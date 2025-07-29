@@ -31,7 +31,7 @@ import Backend.Scoreboard.Model
 import Date
 import Pages.Completion.Model
 import Pages.Components.Types exposing (PopulationSelectionOption(..))
-import Pages.Reports.Model exposing (PregnancyTrimester(..), ReportType(..))
+import Pages.Reports.Model exposing (PregnancyTrimester(..), PrenatalContactType(..), ReportType(..))
 import Pages.Scoreboard.Model exposing (..)
 import Time exposing (Month(..))
 
@@ -97,6 +97,7 @@ type TranslationId
     | Commune
     | Completed
     | CompletionReportType Pages.Completion.Model.ReportType
+    | ContactType
     | CoreExam
     | DangerSigns
     | DeliveryLocation DeliveryLocation
@@ -198,6 +199,7 @@ type TranslationId
     | PregnancyTest
     | PregnancyTrimester PregnancyTrimester
     | PrenatalActivity PrenatalActivity
+    | PrenatalContactType PrenatalContactType
     | PrenatalDiagnosis PrenatalDiagnosis
     | PrevalenceByMonthOneVisitOrMore
     | PrevalenceByMonthTwoVisitsOrMore
@@ -654,6 +656,12 @@ translationSet transId =
 
         CHW ->
             { english = "CHW"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        ContactType ->
+            { english = "Contact Type"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -1981,6 +1989,56 @@ translationSet transId =
                     , kirundi = Nothing
                     }
 
+        PrenatalContactType prenatalContactType ->
+            case prenatalContactType of
+                PrenatalContact1 ->
+                    { english = "First ANC contact (≤12 weeks)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalContact2 ->
+                    { english = "2nd ANC contact (20 weeks)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalContact3 ->
+                    { english = "3rd ANC contact (26 weeks)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalContact4 ->
+                    { english = "4th ANC contact (30 weeks)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalContact5 ->
+                    { english = "5th ANC contact (34 weeks)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalContact6 ->
+                    { english = "6th ANC contact (36 weeks)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalContact7 ->
+                    { english = "7th ANC contact (38 weeks)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalContact8 ->
+                    { english = "8th ANC contact (40 weeks)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
         PrenatalDiagnosis diagnosis ->
             case diagnosis of
                 DiagnosisChronicHypertension ->
@@ -2431,6 +2489,12 @@ translationSet transId =
 
                 ReportPrenatal ->
                     translationSet Antenatal
+
+                ReportPrenatalContacts ->
+                    { english = "ANC Contacts"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
 
                 ReportPrenatalDiagnoses ->
                     { english = "ANC Diagnoses"

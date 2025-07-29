@@ -6637,6 +6637,7 @@ var $author$project$Pages$Reports$Model$ReportAcuteIllness = {$: 'ReportAcuteIll
 var $author$project$Pages$Reports$Model$ReportDemographics = {$: 'ReportDemographics'};
 var $author$project$Pages$Reports$Model$ReportNutrition = {$: 'ReportNutrition'};
 var $author$project$Pages$Reports$Model$ReportPrenatal = {$: 'ReportPrenatal'};
+var $author$project$Pages$Reports$Model$ReportPrenatalContacts = {$: 'ReportPrenatalContacts'};
 var $author$project$Pages$Reports$Model$ReportPrenatalDiagnoses = {$: 'ReportPrenatalDiagnoses'};
 var $author$project$Pages$Reports$Utils$reportTypeFromString = function (reportType) {
 	switch (reportType) {
@@ -6650,6 +6651,8 @@ var $author$project$Pages$Reports$Utils$reportTypeFromString = function (reportT
 			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportPrenatal);
 		case 'prenatal-diagnoses':
 			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportPrenatalDiagnoses);
+		case 'prenatal-contacts':
+			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportPrenatalContacts);
 		default:
 			return $elm$core$Maybe$Nothing;
 	}
@@ -11155,6 +11158,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				}
 			case 'CHW':
 				return {english: 'CHW', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'ContactType':
+				return {english: 'Contact Type', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'CoreExam':
 				return {english: 'Core Exam', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'DangerSigns':
@@ -11969,6 +11974,26 @@ var $author$project$Translate$translationSet = function (transId) {
 					default:
 						return {english: 'Vitals Recheck', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 				}
+			case 'PrenatalContactType':
+				var prenatalContactType = transId.a;
+				switch (prenatalContactType.$) {
+					case 'PrenatalContact1':
+						return {english: 'First ANC contact (≤12 weeks)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalContact2':
+						return {english: '2nd ANC contact (20 weeks)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalContact3':
+						return {english: '3rd ANC contact (26 weeks)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalContact4':
+						return {english: '4th ANC contact (30 weeks)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalContact5':
+						return {english: '5th ANC contact (34 weeks)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalContact6':
+						return {english: '6th ANC contact (36 weeks)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalContact7':
+						return {english: '7th ANC contact (38 weeks)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					default:
+						return {english: '8th ANC contact (40 weeks)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				}
 			case 'PrenatalDiagnosis':
 				var diagnosis = transId.a;
 				switch (diagnosis.$) {
@@ -12388,6 +12413,8 @@ var $author$project$Translate$translationSet = function (transId) {
 						var $temp$transId = $author$project$Translate$Antenatal;
 						transId = $temp$transId;
 						continue translationSet;
+					case 'ReportPrenatalContacts':
+						return {english: 'ANC Contacts', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					default:
 						return {english: 'ANC Diagnoses', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 				}
@@ -16357,6 +16384,8 @@ var $author$project$Pages$Reports$Utils$reportTypeToString = function (reportTyp
 			return 'nutrition';
 		case 'ReportPrenatal':
 			return 'prenatal';
+		case 'ReportPrenatalContacts':
+			return 'prenatal-contacts';
 		default:
 			return 'prenatal-diagnoses';
 	}
@@ -18671,6 +18700,152 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F5(
 						A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
 					])));
 	});
+var $author$project$Translate$ContactType = {$: 'ContactType'};
+var $author$project$Pages$Reports$Model$PrenatalContact1 = {$: 'PrenatalContact1'};
+var $author$project$Pages$Reports$Model$PrenatalContact2 = {$: 'PrenatalContact2'};
+var $author$project$Pages$Reports$Model$PrenatalContact3 = {$: 'PrenatalContact3'};
+var $author$project$Pages$Reports$Model$PrenatalContact4 = {$: 'PrenatalContact4'};
+var $author$project$Pages$Reports$Model$PrenatalContact5 = {$: 'PrenatalContact5'};
+var $author$project$Pages$Reports$Model$PrenatalContact6 = {$: 'PrenatalContact6'};
+var $author$project$Pages$Reports$Model$PrenatalContact7 = {$: 'PrenatalContact7'};
+var $author$project$Pages$Reports$Model$PrenatalContact8 = {$: 'PrenatalContact8'};
+var $author$project$Translate$PrenatalContactType = function (a) {
+	return {$: 'PrenatalContactType', a: a};
+};
+var $author$project$Pages$Reports$Utils$eddToLmpDate = function (eddDate) {
+	return A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, -280, eddDate);
+};
+var $author$project$Pages$Reports$Utils$prenatalContactTypeToEncountersAtWeek = function (prenatalContactType) {
+	switch (prenatalContactType.$) {
+		case 'PrenatalContact1':
+			return _Utils_Tuple2(1, 12);
+		case 'PrenatalContact2':
+			return _Utils_Tuple2(2, 20);
+		case 'PrenatalContact3':
+			return _Utils_Tuple2(3, 26);
+		case 'PrenatalContact4':
+			return _Utils_Tuple2(4, 30);
+		case 'PrenatalContact5':
+			return _Utils_Tuple2(5, 34);
+		case 'PrenatalContact6':
+			return _Utils_Tuple2(6, 36);
+		case 'PrenatalContact7':
+			return _Utils_Tuple2(7, 38);
+		default:
+			return _Utils_Tuple2(8, 40);
+	}
+};
+var $author$project$Pages$Reports$View$generatePrenatalContactsReportData = F3(
+	function (language, limitDate, records) {
+		var pregnanciesWithLMP = A2(
+			$elm$core$List$filterMap,
+			function (pregnancy) {
+				return A2(
+					$elm$core$Maybe$map,
+					function (edd) {
+						return _Utils_Tuple2(
+							$author$project$Pages$Reports$Utils$eddToLmpDate(edd),
+							pregnancy);
+					},
+					pregnancy.eddDate);
+			},
+			$elm$core$List$concat(
+				$elm_community$maybe_extra$Maybe$Extra$values(
+					A2(
+						$elm$core$List$map,
+						function ($) {
+							return $.prenatalData;
+						},
+						records))));
+		var generateRow = F2(
+			function (label, value) {
+				return _List_fromArray(
+					[
+						A2($author$project$Translate$translate, language, label),
+						$elm$core$String$fromInt(value)
+					]);
+			});
+		var countPregnanciesByContacts = function (_v1) {
+			var numberOfContacts = _v1.a;
+			var egaWeeks = _v1.b;
+			return $elm$core$List$length(
+				A2(
+					$elm$core$List$filter,
+					function (_v0) {
+						var lmpDate = _v0.a;
+						var pregnancy = _v0.b;
+						var egaXDate = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, egaWeeks * 7, lmpDate);
+						var encountersBeforeEGAX = A2(
+							$elm$core$List$filter,
+							function (encounter) {
+								return !_Utils_eq(
+									A2($justinmimbs$date$Date$compare, encounter.startDate, egaXDate),
+									$elm$core$Basics$GT);
+							},
+							pregnancy.encounters);
+						return (!_Utils_eq(
+							A2($justinmimbs$date$Date$compare, egaXDate, limitDate),
+							$elm$core$Basics$GT)) && _Utils_eq(
+							$elm$core$List$length(encountersBeforeEGAX),
+							numberOfContacts);
+					},
+					pregnanciesWithLMP));
+		};
+		var rows = A2(
+			$elm$core$List$map,
+			function (contactType) {
+				return A2(
+					generateRow,
+					$author$project$Translate$PrenatalContactType(contactType),
+					countPregnanciesByContacts(
+						$author$project$Pages$Reports$Utils$prenatalContactTypeToEncountersAtWeek(contactType)));
+			},
+			_List_fromArray(
+				[$author$project$Pages$Reports$Model$PrenatalContact1, $author$project$Pages$Reports$Model$PrenatalContact2, $author$project$Pages$Reports$Model$PrenatalContact3, $author$project$Pages$Reports$Model$PrenatalContact4, $author$project$Pages$Reports$Model$PrenatalContact5, $author$project$Pages$Reports$Model$PrenatalContact6, $author$project$Pages$Reports$Model$PrenatalContact7, $author$project$Pages$Reports$Model$PrenatalContact8]));
+		return {
+			captions: _List_fromArray(
+				[
+					A2($author$project$Translate$translate, language, $author$project$Translate$ContactType),
+					A2($author$project$Translate$translate, language, $author$project$Translate$Total)
+				]),
+			heading: '',
+			rows: rows
+		};
+	});
+var $author$project$Pages$Reports$View$viewPrenatalContactsReport = F4(
+	function (language, limitDate, scopeLabel, records) {
+		var data = A3($author$project$Pages$Reports$View$generatePrenatalContactsReportData, language, limitDate, records);
+		var csvFileName = 'anc-contacts-report-' + ($elm$core$String$toLower(
+			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
+		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
+		var captionsRow = A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('row captions')
+				]),
+			$author$project$Pages$Components$View$viewStandardCells(data.captions));
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('report prenatal-contacts')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('table')
+						]),
+					A2(
+						$elm$core$List$cons,
+						captionsRow,
+						A2($elm$core$List$map, $author$project$Pages$Components$View$viewStandardRow, data.rows))),
+					A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
+				]));
+	});
 var $author$project$Backend$Reports$Model$NoPrenatalDiagnosis = {$: 'NoPrenatalDiagnosis'};
 var $author$project$Translate$PrenatalDiagnosis = function (a) {
 	return {$: 'PrenatalDiagnosis', a: a};
@@ -18816,9 +18991,6 @@ var $author$project$Translate$PregnancyTrimester = function (a) {
 var $author$project$Pages$Reports$Model$SecondTrimester = {$: 'SecondTrimester'};
 var $author$project$Pages$Reports$Model$ThirdTrimester = {$: 'ThirdTrimester'};
 var $author$project$Translate$Trimester = {$: 'Trimester'};
-var $author$project$Pages$Reports$Utils$eddToLmpDate = function (eddDate) {
-	return A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, -280, eddDate);
-};
 var $author$project$Gizra$NominalDate$diffDays = F2(
 	function (low, high) {
 		return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Days, low, high);
@@ -19625,6 +19797,8 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 								return A5($author$project$Pages$Reports$View$viewNutritionReport, language, limitDate, scopeLabel, data.nutritionReportData, model.nutritionReportData);
 							case 'ReportPrenatal':
 								return A4($author$project$Pages$Reports$View$viewPrenatalReport, language, limitDate, scopeLabel, recordsTillLimitDate);
+							case 'ReportPrenatalContacts':
+								return A4($author$project$Pages$Reports$View$viewPrenatalContactsReport, language, limitDate, scopeLabel, recordsTillLimitDate);
 							default:
 								return A4($author$project$Pages$Reports$View$viewPrenatalDiagnosesReport, language, limitDate, scopeLabel, recordsTillLimitDate);
 						}
@@ -19660,7 +19834,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 								language,
 								model.reportType,
 								_List_fromArray(
-									[$author$project$Pages$Reports$Model$ReportAcuteIllness, $author$project$Pages$Reports$Model$ReportPrenatal, $author$project$Pages$Reports$Model$ReportPrenatalDiagnoses, $author$project$Pages$Reports$Model$ReportDemographics, $author$project$Pages$Reports$Model$ReportNutrition]),
+									[$author$project$Pages$Reports$Model$ReportAcuteIllness, $author$project$Pages$Reports$Model$ReportPrenatal, $author$project$Pages$Reports$Model$ReportPrenatalContacts, $author$project$Pages$Reports$Model$ReportPrenatalDiagnoses, $author$project$Pages$Reports$Model$ReportDemographics, $author$project$Pages$Reports$Model$ReportNutrition]),
 								$author$project$Pages$Reports$Utils$reportTypeToString,
 								$author$project$Pages$Reports$Model$SetReportType,
 								$author$project$Translate$ReportType,

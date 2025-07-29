@@ -295,6 +295,9 @@ viewReportsData language currentDate themePath data model =
                             ReportPrenatal ->
                                 viewPrenatalReport language limitDate scopeLabel recordsTillLimitDate
 
+                            ReportPrenatalContacts ->
+                                viewPrenatalContactsReport language limitDate scopeLabel recordsTillLimitDate
+
                             ReportPrenatalDiagnoses ->
                                 viewPrenatalDiagnosesReport language limitDate scopeLabel recordsTillLimitDate
                     )
@@ -317,6 +320,7 @@ viewReportsData language currentDate themePath data model =
                 model.reportType
                 [ ReportAcuteIllness
                 , ReportPrenatal
+                , ReportPrenatalContacts
                 , ReportPrenatalDiagnoses
                 , ReportDemographics
                 , ReportNutrition
@@ -2060,6 +2064,104 @@ generateAcuteIllnessReportData language startDate records =
         , translate language Translate.Total
         ]
     , rows = rows ++ [ totalsRow, noneRow ]
+    }
+
+
+viewPrenatalContactsReport : Language -> NominalDate -> String -> List PatientData -> Html Msg
+viewPrenatalContactsReport language limitDate scopeLabel records =
+    let
+        data =
+            generatePrenatalContactsReportData language limitDate records
+
+        captionsRow =
+            viewStandardCells data.captions
+                |> div [ class "row captions" ]
+
+        csvFileName =
+            "anc-contacts-report-"
+                ++ (String.toLower <| String.replace " " "-" scopeLabel)
+                ++ "-"
+                ++ customFormatDDMMYYYY "-" limitDate
+                ++ ".csv"
+
+        csvContent =
+            reportTableDataToCSV data
+    in
+    div [ class "report prenatal-contacts" ] <|
+        [ div [ class "table" ] <|
+            captionsRow
+                :: List.map viewStandardRow data.rows
+        , viewDownloadCSVButton language csvFileName csvContent
+        ]
+
+
+generatePrenatalContactsReportData :
+    Language
+    -> NominalDate
+    -> List PatientData
+    -> MetricsResultsTableData
+generatePrenatalContactsReportData language limitDate records =
+    let
+        pregnanciesWithLMP =
+            List.map .prenatalData records
+                |> Maybe.Extra.values
+                |> List.concat
+                |> List.filterMap
+                    (\pregnancy ->
+                        Maybe.map (\edd -> ( eddToLmpDate edd, pregnancy ))
+                            pregnancy.eddDate
+                    )
+
+        countPregnanciesByContacts ( numberOfContacts, egaWeeks ) =
+            List.filter
+                (\( lmpDate, pregnancy ) ->
+                    let
+                        egaXDate =
+                            -- EGA date is X weeks after LMP date.
+                            Date.add Days (egaWeeks * 7) lmpDate
+
+                        encountersBeforeEGAX =
+                            List.filter
+                                (\encounter ->
+                                    -- Encounter was started not after EGA date.
+                                    not <| Date.compare encounter.startDate egaXDate == GT
+                                )
+                                pregnancy.encounters
+                    in
+                    -- EGA X date is not after the limit date (set in filter).
+                    (not <| Date.compare egaXDate limitDate == GT)
+                        && (List.length encountersBeforeEGAX == numberOfContacts)
+                )
+                pregnanciesWithLMP
+                |> List.length
+
+        rows =
+            List.map
+                (\contactType ->
+                    generateRow (Translate.PrenatalContactType contactType)
+                        (countPregnanciesByContacts <| prenatalContactTypeToEncountersAtWeek contactType)
+                )
+                [ PrenatalContact1
+                , PrenatalContact2
+                , PrenatalContact3
+                , PrenatalContact4
+                , PrenatalContact5
+                , PrenatalContact6
+                , PrenatalContact7
+                , PrenatalContact8
+                ]
+
+        generateRow label value =
+            [ translate language label
+            , String.fromInt value
+            ]
+    in
+    { heading = ""
+    , captions =
+        [ translate language Translate.ContactType
+        , translate language Translate.Total
+        ]
+    , rows = rows
     }
 
 

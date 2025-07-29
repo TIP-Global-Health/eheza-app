@@ -33,6 +33,7 @@ type ReportType
     | ReportDemographics
     | ReportNutrition
     | ReportPrenatal
+    | ReportPrenatalContacts
     | ReportPrenatalDiagnoses
 
 
@@ -94,6 +95,17 @@ type PregnancyTrimester
     = FirstTrimester
     | SecondTrimester
     | ThirdTrimester
+
+
+type PrenatalContactType
+    = PrenatalContact1
+    | PrenatalContact2
+    | PrenatalContact3
+    | PrenatalContact4
+    | PrenatalContact5
+    | PrenatalContact6
+    | PrenatalContact7
+    | PrenatalContact8
 
 
 type Msg
