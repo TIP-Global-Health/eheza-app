@@ -2170,7 +2170,7 @@ generatePrenatalContactsReportData language limitDate records =
                 |> List.length
 
         numberOfPregnanciesWith6OrMoreEncounters =
-            List.filter ((>=) 6) encountersAtCompletedPregnancies
+            List.filter (\numberOfEncounters -> numberOfEncounters >= 6) encountersAtCompletedPregnancies
                 |> List.length
 
         numberOfPregnanciesWith8Encounters =

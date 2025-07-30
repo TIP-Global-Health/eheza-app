@@ -18807,7 +18807,9 @@ var $author$project$Pages$Reports$View$generatePrenatalContactsReportData = F3(
 		var numberOfPregnanciesWith6OrMoreEncounters = $elm$core$List$length(
 			A2(
 				$elm$core$List$filter,
-				$elm$core$Basics$ge(6),
+				function (numberOfEncounters) {
+					return numberOfEncounters >= 6;
+				},
 				encountersAtCompletedPregnancies));
 		var numberOfPregnanciesWith8Encounters = $elm$core$List$length(
 			A2(
