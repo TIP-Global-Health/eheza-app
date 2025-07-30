@@ -2112,10 +2112,6 @@ generatePrenatalContactsReportData language limitDate records =
                             pregnancy.eddDate
                     )
 
-        _ =
-            List.length pregnanciesWithLMP
-                |> Debug.log "pregnanciesWithLMP"
-
         countPregnanciesByContacts ( numberOfContacts, egaWeeks ) =
             List.filter
                 (\( lmpDate, pregnancy ) ->
@@ -2138,10 +2134,6 @@ generatePrenatalContactsReportData language limitDate records =
                 )
                 pregnanciesWithLMP
                 |> List.length
-
-        _ =
-            List.length encountersAtCompletedPregnancies
-                |> Debug.log "encountersAtCompletedPregnancies"
 
         encountersAtCompletedPregnancies =
             List.filterMap

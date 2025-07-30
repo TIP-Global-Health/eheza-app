@@ -18724,7 +18724,6 @@ var $author$project$Translate$PrenatalContactType = function (a) {
 var $author$project$Pages$Reports$Utils$eddToLmpDate = function (eddDate) {
 	return A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, -280, eddDate);
 };
-var $elm$core$Debug$log = _Debug_log;
 var $author$project$Pages$Reports$Utils$prenatalContactTypeToEncountersAtWeek = function (prenatalContactType) {
 	switch (prenatalContactType.$) {
 		case 'PrenatalContact1':
@@ -18777,9 +18776,9 @@ var $author$project$Pages$Reports$View$generatePrenatalContactsReportData = F3(
 			});
 		var encountersAtCompletedPregnancies = A2(
 			$elm$core$List$filterMap,
-			function (_v4) {
-				var lmpDate = _v4.a;
-				var pregnancy = _v4.b;
+			function (_v2) {
+				var lmpDate = _v2.a;
+				var pregnancy = _v2.b;
 				var nonPostpartumEncounters = A2(
 					$elm$core$List$filter,
 					function (encounter) {
@@ -18800,15 +18799,15 @@ var $author$project$Pages$Reports$View$generatePrenatalContactsReportData = F3(
 					$elm$core$List$length(nonPostpartumEncounters)) : $elm$core$Maybe$Nothing;
 			},
 			pregnanciesWithLMP);
-		var countPregnanciesByContacts = function (_v3) {
-			var numberOfContacts = _v3.a;
-			var egaWeeks = _v3.b;
+		var countPregnanciesByContacts = function (_v1) {
+			var numberOfContacts = _v1.a;
+			var egaWeeks = _v1.b;
 			return $elm$core$List$length(
 				A2(
 					$elm$core$List$filter,
-					function (_v2) {
-						var lmpDate = _v2.a;
-						var pregnancy = _v2.b;
+					function (_v0) {
+						var lmpDate = _v0.a;
+						var pregnancy = _v0.b;
 						var egaXDate = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, egaWeeks * 7, lmpDate);
 						var encountersBeforeEGAX = A2(
 							$elm$core$List$filter,
@@ -18846,14 +18845,6 @@ var $author$project$Pages$Reports$View$generatePrenatalContactsReportData = F3(
 					},
 					encountersAtCompletedPregnancies));
 		};
-		var _v0 = A2(
-			$elm$core$Debug$log,
-			'pregnanciesWithLMP',
-			$elm$core$List$length(pregnanciesWithLMP));
-		var _v1 = A2(
-			$elm$core$Debug$log,
-			'encountersAtCompletedPregnancies',
-			$elm$core$List$length(encountersAtCompletedPregnancies));
 		return {
 			captions: _List_fromArray(
 				[
