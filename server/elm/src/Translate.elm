@@ -197,6 +197,7 @@ type TranslationId
     | PregnanciesWithAtLeast4Encounters
     | PregnanciesWithAtLeast6Encounters
     | PregnanciesWithAtLeast8Encounters
+    | PregnanciesWithFirstContactAtFirsTrimester
     | PregnancyOutcome PregnancyOutcome
     | PregnancyOutcomeLabel
     | PregnancyTest
@@ -1640,6 +1641,12 @@ translationSet transId =
 
         PregnanciesWithAtLeast8Encounters ->
             { english = "Pregnant women who attended at least 8 ANC contacts"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        PregnanciesWithFirstContactAtFirsTrimester ->
+            { english = "Pregnant women who attended ANC contact within 1st trimester"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

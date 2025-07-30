@@ -11756,6 +11756,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Pregnant women who attended at least 6 ANC contacts', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'PregnanciesWithAtLeast8Encounters':
 				return {english: 'Pregnant women who attended at least 8 ANC contacts', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'PregnanciesWithFirstContactAtFirsTrimester':
+				return {english: 'Pregnant women who attended ANC contact within 1st trimester', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'PregnancyOutcome':
 				var outcome = transId.a;
 				switch (outcome.$) {
@@ -18710,6 +18712,7 @@ var $author$project$Translate$ContactType = {$: 'ContactType'};
 var $author$project$Translate$PregnanciesWithAtLeast4Encounters = {$: 'PregnanciesWithAtLeast4Encounters'};
 var $author$project$Translate$PregnanciesWithAtLeast6Encounters = {$: 'PregnanciesWithAtLeast6Encounters'};
 var $author$project$Translate$PregnanciesWithAtLeast8Encounters = {$: 'PregnanciesWithAtLeast8Encounters'};
+var $author$project$Translate$PregnanciesWithFirstContactAtFirsTrimester = {$: 'PregnanciesWithFirstContactAtFirsTrimester'};
 var $author$project$Pages$Reports$Model$PrenatalContact1 = {$: 'PrenatalContact1'};
 var $author$project$Pages$Reports$Model$PrenatalContact2 = {$: 'PrenatalContact2'};
 var $author$project$Pages$Reports$Model$PrenatalContact3 = {$: 'PrenatalContact3'};
@@ -18856,6 +18859,11 @@ var $author$project$Pages$Reports$View$generatePrenatalContactsReportData = F3(
 				prenatalContactRows,
 				_List_fromArray(
 					[
+						A2(
+						generateRow,
+						$author$project$Translate$PregnanciesWithFirstContactAtFirsTrimester,
+						countPregnanciesByContacts(
+							$author$project$Pages$Reports$Utils$prenatalContactTypeToEncountersAtWeek($author$project$Pages$Reports$Model$PrenatalContact1))),
 						A2(
 						generateRow,
 						$author$project$Translate$PregnanciesWithAtLeast4Encounters,
