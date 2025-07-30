@@ -194,6 +194,9 @@ type TranslationId
     | PregnanciesActive
     | PregnanciesAll
     | PregnanciesCompleted
+    | PregnanciesWith4Encounters
+    | PregnanciesWith6OrMoreEncounters
+    | PregnanciesWith8Encounters
     | PregnancyOutcome PregnancyOutcome
     | PregnancyOutcomeLabel
     | PregnancyTest
@@ -1619,6 +1622,24 @@ translationSet transId =
 
         PregnanciesCompleted ->
             { english = "Completed Pregnancies"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        PregnanciesWith4Encounters ->
+            { english = "Pregnant women who attended 4 ANC standard contacts"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        PregnanciesWith6OrMoreEncounters ->
+            { english = "Pregnant women who attended at least 6 out of 8 ANC contacts"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        PregnanciesWith8Encounters ->
+            { english = "Pregnant women who attended 8 ANC contacts"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

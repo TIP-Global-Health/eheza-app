@@ -2135,7 +2135,49 @@ generatePrenatalContactsReportData language limitDate records =
                 pregnanciesWithLMP
                 |> List.length
 
-        rows =
+        encountersAtCompletedPregnancies =
+            List.filterMap
+                (\( lmpDate, pregnancy ) ->
+                    let
+                        completed =
+                            let
+                                thirtyDaysAfterEDD =
+                                    Date.add Days 310 lmpDate
+                            in
+                            -- Pregnancy is completed when it's completion date is set, or,
+                            -- 30 days after estimated delivery date.
+                            isJust pregnancy.dateConcluded
+                                || (not <| Date.compare thirtyDaysAfterEDD limitDate == GT)
+
+                        nonPostpartumEncounters =
+                            List.filter
+                                (\encounter ->
+                                    -- Encounter was started not after EGA date.
+                                    not <| List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ]
+                                )
+                                pregnancy.encounters
+                    in
+                    if completed then
+                        Just <| List.length nonPostpartumEncounters
+
+                    else
+                        Nothing
+                )
+                pregnanciesWithLMP
+
+        numberOfPregnanciesWith4Encounters =
+            List.filter ((==) 4) encountersAtCompletedPregnancies
+                |> List.length
+
+        numberOfPregnanciesWith6OrMoreEncounters =
+            List.filter ((>=) 6) encountersAtCompletedPregnancies
+                |> List.length
+
+        numberOfPregnanciesWith8Encounters =
+            List.filter ((==) 8) encountersAtCompletedPregnancies
+                |> List.length
+
+        prenatalContactRows =
             List.map
                 (\contactType ->
                     generateRow (Translate.PrenatalContactType contactType)
@@ -2161,7 +2203,12 @@ generatePrenatalContactsReportData language limitDate records =
         [ translate language Translate.ContactType
         , translate language Translate.Total
         ]
-    , rows = rows
+    , rows =
+        prenatalContactRows
+            ++ [ generateRow Translate.PregnanciesWith4Encounters numberOfPregnanciesWith4Encounters
+               , generateRow Translate.PregnanciesWith6OrMoreEncounters numberOfPregnanciesWith6OrMoreEncounters
+               , generateRow Translate.PregnanciesWith8Encounters numberOfPregnanciesWith8Encounters
+               ]
     }
 
 
