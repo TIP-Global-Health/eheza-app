@@ -2112,6 +2112,10 @@ generatePrenatalContactsReportData language limitDate records =
                             pregnancy.eddDate
                     )
 
+        _ =
+            List.length pregnanciesWithLMP
+                |> Debug.log "pregnanciesWithLMP"
+
         countPregnanciesByContacts ( numberOfContacts, egaWeeks ) =
             List.filter
                 (\( lmpDate, pregnancy ) ->
@@ -2134,6 +2138,10 @@ generatePrenatalContactsReportData language limitDate records =
                 )
                 pregnanciesWithLMP
                 |> List.length
+
+        _ =
+            List.length encountersAtCompletedPregnancies
+                |> Debug.log "encountersAtCompletedPregnancies"
 
         encountersAtCompletedPregnancies =
             List.filterMap
@@ -2165,16 +2173,8 @@ generatePrenatalContactsReportData language limitDate records =
                 )
                 pregnanciesWithLMP
 
-        numberOfPregnanciesWith4Encounters =
-            List.filter ((==) 4) encountersAtCompletedPregnancies
-                |> List.length
-
-        numberOfPregnanciesWith6OrMoreEncounters =
-            List.filter (\numberOfEncounters -> numberOfEncounters >= 6) encountersAtCompletedPregnancies
-                |> List.length
-
-        numberOfPregnanciesWith8Encounters =
-            List.filter ((==) 8) encountersAtCompletedPregnancies
+        countNumberOfPregnanciesWithAtLeastXEncounters x =
+            List.filter (\numberOfEncounters -> numberOfEncounters >= x) encountersAtCompletedPregnancies
                 |> List.length
 
         prenatalContactRows =
@@ -2205,9 +2205,9 @@ generatePrenatalContactsReportData language limitDate records =
         ]
     , rows =
         prenatalContactRows
-            ++ [ generateRow Translate.PregnanciesWith4Encounters numberOfPregnanciesWith4Encounters
-               , generateRow Translate.PregnanciesWith6OrMoreEncounters numberOfPregnanciesWith6OrMoreEncounters
-               , generateRow Translate.PregnanciesWith8Encounters numberOfPregnanciesWith8Encounters
+            ++ [ generateRow Translate.PregnanciesWithAtLeast4Encounters (countNumberOfPregnanciesWithAtLeastXEncounters 4)
+               , generateRow Translate.PregnanciesWithAtLeast6Encounters (countNumberOfPregnanciesWithAtLeastXEncounters 6)
+               , generateRow Translate.PregnanciesWithAtLeast8Encounters (countNumberOfPregnanciesWithAtLeastXEncounters 8)
                ]
     }
 

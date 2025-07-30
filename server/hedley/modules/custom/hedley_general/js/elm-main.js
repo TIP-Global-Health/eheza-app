@@ -11750,12 +11750,12 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'All Pregnancies', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'PregnanciesCompleted':
 				return {english: 'Completed Pregnancies', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
-			case 'PregnanciesWith4Encounters':
-				return {english: 'Pregnant women who attended 4 ANC standard contacts', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
-			case 'PregnanciesWith6OrMoreEncounters':
-				return {english: 'Pregnant women who attended at least 6 out of 8 ANC contacts', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
-			case 'PregnanciesWith8Encounters':
-				return {english: 'Pregnant women who attended 8 ANC contacts', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'PregnanciesWithAtLeast4Encounters':
+				return {english: 'Pregnant women who attended at least 4 ANC contacts', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'PregnanciesWithAtLeast6Encounters':
+				return {english: 'Pregnant women who attended at least 6 ANC contacts', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'PregnanciesWithAtLeast8Encounters':
+				return {english: 'Pregnant women who attended at least 8 ANC contacts', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'PregnancyOutcome':
 				var outcome = transId.a;
 				switch (outcome.$) {
@@ -18707,9 +18707,9 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F5(
 					])));
 	});
 var $author$project$Translate$ContactType = {$: 'ContactType'};
-var $author$project$Translate$PregnanciesWith4Encounters = {$: 'PregnanciesWith4Encounters'};
-var $author$project$Translate$PregnanciesWith6OrMoreEncounters = {$: 'PregnanciesWith6OrMoreEncounters'};
-var $author$project$Translate$PregnanciesWith8Encounters = {$: 'PregnanciesWith8Encounters'};
+var $author$project$Translate$PregnanciesWithAtLeast4Encounters = {$: 'PregnanciesWithAtLeast4Encounters'};
+var $author$project$Translate$PregnanciesWithAtLeast6Encounters = {$: 'PregnanciesWithAtLeast6Encounters'};
+var $author$project$Translate$PregnanciesWithAtLeast8Encounters = {$: 'PregnanciesWithAtLeast8Encounters'};
 var $author$project$Pages$Reports$Model$PrenatalContact1 = {$: 'PrenatalContact1'};
 var $author$project$Pages$Reports$Model$PrenatalContact2 = {$: 'PrenatalContact2'};
 var $author$project$Pages$Reports$Model$PrenatalContact3 = {$: 'PrenatalContact3'};
@@ -18724,6 +18724,7 @@ var $author$project$Translate$PrenatalContactType = function (a) {
 var $author$project$Pages$Reports$Utils$eddToLmpDate = function (eddDate) {
 	return A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, -280, eddDate);
 };
+var $elm$core$Debug$log = _Debug_log;
 var $author$project$Pages$Reports$Utils$prenatalContactTypeToEncountersAtWeek = function (prenatalContactType) {
 	switch (prenatalContactType.$) {
 		case 'PrenatalContact1':
@@ -18776,9 +18777,9 @@ var $author$project$Pages$Reports$View$generatePrenatalContactsReportData = F3(
 			});
 		var encountersAtCompletedPregnancies = A2(
 			$elm$core$List$filterMap,
-			function (_v2) {
-				var lmpDate = _v2.a;
-				var pregnancy = _v2.b;
+			function (_v4) {
+				var lmpDate = _v4.a;
+				var pregnancy = _v4.b;
 				var nonPostpartumEncounters = A2(
 					$elm$core$List$filter,
 					function (encounter) {
@@ -18799,32 +18800,15 @@ var $author$project$Pages$Reports$View$generatePrenatalContactsReportData = F3(
 					$elm$core$List$length(nonPostpartumEncounters)) : $elm$core$Maybe$Nothing;
 			},
 			pregnanciesWithLMP);
-		var numberOfPregnanciesWith4Encounters = $elm$core$List$length(
-			A2(
-				$elm$core$List$filter,
-				$elm$core$Basics$eq(4),
-				encountersAtCompletedPregnancies));
-		var numberOfPregnanciesWith6OrMoreEncounters = $elm$core$List$length(
-			A2(
-				$elm$core$List$filter,
-				function (numberOfEncounters) {
-					return numberOfEncounters >= 6;
-				},
-				encountersAtCompletedPregnancies));
-		var numberOfPregnanciesWith8Encounters = $elm$core$List$length(
-			A2(
-				$elm$core$List$filter,
-				$elm$core$Basics$eq(8),
-				encountersAtCompletedPregnancies));
-		var countPregnanciesByContacts = function (_v1) {
-			var numberOfContacts = _v1.a;
-			var egaWeeks = _v1.b;
+		var countPregnanciesByContacts = function (_v3) {
+			var numberOfContacts = _v3.a;
+			var egaWeeks = _v3.b;
 			return $elm$core$List$length(
 				A2(
 					$elm$core$List$filter,
-					function (_v0) {
-						var lmpDate = _v0.a;
-						var pregnancy = _v0.b;
+					function (_v2) {
+						var lmpDate = _v2.a;
+						var pregnancy = _v2.b;
 						var egaXDate = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, egaWeeks * 7, lmpDate);
 						var encountersBeforeEGAX = A2(
 							$elm$core$List$filter,
@@ -18853,6 +18837,23 @@ var $author$project$Pages$Reports$View$generatePrenatalContactsReportData = F3(
 			},
 			_List_fromArray(
 				[$author$project$Pages$Reports$Model$PrenatalContact1, $author$project$Pages$Reports$Model$PrenatalContact2, $author$project$Pages$Reports$Model$PrenatalContact3, $author$project$Pages$Reports$Model$PrenatalContact4, $author$project$Pages$Reports$Model$PrenatalContact5, $author$project$Pages$Reports$Model$PrenatalContact6, $author$project$Pages$Reports$Model$PrenatalContact7, $author$project$Pages$Reports$Model$PrenatalContact8]));
+		var countNumberOfPregnanciesWithAtLeastXEncounters = function (x) {
+			return $elm$core$List$length(
+				A2(
+					$elm$core$List$filter,
+					function (numberOfEncounters) {
+						return _Utils_cmp(numberOfEncounters, x) > -1;
+					},
+					encountersAtCompletedPregnancies));
+		};
+		var _v0 = A2(
+			$elm$core$Debug$log,
+			'pregnanciesWithLMP',
+			$elm$core$List$length(pregnanciesWithLMP));
+		var _v1 = A2(
+			$elm$core$Debug$log,
+			'encountersAtCompletedPregnancies',
+			$elm$core$List$length(encountersAtCompletedPregnancies));
 		return {
 			captions: _List_fromArray(
 				[
@@ -18864,9 +18865,18 @@ var $author$project$Pages$Reports$View$generatePrenatalContactsReportData = F3(
 				prenatalContactRows,
 				_List_fromArray(
 					[
-						A2(generateRow, $author$project$Translate$PregnanciesWith4Encounters, numberOfPregnanciesWith4Encounters),
-						A2(generateRow, $author$project$Translate$PregnanciesWith6OrMoreEncounters, numberOfPregnanciesWith6OrMoreEncounters),
-						A2(generateRow, $author$project$Translate$PregnanciesWith8Encounters, numberOfPregnanciesWith8Encounters)
+						A2(
+						generateRow,
+						$author$project$Translate$PregnanciesWithAtLeast4Encounters,
+						countNumberOfPregnanciesWithAtLeastXEncounters(4)),
+						A2(
+						generateRow,
+						$author$project$Translate$PregnanciesWithAtLeast6Encounters,
+						countNumberOfPregnanciesWithAtLeastXEncounters(6)),
+						A2(
+						generateRow,
+						$author$project$Translate$PregnanciesWithAtLeast8Encounters,
+						countNumberOfPregnanciesWithAtLeastXEncounters(8))
 					]))
 		};
 	});
