@@ -197,6 +197,8 @@ type PrenatalIndicator
     = IndicatorAdequateGWG
     | IndicatorReceivedMMS
     | IndicatorReferredToUltrasound
+    | -- This one is not passed from backend.
+      IndicatorReferredToUltrasoundBeforeEGA24
 
 
 type alias NutritionEncounterData =

@@ -26,6 +26,7 @@ import Backend.Reports.Model
         , NutritionReportTableType(..)
         , PregnancyOutcome(..)
         , PrenatalDiagnosis(..)
+        , PrenatalIndicator(..)
         )
 import Backend.Scoreboard.Model
 import Date
@@ -205,6 +206,7 @@ type TranslationId
     | PrenatalActivity PrenatalActivity
     | PrenatalContactType PrenatalContactType
     | PrenatalDiagnosis PrenatalDiagnosis
+    | PrenatalIndicatorLabel PrenatalIndicator
     | PrevalenceByMonthOneVisitOrMore
     | PrevalenceByMonthTwoVisitsOrMore
     | Province
@@ -2445,6 +2447,32 @@ translationSet transId =
                     { english = "None"
                     , kinyarwanda = Just "Ntabyo"
                     , kirundi = Just "Nta na kimwe"
+                    }
+
+        PrenatalIndicatorLabel indicator ->
+            case indicator of
+                IndicatorAdequateGWG ->
+                    { english = "Pregnant women with adequate gestational weight gain"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                IndicatorReceivedMMS ->
+                    { english = "Pregnant women who received MMS"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                IndicatorReferredToUltrasound ->
+                    { english = "Pregnant women who received ultrasound exams"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                IndicatorReferredToUltrasoundBeforeEGA24 ->
+                    { english = "Pregnant women who received at least one ultrasound before 24 weeks’ gestation"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
                     }
 
         PrevalenceByMonthOneVisitOrMore ->

@@ -12402,6 +12402,18 @@ var $author$project$Translate$translationSet = function (transId) {
 							kirundi: $elm$core$Maybe$Just('Nta na kimwe')
 						};
 				}
+			case 'PrenatalIndicatorLabel':
+				var indicator = transId.a;
+				switch (indicator.$) {
+					case 'IndicatorAdequateGWG':
+						return {english: 'Pregnant women with adequate gestational weight gain', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'IndicatorReceivedMMS':
+						return {english: 'Pregnant women who received MMS', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'IndicatorReferredToUltrasound':
+						return {english: 'Pregnant women who received ultrasound exams', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					default:
+						return {english: 'Pregnant women who received at least one ultrasound before 24 weeks’ gestation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				}
 			case 'PrevalenceByMonthOneVisitOrMore':
 				return {english: 'Prevalence by month - one visit or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'PrevalenceByMonthTwoVisitsOrMore':
@@ -18731,6 +18743,7 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F5(
 					])));
 	});
 var $author$project$Translate$ContactType = {$: 'ContactType'};
+var $author$project$Backend$Reports$Model$IndicatorReferredToUltrasoundBeforeEGA24 = {$: 'IndicatorReferredToUltrasoundBeforeEGA24'};
 var $author$project$Translate$PregnanciesWithAtLeast4Encounters = {$: 'PregnanciesWithAtLeast4Encounters'};
 var $author$project$Translate$PregnanciesWithAtLeast6Encounters = {$: 'PregnanciesWithAtLeast6Encounters'};
 var $author$project$Translate$PregnanciesWithAtLeast8Encounters = {$: 'PregnanciesWithAtLeast8Encounters'};
@@ -18745,6 +18758,9 @@ var $author$project$Pages$Reports$Model$PrenatalContact7 = {$: 'PrenatalContact7
 var $author$project$Pages$Reports$Model$PrenatalContact8 = {$: 'PrenatalContact8'};
 var $author$project$Translate$PrenatalContactType = function (a) {
 	return {$: 'PrenatalContactType', a: a};
+};
+var $author$project$Translate$PrenatalIndicatorLabel = function (a) {
+	return {$: 'PrenatalIndicatorLabel', a: a};
 };
 var $author$project$Pages$Reports$Utils$eddToLmpDate = function (eddDate) {
 	return A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, -280, eddDate);
@@ -18791,6 +18807,42 @@ var $author$project$Pages$Reports$View$generatePrenatalContactsReportData = F3(
 							return $.prenatalData;
 						},
 						records))));
+		var pregnanciesWithIndicator = function (indicator) {
+			return A2(
+				$elm$core$List$filter,
+				function (_v4) {
+					var pregnancy = _v4.b;
+					return A2(
+						$elm$core$List$any,
+						A2(
+							$elm$core$Basics$composeR,
+							function ($) {
+								return $.indicators;
+							},
+							$elm$core$List$member(indicator)),
+						pregnancy.encounters);
+				},
+				pregnanciesWithLMP);
+		};
+		var pregnanciesWithMMS = pregnanciesWithIndicator($author$project$Backend$Reports$Model$IndicatorReceivedMMS);
+		var pregnanciesWithUltrasound = pregnanciesWithIndicator($author$project$Backend$Reports$Model$IndicatorReferredToUltrasound);
+		var pregnanciesWithUltrasoundBeforeEGA24 = A2(
+			$elm$core$List$filter,
+			function (_v3) {
+				var lmpDate = _v3.a;
+				var pregnancy = _v3.b;
+				var ega24Date = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Weeks, 24, lmpDate);
+				return A2(
+					$elm$core$List$any,
+					function (encounter) {
+						return A2($elm$core$List$member, $author$project$Backend$Reports$Model$IndicatorReferredToUltrasound, encounter.indicators) && _Utils_eq(
+							A2($justinmimbs$date$Date$compare, encounter.startDate, ega24Date),
+							$elm$core$Basics$LT);
+					},
+					pregnancy.encounters);
+			},
+			pregnanciesWithUltrasound);
+		var pregnanciesWithAdequateGWG = pregnanciesWithIndicator($author$project$Backend$Reports$Model$IndicatorAdequateGWG);
 		var generateRow = F2(
 			function (label, value) {
 				return _List_fromArray(
@@ -18897,7 +18949,23 @@ var $author$project$Pages$Reports$View$generatePrenatalContactsReportData = F3(
 						A2(
 						generateRow,
 						$author$project$Translate$PregnanciesWithAtLeast8Encounters,
-						countNumberOfPregnanciesWithAtLeastXEncounters(8))
+						countNumberOfPregnanciesWithAtLeastXEncounters(8)),
+						A2(
+						generateRow,
+						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorAdequateGWG),
+						$elm$core$List$length(pregnanciesWithAdequateGWG)),
+						A2(
+						generateRow,
+						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorReceivedMMS),
+						$elm$core$List$length(pregnanciesWithMMS)),
+						A2(
+						generateRow,
+						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorReferredToUltrasound),
+						$elm$core$List$length(pregnanciesWithUltrasound)),
+						A2(
+						generateRow,
+						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorReferredToUltrasoundBeforeEGA24),
+						$elm$core$List$length(pregnanciesWithUltrasoundBeforeEGA24))
 					]))
 		};
 	});

@@ -14,6 +14,7 @@ import Backend.Reports.Model
         , PregnancyOutcome(..)
         , PrenatalDiagnosis(..)
         , PrenatalEncounterType(..)
+        , PrenatalIndicator(..)
         , ReportsData
         , SelectedEntity(..)
         )
@@ -2169,6 +2170,39 @@ generatePrenatalContactsReportData language limitDate records =
             List.filter (\numberOfEncounters -> numberOfEncounters >= x) encountersAtCompletedPregnancies
                 |> List.length
 
+        pregnanciesWithIndicator indicator =
+            List.filter
+                (\( _, pregnancy ) ->
+                    List.any (.indicators >> List.member indicator)
+                        pregnancy.encounters
+                )
+                pregnanciesWithLMP
+
+        pregnanciesWithAdequateGWG =
+            pregnanciesWithIndicator IndicatorAdequateGWG
+
+        pregnanciesWithMMS =
+            pregnanciesWithIndicator IndicatorReceivedMMS
+
+        pregnanciesWithUltrasound =
+            pregnanciesWithIndicator IndicatorReferredToUltrasound
+
+        pregnanciesWithUltrasoundBeforeEGA24 =
+            List.filter
+                (\( lmpDate, pregnancy ) ->
+                    let
+                        ega24Date =
+                            Date.add Weeks 24 lmpDate
+                    in
+                    List.any
+                        (\encounter ->
+                            List.member IndicatorReferredToUltrasound encounter.indicators
+                                && (Date.compare encounter.startDate ega24Date == LT)
+                        )
+                        pregnancy.encounters
+                )
+                pregnanciesWithUltrasound
+
         prenatalContactRows =
             List.map
                 (\contactType ->
@@ -2199,9 +2233,20 @@ generatePrenatalContactsReportData language limitDate records =
         prenatalContactRows
             ++ [ generateRow Translate.PregnanciesWithFirstContactAtFirsTrimester
                     (countPregnanciesByContacts <| prenatalContactTypeToEncountersAtWeek PrenatalContact1)
-               , generateRow Translate.PregnanciesWithAtLeast4Encounters (countNumberOfPregnanciesWithAtLeastXEncounters 4)
-               , generateRow Translate.PregnanciesWithAtLeast6Encounters (countNumberOfPregnanciesWithAtLeastXEncounters 6)
-               , generateRow Translate.PregnanciesWithAtLeast8Encounters (countNumberOfPregnanciesWithAtLeastXEncounters 8)
+               , generateRow Translate.PregnanciesWithAtLeast4Encounters
+                    (countNumberOfPregnanciesWithAtLeastXEncounters 4)
+               , generateRow Translate.PregnanciesWithAtLeast6Encounters
+                    (countNumberOfPregnanciesWithAtLeastXEncounters 6)
+               , generateRow Translate.PregnanciesWithAtLeast8Encounters
+                    (countNumberOfPregnanciesWithAtLeastXEncounters 8)
+               , generateRow (Translate.PrenatalIndicatorLabel IndicatorAdequateGWG)
+                    (List.length pregnanciesWithAdequateGWG)
+               , generateRow (Translate.PrenatalIndicatorLabel IndicatorReceivedMMS)
+                    (List.length pregnanciesWithMMS)
+               , generateRow (Translate.PrenatalIndicatorLabel IndicatorReferredToUltrasound)
+                    (List.length pregnanciesWithUltrasound)
+               , generateRow (Translate.PrenatalIndicatorLabel IndicatorReferredToUltrasoundBeforeEGA24)
+                    (List.length pregnanciesWithUltrasoundBeforeEGA24)
                ]
     }
 
