@@ -258,7 +258,7 @@ decodePrenatalEncounterData =
         |> andThen
             (\s ->
                 case String.split "|" (String.trim s) of
-                    [ first, second, third ] ->
+                    [ first, second, third, fourth ] ->
                         Date.fromIsoString first
                             |> Result.toMaybe
                             |> Maybe.map
@@ -275,8 +275,17 @@ decodePrenatalEncounterData =
                                                 String.split "," third
                                                     |> List.map prenatalDiagnosisFromMapping
                                                     |> Maybe.Extra.values
+
+                                        indicators =
+                                            if String.isEmpty fourth then
+                                                []
+
+                                            else
+                                                String.split "," fourth
+                                                    |> List.map prenatalIndicatorFromMapping
+                                                    |> Maybe.Extra.values
                                     in
-                                    succeed (PrenatalEncounterData startDate encounterType diagnoses)
+                                    succeed (PrenatalEncounterData startDate encounterType diagnoses indicators)
                                 )
                             |> Maybe.withDefault (fail "Failed to decode PrenatalEncounterData")
 
@@ -499,6 +508,22 @@ prenatalDiagnosisFromMapping s =
 
         "l2" ->
             Just DiagnosisPostpartumMastitis
+
+        _ ->
+            Nothing
+
+
+prenatalIndicatorFromMapping : String -> Maybe PrenatalIndicator
+prenatalIndicatorFromMapping s =
+    case s of
+        "a" ->
+            Just IndicatorAdequateGWG
+
+        "b" ->
+            Just IndicatorReceivedMMS
+
+        "c" ->
+            Just IndicatorReferredToUltrasound
 
         _ ->
             Nothing

@@ -9113,9 +9113,9 @@ var $author$project$Backend$Reports$Decoder$decodePregnancyOutcome = A2(
 				$author$project$Backend$Reports$Decoder$pregnancyOutcomeFromString(s)));
 	},
 	$elm$json$Json$Decode$string);
-var $author$project$Backend$Reports$Model$PrenatalEncounterData = F3(
-	function (startDate, encounterType, diagnoses) {
-		return {diagnoses: diagnoses, encounterType: encounterType, startDate: startDate};
+var $author$project$Backend$Reports$Model$PrenatalEncounterData = F4(
+	function (startDate, encounterType, diagnoses, indicators) {
+		return {diagnoses: diagnoses, encounterType: encounterType, indicators: indicators, startDate: startDate};
 	});
 var $author$project$Backend$Reports$Model$DiagnosisCandidiasis = {$: 'DiagnosisCandidiasis'};
 var $author$project$Backend$Reports$Model$DiagnosisChronicHypertension = {$: 'DiagnosisChronicHypertension'};
@@ -9333,6 +9333,21 @@ var $author$project$Backend$Reports$Decoder$prenatalEncounterTypeFromString = fu
 			return $author$project$Backend$Reports$Model$NurseEncounter;
 	}
 };
+var $author$project$Backend$Reports$Model$IndicatorAdequateGWG = {$: 'IndicatorAdequateGWG'};
+var $author$project$Backend$Reports$Model$IndicatorReceivedMMS = {$: 'IndicatorReceivedMMS'};
+var $author$project$Backend$Reports$Model$IndicatorReferredToUltrasound = {$: 'IndicatorReferredToUltrasound'};
+var $author$project$Backend$Reports$Decoder$prenatalIndicatorFromMapping = function (s) {
+	switch (s) {
+		case 'a':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorAdequateGWG);
+		case 'b':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorReceivedMMS);
+		case 'c':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorReferredToUltrasound);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
 var $author$project$Backend$Reports$Decoder$decodePrenatalEncounterData = A2(
 	$elm$json$Json$Decode$andThen,
 	function (s) {
@@ -9340,18 +9355,25 @@ var $author$project$Backend$Reports$Decoder$decodePrenatalEncounterData = A2(
 			$elm$core$String$split,
 			'|',
 			$elm$core$String$trim(s));
-		if (((_v0.b && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
+		if ((((_v0.b && _v0.b.b) && _v0.b.b.b) && _v0.b.b.b.b) && (!_v0.b.b.b.b.b)) {
 			var first = _v0.a;
 			var _v1 = _v0.b;
 			var second = _v1.a;
 			var _v2 = _v1.b;
 			var third = _v2.a;
+			var _v3 = _v2.b;
+			var fourth = _v3.a;
 			return A2(
 				$elm$core$Maybe$withDefault,
 				$elm$json$Json$Decode$fail('Failed to decode PrenatalEncounterData'),
 				A2(
 					$elm$core$Maybe$map,
 					function (startDate) {
+						var indicators = $elm$core$String$isEmpty(fourth) ? _List_Nil : $elm_community$maybe_extra$Maybe$Extra$values(
+							A2(
+								$elm$core$List$map,
+								$author$project$Backend$Reports$Decoder$prenatalIndicatorFromMapping,
+								A2($elm$core$String$split, ',', fourth)));
 						var encounterType = $author$project$Backend$Reports$Decoder$prenatalEncounterTypeFromString(second);
 						var diagnoses = $elm$core$String$isEmpty(third) ? _List_Nil : $elm_community$maybe_extra$Maybe$Extra$values(
 							A2(
@@ -9359,7 +9381,7 @@ var $author$project$Backend$Reports$Decoder$decodePrenatalEncounterData = A2(
 								$author$project$Backend$Reports$Decoder$prenatalDiagnosisFromMapping,
 								A2($elm$core$String$split, ',', third)));
 						return $elm$json$Json$Decode$succeed(
-							A3($author$project$Backend$Reports$Model$PrenatalEncounterData, startDate, encounterType, diagnoses));
+							A4($author$project$Backend$Reports$Model$PrenatalEncounterData, startDate, encounterType, diagnoses, indicators));
 					},
 					$elm$core$Result$toMaybe(
 						$justinmimbs$date$Date$fromIsoString(first))));

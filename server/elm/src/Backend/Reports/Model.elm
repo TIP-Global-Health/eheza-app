@@ -113,6 +113,7 @@ type alias PrenatalEncounterData =
     { startDate : NominalDate
     , encounterType : PrenatalEncounterType
     , diagnoses : List PrenatalDiagnosis
+    , indicators : List PrenatalIndicator
     }
 
 
@@ -190,6 +191,12 @@ type PrenatalDiagnosis
     | DiagnosisPostpartumEarlyMastitisOrEngorgment
     | DiagnosisPostpartumMastitis
     | NoPrenatalDiagnosis
+
+
+type PrenatalIndicator
+    = IndicatorAdequateGWG
+    | IndicatorReceivedMMS
+    | IndicatorReferredToUltrasound
 
 
 type alias NutritionEncounterData =

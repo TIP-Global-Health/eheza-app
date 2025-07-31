@@ -594,6 +594,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
   $encounters_data = [];
   $ai_diagnosis_mapping = hedley_reports_ai_diagnosis_mapping();
   $prenatal_diagnosis_mapping = hedley_reports_prenatal_diagnosis_mapping();
+  $prenatal_indicator_mapping = hedley_reports_prenatal_indicator_mapping();
   $encounter_types_to_load = [
     HEDLEY_STATS_PRENATAL_ENCOUNTER_TYPE,
     HEDLEY_STATS_ACUTE_ILLNESS_ENCOUNTER_TYPE,
@@ -645,24 +646,25 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
 
           // Resolving indicators.
           // First one is GWG adequate, second is MMS and third is Ultrasound.
-          $gwg = $mms = $us = '';
-          $indicators = $encounter->field_prenatal_indicators[LANGUAGE_NONE];
-          if (!empty($indicators)) {
-            foreach ($indicators as $item) {
+          $indicators = [];
+          $prenatal_indicators = $encounter->field_prenatal_indicators[LANGUAGE_NONE];
+          if (!empty($prenatal_indicators)) {
+            foreach ($prenatal_indicators as $item) {
               if ($item['value'] == 'adequate-gwg') {
-                $gwg = '+';
+                $indicators[] = $prenatal_indicator_mapping['gwg'];
                 break;
               }
             }
           }
           if (in_array($encounter->nid, $mms_by_encounter)) {
-            $mms = '+';
+            $indicators[] = $prenatal_indicator_mapping['mms'];
           }
           if (in_array($encounter->nid, $ultrasound_by_encounter)) {
-            $us = '+';
+            $indicators[] = $prenatal_indicator_mapping['us'];
           }
+          $mapped_indicators = implode(",", array_unique($indicators));
 
-          $encounter_data = "$encounter_date|$encounter_type|$mapped_diagnoses|$gwg,$mms,$us";
+          $encounter_data = "$encounter_date|$encounter_type|$mapped_diagnoses|$mapped_indicators";
           break;
 
         case HEDLEY_STATS_NUTRITION_ENCOUNTER_TYPE:
@@ -1428,6 +1430,24 @@ function hedley_reports_prenatal_diagnosis_mapping() {
     'postpartum-excessive-bleeding' => 'j2',
     'postpartum-early-mastitis-engorgment' => 'k2',
     'postpartum-mastitis' => 'l2',
+  ];
+}
+
+
+/**
+ * Provides a mapping for Prenatal indicator codes.
+ *
+ * This function returns an associative array where the keys are indicator
+ * identifiers and the values are corresponding codes.
+ *
+ * @return array
+ *   An associative array mapping indicator identifiers to their codes.
+ */
+function hedley_reports_prenatal_indicator_mapping() {
+  return [
+    'gwg' => 'a',
+    'mms' => 'b',
+    'us' => 'c',
   ];
 }
 
