@@ -393,6 +393,12 @@ decodePrenatalIndicator =
                     "past-labs-completed" ->
                         succeed IndicatorHistoryLabsCompleted
 
+                    "adequate-gwg" ->
+                        succeed IndicatorAdequateGWG
+
+                    "inadequate-gwg" ->
+                        succeed IndicatorInadequateGWG
+
                     "none" ->
                         succeed NoPrenatalIndicators
 

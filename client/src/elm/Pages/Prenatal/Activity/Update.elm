@@ -1004,7 +1004,7 @@ update language currentDate id isLabTech db msg model =
             , []
             )
 
-        SaveNutritionAssessment personId saved maybeHeight nextTask ->
+        SaveNutritionAssessment personId saved maybeHeight isAdequateGWG nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -1022,7 +1022,7 @@ update language currentDate id isLabTech db msg model =
                     Maybe.map (\height -> { form_ | height = Just height }) maybeHeight
                         |> Maybe.withDefault form_
 
-                appMsgs =
+                saveMsg =
                     toPrenatalNutritionValueWithDefault measurement form
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveNutrition personId measurementId
@@ -1031,10 +1031,16 @@ update language currentDate id isLabTech db msg model =
                                 >> List.singleton
                             )
                         |> Maybe.withDefault []
+
+                setAdequateGWGMsg =
+                    [ Backend.PrenatalEncounter.Model.SetGWGIndicator isAdequateGWG
+                        |> Backend.Model.MsgPrenatalEncounter id
+                        |> App.Model.MsgIndexedDb
+                    ]
             in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMsg ++ setAdequateGWGMsg
             )
                 |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
 
