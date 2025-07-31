@@ -444,6 +444,7 @@ function hedley_reports_get_triggering_measurement_types() {
     HEDLEY_ACTIVITY_HEIGHT_BUNDLES,
     HEDLEY_ACTIVITY_WEIGHT_BUNDLES,
     HEDLEY_ACTIVITY_REPORTS_GROUP_MEASUREMENT_BUNDLES,
+    [HEDLEY_ACTIVITY_PRENATAL_MMS_CONTENT_TYPE, HEDLEY_ACTIVITY_PRENATAL_REFERRAL_CONTENT_TYPE],
   ));
 }
 
@@ -472,6 +473,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
   ];
 
   $sessions_ids = $zscores_by_encounter = [];
+  $mms_by_encounter = $ultrasound_by_encounter = [];
   $measurements_bundles = hedley_reports_get_triggering_measurement_types();
   $measurements_ids = hedley_general_get_person_measurements($person->nid, $measurements_bundles);
   $measurements = node_load_multiple($measurements_ids);
@@ -563,6 +565,26 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
         }
         break;
 
+      case HEDLEY_ACTIVITY_PRENATAL_MMS_CONTENT_TYPE:
+        foreach ($measurement->field_administration_note[LANGUAGE_NONE] as $item) {
+          if ($item['value'] == 'administered-today') {
+            $encounter_id = $measurement->field_prenatal_encounter[LANGUAGE_NONE][0]['target_id'];
+            $mms_by_encounter[] = $encounter_id;
+            break;
+          }
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_PRENATAL_REFERRAL_CONTENT_TYPE:
+        foreach ($measurement->field_referrals[LANGUAGE_NONE] as $item) {
+          if ($item['value'] == 'us') {
+            $encounter_id = $measurement->field_prenatal_encounter[LANGUAGE_NONE][0]['target_id'];
+            $ultrasound_by_encounter[] = $encounter_id;
+            break;
+          }
+        }
+        break;
+
       default:
         $encounter_id = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
         $sessions_ids[] = $encounter_id;
@@ -620,7 +642,27 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
             }
           }
           $mapped_diagnoses = implode(",", array_unique($mapped_diagnoses));
-          $encounter_data = "$encounter_date|$encounter_type|$mapped_diagnoses";
+
+          // Resolving indicators.
+          // First one is GWG adequate, second is MMS and third is Ultrasound.
+          $gwg = $mms = $us = '';
+          $indicators = $encounter->field_prenatal_indicators[LANGUAGE_NONE];
+          if (!empty($indicators)) {
+            foreach ($indicators as $item) {
+              if ($item['value'] == 'adequate-gwg') {
+                $gwg = '+';
+                break;
+              }
+            }
+          }
+          if (in_array($encounter->nid, $mms_by_encounter)) {
+            $mms = '+';
+          }
+          if (in_array($encounter->nid, $ultrasound_by_encounter)) {
+            $us = '+';
+          }
+
+          $encounter_data = "$encounter_date|$encounter_type|$mapped_diagnoses|$gwg,$mms,$us";
           break;
 
         case HEDLEY_STATS_NUTRITION_ENCOUNTER_TYPE:
