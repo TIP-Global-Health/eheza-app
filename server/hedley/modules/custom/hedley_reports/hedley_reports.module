@@ -596,11 +596,14 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
         break;
 
       case HEDLEY_ACTIVITY_PRENATAL_REFERRAL_CONTENT_TYPE:
-        foreach ($measurement->field_referrals[LANGUAGE_NONE] as $item) {
-          if ($item['value'] == 'us') {
-            $encounter_id = $measurement->field_prenatal_encounter[LANGUAGE_NONE][0]['target_id'];
-            $prenatal_indicators_by_encounter['ultrasound'][] = $encounter_id;
-            break;
+        $referrals = $measurement->field_referrals[LANGUAGE_NONE];
+        if (!empty($referrals)) {
+          foreach ($measurement->field_referrals[LANGUAGE_NONE] as $item) {
+            if ($item['value'] == 'us') {
+              $encounter_id = $measurement->field_prenatal_encounter[LANGUAGE_NONE][0]['target_id'];
+              $prenatal_indicators_by_encounter['ultrasound'][] = $encounter_id;
+              break;
+            }
           }
         }
         break;
@@ -670,10 +673,13 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
             break;
           }
         }
-        foreach ($measurement->field_recommended_treatment[LANGUAGE_NONE] as $item) {
-          if ($item['value'] == 'azithromycin') {
-            $prenatal_indicators_by_encounter['azithromycin'][] = $encounter_id;
-            break;
+        $recommended_treatment = $measurement->field_recommended_treatment[LANGUAGE_NONE];
+        if (!empty($recommended_treatment)) {
+          foreach ($recommended_treatment as $item) {
+            if ($item['value'] == 'azithromycin') {
+              $prenatal_indicators_by_encounter['azithromycin'][] = $encounter_id;
+              break;
+            }
           }
         }
         break;
@@ -1549,7 +1555,7 @@ function hedley_reports_prenatal_indicator_mapping() {
     'stillbirth' => 'h',
     'intrauterine-death' => 'i',
     'azithromycin' => 'j',
-    'anemia-test' => 'h',
+    'anemia-test' => 'k',
   ];
 }
 
