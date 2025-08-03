@@ -2170,22 +2170,25 @@ generatePrenatalContactsReportData language limitDate records =
             List.filter (\numberOfEncounters -> numberOfEncounters >= x) encountersAtCompletedPregnancies
                 |> List.length
 
-        pregnanciesWithIndicator indicator =
+        pregnanciesWithAnyOfIndicators indicators =
             List.filter
                 (\( _, pregnancy ) ->
-                    List.any (.indicators >> List.member indicator)
+                    List.any
+                        (\encounter ->
+                            List.any
+                                (\indicator ->
+                                    List.member indicator encounter.indicators
+                                )
+                                indicators
+                        )
                         pregnancy.encounters
                 )
-                pregnanciesWithLMP
 
-        pregnanciesWithAdequateGWG =
-            pregnanciesWithIndicator IndicatorAdequateGWG
-
-        pregnanciesWithMMS =
-            pregnanciesWithIndicator IndicatorReceivedMMS
+        pregnanciesWithIndicator indicator =
+            pregnanciesWithAnyOfIndicators [ indicator ]
 
         pregnanciesWithUltrasound =
-            pregnanciesWithIndicator IndicatorReferredToUltrasound
+            pregnanciesWithIndicator IndicatorReferredToUltrasound pregnanciesWithLMP
 
         pregnanciesWithUltrasoundBeforeEGA24 =
             List.filter
@@ -2202,6 +2205,39 @@ generatePrenatalContactsReportData language limitDate records =
                         pregnancy.encounters
                 )
                 pregnanciesWithUltrasound
+
+        pregnanciesWithHistoryOfAdversePregnancyOutcomes =
+            pregnanciesWithAnyOfIndicators
+                [ IndicatorPretermBirth
+                , IndicatorAbortion
+                , IndicatorStillbirth
+                , IndicatorIntrauterineDeath
+                ]
+                pregnanciesWithLMP
+
+        pregnanciesWithHistoryOfAdversePregnancyOutcomesReceivedAzithromycin =
+            pregnanciesWithIndicator IndicatorReceivedAzithromycin pregnanciesWithHistoryOfAdversePregnancyOutcomes
+
+        pregnanciesWithDiagnosedAnemia =
+            List.filter
+                (\( lmpDate, pregnancy ) ->
+                    let
+                        anemiaDiagnoses =
+                            [ DiagnosisMalariaWithAnemia
+                            , DiagnosisMalariaWithSevereAnemia
+                            , DiagnosisModerateAnemia
+                            , DiagnosisSevereAnemia
+                            , DiagnosisSevereAnemiaWithComplications
+                            ]
+                    in
+                    List.any
+                        (\encounter ->
+                            List.any (\diagnosis -> List.member diagnosis anemiaDiagnoses)
+                                encounter.diagnoses
+                        )
+                        pregnancy.encounters
+                )
+                pregnanciesWithLMP
 
         prenatalContactRows =
             List.map
@@ -2240,13 +2276,25 @@ generatePrenatalContactsReportData language limitDate records =
                , generateRow Translate.PregnanciesWithAtLeast8Encounters
                     (countNumberOfPregnanciesWithAtLeastXEncounters 8)
                , generateRow (Translate.PrenatalIndicatorLabel IndicatorAdequateGWG)
-                    (List.length pregnanciesWithAdequateGWG)
+                    (List.length <| pregnanciesWithIndicator IndicatorAdequateGWG pregnanciesWithLMP)
                , generateRow (Translate.PrenatalIndicatorLabel IndicatorReceivedMMS)
-                    (List.length pregnanciesWithMMS)
+                    (List.length <| pregnanciesWithIndicator IndicatorReceivedMMS pregnanciesWithLMP)
                , generateRow (Translate.PrenatalIndicatorLabel IndicatorReferredToUltrasound)
                     (List.length pregnanciesWithUltrasound)
                , generateRow (Translate.PrenatalIndicatorLabel IndicatorReferredToUltrasoundBeforeEGA24)
                     (List.length pregnanciesWithUltrasoundBeforeEGA24)
+               , generateRow (Translate.PrenatalIndicatorLabel IndicatorReceivedAspirin)
+                    (List.length <| pregnanciesWithIndicator IndicatorReceivedAspirin pregnanciesWithLMP)
+               , generateRow (Translate.PrenatalIndicatorLabel IndicatorReceivedCalcium)
+                    (List.length <| pregnanciesWithIndicator IndicatorReceivedCalcium pregnanciesWithLMP)
+               , generateRow (Translate.PrenatalIndicatorLabel IndicatorHistoryOfAdversePregnancyOutcomes)
+                    (List.length pregnanciesWithHistoryOfAdversePregnancyOutcomes)
+               , generateRow (Translate.PrenatalIndicatorLabel IndicatorHistoryOfAdversePregnancyOutcomesReceivedAzithromycin)
+                    (List.length pregnanciesWithHistoryOfAdversePregnancyOutcomesReceivedAzithromycin)
+               , generateRow (Translate.PrenatalIndicatorLabel IndicatorAnemiaTest)
+                    (List.length <| pregnanciesWithIndicator IndicatorAnemiaTest pregnanciesWithLMP)
+               , generateRow (Translate.PrenatalIndicatorLabel IndicatorDiagnosedAnemia)
+                    (List.length pregnanciesWithDiagnosedAnemia)
                ]
     }
 

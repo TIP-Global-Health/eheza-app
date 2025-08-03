@@ -9333,9 +9333,17 @@ var $author$project$Backend$Reports$Decoder$prenatalEncounterTypeFromString = fu
 			return $author$project$Backend$Reports$Model$NurseEncounter;
 	}
 };
+var $author$project$Backend$Reports$Model$IndicatorAbortion = {$: 'IndicatorAbortion'};
 var $author$project$Backend$Reports$Model$IndicatorAdequateGWG = {$: 'IndicatorAdequateGWG'};
+var $author$project$Backend$Reports$Model$IndicatorAnemiaTest = {$: 'IndicatorAnemiaTest'};
+var $author$project$Backend$Reports$Model$IndicatorIntrauterineDeath = {$: 'IndicatorIntrauterineDeath'};
+var $author$project$Backend$Reports$Model$IndicatorPretermBirth = {$: 'IndicatorPretermBirth'};
+var $author$project$Backend$Reports$Model$IndicatorReceivedAspirin = {$: 'IndicatorReceivedAspirin'};
+var $author$project$Backend$Reports$Model$IndicatorReceivedAzithromycin = {$: 'IndicatorReceivedAzithromycin'};
+var $author$project$Backend$Reports$Model$IndicatorReceivedCalcium = {$: 'IndicatorReceivedCalcium'};
 var $author$project$Backend$Reports$Model$IndicatorReceivedMMS = {$: 'IndicatorReceivedMMS'};
 var $author$project$Backend$Reports$Model$IndicatorReferredToUltrasound = {$: 'IndicatorReferredToUltrasound'};
+var $author$project$Backend$Reports$Model$IndicatorStillbirth = {$: 'IndicatorStillbirth'};
 var $author$project$Backend$Reports$Decoder$prenatalIndicatorFromMapping = function (s) {
 	switch (s) {
 		case 'a':
@@ -9344,6 +9352,22 @@ var $author$project$Backend$Reports$Decoder$prenatalIndicatorFromMapping = funct
 			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorReceivedMMS);
 		case 'c':
 			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorReferredToUltrasound);
+		case 'd':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorReceivedAspirin);
+		case 'e':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorReceivedCalcium);
+		case 'f':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorPretermBirth);
+		case 'g':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorAbortion);
+		case 'h':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorIntrauterineDeath);
+		case 'i':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorStillbirth);
+		case 'j':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorReceivedAzithromycin);
+		case 'k':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorAnemiaTest);
 		default:
 			return $elm$core$Maybe$Nothing;
 	}
@@ -12405,14 +12429,36 @@ var $author$project$Translate$translationSet = function (transId) {
 			case 'PrenatalIndicatorLabel':
 				var indicator = transId.a;
 				switch (indicator.$) {
+					case 'IndicatorAbortion':
+						return {english: '', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'IndicatorAdequateGWG':
-						return {english: 'Pregnant women with adequate gestational weight gain', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Number of encounters where adequate gestational weight gain was recorded', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'IndicatorAnemiaTest':
+						return {english: 'Pregnant women tested for anemia', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'IndicatorDiagnosedAnemia':
+						return {english: 'Pregnant women with anemia', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'IndicatorHistoryOfAdversePregnancyOutcomes':
+						return {english: 'Pregnant women with a history of preterm births, spontaneous abortion, stillbirth, or intrauterine fetal deaths', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'IndicatorHistoryOfAdversePregnancyOutcomesReceivedAzithromycin':
+						return {english: 'Pregnant women with a history of adverse pregnancy outcomes, who received Azithromycin', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'IndicatorIntrauterineDeath':
+						return {english: '', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'IndicatorReceivedAspirin':
+						return {english: 'Pregnant women who received low-dose aspirin', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'IndicatorReceivedAzithromycin':
+						return {english: '', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'IndicatorReceivedCalcium':
+						return {english: 'Pregnant women who received low-dose antenatal calcium', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'IndicatorReceivedMMS':
 						return {english: 'Pregnant women who received MMS', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'IndicatorPretermBirth':
+						return {english: '', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'IndicatorReferredToUltrasound':
 						return {english: 'Pregnant women who received ultrasound exams', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
-					default:
+					case 'IndicatorReferredToUltrasoundBeforeEGA24':
 						return {english: 'Pregnant women who received at least one ultrasound before 24 weeks’ gestation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					default:
+						return {english: '', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 				}
 			case 'PrevalenceByMonthOneVisitOrMore':
 				return {english: 'Prevalence by month - one visit or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
@@ -18743,6 +18789,9 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F5(
 					])));
 	});
 var $author$project$Translate$ContactType = {$: 'ContactType'};
+var $author$project$Backend$Reports$Model$IndicatorDiagnosedAnemia = {$: 'IndicatorDiagnosedAnemia'};
+var $author$project$Backend$Reports$Model$IndicatorHistoryOfAdversePregnancyOutcomes = {$: 'IndicatorHistoryOfAdversePregnancyOutcomes'};
+var $author$project$Backend$Reports$Model$IndicatorHistoryOfAdversePregnancyOutcomesReceivedAzithromycin = {$: 'IndicatorHistoryOfAdversePregnancyOutcomesReceivedAzithromycin'};
 var $author$project$Backend$Reports$Model$IndicatorReferredToUltrasoundBeforeEGA24 = {$: 'IndicatorReferredToUltrasoundBeforeEGA24'};
 var $author$project$Translate$PregnanciesWithAtLeast4Encounters = {$: 'PregnanciesWithAtLeast4Encounters'};
 var $author$project$Translate$PregnanciesWithAtLeast6Encounters = {$: 'PregnanciesWithAtLeast6Encounters'};
@@ -18807,25 +18856,55 @@ var $author$project$Pages$Reports$View$generatePrenatalContactsReportData = F3(
 							return $.prenatalData;
 						},
 						records))));
-		var pregnanciesWithIndicator = function (indicator) {
-			return A2(
-				$elm$core$List$filter,
+		var pregnanciesWithDiagnosedAnemia = A2(
+			$elm$core$List$filter,
+			function (_v5) {
+				var lmpDate = _v5.a;
+				var pregnancy = _v5.b;
+				var anemiaDiagnoses = _List_fromArray(
+					[$author$project$Backend$Reports$Model$DiagnosisMalariaWithAnemia, $author$project$Backend$Reports$Model$DiagnosisMalariaWithSevereAnemia, $author$project$Backend$Reports$Model$DiagnosisModerateAnemia, $author$project$Backend$Reports$Model$DiagnosisSevereAnemia, $author$project$Backend$Reports$Model$DiagnosisSevereAnemiaWithComplications]);
+				return A2(
+					$elm$core$List$any,
+					function (encounter) {
+						return A2(
+							$elm$core$List$any,
+							function (diagnosis) {
+								return A2($elm$core$List$member, diagnosis, anemiaDiagnoses);
+							},
+							encounter.diagnoses);
+					},
+					pregnancy.encounters);
+			},
+			pregnanciesWithLMP);
+		var pregnanciesWithAnyOfIndicators = function (indicators) {
+			return $elm$core$List$filter(
 				function (_v4) {
 					var pregnancy = _v4.b;
 					return A2(
 						$elm$core$List$any,
-						A2(
-							$elm$core$Basics$composeR,
-							function ($) {
-								return $.indicators;
-							},
-							$elm$core$List$member(indicator)),
+						function (encounter) {
+							return A2(
+								$elm$core$List$any,
+								function (indicator) {
+									return A2($elm$core$List$member, indicator, encounter.indicators);
+								},
+								indicators);
+						},
 						pregnancy.encounters);
-				},
-				pregnanciesWithLMP);
+				});
 		};
-		var pregnanciesWithMMS = pregnanciesWithIndicator($author$project$Backend$Reports$Model$IndicatorReceivedMMS);
-		var pregnanciesWithUltrasound = pregnanciesWithIndicator($author$project$Backend$Reports$Model$IndicatorReferredToUltrasound);
+		var pregnanciesWithHistoryOfAdversePregnancyOutcomes = A2(
+			pregnanciesWithAnyOfIndicators,
+			_List_fromArray(
+				[$author$project$Backend$Reports$Model$IndicatorPretermBirth, $author$project$Backend$Reports$Model$IndicatorAbortion, $author$project$Backend$Reports$Model$IndicatorStillbirth, $author$project$Backend$Reports$Model$IndicatorIntrauterineDeath]),
+			pregnanciesWithLMP);
+		var pregnanciesWithIndicator = function (indicator) {
+			return pregnanciesWithAnyOfIndicators(
+				_List_fromArray(
+					[indicator]));
+		};
+		var pregnanciesWithHistoryOfAdversePregnancyOutcomesReceivedAzithromycin = A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorReceivedAzithromycin, pregnanciesWithHistoryOfAdversePregnancyOutcomes);
+		var pregnanciesWithUltrasound = A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorReferredToUltrasound, pregnanciesWithLMP);
 		var pregnanciesWithUltrasoundBeforeEGA24 = A2(
 			$elm$core$List$filter,
 			function (_v3) {
@@ -18842,7 +18921,6 @@ var $author$project$Pages$Reports$View$generatePrenatalContactsReportData = F3(
 					pregnancy.encounters);
 			},
 			pregnanciesWithUltrasound);
-		var pregnanciesWithAdequateGWG = pregnanciesWithIndicator($author$project$Backend$Reports$Model$IndicatorAdequateGWG);
 		var generateRow = F2(
 			function (label, value) {
 				return _List_fromArray(
@@ -18953,11 +19031,13 @@ var $author$project$Pages$Reports$View$generatePrenatalContactsReportData = F3(
 						A2(
 						generateRow,
 						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorAdequateGWG),
-						$elm$core$List$length(pregnanciesWithAdequateGWG)),
+						$elm$core$List$length(
+							A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorAdequateGWG, pregnanciesWithLMP))),
 						A2(
 						generateRow,
 						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorReceivedMMS),
-						$elm$core$List$length(pregnanciesWithMMS)),
+						$elm$core$List$length(
+							A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorReceivedMMS, pregnanciesWithLMP))),
 						A2(
 						generateRow,
 						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorReferredToUltrasound),
@@ -18965,7 +19045,34 @@ var $author$project$Pages$Reports$View$generatePrenatalContactsReportData = F3(
 						A2(
 						generateRow,
 						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorReferredToUltrasoundBeforeEGA24),
-						$elm$core$List$length(pregnanciesWithUltrasoundBeforeEGA24))
+						$elm$core$List$length(pregnanciesWithUltrasoundBeforeEGA24)),
+						A2(
+						generateRow,
+						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorReceivedAspirin),
+						$elm$core$List$length(
+							A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorReceivedAspirin, pregnanciesWithLMP))),
+						A2(
+						generateRow,
+						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorReceivedCalcium),
+						$elm$core$List$length(
+							A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorReceivedCalcium, pregnanciesWithLMP))),
+						A2(
+						generateRow,
+						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorHistoryOfAdversePregnancyOutcomes),
+						$elm$core$List$length(pregnanciesWithHistoryOfAdversePregnancyOutcomes)),
+						A2(
+						generateRow,
+						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorHistoryOfAdversePregnancyOutcomesReceivedAzithromycin),
+						$elm$core$List$length(pregnanciesWithHistoryOfAdversePregnancyOutcomesReceivedAzithromycin)),
+						A2(
+						generateRow,
+						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorAnemiaTest),
+						$elm$core$List$length(
+							A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorAnemiaTest, pregnanciesWithLMP))),
+						A2(
+						generateRow,
+						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorDiagnosedAnemia),
+						$elm$core$List$length(pregnanciesWithDiagnosedAnemia))
 					]))
 		};
 	});

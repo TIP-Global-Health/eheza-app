@@ -194,11 +194,22 @@ type PrenatalDiagnosis
 
 
 type PrenatalIndicator
-    = IndicatorAdequateGWG
+    = IndicatorAbortion
+    | IndicatorAdequateGWG
+    | IndicatorAnemiaTest
+    | IndicatorIntrauterineDeath
+    | IndicatorReceivedAspirin
+    | IndicatorReceivedAzithromycin
+    | IndicatorReceivedCalcium
     | IndicatorReceivedMMS
+    | IndicatorPretermBirth
     | IndicatorReferredToUltrasound
-    | -- This one is not passed from backend.
-      IndicatorReferredToUltrasoundBeforeEGA24
+    | IndicatorStillbirth
+    | -- Indicators bellow are not passed from backend.
+      IndicatorDiagnosedAnemia
+    | IndicatorHistoryOfAdversePregnancyOutcomes
+    | IndicatorHistoryOfAdversePregnancyOutcomesReceivedAzithromycin
+    | IndicatorReferredToUltrasoundBeforeEGA24
 
 
 type alias NutritionEncounterData =

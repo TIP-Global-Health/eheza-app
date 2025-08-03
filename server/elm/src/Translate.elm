@@ -2451,14 +2451,78 @@ translationSet transId =
 
         PrenatalIndicatorLabel indicator ->
             case indicator of
+                IndicatorAbortion ->
+                    -- Not for display.
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 IndicatorAdequateGWG ->
-                    { english = "Pregnant women with adequate gestational weight gain"
+                    { english = "Number of encounters where adequate gestational weight gain was recorded"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                IndicatorAnemiaTest ->
+                    { english = "Pregnant women tested for anemia"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                IndicatorDiagnosedAnemia ->
+                    { english = "Pregnant women with anemia"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                IndicatorHistoryOfAdversePregnancyOutcomes ->
+                    { english = "Pregnant women with a history of preterm births, spontaneous abortion, stillbirth, or intrauterine fetal deaths"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                IndicatorHistoryOfAdversePregnancyOutcomesReceivedAzithromycin ->
+                    { english = "Pregnant women with a history of adverse pregnancy outcomes, who received Azithromycin"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                IndicatorIntrauterineDeath ->
+                    -- Not for display.
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                IndicatorReceivedAspirin ->
+                    { english = "Pregnant women who received low-dose aspirin"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                IndicatorReceivedAzithromycin ->
+                    -- Not for display.
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                IndicatorReceivedCalcium ->
+                    { english = "Pregnant women who received low-dose antenatal calcium"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
 
                 IndicatorReceivedMMS ->
                     { english = "Pregnant women who received MMS"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                IndicatorPretermBirth ->
+                    -- Not for display.
+                    { english = ""
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
@@ -2471,6 +2535,13 @@ translationSet transId =
 
                 IndicatorReferredToUltrasoundBeforeEGA24 ->
                     { english = "Pregnant women who received at least one ultrasound before 24 weeks’ gestation"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                IndicatorStillbirth ->
+                    -- Not for display.
+                    { english = ""
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }

@@ -525,6 +525,30 @@ prenatalIndicatorFromMapping s =
         "c" ->
             Just IndicatorReferredToUltrasound
 
+        "d" ->
+            Just IndicatorReceivedAspirin
+
+        "e" ->
+            Just IndicatorReceivedCalcium
+
+        "f" ->
+            Just IndicatorPretermBirth
+
+        "g" ->
+            Just IndicatorAbortion
+
+        "h" ->
+            Just IndicatorIntrauterineDeath
+
+        "i" ->
+            Just IndicatorStillbirth
+
+        "j" ->
+            Just IndicatorReceivedAzithromycin
+
+        "k" ->
+            Just IndicatorAnemiaTest
+
         _ ->
             Nothing
 
