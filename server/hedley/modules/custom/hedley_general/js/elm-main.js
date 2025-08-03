@@ -12436,7 +12436,7 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'IndicatorAnemiaTest':
 						return {english: 'Pregnant women tested for anemia', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'IndicatorDiagnosedAnemia':
-						return {english: 'Pregnant women with anemia', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Pregnant women diagnosed with anemia', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'IndicatorHistoryOfAdversePregnancyOutcomes':
 						return {english: 'Pregnant women with a history of preterm births, spontaneous abortion, stillbirth, or intrauterine fetal deaths', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'IndicatorHistoryOfAdversePregnancyOutcomesReceivedAzithromycin':

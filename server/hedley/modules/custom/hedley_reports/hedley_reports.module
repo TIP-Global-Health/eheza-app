@@ -1533,7 +1533,6 @@ function hedley_reports_prenatal_diagnosis_mapping() {
   ];
 }
 
-
 /**
  * Provides a mapping for Prenatal indicator codes.
  *

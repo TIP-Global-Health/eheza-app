@@ -2471,7 +2471,7 @@ translationSet transId =
                     }
 
                 IndicatorDiagnosedAnemia ->
-                    { english = "Pregnant women with anemia"
+                    { english = "Pregnant women diagnosed with anemia"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
