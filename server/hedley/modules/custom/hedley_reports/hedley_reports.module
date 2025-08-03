@@ -444,7 +444,16 @@ function hedley_reports_get_triggering_measurement_types() {
     HEDLEY_ACTIVITY_HEIGHT_BUNDLES,
     HEDLEY_ACTIVITY_WEIGHT_BUNDLES,
     HEDLEY_ACTIVITY_REPORTS_GROUP_MEASUREMENT_BUNDLES,
-    [HEDLEY_ACTIVITY_PRENATAL_MMS_CONTENT_TYPE, HEDLEY_ACTIVITY_PRENATAL_REFERRAL_CONTENT_TYPE],
+    [
+      HEDLEY_ACTIVITY_PRENATAL_ASPIRIN_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_PRENATAL_CALCIUM_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_PRENATAL_HEMOGLOBIN_TEST_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_PRENATAL_MEDICATION_DISTRIBUTION_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_PRENATAL_MMS_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_PRENATAL_OBSTETRIC_HISTORY_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_PRENATAL_OBSTETRIC_HISTORY_STEP2_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_PRENATAL_REFERRAL_CONTENT_TYPE,
+    ],
   ));
 }
 
@@ -473,7 +482,18 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
   ];
 
   $sessions_ids = $zscores_by_encounter = [];
-  $mms_by_encounter = $ultrasound_by_encounter = [];
+  $prenatal_indicators_by_encounter = [
+    'mms' => [],
+    'ultrasound' => [],
+    'aspirin' => [],
+    'calcium' => [],
+    'preterm-birth' => [],
+    'abortion' => [],
+    'stillbirth' => [],
+    'intrauterine-death' => [],
+    'azithromycin' => [],
+    'anemia-test' => [],
+  ];
   $measurements_bundles = hedley_reports_get_triggering_measurement_types();
   $measurements_ids = hedley_general_get_person_measurements($person->nid, $measurements_bundles);
   $measurements = node_load_multiple($measurements_ids);
@@ -569,7 +589,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
         foreach ($measurement->field_administration_note[LANGUAGE_NONE] as $item) {
           if ($item['value'] == 'administered-today') {
             $encounter_id = $measurement->field_prenatal_encounter[LANGUAGE_NONE][0]['target_id'];
-            $mms_by_encounter[] = $encounter_id;
+            $prenatal_indicators_by_encounter['mms'][] = $encounter_id;
             break;
           }
         }
@@ -579,7 +599,80 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
         foreach ($measurement->field_referrals[LANGUAGE_NONE] as $item) {
           if ($item['value'] == 'us') {
             $encounter_id = $measurement->field_prenatal_encounter[LANGUAGE_NONE][0]['target_id'];
-            $ultrasound_by_encounter[] = $encounter_id;
+            $prenatal_indicators_by_encounter['ultrasound'][] = $encounter_id;
+            break;
+          }
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_PRENATAL_ASPIRIN_CONTENT_TYPE:
+        foreach ($measurement->field_administration_note[LANGUAGE_NONE] as $item) {
+          if ($item['value'] == 'administered-today') {
+            $encounter_id = $measurement->field_prenatal_encounter[LANGUAGE_NONE][0]['target_id'];
+            $prenatal_indicators_by_encounter['aspirin'][] = $encounter_id;
+            break;
+          }
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_PRENATAL_CALCIUM_CONTENT_TYPE:
+        foreach ($measurement->field_administration_note[LANGUAGE_NONE] as $item) {
+          if ($item['value'] == 'administered-today') {
+            $encounter_id = $measurement->field_prenatal_encounter[LANGUAGE_NONE][0]['target_id'];
+            $prenatal_indicators_by_encounter['calcium'][] = $encounter_id;
+            break;
+          }
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_PRENATAL_OBSTETRIC_HISTORY_CONTENT_TYPE:
+        $encounter_id = $measurement->field_prenatal_encounter[LANGUAGE_NONE][0]['target_id'];
+        $preterm = $measurement->field_preterm_pregnancy[LANGUAGE_NONE][0]['value'];
+        if (!empty($preterm) && $preterm > 0) {
+          $prenatal_indicators_by_encounter['preterm-birth'][] = $encounter_id;
+        }
+        $stillbirths_at_term = $measurement->field_stillbirths_at_term[LANGUAGE_NONE][0]['value'];
+        $stillbirths_preterm = $measurement->field_stillbirths_preterm[LANGUAGE_NONE][0]['value'];
+        if ((!empty($stillbirths_at_term) && $stillbirths_at_term > 0) || (!empty($stillbirths_preterm) && $stillbirths_preterm > 0)) {
+          $prenatal_indicators_by_encounter['stillbirth'][] = $encounter_id;
+        }
+        $abortions = $measurement->field_abortions[LANGUAGE_NONE][0]['value'];
+        if (!empty($abortions) && $abortions > 0) {
+          $prenatal_indicators_by_encounter['abortions'][] = $encounter_id;
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_PRENATAL_OBSTETRIC_HISTORY_STEP2_CONTENT_TYPE:
+        foreach ($measurement->field_obstetric_history_step2[LANGUAGE_NONE] as $item) {
+          if ($item['value'] == 'intra-uterine-death-previous-delivery') {
+            $encounter_id = $measurement->field_prenatal_encounter[LANGUAGE_NONE][0]['target_id'];
+            $prenatal_indicators_by_encounter['intrauterine-death'][] = $encounter_id;
+            break;
+          }
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_PRENATAL_HEMOGLOBIN_TEST_CONTENT_TYPE:
+        foreach ($measurement->field_test_execution_note[LANGUAGE_NONE] as $item) {
+          if ($item['value'] == 'run-today') {
+            $encounter_id = $measurement->field_prenatal_encounter[LANGUAGE_NONE][0]['target_id'];
+            $prenatal_indicators_by_encounter['anemia-test'][] = $encounter_id;
+            break;
+          }
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_PRENATAL_MEDICATION_DISTRIBUTION_CONTENT_TYPE:
+        $encounter_id = $measurement->field_prenatal_encounter[LANGUAGE_NONE][0]['target_id'];
+        foreach ($measurement->field_prescribed_medication[LANGUAGE_NONE] as $item) {
+          if ($item['value'] == 'azithromycin') {
+            $prenatal_indicators_by_encounter['azithromycin'][] = $encounter_id;
+            break;
+          }
+        }
+        foreach ($measurement->field_recommended_treatment[LANGUAGE_NONE] as $item) {
+          if ($item['value'] == 'azithromycin') {
+            $prenatal_indicators_by_encounter['azithromycin'][] = $encounter_id;
             break;
           }
         }
@@ -656,11 +749,12 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
               }
             }
           }
-          if (in_array($encounter->nid, $mms_by_encounter)) {
-            $indicators[] = $prenatal_indicator_mapping['mms'];
-          }
-          if (in_array($encounter->nid, $ultrasound_by_encounter)) {
-            $indicators[] = $prenatal_indicator_mapping['us'];
+
+          $keys = array_keys($prenatal_indicators_by_encounter);
+          foreach ($keys as $key) {
+            if (in_array($encounter->nid, $prenatal_indicators_by_encounter[$key])) {
+              $indicators[] = $prenatal_indicator_mapping[$key];
+            }
           }
           $mapped_indicators = implode(",", array_unique($indicators));
 
@@ -1448,6 +1542,14 @@ function hedley_reports_prenatal_indicator_mapping() {
     'gwg' => 'a',
     'mms' => 'b',
     'us' => 'c',
+    'aspirin' => 'd',
+    'calcium' => 'e',
+    'preterm-birth' => 'f',
+    'abortion' => 'g',
+    'stillbirth' => 'h',
+    'intrauterine-death' => 'i',
+    'azithromycin' => 'j',
+    'anemia-test' => 'h',
   ];
 }
 
