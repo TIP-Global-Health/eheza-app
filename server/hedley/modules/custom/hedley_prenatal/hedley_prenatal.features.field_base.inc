@@ -1088,6 +1088,8 @@ function hedley_prenatal_field_default_field_bases() {
     'settings' => array(
       'allowed_values' => array(
         'past-labs-completed' => 'Past labs completed',
+        'adequate-gwg' => 'Adequate GWG',
+        'inadequate-gwg' => 'Inadequate GWG',
         'none' => 'None',
       ),
       'allowed_values_function' => '',
