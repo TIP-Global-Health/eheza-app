@@ -2614,6 +2614,12 @@ translationSet transId =
                 ReportNutrition ->
                     translationSet Nutrition
 
+                ReportPeripartum ->
+                    { english = "Peripartum"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 ReportPrenatal ->
                     translationSet Antenatal
 
