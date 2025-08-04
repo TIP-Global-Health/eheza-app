@@ -1086,6 +1086,8 @@ type alias BreastfeedingForm =
     , enoughMilkDirty : Bool
     , latchingWell : Maybe Bool
     , latchingWellDirty : Bool
+    , breastfedFirstHour : Maybe Bool
+    , breastfedFirstHourDirty : Bool
     }
 
 
@@ -1102,4 +1104,6 @@ emptyBreastfeedingForm =
     , enoughMilkDirty = False
     , latchingWell = Nothing
     , latchingWellDirty = False
+    , breastfedFirstHour = Nothing
+    , breastfedFirstHourDirty = False
     }

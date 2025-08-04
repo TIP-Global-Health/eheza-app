@@ -2465,6 +2465,9 @@ breastfeedingSignToString value =
         LatchingWell ->
             "latching-well"
 
+        BreastfedFirstHour ->
+            "breastfed-first-hour"
+
         NoBreastfeedingSigns ->
             "none"
 
@@ -2507,6 +2510,9 @@ breastfeedingSignFromString value =
 
         "latching-well" ->
             Just LatchingWell
+
+        "breastfed-first-hour" ->
+            Just BreastfedFirstHour
 
         "none" ->
             Just NoBreastfeedingSigns
