@@ -61,6 +61,9 @@ $labels = [
   'Patient Birth Date',
   'Diagnoses',
   'Diagnoses from previous encounters',
+  'Pregnancy outcome',
+  'Pregnancy outcome location',
+  'Pregnancy outcome date',
 ];
 foreach ($data['measurements_types'] as $measurement_type) {
   $measurement_name = format_name($measurement_type);
@@ -119,6 +122,10 @@ while (TRUE) {
     $encounter_type = $encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value'];
     $encounter_type = empty($encounters) ? 'Nurse' : hedley_general_get_field_sign_label('field_prenatal_encounter_type', $encounter_type);
     $encounter_date = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
+    $pregnancy_outcome = $pregnancy->field_outcome[LANGUAGE_NONE][0]['value'];
+    $pregnancy_outcome_location = $pregnancy->field_outcome_location[LANGUAGE_NONE][0]['value'];
+    $pregnancy_outcome_date = explode(' ', $pregnancy->field_date_concluded[LANGUAGE_NONE][0]['value'])[0];
+
     // Diagnoses.
     $field_values = $encounter->field_prenatal_diagnoses[LANGUAGE_NONE];
     if (empty($field_values)) {
@@ -154,6 +161,9 @@ while (TRUE) {
       $birth_date,
       $diagnoses,
       $past_diagnoses,
+      $pregnancy_outcome,
+      $pregnancy_outcome_location,
+      $pregnancy_outcome_date,
     ];
 
     // Get all measurements that belong to encounter.
