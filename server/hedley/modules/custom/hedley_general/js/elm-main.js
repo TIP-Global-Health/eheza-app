@@ -12619,6 +12619,12 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Targeted Interventions', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Total':
 				return {english: 'Total', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'TotalDeliviries':
+				return {english: 'Total deliveries', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'TotalLiveBirths':
+				return {english: 'Total live births', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'TotalLivePreTermBirths':
+				return {english: 'Preterm birth newborns', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'TreatmentReview':
 				return {english: 'Treatment Review', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Trimester':
@@ -18795,6 +18801,93 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F5(
 						A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
 					])));
 	});
+var $author$project$Translate$TotalDeliviries = {$: 'TotalDeliviries'};
+var $author$project$Translate$TotalLiveBirths = {$: 'TotalLiveBirths'};
+var $author$project$Translate$TotalLivePreTermBirths = {$: 'TotalLivePreTermBirths'};
+var $author$project$Pages$Reports$View$generatePeripartumReportData = F3(
+	function (language, limitDate, records) {
+		var pregnancies = $elm$core$List$concat(
+			$elm_community$maybe_extra$Maybe$Extra$values(
+				A2(
+					$elm$core$List$map,
+					function ($) {
+						return $.prenatalData;
+					},
+					records)));
+		var generateRow = F2(
+			function (label, value) {
+				return _List_fromArray(
+					[
+						A2($author$project$Translate$translate, language, label),
+						$elm$core$String$fromInt(value)
+					]);
+			});
+		var countPregnanciesByOutcome = function (outcome) {
+			return $elm$core$List$length(
+				A2(
+					$elm$core$List$filter,
+					A2(
+						$elm$core$Basics$composeR,
+						function ($) {
+							return $.outcome;
+						},
+						$elm$core$Basics$eq(
+							$elm$core$Maybe$Just(outcome))),
+					pregnancies));
+		};
+		var totalLiveAtTerm = countPregnanciesByOutcome($author$project$Backend$Reports$Model$OutcomeLiveAtTerm);
+		var totalLivePreTerm = countPregnanciesByOutcome($author$project$Backend$Reports$Model$OutcomeLivePreTerm);
+		var totalStillAtTerm = countPregnanciesByOutcome($author$project$Backend$Reports$Model$OutcomeStillAtTerm);
+		var totalStillPreTerm = countPregnanciesByOutcome($author$project$Backend$Reports$Model$OutcomeStillPreTerm);
+		return {
+			captions: _List_fromArray(
+				[
+					'',
+					A2($author$project$Translate$translate, language, $author$project$Translate$Total)
+				]),
+			heading: '',
+			rows: _List_fromArray(
+				[
+					A2(generateRow, $author$project$Translate$TotalDeliviries, ((totalLiveAtTerm + totalLivePreTerm) + totalStillAtTerm) + totalStillPreTerm),
+					A2(generateRow, $author$project$Translate$TotalLiveBirths, totalLiveAtTerm + totalLivePreTerm),
+					A2(generateRow, $author$project$Translate$TotalLivePreTermBirths, totalLivePreTerm)
+				])
+		};
+	});
+var $author$project$Pages$Reports$View$viewPeripartumReport = F4(
+	function (language, limitDate, scopeLabel, records) {
+		var data = A3($author$project$Pages$Reports$View$generatePeripartumReportData, language, limitDate, records);
+		var csvFileName = 'peripartum-report-' + ($elm$core$String$toLower(
+			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
+		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
+		var captionsRow = A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('row captions')
+				]),
+			$author$project$Pages$Components$View$viewStandardCells(data.captions));
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('report peripartum')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('table')
+						]),
+					A2(
+						$elm$core$List$cons,
+						captionsRow,
+						A2($elm$core$List$map, $author$project$Pages$Components$View$viewStandardRow, data.rows))),
+					A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
+				]));
+	});
 var $author$project$Translate$ContactType = {$: 'ContactType'};
 var $author$project$Backend$Reports$Model$IndicatorDiagnosedAnemia = {$: 'IndicatorDiagnosedAnemia'};
 var $author$project$Backend$Reports$Model$IndicatorHistoryOfAdversePregnancyOutcomes = {$: 'IndicatorHistoryOfAdversePregnancyOutcomes'};
@@ -18841,282 +18934,6 @@ var $author$project$Pages$Reports$Utils$prenatalContactTypeToEncountersAtWeek = 
 			return _Utils_Tuple2(8, 40);
 	}
 };
-var $author$project$Pages$Reports$View$generatePeripartumReportData = F3(
-	function (language, limitDate, records) {
-		var pregnanciesWithLMP = A2(
-			$elm$core$List$filterMap,
-			function (pregnancy) {
-				return A2(
-					$elm$core$Maybe$map,
-					function (edd) {
-						return _Utils_Tuple2(
-							$author$project$Pages$Reports$Utils$eddToLmpDate(edd),
-							pregnancy);
-					},
-					pregnancy.eddDate);
-			},
-			$elm$core$List$concat(
-				$elm_community$maybe_extra$Maybe$Extra$values(
-					A2(
-						$elm$core$List$map,
-						function ($) {
-							return $.prenatalData;
-						},
-						records))));
-		var pregnanciesWithDiagnosedAnemia = A2(
-			$elm$core$List$filter,
-			function (_v5) {
-				var lmpDate = _v5.a;
-				var pregnancy = _v5.b;
-				var anemiaDiagnoses = _List_fromArray(
-					[$author$project$Backend$Reports$Model$DiagnosisMalariaWithAnemia, $author$project$Backend$Reports$Model$DiagnosisMalariaWithSevereAnemia, $author$project$Backend$Reports$Model$DiagnosisModerateAnemia, $author$project$Backend$Reports$Model$DiagnosisSevereAnemia, $author$project$Backend$Reports$Model$DiagnosisSevereAnemiaWithComplications]);
-				return A2(
-					$elm$core$List$any,
-					function (encounter) {
-						return A2(
-							$elm$core$List$any,
-							function (diagnosis) {
-								return A2($elm$core$List$member, diagnosis, anemiaDiagnoses);
-							},
-							encounter.diagnoses);
-					},
-					pregnancy.encounters);
-			},
-			pregnanciesWithLMP);
-		var pregnanciesWithAnyOfIndicators = function (indicators) {
-			return $elm$core$List$filter(
-				function (_v4) {
-					var pregnancy = _v4.b;
-					return A2(
-						$elm$core$List$any,
-						function (encounter) {
-							return A2(
-								$elm$core$List$any,
-								function (indicator) {
-									return A2($elm$core$List$member, indicator, encounter.indicators);
-								},
-								indicators);
-						},
-						pregnancy.encounters);
-				});
-		};
-		var pregnanciesWithHistoryOfAdversePregnancyOutcomes = A2(
-			pregnanciesWithAnyOfIndicators,
-			_List_fromArray(
-				[$author$project$Backend$Reports$Model$IndicatorPretermBirth, $author$project$Backend$Reports$Model$IndicatorAbortion, $author$project$Backend$Reports$Model$IndicatorStillbirth, $author$project$Backend$Reports$Model$IndicatorIntrauterineDeath]),
-			pregnanciesWithLMP);
-		var pregnanciesWithIndicator = function (indicator) {
-			return pregnanciesWithAnyOfIndicators(
-				_List_fromArray(
-					[indicator]));
-		};
-		var pregnanciesWithHistoryOfAdversePregnancyOutcomesReceivedAzithromycin = A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorReceivedAzithromycin, pregnanciesWithHistoryOfAdversePregnancyOutcomes);
-		var pregnanciesWithUltrasound = A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorReferredToUltrasound, pregnanciesWithLMP);
-		var pregnanciesWithUltrasoundBeforeEGA24 = A2(
-			$elm$core$List$filter,
-			function (_v3) {
-				var lmpDate = _v3.a;
-				var pregnancy = _v3.b;
-				var ega24Date = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Weeks, 24, lmpDate);
-				return A2(
-					$elm$core$List$any,
-					function (encounter) {
-						return A2($elm$core$List$member, $author$project$Backend$Reports$Model$IndicatorReferredToUltrasound, encounter.indicators) && _Utils_eq(
-							A2($justinmimbs$date$Date$compare, encounter.startDate, ega24Date),
-							$elm$core$Basics$LT);
-					},
-					pregnancy.encounters);
-			},
-			pregnanciesWithUltrasound);
-		var generateRow = F2(
-			function (label, value) {
-				return _List_fromArray(
-					[
-						A2($author$project$Translate$translate, language, label),
-						$elm$core$String$fromInt(value)
-					]);
-			});
-		var encountersAtCompletedPregnancies = A2(
-			$elm$core$List$filterMap,
-			function (_v2) {
-				var lmpDate = _v2.a;
-				var pregnancy = _v2.b;
-				var nonPostpartumEncounters = A2(
-					$elm$core$List$filter,
-					function (encounter) {
-						return !A2(
-							$elm$core$List$member,
-							encounter.encounterType,
-							_List_fromArray(
-								[$author$project$Backend$Reports$Model$NursePostpartumEncounter, $author$project$Backend$Reports$Model$ChwPostpartumEncounter]));
-					},
-					pregnancy.encounters);
-				var completed = function () {
-					var thirtyDaysAfterEDD = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, 310, lmpDate);
-					return $elm_community$maybe_extra$Maybe$Extra$isJust(pregnancy.dateConcluded) || (!_Utils_eq(
-						A2($justinmimbs$date$Date$compare, thirtyDaysAfterEDD, limitDate),
-						$elm$core$Basics$GT));
-				}();
-				return completed ? $elm$core$Maybe$Just(
-					$elm$core$List$length(nonPostpartumEncounters)) : $elm$core$Maybe$Nothing;
-			},
-			pregnanciesWithLMP);
-		var countPregnanciesByContacts = function (_v1) {
-			var numberOfContacts = _v1.a;
-			var egaWeeks = _v1.b;
-			return $elm$core$List$length(
-				A2(
-					$elm$core$List$filter,
-					function (_v0) {
-						var lmpDate = _v0.a;
-						var pregnancy = _v0.b;
-						var egaXDate = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, egaWeeks * 7, lmpDate);
-						var encountersBeforeEGAX = A2(
-							$elm$core$List$filter,
-							function (encounter) {
-								return !_Utils_eq(
-									A2($justinmimbs$date$Date$compare, encounter.startDate, egaXDate),
-									$elm$core$Basics$GT);
-							},
-							pregnancy.encounters);
-						return (!_Utils_eq(
-							A2($justinmimbs$date$Date$compare, egaXDate, limitDate),
-							$elm$core$Basics$GT)) && _Utils_eq(
-							$elm$core$List$length(encountersBeforeEGAX),
-							numberOfContacts);
-					},
-					pregnanciesWithLMP));
-		};
-		var prenatalContactRows = A2(
-			$elm$core$List$map,
-			function (contactType) {
-				return A2(
-					generateRow,
-					$author$project$Translate$PrenatalContactType(contactType),
-					countPregnanciesByContacts(
-						$author$project$Pages$Reports$Utils$prenatalContactTypeToEncountersAtWeek(contactType)));
-			},
-			_List_fromArray(
-				[$author$project$Pages$Reports$Model$PrenatalContact1, $author$project$Pages$Reports$Model$PrenatalContact2, $author$project$Pages$Reports$Model$PrenatalContact3, $author$project$Pages$Reports$Model$PrenatalContact4, $author$project$Pages$Reports$Model$PrenatalContact5, $author$project$Pages$Reports$Model$PrenatalContact6, $author$project$Pages$Reports$Model$PrenatalContact7, $author$project$Pages$Reports$Model$PrenatalContact8]));
-		var countNumberOfPregnanciesWithAtLeastXEncounters = function (x) {
-			return $elm$core$List$length(
-				A2(
-					$elm$core$List$filter,
-					function (numberOfEncounters) {
-						return _Utils_cmp(numberOfEncounters, x) > -1;
-					},
-					encountersAtCompletedPregnancies));
-		};
-		return {
-			captions: _List_fromArray(
-				[
-					A2($author$project$Translate$translate, language, $author$project$Translate$ContactType),
-					A2($author$project$Translate$translate, language, $author$project$Translate$Total)
-				]),
-			heading: '',
-			rows: _Utils_ap(
-				prenatalContactRows,
-				_List_fromArray(
-					[
-						A2(
-						generateRow,
-						$author$project$Translate$PregnanciesWithFirstContactAtFirsTrimester,
-						countPregnanciesByContacts(
-							$author$project$Pages$Reports$Utils$prenatalContactTypeToEncountersAtWeek($author$project$Pages$Reports$Model$PrenatalContact1))),
-						A2(
-						generateRow,
-						$author$project$Translate$PregnanciesWithAtLeast4Encounters,
-						countNumberOfPregnanciesWithAtLeastXEncounters(4)),
-						A2(
-						generateRow,
-						$author$project$Translate$PregnanciesWithAtLeast6Encounters,
-						countNumberOfPregnanciesWithAtLeastXEncounters(6)),
-						A2(
-						generateRow,
-						$author$project$Translate$PregnanciesWithAtLeast8Encounters,
-						countNumberOfPregnanciesWithAtLeastXEncounters(8)),
-						A2(
-						generateRow,
-						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorAdequateGWG),
-						$elm$core$List$length(
-							A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorAdequateGWG, pregnanciesWithLMP))),
-						A2(
-						generateRow,
-						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorReceivedMMS),
-						$elm$core$List$length(
-							A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorReceivedMMS, pregnanciesWithLMP))),
-						A2(
-						generateRow,
-						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorReferredToUltrasound),
-						$elm$core$List$length(pregnanciesWithUltrasound)),
-						A2(
-						generateRow,
-						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorReferredToUltrasoundBeforeEGA24),
-						$elm$core$List$length(pregnanciesWithUltrasoundBeforeEGA24)),
-						A2(
-						generateRow,
-						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorReceivedAspirin),
-						$elm$core$List$length(
-							A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorReceivedAspirin, pregnanciesWithLMP))),
-						A2(
-						generateRow,
-						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorReceivedCalcium),
-						$elm$core$List$length(
-							A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorReceivedCalcium, pregnanciesWithLMP))),
-						A2(
-						generateRow,
-						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorHistoryOfAdversePregnancyOutcomes),
-						$elm$core$List$length(pregnanciesWithHistoryOfAdversePregnancyOutcomes)),
-						A2(
-						generateRow,
-						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorHistoryOfAdversePregnancyOutcomesReceivedAzithromycin),
-						$elm$core$List$length(pregnanciesWithHistoryOfAdversePregnancyOutcomesReceivedAzithromycin)),
-						A2(
-						generateRow,
-						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorAnemiaTest),
-						$elm$core$List$length(
-							A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorAnemiaTest, pregnanciesWithLMP))),
-						A2(
-						generateRow,
-						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorDiagnosedAnemia),
-						$elm$core$List$length(pregnanciesWithDiagnosedAnemia))
-					]))
-		};
-	});
-var $author$project$Pages$Reports$View$viewPeripartumReport = F4(
-	function (language, limitDate, scopeLabel, records) {
-		var data = A3($author$project$Pages$Reports$View$generatePeripartumReportData, language, limitDate, records);
-		var csvFileName = 'peripartum-report-' + ($elm$core$String$toLower(
-			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
-		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
-		var captionsRow = A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('row captions')
-				]),
-			$author$project$Pages$Components$View$viewStandardCells(data.captions));
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('report peripartum')
-				]),
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('table')
-						]),
-					A2(
-						$elm$core$List$cons,
-						captionsRow,
-						A2($elm$core$List$map, $author$project$Pages$Components$View$viewStandardRow, data.rows))),
-					A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
-				]));
-	});
 var $author$project$Pages$Reports$View$generatePrenatalContactsReportData = F3(
 	function (language, limitDate, records) {
 		var pregnanciesWithLMP = A2(

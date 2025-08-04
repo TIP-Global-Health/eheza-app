@@ -240,6 +240,9 @@ type TranslationId
     | TakenByLabel
     | TargetedInterventions
     | Total
+    | TotalDeliviries
+    | TotalLiveBirths
+    | TotalLivePreTermBirths
     | TreatmentReview
     | Trimester
     | Tuberculosis
@@ -2805,6 +2808,24 @@ translationSet transId =
 
         Total ->
             { english = "Total"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        TotalDeliviries ->
+            { english = "Total deliveries"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        TotalLiveBirths ->
+            { english = "Total live births"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        TotalLivePreTermBirths ->
+            { english = "Preterm birth newborns"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
