@@ -768,7 +768,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
           $mapped_diagnoses = implode(",", array_unique($mapped_diagnoses));
 
           // Resolving indicators.
-          // First one is GWG adequate, second is MMS and third is Ultrasound.
+          // 'GWG adequate' indicator is recorded on encounter itself.
           $indicators = [];
           $prenatal_indicators = $encounter->field_prenatal_indicators[LANGUAGE_NONE];
           if (!empty($prenatal_indicators)) {
@@ -780,6 +780,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
             }
           }
 
+          // Other indicators are resolved from measurements.
           $keys = array_keys($prenatal_indicators_by_encounter);
           foreach ($keys as $key) {
             if (in_array($encounter->nid, $prenatal_indicators_by_encounter[$key])) {
