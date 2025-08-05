@@ -1262,8 +1262,6 @@ viewMedicationHistoryPane language currentDate isChw assembled =
         [ viewItemHeading language Translate.MedicationHistory "blue"
         , div [ class "pane-content" ]
             [ entriesHeading
-            , resolveMedicationAdministrationDate .aspirin
-                |> viewEntry Aspirin
             , resolveMedicationAdministrationDate .calcium
                 |> viewEntry Calcium
             , resolveMedicationAdministrationDate .fefol
