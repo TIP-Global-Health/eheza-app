@@ -2473,6 +2473,12 @@ translationSet transId =
                     , kirundi = Nothing
                     }
 
+                IndicatorBreastfedFirstHour ->
+                    { english = "Newborns breastfed within one hour of delivery"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 IndicatorDiagnosedAnemia ->
                     { english = "Pregnant women diagnosed with anemia"
                     , kinyarwanda = Nothing
@@ -2519,6 +2525,12 @@ translationSet transId =
 
                 IndicatorReceivedMMS ->
                     { english = "Pregnant women who received MMS"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                IndicatorPrematureOnsetContractions ->
+                    { english = "Pregnant women with premature labour"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }

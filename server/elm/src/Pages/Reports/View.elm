@@ -2449,6 +2449,12 @@ generatePeripartumReportData language limitDate records =
         totalStillPreTerm =
             countPregnanciesByOutcome OutcomeStillPreTerm
 
+        pregnanciesWithIndicator indicator =
+            List.filter
+                (.encounters
+                    >> List.any (.indicators >> List.member indicator)
+                )
+
         generateRow label value =
             [ translate language label
             , String.fromInt value
@@ -2463,6 +2469,10 @@ generatePeripartumReportData language limitDate records =
         [ generateRow Translate.TotalDeliviries (totalLiveAtTerm + totalLivePreTerm + totalStillAtTerm + totalStillPreTerm)
         , generateRow Translate.TotalLiveBirths (totalLiveAtTerm + totalLivePreTerm)
         , generateRow Translate.TotalLivePreTermBirths totalLivePreTerm
+        , generateRow (Translate.PrenatalIndicatorLabel IndicatorPrematureOnsetContractions)
+            (List.length <| pregnanciesWithIndicator IndicatorPrematureOnsetContractions pregnancies)
+        , generateRow (Translate.PrenatalIndicatorLabel IndicatorBreastfedFirstHour)
+            (List.length <| pregnanciesWithIndicator IndicatorBreastfedFirstHour pregnancies)
         ]
     }
 

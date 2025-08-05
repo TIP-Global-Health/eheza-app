@@ -205,6 +205,8 @@ type PrenatalIndicator
     | IndicatorPretermBirth
     | IndicatorReferredToUltrasound
     | IndicatorStillbirth
+    | IndicatorBreastfedFirstHour
+    | IndicatorPrematureOnsetContractions
     | -- Indicators bellow are not passed from backend.
       IndicatorDiagnosedAnemia
     | IndicatorHistoryOfAdversePregnancyOutcomes

@@ -9339,7 +9339,9 @@ var $author$project$Backend$Reports$Decoder$prenatalEncounterTypeFromString = fu
 var $author$project$Backend$Reports$Model$IndicatorAbortion = {$: 'IndicatorAbortion'};
 var $author$project$Backend$Reports$Model$IndicatorAdequateGWG = {$: 'IndicatorAdequateGWG'};
 var $author$project$Backend$Reports$Model$IndicatorAnemiaTest = {$: 'IndicatorAnemiaTest'};
+var $author$project$Backend$Reports$Model$IndicatorBreastfedFirstHour = {$: 'IndicatorBreastfedFirstHour'};
 var $author$project$Backend$Reports$Model$IndicatorIntrauterineDeath = {$: 'IndicatorIntrauterineDeath'};
+var $author$project$Backend$Reports$Model$IndicatorPrematureOnsetContractions = {$: 'IndicatorPrematureOnsetContractions'};
 var $author$project$Backend$Reports$Model$IndicatorPretermBirth = {$: 'IndicatorPretermBirth'};
 var $author$project$Backend$Reports$Model$IndicatorReceivedAspirin = {$: 'IndicatorReceivedAspirin'};
 var $author$project$Backend$Reports$Model$IndicatorReceivedAzithromycin = {$: 'IndicatorReceivedAzithromycin'};
@@ -9371,6 +9373,10 @@ var $author$project$Backend$Reports$Decoder$prenatalIndicatorFromMapping = funct
 			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorReceivedAzithromycin);
 		case 'k':
 			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorAnemiaTest);
+		case 'l':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorBreastfedFirstHour);
+		case 'm':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorPrematureOnsetContractions);
 		default:
 			return $elm$core$Maybe$Nothing;
 	}
@@ -12438,6 +12444,8 @@ var $author$project$Translate$translationSet = function (transId) {
 						return {english: 'Number of encounters where adequate gestational weight gain was recorded', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'IndicatorAnemiaTest':
 						return {english: 'Pregnant women tested for anemia', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'IndicatorBreastfedFirstHour':
+						return {english: 'Newborns breastfed within one hour of delivery', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'IndicatorDiagnosedAnemia':
 						return {english: 'Pregnant women diagnosed with anemia', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'IndicatorHistoryOfAdversePregnancyOutcomes':
@@ -12454,6 +12462,8 @@ var $author$project$Translate$translationSet = function (transId) {
 						return {english: 'Pregnant women who received low-dose antenatal calcium', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'IndicatorReceivedMMS':
 						return {english: 'Pregnant women who received MMS', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'IndicatorPrematureOnsetContractions':
+						return {english: 'Pregnant women with premature labour', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'IndicatorPretermBirth':
 						return {english: '', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'IndicatorReferredToUltrasound':
@@ -18801,11 +18811,29 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F5(
 						A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
 					])));
 	});
+var $author$project$Translate$PrenatalIndicatorLabel = function (a) {
+	return {$: 'PrenatalIndicatorLabel', a: a};
+};
 var $author$project$Translate$TotalDeliviries = {$: 'TotalDeliviries'};
 var $author$project$Translate$TotalLiveBirths = {$: 'TotalLiveBirths'};
 var $author$project$Translate$TotalLivePreTermBirths = {$: 'TotalLivePreTermBirths'};
 var $author$project$Pages$Reports$View$generatePeripartumReportData = F3(
 	function (language, limitDate, records) {
+		var pregnanciesWithIndicator = function (indicator) {
+			return $elm$core$List$filter(
+				A2(
+					$elm$core$Basics$composeR,
+					function ($) {
+						return $.encounters;
+					},
+					$elm$core$List$any(
+						A2(
+							$elm$core$Basics$composeR,
+							function ($) {
+								return $.indicators;
+							},
+							$elm$core$List$member(indicator)))));
+		};
 		var pregnancies = $elm$core$List$concat(
 			$elm_community$maybe_extra$Maybe$Extra$values(
 				A2(
@@ -18850,7 +18878,17 @@ var $author$project$Pages$Reports$View$generatePeripartumReportData = F3(
 				[
 					A2(generateRow, $author$project$Translate$TotalDeliviries, ((totalLiveAtTerm + totalLivePreTerm) + totalStillAtTerm) + totalStillPreTerm),
 					A2(generateRow, $author$project$Translate$TotalLiveBirths, totalLiveAtTerm + totalLivePreTerm),
-					A2(generateRow, $author$project$Translate$TotalLivePreTermBirths, totalLivePreTerm)
+					A2(generateRow, $author$project$Translate$TotalLivePreTermBirths, totalLivePreTerm),
+					A2(
+					generateRow,
+					$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorPrematureOnsetContractions),
+					$elm$core$List$length(
+						A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorPrematureOnsetContractions, pregnancies))),
+					A2(
+					generateRow,
+					$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorBreastfedFirstHour),
+					$elm$core$List$length(
+						A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorBreastfedFirstHour, pregnancies)))
 				])
 		};
 	});
@@ -18907,9 +18945,6 @@ var $author$project$Pages$Reports$Model$PrenatalContact7 = {$: 'PrenatalContact7
 var $author$project$Pages$Reports$Model$PrenatalContact8 = {$: 'PrenatalContact8'};
 var $author$project$Translate$PrenatalContactType = function (a) {
 	return {$: 'PrenatalContactType', a: a};
-};
-var $author$project$Translate$PrenatalIndicatorLabel = function (a) {
-	return {$: 'PrenatalIndicatorLabel', a: a};
 };
 var $author$project$Pages$Reports$Utils$eddToLmpDate = function (eddDate) {
 	return A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, -280, eddDate);
