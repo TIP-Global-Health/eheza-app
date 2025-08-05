@@ -122,9 +122,20 @@ while (TRUE) {
     $encounter_type = $encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value'];
     $encounter_type = empty($encounters) ? 'Nurse' : hedley_general_get_field_sign_label('field_prenatal_encounter_type', $encounter_type);
     $encounter_date = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
-    $pregnancy_outcome = $pregnancy->field_outcome[LANGUAGE_NONE][0]['value'];
-    $pregnancy_outcome_location = $pregnancy->field_outcome_location[LANGUAGE_NONE][0]['value'];
-    $pregnancy_outcome_date = explode(' ', $pregnancy->field_date_concluded[LANGUAGE_NONE][0]['value'])[0];
+    // Pregnancy outcome data, only for postpartum encounters.
+    $is_postpartum_encounter = in_array($encounter_type, ['nurse-postpartum', 'chw-postpartum']);
+    if ($is_postpartum_encounter) {
+      $pregnancy_outcome = $pregnancy->field_outcome[LANGUAGE_NONE][0]['value'];
+      $pregnancy_outcome_location = $pregnancy->field_outcome_location[LANGUAGE_NONE][0]['value'];
+      $pregnancy_outcome_date = explode(' ', $pregnancy->field_date_concluded[LANGUAGE_NONE][0]['value'])[0];
+    }
+    else {
+      $pregnancy_outcome = '';
+      $pregnancy_outcome_location = '';
+      $pregnancy_outcome_date = '';
+    }
+
+
 
     // Diagnoses.
     $field_values = $encounter->field_prenatal_diagnoses[LANGUAGE_NONE];
