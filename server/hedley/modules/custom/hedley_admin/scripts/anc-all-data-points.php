@@ -120,10 +120,10 @@ while (TRUE) {
     $patient = node_load($patient_id);
     $birth_date = explode(' ', $patient->field_birth_date[LANGUAGE_NONE][0]['value'])[0];
     $encounter_type = $encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value'];
+    $is_postpartum_encounter = in_array($encounter_type, ['nurse-postpartum', 'chw-postpartum']);
     $encounter_type = empty($encounters) ? 'Nurse' : hedley_general_get_field_sign_label('field_prenatal_encounter_type', $encounter_type);
     $encounter_date = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
     // Pregnancy outcome data, only for postpartum encounters.
-    $is_postpartum_encounter = in_array($encounter_type, ['nurse-postpartum', 'chw-postpartum']);
     if ($is_postpartum_encounter) {
       $pregnancy_outcome = $pregnancy->field_outcome[LANGUAGE_NONE][0]['value'];
       $pregnancy_outcome_location = $pregnancy->field_outcome_location[LANGUAGE_NONE][0]['value'];
