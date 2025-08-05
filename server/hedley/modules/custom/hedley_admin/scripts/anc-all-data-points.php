@@ -135,8 +135,6 @@ while (TRUE) {
       $pregnancy_outcome_date = '';
     }
 
-
-
     // Diagnoses.
     $field_values = $encounter->field_prenatal_diagnoses[LANGUAGE_NONE];
     if (empty($field_values)) {
