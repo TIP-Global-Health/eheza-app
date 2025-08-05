@@ -13869,7 +13869,7 @@ translationSet trans =
                     translationSet No
 
                 NotKnownIfOccurs ->
-                    { english = "Don't now"
+                    { english = "Don't know"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
