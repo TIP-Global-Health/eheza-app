@@ -24,6 +24,7 @@ import Backend.Measurement.Model
         , PrenatalHealthEducationSign(..)
         , PrenatalMeasurements
         , PrenatalSymptomQuestion(..)
+        , PreviousDeliveryPeriod(..)
         , ReasonForNonReferral(..)
         , RecommendedTreatmentSign(..)
         , ReferToFacilitySign(..)
@@ -34,7 +35,13 @@ import Backend.Measurement.Model
         , TestExecutionNote(..)
         , TestResult(..)
         )
-import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getHeightValue, getMeasurementValueFunc, weightValueFunc)
+import Backend.Measurement.Utils
+    exposing
+        ( getCurrentReasonForNonReferral
+        , getHeightValue
+        , getMeasurementValueFunc
+        , weightValueFunc
+        )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isLabTechnician)
@@ -712,6 +719,23 @@ viewObstetricHistoryPane language currentDate measurements =
                 |> Maybe.map
                     (\value ->
                         let
+                            periodFromPreviousDeliveryInfo =
+                                EverySet.toList value.previousDeliveryPeriod
+                                    |> -- There can be only single value.
+                                       List.head
+                                    |> Maybe.map
+                                        (\previousDeliveryPeriod ->
+                                            if previousDeliveryPeriod == Neither then
+                                                []
+
+                                            else
+                                                [ translate language Translate.PreviousDelivery
+                                                    ++ ": "
+                                                    ++ (translate language <| Translate.PreviousDeliveryPeriod previousDeliveryPeriod)
+                                                ]
+                                        )
+                                    |> Maybe.withDefault []
+
                             cSectionInfo =
                                 if EverySet.member Backend.Measurement.Model.CSectionInPast value.previousDelivery then
                                     Maybe.andThen (EverySet.toList >> List.head) value.cSectionReason
@@ -757,7 +781,7 @@ viewObstetricHistoryPane language currentDate measurements =
                                         in
                                         [ translate language Translate.ConditionsDuringPrevoiusPregnancy ++ ": " ++ conditions ]
                         in
-                        cSectionInfo ++ conditionsDuringPrevoiusPregnancy
+                        periodFromPreviousDeliveryInfo ++ cSectionInfo ++ conditionsDuringPrevoiusPregnancy
                     )
                 |> Maybe.withDefault []
 

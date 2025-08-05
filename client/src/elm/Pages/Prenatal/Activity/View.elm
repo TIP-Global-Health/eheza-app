@@ -3042,7 +3042,7 @@ obstetricFormSecondStepInputsAndTasks language currentDate assembled form =
             [ MoreThan10Years, Neither ]
             form.previousDeliveryPeriod
             SetPreviousDeliveryPeriod
-            Translate.PreviousDeliveryPeriods
+            Translate.PreviousDeliveryPeriod
       ]
         ++ cSectionsHtml
         ++ [ viewQuestionLabel language Translate.ObstetricHistorySignsReviewQuestion
