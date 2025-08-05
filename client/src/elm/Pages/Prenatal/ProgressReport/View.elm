@@ -2565,6 +2565,34 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                         ++ suffix
                         |> wrapWithLI
 
+        preeclampsiaRiskTreatmentMessage =
+            getMeasurementValueFunc measurements.medicationDistribution
+                |> Maybe.andThen
+                    (\value ->
+                        let
+                            nonAdministrationReasons =
+                                Measurement.Utils.resolveMedicationsNonAdministrationReasons value
+                        in
+                        treatmentMessageForMedication value.distributionSigns nonAdministrationReasons Aspirin
+                            |> Maybe.map
+                                (\treatmentMessage ->
+                                    let
+                                        diagnosisMessage =
+                                            diagnosisForProgressReport
+                                                ++ " "
+                                                ++ (String.toLower <| translate language Translate.On)
+                                                ++ " "
+                                                ++ formatDDMMYYYY date
+                                    in
+                                    [ li []
+                                        [ p [] [ text diagnosisMessage ]
+                                        , p [] [ text treatmentMessage ]
+                                        ]
+                                    ]
+                                )
+                    )
+                |> Maybe.withDefault noTreatmentRecordedMessage
+
         undeterminedDiagnosisMessage =
             diagnosisForProgressReport
                 ++ " - "
@@ -3198,16 +3226,13 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             mentalHealthMessage
 
         DiagnosisHighRiskOfPreeclampsiaInitialPhase ->
-            -- @todo
-            []
+            preeclampsiaRiskTreatmentMessage
 
         DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ->
-            -- @todo
-            []
+            preeclampsiaRiskTreatmentMessage
 
         DiagnosisModerateRiskOfPreeclampsia ->
-            -- @todo
-            []
+            preeclampsiaRiskTreatmentMessage
 
         DiagnosisPostpartumAbdominalPain ->
             undeterminedDiagnosisMessage
