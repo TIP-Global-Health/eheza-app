@@ -113,6 +113,7 @@ import Pages.Utils
         , viewCustomBoolInput
         , viewCustomLabel
         , viewCustomSelectListInput
+        , viewEncounterActionButton
         , viewInstructionsLabel
         , viewLabel
         , viewMeasurementInput
@@ -2286,14 +2287,21 @@ viewNextStepsContent language currentDate isChw assembled data =
                                 -- The encounter is closed on second phase.
                                 saveMsg
 
+                        NextStepsNextVisit ->
+                            viewEncounterActionButton language
+                                Translate.Save
+                                "primary"
+                                -- Button is enabled because there are
+                                -- no actual tasks to be performed.
+                                True
+                                saveMsg
+
                         _ ->
-                            div [ class "actions next-steps" ]
-                                [ button
-                                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                    , onClick saveMsg
-                                    ]
-                                    [ text <| translate language Translate.Save ]
-                                ]
+                            viewEncounterActionButton language
+                                Translate.Save
+                                "primary"
+                                (tasksCompleted == totalTasks)
+                                saveMsg
                 )
                 activeTask
                 |> Maybe.withDefault emptyNode
@@ -3042,7 +3050,7 @@ obstetricFormSecondStepInputsAndTasks language currentDate assembled form =
             [ MoreThan10Years, Neither ]
             form.previousDeliveryPeriod
             SetPreviousDeliveryPeriod
-            Translate.PreviousDeliveryPeriods
+            Translate.PreviousDeliveryPeriod
       ]
         ++ cSectionsHtml
         ++ [ viewQuestionLabel language Translate.ObstetricHistorySignsReviewQuestion
