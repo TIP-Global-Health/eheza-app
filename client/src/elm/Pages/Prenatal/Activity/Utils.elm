@@ -1518,7 +1518,7 @@ resolvePrePregnancyWeight currentDate assembled =
                 assembled.chwPreviousMeasurementsWithDates
                 |> List.head
 
-        -- As last resolt - first weight measurement taken as
+        -- As last resort - first weight measurement taken as
         -- part of Nutrition Assessment activity.
         byNutritionAssessmentWeight =
             let
