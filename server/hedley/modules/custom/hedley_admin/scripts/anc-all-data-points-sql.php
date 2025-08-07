@@ -24,6 +24,7 @@ $memory_limit = drush_get_option('memory_limit', 800);
 
 $data = [];
 $type = 'prenatal_encounter';
+$table = 'public.prenatal_encounters';
 $data['measurements_types'] = hedley_general_get_measurement_types([$type]);
 $skipped_fields = [
   'field_person',
@@ -53,25 +54,30 @@ foreach ($data['measurements_types'] as $measurement_type) {
 }
 
 $labels = [
-  'Encounter ID',
-  'Pregnancy ID',
-  'Encounter Type',
-  'Encounter Date',
-  'Patient ID',
-  'Patient Birth Date',
-  'Diagnoses',
-  'Diagnoses from previous encounters',
-  'Pregnancy outcome',
-  'Pregnancy outcome location',
-  'Pregnancy outcome date',
+  'ID' => 'INTEGER PRIMARY KEY',
+  'Pregnancy ID' => 'INTEGER NOT NULL',
+  'Encounter Type' => 'TEXT NOT NULL',
+  'Encounter Date' => 'TIMESTAMP NOT NULL',
+  'Patient ID' => 'INTEGER NOT NULL',
+  'Patient Birth Date' => 'TIMESTAMP NOT NULL',
+  'Diagnoses' => 'TEXT NOT NULL',
+  'Diagnoses from previous encounters' => 'TEXT NOT NULL',
+  'Pregnancy outcome' => 'TEXT NOT NULL',
+  'Pregnancy outcome location' => 'TEXT NOT NULL',
+  'Pregnancy outcome date' => 'TEXT NOT NULL',
 ];
-$columns = [];
 
-drush_print("CREATE TABLE public.prenatal_encounters (");
-foreach ($labels as $label) {
+drush_print("CREATE TABLE $table (");
+$columns = [];
+$last_key = array_key_last($labels);
+foreach ($labels as $label => $column_type) {
   $column_name = strtolower(str_replace(' ', '_', $label));
   $columns[] = $column_name;
-  drush_print("  $column_name TEXT NOT NULL,");
+  $columns_definition = "  $column_name $column_type";
+  if ($last_key !== $label) {
+    $columns_definition .= ',';
+  }
+  drush_print($columns_definition);
 }
 drush_print(");");
 
@@ -128,11 +134,11 @@ while (TRUE) {
     $pregnancy = node_load($pregnancy_id);
     $patient_id = $pregnancy->field_person[LANGUAGE_NONE][0]['target_id'];
     $patient = node_load($patient_id);
-    $birth_date = explode(' ', $patient->field_birth_date[LANGUAGE_NONE][0]['value'])[0];
+    $birth_date = $patient->field_birth_date[LANGUAGE_NONE][0]['value'];
     $encounter_type = $encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value'];
     $is_postpartum_encounter = in_array($encounter_type, ['nurse-postpartum', 'chw-postpartum']);
     $encounter_type = empty($encounters) ? 'Nurse' : hedley_general_get_field_sign_label('field_prenatal_encounter_type', $encounter_type);
-    $encounter_date = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
+    $encounter_date = $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'];
     // Pregnancy outcome data, only for postpartum encounters.
     if ($is_postpartum_encounter) {
       $pregnancy_outcome = $pregnancy->field_outcome[LANGUAGE_NONE][0]['value'];
@@ -172,22 +178,22 @@ while (TRUE) {
     }
 
     $values = [
-      '\'' . $encounter->nid. '\'',
-      '\'' . $pregnancy_id. '\'',
-      '\'' . $encounter_type. '\'',
-      '\'' . $encounter_date. '\'',
-      '\'' . $patient_id. '\'',
-      '\'' . $birth_date. '\'',
-      '\'' . $diagnoses. '\'',
-      '\'' . $past_diagnoses. '\'',
-      '\'' . $pregnancy_outcome. '\'',
-      '\'' . $pregnancy_outcome_location. '\'',
-      '\'' . $pregnancy_outcome_date. '\'',
+      $encounter->nid,
+      $pregnancy_id,
+      '\'' . $encounter_type . '\'',
+      '\'' . $encounter_date . '\'',
+      $patient_id,
+      '\'' . $birth_date . '\'',
+      '\'' . $diagnoses . '\'',
+      '\'' . $past_diagnoses . '\'',
+      '\'' . $pregnancy_outcome . '\'',
+      '\'' . $pregnancy_outcome_location . '\'',
+      '\'' . $pregnancy_outcome_date . '\'',
     ];
 
     $columns_string = implode(', ', $columns);
     $values_string = implode(', ', $values);
-    drush_print("INSERT INTO public.prenatal_encounters ($columns_string) VALUES ($values_string);");
+    drush_print("INSERT INTO $table ($columns_string) VALUES ($values_string);");
 
     continue;
     // Get all measurements that belong to encounter.
@@ -206,7 +212,7 @@ while (TRUE) {
       continue;
     }
 
-    // As there's a possibility of multiple measurements of sane type
+    // As there's a possibility of multiple measurements of same type
     // (due to glitches), make sure to take only the most recent ones.
     $measurements = [];
     $ids = array_keys($result['node']);

@@ -23,6 +23,7 @@ $batch = drush_get_option('batch', 50);
 $memory_limit = drush_get_option('memory_limit', 800);
 
 $type = 'person';
+$table = 'public.persons';
 
 $labels = [
   'ID' => 'INTEGER PRIMARY KEY',
@@ -36,7 +37,7 @@ $labels = [
   'Village' => 'TEXT NOT NULL',
 ];
 
-drush_print("CREATE TABLE public.persons (");
+drush_print("CREATE TABLE $table (");
 $columns = [];
 $last_key = array_key_last($labels);
 foreach ($labels as $label => $column_type) {
@@ -109,7 +110,7 @@ while (TRUE) {
 
     $columns_string = implode(', ', $columns);
     $values_string = implode(', ', $values);
-    drush_print("INSERT INTO public.persons ($columns_string) VALUES ($values_string);");
+    drush_print("INSERT INTO $table ($columns_string) VALUES ($values_string);");
 
     // Free up memory.
     drupal_static_reset();
