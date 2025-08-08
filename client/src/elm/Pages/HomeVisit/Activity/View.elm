@@ -8,7 +8,6 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra
 import Measurement.Model exposing (NutritionCaringForm, NutritionFeedingForm, NutritionFoodSecurityForm, NutritionHygieneForm)
 import Measurement.Utils
     exposing

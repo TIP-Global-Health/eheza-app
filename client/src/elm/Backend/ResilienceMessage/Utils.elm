@@ -1,7 +1,7 @@
 module Backend.ResilienceMessage.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Entities exposing (NurseId, ResilienceMessageId)
+import Backend.Entities exposing (ResilienceMessageId)
 import Backend.ResilienceMessage.Model exposing (..)
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)

@@ -30,9 +30,7 @@ import Pages.Utils
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
-        , viewCustomLabel
         , viewLabel
-        , viewNumberInput
         , viewQuestionLabel
         )
 import Translate exposing (TranslationId, translate)
