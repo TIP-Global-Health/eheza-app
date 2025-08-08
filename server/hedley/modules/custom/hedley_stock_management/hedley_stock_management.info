@@ -29,6 +29,7 @@ features[field_base][] = field_stock_supplier
 features[field_base][] = field_stock_update_type
 features[field_instance][] = node-stock_update-field_batch_number
 features[field_instance][] = node-stock_update-field_date_measured
+features[field_instance][] = node-stock_update-field_deleted
 features[field_instance][] = node-stock_update-field_execution_date
 features[field_instance][] = node-stock_update-field_expiration_date
 features[field_instance][] = node-stock_update-field_health_center

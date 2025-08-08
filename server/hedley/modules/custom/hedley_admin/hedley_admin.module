@@ -353,7 +353,7 @@ function hedley_admin_devices_sync_state_table(array $form, array &$form_state) 
   );
 
   // SQL query to retrieve synchronization data.
-  $query = db_select('node', 'n');
+  $query = hedley_general_create_db_select_query_excluding_deleted();
   $query->join('users', 'u', 'u.uid = n.uid');
   $query->join('field_data_field_total_to_upload', 'ttu', 'ttu.entity_id = u.uid');
   $query->join('field_data_field_sync_phase', 'sp', 'sp.entity_id = u.uid');
@@ -444,7 +444,8 @@ function hedley_admin_resilience_survey_results_table(array $form, array &$form_
     $header["question_$i"] = t('Q@number', ['@number' => $i]);
   }
 
-  $base_query = (new EntityFieldQuery())->entityCondition('entity_type', 'node')
+  $base_query = hedley_general_create_entity_field_query_excluding_deleted();
+  $base_query->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'resilience_survey')
     ->propertyCondition('status', 1);
 

@@ -30,7 +30,7 @@ $type = 'whatsapp_record';
 // Maximal number of attempts of delivering message.
 $delivery_attempts = variable_get('hedley_whatsapp_delivery_attempts', 5);
 
-$base_query = db_select('node', 'n');
+$base_query = hedley_general_create_db_select_query_excluding_deleted();
 $base_query->addField('n', 'nid');
 $base_query->condition('n.status', NODE_PUBLISHED);
 $base_query->condition('n.type', $type);

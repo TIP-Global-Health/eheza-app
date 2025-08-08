@@ -360,7 +360,7 @@ function format_birth_date(&$date) {
  * Generate base query.
  */
 function base_query_for_bundle($bundle) {
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
   $query
     ->entityCondition('entity_type', 'node')
     ->propertyCondition('type', $bundle)
