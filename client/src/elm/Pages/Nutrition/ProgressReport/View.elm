@@ -62,16 +62,16 @@ view language currentDate zscores site features id isChw db model =
                 (\assembled ( _, child ) ->
                     let
                         ( _, pendingActivities ) =
-                            partitionActivities currentDate site zscores features isChw db assembled
+                            partitionActivities currentDate zscores features isChw db assembled
                     in
                     ( Just <|
                         { showEndEncounterDialog = model.showEndEncounterDialog
-                        , allowEndEncounter = allowEndingEncounter site isChw pendingActivities
+                        , allowEndEncounter = allowEndingEncounter isChw pendingActivities
                         , closeEncounterMsg = CloseEncounter id
                         , setEndEncounterDialogStateMsg = SetEndEncounterDialogState
                         , startEncounterMsg = NoOp
                         }
-                    , mandatoryActivitiesCompleted currentDate site zscores features child isChw assembled db
+                    , mandatoryActivitiesCompleted currentDate zscores features child isChw assembled db
                     )
                 )
                 assembledData

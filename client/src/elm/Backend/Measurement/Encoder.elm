@@ -820,6 +820,84 @@ encodeSpecialityCareSign sign =
                 "none"
 
 
+encodePrenatalAspirin : PrenatalAspirin -> List ( String, Value )
+encodePrenatalAspirin =
+    encodePrenatalMeasurement encodePrenatalAspirinValue
+
+
+encodePrenatalAspirinValue : AdministrationNote -> List ( String, Value )
+encodePrenatalAspirinValue note =
+    encodePrenatalMedicationValue "prenatal_aspirin" note
+
+
+encodePrenatalCalcium : PrenatalCalcium -> List ( String, Value )
+encodePrenatalCalcium =
+    encodePrenatalMeasurement encodePrenatalCalciumValue
+
+
+encodePrenatalCalciumValue : AdministrationNote -> List ( String, Value )
+encodePrenatalCalciumValue note =
+    encodePrenatalMedicationValue "prenatal_calcium" note
+
+
+encodePrenatalFefol : PrenatalFefol -> List ( String, Value )
+encodePrenatalFefol =
+    encodePrenatalMeasurement encodePrenatalFefolValue
+
+
+encodePrenatalFefolValue : AdministrationNote -> List ( String, Value )
+encodePrenatalFefolValue note =
+    encodePrenatalMedicationValue "prenatal_fefol" note
+
+
+encodePrenatalFolate : PrenatalFolate -> List ( String, Value )
+encodePrenatalFolate =
+    encodePrenatalMeasurement encodePrenatalFolateValue
+
+
+encodePrenatalFolateValue : AdministrationNote -> List ( String, Value )
+encodePrenatalFolateValue note =
+    encodePrenatalMedicationValue "prenatal_folate" note
+
+
+encodePrenatalIron : PrenatalIron -> List ( String, Value )
+encodePrenatalIron =
+    encodePrenatalMeasurement encodePrenatalIronValue
+
+
+encodePrenatalIronValue : AdministrationNote -> List ( String, Value )
+encodePrenatalIronValue note =
+    encodePrenatalMedicationValue "prenatal_iron" note
+
+
+encodePrenatalMMS : PrenatalMMS -> List ( String, Value )
+encodePrenatalMMS =
+    encodePrenatalMeasurement encodePrenatalMMSValue
+
+
+encodePrenatalMMSValue : AdministrationNote -> List ( String, Value )
+encodePrenatalMMSValue note =
+    encodePrenatalMedicationValue "prenatal_mms" note
+
+
+encodePrenatalMebendazole : PrenatalMebendazole -> List ( String, Value )
+encodePrenatalMebendazole =
+    encodePrenatalMeasurement encodePrenatalMebendazoleValue
+
+
+encodePrenatalMebendazoleValue : AdministrationNote -> List ( String, Value )
+encodePrenatalMebendazoleValue note =
+    encodePrenatalMedicationValue "prenatal_mebendazole" note
+
+
+encodePrenatalMedicationValue : String -> AdministrationNote -> List ( String, Value )
+encodePrenatalMedicationValue type_ note =
+    [ ( "administration_note", encodeAdministrationNote note )
+    , ( "deleted", bool False )
+    , ( "type", string type_ )
+    ]
+
+
 encodeNutrition : ChildNutrition -> List ( String, Value )
 encodeNutrition =
     encodeGroupMeasurement (encodeNutritionValueWithType "nutrition")
@@ -1329,11 +1407,18 @@ encodeLastMenstrualPeriodValue value =
     , ( "type", string "last_menstrual_period" )
     ]
         ++ encodeNullable "not_confident_reason" value.notConfidentReason encodeLmpDateNotConfidentReason
+        ++ encodeNullable "late_first_visit_reason" value.lateFirstVisitReason encodeLateFirstANCVisitReason
+        ++ encodeNullable "weight" value.prePregnancyWeight encodeWeightInKg
 
 
 encodeLmpDateNotConfidentReason : LmpDateNotConfidentReason -> Value
 encodeLmpDateNotConfidentReason =
     lmpDateNotConfidentReasonToString >> string
+
+
+encodeLateFirstANCVisitReason : LateFirstANCVisitReason -> Value
+encodeLateFirstANCVisitReason =
+    lateFirstANCVisitReasonToString >> string
 
 
 encodeMedicalHistory : MedicalHistory -> List ( String, Value )
@@ -1347,6 +1432,7 @@ encodeMedicalHistoryValue value =
     , ( "physical_condition_history", encodeEverySet encodeMedicalHistoryPhysicalCondition value.physicalConditions )
     , ( "infectious_disease_history", encodeEverySet encodeMedicalHistoryInfectiousDisease value.infectiousDiseases )
     , ( "mental_health_issues", encodeEverySet encodeMedicalHistoryMentalHealthIssue value.mentalHealthIssues )
+    , ( "preeclampsia_in_family", encodeOccursInFamilySign value.preeclampsiaInFamily )
     , ( "deleted", bool False )
     , ( "type", string "medical_history" )
     ]
@@ -1370,6 +1456,11 @@ encodeMedicalHistoryInfectiousDisease =
 encodeMedicalHistoryMentalHealthIssue : MedicalHistoryMentalHealthIssue -> Value
 encodeMedicalHistoryMentalHealthIssue =
     medicalHistoryMentalHealthIssueToString >> string
+
+
+encodeOccursInFamilySign : OccursInFamilySign -> Value
+encodeOccursInFamilySign =
+    occursInFamilySignToString >> string
 
 
 encodeMedicationSign : MedicationSign -> Value
@@ -1523,6 +1614,9 @@ encodeFetalPresentation sign =
             Twins ->
                 "twins"
 
+            UnclearImprecise ->
+                "unclear-imprecise"
+
             Unknown ->
                 "unknown"
 
@@ -1626,6 +1720,11 @@ encodePreviousDeliveryPeriod sign =
             MoreThan5Years ->
                 "more-than-5-years"
 
+            MoreThan10Years ->
+                "more-than-10-years"
+
+            -- After adding 'more than 10 years', actual meaninng of
+            -- this option becomes 'none of these'.
             Neither ->
                 "neither"
 
@@ -2707,6 +2806,7 @@ encodePrenatalMedicationDistributionValue value =
     ]
         ++ encodeEverySetNullable "recommended_treatment" value.recommendedTreatmentSigns encodeRecommendedTreatmentSign
         ++ encodeEverySetNullable "avoiding_guidance_reason" value.avoidingGuidanceReason encodeAvoidingGuidanceReason
+        ++ encodeEverySetNullable "reinforce_treatment_signs" value.reinforceTreatmentSigns encodeReinforceTreatmentSign
 
 
 encodeMedicationDistributionSign : MedicationDistributionSign -> Value
@@ -2715,6 +2815,9 @@ encodeMedicationDistributionSign sign =
         case sign of
             Amoxicillin ->
                 "amoxicillin"
+
+            Aspirin ->
+                "aspirin"
 
             Coartem ->
                 "coartem"
@@ -2767,6 +2870,15 @@ encodeMedicationDistributionSign sign =
             VitaminA ->
                 "vitamina"
 
+            Calcium ->
+                "calcium"
+
+            MMS ->
+                "mms"
+
+            Fefol ->
+                "fefol"
+
             NoMedicationDistributionSigns ->
                 "none"
 
@@ -2783,6 +2895,9 @@ encodeMedicationNonAdministrationSign sign =
         case sign of
             MedicationAmoxicillin reason ->
                 "amoxicillin-" ++ administrationNoteToString reason
+
+            MedicationAspirin reason ->
+                "aspirin-" ++ administrationNoteToString reason
 
             MedicationCoartem reason ->
                 "coartem-" ++ administrationNoteToString reason
@@ -2841,6 +2956,11 @@ encodeRecommendedTreatmentSign =
 encodeAvoidingGuidanceReason : AvoidingGuidanceReason -> Value
 encodeAvoidingGuidanceReason =
     avoidingGuidanceReasonToString >> string
+
+
+encodeReinforceTreatmentSign : ReinforceTreatmentSign -> Value
+encodeReinforceTreatmentSign =
+    reinforceTreatmentSignToString >> string
 
 
 encodeTravelHistory : TravelHistory -> List ( String, Value )

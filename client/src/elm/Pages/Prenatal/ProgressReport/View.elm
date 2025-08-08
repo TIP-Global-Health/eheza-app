@@ -4,7 +4,8 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model
     exposing
-        ( DangerSign(..)
+        ( AdministrationNote(..)
+        , DangerSign(..)
         , EyesCPESign(..)
         , FetalPresentation(..)
         , HandsCPESign(..)
@@ -33,7 +34,7 @@ import Backend.Measurement.Model
         , TestExecutionNote(..)
         , TestResult(..)
         )
-import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getHeightValue, getMeasurementValueFunc)
+import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getHeightValue, getMeasurementValueFunc, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isLabTechnician)
@@ -74,12 +75,20 @@ import Measurement.Utils
         , outsideCareMedicationOptionsSyphilis
         )
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Prenatal.Activity.Utils exposing (generateFutureVaccinationsDataByProgress, respiratoryRateElevated)
+import Pages.Prenatal.Activity.Utils
+    exposing
+        ( generateFutureVaccinationsDataByProgress
+        , resolveMeasuredHeight
+        , resolvePrePregnancyClassification
+        , resolvePrePregnancyWeight
+        , respiratoryRateElevated
+        , weightGainStandardsPerPrePregnancyClassification
+        )
 import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Encounter.View exposing (viewActionButton)
-import Pages.Prenatal.Model exposing (AssembledData, VaccinationProgressDict)
+import Pages.Prenatal.Model exposing (AssembledData, PreviousEncounterData, VaccinationProgressDict)
 import Pages.Prenatal.ProgressReport.Model exposing (..)
-import Pages.Prenatal.ProgressReport.Svg exposing (viewBMIForEGA, viewFundalHeightForEGA, viewMarkers)
+import Pages.Prenatal.ProgressReport.Svg exposing (viewBMIForEGA, viewFundalHeightForEGA, viewMarkers, viewWeightGainForEGA)
 import Pages.Prenatal.ProgressReport.Utils exposing (..)
 import Pages.Prenatal.RecurrentActivity.Utils
 import Pages.Prenatal.RecurrentEncounter.Utils
@@ -109,11 +118,13 @@ import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage, viewModal)
 import Utils.NominalDate exposing (sortByDateDesc)
 import Utils.WebData exposing (viewWebData)
+import ZScore.Model
 
 
 view :
     Language
     -> NominalDate
+    -> ZScore.Model.Model
     -> Site
     -> EverySet SiteFeature
     -> Nurse
@@ -123,17 +134,18 @@ view :
     -> ModelIndexedDb
     -> Model
     -> Html Msg
-view language currentDate site features nurse id isChw initiator db model =
+view language currentDate zscores site features nurse id isChw initiator db model =
     let
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewContentAndHeader language currentDate site features nurse isChw initiator model) identity assembled
+    viewWebData language (viewContentAndHeader language currentDate zscores site features nurse isChw initiator model) identity assembled
 
 
 viewContentAndHeader :
     Language
     -> NominalDate
+    -> ZScore.Model.Model
     -> Site
     -> EverySet SiteFeature
     -> Nurse
@@ -142,7 +154,7 @@ viewContentAndHeader :
     -> Model
     -> AssembledData
     -> Html Msg
-viewContentAndHeader language currentDate site features nurse isChw initiator model assembled =
+viewContentAndHeader language currentDate zscores site features nurse isChw initiator model assembled =
     let
         isLabTech =
             isLabTechnician nurse
@@ -181,7 +193,7 @@ viewContentAndHeader language currentDate site features nurse isChw initiator mo
     in
     div [ class "page-report clinical" ] <|
         [ viewHeader language assembled.id isLabTech isResultsReviewer initiator model
-        , viewContent language currentDate site features isChw isLabTech isResultsReviewer initiator model assembled
+        , viewContent language currentDate zscores site features isChw isLabTech isResultsReviewer initiator model assembled
         , viewModal endEncounterDialog
         , Html.map MsgReportToWhatsAppDialog
             (Components.ReportToWhatsAppDialog.View.view
@@ -302,6 +314,7 @@ viewHeader language id isLabTech isResultsReviewer initiator model =
 viewContent :
     Language
     -> NominalDate
+    -> ZScore.Model.Model
     -> Site
     -> EverySet SiteFeature
     -> Bool
@@ -311,7 +324,7 @@ viewContent :
     -> Model
     -> AssembledData
     -> Html Msg
-viewContent language currentDate site features isChw isLabTech isResultsReviewer initiator model assembled =
+viewContent language currentDate zscores site features isChw isLabTech isResultsReviewer initiator model assembled =
     let
         globalLmpValue =
             let
@@ -537,11 +550,13 @@ viewContent language currentDate site features isChw isLabTech isResultsReviewer
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalMedicalDiagnosis)
                     , viewObstetricalDiagnosisPane language currentDate isChw globalLmpValue firstNurseEncounterMeasurements assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalObstetricalDiagnosis)
+                    , viewMedicationHistoryPane language currentDate isChw assembled
+                        |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalMedicationHistory)
                     , viewVaccinationHistoryPane language currentDate assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalImmunizationHistory)
                     , viewChwActivityPane language currentDate isChw assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalCHWActivity)
-                    , viewPatientProgressPane language currentDate isChw globalLmpValue assembled
+                    , viewPatientProgressPane language currentDate zscores isChw globalLmpValue assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalPatientProgress)
                     , labsPane
                     , viewProgressPhotosPane language currentDate isChw assembled
@@ -746,9 +761,21 @@ viewObstetricHistoryPane language currentDate measurements =
                     )
                 |> Maybe.withDefault []
 
+        medicalHistory =
+            getMeasurementValueFunc measurements.medicalHistory
+                |> Maybe.map
+                    (\value ->
+                        [ translate language Translate.FamilyHistoryOfPreeclampsia
+                            ++ ": "
+                            ++ (translate language <| Translate.OccursInFamilySign value.preeclampsiaInFamily)
+                        ]
+                    )
+                |> Maybe.withDefault []
+
         content =
             obsetricHistory
                 ++ obstetricHistoryStep2
+                ++ medicalHistory
                 |> List.map (\alert -> li [] [ text alert ])
                 |> ul []
                 |> List.singleton
@@ -831,18 +858,7 @@ viewMedicalDiagnosisPane : Language -> NominalDate -> Bool -> PrenatalMeasuremen
 viewMedicalDiagnosisPane language currentDate isChw firstNurseEncounterMeasurements assembled =
     let
         allNurseEncountersData =
-            assembled.nursePreviousEncountersData
-                ++ (if isChw then
-                        []
-
-                    else
-                        [ { startDate = assembled.encounter.startDate
-                          , diagnoses = assembled.encounter.diagnoses
-                          , pastDiagnoses = assembled.encounter.pastDiagnoses
-                          , measurements = assembled.measurements
-                          }
-                        ]
-                   )
+            generateAllNurseEncountersData isChw assembled
                 |> List.sortWith (sortByDateDesc .startDate)
 
         diganoses =
@@ -1031,18 +1047,7 @@ viewObstetricalDiagnosisPane : Language -> NominalDate -> Bool -> Maybe LastMens
 viewObstetricalDiagnosisPane language currentDate isChw globalLmpValue firstNurseEncounterMeasurements assembled =
     let
         allNurseEncountersData =
-            assembled.nursePreviousEncountersData
-                ++ (if isChw then
-                        []
-
-                    else
-                        [ { startDate = assembled.encounter.startDate
-                          , diagnoses = assembled.encounter.diagnoses
-                          , pastDiagnoses = assembled.encounter.pastDiagnoses
-                          , measurements = assembled.measurements
-                          }
-                        ]
-                   )
+            generateAllNurseEncountersData isChw assembled
                 |> List.sortWith (sortByDateDesc .startDate)
 
         initialHealthEducationOccurances =
@@ -1215,6 +1220,66 @@ viewObstetricalDiagnosisPane language currentDate isChw globalLmpValue firstNurs
         ]
 
 
+viewMedicationHistoryPane : Language -> NominalDate -> Bool -> AssembledData -> Html any
+viewMedicationHistoryPane language currentDate isChw assembled =
+    let
+        allNurseEncountersData =
+            generateAllNurseEncountersData isChw assembled
+                |> List.sortWith (sortByDateDesc .startDate)
+
+        resolveMedicationAdministrationDate measurementFunc =
+            List.map (.measurements >> measurementFunc) allNurseEncountersData
+                |> List.filterMap
+                    (Maybe.andThen
+                        (\( _, measurement ) ->
+                            if measurement.value == AdministeredToday then
+                                Just measurement.dateMeasured
+
+                            else
+                                Nothing
+                        )
+                    )
+                |> List.head
+
+        entriesHeading =
+            div [ class "heading medication" ]
+                [ div [ class "name" ] [ text <| translate language Translate.Medication ]
+                , div [ class "date" ] [ text <| translate language Translate.DateReceived ]
+                ]
+
+        viewEntry medicationType administrationDate =
+            let
+                dateForView =
+                    Maybe.map formatDDMMYYYY administrationDate
+                        |> Maybe.withDefault "--"
+            in
+            div [ class "entry medication" ]
+                [ div [ class "cell name" ] [ text <| translate language <| Translate.MedicationDistributionSign medicationType ]
+                , div [ class "cell date" ] [ p [] [ text dateForView ] ]
+                ]
+    in
+    div [ class "medication-history" ] <|
+        [ viewItemHeading language Translate.MedicationHistory "blue"
+        , div [ class "pane-content" ]
+            [ entriesHeading
+            , resolveMedicationAdministrationDate .aspirin
+                |> viewEntry Aspirin
+            , resolveMedicationAdministrationDate .calcium
+                |> viewEntry Calcium
+            , resolveMedicationAdministrationDate .fefol
+                |> viewEntry Fefol
+            , resolveMedicationAdministrationDate .folate
+                |> viewEntry FolicAcid
+            , resolveMedicationAdministrationDate .iron
+                |> viewEntry Iron
+            , resolveMedicationAdministrationDate .mms
+                |> viewEntry MMS
+            , resolveMedicationAdministrationDate .mebendazole
+                |> viewEntry Mebendezole
+            ]
+        ]
+
+
 viewVaccinationHistoryPane : Language -> NominalDate -> AssembledData -> Html any
 viewVaccinationHistoryPane language currentDate assembled =
     div [ class "vaccination-history" ] <|
@@ -1379,17 +1444,12 @@ matchCHWActivityAtEncounter measurements activity =
             isJust measurements.birthPlan
 
 
-viewPatientProgressPane : Language -> NominalDate -> Bool -> Maybe LastMenstrualPeriodValue -> AssembledData -> Html Msg
-viewPatientProgressPane language currentDate isChw globalLmpValue assembled =
+viewPatientProgressPane : Language -> NominalDate -> ZScore.Model.Model -> Bool -> Maybe LastMenstrualPeriodValue -> AssembledData -> Html Msg
+viewPatientProgressPane language currentDate zscores isChw globalLmpValue assembled =
     let
         allNurseEncountersData =
-            List.map (\data -> ( data.startDate, data.measurements )) assembled.nursePreviousEncountersData
-                ++ (if isChw then
-                        []
-
-                    else
-                        [ ( currentDate, assembled.measurements ) ]
-                   )
+            generateAllNurseEncountersData isChw assembled
+                |> List.map (\data -> ( data.startDate, data.measurements ))
 
         encountersTrimestersData =
             allNurseEncountersData
@@ -1705,38 +1765,38 @@ viewPatientProgressPane language currentDate isChw globalLmpValue assembled =
                 ]
 
         egaBmiValues =
-            allNurseEncountersData
-                |> List.filterMap
-                    (\( date, measurements ) ->
-                        assembled.globalLmpDate
-                            |> Maybe.map
-                                (\lmpDate ->
-                                    let
-                                        bmi =
-                                            measurements.nutrition
-                                                |> Maybe.map
-                                                    (\measurement ->
-                                                        let
-                                                            height =
-                                                                Tuple.second measurement
-                                                                    |> .value
-                                                                    |> .height
-                                                                    |> (\(Backend.Measurement.Model.HeightInCm cm) -> cm)
+            List.filterMap
+                (\( date, measurements ) ->
+                    Maybe.map
+                        (\lmpDate ->
+                            let
+                                bmi =
+                                    Maybe.map
+                                        (\measurement ->
+                                            let
+                                                height =
+                                                    Tuple.second measurement
+                                                        |> .value
+                                                        |> .height
+                                                        |> getHeightValue
 
-                                                            weight =
-                                                                Tuple.second measurement
-                                                                    |> .value
-                                                                    |> .weight
-                                                                    |> (\(Backend.Measurement.Model.WeightInKg kg) -> kg)
-                                                        in
-                                                        calculateBmi (Just height) (Just weight)
-                                                            |> Maybe.withDefault 0
-                                                    )
+                                                weight =
+                                                    Tuple.second measurement
+                                                        |> .value
+                                                        |> .weight
+                                                        |> weightValueFunc
+                                            in
+                                            calculateBmi (Just height) (Just weight)
                                                 |> Maybe.withDefault 0
-                                    in
-                                    ( diffDays lmpDate date, bmi )
-                                )
-                    )
+                                        )
+                                        measurements.nutrition
+                                        |> Maybe.withDefault 0
+                            in
+                            ( diffDays lmpDate date, bmi )
+                        )
+                        assembled.globalLmpDate
+                )
+                allNurseEncountersData
 
         egaFundalHeightValues =
             Maybe.map
@@ -1771,6 +1831,52 @@ viewPatientProgressPane language currentDate isChw globalLmpValue assembled =
                 )
                 globalLmpValue
                 |> Maybe.withDefault emptyNode
+
+        weightGainForEGAChart =
+            let
+                prePregnancyWeight =
+                    resolvePrePregnancyWeight assembled |> Maybe.map weightValueFunc
+
+                height =
+                    resolveMeasuredHeight assembled |> Maybe.map getHeightValue
+            in
+            calculateBmi height prePregnancyWeight
+                |> resolvePrePregnancyClassification zscores assembled
+                |> Maybe.map2
+                    (\baselineWeight prePregnancyClassification ->
+                        let
+                            egaWeightGainValues =
+                                Maybe.map
+                                    (\lmpDate ->
+                                        List.filterMap
+                                            (\( date, measurements ) ->
+                                                measurements.nutrition
+                                                    |> Maybe.map
+                                                        (Tuple.second
+                                                            >> .value
+                                                            >> .weight
+                                                            >> weightValueFunc
+                                                            >> (\weight ->
+                                                                    ( diffDays lmpDate date, weight - baselineWeight )
+                                                               )
+                                                        )
+                                            )
+                                            allNurseEncountersData
+                                    )
+                                    assembled.globalLmpDate
+                                    |> Maybe.withDefault []
+                        in
+                        div [ class "weight-gain-info" ]
+                            [ viewChartHeading Translate.WeightGain
+                            , weightGainTable language currentDate assembled.globalLmpDate baselineWeight allNurseEncountersData
+                            , viewWeightGainForEGA language
+                                (weightGainStandardsPerPrePregnancyClassification prePregnancyClassification)
+                                egaWeightGainValues
+                            , illustrativePurposes language
+                            ]
+                    )
+                    prePregnancyWeight
+                |> Maybe.withDefault emptyNode
     in
     div [ class "patient-progress" ]
         [ viewItemHeading language Translate.PatientProgress "blue"
@@ -1798,6 +1904,7 @@ viewPatientProgressPane language currentDate isChw globalLmpValue assembled =
                     , viewBMIForEGA language egaBmiValues
                     , illustrativePurposes language
                     ]
+                , weightGainForEGAChart
                 , div [ class "fundal-height-info" ]
                     [ viewChartHeading Translate.FundalHeight
                     , fundalHeightTable language currentDate assembled.globalLmpDate allNurseEncountersData
@@ -1992,6 +2099,53 @@ fundalHeightTable language currentDate maybeLmpDate allMeasurementsWithDates =
         |> table [ class "ui collapsing celled table" ]
 
 
+weightGainTable : Language -> NominalDate -> Maybe NominalDate -> Float -> List ( NominalDate, PrenatalMeasurements ) -> Html any
+weightGainTable language currentDate maybeLmpDate baselineWeight allMeasurementsWithDates =
+    let
+        cell language_ transId =
+            td [ class "uppercase" ]
+                [ text <| translate language_ transId ]
+    in
+    greedyGroupsOf 6 allMeasurementsWithDates
+        |> List.concatMap
+            (\groupOfSix ->
+                let
+                    egas =
+                        tableEgaHeading language currentDate maybeLmpDate groupOfSix
+
+                    weights =
+                        groupOfSix
+                            |> List.map
+                                (Tuple.second
+                                    >> .nutrition
+                                    >> Maybe.map
+                                        (Tuple.second
+                                            >> .value
+                                            >> .weight
+                                            >> weightValueFunc
+                                            >> (\weight ->
+                                                    [ text <|
+                                                        Round.round 1
+                                                            (weight - baselineWeight)
+                                                            ++ translate language Translate.KilogramShorthand
+                                                    ]
+                                               )
+                                        )
+                                    >> Maybe.withDefault [ text "--" ]
+                                    >> td [ class "center aligned" ]
+                                )
+                            |> (::) (cell language Translate.WeightGain)
+                            |> tr []
+                in
+                [ egas
+                , weights
+                ]
+            )
+        |> tbody []
+        |> List.singleton
+        |> table [ class "ui collapsing celled table" ]
+
+
 illustrativePurposes : Language -> Html any
 illustrativePurposes language =
     div [ class "illustrative-purposes" ] [ text <| translate language Translate.ForIllustrativePurposesOnly ]
@@ -2041,13 +2195,8 @@ viewProgressPhotosPane : Language -> NominalDate -> Bool -> AssembledData -> Htm
 viewProgressPhotosPane language currentDate isChw assembled =
     let
         allNurseEncountersData =
-            List.map (\data -> ( data.startDate, data.measurements )) assembled.nursePreviousEncountersData
-                ++ (if isChw then
-                        []
-
-                    else
-                        [ ( currentDate, assembled.measurements ) ]
-                   )
+            generateAllNurseEncountersData isChw assembled
+                |> List.map (\data -> ( data.startDate, data.measurements ))
 
         content =
             allNurseEncountersData
@@ -3050,6 +3199,18 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
         DiagnosisSuicideRisk ->
             mentalHealthMessage
 
+        DiagnosisHighRiskOfPreeclampsiaInitialPhase ->
+            -- @todo
+            []
+
+        DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ->
+            -- @todo
+            []
+
+        DiagnosisModerateRiskOfPreeclampsia ->
+            -- @todo
+            []
+
         DiagnosisPostpartumAbdominalPain ->
             undeterminedDiagnosisMessage
 
@@ -3213,3 +3374,19 @@ viewTreatmentForPastDiagnosis language date diagnosis =
         ++ (String.toLower <| translate language Translate.PastDiagnosisReportReason)
         ++ "."
         |> wrapWithLI
+
+
+generateAllNurseEncountersData : Bool -> AssembledData -> List PreviousEncounterData
+generateAllNurseEncountersData isChw assembled =
+    assembled.nursePreviousEncountersData
+        ++ (if isChw then
+                []
+
+            else
+                [ { startDate = assembled.encounter.startDate
+                  , diagnoses = assembled.encounter.diagnoses
+                  , pastDiagnoses = assembled.encounter.pastDiagnoses
+                  , measurements = assembled.measurements
+                  }
+                ]
+           )

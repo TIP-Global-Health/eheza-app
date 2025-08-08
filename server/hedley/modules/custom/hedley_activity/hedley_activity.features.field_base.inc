@@ -731,6 +731,7 @@ function hedley_activity_field_default_field_bases() {
         'cephalic' => 'Cephalic',
         'breech' => 'Breech',
         'twins' => 'Twins',
+        'unclear-imprecise' => 'Unclear / Imprecis',
         'unknown' => 'Unknown',
       ),
       'allowed_values_function' => '',
@@ -1125,6 +1126,40 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'datetime',
   );
 
+  // Exported field_base: 'field_late_first_visit_reason'.
+  $field_bases['field_late_first_visit_reason'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_late_first_visit_reason',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'lack-of-funds' => 'Lack Of Funds',
+        'lack-of-health-insurance' => 'Lack Of Health Insurance',
+        'partner-accompaniment-requirement' => 'Partner Accompaniment Requirement',
+        'undetected-pregnancy' => 'Undetected Pregnancy',
+        'long-distances-to-health-facilities' => 'Long Distances To Health Facilities',
+        'negative-past-experiences' => 'Negative Past Experiences',
+        'traditional-beliefs' => 'Traditional Beliefs',
+        'lack-of-awareness-to-anc' => 'Lack Of Awareness To ANC',
+        'delayed-recognition-of-symptoms' => 'Delayed Recognition Of Symptoms',
+        'other-reasons' => 'Other Reasons',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_legs'.
   $field_bases['field_legs'] = array(
     'active' => 1,
@@ -1272,6 +1307,7 @@ function hedley_activity_field_default_field_bases() {
         'bowed-legs' => 'Bowed Legs',
         'hiv' => 'HIV',
         'mental-health-history' => 'Mental health history',
+        'autoimmune-disease' => 'Autoimmune Disease',
         'none' => 'None of these',
       ),
       'allowed_values_function' => '',
@@ -1642,12 +1678,16 @@ function hedley_activity_field_default_field_bases() {
       'allowed_values' => array(
         'baby-died-on-day-of-birth-previous-delivery' => 'Baby Died On Day Of Birth Previous Delivery',
         'partial-placenta-previous-delivery' => 'Partial Placenta Previous Delivery',
+        'placenta-abruption-previous-delivery' => 'Placenta Abruption Previous Delivery',
         'severe-hemorrhaging-previous-delivery' => 'Severe Hemorrhaging Previous Delivery',
         'preeclampsia-previous-pregnancy' => 'Preeclampsia Previous Pregnancy',
         'convulsions-previous-delivery' => 'Convulsions Previous Delivery',
         'convulsions-and-unconscious-previous-delivery' => 'Convulsions And Unconscious Previous Delivery',
         'gestational-diabetes-previous-pregnancy' => 'Gestational Diabetes Previous Pregnancy',
         'incomplete-cervix-previous-pregnancy' => 'Incomplete Cervix Previous Pregnancy',
+        'child-with-low-birthweight-previous-delivery' => 'Child With Low Birthweight Previous Delivery',
+        'small-for-gestational-age-previous-delivery' => 'Small For Gestational Age Previous Delivery',
+        'intra-uterine-death-previous-delivery' => 'Intra-uterine Death Previous Delivery',
         'none' => 'None of these',
         'migrate' => 'Migrate',
       ),
@@ -1792,6 +1832,33 @@ function hedley_activity_field_default_field_bases() {
         'abdominal-pain' => 'Acute Abdominal Pain',
         'laboured-breathing' => 'Laboured Breathing',
         'none' => 'None of these',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_preeclampsia_in_family'.
+  $field_bases['field_preeclampsia_in_family'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_preeclampsia_in_family',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'yes' => 'Yes',
+        'no' => 'No',
+        'do-not-know' => 'Don\'t know',
       ),
       'allowed_values_function' => '',
     ),
@@ -1950,7 +2017,8 @@ function hedley_activity_field_default_field_bases() {
       'allowed_values' => array(
         'less-than-18-month' => 'Less than 18 Month',
         'more-than-5-years' => 'More Than 5 Years',
-        'neither' => 'Neither',
+        'more-than-10-years' => 'More Than 10 Years',
+        'neither' => 'None of these',
       ),
       'allowed_values_function' => '',
     ),

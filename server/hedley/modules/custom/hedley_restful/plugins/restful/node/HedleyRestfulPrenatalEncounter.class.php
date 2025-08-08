@@ -18,6 +18,7 @@ class HedleyRestfulPrenatalEncounter extends HedleyRestfulIndividualEncounter {
    */
   protected $fields = [
     'field_prenatal_encounter_type',
+    'field_next_visit_date',
   ];
 
   /**
@@ -32,6 +33,15 @@ class HedleyRestfulPrenatalEncounter extends HedleyRestfulIndividualEncounter {
   ];
 
   /**
+   * A list of fields that are dates. This is a sub list of $fields.
+   *
+   * @var array
+   */
+  protected $dateFields = [
+    'field_next_visit_date',
+  ];
+
+  /**
    * {@inheritdoc}
    */
   public function publicFieldsInfo() {
@@ -43,6 +53,10 @@ class HedleyRestfulPrenatalEncounter extends HedleyRestfulIndividualEncounter {
       $public_fields[$public_name] = [
         'property' => $field_name,
       ];
+
+      if (in_array($field_name, $this->dateFields)) {
+        $public_fields[$public_name]['process_callbacks'] = [[$this, 'renderDate2']];
+      }
     }
 
     return $public_fields;
@@ -75,6 +89,12 @@ class HedleyRestfulPrenatalEncounter extends HedleyRestfulIndividualEncounter {
       foreach ($this->multiFields as $field_name) {
         $public_name = str_replace('field_', '', $field_name);
         $item->{$public_name} = explode(',', $item->{$public_name});
+      }
+
+      foreach ($this->dateFields as $field_name) {
+        $public_name = str_replace('field_', '', $field_name);
+        $date = explode(' ', $item->{$public_name});
+        $item->{$public_name} = !empty($date[0]) ? $date[0] : NULL;
       }
     }
 

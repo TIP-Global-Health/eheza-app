@@ -443,6 +443,38 @@ function hedley_schedule_field_default_field_bases() {
     'type' => 'entityreference',
   );
 
+  // Exported field_base: 'field_next_visit_date'.
+  $field_bases['field_next_visit_date'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_next_visit_date',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'date',
+    'settings' => array(
+      'granularity' => array(
+        'day' => 'day',
+        'hour' => 0,
+        'minute' => 0,
+        'month' => 'month',
+        'second' => 0,
+        'year' => 'year',
+      ),
+      'timezone_db' => '',
+      'todate' => '',
+      'tz_handling' => 'none',
+    ),
+    'translatable' => 0,
+    'type' => 'datetime',
+  );
+
   // Exported field_base: 'field_nutrition_encounter_type'.
   $field_bases['field_nutrition_encounter_type'] = array(
     'active' => 1,
