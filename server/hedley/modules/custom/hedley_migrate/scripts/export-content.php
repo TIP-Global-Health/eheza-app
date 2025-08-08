@@ -4,6 +4,8 @@
  * @file
  * Populate the type for all clinics.
  *
+ * NOTE: Method is OBSOLETE. Use hedley_admin/scripts/generate-sample-db.php.
+ *
  * Drush scr
  * profiles/hedley/modules/custom/hedley_migrate/scripts/export-content.php.
  */
