@@ -134,7 +134,7 @@ while (TRUE) {
  *   Original text value.
  *
  * @return string
- *  Sanitised value.
+ *   Sanitised value.
  */
 function sanitise_text($value) {
   return str_replace('\'', '`', $value);

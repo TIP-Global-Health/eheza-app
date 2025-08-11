@@ -264,7 +264,7 @@ while (TRUE) {
                 foreach ($field_values as $item) {
                   $set_values[] = hedley_general_get_field_sign_label($field_name, $item['value']);
                 }
-                $values[] = '\'' . implode('&', $set_values). '\'';
+                $values[] = '\'' . implode('&', $set_values) . '\'';
               }
             }
             else {
@@ -285,7 +285,7 @@ while (TRUE) {
             break;
 
           default:
-            $value =  $measurement->{$field_name}[LANGUAGE_NONE][0]['value'] ;
+            $value = $measurement->{$field_name}[LANGUAGE_NONE][0]['value'];
             $values[] = !empty($value) ? '\'' . $value . '\'' : 'NULL';
         }
       }
