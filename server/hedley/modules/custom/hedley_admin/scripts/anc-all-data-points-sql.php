@@ -67,6 +67,36 @@ $labels = [
   'Pregnancy outcome date' => 'TEXT NOT NULL',
 ];
 
+foreach ($data['measurements_types'] as $measurement_type) {
+  $measurement_name = format_name($measurement_type);
+  if (empty($data[$measurement_type])) {
+    continue;
+  }
+  foreach ($data[$measurement_type] as $field_name => $field_info) {
+    $name = format_name($field_name);
+    switch ($field_info['type']) {
+      case 'datetime':
+        $value = 'TIMESTAMP';
+        break;
+
+      case 'entityreference':
+        $value = 'INTEGER';
+        break;
+
+      case 'list_boolean':
+        $value = 'BOOLEAN';
+        break;
+
+      default:
+        $value = 'TEXT';
+        break;
+    }
+
+    $labels["${measurement_name}__$name"] = $value;
+  }
+}
+
+drush_print("DROP TABLE $table;");
 drush_print("CREATE TABLE $table (");
 $columns = [];
 $last_key = array_key_last($labels);
@@ -81,25 +111,11 @@ foreach ($labels as $label => $column_type) {
 }
 drush_print(");");
 
-//foreach ($data['measurements_types'] as $measurement_type) {
-//  $measurement_name = format_name($measurement_type);
-//  if (empty($data[$measurement_type])) {
-//    continue;
-//  }
-//  foreach ($data[$measurement_type] as $field_name => $field_info) {
-//    $name = format_name($field_name);
-//    $labels[] = "$measurement_name: $name";
-//  }
-//}
-//
-//$labels = implode(",", $labels);
-//drush_print($labels);
-
 $base_query = new EntityFieldQuery();
 $base_query
   ->entityCondition('entity_type', 'node')
   ->propertyCondition('type', $type)
-  ->propertyOrderBy('nid', 'DESC')
+  ->propertyOrderBy('nid')
   ->addTag('exclude_deleted');
 
 $count_query = clone $base_query;
@@ -114,7 +130,7 @@ if ($count == 0) {
 while (TRUE) {
   $query = clone $base_query;
   if ($nid) {
-    $query->propertyCondition('nid', $nid, '<');
+    $query->propertyCondition('nid', $nid, '>');
   }
 
   $result = $query
@@ -191,11 +207,6 @@ while (TRUE) {
       '\'' . $pregnancy_outcome_date . '\'',
     ];
 
-    $columns_string = implode(', ', $columns);
-    $values_string = implode(', ', $values);
-    drush_print("INSERT INTO $table ($columns_string) VALUES ($values_string);");
-
-    continue;
     // Get all measurements that belong to encounter.
     $query = new EntityFieldQuery();
     $result = $query
@@ -232,46 +243,50 @@ while (TRUE) {
 
       foreach ($data[$measurement_type] as $field_name => $field_info) {
         if (empty($measurement)) {
-          $out[] = '';
+          $values[] = 'NULL';
           continue;
         }
 
         switch ($field_info['type']) {
-          case 'datetime':
-            $out[] = explode(' ', $measurement->{$field_name}[LANGUAGE_NONE][0]['value'])[0];
-            break;
-
           case 'entityreference':
-            $out[] = $measurement->{$field_name}[LANGUAGE_NONE][0]['target_id'];
+            $value = $measurement->{$field_name}[LANGUAGE_NONE][0]['target_id'];
+            $values[] = !empty($value) ? $value : 'NULL';
             break;
 
           case 'list_text':
             if ($field_info['multivalue']) {
-              $values = [];
               $field_values = $measurement->{$field_name}[LANGUAGE_NONE];
               if (empty($field_values)) {
-                $out[] = '';
+                $values[] = 'NULL';
               }
               else {
+                $set_values = [];
                 foreach ($field_values as $item) {
-                  $values[] = hedley_general_get_field_sign_label($field_name, $item['value']);
+                  $set_values[] = hedley_general_get_field_sign_label($field_name, $item['value']);
                 }
-                $out[] = implode(' & ', $values);
+                $values[] = '\'' . implode('&', $set_values). '\'';
               }
             }
             else {
               $value = $measurement->{$field_name}[LANGUAGE_NONE][0]['value'];
-              $out[] = hedley_general_get_field_sign_label($field_name, $value);
+              $values[] = '\'' . hedley_general_get_field_sign_label($field_name, $value) . '\'';
             }
             break;
 
           case 'list_boolean':
             $value = $measurement->{$field_name}[LANGUAGE_NONE][0]['value'];
-            $out[] = $value ? 'true' : 'false';
+            $values[] = $value ? 'true' : 'false';
+            break;
+
+          case 'number_integer':
+          case 'number_float':
+            $value = $measurement->{$field_name}[LANGUAGE_NONE][0]['value'];
+            $values[] = !empty($value) ? $value : 'NULL';
             break;
 
           default:
-            $out[] = $measurement->{$field_name}[LANGUAGE_NONE][0]['value'];
+            $value =  $measurement->{$field_name}[LANGUAGE_NONE][0]['value'] ;
+            $values[] = !empty($value) ? '\'' . $value . '\'' : 'NULL';
         }
       }
     }
@@ -279,8 +294,9 @@ while (TRUE) {
     unset($measurements);
 
     // Print values.
-    $out = implode(',', $out);
-    drush_print($out);
+    $columns_string = implode(',', $columns);
+    $values_string = implode(',', $values);
+    drush_print("INSERT INTO $table ($columns_string) VALUES ($values_string);");
 
     // Free up memory.
     drupal_static_reset();
@@ -304,6 +320,7 @@ function format_name($value) {
 
   // Replace underscores with spaces.
   $clean_name = str_replace('_', ' ', $clean_name);
+  $clean_name = str_replace('\'', '`', $clean_name);
 
   // Capitalize first letter of each word.
   return ucwords($clean_name);

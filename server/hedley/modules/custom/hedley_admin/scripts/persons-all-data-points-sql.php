@@ -37,6 +37,7 @@ $labels = [
   'Village' => 'TEXT NOT NULL',
 ];
 
+drush_print("DROP TABLE $table;");
 drush_print("CREATE TABLE $table (");
 $columns = [];
 $last_key = array_key_last($labels);
@@ -55,7 +56,7 @@ $base_query = new EntityFieldQuery();
 $base_query
   ->entityCondition('entity_type', 'node')
   ->propertyCondition('type', $type)
-  ->propertyOrderBy('nid', 'DESC')
+  ->propertyOrderBy('nid')
   ->addTag('exclude_deleted');
 
 $count_query = clone $base_query;
@@ -70,7 +71,7 @@ if ($count == 0) {
 while (TRUE) {
   $query = clone $base_query;
   if ($nid) {
-    $query->propertyCondition('nid', $nid, '<');
+    $query->propertyCondition('nid', $nid, '>');
   }
 
   $result = $query
@@ -88,13 +89,19 @@ while (TRUE) {
   foreach ($persons as $person) {
     $person_id = $person->nid;
     $birth_date = $person->field_birth_date[LANGUAGE_NONE][0]['value'];
-    $gender = $person->field_gender[LANGUAGE_NONE][0]['value'];
-    $education_level = $person->field_education_level[LANGUAGE_NONE][0]['value'];
-    $province = $person->field_province[LANGUAGE_NONE][0]['value'];
-    $district = $person->field_district[LANGUAGE_NONE][0]['value'];
-    $sector = $person->field_sector[LANGUAGE_NONE][0]['value'];
-    $cell = $person->field_cell[LANGUAGE_NONE][0]['value'];
-    $village = $person->field_village[LANGUAGE_NONE][0]['value'];
+
+    if (empty($birth_date)) {
+      // Skip person we have no knowledge of their age.
+      continue;
+    }
+
+    $gender = hedley_general_get_field_sign_label('field_gender', $person->field_gender[LANGUAGE_NONE][0]['value']);
+    $education_level = hedley_general_get_field_sign_label('field_education_level', $person->field_education_level[LANGUAGE_NONE][0]['value']);
+    $province = sanitise_text($person->field_province[LANGUAGE_NONE][0]['value']);
+    $district = sanitise_text($person->field_district[LANGUAGE_NONE][0]['value']);
+    $sector = sanitise_text($person->field_sector[LANGUAGE_NONE][0]['value']);
+    $cell = sanitise_text($person->field_cell[LANGUAGE_NONE][0]['value']);
+    $village = sanitise_text($person->field_village[LANGUAGE_NONE][0]['value']);
 
     $values = [
       $person->nid,
@@ -112,10 +119,23 @@ while (TRUE) {
     $values_string = implode(', ', $values);
     drush_print("INSERT INTO $table ($columns_string) VALUES ($values_string);");
 
-    // Free up memory.
-    drupal_static_reset();
   }
   // Explicitly unset large variables after use, for memory optimization.
   unset($persons);
+
+  // Free up memory.
+  drupal_static_reset();
 }
 
+/**
+ * Sanitises text so it does not corrupt SQL format.
+ *
+ * @param string $value
+ *   Original text value.
+ *
+ * @return string
+ *  Sanitised value.
+ */
+function sanitise_text($value) {
+  return str_replace('\'', '`', $value);
+}
