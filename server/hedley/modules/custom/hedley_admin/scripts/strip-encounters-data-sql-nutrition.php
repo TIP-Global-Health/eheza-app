@@ -5,7 +5,7 @@
  * Records all data points of a Prenatal encounter.
  *
  * Execution:  drush scr
- *   profiles/hedley/modules/custom/hedley_admin/scripts/anc-all-data-points-sql.php.
+ *   profiles/hedley/modules/custom/hedley_admin/scripts/strip-encounters-data-sql-nutrition.php.
  */
 
 if (!drupal_is_cli()) {
@@ -23,14 +23,14 @@ $batch = drush_get_option('batch', 50);
 $memory_limit = drush_get_option('memory_limit', 800);
 
 $data = [];
-$type = 'prenatal_encounter';
-$table = 'public.prenatal_encounters';
+$type = 'nutrition_encounter';
+$table = 'public.nutrition_encounters';
 $data['measurements_types'] = hedley_general_get_measurement_types([$type]);
 $skipped_fields = [
   'field_person',
   'field_date_measured',
   'field_nurse',
-  'field_prenatal_encounter',
+  'field_nutrition_encounter',
   'field_uuid',
   'field_shards',
 ];
@@ -55,16 +55,9 @@ foreach ($data['measurements_types'] as $measurement_type) {
 
 $labels = [
   'ID' => 'INTEGER PRIMARY KEY',
-  'Pregnancy ID' => 'INTEGER NOT NULL',
   'Encounter Type' => 'TEXT NOT NULL',
   'Encounter Date' => 'TIMESTAMP NOT NULL',
   'Patient ID' => 'INTEGER NOT NULL',
-  'Patient Birth Date' => 'TIMESTAMP NOT NULL',
-  'Diagnoses' => 'TEXT NOT NULL',
-  'Diagnoses from previous encounters' => 'TEXT NOT NULL',
-  'Pregnancy outcome' => 'TEXT NOT NULL',
-  'Pregnancy outcome location' => 'TEXT NOT NULL',
-  'Pregnancy outcome date' => 'TEXT NOT NULL',
 ];
 
 foreach ($data['measurements_types'] as $measurement_type) {
@@ -80,11 +73,16 @@ foreach ($data['measurements_types'] as $measurement_type) {
         break;
 
       case 'entityreference':
+      case 'number_integer':
         $value = 'INTEGER';
         break;
 
       case 'list_boolean':
         $value = 'BOOLEAN';
+        break;
+
+      case 'number_float':
+        $value = 'FLOAT';
         break;
 
       default:
@@ -146,65 +144,18 @@ while (TRUE) {
   $nid = end($ids);
   $encounters = node_load_multiple($ids);
   foreach ($encounters as $encounter) {
-    $pregnancy_id = $encounter->field_individual_participant[LANGUAGE_NONE][0]['target_id'];
-    $pregnancy = node_load($pregnancy_id);
-    $patient_id = $pregnancy->field_person[LANGUAGE_NONE][0]['target_id'];
-    $patient = node_load($patient_id);
-    $birth_date = $patient->field_birth_date[LANGUAGE_NONE][0]['value'];
-    $encounter_type = $encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value'];
-    $is_postpartum_encounter = in_array($encounter_type, ['nurse-postpartum', 'chw-postpartum']);
-    $encounter_type = empty($encounters) ? 'Nurse' : hedley_general_get_field_sign_label('field_prenatal_encounter_type', $encounter_type);
+    $participant_id = $encounter->field_individual_participant[LANGUAGE_NONE][0]['target_id'];
+    $participant = node_load($participant_id);
+    $patient_id = $participant->field_person[LANGUAGE_NONE][0]['target_id'];
+    $encounter_type = $encounter->field_nutrition_encounter_type[LANGUAGE_NONE][0]['value'];
+    $encounter_type = empty($encounter_type) ? 'Nurse' : hedley_general_get_field_sign_label('field_nutrition_encounter_type', $encounter_type);
     $encounter_date = $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'];
-    // Pregnancy outcome data, only for postpartum encounters.
-    if ($is_postpartum_encounter) {
-      $pregnancy_outcome = $pregnancy->field_outcome[LANGUAGE_NONE][0]['value'];
-      $pregnancy_outcome_location = $pregnancy->field_outcome_location[LANGUAGE_NONE][0]['value'];
-      $pregnancy_outcome_date = explode(' ', $pregnancy->field_date_concluded[LANGUAGE_NONE][0]['value'])[0];
-    }
-    else {
-      $pregnancy_outcome = '';
-      $pregnancy_outcome_location = '';
-      $pregnancy_outcome_date = '';
-    }
-
-    // Diagnoses.
-    $field_values = $encounter->field_prenatal_diagnoses[LANGUAGE_NONE];
-    if (empty($field_values)) {
-      $diagnoses = '';
-    }
-    else {
-      $values = [];
-      foreach ($field_values as $item) {
-        $values[] = hedley_general_get_field_sign_label('field_prenatal_diagnoses', $item['value']);
-      }
-      $diagnoses = implode(' & ', $values);
-    }
-
-    // Past Diagnoses.
-    $field_values = $encounter->field_past_prenatal_diagnoses[LANGUAGE_NONE];
-    if (empty($field_values)) {
-      $past_diagnoses = '';
-    }
-    else {
-      $values = [];
-      foreach ($field_values as $item) {
-        $values[] = hedley_general_get_field_sign_label('field_past_prenatal_diagnoses', $item['value']);
-      }
-      $past_diagnoses = implode(' & ', $values);
-    }
 
     $values = [
       $encounter->nid,
-      $pregnancy_id,
       '\'' . $encounter_type . '\'',
       '\'' . $encounter_date . '\'',
       $patient_id,
-      '\'' . $birth_date . '\'',
-      '\'' . $diagnoses . '\'',
-      '\'' . $past_diagnoses . '\'',
-      '\'' . $pregnancy_outcome . '\'',
-      '\'' . $pregnancy_outcome_location . '\'',
-      '\'' . $pregnancy_outcome_date . '\'',
     ];
 
     // Get all measurements that belong to encounter.
@@ -213,7 +164,7 @@ while (TRUE) {
       ->entityCondition('entity_type', 'node')
       ->entityCondition('bundle', $data['measurements_types'], 'IN')
       ->propertyCondition('status', NODE_PUBLISHED)
-      ->fieldCondition('field_prenatal_encounter', 'target_id', $encounter->nid)
+      ->fieldCondition('field_nutrition_encounter', 'target_id', $encounter->nid)
       ->propertyOrderBy('nid')
       ->addTag('exclude_deleted')
       ->execute();
@@ -316,7 +267,7 @@ while (TRUE) {
  */
 function format_name($value) {
   // Remove common prefixes.
-  $clean_name = preg_replace('/^(prenatal_|field_)/', '', $value);
+  $clean_name = preg_replace('/^(nutrition_|field_)/', '', $value);
 
   // Replace underscores with spaces.
   $clean_name = str_replace('_', ' ', $clean_name);

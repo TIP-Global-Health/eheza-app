@@ -5,7 +5,7 @@
  * Records data points of Person.
  *
  * Execution:  drush scr
- *   profiles/hedley/modules/custom/hedley_admin/scripts/persons-all-data-points-sql.php.
+ *   profiles/hedley/modules/custom/hedley_admin/scripts/strip-persons-data-sql.php.
  */
 
 if (!drupal_is_cli()) {
