@@ -2,10 +2,10 @@
 
 /**
  * @file
- * Records all data points of a Prenatal encounter.
+ * Records all data points of a Prenatal session.
  *
  * Execution:  drush scr
- *   profiles/hedley/modules/custom/hedley_admin/scripts/strip-encounters-data-sql-group-nutrition.php.
+ *   profiles/hedley/modules/custom/hedley_admin/scripts/strip-sessions-data-sql-group-nutrition.php.
  */
 
 if (!drupal_is_cli()) {
@@ -48,6 +48,9 @@ $skipped_fields = [
   'field_session',
   'field_uuid',
   'field_shards',
+  // Deprecated fields bellow.
+  'field_child',
+  'field_mother',
 ];
 
 foreach ($data['child']['measurements_types'] as $measurement_type) {
@@ -82,7 +85,7 @@ foreach ($data['mother']['measurements_types'] as $measurement_type) {
 $labels['child'] = $labels['mother'] = [
   'Session ID' => 'INTEGER NOT NULL',
   'Patient ID' => 'INTEGER NOT NULL',
-  'Encounter Date' => 'TIMESTAMP NOT NULL',
+  'Session Date' => 'TIMESTAMP NOT NULL',
 ];
 
 $measurements_types_by_patient = [
@@ -126,17 +129,17 @@ foreach ($measurements_types_by_patient as $patient_type => $measurements_types)
   }
 }
 
-$tables = [
-  'child' => 'public.group_nutrition_child',
-  'mother' => 'public.group_nutrition_mother',
-];
-foreach ($tables as $patient_type => $table) {
+$patient_types = array_keys($measurements_types_by_patient);
+$table_prefix = 'public.group_nutrition_';
+
+$columns = [];
+foreach ($patient_types as $patient_type) {
+  $table = $table_prefix . $patient_type;
   drush_print("DROP TABLE $table;");
   drush_print("CREATE TABLE $table (");
-  $columns = [];
   foreach ($labels[$patient_type] as $label => $column_type) {
     $column_name = strtolower(str_replace(' ', '_', $label));
-    $columns[] = $column_name;
+    $columns[$patient_type][] = $column_name;
     $columns_definition = "  $column_name $column_type,";
     drush_print($columns_definition);
   }
@@ -144,10 +147,6 @@ foreach ($tables as $patient_type => $table) {
 
   drush_print(");");
 }
-
-return;
-
-
 
 $base_query = new EntityFieldQuery();
 $base_query
@@ -182,118 +181,121 @@ while (TRUE) {
 
   $ids = array_keys($result['node']);
   $nid = end($ids);
-  $encounters = node_load_multiple($ids);
-  foreach ($encounters as $encounter) {
-    $participant_id = $encounter->field_individual_participant[LANGUAGE_NONE][0]['target_id'];
-    $participant = node_load($participant_id);
-    $patient_id = $participant->field_person[LANGUAGE_NONE][0]['target_id'];
-    $encounter_type = $encounter->field_nutrition_encounter_type[LANGUAGE_NONE][0]['value'];
-    $encounter_type = empty($encounter_type) ? 'Nurse' : hedley_general_get_field_sign_label('field_nutrition_encounter_type', $encounter_type);
-    $encounter_date = $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'];
+  $sessions = node_load_multiple($ids);
+  foreach ($sessions as $session) {
+    $session_date = $session->field_scheduled_date[LANGUAGE_NONE][0]['value'];
+    foreach ($measurements_types_by_patient as $patient_type => $measurements_types) {
+      // Get all measurements that belong to session.
+      $query = new EntityFieldQuery();
+      $result = $query
+        ->entityCondition('entity_type', 'node')
+        ->entityCondition('bundle', $data[$patient_type]['measurements_types'], 'IN')
+        ->propertyCondition('status', NODE_PUBLISHED)
+        ->fieldCondition('field_session', 'target_id', $session->nid)
+        ->propertyOrderBy('nid')
+        ->addTag('exclude_deleted')
+        ->execute();
 
-    $values = [
-      $encounter->nid,
-      '\'' . $encounter_type . '\'',
-      '\'' . $encounter_date . '\'',
-      $patient_id,
-    ];
-
-    // Get all measurements that belong to encounter.
-    $query = new EntityFieldQuery();
-    $result = $query
-      ->entityCondition('entity_type', 'node')
-      ->entityCondition('bundle', $data['measurements_types'], 'IN')
-      ->propertyCondition('status', NODE_PUBLISHED)
-      ->fieldCondition('field_nutrition_encounter', 'target_id', $encounter->nid)
-      ->propertyOrderBy('nid')
-      ->addTag('exclude_deleted')
-      ->execute();
-
-    if (empty($result['node'])) {
-      // Skip encounter without any measurements.
-      continue;
-    }
-
-    // As there's a possibility of multiple measurements of same type
-    // (due to glitches), make sure to take only the most recent ones.
-    $measurements = [];
-    $ids = array_keys($result['node']);
-    $nodes = node_load_multiple($ids);
-    foreach ($nodes as $node) {
-      $measurements[$node->type] = $node;
-    }
-    // Explicitly unset large variables after use, for memory optimization.
-    unset($nodes);
-
-    // Collect values.
-    foreach ($data['measurements_types'] as $measurement_type) {
-      $measurement = $measurements[$measurement_type];
-      if (empty($data[$measurement_type])) {
+      if (empty($result['node'])) {
+        // Skip session without any measurements.
         continue;
       }
 
-      foreach ($data[$measurement_type] as $field_name => $field_info) {
-        if (empty($measurement)) {
-          $values[] = 'NULL';
-          continue;
-        }
-
-        switch ($field_info['type']) {
-          case 'entityreference':
-            $value = $measurement->{$field_name}[LANGUAGE_NONE][0]['target_id'];
-            $values[] = !empty($value) ? $value : 'NULL';
-            break;
-
-          case 'list_text':
-            if ($field_info['multivalue']) {
-              $field_values = $measurement->{$field_name}[LANGUAGE_NONE];
-              if (empty($field_values)) {
-                $values[] = 'NULL';
-              }
-              else {
-                $set_values = [];
-                foreach ($field_values as $item) {
-                  $set_values[] = hedley_general_get_field_sign_label($field_name, $item['value']);
-                }
-                $values[] = '\'' . implode('&', $set_values) . '\'';
-              }
-            }
-            else {
-              $value = $measurement->{$field_name}[LANGUAGE_NONE][0]['value'];
-              $values[] = '\'' . hedley_general_get_field_sign_label($field_name, $value) . '\'';
-            }
-            break;
-
-          case 'list_boolean':
-            $value = $measurement->{$field_name}[LANGUAGE_NONE][0]['value'];
-            $values[] = $value ? 'true' : 'false';
-            break;
-
-          case 'number_integer':
-          case 'number_float':
-            $value = $measurement->{$field_name}[LANGUAGE_NONE][0]['value'];
-            $values[] = !empty($value) ? $value : 'NULL';
-            break;
-
-          default:
-            $value = $measurement->{$field_name}[LANGUAGE_NONE][0]['value'];
-            $values[] = !empty($value) ? '\'' . $value . '\'' : 'NULL';
-        }
+      // As there's a possibility of multiple measurements of same type
+      // (due to glitches), make sure to take only the most recent ones.
+      $measurements_by_patient = [];
+      $ids = array_keys($result['node']);
+      $nodes = node_load_multiple($ids);
+      foreach ($nodes as $node) {
+        $patient_id = $node->field_person[LANGUAGE_NONE][0]['target_id'];
+        $measurements_by_patient[$patient_id][$node->type] = $node;
       }
+      // Explicitly unset large variables after use, for memory optimization.
+      unset($nodes);
+
+      // Collect values.
+      foreach ($measurements_by_patient as $patient_id => $measurements) {
+        $values = [
+          $session->nid,
+          $patient_id,
+          '\'' . $session_date . '\'',
+        ];
+
+        foreach ($data[$patient_type]['measurements_types'] as $measurement_type) {
+          $measurement = $measurements[$measurement_type];
+          if (empty($data[$patient_type][$measurement_type])) {
+            continue;
+          }
+
+          foreach ($data[$patient_type][$measurement_type] as $field_name => $field_info) {
+            if (empty($measurement)) {
+              $values[] = 'NULL';
+              continue;
+            }
+
+            switch ($field_info['type']) {
+              case 'entityreference':
+                $value = $measurement->{$field_name}[LANGUAGE_NONE][0]['target_id'];
+                $values[] = !empty($value) ? $value : 'NULL';
+                break;
+
+              case 'list_text':
+                if ($field_info['multivalue']) {
+                  $field_values = $measurement->{$field_name}[LANGUAGE_NONE];
+                  if (empty($field_values)) {
+                    $values[] = 'NULL';
+                  }
+                  else {
+                    $set_values = [];
+                    foreach ($field_values as $item) {
+                      $set_values[] = hedley_general_get_field_sign_label($field_name, $item['value']);
+                    }
+                    $values[] = '\'' . implode('&', $set_values) . '\'';
+                  }
+                }
+                else {
+                  $value = $measurement->{$field_name}[LANGUAGE_NONE][0]['value'];
+                  $values[] = '\'' . hedley_general_get_field_sign_label($field_name, $value) . '\'';
+                }
+                break;
+
+              case 'list_boolean':
+                $value = $measurement->{$field_name}[LANGUAGE_NONE][0]['value'];
+                $values[] = $value ? 'true' : 'false';
+                break;
+
+              case 'number_integer':
+              case 'number_float':
+                $value = $measurement->{$field_name}[LANGUAGE_NONE][0]['value'];
+                $values[] = !empty($value) ? $value : 'NULL';
+                break;
+
+              default:
+                $value = $measurement->{$field_name}[LANGUAGE_NONE][0]['value'];
+                $values[] = !empty($value) ? '\'' . $value . '\'' : 'NULL';
+            }
+          }
+        }
+
+        // Explicitly unset large variables after use, for memory optimization.
+        unset($measurements);
+
+        // Print values.
+        $columns_string = implode(',', $columns[$patient_type]);
+        $values_string = implode(',', $values);
+        $table = $table_prefix . $patient_type;
+        drush_print("INSERT INTO $table ($columns_string) VALUES ($values_string);");
+      }
+
+      // Explicitly unset large variables after use, for memory optimization.
+      unset($measurements_by_patient);
+
+      // Free up memory.
+      drupal_static_reset();
     }
-    // Explicitly unset large variables after use, for memory optimization.
-    unset($measurements);
-
-    // Print values.
-    $columns_string = implode(',', $columns);
-    $values_string = implode(',', $values);
-    drush_print("INSERT INTO $table ($columns_string) VALUES ($values_string);");
-
-    // Free up memory.
-    drupal_static_reset();
   }
   // Explicitly unset large variables after use, for memory optimization.
-  unset($encounters);
+  unset($sessions);
 }
 
 /**
