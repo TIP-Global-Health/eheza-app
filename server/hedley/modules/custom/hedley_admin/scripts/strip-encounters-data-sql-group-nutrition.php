@@ -85,6 +85,7 @@ foreach ($data['mother']['measurements_types'] as $measurement_type) {
 $labels['child'] = $labels['mother'] = [
   'Session ID' => 'INTEGER NOT NULL',
   'Patient ID' => 'INTEGER NOT NULL',
+  'Participant ID' => 'INTEGER NOT NULL',
   'Session Date' => 'TIMESTAMP NOT NULL',
 ];
 
@@ -185,6 +186,10 @@ while (TRUE) {
   foreach ($sessions as $session) {
     $session_date = $session->field_scheduled_date[LANGUAGE_NONE][0]['value'];
     foreach ($measurements_types_by_patient as $patient_type => $measurements_types) {
+      // First patient type is 'child'.
+      // We want to record the IDs of all children, to load all
+      // session participants, and add participant ID to the table.
+      $children = [];
       // Get all measurements that belong to session.
       $query = new EntityFieldQuery();
       $result = $query
@@ -208,16 +213,49 @@ while (TRUE) {
       $nodes = node_load_multiple($ids);
       foreach ($nodes as $node) {
         $patient_id = $node->field_person[LANGUAGE_NONE][0]['target_id'];
+        if ($patient_type == 'child') {
+          $children[] = $patient_id;
+        }
         $measurements_by_patient[$patient_id][$node->type] = $node;
       }
       // Explicitly unset large variables after use, for memory optimization.
       unset($nodes);
 
+      // Load all session participants, and map person ID to participant.
+      $participant_by_person_id = [];
+      if ($patient_type == 'child') {
+        $clinic_id = $session->field_clinic[LANGUAGE_NONE][0]['target_id'];
+        $children = array_unique($children);
+        if (!empty($clinic_id)) {
+          $query = new EntityFieldQuery();
+          $result = $query
+            ->entityCondition('entity_type', 'node')
+            ->entityCondition('bundle', 'pmtct_participant')
+            ->propertyCondition('status', NODE_PUBLISHED)
+            ->fieldCondition('field_person', 'target_id', $children, 'IN')
+            ->fieldCondition('field_clinic', 'target_id', $clinic_id)
+            ->addTag('exclude_deleted')
+            ->execute();
+
+          if (!empty($result['node'])) {
+            $participants = node_load_multiple(array_keys($result['node']));
+            foreach ($participants as $participant) {
+              $child_id = $participant->field_person[LANGUAGE_NONE][0]['target_id'];
+              $adult_id = $participant->field_adult[LANGUAGE_NONE][0]['target_id'];
+              $participant_by_person_id[$child_id] = $participant->nid;
+              $participant_by_person_id[$adult_id] = $participant->nid;
+            }
+          }
+        }
+      }
+
       // Collect values.
       foreach ($measurements_by_patient as $patient_id => $measurements) {
+        $participant_id = (int) $participant_by_person_id[$patient_id];
         $values = [
           $session->nid,
           $patient_id,
+          $participant_id,
           '\'' . $session_date . '\'',
         ];
 
