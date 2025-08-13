@@ -2323,7 +2323,7 @@ translationSet trans =
             { english = "Actions Taken"
             , kinyarwanda = Just "Ibyakozwe"
             , kirundi = Just "Ibikorwa vyakozwe"
-            , somali = Just "Tallaabooyinka way fuleen "
+            , somali = Just "Tallaabooyinka way fuleen"
             }
 
         ActionsToTake ->
