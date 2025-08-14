@@ -5,7 +5,7 @@
  * Records all data points of a Prenatal session.
  *
  * Execution:  drush scr
- *   profiles/hedley/modules/custom/hedley_admin/scripts/strip-sessions-data-sql-group-nutrition.php.
+ *   profiles/hedley/modules/custom/hedley_admin/scripts/strip-encounters-data-sql-group-nutrition.php.
  */
 
 if (!drupal_is_cli()) {
@@ -86,6 +86,7 @@ $labels['child'] = $labels['mother'] = [
   'Session ID' => 'INTEGER NOT NULL',
   'Patient ID' => 'INTEGER NOT NULL',
   'Participant ID' => 'INTEGER NOT NULL',
+  'Clinic Type' => 'TEXT NOT NULL',
   'Session Date' => 'TIMESTAMP NOT NULL',
 ];
 
@@ -184,6 +185,14 @@ while (TRUE) {
   $nid = end($ids);
   $sessions = node_load_multiple($ids);
   foreach ($sessions as $session) {
+    $clinic_type = '';
+    $clinic_id = $session->field_clinic[LANGUAGE_NONE][0]['target_id'];
+    if (!empty($clinic_id)) {
+      $clinic = node_load($clinic_id);
+      $clinic_type = $clinic->field_group_type[LANGUAGE_NONE][0]['value'];
+      $clinic_type = hedley_general_get_field_sign_label('field_group_type', $clinic_type);
+    }
+
     $session_date = $session->field_scheduled_date[LANGUAGE_NONE][0]['value'];
     foreach ($measurements_types_by_patient as $patient_type => $measurements_types) {
       // First patient type is 'child'.
@@ -224,7 +233,6 @@ while (TRUE) {
       // Load all session participants, and map person ID to participant.
       $participant_by_person_id = [];
       if ($patient_type == 'child') {
-        $clinic_id = $session->field_clinic[LANGUAGE_NONE][0]['target_id'];
         $children = array_unique($children);
         if (!empty($clinic_id)) {
           $query = new EntityFieldQuery();
@@ -256,6 +264,7 @@ while (TRUE) {
           $session->nid,
           $patient_id,
           $participant_id,
+          $clinic_type,
           '\'' . $session_date . '\'',
         ];
 
