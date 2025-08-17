@@ -987,7 +987,7 @@ function hedley_reports_get_vaccination_dates($measurement) {
   }
 
   foreach ($administration_dates as $item) {
-    $dates[] = $item['value'];
+    $dates[] = explode(' ', $item['value'])[0];
   }
 
   return $dates;
