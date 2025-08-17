@@ -716,7 +716,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
         break;
 
       case HEDLEY_ACTIVITY_WELL_CHILD_BCG_IMMUNISATION_CONTENT_TYPE:
-        $administration_dates = hedley_reports_get_vaccination_dates($measurements);
+        $administration_dates = hedley_reports_get_vaccination_dates($measurement);
         if (!empty($administration_dates)) {
           $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
           $vaccine_type = $vaccine_type_mapping[HEDLEY_ACTIVITY_WELL_CHILD_BCG_IMMUNISATION_CONTENT_TYPE];
@@ -725,7 +725,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
         break;
 
       case HEDLEY_ACTIVITY_WELL_CHILD_OPV_IMMUNISATION_CONTENT_TYPE:
-        $administration_dates = hedley_reports_get_vaccination_dates($measurements);
+        $administration_dates = hedley_reports_get_vaccination_dates($measurement);
         if (!empty($administration_dates)) {
           $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
           $vaccine_type = $vaccine_type_mapping[HEDLEY_ACTIVITY_WELL_CHILD_OPV_IMMUNISATION_CONTENT_TYPE];
@@ -734,7 +734,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
         break;
 
       case HEDLEY_ACTIVITY_WELL_CHILD_DTP_IMMUNISATION_CONTENT_TYPE:
-        $administration_dates = hedley_reports_get_vaccination_dates($measurements);
+        $administration_dates = hedley_reports_get_vaccination_dates($measurement);
         if (!empty($administration_dates)) {
           $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
           $vaccine_type = $vaccine_type_mapping[HEDLEY_ACTIVITY_WELL_CHILD_DTP_IMMUNISATION_CONTENT_TYPE];
@@ -743,7 +743,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
         break;
 
       case HEDLEY_ACTIVITY_WELL_CHILD_DTP_STANDALONE_IMMUNISATION_CONTENT_TYPE:
-        $administration_dates = hedley_reports_get_vaccination_dates($measurements);
+        $administration_dates = hedley_reports_get_vaccination_dates($measurement);
         if (!empty($administration_dates)) {
           $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
           $vaccine_type = $vaccine_type_mapping[HEDLEY_ACTIVITY_WELL_CHILD_DTP_STANDALONE_IMMUNISATION_CONTENT_TYPE];
@@ -752,7 +752,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
         break;
 
       case HEDLEY_ACTIVITY_WELL_CHILD_PCV13_IMMUNISATION_CONTENT_TYPE:
-        $administration_dates = hedley_reports_get_vaccination_dates($measurements);
+        $administration_dates = hedley_reports_get_vaccination_dates($measurement);
         if (!empty($administration_dates)) {
           $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
           $vaccine_type = $vaccine_type_mapping[HEDLEY_ACTIVITY_WELL_CHILD_PCV13_IMMUNISATION_CONTENT_TYPE];
@@ -761,7 +761,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
         break;
 
       case HEDLEY_ACTIVITY_WELL_CHILD_ROTARIX_IMMUNISATION_CONTENT_TYPE:
-        $administration_dates = hedley_reports_get_vaccination_dates($measurements);
+        $administration_dates = hedley_reports_get_vaccination_dates($measurement);
         if (!empty($administration_dates)) {
           $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
           $vaccine_type = $vaccine_type_mapping[HEDLEY_ACTIVITY_WELL_CHILD_ROTARIX_IMMUNISATION_CONTENT_TYPE];
@@ -770,7 +770,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
         break;
 
       case HEDLEY_ACTIVITY_WELL_CHILD_IPV_IMMUNISATION_CONTENT_TYPE:
-        $administration_dates = hedley_reports_get_vaccination_dates($measurements);
+        $administration_dates = hedley_reports_get_vaccination_dates($measurement);
         if (!empty($administration_dates)) {
           $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
           $vaccine_type = $vaccine_type_mapping[HEDLEY_ACTIVITY_WELL_CHILD_IPV_IMMUNISATION_CONTENT_TYPE];
@@ -779,7 +779,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
         break;
 
       case HEDLEY_ACTIVITY_WELL_CHILD_MR_IMMUNISATION_CONTENT_TYPE:
-        $administration_dates = hedley_reports_get_vaccination_dates($measurements);
+        $administration_dates = hedley_reports_get_vaccination_dates($measurement);
         if (!empty($administration_dates)) {
           $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
           $vaccine_type = $vaccine_type_mapping[HEDLEY_ACTIVITY_WELL_CHILD_MR_IMMUNISATION_CONTENT_TYPE];
