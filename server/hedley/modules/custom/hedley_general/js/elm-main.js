@@ -40707,12 +40707,14 @@ var $author$project$Pages$Scoreboard$Utils$getIntervalForVaccine = F2(
 				return _Utils_Tuple2(4, $justinmimbs$date$Date$Weeks);
 			case 'VaccineIPV':
 				return _Utils_Tuple2(0, $justinmimbs$date$Date$Days);
-			default:
+			case 'VaccineMR':
 				if (site.$ === 'SiteBurundi') {
 					return _Utils_Tuple2(9, $justinmimbs$date$Date$Months);
 				} else {
 					return _Utils_Tuple2(6, $justinmimbs$date$Date$Months);
 				}
+			default:
+				return _Utils_Tuple2(6, $justinmimbs$date$Date$Months);
 		}
 	});
 var $author$project$Backend$Scoreboard$Utils$vaccineDoseToComparable = function (dose) {
@@ -40795,12 +40797,18 @@ var $author$project$Pages$Scoreboard$Utils$initialVaccinationDateByBirthDate = F
 					unit,
 					dosesInterval * interval,
 					A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Weeks, 14, birthDate));
-			default:
+			case 'VaccineMR':
 				return A3(
 					$justinmimbs$date$Date$add,
 					unit,
 					dosesInterval * interval,
 					A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Weeks, 36, birthDate));
+			default:
+				return A3(
+					$justinmimbs$date$Date$add,
+					unit,
+					dosesInterval * interval,
+					A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Years, 12, birthDate));
 		}
 	});
 var $author$project$Pages$Scoreboard$Utils$latestVaccinationDataForVaccine = F2(
@@ -40834,6 +40842,8 @@ var $author$project$Pages$Scoreboard$Utils$getLastDoseForVaccine = F2(
 				return $author$project$Backend$Scoreboard$Model$VaccineDoseSecond;
 			case 'VaccineIPV':
 				return $author$project$Backend$Scoreboard$Model$VaccineDoseFirst;
+			case 'VaccineMR':
+				return $author$project$Backend$Scoreboard$Model$VaccineDoseSecond;
 			default:
 				return $author$project$Backend$Scoreboard$Model$VaccineDoseSecond;
 		}

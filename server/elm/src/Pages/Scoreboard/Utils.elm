@@ -119,6 +119,9 @@ getLastDoseForVaccine initialOpvAdministered vaccineType =
         VaccineMR ->
             VaccineDoseSecond
 
+        VaccineHPV ->
+            VaccineDoseSecond
+
 
 getNextVaccineDose : VaccineDose -> Maybe VaccineDose
 getNextVaccineDose dose =
@@ -170,6 +173,9 @@ getIntervalForVaccine site vaccineType =
 
                 _ ->
                     ( 6, Months )
+
+        VaccineHPV ->
+            ( 6, Months )
 
 
 initialVaccinationDateByBirthDate : Site -> NominalDate -> Bool -> VaccinationProgressDict -> ( VaccineType, VaccineDose ) -> NominalDate
@@ -246,7 +252,14 @@ initialVaccinationDateByBirthDate site birthDate initialOpvAdministered vaccinat
             Date.add Weeks 36 birthDate
                 |> Date.add unit (dosesInterval * interval)
 
+        VaccineHPV ->
+            Date.add Years 12 birthDate
+                |> Date.add unit (dosesInterval * interval)
 
+
+{-| We don't include VaccineHPV, since it's given only at
+age of 12 years.
+-}
 allVaccineTypes : List VaccineType
 allVaccineTypes =
     [ VaccineBCG
