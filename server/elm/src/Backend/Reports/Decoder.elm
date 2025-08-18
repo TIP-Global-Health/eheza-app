@@ -1,8 +1,10 @@
 module Backend.Reports.Decoder exposing (decodeReportsData)
 
+import AssocList as Dict exposing (Dict)
 import Backend.Decoder exposing (decodeSite, decodeWithFallback)
 import Backend.Reports.Model exposing (..)
 import Backend.Reports.Utils exposing (..)
+import Backend.Scoreboard.Model exposing (VaccineType(..))
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeFloat, decodeInt)
@@ -64,7 +66,7 @@ decodePatientData =
         |> optionalAt [ "individual", "acute-illness" ] (nullable (list (list decodeAcuteIllnessEncounterData))) Nothing
         |> optionalAt [ "individual", "antenatal" ] (nullable (list decodePrenatalParticipantData)) Nothing
         |> optionalAt [ "individual", "home-visit" ] (nullable (list (list decodeYYYYMMDD))) Nothing
-        |> optionalAt [ "individual", "well-child" ] (nullable (list (list decodeNutritionEncounterData))) Nothing
+        |> optionalAt [ "individual", "well-child" ] (nullable (list (list decodeWellChildEncounterData))) Nothing
         |> optionalAt [ "individual", "child-scoreboard" ] (nullable (list (list decodeYYYYMMDD))) Nothing
         |> optionalAt [ "individual", "ncd" ] (nullable (list (list decodeYYYYMMDD))) Nothing
         |> optionalAt [ "individual", "hiv" ] (nullable (list (list decodeYYYYMMDD))) Nothing
@@ -587,11 +589,108 @@ decodeNutritionEncounterData =
             )
 
 
+decodeWellChildEncounterData : Decoder WellChildEncounterData
+decodeWellChildEncounterData =
+    string
+        |> andThen
+            (\s ->
+                case String.split "|" (String.trim s) of
+                    [ first, second, third ] ->
+                        (Date.fromIsoString first |> Result.toMaybe)
+                            |> Maybe.map
+                                (\startDate ->
+                                    succeed
+                                        (WellChildEncounterData startDate
+                                            (nutritionDataFromString second)
+                                            (immunisationDataFromString third)
+                                        )
+                                )
+                            |> Maybe.withDefault (fail "Failed to decode WellChildEncounterData")
+
+                    _ ->
+                        fail "Failed to decode WellChildEncounterData"
+            )
+
+
 nutritionDataFromString : String -> Maybe NutritionData
 nutritionDataFromString s =
     case String.split "," s of
-        [ stunting, underweight, wasting ] ->
-            Just <| NutritionData (String.toFloat stunting) (String.toFloat wasting) (String.toFloat underweight)
+        [ stunting, underweight, wasting, muac ] ->
+            Just <|
+                NutritionData (String.toFloat stunting)
+                    (String.toFloat wasting)
+                    (String.toFloat underweight)
+                    (String.toFloat muac)
+
+        _ ->
+            Nothing
+
+
+immunisationDataFromString : String -> Maybe (Dict VaccineType (List NominalDate))
+immunisationDataFromString s =
+    let
+        tuples =
+            String.split "," s
+                |> List.filterMap
+                    (\item ->
+                        case String.split ":" item of
+                            [ mappedVaccineType, adminstrationDates ] ->
+                                vaccineTypeFromMapping mappedVaccineType
+                                    |> Maybe.andThen
+                                        (\vaccineType ->
+                                            let
+                                                dates =
+                                                    String.split "+" adminstrationDates
+                                                        |> List.map (Date.fromIsoString >> Result.toMaybe)
+                                                        |> Maybe.Extra.values
+                                            in
+                                            if List.isEmpty dates then
+                                                Nothing
+
+                                            else
+                                                Just ( vaccineType, dates )
+                                        )
+
+                            _ ->
+                                Nothing
+                    )
+    in
+    if List.isEmpty tuples then
+        Nothing
+
+    else
+        Just <| Dict.fromList tuples
+
+
+vaccineTypeFromMapping : String -> Maybe VaccineType
+vaccineTypeFromMapping s =
+    case s of
+        "a" ->
+            Just VaccineBCG
+
+        "b" ->
+            Just VaccineOPV
+
+        "c" ->
+            Just VaccineDTP
+
+        "d" ->
+            Just VaccineDTPStandalone
+
+        "e" ->
+            Just VaccinePCV13
+
+        "f" ->
+            Just VaccineRotarix
+
+        "g" ->
+            Just VaccineIPV
+
+        "h" ->
+            Just VaccineMR
+
+        "i" ->
+            Just VaccineHPV
 
         _ ->
             Nothing

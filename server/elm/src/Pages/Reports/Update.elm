@@ -151,7 +151,10 @@ calculateNutritionReportDataTask currentDate data =
                         [ Maybe.map
                             (List.concat
                                 >> List.filter filterByYear
-                                >> List.map (Tuple.pair record.id)
+                                >> List.map
+                                    (\item ->
+                                        ( record.id, { startDate = item.startDate, nutritionData = item.nutritionData } )
+                                    )
                             )
                             record.wellChildData
                         , Maybe.map

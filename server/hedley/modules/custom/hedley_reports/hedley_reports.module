@@ -443,8 +443,7 @@ function hedley_reports_get_triggering_measurement_types() {
   return array_unique(array_merge(
     HEDLEY_ACTIVITY_HEIGHT_BUNDLES,
     HEDLEY_ACTIVITY_WEIGHT_BUNDLES,
-// @todo:
-//    HEDLEY_ACTIVITY_MUAC_BUNDLES,
+    HEDLEY_ACTIVITY_MUAC_BUNDLES,
     HEDLEY_ACTIVITY_REPORTS_GROUP_MEASUREMENT_BUNDLES,
     HEDLEY_ACTIVITY_WELL_CHILD_IMMUNISATION_BUNDLES,
     [
@@ -537,6 +536,19 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
         }
         break;
 
+      case HEDLEY_ACTIVITY_NUTRITION_MUAC_CONTENT_TYPE:
+        $encounter_id = $measurement->field_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
+        $muac = $measurement->field_muac[LANGUAGE_NONE][0]['value'];
+        if (!empty($muac)) {
+          if (empty($zscores_by_encounter[$encounter_id])) {
+            $zscores_by_encounter[$encounter_id] = ['m' => $muac];
+          }
+          else {
+            $zscores_by_encounter[$encounter_id]['m'] = $muac;
+          }
+        }
+        break;
+
       case HEDLEY_ACTIVITY_NUTRITION_WEIGHT_CONTENT_TYPE:
         $encounter_id = $measurement->field_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
         $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
@@ -567,6 +579,19 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
         }
         break;
 
+      case HEDLEY_ACTIVITY_WELL_CHILD_MUAC_CONTENT_TYPE:
+        $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
+        $muac = $measurement->field_muac[LANGUAGE_NONE][0]['value'];
+        if (!empty($muac)) {
+          if (empty($zscores_by_encounter[$encounter_id])) {
+            $zscores_by_encounter[$encounter_id] = ['m' => $muac];
+          }
+          else {
+            $zscores_by_encounter[$encounter_id]['m'] = $muac;
+          }
+        }
+        break;
+
       case HEDLEY_ACTIVITY_HEIGHT_CONTENT_TYPE:
         $encounter_id = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
         $sessions_ids[] = $encounter_id;
@@ -593,6 +618,20 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
           else {
             $zscores_by_encounter[$encounter_id]['w'] = $zscore_age;
             $zscores_by_encounter[$encounter_id]['u'] = $zscore_length;
+          }
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_MUAC_CONTENT_TYPE:
+        $encounter_id = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
+        $sessions_ids[] = $encounter_id;
+        $muac = $measurement->field_muac[LANGUAGE_NONE][0]['value'];
+        if (!empty($muac)) {
+          if (empty($zscores_by_encounter[$encounter_id])) {
+            $zscores_by_encounter[$encounter_id] = ['m' => $muac];
+          }
+          else {
+            $zscores_by_encounter[$encounter_id]['m'] = $muac;
           }
         }
         break;
@@ -1064,8 +1103,9 @@ function hedley_reports_nutrition_metrics_to_string($values) {
   $stunting = !empty($values['s']) ? $values['s'] : '';
   $wasting = !empty($values['w']) ? $values['w'] : '';
   $underweight = !empty($values['u']) ? $values['u'] : '';
+  $muac = !empty($values['m']) ? $values['m'] : '';
 
-  return "$stunting,$wasting,$underweight";
+  return "$stunting,$wasting,$underweight,$muac";
 }
 
 /**

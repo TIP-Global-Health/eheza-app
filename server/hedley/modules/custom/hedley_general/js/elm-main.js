@@ -6512,7 +6512,11 @@ var $author$project$Pages$Reports$Update$calculateNutritionReportDataTask = F2(
 													$elm$core$Basics$composeR,
 													$elm$core$List$filter(filterByYear),
 													$elm$core$List$map(
-														$elm$core$Tuple$pair(record.id)))),
+														function (item) {
+															return _Utils_Tuple2(
+																record.id,
+																{nutritionData: item.nutritionData, startDate: item.startDate});
+														}))),
 											record.wellChildData),
 											A2(
 											$elm$core$Maybe$map,
@@ -8979,25 +8983,28 @@ var $author$project$Backend$Reports$Model$NutritionEncounterData = F2(
 	function (startDate, nutritionData) {
 		return {nutritionData: nutritionData, startDate: startDate};
 	});
-var $author$project$Backend$Reports$Model$NutritionData = F3(
-	function (stunting, wasting, underweight) {
-		return {stunting: stunting, underweight: underweight, wasting: wasting};
+var $author$project$Backend$Reports$Model$NutritionData = F4(
+	function (stunting, wasting, underweight, muac) {
+		return {muac: muac, stunting: stunting, underweight: underweight, wasting: wasting};
 	});
 var $elm$core$String$toFloat = _String_toFloat;
 var $author$project$Backend$Reports$Decoder$nutritionDataFromString = function (s) {
 	var _v0 = A2($elm$core$String$split, ',', s);
-	if (((_v0.b && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
+	if ((((_v0.b && _v0.b.b) && _v0.b.b.b) && _v0.b.b.b.b) && (!_v0.b.b.b.b.b)) {
 		var stunting = _v0.a;
 		var _v1 = _v0.b;
 		var underweight = _v1.a;
 		var _v2 = _v1.b;
 		var wasting = _v2.a;
+		var _v3 = _v2.b;
+		var muac = _v3.a;
 		return $elm$core$Maybe$Just(
-			A3(
+			A4(
 				$author$project$Backend$Reports$Model$NutritionData,
 				$elm$core$String$toFloat(stunting),
 				$elm$core$String$toFloat(wasting),
-				$elm$core$String$toFloat(underweight)));
+				$elm$core$String$toFloat(underweight),
+				$elm$core$String$toFloat(muac)));
 	} else {
 		return $elm$core$Maybe$Nothing;
 	}
@@ -9452,6 +9459,117 @@ var $author$project$Backend$Reports$Decoder$decodePrenatalParticipantData = A3(
 						'created',
 						$author$project$Gizra$NominalDate$decodeYYYYMMDD,
 						$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$PrenatalParticipantData)))))));
+var $author$project$Backend$Reports$Model$WellChildEncounterData = F3(
+	function (startDate, nutritionData, immunisationData) {
+		return {immunisationData: immunisationData, nutritionData: nutritionData, startDate: startDate};
+	});
+var $pzp1997$assoc_list$AssocList$fromList = function (alist) {
+	return A3(
+		$elm$core$List$foldl,
+		F2(
+			function (_v0, result) {
+				var key = _v0.a;
+				var value = _v0.b;
+				return A3($pzp1997$assoc_list$AssocList$insert, key, value, result);
+			}),
+		$pzp1997$assoc_list$AssocList$D(_List_Nil),
+		alist);
+};
+var $author$project$Backend$Scoreboard$Model$VaccineBCG = {$: 'VaccineBCG'};
+var $author$project$Backend$Scoreboard$Model$VaccineDTP = {$: 'VaccineDTP'};
+var $author$project$Backend$Scoreboard$Model$VaccineDTPStandalone = {$: 'VaccineDTPStandalone'};
+var $author$project$Backend$Scoreboard$Model$VaccineHPV = {$: 'VaccineHPV'};
+var $author$project$Backend$Scoreboard$Model$VaccineIPV = {$: 'VaccineIPV'};
+var $author$project$Backend$Scoreboard$Model$VaccineMR = {$: 'VaccineMR'};
+var $author$project$Backend$Scoreboard$Model$VaccineOPV = {$: 'VaccineOPV'};
+var $author$project$Backend$Scoreboard$Model$VaccinePCV13 = {$: 'VaccinePCV13'};
+var $author$project$Backend$Scoreboard$Model$VaccineRotarix = {$: 'VaccineRotarix'};
+var $author$project$Backend$Reports$Decoder$vaccineTypeFromMapping = function (s) {
+	switch (s) {
+		case 'a':
+			return $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$VaccineBCG);
+		case 'b':
+			return $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$VaccineOPV);
+		case 'c':
+			return $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$VaccineDTP);
+		case 'd':
+			return $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$VaccineDTPStandalone);
+		case 'e':
+			return $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$VaccinePCV13);
+		case 'f':
+			return $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$VaccineRotarix);
+		case 'g':
+			return $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$VaccineIPV);
+		case 'h':
+			return $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$VaccineMR);
+		case 'i':
+			return $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$VaccineHPV);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Backend$Reports$Decoder$immunisationDataFromString = function (s) {
+	var tuples = A2(
+		$elm$core$List$filterMap,
+		function (item) {
+			var _v0 = A2($elm$core$String$split, ':', item);
+			if ((_v0.b && _v0.b.b) && (!_v0.b.b.b)) {
+				var mappedVaccineType = _v0.a;
+				var _v1 = _v0.b;
+				var adminstrationDates = _v1.a;
+				return A2(
+					$elm$core$Maybe$andThen,
+					function (vaccineType) {
+						var dates = $elm_community$maybe_extra$Maybe$Extra$values(
+							A2(
+								$elm$core$List$map,
+								A2($elm$core$Basics$composeR, $justinmimbs$date$Date$fromIsoString, $elm$core$Result$toMaybe),
+								A2($elm$core$String$split, '+', adminstrationDates)));
+						return $elm$core$List$isEmpty(dates) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(
+							_Utils_Tuple2(vaccineType, dates));
+					},
+					$author$project$Backend$Reports$Decoder$vaccineTypeFromMapping(mappedVaccineType));
+			} else {
+				return $elm$core$Maybe$Nothing;
+			}
+		},
+		A2($elm$core$String$split, ',', s));
+	return $elm$core$List$isEmpty(tuples) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(
+		$pzp1997$assoc_list$AssocList$fromList(tuples));
+};
+var $author$project$Backend$Reports$Decoder$decodeWellChildEncounterData = A2(
+	$elm$json$Json$Decode$andThen,
+	function (s) {
+		var _v0 = A2(
+			$elm$core$String$split,
+			'|',
+			$elm$core$String$trim(s));
+		if (((_v0.b && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
+			var first = _v0.a;
+			var _v1 = _v0.b;
+			var second = _v1.a;
+			var _v2 = _v1.b;
+			var third = _v2.a;
+			return A2(
+				$elm$core$Maybe$withDefault,
+				$elm$json$Json$Decode$fail('Failed to decode WellChildEncounterData'),
+				A2(
+					$elm$core$Maybe$map,
+					function (startDate) {
+						return $elm$json$Json$Decode$succeed(
+							A3(
+								$author$project$Backend$Reports$Model$WellChildEncounterData,
+								startDate,
+								$author$project$Backend$Reports$Decoder$nutritionDataFromString(second),
+								$author$project$Backend$Reports$Decoder$immunisationDataFromString(third)));
+					},
+					$elm$core$Result$toMaybe(
+						$justinmimbs$date$Date$fromIsoString(first))));
+		} else {
+			return $elm$json$Json$Decode$fail('Failed to decode WellChildEncounterData');
+		}
+	},
+	$elm$json$Json$Decode$string);
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt = F4(
 	function (path, valDecoder, fallback, decoder) {
 		return A2(
@@ -9544,7 +9662,7 @@ var $author$project$Backend$Reports$Decoder$decodePatientData = A4(
 												['individual', 'well-child']),
 											$elm$json$Json$Decode$nullable(
 												$elm$json$Json$Decode$list(
-													$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionEncounterData))),
+													$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeWellChildEncounterData))),
 											$elm$core$Maybe$Nothing,
 											A4(
 												$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
@@ -9698,18 +9816,6 @@ var $author$project$Gizra$NominalDate$diffMonths = F2(
 	function (low, high) {
 		return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Months, low, high);
 	});
-var $pzp1997$assoc_list$AssocList$fromList = function (alist) {
-	return A3(
-		$elm$core$List$foldl,
-		F2(
-			function (_v0, result) {
-				var key = _v0.a;
-				var value = _v0.b;
-				return A3($pzp1997$assoc_list$AssocList$insert, key, value, result);
-			}),
-		$pzp1997$assoc_list$AssocList$D(_List_Nil),
-		alist);
-};
 var $elm$core$Tuple$second = function (_v0) {
 	var y = _v0.b;
 	return y;
@@ -9871,14 +9977,6 @@ var $author$project$Backend$Scoreboard$Decoder$decodeUniqueDates = A2(
 	$elm$json$Json$Decode$map,
 	$Gizra$elm_all_set$EverySet$fromList,
 	$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD));
-var $author$project$Backend$Scoreboard$Model$VaccineBCG = {$: 'VaccineBCG'};
-var $author$project$Backend$Scoreboard$Model$VaccineDTP = {$: 'VaccineDTP'};
-var $author$project$Backend$Scoreboard$Model$VaccineDTPStandalone = {$: 'VaccineDTPStandalone'};
-var $author$project$Backend$Scoreboard$Model$VaccineIPV = {$: 'VaccineIPV'};
-var $author$project$Backend$Scoreboard$Model$VaccineMR = {$: 'VaccineMR'};
-var $author$project$Backend$Scoreboard$Model$VaccineOPV = {$: 'VaccineOPV'};
-var $author$project$Backend$Scoreboard$Model$VaccinePCV13 = {$: 'VaccinePCV13'};
-var $author$project$Backend$Scoreboard$Model$VaccineRotarix = {$: 'VaccineRotarix'};
 var $elm$core$Basics$compare = _Utils_compare;
 var $justinmimbs$date$Date$compare = F2(
 	function (_v0, _v1) {
