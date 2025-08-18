@@ -443,7 +443,8 @@ function hedley_reports_get_triggering_measurement_types() {
   return array_unique(array_merge(
     HEDLEY_ACTIVITY_HEIGHT_BUNDLES,
     HEDLEY_ACTIVITY_WEIGHT_BUNDLES,
-    HEDLEY_ACTIVITY_MUAC_BUNDLES,
+// @todo:
+//    HEDLEY_ACTIVITY_MUAC_BUNDLES,
     HEDLEY_ACTIVITY_REPORTS_GROUP_MEASUREMENT_BUNDLES,
     HEDLEY_ACTIVITY_WELL_CHILD_IMMUNISATION_BUNDLES,
     [
@@ -783,6 +784,15 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
         if (!empty($administration_dates)) {
           $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
           $vaccine_type = $vaccine_type_mapping[HEDLEY_ACTIVITY_WELL_CHILD_MR_IMMUNISATION_CONTENT_TYPE];
+          $vaccinations_by_encounter[$encounter_id][$vaccine_type] = $administration_dates;
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_WELL_CHILD_HPV_IMMUNISATION_CONTENT_TYPE:
+        $administration_dates = hedley_reports_get_vaccination_dates($measurement);
+        if (!empty($administration_dates)) {
+          $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
+          $vaccine_type = $vaccine_type_mapping[HEDLEY_ACTIVITY_WELL_CHILD_HPV_IMMUNISATION_CONTENT_TYPE];
           $vaccinations_by_encounter[$encounter_id][$vaccine_type] = $administration_dates;
         }
         break;
@@ -1823,7 +1833,12 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
       }
       if (isset($patient_data->individual->{"well-child"})) {
         foreach ($patient_data->individual->{"well-child"} as $items) {
-          $data_for_patient['encounters'] = array_merge($data_for_patient['encounters'], $items);
+          $normalized = [];
+          foreach ($items as $item) {
+            $parts = explode('|', $item);
+            $normalized[] = $parts[0] . ' ' . $parts[1];
+          }
+          $data_for_patient['encounters'] = array_merge($data_for_patient['encounters'], $normalized);
         }
       }
     }
