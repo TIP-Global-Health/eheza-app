@@ -601,7 +601,10 @@ viewUniversalInterventionPane language currentDate site yearSelectorGap monthsGa
                                                                 record.ncda.universalIntervention.row1
 
                                                         futureVaccinations =
-                                                            generateFutureVaccinationsData site record.birthDate vaccinationProgressOnReferrenceDate
+                                                            generateFutureVaccinationsData site
+                                                                record.birthDate
+                                                                vaccinationProgressOnReferrenceDate
+                                                                allVaccineTypes
 
                                                         closestDateForVaccination =
                                                             List.filterMap (Tuple.second >> Maybe.map Tuple.second) futureVaccinations

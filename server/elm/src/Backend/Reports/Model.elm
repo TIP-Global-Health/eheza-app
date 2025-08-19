@@ -3,6 +3,7 @@ module Backend.Reports.Model exposing (..)
 import App.Types exposing (Site)
 import AssocList as Dict exposing (Dict)
 import Backend.Scoreboard.Model exposing (VaccineType)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Json.Encode exposing (Value)
 
@@ -233,7 +234,7 @@ type alias NutritionData =
 type alias WellChildEncounterData =
     { startDate : NominalDate
     , nutritionData : Maybe NutritionData
-    , immunisationData : Maybe (Dict VaccineType (List NominalDate))
+    , immunisationData : Maybe (Dict VaccineType (EverySet NominalDate))
     }
 
 

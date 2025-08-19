@@ -626,7 +626,7 @@ nutritionDataFromString s =
             Nothing
 
 
-immunisationDataFromString : String -> Maybe (Dict VaccineType (List NominalDate))
+immunisationDataFromString : String -> Maybe (Dict VaccineType (EverySet NominalDate))
 immunisationDataFromString s =
     let
         tuples =
@@ -643,8 +643,9 @@ immunisationDataFromString s =
                                                     String.split "+" adminstrationDates
                                                         |> List.map (Date.fromIsoString >> Result.toMaybe)
                                                         |> Maybe.Extra.values
+                                                        |> EverySet.fromList
                                             in
-                                            if List.isEmpty dates then
+                                            if EverySet.isEmpty dates then
                                                 Nothing
 
                                             else

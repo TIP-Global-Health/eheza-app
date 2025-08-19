@@ -1,6 +1,6 @@
 module Pages.Reports.View exposing (view)
 
-import App.Types exposing (Language)
+import App.Types exposing (Language, Site)
 import AssocList as Dict exposing (Dict)
 import Backend.Model exposing (ModelBackend)
 import Backend.Reports.Model
@@ -19,8 +19,10 @@ import Backend.Reports.Model
         , SelectedEntity(..)
         )
 import Backend.Reports.Utils exposing (allAcuteIllnessDiagnoses, allPrenatalDiagnoses)
+import Backend.Scoreboard.Utils exposing (generateVaccinationProgressForVaccine)
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
+import EverySet
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate, customFormatDDMMYYYY, formatDDMMYYYY, sortByDate, sortByDateDesc)
 import Html exposing (..)
@@ -32,6 +34,7 @@ import Pages.Components.View exposing (viewCustomCells, viewMetricsResultsTable,
 import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Reports.Model exposing (..)
 import Pages.Reports.Utils exposing (..)
+import Pages.Scoreboard.Utils exposing (generateFutureVaccinationsData)
 import Pages.Utils
     exposing
         ( calculatePercentage
@@ -297,7 +300,7 @@ viewReportsData language currentDate themePath data model =
                                 viewPeripartumReport language limitDate scopeLabel recordsTillLimitDate
 
                             ReportPostnatalCare ->
-                                viewPostnatalCareReport language limitDate scopeLabel recordsTillLimitDate
+                                viewPostnatalCareReport language data.site limitDate scopeLabel recordsTillLimitDate
 
                             ReportPrenatal ->
                                 viewPrenatalReport language limitDate scopeLabel recordsTillLimitDate
@@ -2481,11 +2484,11 @@ generatePeripartumReportData language limitDate records =
     }
 
 
-viewPostnatalCareReport : Language -> NominalDate -> String -> List PatientData -> Html Msg
-viewPostnatalCareReport language limitDate scopeLabel records =
+viewPostnatalCareReport : Language -> Site -> NominalDate -> String -> List PatientData -> Html Msg
+viewPostnatalCareReport language site limitDate scopeLabel records =
     let
         data =
-            generatePostnatalCareReportData language limitDate records
+            generatePostnatalCareReportData language site limitDate records
 
         captionsRow =
             viewStandardCells data.captions
@@ -2511,10 +2514,11 @@ viewPostnatalCareReport language limitDate scopeLabel records =
 
 generatePostnatalCareReportData :
     Language
+    -> Site
     -> NominalDate
     -> List PatientData
     -> MetricsResultsTableData
-generatePostnatalCareReportData language limitDate records =
+generatePostnatalCareReportData language site limitDate records =
     let
         totalEncountersWithin24HoursOfBirth =
             List.filterMap
@@ -2536,54 +2540,62 @@ generatePostnatalCareReportData language limitDate records =
                     )
                 |> List.length
 
-        -- type alias PatientData =
-        --     { id : PersonId
-        --     , created : NominalDate
-        --     , birthDate : NominalDate
-        --     , gender : Gender
-        --     , acuteIllnessData : Maybe (List (List AcuteIllnessEncounterData))
-        --     , prenatalData : Maybe (List PrenatalParticipantData)
-        --     , homeVisitData : Maybe (List (List HomeVisitEncounterData))
-        --     , wellChildData : Maybe (List (List WellChildEncounterData))
-        --     , childScorecardData : Maybe (List (List ChildScorecardEncounterData))
-        --     , ncdData : Maybe (List (List NCDEncounterData))
-        --     , hivData : Maybe (List (List HIVEncounterData))
-        --     , tuberculosisData : Maybe (List (List TuberculosisEncounterData))
-        --     , individualNutritionData : Maybe (List (List NutritionEncounterData))
-        --     , groupNutritionPmtctData : Maybe (List NutritionEncounterData)
-        --     , groupNutritionFbfData : Maybe (List NutritionEncounterData)
-        --     , groupNutritionSorwatheData : Maybe (List NutritionEncounterData)
-        --     , groupNutritionChwData : Maybe (List NutritionEncounterData)
-        --     , groupNutritionAchiData : Maybe (List NutritionEncounterData)
-        --     }
-        --
-        --     pregnancies =
-        --         List.map .prenatalData records
-        --             |> Maybe.Extra.values
-        --             |> List.concat
-        --
-        --     countPregnanciesByOutcome outcome =
-        --         List.filter (.outcome >> (==) (Just outcome)) pregnancies
-        --             |> List.length
-        --
-        --     totalLiveAtTerm =
-        --         countPregnanciesByOutcome OutcomeLiveAtTerm
-        --
-        --     totalLivePreTerm =
-        --         countPregnanciesByOutcome OutcomeLivePreTerm
-        --
-        --     totalStillAtTerm =
-        --         countPregnanciesByOutcome OutcomeStillAtTerm
-        --
-        --     totalStillPreTerm =
-        --         countPregnanciesByOutcome OutcomeStillPreTerm
-        --
-        --     pregnanciesWithIndicator indicator =
-        --         List.filter
-        --             (.encounters
-        --                 >> List.any (.indicators >> List.member indicator)
-        --             )
-        --
+        _ =
+            List.length patientsUpToDateWithImmunization
+                |> Debug.log ""
+
+        patientsUpToDateWithImmunization =
+            List.filterMap
+                (\patientData ->
+                    Maybe.andThen
+                        (\wellChildData ->
+                            let
+                                vaccinationProgressDict =
+                                    List.concat wellChildData
+                                        |> List.map .immunisationData
+                                        |> Maybe.Extra.values
+                                        |> List.foldl
+                                            (\immunisationsDict accumDict ->
+                                                Dict.merge
+                                                    (\key value -> Dict.insert key value)
+                                                    (\key value1 value2 -> Dict.insert key (EverySet.union value1 value2))
+                                                    (\key value -> Dict.insert key value)
+                                                    immunisationsDict
+                                                    accumDict
+                                                    Dict.empty
+                                            )
+                                            Dict.empty
+                                        |> Dict.map (\_ value -> generateVaccinationProgressForVaccine value)
+
+                                futureVaccinations =
+                                    generateFutureVaccinationsData site
+                                        patientData.birthDate
+                                        vaccinationProgressDict
+                                        allVaccineTypes
+
+                                closestDateForVaccination =
+                                    List.filterMap (Tuple.second >> Maybe.map Tuple.second) futureVaccinations
+                                        |> List.sortWith Date.compare
+                                        |> List.head
+                            in
+                            if isNothing closestDateForVaccination then
+                                Just patientData.birthDate
+
+                            else
+                                Maybe.andThen
+                                    (\closestDate ->
+                                        if Date.compare closestDate limitDate == GT then
+                                            Just patientData.birthDate
+
+                                        else
+                                            Nothing
+                                    )
+                                    closestDateForVaccination
+                        )
+                        patientData.wellChildData
+                )
+                records
+
         generateRow label value =
             [ translate language label
             , String.fromInt value

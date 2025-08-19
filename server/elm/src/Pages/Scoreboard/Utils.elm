@@ -1,4 +1,4 @@
-module Pages.Scoreboard.Utils exposing (generateFutureVaccinationsData, valuesByViewMode, viewPercentage)
+module Pages.Scoreboard.Utils exposing (allVaccineTypes, generateFutureVaccinationsData, valuesByViewMode, viewPercentage)
 
 import App.Types exposing (Site(..))
 import AssocList as Dict
@@ -17,6 +17,7 @@ generateFutureVaccinationsData :
     Site
     -> NominalDate
     -> VaccinationProgressDict
+    -> List VaccineType
     -> List ( VaccineType, Maybe ( VaccineDose, NominalDate ) )
 generateFutureVaccinationsData site birthDate vaccinationProgress =
     let
@@ -46,7 +47,6 @@ generateFutureVaccinationsData site birthDate vaccinationProgress =
             -- vacination cycle is completed for this vaccine.
             ( vaccineType, nextVaccinationData )
         )
-        allVaccineTypes
 
 
 wasInitialOpvAdministeredByVaccinationProgress : NominalDate -> VaccinationProgressDict -> Bool

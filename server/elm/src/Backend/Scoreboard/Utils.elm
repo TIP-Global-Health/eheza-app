@@ -1,6 +1,11 @@
 module Backend.Scoreboard.Utils exposing (..)
 
+import AssocList as Dict exposing (Dict)
 import Backend.Scoreboard.Model exposing (..)
+import Date
+import EverySet exposing (EverySet)
+import Gizra.NominalDate exposing (NominalDate)
+import Maybe.Extra
 
 
 vaccineDoseToComparable : VaccineDose -> Int
@@ -42,3 +47,16 @@ vaccineDoseFromOrder order =
 
         _ ->
             Nothing
+
+
+generateVaccinationProgressForVaccine : EverySet NominalDate -> Dict VaccineDose NominalDate
+generateVaccinationProgressForVaccine dates =
+    EverySet.toList dates
+        |> List.sortWith Date.compare
+        |> List.indexedMap
+            (\index date ->
+                vaccineDoseFromOrder index
+                    |> Maybe.map (\dose -> ( dose, date ))
+            )
+        |> Maybe.Extra.values
+        |> Dict.fromList
