@@ -296,6 +296,9 @@ viewReportsData language currentDate themePath data model =
                             ReportPeripartum ->
                                 viewPeripartumReport language limitDate scopeLabel recordsTillLimitDate
 
+                            ReportPostnatalCare ->
+                                viewPostnatalCareReport language limitDate scopeLabel recordsTillLimitDate
+
                             ReportPrenatal ->
                                 viewPrenatalReport language limitDate scopeLabel recordsTillLimitDate
 
@@ -329,6 +332,7 @@ viewReportsData language currentDate themePath data model =
                 , ReportDemographics
                 , ReportNutrition
                 , ReportPeripartum
+                , ReportPostnatalCare
                 ]
                 reportTypeToString
                 SetReportType
@@ -2473,6 +2477,132 @@ generatePeripartumReportData language limitDate records =
             (List.length <| pregnanciesWithIndicator IndicatorPrematureOnsetContractions pregnancies)
         , generateRow (Translate.PrenatalIndicatorLabel IndicatorBreastfedFirstHour)
             (List.length <| pregnanciesWithIndicator IndicatorBreastfedFirstHour pregnancies)
+        ]
+    }
+
+
+viewPostnatalCareReport : Language -> NominalDate -> String -> List PatientData -> Html Msg
+viewPostnatalCareReport language limitDate scopeLabel records =
+    let
+        data =
+            generatePostnatalCareReportData language limitDate records
+
+        captionsRow =
+            viewStandardCells data.captions
+                |> div [ class "row captions" ]
+
+        csvFileName =
+            "postnatal-care-report-"
+                ++ (String.toLower <| String.replace " " "-" scopeLabel)
+                ++ "-"
+                ++ customFormatDDMMYYYY "-" limitDate
+                ++ ".csv"
+
+        csvContent =
+            reportTableDataToCSV data
+    in
+    div [ class "report postnatal-care" ] <|
+        [ div [ class "table" ] <|
+            captionsRow
+                :: List.map viewStandardRow data.rows
+        , viewDownloadCSVButton language csvFileName csvContent
+        ]
+
+
+generatePostnatalCareReportData :
+    Language
+    -> NominalDate
+    -> List PatientData
+    -> MetricsResultsTableData
+generatePostnatalCareReportData language limitDate records =
+    let
+        totalEncountersWithin24HoursOfBirth =
+            List.filterMap
+                (\patientData ->
+                    Maybe.andThen
+                        (\wellChildData ->
+                            List.concat wellChildData
+                                |> List.sortWith (sortByDate .startDate)
+                                |> List.head
+                                |> Maybe.map (\firstEncounter -> ( patientData.birthDate, firstEncounter ))
+                        )
+                        patientData.wellChildData
+                )
+                records
+                |> List.filter
+                    (\( birthDate, encounter ) ->
+                        (Date.compare birthDate encounter.startDate == EQ)
+                            || (Date.compare (Date.add Days 1 birthDate) encounter.startDate == EQ)
+                    )
+                |> List.length
+
+        -- type alias PatientData =
+        --     { id : PersonId
+        --     , created : NominalDate
+        --     , birthDate : NominalDate
+        --     , gender : Gender
+        --     , acuteIllnessData : Maybe (List (List AcuteIllnessEncounterData))
+        --     , prenatalData : Maybe (List PrenatalParticipantData)
+        --     , homeVisitData : Maybe (List (List HomeVisitEncounterData))
+        --     , wellChildData : Maybe (List (List WellChildEncounterData))
+        --     , childScorecardData : Maybe (List (List ChildScorecardEncounterData))
+        --     , ncdData : Maybe (List (List NCDEncounterData))
+        --     , hivData : Maybe (List (List HIVEncounterData))
+        --     , tuberculosisData : Maybe (List (List TuberculosisEncounterData))
+        --     , individualNutritionData : Maybe (List (List NutritionEncounterData))
+        --     , groupNutritionPmtctData : Maybe (List NutritionEncounterData)
+        --     , groupNutritionFbfData : Maybe (List NutritionEncounterData)
+        --     , groupNutritionSorwatheData : Maybe (List NutritionEncounterData)
+        --     , groupNutritionChwData : Maybe (List NutritionEncounterData)
+        --     , groupNutritionAchiData : Maybe (List NutritionEncounterData)
+        --     }
+        --
+        --     pregnancies =
+        --         List.map .prenatalData records
+        --             |> Maybe.Extra.values
+        --             |> List.concat
+        --
+        --     countPregnanciesByOutcome outcome =
+        --         List.filter (.outcome >> (==) (Just outcome)) pregnancies
+        --             |> List.length
+        --
+        --     totalLiveAtTerm =
+        --         countPregnanciesByOutcome OutcomeLiveAtTerm
+        --
+        --     totalLivePreTerm =
+        --         countPregnanciesByOutcome OutcomeLivePreTerm
+        --
+        --     totalStillAtTerm =
+        --         countPregnanciesByOutcome OutcomeStillAtTerm
+        --
+        --     totalStillPreTerm =
+        --         countPregnanciesByOutcome OutcomeStillPreTerm
+        --
+        --     pregnanciesWithIndicator indicator =
+        --         List.filter
+        --             (.encounters
+        --                 >> List.any (.indicators >> List.member indicator)
+        --             )
+        --
+        generateRow label value =
+            [ translate language label
+            , String.fromInt value
+            ]
+    in
+    { heading = ""
+    , captions =
+        [ ""
+        , translate language Translate.Total
+        ]
+    , rows =
+        [ generateRow Translate.NewbornsWithSPVWithin24Hours totalEncountersWithin24HoursOfBirth
+
+        -- , generateRow Translate.TotalLiveBirths (totalLiveAtTerm + totalLivePreTerm)
+        -- , generateRow Translate.TotalLivePreTermBirths totalLivePreTerm
+        -- , generateRow (Translate.PrenatalIndicatorLabel IndicatorPrematureOnsetContractions)
+        --     (List.length <| pregnanciesWithIndicator IndicatorPrematureOnsetContractions pregnancies)
+        -- , generateRow (Translate.PrenatalIndicatorLabel IndicatorBreastfedFirstHour)
+        --     (List.length <| pregnanciesWithIndicator IndicatorBreastfedFirstHour pregnancies)
         ]
     }
 

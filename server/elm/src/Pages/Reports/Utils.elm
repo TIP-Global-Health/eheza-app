@@ -74,6 +74,9 @@ reportTypeToString reportType =
         ReportPeripartum ->
             "peripartum"
 
+        ReportPostnatalCare ->
+            "postnatal-care"
+
         ReportPrenatal ->
             "prenatal"
 
@@ -98,6 +101,9 @@ reportTypeFromString reportType =
 
         "peripartum" ->
             Just ReportPeripartum
+
+        "postnatal-care" ->
+            Just ReportPostnatalCare
 
         "prenatal" ->
             Just ReportPrenatal

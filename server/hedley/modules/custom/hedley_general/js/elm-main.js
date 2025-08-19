@@ -6641,6 +6641,7 @@ var $author$project$Pages$Reports$Model$ReportAcuteIllness = {$: 'ReportAcuteIll
 var $author$project$Pages$Reports$Model$ReportDemographics = {$: 'ReportDemographics'};
 var $author$project$Pages$Reports$Model$ReportNutrition = {$: 'ReportNutrition'};
 var $author$project$Pages$Reports$Model$ReportPeripartum = {$: 'ReportPeripartum'};
+var $author$project$Pages$Reports$Model$ReportPostnatalCare = {$: 'ReportPostnatalCare'};
 var $author$project$Pages$Reports$Model$ReportPrenatal = {$: 'ReportPrenatal'};
 var $author$project$Pages$Reports$Model$ReportPrenatalContacts = {$: 'ReportPrenatalContacts'};
 var $author$project$Pages$Reports$Model$ReportPrenatalDiagnoses = {$: 'ReportPrenatalDiagnoses'};
@@ -6654,6 +6655,8 @@ var $author$project$Pages$Reports$Utils$reportTypeFromString = function (reportT
 			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportNutrition);
 		case 'peripartum':
 			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportPeripartum);
+		case 'postnatal-care':
+			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportPostnatalCare);
 		case 'prenatal':
 			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportPrenatal);
 		case 'prenatal-contacts':
@@ -11760,6 +11763,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				}
 			case 'NewbornExam':
 				return {english: 'Newborn Exam', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'NewbornsWithSPVWithin24Hours':
+				return {english: 'Newborns who received Newborn Exam or SPV within 24 hours of birth', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'NewScope':
 				return {english: 'New Scope', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'NewSelection':
@@ -12610,6 +12615,8 @@ var $author$project$Translate$translationSet = function (transId) {
 						continue translationSet;
 					case 'ReportPeripartum':
 						return {english: 'Peripartum', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'ReportPostnatalCare':
+						return {english: 'Postnatal Care', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'ReportPrenatal':
 						var $temp$transId = $author$project$Translate$Antenatal;
 						transId = $temp$transId;
@@ -16591,6 +16598,8 @@ var $author$project$Pages$Reports$Utils$reportTypeToString = function (reportTyp
 			return 'nutrition';
 		case 'ReportPeripartum':
 			return 'peripartum';
+		case 'ReportPostnatalCare':
+			return 'postnatal-care';
 		case 'ReportPrenatal':
 			return 'prenatal';
 		case 'ReportPrenatalContacts':
@@ -19024,6 +19033,109 @@ var $author$project$Pages$Reports$View$viewPeripartumReport = F4(
 					A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
 				]));
 	});
+var $author$project$Translate$NewbornsWithSPVWithin24Hours = {$: 'NewbornsWithSPVWithin24Hours'};
+var $author$project$Gizra$NominalDate$sortByDate = F3(
+	function (getDateFunc, entity1, entity2) {
+		return A2(
+			$justinmimbs$date$Date$compare,
+			getDateFunc(entity1),
+			getDateFunc(entity2));
+	});
+var $author$project$Pages$Reports$View$generatePostnatalCareReportData = F3(
+	function (language, limitDate, records) {
+		var totalEncountersWithin24HoursOfBirth = $elm$core$List$length(
+			A2(
+				$elm$core$List$filter,
+				function (_v0) {
+					var birthDate = _v0.a;
+					var encounter = _v0.b;
+					return _Utils_eq(
+						A2($justinmimbs$date$Date$compare, birthDate, encounter.startDate),
+						$elm$core$Basics$EQ) || _Utils_eq(
+						A2(
+							$justinmimbs$date$Date$compare,
+							A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, 1, birthDate),
+							encounter.startDate),
+						$elm$core$Basics$EQ);
+				},
+				A2(
+					$elm$core$List$filterMap,
+					function (patientData) {
+						return A2(
+							$elm$core$Maybe$andThen,
+							function (wellChildData) {
+								return A2(
+									$elm$core$Maybe$map,
+									function (firstEncounter) {
+										return _Utils_Tuple2(patientData.birthDate, firstEncounter);
+									},
+									$elm$core$List$head(
+										A2(
+											$elm$core$List$sortWith,
+											$author$project$Gizra$NominalDate$sortByDate(
+												function ($) {
+													return $.startDate;
+												}),
+											$elm$core$List$concat(wellChildData))));
+							},
+							patientData.wellChildData);
+					},
+					records)));
+		var generateRow = F2(
+			function (label, value) {
+				return _List_fromArray(
+					[
+						A2($author$project$Translate$translate, language, label),
+						$elm$core$String$fromInt(value)
+					]);
+			});
+		return {
+			captions: _List_fromArray(
+				[
+					'',
+					A2($author$project$Translate$translate, language, $author$project$Translate$Total)
+				]),
+			heading: '',
+			rows: _List_fromArray(
+				[
+					A2(generateRow, $author$project$Translate$NewbornsWithSPVWithin24Hours, totalEncountersWithin24HoursOfBirth)
+				])
+		};
+	});
+var $author$project$Pages$Reports$View$viewPostnatalCareReport = F4(
+	function (language, limitDate, scopeLabel, records) {
+		var data = A3($author$project$Pages$Reports$View$generatePostnatalCareReportData, language, limitDate, records);
+		var csvFileName = 'postnatal-care-report-' + ($elm$core$String$toLower(
+			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
+		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
+		var captionsRow = A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('row captions')
+				]),
+			$author$project$Pages$Components$View$viewStandardCells(data.captions));
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('report postnatal-care')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('table')
+						]),
+					A2(
+						$elm$core$List$cons,
+						captionsRow,
+						A2($elm$core$List$map, $author$project$Pages$Components$View$viewStandardRow, data.rows))),
+					A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
+				]));
+	});
 var $author$project$Translate$ContactType = {$: 'ContactType'};
 var $author$project$Backend$Reports$Model$IndicatorDiagnosedAnemia = {$: 'IndicatorDiagnosedAnemia'};
 var $author$project$Backend$Reports$Model$IndicatorHistoryOfAdversePregnancyOutcomes = {$: 'IndicatorHistoryOfAdversePregnancyOutcomes'};
@@ -19496,13 +19608,6 @@ var $author$project$Pages$Reports$Utils$resolvePregnancyTrimester = F2(
 	function (date, lmpDate) {
 		var diffInWeeks = (A2($author$project$Gizra$NominalDate$diffDays, lmpDate, date) / 7) | 0;
 		return (diffInWeeks < 13) ? $author$project$Pages$Reports$Model$FirstTrimester : ((diffInWeeks < 28) ? $author$project$Pages$Reports$Model$SecondTrimester : $author$project$Pages$Reports$Model$ThirdTrimester);
-	});
-var $author$project$Gizra$NominalDate$sortByDate = F3(
-	function (getDateFunc, entity1, entity2) {
-		return A2(
-			$justinmimbs$date$Date$compare,
-			getDateFunc(entity1),
-			getDateFunc(entity2));
 	});
 var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 	function (language, limitDate, records) {
@@ -20294,6 +20399,8 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 								return A5($author$project$Pages$Reports$View$viewNutritionReport, language, limitDate, scopeLabel, data.nutritionReportData, model.nutritionReportData);
 							case 'ReportPeripartum':
 								return A4($author$project$Pages$Reports$View$viewPeripartumReport, language, limitDate, scopeLabel, recordsTillLimitDate);
+							case 'ReportPostnatalCare':
+								return A4($author$project$Pages$Reports$View$viewPostnatalCareReport, language, limitDate, scopeLabel, recordsTillLimitDate);
 							case 'ReportPrenatal':
 								return A4($author$project$Pages$Reports$View$viewPrenatalReport, language, limitDate, scopeLabel, recordsTillLimitDate);
 							case 'ReportPrenatalContacts':
@@ -20333,7 +20440,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 								language,
 								model.reportType,
 								_List_fromArray(
-									[$author$project$Pages$Reports$Model$ReportAcuteIllness, $author$project$Pages$Reports$Model$ReportPrenatal, $author$project$Pages$Reports$Model$ReportPrenatalContacts, $author$project$Pages$Reports$Model$ReportPrenatalDiagnoses, $author$project$Pages$Reports$Model$ReportDemographics, $author$project$Pages$Reports$Model$ReportNutrition, $author$project$Pages$Reports$Model$ReportPeripartum]),
+									[$author$project$Pages$Reports$Model$ReportAcuteIllness, $author$project$Pages$Reports$Model$ReportPrenatal, $author$project$Pages$Reports$Model$ReportPrenatalContacts, $author$project$Pages$Reports$Model$ReportPrenatalDiagnoses, $author$project$Pages$Reports$Model$ReportDemographics, $author$project$Pages$Reports$Model$ReportNutrition, $author$project$Pages$Reports$Model$ReportPeripartum, $author$project$Pages$Reports$Model$ReportPostnatalCare]),
 								$author$project$Pages$Reports$Utils$reportTypeToString,
 								$author$project$Pages$Reports$Model$SetReportType,
 								$author$project$Translate$ReportType,

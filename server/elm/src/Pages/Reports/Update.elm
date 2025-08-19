@@ -33,7 +33,6 @@ update currentDate modelBackend msg model =
                                 -- For large data sets, nutrition report is generated on
                                 -- backend. No need to generate proprietry data.
                                 if isWideScope data.entityType then
-                                    -- ( Loading, performNutritionReportDataCalculation currentDate data.records )
                                     ( model.nutritionReportData, Cmd.none )
 
                                 else

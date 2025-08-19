@@ -171,6 +171,7 @@ type TranslationId
     | NCDATargetedInterventionsItemLabel NCDATargetedInterventionsItem
     | NCDAUniversalInterventionItemLabel NCDAUniversalInterventionItem
     | NewbornExam
+    | NewbornsWithSPVWithin24Hours
     | NewScope
     | NewSelection
     | NoDiagnosis
@@ -1379,6 +1380,12 @@ translationSet transId =
 
         NewbornExam ->
             { english = "Newborn Exam"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        NewbornsWithSPVWithin24Hours ->
+            { english = "Newborns who received Newborn Exam or SPV within 24 hours of birth"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -2631,6 +2638,12 @@ translationSet transId =
 
                 ReportPeripartum ->
                     { english = "Peripartum"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                ReportPostnatalCare ->
+                    { english = "Postnatal Care"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
