@@ -24,7 +24,16 @@ import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, customFormatDDMMYYYY, formatDDMMYYYY, sortByDate, sortByDateDesc)
+import Gizra.NominalDate
+    exposing
+        ( NominalDate
+        , customFormatDDMMYYYY
+        , diffMonths
+        , diffWeeks
+        , formatDDMMYYYY
+        , sortByDate
+        , sortByDateDesc
+        )
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
@@ -2540,11 +2549,7 @@ generatePostnatalCareReportData language site limitDate records =
                     )
                 |> List.length
 
-        _ =
-            List.length patientsUpToDateWithImmunization
-                |> Debug.log ""
-
-        patientsUpToDateWithImmunization =
+        birthDatesOfUpToDateWithImmunizationPatients =
             List.filterMap
                 (\patientData ->
                     Maybe.andThen
@@ -2579,6 +2584,7 @@ generatePostnatalCareReportData language site limitDate records =
                                         |> List.head
                             in
                             if isNothing closestDateForVaccination then
+                                -- Patient has completed the course of all vaccinations.
                                 Just patientData.birthDate
 
                             else
@@ -2596,6 +2602,42 @@ generatePostnatalCareReportData language site limitDate records =
                 )
                 records
 
+        totalUpToDateWithImmunizationInRange =
+            List.foldl
+                (\birthDate accum ->
+                    let
+                        diffInWeeks =
+                            diffWeeks birthDate limitDate
+
+                        diffInMonths =
+                            diffMonths birthDate limitDate
+                    in
+                    if (diffInWeeks >= 7) && (diffInWeeks < 11) then
+                        { accum | inRange7To11Weeks = accum.inRange7To11Weeks + 1 }
+
+                    else if (diffInWeeks >= 11) && (diffInWeeks < 15) then
+                        { accum | inRange11To15Weeks = accum.inRange11To15Weeks + 1 }
+
+                    else if (diffInWeeks >= 15) && (diffInMonths < 10) then
+                        { accum | inRange15WeeksTo10Months = accum.inRange15WeeksTo10Months + 1 }
+
+                    else if (diffInMonths >= 10) && (diffInMonths < 19) then
+                        { accum | inRange10To19Months = accum.inRange10To19Months + 1 }
+
+                    else if (diffInMonths >= 19) && (diffInMonths < 24) then
+                        { accum | inRange19To24Months = accum.inRange19To24Months + 1 }
+
+                    else
+                        accum
+                )
+                { inRange7To11Weeks = 0
+                , inRange11To15Weeks = 0
+                , inRange15WeeksTo10Months = 0
+                , inRange10To19Months = 0
+                , inRange19To24Months = 0
+                }
+                birthDatesOfUpToDateWithImmunizationPatients
+
         generateRow label value =
             [ translate language label
             , String.fromInt value
@@ -2608,8 +2650,12 @@ generatePostnatalCareReportData language site limitDate records =
         ]
     , rows =
         [ generateRow Translate.NewbornsWithSPVWithin24Hours totalEncountersWithin24HoursOfBirth
+        , generateRow Translate.UpToDateWithImmunization7To11WeeksLabel totalUpToDateWithImmunizationInRange.inRange7To11Weeks
+        , generateRow Translate.UpToDateWithImmunization11To15WeeksLabel totalUpToDateWithImmunizationInRange.inRange11To15Weeks
+        , generateRow Translate.UpToDateWithImmunization15WeeksTo10MonthsLabel totalUpToDateWithImmunizationInRange.inRange15WeeksTo10Months
+        , generateRow Translate.UpToDateWithImmunization10To19MonthsLabel totalUpToDateWithImmunizationInRange.inRange10To19Months
+        , generateRow Translate.UpToDateWithImmunization19To24MonthsLabel totalUpToDateWithImmunizationInRange.inRange19To24Months
 
-        -- , generateRow Translate.TotalLiveBirths (totalLiveAtTerm + totalLivePreTerm)
         -- , generateRow Translate.TotalLivePreTermBirths totalLivePreTerm
         -- , generateRow (Translate.PrenatalIndicatorLabel IndicatorPrematureOnsetContractions)
         --     (List.length <| pregnanciesWithIndicator IndicatorPrematureOnsetContractions pregnancies)

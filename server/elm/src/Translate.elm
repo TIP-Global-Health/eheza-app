@@ -255,6 +255,11 @@ type TranslationId
     | UnderweightSevere
     | Unique
     | UniversalIntervention
+    | UpToDateWithImmunization7To11WeeksLabel
+    | UpToDateWithImmunization11To15WeeksLabel
+    | UpToDateWithImmunization15WeeksTo10MonthsLabel
+    | UpToDateWithImmunization10To19MonthsLabel
+    | UpToDateWithImmunization19To24MonthsLabel
     | UrineDipstickTest
     | UrineDipstickTestResult
     | WastingModerate
@@ -2940,6 +2945,36 @@ translationSet transId =
 
         UniversalIntervention ->
             { english = "Universal Intervention"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        UpToDateWithImmunization7To11WeeksLabel ->
+            { english = "Infants aged 7-11 weeks who are up to date with immunization"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        UpToDateWithImmunization11To15WeeksLabel ->
+            { english = "Infants aged 11-15 weeks who are up to date with immunization"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        UpToDateWithImmunization15WeeksTo10MonthsLabel ->
+            { english = "Children aged 15 weeks - 10 mos who are up to date with immunization"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        UpToDateWithImmunization10To19MonthsLabel ->
+            { english = "Children aged 10 -19 mos who are up to date with immunization"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        UpToDateWithImmunization19To24MonthsLabel ->
+            { english = "Children 19 mos - 2 years who are up to date with immunization"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

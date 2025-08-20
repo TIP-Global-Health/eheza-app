@@ -12808,6 +12808,16 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Unique', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'UniversalIntervention':
 				return {english: 'Universal Intervention', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'UpToDateWithImmunization7To11WeeksLabel':
+				return {english: 'Infants aged 7-11 weeks who are up to date with immunization', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'UpToDateWithImmunization11To15WeeksLabel':
+				return {english: 'Infants aged 11-15 weeks who are up to date with immunization', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'UpToDateWithImmunization15WeeksTo10MonthsLabel':
+				return {english: 'Children aged 15 weeks - 10 mos who are up to date with immunization', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'UpToDateWithImmunization10To19MonthsLabel':
+				return {english: 'Children aged 10 -19 mos who are up to date with immunization', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'UpToDateWithImmunization19To24MonthsLabel':
+				return {english: 'Children 19 mos - 2 years who are up to date with immunization', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'UrineDipstickTest':
 				return {english: 'Urine Dipstick Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'UrineDipstickTestResult':
@@ -19044,8 +19054,17 @@ var $author$project$Pages$Reports$View$viewPeripartumReport = F4(
 				]));
 	});
 var $author$project$Translate$NewbornsWithSPVWithin24Hours = {$: 'NewbornsWithSPVWithin24Hours'};
+var $author$project$Translate$UpToDateWithImmunization10To19MonthsLabel = {$: 'UpToDateWithImmunization10To19MonthsLabel'};
+var $author$project$Translate$UpToDateWithImmunization11To15WeeksLabel = {$: 'UpToDateWithImmunization11To15WeeksLabel'};
+var $author$project$Translate$UpToDateWithImmunization15WeeksTo10MonthsLabel = {$: 'UpToDateWithImmunization15WeeksTo10MonthsLabel'};
+var $author$project$Translate$UpToDateWithImmunization19To24MonthsLabel = {$: 'UpToDateWithImmunization19To24MonthsLabel'};
+var $author$project$Translate$UpToDateWithImmunization7To11WeeksLabel = {$: 'UpToDateWithImmunization7To11WeeksLabel'};
 var $author$project$Pages$Reports$Utils$allVaccineTypes = _List_fromArray(
 	[$author$project$Backend$Scoreboard$Model$VaccineBCG, $author$project$Backend$Scoreboard$Model$VaccineOPV, $author$project$Backend$Scoreboard$Model$VaccineDTP, $author$project$Backend$Scoreboard$Model$VaccineDTPStandalone, $author$project$Backend$Scoreboard$Model$VaccinePCV13, $author$project$Backend$Scoreboard$Model$VaccineRotarix, $author$project$Backend$Scoreboard$Model$VaccineIPV, $author$project$Backend$Scoreboard$Model$VaccineMR, $author$project$Backend$Scoreboard$Model$VaccineHPV]);
+var $author$project$Gizra$NominalDate$diffWeeks = F2(
+	function (low, high) {
+		return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Weeks, low, high);
+	});
 var $author$project$Pages$Scoreboard$Utils$getIntervalForVaccine = F2(
 	function (site, vaccineType) {
 		switch (vaccineType.$) {
@@ -19276,7 +19295,6 @@ var $author$project$Pages$Scoreboard$Utils$generateFutureVaccinationsData = F3(
 				return _Utils_Tuple2(vaccineType, nextVaccinationData);
 			});
 	});
-var $elm$core$Debug$log = _Debug_log;
 var $pzp1997$assoc_list$AssocList$member = F2(
 	function (targetKey, dict) {
 		var _v0 = A2($pzp1997$assoc_list$AssocList$get, targetKey, dict);
@@ -19362,9 +19380,9 @@ var $author$project$Pages$Reports$View$generatePostnatalCareReportData = F4(
 		var totalEncountersWithin24HoursOfBirth = $elm$core$List$length(
 			A2(
 				$elm$core$List$filter,
-				function (_v2) {
-					var birthDate = _v2.a;
-					var encounter = _v2.b;
+				function (_v1) {
+					var birthDate = _v1.a;
+					var encounter = _v1.b;
 					return _Utils_eq(
 						A2($justinmimbs$date$Date$compare, birthDate, encounter.startDate),
 						$elm$core$Basics$EQ) || _Utils_eq(
@@ -19397,7 +19415,15 @@ var $author$project$Pages$Reports$View$generatePostnatalCareReportData = F4(
 							patientData.wellChildData);
 					},
 					records)));
-		var patientsUpToDateWithImmunization = A2(
+		var generateRow = F2(
+			function (label, value) {
+				return _List_fromArray(
+					[
+						A2($author$project$Translate$translate, language, label),
+						$elm$core$String$fromInt(value)
+					]);
+			});
+		var birthDatesOfUpToDateWithImmunizationPatients = A2(
 			$elm$core$List$filterMap,
 			function (patientData) {
 				return A2(
@@ -19406,7 +19432,7 @@ var $author$project$Pages$Reports$View$generatePostnatalCareReportData = F4(
 						var vaccinationProgressDict = A2(
 							$pzp1997$assoc_list$AssocList$map,
 							F2(
-								function (_v1, value) {
+								function (_v0, value) {
 									return $author$project$Backend$Scoreboard$Utils$generateVaccinationProgressForVaccine(value);
 								}),
 							A3(
@@ -19466,18 +19492,26 @@ var $author$project$Pages$Reports$View$generatePostnatalCareReportData = F4(
 					patientData.wellChildData);
 			},
 			records);
-		var generateRow = F2(
-			function (label, value) {
-				return _List_fromArray(
-					[
-						A2($author$project$Translate$translate, language, label),
-						$elm$core$String$fromInt(value)
-					]);
-			});
-		var _v0 = A2(
-			$elm$core$Debug$log,
-			'',
-			$elm$core$List$length(patientsUpToDateWithImmunization));
+		var totalUpToDateWithImmunizationInRange = A3(
+			$elm$core$List$foldl,
+			F2(
+				function (birthDate, accum) {
+					var diffInWeeks = A2($author$project$Gizra$NominalDate$diffWeeks, birthDate, limitDate);
+					var diffInMonths = A2($author$project$Gizra$NominalDate$diffMonths, birthDate, limitDate);
+					return ((diffInWeeks >= 7) && (diffInWeeks < 11)) ? _Utils_update(
+						accum,
+						{inRange7To11Weeks: accum.inRange7To11Weeks + 1}) : (((diffInWeeks >= 11) && (diffInWeeks < 15)) ? _Utils_update(
+						accum,
+						{inRange11To15Weeks: accum.inRange11To15Weeks + 1}) : (((diffInWeeks >= 15) && (diffInMonths < 10)) ? _Utils_update(
+						accum,
+						{inRange15WeeksTo10Months: accum.inRange15WeeksTo10Months + 1}) : (((diffInMonths >= 10) && (diffInMonths < 19)) ? _Utils_update(
+						accum,
+						{inRange10To19Months: accum.inRange10To19Months + 1}) : (((diffInMonths >= 19) && (diffInMonths < 24)) ? _Utils_update(
+						accum,
+						{inRange19To24Months: accum.inRange19To24Months + 1}) : accum))));
+				}),
+			{inRange10To19Months: 0, inRange11To15Weeks: 0, inRange15WeeksTo10Months: 0, inRange19To24Months: 0, inRange7To11Weeks: 0},
+			birthDatesOfUpToDateWithImmunizationPatients);
 		return {
 			captions: _List_fromArray(
 				[
@@ -19487,7 +19521,12 @@ var $author$project$Pages$Reports$View$generatePostnatalCareReportData = F4(
 			heading: '',
 			rows: _List_fromArray(
 				[
-					A2(generateRow, $author$project$Translate$NewbornsWithSPVWithin24Hours, totalEncountersWithin24HoursOfBirth)
+					A2(generateRow, $author$project$Translate$NewbornsWithSPVWithin24Hours, totalEncountersWithin24HoursOfBirth),
+					A2(generateRow, $author$project$Translate$UpToDateWithImmunization7To11WeeksLabel, totalUpToDateWithImmunizationInRange.inRange7To11Weeks),
+					A2(generateRow, $author$project$Translate$UpToDateWithImmunization11To15WeeksLabel, totalUpToDateWithImmunizationInRange.inRange11To15Weeks),
+					A2(generateRow, $author$project$Translate$UpToDateWithImmunization15WeeksTo10MonthsLabel, totalUpToDateWithImmunizationInRange.inRange15WeeksTo10Months),
+					A2(generateRow, $author$project$Translate$UpToDateWithImmunization10To19MonthsLabel, totalUpToDateWithImmunizationInRange.inRange10To19Months),
+					A2(generateRow, $author$project$Translate$UpToDateWithImmunization19To24MonthsLabel, totalUpToDateWithImmunizationInRange.inRange19To24Months)
 				])
 		};
 	});
