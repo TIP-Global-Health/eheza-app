@@ -1028,6 +1028,15 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
   return TRUE;
 }
 
+/**
+ * Gets vaccination administration dates recorded at the measurement.
+ *
+ * @param object $measurement
+ *   Measurement object.
+ *
+ * @return array
+ *   List of administration dates.
+ */
 function hedley_reports_get_vaccination_dates($measurement) {
   $dates = [];
   $administration_dates = $measurement->field_administration_dates[LANGUAGE_NONE];
@@ -1042,6 +1051,16 @@ function hedley_reports_get_vaccination_dates($measurement) {
   return $dates;
 }
 
+/**
+ * Returns a mapping of vaccine types to corresponding code values.
+ *
+ * This function provides the standard mapping between human-readable vaccine
+ * types and their single-character code representations used in the
+ * system.
+ *
+ * @return array
+ *   An associative array mapping vaccine type strings to code characters.
+ */
 function hedley_reports_vaccine_type_mapping() {
   return [
     HEDLEY_ACTIVITY_WELL_CHILD_BCG_IMMUNISATION_CONTENT_TYPE => 'a',
