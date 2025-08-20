@@ -33,6 +33,7 @@ type ReportType
     | ReportDemographics
     | ReportNutrition
     | ReportPeripartum
+    | ReportPostnatalCare
     | ReportPrenatal
     | ReportPrenatalContacts
     | ReportPrenatalDiagnoses

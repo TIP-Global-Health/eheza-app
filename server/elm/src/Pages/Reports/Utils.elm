@@ -2,6 +2,7 @@ module Pages.Reports.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Reports.Model exposing (..)
+import Backend.Scoreboard.Model exposing (VaccineType(..))
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate, diffDays)
 import List.Extra exposing (unique)
@@ -74,6 +75,9 @@ reportTypeToString reportType =
         ReportPeripartum ->
             "peripartum"
 
+        ReportPostnatalCare ->
+            "postnatal-care"
+
         ReportPrenatal ->
             "prenatal"
 
@@ -98,6 +102,9 @@ reportTypeFromString reportType =
 
         "peripartum" ->
             Just ReportPeripartum
+
+        "postnatal-care" ->
+            Just ReportPostnatalCare
 
         "prenatal" ->
             Just ReportPrenatal
@@ -439,3 +446,17 @@ resolveDataSetForYear date yearIndex encountersByMonth =
 isWideScope : SelectedEntity -> Bool
 isWideScope selectedEntity =
     List.member selectedEntity [ EntityGlobal, EntityProvince, EntityDistrict, EntityHealthCenter ]
+
+
+allVaccineTypes : List VaccineType
+allVaccineTypes =
+    [ VaccineBCG
+    , VaccineOPV
+    , VaccineDTP
+    , VaccineDTPStandalone
+    , VaccinePCV13
+    , VaccineRotarix
+    , VaccineIPV
+    , VaccineMR
+    , VaccineHPV
+    ]
