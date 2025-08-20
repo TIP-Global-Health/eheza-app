@@ -2968,7 +2968,7 @@ translationSet transId =
             }
 
         UpToDateWithImmunization10To19MonthsLabel ->
-            { english = "Children aged 10 -19 mos who are up to date with immunization"
+            { english = "Children aged 10-19 mos who are up to date with immunization"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

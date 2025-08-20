@@ -12815,7 +12815,7 @@ var $author$project$Translate$translationSet = function (transId) {
 			case 'UpToDateWithImmunization15WeeksTo10MonthsLabel':
 				return {english: 'Children aged 15 weeks - 10 mos who are up to date with immunization', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'UpToDateWithImmunization10To19MonthsLabel':
-				return {english: 'Children aged 10 -19 mos who are up to date with immunization', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Children aged 10-19 mos who are up to date with immunization', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'UpToDateWithImmunization19To24MonthsLabel':
 				return {english: 'Children 19 mos - 2 years who are up to date with immunization', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'UrineDipstickTest':
