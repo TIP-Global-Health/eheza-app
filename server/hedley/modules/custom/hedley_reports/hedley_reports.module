@@ -435,15 +435,15 @@ function hedley_reports_trigger_recalculation_by_edited_content($node) {
  */
 function hedley_reports_get_triggering_encounter_types() {
   return [
-    HEDLEY_STATS_PRENATAL_ENCOUNTER_TYPE,
-    HEDLEY_STATS_ACUTE_ILLNESS_ENCOUNTER_TYPE,
-    HEDLEY_STATS_CHILD_SCOREBOARD_ENCOUNTER_TYPE,
-    HEDLEY_STATS_HIV_ENCOUNTER_TYPE,
-    HEDLEY_STATS_HOME_VISIT_ENCOUNTER_TYPE,
-    HEDLEY_STATS_NCD_ENCOUNTER_TYPE,
-    HEDLEY_STATS_NUTRITION_ENCOUNTER_TYPE,
-    HEDLEY_STATS_TUBERCULOSIS_ENCOUNTER_TYPE,
-    HEDLEY_STATS_SPV_ENCOUNTER_TYPE,
+    HEDLEY_ACTIVITY_ACUTE_ILLNESS_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_CHILD_SCOREBOARD_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_HIV_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_HOME_VISIT_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_NCD_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_NUTRITION_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_PRENATAL_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_WELL_CHILD_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_TUBERCULOSIS_ENCOUNTER_CONTENT_TYPE,
   ];
 }
 
@@ -586,7 +586,17 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
   $encounters_data = [];
   $ai_diagnosis_mapping = hedley_reports_ai_diagnosis_mapping();
   $prenatal_diagnosis_mapping = hedley_reports_prenatal_diagnosis_mapping();
-  $encounter_types_to_load = hedley_reports_get_triggering_encounter_types();
+  $encounter_types_to_load = [
+    HEDLEY_STATS_PRENATAL_ENCOUNTER_TYPE,
+    HEDLEY_STATS_ACUTE_ILLNESS_ENCOUNTER_TYPE,
+    HEDLEY_STATS_CHILD_SCOREBOARD_ENCOUNTER_TYPE,
+    HEDLEY_STATS_HIV_ENCOUNTER_TYPE,
+    HEDLEY_STATS_HOME_VISIT_ENCOUNTER_TYPE,
+    HEDLEY_STATS_NCD_ENCOUNTER_TYPE,
+    HEDLEY_STATS_NUTRITION_ENCOUNTER_TYPE,
+    HEDLEY_STATS_TUBERCULOSIS_ENCOUNTER_TYPE,
+    HEDLEY_STATS_SPV_ENCOUNTER_TYPE,
+  ];
   $individual_participants_ids = hedley_person_individual_participants_for_person($person->nid, $encounter_types_to_load);
   $individual_participants = node_load_multiple($individual_participants_ids);
   foreach ($individual_participants as $individual_participant) {
