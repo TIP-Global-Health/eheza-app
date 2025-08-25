@@ -70,6 +70,7 @@ function hedley_forms_field_default_field_bases() {
         'en' => 'English',
         'rw' => 'Kinyarwanda',
         'bu' => 'Kirundi',
+        'so' => 'Somali',
       ),
       'allowed_values_function' => '',
     ),
