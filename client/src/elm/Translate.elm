@@ -16540,7 +16540,7 @@ translationSet trans =
                     { english = "First Trimester"
                     , kinyarwanda = Just "Igihembwe cya mbere"
                     , kirundi = Just "Igice ca mbere"
-                    , somali = Just "Saddex-biloodka Koowaad "
+                    , somali = Just "Saddex-biloodka Koowaad"
                     }
 
                 SecondTrimester ->
