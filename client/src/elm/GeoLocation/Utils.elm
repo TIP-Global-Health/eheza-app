@@ -64,6 +64,13 @@ getGeoProvinces site =
                 , ( toEntityId 30, GeoLocation "Rumonge" Nothing )
                 ]
 
+        SiteSomalia ->
+            Dict.fromList
+                [ ( toEntityId 2755, GeoLocation "Amajyaruguru" Nothing )
+                , ( toEntityId 4074, GeoLocation "Iburasirazuba" Nothing )
+                , ( toEntityId 4847, GeoLocation "Umujyi wa kigali" Nothing )
+                ]
+
         _ ->
             Dict.empty
 
@@ -88,6 +95,17 @@ getGeoDistricts site =
                 , ( toEntityId 31, GeoLocation "Rumonge" (Just <| toEntityId 30) )
                 ]
 
+        SiteSomalia ->
+            Dict.fromList
+                [ ( toEntityId 2756, GeoLocation "Gakenke" (Just <| toEntityId 2755) )
+                , ( toEntityId 3490, GeoLocation "Rulindo" (Just <| toEntityId 2755) )
+                , ( toEntityId 4075, GeoLocation "Bugesera" (Just <| toEntityId 4074) )
+                , ( toEntityId 4744, GeoLocation "Rwamagana" (Just <| toEntityId 4074) )
+                , ( toEntityId 4848, GeoLocation "Nyarugenge" (Just <| toEntityId 4847) )
+                , ( toEntityId 4903, GeoLocation "Gasabo" (Just <| toEntityId 4847) )
+                , ( toEntityId 5478, GeoLocation "Kicukiro" (Just <| toEntityId 4847) )
+                ]
+
         _ ->
             Dict.empty
 
@@ -100,6 +118,9 @@ getGeoSectors site =
 
         SiteBurundi ->
             getGeoSectorsForBurundi
+
+        SiteSomalia ->
+            getGeoSectorsForRwanda
 
         _ ->
             Dict.empty
@@ -202,6 +223,9 @@ getGeoCells site =
 
         SiteBurundi ->
             getGeoCellsForBurundi
+
+        SiteSomalia ->
+            getGeoCellsForRwanda
 
         _ ->
             Dict.empty
@@ -588,6 +612,9 @@ getGeoVillages site =
 
         SiteBurundi ->
             getGeoVillagesForBurundi
+
+        SiteSomalia ->
+            getGeoVillagesForRwanda
 
         _ ->
             Dict.empty
@@ -2999,6 +3026,9 @@ resolveGeoSructureLabelLevel2 site =
         SiteBurundi ->
             Translate.Commune
 
+        SiteSomalia ->
+            Translate.District
+
         SiteUnknown ->
             Translate.EmptyString
 
@@ -3011,6 +3041,9 @@ resolveGeoSructureLabelLevel3 site =
 
         SiteBurundi ->
             Translate.Zone
+
+        SiteSomalia ->
+            Translate.Sector
 
         SiteUnknown ->
             Translate.EmptyString
@@ -3025,6 +3058,9 @@ resolveGeoSructureLabelLevel4 site =
         SiteBurundi ->
             Translate.Colline
 
+        SiteSomalia ->
+            Translate.Cell
+
         SiteUnknown ->
             Translate.EmptyString
 
@@ -3037,6 +3073,9 @@ resolveGeoSructureLabelLevel5 site =
 
         SiteBurundi ->
             Translate.CollineSub
+
+        SiteSomalia ->
+            Translate.Village
 
         SiteUnknown ->
             Translate.EmptyString
