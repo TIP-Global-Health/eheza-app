@@ -66,10 +66,7 @@ getGeoProvinces site =
 
         SiteSomalia ->
             Dict.fromList
-                [ ( toEntityId 2755, GeoLocation "Amajyaruguru" Nothing )
-                , ( toEntityId 4074, GeoLocation "Iburasirazuba" Nothing )
-                , ( toEntityId 4847, GeoLocation "Umujyi wa kigali" Nothing )
-                ]
+                [ ( toEntityId 1, GeoLocation "Banadir" Nothing ) ]
 
         _ ->
             Dict.empty
@@ -97,13 +94,8 @@ getGeoDistricts site =
 
         SiteSomalia ->
             Dict.fromList
-                [ ( toEntityId 2756, GeoLocation "Gakenke" (Just <| toEntityId 2755) )
-                , ( toEntityId 3490, GeoLocation "Rulindo" (Just <| toEntityId 2755) )
-                , ( toEntityId 4075, GeoLocation "Bugesera" (Just <| toEntityId 4074) )
-                , ( toEntityId 4744, GeoLocation "Rwamagana" (Just <| toEntityId 4074) )
-                , ( toEntityId 4848, GeoLocation "Nyarugenge" (Just <| toEntityId 4847) )
-                , ( toEntityId 4903, GeoLocation "Gasabo" (Just <| toEntityId 4847) )
-                , ( toEntityId 5478, GeoLocation "Kicukiro" (Just <| toEntityId 4847) )
+                [ ( toEntityId 2, GeoLocation "Deynile" (Just <| toEntityId 1) )
+                , ( toEntityId 9, GeoLocation "Garasbaley" (Just <| toEntityId 1) )
                 ]
 
         _ ->
@@ -120,7 +112,7 @@ getGeoSectors site =
             getGeoSectorsForBurundi
 
         SiteSomalia ->
-            getGeoSectorsForRwanda
+            getGeoSectorsForSomalia
 
         _ ->
             Dict.empty
@@ -215,6 +207,15 @@ getGeoSectorsForBurundi =
         ]
 
 
+getGeoSectorsForSomalia : Dict GeoLocationId GeoLocation
+getGeoSectorsForSomalia =
+    Dict.fromList
+        [ ( toEntityId 3, GeoLocation "Koshin" (Just <| toEntityId 2) )
+        , ( toEntityId 6, GeoLocation "Zeytuun" (Just <| toEntityId 2) )
+        , ( toEntityId 10, GeoLocation "Iskaashi" (Just <| toEntityId 9) )
+        ]
+
+
 getGeoCells : Site -> Dict GeoLocationId GeoLocation
 getGeoCells site =
     case site of
@@ -225,7 +226,7 @@ getGeoCells site =
             getGeoCellsForBurundi
 
         SiteSomalia ->
-            getGeoCellsForRwanda
+            getGeoCellsForSomalia
 
         _ ->
             Dict.empty
@@ -604,6 +605,15 @@ getGeoCellsForBurundi =
         ]
 
 
+getGeoCellsForSomalia : Dict GeoLocationId GeoLocation
+getGeoCellsForSomalia =
+    Dict.fromList
+        [ ( toEntityId 4, GeoLocation "Koshin" (Just <| toEntityId 3) )
+        , ( toEntityId 7, GeoLocation "Zeytuun" (Just <| toEntityId 6) )
+        , ( toEntityId 11, GeoLocation "Iskaashi" (Just <| toEntityId 10) )
+        ]
+
+
 getGeoVillages : Site -> Dict GeoLocationId GeoLocation
 getGeoVillages site =
     case site of
@@ -614,7 +624,7 @@ getGeoVillages site =
             getGeoVillagesForBurundi
 
         SiteSomalia ->
-            getGeoVillagesForRwanda
+            getGeoVillagesForSomalia
 
         _ ->
             Dict.empty
@@ -3009,6 +3019,15 @@ getGeoVillagesForBurundi =
         , ( toEntityId 89, GeoLocation "Mugara" (Just <| toEntityId 88) )
         , ( toEntityId 98, GeoLocation "Gitwe" (Just <| toEntityId 97) )
         , ( toEntityId 103, GeoLocation "Karagara" (Just <| toEntityId 102) )
+        ]
+
+
+getGeoVillagesForSomalia : Dict GeoLocationId GeoLocation
+getGeoVillagesForSomalia =
+    Dict.fromList
+        [ ( toEntityId 5, GeoLocation "Koshin" (Just <| toEntityId 4) )
+        , ( toEntityId 8, GeoLocation "Zeytuun" (Just <| toEntityId 7) )
+        , ( toEntityId 12, GeoLocation "Iskaashi" (Just <| toEntityId 11) )
         ]
 
 
