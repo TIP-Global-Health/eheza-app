@@ -213,6 +213,7 @@ getGeoSectorsForSomalia =
         [ ( toEntityId 3, GeoLocation "Koshin" (Just <| toEntityId 2) )
         , ( toEntityId 6, GeoLocation "Zeytuun" (Just <| toEntityId 2) )
         , ( toEntityId 10, GeoLocation "Iskaashi" (Just <| toEntityId 9) )
+        , ( toEntityId 13, GeoLocation "Qodaxley" (Just <| toEntityId 9) )
         ]
 
 
@@ -611,6 +612,7 @@ getGeoCellsForSomalia =
         [ ( toEntityId 4, GeoLocation "Koshin" (Just <| toEntityId 3) )
         , ( toEntityId 7, GeoLocation "Zeytuun" (Just <| toEntityId 6) )
         , ( toEntityId 11, GeoLocation "Iskaashi" (Just <| toEntityId 10) )
+        , ( toEntityId 14, GeoLocation "Qodaxley" (Just <| toEntityId 13) )
         ]
 
 
@@ -3028,6 +3030,7 @@ getGeoVillagesForSomalia =
         [ ( toEntityId 5, GeoLocation "Koshin" (Just <| toEntityId 4) )
         , ( toEntityId 8, GeoLocation "Zeytuun" (Just <| toEntityId 7) )
         , ( toEntityId 12, GeoLocation "Iskaashi" (Just <| toEntityId 11) )
+        , ( toEntityId 15, GeoLocation "Qodaxley" (Just <| toEntityId 14) )
         ]
 
 
