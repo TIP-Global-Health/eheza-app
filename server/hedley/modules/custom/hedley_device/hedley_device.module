@@ -134,7 +134,7 @@ function hedley_device_check_unique_pairing_code($code, $nid = NULL) {
     return TRUE;
   }
 
-  $query = hedley_general_create_entity_field_query_excluding_deleted();
+  $query = new EntityFieldQuery();
   $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'device')
