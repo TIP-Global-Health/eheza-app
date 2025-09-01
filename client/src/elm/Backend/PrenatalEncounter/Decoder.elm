@@ -33,6 +33,7 @@ decodePrenatalEncounter =
         |> optional "prenatal_diagnoses" decodeDiagnoses (EverySet.singleton NoPrenatalDiagnosis)
         |> optional "past_prenatal_diagnoses" decodeDiagnoses (EverySet.singleton NoPrenatalDiagnosis)
         |> optional "prenatal_indicators" (decodeEverySet decodePrenatalIndicator) EverySet.empty
+        |> optional "next_visit_date" (nullable decodeYYYYMMDD) Nothing
         |> required "deleted" (decodeWithFallback False bool)
         |> optional "shard" (nullable decodeEntityUuid) Nothing
 
@@ -331,6 +332,15 @@ decodePrenatalDiagnosis =
 
                     "suicide-risk" ->
                         succeed DiagnosisSuicideRisk
+
+                    "high-risk-of-preeclampsia-initial" ->
+                        succeed DiagnosisHighRiskOfPreeclampsiaInitialPhase
+
+                    "high-risk-of-preeclampsia-recurrent" ->
+                        succeed DiagnosisHighRiskOfPreeclampsiaRecurrentPhase
+
+                    "moderate-risk-of-preeclampsia" ->
+                        succeed DiagnosisModerateRiskOfPreeclampsia
 
                     "other" ->
                         succeed DiagnosisOther

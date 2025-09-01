@@ -8038,6 +8038,44 @@ function hedley_prenatal_field_default_field_instances() {
   );
 
   // Exported field_instance:
+  // 'node-prenatal_medication_distribution-field_reinforce_treatment_signs'.
+  $field_instances['node-prenatal_medication_distribution-field_reinforce_treatment_signs'] = array(
+    'bundle' => 'prenatal_medication_distribution',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_reinforce_treatment_signs',
+    'label' => 'Reinforce treatment signs',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 15,
+    ),
+  );
+
+  // Exported field_instance:
   // 'node-prenatal_medication_distribution-field_shards'.
   $field_instances['node-prenatal_medication_distribution-field_shards'] = array(
     'bundle' => 'prenatal_medication_distribution',
@@ -13669,6 +13707,7 @@ function hedley_prenatal_field_default_field_instances() {
   t('Reasons for non referrals');
   t('Recommended Treatment');
   t('Referrals');
+  t('Reinforce treatment signs');
   t('Review State');
   t('Rhesus');
   t('Send to HC');

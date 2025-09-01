@@ -52,7 +52,8 @@ type alias VaccinationProgressDict =
 
 
 type alias MedicationDistributionForm =
-    { mebendezole : Maybe Bool
+    { aspirin : Maybe Bool
+    , mebendezole : Maybe Bool
 
     -- Tenofovir is not in use, for now.
     , tenofovir : Maybe Bool
@@ -72,12 +73,18 @@ type alias MedicationDistributionForm =
     , recommendedTreatmentSigns : Maybe (List RecommendedTreatmentSign)
     , hypertensionAvoidingGuidanceReason : Maybe AvoidingGuidanceReason
     , hypertensionAvoidingGuidanceReasonDirty : Bool
+
+    -- Moderate anemia treatment.
+    , reinforceFefol : Maybe Bool
+    , reinforceMMS : Maybe Bool
+    , repeatHemoglobinTest : Maybe Bool
     }
 
 
 emptyMedicationDistributionForm : MedicationDistributionForm
 emptyMedicationDistributionForm =
-    { mebendezole = Nothing
+    { aspirin = Nothing
+    , mebendezole = Nothing
     , tenofovir = Nothing
     , lamivudine = Nothing
     , dolutegravir = Nothing
@@ -93,6 +100,9 @@ emptyMedicationDistributionForm =
     , recommendedTreatmentSigns = Nothing
     , hypertensionAvoidingGuidanceReason = Nothing
     , hypertensionAvoidingGuidanceReasonDirty = False
+    , reinforceFefol = Nothing
+    , reinforceMMS = Nothing
+    , repeatHemoglobinTest = Nothing
     }
 
 

@@ -1365,12 +1365,18 @@ encodeLastMenstrualPeriodValue value =
     , ( "type", string "last_menstrual_period" )
     ]
         ++ encodeNullable "not_confident_reason" value.notConfidentReason encodeLmpDateNotConfidentReason
+        ++ encodeNullable "late_first_visit_reason" value.lateFirstVisitReason encodeLateFirstANCVisitReason
         ++ encodeNullable "weight" value.prePregnancyWeight encodeWeightInKg
 
 
 encodeLmpDateNotConfidentReason : LmpDateNotConfidentReason -> Value
 encodeLmpDateNotConfidentReason =
     lmpDateNotConfidentReasonToString >> string
+
+
+encodeLateFirstANCVisitReason : LateFirstANCVisitReason -> Value
+encodeLateFirstANCVisitReason =
+    lateFirstANCVisitReasonToString >> string
 
 
 encodeMedicalHistory : MedicalHistory -> List ( String, Value )
@@ -1384,6 +1390,8 @@ encodeMedicalHistoryValue value =
     , ( "physical_condition_history", encodeEverySet encodeMedicalHistoryPhysicalCondition value.physicalConditions )
     , ( "infectious_disease_history", encodeEverySet encodeMedicalHistoryInfectiousDisease value.infectiousDiseases )
     , ( "mental_health_issues", encodeEverySet encodeMedicalHistoryMentalHealthIssue value.mentalHealthIssues )
+    , ( "preeclampsia_in_family", encodeOccursInFamilySign value.preeclampsiaInFamily )
+    , ( "deleted", bool False )
     , ( "type", string "medical_history" )
     ]
 
@@ -1406,6 +1414,11 @@ encodeMedicalHistoryInfectiousDisease =
 encodeMedicalHistoryMentalHealthIssue : MedicalHistoryMentalHealthIssue -> Value
 encodeMedicalHistoryMentalHealthIssue =
     medicalHistoryMentalHealthIssueToString >> string
+
+
+encodeOccursInFamilySign : OccursInFamilySign -> Value
+encodeOccursInFamilySign =
+    occursInFamilySignToString >> string
 
 
 encodeMedicationSign : MedicationSign -> Value
@@ -1556,6 +1569,9 @@ encodeFetalPresentation sign =
             Twins ->
                 "twins"
 
+            UnclearImprecise ->
+                "unclear-imprecise"
+
             Unknown ->
                 "unknown"
 
@@ -1657,6 +1673,11 @@ encodePreviousDeliveryPeriod sign =
             MoreThan5Years ->
                 "more-than-5-years"
 
+            MoreThan10Years ->
+                "more-than-10-years"
+
+            -- After adding 'more than 10 years', actual meaninng of
+            -- this option becomes 'none of these'.
             Neither ->
                 "neither"
 
@@ -2836,6 +2857,7 @@ encodePrenatalMedicationDistributionValue value =
     ]
         ++ encodeEverySetNullable "recommended_treatment" value.recommendedTreatmentSigns encodeRecommendedTreatmentSign
         ++ encodeEverySetNullable "avoiding_guidance_reason" value.avoidingGuidanceReason encodeAvoidingGuidanceReason
+        ++ encodeEverySetNullable "reinforce_treatment_signs" value.reinforceTreatmentSigns encodeReinforceTreatmentSign
 
 
 encodeMedicationDistributionSign : MedicationDistributionSign -> Value
@@ -2844,6 +2866,9 @@ encodeMedicationDistributionSign sign =
         case sign of
             Amoxicillin ->
                 "amoxicillin"
+
+            Aspirin ->
+                "aspirin"
 
             Coartem ->
                 "coartem"
@@ -2902,9 +2927,6 @@ encodeMedicationDistributionSign sign =
             MMS ->
                 "mms"
 
-            Aspirin ->
-                "aspirin"
-
             Fefol ->
                 "fefol"
 
@@ -2924,6 +2946,9 @@ encodeMedicationNonAdministrationSign sign =
         case sign of
             MedicationAmoxicillin reason ->
                 "amoxicillin-" ++ administrationNoteToString reason
+
+            MedicationAspirin reason ->
+                "aspirin-" ++ administrationNoteToString reason
 
             MedicationCoartem reason ->
                 "coartem-" ++ administrationNoteToString reason
@@ -2982,6 +3007,11 @@ encodeRecommendedTreatmentSign =
 encodeAvoidingGuidanceReason : AvoidingGuidanceReason -> Value
 encodeAvoidingGuidanceReason =
     avoidingGuidanceReasonToString >> string
+
+
+encodeReinforceTreatmentSign : ReinforceTreatmentSign -> Value
+encodeReinforceTreatmentSign =
+    reinforceTreatmentSignToString >> string
 
 
 encodeTravelHistory : TravelHistory -> List ( String, Value )

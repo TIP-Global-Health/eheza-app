@@ -25,6 +25,7 @@ type NextStepsTask
     | NextStepsNewbornEnrolment
     | NextStepsMedicationDistribution
     | NextStepsWait
+    | NextStepsNextVisit
 
 
 type SymptomReviewStep
@@ -43,6 +44,7 @@ type TreatmentReviewTask
 
 type ImmunisationTask
     = TaskTetanus
+    | TaskOverview
 
 
 type WarningPopupType msg
@@ -60,8 +62,7 @@ type ObstetricHistoryStep
 
 
 type MedicationTask
-    = TaskAspirin
-    | TaskCalcium
+    = TaskCalcium
     | TaskFefol
     | TaskFolate
     | TaskIron

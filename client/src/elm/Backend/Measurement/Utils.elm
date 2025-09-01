@@ -1775,6 +1775,41 @@ avoidingGuidanceReasonToString value =
             "hypertension-other"
 
 
+reinforceTreatmentSignFromString : String -> Maybe ReinforceTreatmentSign
+reinforceTreatmentSignFromString value =
+    case value of
+        "anemia-fefol" ->
+            Just ReinforceSignFefol
+
+        "anemia-mms" ->
+            Just ReinforceSignMMS
+
+        "anemia-repeat-test" ->
+            Just ReinforceSignRepeatHemoglobinTest
+
+        "none" ->
+            Just NoReinforceTreatmentSigns
+
+        _ ->
+            Nothing
+
+
+reinforceTreatmentSignToString : ReinforceTreatmentSign -> String
+reinforceTreatmentSignToString value =
+    case value of
+        ReinforceSignFefol ->
+            "anemia-fefol"
+
+        ReinforceSignMMS ->
+            "anemia-mms"
+
+        ReinforceSignRepeatHemoglobinTest ->
+            "anemia-repeat-test"
+
+        NoReinforceTreatmentSigns ->
+            "none"
+
+
 illnessSymptomToString : IllnessSymptom -> String
 illnessSymptomToString symptom =
     case symptom of
@@ -3899,6 +3934,77 @@ lmpDateNotConfidentReasonFromString value =
             Nothing
 
 
+lateFirstANCVisitReasonToString : LateFirstANCVisitReason -> String
+lateFirstANCVisitReasonToString value =
+    case value of
+        ReasonLackOfFunds ->
+            "lack-of-funds"
+
+        ReasonLackOfHealthInsurance ->
+            "lack-of-health-insurance"
+
+        ReasonPartnerAccompanimentRequirement ->
+            "partner-accompaniment-requirement"
+
+        ReasonUndetectedPregnancy ->
+            "undetected-pregnancy"
+
+        ReasonLongDistancesToHealthFacilities ->
+            "long-distances-to-health-facilities"
+
+        ReasonNegativePastExperiences ->
+            "negative-past-experiences"
+
+        ReasonTraditionalBeliefs ->
+            "traditional-beliefs"
+
+        ReasonLackOfAwarenessToANC ->
+            "lack-of-awareness-to-anc"
+
+        ReasonDelayedRecognitionOfSymptoms ->
+            "delayed-recognition-of-symptoms"
+
+        ReasonOtherReasons ->
+            "other-reasons"
+
+
+lateFirstANCVisitReasonFromString : String -> Maybe LateFirstANCVisitReason
+lateFirstANCVisitReasonFromString value =
+    case value of
+        "lack-of-funds" ->
+            Just ReasonLackOfFunds
+
+        "lack-of-health-insurance" ->
+            Just ReasonLackOfHealthInsurance
+
+        "partner-accompaniment-requirement" ->
+            Just ReasonPartnerAccompanimentRequirement
+
+        "undetected-pregnancy" ->
+            Just ReasonUndetectedPregnancy
+
+        "long-distances-to-health-facilities" ->
+            Just ReasonLongDistancesToHealthFacilities
+
+        "negative-past-experiences" ->
+            Just ReasonNegativePastExperiences
+
+        "traditional-beliefs" ->
+            Just ReasonTraditionalBeliefs
+
+        "lack-of-awareness-to-anc" ->
+            Just ReasonLackOfAwarenessToANC
+
+        "delayed-recognition-of-symptoms" ->
+            Just ReasonDelayedRecognitionOfSymptoms
+
+        "other-reasons" ->
+            Just ReasonOtherReasons
+
+        _ ->
+            Nothing
+
+
 bloodSmearResultToString : BloodSmearResult -> String
 bloodSmearResultToString value =
     case value of
@@ -4501,6 +4607,9 @@ obstetricHistoryStep2SignToString sign =
         ObstetricHistoryPartialPlacentaPreviousDelivery ->
             "partial-placenta-previous-delivery"
 
+        ObstetricHistoryPlacentaAbruptionPreviousDelivery ->
+            "placenta-abruption-previous-delivery"
+
         ObstetricHistorySevereHemorrhagingPreviousDelivery ->
             "severe-hemorrhaging-previous-delivery"
 
@@ -4509,6 +4618,15 @@ obstetricHistoryStep2SignToString sign =
 
         ObstetricHistoryConvulsionsAndUnconsciousPreviousDelivery ->
             "convulsions-and-unconscious-previous-delivery"
+
+        ObstetricHistoryChildWithLowBirthweightPreviousDelivery ->
+            "child-with-low-birthweight-previous-delivery"
+
+        ObstetricHistorySmallForGestationalAgePreviousDelivery ->
+            "small-for-gestational-age-previous-delivery"
+
+        ObstetricHistoryIntraUterineDeathPreviousDelivery ->
+            "intra-uterine-death-previous-delivery"
 
         NoObstetricHistoryStep2Sign ->
             "none"
@@ -4535,6 +4653,9 @@ obstetricHistoryStep2SignFromString sign =
         "partial-placenta-previous-delivery" ->
             Just ObstetricHistoryPartialPlacentaPreviousDelivery
 
+        "placenta-abruption-previous-delivery" ->
+            Just ObstetricHistoryPlacentaAbruptionPreviousDelivery
+
         "severe-hemorrhaging-previous-delivery" ->
             Just ObstetricHistorySevereHemorrhagingPreviousDelivery
 
@@ -4543,6 +4664,15 @@ obstetricHistoryStep2SignFromString sign =
 
         "convulsions-and-unconscious-previous-delivery" ->
             Just ObstetricHistoryConvulsionsAndUnconsciousPreviousDelivery
+
+        "child-with-low-birthweight-previous-delivery" ->
+            Just ObstetricHistoryChildWithLowBirthweightPreviousDelivery
+
+        "small-for-gestational-age-previous-delivery" ->
+            Just ObstetricHistorySmallForGestationalAgePreviousDelivery
+
+        "intra-uterine-death-previous-delivery" ->
+            Just ObstetricHistoryIntraUterineDeathPreviousDelivery
 
         "none" ->
             Just NoObstetricHistoryStep2Sign
@@ -4590,6 +4720,9 @@ medicalHistorySignToString sign =
         MentalHealthHistory ->
             "mental-health-history"
 
+        AutoimmuneDisease ->
+            "autoimmune-disease"
+
         NoMedicalHistorySigns ->
             "none"
 
@@ -4629,6 +4762,9 @@ medicalHistorySignFromString sign =
 
         "mental-health-history" ->
             Just MentalHealthHistory
+
+        "autoimmune-disease" ->
+            Just AutoimmuneDisease
 
         "none" ->
             Just NoMedicalHistorySigns
@@ -4749,6 +4885,35 @@ medicalHistoryMentalHealthIssueFromString sign =
 
         "none" ->
             Just NoMedicalHistoryMentalHealthIssue
+
+        _ ->
+            Nothing
+
+
+occursInFamilySignToString : OccursInFamilySign -> String
+occursInFamilySignToString sign =
+    case sign of
+        DoesOccur ->
+            "yes"
+
+        DoesNotOccur ->
+            "no"
+
+        NotKnownIfOccurs ->
+            "do-not-know"
+
+
+occursInFamilySignFromString : String -> Maybe OccursInFamilySign
+occursInFamilySignFromString sign =
+    case sign of
+        "yes" ->
+            Just DoesOccur
+
+        "no" ->
+            Just DoesNotOccur
+
+        "do-not-know" ->
+            Just NotKnownIfOccurs
 
         _ ->
             Nothing
