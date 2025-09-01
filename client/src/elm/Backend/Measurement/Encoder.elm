@@ -1391,7 +1391,6 @@ encodeMedicalHistoryValue value =
     , ( "infectious_disease_history", encodeEverySet encodeMedicalHistoryInfectiousDisease value.infectiousDiseases )
     , ( "mental_health_issues", encodeEverySet encodeMedicalHistoryMentalHealthIssue value.mentalHealthIssues )
     , ( "preeclampsia_in_family", encodeOccursInFamilySign value.preeclampsiaInFamily )
-    , ( "deleted", bool False )
     , ( "type", string "medical_history" )
     ]
 
