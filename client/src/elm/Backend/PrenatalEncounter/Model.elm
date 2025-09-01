@@ -16,6 +16,7 @@ type alias PrenatalEncounter =
     , diagnoses : EverySet PrenatalDiagnosis
     , pastDiagnoses : EverySet PrenatalDiagnosis
     , indicators : EverySet PrenatalIndicator
+    , nextVisitDate : Maybe NominalDate
     , shard : Maybe HealthCenterId
     }
 
@@ -29,6 +30,7 @@ emptyPrenatalEncounter participant startDate encounterType shard =
     , diagnoses = EverySet.empty
     , pastDiagnoses = EverySet.empty
     , indicators = EverySet.empty
+    , nextVisitDate = Nothing
     , shard = shard
     }
 
@@ -180,6 +182,7 @@ type Msg
     | SetPrenatalDiagnoses (EverySet PrenatalDiagnosis)
     | SetPastPrenatalDiagnoses (EverySet PrenatalDiagnosis)
     | SetLabsHistoryCompleted
+    | SetNextVisitDate NominalDate
     | HandleUpdatedPrenatalEncounter (WebData ())
     | SaveBreastExam PersonId (Maybe BreastExamId) BreastExamValue
     | HandleSavedBreastExam (WebData ())

@@ -704,6 +704,9 @@ resolveMedicationsNonAdministrationReasons value =
                     MedicationAmoxicillin reason ->
                         Just ( Amoxicillin, reason )
 
+                    MedicationAspirin reason ->
+                        Just ( Aspirin, reason )
+
                     MedicationCoartem reason ->
                         Just ( Coartem, reason )
 
@@ -10436,6 +10439,17 @@ viewAdministeredMedicationQuestion language medicineTranslationId =
                 ++ translate language medicineTranslationId
                 ++ " "
                 ++ translate language Translate.ToThePatient
+                ++ "?"
+        ]
+
+
+viewReinforceAdherenceQuestion : Language -> TranslationId -> Html any
+viewReinforceAdherenceQuestion language medicineTranslationId =
+    div [ class "label" ]
+        [ text <|
+            translate language Translate.ReinforceAdherenceQuestion
+                ++ " "
+                ++ translate language medicineTranslationId
                 ++ "?"
         ]
 

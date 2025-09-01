@@ -1049,6 +1049,7 @@ decodePrenatalMedicationDistributionValue =
         |> required "non_administration_reason" (decodeEverySet decodeMedicationNonAdministrationSign)
         |> optional "recommended_treatment" (nullable (decodeEverySet decodeRecommendedTreatmentSign)) Nothing
         |> optional "avoiding_guidance_reason" (nullable (decodeEverySet decodeAvoidingGuidanceReason)) Nothing
+        |> optional "reinforce_treatment_signs" (nullable (decodeEverySet decodeReinforceTreatmentSign)) Nothing
 
 
 decodeRecommendedTreatmentSign : Decoder RecommendedTreatmentSign
@@ -1070,6 +1071,17 @@ decodeAvoidingGuidanceReason =
                 avoidingGuidanceReasonFromString s
                     |> Maybe.map succeed
                     |> Maybe.withDefault (fail <| s ++ " is not a recognized AvoidingGuidanceReason")
+            )
+
+
+decodeReinforceTreatmentSign : Decoder ReinforceTreatmentSign
+decodeReinforceTreatmentSign =
+    string
+        |> andThen
+            (\s ->
+                reinforceTreatmentSignFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized ReinforceTreatmentSign")
             )
 
 
@@ -1926,6 +1938,7 @@ decodeLastMenstrualPeriod =
         |> optional "weight" (nullable (map WeightInKg decodeFloat)) Nothing
         |> required "confident" bool
         |> optional "not_confident_reason" (nullable decodeLmpDateNotConfidentReason) Nothing
+        |> optional "late_first_visit_reason" (nullable decodeLateFirstANCVisitReason) Nothing
         |> optional "confirmation" (decodeWithFallback False bool) False
         |> decodePrenatalMeasurement
 
@@ -1938,6 +1951,17 @@ decodeLmpDateNotConfidentReason =
                 lmpDateNotConfidentReasonFromString reason
                     |> Maybe.map succeed
                     |> Maybe.withDefault (reason ++ " is not a recognized LmpDateNotConfidentReason" |> fail)
+            )
+
+
+decodeLateFirstANCVisitReason : Decoder LateFirstANCVisitReason
+decodeLateFirstANCVisitReason =
+    string
+        |> andThen
+            (\reason ->
+                lateFirstANCVisitReasonFromString reason
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (reason ++ " is not a recognized LateFirstANCVisitReason" |> fail)
             )
 
 
@@ -1959,6 +1983,7 @@ decodeMedicalHistoryValue =
         |> optional "mental_health_issues"
             (decodeEverySet decodeMedicalHistoryMentalHealthIssue)
             (EverySet.singleton NoMedicalHistoryMentalHealthIssue)
+        |> optional "preeclampsia_in_family" decodeOccursInFamilySign NotKnownIfOccurs
 
 
 decodeMedicalHistorySign : Decoder MedicalHistorySign
@@ -2002,6 +2027,17 @@ decodeMedicalHistoryMentalHealthIssue =
                 medicalHistoryMentalHealthIssueFromString s
                     |> Maybe.map succeed
                     |> Maybe.withDefault (s ++ " is not a recognized MedicalHistoryMentalHealthIssue" |> fail)
+            )
+
+
+decodeOccursInFamilySign : Decoder OccursInFamilySign
+decodeOccursInFamilySign =
+    string
+        |> andThen
+            (\s ->
+                occursInFamilySignFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (s ++ " is not a recognized OccursInFamilySign" |> fail)
             )
 
 
@@ -2134,6 +2170,9 @@ decodeFetalPresentation =
 
                     "twins" ->
                         succeed Twins
+
+                    "unclear-imprecise" ->
+                        succeed UnclearImprecise
 
                     "unknown" ->
                         succeed Unknown
@@ -2334,6 +2373,9 @@ decodePreviousDeliveryPeriod =
 
                     "more-than-5-years" ->
                         succeed MoreThan5Years
+
+                    "more-than-10-years" ->
+                        succeed MoreThan10Years
 
                     "neither" ->
                         succeed Neither
@@ -3517,6 +3559,9 @@ decodeMedicationDistributionSign =
                     "amoxicillin" ->
                         succeed Amoxicillin
 
+                    "aspirin" ->
+                        succeed Aspirin
+
                     "coartem" ->
                         succeed Coartem
 
@@ -3574,9 +3619,6 @@ decodeMedicationDistributionSign =
                     "mms" ->
                         succeed MMS
 
-                    "aspirin" ->
-                        succeed Aspirin
-
                     "fefol" ->
                         succeed Fefol
 
@@ -3623,6 +3665,11 @@ decodeMedicationNonAdministrationSign =
                                     "amoxicillin" ->
                                         administrationNote
                                             |> Maybe.map (MedicationAmoxicillin >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "aspirin" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationAspirin >> succeed)
                                             |> Maybe.withDefault failure
 
                                     "coartem" ->
