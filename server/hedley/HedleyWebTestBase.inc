@@ -39,12 +39,6 @@ class HedleyWebTestBase extends DrupalWebTestCase {
 
     call_user_func_array(['HedleyWebTestBase', 'parent::setUp'], $modules);
 
-    // Load Composer autoloader if it exists
-    $autoloader_path = DRUPAL_ROOT . '/sites/all/vendor/autoload.php';
-    if (file_exists($autoloader_path)) {
-      require_once $autoloader_path;
-    }
-
     // Known issue: https://www.drupal.org/node/1217340
     features_revert();
   }
