@@ -395,7 +395,7 @@ h3.ui.header {
 }
 
 .icon-task-planning {
-  background-image: url(#{$img-path}icon-planning-active.svg);
+  background-image: url(#{$img-path}icon-family-white.svg);
   background-size: 88px 80px;
 }
 
@@ -2005,21 +2005,6 @@ input::placeholder {
   }
 }
 
-.icon-planning {
-  .active &:after {
-    background-image: url(#{$img-path}icon-planning-active.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-planning-active.svg), url(#{$img-path}icon-completed-circle.svg);
-  }
-
-  &:after {
-    background-image: url(#{$img-path}icon-planning.svg);
-    background-size: 64px 60px;
-  }
-}
-
 .icon-lactation {
   .active &:after {
     background-image: url(#{$img-path}icon-lactation-active.svg);
@@ -2958,6 +2943,7 @@ input::placeholder {
   }
 }
 
+.icon-planning,
 .icon-family {
   .active &:after {
     background-image: url(#{$img-path}icon-family-white.svg);
