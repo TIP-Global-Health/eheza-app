@@ -120,7 +120,7 @@ function hedley_user_get_unique_pincode() {
  *   TRUE if the supplied pincode is unique
  */
 function hedley_user_check_unique_pincode($code, $nid = NULL) {
-  $query = hedley_general_create_entity_field_query_excluding_deleted();
+  $query = new EntityFieldQuery();
   $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'nurse')
