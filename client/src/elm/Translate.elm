@@ -7228,7 +7228,7 @@ translationSet trans =
             { english = "Follow up with the mother in"
             , kinyarwanda = Just "Gukurikirana umubyeyi mu"
             , kirundi = Just "Kurikirana umuvyeyi mu"
-            , somali = Nothing
+            , somali = Just "Ka warqabka hooyada inta"
             }
 
         FollowUpOption option ->
@@ -7272,14 +7272,14 @@ translationSet trans =
                     { english = "2 Months"
                     , kinyarwanda = Just "Amezi 2"
                     , kirundi = Just "Amezi 2"
-                    , somali = Nothing
+                    , somali = Just "2 Bil"
                     }
 
                 ThreeMonths ->
                     { english = "3 Months"
                     , kinyarwanda = Just "Amezi 3"
                     , kirundi = Just "Amezi 3"
-                    , somali = Nothing
+                    , somali = Just "3 Bil"
                     }
 
                 FollowUpNotNeeded ->
@@ -7373,7 +7373,7 @@ translationSet trans =
                     { english = "Male"
                     , kinyarwanda = Just "Gabo"
                     , kirundi = Just "Gabo"
-                    , somali = Nothing
+                    , somali = Just "Lab"
                     }
 
                 Female ->
@@ -8867,7 +8867,7 @@ translationSet trans =
                     { english = "Antenatal Encounter"
                     , kinyarwanda = Just "Isuzuma k’umugore utwite"
                     , kirundi = Just "Umubonano imbere yo kuvyara"
-                    , somali = Nothing
+                    , somali = Just "Tiriska Uurreyda"
                     }
 
                 ChildScoreboardEncounter ->
@@ -10680,7 +10680,7 @@ translationSet trans =
             { english = "Lab Results"
             , kinyarwanda = Just "Ibisubizo by'Ibizamini Byafashwe"
             , kirundi = Just "Inyishu y'igipimo c'ingwara"
-            , somali = Nothing
+            , somali = Just "Natiijada baaritaanada"
             }
 
         LabResultsHistoryModeLabel mode ->
@@ -11065,7 +11065,7 @@ translationSet trans =
                     { english = "Lab Results"
                     , kinyarwanda = Just "Ibisubizo by'Ibizamini Byafashwe"
                     , kirundi = Just "Inyishu y'igipimo c'ingwara"
-                    , somali = Nothing
+                    , somali = Just "Natiijada baaritaanada"
                     }
 
                 LabResultsCurrentDipstickShort ->
@@ -12163,7 +12163,7 @@ translationSet trans =
             { english = "Medical Diagnosis"
             , kinyarwanda = Just "Uburwayi bwemejwe na Muganga"
             , kirundi = Just "Isuzuma ryo kwa muganga"
-            , somali = Nothing
+            , somali = Just "Baaritaan Caafimaad"
             }
 
         MedicalDiagnosisAlert diagnosis ->
@@ -14246,7 +14246,7 @@ translationSet trans =
                     { english = "Lab Results"
                     , kinyarwanda = Just "Ibisubizo by'Ibizamini Byafashwe"
                     , kirundi = Just "Inyishu y'igipimo c'ingwara"
-                    , somali = Nothing
+                    , somali = Just "Natiijada baaritaanada"
                     }
 
                 Backend.NCDActivity.Model.RecurrentNextSteps ->
@@ -16099,14 +16099,14 @@ translationSet trans =
             { english = "2 weeks or less"
             , kinyarwanda = Nothing
             , kirundi = Just "Indwi 2 canke itagejeje indwi 2"
-            , somali = Nothing
+            , somali = Just "Laba todobaad iyo ka yar"
             }
 
         PeriodMoreThan2Weeks ->
             { english = "More than 2 weeks"
             , kinyarwanda = Nothing
             , kirundi = Just "Birenge indwi 2"
-            , somali = Nothing
+            , somali = Just "Ka badan laba todobaad"
             }
 
         PersistentStorage authorized ->
@@ -16524,7 +16524,7 @@ translationSet trans =
                     { english = "Indeterminate"
                     , kinyarwanda = Just "Ntibisobanutse"
                     , kirundi = Just "Ntibizwi neza"
-                    , somali = Nothing
+                    , somali = Just "Aan horay laga ogaan karin"
                     }
 
                 PregnancyTestUnableToConduct ->
@@ -16689,7 +16689,7 @@ translationSet trans =
                     { english = "Lab Results"
                     , kinyarwanda = Just "Ibisubizo by'Ibizamini Byafashwe"
                     , kirundi = Just "Inyishu y'igipimo c'ingwara"
-                    , somali = Nothing
+                    , somali = Just "Natiijada baaritaanada"
                     }
 
                 Backend.PrenatalActivity.Model.RecurrentNextSteps ->
@@ -17799,7 +17799,7 @@ translationSet trans =
                     { english = "Abdominal Pain"
                     , kinyarwanda = Just "Kubabara mu nda"
                     , kirundi = Just "Ukubabara mu nda"
-                    , somali = Nothing
+                    , somali = Just "Calool Xanuun"
                     }
 
                 DiagnosisPostpartumUrinaryIncontinence ->
@@ -18263,7 +18263,7 @@ translationSet trans =
                     { english = "Abdominal Pain"
                     , kinyarwanda = Just "Kubabara mu nda"
                     , kirundi = Just "Ukubabara mu nda"
-                    , somali = Nothing
+                    , somali = Just "Calool Xanuun"
                     }
 
                 DiagnosisPostpartumUrinaryIncontinence ->
@@ -19814,7 +19814,7 @@ translationSet trans =
                     { english = "Abdominal Pain"
                     , kinyarwanda = Just "Kubabara mu nda"
                     , kirundi = Just "Ukubabara mu nda"
-                    , somali = Nothing
+                    , somali = Just "Calool Xanuun"
                     }
 
                 PostpartumUrinaryIncontinence ->
@@ -20045,7 +20045,7 @@ translationSet trans =
                     { english = "Indeterminate"
                     , kinyarwanda = Just "Ntibisobanutse"
                     , kirundi = Just "Ntibizwi neza"
-                    , somali = Nothing
+                    , somali = Just "Aan horay laga ogaan karin"
                     }
 
         PrenatalVaccineLabel value ->
@@ -21808,7 +21808,7 @@ translationSet trans =
                     { english = "Medical Diagnosis"
                     , kinyarwanda = Nothing
                     , kirundi = Just "Isuzuma ryo kwa muganga"
-                    , somali = Nothing
+                    , somali = Just "Baaritaan Caafimaad"
                     }
 
                 ComponentNCDPatientProgress ->
@@ -26583,7 +26583,7 @@ translationSet trans =
                     { english = "Increased Thirst"
                     , kinyarwanda = Just "Afite inyota cyane"
                     , kirundi = Just "Kongereza inyota"
-                    , somali = Nothing
+                    , somali = Just "Oon sii badanaya"
                     }
 
                 DryMouth ->
@@ -26637,7 +26637,7 @@ translationSet trans =
                     { english = "Abdominal Pain"
                     , kinyarwanda = Just "Kubabara mu nda"
                     , kirundi = Just "Ukubabara mu nda"
-                    , somali = Nothing
+                    , somali = Just "Calool Xanuun"
                     }
 
                 BloodyDiarrhea ->
@@ -26960,7 +26960,7 @@ translationSet trans =
                 { english = value ++ " tablets"
                 , kinyarwanda = Just <| "ibinini " ++ value
                 , kirundi = Just <| "ibinini " ++ value
-                , somali = Nothing
+                , somali = Just <| "kaniiniyo " ++ value
                 }
 
         TakenAsPrescribed ->
