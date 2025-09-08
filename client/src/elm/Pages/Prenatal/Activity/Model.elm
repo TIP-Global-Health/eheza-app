@@ -19,6 +19,7 @@ import Measurement.Model
         , HepatitisBTestForm
         , LaboratoryTask
         , MalariaTestForm
+        , MedicationAdministrationForm
         , OutsideCareForm
         , OutsideCareStep
         , PartnerHIVTestForm
@@ -36,6 +37,7 @@ import Measurement.Model
         , emptyHemoglobinTestForm
         , emptyHepatitisBTestForm
         , emptyMalariaTestForm
+        , emptyMedicationAdministrationForm
         , emptyOutsideCareForm
         , emptyPartnerHIVTestForm
         , emptyRandomBloodSugarTestUniversalForm
@@ -61,6 +63,8 @@ type Msg
     | SetLmpDate Date
     | SetLmpDateConfident Bool
     | SetLmpDateNotConfidentReason LmpDateNotConfidentReason
+    | SetLateFirstVisitReason LateFirstANCVisitReason
+    | SetPrePregnancyWeight String
     | SavePregnancyDating IndividualEncounterParticipantId PersonId (Maybe ( LastMenstrualPeriodId, LastMenstrualPeriod ))
       -- HistoryMsgs
     | SetActiveHistoryTask HistoryTask
@@ -77,6 +81,7 @@ type Msg
     | SaveOBHistoryStep2 PersonId (Maybe ( ObstetricHistoryStep2Id, ObstetricHistoryStep2 )) (Maybe HistoryTask)
       -- HistoryMsgs, Medical
     | SetMedicalHistorySigns MedicalHistorySign
+    | SetPreeclampsiaInFamily OccursInFamilySign
     | SetMedicalHistoryPhysicalCondition MedicalHistoryPhysicalCondition
     | SetMedicalHistoryInfectiousDisease MedicalHistoryInfectiousDisease
     | SetMedicalHistoryMentalHealthIssue MedicalHistoryMentalHealthIssue
@@ -119,6 +124,7 @@ type Msg
     | SetObstetricalExamFetalPresentation FetalPresentation
     | SetObstetricalExamCSectionScar CSectionScar
     | HideFundalPalpablePopup
+    | ToggleFetalHeartRateNotAudible
     | SaveObstetricalExam PersonId (Maybe ( ObstetricalExamId, ObstetricalExam )) (Maybe ExaminationTask)
       -- ExaminationMsgs, Breast Exam
     | SetBreastExamBoolInput (Bool -> BreastExamForm -> BreastExamForm) Bool
@@ -134,8 +140,28 @@ type Msg
     | SetFamilyPlanningSign FamilyPlanningSign
     | SaveFamilyPlanning PersonId (Maybe ( PrenatalFamilyPlanningId, PrenatalFamilyPlanning ))
       -- MedicationMsgs
-    | SetMedicationBoolInput (Bool -> MedicationForm -> MedicationForm) Bool
-    | SaveMedication PersonId (Maybe ( MedicationId, Medication ))
+    | SetActiveMedicationTask MedicationTask
+    | SetAspirinAdministered Bool
+    | SetAspirinReasonForNonAdministration AdministrationNote
+    | SaveAspirin PersonId (Maybe ( PrenatalAspirinId, PrenatalAspirin )) (Maybe MedicationTask)
+    | SetCalciumAdministered Bool
+    | SetCalciumReasonForNonAdministration AdministrationNote
+    | SaveCalcium PersonId (Maybe ( PrenatalCalciumId, PrenatalCalcium )) (Maybe MedicationTask)
+    | SetFefolAdministered Bool
+    | SetFefolReasonForNonAdministration AdministrationNote
+    | SaveFefol PersonId (Maybe ( PrenatalFefolId, PrenatalFefol )) (Maybe MedicationTask)
+    | SetFolateAdministered Bool
+    | SetFolateReasonForNonAdministration AdministrationNote
+    | SaveFolate PersonId (Maybe ( PrenatalFolateId, PrenatalFolate )) (Maybe MedicationTask)
+    | SetIronAdministered Bool
+    | SetIronReasonForNonAdministration AdministrationNote
+    | SaveIron PersonId (Maybe ( PrenatalIronId, PrenatalIron )) (Maybe MedicationTask)
+    | SetMMSAdministered Bool
+    | SetMMSReasonForNonAdministration AdministrationNote
+    | SaveMMS PersonId (Maybe ( PrenatalMMSId, PrenatalMMS )) (Maybe MedicationTask)
+    | SetMebendazoleAdministered Bool
+    | SetMebendazoleReasonForNonAdministration AdministrationNote
+    | SaveMebendazole PersonId (Maybe ( PrenatalMebendazoleId, PrenatalMebendazole )) (Maybe MedicationTask)
       -- MalariaPreventionMsgs
     | SetMalariaPreventionBoolInput (Bool -> MalariaPreventionForm -> MalariaPreventionForm) Bool
     | SaveMalariaPrevention PersonId (Maybe ( MalariaPreventionId, MalariaPrevention ))
@@ -232,6 +258,7 @@ type Msg
     | SetAvoidingGuidanceReason AvoidingGuidanceReason
     | SaveMedicationDistribution PersonId (Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )) Bool (Maybe NextStepsTask)
     | SaveWait PersonId (Maybe PrenatalLabsResultsId) LabsResultsValue
+    | SaveNextVisitDate NominalDate Bool (Maybe NextStepsTask)
       -- SYMPTOMREVIEWMsgs
     | SetSymptomReviewStep SymptomReviewStep
     | SetPrenatalSymptom PrenatalSymptom
@@ -395,13 +422,27 @@ emptyFamilyPlanningData =
 
 
 type alias MedicationData =
-    { form : MedicationForm
+    { aspirinForm : MedicationAdministrationForm
+    , calciumForm : MedicationAdministrationForm
+    , fefolForm : MedicationAdministrationForm
+    , folateForm : MedicationAdministrationForm
+    , ironForm : MedicationAdministrationForm
+    , mmsForm : MedicationAdministrationForm
+    , mebendazoleForm : MedicationAdministrationForm
+    , activeTask : Maybe MedicationTask
     }
 
 
 emptyMedicationData : MedicationData
 emptyMedicationData =
-    { form = emptyMedicationForm
+    { aspirinForm = emptyMedicationAdministrationForm
+    , calciumForm = emptyMedicationAdministrationForm
+    , folateForm = emptyMedicationAdministrationForm
+    , fefolForm = emptyMedicationAdministrationForm
+    , ironForm = emptyMedicationAdministrationForm
+    , mmsForm = emptyMedicationAdministrationForm
+    , mebendazoleForm = emptyMedicationAdministrationForm
+    , activeTask = Nothing
     }
 
 
@@ -712,16 +753,27 @@ emptyNextStepsData =
 
 type alias PregnancyDatingForm =
     { lmpDate : Maybe Date
+    , prePregnancyWeight : Maybe Float
+    , prePregnancyWeightDirty : Bool
     , lmpDateConfident : Maybe Bool
     , chwLmpConfirmation : Maybe Bool
     , lmpDateNotConfidentReason : Maybe LmpDateNotConfidentReason
+    , lateFirstVisitReason : Maybe LateFirstANCVisitReason
     , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
     }
 
 
 emptyPregnancyDatingForm : PregnancyDatingForm
 emptyPregnancyDatingForm =
-    PregnancyDatingForm Nothing Nothing Nothing Nothing Nothing
+    { lmpDate = Nothing
+    , prePregnancyWeight = Nothing
+    , prePregnancyWeightDirty = False
+    , lmpDateConfident = Nothing
+    , chwLmpConfirmation = Nothing
+    , lmpDateNotConfidentReason = Nothing
+    , lateFirstVisitReason = Nothing
+    , dateSelectorPopupState = Nothing
+    }
 
 
 type alias ObstetricFormFirstStep =
@@ -787,6 +839,7 @@ type alias MedicalHistoryForm =
     , physicalConditions : Maybe (List MedicalHistoryPhysicalCondition)
     , infectiousDiseases : Maybe (List MedicalHistoryInfectiousDisease)
     , mentalHealthIssues : Maybe (List MedicalHistoryMentalHealthIssue)
+    , preeclampsiaInFamily : Maybe OccursInFamilySign
     }
 
 
@@ -796,6 +849,7 @@ emptyMedicalHistoryForm =
     , physicalConditions = Nothing
     , infectiousDiseases = Nothing
     , mentalHealthIssues = Nothing
+    , preeclampsiaInFamily = Nothing
     }
 
 
@@ -839,6 +893,7 @@ type alias ObstetricalExamForm =
     , fetalMovement : Maybe Bool
     , fetalHeartRate : Maybe Int
     , fetalHeartRateDirty : Bool
+    , fetalHeartRateNotAudible : Maybe Bool
     , cSectionScar : Maybe CSectionScar
     , displayFundalPalpablePopup : Bool
     }
@@ -853,6 +908,7 @@ emptyObstetricalExamForm =
     , fetalMovement = Nothing
     , fetalHeartRate = Nothing
     , fetalHeartRateDirty = False
+    , fetalHeartRateNotAudible = Nothing
     , cSectionScar = Nothing
     , displayFundalPalpablePopup = False
     }
@@ -1001,7 +1057,7 @@ type alias PostpartumTreatmentReviewData =
     }
 
 
-emptyPostpartumTreatmentReviewData : MedicationData
+emptyPostpartumTreatmentReviewData : PostpartumTreatmentReviewData
 emptyPostpartumTreatmentReviewData =
     { form = emptyMedicationForm
     }
