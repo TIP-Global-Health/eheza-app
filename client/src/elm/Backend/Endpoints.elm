@@ -1086,10 +1086,22 @@ prenatalSpecialityCareEndpoint =
         |> withValueEncoder (object << encodePrenatalSpecialityCare)
 
 
+prenatalAspirinEndpoint : ReadWriteEndPoint Error PrenatalAspirinId PrenatalAspirin PrenatalAspirin ()
+prenatalAspirinEndpoint =
+    swEndpoint "nodes/prenatal_aspirin" decodePrenatalAspirin
+        |> withValueEncoder (object << encodePrenatalAspirin)
+
+
 prenatalCalciumEndpoint : ReadWriteEndPoint Error PrenatalCalciumId PrenatalCalcium PrenatalCalcium ()
 prenatalCalciumEndpoint =
     swEndpoint "nodes/prenatal_calcium" decodePrenatalCalcium
         |> withValueEncoder (object << encodePrenatalCalcium)
+
+
+prenatalFefolEndpoint : ReadWriteEndPoint Error PrenatalFefolId PrenatalFefol PrenatalFefol ()
+prenatalFefolEndpoint =
+    swEndpoint "nodes/prenatal_fefol" decodePrenatalFefol
+        |> withValueEncoder (object << encodePrenatalFefol)
 
 
 prenatalFolateEndpoint : ReadWriteEndPoint Error PrenatalFolateId PrenatalFolate PrenatalFolate ()

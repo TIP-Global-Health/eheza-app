@@ -1604,62 +1604,62 @@ immunisationTasksCompletedFromTotal :
     -> Measurement.Model.ImmunisationTask
     -> ( Int, Int )
 immunisationTasksCompletedFromTotal language currentDate site isChw assembled data task =
-    Maybe.map
-        (\vaccineType ->
-            let
-                form =
-                    case vaccineType of
-                        VaccineBCG ->
-                            assembled.measurements.bcgImmunisation
-                                |> getMeasurementValueFunc
-                                |> vaccinationFormWithDefault data.bcgForm
+    immunisationTaskToVaccineType task
+        |> Maybe.map
+            (\vaccineType ->
+                let
+                    form =
+                        case vaccineType of
+                            VaccineBCG ->
+                                assembled.measurements.bcgImmunisation
+                                    |> getMeasurementValueFunc
+                                    |> vaccinationFormWithDefault data.bcgForm
 
-                        VaccineDTP ->
-                            assembled.measurements.dtpImmunisation
-                                |> getMeasurementValueFunc
-                                |> vaccinationFormWithDefault data.dtpForm
+                            VaccineDTP ->
+                                assembled.measurements.dtpImmunisation
+                                    |> getMeasurementValueFunc
+                                    |> vaccinationFormWithDefault data.dtpForm
 
-                        VaccineDTPStandalone ->
-                            assembled.measurements.dtpStandaloneImmunisation
-                                |> getMeasurementValueFunc
-                                |> vaccinationFormWithDefault data.dtpStandaloneForm
+                            VaccineDTPStandalone ->
+                                assembled.measurements.dtpStandaloneImmunisation
+                                    |> getMeasurementValueFunc
+                                    |> vaccinationFormWithDefault data.dtpStandaloneForm
 
-                        VaccineHPV ->
-                            assembled.measurements.hpvImmunisation
-                                |> getMeasurementValueFunc
-                                |> vaccinationFormWithDefault data.hpvForm
+                            VaccineHPV ->
+                                assembled.measurements.hpvImmunisation
+                                    |> getMeasurementValueFunc
+                                    |> vaccinationFormWithDefault data.hpvForm
 
-                        VaccineIPV ->
-                            assembled.measurements.ipvImmunisation
-                                |> getMeasurementValueFunc
-                                |> vaccinationFormWithDefault data.ipvForm
+                            VaccineIPV ->
+                                assembled.measurements.ipvImmunisation
+                                    |> getMeasurementValueFunc
+                                    |> vaccinationFormWithDefault data.ipvForm
 
-                        VaccineMR ->
-                            assembled.measurements.mrImmunisation
-                                |> getMeasurementValueFunc
-                                |> vaccinationFormWithDefault data.mrForm
+                            VaccineMR ->
+                                assembled.measurements.mrImmunisation
+                                    |> getMeasurementValueFunc
+                                    |> vaccinationFormWithDefault data.mrForm
 
-                        VaccineOPV ->
-                            assembled.measurements.opvImmunisation
-                                |> getMeasurementValueFunc
-                                |> vaccinationFormWithDefault data.opvForm
+                            VaccineOPV ->
+                                assembled.measurements.opvImmunisation
+                                    |> getMeasurementValueFunc
+                                    |> vaccinationFormWithDefault data.opvForm
 
-                        VaccinePCV13 ->
-                            assembled.measurements.pcv13Immunisation
-                                |> getMeasurementValueFunc
-                                |> vaccinationFormWithDefault data.pcv13Form
+                            VaccinePCV13 ->
+                                assembled.measurements.pcv13Immunisation
+                                    |> getMeasurementValueFunc
+                                    |> vaccinationFormWithDefault data.pcv13Form
 
-                        VaccineRotarix ->
-                            assembled.measurements.rotarixImmunisation
-                                |> getMeasurementValueFunc
-                                |> vaccinationFormWithDefault data.rotarixForm
+                            VaccineRotarix ->
+                                assembled.measurements.rotarixImmunisation
+                                    |> getMeasurementValueFunc
+                                    |> vaccinationFormWithDefault data.rotarixForm
 
-                ( _, tasksActive, tasksCompleted ) =
-                    vaccinationFormDynamicContentAndTasks language currentDate site isChw assembled vaccineType form
-            in
-            ( tasksActive, tasksCompleted )
-        )
-        (immunisationTaskToVaccineType task)
+                    ( _, tasksActive, tasksCompleted ) =
+                        vaccinationFormDynamicContentAndTasks language currentDate site isChw assembled vaccineType form
+                in
+                ( tasksActive, tasksCompleted )
+            )
         |> Maybe.withDefault ( 0, 0 )
 
 

@@ -24,6 +24,7 @@ import Backend.Measurement.Model
         , PrenatalHealthEducationSign(..)
         , PrenatalMeasurements
         , PrenatalSymptomQuestion(..)
+        , PreviousDeliveryPeriod(..)
         , ReasonForNonReferral(..)
         , RecommendedTreatmentSign(..)
         , ReferToFacilitySign(..)
@@ -33,7 +34,13 @@ import Backend.Measurement.Model
         , TestExecutionNote(..)
         , TestResult(..)
         )
-import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getHeightValue, getMeasurementValueFunc, weightValueFunc)
+import Backend.Measurement.Utils
+    exposing
+        ( getCurrentReasonForNonReferral
+        , getHeightValue
+        , getMeasurementValueFunc
+        , weightValueFunc
+        )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isLabTechnician)
@@ -711,6 +718,23 @@ viewObstetricHistoryPane language currentDate measurements =
                 |> Maybe.map
                     (\value ->
                         let
+                            periodFromPreviousDeliveryInfo =
+                                EverySet.toList value.previousDeliveryPeriod
+                                    |> -- There can be only single value.
+                                       List.head
+                                    |> Maybe.map
+                                        (\previousDeliveryPeriod ->
+                                            if previousDeliveryPeriod == Neither then
+                                                []
+
+                                            else
+                                                [ translate language Translate.PreviousDelivery
+                                                    ++ ": "
+                                                    ++ (translate language <| Translate.PreviousDeliveryPeriod previousDeliveryPeriod)
+                                                ]
+                                        )
+                                    |> Maybe.withDefault []
+
                             cSectionInfo =
                                 if EverySet.member Backend.Measurement.Model.CSectionInPast value.previousDelivery then
                                     Maybe.andThen (EverySet.toList >> List.head) value.cSectionReason
@@ -756,13 +780,25 @@ viewObstetricHistoryPane language currentDate measurements =
                                         in
                                         [ translate language Translate.ConditionsDuringPrevoiusPregnancy ++ ": " ++ conditions ]
                         in
-                        cSectionInfo ++ conditionsDuringPrevoiusPregnancy
+                        periodFromPreviousDeliveryInfo ++ cSectionInfo ++ conditionsDuringPrevoiusPregnancy
+                    )
+                |> Maybe.withDefault []
+
+        medicalHistory =
+            getMeasurementValueFunc measurements.medicalHistory
+                |> Maybe.map
+                    (\value ->
+                        [ translate language Translate.FamilyHistoryOfPreeclampsia
+                            ++ ": "
+                            ++ (translate language <| Translate.OccursInFamilySign value.preeclampsiaInFamily)
+                        ]
                     )
                 |> Maybe.withDefault []
 
         content =
             obsetricHistory
                 ++ obstetricHistoryStep2
+                ++ medicalHistory
                 |> List.map (\alert -> li [] [ text alert ])
                 |> ul []
                 |> List.singleton
@@ -1252,6 +1288,8 @@ viewMedicationHistoryPane language currentDate isChw assembled =
             [ entriesHeading
             , resolveMedicationAdministrationDate .calcium
                 |> viewEntry Calcium
+            , resolveMedicationAdministrationDate .fefol
+                |> viewEntry Fefol
             , resolveMedicationAdministrationDate .folate
                 |> viewEntry FolicAcid
             , resolveMedicationAdministrationDate .iron
@@ -2551,6 +2589,34 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                         ++ suffix
                         |> wrapWithLI
 
+        preeclampsiaRiskTreatmentMessage =
+            getMeasurementValueFunc measurements.medicationDistribution
+                |> Maybe.andThen
+                    (\value ->
+                        let
+                            nonAdministrationReasons =
+                                Measurement.Utils.resolveMedicationsNonAdministrationReasons value
+                        in
+                        treatmentMessageForMedication value.distributionSigns nonAdministrationReasons Aspirin
+                            |> Maybe.map
+                                (\treatmentMessage ->
+                                    let
+                                        diagnosisMessage =
+                                            diagnosisForProgressReport
+                                                ++ " "
+                                                ++ (String.toLower <| translate language Translate.On)
+                                                ++ " "
+                                                ++ formatDDMMYYYY date
+                                    in
+                                    [ li []
+                                        [ p [] [ text diagnosisMessage ]
+                                        , p [] [ text treatmentMessage ]
+                                        ]
+                                    ]
+                                )
+                    )
+                |> Maybe.withDefault noTreatmentRecordedMessage
+
         undeterminedDiagnosisMessage =
             diagnosisForProgressReport
                 ++ " - "
@@ -3182,6 +3248,15 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
 
         DiagnosisSuicideRisk ->
             mentalHealthMessage
+
+        DiagnosisHighRiskOfPreeclampsiaInitialPhase ->
+            preeclampsiaRiskTreatmentMessage
+
+        DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ->
+            preeclampsiaRiskTreatmentMessage
+
+        DiagnosisModerateRiskOfPreeclampsia ->
+            preeclampsiaRiskTreatmentMessage
 
         DiagnosisPostpartumAbdominalPain ->
             undeterminedDiagnosisMessage

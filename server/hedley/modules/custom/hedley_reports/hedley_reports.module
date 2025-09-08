@@ -13,6 +13,8 @@ include_once 'hedley_reports.features.inc';
  */
 
 define('HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA', 'hedley_reports_calculate_reports_data');
+define('HEDLEY_REPORTS_SCOPE_FULL', 'full');
+define('HEDLEY_REPORTS_SCOPE_HEALTH_CENTERS', 'health_centers');
 
 const RDT_POSITIVE_VALUES = ['positive', 'positive-and-pregnant'];
 
@@ -24,14 +26,15 @@ function hedley_reports_menu() {
     'title' => 'Statistical Queries',
     'description' => 'View Statistical Queries',
     'page callback' => 'hedley_reports_statistical_queries_report_callback_menu',
-    'access callback' => 'hedley_reports_statistical_queries_report_access',
+    'access callback' => 'hedley_reports_menu_access',
   );
 
   $items['admin/reports/statistical-queries/all'] = array(
     'title' => 'Entire Population',
     'description' => 'View report for Entire Population',
     'page callback' => 'hedley_reports_statistical_queries_report_callback_global',
-    'access callback' => 'hedley_reports_statistical_queries_report_access',
+    'access callback' => 'hedley_reports_menu_access',
+    'access arguments' => [3],
   );
 
   $items['admin/reports/statistical-queries/demographics/%'] = array(
@@ -39,7 +42,8 @@ function hedley_reports_menu() {
     'description' => 'View report for province',
     'page callback' => 'hedley_reports_statistical_queries_report_callback_province',
     'page arguments' => [4],
-    'access callback' => 'hedley_reports_statistical_queries_report_access',
+    'access callback' => 'hedley_reports_menu_access',
+    'access arguments' => [3, 4],
   );
 
   $items['admin/reports/statistical-queries/demographics/%/%'] = array(
@@ -47,7 +51,8 @@ function hedley_reports_menu() {
     'description' => 'View report for district',
     'page callback' => 'hedley_reports_statistical_queries_report_callback_district',
     'page arguments' => [4, 5],
-    'access callback' => 'hedley_reports_statistical_queries_report_access',
+    'access callback' => 'hedley_reports_menu_access',
+    'access arguments' => [3, 4],
   );
 
   $items['admin/reports/statistical-queries/demographics/%/%/%'] = array(
@@ -55,7 +60,8 @@ function hedley_reports_menu() {
     'description' => 'View report for sector',
     'page callback' => 'hedley_reports_statistical_queries_report_callback_sector',
     'page arguments' => [4, 5, 6],
-    'access callback' => 'hedley_reports_statistical_queries_report_access',
+    'access callback' => 'hedley_reports_menu_access',
+    'access arguments' => [3, 4],
   );
 
   $items['admin/reports/statistical-queries/demographics/%/%/%/%'] = array(
@@ -63,7 +69,8 @@ function hedley_reports_menu() {
     'description' => 'View report for cell',
     'page callback' => 'hedley_reports_statistical_queries_report_callback_cell',
     'page arguments' => [4, 5, 6, 7],
-    'access callback' => 'hedley_reports_statistical_queries_report_access',
+    'access callback' => 'hedley_reports_menu_access',
+    'access arguments' => [3, 4],
   );
 
   $items['admin/reports/statistical-queries/demographics/%/%/%/%/%'] = array(
@@ -71,7 +78,8 @@ function hedley_reports_menu() {
     'description' => 'View report for village',
     'page callback' => 'hedley_reports_statistical_queries_report_callback_village',
     'page arguments' => [4, 5, 6, 7, 8],
-    'access callback' => 'hedley_reports_statistical_queries_report_access',
+    'access callback' => 'hedley_reports_menu_access',
+    'access arguments' => [3, 4],
   );
 
   $items['admin/reports/statistical-queries/health-center/%'] = array(
@@ -79,21 +87,23 @@ function hedley_reports_menu() {
     'description' => 'View report for health center',
     'page callback' => 'hedley_reports_statistical_queries_report_callback_health_center',
     'page arguments' => [4],
-    'access callback' => 'hedley_reports_statistical_queries_report_access',
+    'access callback' => 'hedley_reports_menu_access',
+    'access arguments' => [3, 4],
   );
 
   $items['admin/reports/completion'] = array(
     'title' => 'Completion report',
     'description' => 'View Completion report',
     'page callback' => 'hedley_reports_completion_report_callback_menu',
-    'access callback' => 'hedley_reports_statistical_queries_report_access',
+    'access callback' => 'hedley_reports_menu_access',
   );
 
   $items['admin/reports/completion/all'] = array(
     'title' => 'Entire Population',
     'description' => 'View Completion report for Entire Population',
     'page callback' => 'hedley_reports_completion_report_callback_global',
-    'access callback' => 'hedley_reports_statistical_queries_report_access',
+    'access callback' => 'hedley_reports_menu_access',
+    'access arguments' => [3],
   );
 
   $items['admin/reports/completion/health-center/%'] = array(
@@ -101,22 +111,39 @@ function hedley_reports_menu() {
     'description' => 'View Completion report for health center',
     'page callback' => 'hedley_reports_completion_report_callback_health_center',
     'page arguments' => [4],
-    'access callback' => 'hedley_reports_statistical_queries_report_access',
+    'access callback' => 'hedley_reports_menu_access',
+    'access arguments' => [3, 4],
   );
 
   return $items;
 }
 
 /**
- * Grants access to Statistical Queries and Completion Report.
+ * Grants access for Statistical Queries and Completion Report.
+ *
+ * @param string $population
+ *   Selected population scope.
+ *   Possible options: be 'all', 'health-center', 'demographics'.
+ * @param string $main_id
+ *   The ID of top level item from scope from 'health-center'/'demographics'.
  *
  * @return bool
  *   TRUE if the user has access, FALSE otherwise.
  */
-function hedley_reports_statistical_queries_report_access() {
+function hedley_reports_menu_access($population = FALSE, $main_id = FALSE) {
+  $scope_data = hedley_reports_resolve_scope_for_reports_by_current_user();
   $statistical_queries_manager_role = user_role_load_by_name('Statistical Queries Manager');
+  $base_condition = user_has_role($statistical_queries_manager_role->rid) || hedley_admin_administrators_access();
 
-  return user_has_role($statistical_queries_manager_role->rid) || hedley_admin_administrators_access();
+  if (empty($population) || $scope_data['scope'] == HEDLEY_REPORTS_SCOPE_FULL) {
+    return $base_condition;
+  }
+
+  if ($scope_data['scope'] == HEDLEY_REPORTS_SCOPE_HEALTH_CENTERS) {
+    return $base_condition && ($population == 'health-center') && in_array($main_id, $scope_data['items']);
+  }
+
+  return FALSE;
 }
 
 /**
@@ -216,15 +243,24 @@ function hedley_reports_statistical_queries_report_callback_menu() {
  * @param string $page
  *   The page identifier used to build the Elm app.
  *
- * @return array
- *   A renderable array containing the Elm app with site name
- *   and health centers data.
+ * @return string
+ *   The HTML markup for the Elm application.
  */
 function hedley_reports_callback_menu_by_page($page) {
-  $site = variable_get('hedley_general_site_name', '');
+  $data = [
+    'site' => variable_get('hedley_general_site_name', ''),
+  ];
+  $health_center_ids = hedley_health_center_get_all_health_centers_ids();
+
+  // At reports, users with 'Statistical Queries Manager' role, may be
+  // restricted to predefined list of health centers.
+  $scope_data = hedley_reports_resolve_scope_for_reports_by_current_user();
+  $data['scope'] = $scope_data['scope'];
+  if (!empty($scope_data['items'])) {
+    $health_center_ids = $scope_data['items'];
+  }
 
   $health_centers_data = [];
-  $health_center_ids = hedley_health_center_get_all_health_centers_ids();
   $nodes = node_load_multiple($health_center_ids);
   foreach ($nodes as $node) {
     $health_centers_data[] = [
@@ -233,10 +269,44 @@ function hedley_reports_callback_menu_by_page($page) {
     ];
   }
 
-  return hedley_general_build_elm_app($page, [
-    'site' => $site,
-    'health_centers' => $health_centers_data,
-  ]);
+  $data['health_centers'] = $health_centers_data;
+
+  return hedley_general_build_elm_app($page, $data);
+}
+
+/**
+ * Resolve scope for accessing reports for current user.
+ *
+ * @return array
+ *   The scope, anf if applicable, items in scope.
+ *
+ * @throws \EntityMetadataWrapperException
+ */
+function hedley_reports_resolve_scope_for_reports_by_current_user() {
+  global $user;
+  $admin_role = user_role_load_by_name('administrator');
+  $return = ['scope' => HEDLEY_REPORTS_SCOPE_FULL];
+  if (user_has_role($admin_role->rid, $user)) {
+    return $return;
+  }
+
+  $statistical_queries_manager_role = user_role_load_by_name('Statistical Queries Manager');
+  if (!user_has_role($statistical_queries_manager_role->rid, $user)) {
+    // This should not happen.
+    return [];
+  }
+
+  $account_wrapper = entity_metadata_wrapper('user', $user);
+  $allowed_health_centers = $account_wrapper->field_health_centers_for_reports->value(['identifier' => TRUE]);
+  if (empty($allowed_health_centers)) {
+    // No restrictions for HC list.
+    return $return;
+  }
+
+  return [
+    'scope' => HEDLEY_REPORTS_SCOPE_HEALTH_CENTERS,
+    'items' => $allowed_health_centers,
+  ];
 }
 
 /**
@@ -290,13 +360,7 @@ function hedley_reports_trigger_recalculation_for_edited_person($node) {
  * @throws EntityMetadataWrapperException
  */
 function hedley_reports_trigger_recalculation_by_new_content($node) {
-  $triggering_encounters = [
-    HEDLEY_ACTIVITY_ACUTE_ILLNESS_ENCOUNTER_CONTENT_TYPE,
-    HEDLEY_ACTIVITY_NUTRITION_ENCOUNTER_CONTENT_TYPE,
-    HEDLEY_ACTIVITY_HOME_VISIT_ENCOUNTER_CONTENT_TYPE,
-    HEDLEY_ACTIVITY_PRENATAL_ENCOUNTER_CONTENT_TYPE,
-    HEDLEY_ACTIVITY_WELL_CHILD_ENCOUNTER_CONTENT_TYPE,
-  ];
+  $triggering_encounters = hedley_reports_get_triggering_encounter_types();
   $triggering_measurements = hedley_reports_get_triggering_measurement_types();
 
   if (!in_array($node->type, array_merge($triggering_encounters, $triggering_measurements))) {
@@ -361,6 +425,26 @@ function hedley_reports_trigger_recalculation_by_edited_content($node) {
   hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA, $person_id, [
     'person_id' => $person_id,
   ]);
+}
+
+/**
+ * Retrieves encounter types that trigger Reports data recalculation.
+ *
+ * @return array
+ *   The array of triggering encounter types.
+ */
+function hedley_reports_get_triggering_encounter_types() {
+  return [
+    HEDLEY_ACTIVITY_ACUTE_ILLNESS_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_CHILD_SCOREBOARD_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_HIV_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_HOME_VISIT_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_NCD_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_NUTRITION_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_PRENATAL_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_WELL_CHILD_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_TUBERCULOSIS_ENCOUNTER_CONTENT_TYPE,
+  ];
 }
 
 /**
@@ -6298,6 +6382,8 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
     'prenatal_iron' => 'c1',
     'prenatal_mms' => 'd1',
     'prenatal_mebendazole' => 'e1',
+    'prenatal_aspirin' => 'f1',
+    'prenatal_fefol' => 'g1',
   ];
 
   // Load all encounters of current participant.
@@ -6444,6 +6530,7 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
     $expected = hedley_reports_prenatal_generate_expected_initial_activities($encounter_data);
     hedley_reports_prenatal_add_history_activities($encounter_data, $expected);
     hedley_reports_prenatal_add_examination_activities($encounter_data, $expected);
+    hedley_reports_prenatal_add_medication_activities($encounter_data, $expected);
     hedley_reports_prenatal_add_immunisation_activities($encounter_data, $expected);
     hedley_reports_prenatal_add_mental_health_activity($encounter_data, $expected);
     hedley_reports_prenatal_add_photo_activity($encounter_data, $expected);
@@ -6520,7 +6607,6 @@ function hedley_reports_prenatal_generate_vaccination_history_data(array $encoun
  * Here we add activities with simple logic from:
  *  - Pregnancy Dating.
  *  - Family Planning.
- *  - Medication.
  *  - Malaria prevention (Resource).
  *  - Danger Signs.
  *  - Symptom Review.
@@ -6548,39 +6634,6 @@ function hedley_reports_prenatal_generate_expected_initial_activities(array $enc
     $launch_date_obj = new DateTime($launch_date);
     if ($encounter_data['start_date_obj'] >= $launch_date_obj) {
       $expected[] = 'prenatal_symptom_review';
-    }
-  }
-
-  if ($encounter_type == 'nurse' && empty($previous_nurse_encounters_data)) {
-    // Medications were changed - from single medication activity,
-    // to 5 activities for each of medication types.
-    $change_date = variable_get('hedley_prenatal_change_medications', FALSE);
-    if (!$change_date) {
-      $expected[] = 'medication';
-    }
-    else {
-      $change_date_obj = new DateTime($change_date);
-      if ($encounter_data['start_date_obj'] >= $change_date_obj) {
-        // Encounter has started after the change.
-        $expected[] = 'prenatal_calcium';
-        $expected[] = 'prenatal_folate';
-        $expected[] = 'prenatal_iron';
-        $expected[] = 'prenatal_mms';
-
-        // Mebendazole activity is expected from EGA 24.
-        $lmp_date = $encounter_data['lmp_date'];
-        if (!empty($lmp_date)) {
-          $lmp_date_obj = new DateTime($lmp_date);
-          $ega_in_weeks = hedley_reports_prenatal_calculate_ega_weeks($lmp_date_obj, $encounter_data['start_date_obj']);
-          if ($ega_in_weeks >= 24) {
-            $expected[] = 'prenatal_mebendazole';
-          }
-        }
-      }
-      else {
-        // Encounter has started before the change.
-        $expected[] = 'medication';
-      }
     }
   }
 
@@ -6670,6 +6723,103 @@ function hedley_reports_prenatal_add_examination_activities(array $encounter_dat
       $expected[] = 'prenatal_gu_exam';
     }
   }
+}
+
+/**
+ * Adds Medication activities to the expected list, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
+function hedley_reports_prenatal_add_medication_activities(array $encounter_data, array &$expected) {
+  $encounter_type = $encounter_data['encounter_type'];
+  if ($encounter_type !== 'nurse') {
+    return;
+  }
+
+  $expected_activities = [];
+
+  // Medications were changed - from single medication activity,
+  // to 7 activities for each of medication types.
+  $change_date = variable_get('hedley_prenatal_change_medications', FALSE);
+  if (!$change_date) {
+    $expected_activities[] = 'medication';
+  }
+  else {
+    $change_date_obj = new DateTime($change_date);
+    if ($encounter_data['start_date_obj'] >= $change_date_obj) {
+      if (!hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_mms')) {
+        $expected_activities[] = 'prenatal_mms';
+      }
+
+      if (
+        !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_fefol') &&
+        !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_iron') &&
+        !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_folate') &&
+        !hedley_reports_prenatal_medication_distributed_today($encounter_data, 'prenatal_iron') &&
+        !hedley_reports_prenatal_medication_distributed_today($encounter_data, 'prenatal_folate')
+      ) {
+        $expected_activities[] = 'prenatal_fefol';
+      }
+
+      if (
+        !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_folate') &&
+        !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_fefol') &&
+        !hedley_reports_prenatal_medication_distributed_today($encounter_data, 'prenatal_fefol')
+      ) {
+        $expected_activities[] = 'prenatal_folate';
+      }
+
+      if (
+        !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_iron') &&
+        !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_fefol') &&
+        !hedley_reports_prenatal_medication_distributed_today($encounter_data, 'prenatal_fefol')
+      ) {
+        $expected_activities[] = 'prenatal_iron';
+      }
+
+      // Activities expected from certain EGA week.
+      $lmp_date = $encounter_data['lmp_date'];
+      if (!empty($lmp_date)) {
+        $lmp_date_obj = new DateTime($lmp_date);
+        $ega_in_weeks = hedley_reports_prenatal_calculate_ega_weeks($lmp_date_obj, $encounter_data['start_date_obj']);
+
+        if (
+          ($ega_in_weeks >= 12) &&
+          !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_aspirin') &&
+          (hedley_reports_prenatal_medical_history_sign_recorded_previously($encounter_data, 'hypertension-before-pregnancy') ||
+            hedley_reports_prenatal_medical_history_sign_recorded_today($encounter_data, 'hypertension-before-pregnancy') ||
+            hedley_reports_prenatal_obstetric_history_step2_sign_recorded_previously($encounter_data, 'preeclampsia-previous-pregnancy') ||
+            hedley_reports_prenatal_obstetric_history_step2_sign_recorded_today($encounter_data, 'preeclampsia-previous-pregnancy')
+          )
+        ) {
+          $expected_activities[] = 'prenatal_aspirin';
+        }
+
+        if (
+          ($ega_in_weeks >= 14) &&
+          !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_calcium')
+        ) {
+          $expected_activities[] = 'prenatal_calcium';
+        }
+
+        if (
+          ($ega_in_weeks >= 24) &&
+          !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_mebendazole')
+        ) {
+          $expected_activities[] = 'prenatal_mebendazole';
+        }
+      }
+    }
+    else {
+      // Encounter has started before the change.
+      $expected_activities[] = 'medication';
+    }
+  }
+
+  $expected = array_merge($expected, $expected_activities);
 }
 
 /**
@@ -8613,14 +8763,185 @@ function hedley_reports_prenatal_diagnosed_any_of(array $encounter_data, array $
 function hedley_reports_prenatal_symptom_recorded_previously(array $encounter_data, $symptom_value) {
   $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
   foreach ($previous_nurse_encounters_data as $previous_encounter_data) {
-    $symptom_review_measurement = $previous_encounter_data['measurements_by_type']['prenatal_symptom_review'];
-    if (empty($symptom_review_measurement) || empty($symptom_review_measurement->field_prenatal_symptoms[LANGUAGE_NONE])) {
+    $measurement = $previous_encounter_data['measurements_by_type']['prenatal_symptom_review'];
+    if (empty($measurement) || empty($measurement->field_prenatal_symptoms[LANGUAGE_NONE])) {
       continue;
     }
-    foreach ($symptom_review_measurement->field_prenatal_symptoms[LANGUAGE_NONE] as $symptom) {
+    foreach ($measurement->field_prenatal_symptoms[LANGUAGE_NONE] as $symptom) {
       if ($symptom['value'] === $symptom_value) {
         return TRUE;
       }
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Checks if a specific medication was distributed during previous encounters.
+ *
+ * This function iterates over previous nurse encounters to determine if a
+ * specified medication was distributed in any of them.
+ *
+ * @param array $encounter_data
+ *   The encounter data, including previous nurse encounters.
+ * @param string $medication_type
+ *   The type of medication distributed (medication activity).
+ *
+ * @return bool
+ *   TRUE if the medication was distributed previously; FALSE otherwise.
+ */
+function hedley_reports_prenatal_medication_distributed_previously(array $encounter_data, $medication_type) {
+  $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
+  foreach ($previous_nurse_encounters_data as $previous_encounter_data) {
+    $measurement = $previous_encounter_data['measurements_by_type'][$medication_type];
+    if (empty($measurement) || empty($measurement->field_administration_note[LANGUAGE_NONE])) {
+      continue;
+    }
+    foreach ($measurement->field_administration_note[LANGUAGE_NONE] as $note) {
+      if ($note['value'] === 'administered-today') {
+        return TRUE;
+      }
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Checks if a specific medication was distributed during current encounter.
+ *
+ * @param array $encounter_data
+ *   The encounter data.
+ * @param string $medication_type
+ *   The type of medication distributed (medication activity).
+ *
+ * @return bool
+ *   TRUE if the medication was distributed; FALSE otherwise.
+ */
+function hedley_reports_prenatal_medication_distributed_today(array $encounter_data, $medication_type) {
+  $measurement = $encounter_data['measurements_by_type'][$medication_type];
+  if (empty($measurement) || empty($measurement->field_administration_note[LANGUAGE_NONE])) {
+    return FALSE;
+  }
+
+  foreach ($measurement->field_administration_note[LANGUAGE_NONE] as $note) {
+    if ($note['value'] === 'administered-today') {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Checks if given medical history sign was recorded previously.
+ *
+ * This function iterates over previous nurse encounters to determine if a
+ * specified sign was recorded in any of them.
+ *
+ * @param array $encounter_data
+ *   The encounter data, including previous nurse encounters.
+ * @param string $sign_value
+ *   The sign value to search for in previous encounters.
+ *
+ * @return bool
+ *   TRUE if the sign was recorded previously; FALSE otherwise.
+ */
+function hedley_reports_prenatal_medical_history_sign_recorded_previously(array $encounter_data, $sign_value) {
+  $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
+  foreach ($previous_nurse_encounters_data as $previous_encounter_data) {
+    $measurement = $previous_encounter_data['measurements_by_type']['medical_history'];
+    if (empty($measurement) || empty($measurement->field_medical_history[LANGUAGE_NONE])) {
+      continue;
+    }
+    foreach ($measurement->field_medical_history[LANGUAGE_NONE] as $symptom) {
+      if ($symptom['value'] === $sign_value) {
+        return TRUE;
+      }
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Checks if given medical history sign was recorded at current encounter.
+ *
+ * @param array $encounter_data
+ *   The encounter data.
+ * @param string $sign_value
+ *   The sign value to search for.
+ *
+ * @return bool
+ *   TRUE if the sign was recorded today; FALSE otherwise.
+ */
+function hedley_reports_prenatal_medical_history_sign_recorded_today(array $encounter_data, $sign_value) {
+  $measurement = $encounter_data['measurements_by_type']['medical_history'];
+  if (empty($measurement) || empty($measurement->field_medical_history[LANGUAGE_NONE])) {
+    return FALSE;
+  }
+
+  foreach ($measurement->field_medical_history[LANGUAGE_NONE] as $symptom) {
+    if ($symptom['value'] === $sign_value) {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Checks if given obstetric history step2 sign was recorded at this encounter.
+ *
+ * @param array $encounter_data
+ *   The encounter data.
+ * @param string $sign_value
+ *   The sign value to search for.
+ *
+ * @return bool
+ *   TRUE if the sign was recorded today; FALSE otherwise.
+ */
+function hedley_reports_prenatal_obstetric_history_step2_sign_recorded_previously(array $encounter_data, $sign_value) {
+  $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
+  foreach ($previous_nurse_encounters_data as $previous_encounter_data) {
+    $measurement = $previous_encounter_data['measurements_by_type']['obstetric_history_step2'];
+    if (empty($measurement) || empty($measurement->field_obstetric_history_step2[LANGUAGE_NONE])) {
+      continue;
+    }
+    foreach ($measurement->field_obstetric_history_step2[LANGUAGE_NONE] as $symptom) {
+      if ($symptom['value'] === $sign_value) {
+        return TRUE;
+      }
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Checks if given  obstetric history step2 sign was recorded previously.
+ *
+ * This function iterates over previous nurse encounters to determine if a
+ * specified sign was recorded in any of them.
+ *
+ * @param array $encounter_data
+ *   The encounter data, including previous nurse encounters.
+ * @param string $sign_value
+ *   The sign value to search for in previous encounters.
+ *
+ * @return bool
+ *   TRUE if the sign was recorded previously; FALSE otherwise.
+ */
+function hedley_reports_prenatal_obstetric_history_step2_sign_recorded_today(array $encounter_data, $sign_value) {
+  $measurement = $encounter_data['measurements_by_type']['obstetric_history_step2'];
+  if (empty($measurement) || empty($measurement->field_obstetric_history_step2[LANGUAGE_NONE])) {
+    return FALSE;
+  }
+
+  foreach ($measurement->field_obstetric_history_step2[LANGUAGE_NONE] as $symptom) {
+    if ($symptom['value'] === $sign_value) {
+      return TRUE;
     }
   }
 
