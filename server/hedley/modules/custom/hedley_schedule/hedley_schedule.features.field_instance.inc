@@ -2635,6 +2635,62 @@ Used to track location where pregnancies were completed.',
     ),
   );
 
+  // Exported field_instance: 'node-prenatal_encounter-field_next_visit_date'.
+  $field_instances['node-prenatal_encounter-field_next_visit_date'] = array(
+    'bundle' => 'prenatal_encounter',
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'date',
+        'settings' => array(
+          'custom_date_format' => '',
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 19,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_next_visit_date',
+    'label' => 'Next Visit Date',
+    'required' => 0,
+    'settings' => array(
+      'default_value' => 'now',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 1,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_text',
+      'weight' => 17,
+    ),
+  );
+
   // Exported field_instance:
   // 'node-prenatal_encounter-field_prenatal_encounter_type'.
   $field_instances['node-prenatal_encounter-field_prenatal_encounter_type'] = array(
@@ -3160,6 +3216,7 @@ Used to track outcome of pregnancies.');
   t('Leave this blank -- it will be automatically generated.');
   t('Leave this field blank -- it will be automatically generated.');
   t('Newborn');
+  t('Next Visit Date');
   t('Nurse');
   t('Nutrition Encounter Type');
   t('Once you have created a "Counseling Topic" and it has been used, make only minor edits -- any edit will affect the historical data of which topics have been discussed with participants. If an edit would represent a different topic, then create a new topic instead. You can remove an unused topic from the relevant "Counseling Schedule" -- but do not delete the unused topic, since that would also affect the historical data.');

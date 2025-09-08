@@ -185,10 +185,8 @@ viewReportsData language currentDate themePath data model =
                                     List.filterMap
                                         (\record ->
                                             if
-                                                -- Patient was created not before the FROM date and
-                                                -- not after the TO date.
-                                                (not <| Date.compare record.created startDate == LT)
-                                                    && (not <| Date.compare record.created limitDate == GT)
+                                                -- Patient was created not after the TO date.
+                                                not <| Date.compare record.created limitDate == GT
                                             then
                                                 let
                                                     filterPrenatalData =
@@ -289,7 +287,7 @@ viewReportsData language currentDate themePath data model =
                                 viewAcuteIllnessReport language limitDate startDate scopeLabel recordsTillLimitDate
 
                             ReportDemographics ->
-                                viewDemographicsReport language limitDate scopeLabel recordsTillLimitDate
+                                viewDemographicsReport language startDate limitDate scopeLabel recordsTillLimitDate
 
                             ReportNutrition ->
                                 viewNutritionReport language limitDate scopeLabel data.nutritionReportData model.nutritionReportData
@@ -336,11 +334,21 @@ viewReportsData language currentDate themePath data model =
         ]
 
 
-viewDemographicsReport : Language -> NominalDate -> String -> List PatientData -> Html Msg
-viewDemographicsReport language limitDate scopeLabel records =
+viewDemographicsReport : Language -> NominalDate -> NominalDate -> String -> List PatientData -> Html Msg
+viewDemographicsReport language startDate limitDate scopeLabel records =
     let
         demographicsReportPatientsData =
-            generateDemographicsReportPatientsData language limitDate records
+            -- We get recoderds for all patients that were created not before
+            -- the TO date.
+            -- In this report however, we want to get only those patients that
+            -- were created not after the FROM date, hence the filtering.
+            List.filter
+                (\record ->
+                    -- Patient was created not before the FROM date.
+                    not <| Date.compare record.created startDate == LT
+                )
+                records
+                |> generateDemographicsReportPatientsData language limitDate
 
         demographicsReportEncountersData =
             generateDemographicsReportEncountersData language records

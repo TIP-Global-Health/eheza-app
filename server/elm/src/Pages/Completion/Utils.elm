@@ -299,7 +299,8 @@ allTuberculosisActivities =
 
 allPrenatalActivities : List PrenatalActivity
 allPrenatalActivities =
-    [ PrenatalAppointmentConfirmation
+    [ PrenatalAspirin
+    , PrenatalAppointmentConfirmation
     , PrenatalBirthPlan
     , PrenatalBloodGprsTest
     , PrenatalBloodGprsTestResult
@@ -309,6 +310,7 @@ allPrenatalActivities =
     , PrenatalCorePhysicalExam
     , PrenatalDangerSigns
     , PrenatalFamilyPlanning
+    , PrenatalFefol
     , PrenatalFolate
     , PrenatalFollowUp
     , PrenatalGuExam

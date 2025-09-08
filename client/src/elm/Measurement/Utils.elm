@@ -718,6 +718,9 @@ resolveMedicationsNonAdministrationReasons value =
                     MedicationAmoxicillin reason ->
                         Just ( Amoxicillin, reason )
 
+                    MedicationAspirin reason ->
+                        Just ( Aspirin, reason )
+
                     MedicationCoartem reason ->
                         Just ( Coartem, reason )
 
@@ -10374,7 +10377,13 @@ medicationAdministrationFormInputsAndTasks language currentDate person config fo
                     (\( dosage, icon, helper ) ->
                         [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
                         , div [ class "instructions" ]
-                            [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign config.medication) icon "" dosage Nothing
+                            [ viewAdministeredMedicationCustomLabel language
+                                Translate.Administer
+                                (Translate.MedicationDistributionSign config.medication)
+                                ""
+                                icon
+                                dosage
+                                Nothing
                             , div [ class "prescription" ] [ text <| helper ++ "." ]
                             ]
                         ]
@@ -10444,6 +10453,17 @@ viewAdministeredMedicationQuestion language medicineTranslationId =
                 ++ translate language medicineTranslationId
                 ++ " "
                 ++ translate language Translate.ToThePatient
+                ++ "?"
+        ]
+
+
+viewReinforceAdherenceQuestion : Language -> TranslationId -> Html any
+viewReinforceAdherenceQuestion language medicineTranslationId =
+    div [ class "label" ]
+        [ text <|
+            translate language Translate.ReinforceAdherenceQuestion
+                ++ " "
+                ++ translate language medicineTranslationId
                 ++ "?"
         ]
 

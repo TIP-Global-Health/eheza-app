@@ -19,6 +19,7 @@ class HedleyRestfulLastMenstrualPeriods extends HedleyRestfulPrenatalActivityBas
     'field_confident',
     'field_not_confident_reason',
     'field_confirmation',
+    'field_late_first_visit_reason',
   ];
 
   /**

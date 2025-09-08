@@ -17,6 +17,7 @@ class HedleyRestfulPrenatalEncounter extends HedleyRestfulIndividualEncounter {
    */
   protected $fields = [
     'field_prenatal_encounter_type',
+    'field_next_visit_date',
   ];
 
   /**
@@ -30,4 +31,13 @@ class HedleyRestfulPrenatalEncounter extends HedleyRestfulIndividualEncounter {
     'field_prenatal_indicators',
   ];
 
+  /**
+   * A list of fields that are dates. This is a sub list of $fields.
+   *
+   * @var array
+   */
+  protected $dateFields = [
+    'field_next_visit_date',
+  ];
+  
 }

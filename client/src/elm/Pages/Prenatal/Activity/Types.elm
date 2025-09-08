@@ -25,6 +25,7 @@ type NextStepsTask
     | NextStepsNewbornEnrolment
     | NextStepsMedicationDistribution
     | NextStepsWait
+    | NextStepsNextVisit
 
 
 type SymptomReviewStep
@@ -43,6 +44,7 @@ type TreatmentReviewTask
 
 type ImmunisationTask
     = TaskTetanus
+    | TaskOverview
 
 
 type WarningPopupType msg
@@ -61,10 +63,11 @@ type ObstetricHistoryStep
 
 type MedicationTask
     = TaskCalcium
+    | TaskFefol
     | TaskFolate
     | TaskIron
-    | TaskMMS
     | TaskMebendazole
+    | TaskMMS
 
 
 type PrePregnancyClassification
