@@ -2083,6 +2083,7 @@ type TranslationId
     | Type
     | UbudeheLabel
     | UbudeheNumber Ubudehe
+    | UnableToTakeMeasurement
     | Underweight
     | UndeterminedDiagnoses
     | UndeterminedDiagnosisMessage
@@ -24511,6 +24512,12 @@ translationSet trans =
 
                 NoUbudehe ->
                     translationSet EmptyString
+
+        UnableToTakeMeasurement ->
+            { english = "Unable to take measurement"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         Underweight ->
             { english = "Underweight"
