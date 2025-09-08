@@ -25,6 +25,13 @@ class HedleyRestfulIndividualEncounter extends HedleyRestfulSyncBase {
   protected $multiFields = [];
 
   /**
+   * A list of fields that are dates. This is a sub list of $fields.
+   *
+   * @var array
+   */
+  protected $dateFields = [];
+
+  /**
    * {@inheritdoc}
    */
   public function publicFieldsInfo() {
@@ -48,6 +55,10 @@ class HedleyRestfulIndividualEncounter extends HedleyRestfulSyncBase {
       $public_fields[$public_name] = [
         'property' => $field_name,
       ];
+
+      if (in_array($field_name, $this->dateFields)) {
+        $public_fields[$public_name]['process_callbacks'] = [[$this, 'renderDate2']];
+      }
     }
 
     // The label is decorative only.
@@ -106,6 +117,12 @@ class HedleyRestfulIndividualEncounter extends HedleyRestfulSyncBase {
       foreach ($this->multiFields as $field_name) {
         $public_name = str_replace('field_', '', $field_name);
         $item->{$public_name} = explode(',', $item->{$public_name});
+      }
+
+      foreach ($this->dateFields as $field_name) {
+        $public_name = str_replace('field_', '', $field_name);
+        $date = explode(' ', $item->{$public_name});
+        $item->{$public_name} = !empty($date[0]) ? $date[0] : NULL;
       }
 
       unset($item->label);
