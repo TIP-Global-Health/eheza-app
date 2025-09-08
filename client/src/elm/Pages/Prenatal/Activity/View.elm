@@ -1013,6 +1013,25 @@ viewExaminationContent language currentDate zscores assembled data =
                 |> breastExamFormWithDefault data.breastExamForm
                 |> breastExamInputsAndTasks language currentDate assembled
 
+        ( nutritionAssessmentForm, isAdequateGWG ) =
+            let
+                form =
+                    getMeasurementValueFunc assembled.measurements.nutrition
+                        |> prenatalNutritionFormWithDefault data.nutritionAssessmentForm
+
+                formWithMeasuredHeight =
+                    Maybe.map (\height -> { form | height = Just height }) previouslyMeasuredHeight
+                        |> Maybe.withDefault form
+
+                prePregnancyWeight =
+                    resolvePrePregnancyWeight assembled
+                        |> Maybe.map weightValueFunc
+
+                formWithIndicator =
+                    viewNutritionAssessmentFormWithGWGIndicator language currentDate zscores assembled formWithMeasuredHeight previouslyMeasuredHeight prePregnancyWeight
+            in
+            ( Tuple.first formWithIndicator, Tuple.second formWithIndicator )
+
         viewForm =
             case activeTask of
                 Just Vitals ->
@@ -1021,20 +1040,7 @@ viewExaminationContent language currentDate zscores assembled data =
                         |> viewVitalsForm language currentDate assembled
 
                 Just NutritionAssessment ->
-                    let
-                        form =
-                            getMeasurementValueFunc assembled.measurements.nutrition
-                                |> prenatalNutritionFormWithDefault data.nutritionAssessmentForm
-
-                        formWithMeasuredHeight =
-                            Maybe.map (\height -> { form | height = Just height }) previouslyMeasuredHeight
-                                |> Maybe.withDefault form
-
-                        prePregnancyWeight =
-                            resolvePrePregnancyWeight assembled
-                                |> Maybe.map weightValueFunc
-                    in
-                    viewNutritionAssessmentForm language currentDate zscores assembled formWithMeasuredHeight previouslyMeasuredHeight prePregnancyWeight
+                    nutritionAssessmentForm
 
                 Just CorePhysicalExam ->
                     getMeasurementValueFunc assembled.measurements.corePhysicalExam
@@ -1076,7 +1082,7 @@ viewExaminationContent language currentDate zscores assembled data =
                                     SaveVitals personId measurements.vitals nextTask
 
                                 NutritionAssessment ->
-                                    SaveNutritionAssessment personId measurements.nutrition previouslyMeasuredHeight nextTask
+                                    SaveNutritionAssessment personId measurements.nutrition previouslyMeasuredHeight isAdequateGWG nextTask
 
                                 CorePhysicalExam ->
                                     SaveCorePhysicalExam personId measurements.corePhysicalExam nextTask
@@ -3226,8 +3232,8 @@ viewVitalsForm language currentDate assembled form =
     Measurement.View.viewVitalsForm language currentDate formConfig form
 
 
-viewNutritionAssessmentForm : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> NutritionAssessmentForm -> Maybe Float -> Maybe Float -> Html Msg
-viewNutritionAssessmentForm language currentDate zscores assembled form previouslyMeasuredHeight prePregnancyWeight =
+viewNutritionAssessmentFormWithGWGIndicator : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> NutritionAssessmentForm -> Maybe Float -> Maybe Float -> ( Html Msg, Bool )
+viewNutritionAssessmentFormWithGWGIndicator language currentDate zscores assembled form previouslyMeasuredHeight prePregnancyWeight =
     let
         hideHeightInput =
             isJust previouslyMeasuredHeight
@@ -3295,6 +3301,13 @@ viewNutritionAssessmentForm language currentDate zscores assembled form previous
                 baselineClassification
 
         gwgIndicator =
+            Maybe.map Tuple.first gwgData
+
+        isAdequateGWG =
+            Maybe.map Tuple.second gwgData
+                |> Maybe.withDefault False
+
+        gwgData =
             Maybe.Extra.andThen3
                 (\prePregnancyClassification baselineWeight currentWeight ->
                     resolveGWGClassification currentDate prePregnancyClassification baselineWeight currentWeight assembled
@@ -3311,7 +3324,9 @@ viewNutritionAssessmentForm language currentDate zscores assembled form previous
                                         else
                                             "yellow"
                                 in
-                                p [ class color ] [ text <| translate language <| Translate.GWGClassification classification ]
+                                ( p [ class color ] [ text <| translate language <| Translate.GWGClassification classification ]
+                                , classification == GWGAdequate
+                                )
                             )
                 )
                 baselineClassification
@@ -3363,7 +3378,7 @@ viewNutritionAssessmentForm language currentDate zscores assembled form previous
                 form.muac
                 |> Maybe.withDefault emptyNode
     in
-    div [ class "ui form examination nutrition-assessment" ] <|
+    ( div [ class "ui form examination nutrition-assessment" ] <|
         heightSection
             ++ [ div [ class "ui grid" ]
                     [ div [ class "twelve wide column" ]
@@ -3436,6 +3451,8 @@ viewNutritionAssessmentForm language currentDate zscores assembled form previous
                     ]
                , viewPreviousMeasurement language muacPreviousValue Translate.UnitCentimeter
                ]
+    , isAdequateGWG
+    )
 
 
 viewCorePhysicalExamForm : Language -> NominalDate -> CorePhysicalExamForm -> Html Msg
