@@ -39,5 +39,5 @@ class HedleyRestfulPrenatalEncounter extends HedleyRestfulIndividualEncounter {
   protected $dateFields = [
     'field_next_visit_date',
   ];
-  
+
 }
