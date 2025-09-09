@@ -360,13 +360,7 @@ function hedley_reports_trigger_recalculation_for_edited_person($node) {
  * @throws EntityMetadataWrapperException
  */
 function hedley_reports_trigger_recalculation_by_new_content($node) {
-  $triggering_encounters = [
-    HEDLEY_ACTIVITY_ACUTE_ILLNESS_ENCOUNTER_CONTENT_TYPE,
-    HEDLEY_ACTIVITY_NUTRITION_ENCOUNTER_CONTENT_TYPE,
-    HEDLEY_ACTIVITY_HOME_VISIT_ENCOUNTER_CONTENT_TYPE,
-    HEDLEY_ACTIVITY_PRENATAL_ENCOUNTER_CONTENT_TYPE,
-    HEDLEY_ACTIVITY_WELL_CHILD_ENCOUNTER_CONTENT_TYPE,
-  ];
+  $triggering_encounters = hedley_reports_get_triggering_encounter_types();
   $triggering_measurements = hedley_reports_get_triggering_measurement_types();
 
   if (!in_array($node->type, array_merge($triggering_encounters, $triggering_measurements))) {
@@ -431,6 +425,26 @@ function hedley_reports_trigger_recalculation_by_edited_content($node) {
   hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA, $person_id, [
     'person_id' => $person_id,
   ]);
+}
+
+/**
+ * Retrieves encounter types that trigger Reports data recalculation.
+ *
+ * @return array
+ *   The array of triggering encounter types.
+ */
+function hedley_reports_get_triggering_encounter_types() {
+  return [
+    HEDLEY_ACTIVITY_ACUTE_ILLNESS_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_CHILD_SCOREBOARD_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_HIV_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_HOME_VISIT_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_NCD_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_NUTRITION_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_PRENATAL_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_WELL_CHILD_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_TUBERCULOSIS_ENCOUNTER_CONTENT_TYPE,
+  ];
 }
 
 /**
