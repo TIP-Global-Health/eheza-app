@@ -1342,7 +1342,7 @@ type TranslationId
     | PreTermPregnancy
     | PreviousCSectionScar
     | PreviousDelivery
-    | PreviousDeliveryPeriods PreviousDeliveryPeriod
+    | PreviousDeliveryPeriod PreviousDeliveryPeriod
     | PreviousFloatMeasurement Float
     | PreviousMeasurementNotFound
     | PreviousMedication
@@ -13874,7 +13874,7 @@ translationSet trans =
                     translationSet No
 
                 NotKnownIfOccurs ->
-                    { english = "Don't now"
+                    { english = "Don't know"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
@@ -17880,12 +17880,12 @@ translationSet trans =
             }
 
         PreviousDelivery ->
-            { english = "Previous Delivery"
+            { english = "Previous delivery"
             , kinyarwanda = Just "Kubyara guheruka"
             , kirundi = Just "Ukwibaruka guheruka"
             }
 
-        PreviousDeliveryPeriods period ->
+        PreviousDeliveryPeriod period ->
             case period of
                 LessThan18Month ->
                     { english = "Less than 18 month ago"
