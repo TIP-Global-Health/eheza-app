@@ -15,8 +15,12 @@ import Backend.Measurement.Model
         , ChildNutritionSign(..)
         , LungsCPESign(..)
         , ReasonForNotIsolating(..)
+        , SymptomsENTSign(..)
+        , SymptomsEyesSign(..)
         , SymptomsGISign(..)
+        , SymptomsGUSign(..)
         , SymptomsGeneralSign(..)
+        , SymptomsOralSign(..)
         , SymptomsRespiratorySign(..)
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
@@ -74,6 +78,18 @@ update currentDate site selectedHealthCenter id db msg model =
 
         symptomsGIForm =
             resolveFormWithDefaults .symptomsGI symptomsGIFormWithDefault model.symptomsData.symptomsGIForm
+
+        symptomsENTForm =
+            resolveFormWithDefaults .symptomsENT symptomsENTFormWithDefault model.symptomsData.symptomsENTForm
+
+        symptomsEyesForm =
+            resolveFormWithDefaults .symptomsEyes symptomsEyesFormWithDefault model.symptomsData.symptomsEyesForm
+
+        symptomsGUForm =
+            resolveFormWithDefaults .symptomsGU symptomsGUFormWithDefault model.symptomsData.symptomsGUForm
+
+        symptomsOralForm =
+            resolveFormWithDefaults .symptomsOral symptomsOralFormWithDefault model.symptomsData.symptomsOralForm
 
         coreExamForm =
             resolveFormWithDefaults .coreExam coreExamFormWithDefault model.physicalExamData.coreExamForm
@@ -181,6 +197,74 @@ update currentDate site selectedHealthCenter id db msg model =
             , []
             )
 
+        ToggleSymptomsENTSign sign ->
+            let
+                updatedSigns =
+                    toggleSymptomsSign SymptomsENT sign NoSymptomsENT symptomsENTForm.signs
+
+                updatedForm =
+                    { symptomsENTForm | signs = updatedSigns, signsDirty = True }
+
+                updatedData =
+                    model.symptomsData
+                        |> (\data -> { data | symptomsENTForm = updatedForm })
+            in
+            ( { model | symptomsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        ToggleSymptomsEyesSign sign ->
+            let
+                updatedSigns =
+                    toggleSymptomsSign SymptomsEyes sign NoSymptomsEyes symptomsEyesForm.signs
+
+                updatedForm =
+                    { symptomsEyesForm | signs = updatedSigns, signsDirty = True }
+
+                updatedData =
+                    model.symptomsData
+                        |> (\data -> { data | symptomsEyesForm = updatedForm })
+            in
+            ( { model | symptomsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        ToggleSymptomsGUSign sign ->
+            let
+                updatedSigns =
+                    toggleSymptomsSign SymptomsGU sign NoSymptomsGU symptomsGUForm.signs
+
+                updatedForm =
+                    { symptomsGUForm | signs = updatedSigns, signsDirty = True }
+
+                updatedData =
+                    model.symptomsData
+                        |> (\data -> { data | symptomsGUForm = updatedForm })
+            in
+            ( { model | symptomsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        ToggleSymptomsOralSign sign ->
+            let
+                updatedSigns =
+                    toggleSymptomsSign SymptomsOral sign NoSymptomsOral symptomsOralForm.signs
+
+                updatedForm =
+                    { symptomsOralForm | signs = updatedSigns, signsDirty = True }
+
+                updatedData =
+                    model.symptomsData
+                        |> (\data -> { data | symptomsOralForm = updatedForm })
+            in
+            ( { model | symptomsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetSymptomsGeneralSignValue sign string ->
             String.toInt string
                 |> Maybe.map
@@ -266,7 +350,83 @@ update currentDate site selectedHealthCenter id db msg model =
             , []
             )
 
-        SaveSymptomsGeneral personId saved nextTask ->
+        SetSymptomsENTSignValue sign string ->
+            String.toInt string
+                |> Maybe.map
+                    (\value ->
+                        let
+                            updatedForm =
+                                { symptomsENTForm | signs = Dict.insert sign value symptomsENTForm.signs }
+
+                            updatedData =
+                                model.symptomsData
+                                    |> (\data -> { data | symptomsENTForm = updatedForm })
+                        in
+                        ( { model | symptomsData = updatedData }
+                        , Cmd.none
+                        , []
+                        )
+                    )
+                |> Maybe.withDefault noChange
+
+        SetSymptomsEyesSignValue sign string ->
+            String.toInt string
+                |> Maybe.map
+                    (\value ->
+                        let
+                            updatedForm =
+                                { symptomsEyesForm | signs = Dict.insert sign value symptomsEyesForm.signs }
+
+                            updatedData =
+                                model.symptomsData
+                                    |> (\data -> { data | symptomsEyesForm = updatedForm })
+                        in
+                        ( { model | symptomsData = updatedData }
+                        , Cmd.none
+                        , []
+                        )
+                    )
+                |> Maybe.withDefault noChange
+
+        SetSymptomsGUSignValue sign string ->
+            String.toInt string
+                |> Maybe.map
+                    (\value ->
+                        let
+                            updatedForm =
+                                { symptomsGUForm | signs = Dict.insert sign value symptomsGUForm.signs }
+
+                            updatedData =
+                                model.symptomsData
+                                    |> (\data -> { data | symptomsGUForm = updatedForm })
+                        in
+                        ( { model | symptomsData = updatedData }
+                        , Cmd.none
+                        , []
+                        )
+                    )
+                |> Maybe.withDefault noChange
+
+        SetSymptomsOralSignValue sign string ->
+            String.toInt string
+                |> Maybe.map
+                    (\value ->
+                        let
+                            updatedForm =
+                                { symptomsOralForm | signs = Dict.insert sign value symptomsOralForm.signs }
+
+                            updatedData =
+                                model.symptomsData
+                                    |> (\data -> { data | symptomsOralForm = updatedForm })
+                        in
+                        ( { model | symptomsData = updatedData }
+                        , Cmd.none
+                        , []
+                        )
+                    )
+                |> Maybe.withDefault noChange
+
+        SaveSymptomsENT personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -275,16 +435,16 @@ update currentDate site selectedHealthCenter id db msg model =
                     getMeasurementValueFunc saved
 
                 form =
-                    model.symptomsData.symptomsGeneralForm
+                    model.symptomsData.symptomsENTForm
 
                 value =
-                    toSymptomsGeneralValueWithDefault measurement form
+                    toSymptomsENTValueWithDefault measurement form
 
                 extraMsgs =
                     generateSymptomsReviewMsgs nextTask
 
                 appMsgs =
-                    Backend.AcuteIllnessEncounter.Model.SaveSymptomsGeneral personId measurementId value
+                    Backend.AcuteIllnessEncounter.Model.SaveSymptomsENT personId measurementId value
                         |> Backend.Model.MsgAcuteIllnessEncounter id
                         |> App.Model.MsgIndexedDb
                         |> List.singleton
@@ -343,6 +503,122 @@ update currentDate site selectedHealthCenter id db msg model =
 
                 appMsgs =
                     Backend.AcuteIllnessEncounter.Model.SaveSymptomsGI personId measurementId value
+                        |> Backend.Model.MsgAcuteIllnessEncounter id
+                        |> App.Model.MsgIndexedDb
+                        |> List.singleton
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate site selectedHealthCenter id db) extraMsgs
+
+        SaveSymptomsGeneral personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                form =
+                    model.symptomsData.symptomsGeneralForm
+
+                value =
+                    toSymptomsGeneralValueWithDefault measurement form
+
+                extraMsgs =
+                    generateSymptomsReviewMsgs nextTask
+
+                appMsgs =
+                    Backend.AcuteIllnessEncounter.Model.SaveSymptomsGeneral personId measurementId value
+                        |> Backend.Model.MsgAcuteIllnessEncounter id
+                        |> App.Model.MsgIndexedDb
+                        |> List.singleton
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate site selectedHealthCenter id db) extraMsgs
+
+        SaveSymptomsEyes personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                form =
+                    model.symptomsData.symptomsEyesForm
+
+                value =
+                    toSymptomsEyesValueWithDefault measurement form
+
+                extraMsgs =
+                    generateSymptomsReviewMsgs nextTask
+
+                appMsgs =
+                    Backend.AcuteIllnessEncounter.Model.SaveSymptomsEyes personId measurementId value
+                        |> Backend.Model.MsgAcuteIllnessEncounter id
+                        |> App.Model.MsgIndexedDb
+                        |> List.singleton
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate site selectedHealthCenter id db) extraMsgs
+
+        SaveSymptomsGU personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                form =
+                    model.symptomsData.symptomsGUForm
+
+                value =
+                    toSymptomsGUValueWithDefault measurement form
+
+                extraMsgs =
+                    generateSymptomsReviewMsgs nextTask
+
+                appMsgs =
+                    Backend.AcuteIllnessEncounter.Model.SaveSymptomsGU personId measurementId value
+                        |> Backend.Model.MsgAcuteIllnessEncounter id
+                        |> App.Model.MsgIndexedDb
+                        |> List.singleton
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate site selectedHealthCenter id db) extraMsgs
+
+        SaveSymptomsOral personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                form =
+                    model.symptomsData.symptomsOralForm
+
+                value =
+                    toSymptomsOralValueWithDefault measurement form
+
+                extraMsgs =
+                    generateSymptomsReviewMsgs nextTask
+
+                appMsgs =
+                    Backend.AcuteIllnessEncounter.Model.SaveSymptomsOral personId measurementId value
                         |> Backend.Model.MsgAcuteIllnessEncounter id
                         |> App.Model.MsgIndexedDb
                         |> List.singleton
