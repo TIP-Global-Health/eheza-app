@@ -316,24 +316,23 @@ generateAssembledData id db =
                 |> Maybe.withDefault NotAsked
 
         participant =
-            encounter
-                |> RemoteData.andThen
-                    (\encounter_ ->
-                        Dict.get encounter_.participant db.individualParticipants
-                            |> Maybe.withDefault NotAsked
-                    )
+            RemoteData.andThen
+                (\encounter_ ->
+                    Dict.get encounter_.participant db.individualParticipants
+                        |> Maybe.withDefault NotAsked
+                )
+                encounter
 
         person =
-            participant
-                |> RemoteData.andThen
-                    (\participant_ ->
-                        Dict.get participant_.person db.people
-                            |> Maybe.withDefault NotAsked
-                    )
+            RemoteData.andThen
+                (\participant_ ->
+                    Dict.get participant_.person db.people
+                        |> Maybe.withDefault NotAsked
+                )
+                participant
 
         ( nursePreviousEncountersData, chwPreviousMeasurementsWithDates ) =
-            encounter
-                |> RemoteData.toMaybe
+            RemoteData.toMaybe encounter
                 |> Maybe.map
                     (\encounter_ ->
                         generatePreviousMeasurements id encounter_.participant db

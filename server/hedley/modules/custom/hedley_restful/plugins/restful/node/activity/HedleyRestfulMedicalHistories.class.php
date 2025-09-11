@@ -13,6 +13,13 @@ class HedleyRestfulMedicalHistories extends HedleyRestfulPrenatalActivityBase {
   /**
    * {@inheritdoc}
    */
+  protected $fields = [
+    'field_preeclampsia_in_family',
+  ];
+
+  /**
+   * {@inheritdoc}
+   */
   protected $multiFields = [
     'field_medical_history',
     'field_physical_condition_history',

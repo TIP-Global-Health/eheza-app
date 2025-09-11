@@ -319,6 +319,9 @@ nonAdministrationReasonToSign sign reason =
         Amoxicillin ->
             MedicationAmoxicillin reason
 
+        Aspirin ->
+            MedicationAspirin reason
+
         Coartem ->
             MedicationCoartem reason
 
@@ -377,9 +380,6 @@ nonAdministrationReasonToSign sign reason =
             NoMedicationNonAdministrationSigns
 
         MMS ->
-            NoMedicationNonAdministrationSigns
-
-        Aspirin ->
             NoMedicationNonAdministrationSigns
 
         Fefol ->
