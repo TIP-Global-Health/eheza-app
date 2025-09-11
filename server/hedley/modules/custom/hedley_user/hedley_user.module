@@ -211,7 +211,10 @@ function hedley_user_create_person_by_sync_incident(array &$edit, $data) {
     'national_id_number',
     'number_of_children',
     'phone_number',
-    // @todo: add photo?
+    'spouse_name',
+    'spouse_phone_number',
+    'next_of_kin_name',
+    'next_of_kin_phone_number',
     'province',
     'sector',
     'ubudehe',
