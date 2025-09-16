@@ -500,6 +500,7 @@ function hedley_general_build_elm_app($page, array $data) {
   // Add scripts.
   drupal_add_js($path_hedley_general . '/js/elm-main.js');
   drupal_add_js($path_hedley_general . '/js/elm.js');
+  drupal_add_js($path_hedley_general . '/js/pako.min.js');
 
   // Add CSS for all pages.
   drupal_add_css($path_hedley_general . '/css/elm.css', 'file');
@@ -520,12 +521,18 @@ function hedley_general_build_elm_app($page, array $data) {
   // Getting a unique ID for the app.
   $app_id = drupal_html_id('elm-app');
 
+  // Compress data.
+  $json_data = json_encode($data);
+  $compression_start = microtime(true);
+  $gzipped = gzencode($json_data, 9);
+  $compressed_data = base64_encode($gzipped);
+
   // Add settings.
   $settings = [
     'elm_apps' => [
       $app_id => [
         'page' => $page,
-        'data' => $data,
+        'data' => $compressed_data,
         'theme_path' => $path_hedley_general,
       ],
     ],
