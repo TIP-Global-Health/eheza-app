@@ -523,7 +523,6 @@ function hedley_general_build_elm_app($page, array $data) {
 
   // Compress data.
   $json_data = json_encode($data);
-  $compression_start = microtime(true);
   $gzipped = gzencode($json_data, 9);
   $compressed_data = base64_encode($gzipped);
 
