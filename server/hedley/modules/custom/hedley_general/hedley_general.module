@@ -521,8 +521,8 @@ function hedley_general_build_elm_app($page, array $data) {
   // Getting a unique ID for the app.
   $app_id = drupal_html_id('elm-app');
 
-  // Compress data.
   $json_data = json_encode($data);
+  // Compress JSON data as much as possible.
   $gzipped = gzencode($json_data, 9);
   $compressed_data = base64_encode($gzipped);
 
