@@ -64,6 +64,11 @@ $labels = [
   'Pregnancy outcome',
   'Pregnancy outcome location',
   'Pregnancy outcome date',
+  'Province',
+  'District',
+  'Sector',
+  'Cell',
+  'Village',
 ];
 foreach ($data['measurements_types'] as $measurement_type) {
   $measurement_name = format_name($measurement_type);
@@ -119,6 +124,11 @@ while (TRUE) {
     $patient_id = $pregnancy->field_person[LANGUAGE_NONE][0]['target_id'];
     $patient = node_load($patient_id);
     $birth_date = explode(' ', $patient->field_birth_date[LANGUAGE_NONE][0]['value'])[0];
+    $province = $patient->field_province[LANGUAGE_NONE][0]['value'];
+    $district = $patient->field_district[LANGUAGE_NONE][0]['value'];
+    $sector = $patient->field_sector[LANGUAGE_NONE][0]['value'];
+    $cell = $patient->field_cell[LANGUAGE_NONE][0]['value'];
+    $village = $patient->field_village[LANGUAGE_NONE][0]['value'];
     $encounter_type = $encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value'];
     $is_postpartum_encounter = in_array($encounter_type, ['nurse-postpartum', 'chw-postpartum']);
     $encounter_type = empty($encounter_type) ? 'Nurse' : hedley_general_get_field_sign_label('field_prenatal_encounter_type', $encounter_type);
@@ -173,6 +183,11 @@ while (TRUE) {
       $pregnancy_outcome,
       $pregnancy_outcome_location,
       $pregnancy_outcome_date,
+      $province,
+      $district,
+      $sector,
+      $cell,
+      $village,
     ];
 
     // Get all measurements that belong to encounter.
