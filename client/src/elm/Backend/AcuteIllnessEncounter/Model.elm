@@ -16,6 +16,7 @@ type alias AcuteIllnessEncounter =
     , sequenceNumber : Int
     , encounterType : AcuteIllnessEncounterType
     , diagnosis : AcuteIllnessDiagnosis
+    , deleted : Bool
     , shard : Maybe HealthCenterId
     }
 
@@ -28,6 +29,7 @@ emptyAcuteIllnessEncounter participant startDate sequenceNumber encounterType sh
     , endDate = Nothing
     , encounterType = encounterType
     , diagnosis = NoAcuteIllnessDiagnosis
+    , deleted = False
     , shard = shard
     }
 

@@ -40,7 +40,7 @@ encodePrenatalEncounter encounter =
     , ( "prenatal_diagnoses", list encodePrenatalDiagnosis (diagnosesWithDefault encounter.diagnoses) )
     , ( "past_prenatal_diagnoses", list encodePrenatalDiagnosis (diagnosesWithDefault encounter.pastDiagnoses) )
     , ( "next_visit_date", maybe encodeYYYYMMDD encounter.nextVisitDate )
-    , ( "deleted", bool False )
+    , ( "deleted", bool encounter.deleted )
     , ( "type", string "prenatal_encounter" )
     ]
         ++ prenatalIndicators

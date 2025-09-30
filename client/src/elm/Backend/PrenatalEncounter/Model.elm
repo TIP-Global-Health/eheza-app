@@ -17,6 +17,7 @@ type alias PrenatalEncounter =
     , pastDiagnoses : EverySet PrenatalDiagnosis
     , indicators : EverySet PrenatalIndicator
     , nextVisitDate : Maybe NominalDate
+    , deleted : Bool
     , shard : Maybe HealthCenterId
     }
 
@@ -31,6 +32,7 @@ emptyPrenatalEncounter participant startDate encounterType shard =
     , pastDiagnoses = EverySet.empty
     , indicators = EverySet.empty
     , nextVisitDate = Nothing
+    , deleted = False
     , shard = shard
     }
 

@@ -171,8 +171,12 @@ function hedley_general_get_person_measurements($person_id, array $measurement_t
 
   $query = db_select('field_data_field_person', 't');
   $query->addField('t', 'entity_id');
-  $query->condition('bundle', $measurement_types, 'IN');
+  $query->condition('t.bundle', $measurement_types, 'IN');
   $query->condition('field_person_target_id', $person_id);
+  // Join with node table first.
+  $query->join('node', 'n', 't.entity_id = n.nid');
+  // Apply exclude deleted logic.
+  $query = hedley_general_apply_exclude_deleted($query);
 
   return $query->execute()->fetchCol();
 }
@@ -198,6 +202,11 @@ function hedley_general_get_person_content_associated_by_fields($person_id, arra
     $query->addField('t', 'entity_id');
     $query->addField('t', 'bundle');
     $query->condition("${field}_target_id", $person_id);
+
+    // Join with node table first.
+    $query->join('node', 'n', 't.entity_id = n.nid');
+    // Apply exclude deleted logic.
+    $query = hedley_general_apply_exclude_deleted($query);
 
     $content = array_merge($content, $query->execute()->fetchAll());
   }
@@ -287,6 +296,36 @@ function hedley_general_get_content_type_fields($type) {
   $query->condition('bundle', $type);
 
   return $query->execute()->fetchCol();
+}
+
+/**
+ * Creates an EntityFieldQuery with the exclude_deleted tag pre-applied.
+ */
+function hedley_general_create_entity_field_query_excluding_deleted() {
+  $query = new EntityFieldQuery();
+  $query->addTag('exclude_deleted');
+  return $query;
+}
+
+/**
+ * Creates a db_select query and applies exclude_deleted logic.
+ */
+function hedley_general_create_db_select_query_excluding_deleted($node_alias = 'n') {
+  $query = db_select('node', $node_alias);
+
+  return hedley_general_apply_exclude_deleted($query, $node_alias);
+}
+
+/**
+ * Applies exclude_deleted logic for a db_select query.
+ */
+function hedley_general_apply_exclude_deleted($query, $node_alias = 'n') {
+  $query->leftJoin('field_data_field_deleted', 'fd', $node_alias . '.nid = fd.entity_id');
+  $or = db_or()
+    ->isNull('fd.field_deleted_value')
+    ->condition('fd.field_deleted_value', 0);
+  $query->condition($or);
+  return $query;
 }
 
 /**

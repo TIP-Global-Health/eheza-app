@@ -52,7 +52,7 @@ function hedley_schedule_node_presave($node) {
  *   The count of sessions.
  */
 function hedley_schedule_clinic_has_sessions($clinic_nid, $scheduled_starting_date) {
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
 
   return $query
     ->entityCondition('entity_type', 'node')
@@ -78,7 +78,7 @@ function hedley_schedule_clinic_has_sessions($clinic_nid, $scheduled_starting_da
  *   Node IDs if they exist or nothing if no nodes exist.
  */
 function hedley_schedule_clinic_get_sessions_by_date($clinic_nid, $scheduled_starting_date, $range = 1) {
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
 
   $result = $query
     ->entityCondition('entity_type', 'node')
@@ -104,7 +104,7 @@ function hedley_schedule_clinic_get_sessions_by_date($clinic_nid, $scheduled_sta
 function hedley_schedule_get_today_sessions($range = 50) {
   $today = date('Y-m-d');
 
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
   $result = $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'session')

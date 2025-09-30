@@ -33,6 +33,7 @@ class HedleyWebTestBase extends DrupalWebTestCase {
       'admin_menu',
       'restful',
       'restful_token_auth',
+      'hedley_device',
       'hedley_restful',
     ]);
 
