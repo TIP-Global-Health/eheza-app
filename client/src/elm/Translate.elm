@@ -2852,7 +2852,7 @@ translationSet trans =
 
         AdministerMMSHelper ->
             { english = "1 tablet by mouth daily - 180 tablets dispensed"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Kunywa ikinini kimwe ku munsi - Hatanzwe ibinini 180"
             , kirundi = Nothing
             }
 
@@ -6851,19 +6851,19 @@ translationSet trans =
             case value of
                 GWGSeverelyInadequate ->
                     { english = "Severely Inadequate"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibiro ntibyiyongera cyane ku buryo buhagije"
                     , kirundi = Nothing
                     }
 
                 GWGInadequate ->
                     { english = "Inadequate"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibiro ntibyiyongera ku buryo buhagije"
                     , kirundi = Nothing
                     }
 
                 GWGAdequate ->
                     { english = "Adequate"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibiro byiyongera ku buryo buhagije"
                     , kirundi = Nothing
                     }
 
@@ -6875,7 +6875,7 @@ translationSet trans =
 
         GWGClassificationLabel ->
             { english = "GWG Classification"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibyiciro by'iyongera ry’ibiro mu gihe cyo kutwita (GWG)"
             , kirundi = Nothing
             }
 
@@ -9097,13 +9097,13 @@ translationSet trans =
 
                 TaskFefol ->
                     { english = "Fefol"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibinini by'ubutare (Fefol)"
                     , kirundi = Nothing
                     }
 
                 TaskFolate ->
                     { english = "Folate"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibinini bya Acide Folic"
                     , kirundi = Nothing
                     }
 
@@ -9966,7 +9966,7 @@ translationSet trans =
 
                 ReasonPartnerAccompanimentRequirement ->
                     { english = "Partner accompaniment requirement for 1st visit"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gusabwa ko umubyeyi aherekezwa n’uwo bashakanye cg n’uwo babana ku nshuro ya mbere yo kwipimisha inda"
                     , kirundi = Nothing
                     }
 
@@ -11012,7 +11012,7 @@ translationSet trans =
 
                 Backend.Measurement.Model.AutoimmuneDisease ->
                     { english = "Autoimmune Disease"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Indwara y’ubudahangarwa bw’umubiri bwibeshya bukirwanya"
                     , kirundi = Nothing
                     }
 
@@ -13808,7 +13808,7 @@ translationSet trans =
 
                 ObstetricHistoryPlacentaAbruptionPreviousDelivery ->
                     { english = "Placenta Abruption"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Komoka kw’ingobyi y’umwana"
                     , kirundi = Nothing
                     }
 
@@ -17976,7 +17976,7 @@ translationSet trans =
 
         ProvideNutritionalSupplement ->
             { english = "Provide Nutritional Supplement"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Tanga Inyongeramirire"
             , kirundi = Nothing
             }
 
