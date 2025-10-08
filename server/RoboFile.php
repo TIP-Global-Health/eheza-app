@@ -53,7 +53,7 @@ class RoboFile extends Tasks {
 
     if ($result->getMessage()) {
       $this->yell($result->getMessage());
-      throw new Exception('The Pantheon working directory is dirty. Please commit any pending changes ör add to .gitignore.');
+      throw new Exception('The Pantheon working directory is dirty. Please commit any pending changes or add to .gitignore.');
     }
 
     // Validate pantheon.upstream.yml.
@@ -67,7 +67,15 @@ class RoboFile extends Tasks {
       throw new Exception("'php_version:' directive is missing from pantheon.upstream.yml in Pantheon directory ($pantheonDirectory)");
     }
 
-    $this->_exec("cd $pantheonDirectory && git checkout $branchName");
+    $result = $this
+      ->taskExec("git checkout $branchName")
+      ->printOutput(FALSE)
+      ->run();
+
+    if ($result->getMessage()) {
+      $this->yell($result->getMessage());
+      throw new Exception("Specified branch $branchName does not exist.");
+    }
 
     $rsyncExclude = [
       '.git',
