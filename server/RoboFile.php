@@ -68,7 +68,7 @@ class RoboFile extends Tasks {
     }
 
     $result = $this
-      ->taskExec("git checkout $branchName")
+      ->taskExec("cd $pantheonDirectory && git checkout $branchName")
       ->printOutput(FALSE)
       ->run();
 
