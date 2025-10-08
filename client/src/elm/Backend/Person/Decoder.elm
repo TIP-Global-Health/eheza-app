@@ -47,6 +47,10 @@ decodePerson =
         |> optional "longitude" (nullable string) Nothing
         |> optional "save_gps_location" bool False
         |> optional "phone_number" (nullable string) Nothing
+        |> optional "spouse_name" (nullable string) Nothing
+        |> optional "spouse_phone_number" (nullable string) Nothing
+        |> optional "next_of_kin_name" (nullable string) Nothing
+        |> optional "next_of_kin_phone_number" (nullable string) Nothing
         |> optional "health_center" (nullable decodeEntityUuid) Nothing
         |> required "deleted" bool
         |> optional "shard" (nullable decodeEntityUuid) Nothing

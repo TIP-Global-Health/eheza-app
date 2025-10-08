@@ -1111,6 +1111,7 @@ type TranslationId
     | NextAppointment
     | NextDue
     | NextImmunisationVisit Bool
+    | NextOfKin
     | NextPediatricVisit Bool
     | NextSteps
     | NextStepsTask Bool Pages.AcuteIllness.Activity.Types.NextStepsTask
@@ -1946,6 +1947,7 @@ type TranslationId
     | SpecialityCareHeaderPrefix
     | SpecialityCareHeaderSuffix
     | SpecialityCareSignQuestion SpecialityCareSign
+    | SpousePartner
     | StockCorrectionReason StockCorrectionReason
     | StockManagement
     | StockManagementMenu StockManagementMenu
@@ -12861,6 +12863,12 @@ translationSet trans =
                 , kirundi = Just "Urugendo kubw'urucanco ruzokurikira umunsi ruzobako"
                 }
 
+        NextOfKin ->
+            { english = "Next of Kin"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         NextPediatricVisit isChw ->
             if isChw then
                 { english = "Next pediatric visit at the health center"
@@ -23072,6 +23080,12 @@ translationSet trans =
 
                 NoSpecialityCareSigns ->
                     translationSet EmptyString
+
+        SpousePartner ->
+            { english = "Spouse / Partner"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         StockCorrectionReason value ->
             case value of
