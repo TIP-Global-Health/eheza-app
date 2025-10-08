@@ -10,7 +10,7 @@ import Backend.Person.Utils exposing (defaultIconForPerson, graduatingAgeInMonth
 import Backend.PrenatalActivity.Model
 import Backend.Session.Utils exposing (getSession)
 import Backend.Village.Utils exposing (personLivesInVillage)
-import Components.PatientsSearchForm.Utils exposing (..)
+import Components.PatientsSearchForm.Utils
 import Components.PatientsSearchForm.View
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffMonths)
@@ -130,25 +130,6 @@ viewSearchForm language currentDate maybeVillageId isChw initiator relation mode
             Components.PatientsSearchForm.View.view language model
                 |> Html.map Pages.People.Model.MsgPatientsSearchForm
 
-        relatedPerson =
-            Maybe.andThen (\id -> Dict.get id db.people) relation
-                |> Maybe.andThen RemoteData.toMaybe
-
-        expectedAge =
-            relatedPerson
-                |> Maybe.andThen (isPersonAnAdult currentDate)
-                |> (\isAdult ->
-                        case isAdult of
-                            Just True ->
-                                ExpectChild
-
-                            Just False ->
-                                ExpectAdult
-
-                            Nothing ->
-                                ExpectAdultOrChild
-                   )
-
         searchValue =
             Components.PatientsSearchForm.Utils.getSearchValue model
 
@@ -158,6 +139,25 @@ viewSearchForm language currentDate maybeVillageId isChw initiator relation mode
 
             else
                 let
+                    relatedPerson =
+                        Maybe.andThen (\id -> Dict.get id db.people) relation
+                            |> Maybe.andThen RemoteData.toMaybe
+
+                    expectedAge =
+                        relatedPerson
+                            |> Maybe.andThen (isPersonAnAdult currentDate)
+                            |> (\isAdult ->
+                                    case isAdult of
+                                        Just True ->
+                                            ExpectChild
+
+                                        Just False ->
+                                            ExpectAdult
+
+                                        Nothing ->
+                                            ExpectAdultOrChild
+                               )
+
                     -- When relation person is provided, we need to make sure
                     -- that at search result, we don't present:
                     -- 1. Relation person himself.

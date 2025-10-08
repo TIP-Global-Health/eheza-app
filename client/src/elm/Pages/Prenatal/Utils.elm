@@ -4603,44 +4603,6 @@ healthEducationFormInputsAndTasksForHIV language setBoolInputMsg assembled form 
                 Nothing
             ]
 
-        partnerSurpressedViralLoadByHIVTest =
-            getMeasurementValueFunc assembled.measurements.hivTest
-                |> Maybe.andThen .hivSigns
-                |> Maybe.map
-                    (\hivSigns ->
-                        -- Partner is HIV positive.
-                        EverySet.member PartnerHIVPositive hivSigns
-                            -- Partner is taking ARVs.
-                            && EverySet.member PartnerTakingARV hivSigns
-                            -- Partner reached surpressed viral load.
-                            && EverySet.member PartnerSurpressedViralLoad hivSigns
-                    )
-                |> Maybe.withDefault False
-
-        partnerSurpressedViralLoadByPartnerHIVTest =
-            let
-                patientHIVNegative =
-                    getMeasurementValueFunc assembled.measurements.hivTest
-                        |> Maybe.map
-                            (\value ->
-                                List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
-                                    && (value.testResult == Just TestNegative)
-                            )
-                        |> Maybe.withDefault False
-            in
-            patientHIVNegative
-                && (getMeasurementValueFunc assembled.measurements.partnerHIVTest
-                        |> Maybe.andThen .hivSigns
-                        |> Maybe.map
-                            (\hivSigns ->
-                                -- Partner is taking ARVs.
-                                EverySet.member PartnerTakingARV hivSigns
-                                    -- Partner reached surpressed viral load.
-                                    && EverySet.member PartnerSurpressedViralLoad hivSigns
-                            )
-                        |> Maybe.withDefault False
-                   )
-
         header =
             viewCustomLabel language Translate.HIV "" "label header"
 
@@ -4670,14 +4632,9 @@ healthEducationFormInputsAndTasksForHIV language setBoolInputMsg assembled form 
         , [ form.positiveHIV, form.saferSexHIV, form.partnerTesting, form.familyPlanning ]
         )
 
-    else if partnerSurpressedViralLoadByPartnerHIVTest || partnerSurpressedViralLoadByHIVTest then
-        ( header :: saferSexHIVInput
-        , [ form.saferSexHIV ]
-        )
-
     else
         let
-            partnerSurpressedViralLoad =
+            partnerSurpressedViralLoadByHIVTest =
                 getMeasurementValueFunc assembled.measurements.hivTest
                     |> Maybe.andThen .hivSigns
                     |> Maybe.map
@@ -4690,16 +4647,61 @@ healthEducationFormInputsAndTasksForHIV language setBoolInputMsg assembled form 
                                 && EverySet.member PartnerSurpressedViralLoad hivSigns
                         )
                     |> Maybe.withDefault False
+
+            partnerSurpressedViralLoadByPartnerHIVTest =
+                let
+                    patientHIVNegative =
+                        getMeasurementValueFunc assembled.measurements.hivTest
+                            |> Maybe.map
+                                (\value ->
+                                    List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                                        && (value.testResult == Just TestNegative)
+                                )
+                            |> Maybe.withDefault False
+                in
+                patientHIVNegative
+                    && (getMeasurementValueFunc assembled.measurements.partnerHIVTest
+                            |> Maybe.andThen .hivSigns
+                            |> Maybe.map
+                                (\hivSigns ->
+                                    -- Partner is taking ARVs.
+                                    EverySet.member PartnerTakingARV hivSigns
+                                        -- Partner reached surpressed viral load.
+                                        && EverySet.member PartnerSurpressedViralLoad hivSigns
+                                )
+                            |> Maybe.withDefault False
+                       )
         in
-        if partnerSurpressedViralLoad then
+        if partnerSurpressedViralLoadByPartnerHIVTest || partnerSurpressedViralLoadByHIVTest then
             ( header :: saferSexHIVInput
             , [ form.saferSexHIV ]
             )
 
         else
-            ( header :: saferSexHIVInput ++ partnerTestingInput
-            , [ form.saferSexHIV, form.partnerTesting ]
-            )
+            let
+                partnerSurpressedViralLoad =
+                    getMeasurementValueFunc assembled.measurements.hivTest
+                        |> Maybe.andThen .hivSigns
+                        |> Maybe.map
+                            (\hivSigns ->
+                                -- Partner is HIV positive.
+                                EverySet.member PartnerHIVPositive hivSigns
+                                    -- Partner is taking ARVs.
+                                    && EverySet.member PartnerTakingARV hivSigns
+                                    -- Partner reached surpressed viral load.
+                                    && EverySet.member PartnerSurpressedViralLoad hivSigns
+                            )
+                        |> Maybe.withDefault False
+            in
+            if partnerSurpressedViralLoad then
+                ( header :: saferSexHIVInput
+                , [ form.saferSexHIV ]
+                )
+
+            else
+                ( header :: saferSexHIVInput ++ partnerTestingInput
+                , [ form.saferSexHIV, form.partnerTesting ]
+                )
 
 
 healthEducationFormFamilyPlanningInput :

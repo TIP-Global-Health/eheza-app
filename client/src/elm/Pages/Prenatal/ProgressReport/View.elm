@@ -29,7 +29,6 @@ import Backend.Measurement.Model
         , RecommendedTreatmentSign(..)
         , ReferToFacilitySign(..)
         , ReferralFacility(..)
-        , Rhesus(..)
         , SendToHCSign(..)
         , SpecialityCareSign(..)
         , TestExecutionNote(..)
@@ -93,7 +92,7 @@ import Pages.Prenatal.Activity.Utils
         )
 import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Encounter.View exposing (viewActionButton)
-import Pages.Prenatal.Model exposing (AssembledData, PreviousEncounterData, VaccinationProgressDict)
+import Pages.Prenatal.Model exposing (AssembledData, PreviousEncounterData)
 import Pages.Prenatal.ProgressReport.Model exposing (..)
 import Pages.Prenatal.ProgressReport.Svg exposing (viewBMIForEGA, viewFundalHeightForEGA, viewMarkers, viewWeightGainForEGA)
 import Pages.Prenatal.ProgressReport.Utils exposing (..)
@@ -970,14 +969,15 @@ viewMedicalDiagnosisPane language currentDate isChw firstNurseEncounterMeasureme
                                         let
                                             partnerPositive =
                                                 EverySet.member PartnerHIVPositive hivSigns
-
-                                            takingARV =
-                                                EverySet.member PartnerTakingARV hivSigns
-
-                                            surpressedViralLoad =
-                                                EverySet.member PartnerSurpressedViralLoad hivSigns
                                         in
                                         if partnerPositive then
+                                            let
+                                                takingARV =
+                                                    EverySet.member PartnerTakingARV hivSigns
+
+                                                surpressedViralLoad =
+                                                    EverySet.member PartnerSurpressedViralLoad hivSigns
+                                            in
                                             Just <| Translate.DiscordantCoupleStatus takingARV surpressedViralLoad
 
                                         else
