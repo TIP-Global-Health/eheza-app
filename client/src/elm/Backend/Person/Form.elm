@@ -421,6 +421,10 @@ validatePerson site maybeRelated operation maybeCurrentDate =
                         SiteBurundi ->
                             nullable string
 
+                        -- @todo - needs validation?
+                        SiteSomalia ->
+                            nullable string
+
                         _ ->
                             validateNationalIdNumber
             in
