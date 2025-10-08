@@ -72,8 +72,7 @@ class RoboFile extends Tasks {
       ->printOutput(FALSE)
       ->run();
 
-    if ($result->getMessage()) {
-      $this->yell($result->getMessage());
+    if (!$result->wasSuccessful()) {
       throw new Exception("Specified branch $branchName does not exist.");
     }
 
