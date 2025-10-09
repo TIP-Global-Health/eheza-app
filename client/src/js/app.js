@@ -1590,7 +1590,7 @@ elmApp.ports.logByRollbar.subscribe(function(data) {
                 .toArray();
 
             if (result[0]) {
-              // Hash exists, indicating that this message was sent alredy.
+              // Hash exists, indicating that this message was sent already.
               return;
             }
 
