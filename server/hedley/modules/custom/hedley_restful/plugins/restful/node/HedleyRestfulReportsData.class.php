@@ -61,12 +61,12 @@ class HedleyRestfulReportsData extends \RestfulBase implements \RestfulDataProvi
     }
     $base = $request['base_revision'];
 
-    $province = $request['province'];
-    $district = $request['district'];
-    $sector = $request['sector'];
-    $cell = $request['cell'];
-    $village = $request['village'];
-    $health_center = $request['health_center'];
+    $province = !empty($request['province']) ? $request['province'] : NULL;
+    $district = !empty($request['district']) ? $request['district'] : NULL;
+    $sector = !empty($request['sector']) ? $request['sector'] : NULL;
+    $cell = !empty($request['cell']) ? $request['cell'] : NULL;
+    $village = !empty($request['village']) ? $request['village'] : NULL;
+    $health_center = !empty($request['health_center']) ? $request['health_center'] : NULL;
 
     switch ($app_type) {
       case 'reports':
