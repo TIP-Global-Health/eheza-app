@@ -1055,6 +1055,67 @@ function hedley_reports_generate_results_data($province, $district, $sector, $ce
   return $data;
 }
 
+function hedley_reports_generate_results_data_for_restful($from_nid, $batch, $province, $district, $sector, $cell, $village, $health_center) {
+  $query = new EntityFieldQuery();
+  $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'person')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->propertyCondition('nid', $from_nid, '>')
+    ->fieldCondition('field_reports_data', 'value', NULL, 'IS NOT NULL')
+    ->addTag('exclude_deleted');
+
+  if (!empty($province)) {
+    $query->fieldCondition('field_province', 'value', $province);
+  }
+
+  if (!empty($district)) {
+    $query->fieldCondition('field_district', 'value', $district);
+  }
+
+  if (!empty($sector)) {
+    $query->fieldCondition('field_sector', 'value', $sector);
+  }
+
+  if (!empty($cell)) {
+    $query->fieldCondition('field_cell', 'value', $cell);
+  }
+
+  if (!empty($village)) {
+    $query->fieldCondition('field_village', 'value', $village);
+  }
+
+  if (!empty($health_center)) {
+    $query->fieldCondition('field_shards', 'target_id', $health_center);
+  }
+
+  $result = $query
+    ->range(0, $batch)
+    ->propertyOrderBy('nid')
+    ->execute();
+
+  if (empty($result['node'])) {
+    // No more items left.
+    return [];
+  }
+
+  $output = [];
+  $ids = array_keys($result['node']);
+  $nodes = node_load_multiple($ids);
+  foreach ($nodes as $node) {
+    $json_data = $node->field_reports_data[LANGUAGE_NONE][0]['value'];
+    if (empty($json_data)) {
+      continue;
+    }
+    $output[] = json_decode($json_data);
+  }
+
+  return [
+    'batch' => $output,
+    'last' => end($ids),
+  ];
+}
+
 /**
  * Loads data in scope, stored at Report Data node.
  *

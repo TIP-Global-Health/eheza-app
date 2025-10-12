@@ -393,6 +393,67 @@ function hedley_ncda_generate_results_data($province, $district, $sector, $cell,
   return $data;
 }
 
+function hedley_ncda_generate_results_data_for_restful($from_nid, $batch, $province, $district, $sector, $cell, $village) {
+  $three_years_ago = date('Y-m-d', strtotime('-3 years'));
+  $query = new EntityFieldQuery();
+  $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'person')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->propertyCondition('nid', $from_nid, '>')
+    // Since we show data starting Nov 23, it's enough to select only those
+    // born during the past 3 years.
+    // Position the condition as first field condition, as placing it bellow
+    // caused incorrect query results on live environment.
+    ->fieldCondition('field_birth_date', 'value', $three_years_ago, '>')
+    ->fieldCondition('field_province', 'value', $province)
+    ->fieldCondition('field_district', 'value', $district)
+    ->fieldCondition('field_ncda_data', 'value', NULL, 'IS NOT NULL')
+    ->addTag('exclude_deleted');
+
+  if (!empty($sector)) {
+    $query->fieldCondition('field_sector', 'value', $sector);
+  }
+
+  if (!empty($cell)) {
+    $query->fieldCondition('field_cell', 'value', $cell);
+  }
+
+  if (!empty($village)) {
+    $query->fieldCondition('field_village', 'value', $village);
+  }
+
+  $result = $query
+    ->range(0, $batch)
+    ->propertyOrderBy('nid')
+    ->execute();
+
+  if (empty($result['node'])) {
+    // No more items left.
+    return [];
+  }
+
+  $output = [];
+  $ids = array_keys($result['node']);
+  $nodes = node_load_multiple($ids);
+  foreach ($nodes as $node) {
+    $json_data = $node->field_ncda_data[LANGUAGE_NONE][0]['value'];
+    if (empty($json_data)) {
+      continue;
+    }
+
+    $decoded = json_decode($json_data);
+    $decoded->created = date("Y-m-d", $node->created);
+
+    $output[] = $decoded;
+  }
+
+  return [
+    'batch' => $output,
+    'last' => end($ids),
+  ];
+}
+
 /**
  * Generate aggregated NCDA data for person, and store in field on person node.
  *
