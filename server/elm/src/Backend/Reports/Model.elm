@@ -249,4 +249,5 @@ type NutritionReportTableType
 
 
 type Msg
-    = SetData Value
+    = NoOp
+    | SetData Value

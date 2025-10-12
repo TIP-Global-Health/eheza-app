@@ -23,7 +23,7 @@ class HedleyRestfulReportsData extends \RestfulBase implements \RestfulDataProvi
   public static function controllersInfo() {
     return [
       '' => [
-        \RestfulInterface::GET => 'getData',
+        \RestfulInterface::POST => 'getData',
       ],
       '^.*$' => [
         // We do not allow any calls here.
