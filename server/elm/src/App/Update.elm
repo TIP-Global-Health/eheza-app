@@ -34,7 +34,7 @@ init flags =
             resolveActivePage flags.page
 
         model =
-            { emptyModel | activePage = activePage, themePath = flags.themePath }
+            { emptyModel | activePage = activePage, themePath = flags.themePath, backendUrl = flags.backendUrl }
 
         modelWithAppData =
             case model.activePage of

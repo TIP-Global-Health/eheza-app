@@ -5522,6 +5522,7 @@ var $elm$time$Time$millisToPosix = $elm$time$Time$Posix;
 var $author$project$App$Model$emptyModel = {
 	activePage: $author$project$App$Types$NotFound,
 	backend: $author$project$Backend$Model$emptyModelBackend,
+	backendUrl: '',
 	completionMenuPage: $author$project$Pages$CompletionMenu$Model$emptyModel,
 	completionPage: $author$project$Pages$Completion$Model$emptyModel,
 	currentTime: $elm$time$Time$millisToPosix(0),
@@ -10535,7 +10536,7 @@ var $author$project$App$Update$init = function (flags) {
 	var activePage = $author$project$App$Update$resolveActivePage(flags.page);
 	var model = _Utils_update(
 		$author$project$App$Model$emptyModel,
-		{activePage: activePage, themePath: flags.themePath});
+		{activePage: activePage, backendUrl: flags.backendUrl, themePath: flags.themePath});
 	var modelWithAppData = function () {
 		var _v0 = model.activePage;
 		switch (_v0.$) {
@@ -40985,11 +40986,16 @@ _Platform_export({'Main':{'init':$author$project$Main$main(
 				function (page) {
 					return A2(
 						$elm$json$Json$Decode$andThen,
-						function (appData) {
-							return $elm$json$Json$Decode$succeed(
-								{appData: appData, page: page, themePath: themePath});
+						function (backendUrl) {
+							return A2(
+								$elm$json$Json$Decode$andThen,
+								function (appData) {
+									return $elm$json$Json$Decode$succeed(
+										{appData: appData, backendUrl: backendUrl, page: page, themePath: themePath});
+								},
+								A2($elm$json$Json$Decode$field, 'appData', $elm$json$Json$Decode$value));
 						},
-						A2($elm$json$Json$Decode$field, 'appData', $elm$json$Json$Decode$value));
+						A2($elm$json$Json$Decode$field, 'backendUrl', $elm$json$Json$Decode$string));
 				},
 				A2($elm$json$Json$Decode$field, 'page', $elm$json$Json$Decode$string));
 		},
