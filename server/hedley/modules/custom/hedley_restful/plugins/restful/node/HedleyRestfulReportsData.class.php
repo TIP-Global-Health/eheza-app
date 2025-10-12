@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \HedleyRestfulSync.
+ * Contains \HedleyRestfulReportsData.
  */
 
 use Ramsey\Uuid\Uuid;
@@ -13,12 +13,9 @@ use Ramsey\Uuid\Uuid;
 class HedleyRestfulReportsData extends \RestfulBase implements \RestfulDataProviderInterface {
 
   /**
-   * Nodes synced to all devices.
-   *
-   * The content types and their restful handler for nodes that
-   * we sync to all devices.
+   * Data batch limit.
    */
-  const HEDLEY_RESTFUL_QUERY_BATCH = 500;
+  const HEDLEY_RESTFUL_QUERY_BATCH = 5000;
 
   /**
    * Overrides \RestfulBase::controllersInfo().
@@ -44,7 +41,7 @@ class HedleyRestfulReportsData extends \RestfulBase implements \RestfulDataProvi
   /**
    *
    * @return array
-   *   A representation of the required revisions
+   *   A representation of the required data.
    *
    * @throws \RestfulBadRequestException
    */
@@ -114,68 +111,21 @@ class HedleyRestfulReportsData extends \RestfulBase implements \RestfulDataProvi
       return [];
     }
 
-    $batch_by_node_type = [];
-
-    foreach ($batch as $item) {
-      $batch_by_node_type[$item->type][] = $item;
-    }
-
     $output = [];
-    foreach ($batch_by_node_type as $node_type => $items) {
-      $handler_name = $handlers_by_types[$node_type];
-      $sub_handler = restful_get_restful_handler($handler_name);
-      $sub_handler->setAccount($account);
-
-      $node_ids = [];
-      foreach ($items as $item) {
-        $node_ids[] = $item->nid;
+    $ids = array_keys($result['node']);
+    $nodes = node_load_multiple($ids);
+    foreach ($nodes as $node) {
+      $json_data = $node->field_reports_data[LANGUAGE_NONE][0]['value'];
+      if (empty($json_data)) {
+        continue;
       }
-
-      $rendered_items = $sub_handler->viewWithDbSelect($node_ids);
-      $output = array_merge($output, $rendered_items);
+      $output[] = json_decode($json_data);
     }
 
-    // Generate list of enabled features.
-    $available_features = [
-      'gps_coordinates',
-      'group_education',
-      'hiv_management',
-      'ncda',
-      'report_to_whatsapp',
-      'stock_management',
-      'tuberculosis_management',
+    return [
+      'batch' => $output,
+      'last' => end($ids),
     ];
-    $enabled_features = array_filter(
-      $available_features,
-      function ($feature) {
-        return variable_get("hedley_admin_feature_{$feature}_enabled", FALSE);
-      }
-    );
-
-    $return = [
-      'base_revision' => $base,
-      'revision_count' => $count,
-      'rollbar_token' => variable_get('hedley_general_rollbar_token', ''),
-      'site' => variable_get('hedley_general_site_name', ''),
-      'features' => implode(' ', $enabled_features),
-    ];
-
-    if (!empty($request['access_token'])) {
-      $device_user_id = hedley_restful_resolve_device_by_token($request['access_token']);
-      if ($device_user_id) {
-        $device_user = user_load($device_user_id);
-        $device_name = $device_user->name;
-        $words = explode(' ', $device_name);
-        if (end($words) == 'Robot') {
-          array_splice($words, -1);
-        }
-        $return['device_name'] = implode(' ', $words);
-      }
-    }
-
-    $return['batch'] = $output;
-
-    return $return;
   }
 
   /**
