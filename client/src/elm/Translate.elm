@@ -1111,6 +1111,7 @@ type TranslationId
     | NextAppointment
     | NextDue
     | NextImmunisationVisit Bool
+    | NextOfKin
     | NextPediatricVisit Bool
     | NextSteps
     | NextStepsTask Bool Pages.AcuteIllness.Activity.Types.NextStepsTask
@@ -1342,7 +1343,7 @@ type TranslationId
     | PreTermPregnancy
     | PreviousCSectionScar
     | PreviousDelivery
-    | PreviousDeliveryPeriods PreviousDeliveryPeriod
+    | PreviousDeliveryPeriod PreviousDeliveryPeriod
     | PreviousFloatMeasurement Float
     | PreviousMeasurementNotFound
     | PreviousMedication
@@ -1946,6 +1947,7 @@ type TranslationId
     | SpecialityCareHeaderPrefix
     | SpecialityCareHeaderSuffix
     | SpecialityCareSignQuestion SpecialityCareSign
+    | SpousePartner
     | StockCorrectionReason StockCorrectionReason
     | StockManagement
     | StockManagementMenu StockManagementMenu
@@ -2795,7 +2797,7 @@ translationSet trans =
 
         AdministerAspirinHelper ->
             { english = "1 tablet 150 mg by mouth daily"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ikinini kimwe mu kanwa cya mirigarama 150 buri munsi"
             , kirundi = Nothing
             }
 
@@ -2807,7 +2809,7 @@ translationSet trans =
 
         AdministerCalciumHelper ->
             { english = "1 tablet 500 mg by mouth daily"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ikinini kimwe mu kanwa cya mirigarama 500 buri munsi"
             , kirundi = Nothing
             }
 
@@ -2822,7 +2824,7 @@ translationSet trans =
 
         AdministerFolicAcidHelper ->
             { english = "1 tablet 400 IU by mouth daily for 3 months"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ikinini 1 mu kanwa (400 IU) buri munsi mu gihe cy'amezi 3"
             , kirundi = Nothing
             }
 
@@ -2834,7 +2836,7 @@ translationSet trans =
 
         AdministerIronHelper ->
             { english = "1 tablet 60 mg by mouth 2x a day for 3 months"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ikinini kimwe mu kanwa cya mirigarama 60 inshuro 2 ku munsi mu gihe cy'amezi 3"
             , kirundi = Nothing
             }
 
@@ -2852,7 +2854,7 @@ translationSet trans =
 
         AdministerMMSHelper ->
             { english = "1 tablet by mouth daily - 180 tablets dispensed"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Kunywa ikinini kimwe ku munsi - Hatanzwe ibinini 180"
             , kirundi = Nothing
             }
 
@@ -2864,7 +2866,7 @@ translationSet trans =
 
         AdministerPrenatalMebendezoleHelper ->
             { english = "1 tablet 500 mg by mouth ONCE"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ikinini kimwe mu kanwa cya mirigarama 500 INSHURO IMWE GUSA"
             , kirundi = Nothing
             }
 
@@ -3621,19 +3623,19 @@ translationSet trans =
 
         BaselineBMI value ->
             { english = "Pre-pregnancy baseline BMI: " ++ Round.round 1 value
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just <| "BMI yarafite mbere yo gutwita: " ++ Round.round 1 value
             , kirundi = Nothing
             }
 
         BaselineWeight value ->
             { english = "Pre-pregnancy baseline weight: " ++ String.fromFloat value
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just <| "Ibiro yarafite mbere yo gutwita: " ++ String.fromFloat value
             , kirundi = Nothing
             }
 
         BaselineWeightNotFound ->
             { english = "No pre-pregnancy baseline weight on record"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Nta biro bya mbere yo kubyara byafashwe"
             , kirundi = Nothing
             }
 
@@ -6221,7 +6223,7 @@ translationSet trans =
 
         FamilyHistoryOfPreeclampsia ->
             { english = "Family history of pre-eclampsia"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Amakuru ku muryango ku bijyanye na Preklampus"
             , kirundi = Nothing
             }
 
@@ -6403,7 +6405,7 @@ translationSet trans =
 
         HeartRateNotAudible ->
             { english = "Heart rate not audible"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umutima w'umwana ntago wumvikana"
             , kirundi = Nothing
             }
 
@@ -6447,7 +6449,7 @@ translationSet trans =
 
                 UnclearImprecise ->
                     { english = "Unclear / Imprecise"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntibisobanutse / Ntibigaragara neza"
                     , kirundi = Nothing
                     }
 
@@ -6713,7 +6715,7 @@ translationSet trans =
 
         GestationalWeightGain value ->
             { english = "Gestational weight gain: " ++ Round.round 1 value
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just <| "Ibiro byiyongereyeho mu gihe cyo gutwita: " ++ Round.round 1 value
             , kirundi = Nothing
             }
 
@@ -6851,19 +6853,19 @@ translationSet trans =
             case value of
                 GWGSeverelyInadequate ->
                     { english = "Severely Inadequate"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibiro ntibyiyongera cyane ku buryo buhagije"
                     , kirundi = Nothing
                     }
 
                 GWGInadequate ->
                     { english = "Inadequate"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibiro ntibyiyongera ku buryo buhagije"
                     , kirundi = Nothing
                     }
 
                 GWGAdequate ->
                     { english = "Adequate"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibiro byiyongera ku buryo buhagije"
                     , kirundi = Nothing
                     }
 
@@ -6875,7 +6877,7 @@ translationSet trans =
 
         GWGClassificationLabel ->
             { english = "GWG Classification"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibyiciro by'iyongera ry’ibiro mu gihe cyo kutwita (GWG)"
             , kirundi = Nothing
             }
 
@@ -9091,25 +9093,25 @@ translationSet trans =
             case task of
                 TaskCalcium ->
                     { english = "Calcium"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kalisiyumu"
                     , kirundi = Nothing
                     }
 
                 TaskFefol ->
                     { english = "Fefol"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibinini by'ubutare (Fefol)"
                     , kirundi = Nothing
                     }
 
                 TaskFolate ->
                     { english = "Folate"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibinini bya Acide Folic"
                     , kirundi = Nothing
                     }
 
                 TaskIron ->
                     { english = "Iron"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Yafashe umuti wongera amaraso"
                     , kirundi = Nothing
                     }
 
@@ -9946,7 +9948,7 @@ translationSet trans =
 
         LateFirstANCVisitQuestion ->
             { english = "Why has the patient NOT had an ANC visit in her first trimester"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Kubera iki umubyeyi atitabiriye isuzuma ku mugore utwite mu gihembwe cyambere"
             , kirundi = Nothing
             }
 
@@ -9954,61 +9956,61 @@ translationSet trans =
             case reason of
                 ReasonLackOfFunds ->
                     { english = "Poverty/lack of funds for transport or services"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ubukene/kubura amafaranga y'itike cyangwa kwishyura serivise"
                     , kirundi = Nothing
                     }
 
                 ReasonLackOfHealthInsurance ->
                     { english = "Lack of health insurance"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kubura ubwishingizi mu kwivuza"
                     , kirundi = Nothing
                     }
 
                 ReasonPartnerAccompanimentRequirement ->
                     { english = "Partner accompaniment requirement for 1st visit"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gusabwa ko umubyeyi aherekezwa n’uwo bashakanye cg n’uwo babana ku nshuro ya mbere yo kwipimisha inda"
                     , kirundi = Nothing
                     }
 
                 ReasonUndetectedPregnancy ->
                     { english = "Unplanned or undetected pregnancies"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Inda itateganyijwe cyangwa kutamenya ko atwite"
                     , kirundi = Nothing
                     }
 
                 ReasonLongDistancesToHealthFacilities ->
                     { english = "Long distances to health facilities"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikigo nderabuzima kiri kure"
                     , kirundi = Nothing
                     }
 
                 ReasonNegativePastExperiences ->
                     { english = "Negative past experiences with providers/ facility"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kudahabwa serivise nziza ubushize"
                     , kirundi = Nothing
                     }
 
                 ReasonTraditionalBeliefs ->
                     { english = "Traditional beliefs about hiding early pregnancy"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imyemerere ya gakondo yo guhisha inda ikiri nto"
                     , kirundi = Nothing
                     }
 
                 ReasonLackOfAwarenessToANC ->
                     { english = "Lack of awareness about the importance of early ANC"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kutagira ubumenyi ku kamaro ko gutangira isuzuma k'umugore utwite hakiri kare"
                     , kirundi = Nothing
                     }
 
                 ReasonDelayedRecognitionOfSymptoms ->
                     { english = "Delayed recognition of pregnancy symptoms"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gutinda kumenya ibimenyetso by’inda"
                     , kirundi = Nothing
                     }
 
                 ReasonOtherReasons ->
                     { english = "Other reasons"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Izindi mpamvu"
                     , kirundi = Nothing
                     }
 
@@ -10231,13 +10233,13 @@ translationSet trans =
 
         LmpDateConfirmationLabel ->
             { english = "Please confirm the data submitted by the CHW"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Emeza amakuru yatanzwe n’umujyanama w’ubuzima"
             , kirundi = Nothing
             }
 
         LmpDateConfirmationQuestion ->
             { english = "Do you want to confirm the above data"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Urashaka kwemeza aya makuru ari hejuru"
             , kirundi = Nothing
             }
 
@@ -11012,7 +11014,7 @@ translationSet trans =
 
                 Backend.Measurement.Model.AutoimmuneDisease ->
                     { english = "Autoimmune Disease"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Indwara y’ubudahangarwa bw’umubiri bwibeshya bukirwanya"
                     , kirundi = Nothing
                     }
 
@@ -11080,13 +11082,13 @@ translationSet trans =
 
         MedicationDistributionHelperPreeclampsiaRiskHigh ->
             { english = "Patient shows signs of High Risk for Preclampsia"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso biri hejuru byo kugira Preklampusi"
             , kirundi = Nothing
             }
 
         MedicationDistributionHelperPreeclampsiaRiskModerate ->
             { english = "Patient shows signs of Moderate Risk for Preclampsia"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso byoroheje byo kugira Preklampusi"
             , kirundi = Nothing
             }
 
@@ -11262,7 +11264,7 @@ translationSet trans =
 
                 Calcium ->
                     { english = "Calcium"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kalisiyumu"
                     , kirundi = Nothing
                     }
 
@@ -11364,7 +11366,7 @@ translationSet trans =
 
         MedicalHistoryPreeclampsiaInFamilyQuestion ->
             { english = "Family History: Has your mother or sister ever had pre-eclampsia during pregnancy"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Amakuru ku muryango: Mama wawe cyangwa mukuru cg murumuna wawe bigeze bagira Preklampusi batwite"
             , kirundi = Nothing
             }
 
@@ -12861,6 +12863,12 @@ translationSet trans =
                 , kirundi = Just "Urugendo kubw'urucanco ruzokurikira umunsi ruzobako"
                 }
 
+        NextOfKin ->
+            { english = "Next of Kin"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         NextPediatricVisit isChw ->
             if isChw then
                 { english = "Next pediatric visit at the health center"
@@ -12914,7 +12922,7 @@ translationSet trans =
 
         NextVisit ->
             { english = "Next Visit"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Isura rikurikira"
             , kirundi = Nothing
             }
 
@@ -13808,7 +13816,7 @@ translationSet trans =
 
                 ObstetricHistoryPlacentaAbruptionPreviousDelivery ->
                     { english = "Placenta Abruption"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Komoka kw’ingobyi y’umwana"
                     , kirundi = Nothing
                     }
 
@@ -13832,19 +13840,19 @@ translationSet trans =
 
                 ObstetricHistoryChildWithLowBirthweightPreviousDelivery ->
                     { english = "A child with low birthweight"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana yavukanye ibiro bike"
                     , kirundi = Nothing
                     }
 
                 ObstetricHistorySmallForGestationalAgePreviousDelivery ->
                     { english = "Small for gestational age"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana ni muto ugereranyije n'amezi y'inda"
                     , kirundi = Nothing
                     }
 
                 ObstetricHistoryIntraUterineDeathPreviousDelivery ->
                     { english = "Intra-uterine death"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana yaphiriye mu nda"
                     , kirundi = Nothing
                     }
 
@@ -13869,8 +13877,8 @@ translationSet trans =
                     translationSet No
 
                 NotKnownIfOccurs ->
-                    { english = "Don't now"
-                    , kinyarwanda = Nothing
+                    { english = "Don't know"
+                    , kinyarwanda = Just "Ntago bizwi"
                     , kirundi = Nothing
                     }
 
@@ -15278,7 +15286,7 @@ translationSet trans =
 
                 DiagnosisHighRiskOfPreeclampsiaInitialPhase ->
                     { english = "High Risk of Preeclampsia"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Afite ibyago byinshi byo kugira Preklampusi"
                     , kirundi = Nothing
                     }
 
@@ -15287,7 +15295,7 @@ translationSet trans =
 
                 DiagnosisModerateRiskOfPreeclampsia ->
                     { english = "Moderate Risk of Preeclampsia"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Afite ibyago biringaniye byo kugira Preklampusi"
                     , kirundi = Nothing
                     }
 
@@ -15781,7 +15789,7 @@ translationSet trans =
 
                 DiagnosisHighRiskOfPreeclampsiaInitialPhase ->
                     { english = "High Risk of Preeclampsia"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Afite ibyago byinshi byo kugira Preklampusi"
                     , kirundi = Nothing
                     }
 
@@ -15790,7 +15798,7 @@ translationSet trans =
 
                 DiagnosisModerateRiskOfPreeclampsia ->
                     { english = "Moderate Risk of Preeclampsia"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Afite ibyago biringaniye byo kugira Preklampusi"
                     , kirundi = Nothing
                     }
 
@@ -15858,13 +15866,13 @@ translationSet trans =
             case diagnosis of
                 DiagnosisModerateRiskOfPreeclampsia ->
                     { english = "Patient shows signs of Moderate Risk for Preclampsia"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso biringaniye byo kugira Preklampusi"
                     , kirundi = Nothing
                     }
 
                 DiagnosisHighRiskOfPreeclampsiaInitialPhase ->
                     { english = "Patient shows signs of High Risk for Preclampsia"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso biri hejuru byo kugira Preklampusi"
                     , kirundi = Nothing
                     }
 
@@ -16768,7 +16776,7 @@ translationSet trans =
 
                 Pages.Prenatal.Activity.Types.NextStepsNextVisit ->
                     { english = "Next ANC Visit"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Izuzuma ku mugore utwite rikurikira"
                     , kirundi = Nothing
                     }
 
@@ -17779,13 +17787,13 @@ translationSet trans =
 
         PrePregnancyWeight ->
             { english = "Pre-pregnancy Weight"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibiro bya mbere yo gutwita"
             , kirundi = Nothing
             }
 
         PrePregnancyWeightQuestion ->
             { english = "What is the patient's baseline (pre-pregnancy) weight"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubyeyi yari afite ibiro bingahe mbere yo gutwita"
             , kirundi = Nothing
             }
 
@@ -17875,12 +17883,12 @@ translationSet trans =
             }
 
         PreviousDelivery ->
-            { english = "Previous Delivery"
+            { english = "Previous delivery"
             , kinyarwanda = Just "Kubyara guheruka"
             , kirundi = Just "Ukwibaruka guheruka"
             }
 
-        PreviousDeliveryPeriods period ->
+        PreviousDeliveryPeriod period ->
             case period of
                 LessThan18Month ->
                     { english = "Less than 18 month ago"
@@ -17896,7 +17904,7 @@ translationSet trans =
 
                 MoreThan10Years ->
                     { english = "More than 10 years ago"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Hejuru y'imyaka icumi ishize"
                     , kirundi = Nothing
                     }
 
@@ -17976,7 +17984,7 @@ translationSet trans =
 
         ProvideNutritionalSupplement ->
             { english = "Provide Nutritional Supplement"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Tanga Inyongeramirire"
             , kirundi = Nothing
             }
 
@@ -19185,13 +19193,13 @@ translationSet trans =
 
         ReinforceAdherenceQuestion ->
             { english = "Have you counseled the patient on adherence to"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Wamuhaye inama ku kubahiriza"
             , kirundi = Nothing
             }
 
         ReinforceAdherenceTo ->
             { english = "Reinforce adherence to"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Shimangira kubahiriza"
             , kirundi = Nothing
             }
 
@@ -19203,7 +19211,7 @@ translationSet trans =
 
         RepeatHemoglobinTestQuestion ->
             { english = "Have you counseled the patient to return to the health center to repeat the hemoglobin test in four weeks"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Wagiriye umubyeyi inama yo gusubira ku kigo nderabuzima gusubiramo ikizamini cy'ingano y'amaraso mu byumweru bine"
             , kirundi = Nothing
             }
 
@@ -23073,6 +23081,12 @@ translationSet trans =
                 NoSpecialityCareSigns ->
                     translationSet EmptyString
 
+        SpousePartner ->
+            { english = "Spouse / Partner"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         StockCorrectionReason value ->
             case value of
                 ReasonInputError ->
@@ -24914,7 +24928,7 @@ translationSet trans =
 
         WeightGain ->
             { english = "Weight gain"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Kwiyongera kw'ibiro"
             , kirundi = Nothing
             }
 
@@ -25484,7 +25498,7 @@ translationSet trans =
 
                 TaskNextVisit ->
                     { english = "Next Visit"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isura rikurikira"
                     , kirundi = Nothing
                     }
 

@@ -36,3 +36,5 @@ ENV NPM_CONFIG_UNSAFE_PERM=true
 RUN npm install -g elm-test@0.19.1-revision6
 # Install svg2elm.
 RUN npm install -g svg2elm
+# Downgrade terminus.
+RUN curl -L --fail -o /usr/local/bin/terminus https://github.com/pantheon-systems/terminus/releases/download/3.6.2/terminus.phar && chmod +x /usr/local/bin/terminus
