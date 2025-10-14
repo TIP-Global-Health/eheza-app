@@ -9,6 +9,7 @@ import Backend.Nurse.Utils exposing (resilienceRoleToString)
 import Backend.Person.Model exposing (EducationLevel(..), MaritalStatus(..), allUbudehes)
 import Backend.Person.Utils exposing (educationLevelToInt, genderToString, maritalStatusToString, ubudeheToInt)
 import Backend.ResilienceMessage.Model exposing (ResilienceCategory(..), ResilienceMessage, ResilienceMessageOrder(..))
+import Backend.ResilienceMessage.Utils exposing (resolveDisplayDay)
 import Backend.ResilienceSurvey.Model exposing (ResilienceSurveyQuestionOption(..), ResilienceSurveyType(..))
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
@@ -46,6 +47,16 @@ view language currentTime nurseId nurse db model =
         currentDate =
             fromLocalDateTime currentTime
 
+        -- Extract nurse messages as a list
+        messagesList : List ResilienceMessage
+        messagesList =
+            Dict.values nurse.resilienceMessages
+
+        -- Helper to check if a message for a specific day was read
+        wasMessageRead : Int -> Bool
+        wasMessageRead targetDay =
+            List.any (\msg -> msg.displayDay == targetDay && msg.timeRead /= Nothing) messagesList
+
         numberOfUnreadMessages =
             resolveNumberOfUnreadMessages currentTime currentDate nurse
 
@@ -62,53 +73,40 @@ view language currentTime nurseId nurse db model =
                     [ span [ class "icon-back" ] [] ]
                 ]
 
+        runSurvey surveyType =
+            let
+                filteredSurveys =
+                    Dict.get nurseId db.resilienceSurveysByNurse
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map Dict.values
+                        |> Maybe.withDefault []
+                        |> List.filter (\s -> s.surveyType == surveyType)
+
+                surveyCount =
+                    List.length filteredSurveys
+
+                canTakeSurvey =
+                    if surveyCount == 0 then
+                        True
+                        -- Baseline survey always allowed
+
+                    else if surveyCount == 1 then
+                        wasMessageRead 103
+                        -- Second survey requires message at day 103 read
+
+                    else if surveyCount == 2 then
+                        wasMessageRead 198
+                        -- Final survey requires message at day 198 read
+
+                    else
+                        False
+            in
+            canTakeSurvey
+
         content =
             Maybe.map
                 (\programStartDate ->
                     let
-                        surveys =
-                            Dict.get nurseId db.resilienceSurveysByNurse
-                                |> Maybe.andThen RemoteData.toMaybe
-                                |> Maybe.map Dict.values
-                                |> Maybe.withDefault []
-
-                        surveysSorted =
-                            List.sortWith (sortByDateDesc .dateMeasured) surveys
-
-                        runSurvey surveyType =
-                            let
-                                filteredSurveys =
-                                    List.filter (.surveyType >> (==) surveyType) surveysSorted
-
-                                surveyCount =
-                                    List.length filteredSurveys
-
-                                filterCondition survey =
-                                    let
-                                        -- Calculate the days since the program started
-                                        daysSinceProgramStart =
-                                            Date.diff Days programStartDate currentDate
-                                    in
-                                    if surveyCount == 0 then
-                                        -- First survey should always run at the start of the program
-                                        True
-
-                                    else if surveyCount == 1 then
-                                        -- Second survey should run at 106 days
-                                        daysSinceProgramStart >= 105
-
-                                    else if surveyCount == 2 then
-                                        -- Final survey should run at 201 days
-                                        daysSinceProgramStart >= 200
-
-                                    else
-                                        -- No more surveys after 3 have been completed
-                                        False
-                            in
-                            List.head filteredSurveys
-                                |> Maybe.map filterCondition
-                                |> Maybe.withDefault True
-
                         runQuarterlySurvey =
                             runSurvey ResilienceSurveyQuarterly
                     in
@@ -132,8 +130,7 @@ view language currentTime nurseId nurse db model =
     div [ class "page-activity messaging-center" ]
         [ header
         , content
-        , viewModal <|
-            surveyScoreDialog language model.surveyScoreDialogState
+        , viewModal <| surveyScoreDialog language model.surveyScoreDialogState
         ]
 
 
