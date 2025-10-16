@@ -18,7 +18,6 @@ FROM
        ip.bundle = 'prenatal_encounter' AND
        fdfpet.field_prenatal_encounter_type_value LIKE 'Chw%' AND
        edd.field_expected_date_concluded_value is NOT NULL AND
-       field_district_value='Bugesera' AND
        FROM_UNIXTIME(node.created) < :limit
    GROUP BY
      field_individual_participant_target_id) a
