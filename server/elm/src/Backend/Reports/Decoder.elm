@@ -1,4 +1,4 @@
-module Backend.Reports.Decoder exposing (decodeReportsData)
+module Backend.Reports.Decoder exposing (decodeReportsData, decodeSyncResponse)
 
 import Backend.Decoder exposing (decodeSite, decodeWithFallback)
 import Backend.Reports.Model exposing (..)
@@ -7,8 +7,8 @@ import Date
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeFloat, decodeInt)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffMonths)
-import Json.Decode exposing (Decoder, andThen, bool, fail, list, map, nullable, oneOf, string, succeed)
-import Json.Decode.Pipeline exposing (optional, optionalAt, required)
+import Json.Decode exposing (Decoder, andThen, at, bool, fail, field, list, map, nullable, oneOf, string, succeed)
+import Json.Decode.Pipeline exposing (hardcoded, optional, optionalAt, required)
 import Maybe.Extra
 
 
@@ -18,8 +18,18 @@ decodeReportsData =
         |> required "site" decodeSite
         |> required "entity_name" string
         |> required "entity_type" decodeSelectedEntity
-        |> required "results" (list decodePatientData)
+        |> hardcoded []
+        -- |> required "results" (list decodePatientData)
         |> optionalAt [ "additional", "nutrition_report_data" ] (nullable (list decodeBackendGeneratedNutritionReportTableDate)) Nothing
+
+
+decodeSyncResponse : Decoder SyncResponse
+decodeSyncResponse =
+    field "data"
+        (succeed SyncResponse
+            |> required "batch" (list decodePatientData)
+            |> required "last" decodeInt
+        )
 
 
 decodeSelectedEntity : Decoder SelectedEntity

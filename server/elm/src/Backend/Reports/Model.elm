@@ -3,6 +3,7 @@ module Backend.Reports.Model exposing (..)
 import App.Types exposing (Site)
 import Gizra.NominalDate exposing (NominalDate)
 import Json.Encode exposing (Value)
+import RemoteData exposing (WebData)
 
 
 type alias ReportsData =
@@ -248,6 +249,13 @@ type NutritionReportTableType
     | NutritionTableIncidenceYearTwoOrMore
 
 
+type alias SyncResponse =
+    { records : List PatientData
+    , lastIdSynced : PersonId
+    }
+
+
 type Msg
-    = NoOp
-    | SetData Value
+    = SetData Value
+    | SendSyncRequest PersonId
+    | HandleSyncResponse (WebData SyncResponse)
