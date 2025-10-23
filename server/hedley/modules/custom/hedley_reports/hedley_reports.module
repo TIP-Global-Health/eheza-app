@@ -914,7 +914,7 @@ function hedley_reports_statistical_queries_report_callback_health_center($healt
  *   The HTML markup for the Elm application.
  */
 function hedley_reports_build_statistical_queries_results_app($province = NULL, $district = NULL, $sector = NULL, $cell = NULL, $village = NULL, $health_center = NULL) {
-  $data = [];
+  $data = $params = [];
 
   if (empty($province)) {
     if (empty($health_center)) {
@@ -925,37 +925,51 @@ function hedley_reports_build_statistical_queries_results_app($province = NULL, 
       $wrapper = entity_metadata_wrapper('node', $health_center);
       $data['entity_name'] = $wrapper->label();
       $data['entity_type'] = 'health-center';
+      $params['health_center'] = $health_center;
     }
   }
   elseif (empty($district)) {
     $data['entity_name'] = $province;
     $data['entity_type'] = 'province';
+    $params['province'] = $province;
   }
   elseif (empty($sector)) {
     $data['entity_name'] = $district;
     $data['entity_type'] = 'district';
+    $params['province'] = $province;
+    $params['district'] = $district;
   }
   elseif (empty($cell)) {
     $data['entity_name'] = $sector;
     $data['entity_type'] = 'sector';
+    $params['province'] = $province;
+    $params['district'] = $district;
+    $params['sector'] = $sector;
   }
   elseif (empty($village)) {
     $data['entity_name'] = $cell;
     $data['entity_type'] = 'cell';
+    $params['province'] = $province;
+    $params['district'] = $district;
+    $params['sector'] = $sector;
+    $params['cell'] = $cell;
   }
   else {
     $data['entity_name'] = $village;
     $data['entity_type'] = 'village';
+    $params['province'] = $province;
+    $params['district'] = $district;
+    $params['sector'] = $sector;
+    $params['cell'] = $cell;
+    $params['village'] = $village;
   }
 
   $data['site'] = variable_get('hedley_general_site_name', '');
+  $data['params'] = $params;
 
-  if (in_array($data['entity_type'], ['sector', 'cell', 'village'])) {
-    // For smaller data sets, we generate results on fly.
-    $data['results'] = hedley_reports_generate_results_data($province, $district, $sector, $cell, $village, $health_center);
-  }
-  else {
-    [$data['results'], $data['additional']] = hedley_reports_load_results_data('statistical-query', $data['entity_type'], $province, $district, $health_center);
+  if (in_array($data['entity_type'], ['province', 'district'])) {
+    // For large data sets, try loading additional data.
+    $data['additional'] = hedley_reports_load_results_additional_data('statistical-query', $data['entity_type'], $province, $district, $health_center);
   }
 
   return hedley_general_build_elm_app('reports-results', $data);
@@ -1165,6 +1179,37 @@ function hedley_reports_load_results_data($report_variant, $scope, $province = N
   }
 
   return [json_decode($data), json_decode($additional_data)];
+}
+
+/**
+ * Loads additional data in scope, stored on Report Data node.
+ *
+ * @param string $report_variant
+ *   Type of report to load.
+ * @param string $scope
+ *   Scope of data to load.
+ * @param string|null $province
+ *   Province name.
+ * @param string|null $district
+ *   District name.
+ * @param int|null $health_center
+ *   Health center ID.
+ *
+ * @return array
+ *   Stored data.
+ */
+function hedley_reports_load_results_additional_data($report_variant, $scope, $province = NULL, $district = NULL, $health_center = NULL) {
+  $node_id = hedley_reports_load_results_data_node($report_variant, $scope, $province, $district, $health_center);
+  if (!$node_id) {
+    return [];
+  }
+
+  $node = node_load($node_id);
+  if (empty($node->field_reports_data) || empty($node->field_reports_data[LANGUAGE_NONE][0]['value'])) {
+    return [];
+  }
+
+  return json_decode($node->field_reports_data[LANGUAGE_NONE][0]['value']);
 }
 
 /**

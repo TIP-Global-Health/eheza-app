@@ -10,8 +10,19 @@ type alias ReportsData =
     { site : Site
     , entityName : String
     , entityType : SelectedEntity
+    , params : ReportParams
     , records : List PatientData
     , nutritionReportData : Maybe (List BackendGeneratedNutritionReportTableDate)
+    }
+
+
+type alias ReportParams =
+    { province : Maybe String
+    , district : Maybe String
+    , sector : Maybe String
+    , cell : Maybe String
+    , village : Maybe String
+    , healthCenter : Maybe HealthCenterId
     }
 
 
@@ -48,6 +59,10 @@ type alias PatientData =
 
 
 type alias PersonId =
+    Int
+
+
+type alias HealthCenterId =
     Int
 
 

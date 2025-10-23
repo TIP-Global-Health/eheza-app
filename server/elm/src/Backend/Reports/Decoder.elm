@@ -18,9 +18,20 @@ decodeReportsData =
         |> required "site" decodeSite
         |> required "entity_name" string
         |> required "entity_type" decodeSelectedEntity
+        |> required "params" decodeReportParams
         |> hardcoded []
-        -- |> required "results" (list decodePatientData)
         |> optionalAt [ "additional", "nutrition_report_data" ] (nullable (list decodeBackendGeneratedNutritionReportTableDate)) Nothing
+
+
+decodeReportParams : Decoder ReportParams
+decodeReportParams =
+    succeed ReportParams
+        |> optional "province" (nullable string) Nothing
+        |> optional "district" (nullable string) Nothing
+        |> optional "sector" (nullable string) Nothing
+        |> optional "cell" (nullable string) Nothing
+        |> optional "village" (nullable string) Nothing
+        |> optional "health_center" (nullable decodeInt) Nothing
 
 
 decodeSyncResponse : Decoder SyncResponse

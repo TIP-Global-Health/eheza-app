@@ -8928,9 +8928,9 @@ var $author$project$Backend$Reports$Model$HandleSyncResponse = function (a) {
 var $author$project$Backend$Reports$Model$SendSyncRequest = function (a) {
 	return {$: 'SendSyncRequest', a: a};
 };
-var $author$project$Backend$Reports$Model$ReportsData = F5(
-	function (site, entityName, entityType, records, nutritionReportData) {
-		return {entityName: entityName, entityType: entityType, nutritionReportData: nutritionReportData, records: records, site: site};
+var $author$project$Backend$Reports$Model$ReportsData = F6(
+	function (site, entityName, entityType, params, records, nutritionReportData) {
+		return {entityName: entityName, entityType: entityType, nutritionReportData: nutritionReportData, params: params, records: records, site: site};
 	});
 var $author$project$Backend$Reports$Model$BackendGeneratedNutritionReportTableDate = F8(
 	function (tableType, captions, stuntingModerate, stuntingSevere, wastingModerate, wastingSevere, underweightModerate, underweightSevere) {
@@ -9002,6 +9002,41 @@ var $author$project$Backend$Reports$Decoder$decodeBackendGeneratedNutritionRepor
 								'type',
 								$author$project$Backend$Reports$Decoder$decodeNutritionReportTableType,
 								$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$BackendGeneratedNutritionReportTableDate)))))))));
+var $author$project$Backend$Reports$Model$ReportParams = F6(
+	function (province, district, sector, cell, village, healthCenter) {
+		return {cell: cell, district: district, healthCenter: healthCenter, province: province, sector: sector, village: village};
+	});
+var $author$project$Backend$Reports$Decoder$decodeReportParams = A4(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+	'health_center',
+	$elm$json$Json$Decode$nullable($author$project$Gizra$Json$decodeInt),
+	$elm$core$Maybe$Nothing,
+	A4(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+		'village',
+		$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string),
+		$elm$core$Maybe$Nothing,
+		A4(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+			'cell',
+			$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string),
+			$elm$core$Maybe$Nothing,
+			A4(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+				'sector',
+				$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string),
+				$elm$core$Maybe$Nothing,
+				A4(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+					'district',
+					$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string),
+					$elm$core$Maybe$Nothing,
+					A4(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+						'province',
+						$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string),
+						$elm$core$Maybe$Nothing,
+						$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$ReportParams)))))));
 var $author$project$Backend$Reports$Model$EntityCell = {$: 'EntityCell'};
 var $author$project$Backend$Reports$Model$EntitySector = {$: 'EntitySector'};
 var $author$project$Backend$Reports$Model$EntityVillage = {$: 'EntityVillage'};
@@ -9052,17 +9087,21 @@ var $author$project$Backend$Reports$Decoder$decodeReportsData = A4(
 		_List_Nil,
 		A3(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'entity_type',
-			$author$project$Backend$Reports$Decoder$decodeSelectedEntity,
+			'params',
+			$author$project$Backend$Reports$Decoder$decodeReportParams,
 			A3(
 				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-				'entity_name',
-				$elm$json$Json$Decode$string,
+				'entity_type',
+				$author$project$Backend$Reports$Decoder$decodeSelectedEntity,
 				A3(
 					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-					'site',
-					$author$project$Backend$Decoder$decodeSite,
-					$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$ReportsData))))));
+					'entity_name',
+					$elm$json$Json$Decode$string,
+					A3(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+						'site',
+						$author$project$Backend$Decoder$decodeSite,
+						$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$ReportsData)))))));
 var $author$project$Backend$Reports$Model$SyncResponse = F2(
 	function (records, lastIdSynced) {
 		return {lastIdSynced: lastIdSynced, records: records};
@@ -9800,6 +9839,7 @@ var $author$project$Backend$Reports$Decoder$decodeSyncResponse = A2(
 			'batch',
 			$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodePatientData),
 			$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$SyncResponse))));
+var $elm$json$Json$Encode$int = _Json_wrap;
 var $elm$core$Debug$log = _Debug_log;
 var $elm$json$Json$Encode$object = function (pairs) {
 	return _Json_wrap(
@@ -10586,11 +10626,11 @@ var $author$project$Backend$Reports$Update$update = F4(
 			switch (msg.$) {
 				case 'SetData':
 					var value = msg.a;
+					var decodedValue = A2($elm$json$Json$Decode$decodeValue, $author$project$Backend$Reports$Decoder$decodeReportsData, value);
 					var modelUpdated = _Utils_update(
 						model,
 						{
-							reportsData: $elm$core$Maybe$Just(
-								A2($elm$json$Json$Decode$decodeValue, $author$project$Backend$Reports$Decoder$decodeReportsData, value))
+							reportsData: $elm$core$Maybe$Just(decodedValue)
 						});
 					var $temp$currentDate = currentDate,
 						$temp$backendUrl = backendUrl,
@@ -10604,16 +10644,79 @@ var $author$project$Backend$Reports$Update$update = F4(
 				case 'SendSyncRequest':
 					var fromPersonId = msg.a;
 					var cmd = function () {
-						var params = _List_fromArray(
-							[
-								_Utils_Tuple2(
-								'app_type',
-								$elm$json$Json$Encode$string('reports')),
-								_Utils_Tuple2(
-								'base_revision',
-								$elm$json$Json$Encode$string(
-									$elm$core$String$fromInt(fromPersonId)))
-							]);
+						var geoParams = A2(
+							$elm$core$Maybe$withDefault,
+							_List_Nil,
+							A2(
+								$elm$core$Maybe$map,
+								function (reportsData) {
+									return $elm_community$maybe_extra$Maybe$Extra$values(
+										_List_fromArray(
+											[
+												A2(
+												$elm$core$Maybe$map,
+												function (value) {
+													return _Utils_Tuple2(
+														'province',
+														$elm$json$Json$Encode$string(value));
+												},
+												reportsData.params.province),
+												A2(
+												$elm$core$Maybe$map,
+												function (value) {
+													return _Utils_Tuple2(
+														'district',
+														$elm$json$Json$Encode$string(value));
+												},
+												reportsData.params.district),
+												A2(
+												$elm$core$Maybe$map,
+												function (value) {
+													return _Utils_Tuple2(
+														'sector',
+														$elm$json$Json$Encode$string(value));
+												},
+												reportsData.params.sector),
+												A2(
+												$elm$core$Maybe$map,
+												function (value) {
+													return _Utils_Tuple2(
+														'cell',
+														$elm$json$Json$Encode$string(value));
+												},
+												reportsData.params.cell),
+												A2(
+												$elm$core$Maybe$map,
+												function (value) {
+													return _Utils_Tuple2(
+														'village',
+														$elm$json$Json$Encode$string(value));
+												},
+												reportsData.params.village),
+												A2(
+												$elm$core$Maybe$map,
+												function (value) {
+													return _Utils_Tuple2(
+														'health_center',
+														$elm$json$Json$Encode$int(value));
+												},
+												reportsData.params.healthCenter)
+											]));
+								},
+								A2($elm$core$Maybe$andThen, $elm$core$Result$toMaybe, model.reportsData)));
+						var params = _Utils_ap(
+							_List_fromArray(
+								[
+									_Utils_Tuple2(
+									'app_type',
+									$elm$json$Json$Encode$string('reports')),
+									_Utils_Tuple2(
+									'base_revision',
+									$elm$json$Json$Encode$string(
+										$elm$core$String$fromInt(fromPersonId)))
+								]),
+							geoParams);
+						var _v1 = A2($elm$core$Debug$log, 'geoParams', geoParams);
 						return A2(
 							$lukewestby$elm_http_builder$HttpBuilder$send,
 							A2($elm$core$Basics$composeR, $krisajenkins$remotedata$RemoteData$fromResult, $author$project$Backend$Reports$Model$HandleSyncResponse),
@@ -10653,13 +10756,13 @@ var $author$project$Backend$Reports$Update$update = F4(
 												});
 										},
 										A2($elm$core$Maybe$andThen, $elm$core$Result$toMaybe, model.reportsData)));
-								var _v1 = A2($elm$core$Debug$log, '', response.lastIdSynced);
+								var _v2 = A2($elm$core$Debug$log, '', response.lastIdSynced);
 								return A4(
 									$author$project$Backend$Reports$Update$update,
 									currentDate,
 									backendUrl,
 									$author$project$Backend$Reports$Model$SendSyncRequest(response.lastIdSynced),
-									model);
+									modelUpdated);
 							},
 							$krisajenkins$remotedata$RemoteData$toMaybe(data)));
 			}
@@ -15288,7 +15391,6 @@ var $author$project$DateSelector$Selector$groupsOf = F2(
 				n,
 				A2($elm$core$List$drop, n, list)));
 	});
-var $elm$json$Json$Encode$int = _Json_wrap;
 var $justinmimbs$date$Date$isBetween = F3(
 	function (_v0, _v1, _v2) {
 		var a = _v0.a;
