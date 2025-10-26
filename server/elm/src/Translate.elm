@@ -19,6 +19,7 @@ import Backend.Completion.Model
         , TuberculosisActivity(..)
         , WellChildActivity(..)
         )
+import Backend.Components.Model exposing (SelectedEntity(..))
 import Backend.Reports.Model
     exposing
         ( AcuteIllnessDiagnosis(..)
@@ -214,8 +215,8 @@ type TranslationId
     | Save
     | Scope
     | Sector
-    | SelectedEntity Backend.Scoreboard.Model.SelectedEntity
-    | SelectedScope Backend.Reports.Model.SelectedEntity
+    | SelectedEntity SelectedEntity
+    | SelectedScope SelectedEntity
     | SelectLimitDate
     | SelectStartDate
     | SelectScope
@@ -2467,39 +2468,43 @@ translationSet transId =
 
         SelectedEntity entity ->
             case entity of
-                Backend.Scoreboard.Model.EntityDistrict ->
+                EntityDistrict ->
                     translationSet District
 
-                Backend.Scoreboard.Model.EntitySector ->
+                EntitySector ->
                     translationSet Sector
 
-                Backend.Scoreboard.Model.EntityCell ->
+                EntityCell ->
                     translationSet Cell
 
-                Backend.Scoreboard.Model.EntityVillage ->
+                EntityVillage ->
                     translationSet Village
+
+                -- Other options can not be selected.
+                _ ->
+                    translationSet EmptyString
 
         SelectedScope entity ->
             case entity of
-                Backend.Reports.Model.EntityGlobal ->
+                EntityGlobal ->
                     translationSet Global
 
-                Backend.Reports.Model.EntityHealthCenter ->
+                EntityHealthCenter ->
                     translationSet HealthCenter
 
-                Backend.Reports.Model.EntityProvince ->
+                EntityProvince ->
                     translationSet Province
 
-                Backend.Reports.Model.EntityDistrict ->
+                EntityDistrict ->
                     translationSet District
 
-                Backend.Reports.Model.EntitySector ->
+                EntitySector ->
                     translationSet Sector
 
-                Backend.Reports.Model.EntityCell ->
+                EntityCell ->
                     translationSet Cell
 
-                Backend.Reports.Model.EntityVillage ->
+                EntityVillage ->
                     translationSet Village
 
         SelectLimitDate ->

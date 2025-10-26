@@ -1,6 +1,7 @@
 module Backend.Scoreboard.Decoder exposing (decodeScoreboardData)
 
 import AssocList as Dict
+import Backend.Components.Decoder exposing (decodeReportParams, decodeSelectedEntity)
 import Backend.Decoder exposing (decodeSite)
 import Backend.Scoreboard.Model exposing (..)
 import Backend.Scoreboard.Utils exposing (..)
@@ -18,30 +19,8 @@ decodeScoreboardData currentDate =
         |> required "site" decodeSite
         |> required "entity_name" string
         |> required "entity_type" decodeSelectedEntity
+        |> required "params" decodeReportParams
         |> hardcoded []
-
-
-decodeSelectedEntity : Decoder SelectedEntity
-decodeSelectedEntity =
-    string
-        |> andThen
-            (\entityType ->
-                case entityType of
-                    "district" ->
-                        succeed EntityDistrict
-
-                    "sector" ->
-                        succeed EntitySector
-
-                    "cell" ->
-                        succeed EntityCell
-
-                    "village" ->
-                        succeed EntityVillage
-
-                    _ ->
-                        fail <| entityType ++ " is unknown SelectedEntity type"
-            )
 
 
 decodePatientData : NominalDate -> Decoder PatientData

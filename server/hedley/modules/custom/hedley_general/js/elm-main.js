@@ -6276,10 +6276,10 @@ var $krisajenkins$remotedata$RemoteData$isSuccess = function (data) {
 		return false;
 	}
 };
-var $author$project$Backend$Reports$Model$EntityDistrict = {$: 'EntityDistrict'};
-var $author$project$Backend$Reports$Model$EntityGlobal = {$: 'EntityGlobal'};
-var $author$project$Backend$Reports$Model$EntityHealthCenter = {$: 'EntityHealthCenter'};
-var $author$project$Backend$Reports$Model$EntityProvince = {$: 'EntityProvince'};
+var $author$project$Backend$Components$Model$EntityDistrict = {$: 'EntityDistrict'};
+var $author$project$Backend$Components$Model$EntityGlobal = {$: 'EntityGlobal'};
+var $author$project$Backend$Components$Model$EntityHealthCenter = {$: 'EntityHealthCenter'};
+var $author$project$Backend$Components$Model$EntityProvince = {$: 'EntityProvince'};
 var $elm$core$List$any = F2(
 	function (isOkay, list) {
 		any:
@@ -6315,7 +6315,7 @@ var $author$project$Pages$Reports$Utils$isWideScope = function (selectedEntity) 
 		$elm$core$List$member,
 		selectedEntity,
 		_List_fromArray(
-			[$author$project$Backend$Reports$Model$EntityGlobal, $author$project$Backend$Reports$Model$EntityProvince, $author$project$Backend$Reports$Model$EntityDistrict, $author$project$Backend$Reports$Model$EntityHealthCenter]));
+			[$author$project$Backend$Components$Model$EntityGlobal, $author$project$Backend$Components$Model$EntityProvince, $author$project$Backend$Components$Model$EntityDistrict, $author$project$Backend$Components$Model$EntityHealthCenter]));
 };
 var $author$project$Pages$Reports$Model$NutritionReportDataCalculationCompleted = function (a) {
 	return {$: 'NutritionReportDataCalculationCompleted', a: a};
@@ -9002,11 +9002,11 @@ var $author$project$Backend$Reports$Decoder$decodeBackendGeneratedNutritionRepor
 								'type',
 								$author$project$Backend$Reports$Decoder$decodeNutritionReportTableType,
 								$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$BackendGeneratedNutritionReportTableDate)))))))));
-var $author$project$Backend$Reports$Model$ReportParams = F6(
+var $author$project$Backend$Components$Model$ReportParams = F6(
 	function (province, district, sector, cell, village, healthCenter) {
 		return {cell: cell, district: district, healthCenter: healthCenter, province: province, sector: sector, village: village};
 	});
-var $author$project$Backend$Reports$Decoder$decodeReportParams = A4(
+var $author$project$Backend$Components$Decoder$decodeReportParams = A4(
 	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
 	'health_center',
 	$elm$json$Json$Decode$nullable($author$project$Gizra$Json$decodeInt),
@@ -9036,28 +9036,28 @@ var $author$project$Backend$Reports$Decoder$decodeReportParams = A4(
 						'province',
 						$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string),
 						$elm$core$Maybe$Nothing,
-						$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$ReportParams)))))));
-var $author$project$Backend$Reports$Model$EntityCell = {$: 'EntityCell'};
-var $author$project$Backend$Reports$Model$EntitySector = {$: 'EntitySector'};
-var $author$project$Backend$Reports$Model$EntityVillage = {$: 'EntityVillage'};
-var $author$project$Backend$Reports$Decoder$decodeSelectedEntity = A2(
+						$elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$ReportParams)))))));
+var $author$project$Backend$Components$Model$EntityCell = {$: 'EntityCell'};
+var $author$project$Backend$Components$Model$EntitySector = {$: 'EntitySector'};
+var $author$project$Backend$Components$Model$EntityVillage = {$: 'EntityVillage'};
+var $author$project$Backend$Components$Decoder$decodeSelectedEntity = A2(
 	$elm$json$Json$Decode$andThen,
 	function (entityType) {
 		switch (entityType) {
 			case 'global':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$EntityGlobal);
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$EntityGlobal);
 			case 'province':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$EntityProvince);
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$EntityProvince);
 			case 'district':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$EntityDistrict);
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$EntityDistrict);
 			case 'sector':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$EntitySector);
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$EntitySector);
 			case 'cell':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$EntityCell);
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$EntityCell);
 			case 'village':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$EntityVillage);
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$EntityVillage);
 			case 'health-center':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$EntityHealthCenter);
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$EntityHealthCenter);
 			default:
 				return $elm$json$Json$Decode$fail(entityType + ' is unknown SelectedEntity type');
 		}
@@ -9091,11 +9091,11 @@ var $author$project$Backend$Reports$Decoder$decodeReportsData = A2(
 			A3(
 				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 				'params',
-				$author$project$Backend$Reports$Decoder$decodeReportParams,
+				$author$project$Backend$Components$Decoder$decodeReportParams,
 				A3(
 					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 					'entity_type',
-					$author$project$Backend$Reports$Decoder$decodeSelectedEntity,
+					$author$project$Backend$Components$Decoder$decodeSelectedEntity,
 					A3(
 						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 						'entity_name',
@@ -9847,6 +9847,60 @@ var $author$project$Backend$Reports$Decoder$decodeSyncResponse = A2(
 				$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodePatientData),
 				$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$SyncResponse)))));
 var $elm$json$Json$Encode$int = _Json_wrap;
+var $author$project$Backend$Components$Encoder$encodeReportParams = function (params) {
+	return $elm_community$maybe_extra$Maybe$Extra$values(
+		_List_fromArray(
+			[
+				A2(
+				$elm$core$Maybe$map,
+				function (value) {
+					return _Utils_Tuple2(
+						'province',
+						$elm$json$Json$Encode$string(value));
+				},
+				params.province),
+				A2(
+				$elm$core$Maybe$map,
+				function (value) {
+					return _Utils_Tuple2(
+						'district',
+						$elm$json$Json$Encode$string(value));
+				},
+				params.district),
+				A2(
+				$elm$core$Maybe$map,
+				function (value) {
+					return _Utils_Tuple2(
+						'sector',
+						$elm$json$Json$Encode$string(value));
+				},
+				params.sector),
+				A2(
+				$elm$core$Maybe$map,
+				function (value) {
+					return _Utils_Tuple2(
+						'cell',
+						$elm$json$Json$Encode$string(value));
+				},
+				params.cell),
+				A2(
+				$elm$core$Maybe$map,
+				function (value) {
+					return _Utils_Tuple2(
+						'village',
+						$elm$json$Json$Encode$string(value));
+				},
+				params.village),
+				A2(
+				$elm$core$Maybe$map,
+				function (value) {
+					return _Utils_Tuple2(
+						'health_center',
+						$elm$json$Json$Encode$int(value));
+				},
+				params.healthCenter)
+			]));
+};
 var $elm$json$Json$Encode$object = function (pairs) {
 	return _Json_wrap(
 		A3(
@@ -10655,60 +10709,12 @@ var $author$project$Backend$Reports$Update$update = F4(
 							_List_Nil,
 							A2(
 								$elm$core$Maybe$map,
-								function (reportsData) {
-									return $elm_community$maybe_extra$Maybe$Extra$values(
-										_List_fromArray(
-											[
-												A2(
-												$elm$core$Maybe$map,
-												function (value) {
-													return _Utils_Tuple2(
-														'province',
-														$elm$json$Json$Encode$string(value));
-												},
-												reportsData.params.province),
-												A2(
-												$elm$core$Maybe$map,
-												function (value) {
-													return _Utils_Tuple2(
-														'district',
-														$elm$json$Json$Encode$string(value));
-												},
-												reportsData.params.district),
-												A2(
-												$elm$core$Maybe$map,
-												function (value) {
-													return _Utils_Tuple2(
-														'sector',
-														$elm$json$Json$Encode$string(value));
-												},
-												reportsData.params.sector),
-												A2(
-												$elm$core$Maybe$map,
-												function (value) {
-													return _Utils_Tuple2(
-														'cell',
-														$elm$json$Json$Encode$string(value));
-												},
-												reportsData.params.cell),
-												A2(
-												$elm$core$Maybe$map,
-												function (value) {
-													return _Utils_Tuple2(
-														'village',
-														$elm$json$Json$Encode$string(value));
-												},
-												reportsData.params.village),
-												A2(
-												$elm$core$Maybe$map,
-												function (value) {
-													return _Utils_Tuple2(
-														'health_center',
-														$elm$json$Json$Encode$int(value));
-												},
-												reportsData.params.healthCenter)
-											]));
-								},
+								A2(
+									$elm$core$Basics$composeR,
+									function ($) {
+										return $.params;
+									},
+									$author$project$Backend$Components$Encoder$encodeReportParams),
 								A2($elm$core$Maybe$andThen, $elm$core$Result$toMaybe, model.reportsData)));
 						var params = _Utils_ap(
 							_List_fromArray(
@@ -10804,48 +10810,31 @@ var $author$project$Backend$ReportsMenu$Update$update = F3(
 			});
 		return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
 	});
-var $author$project$Backend$Scoreboard$Model$ScoreboardData = F4(
-	function (site, entityName, entityType, records) {
-		return {entityName: entityName, entityType: entityType, records: records, site: site};
+var $author$project$Backend$Scoreboard$Model$ScoreboardData = F5(
+	function (site, entityName, entityType, params, records) {
+		return {entityName: entityName, entityType: entityType, params: params, records: records, site: site};
 	});
-var $author$project$Backend$Scoreboard$Model$EntityCell = {$: 'EntityCell'};
-var $author$project$Backend$Scoreboard$Model$EntityDistrict = {$: 'EntityDistrict'};
-var $author$project$Backend$Scoreboard$Model$EntitySector = {$: 'EntitySector'};
-var $author$project$Backend$Scoreboard$Model$EntityVillage = {$: 'EntityVillage'};
-var $author$project$Backend$Scoreboard$Decoder$decodeSelectedEntity = A2(
-	$elm$json$Json$Decode$andThen,
-	function (entityType) {
-		switch (entityType) {
-			case 'district':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$EntityDistrict);
-			case 'sector':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$EntitySector);
-			case 'cell':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$EntityCell);
-			case 'village':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$EntityVillage);
-			default:
-				return $elm$json$Json$Decode$fail(entityType + ' is unknown SelectedEntity type');
-		}
-	},
-	$elm$json$Json$Decode$string);
 var $author$project$Backend$Scoreboard$Decoder$decodeScoreboardData = function (currentDate) {
 	return A2(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
 		_List_Nil,
 		A3(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'entity_type',
-			$author$project$Backend$Scoreboard$Decoder$decodeSelectedEntity,
+			'params',
+			$author$project$Backend$Components$Decoder$decodeReportParams,
 			A3(
 				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-				'entity_name',
-				$elm$json$Json$Decode$string,
+				'entity_type',
+				$author$project$Backend$Components$Decoder$decodeSelectedEntity,
 				A3(
 					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-					'site',
-					$author$project$Backend$Decoder$decodeSite,
-					$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$ScoreboardData)))));
+					'entity_name',
+					$elm$json$Json$Decode$string,
+					A3(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+						'site',
+						$author$project$Backend$Decoder$decodeSite,
+						$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$ScoreboardData))))));
 };
 var $author$project$Backend$Scoreboard$Update$update = F3(
 	function (currentDate, msg, model) {
@@ -11304,6 +11293,7 @@ var $author$project$Translate$CoreExam = {$: 'CoreExam'};
 var $author$project$Translate$DangerSigns = {$: 'DangerSigns'};
 var $author$project$Translate$Diagnostics = {$: 'Diagnostics'};
 var $author$project$Translate$District = {$: 'District'};
+var $author$project$Translate$EmptyString = {$: 'EmptyString'};
 var $author$project$Translate$FamilyPlanning = {$: 'FamilyPlanning'};
 var $author$project$Translate$Feeding = {$: 'Feeding'};
 var $author$project$Translate$FollowUp = {$: 'FollowUp'};
@@ -13082,8 +13072,12 @@ var $author$project$Translate$translationSet = function (transId) {
 						var $temp$transId = $author$project$Translate$Cell;
 						transId = $temp$transId;
 						continue translationSet;
-					default:
+					case 'EntityVillage':
 						var $temp$transId = $author$project$Translate$Village;
+						transId = $temp$transId;
+						continue translationSet;
+					default:
+						var $temp$transId = $author$project$Translate$EmptyString;
 						transId = $temp$transId;
 						continue translationSet;
 				}
@@ -18971,7 +18965,6 @@ var $author$project$Translate$DeliveryLocation = function (a) {
 var $author$project$Translate$DeliveryLocationsTableHeading = {$: 'DeliveryLocationsTableHeading'};
 var $author$project$Translate$DeliveryLocationsTablePercentage = {$: 'DeliveryLocationsTablePercentage'};
 var $author$project$Translate$DeliveryLocationsTableTotals = {$: 'DeliveryLocationsTableTotals'};
-var $author$project$Translate$EmptyString = {$: 'EmptyString'};
 var $author$project$Pages$Reports$Model$FirstTrimester = {$: 'FirstTrimester'};
 var $author$project$Translate$FirstVisit = {$: 'FirstVisit'};
 var $author$project$Translate$HC = {$: 'HC'};

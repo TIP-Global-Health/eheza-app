@@ -1,5 +1,6 @@
 module Backend.Reports.Update exposing (update)
 
+import Backend.Components.Encoder exposing (encodeReportParams)
 import Backend.Model exposing (ModelBackend)
 import Backend.Reports.Decoder exposing (decodeReportsData, decodeSyncResponse)
 import Backend.Reports.Model exposing (Msg(..))
@@ -32,17 +33,7 @@ update currentDate backendUrl msg model =
                     let
                         geoParams =
                             Maybe.andThen Result.toMaybe model.reportsData
-                                |> Maybe.map
-                                    (\reportsData ->
-                                        [ Maybe.map (\value -> ( "province", string value )) reportsData.params.province
-                                        , Maybe.map (\value -> ( "district", string value )) reportsData.params.district
-                                        , Maybe.map (\value -> ( "sector", string value )) reportsData.params.sector
-                                        , Maybe.map (\value -> ( "cell", string value )) reportsData.params.cell
-                                        , Maybe.map (\value -> ( "village", string value )) reportsData.params.village
-                                        , Maybe.map (\value -> ( "health_center", int value )) reportsData.params.healthCenter
-                                        ]
-                                            |> Maybe.Extra.values
-                                    )
+                                |> Maybe.map (.params >> encodeReportParams)
                                 |> Maybe.withDefault []
 
                         params =

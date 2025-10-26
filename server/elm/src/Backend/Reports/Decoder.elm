@@ -1,5 +1,6 @@
 module Backend.Reports.Decoder exposing (decodeReportsData, decodeSyncResponse)
 
+import Backend.Components.Decoder exposing (decodeReportParams, decodeSelectedEntity)
 import Backend.Decoder exposing (decodeSite, decodeWithFallback)
 import Backend.Reports.Model exposing (..)
 import Backend.Reports.Utils exposing (..)
@@ -24,17 +25,6 @@ decodeReportsData =
         |> hardcoded Nothing
 
 
-decodeReportParams : Decoder ReportParams
-decodeReportParams =
-    succeed ReportParams
-        |> optional "province" (nullable string) Nothing
-        |> optional "district" (nullable string) Nothing
-        |> optional "sector" (nullable string) Nothing
-        |> optional "cell" (nullable string) Nothing
-        |> optional "village" (nullable string) Nothing
-        |> optional "health_center" (nullable decodeInt) Nothing
-
-
 decodeSyncResponse : Decoder SyncResponse
 decodeSyncResponse =
     field "data"
@@ -43,38 +33,6 @@ decodeSyncResponse =
             |> required "total_remaining" decodeInt
             |> required "last" decodeInt
         )
-
-
-decodeSelectedEntity : Decoder SelectedEntity
-decodeSelectedEntity =
-    string
-        |> andThen
-            (\entityType ->
-                case entityType of
-                    "global" ->
-                        succeed EntityGlobal
-
-                    "province" ->
-                        succeed EntityProvince
-
-                    "district" ->
-                        succeed EntityDistrict
-
-                    "sector" ->
-                        succeed EntitySector
-
-                    "cell" ->
-                        succeed EntityCell
-
-                    "village" ->
-                        succeed EntityVillage
-
-                    "health-center" ->
-                        succeed EntityHealthCenter
-
-                    _ ->
-                        fail <| entityType ++ " is unknown SelectedEntity type"
-            )
 
 
 decodePatientData : Decoder PatientData

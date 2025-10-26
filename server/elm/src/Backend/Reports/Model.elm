@@ -1,6 +1,7 @@
 module Backend.Reports.Model exposing (..)
 
 import App.Types exposing (Site)
+import Backend.Components.Model exposing (ReportParams, SelectedEntity)
 import Gizra.NominalDate exposing (NominalDate)
 import Json.Encode exposing (Value)
 import RemoteData exposing (WebData)
@@ -15,26 +16,6 @@ type alias ReportsData =
     , nutritionReportData : Maybe (List BackendGeneratedNutritionReportTableDate)
     , remainingForDownload : Maybe Int
     }
-
-
-type alias ReportParams =
-    { province : Maybe String
-    , district : Maybe String
-    , sector : Maybe String
-    , cell : Maybe String
-    , village : Maybe String
-    , healthCenter : Maybe HealthCenterId
-    }
-
-
-type SelectedEntity
-    = EntityGlobal
-    | EntityProvince
-    | EntityDistrict
-    | EntitySector
-    | EntityCell
-    | EntityVillage
-    | EntityHealthCenter
 
 
 type alias PatientData =

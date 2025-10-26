@@ -1,6 +1,7 @@
 module Pages.Reports.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
+import Backend.Components.Model exposing (SelectedEntity(..))
 import Backend.Reports.Model exposing (..)
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate, diffDays)

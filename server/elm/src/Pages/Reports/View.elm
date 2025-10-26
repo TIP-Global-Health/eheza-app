@@ -2,6 +2,7 @@ module Pages.Reports.View exposing (view)
 
 import App.Types exposing (Language)
 import AssocList as Dict exposing (Dict)
+import Backend.Components.Model exposing (SelectedEntity(..))
 import Backend.Model exposing (ModelBackend)
 import Backend.Reports.Model
     exposing
@@ -15,7 +16,6 @@ import Backend.Reports.Model
         , PrenatalDiagnosis(..)
         , PrenatalEncounterType(..)
         , ReportsData
-        , SelectedEntity(..)
         )
 import Backend.Reports.Utils exposing (allAcuteIllnessDiagnoses, allPrenatalDiagnoses)
 import Date exposing (Unit(..))
