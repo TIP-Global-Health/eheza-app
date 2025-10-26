@@ -1,8 +1,17 @@
 ARG BASE_IMAGE
 FROM $BASE_IMAGE
 
-RUN apt-get update || true
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y -o Dpkg::Options::="--force-confold" --no-install-recommends --no-install-suggests inotify-tools build-essential mime-support
+RUN set -eux; \
+    apt-get update; \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+      -o Dpkg::Options::="--force-confold" \
+      --no-install-recommends \
+      --no-install-suggests \
+      inotify-tools \
+      build-essential \
+      mime-support; \
+    apt-get clean; \
+    rm -rf /var/lib/apt/lists/*
 
 RUN if [ "$(uname -m)" = "aarch64" ] || [ "$(uname -m)" = "arm64" ]; then \
       DEBIAN_FRONTEND=noninteractive apt-get install -y -o Dpkg::Options::="--force-confold" --no-install-recommends --no-install-suggests autoconf autotools-dev automake; \
