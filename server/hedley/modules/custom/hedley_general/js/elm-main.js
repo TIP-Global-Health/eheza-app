@@ -8928,9 +8928,9 @@ var $author$project$Backend$Reports$Model$HandleSyncResponse = function (a) {
 var $author$project$Backend$Reports$Model$SendSyncRequest = function (a) {
 	return {$: 'SendSyncRequest', a: a};
 };
-var $author$project$Backend$Reports$Model$ReportsData = F6(
-	function (site, entityName, entityType, params, records, nutritionReportData) {
-		return {entityName: entityName, entityType: entityType, nutritionReportData: nutritionReportData, params: params, records: records, site: site};
+var $author$project$Backend$Reports$Model$ReportsData = F7(
+	function (site, entityName, entityType, params, records, nutritionReportData, remainingForDownload) {
+		return {entityName: entityName, entityType: entityType, nutritionReportData: nutritionReportData, params: params, records: records, remainingForDownload: remainingForDownload, site: site};
 	});
 var $author$project$Backend$Reports$Model$BackendGeneratedNutritionReportTableDate = F8(
 	function (tableType, captions, stuntingModerate, stuntingSevere, wastingModerate, wastingSevere, underweightModerate, underweightSevere) {
@@ -9075,36 +9075,39 @@ var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt = F4(
 				fallback),
 			decoder);
 	});
-var $author$project$Backend$Reports$Decoder$decodeReportsData = A4(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
-	_List_fromArray(
-		['additional', 'nutrition_report_data']),
-	$elm$json$Json$Decode$nullable(
-		$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeBackendGeneratedNutritionReportTableDate)),
+var $author$project$Backend$Reports$Decoder$decodeReportsData = A2(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
 	$elm$core$Maybe$Nothing,
-	A2(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
-		_List_Nil,
-		A3(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'params',
-			$author$project$Backend$Reports$Decoder$decodeReportParams,
+	A4(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
+		_List_fromArray(
+			['additional', 'nutrition_report_data']),
+		$elm$json$Json$Decode$nullable(
+			$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeBackendGeneratedNutritionReportTableDate)),
+		$elm$core$Maybe$Nothing,
+		A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+			_List_Nil,
 			A3(
 				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-				'entity_type',
-				$author$project$Backend$Reports$Decoder$decodeSelectedEntity,
+				'params',
+				$author$project$Backend$Reports$Decoder$decodeReportParams,
 				A3(
 					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-					'entity_name',
-					$elm$json$Json$Decode$string,
+					'entity_type',
+					$author$project$Backend$Reports$Decoder$decodeSelectedEntity,
 					A3(
 						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-						'site',
-						$author$project$Backend$Decoder$decodeSite,
-						$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$ReportsData)))))));
-var $author$project$Backend$Reports$Model$SyncResponse = F2(
-	function (records, lastIdSynced) {
-		return {lastIdSynced: lastIdSynced, records: records};
+						'entity_name',
+						$elm$json$Json$Decode$string,
+						A3(
+							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+							'site',
+							$author$project$Backend$Decoder$decodeSite,
+							$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$ReportsData))))))));
+var $author$project$Backend$Reports$Model$SyncResponse = F3(
+	function (records, totalRemaining, lastIdSynced) {
+		return {lastIdSynced: lastIdSynced, records: records, totalRemaining: totalRemaining};
 	});
 var $author$project$Backend$Reports$Model$Female = {$: 'Female'};
 var $author$project$Backend$Reports$Model$PatientData = function (id) {
@@ -9836,11 +9839,14 @@ var $author$project$Backend$Reports$Decoder$decodeSyncResponse = A2(
 		$author$project$Gizra$Json$decodeInt,
 		A3(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'batch',
-			$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodePatientData),
-			$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$SyncResponse))));
+			'total_remaining',
+			$author$project$Gizra$Json$decodeInt,
+			A3(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				'batch',
+				$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodePatientData),
+				$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$SyncResponse)))));
 var $elm$json$Json$Encode$int = _Json_wrap;
-var $elm$core$Debug$log = _Debug_log;
 var $elm$json$Json$Encode$object = function (pairs) {
 	return _Json_wrap(
 		A3(
@@ -10716,7 +10722,6 @@ var $author$project$Backend$Reports$Update$update = F4(
 										$elm$core$String$fromInt(fromPersonId)))
 								]),
 							geoParams);
-						var _v1 = A2($elm$core$Debug$log, 'geoParams', geoParams);
 						return A2(
 							$lukewestby$elm_http_builder$HttpBuilder$send,
 							A2($elm$core$Basics$composeR, $krisajenkins$remotedata$RemoteData$fromResult, $author$project$Backend$Reports$Model$HandleSyncResponse),
@@ -10743,11 +10748,14 @@ var $author$project$Backend$Reports$Update$update = F4(
 									A2(
 										$elm$core$Maybe$map,
 										function (reportsData) {
+											var recordsUpdated = _Utils_ap(reportsData.records, response.records);
 											var reportsDataUpdated = _Utils_update(
 												reportsData,
 												{
-													records: _Utils_ap(reportsData.records, response.records)
+													records: recordsUpdated,
+													remainingForDownload: $elm$core$Maybe$Just(response.totalRemaining)
 												});
+											var totalRecordsUpdated = $elm$core$List$length(recordsUpdated);
 											return _Utils_update(
 												model,
 												{
@@ -10756,7 +10764,6 @@ var $author$project$Backend$Reports$Update$update = F4(
 												});
 										},
 										A2($elm$core$Maybe$andThen, $elm$core$Result$toMaybe, model.reportsData)));
-								var _v2 = A2($elm$core$Debug$log, '', response.lastIdSynced);
 								return A4(
 									$author$project$Backend$Reports$Update$update,
 									currentDate,
@@ -20006,8 +20013,8 @@ var $author$project$Pages$Reports$View$viewPrenatalReport = F4(
 var $author$project$Pages$Reports$View$viewReportsData = F5(
 	function (language, currentDate, themePath, data, model) {
 		var scopeLabel = function () {
-			var _v2 = data.entityType;
-			switch (_v2.$) {
+			var _v3 = data.entityType;
+			switch (_v3.$) {
 				case 'EntityGlobal':
 					return A2($author$project$Translate$translate, language, $author$project$Translate$Global);
 				case 'EntityHealthCenter':
@@ -20020,52 +20027,91 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 							$author$project$Translate$SelectedScope(data.entityType))));
 			}
 		}();
-		var topBar = A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('top-bar')
-				]),
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('new-selection')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							$elm$html$Html$a,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$href('/admin/reports/statistical-queries')
-								]),
-							_List_fromArray(
-								[
-									A2(
-									$elm$html$Html$button,
-									_List_Nil,
-									_List_fromArray(
-										[
-											$elm$html$Html$text(
-											A2($author$project$Translate$translate, language, $author$project$Translate$NewScope))
-										]))
-								]))
-						])),
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('scope')
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text(
-							A2($author$project$Translate$translate, language, $author$project$Translate$Scope) + (': ' + scopeLabel))
-						]))
-				]));
+		var topBar = function () {
+			var _v2 = A2(
+				$elm$core$Maybe$withDefault,
+				_Utils_Tuple2('Pending', 'NOT AVAILABLE'),
+				A2(
+					$elm$core$Maybe$map,
+					function (remainingForDownload) {
+						var totalDownloaded = $elm$core$List$length(data.records);
+						return _Utils_Tuple2(
+							(!remainingForDownload) ? 'COMPLETED' : 'IN PROCESS',
+							$elm$core$String$fromInt(totalDownloaded) + (' / ' + $elm$core$String$fromInt(totalDownloaded + remainingForDownload)));
+					},
+					data.remainingForDownload));
+			var syncStatus = _v2.a;
+			var progress = _v2.b;
+			return A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('top-bar')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('new-selection')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$a,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$href('/admin/reports/statistical-queries')
+									]),
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$button,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text(
+												A2($author$project$Translate$translate, language, $author$project$Translate$NewScope))
+											]))
+									]))
+							])),
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('scope')
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text(
+								A2($author$project$Translate$translate, language, $author$project$Translate$Scope) + (': ' + scopeLabel))
+							])),
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('download-status')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Download status: ' + syncStatus)
+									])),
+								A2(
+								$elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$text(progress)
+									]))
+							]))
+					]));
+		}();
 		var dateInputs = A2(
 			$elm$core$Maybe$withDefault,
 			_List_Nil,

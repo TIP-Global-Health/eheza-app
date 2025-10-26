@@ -1103,6 +1103,9 @@ function hedley_reports_generate_results_data_for_restful($from_nid, $batch, $pr
     $query->fieldCondition('field_shards', 'target_id', $health_center);
   }
 
+  $count_query = clone $query;
+  $count = $count_query->count()->execute();
+
   $result = $query
     ->range(0, $batch)
     ->propertyOrderBy('nid')
@@ -1126,6 +1129,7 @@ function hedley_reports_generate_results_data_for_restful($from_nid, $batch, $pr
 
   return [
     'batch' => $output,
+    'total_remaining' => $count - count($ids),
     'last' => end($ids),
   ];
 }

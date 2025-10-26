@@ -21,6 +21,7 @@ decodeReportsData =
         |> required "params" decodeReportParams
         |> hardcoded []
         |> optionalAt [ "additional", "nutrition_report_data" ] (nullable (list decodeBackendGeneratedNutritionReportTableDate)) Nothing
+        |> hardcoded Nothing
 
 
 decodeReportParams : Decoder ReportParams
@@ -39,6 +40,7 @@ decodeSyncResponse =
     field "data"
         (succeed SyncResponse
             |> required "batch" (list decodePatientData)
+            |> required "total_remaining" decodeInt
             |> required "last" decodeInt
         )
 

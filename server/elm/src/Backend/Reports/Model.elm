@@ -13,6 +13,7 @@ type alias ReportsData =
     , params : ReportParams
     , records : List PatientData
     , nutritionReportData : Maybe (List BackendGeneratedNutritionReportTableDate)
+    , remainingForDownload : Maybe Int
     }
 
 
@@ -266,6 +267,7 @@ type NutritionReportTableType
 
 type alias SyncResponse =
     { records : List PatientData
+    , totalRemaining : Int
     , lastIdSynced : PersonId
     }
 

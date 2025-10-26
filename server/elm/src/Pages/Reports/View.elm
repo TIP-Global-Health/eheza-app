@@ -64,6 +64,25 @@ viewReportsData : Language -> NominalDate -> String -> ReportsData -> Model -> H
 viewReportsData language currentDate themePath data model =
     let
         topBar =
+            let
+                ( syncStatus, progress ) =
+                    Maybe.map
+                        (\remainingForDownload ->
+                            let
+                                totalDownloaded =
+                                    List.length data.records
+                            in
+                            ( if remainingForDownload == 0 then
+                                "COMPLETED"
+
+                              else
+                                "IN PROCESS"
+                            , String.fromInt totalDownloaded ++ " / " ++ String.fromInt (totalDownloaded + remainingForDownload)
+                            )
+                        )
+                        data.remainingForDownload
+                        |> Maybe.withDefault ( "Pending", "NOT AVAILABLE" )
+            in
             div [ class "top-bar" ]
                 [ div [ class "new-selection" ]
                     [ a [ href "/admin/reports/statistical-queries" ]
@@ -73,6 +92,10 @@ viewReportsData language currentDate themePath data model =
                     ]
                 , div [ class "scope" ]
                     [ text <| translate language Translate.Scope ++ ": " ++ scopeLabel ]
+                , div [ class "download-status" ]
+                    [ div [] [ text <| "Download status: " ++ syncStatus ]
+                    , div [] [ text progress ]
+                    ]
                 ]
 
         scopeLabel =

@@ -114,6 +114,14 @@ body.admin-menu #page-wrapper #header {
 .page-content .top-bar .scope {
   font-size: 28px;
   font-weight: bold;
+  width: 40%;
+}
+
+.page-content .top-bar .download-status {
+  color: #808080;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
 }
 
 .page-content .top-bar .year-selector {

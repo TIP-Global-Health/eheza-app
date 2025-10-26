@@ -45,9 +45,6 @@ update currentDate backendUrl msg model =
                                     )
                                 |> Maybe.withDefault []
 
-                        _ =
-                            Debug.log "geoParams" geoParams
-
                         params =
                             [ ( "app_type", string "reports" )
                             , ( "base_revision", string (String.fromInt fromPersonId) )
@@ -66,16 +63,19 @@ update currentDate backendUrl msg model =
                 |> Maybe.map
                     (\response ->
                         let
-                            _ =
-                                Debug.log "" response.lastIdSynced
-
                             modelUpdated =
                                 Maybe.andThen Result.toMaybe model.reportsData
                                     |> Maybe.map
                                         (\reportsData ->
                                             let
                                                 reportsDataUpdated =
-                                                    { reportsData | records = reportsData.records ++ response.records }
+                                                    { reportsData | records = recordsUpdated, remainingForDownload = Just response.totalRemaining }
+
+                                                recordsUpdated =
+                                                    reportsData.records ++ response.records
+
+                                                totalRecordsUpdated =
+                                                    List.length recordsUpdated
                                             in
                                             { model | reportsData = Just (Ok reportsDataUpdated) }
                                         )
