@@ -94,7 +94,7 @@ viewReportsData language currentDate themePath data model =
                     [ text <| translate language Translate.Scope ++ ": " ++ scopeLabel ]
                 , div [ class "download-status" ]
                     [ div [] [ text <| "Download status: " ++ syncStatus ]
-                    , div [] [ text <| "(" ++ progress ++ ")" ]
+                    , div [ class "progress" ] [ text <| "(" ++ progress ++ ")" ]
                     ]
                 ]
 

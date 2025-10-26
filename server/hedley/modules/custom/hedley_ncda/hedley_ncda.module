@@ -275,6 +275,8 @@ function hedley_ncda_aggregated_callback_village($province, $district, $sector, 
  */
 function hedley_ncda_build_results_app($province, $district, $sector = NULL, $cell = NULL, $village = NULL) {
   $data = [];
+  $params['province'] = $province;
+  $params['district'] = $district;
 
   if (empty($sector)) {
     $data['entity_name'] = $district;
@@ -283,25 +285,24 @@ function hedley_ncda_build_results_app($province, $district, $sector = NULL, $ce
   elseif (empty($cell)) {
     $data['entity_name'] = $sector;
     $data['entity_type'] = 'sector';
+    $params['sector'] = $sector;
   }
   elseif (empty($village)) {
     $data['entity_name'] = $cell;
     $data['entity_type'] = 'cell';
+    $params['sector'] = $sector;
+    $params['cell'] = $cell;
   }
   else {
     $data['entity_name'] = $village;
     $data['entity_type'] = 'village';
+    $params['sector'] = $sector;
+    $params['cell'] = $cell;
+    $params['village'] = $village;
   }
 
   $data['site'] = variable_get('hedley_general_site_name', '');
-
-  if ($data['entity_type'] == 'district') {
-    list($data['results'], $data['additional']) = hedley_reports_load_results_data('aggregated-ncda', $data['entity_type'], $province, $district);
-  }
-  else {
-    // For smaller data sets, we generate results on fly.
-    $data['results'] = hedley_ncda_generate_results_data($province, $district, $sector, $cell, $village);
-  }
+  $data['params'] = $params;
 
   return hedley_general_build_elm_app('ncda-results', $data);
 }
@@ -423,6 +424,9 @@ function hedley_ncda_generate_results_data_for_restful($from_nid, $batch, $provi
     $query->fieldCondition('field_village', 'value', $village);
   }
 
+  $count_query = clone $query;
+  $count = $count_query->count()->execute();
+
   $result = $query
     ->range(0, $batch)
     ->propertyOrderBy('nid')
@@ -450,6 +454,7 @@ function hedley_ncda_generate_results_data_for_restful($from_nid, $batch, $provi
 
   return [
     'batch' => $output,
+    'total_remaining' => $count - count($ids),
     'last' => end($ids),
   ];
 }
