@@ -81,7 +81,7 @@ viewReportsData language currentDate themePath data model =
                             )
                         )
                         data.remainingForDownload
-                        |> Maybe.withDefault ( "Pending", "NOT AVAILABLE" )
+                        |> Maybe.withDefault ( "PENDING", "0 / 0" )
             in
             div [ class "top-bar" ]
                 [ div [ class "new-selection" ]
@@ -94,7 +94,7 @@ viewReportsData language currentDate themePath data model =
                     [ text <| translate language Translate.Scope ++ ": " ++ scopeLabel ]
                 , div [ class "download-status" ]
                     [ div [] [ text <| "Download status: " ++ syncStatus ]
-                    , div [] [ text progress ]
+                    , div [] [ text <| "(" ++ progress ++ ")" ]
                     ]
                 ]
 

@@ -20030,7 +20030,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 		var topBar = function () {
 			var _v2 = A2(
 				$elm$core$Maybe$withDefault,
-				_Utils_Tuple2('Pending', 'NOT AVAILABLE'),
+				_Utils_Tuple2('PENDING', '0 / 0'),
 				A2(
 					$elm$core$Maybe$map,
 					function (remainingForDownload) {
@@ -20107,7 +20107,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 								_List_Nil,
 								_List_fromArray(
 									[
-										$elm$html$Html$text(progress)
+										$elm$html$Html$text('(' + (progress + ')'))
 									]))
 							]))
 					]));
