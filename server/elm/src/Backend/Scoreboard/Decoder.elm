@@ -1,4 +1,4 @@
-module Backend.Scoreboard.Decoder exposing (decodeScoreboardData)
+module Backend.Scoreboard.Decoder exposing (decodeScoreboardData, decodeSyncResponse)
 
 import AssocList as Dict
 import Backend.Components.Decoder exposing (decodeReportParams, decodeSelectedEntity)
@@ -7,8 +7,9 @@ import Backend.Scoreboard.Model exposing (..)
 import Backend.Scoreboard.Utils exposing (..)
 import Date
 import EverySet exposing (EverySet)
+import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffMonths)
-import Json.Decode exposing (Decoder, andThen, bool, fail, list, map, maybe, string, succeed)
+import Json.Decode exposing (Decoder, andThen, bool, fail, field, list, map, maybe, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Maybe.Extra exposing (isNothing)
 
@@ -21,6 +22,17 @@ decodeScoreboardData currentDate =
         |> required "entity_type" decodeSelectedEntity
         |> required "params" decodeReportParams
         |> hardcoded []
+        |> hardcoded Nothing
+
+
+decodeSyncResponse : NominalDate -> Decoder SyncResponse
+decodeSyncResponse currentDate =
+    field "data"
+        (succeed SyncResponse
+            |> required "batch" (list (decodePatientData currentDate))
+            |> required "total_remaining" decodeInt
+            |> required "last" decodeInt
+        )
 
 
 decodePatientData : NominalDate -> Decoder PatientData

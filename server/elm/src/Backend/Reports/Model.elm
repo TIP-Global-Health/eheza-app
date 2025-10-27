@@ -1,7 +1,7 @@
 module Backend.Reports.Model exposing (..)
 
 import App.Types exposing (Site)
-import Backend.Components.Model exposing (ReportParams, SelectedEntity)
+import Backend.Components.Model exposing (PersonId, ReportParams, SelectedEntity)
 import Gizra.NominalDate exposing (NominalDate)
 import Json.Encode exposing (Value)
 import RemoteData exposing (WebData)
@@ -38,14 +38,6 @@ type alias PatientData =
     , groupNutritionChwData : Maybe (List NutritionEncounterData)
     , groupNutritionAchiData : Maybe (List NutritionEncounterData)
     }
-
-
-type alias PersonId =
-    Int
-
-
-type alias HealthCenterId =
-    Int
 
 
 type Gender

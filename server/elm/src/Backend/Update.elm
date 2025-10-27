@@ -25,7 +25,7 @@ updateBackend currentDate backendUrl msg model =
         MsgScoreboard subMsg ->
             updateSubModel
                 subMsg
-                (\subMsg_ model_ -> Backend.Scoreboard.Update.update currentDate subMsg_ model_)
+                (\subMsg_ model_ -> Backend.Scoreboard.Update.update currentDate backendUrl subMsg_ model_)
                 (\subCmds -> MsgScoreboard subCmds)
                 model
 

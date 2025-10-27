@@ -9,8 +9,7 @@ import Error.Utils exposing (noError)
 import Gizra.NominalDate exposing (NominalDate)
 import HttpBuilder exposing (..)
 import Json.Decode exposing (decodeValue)
-import Json.Encode exposing (int, object, string)
-import Maybe.Extra
+import Json.Encode exposing (object, string)
 import RemoteData
 
 
@@ -19,11 +18,8 @@ update currentDate backendUrl msg model =
     case msg of
         SetData value ->
             let
-                decodedValue =
-                    decodeValue decodeReportsData value
-
                 modelUpdated =
-                    { model | reportsData = Just decodedValue }
+                    { model | reportsData = Just <| decodeValue decodeReportsData value }
             in
             update currentDate backendUrl (SendSyncRequest 0) modelUpdated
 

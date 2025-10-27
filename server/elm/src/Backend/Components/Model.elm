@@ -12,6 +12,10 @@ type alias HealthCenterData =
     }
 
 
+type alias PersonId =
+    Int
+
+
 type alias HealthCenterId =
     Int
 

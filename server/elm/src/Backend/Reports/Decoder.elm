@@ -6,7 +6,7 @@ import Backend.Reports.Model exposing (..)
 import Backend.Reports.Utils exposing (..)
 import Date
 import EverySet exposing (EverySet)
-import Gizra.Json exposing (decodeFloat, decodeInt)
+import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffMonths)
 import Json.Decode exposing (Decoder, andThen, at, bool, fail, field, list, map, nullable, oneOf, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, optional, optionalAt, required)

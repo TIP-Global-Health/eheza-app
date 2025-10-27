@@ -2,10 +2,11 @@ module Backend.Scoreboard.Model exposing (..)
 
 import App.Types exposing (Site)
 import AssocList as Dict exposing (Dict)
-import Backend.Components.Model exposing (ReportParams, SelectedEntity)
+import Backend.Components.Model exposing (PersonId, ReportParams, SelectedEntity)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Json.Encode exposing (Value)
+import RemoteData exposing (WebData)
 
 
 type alias ScoreboardData =
@@ -14,6 +15,7 @@ type alias ScoreboardData =
     , entityType : SelectedEntity
     , params : ReportParams
     , records : List PatientData
+    , remainingForDownload : Maybe Int
     }
 
 
@@ -180,5 +182,14 @@ emptyInfrastructureEnvironmentWashData =
     InfrastructureEnvironmentWashData [] [] [] [] []
 
 
+type alias SyncResponse =
+    { records : List PatientData
+    , totalRemaining : Int
+    , lastIdSynced : PersonId
+    }
+
+
 type Msg
     = SetData Value
+    | SendSyncRequest PersonId
+    | HandleSyncResponse (WebData SyncResponse)
