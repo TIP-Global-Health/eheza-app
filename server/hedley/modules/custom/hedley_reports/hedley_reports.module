@@ -1069,6 +1069,31 @@ function hedley_reports_generate_results_data($province, $district, $sector, $ce
   return $data;
 }
 
+/**
+ * Generate Aggregated Reports data which is stored on person nodes.
+ *
+ * The requests are coming from restful endpoint.
+ *
+ * @param int $from_nid
+ *   Query for data from nodes which IDs are above provided node ID.
+ * @param int $batch
+ *   Number of nodes to be processed in single batch.
+ * @param string|null $province
+ *   Province name.
+ * @param string|null $district
+ *   District name.
+ * @param string|null $sector
+ *   Sector name.
+ * @param string|null $cell
+ *   Cell name.
+ * @param string|null $village
+ *   Village name.
+ * @param int|null $health_center
+ *   Health center ID.
+ *
+ * @return array
+ *   An array of generated data.
+ */
 function hedley_reports_generate_results_data_for_restful($from_nid, $batch, $province, $district, $sector, $cell, $village, $health_center) {
   $query = new EntityFieldQuery();
   $query
@@ -2312,6 +2337,12 @@ function hedley_reports_build_completion_results_app($health_center = NULL) {
 /**
  * Generate Completion report data which is stored on encounter nodes.
  *
+ * The requests are coming from restful endpoint.
+ *
+ * @param int $from_nid
+ *   Query for data from nodes which IDs are above provided node ID.
+ * @param int $batch
+ *   Number of nodes to be processed in single batch.
  * @param int|null $health_center
  *   Health center ID.
  *

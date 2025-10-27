@@ -394,6 +394,29 @@ function hedley_ncda_generate_results_data($province, $district, $sector, $cell,
   return $data;
 }
 
+/**
+ * Generate aggregated NCDA data which is stored on person nodes.
+ *
+ * The requests are coming from restful endpoint.
+ *
+ * @param int $from_nid
+ *   Query for data from nodes which IDs are above provided node ID.
+ * @param int $batch
+ *   Number of nodes to be processed in single batch.
+ * @param string $province
+ *   Province name.
+ * @param string $district
+ *   District name.
+ * @param string $sector
+ *   Sector name.
+ * @param string $cell
+ *   Cell name.
+ * @param string $village
+ *   Village name.
+ *
+ * @return array
+ *   An array of generated data.
+ */
 function hedley_ncda_generate_results_data_for_restful($from_nid, $batch, $province, $district, $sector, $cell, $village) {
   $three_years_ago = date('Y-m-d', strtotime('-3 years'));
   $query = new EntityFieldQuery();

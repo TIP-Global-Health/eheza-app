@@ -5,8 +5,6 @@
  * Contains \HedleyRestfulReportsData.
  */
 
-use Ramsey\Uuid\Uuid;
-
 /**
  * Class HedleyRestfulReportsData.
  */
@@ -15,7 +13,7 @@ class HedleyRestfulReportsData extends \RestfulBase implements \RestfulDataProvi
   /**
    * Data batch limit.
    */
-  const HEDLEY_RESTFUL_QUERY_BATCH = 5000;
+  const HEDLEY_RESTFUL_QUERY_BATCH = 10000;
 
   /**
    * Overrides \RestfulBase::controllersInfo().
@@ -39,6 +37,7 @@ class HedleyRestfulReportsData extends \RestfulBase implements \RestfulDataProvi
   }
 
   /**
+   * Generates reports data according to provided parameters.
    *
    * @return array
    *   A representation of the required data.
