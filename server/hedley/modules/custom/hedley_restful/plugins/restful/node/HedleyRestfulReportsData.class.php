@@ -75,6 +75,9 @@ class HedleyRestfulReportsData extends \RestfulBase implements \RestfulDataProvi
       case 'scoreboard':
         return hedley_ncda_generate_results_data_for_restful($base, self::HEDLEY_RESTFUL_QUERY_BATCH, $province, $district, $sector, $cell, $village);
 
+      case 'completion':
+        return hedley_reports_generate_completion_data_for_restful($base, self::HEDLEY_RESTFUL_QUERY_BATCH, $health_center);
+
       default:
         return [];
     }
