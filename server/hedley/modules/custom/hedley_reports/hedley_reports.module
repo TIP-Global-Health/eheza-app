@@ -1209,7 +1209,6 @@ function hedley_reports_load_results_additional_data($report_variant, $scope, $p
  * @throws Exception
  */
 function hedley_reports_create_or_update_results_data_node(array $data, $report_variant, $scope, $province = NULL, $district = NULL, $health_center = NULL) {
-  $data_file_id = hedley_reports_create_data_file($data);
   $node_id = hedley_reports_load_results_data_node($report_variant, $scope, $province, $district, $health_center);
   if (!$node_id) {
     // Create the Report Data node.
@@ -1222,11 +1221,6 @@ function hedley_reports_create_or_update_results_data_node(array $data, $report_
     $node->language = LANGUAGE_NONE;
     $node->field_report_variant[LANGUAGE_NONE][0]['value'] = $report_variant;
     $node->field_data_scope[LANGUAGE_NONE][0]['value'] = $scope;
-    // Attach the file to the node's file field.
-    $node->field_data_file[LANGUAGE_NONE][0] = [
-      'fid' => $data_file_id,
-      'display' => 1,
-    ];
     if (!empty($province)) {
       $node->field_province[LANGUAGE_NONE][0]['value'] = $province;
     }
@@ -1236,20 +1230,6 @@ function hedley_reports_create_or_update_results_data_node(array $data, $report_
     if (!empty($health_center)) {
       $node->field_health_center[LANGUAGE_NONE][0]['target_id'] = $health_center;
     }
-  }
-  else {
-    // Update the Report Data node.
-    $node = node_load($node_id);
-    $old_file = file_load($node->field_data_file[LANGUAGE_NONE][0]['fid']);
-    if ($old_file) {
-      // Delete the old file.
-      file_delete($old_file, TRUE);
-    }
-    // Attach new file.
-    $node->field_data_file[LANGUAGE_NONE][0] = [
-      'fid' => $data_file_id,
-      'display' => 1,
-    ];
   }
 
   if ($report_variant == 'statistical-query') {
