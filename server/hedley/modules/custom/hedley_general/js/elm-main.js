@@ -7073,21 +7073,270 @@ var $author$project$Backend$Types$BackendReturn = F4(
 	function (model, cmd, error, appMsgs) {
 		return {appMsgs: appMsgs, cmd: cmd, error: error, model: model};
 	});
+var $author$project$Backend$Completion$Model$HandleSyncResponse = function (a) {
+	return {$: 'HandleSyncResponse', a: a};
+};
+var $author$project$Backend$Completion$Model$SendSyncRequest = function (a) {
+	return {$: 'SendSyncRequest', a: a};
+};
 var $author$project$Backend$Completion$Model$CompletionData = function (site) {
 	return function (entityName) {
 		return function (entityType) {
-			return function (acuteIllnessData) {
-				return function (childScoreboardData) {
-					return function (hivData) {
-						return function (homeVisitData) {
-							return function (ncdData) {
-								return function (nutritionIndividualData) {
-									return function (nutritionGroupData) {
-										return function (prenatalData) {
-											return function (tuberculosisData) {
-												return function (wellChildData) {
-													return {acuteIllnessData: acuteIllnessData, childScoreboardData: childScoreboardData, entityName: entityName, entityType: entityType, hivData: hivData, homeVisitData: homeVisitData, ncdData: ncdData, nutritionGroupData: nutritionGroupData, nutritionIndividualData: nutritionIndividualData, prenatalData: prenatalData, site: site, tuberculosisData: tuberculosisData, wellChildData: wellChildData};
+			return function (params) {
+				return function (acuteIllnessData) {
+					return function (childScoreboardData) {
+						return function (hivData) {
+							return function (homeVisitData) {
+								return function (ncdData) {
+									return function (nutritionIndividualData) {
+										return function (nutritionGroupData) {
+											return function (prenatalData) {
+												return function (tuberculosisData) {
+													return function (wellChildData) {
+														return function (remainingForDownload) {
+															return {acuteIllnessData: acuteIllnessData, childScoreboardData: childScoreboardData, entityName: entityName, entityType: entityType, hivData: hivData, homeVisitData: homeVisitData, ncdData: ncdData, nutritionGroupData: nutritionGroupData, nutritionIndividualData: nutritionIndividualData, params: params, prenatalData: prenatalData, remainingForDownload: remainingForDownload, site: site, tuberculosisData: tuberculosisData, wellChildData: wellChildData};
+														};
+													};
 												};
+											};
+										};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
+var $author$project$Backend$Components$Model$ReportParams = F6(
+	function (province, district, sector, cell, village, healthCenter) {
+		return {cell: cell, district: district, healthCenter: healthCenter, province: province, sector: sector, village: village};
+	});
+var $elm$json$Json$Decode$fail = _Json_fail;
+var $elm$json$Json$Decode$int = _Json_decodeInt;
+var $elm$json$Json$Decode$oneOf = _Json_oneOf;
+var $elm$json$Json$Decode$string = _Json_decodeString;
+var $author$project$Gizra$Json$decodeInt = $elm$json$Json$Decode$oneOf(
+	_List_fromArray(
+		[
+			$elm$json$Json$Decode$int,
+			A2(
+			$elm$json$Json$Decode$andThen,
+			function (s) {
+				var _v0 = $elm$core$String$toInt(s);
+				if (_v0.$ === 'Just') {
+					var value = _v0.a;
+					return $elm$json$Json$Decode$succeed(value);
+				} else {
+					return $elm$json$Json$Decode$fail('Not an integer');
+				}
+			},
+			$elm$json$Json$Decode$string)
+		]));
+var $elm$json$Json$Decode$null = _Json_decodeNull;
+var $elm$json$Json$Decode$nullable = function (decoder) {
+	return $elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				$elm$json$Json$Decode$null($elm$core$Maybe$Nothing),
+				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder)
+			]));
+};
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
+var $elm$json$Json$Decode$decodeValue = _Json_run;
+var $elm$json$Json$Decode$value = _Json_decodeValue;
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder = F3(
+	function (pathDecoder, valDecoder, fallback) {
+		var nullOr = function (decoder) {
+			return $elm$json$Json$Decode$oneOf(
+				_List_fromArray(
+					[
+						decoder,
+						$elm$json$Json$Decode$null(fallback)
+					]));
+		};
+		var handleResult = function (input) {
+			var _v0 = A2($elm$json$Json$Decode$decodeValue, pathDecoder, input);
+			if (_v0.$ === 'Ok') {
+				var rawValue = _v0.a;
+				var _v1 = A2(
+					$elm$json$Json$Decode$decodeValue,
+					nullOr(valDecoder),
+					rawValue);
+				if (_v1.$ === 'Ok') {
+					var finalResult = _v1.a;
+					return $elm$json$Json$Decode$succeed(finalResult);
+				} else {
+					var finalErr = _v1.a;
+					return $elm$json$Json$Decode$fail(
+						$elm$json$Json$Decode$errorToString(finalErr));
+				}
+			} else {
+				return $elm$json$Json$Decode$succeed(fallback);
+			}
+		};
+		return A2($elm$json$Json$Decode$andThen, handleResult, $elm$json$Json$Decode$value);
+	});
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional = F4(
+	function (key, valDecoder, fallback, decoder) {
+		return A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+			A3(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder,
+				A2($elm$json$Json$Decode$field, key, $elm$json$Json$Decode$value),
+				valDecoder,
+				fallback),
+			decoder);
+	});
+var $author$project$Backend$Components$Decoder$decodeReportParams = A4(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+	'health_center',
+	$elm$json$Json$Decode$nullable($author$project$Gizra$Json$decodeInt),
+	$elm$core$Maybe$Nothing,
+	A4(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+		'village',
+		$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string),
+		$elm$core$Maybe$Nothing,
+		A4(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+			'cell',
+			$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string),
+			$elm$core$Maybe$Nothing,
+			A4(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+				'sector',
+				$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string),
+				$elm$core$Maybe$Nothing,
+				A4(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+					'district',
+					$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string),
+					$elm$core$Maybe$Nothing,
+					A4(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+						'province',
+						$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string),
+						$elm$core$Maybe$Nothing,
+						$elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$ReportParams)))))));
+var $author$project$Backend$Components$Model$EntityCell = {$: 'EntityCell'};
+var $author$project$Backend$Components$Model$EntitySector = {$: 'EntitySector'};
+var $author$project$Backend$Components$Model$EntityVillage = {$: 'EntityVillage'};
+var $author$project$Backend$Components$Decoder$decodeSelectedEntity = A2(
+	$elm$json$Json$Decode$andThen,
+	function (entityType) {
+		switch (entityType) {
+			case 'global':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$EntityGlobal);
+			case 'province':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$EntityProvince);
+			case 'district':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$EntityDistrict);
+			case 'sector':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$EntitySector);
+			case 'cell':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$EntityCell);
+			case 'village':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$EntityVillage);
+			case 'health-center':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$EntityHealthCenter);
+			default:
+				return $elm$json$Json$Decode$fail(entityType + ' is unknown SelectedEntity type');
+		}
+	},
+	$elm$json$Json$Decode$string);
+var $author$project$App$Types$SiteBurundi = {$: 'SiteBurundi'};
+var $author$project$App$Types$SiteRwanda = {$: 'SiteRwanda'};
+var $author$project$App$Types$SiteUnknown = {$: 'SiteUnknown'};
+var $elm$core$String$toLower = _String_toLower;
+var $author$project$Backend$Decoder$siteFromString = function (str) {
+	var _v0 = $elm$core$String$toLower(str);
+	switch (_v0) {
+		case 'rwanda':
+			return $author$project$App$Types$SiteRwanda;
+		case 'burundi':
+			return $author$project$App$Types$SiteBurundi;
+		default:
+			return $author$project$App$Types$SiteUnknown;
+	}
+};
+var $author$project$Backend$Decoder$decodeSite = A2(
+	$elm$json$Json$Decode$andThen,
+	A2($elm$core$Basics$composeR, $author$project$Backend$Decoder$siteFromString, $elm$json$Json$Decode$succeed),
+	$elm$json$Json$Decode$string);
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded = A2($elm$core$Basics$composeR, $elm$json$Json$Decode$succeed, $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom);
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
+	function (key, valDecoder, decoder) {
+		return A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+			A2($elm$json$Json$Decode$field, key, valDecoder),
+			decoder);
+	});
+var $author$project$Backend$Completion$Decoder$decodeCompletionData = A2(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+	$elm$core$Maybe$Nothing,
+	A2(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+		_List_Nil,
+		A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+			_List_Nil,
+			A2(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+				_List_Nil,
+				A2(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+					_List_Nil,
+					A2(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+						_List_Nil,
+						A2(
+							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+							_List_Nil,
+							A2(
+								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+								_List_Nil,
+								A2(
+									$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+									_List_Nil,
+									A2(
+										$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+										_List_Nil,
+										A2(
+											$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+											_List_Nil,
+											A3(
+												$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+												'params',
+												$author$project$Backend$Components$Decoder$decodeReportParams,
+												A3(
+													$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+													'entity_type',
+													$author$project$Backend$Components$Decoder$decodeSelectedEntity,
+													A3(
+														$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+														'entity_name',
+														$elm$json$Json$Decode$string,
+														A3(
+															$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+															'site',
+															$author$project$Backend$Decoder$decodeSite,
+															$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$CompletionData))))))))))))))));
+var $author$project$Backend$Completion$Model$SyncResponse = function (acuteIllnessData) {
+	return function (childScoreboardData) {
+		return function (hivData) {
+			return function (homeVisitData) {
+				return function (ncdData) {
+					return function (nutritionIndividualData) {
+						return function (nutritionGroupData) {
+							return function (prenatalData) {
+								return function (tuberculosisData) {
+									return function (wellChildData) {
+										return function (totalRemaining) {
+											return function (lastIdSynced) {
+												return {acuteIllnessData: acuteIllnessData, childScoreboardData: childScoreboardData, hivData: hivData, homeVisitData: homeVisitData, lastIdSynced: lastIdSynced, ncdData: ncdData, nutritionGroupData: nutritionGroupData, nutritionIndividualData: nutritionIndividualData, prenatalData: prenatalData, totalRemaining: totalRemaining, tuberculosisData: tuberculosisData, wellChildData: wellChildData};
 											};
 										};
 									};
@@ -7254,8 +7503,6 @@ var $author$project$Backend$Completion$Decoder$activitiesCompletionDataFromStrin
 				A2($author$project$Backend$Completion$Model$ActivitiesCompletionData, _List_Nil, _List_Nil));
 		}
 	});
-var $elm$json$Json$Decode$fail = _Json_fail;
-var $elm$json$Json$Decode$string = _Json_decodeString;
 var $author$project$Backend$Completion$Decoder$decodeActivitiesCompletionData = function (activityFromString) {
 	return A2(
 		$elm$json$Json$Decode$andThen,
@@ -7282,7 +7529,6 @@ var $author$project$Backend$Completion$Decoder$decodeTakenBy = A2(
 				$author$project$Backend$Completion$Utils$takenByFromString(takenBy)));
 	},
 	$elm$json$Json$Decode$string);
-var $elm$json$Json$Decode$oneOf = _Json_oneOf;
 var $author$project$Backend$Decoder$decodeWithFallback = F2(
 	function (fallback, decoder) {
 		return $elm$json$Json$Decode$oneOf(
@@ -8051,68 +8297,6 @@ var $author$project$Gizra$NominalDate$decodeYYYYMMDD = A2(
 	$elm$json$Json$Decode$andThen,
 	A2($elm$core$Basics$composeL, $elm_community$json_extra$Json$Decode$Extra$fromResult, $justinmimbs$date$Date$fromIsoString),
 	$elm$json$Json$Decode$string);
-var $elm$json$Json$Decode$null = _Json_decodeNull;
-var $elm$json$Json$Decode$nullable = function (decoder) {
-	return $elm$json$Json$Decode$oneOf(
-		_List_fromArray(
-			[
-				$elm$json$Json$Decode$null($elm$core$Maybe$Nothing),
-				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder)
-			]));
-};
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
-var $elm$json$Json$Decode$decodeValue = _Json_run;
-var $elm$json$Json$Decode$value = _Json_decodeValue;
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder = F3(
-	function (pathDecoder, valDecoder, fallback) {
-		var nullOr = function (decoder) {
-			return $elm$json$Json$Decode$oneOf(
-				_List_fromArray(
-					[
-						decoder,
-						$elm$json$Json$Decode$null(fallback)
-					]));
-		};
-		var handleResult = function (input) {
-			var _v0 = A2($elm$json$Json$Decode$decodeValue, pathDecoder, input);
-			if (_v0.$ === 'Ok') {
-				var rawValue = _v0.a;
-				var _v1 = A2(
-					$elm$json$Json$Decode$decodeValue,
-					nullOr(valDecoder),
-					rawValue);
-				if (_v1.$ === 'Ok') {
-					var finalResult = _v1.a;
-					return $elm$json$Json$Decode$succeed(finalResult);
-				} else {
-					var finalErr = _v1.a;
-					return $elm$json$Json$Decode$fail(
-						$elm$json$Json$Decode$errorToString(finalErr));
-				}
-			} else {
-				return $elm$json$Json$Decode$succeed(fallback);
-			}
-		};
-		return A2($elm$json$Json$Decode$andThen, handleResult, $elm$json$Json$Decode$value);
-	});
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional = F4(
-	function (key, valDecoder, fallback, decoder) {
-		return A2(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
-			A3(
-				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder,
-				A2($elm$json$Json$Decode$field, key, $elm$json$Json$Decode$value),
-				valDecoder,
-				fallback),
-			decoder);
-	});
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
-	function (key, valDecoder, decoder) {
-		return A2(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
-			A2($elm$json$Json$Decode$field, key, valDecoder),
-			decoder);
-	});
 var $author$project$Backend$Completion$Decoder$decodeEncounterData = function (activityFromString) {
 	return A3(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
@@ -8174,40 +8358,6 @@ var $author$project$Backend$Completion$Decoder$decodeNutritionGroupEncounterData
 						$author$project$Gizra$NominalDate$decodeYYYYMMDD,
 						$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$NutritionGroupEncounterData)))));
 	});
-var $author$project$Backend$Completion$Model$EntityGlobal = {$: 'EntityGlobal'};
-var $author$project$Backend$Completion$Model$EntityHealthCenter = {$: 'EntityHealthCenter'};
-var $author$project$Backend$Completion$Decoder$decodeSelectedEntity = A2(
-	$elm$json$Json$Decode$andThen,
-	function (entityType) {
-		switch (entityType) {
-			case 'global':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$EntityGlobal);
-			case 'health-center':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$EntityHealthCenter);
-			default:
-				return $elm$json$Json$Decode$fail(entityType + ' is unknown SelectedEntity type');
-		}
-	},
-	$elm$json$Json$Decode$string);
-var $author$project$App$Types$SiteBurundi = {$: 'SiteBurundi'};
-var $author$project$App$Types$SiteRwanda = {$: 'SiteRwanda'};
-var $author$project$App$Types$SiteUnknown = {$: 'SiteUnknown'};
-var $elm$core$String$toLower = _String_toLower;
-var $author$project$Backend$Decoder$siteFromString = function (str) {
-	var _v0 = $elm$core$String$toLower(str);
-	switch (_v0) {
-		case 'rwanda':
-			return $author$project$App$Types$SiteRwanda;
-		case 'burundi':
-			return $author$project$App$Types$SiteBurundi;
-		default:
-			return $author$project$App$Types$SiteUnknown;
-	}
-};
-var $author$project$Backend$Decoder$decodeSite = A2(
-	$elm$json$Json$Decode$andThen,
-	A2($elm$core$Basics$composeR, $author$project$Backend$Decoder$siteFromString, $elm$json$Json$Decode$succeed),
-	$elm$json$Json$Decode$string);
 var $author$project$Backend$Completion$Model$WellChildEncounterData = F3(
 	function (startDate, encounterType, completion) {
 		return {completion: completion, encounterType: encounterType, startDate: startDate};
@@ -8756,1096 +8906,79 @@ var $author$project$Backend$Completion$Utils$tuberculosisActivityFromMapping = f
 			return $elm$core$Maybe$Nothing;
 	}
 };
-var $author$project$Backend$Completion$Decoder$decodeCompletionData = A3(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
-	_List_fromArray(
-		['results', 'well_child']),
-	$elm$json$Json$Decode$list($author$project$Backend$Completion$Decoder$decodeWellChildEncounterData),
-	A3(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
-		_List_fromArray(
-			['results', 'tuberculosis']),
-		$elm$json$Json$Decode$list(
-			$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$tuberculosisActivityFromMapping)),
-		A3(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
-			_List_fromArray(
-				['results', 'prenatal']),
-			$elm$json$Json$Decode$list(
-				$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$prenatalActivityFromMapping)),
-			A3(
-				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
-				_List_fromArray(
-					['results', 'nutrition_group']),
-				$elm$json$Json$Decode$list(
-					A2($author$project$Backend$Completion$Decoder$decodeNutritionGroupEncounterData, $author$project$Backend$Completion$Utils$nutritionMotherActivityFromMapping, $author$project$Backend$Completion$Utils$nutritionChildActivityFromMapping)),
-				A3(
-					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
-					_List_fromArray(
-						['results', 'nutrition_individual']),
-					$elm$json$Json$Decode$list(
-						$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$nutritionChildActivityFromMapping)),
-					A3(
-						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
-						_List_fromArray(
-							['results', 'ncd']),
-						$elm$json$Json$Decode$list(
-							$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$ncdActivityFromMapping)),
-						A3(
-							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
-							_List_fromArray(
-								['results', 'home_visit']),
-							$elm$json$Json$Decode$list(
-								$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$homeVisitActivityFromMapping)),
-							A3(
-								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
-								_List_fromArray(
-									['results', 'hiv']),
-								$elm$json$Json$Decode$list(
-									$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$hivActivityFromMapping)),
-								A3(
-									$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
-									_List_fromArray(
-										['results', 'child_scoreboard']),
-									$elm$json$Json$Decode$list(
-										$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$childScoreboardActivityFromMapping)),
-									A3(
-										$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
-										_List_fromArray(
-											['results', 'acute_illness']),
-										$elm$json$Json$Decode$list(
-											$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$acuteIllnessActivityFromMapping)),
-										A3(
-											$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-											'entity_type',
-											$author$project$Backend$Completion$Decoder$decodeSelectedEntity,
-											A3(
-												$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-												'entity_name',
-												$elm$json$Json$Decode$string,
-												A3(
-													$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-													'site',
-													$author$project$Backend$Decoder$decodeSite,
-													$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$CompletionData))))))))))))));
-var $author$project$Backend$Completion$Update$update = F3(
-	function (currentDate, msg, model) {
-		var value = msg.a;
-		var modelUpdated = _Utils_update(
-			model,
-			{
-				completionData: $elm$core$Maybe$Just(
-					A2($elm$json$Json$Decode$decodeValue, $author$project$Backend$Completion$Decoder$decodeCompletionData, value))
-			});
-		return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
-	});
-var $author$project$Backend$CompletionMenu$Model$MenuData = F3(
-	function (site, healthCenters, scope) {
-		return {healthCenters: healthCenters, scope: scope, site: site};
-	});
-var $author$project$Backend$Components$Model$HealthCenterData = F2(
-	function (id, name) {
-		return {id: id, name: name};
-	});
-var $elm$json$Json$Decode$int = _Json_decodeInt;
-var $author$project$Gizra$Json$decodeInt = $elm$json$Json$Decode$oneOf(
-	_List_fromArray(
-		[
-			$elm$json$Json$Decode$int,
-			A2(
-			$elm$json$Json$Decode$andThen,
-			function (s) {
-				var _v0 = $elm$core$String$toInt(s);
-				if (_v0.$ === 'Just') {
-					var value = _v0.a;
-					return $elm$json$Json$Decode$succeed(value);
-				} else {
-					return $elm$json$Json$Decode$fail('Not an integer');
-				}
-			},
-			$elm$json$Json$Decode$string)
-		]));
-var $author$project$Backend$Components$Decoder$decodeHealthCenterData = A3(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-	'name',
-	$elm$json$Json$Decode$string,
-	A3(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'id',
-		$author$project$Gizra$Json$decodeInt,
-		$elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$HealthCenterData)));
-var $author$project$Backend$Components$Model$ScopeFull = {$: 'ScopeFull'};
-var $author$project$Backend$Components$Model$ScopeHealthCenters = {$: 'ScopeHealthCenters'};
-var $author$project$Backend$Components$Decoder$decodeMenuScope = A2(
-	$elm$json$Json$Decode$andThen,
-	function (scope) {
-		switch (scope) {
-			case 'full':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$ScopeFull);
-			case 'health_centers':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$ScopeHealthCenters);
-			default:
-				return $elm$json$Json$Decode$fail(scope + ' is unknown MenuScope type');
-		}
-	},
-	$elm$json$Json$Decode$string);
-var $elm$json$Json$Decode$maybe = function (decoder) {
-	return $elm$json$Json$Decode$oneOf(
-		_List_fromArray(
-			[
-				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder),
-				$elm$json$Json$Decode$succeed($elm$core$Maybe$Nothing)
-			]));
-};
-var $author$project$Backend$CompletionMenu$Decoder$decodeMenuData = A4(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-	'scope',
-	$elm$json$Json$Decode$maybe($author$project$Backend$Components$Decoder$decodeMenuScope),
-	$elm$core$Maybe$Nothing,
-	A3(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'health_centers',
-		$elm$json$Json$Decode$list($author$project$Backend$Components$Decoder$decodeHealthCenterData),
+var $author$project$Backend$Completion$Decoder$decodeSyncResponse = function (currentDate) {
+	return A2(
+		$elm$json$Json$Decode$field,
+		'data',
 		A3(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'site',
-			$author$project$Backend$Decoder$decodeSite,
-			$elm$json$Json$Decode$succeed($author$project$Backend$CompletionMenu$Model$MenuData))));
-var $author$project$Backend$CompletionMenu$Update$update = F3(
-	function (currentDate, msg, model) {
-		var value = msg.a;
-		var modelUpdated = _Utils_update(
-			model,
-			{
-				completionMenuData: $elm$core$Maybe$Just(
-					A2($elm$json$Json$Decode$decodeValue, $author$project$Backend$CompletionMenu$Decoder$decodeMenuData, value))
-			});
-		return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
-	});
-var $author$project$Backend$Reports$Model$HandleSyncResponse = function (a) {
-	return {$: 'HandleSyncResponse', a: a};
-};
-var $author$project$Backend$Reports$Model$SendSyncRequest = function (a) {
-	return {$: 'SendSyncRequest', a: a};
-};
-var $author$project$Backend$Reports$Model$ReportsData = F7(
-	function (site, entityName, entityType, params, records, nutritionReportData, remainingForDownload) {
-		return {entityName: entityName, entityType: entityType, nutritionReportData: nutritionReportData, params: params, records: records, remainingForDownload: remainingForDownload, site: site};
-	});
-var $author$project$Backend$Reports$Model$BackendGeneratedNutritionReportTableDate = F8(
-	function (tableType, captions, stuntingModerate, stuntingSevere, wastingModerate, wastingSevere, underweightModerate, underweightSevere) {
-		return {captions: captions, stuntingModerate: stuntingModerate, stuntingSevere: stuntingSevere, tableType: tableType, underweightModerate: underweightModerate, underweightSevere: underweightSevere, wastingModerate: wastingModerate, wastingSevere: wastingSevere};
-	});
-var $author$project$Backend$Reports$Model$NutritionTableIncidenceMonthOneOrMore = {$: 'NutritionTableIncidenceMonthOneOrMore'};
-var $author$project$Backend$Reports$Model$NutritionTableIncidenceMonthTwoOrMore = {$: 'NutritionTableIncidenceMonthTwoOrMore'};
-var $author$project$Backend$Reports$Model$NutritionTableIncidenceQuarterOneOrMore = {$: 'NutritionTableIncidenceQuarterOneOrMore'};
-var $author$project$Backend$Reports$Model$NutritionTableIncidenceQuarterTwoOrMore = {$: 'NutritionTableIncidenceQuarterTwoOrMore'};
-var $author$project$Backend$Reports$Model$NutritionTableIncidenceYearOneOrMore = {$: 'NutritionTableIncidenceYearOneOrMore'};
-var $author$project$Backend$Reports$Model$NutritionTableIncidenceYearTwoOrMore = {$: 'NutritionTableIncidenceYearTwoOrMore'};
-var $author$project$Backend$Reports$Model$NutritionTablePrevalanceOneOrMore = {$: 'NutritionTablePrevalanceOneOrMore'};
-var $author$project$Backend$Reports$Model$NutritionTablePrevalanceTwoOrMore = {$: 'NutritionTablePrevalanceTwoOrMore'};
-var $author$project$Backend$Reports$Decoder$decodeNutritionReportTableType = A2(
-	$elm$json$Json$Decode$andThen,
-	function (tableType) {
-		switch (tableType) {
-			case 'prevalence-1':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$NutritionTablePrevalanceOneOrMore);
-			case 'prevalence-2':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$NutritionTablePrevalanceTwoOrMore);
-			case 'incidence-month-1':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$NutritionTableIncidenceMonthOneOrMore);
-			case 'incidence-month-2':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$NutritionTableIncidenceMonthTwoOrMore);
-			case 'incidence-quarter-1':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$NutritionTableIncidenceQuarterOneOrMore);
-			case 'incidence-quarter-2':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$NutritionTableIncidenceQuarterTwoOrMore);
-			case 'incidence-year-1':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$NutritionTableIncidenceYearOneOrMore);
-			case 'incidence-year-2':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$NutritionTableIncidenceYearTwoOrMore);
-			default:
-				return $elm$json$Json$Decode$fail(tableType + ' is unknown NutritionReportTableType type');
-		}
-	},
-	$elm$json$Json$Decode$string);
-var $author$project$Backend$Reports$Decoder$decodeBackendGeneratedNutritionReportTableDate = A3(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-	'underweight_severe',
-	$elm$json$Json$Decode$list($elm$json$Json$Decode$string),
-	A3(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'underweight_moderate',
-		$elm$json$Json$Decode$list($elm$json$Json$Decode$string),
-		A3(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'wasting_severe',
-			$elm$json$Json$Decode$list($elm$json$Json$Decode$string),
-			A3(
-				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-				'wasting_moderate',
-				$elm$json$Json$Decode$list($elm$json$Json$Decode$string),
-				A3(
-					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-					'stunting_severe',
-					$elm$json$Json$Decode$list($elm$json$Json$Decode$string),
-					A3(
-						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-						'stunting_moderate',
-						$elm$json$Json$Decode$list($elm$json$Json$Decode$string),
-						A3(
-							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-							'period',
-							$elm$json$Json$Decode$list($elm$json$Json$Decode$string),
-							A3(
-								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-								'type',
-								$author$project$Backend$Reports$Decoder$decodeNutritionReportTableType,
-								$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$BackendGeneratedNutritionReportTableDate)))))))));
-var $author$project$Backend$Components$Model$ReportParams = F6(
-	function (province, district, sector, cell, village, healthCenter) {
-		return {cell: cell, district: district, healthCenter: healthCenter, province: province, sector: sector, village: village};
-	});
-var $author$project$Backend$Components$Decoder$decodeReportParams = A4(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-	'health_center',
-	$elm$json$Json$Decode$nullable($author$project$Gizra$Json$decodeInt),
-	$elm$core$Maybe$Nothing,
-	A4(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-		'village',
-		$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string),
-		$elm$core$Maybe$Nothing,
-		A4(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-			'cell',
-			$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string),
-			$elm$core$Maybe$Nothing,
-			A4(
-				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-				'sector',
-				$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string),
-				$elm$core$Maybe$Nothing,
-				A4(
-					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-					'district',
-					$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string),
-					$elm$core$Maybe$Nothing,
-					A4(
-						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-						'province',
-						$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string),
-						$elm$core$Maybe$Nothing,
-						$elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$ReportParams)))))));
-var $author$project$Backend$Components$Model$EntityCell = {$: 'EntityCell'};
-var $author$project$Backend$Components$Model$EntitySector = {$: 'EntitySector'};
-var $author$project$Backend$Components$Model$EntityVillage = {$: 'EntityVillage'};
-var $author$project$Backend$Components$Decoder$decodeSelectedEntity = A2(
-	$elm$json$Json$Decode$andThen,
-	function (entityType) {
-		switch (entityType) {
-			case 'global':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$EntityGlobal);
-			case 'province':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$EntityProvince);
-			case 'district':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$EntityDistrict);
-			case 'sector':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$EntitySector);
-			case 'cell':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$EntityCell);
-			case 'village':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$EntityVillage);
-			case 'health-center':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$EntityHealthCenter);
-			default:
-				return $elm$json$Json$Decode$fail(entityType + ' is unknown SelectedEntity type');
-		}
-	},
-	$elm$json$Json$Decode$string);
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded = A2($elm$core$Basics$composeR, $elm$json$Json$Decode$succeed, $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom);
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt = F4(
-	function (path, valDecoder, fallback, decoder) {
-		return A2(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
-			A3(
-				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder,
-				A2($elm$json$Json$Decode$at, path, $elm$json$Json$Decode$value),
-				valDecoder,
-				fallback),
-			decoder);
-	});
-var $author$project$Backend$Reports$Decoder$decodeReportsData = A2(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
-	$elm$core$Maybe$Nothing,
-	A4(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
-		_List_fromArray(
-			['additional', 'nutrition_report_data']),
-		$elm$json$Json$Decode$nullable(
-			$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeBackendGeneratedNutritionReportTableDate)),
-		$elm$core$Maybe$Nothing,
-		A2(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
-			_List_Nil,
-			A3(
-				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-				'params',
-				$author$project$Backend$Components$Decoder$decodeReportParams,
-				A3(
-					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-					'entity_type',
-					$author$project$Backend$Components$Decoder$decodeSelectedEntity,
-					A3(
-						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-						'entity_name',
-						$elm$json$Json$Decode$string,
-						A3(
-							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-							'site',
-							$author$project$Backend$Decoder$decodeSite,
-							$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$ReportsData))))))));
-var $author$project$Backend$Reports$Model$SyncResponse = F3(
-	function (records, totalRemaining, lastIdSynced) {
-		return {lastIdSynced: lastIdSynced, records: records, totalRemaining: totalRemaining};
-	});
-var $author$project$Backend$Reports$Model$Female = {$: 'Female'};
-var $author$project$Backend$Reports$Model$PatientData = function (id) {
-	return function (created) {
-		return function (birthDate) {
-			return function (gender) {
-				return function (acuteIllnessData) {
-					return function (prenatalData) {
-						return function (homeVisitData) {
-							return function (wellChildData) {
-								return function (childScorecardData) {
-									return function (ncdData) {
-										return function (hivData) {
-											return function (tuberculosisData) {
-												return function (individualNutritionData) {
-													return function (groupNutritionPmtctData) {
-														return function (groupNutritionFbfData) {
-															return function (groupNutritionSorwatheData) {
-																return function (groupNutritionChwData) {
-																	return function (groupNutritionAchiData) {
-																		return {acuteIllnessData: acuteIllnessData, birthDate: birthDate, childScorecardData: childScorecardData, created: created, gender: gender, groupNutritionAchiData: groupNutritionAchiData, groupNutritionChwData: groupNutritionChwData, groupNutritionFbfData: groupNutritionFbfData, groupNutritionPmtctData: groupNutritionPmtctData, groupNutritionSorwatheData: groupNutritionSorwatheData, hivData: hivData, homeVisitData: homeVisitData, id: id, individualNutritionData: individualNutritionData, ncdData: ncdData, prenatalData: prenatalData, tuberculosisData: tuberculosisData, wellChildData: wellChildData};
-																	};
-																};
-															};
-														};
-													};
-												};
-											};
-										};
-									};
-								};
-							};
-						};
-					};
-				};
-			};
-		};
-	};
-};
-var $author$project$Backend$Reports$Model$AcuteIllnessEncounterCHW = {$: 'AcuteIllnessEncounterCHW'};
-var $author$project$Backend$Reports$Model$AcuteIllnessEncounterData = F3(
-	function (startDate, encounterType, diagnosis) {
-		return {diagnosis: diagnosis, encounterType: encounterType, startDate: startDate};
-	});
-var $author$project$Backend$Reports$Model$DiagnosisCovid19Suspect = {$: 'DiagnosisCovid19Suspect'};
-var $author$project$Backend$Reports$Model$DiagnosisFeverOfUnknownOrigin = {$: 'DiagnosisFeverOfUnknownOrigin'};
-var $author$project$Backend$Reports$Model$DiagnosisGastrointestinalInfectionComplicated = {$: 'DiagnosisGastrointestinalInfectionComplicated'};
-var $author$project$Backend$Reports$Model$DiagnosisGastrointestinalInfectionUncomplicated = {$: 'DiagnosisGastrointestinalInfectionUncomplicated'};
-var $author$project$Backend$Reports$Model$DiagnosisLowRiskCovid19 = {$: 'DiagnosisLowRiskCovid19'};
-var $author$project$Backend$Reports$Model$DiagnosisMalariaComplicated = {$: 'DiagnosisMalariaComplicated'};
-var $author$project$Backend$Reports$Model$DiagnosisMalariaUncomplicated = {$: 'DiagnosisMalariaUncomplicated'};
-var $author$project$Backend$Reports$Model$DiagnosisMalariaUncomplicatedAndPregnant = {$: 'DiagnosisMalariaUncomplicatedAndPregnant'};
-var $author$project$Backend$Reports$Model$DiagnosisPneuminialCovid19 = {$: 'DiagnosisPneuminialCovid19'};
-var $author$project$Backend$Reports$Model$DiagnosisRespiratoryInfectionComplicated = {$: 'DiagnosisRespiratoryInfectionComplicated'};
-var $author$project$Backend$Reports$Model$DiagnosisRespiratoryInfectionUncomplicated = {$: 'DiagnosisRespiratoryInfectionUncomplicated'};
-var $author$project$Backend$Reports$Model$DiagnosisSevereCovid19 = {$: 'DiagnosisSevereCovid19'};
-var $author$project$Backend$Reports$Model$DiagnosisSimpleColdAndCough = {$: 'DiagnosisSimpleColdAndCough'};
-var $author$project$Backend$Reports$Model$DiagnosisTuberculosisSuspect = {$: 'DiagnosisTuberculosisSuspect'};
-var $author$project$Backend$Reports$Model$DiagnosisUndeterminedMoreEvaluationNeeded = {$: 'DiagnosisUndeterminedMoreEvaluationNeeded'};
-var $author$project$Backend$Reports$Decoder$acuteIllnessDiagnosisFromMapping = function (mapping) {
-	switch (mapping) {
-		case 'a':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisCovid19Suspect);
-		case 'b':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSevereCovid19);
-		case 'c':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPneuminialCovid19);
-		case 'd':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisLowRiskCovid19);
-		case 'e':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMalariaComplicated);
-		case 'f':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMalariaUncomplicated);
-		case 'g':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMalariaUncomplicatedAndPregnant);
-		case 'h':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisGastrointestinalInfectionComplicated);
-		case 'i':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisGastrointestinalInfectionUncomplicated);
-		case 'j':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSimpleColdAndCough);
-		case 'k':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisRespiratoryInfectionComplicated);
-		case 'l':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisRespiratoryInfectionUncomplicated);
-		case 'm':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisFeverOfUnknownOrigin);
-		case 'n':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisUndeterminedMoreEvaluationNeeded);
-		case 'o':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisTuberculosisSuspect);
-		default:
-			return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$Backend$Reports$Model$AcuteIllnessEncounterNurse = {$: 'AcuteIllnessEncounterNurse'};
-var $author$project$Backend$Reports$Model$AcuteIllnessEncounterNurseSubsequent = {$: 'AcuteIllnessEncounterNurseSubsequent'};
-var $author$project$Backend$Reports$Decoder$acuteIllnessEncounterTypeFromString = function (encounterType) {
-	switch (encounterType) {
-		case 'nurse-encounter':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$AcuteIllnessEncounterNurse);
-		case 'nurse-encounter-subsequent':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$AcuteIllnessEncounterNurseSubsequent);
-		case 'chw-encounter':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$AcuteIllnessEncounterCHW);
-		default:
-			return $elm$core$Maybe$Nothing;
-	}
-};
-var $elm$core$Result$toMaybe = function (result) {
-	if (result.$ === 'Ok') {
-		var v = result.a;
-		return $elm$core$Maybe$Just(v);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$Backend$Reports$Decoder$decodeAcuteIllnessEncounterData = A2(
-	$elm$json$Json$Decode$andThen,
-	function (s) {
-		var _v0 = A2(
-			$elm$core$String$split,
-			'|',
-			$elm$core$String$trim(s));
-		if (((_v0.b && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
-			var first = _v0.a;
-			var _v1 = _v0.b;
-			var second = _v1.a;
-			var _v2 = _v1.b;
-			var third = _v2.a;
-			return A2(
-				$elm$core$Maybe$withDefault,
-				$elm$json$Json$Decode$fail('Failed to decode AcuteIllnessEncounterData'),
-				A2(
-					$elm$core$Maybe$map,
-					function (startDate) {
-						var encounterType = A2(
-							$elm$core$Maybe$withDefault,
-							$author$project$Backend$Reports$Model$AcuteIllnessEncounterCHW,
-							$author$project$Backend$Reports$Decoder$acuteIllnessEncounterTypeFromString(second));
-						var diagnosis = $author$project$Backend$Reports$Decoder$acuteIllnessDiagnosisFromMapping(third);
-						return $elm$json$Json$Decode$succeed(
-							A3($author$project$Backend$Reports$Model$AcuteIllnessEncounterData, startDate, encounterType, diagnosis));
-					},
-					$elm$core$Result$toMaybe(
-						$justinmimbs$date$Date$fromIsoString(first))));
-		} else {
-			return $elm$json$Json$Decode$fail('Failed to decode AcuteIllnessEncounterData');
-		}
-	},
-	$elm$json$Json$Decode$string);
-var $author$project$Backend$Reports$Model$Male = {$: 'Male'};
-var $author$project$Backend$Reports$Utils$genderFromString = function (s) {
-	switch (s) {
-		case 'female':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$Female);
-		case 'male':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$Male);
-		default:
-			return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$Backend$Reports$Decoder$decodeGender = A2(
-	$elm$json$Json$Decode$andThen,
-	function (gender) {
-		return A2(
-			$elm$core$Maybe$withDefault,
-			$elm$json$Json$Decode$fail(gender + ' is not a recognized Gender.'),
-			A2(
-				$elm$core$Maybe$map,
-				$elm$json$Json$Decode$succeed,
-				$author$project$Backend$Reports$Utils$genderFromString(gender)));
-	},
-	$elm$json$Json$Decode$string);
-var $author$project$Backend$Reports$Model$NutritionEncounterData = F2(
-	function (startDate, nutritionData) {
-		return {nutritionData: nutritionData, startDate: startDate};
-	});
-var $author$project$Backend$Reports$Model$NutritionData = F3(
-	function (stunting, wasting, underweight) {
-		return {stunting: stunting, underweight: underweight, wasting: wasting};
-	});
-var $elm$core$String$toFloat = _String_toFloat;
-var $author$project$Backend$Reports$Decoder$nutritionDataFromString = function (s) {
-	var _v0 = A2($elm$core$String$split, ',', s);
-	if (((_v0.b && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
-		var stunting = _v0.a;
-		var _v1 = _v0.b;
-		var underweight = _v1.a;
-		var _v2 = _v1.b;
-		var wasting = _v2.a;
-		return $elm$core$Maybe$Just(
-			A3(
-				$author$project$Backend$Reports$Model$NutritionData,
-				$elm$core$String$toFloat(stunting),
-				$elm$core$String$toFloat(wasting),
-				$elm$core$String$toFloat(underweight)));
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$Backend$Reports$Decoder$decodeNutritionEncounterData = A2(
-	$elm$json$Json$Decode$andThen,
-	function (s) {
-		var _v0 = A2(
-			$elm$core$String$split,
-			' ',
-			$elm$core$String$trim(s));
-		_v0$2:
-		while (true) {
-			if (_v0.b) {
-				if (!_v0.b.b) {
-					var first = _v0.a;
-					return A2(
-						$elm$core$Maybe$withDefault,
-						$elm$json$Json$Decode$fail('Failed to decode NutritionEncounterData'),
-						A2(
-							$elm$core$Maybe$map,
-							function (startDate) {
-								return $elm$json$Json$Decode$succeed(
-									A2($author$project$Backend$Reports$Model$NutritionEncounterData, startDate, $elm$core$Maybe$Nothing));
-							},
-							$elm$core$Result$toMaybe(
-								$justinmimbs$date$Date$fromIsoString(first))));
-				} else {
-					if (!_v0.b.b.b) {
-						var first = _v0.a;
-						var _v1 = _v0.b;
-						var second = _v1.a;
-						return A2(
-							$elm$core$Maybe$withDefault,
-							$elm$json$Json$Decode$fail('Failed to decode NutritionEncounterData'),
-							A2(
-								$elm$core$Maybe$map,
-								function (startDate) {
-									return $elm$json$Json$Decode$succeed(
-										A2(
-											$author$project$Backend$Reports$Model$NutritionEncounterData,
-											startDate,
-											$author$project$Backend$Reports$Decoder$nutritionDataFromString(second)));
-								},
-								$elm$core$Result$toMaybe(
-									$justinmimbs$date$Date$fromIsoString(first))));
-					} else {
-						break _v0$2;
-					}
-				}
-			} else {
-				break _v0$2;
-			}
-		}
-		return $elm$json$Json$Decode$fail('Failed to decode NutritionEncounterData');
-	},
-	$elm$json$Json$Decode$string);
-var $author$project$Backend$Reports$Model$PrenatalParticipantData = F6(
-	function (created, eddDate, dateConcluded, outcome, deliveryLocation, encounters) {
-		return {created: created, dateConcluded: dateConcluded, deliveryLocation: deliveryLocation, eddDate: eddDate, encounters: encounters, outcome: outcome};
-	});
-var $author$project$Backend$Reports$Model$FacilityDelivery = {$: 'FacilityDelivery'};
-var $author$project$Backend$Reports$Model$HomeDelivery = {$: 'HomeDelivery'};
-var $author$project$Backend$Reports$Decoder$deliveryLocationFromString = function (location) {
-	switch (location) {
-		case 'f':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$FacilityDelivery);
-		case 'h':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$HomeDelivery);
-		default:
-			return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$Backend$Reports$Decoder$decodeDeliveryLocation = A2(
-	$elm$json$Json$Decode$andThen,
-	function (s) {
-		return A2(
-			$elm$core$Maybe$withDefault,
-			$elm$json$Json$Decode$fail(s + ' is not a recognized DeliveryLocation'),
-			A2(
-				$elm$core$Maybe$map,
-				$elm$json$Json$Decode$succeed,
-				$author$project$Backend$Reports$Decoder$deliveryLocationFromString(s)));
-	},
-	$elm$json$Json$Decode$string);
-var $author$project$Backend$Reports$Model$OutcomeAbortions = {$: 'OutcomeAbortions'};
-var $author$project$Backend$Reports$Model$OutcomeLiveAtTerm = {$: 'OutcomeLiveAtTerm'};
-var $author$project$Backend$Reports$Model$OutcomeLivePreTerm = {$: 'OutcomeLivePreTerm'};
-var $author$project$Backend$Reports$Model$OutcomeStillAtTerm = {$: 'OutcomeStillAtTerm'};
-var $author$project$Backend$Reports$Model$OutcomeStillPreTerm = {$: 'OutcomeStillPreTerm'};
-var $author$project$Backend$Reports$Decoder$pregnancyOutcomeFromString = function (outcome) {
-	switch (outcome) {
-		case 'a':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$OutcomeLiveAtTerm);
-		case 'b':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$OutcomeLivePreTerm);
-		case 'c':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$OutcomeStillAtTerm);
-		case 'd':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$OutcomeStillPreTerm);
-		case 'e':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$OutcomeAbortions);
-		default:
-			return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$Backend$Reports$Decoder$decodePregnancyOutcome = A2(
-	$elm$json$Json$Decode$andThen,
-	function (s) {
-		return A2(
-			$elm$core$Maybe$withDefault,
-			$elm$json$Json$Decode$fail(s + ' is not a recognized PregnancyOutcome'),
-			A2(
-				$elm$core$Maybe$map,
-				$elm$json$Json$Decode$succeed,
-				$author$project$Backend$Reports$Decoder$pregnancyOutcomeFromString(s)));
-	},
-	$elm$json$Json$Decode$string);
-var $author$project$Backend$Reports$Model$PrenatalEncounterData = F3(
-	function (startDate, encounterType, diagnoses) {
-		return {diagnoses: diagnoses, encounterType: encounterType, startDate: startDate};
-	});
-var $author$project$Backend$Reports$Model$DiagnosisCandidiasis = {$: 'DiagnosisCandidiasis'};
-var $author$project$Backend$Reports$Model$DiagnosisChronicHypertension = {$: 'DiagnosisChronicHypertension'};
-var $author$project$Backend$Reports$Model$DiagnosisDeepVeinThrombosis = {$: 'DiagnosisDeepVeinThrombosis'};
-var $author$project$Backend$Reports$Model$DiagnosisDepressionHighlyPossible = {$: 'DiagnosisDepressionHighlyPossible'};
-var $author$project$Backend$Reports$Model$DiagnosisDepressionNotLikely = {$: 'DiagnosisDepressionNotLikely'};
-var $author$project$Backend$Reports$Model$DiagnosisDepressionPossible = {$: 'DiagnosisDepressionPossible'};
-var $author$project$Backend$Reports$Model$DiagnosisDepressionProbable = {$: 'DiagnosisDepressionProbable'};
-var $author$project$Backend$Reports$Model$DiagnosisDiabetes = {$: 'DiagnosisDiabetes'};
-var $author$project$Backend$Reports$Model$DiagnosisDiscordantPartnership = {$: 'DiagnosisDiscordantPartnership'};
-var $author$project$Backend$Reports$Model$DiagnosisEclampsia = {$: 'DiagnosisEclampsia'};
-var $author$project$Backend$Reports$Model$DiagnosisEctopicPregnancy = {$: 'DiagnosisEctopicPregnancy'};
-var $author$project$Backend$Reports$Model$DiagnosisGestationalDiabetes = {$: 'DiagnosisGestationalDiabetes'};
-var $author$project$Backend$Reports$Model$DiagnosisGestationalHypertension = {$: 'DiagnosisGestationalHypertension'};
-var $author$project$Backend$Reports$Model$DiagnosisGonorrhea = {$: 'DiagnosisGonorrhea'};
-var $author$project$Backend$Reports$Model$DiagnosisHIV = {$: 'DiagnosisHIV'};
-var $author$project$Backend$Reports$Model$DiagnosisHIVDetectableViralLoad = {$: 'DiagnosisHIVDetectableViralLoad'};
-var $author$project$Backend$Reports$Model$DiagnosisHeartburn = {$: 'DiagnosisHeartburn'};
-var $author$project$Backend$Reports$Model$DiagnosisHepatitisB = {$: 'DiagnosisHepatitisB'};
-var $author$project$Backend$Reports$Model$DiagnosisHyperemesisGravidum = {$: 'DiagnosisHyperemesisGravidum'};
-var $author$project$Backend$Reports$Model$DiagnosisImminentDelivery = {$: 'DiagnosisImminentDelivery'};
-var $author$project$Backend$Reports$Model$DiagnosisInfection = {$: 'DiagnosisInfection'};
-var $author$project$Backend$Reports$Model$DiagnosisLaborAndDelivery = {$: 'DiagnosisLaborAndDelivery'};
-var $author$project$Backend$Reports$Model$DiagnosisMalaria = {$: 'DiagnosisMalaria'};
-var $author$project$Backend$Reports$Model$DiagnosisMalariaWithAnemia = {$: 'DiagnosisMalariaWithAnemia'};
-var $author$project$Backend$Reports$Model$DiagnosisMalariaWithSevereAnemia = {$: 'DiagnosisMalariaWithSevereAnemia'};
-var $author$project$Backend$Reports$Model$DiagnosisMaternalComplications = {$: 'DiagnosisMaternalComplications'};
-var $author$project$Backend$Reports$Model$DiagnosisMiscarriage = {$: 'DiagnosisMiscarriage'};
-var $author$project$Backend$Reports$Model$DiagnosisModerateAnemia = {$: 'DiagnosisModerateAnemia'};
-var $author$project$Backend$Reports$Model$DiagnosisModeratePreeclampsia = {$: 'DiagnosisModeratePreeclampsia'};
-var $author$project$Backend$Reports$Model$DiagnosisMolarPregnancy = {$: 'DiagnosisMolarPregnancy'};
-var $author$project$Backend$Reports$Model$DiagnosisNeurosyphilis = {$: 'DiagnosisNeurosyphilis'};
-var $author$project$Backend$Reports$Model$DiagnosisObstructedLabor = {$: 'DiagnosisObstructedLabor'};
-var $author$project$Backend$Reports$Model$DiagnosisOther = {$: 'DiagnosisOther'};
-var $author$project$Backend$Reports$Model$DiagnosisPPROM = {$: 'DiagnosisPPROM'};
-var $author$project$Backend$Reports$Model$DiagnosisPROM = {$: 'DiagnosisPROM'};
-var $author$project$Backend$Reports$Model$DiagnosisPelvicPainIntense = {$: 'DiagnosisPelvicPainIntense'};
-var $author$project$Backend$Reports$Model$DiagnosisPlacentaPrevia = {$: 'DiagnosisPlacentaPrevia'};
-var $author$project$Backend$Reports$Model$DiagnosisPlacentalAbruption = {$: 'DiagnosisPlacentalAbruption'};
-var $author$project$Backend$Reports$Model$DiagnosisPostAbortionSepsis = {$: 'DiagnosisPostAbortionSepsis'};
-var $author$project$Backend$Reports$Model$DiagnosisPostpartumAbdominalPain = {$: 'DiagnosisPostpartumAbdominalPain'};
-var $author$project$Backend$Reports$Model$DiagnosisPostpartumEarlyMastitisOrEngorgment = {$: 'DiagnosisPostpartumEarlyMastitisOrEngorgment'};
-var $author$project$Backend$Reports$Model$DiagnosisPostpartumExcessiveBleeding = {$: 'DiagnosisPostpartumExcessiveBleeding'};
-var $author$project$Backend$Reports$Model$DiagnosisPostpartumFatigue = {$: 'DiagnosisPostpartumFatigue'};
-var $author$project$Backend$Reports$Model$DiagnosisPostpartumFever = {$: 'DiagnosisPostpartumFever'};
-var $author$project$Backend$Reports$Model$DiagnosisPostpartumHeadache = {$: 'DiagnosisPostpartumHeadache'};
-var $author$project$Backend$Reports$Model$DiagnosisPostpartumInfection = {$: 'DiagnosisPostpartumInfection'};
-var $author$project$Backend$Reports$Model$DiagnosisPostpartumMastitis = {$: 'DiagnosisPostpartumMastitis'};
-var $author$project$Backend$Reports$Model$DiagnosisPostpartumPerinealPainOrDischarge = {$: 'DiagnosisPostpartumPerinealPainOrDischarge'};
-var $author$project$Backend$Reports$Model$DiagnosisPostpartumUrinaryIncontinence = {$: 'DiagnosisPostpartumUrinaryIncontinence'};
-var $author$project$Backend$Reports$Model$DiagnosisPyelonephritis = {$: 'DiagnosisPyelonephritis'};
-var $author$project$Backend$Reports$Model$DiagnosisRhesusNegative = {$: 'DiagnosisRhesusNegative'};
-var $author$project$Backend$Reports$Model$DiagnosisSevereAnemia = {$: 'DiagnosisSevereAnemia'};
-var $author$project$Backend$Reports$Model$DiagnosisSevereAnemiaWithComplications = {$: 'DiagnosisSevereAnemiaWithComplications'};
-var $author$project$Backend$Reports$Model$DiagnosisSeverePreeclampsia = {$: 'DiagnosisSeverePreeclampsia'};
-var $author$project$Backend$Reports$Model$DiagnosisSevereVomiting = {$: 'DiagnosisSevereVomiting'};
-var $author$project$Backend$Reports$Model$DiagnosisSuicideRisk = {$: 'DiagnosisSuicideRisk'};
-var $author$project$Backend$Reports$Model$DiagnosisSyphilis = {$: 'DiagnosisSyphilis'};
-var $author$project$Backend$Reports$Model$DiagnosisSyphilisWithComplications = {$: 'DiagnosisSyphilisWithComplications'};
-var $author$project$Backend$Reports$Model$DiagnosisTrichomonasOrBacterialVaginosis = {$: 'DiagnosisTrichomonasOrBacterialVaginosis'};
-var $author$project$Backend$Reports$Model$DiagnosisTuberculosis = {$: 'DiagnosisTuberculosis'};
-var $author$project$Backend$Reports$Model$DiagnosisUrinaryTractInfection = {$: 'DiagnosisUrinaryTractInfection'};
-var $author$project$Backend$Reports$Model$DiagnosisUterineRupture = {$: 'DiagnosisUterineRupture'};
-var $author$project$Backend$Reports$Decoder$prenatalDiagnosisFromMapping = function (s) {
-	switch (s) {
-		case 'a':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisChronicHypertension);
-		case 'b':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisGestationalHypertension);
-		case 'c':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisModeratePreeclampsia);
-		case 'd':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSeverePreeclampsia);
-		case 'g':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisEclampsia);
-		case 'h':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisHIV);
-		case 'i':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisHIVDetectableViralLoad);
-		case 'j':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisDiscordantPartnership);
-		case 'k':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSyphilis);
-		case 'l':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSyphilisWithComplications);
-		case 'm':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisNeurosyphilis);
-		case 'n':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisHepatitisB);
-		case 'o':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMalaria);
-		case 'p':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMalariaWithAnemia);
-		case 'q':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMalariaWithSevereAnemia);
-		case 'r':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisModerateAnemia);
-		case 's':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSevereAnemia);
-		case 't':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSevereAnemiaWithComplications);
-		case 'u':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMiscarriage);
-		case 'v':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMolarPregnancy);
-		case 'w':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPlacentaPrevia);
-		case 'x':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPlacentalAbruption);
-		case 'y':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisUterineRupture);
-		case 'z':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisObstructedLabor);
-		case 'a1':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostAbortionSepsis);
-		case 'b1':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisEctopicPregnancy);
-		case 'c1':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPROM);
-		case 'd1':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPPROM);
-		case 'e1':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisHyperemesisGravidum);
-		case 'f1':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSevereVomiting);
-		case 'g1':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMaternalComplications);
-		case 'h1':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisInfection);
-		case 'i1':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisImminentDelivery);
-		case 'j1':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisLaborAndDelivery);
-		case 'k1':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisHeartburn);
-		case 'l1':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisDeepVeinThrombosis);
-		case 'm1':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPelvicPainIntense);
-		case 'n1':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisUrinaryTractInfection);
-		case 'o1':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPyelonephritis);
-		case 'p1':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisCandidiasis);
-		case 'q1':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisGonorrhea);
-		case 'r1':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisTrichomonasOrBacterialVaginosis);
-		case 's1':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisTuberculosis);
-		case 't1':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisDiabetes);
-		case 'u1':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisGestationalDiabetes);
-		case 'v1':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisRhesusNegative);
-		case 'w1':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisDepressionNotLikely);
-		case 'x1':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisDepressionPossible);
-		case 'y1':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisDepressionHighlyPossible);
-		case 'z1':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisDepressionProbable);
-		case 'a2':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSuicideRisk);
-		case 'b2':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisOther);
-		case 'c2':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumAbdominalPain);
-		case 'd2':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumUrinaryIncontinence);
-		case 'e2':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumHeadache);
-		case 'f2':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumFatigue);
-		case 'g2':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumFever);
-		case 'h2':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumPerinealPainOrDischarge);
-		case 'i2':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumInfection);
-		case 'j2':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumExcessiveBleeding);
-		case 'k2':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumEarlyMastitisOrEngorgment);
-		case 'l2':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumMastitis);
-		default:
-			return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$Backend$Reports$Model$ChwFirstEncounter = {$: 'ChwFirstEncounter'};
-var $author$project$Backend$Reports$Model$ChwPostpartumEncounter = {$: 'ChwPostpartumEncounter'};
-var $author$project$Backend$Reports$Model$ChwSecondEncounter = {$: 'ChwSecondEncounter'};
-var $author$project$Backend$Reports$Model$ChwThirdPlusEncounter = {$: 'ChwThirdPlusEncounter'};
-var $author$project$Backend$Reports$Model$NurseEncounter = {$: 'NurseEncounter'};
-var $author$project$Backend$Reports$Model$NursePostpartumEncounter = {$: 'NursePostpartumEncounter'};
-var $author$project$Backend$Reports$Decoder$prenatalEncounterTypeFromString = function (encounterType) {
-	switch (encounterType) {
-		case 'nurse':
-			return $author$project$Backend$Reports$Model$NurseEncounter;
-		case 'nurse-postpartum':
-			return $author$project$Backend$Reports$Model$NursePostpartumEncounter;
-		case 'chw-1':
-			return $author$project$Backend$Reports$Model$ChwFirstEncounter;
-		case 'chw-2':
-			return $author$project$Backend$Reports$Model$ChwSecondEncounter;
-		case 'chw-3':
-			return $author$project$Backend$Reports$Model$ChwThirdPlusEncounter;
-		case 'chw-postpartum':
-			return $author$project$Backend$Reports$Model$ChwPostpartumEncounter;
-		default:
-			return $author$project$Backend$Reports$Model$NurseEncounter;
-	}
-};
-var $author$project$Backend$Reports$Decoder$decodePrenatalEncounterData = A2(
-	$elm$json$Json$Decode$andThen,
-	function (s) {
-		var _v0 = A2(
-			$elm$core$String$split,
-			'|',
-			$elm$core$String$trim(s));
-		if (((_v0.b && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
-			var first = _v0.a;
-			var _v1 = _v0.b;
-			var second = _v1.a;
-			var _v2 = _v1.b;
-			var third = _v2.a;
-			return A2(
-				$elm$core$Maybe$withDefault,
-				$elm$json$Json$Decode$fail('Failed to decode PrenatalEncounterData'),
-				A2(
-					$elm$core$Maybe$map,
-					function (startDate) {
-						var encounterType = $author$project$Backend$Reports$Decoder$prenatalEncounterTypeFromString(second);
-						var diagnoses = $elm$core$String$isEmpty(third) ? _List_Nil : $elm_community$maybe_extra$Maybe$Extra$values(
-							A2(
-								$elm$core$List$map,
-								$author$project$Backend$Reports$Decoder$prenatalDiagnosisFromMapping,
-								A2($elm$core$String$split, ',', third)));
-						return $elm$json$Json$Decode$succeed(
-							A3($author$project$Backend$Reports$Model$PrenatalEncounterData, startDate, encounterType, diagnoses));
-					},
-					$elm$core$Result$toMaybe(
-						$justinmimbs$date$Date$fromIsoString(first))));
-		} else {
-			return $elm$json$Json$Decode$fail('Failed to decode PrenatalEncounterData');
-		}
-	},
-	$elm$json$Json$Decode$string);
-var $author$project$Backend$Reports$Decoder$decodePrenatalParticipantData = A3(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-	'encounters',
-	$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodePrenatalEncounterData),
-	A4(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-		'ol',
-		$elm$json$Json$Decode$nullable($author$project$Backend$Reports$Decoder$decodeDeliveryLocation),
-		$elm$core$Maybe$Nothing,
-		A4(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-			'o',
-			$elm$json$Json$Decode$nullable($author$project$Backend$Reports$Decoder$decodePregnancyOutcome),
-			$elm$core$Maybe$Nothing,
-			A4(
-				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-				'dc',
-				$elm$json$Json$Decode$nullable($author$project$Gizra$NominalDate$decodeYYYYMMDD),
-				$elm$core$Maybe$Nothing,
-				A4(
-					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-					'edd',
-					$elm$json$Json$Decode$nullable($author$project$Gizra$NominalDate$decodeYYYYMMDD),
-					$elm$core$Maybe$Nothing,
-					A3(
-						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-						'created',
-						$author$project$Gizra$NominalDate$decodeYYYYMMDD,
-						$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$PrenatalParticipantData)))))));
-var $author$project$Backend$Reports$Decoder$decodePatientData = A4(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
-	_List_fromArray(
-		['group_nutrition', 'achi']),
-	$elm$json$Json$Decode$nullable(
-		$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionEncounterData)),
-	$elm$core$Maybe$Nothing,
-	A4(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
-		_List_fromArray(
-			['group_nutrition', 'chw']),
-		$elm$json$Json$Decode$nullable(
-			$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionEncounterData)),
-		$elm$core$Maybe$Nothing,
-		A4(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
-			_List_fromArray(
-				['group_nutrition', 'sorwathe']),
-			$elm$json$Json$Decode$nullable(
-				$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionEncounterData)),
-			$elm$core$Maybe$Nothing,
-			A4(
-				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
-				_List_fromArray(
-					['group_nutrition', 'fbf']),
-				$elm$json$Json$Decode$nullable(
-					$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionEncounterData)),
-				$elm$core$Maybe$Nothing,
-				A4(
-					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
-					_List_fromArray(
-						['group_nutrition', 'pmtct']),
-					$elm$json$Json$Decode$nullable(
-						$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionEncounterData)),
-					$elm$core$Maybe$Nothing,
-					A4(
-						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
-						_List_fromArray(
-							['individual', 'nutrition']),
-						$elm$json$Json$Decode$nullable(
-							$elm$json$Json$Decode$list(
-								$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionEncounterData))),
-						$elm$core$Maybe$Nothing,
-						A4(
-							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
-							_List_fromArray(
-								['individual', 'tuberculosis']),
-							$elm$json$Json$Decode$nullable(
-								$elm$json$Json$Decode$list(
-									$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD))),
-							$elm$core$Maybe$Nothing,
-							A4(
-								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
-								_List_fromArray(
-									['individual', 'hiv']),
-								$elm$json$Json$Decode$nullable(
-									$elm$json$Json$Decode$list(
-										$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD))),
-								$elm$core$Maybe$Nothing,
-								A4(
-									$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
-									_List_fromArray(
-										['individual', 'ncd']),
-									$elm$json$Json$Decode$nullable(
-										$elm$json$Json$Decode$list(
-											$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD))),
-									$elm$core$Maybe$Nothing,
-									A4(
-										$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
-										_List_fromArray(
-											['individual', 'child-scoreboard']),
-										$elm$json$Json$Decode$nullable(
-											$elm$json$Json$Decode$list(
-												$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD))),
-										$elm$core$Maybe$Nothing,
-										A4(
-											$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
-											_List_fromArray(
-												['individual', 'well-child']),
-											$elm$json$Json$Decode$nullable(
-												$elm$json$Json$Decode$list(
-													$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionEncounterData))),
-											$elm$core$Maybe$Nothing,
-											A4(
-												$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
-												_List_fromArray(
-													['individual', 'home-visit']),
-												$elm$json$Json$Decode$nullable(
-													$elm$json$Json$Decode$list(
-														$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD))),
-												$elm$core$Maybe$Nothing,
-												A4(
-													$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
-													_List_fromArray(
-														['individual', 'antenatal']),
-													$elm$json$Json$Decode$nullable(
-														$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodePrenatalParticipantData)),
-													$elm$core$Maybe$Nothing,
-													A4(
-														$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
-														_List_fromArray(
-															['individual', 'acute-illness']),
-														$elm$json$Json$Decode$nullable(
-															$elm$json$Json$Decode$list(
-																$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeAcuteIllnessEncounterData))),
-														$elm$core$Maybe$Nothing,
-														A3(
-															$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-															'gender',
-															A2($author$project$Backend$Decoder$decodeWithFallback, $author$project$Backend$Reports$Model$Female, $author$project$Backend$Reports$Decoder$decodeGender),
-															A3(
-																$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-																'birth_date',
-																$author$project$Gizra$NominalDate$decodeYYYYMMDD,
-																A3(
-																	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-																	'created',
-																	$author$project$Gizra$NominalDate$decodeYYYYMMDD,
-																	A3(
-																		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-																		'id',
-																		$author$project$Gizra$Json$decodeInt,
-																		$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$PatientData)))))))))))))))))));
-var $author$project$Backend$Reports$Decoder$decodeSyncResponse = A2(
-	$elm$json$Json$Decode$field,
-	'data',
-	A3(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'last',
-		$author$project$Gizra$Json$decodeInt,
-		A3(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'total_remaining',
+			'last',
 			$author$project$Gizra$Json$decodeInt,
 			A3(
 				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-				'batch',
-				$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodePatientData),
-				$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$SyncResponse)))));
+				'total_remaining',
+				$author$project$Gizra$Json$decodeInt,
+				A3(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
+					_List_fromArray(
+						['batch', 'well_child']),
+					$elm$json$Json$Decode$list($author$project$Backend$Completion$Decoder$decodeWellChildEncounterData),
+					A3(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
+						_List_fromArray(
+							['batch', 'tuberculosis']),
+						$elm$json$Json$Decode$list(
+							$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$tuberculosisActivityFromMapping)),
+						A3(
+							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
+							_List_fromArray(
+								['batch', 'prenatal']),
+							$elm$json$Json$Decode$list(
+								$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$prenatalActivityFromMapping)),
+							A3(
+								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
+								_List_fromArray(
+									['batch', 'nutrition_group']),
+								$elm$json$Json$Decode$list(
+									A2($author$project$Backend$Completion$Decoder$decodeNutritionGroupEncounterData, $author$project$Backend$Completion$Utils$nutritionMotherActivityFromMapping, $author$project$Backend$Completion$Utils$nutritionChildActivityFromMapping)),
+								A3(
+									$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
+									_List_fromArray(
+										['batch', 'nutrition_individual']),
+									$elm$json$Json$Decode$list(
+										$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$nutritionChildActivityFromMapping)),
+									A3(
+										$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
+										_List_fromArray(
+											['batch', 'ncd']),
+										$elm$json$Json$Decode$list(
+											$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$ncdActivityFromMapping)),
+										A3(
+											$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
+											_List_fromArray(
+												['batch', 'home_visit']),
+											$elm$json$Json$Decode$list(
+												$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$homeVisitActivityFromMapping)),
+											A3(
+												$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
+												_List_fromArray(
+													['batch', 'hiv']),
+												$elm$json$Json$Decode$list(
+													$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$hivActivityFromMapping)),
+												A3(
+													$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
+													_List_fromArray(
+														['batch', 'child_scoreboard']),
+													$elm$json$Json$Decode$list(
+														$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$childScoreboardActivityFromMapping)),
+													A3(
+														$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
+														_List_fromArray(
+															['batch', 'acute_illness']),
+														$elm$json$Json$Decode$list(
+															$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$acuteIllnessActivityFromMapping)),
+														$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$SyncResponse))))))))))))));
+};
 var $elm$json$Json$Encode$int = _Json_wrap;
 var $author$project$Backend$Components$Encoder$encodeReportParams = function (params) {
 	return $elm_community$maybe_extra$Maybe$Extra$values(
@@ -9901,6 +9034,7 @@ var $author$project$Backend$Components$Encoder$encodeReportParams = function (pa
 				params.healthCenter)
 			]));
 };
+var $elm$core$Debug$log = _Debug_log;
 var $elm$json$Json$Encode$object = function (pairs) {
 	return _Json_wrap(
 		A3(
@@ -10630,6 +9764,14 @@ var $krisajenkins$remotedata$RemoteData$toMaybe = A2(
 	$elm$core$Basics$composeR,
 	$krisajenkins$remotedata$RemoteData$map($elm$core$Maybe$Just),
 	$krisajenkins$remotedata$RemoteData$withDefault($elm$core$Maybe$Nothing));
+var $elm$core$Result$toMaybe = function (result) {
+	if (result.$ === 'Ok') {
+		var v = result.a;
+		return $elm$core$Maybe$Just(v);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
 var $elm$json$Json$Decode$decodeString = _Json_runOnString;
 var $elm$http$Http$expectJson = function (decoder) {
 	return $elm$http$Http$expectStringResponse(
@@ -10679,6 +9821,1035 @@ var $lukewestby$elm_http_builder$HttpBuilder$withJsonBody = function (value) {
 	return $lukewestby$elm_http_builder$HttpBuilder$withBody(
 		$elm$http$Http$jsonBody(value));
 };
+var $author$project$Backend$Completion$Update$update = F4(
+	function (currentDate, backendUrl, msg, model) {
+		update:
+		while (true) {
+			switch (msg.$) {
+				case 'SetData':
+					var value = msg.a;
+					var modelUpdated = _Utils_update(
+						model,
+						{
+							completionData: $elm$core$Maybe$Just(
+								A2($elm$json$Json$Decode$decodeValue, $author$project$Backend$Completion$Decoder$decodeCompletionData, value))
+						});
+					var $temp$currentDate = currentDate,
+						$temp$backendUrl = backendUrl,
+						$temp$msg = $author$project$Backend$Completion$Model$SendSyncRequest(0),
+						$temp$model = modelUpdated;
+					currentDate = $temp$currentDate;
+					backendUrl = $temp$backendUrl;
+					msg = $temp$msg;
+					model = $temp$model;
+					continue update;
+				case 'SendSyncRequest':
+					var fromPersonId = msg.a;
+					var cmd = function () {
+						var geoParams = A2(
+							$elm$core$Maybe$withDefault,
+							_List_Nil,
+							A2(
+								$elm$core$Maybe$map,
+								A2(
+									$elm$core$Basics$composeR,
+									function ($) {
+										return $.params;
+									},
+									$author$project$Backend$Components$Encoder$encodeReportParams),
+								A2($elm$core$Maybe$andThen, $elm$core$Result$toMaybe, model.completionData)));
+						var params = _Utils_ap(
+							_List_fromArray(
+								[
+									_Utils_Tuple2(
+									'app_type',
+									$elm$json$Json$Encode$string('completion')),
+									_Utils_Tuple2(
+									'base_revision',
+									$elm$json$Json$Encode$string(
+										$elm$core$String$fromInt(fromPersonId)))
+								]),
+							geoParams);
+						return A2(
+							$lukewestby$elm_http_builder$HttpBuilder$send,
+							A2($elm$core$Basics$composeR, $krisajenkins$remotedata$RemoteData$fromResult, $author$project$Backend$Completion$Model$HandleSyncResponse),
+							A2(
+								$lukewestby$elm_http_builder$HttpBuilder$withExpectJson,
+								$author$project$Backend$Completion$Decoder$decodeSyncResponse(currentDate),
+								A2(
+									$lukewestby$elm_http_builder$HttpBuilder$withJsonBody,
+									$elm$json$Json$Encode$object(params),
+									$lukewestby$elm_http_builder$HttpBuilder$post(backendUrl + '/api/reports-data'))));
+					}();
+					return A4($author$project$Backend$Types$BackendReturn, model, cmd, $author$project$Error$Utils$noError, _List_Nil);
+				default:
+					var data = msg.a;
+					return A2(
+						$elm$core$Maybe$withDefault,
+						A4($author$project$Backend$Types$BackendReturn, model, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil),
+						A2(
+							$elm$core$Maybe$map,
+							function (response) {
+								var modelUpdated = A2(
+									$elm$core$Maybe$withDefault,
+									model,
+									A2(
+										$elm$core$Maybe$map,
+										function (completionData) {
+											var completionDataUpdated = _Utils_update(
+												completionData,
+												{
+													acuteIllnessData: _Utils_ap(completionData.acuteIllnessData, response.acuteIllnessData),
+													childScoreboardData: _Utils_ap(completionData.childScoreboardData, response.childScoreboardData),
+													hivData: _Utils_ap(completionData.hivData, response.hivData),
+													homeVisitData: _Utils_ap(completionData.homeVisitData, response.homeVisitData),
+													ncdData: _Utils_ap(completionData.ncdData, response.ncdData),
+													nutritionGroupData: _Utils_ap(completionData.nutritionGroupData, response.nutritionGroupData),
+													nutritionIndividualData: _Utils_ap(completionData.nutritionIndividualData, response.nutritionIndividualData),
+													prenatalData: _Utils_ap(completionData.prenatalData, response.prenatalData),
+													remainingForDownload: $elm$core$Maybe$Just(response.totalRemaining),
+													tuberculosisData: _Utils_ap(completionData.tuberculosisData, response.tuberculosisData),
+													wellChildData: _Utils_ap(completionData.wellChildData, response.wellChildData)
+												});
+											var _v1 = A2($elm$core$Debug$log, 'response.totalRemaining', response.totalRemaining);
+											return _Utils_update(
+												model,
+												{
+													completionData: $elm$core$Maybe$Just(
+														$elm$core$Result$Ok(completionDataUpdated))
+												});
+										},
+										A2($elm$core$Maybe$andThen, $elm$core$Result$toMaybe, model.completionData)));
+								return (!response.totalRemaining) ? A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil) : A4(
+									$author$project$Backend$Completion$Update$update,
+									currentDate,
+									backendUrl,
+									$author$project$Backend$Completion$Model$SendSyncRequest(response.lastIdSynced),
+									modelUpdated);
+							},
+							$krisajenkins$remotedata$RemoteData$toMaybe(data)));
+			}
+		}
+	});
+var $author$project$Backend$CompletionMenu$Model$MenuData = F3(
+	function (site, healthCenters, scope) {
+		return {healthCenters: healthCenters, scope: scope, site: site};
+	});
+var $author$project$Backend$Components$Model$HealthCenterData = F2(
+	function (id, name) {
+		return {id: id, name: name};
+	});
+var $author$project$Backend$Components$Decoder$decodeHealthCenterData = A3(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'name',
+	$elm$json$Json$Decode$string,
+	A3(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'id',
+		$author$project$Gizra$Json$decodeInt,
+		$elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$HealthCenterData)));
+var $author$project$Backend$Components$Model$ScopeFull = {$: 'ScopeFull'};
+var $author$project$Backend$Components$Model$ScopeHealthCenters = {$: 'ScopeHealthCenters'};
+var $author$project$Backend$Components$Decoder$decodeMenuScope = A2(
+	$elm$json$Json$Decode$andThen,
+	function (scope) {
+		switch (scope) {
+			case 'full':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$ScopeFull);
+			case 'health_centers':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$ScopeHealthCenters);
+			default:
+				return $elm$json$Json$Decode$fail(scope + ' is unknown MenuScope type');
+		}
+	},
+	$elm$json$Json$Decode$string);
+var $elm$json$Json$Decode$maybe = function (decoder) {
+	return $elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder),
+				$elm$json$Json$Decode$succeed($elm$core$Maybe$Nothing)
+			]));
+};
+var $author$project$Backend$CompletionMenu$Decoder$decodeMenuData = A4(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+	'scope',
+	$elm$json$Json$Decode$maybe($author$project$Backend$Components$Decoder$decodeMenuScope),
+	$elm$core$Maybe$Nothing,
+	A3(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'health_centers',
+		$elm$json$Json$Decode$list($author$project$Backend$Components$Decoder$decodeHealthCenterData),
+		A3(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'site',
+			$author$project$Backend$Decoder$decodeSite,
+			$elm$json$Json$Decode$succeed($author$project$Backend$CompletionMenu$Model$MenuData))));
+var $author$project$Backend$CompletionMenu$Update$update = F3(
+	function (currentDate, msg, model) {
+		var value = msg.a;
+		var modelUpdated = _Utils_update(
+			model,
+			{
+				completionMenuData: $elm$core$Maybe$Just(
+					A2($elm$json$Json$Decode$decodeValue, $author$project$Backend$CompletionMenu$Decoder$decodeMenuData, value))
+			});
+		return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
+	});
+var $author$project$Backend$Reports$Model$HandleSyncResponse = function (a) {
+	return {$: 'HandleSyncResponse', a: a};
+};
+var $author$project$Backend$Reports$Model$SendSyncRequest = function (a) {
+	return {$: 'SendSyncRequest', a: a};
+};
+var $author$project$Backend$Reports$Model$ReportsData = F7(
+	function (site, entityName, entityType, params, records, nutritionReportData, remainingForDownload) {
+		return {entityName: entityName, entityType: entityType, nutritionReportData: nutritionReportData, params: params, records: records, remainingForDownload: remainingForDownload, site: site};
+	});
+var $author$project$Backend$Reports$Model$BackendGeneratedNutritionReportTableDate = F8(
+	function (tableType, captions, stuntingModerate, stuntingSevere, wastingModerate, wastingSevere, underweightModerate, underweightSevere) {
+		return {captions: captions, stuntingModerate: stuntingModerate, stuntingSevere: stuntingSevere, tableType: tableType, underweightModerate: underweightModerate, underweightSevere: underweightSevere, wastingModerate: wastingModerate, wastingSevere: wastingSevere};
+	});
+var $author$project$Backend$Reports$Model$NutritionTableIncidenceMonthOneOrMore = {$: 'NutritionTableIncidenceMonthOneOrMore'};
+var $author$project$Backend$Reports$Model$NutritionTableIncidenceMonthTwoOrMore = {$: 'NutritionTableIncidenceMonthTwoOrMore'};
+var $author$project$Backend$Reports$Model$NutritionTableIncidenceQuarterOneOrMore = {$: 'NutritionTableIncidenceQuarterOneOrMore'};
+var $author$project$Backend$Reports$Model$NutritionTableIncidenceQuarterTwoOrMore = {$: 'NutritionTableIncidenceQuarterTwoOrMore'};
+var $author$project$Backend$Reports$Model$NutritionTableIncidenceYearOneOrMore = {$: 'NutritionTableIncidenceYearOneOrMore'};
+var $author$project$Backend$Reports$Model$NutritionTableIncidenceYearTwoOrMore = {$: 'NutritionTableIncidenceYearTwoOrMore'};
+var $author$project$Backend$Reports$Model$NutritionTablePrevalanceOneOrMore = {$: 'NutritionTablePrevalanceOneOrMore'};
+var $author$project$Backend$Reports$Model$NutritionTablePrevalanceTwoOrMore = {$: 'NutritionTablePrevalanceTwoOrMore'};
+var $author$project$Backend$Reports$Decoder$decodeNutritionReportTableType = A2(
+	$elm$json$Json$Decode$andThen,
+	function (tableType) {
+		switch (tableType) {
+			case 'prevalence-1':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$NutritionTablePrevalanceOneOrMore);
+			case 'prevalence-2':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$NutritionTablePrevalanceTwoOrMore);
+			case 'incidence-month-1':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$NutritionTableIncidenceMonthOneOrMore);
+			case 'incidence-month-2':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$NutritionTableIncidenceMonthTwoOrMore);
+			case 'incidence-quarter-1':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$NutritionTableIncidenceQuarterOneOrMore);
+			case 'incidence-quarter-2':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$NutritionTableIncidenceQuarterTwoOrMore);
+			case 'incidence-year-1':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$NutritionTableIncidenceYearOneOrMore);
+			case 'incidence-year-2':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$NutritionTableIncidenceYearTwoOrMore);
+			default:
+				return $elm$json$Json$Decode$fail(tableType + ' is unknown NutritionReportTableType type');
+		}
+	},
+	$elm$json$Json$Decode$string);
+var $author$project$Backend$Reports$Decoder$decodeBackendGeneratedNutritionReportTableDate = A3(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'underweight_severe',
+	$elm$json$Json$Decode$list($elm$json$Json$Decode$string),
+	A3(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'underweight_moderate',
+		$elm$json$Json$Decode$list($elm$json$Json$Decode$string),
+		A3(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'wasting_severe',
+			$elm$json$Json$Decode$list($elm$json$Json$Decode$string),
+			A3(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				'wasting_moderate',
+				$elm$json$Json$Decode$list($elm$json$Json$Decode$string),
+				A3(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+					'stunting_severe',
+					$elm$json$Json$Decode$list($elm$json$Json$Decode$string),
+					A3(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+						'stunting_moderate',
+						$elm$json$Json$Decode$list($elm$json$Json$Decode$string),
+						A3(
+							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+							'period',
+							$elm$json$Json$Decode$list($elm$json$Json$Decode$string),
+							A3(
+								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+								'type',
+								$author$project$Backend$Reports$Decoder$decodeNutritionReportTableType,
+								$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$BackendGeneratedNutritionReportTableDate)))))))));
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt = F4(
+	function (path, valDecoder, fallback, decoder) {
+		return A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+			A3(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder,
+				A2($elm$json$Json$Decode$at, path, $elm$json$Json$Decode$value),
+				valDecoder,
+				fallback),
+			decoder);
+	});
+var $author$project$Backend$Reports$Decoder$decodeReportsData = A2(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+	$elm$core$Maybe$Nothing,
+	A4(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
+		_List_fromArray(
+			['additional', 'nutrition_report_data']),
+		$elm$json$Json$Decode$nullable(
+			$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeBackendGeneratedNutritionReportTableDate)),
+		$elm$core$Maybe$Nothing,
+		A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+			_List_Nil,
+			A3(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				'params',
+				$author$project$Backend$Components$Decoder$decodeReportParams,
+				A3(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+					'entity_type',
+					$author$project$Backend$Components$Decoder$decodeSelectedEntity,
+					A3(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+						'entity_name',
+						$elm$json$Json$Decode$string,
+						A3(
+							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+							'site',
+							$author$project$Backend$Decoder$decodeSite,
+							$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$ReportsData))))))));
+var $author$project$Backend$Reports$Model$SyncResponse = F3(
+	function (records, totalRemaining, lastIdSynced) {
+		return {lastIdSynced: lastIdSynced, records: records, totalRemaining: totalRemaining};
+	});
+var $author$project$Backend$Reports$Model$Female = {$: 'Female'};
+var $author$project$Backend$Reports$Model$PatientData = function (id) {
+	return function (created) {
+		return function (birthDate) {
+			return function (gender) {
+				return function (acuteIllnessData) {
+					return function (prenatalData) {
+						return function (homeVisitData) {
+							return function (wellChildData) {
+								return function (childScorecardData) {
+									return function (ncdData) {
+										return function (hivData) {
+											return function (tuberculosisData) {
+												return function (individualNutritionData) {
+													return function (groupNutritionPmtctData) {
+														return function (groupNutritionFbfData) {
+															return function (groupNutritionSorwatheData) {
+																return function (groupNutritionChwData) {
+																	return function (groupNutritionAchiData) {
+																		return {acuteIllnessData: acuteIllnessData, birthDate: birthDate, childScorecardData: childScorecardData, created: created, gender: gender, groupNutritionAchiData: groupNutritionAchiData, groupNutritionChwData: groupNutritionChwData, groupNutritionFbfData: groupNutritionFbfData, groupNutritionPmtctData: groupNutritionPmtctData, groupNutritionSorwatheData: groupNutritionSorwatheData, hivData: hivData, homeVisitData: homeVisitData, id: id, individualNutritionData: individualNutritionData, ncdData: ncdData, prenatalData: prenatalData, tuberculosisData: tuberculosisData, wellChildData: wellChildData};
+																	};
+																};
+															};
+														};
+													};
+												};
+											};
+										};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
+var $author$project$Backend$Reports$Model$AcuteIllnessEncounterCHW = {$: 'AcuteIllnessEncounterCHW'};
+var $author$project$Backend$Reports$Model$AcuteIllnessEncounterData = F3(
+	function (startDate, encounterType, diagnosis) {
+		return {diagnosis: diagnosis, encounterType: encounterType, startDate: startDate};
+	});
+var $author$project$Backend$Reports$Model$DiagnosisCovid19Suspect = {$: 'DiagnosisCovid19Suspect'};
+var $author$project$Backend$Reports$Model$DiagnosisFeverOfUnknownOrigin = {$: 'DiagnosisFeverOfUnknownOrigin'};
+var $author$project$Backend$Reports$Model$DiagnosisGastrointestinalInfectionComplicated = {$: 'DiagnosisGastrointestinalInfectionComplicated'};
+var $author$project$Backend$Reports$Model$DiagnosisGastrointestinalInfectionUncomplicated = {$: 'DiagnosisGastrointestinalInfectionUncomplicated'};
+var $author$project$Backend$Reports$Model$DiagnosisLowRiskCovid19 = {$: 'DiagnosisLowRiskCovid19'};
+var $author$project$Backend$Reports$Model$DiagnosisMalariaComplicated = {$: 'DiagnosisMalariaComplicated'};
+var $author$project$Backend$Reports$Model$DiagnosisMalariaUncomplicated = {$: 'DiagnosisMalariaUncomplicated'};
+var $author$project$Backend$Reports$Model$DiagnosisMalariaUncomplicatedAndPregnant = {$: 'DiagnosisMalariaUncomplicatedAndPregnant'};
+var $author$project$Backend$Reports$Model$DiagnosisPneuminialCovid19 = {$: 'DiagnosisPneuminialCovid19'};
+var $author$project$Backend$Reports$Model$DiagnosisRespiratoryInfectionComplicated = {$: 'DiagnosisRespiratoryInfectionComplicated'};
+var $author$project$Backend$Reports$Model$DiagnosisRespiratoryInfectionUncomplicated = {$: 'DiagnosisRespiratoryInfectionUncomplicated'};
+var $author$project$Backend$Reports$Model$DiagnosisSevereCovid19 = {$: 'DiagnosisSevereCovid19'};
+var $author$project$Backend$Reports$Model$DiagnosisSimpleColdAndCough = {$: 'DiagnosisSimpleColdAndCough'};
+var $author$project$Backend$Reports$Model$DiagnosisTuberculosisSuspect = {$: 'DiagnosisTuberculosisSuspect'};
+var $author$project$Backend$Reports$Model$DiagnosisUndeterminedMoreEvaluationNeeded = {$: 'DiagnosisUndeterminedMoreEvaluationNeeded'};
+var $author$project$Backend$Reports$Decoder$acuteIllnessDiagnosisFromMapping = function (mapping) {
+	switch (mapping) {
+		case 'a':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisCovid19Suspect);
+		case 'b':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSevereCovid19);
+		case 'c':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPneuminialCovid19);
+		case 'd':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisLowRiskCovid19);
+		case 'e':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMalariaComplicated);
+		case 'f':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMalariaUncomplicated);
+		case 'g':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMalariaUncomplicatedAndPregnant);
+		case 'h':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisGastrointestinalInfectionComplicated);
+		case 'i':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisGastrointestinalInfectionUncomplicated);
+		case 'j':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSimpleColdAndCough);
+		case 'k':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisRespiratoryInfectionComplicated);
+		case 'l':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisRespiratoryInfectionUncomplicated);
+		case 'm':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisFeverOfUnknownOrigin);
+		case 'n':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisUndeterminedMoreEvaluationNeeded);
+		case 'o':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisTuberculosisSuspect);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Backend$Reports$Model$AcuteIllnessEncounterNurse = {$: 'AcuteIllnessEncounterNurse'};
+var $author$project$Backend$Reports$Model$AcuteIllnessEncounterNurseSubsequent = {$: 'AcuteIllnessEncounterNurseSubsequent'};
+var $author$project$Backend$Reports$Decoder$acuteIllnessEncounterTypeFromString = function (encounterType) {
+	switch (encounterType) {
+		case 'nurse-encounter':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$AcuteIllnessEncounterNurse);
+		case 'nurse-encounter-subsequent':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$AcuteIllnessEncounterNurseSubsequent);
+		case 'chw-encounter':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$AcuteIllnessEncounterCHW);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Backend$Reports$Decoder$decodeAcuteIllnessEncounterData = A2(
+	$elm$json$Json$Decode$andThen,
+	function (s) {
+		var _v0 = A2(
+			$elm$core$String$split,
+			'|',
+			$elm$core$String$trim(s));
+		if (((_v0.b && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
+			var first = _v0.a;
+			var _v1 = _v0.b;
+			var second = _v1.a;
+			var _v2 = _v1.b;
+			var third = _v2.a;
+			return A2(
+				$elm$core$Maybe$withDefault,
+				$elm$json$Json$Decode$fail('Failed to decode AcuteIllnessEncounterData'),
+				A2(
+					$elm$core$Maybe$map,
+					function (startDate) {
+						var encounterType = A2(
+							$elm$core$Maybe$withDefault,
+							$author$project$Backend$Reports$Model$AcuteIllnessEncounterCHW,
+							$author$project$Backend$Reports$Decoder$acuteIllnessEncounterTypeFromString(second));
+						var diagnosis = $author$project$Backend$Reports$Decoder$acuteIllnessDiagnosisFromMapping(third);
+						return $elm$json$Json$Decode$succeed(
+							A3($author$project$Backend$Reports$Model$AcuteIllnessEncounterData, startDate, encounterType, diagnosis));
+					},
+					$elm$core$Result$toMaybe(
+						$justinmimbs$date$Date$fromIsoString(first))));
+		} else {
+			return $elm$json$Json$Decode$fail('Failed to decode AcuteIllnessEncounterData');
+		}
+	},
+	$elm$json$Json$Decode$string);
+var $author$project$Backend$Reports$Model$Male = {$: 'Male'};
+var $author$project$Backend$Reports$Utils$genderFromString = function (s) {
+	switch (s) {
+		case 'female':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$Female);
+		case 'male':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$Male);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Backend$Reports$Decoder$decodeGender = A2(
+	$elm$json$Json$Decode$andThen,
+	function (gender) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			$elm$json$Json$Decode$fail(gender + ' is not a recognized Gender.'),
+			A2(
+				$elm$core$Maybe$map,
+				$elm$json$Json$Decode$succeed,
+				$author$project$Backend$Reports$Utils$genderFromString(gender)));
+	},
+	$elm$json$Json$Decode$string);
+var $author$project$Backend$Reports$Model$NutritionEncounterData = F2(
+	function (startDate, nutritionData) {
+		return {nutritionData: nutritionData, startDate: startDate};
+	});
+var $author$project$Backend$Reports$Model$NutritionData = F3(
+	function (stunting, wasting, underweight) {
+		return {stunting: stunting, underweight: underweight, wasting: wasting};
+	});
+var $elm$core$String$toFloat = _String_toFloat;
+var $author$project$Backend$Reports$Decoder$nutritionDataFromString = function (s) {
+	var _v0 = A2($elm$core$String$split, ',', s);
+	if (((_v0.b && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
+		var stunting = _v0.a;
+		var _v1 = _v0.b;
+		var underweight = _v1.a;
+		var _v2 = _v1.b;
+		var wasting = _v2.a;
+		return $elm$core$Maybe$Just(
+			A3(
+				$author$project$Backend$Reports$Model$NutritionData,
+				$elm$core$String$toFloat(stunting),
+				$elm$core$String$toFloat(wasting),
+				$elm$core$String$toFloat(underweight)));
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Backend$Reports$Decoder$decodeNutritionEncounterData = A2(
+	$elm$json$Json$Decode$andThen,
+	function (s) {
+		var _v0 = A2(
+			$elm$core$String$split,
+			' ',
+			$elm$core$String$trim(s));
+		_v0$2:
+		while (true) {
+			if (_v0.b) {
+				if (!_v0.b.b) {
+					var first = _v0.a;
+					return A2(
+						$elm$core$Maybe$withDefault,
+						$elm$json$Json$Decode$fail('Failed to decode NutritionEncounterData'),
+						A2(
+							$elm$core$Maybe$map,
+							function (startDate) {
+								return $elm$json$Json$Decode$succeed(
+									A2($author$project$Backend$Reports$Model$NutritionEncounterData, startDate, $elm$core$Maybe$Nothing));
+							},
+							$elm$core$Result$toMaybe(
+								$justinmimbs$date$Date$fromIsoString(first))));
+				} else {
+					if (!_v0.b.b.b) {
+						var first = _v0.a;
+						var _v1 = _v0.b;
+						var second = _v1.a;
+						return A2(
+							$elm$core$Maybe$withDefault,
+							$elm$json$Json$Decode$fail('Failed to decode NutritionEncounterData'),
+							A2(
+								$elm$core$Maybe$map,
+								function (startDate) {
+									return $elm$json$Json$Decode$succeed(
+										A2(
+											$author$project$Backend$Reports$Model$NutritionEncounterData,
+											startDate,
+											$author$project$Backend$Reports$Decoder$nutritionDataFromString(second)));
+								},
+								$elm$core$Result$toMaybe(
+									$justinmimbs$date$Date$fromIsoString(first))));
+					} else {
+						break _v0$2;
+					}
+				}
+			} else {
+				break _v0$2;
+			}
+		}
+		return $elm$json$Json$Decode$fail('Failed to decode NutritionEncounterData');
+	},
+	$elm$json$Json$Decode$string);
+var $author$project$Backend$Reports$Model$PrenatalParticipantData = F6(
+	function (created, eddDate, dateConcluded, outcome, deliveryLocation, encounters) {
+		return {created: created, dateConcluded: dateConcluded, deliveryLocation: deliveryLocation, eddDate: eddDate, encounters: encounters, outcome: outcome};
+	});
+var $author$project$Backend$Reports$Model$FacilityDelivery = {$: 'FacilityDelivery'};
+var $author$project$Backend$Reports$Model$HomeDelivery = {$: 'HomeDelivery'};
+var $author$project$Backend$Reports$Decoder$deliveryLocationFromString = function (location) {
+	switch (location) {
+		case 'f':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$FacilityDelivery);
+		case 'h':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$HomeDelivery);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Backend$Reports$Decoder$decodeDeliveryLocation = A2(
+	$elm$json$Json$Decode$andThen,
+	function (s) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			$elm$json$Json$Decode$fail(s + ' is not a recognized DeliveryLocation'),
+			A2(
+				$elm$core$Maybe$map,
+				$elm$json$Json$Decode$succeed,
+				$author$project$Backend$Reports$Decoder$deliveryLocationFromString(s)));
+	},
+	$elm$json$Json$Decode$string);
+var $author$project$Backend$Reports$Model$OutcomeAbortions = {$: 'OutcomeAbortions'};
+var $author$project$Backend$Reports$Model$OutcomeLiveAtTerm = {$: 'OutcomeLiveAtTerm'};
+var $author$project$Backend$Reports$Model$OutcomeLivePreTerm = {$: 'OutcomeLivePreTerm'};
+var $author$project$Backend$Reports$Model$OutcomeStillAtTerm = {$: 'OutcomeStillAtTerm'};
+var $author$project$Backend$Reports$Model$OutcomeStillPreTerm = {$: 'OutcomeStillPreTerm'};
+var $author$project$Backend$Reports$Decoder$pregnancyOutcomeFromString = function (outcome) {
+	switch (outcome) {
+		case 'a':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$OutcomeLiveAtTerm);
+		case 'b':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$OutcomeLivePreTerm);
+		case 'c':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$OutcomeStillAtTerm);
+		case 'd':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$OutcomeStillPreTerm);
+		case 'e':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$OutcomeAbortions);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Backend$Reports$Decoder$decodePregnancyOutcome = A2(
+	$elm$json$Json$Decode$andThen,
+	function (s) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			$elm$json$Json$Decode$fail(s + ' is not a recognized PregnancyOutcome'),
+			A2(
+				$elm$core$Maybe$map,
+				$elm$json$Json$Decode$succeed,
+				$author$project$Backend$Reports$Decoder$pregnancyOutcomeFromString(s)));
+	},
+	$elm$json$Json$Decode$string);
+var $author$project$Backend$Reports$Model$PrenatalEncounterData = F3(
+	function (startDate, encounterType, diagnoses) {
+		return {diagnoses: diagnoses, encounterType: encounterType, startDate: startDate};
+	});
+var $author$project$Backend$Reports$Model$DiagnosisCandidiasis = {$: 'DiagnosisCandidiasis'};
+var $author$project$Backend$Reports$Model$DiagnosisChronicHypertension = {$: 'DiagnosisChronicHypertension'};
+var $author$project$Backend$Reports$Model$DiagnosisDeepVeinThrombosis = {$: 'DiagnosisDeepVeinThrombosis'};
+var $author$project$Backend$Reports$Model$DiagnosisDepressionHighlyPossible = {$: 'DiagnosisDepressionHighlyPossible'};
+var $author$project$Backend$Reports$Model$DiagnosisDepressionNotLikely = {$: 'DiagnosisDepressionNotLikely'};
+var $author$project$Backend$Reports$Model$DiagnosisDepressionPossible = {$: 'DiagnosisDepressionPossible'};
+var $author$project$Backend$Reports$Model$DiagnosisDepressionProbable = {$: 'DiagnosisDepressionProbable'};
+var $author$project$Backend$Reports$Model$DiagnosisDiabetes = {$: 'DiagnosisDiabetes'};
+var $author$project$Backend$Reports$Model$DiagnosisDiscordantPartnership = {$: 'DiagnosisDiscordantPartnership'};
+var $author$project$Backend$Reports$Model$DiagnosisEclampsia = {$: 'DiagnosisEclampsia'};
+var $author$project$Backend$Reports$Model$DiagnosisEctopicPregnancy = {$: 'DiagnosisEctopicPregnancy'};
+var $author$project$Backend$Reports$Model$DiagnosisGestationalDiabetes = {$: 'DiagnosisGestationalDiabetes'};
+var $author$project$Backend$Reports$Model$DiagnosisGestationalHypertension = {$: 'DiagnosisGestationalHypertension'};
+var $author$project$Backend$Reports$Model$DiagnosisGonorrhea = {$: 'DiagnosisGonorrhea'};
+var $author$project$Backend$Reports$Model$DiagnosisHIV = {$: 'DiagnosisHIV'};
+var $author$project$Backend$Reports$Model$DiagnosisHIVDetectableViralLoad = {$: 'DiagnosisHIVDetectableViralLoad'};
+var $author$project$Backend$Reports$Model$DiagnosisHeartburn = {$: 'DiagnosisHeartburn'};
+var $author$project$Backend$Reports$Model$DiagnosisHepatitisB = {$: 'DiagnosisHepatitisB'};
+var $author$project$Backend$Reports$Model$DiagnosisHyperemesisGravidum = {$: 'DiagnosisHyperemesisGravidum'};
+var $author$project$Backend$Reports$Model$DiagnosisImminentDelivery = {$: 'DiagnosisImminentDelivery'};
+var $author$project$Backend$Reports$Model$DiagnosisInfection = {$: 'DiagnosisInfection'};
+var $author$project$Backend$Reports$Model$DiagnosisLaborAndDelivery = {$: 'DiagnosisLaborAndDelivery'};
+var $author$project$Backend$Reports$Model$DiagnosisMalaria = {$: 'DiagnosisMalaria'};
+var $author$project$Backend$Reports$Model$DiagnosisMalariaWithAnemia = {$: 'DiagnosisMalariaWithAnemia'};
+var $author$project$Backend$Reports$Model$DiagnosisMalariaWithSevereAnemia = {$: 'DiagnosisMalariaWithSevereAnemia'};
+var $author$project$Backend$Reports$Model$DiagnosisMaternalComplications = {$: 'DiagnosisMaternalComplications'};
+var $author$project$Backend$Reports$Model$DiagnosisMiscarriage = {$: 'DiagnosisMiscarriage'};
+var $author$project$Backend$Reports$Model$DiagnosisModerateAnemia = {$: 'DiagnosisModerateAnemia'};
+var $author$project$Backend$Reports$Model$DiagnosisModeratePreeclampsia = {$: 'DiagnosisModeratePreeclampsia'};
+var $author$project$Backend$Reports$Model$DiagnosisMolarPregnancy = {$: 'DiagnosisMolarPregnancy'};
+var $author$project$Backend$Reports$Model$DiagnosisNeurosyphilis = {$: 'DiagnosisNeurosyphilis'};
+var $author$project$Backend$Reports$Model$DiagnosisObstructedLabor = {$: 'DiagnosisObstructedLabor'};
+var $author$project$Backend$Reports$Model$DiagnosisOther = {$: 'DiagnosisOther'};
+var $author$project$Backend$Reports$Model$DiagnosisPPROM = {$: 'DiagnosisPPROM'};
+var $author$project$Backend$Reports$Model$DiagnosisPROM = {$: 'DiagnosisPROM'};
+var $author$project$Backend$Reports$Model$DiagnosisPelvicPainIntense = {$: 'DiagnosisPelvicPainIntense'};
+var $author$project$Backend$Reports$Model$DiagnosisPlacentaPrevia = {$: 'DiagnosisPlacentaPrevia'};
+var $author$project$Backend$Reports$Model$DiagnosisPlacentalAbruption = {$: 'DiagnosisPlacentalAbruption'};
+var $author$project$Backend$Reports$Model$DiagnosisPostAbortionSepsis = {$: 'DiagnosisPostAbortionSepsis'};
+var $author$project$Backend$Reports$Model$DiagnosisPostpartumAbdominalPain = {$: 'DiagnosisPostpartumAbdominalPain'};
+var $author$project$Backend$Reports$Model$DiagnosisPostpartumEarlyMastitisOrEngorgment = {$: 'DiagnosisPostpartumEarlyMastitisOrEngorgment'};
+var $author$project$Backend$Reports$Model$DiagnosisPostpartumExcessiveBleeding = {$: 'DiagnosisPostpartumExcessiveBleeding'};
+var $author$project$Backend$Reports$Model$DiagnosisPostpartumFatigue = {$: 'DiagnosisPostpartumFatigue'};
+var $author$project$Backend$Reports$Model$DiagnosisPostpartumFever = {$: 'DiagnosisPostpartumFever'};
+var $author$project$Backend$Reports$Model$DiagnosisPostpartumHeadache = {$: 'DiagnosisPostpartumHeadache'};
+var $author$project$Backend$Reports$Model$DiagnosisPostpartumInfection = {$: 'DiagnosisPostpartumInfection'};
+var $author$project$Backend$Reports$Model$DiagnosisPostpartumMastitis = {$: 'DiagnosisPostpartumMastitis'};
+var $author$project$Backend$Reports$Model$DiagnosisPostpartumPerinealPainOrDischarge = {$: 'DiagnosisPostpartumPerinealPainOrDischarge'};
+var $author$project$Backend$Reports$Model$DiagnosisPostpartumUrinaryIncontinence = {$: 'DiagnosisPostpartumUrinaryIncontinence'};
+var $author$project$Backend$Reports$Model$DiagnosisPyelonephritis = {$: 'DiagnosisPyelonephritis'};
+var $author$project$Backend$Reports$Model$DiagnosisRhesusNegative = {$: 'DiagnosisRhesusNegative'};
+var $author$project$Backend$Reports$Model$DiagnosisSevereAnemia = {$: 'DiagnosisSevereAnemia'};
+var $author$project$Backend$Reports$Model$DiagnosisSevereAnemiaWithComplications = {$: 'DiagnosisSevereAnemiaWithComplications'};
+var $author$project$Backend$Reports$Model$DiagnosisSeverePreeclampsia = {$: 'DiagnosisSeverePreeclampsia'};
+var $author$project$Backend$Reports$Model$DiagnosisSevereVomiting = {$: 'DiagnosisSevereVomiting'};
+var $author$project$Backend$Reports$Model$DiagnosisSuicideRisk = {$: 'DiagnosisSuicideRisk'};
+var $author$project$Backend$Reports$Model$DiagnosisSyphilis = {$: 'DiagnosisSyphilis'};
+var $author$project$Backend$Reports$Model$DiagnosisSyphilisWithComplications = {$: 'DiagnosisSyphilisWithComplications'};
+var $author$project$Backend$Reports$Model$DiagnosisTrichomonasOrBacterialVaginosis = {$: 'DiagnosisTrichomonasOrBacterialVaginosis'};
+var $author$project$Backend$Reports$Model$DiagnosisTuberculosis = {$: 'DiagnosisTuberculosis'};
+var $author$project$Backend$Reports$Model$DiagnosisUrinaryTractInfection = {$: 'DiagnosisUrinaryTractInfection'};
+var $author$project$Backend$Reports$Model$DiagnosisUterineRupture = {$: 'DiagnosisUterineRupture'};
+var $author$project$Backend$Reports$Decoder$prenatalDiagnosisFromMapping = function (s) {
+	switch (s) {
+		case 'a':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisChronicHypertension);
+		case 'b':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisGestationalHypertension);
+		case 'c':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisModeratePreeclampsia);
+		case 'd':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSeverePreeclampsia);
+		case 'g':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisEclampsia);
+		case 'h':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisHIV);
+		case 'i':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisHIVDetectableViralLoad);
+		case 'j':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisDiscordantPartnership);
+		case 'k':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSyphilis);
+		case 'l':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSyphilisWithComplications);
+		case 'm':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisNeurosyphilis);
+		case 'n':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisHepatitisB);
+		case 'o':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMalaria);
+		case 'p':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMalariaWithAnemia);
+		case 'q':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMalariaWithSevereAnemia);
+		case 'r':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisModerateAnemia);
+		case 's':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSevereAnemia);
+		case 't':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSevereAnemiaWithComplications);
+		case 'u':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMiscarriage);
+		case 'v':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMolarPregnancy);
+		case 'w':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPlacentaPrevia);
+		case 'x':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPlacentalAbruption);
+		case 'y':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisUterineRupture);
+		case 'z':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisObstructedLabor);
+		case 'a1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostAbortionSepsis);
+		case 'b1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisEctopicPregnancy);
+		case 'c1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPROM);
+		case 'd1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPPROM);
+		case 'e1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisHyperemesisGravidum);
+		case 'f1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSevereVomiting);
+		case 'g1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMaternalComplications);
+		case 'h1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisInfection);
+		case 'i1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisImminentDelivery);
+		case 'j1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisLaborAndDelivery);
+		case 'k1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisHeartburn);
+		case 'l1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisDeepVeinThrombosis);
+		case 'm1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPelvicPainIntense);
+		case 'n1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisUrinaryTractInfection);
+		case 'o1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPyelonephritis);
+		case 'p1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisCandidiasis);
+		case 'q1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisGonorrhea);
+		case 'r1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisTrichomonasOrBacterialVaginosis);
+		case 's1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisTuberculosis);
+		case 't1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisDiabetes);
+		case 'u1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisGestationalDiabetes);
+		case 'v1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisRhesusNegative);
+		case 'w1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisDepressionNotLikely);
+		case 'x1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisDepressionPossible);
+		case 'y1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisDepressionHighlyPossible);
+		case 'z1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisDepressionProbable);
+		case 'a2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSuicideRisk);
+		case 'b2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisOther);
+		case 'c2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumAbdominalPain);
+		case 'd2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumUrinaryIncontinence);
+		case 'e2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumHeadache);
+		case 'f2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumFatigue);
+		case 'g2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumFever);
+		case 'h2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumPerinealPainOrDischarge);
+		case 'i2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumInfection);
+		case 'j2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumExcessiveBleeding);
+		case 'k2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumEarlyMastitisOrEngorgment);
+		case 'l2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumMastitis);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Backend$Reports$Model$ChwFirstEncounter = {$: 'ChwFirstEncounter'};
+var $author$project$Backend$Reports$Model$ChwPostpartumEncounter = {$: 'ChwPostpartumEncounter'};
+var $author$project$Backend$Reports$Model$ChwSecondEncounter = {$: 'ChwSecondEncounter'};
+var $author$project$Backend$Reports$Model$ChwThirdPlusEncounter = {$: 'ChwThirdPlusEncounter'};
+var $author$project$Backend$Reports$Model$NurseEncounter = {$: 'NurseEncounter'};
+var $author$project$Backend$Reports$Model$NursePostpartumEncounter = {$: 'NursePostpartumEncounter'};
+var $author$project$Backend$Reports$Decoder$prenatalEncounterTypeFromString = function (encounterType) {
+	switch (encounterType) {
+		case 'nurse':
+			return $author$project$Backend$Reports$Model$NurseEncounter;
+		case 'nurse-postpartum':
+			return $author$project$Backend$Reports$Model$NursePostpartumEncounter;
+		case 'chw-1':
+			return $author$project$Backend$Reports$Model$ChwFirstEncounter;
+		case 'chw-2':
+			return $author$project$Backend$Reports$Model$ChwSecondEncounter;
+		case 'chw-3':
+			return $author$project$Backend$Reports$Model$ChwThirdPlusEncounter;
+		case 'chw-postpartum':
+			return $author$project$Backend$Reports$Model$ChwPostpartumEncounter;
+		default:
+			return $author$project$Backend$Reports$Model$NurseEncounter;
+	}
+};
+var $author$project$Backend$Reports$Decoder$decodePrenatalEncounterData = A2(
+	$elm$json$Json$Decode$andThen,
+	function (s) {
+		var _v0 = A2(
+			$elm$core$String$split,
+			'|',
+			$elm$core$String$trim(s));
+		if (((_v0.b && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
+			var first = _v0.a;
+			var _v1 = _v0.b;
+			var second = _v1.a;
+			var _v2 = _v1.b;
+			var third = _v2.a;
+			return A2(
+				$elm$core$Maybe$withDefault,
+				$elm$json$Json$Decode$fail('Failed to decode PrenatalEncounterData'),
+				A2(
+					$elm$core$Maybe$map,
+					function (startDate) {
+						var encounterType = $author$project$Backend$Reports$Decoder$prenatalEncounterTypeFromString(second);
+						var diagnoses = $elm$core$String$isEmpty(third) ? _List_Nil : $elm_community$maybe_extra$Maybe$Extra$values(
+							A2(
+								$elm$core$List$map,
+								$author$project$Backend$Reports$Decoder$prenatalDiagnosisFromMapping,
+								A2($elm$core$String$split, ',', third)));
+						return $elm$json$Json$Decode$succeed(
+							A3($author$project$Backend$Reports$Model$PrenatalEncounterData, startDate, encounterType, diagnoses));
+					},
+					$elm$core$Result$toMaybe(
+						$justinmimbs$date$Date$fromIsoString(first))));
+		} else {
+			return $elm$json$Json$Decode$fail('Failed to decode PrenatalEncounterData');
+		}
+	},
+	$elm$json$Json$Decode$string);
+var $author$project$Backend$Reports$Decoder$decodePrenatalParticipantData = A3(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'encounters',
+	$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodePrenatalEncounterData),
+	A4(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+		'ol',
+		$elm$json$Json$Decode$nullable($author$project$Backend$Reports$Decoder$decodeDeliveryLocation),
+		$elm$core$Maybe$Nothing,
+		A4(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+			'o',
+			$elm$json$Json$Decode$nullable($author$project$Backend$Reports$Decoder$decodePregnancyOutcome),
+			$elm$core$Maybe$Nothing,
+			A4(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+				'dc',
+				$elm$json$Json$Decode$nullable($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+				$elm$core$Maybe$Nothing,
+				A4(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+					'edd',
+					$elm$json$Json$Decode$nullable($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+					$elm$core$Maybe$Nothing,
+					A3(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+						'created',
+						$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+						$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$PrenatalParticipantData)))))));
+var $author$project$Backend$Reports$Decoder$decodePatientData = A4(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
+	_List_fromArray(
+		['group_nutrition', 'achi']),
+	$elm$json$Json$Decode$nullable(
+		$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionEncounterData)),
+	$elm$core$Maybe$Nothing,
+	A4(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
+		_List_fromArray(
+			['group_nutrition', 'chw']),
+		$elm$json$Json$Decode$nullable(
+			$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionEncounterData)),
+		$elm$core$Maybe$Nothing,
+		A4(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
+			_List_fromArray(
+				['group_nutrition', 'sorwathe']),
+			$elm$json$Json$Decode$nullable(
+				$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionEncounterData)),
+			$elm$core$Maybe$Nothing,
+			A4(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
+				_List_fromArray(
+					['group_nutrition', 'fbf']),
+				$elm$json$Json$Decode$nullable(
+					$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionEncounterData)),
+				$elm$core$Maybe$Nothing,
+				A4(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
+					_List_fromArray(
+						['group_nutrition', 'pmtct']),
+					$elm$json$Json$Decode$nullable(
+						$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionEncounterData)),
+					$elm$core$Maybe$Nothing,
+					A4(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
+						_List_fromArray(
+							['individual', 'nutrition']),
+						$elm$json$Json$Decode$nullable(
+							$elm$json$Json$Decode$list(
+								$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionEncounterData))),
+						$elm$core$Maybe$Nothing,
+						A4(
+							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
+							_List_fromArray(
+								['individual', 'tuberculosis']),
+							$elm$json$Json$Decode$nullable(
+								$elm$json$Json$Decode$list(
+									$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD))),
+							$elm$core$Maybe$Nothing,
+							A4(
+								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
+								_List_fromArray(
+									['individual', 'hiv']),
+								$elm$json$Json$Decode$nullable(
+									$elm$json$Json$Decode$list(
+										$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD))),
+								$elm$core$Maybe$Nothing,
+								A4(
+									$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
+									_List_fromArray(
+										['individual', 'ncd']),
+									$elm$json$Json$Decode$nullable(
+										$elm$json$Json$Decode$list(
+											$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD))),
+									$elm$core$Maybe$Nothing,
+									A4(
+										$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
+										_List_fromArray(
+											['individual', 'child-scoreboard']),
+										$elm$json$Json$Decode$nullable(
+											$elm$json$Json$Decode$list(
+												$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD))),
+										$elm$core$Maybe$Nothing,
+										A4(
+											$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
+											_List_fromArray(
+												['individual', 'well-child']),
+											$elm$json$Json$Decode$nullable(
+												$elm$json$Json$Decode$list(
+													$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionEncounterData))),
+											$elm$core$Maybe$Nothing,
+											A4(
+												$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
+												_List_fromArray(
+													['individual', 'home-visit']),
+												$elm$json$Json$Decode$nullable(
+													$elm$json$Json$Decode$list(
+														$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD))),
+												$elm$core$Maybe$Nothing,
+												A4(
+													$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
+													_List_fromArray(
+														['individual', 'antenatal']),
+													$elm$json$Json$Decode$nullable(
+														$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodePrenatalParticipantData)),
+													$elm$core$Maybe$Nothing,
+													A4(
+														$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
+														_List_fromArray(
+															['individual', 'acute-illness']),
+														$elm$json$Json$Decode$nullable(
+															$elm$json$Json$Decode$list(
+																$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeAcuteIllnessEncounterData))),
+														$elm$core$Maybe$Nothing,
+														A3(
+															$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+															'gender',
+															A2($author$project$Backend$Decoder$decodeWithFallback, $author$project$Backend$Reports$Model$Female, $author$project$Backend$Reports$Decoder$decodeGender),
+															A3(
+																$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+																'birth_date',
+																$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+																A3(
+																	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+																	'created',
+																	$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+																	A3(
+																		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+																		'id',
+																		$author$project$Gizra$Json$decodeInt,
+																		$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$PatientData)))))))))))))))))));
+var $author$project$Backend$Reports$Decoder$decodeSyncResponse = A2(
+	$elm$json$Json$Decode$field,
+	'data',
+	A3(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'last',
+		$author$project$Gizra$Json$decodeInt,
+		A3(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'total_remaining',
+			$author$project$Gizra$Json$decodeInt,
+			A3(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				'batch',
+				$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodePatientData),
+				$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$SyncResponse)))));
 var $author$project$Backend$Reports$Update$update = F4(
 	function (currentDate, backendUrl, msg, model) {
 		update:
@@ -11603,7 +11774,7 @@ var $author$project$Backend$Update$updateBackend = F4(
 					subMsg,
 					F2(
 						function (subMsg_, model_) {
-							return A3($author$project$Backend$Completion$Update$update, currentDate, subMsg_, model_);
+							return A4($author$project$Backend$Completion$Update$update, currentDate, backendUrl, subMsg_, model_);
 						}),
 					function (subCmds) {
 						return $author$project$Backend$Model$MsgCompletion(subCmds);
@@ -17149,13 +17320,30 @@ var $author$project$Pages$Completion$View$viewCompletionData = F5(
 	function (language, currentDate, themePath, data, model) {
 		var topBar = function () {
 			var scopeLabel = function () {
-				var _v2 = data.entityType;
-				if (_v2.$ === 'EntityGlobal') {
-					return A2($author$project$Translate$translate, language, $author$project$Translate$Global);
-				} else {
-					return data.entityName;
+				var _v3 = data.entityType;
+				switch (_v3.$) {
+					case 'EntityGlobal':
+						return A2($author$project$Translate$translate, language, $author$project$Translate$Global);
+					case 'EntityHealthCenter':
+						return data.entityName;
+					default:
+						return A2($author$project$Translate$translate, language, $author$project$Translate$EmptyString);
 				}
 			}();
+			var _v2 = A2(
+				$elm$core$Maybe$withDefault,
+				_Utils_Tuple2('PENDING', '0 / 0'),
+				A2(
+					$elm$core$Maybe$map,
+					function (remainingForDownload) {
+						var totalDownloaded = (((((((($elm$core$List$length(data.acuteIllnessData) + $elm$core$List$length(data.childScoreboardData)) + $elm$core$List$length(data.hivData)) + $elm$core$List$length(data.homeVisitData)) + $elm$core$List$length(data.ncdData)) + $elm$core$List$length(data.nutritionIndividualData)) + $elm$core$List$length(data.nutritionGroupData)) + $elm$core$List$length(data.prenatalData)) + $elm$core$List$length(data.tuberculosisData)) + $elm$core$List$length(data.wellChildData);
+						return _Utils_Tuple2(
+							(!remainingForDownload) ? 'COMPLETED' : 'IN PROCESS',
+							$elm$core$String$fromInt(totalDownloaded) + (' / ' + $elm$core$String$fromInt(totalDownloaded + remainingForDownload)));
+					},
+					data.remainingForDownload));
+			var syncStatus = _v2.a;
+			var progress = _v2.b;
 			return A2(
 				$elm$html$Html$div,
 				_List_fromArray(
@@ -17200,6 +17388,32 @@ var $author$project$Pages$Completion$View$viewCompletionData = F5(
 							[
 								$elm$html$Html$text(
 								A2($author$project$Translate$translate, language, $author$project$Translate$Scope) + (': ' + scopeLabel))
+							])),
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('download-status')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Download status: ' + syncStatus)
+									])),
+								A2(
+								$elm$html$Html$div,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('progress')
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('(' + (progress + ')'))
+									]))
 							]))
 					]));
 		}();

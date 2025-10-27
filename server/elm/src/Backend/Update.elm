@@ -53,6 +53,6 @@ updateBackend currentDate backendUrl msg model =
         MsgCompletion subMsg ->
             updateSubModel
                 subMsg
-                (\subMsg_ model_ -> Backend.Completion.Update.update currentDate subMsg_ model_)
+                (\subMsg_ model_ -> Backend.Completion.Update.update currentDate backendUrl subMsg_ model_)
                 (\subCmds -> MsgCompletion subCmds)
                 model

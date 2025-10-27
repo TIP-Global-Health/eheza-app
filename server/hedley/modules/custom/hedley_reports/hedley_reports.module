@@ -1135,59 +1135,6 @@ function hedley_reports_generate_results_data_for_restful($from_nid, $batch, $pr
 }
 
 /**
- * Loads data in scope, stored at Report Data node.
- *
- * @param string $report_variant
- *   Type of report to load.
- * @param string $scope
- *   Scope of data to load.
- * @param string|null $province
- *   Province name.
- * @param string|null $district
- *   District name.
- * @param int|null $health_center
- *   Health center ID.
- *
- * @return array
- *   Stored data.
- *
- * @todo: remove ?
- */
-function hedley_reports_load_results_data($report_variant, $scope, $province = NULL, $district = NULL, $health_center = NULL) {
-  $node_id = hedley_reports_load_results_data_node($report_variant, $scope, $province, $district, $health_center);
-  if (!$node_id) {
-    return [];
-  }
-
-  $node = node_load($node_id);
-  $file = file_load($node->field_data_file[LANGUAGE_NONE][0]['fid']);
-  if (!$file) {
-    return [];
-  }
-
-  // Get the real path of the file.
-  $file_path = drupal_realpath($file->uri);
-  // Open the gzipped file and read its contents.
-  $gz_fp = gzopen($file_path, 'r');
-  if (!$gz_fp) {
-    return [];
-  }
-
-  $data = '';
-  while (!gzeof($gz_fp)) {
-    $data .= gzread($gz_fp, 4096);
-  }
-  gzclose($gz_fp);
-
-  $additional_data = '';
-  if (!empty($node->field_reports_data)) {
-    $additional_data = $node->field_reports_data[LANGUAGE_NONE][0]['value'];
-  }
-
-  return [json_decode($data), json_decode($additional_data)];
-}
-
-/**
  * Loads additional data in scope, stored on Report Data node.
  *
  * @param string $report_variant
