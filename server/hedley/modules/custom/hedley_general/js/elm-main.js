@@ -10768,7 +10768,7 @@ var $author$project$Backend$Reports$Update$update = F4(
 												});
 										},
 										A2($elm$core$Maybe$andThen, $elm$core$Result$toMaybe, model.reportsData)));
-								return A4(
+								return (!response.totalRemaining) ? A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil) : A4(
 									$author$project$Backend$Reports$Update$update,
 									currentDate,
 									backendUrl,
@@ -11487,7 +11487,7 @@ var $author$project$Backend$Scoreboard$Update$update = F4(
 												});
 										},
 										A2($elm$core$Maybe$andThen, $elm$core$Result$toMaybe, model.scoreboardData)));
-								return A4(
+								return (!response.totalRemaining) ? A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil) : A4(
 									$author$project$Backend$Scoreboard$Update$update,
 									currentDate,
 									backendUrl,

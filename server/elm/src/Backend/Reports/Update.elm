@@ -65,6 +65,10 @@ update currentDate backendUrl msg model =
                                         )
                                     |> Maybe.withDefault model
                         in
-                        update currentDate backendUrl (SendSyncRequest response.lastIdSynced) modelUpdated
+                        if response.totalRemaining == 0 then
+                            BackendReturn modelUpdated Cmd.none noError []
+
+                        else
+                            update currentDate backendUrl (SendSyncRequest response.lastIdSynced) modelUpdated
                     )
                 |> Maybe.withDefault (BackendReturn model Cmd.none noError [])
