@@ -10754,14 +10754,12 @@ var $author$project$Backend$Reports$Update$update = F4(
 									A2(
 										$elm$core$Maybe$map,
 										function (reportsData) {
-											var recordsUpdated = _Utils_ap(reportsData.records, response.records);
 											var reportsDataUpdated = _Utils_update(
 												reportsData,
 												{
-													records: recordsUpdated,
+													records: _Utils_ap(reportsData.records, response.records),
 													remainingForDownload: $elm$core$Maybe$Just(response.totalRemaining)
 												});
-											var totalRecordsUpdated = $elm$core$List$length(recordsUpdated);
 											return _Utils_update(
 												model,
 												{
@@ -11475,14 +11473,12 @@ var $author$project$Backend$Scoreboard$Update$update = F4(
 									A2(
 										$elm$core$Maybe$map,
 										function (scoreboardData) {
-											var recordsUpdated = _Utils_ap(scoreboardData.records, response.records);
 											var scoreboardDataUpdated = _Utils_update(
 												scoreboardData,
 												{
-													records: recordsUpdated,
+													records: _Utils_ap(scoreboardData.records, response.records),
 													remainingForDownload: $elm$core$Maybe$Just(response.totalRemaining)
 												});
-											var totalRecordsUpdated = $elm$core$List$length(recordsUpdated);
 											return _Utils_update(
 												model,
 												{
@@ -17666,6 +17662,19 @@ var $author$project$Pages$Reports$Utils$reportTypeToString = function (reportTyp
 			return 'prenatal-diagnoses';
 	}
 };
+var $author$project$Pages$Components$Utils$syncStatusAndProgress = function (records) {
+	return A2(
+		$elm$core$Basics$composeR,
+		$elm$core$Maybe$map(
+			function (remainingForDownload) {
+				var totalDownloaded = $elm$core$List$length(records);
+				return _Utils_Tuple2(
+					(!remainingForDownload) ? 'COMPLETED' : 'IN PROCESS',
+					$elm$core$String$fromInt(totalDownloaded) + (' / ' + $elm$core$String$fromInt(totalDownloaded + remainingForDownload)));
+			}),
+		$elm$core$Maybe$withDefault(
+			_Utils_Tuple2('PENDING', '0 / 0')));
+};
 var $author$project$Translate$AcuteIllnessDiagnosis = function (a) {
 	return {$: 'AcuteIllnessDiagnosis', a: a};
 };
@@ -20142,18 +20151,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 			}
 		}();
 		var topBar = function () {
-			var _v2 = A2(
-				$elm$core$Maybe$withDefault,
-				_Utils_Tuple2('PENDING', '0 / 0'),
-				A2(
-					$elm$core$Maybe$map,
-					function (remainingForDownload) {
-						var totalDownloaded = $elm$core$List$length(data.records);
-						return _Utils_Tuple2(
-							(!remainingForDownload) ? 'COMPLETED' : 'IN PROCESS',
-							$elm$core$String$fromInt(totalDownloaded) + (' / ' + $elm$core$String$fromInt(totalDownloaded + remainingForDownload)));
-					},
-					data.remainingForDownload));
+			var _v2 = A2($author$project$Pages$Components$Utils$syncStatusAndProgress, data.records, data.remainingForDownload);
 			var syncStatus = _v2.a;
 			var progress = _v2.b;
 			return A2(
@@ -41588,6 +41586,21 @@ var $author$project$Pages$Scoreboard$View$viewScoreboardData = F4(
 						]))
 				]));
 		var monthsGap = A2($author$project$Pages$Scoreboard$View$generateMonthsGap, currentDate, model.yearSelectorGap);
+		var downloadStatus = function () {
+			var _v0 = A2($author$project$Pages$Components$Utils$syncStatusAndProgress, data.records, data.remainingForDownload);
+			var syncStatus = _v0.a;
+			var progress = _v0.b;
+			return A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('download-status')
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('Download status: ' + (syncStatus + ('     (' + (progress + ')'))))
+					]));
+		}();
 		var childrenUnder2 = A3(
 			$elm$core$List$foldl,
 			F2(
@@ -41624,6 +41637,7 @@ var $author$project$Pages$Scoreboard$View$viewScoreboardData = F4(
 				]),
 			_List_fromArray(
 				[
+					downloadStatus,
 					topBar,
 					A2($author$project$Pages$Scoreboard$View$viewAggregatedChildScoreboardPane, language, data),
 					A7($author$project$Pages$Scoreboard$View$viewDemographicsPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),

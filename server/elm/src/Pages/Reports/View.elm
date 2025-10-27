@@ -27,6 +27,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
+import Pages.Components.Utils exposing (syncStatusAndProgress)
 import Pages.Components.View exposing (viewCustomCells, viewMetricsResultsTable, viewStandardCells, viewStandardRow)
 import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Reports.Model exposing (..)
@@ -66,22 +67,7 @@ viewReportsData language currentDate themePath data model =
         topBar =
             let
                 ( syncStatus, progress ) =
-                    Maybe.map
-                        (\remainingForDownload ->
-                            let
-                                totalDownloaded =
-                                    List.length data.records
-                            in
-                            ( if remainingForDownload == 0 then
-                                "COMPLETED"
-
-                              else
-                                "IN PROCESS"
-                            , String.fromInt totalDownloaded ++ " / " ++ String.fromInt (totalDownloaded + remainingForDownload)
-                            )
-                        )
-                        data.remainingForDownload
-                        |> Maybe.withDefault ( "PENDING", "0 / 0" )
+                    syncStatusAndProgress data.records data.remainingForDownload
             in
             div [ class "top-bar" ]
                 [ div [ class "new-selection" ]

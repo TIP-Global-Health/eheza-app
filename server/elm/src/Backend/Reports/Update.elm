@@ -56,13 +56,10 @@ update currentDate backendUrl msg model =
                                         (\reportsData ->
                                             let
                                                 reportsDataUpdated =
-                                                    { reportsData | records = recordsUpdated, remainingForDownload = Just response.totalRemaining }
-
-                                                recordsUpdated =
-                                                    reportsData.records ++ response.records
-
-                                                totalRecordsUpdated =
-                                                    List.length recordsUpdated
+                                                    { reportsData
+                                                        | records = reportsData.records ++ response.records
+                                                        , remainingForDownload = Just response.totalRemaining
+                                                    }
                                             in
                                             { model | reportsData = Just (Ok reportsDataUpdated) }
                                         )
