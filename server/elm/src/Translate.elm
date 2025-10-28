@@ -28,7 +28,6 @@ import Backend.Reports.Model
         , PregnancyOutcome(..)
         , PrenatalDiagnosis(..)
         )
-import Backend.Scoreboard.Model
 import Date
 import Pages.Completion.Model
 import Pages.Components.Types exposing (PopulationSelectionOption(..))
@@ -238,7 +237,6 @@ type TranslationId
     | Tuberculosis
     | TuberculosisActivity TuberculosisActivity
     | Vitals
-    | ViewMode
     | Village
     | UnderweightModerate
     | UnderweightSevere
@@ -2663,12 +2661,6 @@ translationSet transId =
 
                 TuberculosisTreatmentReview ->
                     translationSet TreatmentReview
-
-        ViewMode ->
-            { english = "View Mode"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
-            }
 
         Vitals ->
             { english = "Vitals"

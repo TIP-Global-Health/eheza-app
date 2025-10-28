@@ -11,10 +11,8 @@ import Backend.Completion.Model
         , NutritionChildActivity(..)
         , NutritionMotherActivity(..)
         , PrenatalActivity(..)
-        , TakenBy(..)
         , TuberculosisActivity(..)
         , WellChildActivity(..)
-        , WellChildEncounterType(..)
         )
 import Pages.Completion.Model exposing (ReportType(..))
 

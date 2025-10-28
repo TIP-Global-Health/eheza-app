@@ -6082,8 +6082,6 @@ var $author$project$Backend$Completion$Utils$takenByFromString = function (value
 var $author$project$Pages$Completion$Update$update = F4(
 	function (currentDate, modelBackend, msg, model) {
 		switch (msg.$) {
-			case 'NoOp':
-				return A4($author$project$App$Model$PagesReturn, model, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
 			case 'SetReportType':
 				var value = msg.a;
 				return A4(
@@ -9034,7 +9032,6 @@ var $author$project$Backend$Components$Encoder$encodeReportParams = function (pa
 				params.healthCenter)
 			]));
 };
-var $elm$core$Debug$log = _Debug_log;
 var $elm$json$Json$Encode$object = function (pairs) {
 	return _Json_wrap(
 		A3(
@@ -9911,7 +9908,6 @@ var $author$project$Backend$Completion$Update$update = F4(
 													tuberculosisData: _Utils_ap(completionData.tuberculosisData, response.tuberculosisData),
 													wellChildData: _Utils_ap(completionData.wellChildData, response.wellChildData)
 												});
-											var _v1 = A2($elm$core$Debug$log, 'response.totalRemaining', response.totalRemaining);
 											return _Utils_update(
 												model,
 												{
@@ -14016,8 +14012,6 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 				}
-			case 'ViewMode':
-				return {english: 'View Mode', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Vitals':
 				return {english: 'Vitals', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Village':
@@ -16983,13 +16977,12 @@ var $author$project$Pages$Completion$View$generateNutritionGroupReportData = F2(
 					});
 			});
 		var motherActivityRows = A3(generateActivityRows, $author$project$Translate$NutritionMotherActivity, motherData, $author$project$Pages$Completion$Utils$allNutritionMotherGroupActivities);
-		var childrenData = $elm$core$List$concat(
-			A2(
-				$elm$core$List$map,
-				function ($) {
-					return $.childrenData;
-				},
-				records));
+		var childrenData = A2(
+			$elm$core$List$concatMap,
+			function ($) {
+				return $.childrenData;
+			},
+			records);
 		var childrenActivityRows = A3(generateActivityRows, $author$project$Translate$NutritionChildActivity, childrenData, $author$project$Pages$Completion$Utils$allNutritionChildGroupActivities);
 		return {
 			captions: $author$project$Pages$Completion$View$generateCaptionsList(language),
@@ -17430,32 +17423,36 @@ var $author$project$Pages$Completion$View$viewCompletionData = F5(
 							[$author$project$Pages$Completion$Model$ReportChildScoreboard, $author$project$Pages$Completion$Model$ReportHIV, $author$project$Pages$Completion$Model$ReportHomeVisit, $author$project$Pages$Completion$Model$ReportNewbornExam, $author$project$Pages$Completion$Model$ReportTuberculosis, $author$project$Pages$Completion$Model$ReportNCD]))) {
 						return $author$project$Gizra$Html$emptyNode;
 					} else {
-						var options = A2(
-							$elm$core$List$map,
-							function (option) {
-								return _Utils_Tuple2(
-									A2(
-										$author$project$Translate$translate,
-										language,
-										$author$project$Translate$TakenBy(option)),
-									option);
-							},
-							_List_fromArray(
-								[$author$project$Backend$Completion$Model$TakenByNurse, $author$project$Backend$Completion$Model$TakenByCHW]));
-						return $elm_community$maybe_extra$Maybe$Extra$isJust(model.reportType) ? A4(
-							$author$project$Pages$Utils$wrapSelectListInput,
-							language,
-							$author$project$Translate$TakenByLabel,
-							false,
-							A6(
-								$author$project$Pages$Utils$viewCustomSelectListInput,
-								model.takenBy,
-								options,
-								$author$project$Backend$Completion$Utils$takenByToString,
-								$author$project$Pages$Completion$Model$SetTakenBy,
-								'select-input',
-								$elm$core$Maybe$Just(
-									A2($author$project$Translate$translate, language, $author$project$Translate$Any)))) : $author$project$Gizra$Html$emptyNode;
+						if ($elm_community$maybe_extra$Maybe$Extra$isJust(model.reportType)) {
+							var options = A2(
+								$elm$core$List$map,
+								function (option) {
+									return _Utils_Tuple2(
+										A2(
+											$author$project$Translate$translate,
+											language,
+											$author$project$Translate$TakenBy(option)),
+										option);
+								},
+								_List_fromArray(
+									[$author$project$Backend$Completion$Model$TakenByNurse, $author$project$Backend$Completion$Model$TakenByCHW]));
+							return A4(
+								$author$project$Pages$Utils$wrapSelectListInput,
+								language,
+								$author$project$Translate$TakenByLabel,
+								false,
+								A6(
+									$author$project$Pages$Utils$viewCustomSelectListInput,
+									model.takenBy,
+									options,
+									$author$project$Backend$Completion$Utils$takenByToString,
+									$author$project$Pages$Completion$Model$SetTakenBy,
+									'select-input',
+									$elm$core$Maybe$Just(
+										A2($author$project$Translate$translate, language, $author$project$Translate$Any))));
+						} else {
+							return $author$project$Gizra$Html$emptyNode;
+						}
 					}
 				},
 				model.reportType));
@@ -20111,39 +20108,39 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 		var activeNurseVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForActive.nurse);
 		var activeNurseVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForActive.nurse);
 		var activeNurseVisitsTotal = (((activeNurseVisits1 + activeNurseVisits2) + activeNurseVisits3) + activeNurseVisits4) + activeNurseVisits5AndMore;
-		var deliveryLocationsDict = A3(
-			$elm$core$List$foldl,
-			F2(
-				function (participantData, accumDict) {
-					return A2(
-						$elm$core$Maybe$withDefault,
-						accumDict,
-						A2(
-							$elm$core$Maybe$map,
-							function (location) {
-								var updated = A2(
-									$elm$core$Maybe$withDefault,
-									1,
-									A2(
-										$elm$core$Maybe$map,
-										$elm$core$Basics$add(1),
-										A2($pzp1997$assoc_list$AssocList$get, location, accumDict)));
-								return A3($pzp1997$assoc_list$AssocList$insert, location, updated, accumDict);
-							},
-							participantData.deliveryLocation));
-				}),
-			$pzp1997$assoc_list$AssocList$empty,
-			completed);
 		var deliveryLocationsTable = function () {
 			var totalCompletedPregnancies = $elm$core$List$length(completed);
-			var homeDeliveries = A2(
-				$elm$core$Maybe$withDefault,
-				0,
-				A2($pzp1997$assoc_list$AssocList$get, $author$project$Backend$Reports$Model$HomeDelivery, deliveryLocationsDict));
+			var deliveryLocationsDict = A3(
+				$elm$core$List$foldl,
+				F2(
+					function (participantData, accumDict) {
+						return A2(
+							$elm$core$Maybe$withDefault,
+							accumDict,
+							A2(
+								$elm$core$Maybe$map,
+								function (location) {
+									var updated = A2(
+										$elm$core$Maybe$withDefault,
+										1,
+										A2(
+											$elm$core$Maybe$map,
+											$elm$core$Basics$add(1),
+											A2($pzp1997$assoc_list$AssocList$get, location, accumDict)));
+									return A3($pzp1997$assoc_list$AssocList$insert, location, updated, accumDict);
+								},
+								participantData.deliveryLocation));
+					}),
+				$pzp1997$assoc_list$AssocList$empty,
+				completed);
 			var facilityDeliveries = A2(
 				$elm$core$Maybe$withDefault,
 				0,
 				A2($pzp1997$assoc_list$AssocList$get, $author$project$Backend$Reports$Model$FacilityDelivery, deliveryLocationsDict));
+			var homeDeliveries = A2(
+				$elm$core$Maybe$withDefault,
+				0,
+				A2($pzp1997$assoc_list$AssocList$get, $author$project$Backend$Reports$Model$HomeDelivery, deliveryLocationsDict));
 			var totalDeliveries = facilityDeliveries + homeDeliveries;
 			return {
 				captions: A2(
@@ -20238,14 +20235,12 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 		var completedAllVisits2 = A2(resolveValueFromDict, 2, partitionedVisitsForCompleted.all);
 		var completedAllVisits3 = A2(resolveValueFromDict, 3, partitionedVisitsForCompleted.all);
 		var completedAllVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForCompleted.all);
-		var completedAllVisits5 = A2(resolveValueFromDict, 5, partitionedVisitsForCompleted.all);
 		var completedAllVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForCompleted.all);
 		var completedAllVisitsTotal = (((completedAllVisits1 + completedAllVisits2) + completedAllVisits3) + completedAllVisits4) + completedAllVisits5AndMore;
 		var completedChwVisits1 = A2(resolveValueFromDict, 1, partitionedVisitsForCompleted.chw);
 		var completedChwVisits2 = A2(resolveValueFromDict, 2, partitionedVisitsForCompleted.chw);
 		var completedChwVisits3 = A2(resolveValueFromDict, 3, partitionedVisitsForCompleted.chw);
 		var completedChwVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForCompleted.chw);
-		var completedChwVisits5 = A2(resolveValueFromDict, 5, partitionedVisitsForCompleted.chw);
 		var completedChwVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForCompleted.chw);
 		var completedChwVisitsTotal = (((completedChwVisits1 + completedChwVisits2) + completedChwVisits3) + completedChwVisits4) + completedChwVisits5AndMore;
 		var completedNurseVisits1 = A2(resolveValueFromDict, 1, partitionedVisitsForCompleted.nurse);

@@ -1,7 +1,7 @@
 module Backend.Components.Encoder exposing (..)
 
 import Backend.Components.Model exposing (ReportParams)
-import Json.Encode exposing (Value, int, object, string)
+import Json.Encode exposing (Value, int, string)
 import Maybe.Extra
 
 

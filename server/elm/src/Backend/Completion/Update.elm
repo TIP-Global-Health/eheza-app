@@ -55,9 +55,6 @@ update currentDate backendUrl msg model =
                                     |> Maybe.map
                                         (\completionData ->
                                             let
-                                                _ =
-                                                    Debug.log "response.totalRemaining" response.totalRemaining
-
                                                 completionDataUpdated =
                                                     { completionData
                                                         | acuteIllnessData = completionData.acuteIllnessData ++ response.acuteIllnessData

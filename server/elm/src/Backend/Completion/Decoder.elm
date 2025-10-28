@@ -1,17 +1,13 @@
 module Backend.Completion.Decoder exposing (decodeCompletionData, decodeSyncResponse)
 
-import AssocList as Dict
 import Backend.Completion.Model exposing (..)
 import Backend.Completion.Utils exposing (..)
 import Backend.Components.Decoder exposing (decodeReportParams, decodeSelectedEntity)
 import Backend.Decoder exposing (decodeSite, decodeWithFallback)
-import Date
-import EverySet exposing (EverySet)
-import Gizra.Json exposing (decodeFloat, decodeInt)
-import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffMonths)
-import Json.Decode exposing (Decoder, andThen, bool, fail, field, list, map, maybe, nullable, oneOf, string, succeed)
-import Json.Decode.Pipeline exposing (hardcoded, optional, optionalAt, required, requiredAt)
-import Maybe.Extra exposing (isNothing)
+import Gizra.Json exposing (decodeInt)
+import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
+import Json.Decode exposing (Decoder, andThen, fail, field, list, nullable, oneOf, string, succeed)
+import Json.Decode.Pipeline exposing (hardcoded, optional, required, requiredAt)
 
 
 decodeCompletionData : Decoder CompletionData

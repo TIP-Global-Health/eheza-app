@@ -9,7 +9,7 @@ import Date
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffMonths)
-import Json.Decode exposing (Decoder, andThen, bool, fail, field, list, map, maybe, string, succeed)
+import Json.Decode exposing (Decoder, bool, field, list, map, maybe, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Maybe.Extra exposing (isNothing)
 
