@@ -24,9 +24,10 @@
 
         // Initiate ELM application.
         const app = Elm.Main.init({node: node, flags: {
-          appData: decompressData(appSettings.data),
+          appData: appSettings.data,
           page: appSettings.page,
           themePath: appSettings.theme_path,
+          backendUrl: appSettings.backend_url,
         }});
 
         if (appSettings.page === 'reports-results') {
@@ -45,17 +46,5 @@
       });
     }
   };
-
-  // Decompress gzipped base64 data.
-  function decompressData(base64Data) {
-    var binaryString = atob(base64Data);
-    var bytes = new Uint8Array(binaryString.length);
-    for (var i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    var decompressed = pako.ungzip(bytes, { to: 'string' });
-
-    return JSON.parse(decompressed);
-  }
 
 })(jQuery, Drupal);

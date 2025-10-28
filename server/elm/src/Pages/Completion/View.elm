@@ -15,7 +15,6 @@ import Backend.Completion.Model
         , NutritionGroupEncounterData
         , NutritionMotherActivity(..)
         , PrenatalActivity(..)
-        , SelectedEntity(..)
         , TakenBy(..)
         , TuberculosisActivity(..)
         , WellChildActivity(..)
@@ -23,6 +22,7 @@ import Backend.Completion.Model
         , WellChildEncounterType(..)
         )
 import Backend.Completion.Utils exposing (takenByToString)
+import Backend.Components.Model exposing (SelectedEntity(..))
 import Backend.Model exposing (ModelBackend)
 import Date exposing (Interval(..), Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
@@ -69,6 +69,37 @@ viewCompletionData language currentDate themePath data model =
 
                         EntityHealthCenter ->
                             data.entityName
+
+                        -- Other options are not supported.
+                        _ ->
+                            translate language Translate.EmptyString
+
+                ( syncStatus, progress ) =
+                    Maybe.map
+                        (\remainingForDownload ->
+                            let
+                                totalDownloaded =
+                                    List.length data.acuteIllnessData
+                                        + List.length data.childScoreboardData
+                                        + List.length data.hivData
+                                        + List.length data.homeVisitData
+                                        + List.length data.ncdData
+                                        + List.length data.nutritionIndividualData
+                                        + List.length data.nutritionGroupData
+                                        + List.length data.prenatalData
+                                        + List.length data.tuberculosisData
+                                        + List.length data.wellChildData
+                            in
+                            ( if remainingForDownload == 0 then
+                                "COMPLETED"
+
+                              else
+                                "IN PROCESS"
+                            , String.fromInt totalDownloaded ++ " / " ++ String.fromInt (totalDownloaded + remainingForDownload)
+                            )
+                        )
+                        data.remainingForDownload
+                        |> Maybe.withDefault ( "PENDING", "0 / 0" )
             in
             div [ class "top-bar" ]
                 [ div [ class "new-selection" ]
@@ -79,6 +110,10 @@ viewCompletionData language currentDate themePath data model =
                     ]
                 , div [ class "scope" ]
                     [ text <| translate language Translate.Scope ++ ": " ++ scopeLabel ]
+                , div [ class "download-status" ]
+                    [ div [] [ text <| "Download status: " ++ syncStatus ]
+                    , div [ class "progress" ] [ text <| "(" ++ progress ++ ")" ]
+                    ]
                 ]
 
         takenByInput =

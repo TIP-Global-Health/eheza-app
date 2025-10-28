@@ -914,7 +914,7 @@ function hedley_reports_statistical_queries_report_callback_health_center($healt
  *   The HTML markup for the Elm application.
  */
 function hedley_reports_build_statistical_queries_results_app($province = NULL, $district = NULL, $sector = NULL, $cell = NULL, $village = NULL, $health_center = NULL) {
-  $data = [];
+  $data = $params = [];
 
   if (empty($province)) {
     if (empty($health_center)) {
@@ -925,37 +925,51 @@ function hedley_reports_build_statistical_queries_results_app($province = NULL, 
       $wrapper = entity_metadata_wrapper('node', $health_center);
       $data['entity_name'] = $wrapper->label();
       $data['entity_type'] = 'health-center';
+      $params['health_center'] = $health_center;
     }
   }
   elseif (empty($district)) {
     $data['entity_name'] = $province;
     $data['entity_type'] = 'province';
+    $params['province'] = $province;
   }
   elseif (empty($sector)) {
     $data['entity_name'] = $district;
     $data['entity_type'] = 'district';
+    $params['province'] = $province;
+    $params['district'] = $district;
   }
   elseif (empty($cell)) {
     $data['entity_name'] = $sector;
     $data['entity_type'] = 'sector';
+    $params['province'] = $province;
+    $params['district'] = $district;
+    $params['sector'] = $sector;
   }
   elseif (empty($village)) {
     $data['entity_name'] = $cell;
     $data['entity_type'] = 'cell';
+    $params['province'] = $province;
+    $params['district'] = $district;
+    $params['sector'] = $sector;
+    $params['cell'] = $cell;
   }
   else {
     $data['entity_name'] = $village;
     $data['entity_type'] = 'village';
+    $params['province'] = $province;
+    $params['district'] = $district;
+    $params['sector'] = $sector;
+    $params['cell'] = $cell;
+    $params['village'] = $village;
   }
 
   $data['site'] = variable_get('hedley_general_site_name', '');
+  $data['params'] = $params;
 
-  if (in_array($data['entity_type'], ['sector', 'cell', 'village'])) {
-    // For smaller data sets, we generate results on fly.
-    $data['results'] = hedley_reports_generate_results_data($province, $district, $sector, $cell, $village, $health_center);
-  }
-  else {
-    [$data['results'], $data['additional']] = hedley_reports_load_results_data('statistical-query', $data['entity_type'], $province, $district, $health_center);
+  if (in_array($data['entity_type'], ['province', 'district'])) {
+    // For large data sets, try loading additional data.
+    $data['additional'] = hedley_reports_load_results_additional_data('statistical-query', $data['entity_type'], $province, $district, $health_center);
   }
 
   return hedley_general_build_elm_app('reports-results', $data);
@@ -1056,7 +1070,97 @@ function hedley_reports_generate_results_data($province, $district, $sector, $ce
 }
 
 /**
- * Loads data in scope, stored at Report Data node.
+ * Generate Aggregated Reports data which is stored on person nodes.
+ *
+ * The requests are coming from restful endpoint.
+ *
+ * @param int $from_nid
+ *   Query for data from nodes which IDs are above provided node ID.
+ * @param int $batch
+ *   Number of nodes to be processed in single batch.
+ * @param string|null $province
+ *   Province name.
+ * @param string|null $district
+ *   District name.
+ * @param string|null $sector
+ *   Sector name.
+ * @param string|null $cell
+ *   Cell name.
+ * @param string|null $village
+ *   Village name.
+ * @param int|null $health_center
+ *   Health center ID.
+ *
+ * @return array
+ *   An array of generated data.
+ */
+function hedley_reports_generate_results_data_for_restful($from_nid, $batch, $province, $district, $sector, $cell, $village, $health_center) {
+  $query = new EntityFieldQuery();
+  $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'person')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->propertyCondition('nid', $from_nid, '>')
+    ->fieldCondition('field_reports_data', 'value', NULL, 'IS NOT NULL')
+    ->addTag('exclude_deleted');
+
+  if (!empty($province)) {
+    $query->fieldCondition('field_province', 'value', $province);
+  }
+
+  if (!empty($district)) {
+    $query->fieldCondition('field_district', 'value', $district);
+  }
+
+  if (!empty($sector)) {
+    $query->fieldCondition('field_sector', 'value', $sector);
+  }
+
+  if (!empty($cell)) {
+    $query->fieldCondition('field_cell', 'value', $cell);
+  }
+
+  if (!empty($village)) {
+    $query->fieldCondition('field_village', 'value', $village);
+  }
+
+  if (!empty($health_center)) {
+    $query->fieldCondition('field_shards', 'target_id', $health_center);
+  }
+
+  $count_query = clone $query;
+  $count = $count_query->count()->execute();
+
+  $result = $query
+    ->range(0, $batch)
+    ->propertyOrderBy('nid')
+    ->execute();
+
+  if (empty($result['node'])) {
+    // No more items left.
+    return [];
+  }
+
+  $output = [];
+  $ids = array_keys($result['node']);
+  $nodes = node_load_multiple($ids);
+  foreach ($nodes as $node) {
+    $json_data = $node->field_reports_data[LANGUAGE_NONE][0]['value'];
+    if (empty($json_data)) {
+      continue;
+    }
+    $output[] = json_decode($json_data);
+  }
+
+  return [
+    'batch' => $output,
+    'total_remaining' => $count - count($ids),
+    'last' => end($ids),
+  ];
+}
+
+/**
+ * Loads additional data in scope, stored on Report Data node.
  *
  * @param string $report_variant
  *   Type of report to load.
@@ -1072,38 +1176,18 @@ function hedley_reports_generate_results_data($province, $district, $sector, $ce
  * @return array
  *   Stored data.
  */
-function hedley_reports_load_results_data($report_variant, $scope, $province = NULL, $district = NULL, $health_center = NULL) {
+function hedley_reports_load_results_additional_data($report_variant, $scope, $province = NULL, $district = NULL, $health_center = NULL) {
   $node_id = hedley_reports_load_results_data_node($report_variant, $scope, $province, $district, $health_center);
   if (!$node_id) {
     return [];
   }
 
   $node = node_load($node_id);
-  $file = file_load($node->field_data_file[LANGUAGE_NONE][0]['fid']);
-  if (!$file) {
+  if (empty($node->field_reports_data) || empty($node->field_reports_data[LANGUAGE_NONE][0]['value'])) {
     return [];
   }
 
-  // Get the real path of the file.
-  $file_path = drupal_realpath($file->uri);
-  // Open the gzipped file and read its contents.
-  $gz_fp = gzopen($file_path, 'r');
-  if (!$gz_fp) {
-    return [];
-  }
-
-  $data = '';
-  while (!gzeof($gz_fp)) {
-    $data .= gzread($gz_fp, 4096);
-  }
-  gzclose($gz_fp);
-
-  $additional_data = '';
-  if (!empty($node->field_reports_data)) {
-    $additional_data = $node->field_reports_data[LANGUAGE_NONE][0]['value'];
-  }
-
-  return [json_decode($data), json_decode($additional_data)];
+  return json_decode($node->field_reports_data[LANGUAGE_NONE][0]['value']);
 }
 
 /**
@@ -1125,7 +1209,6 @@ function hedley_reports_load_results_data($report_variant, $scope, $province = N
  * @throws Exception
  */
 function hedley_reports_create_or_update_results_data_node(array $data, $report_variant, $scope, $province = NULL, $district = NULL, $health_center = NULL) {
-  $data_file_id = hedley_reports_create_data_file($data);
   $node_id = hedley_reports_load_results_data_node($report_variant, $scope, $province, $district, $health_center);
   if (!$node_id) {
     // Create the Report Data node.
@@ -1138,11 +1221,6 @@ function hedley_reports_create_or_update_results_data_node(array $data, $report_
     $node->language = LANGUAGE_NONE;
     $node->field_report_variant[LANGUAGE_NONE][0]['value'] = $report_variant;
     $node->field_data_scope[LANGUAGE_NONE][0]['value'] = $scope;
-    // Attach the file to the node's file field.
-    $node->field_data_file[LANGUAGE_NONE][0] = [
-      'fid' => $data_file_id,
-      'display' => 1,
-    ];
     if (!empty($province)) {
       $node->field_province[LANGUAGE_NONE][0]['value'] = $province;
     }
@@ -1152,20 +1230,6 @@ function hedley_reports_create_or_update_results_data_node(array $data, $report_
     if (!empty($health_center)) {
       $node->field_health_center[LANGUAGE_NONE][0]['target_id'] = $health_center;
     }
-  }
-  else {
-    // Update the Report Data node.
-    $node = node_load($node_id);
-    $old_file = file_load($node->field_data_file[LANGUAGE_NONE][0]['fid']);
-    if ($old_file) {
-      // Delete the old file.
-      file_delete($old_file, TRUE);
-    }
-    // Attach new file.
-    $node->field_data_file[LANGUAGE_NONE][0] = [
-      'fid' => $data_file_id,
-      'display' => 1,
-    ];
   }
 
   if ($report_variant == 'statistical-query') {
@@ -2231,7 +2295,7 @@ function hedley_reports_completion_report_callback_health_center($health_center)
  *   The HTML markup for the Elm application.
  */
 function hedley_reports_build_completion_results_app($health_center = NULL) {
-  $data = [];
+  $data = $params = [];
 
   if (empty($health_center)) {
     $data['entity_name'] = 'Global';
@@ -2241,13 +2305,148 @@ function hedley_reports_build_completion_results_app($health_center = NULL) {
     $wrapper = entity_metadata_wrapper('node', $health_center);
     $data['entity_name'] = $wrapper->label();
     $data['entity_type'] = 'health-center';
+    $params['health_center'] = $health_center;
   }
 
   $data['site'] = variable_get('hedley_general_site_name', '');
-
-  [$data['results'], $data['additional']] = hedley_reports_load_results_data('completion', $data['entity_type'], NULL, NULL, $health_center);
+  $data['params'] = $params;
 
   return hedley_general_build_elm_app('completion-results', $data);
+}
+
+/**
+ * Generate Completion report data which is stored on encounter nodes.
+ *
+ * The requests are coming from restful endpoint.
+ *
+ * @param int $from_nid
+ *   Query for data from nodes which IDs are above provided node ID.
+ * @param int $batch
+ *   Number of nodes to be processed in single batch.
+ * @param int|null $health_center
+ *   Health center ID.
+ *
+ * @return array
+ *   An array of generated data.
+ */
+function hedley_reports_generate_completion_data_for_restful($from_nid, $batch, $health_center) {
+  $bundles = [
+    // Acute Illness data.
+    'acute_illness_encounter',
+    // Nutrition Group data.
+    'attendance',
+    // Child Scoreboard data.
+    'child_scoreboard_encounter',
+    // HIV Data.
+    'hiv_encounter',
+    // Home Visit data.
+    'home_visit_encounter',
+    // NCD Data.
+    'ncd_encounter',
+    // Nutrition Individual data.
+    'nutrition_encounter',
+    // Prenatal Data.
+    'prenatal_encounter',
+    // Tuberculosis Data.
+    'tuberculosis_encounter',
+    // Well Child data.
+    'well_child_encounter',
+  ];
+
+  $query = new EntityFieldQuery();
+  $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', $bundles, 'IN')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->propertyCondition('nid', $from_nid, '>')
+    ->fieldCondition('field_reports_data', 'value', NULL, 'IS NOT NULL')
+    ->propertyOrderBy('nid');
+
+  if (!empty($health_center)) {
+    $query->fieldCondition('field_shards', 'target_id', $health_center);
+  }
+
+  $count_query = clone $query;
+  $count = $count_query->count()->execute();
+
+  if ($count == 0) {
+    return [];
+  }
+
+  $result = $query
+    ->range(0, $batch)
+    ->propertyOrderBy('nid')
+    ->execute();
+
+  $data = [
+    'acute_illness' => [],
+    'child_scoreboard' => [],
+    'hiv' => [],
+    'home_visit' => [],
+    'ncd' => [],
+    'nutrition_individual' => [],
+    'nutrition_group' => [],
+    'prenatal' => [],
+    'tuberculosis' => [],
+    'well_child' => [],
+  ];
+
+  $ids = array_keys($result['node']);
+  $nodes = node_load_multiple($ids);
+  foreach ($nodes as $node) {
+    $json_data = $node->field_reports_data[LANGUAGE_NONE][0]['value'];
+    if (empty($json_data)) {
+      continue;
+    }
+
+    switch ($node->type) {
+      case 'acute_illness_encounter':
+        $data['acute_illness'][] = json_decode($json_data);
+        break;
+
+      case 'attendance':
+        $data['nutrition_group'][] = json_decode($json_data);
+        break;
+
+      case 'child_scoreboard_encounter':
+        $data['child_scoreboard'][] = json_decode($json_data);
+        break;
+
+      case 'hiv_encounter':
+        $data['hiv'][] = json_decode($json_data);
+        break;
+
+      case 'home_visit_encounter':
+        $data['home_visit'][] = json_decode($json_data);
+        break;
+
+      case 'ncd_encounter':
+        $data['ncd'][] = json_decode($json_data);
+        break;
+
+      case 'nutrition_encounter':
+        $data['nutrition_individual'][] = json_decode($json_data);
+        break;
+
+      case 'prenatal_encounter':
+        $data['prenatal'][] = json_decode($json_data);
+        break;
+
+      case 'tuberculosis_encounter':
+        $data['tuberculosis'][] = json_decode($json_data);
+        break;
+
+      case 'well_child_encounter':
+        $data['well_child'][] = json_decode($json_data);
+        break;
+    }
+  }
+
+  return [
+    'batch' => $data,
+    'total_remaining' => $count - count($ids),
+    'last' => end($ids),
+  ];
 }
 
 /**

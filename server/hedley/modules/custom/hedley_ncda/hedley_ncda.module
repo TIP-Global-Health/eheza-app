@@ -275,6 +275,8 @@ function hedley_ncda_aggregated_callback_village($province, $district, $sector, 
  */
 function hedley_ncda_build_results_app($province, $district, $sector = NULL, $cell = NULL, $village = NULL) {
   $data = [];
+  $params['province'] = $province;
+  $params['district'] = $district;
 
   if (empty($sector)) {
     $data['entity_name'] = $district;
@@ -283,25 +285,24 @@ function hedley_ncda_build_results_app($province, $district, $sector = NULL, $ce
   elseif (empty($cell)) {
     $data['entity_name'] = $sector;
     $data['entity_type'] = 'sector';
+    $params['sector'] = $sector;
   }
   elseif (empty($village)) {
     $data['entity_name'] = $cell;
     $data['entity_type'] = 'cell';
+    $params['sector'] = $sector;
+    $params['cell'] = $cell;
   }
   else {
     $data['entity_name'] = $village;
     $data['entity_type'] = 'village';
+    $params['sector'] = $sector;
+    $params['cell'] = $cell;
+    $params['village'] = $village;
   }
 
   $data['site'] = variable_get('hedley_general_site_name', '');
-
-  if ($data['entity_type'] == 'district') {
-    list($data['results'], $data['additional']) = hedley_reports_load_results_data('aggregated-ncda', $data['entity_type'], $province, $district);
-  }
-  else {
-    // For smaller data sets, we generate results on fly.
-    $data['results'] = hedley_ncda_generate_results_data($province, $district, $sector, $cell, $village);
-  }
+  $data['params'] = $params;
 
   return hedley_general_build_elm_app('ncda-results', $data);
 }
@@ -309,6 +310,12 @@ function hedley_ncda_build_results_app($province, $district, $sector = NULL, $ce
 /**
  * Generate aggregated NCDA data which is stored on person nodes.
  *
+ * The requests are coming from restful endpoint.
+ *
+ * @param int $from_nid
+ *   Query for data from nodes which IDs are above provided node ID.
+ * @param int $batch
+ *   Number of nodes to be processed in single batch.
  * @param string $province
  *   Province name.
  * @param string $district
@@ -323,17 +330,18 @@ function hedley_ncda_build_results_app($province, $district, $sector = NULL, $ce
  * @return array
  *   An array of generated data.
  */
-function hedley_ncda_generate_results_data($province, $district, $sector, $cell, $village) {
+function hedley_ncda_generate_results_data_for_restful($from_nid, $batch, $province, $district, $sector, $cell, $village) {
   $three_years_ago = date('Y-m-d', strtotime('-3 years'));
-  $base_query = new EntityFieldQuery();
-  $base_query
+  $query = new EntityFieldQuery();
+  $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'person')
     ->propertyCondition('status', NODE_PUBLISHED)
-      // Since we show data starting Nov 23, it's enough to select only those
-      // born during the past 3 years.
-      // Position the condition as first field condition, as placing it bellow
-      // caused incorrect query results on live environment.
+    ->propertyCondition('nid', $from_nid, '>')
+    // Since we show data starting Nov 23, it's enough to select only those
+    // born during the past 3 years.
+    // Position the condition as first field condition, as placing it bellow
+    // caused incorrect query results on live environment.
     ->fieldCondition('field_birth_date', 'value', $three_years_ago, '>')
     ->fieldCondition('field_province', 'value', $province)
     ->fieldCondition('field_district', 'value', $district)
@@ -341,56 +349,50 @@ function hedley_ncda_generate_results_data($province, $district, $sector, $cell,
     ->addTag('exclude_deleted');
 
   if (!empty($sector)) {
-    $base_query->fieldCondition('field_sector', 'value', $sector);
+    $query->fieldCondition('field_sector', 'value', $sector);
   }
 
   if (!empty($cell)) {
-    $base_query->fieldCondition('field_cell', 'value', $cell);
+    $query->fieldCondition('field_cell', 'value', $cell);
   }
 
   if (!empty($village)) {
-    $base_query->fieldCondition('field_village', 'value', $village);
+    $query->fieldCondition('field_village', 'value', $village);
   }
 
-  $data = [];
-  $nid = 0;
-  $batch = 400;
-  while (TRUE) {
-    // Free up memory.
-    drupal_static_reset();
+  $count_query = clone $query;
+  $count = $count_query->count()->execute();
 
-    $query = clone $base_query;
-    if ($nid) {
-      $query->propertyCondition('nid', $nid, '>');
-    }
+  $result = $query
+    ->range(0, $batch)
+    ->propertyOrderBy('nid')
+    ->execute();
 
-    $result = $query
-      ->range(0, $batch)
-      ->execute();
-
-    if (empty($result['node'])) {
-      // No more items left.
-      break;
-    }
-
-    $ids = array_keys($result['node']);
-    $nodes = node_load_multiple($ids);
-    foreach ($nodes as $node) {
-      $json_data = $node->field_ncda_data[LANGUAGE_NONE][0]['value'];
-      if (empty($json_data)) {
-        continue;
-      }
-
-      $decoded = json_decode($json_data);
-      $decoded->created = date("Y-m-d", $node->created);
-
-      $data[] = $decoded;
-    }
-
-    $nid = end($ids);
+  if (empty($result['node'])) {
+    // No more items left.
+    return [];
   }
 
-  return $data;
+  $output = [];
+  $ids = array_keys($result['node']);
+  $nodes = node_load_multiple($ids);
+  foreach ($nodes as $node) {
+    $json_data = $node->field_ncda_data[LANGUAGE_NONE][0]['value'];
+    if (empty($json_data)) {
+      continue;
+    }
+
+    $decoded = json_decode($json_data);
+    $decoded->created = date("Y-m-d", $node->created);
+
+    $output[] = $decoded;
+  }
+
+  return [
+    'batch' => $output,
+    'total_remaining' => $count - count($ids),
+    'last' => end($ids),
+  ];
 }
 
 /**
