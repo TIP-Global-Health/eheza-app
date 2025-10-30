@@ -195,7 +195,7 @@ fetch model =
                 Pages.Person.Fetch.fetch id initiator model.indexedDb
                     |> List.map MsgIndexedDb
 
-            UserPage (PersonsPage relation initiator) ->
+            UserPage (PersonsPage relation _) ->
                 getLoggedInData model
                     |> Maybe.map
                         (\( _, loggedIn ) ->
