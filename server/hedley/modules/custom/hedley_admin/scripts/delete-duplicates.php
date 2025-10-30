@@ -38,7 +38,7 @@ foreach ($chunks as $uuids) {
   drupal_static_reset();
 
   foreach ($uuids as $uuid) {
-    $query = new EntityFieldQuery();
+    $query = hedley_general_create_entity_field_query_excluding_deleted();
 
     // Pull all nodes that share UUID.
     $result = $query
@@ -65,7 +65,7 @@ foreach ($chunks as $uuids) {
       // and measurements that were taken for that person.
       foreach ($ids as $index => $id) {
         // Pull all reference made with 'field_person' field.
-        $query1 = new EntityFieldQuery();
+        $query1 = hedley_general_create_entity_field_query_excluding_deleted();
         $result1 = $query1
           ->entityCondition('entity_type', 'node')
           ->fieldCondition('field_person', 'target_id', $id)
@@ -73,7 +73,7 @@ foreach ($chunks as $uuids) {
           ->execute();
 
         // Pull all reference made with 'field_adult' field.
-        $query2 = new EntityFieldQuery();
+        $query2 = hedley_general_create_entity_field_query_excluding_deleted();
         $result2 = $query2
           ->entityCondition('entity_type', 'node')
           ->fieldCondition('field_adult', 'target_id', $id)
@@ -81,7 +81,7 @@ foreach ($chunks as $uuids) {
           ->execute();
 
         // Pull all reference made with 'field_related_to' field.
-        $query3 = new EntityFieldQuery();
+        $query3 = hedley_general_create_entity_field_query_excluding_deleted();
         $result3 = $query3
           ->entityCondition('entity_type', 'node')
           ->fieldCondition('field_related_to', 'target_id', $id)

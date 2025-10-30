@@ -14,6 +14,7 @@ type alias WellChildEncounter =
     , encounterType : WellChildEncounterType
     , encounterNote : EncounterNote
     , encounterWarnings : EverySet EncounterWarning
+    , deleted : Bool
     , shard : Maybe HealthCenterId
     }
 
@@ -31,6 +32,7 @@ emptyWellChildEncounter participant startDate encounterType shard =
     , encounterType = encounterType
     , encounterNote = NoEncounterNotes
     , encounterWarnings = EverySet.singleton NoEncounterWarnings
+    , deleted = False
     , shard = shard
     }
 

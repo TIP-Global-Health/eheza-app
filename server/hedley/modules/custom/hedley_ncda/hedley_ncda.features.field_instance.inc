@@ -247,6 +247,49 @@ function hedley_ncda_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-child_scoreboard_bcg_iz-field_deleted'.
+  $field_instances['node-child_scoreboard_bcg_iz-field_deleted'] = array(
+    'bundle' => 'child_scoreboard_bcg_iz',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance: 'node-child_scoreboard_bcg_iz-field_nurse'.
   $field_instances['node-child_scoreboard_bcg_iz-field_nurse'] = array(
     'bundle' => 'child_scoreboard_bcg_iz',
@@ -655,6 +698,49 @@ function hedley_ncda_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => -1,
+    ),
+  );
+
+  // Exported field_instance: 'node-child_scoreboard_dtp_iz-field_deleted'.
+  $field_instances['node-child_scoreboard_dtp_iz-field_deleted'] = array(
+    'bundle' => 'child_scoreboard_dtp_iz',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -1069,6 +1155,49 @@ function hedley_ncda_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-child_scoreboard_dtp_sa_iz-field_deleted'.
+  $field_instances['node-child_scoreboard_dtp_sa_iz-field_deleted'] = array(
+    'bundle' => 'child_scoreboard_dtp_sa_iz',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance: 'node-child_scoreboard_dtp_sa_iz-field_nurse'.
   $field_instances['node-child_scoreboard_dtp_sa_iz-field_nurse'] = array(
     'bundle' => 'child_scoreboard_dtp_sa_iz',
@@ -1241,6 +1370,49 @@ function hedley_ncda_field_default_field_instances() {
       ),
       'type' => 'text_textfield',
       'weight' => 5,
+    ),
+  );
+
+  // Exported field_instance: 'node-child_scoreboard_encounter-field_deleted'.
+  $field_instances['node-child_scoreboard_encounter-field_deleted'] = array(
+    'bundle' => 'child_scoreboard_encounter',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -1708,6 +1880,49 @@ function hedley_ncda_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-child_scoreboard_ipv_iz-field_deleted'.
+  $field_instances['node-child_scoreboard_ipv_iz-field_deleted'] = array(
+    'bundle' => 'child_scoreboard_ipv_iz',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance: 'node-child_scoreboard_ipv_iz-field_nurse'.
   $field_instances['node-child_scoreboard_ipv_iz-field_nurse'] = array(
     'bundle' => 'child_scoreboard_ipv_iz',
@@ -2118,6 +2333,49 @@ function hedley_ncda_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-child_scoreboard_mr_iz-field_deleted'.
+  $field_instances['node-child_scoreboard_mr_iz-field_deleted'] = array(
+    'bundle' => 'child_scoreboard_mr_iz',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance: 'node-child_scoreboard_mr_iz-field_nurse'.
   $field_instances['node-child_scoreboard_mr_iz-field_nurse'] = array(
     'bundle' => 'child_scoreboard_mr_iz',
@@ -2495,6 +2753,49 @@ function hedley_ncda_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance: 'node-child_scoreboard_ncda-field_deleted'.
+  $field_instances['node-child_scoreboard_ncda-field_deleted'] = array(
+    'bundle' => 'child_scoreboard_ncda',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -3112,6 +3413,49 @@ function hedley_ncda_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-child_scoreboard_opv_iz-field_deleted'.
+  $field_instances['node-child_scoreboard_opv_iz-field_deleted'] = array(
+    'bundle' => 'child_scoreboard_opv_iz',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance: 'node-child_scoreboard_opv_iz-field_nurse'.
   $field_instances['node-child_scoreboard_opv_iz-field_nurse'] = array(
     'bundle' => 'child_scoreboard_opv_iz',
@@ -3520,6 +3864,49 @@ function hedley_ncda_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => -1,
+    ),
+  );
+
+  // Exported field_instance: 'node-child_scoreboard_pcv13_iz-field_deleted'.
+  $field_instances['node-child_scoreboard_pcv13_iz-field_deleted'] = array(
+    'bundle' => 'child_scoreboard_pcv13_iz',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -3934,6 +4321,49 @@ function hedley_ncda_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-child_scoreboard_rotarix_iz-field_deleted'.
+  $field_instances['node-child_scoreboard_rotarix_iz-field_deleted'] = array(
+    'bundle' => 'child_scoreboard_rotarix_iz',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance: 'node-child_scoreboard_rotarix_iz-field_nurse'.
   $field_instances['node-child_scoreboard_rotarix_iz-field_nurse'] = array(
     'bundle' => 'child_scoreboard_rotarix_iz',
@@ -4119,6 +4549,7 @@ function hedley_ncda_field_default_field_instances() {
   t('Child Scoreboard Encounter');
   t('Completion Data');
   t('Date Measured');
+  t('Deleted');
   t('Individual Participant');
   t('MUAC');
   t('NCDA Signs');
