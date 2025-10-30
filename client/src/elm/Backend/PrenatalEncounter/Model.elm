@@ -66,6 +66,8 @@ type PrenatalEncounterPostCreateDestination
 
 type PrenatalIndicator
     = IndicatorHistoryLabsCompleted
+    | IndicatorAdequateGWG
+    | IndicatorInadequateGWG
     | NoPrenatalIndicators
 
 
@@ -183,6 +185,7 @@ type Msg
     | SetPastPrenatalDiagnoses (EverySet PrenatalDiagnosis)
     | SetLabsHistoryCompleted
     | SetNextVisitDate NominalDate
+    | SetGWGIndicator Bool
     | HandleUpdatedPrenatalEncounter (WebData ())
     | SaveBreastExam PersonId (Maybe BreastExamId) BreastExamValue
     | HandleSavedBreastExam (WebData ())
