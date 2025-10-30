@@ -140,7 +140,7 @@ import Pages.Report.Model
         , ReportTab(..)
         )
 import Pages.StockManagement.Model exposing (CorrectionEntryType(..), StockManagementMenu(..))
-import Pages.TraceContact.Model exposing (NoContactReason(..))
+import Pages.TraceContact.Model exposing (NoContactReason(..), SymptomsTask(..))
 import Pages.Tuberculosis.Activity.Model exposing (TuberculosisFollowUpTestingStage(..))
 import Pages.WellChild.Activity.Types
     exposing
@@ -1975,13 +1975,17 @@ type TranslationId
     | SuspectedCovid19CaseContactHC
     | SuspectedCovid19CasePerformRapidTest
     | SuspectedCovid19CaseReferToHCForTesting
-    | SymptomRelief SymptomReliefType
     | Symptoms
+    | SymptomsENTSign SymptomsENTSign
+    | SymptomsEyesSign SymptomsEyesSign
     | SymptomsGeneralSign SymptomsGeneralSign
     | SymptomsGISign SymptomsGISign
     | SymptomsGISignAbbrev SymptomsGISign
+    | SymptomsGUSign SymptomsGUSign
+    | SymptomsOralSign SymptomsOralSign
+    | SymptomRelief SymptomReliefType
     | SymptomsRespiratorySign SymptomsRespiratorySign
-    | SymptomsTask SymptomsTask
+    | SymptomsTask Pages.AcuteIllness.Activity.Types.SymptomsTask
     | SymptomReview
     | Syphilis
     | SyphilisRecommendedTreatmentHeader
@@ -2030,6 +2034,7 @@ type TranslationId
     | Topics
     | TotalHighRiskPregnancies
     | ToThePatient
+    | TraceContactSymptomsTask Pages.TraceContact.Model.SymptomsTask
     | TransportationPlanQuestion
     | TraveledToCOVID19CountryQuestion
     | TravelHistory
@@ -23399,6 +23404,70 @@ translationSet trans =
             , kirundi = Just "Ibimenyetso"
             }
 
+        SymptomsENTSign sign ->
+            case sign of
+                EarPain ->
+                    { english = "Ear pain"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                EarPusDischarge ->
+                    { english = "Ear pus discharge"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                DifficultSwallowing ->
+                    { english = "Difficult swallowing"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NoSymptomsENT ->
+                    translationSet NoneOfTheAbove
+
+        SymptomsEyesSign sign ->
+            case sign of
+                EyePusDischarge ->
+                    { english = "Pus draining from the eye"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                SwollenEyes ->
+                    { english = "Swollen eyes"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                YellowEyes_ ->
+                    { english = "Yellow and swollen eyes"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                RedEyes ->
+                    { english = "Red eyes"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                CloudyAppearance ->
+                    { english = "Cloudy appearance / cloudy cornea"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                EyeIrritation ->
+                    { english = "Eye irritation"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NoSymptomsEyes ->
+                    translationSet NoneOfTheAbove
+
         SymptomsGeneralSign sign ->
             case sign of
                 BodyAches ->
@@ -23534,6 +23603,70 @@ translationSet trans =
                 _ ->
                     translationSet (SymptomsGISign sign)
 
+        SymptomsGUSign sign ->
+            case sign of
+                CokeColoredUrine_ ->
+                    { english = "Coca-Cola colored urine"
+                    , kinyarwanda = Just "Inkari zisa na kokakola"
+                    , kirundi = Just "Umukoyo urimwo irangi rya coca-cola"
+                    }
+
+                FrequentUrination ->
+                    { english = "Frequent urination"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                Dysuria ->
+                    { english = "Dysuria"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                CBDUrine ->
+                    { english = "Cloudy, bloody, or discolored urine"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                AbnormalDischarge ->
+                    { english = "Abnormal discharge"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                GenitalItching ->
+                    { english = "Genital itching / burning"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NoSymptomsGU ->
+                    translationSet NoneOfTheAbove
+
+        SymptomsOralSign sign ->
+            case sign of
+                MouthUlcer ->
+                    { english = "Mouth ulcer"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                Toothache ->
+                    { english = "Toothache"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                SwollenGums ->
+                    { english = "Swollen gums"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NoSymptomsOral ->
+                    translationSet NoneOfTheAbove
+
         SymptomsRespiratorySign sign ->
             case sign of
                 BloodInSputum ->
@@ -23572,27 +23705,51 @@ translationSet trans =
                     , kirundi = Just "Ububabare nk'umusonga mu gikiriza (umengo bagucumise imbugita)"
                     }
 
+                SymptomDifficultyBreathing ->
+                    translationSet DifficultyBreathingLabel
+
                 NoSymptomsRespiratory ->
                     translationSet NoneOfTheAbove
 
         SymptomsTask task ->
             case task of
-                SymptomsGeneral ->
+                Pages.AcuteIllness.Activity.Types.SymptomsGeneral ->
                     { english = "General"
                     , kinyarwanda = Just "Ibimenyesto rusange"
                     , kirundi = Just "Rusangi"
                     }
 
-                SymptomsRespiratory ->
+                Pages.AcuteIllness.Activity.Types.SymptomsRespiratory ->
                     { english = "Respiratory"
                     , kinyarwanda = Just "Ubuhumekero"
                     , kirundi = Just "Guhema"
                     }
 
-                SymptomsGI ->
+                Pages.AcuteIllness.Activity.Types.SymptomsGI ->
                     { english = "GI"
                     , kinyarwanda = Just "Urwungano ngogozi"
                     , kirundi = Just "Ingwara zo mu nda"
+                    }
+
+                SymptomsENT ->
+                    { english = "ENT"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                SymptomsEyes ->
+                    translationSet Eyes
+
+                SymptomsGU ->
+                    { english = "GU"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                SymptomsOral ->
+                    { english = "Oral"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
                     }
 
         SymptomReview ->
@@ -23866,6 +24023,26 @@ translationSet trans =
             , kinyarwanda = Just "ku murwayi"
             , kirundi = Just "Ku mugwayi"
             }
+
+        TraceContactSymptomsTask task ->
+            case task of
+                Pages.TraceContact.Model.SymptomsGeneral ->
+                    { english = "General"
+                    , kinyarwanda = Just "Ibimenyesto rusange"
+                    , kirundi = Just "Rusangi"
+                    }
+
+                Pages.TraceContact.Model.SymptomsRespiratory ->
+                    { english = "Respiratory"
+                    , kinyarwanda = Just "Ubuhumekero"
+                    , kirundi = Just "Guhema"
+                    }
+
+                Pages.TraceContact.Model.SymptomsGI ->
+                    { english = "GI"
+                    , kinyarwanda = Just "Urwungano ngogozi"
+                    , kirundi = Just "Ingwara zo mu nda"
+                    }
 
         TransportationPlanQuestion ->
             { english = "Have you planned for transportation to and from the health center to give birth"

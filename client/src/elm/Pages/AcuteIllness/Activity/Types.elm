@@ -12,6 +12,10 @@ type SymptomsTask
     = SymptomsGeneral
     | SymptomsRespiratory
     | SymptomsGI
+    | SymptomsENT
+    | SymptomsEyes
+    | SymptomsGU
+    | SymptomsOral
 
 
 
