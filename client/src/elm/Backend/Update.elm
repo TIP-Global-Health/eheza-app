@@ -71,7 +71,6 @@ import Backend.PrenatalEncounter.Update
 import Backend.Relationship.Encoder exposing (encodeRelationshipChanges)
 import Backend.Relationship.Model exposing (MyRelatedBy(..), MyRelationship, RelatedBy(..))
 import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
-import Backend.ResilienceMessage.Model
 import Backend.ResilienceSurvey.Model
 import Backend.ResilienceSurvey.Update
 import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession)
