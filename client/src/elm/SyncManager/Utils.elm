@@ -22,7 +22,6 @@ import Backend.Person.Encoder
 import Backend.PmtctParticipant.Encoder
 import Backend.PrenatalEncounter.Encoder
 import Backend.Relationship.Encoder
-import Backend.ResilienceMessage.Encoder
 import Backend.ResilienceSurvey.Encoder
 import Backend.Session.Encoder
 import Backend.StockUpdate.Encoder

@@ -26,7 +26,6 @@ import Backend.Person.Decoder
 import Backend.PmtctParticipant.Decoder
 import Backend.PrenatalEncounter.Decoder
 import Backend.Relationship.Decoder
-import Backend.ResilienceMessage.Decoder
 import Backend.ResilienceSurvey.Decoder
 import Backend.Session.Decoder
 import Backend.StockUpdate.Decoder
