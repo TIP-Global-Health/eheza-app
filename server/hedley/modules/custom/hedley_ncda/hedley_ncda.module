@@ -363,15 +363,15 @@ function hedley_ncda_generate_results_data_for_restful($from_nid, $batch, $provi
   $count_query = clone $query;
   $count = $count_query->count()->execute();
 
+  if ($count == 0) {
+    // No more items left.
+    return [];
+  }
+
   $result = $query
     ->range(0, $batch)
     ->propertyOrderBy('nid')
     ->execute();
-
-  if (empty($result['node'])) {
-    // No more items left.
-    return [];
-  }
 
   $output = [];
   $ids = array_keys($result['node']);
