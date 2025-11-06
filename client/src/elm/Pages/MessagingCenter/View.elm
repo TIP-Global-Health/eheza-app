@@ -9,6 +9,7 @@ import Backend.Nurse.Utils exposing (resilienceRoleToString)
 import Backend.Person.Model exposing (EducationLevel(..), MaritalStatus(..), allUbudehes)
 import Backend.Person.Utils exposing (educationLevelToInt, genderToString, maritalStatusToString, ubudeheToInt)
 import Backend.ResilienceMessage.Model exposing (ResilienceCategory(..), ResilienceMessage, ResilienceMessageOrder(..))
+import Backend.ResilienceMessage.Utils exposing (resolveDisplayDay)
 import Backend.ResilienceSurvey.Model exposing (ResilienceSurveyQuestionOption(..), ResilienceSurveyType(..))
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
@@ -46,6 +47,26 @@ view language currentTime nurseId nurse db model =
         currentDate =
             fromLocalDateTime currentTime
 
+        messagesList =
+            Dict.values nurse.resilienceMessages
+
+        -- Check if a message was read before this session
+        -- or long enough before sessionStartTime (1 minute difference)
+        wasMessageReadBeforeSession targetDay =
+            List.any
+                (\msg ->
+                    msg.displayDay
+                        == targetDay
+                        && (case msg.timeRead of
+                                Just timeRead ->
+                                    posixToMillis timeRead < posixToMillis currentTime - (1 * 60 * 1000)
+
+                                Nothing ->
+                                    False
+                           )
+                )
+                messagesList
+
         numberOfUnreadMessages =
             resolveNumberOfUnreadMessages currentTime currentDate nurse
 
@@ -53,7 +74,8 @@ view language currentTime nurseId nurse db model =
             div [ class "ui basic head segment" ]
                 [ h1 [ class "ui header" ]
                     [ translateText language Translate.ResilienceMessage
-                    , span [ class "counter" ] [ text <| String.fromInt numberOfUnreadMessages ]
+                    , span [ class "counter" ]
+                        [ text <| String.fromInt numberOfUnreadMessages ]
                     ]
                 , span
                     [ class "link-back"
@@ -62,78 +84,74 @@ view language currentTime nurseId nurse db model =
                     [ span [ class "icon-back" ] [] ]
                 ]
 
+        runSurvey surveyType =
+            let
+                filteredSurveys =
+                    Dict.get nurseId db.resilienceSurveysByNurse
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map Dict.values
+                        |> Maybe.withDefault []
+                        |> List.filter (\s -> s.surveyType == surveyType)
+
+                surveyCount =
+                    List.length filteredSurveys
+
+                canTakeSurvey =
+                    if not model.hasShownMessagesThisSession then
+                        if surveyCount == 0 then
+                            True
+
+                        else if surveyCount == 1 then
+                            wasMessageReadBeforeSession 103
+
+                        else if surveyCount >= 2 then
+                            wasMessageReadBeforeSession 198
+
+                        else
+                            False
+
+                    else
+                        False
+            in
+            canTakeSurvey
+
         content =
             Maybe.map
                 (\programStartDate ->
                     let
-                        surveys =
-                            Dict.get nurseId db.resilienceSurveysByNurse
-                                |> Maybe.andThen RemoteData.toMaybe
-                                |> Maybe.map Dict.values
-                                |> Maybe.withDefault []
-
-                        surveysSorted =
-                            List.sortWith (sortByDateDesc .dateMeasured) surveys
-
-                        runSurvey surveyType =
-                            let
-                                filteredSurveys =
-                                    List.filter (.surveyType >> (==) surveyType) surveysSorted
-
-                                surveyCount =
-                                    List.length filteredSurveys
-
-                                filterCondition survey =
-                                    let
-                                        -- Calculate the days since the program started
-                                        daysSinceProgramStart =
-                                            Date.diff Days programStartDate currentDate
-                                    in
-                                    if surveyCount == 0 then
-                                        -- First survey should always run at the start of the program
-                                        True
-
-                                    else if surveyCount == 1 then
-                                        -- Second survey should run at 106 days
-                                        daysSinceProgramStart >= 105
-
-                                    else if surveyCount == 2 then
-                                        -- Final survey should run at 201 days
-                                        daysSinceProgramStart >= 200
-
-                                    else
-                                        -- No more surveys after 3 have been completed
-                                        False
-                            in
-                            List.head filteredSurveys
-                                |> Maybe.map filterCondition
-                                |> Maybe.withDefault True
-
                         runQuarterlySurvey =
                             runSurvey ResilienceSurveyQuarterly
+
+                        runAdoptionSurvey =
+                            runSurvey ResilienceSurveyAdoption
+
+                        filteredNurse =
+                            nurse
                     in
                     if runQuarterlySurvey then
                         viewQuarterlySurvey language currentDate nurseId model.surveyForm
 
-                    else
-                        let
-                            runAdoptionSurvey =
-                                runSurvey ResilienceSurveyAdoption
-                        in
-                        if runAdoptionSurvey then
-                            viewAdoptionSurvey language currentDate nurseId model.surveyForm
+                    else if runAdoptionSurvey then
+                        viewAdoptionSurvey language currentDate nurseId model.surveyForm
 
-                        else
-                            viewMessagingCenter language currentTime currentDate programStartDate nurseId nurse db model
+                    else
+                        viewMessagingCenter language
+                            currentTime
+                            currentDate
+                            programStartDate
+                            nurseId
+                            filteredNurse
+                            db
+                            { model | hasShownMessagesThisSession = True }
                 )
                 nurse.resilienceProgramStartDate
-                |> Maybe.withDefault (viewKickOffSurvey language currentDate nurseId nurse model.kickOffForm)
+                |> Maybe.withDefault
+                    (viewKickOffSurvey language currentDate nurseId nurse model.kickOffForm)
     in
     div [ class "page-activity messaging-center" ]
         [ header
         , content
-        , viewModal <|
-            surveyScoreDialog language model.surveyScoreDialogState
+        , viewModal <| surveyScoreDialog language model.surveyScoreDialogState
         ]
 
 
