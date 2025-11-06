@@ -47,15 +47,25 @@ view language currentTime nurseId nurse db model =
         currentDate =
             fromLocalDateTime currentTime
 
-        -- Extract nurse messages as a list
-        messagesList : List ResilienceMessage
         messagesList =
             Dict.values nurse.resilienceMessages
 
-        -- Helper to check if a message for a specific day was read
-        wasMessageRead : Int -> Bool
-        wasMessageRead targetDay =
-            List.any (\msg -> msg.displayDay == targetDay && msg.timeRead /= Nothing) messagesList
+        -- Check if a message was read before this session
+        -- or long enough before sessionStartTime (1 minute difference)
+        wasMessageReadBeforeSession targetDay =
+            List.any
+                (\msg ->
+                    msg.displayDay
+                        == targetDay
+                        && (case msg.timeRead of
+                                Just timeRead ->
+                                    posixToMillis timeRead < posixToMillis currentTime - (1 * 60 * 1000)
+
+                                Nothing ->
+                                    False
+                           )
+                )
+                messagesList
 
         numberOfUnreadMessages =
             resolveNumberOfUnreadMessages currentTime currentDate nurse
@@ -64,7 +74,8 @@ view language currentTime nurseId nurse db model =
             div [ class "ui basic head segment" ]
                 [ h1 [ class "ui header" ]
                     [ translateText language Translate.ResilienceMessage
-                    , span [ class "counter" ] [ text <| String.fromInt numberOfUnreadMessages ]
+                    , span [ class "counter" ]
+                        [ text <| String.fromInt numberOfUnreadMessages ]
                     ]
                 , span
                     [ class "link-back"
@@ -86,17 +97,18 @@ view language currentTime nurseId nurse db model =
                     List.length filteredSurveys
 
                 canTakeSurvey =
-                    if surveyCount == 0 then
-                        True
-                        -- Baseline survey always allowed
+                    if not model.hasShownMessagesThisSession then
+                        if surveyCount == 0 then
+                            True
 
-                    else if surveyCount == 1 then
-                        wasMessageRead 103
-                        -- Second survey requires message at day 103 read
+                        else if surveyCount == 1 then
+                            wasMessageReadBeforeSession 103
 
-                    else if surveyCount == 2 then
-                        wasMessageRead 198
-                        -- Final survey requires message at day 198 read
+                        else if surveyCount >= 2 then
+                            wasMessageReadBeforeSession 198
+
+                        else
+                            False
 
                     else
                         False
@@ -109,23 +121,32 @@ view language currentTime nurseId nurse db model =
                     let
                         runQuarterlySurvey =
                             runSurvey ResilienceSurveyQuarterly
+
+                        runAdoptionSurvey =
+                            runSurvey ResilienceSurveyAdoption
+
+                        filteredNurse =
+                            nurse
                     in
                     if runQuarterlySurvey then
                         viewQuarterlySurvey language currentDate nurseId model.surveyForm
 
-                    else
-                        let
-                            runAdoptionSurvey =
-                                runSurvey ResilienceSurveyAdoption
-                        in
-                        if runAdoptionSurvey then
-                            viewAdoptionSurvey language currentDate nurseId model.surveyForm
+                    else if runAdoptionSurvey then
+                        viewAdoptionSurvey language currentDate nurseId model.surveyForm
 
-                        else
-                            viewMessagingCenter language currentTime currentDate programStartDate nurseId nurse db model
+                    else
+                        viewMessagingCenter language
+                            currentTime
+                            currentDate
+                            programStartDate
+                            nurseId
+                            filteredNurse
+                            db
+                            { model | hasShownMessagesThisSession = True }
                 )
                 nurse.resilienceProgramStartDate
-                |> Maybe.withDefault (viewKickOffSurvey language currentDate nurseId nurse model.kickOffForm)
+                |> Maybe.withDefault
+                    (viewKickOffSurvey language currentDate nurseId nurse model.kickOffForm)
     in
     div [ class "page-activity messaging-center" ]
         [ header
