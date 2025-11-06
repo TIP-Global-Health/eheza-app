@@ -28113,7 +28113,8 @@ translationSet trans =
                             { english = "Measles-Rubella Vaccine"
                             , kinyarwanda = Just "Urukingo rw'Iseru na Rubeyole"
                             , kirundi = Just "Urucanco rw'agasama na Rubeole"
-                            , somali = Nothing}
+                            , somali = Nothing
+                            }
 
                         VaccineHPV ->
                             { english = "HPV Vaccine"
