@@ -324,6 +324,18 @@ applyDefaultValuesForPerson currentDate site reverseGeoInfo maybeVillage isChw m
 
                 defaultTelephoneNumber =
                     maybeRelatedPerson |> Maybe.andThen .telephoneNumber
+
+                defaultSpouseName =
+                    Maybe.andThen .spouseName maybeRelatedPerson
+
+                defaultSpousePhoneNumber =
+                    Maybe.andThen .spousePhoneNumber maybeRelatedPerson
+
+                defaultNextOfKinName =
+                    Maybe.andThen .nextOfKinName maybeRelatedPerson
+
+                defaultNextOfKinPhoneNumber =
+                    Maybe.andThen .nextOfKinPhoneNumber maybeRelatedPerson
             in
             form
                 |> applyDefaultTextInput photo defaultAvatarUrl identity
@@ -346,6 +358,10 @@ applyDefaultValuesForPerson currentDate site reverseGeoInfo maybeVillage isChw m
                 |> applyDefaultLocation cell defaultCellId
                 |> applyDefaultLocation village defaultVillageId
                 |> applyDefaultTextInput phoneNumber defaultTelephoneNumber identity
+                |> applyDefaultTextInput spouseName defaultSpouseName identity
+                |> applyDefaultTextInput spousePhoneNumber defaultSpousePhoneNumber identity
+                |> applyDefaultTextInput nextOfKinName defaultNextOfKinName identity
+                |> applyDefaultTextInput nextOfKinPhoneNumber defaultNextOfKinPhoneNumber identity
                 |> applyDefaultSelectInput healthCenter defaultHealthCenter fromEntityUuid
 
 
@@ -437,6 +453,10 @@ validatePerson site maybeRelated operation maybeCurrentDate =
                 |> andMap (succeed Nothing)
                 |> andMap (field saveGPSLocation bool)
                 |> andMap (field phoneNumber <| nullable validateDigitsOnly)
+                |> andMap (field spouseName <| nullable string)
+                |> andMap (field spousePhoneNumber <| nullable validateDigitsOnly)
+                |> andMap (field nextOfKinName <| nullable string)
+                |> andMap (field nextOfKinPhoneNumber <| nullable validateDigitsOnly)
                 |> andMap (field healthCenter (validateHealthCenterId maybeRelated))
                 |> andMap (succeed False)
                 |> andMap (succeed Nothing)
@@ -479,6 +499,10 @@ validateContact site =
                 |> andMap (succeed Nothing)
                 |> andMap (succeed False)
                 |> andMap (field phoneNumber <| nullable validateDigitsOnly)
+                |> andMap (succeed Nothing)
+                |> andMap (succeed Nothing)
+                |> andMap (succeed Nothing)
+                |> andMap (succeed Nothing)
                 |> andMap (succeed Nothing)
                 |> andMap (succeed False)
                 |> andMap (succeed Nothing)
@@ -864,6 +888,26 @@ village =
 phoneNumber : String
 phoneNumber =
     "phone_number"
+
+
+spouseName : String
+spouseName =
+    "spouse_name"
+
+
+spousePhoneNumber : String
+spousePhoneNumber =
+    "spouse_phone_number"
+
+
+nextOfKinName : String
+nextOfKinName =
+    "next_of_kin_name"
+
+
+nextOfKinPhoneNumber : String
+nextOfKinPhoneNumber =
+    "next_of_kin_phone_number"
 
 
 healthCenter : String
