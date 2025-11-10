@@ -302,7 +302,7 @@ resolveDisplayDay category order =
         ResilienceCategoryGrowth ->
             case order of
                 ResilienceMessage1 ->
-                    Just 2
+                    Just 4
 
                 ResilienceMessage2 ->
                     Just 28
@@ -311,13 +311,13 @@ resolveDisplayDay category order =
                     Just 49
 
                 ResilienceMessage4 ->
-                    Just 61
+                    Just 60
 
                 ResilienceMessage5 ->
                     Just 70
 
                 ResilienceMessage6 ->
-                    Just 96
+                    Just 97
 
                 ResilienceMessage7 ->
                     Just 100
@@ -379,13 +379,13 @@ resolveDisplayDay category order =
                     Just 9
 
                 ResilienceMessage3 ->
-                    Just 33
+                    Just 32
 
                 ResilienceMessage4 ->
                     Just 44
 
                 ResilienceMessage5 ->
-                    Just 54
+                    Just 53
 
                 ResilienceMessage6 ->
                     Just 63
@@ -397,10 +397,10 @@ resolveDisplayDay category order =
                     Just 79
 
                 ResilienceMessage9 ->
-                    Just 91
+                    Just 93
 
                 ResilienceMessage10 ->
-                    Just 93
+                    Just 95
 
                 ResilienceMessage11 ->
                     Just 119
@@ -426,13 +426,13 @@ resolveDisplayDay category order =
         ResilienceCategoryMindfulness ->
             case order of
                 ResilienceMessage1 ->
-                    Just 12
+                    Just 11
 
                 ResilienceMessage2 ->
                     Just 14
 
                 ResilienceMessage3 ->
-                    Just 19
+                    Just 18
 
                 ResilienceMessage4 ->
                     Just 35
@@ -441,7 +441,7 @@ resolveDisplayDay category order =
                     Just 37
 
                 ResilienceMessage6 ->
-                    Just 47
+                    Just 46
 
                 ResilienceMessage7 ->
                     Just 77
@@ -470,34 +470,34 @@ resolveDisplayDay category order =
                     Just 23
 
                 ResilienceMessage3 ->
-                    Just 26
+                    Just 25
 
                 ResilienceMessage4 ->
-                    Just 40
+                    Just 39
 
                 ResilienceMessage5 ->
                     Just 51
 
                 ResilienceMessage6 ->
-                    Just 68
+                    Just 67
 
                 ResilienceMessage7 ->
                     Just 72
 
                 ResilienceMessage8 ->
-                    Just 75
+                    Just 74
 
                 ResilienceMessage9 ->
-                    Just 82
+                    Just 81
 
                 ResilienceMessage10 ->
-                    Just 89
+                    Just 88
 
                 ResilienceMessage11 ->
                     Just 98
 
                 ResilienceMessage12 ->
-                    Just 110
+                    Just 109
 
                 ResilienceMessage13 ->
                     Just 128
@@ -532,7 +532,7 @@ resolveDisplayDay category order =
                     Just 58
 
                 ResilienceMessage4 ->
-                    Just 103
+                    Just 102
 
                 ResilienceMessage5 ->
                     Just 114
@@ -544,7 +544,7 @@ resolveDisplayDay category order =
                     Just 142
 
                 ResilienceMessage8 ->
-                    Just 150
+                    Just 151
 
                 ResilienceMessage9 ->
                     Just 165
@@ -564,10 +564,10 @@ resolveDisplayDay category order =
                     Just 56
 
                 ResilienceMessage3 ->
-                    Just 84
+                    Just 86
 
                 ResilienceMessage4 ->
-                    Just 117
+                    Just 116
 
                 ResilienceMessage5 ->
                     Just 147
