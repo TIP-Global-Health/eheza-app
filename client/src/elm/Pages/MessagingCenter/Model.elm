@@ -27,9 +27,19 @@ type alias Model =
     , kickOffForm : KickOffForm
     , surveyForm : SurveyForm
     , surveyScoreDialogState : Maybe SurveyScoreDialogState
+    , consentForm : ConsentForm
     , hasGivenConsent : Bool
     }
 
+
+type alias ConsentForm =
+    { agreesToParticipate : Maybe Bool }
+
+
+emptyConsentForm : ConsentForm
+emptyConsentForm =
+    { agreesToParticipate = Nothing
+    }
 
 emptyModel : Model
 emptyModel =
@@ -40,6 +50,7 @@ emptyModel =
     , kickOffForm = emptyKickOffForm
     , surveyForm = emptySurveyForm
     , surveyScoreDialogState = Nothing
+    , consentForm = emptyConsentForm
     , hasGivenConsent = False
     }
 
@@ -116,3 +127,5 @@ type Msg
     | ToggleMessageRead ResilienceMessageId NurseId Nurse Bool
     | ToggleMessageFavorite ResilienceMessageId NurseId Nurse
     | ScheduleMessageReminder Int ResilienceMessageId NurseId Nurse
+    | SetConsentAgree Bool
+    | SaveConsent NurseId Nurse

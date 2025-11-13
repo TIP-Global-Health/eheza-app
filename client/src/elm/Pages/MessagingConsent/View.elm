@@ -39,12 +39,12 @@ view language currentTime nurseId nurse model =
     in
     div [ class "page-activity messaging-consent" ]
         [ header
-        , viewConsentForm language nurseId nurse
+        , viewConsentForm language nurseId nurse model.consentForm
         ]
 
 
-viewConsentForm : Language -> NurseId -> Nurse -> Html Msg
-viewConsentForm language nurseId nurse =
+viewConsentForm : Language -> NurseId -> Nurse -> ConsentForm -> Html Msg
+viewConsentForm language nurseId nurse form =
     div [ class "consent" ]
         [ p [ class "title" ] [ text <| translate language Translate.ResilienceConsentTitle ]
         , p [ class "title" ] [ text <| translate language Translate.ResilienceConsentSubTitle ]
@@ -62,5 +62,19 @@ viewConsentForm language nurseId nurse =
         , p [] [ text <| translate language Translate.ResilienceConsentParagraph4 ]
         , p [ class "greeting" ] [ text <| translate language Translate.ResilienceConsentSubTitle2 ]
         , p [] [ text <| translate language Translate.ResilienceConsentParagraph5 ]
-
+        , div [ class "full content" ]
+            [ div [ class "ui form" ]
+                [ viewQuestionLabel language Translate.ResilienceConsentSubTitle
+                , viewBoolInput
+                    language
+                    form.agreesToParticipate
+                    SetConsentAgree
+                    "consent-agree"
+                    Nothing
+                ]
+            ]
+        , viewSaveAction
+            language
+            (SaveConsent nurseId nurse)
+            (form.agreesToParticipate == Nothing)
         ]
