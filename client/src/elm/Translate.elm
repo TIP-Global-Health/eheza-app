@@ -1427,6 +1427,21 @@ type TranslationId
     | Reports
     | ReportCompleted { pending : Int, completed : Int }
     | ResilienceCategory ResilienceCategory
+    | ResilienceConsentBullet1
+    | ResilienceConsentBullet2
+    | ResilienceConsentBullet3
+    | ResilienceConsentBullet4
+    | ResilienceConsentBullet5
+    | ResilienceConsentGreeting
+    | ResilienceConsentParagraph1
+    | ResilienceConsentParagraph2
+    | ResilienceConsentParagraph3
+    | ResilienceConsentParagraph4
+    | ResilienceConsentParagraph5
+    | ResilienceConsentQuestion
+    | ResilienceConsentSubTitle
+    | ResilienceConsentSubTitle2
+    | ResilienceConsentTitle
     | ResilienceMessage
     | ResilienceMessageIntroduction1Title
     | ResilienceMessageIntroduction1Paragraph1 String
@@ -19449,6 +19464,97 @@ translationSet trans =
                     { english = "End Of Month"
                     , kinyarwanda = Just "Gusoza ukwezi kwa mbere"
                     , kirundi = Nothing
+                    }
+
+        ResilienceConsentBullet1 ->
+                    { english = "Engaging in stress management,"
+                    , kinyarwanda = Just "Guhangana n’umunaniro ukabije,"
+                    , kirundi = Nothing
+                    }
+
+        ResilienceConsentBullet2 ->
+                    { english = "Practicing mindfulness and relaxation,"
+                    , kinyarwanda = Just "Gukora umwitozo wa mindfulness no kuruhuka,"
+                    , kirundi = Nothing
+                    }
+
+        ResilienceConsentBullet3 ->
+                    { english = "Engaging in essential self-care,"
+                    , kinyarwanda = Just "Ibikorwa byo kwiyitaho,"
+                    , kirundi = Nothing
+                    }
+
+        ResilienceConsentBullet4 ->
+                    { english = "Connecting to purpose (seeking growth),"
+                    , kinyarwanda = Just "Kubaka ubuzima bufite intego (Gushaka iterambere),"
+                    , kirundi = Nothing
+                    }
+
+        ResilienceConsentBullet5 ->
+                    { english = "Connecting with others (seeking support when needed)."
+                    , kinyarwanda = Just "Gusabana n’abandi (Gushaka bufasha mugihe bikenewe)."
+                    , kirundi = Nothing
+                    }
+
+        ResilienceConsentGreeting ->
+                    { english = "Dear Healthcare Worker,"
+                    , kinyarwanda = Just "Mukozi utanga serivisi z’ubuvuzi,"
+                    , kirundi = Nothing
+                    }
+
+        ResilienceConsentParagraph1 ->
+                    { english = "TIP Global Health, in collaboration with the Rwanda Biomedical Center, is implementing a HCWs well-being program to improve the resilience of health care providers.  In partnership with the Johnson & Johnson Center for Health Worker Innovation (CHWI) and Thrives Health Communication Agency, TIP  developed  81 Resilience Messages to facilitate behaviors that promote recovery and adaptation.  These messages are designed to help HCWs manage common stressors and maintain psychosocial well-being. The messages focus on five core behaviors:"
+                    , kinyarwanda = Just "TIP Global Health (TIP-GH), ku bufatanye n’Ikigo cy’Igihugu Gishinzwe Ubuzima (Rwanda Biomedical Center - RBC), iri gushyira mu bikorwa gahunda yo guteza imbere imibereho myiza y’abakozi batanga serivisi z’ubuvuzi (HCWs well-being program) hagamijwe kongerera abatanga serivisi z’ubuzima ubumenyi mu gukora akazi neza no mu bihe bigoye. Ku bufatanye n’Ikigo cya Johnson & Johnson for Healthcare Workers Innnovation (CHWI) hamwe na Thrives Health Communication Agency, TIP yateguye ubutumwa 81 bugamije gufasha abakozi bo mu rwego rw’ubuzima guhangana n’ibibazo no kubungabunga imitekerereze n’imyitwarire yabo. Ubutumwa bushingiye ku myitwarire itanu y’ingenzi:"
+                    , kirundi = Nothing
+                    }
+
+        ResilienceConsentParagraph2 ->
+                    { english = "TIP invites healthcare workers to participate in this program aimed at supporting well-being and improving performance. By enrolling, you will receive three supportive messages that will teach you how to manage common stressors and maintain psychosocial well-being."
+                    , kinyarwanda = Just "TIP-GH irasaba abakozi batanga serevisi z’ubuzima kwitabira iyi gahunda igamije guteza imbere imibereho myiza  y’abakozi no kunoza akazi. Nutangira iyi porogram, uzajya woherezwa ubutumwa butatu mu cyumweru bukongerera ubumenyi mu kubungabunga imitekerereze n’imyitwarire yawe."
+                    , kirundi = Nothing
+                    }
+
+        ResilienceConsentParagraph3 ->
+                    { english = "Every quarter, you will receive self-evaluation surveys to assess your change. Some questions may touch on personal or sensitive topics, which could cause mild discomfort. However, every effort has been made to ensure the content is supportive and respectful."
+                    , kinyarwanda = Just "Buri gihembwe, uzayajya uhabwa ibibazo byo kwisuzuma kugirango urebe impinduka wagize. Bimwe mu bibazo bizaba byerekeye ku buzima bwite bwawe cyangwa amarangamutima yawe, bishobora gutuma wumva utamerewe neza. Gusa ibikubiye muri iyi gahunda bigamije kugushyigikira, hatagamijwe kuguhutaza."
+                    , kirundi = Nothing
+                    }
+
+        ResilienceConsentParagraph4 ->
+                    { english = "Your privacy is protected under Rwanda’s Law No. 058/2021 of October 15, 2021, on the Protection of Personal Data and Privacy, which implements international data protection standards."
+                    , kinyarwanda = Just "Amakuru yerekeye ubuzima bwawe agirwa ibanga hubahirizwa itegeko No. 058/2021 ryo ku wa 15 Ukwakira 2021 ryerekeye kurinda amakuru bwite n’imibereho bwite by’umuntu, ishyira mu bikorwa amahame mpuzamahanga yo kubika no kurinda amakuru."
+                    , kirundi = Nothing
+                    }
+
+        ResilienceConsentParagraph5 ->
+                    { english = "I understand the purpose of this program and agree to participate voluntarily in receiving resilience messages and completing self-report evaluations. I know I can withdraw at any time."
+                    , kinyarwanda = Just "Nsobanukiwe n’intego y’iyi gahunda kandi nemeye kuyitabira ku bushake bwanjye, nkemera koherezwa ubutumwa bugamije ku gubwa neza no gusubiza ibibazo by’isuzuma. Nzi neza ko nshobora guhagarika kwitabira iyi gahunda igihe cyose mbishakiye."
+                    , kirundi = Nothing
+                    }
+
+        ResilienceConsentQuestion ->
+                    { english = "Do you agree to participate in the program"
+                    , kinyarwanda = Just "Uremera kwitabira iyi gahunda?"
+                    , kirundi = Nothing
+                    }
+
+        ResilienceConsentSubTitle ->
+                    { english = "TIP Resilience message"
+                    , kinyarwanda = Just "TIP Ubutumwa bwo kwifasha kwiyitaho"
+                    , kirundi = Nothing
+                    }
+
+        ResilienceConsentSubTitle2 ->
+                    { english = "Consent to Participate"
+                    , kinyarwanda = Just "Kwemera kwitabira"
+                    , kirundi = Nothing
+                    }
+
+        ResilienceConsentTitle ->
+                    { english = "INFORMED CONSENT AND DECLARATION OF CONSENT"
+                    , kinyarwanda = Just "KWEMERA KUMENYESHEJWE NO GUTANGA UBURENGANZIRA KU BUSHAKE"
+                    , kirundi = Nothing
+
                     }
 
         ResilienceMessage ->
