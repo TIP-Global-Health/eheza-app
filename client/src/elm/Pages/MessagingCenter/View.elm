@@ -102,7 +102,7 @@ view language currentTime nurseId nurse db model =
                             True
 
                         else if surveyCount == 1 then
-                            wasMessageReadBeforeSession 103
+                            wasMessageReadBeforeSession 102
 
                         else if surveyCount >= 2 then
                             wasMessageReadBeforeSession 198
