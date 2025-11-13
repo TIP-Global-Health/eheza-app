@@ -324,22 +324,68 @@ update currentTime currentDate db msg model =
 
         SaveConsent nurseId nurse ->
             let
-                redirectMsg =
+                userAnswer =
                     case model.consentForm.agreesToParticipate of
-                        Just False ->
-                            [ App.Model.SetActivePage PinCodePage ]
+                        Just b ->
+                            b
 
-                        _ ->
-                            []
+                        Nothing ->
+                            False
+
+                nurseWithConsent =
+                    { nurse
+                        | resilienceConsentGiven = userAnswer
+                        , resilienceConsentReason =
+                            if userAnswer then
+                                Nothing
+
+                            else
+                                model.consentForm.reasonsToNotConsent
+                    }
+
+                redirectMsg =
+                    if userAnswer == False then
+                        [ App.Model.SetActivePage PinCodePage ]
+
+                    else
+                        []
+
+                updatedModel =
+                    if userAnswer then
+                        { model
+                            | hasGivenConsent = True
+                        }
+
+                    else
+                        { model
+                            | hasGivenConsent = False
+                            , consentForm =
+                                { agreesToParticipate = Nothing
+                                , reasonsToNotConsent = Nothing
+                                }
+                        }
 
                 updateMsg =
-                    Backend.Nurse.Model.UpdateNurse nurseId nurse
+                    Backend.Nurse.Model.UpdateNurse nurseId nurseWithConsent
                         |> Backend.Model.MsgNurse nurseId
                         |> App.Model.MsgIndexedDb
             in
-            ( { model | hasGivenConsent = True }
+            ( updatedModel
             , Cmd.none
             , updateMsg :: redirectMsg
+            )
+
+        SelectConsentReason reason ->
+            let
+                form =
+                    model.consentForm
+
+                updatedForm =
+                    { form | reasonsToNotConsent = Just reason }
+            in
+            ( { model | consentForm = updatedForm }
+            , Cmd.none
+            , []
             )
 
 

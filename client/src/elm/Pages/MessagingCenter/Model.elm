@@ -5,7 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (Gender)
 import Backend.Nurse.Model exposing (Nurse, ResilienceRole)
 import Backend.Person.Model exposing (EducationLevel, MaritalStatus, Ubudehe)
-import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
+import Backend.ResilienceMessage.Model exposing (ReasonForNotConsenting, ResilienceMessage)
 import Backend.ResilienceSurvey.Model
     exposing
         ( ResilienceSurveyQuestion
@@ -33,13 +33,17 @@ type alias Model =
 
 
 type alias ConsentForm =
-    { agreesToParticipate : Maybe Bool }
+    { agreesToParticipate : Maybe Bool
+    , reasonsToNotConsent : Maybe ReasonForNotConsenting
+    }
 
 
 emptyConsentForm : ConsentForm
 emptyConsentForm =
     { agreesToParticipate = Nothing
+    , reasonsToNotConsent = Nothing
     }
+
 
 emptyModel : Model
 emptyModel =
@@ -128,4 +132,5 @@ type Msg
     | ToggleMessageFavorite ResilienceMessageId NurseId Nurse
     | ScheduleMessageReminder Int ResilienceMessageId NurseId Nurse
     | SetConsentAgree Bool
+    | SelectConsentReason ReasonForNotConsenting
     | SaveConsent NurseId Nurse

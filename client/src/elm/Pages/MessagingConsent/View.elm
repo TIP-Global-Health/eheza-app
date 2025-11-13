@@ -2,6 +2,7 @@ module Pages.MessagingConsent.View exposing (view)
 
 import Backend.Entities exposing (..)
 import Backend.Nurse.Model exposing (Nurse, ResilienceRole(..))
+import Backend.ResilienceMessage.Model exposing (ReasonForNotConsenting(..), ResilienceCategory(..), ResilienceMessage, ResilienceMessageOrder(..))
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -32,7 +33,7 @@ view language currentTime nurseId nurse model =
                     ]
                 , span
                     [ class "link-back"
-                    , onClick <| SetActivePage <| WellbeingPage
+                    , onClick <| SetActivePage <| UserPage WellbeingPage
                     ]
                     [ span [ class "icon-back" ] [] ]
                 ]
@@ -64,7 +65,7 @@ viewConsentForm language nurseId nurse form =
         , p [] [ text <| translate language Translate.ResilienceConsentParagraph5 ]
         , div [ class "full content" ]
             [ div [ class "ui form" ]
-                [ viewQuestionLabel language Translate.ResilienceConsentSubTitle
+                [ viewQuestionLabel language Translate.ResilienceConsentQuestion
                 , viewBoolInput
                     language
                     form.agreesToParticipate
@@ -72,6 +73,26 @@ viewConsentForm language nurseId nurse form =
                     "consent-agree"
                     Nothing
                 ]
+            , case form.agreesToParticipate of
+                Just False ->
+                    div [ class "ui form" ]
+                        [ viewQuestionLabel language Translate.WhyNot
+                        , viewCheckBoxSelectInput language
+                            [ ManyOtherCommitments
+                            , NoDedicatedTimeForTheProgram
+                            , ProgramNotAddressingMyStressors
+                            , DontWantToBeSeenAsStruggling
+                            , TriedSimilarProgramBefore
+                            , NotInterestedInProgram
+                            ]
+                            []
+                            form.reasonsToNotConsent
+                            SelectConsentReason
+                            Translate.ReasonForNotConsenting
+                        ]
+
+                _ ->
+                    text ""
             ]
         , viewSaveAction
             language
