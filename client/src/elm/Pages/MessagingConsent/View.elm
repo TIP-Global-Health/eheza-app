@@ -33,7 +33,7 @@ view language currentTime nurseId nurse model =
                     ]
                 , span
                     [ class "link-back"
-                    , onClick <| SetActivePage <| UserPage WellbeingPage
+                    , onClick <| SetActivePage <| WellbeingPage
                     ]
                     [ span [ class "icon-back" ] [] ]
                 ]

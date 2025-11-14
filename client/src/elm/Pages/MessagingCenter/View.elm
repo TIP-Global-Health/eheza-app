@@ -8,7 +8,7 @@ import Backend.Nurse.Model exposing (Nurse, ResilienceRole(..))
 import Backend.Nurse.Utils exposing (resilienceRoleToString)
 import Backend.Person.Model exposing (EducationLevel(..), MaritalStatus(..), allUbudehes)
 import Backend.Person.Utils exposing (educationLevelToInt, genderToString, maritalStatusToString, ubudeheToInt)
-import Backend.ResilienceMessage.Model exposing (ResilienceCategory(..), ResilienceMessage, ResilienceMessageOrder(..))
+import Backend.ResilienceMessage.Model exposing (ReasonForNotConsenting(..), ResilienceCategory(..), ResilienceMessage, ResilienceMessageOrder(..))
 import Backend.ResilienceSurvey.Model exposing (ResilienceSurveyQuestionOption(..), ResilienceSurveyType(..))
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
@@ -21,6 +21,7 @@ import Html.Events exposing (onClick)
 import Maybe
 import Pages.MessagingCenter.Model exposing (..)
 import Pages.MessagingCenter.Utils exposing (..)
+import Pages.MessagingConsent.View
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
@@ -61,80 +62,89 @@ view language currentTime nurseId nurse db model =
                     ]
                     [ span [ class "icon-back" ] [] ]
                 ]
+    in
+    if not model.hasGivenConsent then
+        Pages.MessagingConsent.View.view language
+            currentTime
+            nurseId
+            nurse
+            model
 
-        content =
-            Maybe.map
-                (\programStartDate ->
-                    let
-                        surveys =
-                            Dict.get nurseId db.resilienceSurveysByNurse
-                                |> Maybe.andThen RemoteData.toMaybe
-                                |> Maybe.map Dict.values
-                                |> Maybe.withDefault []
-
-                        surveysSorted =
-                            List.sortWith (sortByDateDesc .dateMeasured) surveys
-
-                        runSurvey surveyType =
-                            let
-                                filteredSurveys =
-                                    List.filter (.surveyType >> (==) surveyType) surveysSorted
-
-                                surveyCount =
-                                    List.length filteredSurveys
-
-                                filterCondition survey =
-                                    let
-                                        -- Calculate the days since the program started
-                                        daysSinceProgramStart =
-                                            Date.diff Days programStartDate currentDate
-                                    in
-                                    if surveyCount == 0 then
-                                        -- First survey should always run at the start of the program
-                                        True
-
-                                    else if surveyCount == 1 then
-                                        -- Second survey should run at 106 days
-                                        daysSinceProgramStart >= 105
-
-                                    else if surveyCount == 2 then
-                                        -- Final survey should run at 201 days
-                                        daysSinceProgramStart >= 200
-
-                                    else
-                                        -- No more surveys after 3 have been completed
-                                        False
-                            in
-                            List.head filteredSurveys
-                                |> Maybe.map filterCondition
-                                |> Maybe.withDefault True
-
-                        runQuarterlySurvey =
-                            runSurvey ResilienceSurveyQuarterly
-                    in
-                    if runQuarterlySurvey then
-                        viewQuarterlySurvey language currentDate nurseId model.surveyForm
-
-                    else
+    else
+        let
+            content =
+                Maybe.map
+                    (\programStartDate ->
                         let
-                            runAdoptionSurvey =
-                                runSurvey ResilienceSurveyAdoption
+                            surveys =
+                                Dict.get nurseId db.resilienceSurveysByNurse
+                                    |> Maybe.andThen RemoteData.toMaybe
+                                    |> Maybe.map Dict.values
+                                    |> Maybe.withDefault []
+
+                            surveysSorted =
+                                List.sortWith (sortByDateDesc .dateMeasured) surveys
+
+                            runSurvey surveyType =
+                                let
+                                    filteredSurveys =
+                                        List.filter (.surveyType >> (==) surveyType) surveysSorted
+
+                                    surveyCount =
+                                        List.length filteredSurveys
+
+                                    filterCondition survey =
+                                        let
+                                            -- Calculate the days since the program started
+                                            daysSinceProgramStart =
+                                                Date.diff Days programStartDate currentDate
+                                        in
+                                        if surveyCount == 0 then
+                                            -- First survey should always run at the start of the program
+                                            True
+
+                                        else if surveyCount == 1 then
+                                            -- Second survey should run at 106 days
+                                            daysSinceProgramStart >= 105
+
+                                        else if surveyCount == 2 then
+                                            -- Final survey should run at 201 days
+                                            daysSinceProgramStart >= 200
+
+                                        else
+                                            -- No more surveys after 3 have been completed
+                                            False
+                                in
+                                List.head filteredSurveys
+                                    |> Maybe.map filterCondition
+                                    |> Maybe.withDefault True
+
+                            runQuarterlySurvey =
+                                runSurvey ResilienceSurveyQuarterly
                         in
-                        if runAdoptionSurvey then
-                            viewAdoptionSurvey language currentDate nurseId model.surveyForm
+                        if runQuarterlySurvey then
+                            viewQuarterlySurvey language currentDate nurseId model.surveyForm
 
                         else
-                            viewMessagingCenter language currentTime currentDate programStartDate nurseId nurse db model
-                )
-                nurse.resilienceProgramStartDate
-                |> Maybe.withDefault (viewKickOffSurvey language currentDate nurseId nurse model.kickOffForm)
-    in
-    div [ class "page-activity messaging-center" ]
-        [ header
-        , content
-        , viewModal <|
-            surveyScoreDialog language model.surveyScoreDialogState
-        ]
+                            let
+                                runAdoptionSurvey =
+                                    runSurvey ResilienceSurveyAdoption
+                            in
+                            if runAdoptionSurvey then
+                                viewAdoptionSurvey language currentDate nurseId model.surveyForm
+
+                            else
+                                viewMessagingCenter language currentTime currentDate programStartDate nurseId nurse db model
+                    )
+                    nurse.resilienceProgramStartDate
+                    |> Maybe.withDefault (viewKickOffSurvey language currentDate nurseId nurse model.kickOffForm)
+        in
+        div [ class "page-activity messaging-center" ]
+            [ header
+            , content
+            , viewModal <|
+                surveyScoreDialog language model.surveyScoreDialogState
+            ]
 
 
 viewKickOffSurvey : Language -> NominalDate -> NurseId -> Nurse -> KickOffForm -> Html Msg
