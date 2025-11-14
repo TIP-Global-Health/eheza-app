@@ -19573,7 +19573,7 @@ translationSet trans =
 
         ResilienceConsentQuestion ->
             { english = "Do you agree to participate in the program"
-            , kinyarwanda = Just "Uremera kwitabira iyi gahunda?"
+            , kinyarwanda = Just "Uremera kwitabira iyi gahunda"
             , kirundi = Nothing
             }
 
