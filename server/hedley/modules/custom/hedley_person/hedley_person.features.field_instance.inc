@@ -178,6 +178,86 @@ function hedley_person_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-nurse-field_resilience_consent'.
+  $field_instances['node-nurse-field_resilience_consent'] = array(
+    'bundle' => 'nurse',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 17,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_resilience_consent',
+    'label' => 'Resilience Consent',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 17,
+    ),
+  );
+
+  // Exported field_instance: 'node-nurse-field_resilience_consent_reason'.
+  $field_instances['node-nurse-field_resilience_consent_reason'] = array(
+    'bundle' => 'nurse',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 18,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_resilience_consent_reason',
+    'label' => 'Resilience Consent Reason',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 18,
+    ),
+  );
+
   // Exported field_instance: 'node-nurse-field_resilience_role'.
   $field_instances['node-nurse-field_resilience_role'] = array(
     'bundle' => 'nurse',
@@ -1948,6 +2028,8 @@ function hedley_person_field_default_field_instances() {
   t('Related to');
   t('Reports Data');
   t('Resilience Birth date');
+  t('Resilience Consent');
+  t('Resilience Consent Reason');
   t('Resilience Education Level');
   t('Resilience Gender');
   t('Resilience Marital status');
