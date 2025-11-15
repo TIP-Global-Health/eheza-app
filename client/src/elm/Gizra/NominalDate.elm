@@ -5,7 +5,7 @@ module Gizra.NominalDate exposing
     , fromLocalDateTime
     , diffDays, diffCalendarMonthsAndDays
     , NominalDateRange, decodeDrupalRange, encodeDrupalRange
-    , allMonths, daysInMonth, diffCalendarMonths, diffCalendarYearsAndMonths, diffMonths, diffWeeks, diffYears, formatDDMMYY, formatDDMMYYYY, isDiffTruthy, isLeapYear, monthMM, toLastDayOfMonth, yearYY, yearYYNumber
+    , allMonths, daysInMonth, diffCalendarMonths, diffCalendarYearsAndMonths, diffMonths, diffWeeks, diffYears, formatDDMMYY, formatDDMMYYYY, isDiffTruthy, isLeapYear, toLastDayOfMonth, yearYYNumber
     )
 
 {-| Some utilities for dealing with "pure" dates that have no time or
@@ -363,16 +363,6 @@ allMonths =
     , Nov
     , Dec
     ]
-
-
-monthMM : NominalDate -> String
-monthMM =
-    Date.month >> Date.monthToNumber >> Debug.toString >> addLeadingZero
-
-
-yearYY : NominalDate -> String
-yearYY date =
-    yearYYNumber |> Debug.toString |> addLeadingZero
 
 
 yearYYNumber : NominalDate -> Int
