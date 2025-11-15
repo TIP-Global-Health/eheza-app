@@ -7,7 +7,6 @@ import Gizra.Json exposing (decodeInt)
 import Gizra.TimePosix exposing (decodeSecondsAsPosix)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
-import Restful.Endpoint exposing (decodeEntityUuid)
 
 
 decodeResilienceMessages : Decoder (Dict String ResilienceMessage)

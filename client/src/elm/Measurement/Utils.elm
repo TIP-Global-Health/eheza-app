@@ -2043,16 +2043,16 @@ toPartnerHIVTestValueWithDefault saved form =
 
 toPartnerHIVTestValue : PartnerHIVTestForm -> Maybe PartnerHIVTestValue
 toPartnerHIVTestValue form =
-    let
-        hivSigns =
-            [ ifNullableTrue PartnerTakingARV form.partnerTakingARV
-            , ifNullableTrue PartnerSurpressedViralLoad form.partnerSurpressedViralLoad
-            ]
-                |> Maybe.Extra.combine
-                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHIVSign)
-    in
     Maybe.map
         (\executionNote ->
+            let
+                hivSigns =
+                    [ ifNullableTrue PartnerTakingARV form.partnerTakingARV
+                    , ifNullableTrue PartnerSurpressedViralLoad form.partnerSurpressedViralLoad
+                    ]
+                        |> Maybe.Extra.combine
+                        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHIVSign)
+            in
             { executionNote = executionNote
             , executionDate = form.executionDate
             , testPrerequisites = testPrerequisitesByImmediateResult form.immediateResult
@@ -4273,9 +4273,6 @@ partnerARVViralLoadInputsAndTasks :
     -> ( List (Html msg), Int, Int )
 partnerARVViralLoadInputsAndTasks language setPartnerHIVTestFormBoolInputMsg partnerTakingARV partnerSurpressedViralLoad =
     let
-        emptySection =
-            ( [], 0, 0 )
-
         partnerTakingARVUpdateFunc =
             \value form_ ->
                 { form_
@@ -4305,7 +4302,7 @@ partnerARVViralLoadInputsAndTasks language setPartnerHIVTestFormBoolInputMsg par
                 )
 
             else
-                emptySection
+                ( [], 0, 0 )
     in
     ( [ viewQuestionLabel language <| Translate.PrenatalHIVSignQuestion PartnerTakingARV
       , viewBoolInput
