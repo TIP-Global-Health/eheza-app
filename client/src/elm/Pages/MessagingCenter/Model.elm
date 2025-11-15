@@ -17,6 +17,7 @@ import DateSelector.Model exposing (DateSelectorConfig)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (Page)
+import Time
 
 
 type alias Model =
@@ -27,6 +28,8 @@ type alias Model =
     , kickOffForm : KickOffForm
     , surveyForm : SurveyForm
     , surveyScoreDialogState : Maybe SurveyScoreDialogState
+    , sessionStartTime : Time.Posix
+    , hasShownMessagesThisSession : Bool
     }
 
 
@@ -39,6 +42,8 @@ emptyModel =
     , kickOffForm = emptyKickOffForm
     , surveyForm = emptySurveyForm
     , surveyScoreDialogState = Nothing
+    , sessionStartTime = Time.millisToPosix 0
+    , hasShownMessagesThisSession = False
     }
 
 
