@@ -24,6 +24,15 @@ type ResilienceCategory
     | ResilienceCategoryEndOfPeriod
 
 
+type ReasonForNotConsenting
+    = ManyOtherCommitments
+    | NoDedicatedTimeForTheProgram
+    | ProgramNotAddressingMyStressors
+    | DontWantToBeSeenAsStruggling
+    | TriedSimilarProgramBefore
+    | NotInterestedInProgram
+
+
 type ResilienceMessageOrder
     = ResilienceMessage1
     | ResilienceMessage2

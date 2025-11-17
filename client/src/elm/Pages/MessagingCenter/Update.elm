@@ -20,6 +20,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Pages.MessagingCenter.Model exposing (..)
 import Pages.MessagingCenter.Utils exposing (resolveSurveyScoreDialogState, surveyAnswerToScore, surveyQuestionsAnswered)
+import Pages.Page exposing (Page(..), UserPage(..))
 import Time
 import Time.Extra
 
@@ -306,6 +307,67 @@ update currentTime currentDate db msg model =
                         , timeRead = Just currentTime
                     }
                 )
+            )
+
+        SetConsentAgree value ->
+            let
+                form =
+                    model.consentForm
+
+                updatedForm =
+                    { form | agreesToParticipate = Just value, reasonsToNotConsent = Nothing }
+            in
+            ( { model | consentForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SelectConsentReason reason ->
+            let
+                form =
+                    model.consentForm
+
+                updatedForm =
+                    { form | reasonsToNotConsent = Just reason }
+            in
+            ( { model | consentForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SaveConsent nurseId nurse ->
+            let
+                agreesToParticipate =
+                    Maybe.withDefault False model.consentForm.agreesToParticipate
+
+                nurseWithConsent =
+                    { nurse
+                        | resilienceConsentGiven = agreesToParticipate
+                        , resilienceConsentReason = model.consentForm.reasonsToNotConsent
+                    }
+
+                ( redirectMsg, updatedModel ) =
+                    if not agreesToParticipate then
+                        ( [ App.Model.SetActivePage PinCodePage ]
+                        , { model
+                            | consentForm =
+                                { agreesToParticipate = Nothing
+                                , reasonsToNotConsent = Nothing
+                                }
+                          }
+                        )
+
+                    else
+                        ( [], model )
+
+                updateMsg =
+                    Backend.Nurse.Model.UpdateNurse nurseId nurseWithConsent
+                        |> Backend.Model.MsgNurse nurseId
+                        |> App.Model.MsgIndexedDb
+            in
+            ( updatedModel
+            , Cmd.none
+            , updateMsg :: redirectMsg
             )
 
 

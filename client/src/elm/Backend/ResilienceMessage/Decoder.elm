@@ -1,4 +1,4 @@
-module Backend.ResilienceMessage.Decoder exposing (decodeResilienceMessage, decodeResilienceMessages)
+module Backend.ResilienceMessage.Decoder exposing (decodeReasonForNotConsenting, decodeResilienceMessage, decodeResilienceMessages)
 
 import AssocList as Dict exposing (Dict)
 import Backend.ResilienceMessage.Model exposing (..)
@@ -58,4 +58,33 @@ decodeResilienceMessageOrder =
                             s
                                 ++ " is not a recognized ResilienceMessageOrder."
                         )
+            )
+
+
+decodeReasonForNotConsenting : Decoder ReasonForNotConsenting
+decodeReasonForNotConsenting =
+    string
+        |> andThen
+            (\str ->
+                case str of
+                    "many-other-commitments" ->
+                        succeed ManyOtherCommitments
+
+                    "no-dedicated-time" ->
+                        succeed NoDedicatedTimeForTheProgram
+
+                    "program-not-addressing-stressors" ->
+                        succeed ProgramNotAddressingMyStressors
+
+                    "do-not-want-to-be-seen-as-struggling" ->
+                        succeed DontWantToBeSeenAsStruggling
+
+                    "tried-similar-program" ->
+                        succeed TriedSimilarProgramBefore
+
+                    "not-interested" ->
+                        succeed NotInterestedInProgram
+
+                    _ ->
+                        fail ("Unknown reason for not consenting: " ++ str)
             )
