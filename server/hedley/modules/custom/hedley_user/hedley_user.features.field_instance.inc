@@ -500,7 +500,7 @@ function hedley_user_field_default_field_instances() {
     'label' => 'Groups',
     'required' => 0,
     'settings' => array(
-      'user_register_form' => 1,
+      'user_register_form' => 0,
     ),
     'widget' => array(
       'active' => 1,
@@ -574,7 +574,7 @@ This info is periodically reported by device.',
     'label' => 'Health centers for reports',
     'required' => 0,
     'settings' => array(
-      'user_register_form' => 0,
+      'user_register_form' => 1,
     ),
     'widget' => array(
       'active' => 1,

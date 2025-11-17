@@ -5618,7 +5618,7 @@ function hedley_activity_field_default_field_instances() {
         'display_label' => 1,
       ),
       'type' => 'options_onoff',
-      'weight' => 6,
+      'weight' => 9,
     ),
   );
 
@@ -5661,7 +5661,7 @@ function hedley_activity_field_default_field_instances() {
         'display_label' => 0,
       ),
       'type' => 'options_onoff',
-      'weight' => 7,
+      'weight' => 11,
     ),
   );
 
@@ -5774,7 +5774,45 @@ function hedley_activity_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 5,
+      'weight' => 7,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-last_menstrual_period-field_late_first_visit_reason'.
+  $field_instances['node-last_menstrual_period-field_late_first_visit_reason'] = array(
+    'bundle' => 'last_menstrual_period',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_late_first_visit_reason',
+    'label' => 'Late first visit reason',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 9,
     ),
   );
 
@@ -5812,7 +5850,7 @@ function hedley_activity_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 8,
+      'weight' => 10,
     ),
   );
 
@@ -5993,7 +6031,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 10,
+      'weight' => 5,
     ),
   );
 
@@ -6033,7 +6071,53 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 9,
+      'weight' => 6,
+    ),
+  );
+
+  // Exported field_instance: 'node-last_menstrual_period-field_weight'.
+  $field_instances['node-last_menstrual_period-field_weight'] = array(
+    'bundle' => 'last_menstrual_period',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 2,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_decimal',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_weight',
+    'label' => 'Pre-pregnancy Weight',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 8,
     ),
   );
 
@@ -6330,6 +6414,44 @@ function hedley_activity_field_default_field_instances() {
       'settings' => array(),
       'type' => 'options_buttons',
       'weight' => 8,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-medical_history-field_preeclampsia_in_family'.
+  $field_instances['node-medical_history-field_preeclampsia_in_family'] = array(
+    'bundle' => 'medical_history',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_preeclampsia_in_family',
+    'label' => 'Preeclampsia in family',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 11,
     ),
   );
 
@@ -16065,6 +16187,7 @@ function hedley_activity_field_default_field_instances() {
   t('Infectious Disease History');
   t('Lactation signs');
   t('Last Menstrual Period');
+  t('Late first visit reason');
   t('Leave blank -- it will be entered automatically.');
   t('Leave blank -- it will be filled in automatically.');
   t('Leave this blank -- it will be automatically generated.');
@@ -16095,7 +16218,9 @@ function hedley_activity_field_default_field_instances() {
   t('Physical Condition History');
   t('Postpartum child');
   t('Postpartum mother');
+  t('Pre-pregnancy Weight');
   t('PreTerm Pregnancy');
+  t('Preeclampsia in family');
   t('Prenatal Encounter');
   t('Prenatal Health Education');
   t('Previous Delivery (Partially DEPRECATED)');

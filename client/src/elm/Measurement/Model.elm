@@ -9,6 +9,7 @@ import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.ParticipantConsent.Model exposing (..)
+import Backend.Person.Model exposing (Person)
 import Date exposing (Unit)
 import DateSelector.Model exposing (DateSelectorConfig)
 import EverySet exposing (EverySet)
@@ -2078,4 +2079,23 @@ emptyOngoingTreatmentReviewForm =
     , totalMissedDosesDirty = False
     , adverseEvents = Nothing
     , adverseEventsDirty = False
+    }
+
+
+type alias MedicationAdministrationForm =
+    { medicationAdministered : Maybe Bool
+    , reasonForNonAdministration : Maybe AdministrationNote
+    }
+
+
+emptyMedicationAdministrationForm : MedicationAdministrationForm
+emptyMedicationAdministrationForm =
+    MedicationAdministrationForm Nothing Nothing
+
+
+type alias MedicationAdministrationFormConfig msg =
+    { medication : MedicationDistributionSign
+    , setMedicationAdministeredMsg : Bool -> msg
+    , setReasonForNonAdministration : AdministrationNote -> msg
+    , resolveDosageAndIconFunc : Language -> NominalDate -> Person -> Maybe ( String, String, String )
     }

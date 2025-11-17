@@ -1049,6 +1049,9 @@ function hedley_prenatal_field_default_field_bases() {
         'depression-highly-possible' => 'Depression Highly Possible',
         'depression-probable' => 'Depression Probable',
         'suicide-risk' => 'Suicide Risk',
+        'high-risk-of-preeclampsia-initial' => 'High Risk of Preeclampsia - Initial Phase',
+        'high-risk-of-preeclampsia-recurrent' => 'High Risk of Preeclampsia - Recurrent Phase',
+        'moderate-risk-of-preeclampsia' => 'Moderate Risk of Preeclampsia',
         'other' => 'Other',
         'postpartum-abdominal-pain' => 'Postpartum Abdominal Pain',
         'postpartum-urinary-incontinence' => 'Postpartum Urinary Incontinence',
@@ -1353,6 +1356,34 @@ function hedley_prenatal_field_default_field_bases() {
         'anc-accompany' => 'ANC services - accompany',
         'us' => 'Ultrasound',
         'us-referral-form' => 'Ultrasound - referral form',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_reinforce_treatment_signs'.
+  $field_bases['field_reinforce_treatment_signs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_reinforce_treatment_signs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'anemia-fefol' => 'Anemia Fefol',
+        'anemia-mms' => 'Anemia MMS',
+        'anemia-repeat-test' => 'Anemia Repeat test',
         'none' => 'None',
       ),
       'allowed_values_function' => '',
