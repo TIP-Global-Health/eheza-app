@@ -31,7 +31,18 @@ import Backend.Person.Utils exposing (generateFullName)
 import Backend.PrenatalActivity.Model exposing (PrenatalRecurrentActivity(..))
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter)
-import Backend.Utils exposing (hivManagementEnabled, resolveIndividualParticipantForPerson, resolveIndividualParticipantsForPerson, tuberculosisManagementEnabled)
+import Backend.Utils
+    exposing
+        ( acuteIllnessEnabled
+        , antenatalEnabled
+        , hivManagementEnabled
+        , ncdEnabled
+        , nutritionEnabled
+        , resolveIndividualParticipantForPerson
+        , resolveIndividualParticipantsForPerson
+        , tuberculosisManagementEnabled
+        , wellChildEnabled
+        )
 import Backend.Village.Utils exposing (resolveVillageResidents)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..))
 import Date exposing (Unit(..))
@@ -94,7 +105,7 @@ view language currentDate features healthCenterId mVillageId isLabTech syncManag
                     viewWebData language (viewContentForChw language currentDate features villageId model db) identity followUps
                 )
                 mVillageId
-                |> Maybe.withDefault (viewWebData language (viewContentForNurse language currentDate isLabTech model db) identity followUps)
+                |> Maybe.withDefault (viewWebData language (viewContentForNurse language currentDate features isLabTech model db) identity followUps)
                 |> viewBySyncStatus language healthCenterId syncManager.syncInfoAuthorities
     in
     div [ class "wrap wrap-alt-2 page-case-management" ]
@@ -116,16 +127,25 @@ viewContentForChw language currentDate features villageId model db allFollowUps 
         followUps =
             filterFollowUpsOfResidents villageResidents allFollowUps
 
-        nutritionFollowUps =
-            generateNutritionFollowUps currentDate followUps
-                |> fillPersonName identity db
+        nutritionPane =
+            if nutritionEnabled features then
+                let
+                    nutritionFollowUps =
+                        generateNutritionFollowUps currentDate followUps
+                            |> fillPersonName identity db
+                in
+                [ ( FilterNutrition, viewNutritionPane language currentDate nutritionFollowUps db model ) ]
 
-        nutritionFollowUpsPane =
-            viewNutritionPane language currentDate nutritionFollowUps db model
+            else
+                []
 
         acuteIllnessFollowUps =
-            generateAcuteIllnessFollowUps currentDate db followUps
-                |> fillPersonName Tuple.second db
+            if acuteIllnessEnabled features then
+                generateAcuteIllnessFollowUps currentDate db followUps
+                    |> fillPersonName Tuple.second db
+
+            else
+                Dict.empty
 
         ( tbSuspectAcuteIllnessFollowUps, nonTBSuspectAcuteIllnessFollowUps ) =
             Dict.partition
@@ -134,22 +154,36 @@ viewContentForChw language currentDate features villageId model db allFollowUps 
                 )
                 acuteIllnessFollowUps
 
-        acuteIllnessFollowUpsPane =
-            viewAcuteIllnessPane language currentDate nonTBSuspectAcuteIllnessFollowUps db model
+        acuteIllnessPane =
+            if acuteIllnessEnabled features then
+                [ ( FilterAcuteIllness, viewAcuteIllnessPane language currentDate nonTBSuspectAcuteIllnessFollowUps db model ) ]
 
-        prenatalFollowUps =
-            generatePrenatalFollowUps currentDate db followUps
-                |> fillPersonName Tuple.second db
+            else
+                []
 
-        prenatalFollowUpsPane =
-            viewPrenatalPane language currentDate prenatalFollowUps db model
+        prenatalPane =
+            if antenatalEnabled features then
+                let
+                    prenatalFollowUps =
+                        generatePrenatalFollowUps currentDate db followUps
+                            |> fillPersonName Tuple.second db
+                in
+                [ ( FilterAntenatal, viewPrenatalPane language currentDate prenatalFollowUps db model ) ]
 
-        immunizationFollowUps =
-            generateImmunizationFollowUps currentDate followUps
-                |> fillPersonName identity db
+            else
+                []
 
-        immunizationFollowUpsPane =
-            viewImmunizationPane language currentDate immunizationFollowUps db model
+        immunizationPane =
+            if wellChildEnabled features then
+                let
+                    immunizationFollowUps =
+                        generateImmunizationFollowUps currentDate followUps
+                            |> fillPersonName identity db
+                in
+                [ ( FilterImmunization, viewImmunizationPane language currentDate immunizationFollowUps db model ) ]
+
+            else
+                []
 
         tuberculosisPane =
             if tuberculosisManagementEnabled features then
@@ -187,11 +221,10 @@ viewContentForChw language currentDate features villageId model db allFollowUps 
                 []
 
         panes =
-            [ ( FilterAcuteIllness, acuteIllnessFollowUpsPane )
-            , ( FilterAntenatal, prenatalFollowUpsPane )
-            , ( FilterNutrition, nutritionFollowUpsPane )
-            , ( FilterImmunization, immunizationFollowUpsPane )
-            ]
+            acuteIllnessPane
+                ++ prenatalPane
+                ++ nutritionPane
+                ++ immunizationPane
                 ++ tuberculosisPane
                 ++ hivPane
                 |> List.filterMap
@@ -208,32 +241,43 @@ viewContentForChw language currentDate features villageId model db allFollowUps 
             :: panes
 
 
-viewContentForNurse : Language -> NominalDate -> Bool -> Model -> ModelIndexedDb -> FollowUpMeasurements -> Html Msg
-viewContentForNurse language currentDate isLabTech model db followUps =
+viewContentForNurse : Language -> NominalDate -> EverySet SiteFeature -> Bool -> Model -> ModelIndexedDb -> FollowUpMeasurements -> Html Msg
+viewContentForNurse language currentDate features isLabTech model db followUps =
     let
         ( panes, filters ) =
             let
                 prenatalLabsPane =
-                    viewPrenatalLabsPane language currentDate isLabTech followUps.prenatalLabs db model
+                    if antenatalEnabled features then
+                        [ ( FilterPrenatalLabs, viewPrenatalLabsPane language currentDate isLabTech followUps.prenatalLabs db model ) ]
+
+                    else
+                        []
             in
             if isLabTech then
-                ( [ ( FilterPrenatalLabs, prenatalLabsPane ) ]
-                , labTechFilters
+                ( prenatalLabsPane
+                , labTechFilters features
                 )
 
             else
                 let
                     contactsTracingPane =
-                        viewContactsTracingPane language currentDate followUps.traceContacts db model
+                        if acuteIllnessEnabled features then
+                            [ ( FilterContactsTrace, viewContactsTracingPane language currentDate followUps.traceContacts db model ) ]
 
-                    ncdLabsPane =
-                        viewNCDLabsPane language currentDate followUps.ncdLabs db model
+                        else
+                            []
+
+                    ncdLabsPanePane =
+                        if ncdEnabled features then
+                            [ ( FilterNCDLabs, viewNCDLabsPane language currentDate followUps.ncdLabs db model ) ]
+
+                        else
+                            []
                 in
-                ( [ ( FilterContactsTrace, contactsTracingPane )
-                  , ( FilterPrenatalLabs, prenatalLabsPane )
-                  , ( FilterNCDLabs, ncdLabsPane )
-                  ]
-                , nurseFilters
+                ( contactsTracingPane
+                    ++ prenatalLabsPane
+                    ++ ncdLabsPanePane
+                , nurseFilters features
                 )
 
         panesForView =

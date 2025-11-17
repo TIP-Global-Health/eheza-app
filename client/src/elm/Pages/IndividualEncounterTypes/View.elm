@@ -3,7 +3,17 @@ module Pages.IndividualEncounterTypes.View exposing (view)
 import App.Model exposing (Msg(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
-import Backend.Utils exposing (hivManagementEnabled, ncdaEnabled, tuberculosisManagementEnabled)
+import Backend.Utils
+    exposing
+        ( acuteIllnessEnabled
+        , antenatalEnabled
+        , hivManagementEnabled
+        , ncdEnabled
+        , ncdaEnabled
+        , nutritionIndividualEnabled
+        , tuberculosisManagementEnabled
+        , wellChildEnabled
+        )
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
@@ -53,45 +63,33 @@ viewContent language currentDate features healthCenterId isChw model =
                 ]
 
         buttons =
+            let
+                viewButtonIfFeatureEnabled ( enabledFunc, encounterType ) =
+                    if enabledFunc features then
+                        encounterButton encounterType
+
+                    else
+                        emptyNode
+            in
             if isChw then
-                let
-                    childScoreboardButton =
-                        if ncdaEnabled features then
-                            encounterButton ChildScoreboardEncounter
-
-                        else
-                            emptyNode
-
-                    tuberculosisManagementButton =
-                        if tuberculosisManagementEnabled features then
-                            encounterButton TuberculosisEncounter
-
-                        else
-                            emptyNode
-
-                    hivManagementButton =
-                        if hivManagementEnabled features then
-                            encounterButton HIVEncounter
-
-                        else
-                            emptyNode
-                in
-                [ encounterButton AcuteIllnessEncounter
-                , encounterButton AntenatalEncounter
-                , encounterButton NutritionEncounter
-                , encounterButton WellChildEncounter
-                , childScoreboardButton
-                , tuberculosisManagementButton
-                , hivManagementButton
-                ]
+                List.map viewButtonIfFeatureEnabled
+                    [ ( acuteIllnessEnabled, AcuteIllnessEncounter )
+                    , ( antenatalEnabled, AntenatalEncounter )
+                    , ( nutritionIndividualEnabled, NutritionEncounter )
+                    , ( wellChildEnabled, WellChildEncounter )
+                    , ( ncdaEnabled, ChildScoreboardEncounter )
+                    , ( tuberculosisManagementEnabled, TuberculosisEncounter )
+                    , ( hivManagementEnabled, HIVEncounter )
+                    ]
 
             else
-                [ encounterButton AcuteIllnessEncounter
-                , encounterButton AntenatalEncounter
-                , encounterButton NutritionEncounter
-                , encounterButton NCDEncounter
-                , encounterButton WellChildEncounter
-                ]
+                List.map viewButtonIfFeatureEnabled
+                    [ ( acuteIllnessEnabled, AcuteIllnessEncounter )
+                    , ( antenatalEnabled, AntenatalEncounter )
+                    , ( nutritionIndividualEnabled, NutritionEncounter )
+                    , ( ncdEnabled, NCDEncounter )
+                    , ( wellChildEnabled, WellChildEncounter )
+                    ]
     in
     p [] [ text <| translate language Translate.SelectEncounterType ++ ":" ]
         :: buttons

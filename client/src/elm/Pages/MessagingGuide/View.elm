@@ -18,7 +18,7 @@ view language =
                     ]
                 , span
                     [ class "link-back"
-                    , onClick <| App.Model.SetActivePage <| UserPage WellbeingPage
+                    , onClick <| App.Model.SetActivePage WellbeingPage
                     ]
                     [ span [ class "icon-back" ] [] ]
                 ]

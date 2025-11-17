@@ -56,6 +56,15 @@ pageToFragment current =
         PinCodePage ->
             Just "pincode"
 
+        MessagingCenterPage ->
+            Just "messaging-center"
+
+        WellbeingPage ->
+            Just "wellbeing"
+
+        MessagingGuide ->
+            Just "messaging-guide"
+
         PageNotFound _ ->
             -- If we couldn't interpret the URL, we don't try to change it.
             Nothing
@@ -376,15 +385,6 @@ pageToFragment current =
                             ++ "/"
                             ++ Backend.PatientRecord.Utils.progressReportInitiatorToUrlFragment initiator
 
-                MessagingCenterPage ->
-                    Just "messaging-center"
-
-                WellbeingPage ->
-                    Just "wellbeing"
-
-                MessagingGuide ->
-                    Just "messaging-guide"
-
                 StockManagementPage ->
                     Just "stock-management"
 
@@ -455,9 +455,9 @@ parser =
         , map (\id activity -> UserPage <| HIVActivityPage id activity) (s "hiv-activity" </> parseUuid </> parseHIVActivity)
         , map (\id -> UserPage <| TraceContactPage id) (s "trace-contact" </> parseUuid)
         , map (\id initiator -> UserPage <| PatientRecordPage initiator id) (s "patient-record" </> parseUuid </> parsePatientRecordInitiator)
-        , map (UserPage MessagingCenterPage) (s "messaging-center")
-        , map (UserPage WellbeingPage) (s "wellbeing")
-        , map (UserPage MessagingGuide) (s "messaging-guide")
+        , map MessagingCenterPage (s "messaging-center")
+        , map WellbeingPage (s "wellbeing")
+        , map MessagingGuide (s "messaging-guide")
         , map (UserPage StockManagementPage) (s "stock-management")
 
         -- `top` represents the page without any segements ... i.e. the root page.

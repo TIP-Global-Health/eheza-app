@@ -467,6 +467,10 @@ div.page-pincode {
   .wrap-cards {
     padding: 0;
 
+    .ui.four.cards {
+      justify-content: center;
+    }
+
     .card {
       margin: 0.75rem 0.75rem 0.75rem 0;
 
@@ -5857,8 +5861,73 @@ div.page-activity.hiv {
     }
 
   }
-
   .overlay .ui.tiny.active.modal {
     color: $color-text;
+  }
+}
+
+div.page-activity.messaging-consent {
+  .consent {
+    background: $color-white;
+    padding: 30px 25px;
+    color: $color-text;
+    text-align: left;
+
+    .title {
+      font-weight: bold;
+      text-align: center;
+
+      &.note {
+        font-style: italic;
+      }
+    }
+
+    .greeting {
+      font-weight: bold;
+    }
+
+    .content {
+      .form-input.yes-no {
+        padding-bottom: 15px;
+        margin-left: 25px;
+
+        label {
+          font-size: 25px;
+          margin-left: 10px;
+        }
+
+        label:before {
+          content: " ";
+          display: inline-block;
+          position: relative;
+          top: 5px;
+          margin-right: 10px;
+          width: 26px;
+          height: 26px;
+          border-radius: 13px;
+          border: 2px solid $color-gray-border;
+          background-color: transparent;
+        }
+
+        input[type=radio] {
+          display: none;
+        }
+
+        input[type=radio]:checked + label:after {
+          content: " ";
+          border-radius: 7px;
+          width: 14px;
+          height: 14px;
+          position: absolute;
+          top: 25px;
+          left: 30px;
+          display: block;
+          background: $color-text;
+        }
+      }
+    }
+    .actions {
+      margin: 0;
+    }
   }
 }

@@ -5,6 +5,7 @@ import Backend.Nurse.Model exposing (..)
 import Backend.Nurse.Utils exposing (resilienceRoleToString)
 import Backend.Person.Encoder exposing (encodeEducationLevel, encodeGender, encodeMaritalStatus, encodeUbudehe)
 import Backend.ResilienceMessage.Encoder exposing (encodeResilienceMessage)
+import Backend.ResilienceMessage.Model exposing (ReasonForNotConsenting(..))
 import EverySet
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Gizra.TimePosix exposing (encodePosixAsSeconds)
@@ -36,6 +37,8 @@ encodeNurse nurse =
     , ( "resilience_program", bool nurse.resilienceProgramEnabled )
     , ( "resilience_start_date", maybe encodeYYYYMMDD nurse.resilienceProgramStartDate )
     , ( "resilience_role", maybe encodeResilienceRole nurse.resilienceRole )
+    , ( "resilience_consent", bool nurse.resilienceConsentGiven )
+    , ( "resilience_consent_reason", maybe encodeReasonForNotConsenting nurse.resilienceConsentReason )
     , ( "birth_date", maybe encodeYYYYMMDD nurse.resilienceBirthDate )
     , ( "gender", maybe encodeGender nurse.resilienceGender )
     , ( "education_level", maybe encodeEducationLevel nurse.resilienceEducationLevel )
@@ -68,3 +71,25 @@ encodeRole role =
 encodeResilienceRole : ResilienceRole -> Value
 encodeResilienceRole =
     resilienceRoleToString >> string
+
+
+encodeReasonForNotConsenting : ReasonForNotConsenting -> Value
+encodeReasonForNotConsenting reason =
+    case reason of
+        ManyOtherCommitments ->
+            string "many-other-commitments"
+
+        NoDedicatedTimeForTheProgram ->
+            string "no-dedicated-time"
+
+        ProgramNotAddressingMyStressors ->
+            string "program-not-addressing-stressors"
+
+        DontWantToBeSeenAsStruggling ->
+            string "do-not-want-to-be-seen-as-struggling"
+
+        TriedSimilarProgramBefore ->
+            string "tried-similar-program"
+
+        NotInterestedInProgram ->
+            string "not-interested"

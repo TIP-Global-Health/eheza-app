@@ -1,7 +1,7 @@
 module App.Fetch exposing (fetch, forget, shouldFetch)
 
 import App.Model exposing (..)
-import App.Utils exposing (getLoggedInData)
+import App.Utils exposing (getLoggedIn, getLoggedInData)
 import AssocList as Dict
 import Backend.Fetch
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
@@ -101,10 +101,39 @@ fetch model =
                 List.map MsgIndexedDb Pages.Device.Fetch.fetch
 
             PinCodePage ->
-                getLoggedInData model
-                    |> Maybe.map (Tuple.second >> .nurse >> Tuple.first)
+                getLoggedIn model
+                    |> Maybe.map (.nurse >> Tuple.first)
                     |> Pages.PinCode.Fetch.fetch
                     |> List.map MsgIndexedDb
+
+            MessagingCenterPage ->
+                getLoggedIn model
+                    |> Maybe.map
+                        (\loggedIn ->
+                            let
+                                nurseId =
+                                    Tuple.first loggedIn.nurse
+                            in
+                            Pages.MessagingCenter.Fetch.fetch currentDate nurseId model.indexedDb
+                                |> List.map MsgIndexedDb
+                        )
+                    |> Maybe.withDefault []
+
+            WellbeingPage ->
+                getLoggedIn model
+                    |> Maybe.map
+                        (\loggedIn ->
+                            let
+                                nurseId =
+                                    Tuple.first loggedIn.nurse
+                            in
+                            Pages.Wellbeing.Fetch.fetch currentDate nurseId model.indexedDb
+                                |> List.map MsgIndexedDb
+                        )
+                    |> Maybe.withDefault []
+
+            MessagingGuide ->
+                []
 
             PageNotFound _ ->
                 []
@@ -445,35 +474,6 @@ fetch model =
             UserPage (PatientRecordPage _ id) ->
                 Pages.PatientRecord.Fetch.fetch currentDate id model.indexedDb
                     |> List.map MsgIndexedDb
-
-            UserPage MessagingCenterPage ->
-                getLoggedInData model
-                    |> Maybe.map
-                        (\( _, loggedIn ) ->
-                            let
-                                nurseId =
-                                    Tuple.first loggedIn.nurse
-                            in
-                            Pages.MessagingCenter.Fetch.fetch currentDate nurseId model.indexedDb
-                                |> List.map MsgIndexedDb
-                        )
-                    |> Maybe.withDefault []
-
-            UserPage WellbeingPage ->
-                getLoggedInData model
-                    |> Maybe.map
-                        (\( _, loggedIn ) ->
-                            let
-                                nurseId =
-                                    Tuple.first loggedIn.nurse
-                            in
-                            Pages.Wellbeing.Fetch.fetch currentDate nurseId model.indexedDb
-                                |> List.map MsgIndexedDb
-                        )
-                    |> Maybe.withDefault []
-
-            UserPage MessagingGuide ->
-                []
 
             UserPage StockManagementPage ->
                 getLoggedInData model
