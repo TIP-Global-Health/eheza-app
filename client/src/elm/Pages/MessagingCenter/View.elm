@@ -63,7 +63,7 @@ view language currentTime nurseId nurse db model =
                     [ span [ class "icon-back" ] [] ]
                 ]
     in
-    if not model.hasGivenConsent then
+    if not nurse.resilienceConsentGiven then
         Pages.MessagingConsent.View.view language
             currentTime
             nurseId

@@ -92,7 +92,7 @@ viewConsentForm language nurseId nurse form =
                         ]
 
                 _ ->
-                    text ""
+                    emptyNode
             ]
         , viewSaveAction
             language

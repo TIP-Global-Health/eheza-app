@@ -315,64 +315,11 @@ update currentTime currentDate db msg model =
                     model.consentForm
 
                 updatedForm =
-                    { form | agreesToParticipate = Just value }
+                    { form | agreesToParticipate = Just value, reasonsToNotConsent = Nothing }
             in
             ( { model | consentForm = updatedForm }
             , Cmd.none
             , []
-            )
-
-        SaveConsent nurseId nurse ->
-            let
-                userAnswer =
-                    case model.consentForm.agreesToParticipate of
-                        Just b ->
-                            b
-
-                        Nothing ->
-                            False
-
-                nurseWithConsent =
-                    { nurse
-                        | resilienceConsentGiven = userAnswer
-                        , resilienceConsentReason =
-                            if userAnswer then
-                                Nothing
-
-                            else
-                                model.consentForm.reasonsToNotConsent
-                    }
-
-                redirectMsg =
-                    if userAnswer == False then
-                        [ App.Model.SetActivePage PinCodePage ]
-
-                    else
-                        []
-
-                updatedModel =
-                    if userAnswer then
-                        { model
-                            | hasGivenConsent = True
-                        }
-
-                    else
-                        { model
-                            | hasGivenConsent = False
-                            , consentForm =
-                                { agreesToParticipate = Nothing
-                                , reasonsToNotConsent = Nothing
-                                }
-                        }
-
-                updateMsg =
-                    Backend.Nurse.Model.UpdateNurse nurseId nurseWithConsent
-                        |> Backend.Model.MsgNurse nurseId
-                        |> App.Model.MsgIndexedDb
-            in
-            ( updatedModel
-            , Cmd.none
-            , updateMsg :: redirectMsg
             )
 
         SelectConsentReason reason ->
@@ -386,6 +333,41 @@ update currentTime currentDate db msg model =
             ( { model | consentForm = updatedForm }
             , Cmd.none
             , []
+            )
+
+        SaveConsent nurseId nurse ->
+            let
+                agreesToParticipate =
+                    Maybe.withDefault False model.consentForm.agreesToParticipate
+
+                nurseWithConsent =
+                    { nurse
+                        | resilienceConsentGiven = agreesToParticipate
+                        , resilienceConsentReason = model.consentForm.reasonsToNotConsent
+                    }
+
+                ( redirectMsg, updatedModel ) =
+                    if not agreesToParticipate then
+                        ( [ App.Model.SetActivePage PinCodePage ]
+                        , { model
+                            | consentForm =
+                                { agreesToParticipate = Nothing
+                                , reasonsToNotConsent = Nothing
+                                }
+                          }
+                        )
+
+                    else
+                        ( [], model )
+
+                updateMsg =
+                    Backend.Nurse.Model.UpdateNurse nurseId nurseWithConsent
+                        |> Backend.Model.MsgNurse nurseId
+                        |> App.Model.MsgIndexedDb
+            in
+            ( updatedModel
+            , Cmd.none
+            , updateMsg :: redirectMsg
             )
 
 
