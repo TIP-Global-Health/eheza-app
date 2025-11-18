@@ -1,27 +1,21 @@
 module Backend.Reports.Model exposing (..)
 
 import App.Types exposing (Site)
+import Backend.Components.Model exposing (PersonId, ReportParams, SelectedEntity)
 import Gizra.NominalDate exposing (NominalDate)
 import Json.Encode exposing (Value)
+import RemoteData exposing (WebData)
 
 
 type alias ReportsData =
     { site : Site
     , entityName : String
     , entityType : SelectedEntity
+    , params : ReportParams
     , records : List PatientData
     , nutritionReportData : Maybe (List BackendGeneratedNutritionReportTableDate)
+    , remainingForDownload : Maybe Int
     }
-
-
-type SelectedEntity
-    = EntityGlobal
-    | EntityProvince
-    | EntityDistrict
-    | EntitySector
-    | EntityCell
-    | EntityVillage
-    | EntityHealthCenter
 
 
 type alias PatientData =
@@ -44,10 +38,6 @@ type alias PatientData =
     , groupNutritionChwData : Maybe (List NutritionEncounterData)
     , groupNutritionAchiData : Maybe (List NutritionEncounterData)
     }
-
-
-type alias PersonId =
-    Int
 
 
 type Gender
@@ -248,5 +238,14 @@ type NutritionReportTableType
     | NutritionTableIncidenceYearTwoOrMore
 
 
+type alias SyncResponse =
+    { records : List PatientData
+    , totalRemaining : Int
+    , lastIdSynced : PersonId
+    }
+
+
 type Msg
     = SetData Value
+    | SendSyncRequest PersonId
+    | HandleSyncResponse (WebData SyncResponse)

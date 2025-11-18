@@ -10,6 +10,7 @@ import Gizra.NominalDate exposing (NominalDate, diffMonths, toLastDayOfMonth)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
+import Pages.Components.Utils exposing (syncStatusAndProgress)
 import Pages.Scoreboard.Model exposing (..)
 import Pages.Scoreboard.Utils exposing (..)
 import Pages.Utils exposing (viewYearSelector)
@@ -63,6 +64,14 @@ viewScoreboardData language currentDate data model =
                     ]
                 ]
 
+        downloadStatus =
+            let
+                ( syncStatus, progress ) =
+                    syncStatusAndProgress data.records data.remainingForDownload
+            in
+            div [ class "download-status" ]
+                [ text <| "Download status: " ++ syncStatus ++ "     (" ++ progress ++ ")" ]
+
         monthsGap =
             generateMonthsGap currentDate model.yearSelectorGap
 
@@ -106,7 +115,8 @@ viewScoreboardData language currentDate data model =
                 data.records
     in
     div [ class "page-content" ]
-        [ topBar
+        [ downloadStatus
+        , topBar
         , viewAggregatedChildScoreboardPane language data
         , viewDemographicsPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
         , viewAcuteMalnutritionPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data

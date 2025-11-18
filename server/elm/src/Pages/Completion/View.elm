@@ -1,45 +1,41 @@
 module Pages.Completion.View exposing (view)
 
 import App.Types exposing (Language, Site)
-import AssocList as Dict exposing (Dict)
 import Backend.Completion.Model
     exposing
-        ( AcuteIllnessActivity(..)
-        , ChildScoreboardActivity(..)
+        ( AcuteIllnessActivity
+        , ChildScoreboardActivity
         , CompletionData
         , EncounterData
-        , HIVActivity(..)
-        , HomeVisitActivity(..)
-        , NCDActivity(..)
-        , NutritionChildActivity(..)
+        , HIVActivity
+        , HomeVisitActivity
+        , NCDActivity
+        , NutritionChildActivity
         , NutritionGroupEncounterData
-        , NutritionMotherActivity(..)
-        , PrenatalActivity(..)
-        , SelectedEntity(..)
+        , NutritionMotherActivity
+        , PrenatalActivity
         , TakenBy(..)
-        , TuberculosisActivity(..)
-        , WellChildActivity(..)
+        , TuberculosisActivity
+        , WellChildActivity
         , WellChildEncounterData
         , WellChildEncounterType(..)
         )
 import Backend.Completion.Utils exposing (takenByToString)
+import Backend.Components.Model exposing (SelectedEntity(..))
 import Backend.Model exposing (ModelBackend)
-import Date exposing (Interval(..), Unit(..))
+import Date
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, customFormatDDMMYYYY, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Completion.Model exposing (..)
 import Pages.Completion.Utils exposing (..)
 import Pages.Components.View exposing (viewMetricsResultsTable)
 import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Utils exposing (calculatePercentage, launchDate, viewCustomSelectListInput, viewSelectListInput, wrapSelectListInput)
-import RemoteData exposing (RemoteData(..))
-import Time exposing (Month(..))
 import Translate exposing (TranslationId, translate)
 import Utils.Html exposing (viewModal)
 
@@ -69,6 +65,37 @@ viewCompletionData language currentDate themePath data model =
 
                         EntityHealthCenter ->
                             data.entityName
+
+                        -- Other options are not supported.
+                        _ ->
+                            translate language Translate.EmptyString
+
+                ( syncStatus, progress ) =
+                    Maybe.map
+                        (\remainingForDownload ->
+                            let
+                                totalDownloaded =
+                                    List.length data.acuteIllnessData
+                                        + List.length data.childScoreboardData
+                                        + List.length data.hivData
+                                        + List.length data.homeVisitData
+                                        + List.length data.ncdData
+                                        + List.length data.nutritionIndividualData
+                                        + List.length data.nutritionGroupData
+                                        + List.length data.prenatalData
+                                        + List.length data.tuberculosisData
+                                        + List.length data.wellChildData
+                            in
+                            ( if remainingForDownload == 0 then
+                                "COMPLETED"
+
+                              else
+                                "IN PROCESS"
+                            , String.fromInt totalDownloaded ++ " / " ++ String.fromInt (totalDownloaded + remainingForDownload)
+                            )
+                        )
+                        data.remainingForDownload
+                        |> Maybe.withDefault ( "PENDING", "0 / 0" )
             in
             div [ class "top-bar" ]
                 [ div [ class "new-selection" ]
@@ -79,6 +106,10 @@ viewCompletionData language currentDate themePath data model =
                     ]
                 , div [ class "scope" ]
                     [ text <| translate language Translate.Scope ++ ": " ++ scopeLabel ]
+                , div [ class "download-status" ]
+                    [ div [] [ text <| "Download status: " ++ syncStatus ]
+                    , div [ class "progress" ] [ text <| "(" ++ progress ++ ")" ]
+                    ]
                 ]
 
         takenByInput =
@@ -99,7 +130,7 @@ viewCompletionData language currentDate themePath data model =
                     then
                         emptyNode
 
-                    else
+                    else if isJust model.reportType then
                         let
                             options =
                                 List.map
@@ -108,18 +139,17 @@ viewCompletionData language currentDate themePath data model =
                                     )
                                     [ TakenByNurse, TakenByCHW ]
                         in
-                        if isJust model.reportType then
-                            viewCustomSelectListInput
-                                model.takenBy
-                                options
-                                takenByToString
-                                SetTakenBy
-                                "select-input"
-                                (Just <| translate language Translate.Any)
-                                |> wrapSelectListInput language Translate.TakenByLabel False
+                        viewCustomSelectListInput
+                            model.takenBy
+                            options
+                            takenByToString
+                            SetTakenBy
+                            "select-input"
+                            (Just <| translate language Translate.Any)
+                            |> wrapSelectListInput language Translate.TakenByLabel False
 
-                        else
-                            emptyNode
+                    else
+                        emptyNode
                 )
                 model.reportType
                 |> Maybe.withDefault emptyNode
@@ -481,8 +511,7 @@ generateNutritionGroupReportData language records =
             List.filterMap .motherData records
 
         childrenData =
-            List.map .childrenData records
-                |> List.concat
+            List.concatMap .childrenData records
 
         generateActivityRows activityTransId data =
             List.map

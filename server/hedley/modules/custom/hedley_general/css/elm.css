@@ -101,6 +101,13 @@ body.admin-menu #page-wrapper #header {
   outline-color: white;
 }
 
+.page-content .download-status {
+  color: white;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
 .page-content .top-bar {
   display: flex;
   height: 60px;
@@ -114,6 +121,19 @@ body.admin-menu #page-wrapper #header {
 .page-content .top-bar .scope {
   font-size: 28px;
   font-weight: bold;
+  width: 40%;
+}
+
+.page-content .top-bar .download-status {
+  color: black;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.page-content .top-bar .download-status .progress {
+  color: #808080;
+  font-size: 14px;
 }
 
 .page-content .top-bar .year-selector {

@@ -520,6 +520,7 @@ function hedley_general_build_elm_app($page, array $data) {
   // Getting a unique ID for the app.
   $app_id = drupal_html_id('elm-app');
 
+  global $base_url;
   // Add settings.
   $settings = [
     'elm_apps' => [
@@ -527,6 +528,7 @@ function hedley_general_build_elm_app($page, array $data) {
         'page' => $page,
         'data' => $data,
         'theme_path' => $path_hedley_general,
+        'backend_url' => $base_url,
       ],
     ],
   ];

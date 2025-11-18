@@ -27,6 +27,7 @@
           appData: appSettings.data,
           page: appSettings.page,
           themePath: appSettings.theme_path,
+          backendUrl: appSettings.backend_url,
         }});
 
         if (appSettings.page === 'reports-results') {

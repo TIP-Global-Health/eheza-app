@@ -8,12 +8,10 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Maybe.Extra exposing (isJust)
 import Pages.Components.Model exposing (DemographicsSelection)
-import Pages.Components.Utils exposing (populationSelectionOptionToString)
 import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Utils
     exposing
-        ( viewCustomLabel
-        , viewGeoLocationSelectListInput
+        ( viewGeoLocationSelectListInput
         , viewMenuActionButton
         )
 import Translate exposing (TranslationId)
