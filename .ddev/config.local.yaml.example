@@ -4,6 +4,7 @@ web_environment:
   # - GITHUB_USERNAME=
   # - GITHUB_ACCESS_TOKEN=
   # - PANTHEON_NAME=
+  # - CONFIG_SITE=
 hooks:
   post-import-db:
     # Sanitize email addresses
