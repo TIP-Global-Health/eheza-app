@@ -1,6 +1,5 @@
 module Backend.ResilienceMessage.Model exposing (..)
 
-import Backend.Entities exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Time
 

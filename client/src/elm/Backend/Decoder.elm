@@ -20,7 +20,6 @@ import Backend.Person.Decoder exposing (decodePerson)
 import Backend.PmtctParticipant.Decoder exposing (decodePmtctParticipant)
 import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalEncounter)
 import Backend.Relationship.Decoder exposing (decodeRelationship)
-import Backend.ResilienceMessage.Decoder exposing (decodeResilienceMessage)
 import Backend.ResilienceSurvey.Decoder exposing (decodeResilienceSurvey)
 import Backend.Session.Decoder exposing (decodeSession)
 import Backend.StockUpdate.Decoder exposing (decodeStockUpdate)
@@ -381,17 +380,29 @@ decodeRevision =
                     "pmtct_participant" ->
                         decodeWithUuid PmtctParticipantRevision decodePmtctParticipant
 
+                    "prenatal_aspirin" ->
+                        decodeWithUuid PrenatalAspirinRevision decodePrenatalAspirin
+
                     "prenatal_blood_gprs_test" ->
                         decodeWithUuid PrenatalBloodGpRsTestRevision decodePrenatalBloodGpRsTest
 
                     "prenatal_breastfeeding" ->
                         decodeWithUuid PrenatalBreastfeedingRevision decodePrenatalBreastfeeding
 
+                    "prenatal_calcium" ->
+                        decodeWithUuid PrenatalCalciumRevision decodePrenatalCalcium
+
                     "prenatal_encounter" ->
                         decodeWithUuid PrenatalEncounterRevision decodePrenatalEncounter
 
                     "prenatal_family_planning" ->
                         decodeWithUuid PrenatalFamilyPlanningRevision decodePrenatalFamilyPlanning
+
+                    "prenatal_fefol" ->
+                        decodeWithUuid PrenatalFefolRevision decodePrenatalFefol
+
+                    "prenatal_folate" ->
+                        decodeWithUuid PrenatalFolateRevision decodePrenatalFolate
 
                     "prenatal_follow_up" ->
                         decodeWithUuid PrenatalFollowUpRevision decodePrenatalFollowUp
@@ -414,17 +425,26 @@ decodeRevision =
                     "prenatal_hiv_pcr_test" ->
                         decodeWithUuid PrenatalHIVPCRTestRevision decodePrenatalHIVPCRTest
 
+                    "prenatal_iron" ->
+                        decodeWithUuid PrenatalIronRevision decodePrenatalIron
+
                     "prenatal_labs_results" ->
                         decodeWithUuid PrenatalLabsResultsRevision decodePrenatalLabsResults
 
                     "prenatal_malaria_test" ->
                         decodeWithUuid PrenatalMalariaTestRevision decodePrenatalMalariaTest
 
+                    "prenatal_mebendazole" ->
+                        decodeWithUuid PrenatalMebendazoleRevision decodePrenatalMebendazole
+
                     "prenatal_mental_health" ->
                         decodeWithUuid PrenatalMentalHealthRevision decodePrenatalMentalHealth
 
                     "prenatal_medication_distribution" ->
                         decodeWithUuid PrenatalMedicationDistributionRevision decodePrenatalMedicationDistribution
+
+                    "prenatal_mms" ->
+                        decodeWithUuid PrenatalMMSRevision decodePrenatalMMS
 
                     "prenatal_nutrition" ->
                         decodeWithUuid PrenatalNutritionRevision decodePrenatalNutrition

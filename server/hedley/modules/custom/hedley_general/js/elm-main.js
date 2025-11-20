@@ -8330,14 +8330,18 @@ var $author$project$Backend$Completion$Utils$nutritionMotherActivityFromMapping 
 	}
 };
 var $author$project$Backend$Completion$Model$PrenatalAppointmentConfirmation = {$: 'PrenatalAppointmentConfirmation'};
+var $author$project$Backend$Completion$Model$PrenatalAspirin = {$: 'PrenatalAspirin'};
 var $author$project$Backend$Completion$Model$PrenatalBirthPlan = {$: 'PrenatalBirthPlan'};
 var $author$project$Backend$Completion$Model$PrenatalBloodGprsTest = {$: 'PrenatalBloodGprsTest'};
 var $author$project$Backend$Completion$Model$PrenatalBloodGprsTestResult = {$: 'PrenatalBloodGprsTestResult'};
 var $author$project$Backend$Completion$Model$PrenatalBreastExam = {$: 'PrenatalBreastExam'};
 var $author$project$Backend$Completion$Model$PrenatalBreastfeeding = {$: 'PrenatalBreastfeeding'};
+var $author$project$Backend$Completion$Model$PrenatalCalcium = {$: 'PrenatalCalcium'};
 var $author$project$Backend$Completion$Model$PrenatalCorePhysicalExam = {$: 'PrenatalCorePhysicalExam'};
 var $author$project$Backend$Completion$Model$PrenatalDangerSigns = {$: 'PrenatalDangerSigns'};
 var $author$project$Backend$Completion$Model$PrenatalFamilyPlanning = {$: 'PrenatalFamilyPlanning'};
+var $author$project$Backend$Completion$Model$PrenatalFefol = {$: 'PrenatalFefol'};
+var $author$project$Backend$Completion$Model$PrenatalFolate = {$: 'PrenatalFolate'};
 var $author$project$Backend$Completion$Model$PrenatalFollowUp = {$: 'PrenatalFollowUp'};
 var $author$project$Backend$Completion$Model$PrenatalGuExam = {$: 'PrenatalGuExam'};
 var $author$project$Backend$Completion$Model$PrenatalHIVPCRTest = {$: 'PrenatalHIVPCRTest'};
@@ -8349,9 +8353,12 @@ var $author$project$Backend$Completion$Model$PrenatalHemoglobinTest = {$: 'Prena
 var $author$project$Backend$Completion$Model$PrenatalHemoglobinTestResult = {$: 'PrenatalHemoglobinTestResult'};
 var $author$project$Backend$Completion$Model$PrenatalHepatitisBTest = {$: 'PrenatalHepatitisBTest'};
 var $author$project$Backend$Completion$Model$PrenatalHepatitisBTestResult = {$: 'PrenatalHepatitisBTestResult'};
+var $author$project$Backend$Completion$Model$PrenatalIron = {$: 'PrenatalIron'};
 var $author$project$Backend$Completion$Model$PrenatalLastMenstrualPeriod = {$: 'PrenatalLastMenstrualPeriod'};
+var $author$project$Backend$Completion$Model$PrenatalMMS = {$: 'PrenatalMMS'};
 var $author$project$Backend$Completion$Model$PrenatalMalariaTest = {$: 'PrenatalMalariaTest'};
 var $author$project$Backend$Completion$Model$PrenatalMalariaTestResult = {$: 'PrenatalMalariaTestResult'};
+var $author$project$Backend$Completion$Model$PrenatalMebendazole = {$: 'PrenatalMebendazole'};
 var $author$project$Backend$Completion$Model$PrenatalMedicalHistory = {$: 'PrenatalMedicalHistory'};
 var $author$project$Backend$Completion$Model$PrenatalMedication = {$: 'PrenatalMedication'};
 var $author$project$Backend$Completion$Model$PrenatalMedicationDistribution = {$: 'PrenatalMedicationDistribution'};
@@ -8490,6 +8497,20 @@ var $author$project$Backend$Completion$Utils$prenatalActivityFromMapping = funct
 			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalSyphilisTestResult);
 		case '9+':
 			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalUrineDipstickTestResult);
+		case 'a1':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalCalcium);
+		case 'b1':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalFolate);
+		case 'c1':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalIron);
+		case 'd1':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalMebendazole);
+		case 'e1':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalMMS);
+		case 'f1':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalAspirin);
+		case 'g1':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalFefol);
 		default:
 			return $elm$core$Maybe$Nothing;
 	}
@@ -11787,6 +11808,8 @@ var $author$project$Translate$translationSet = function (transId) {
 			case 'PrenatalActivity':
 				var activity = transId.a;
 				switch (activity.$) {
+					case 'PrenatalAspirin':
+						return {english: 'Low dose Aspirin', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalAppointmentConfirmation':
 						return {english: 'Appointment Confirmation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalBirthPlan':
@@ -11797,6 +11820,8 @@ var $author$project$Translate$translationSet = function (transId) {
 						return {english: 'Blood Group and Rhesus Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalBreastExam':
 						return {english: 'Breast Exam', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalCalcium':
+						return {english: 'Calcium', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalBreastfeeding':
 						return {english: 'Breastfeeding', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalCorePhysicalExam':
@@ -11809,6 +11834,10 @@ var $author$project$Translate$translationSet = function (transId) {
 						var $temp$transId = $author$project$Translate$FamilyPlanning;
 						transId = $temp$transId;
 						continue translationSet;
+					case 'PrenatalFefol':
+						return {english: 'Fefol', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalFolate':
+						return {english: 'Folate', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalFollowUp':
 						var $temp$transId = $author$project$Translate$FollowUp;
 						transId = $temp$transId;
@@ -11837,12 +11866,16 @@ var $author$project$Translate$translationSet = function (transId) {
 						continue translationSet;
 					case 'PrenatalHIVTestResult':
 						return {english: 'HIV Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalIron':
+						return {english: 'Iron', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalLastMenstrualPeriod':
 						return {english: 'Last Menstrual Period', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalMalariaTest':
 						return {english: 'Malaria Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalMalariaTestResult':
 						return {english: 'Malaria Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalMebendazole':
+						return {english: 'Mebendazole', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalMedicalHistory':
 						return {english: 'Medical History', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalMedication':
@@ -11855,6 +11888,8 @@ var $author$project$Translate$translationSet = function (transId) {
 						continue translationSet;
 					case 'PrenatalMentalHealth':
 						return {english: 'Mental Health', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalMMS':
+						return {english: 'MMS', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalNutrition':
 						var $temp$transId = $author$project$Translate$Nutrition;
 						transId = $temp$transId;
@@ -15573,7 +15608,7 @@ var $author$project$Translate$PrenatalActivity = function (a) {
 	return {$: 'PrenatalActivity', a: a};
 };
 var $author$project$Pages$Completion$Utils$allPrenatalActivities = _List_fromArray(
-	[$author$project$Backend$Completion$Model$PrenatalAppointmentConfirmation, $author$project$Backend$Completion$Model$PrenatalBirthPlan, $author$project$Backend$Completion$Model$PrenatalBloodGprsTest, $author$project$Backend$Completion$Model$PrenatalBloodGprsTestResult, $author$project$Backend$Completion$Model$PrenatalBreastExam, $author$project$Backend$Completion$Model$PrenatalBreastfeeding, $author$project$Backend$Completion$Model$PrenatalCorePhysicalExam, $author$project$Backend$Completion$Model$PrenatalDangerSigns, $author$project$Backend$Completion$Model$PrenatalFamilyPlanning, $author$project$Backend$Completion$Model$PrenatalFollowUp, $author$project$Backend$Completion$Model$PrenatalGuExam, $author$project$Backend$Completion$Model$PrenatalHealthEducation, $author$project$Backend$Completion$Model$PrenatalHemoglobinTest, $author$project$Backend$Completion$Model$PrenatalHemoglobinTestResult, $author$project$Backend$Completion$Model$PrenatalHepatitisBTest, $author$project$Backend$Completion$Model$PrenatalHepatitisBTestResult, $author$project$Backend$Completion$Model$PrenatalHIVPCRTest, $author$project$Backend$Completion$Model$PrenatalHIVPCRTestResult, $author$project$Backend$Completion$Model$PrenatalHIVTest, $author$project$Backend$Completion$Model$PrenatalHIVTestResult, $author$project$Backend$Completion$Model$PrenatalLastMenstrualPeriod, $author$project$Backend$Completion$Model$PrenatalMalariaTest, $author$project$Backend$Completion$Model$PrenatalMalariaTestResult, $author$project$Backend$Completion$Model$PrenatalMedicalHistory, $author$project$Backend$Completion$Model$PrenatalMedication, $author$project$Backend$Completion$Model$PrenatalMedicationDistribution, $author$project$Backend$Completion$Model$PrenatalMentalHealth, $author$project$Backend$Completion$Model$PrenatalNutrition, $author$project$Backend$Completion$Model$PrenatalObstetricalExam, $author$project$Backend$Completion$Model$PrenatalObstetricHistory, $author$project$Backend$Completion$Model$PrenatalObstetricHistoryStep2, $author$project$Backend$Completion$Model$PrenatalOutsideCare, $author$project$Backend$Completion$Model$PrenatalPartnerHIVTest, $author$project$Backend$Completion$Model$PrenatalPartnerHIVTestResult, $author$project$Backend$Completion$Model$PrenatalPhoto, $author$project$Backend$Completion$Model$PrenatalPostpartumTreatmentReview, $author$project$Backend$Completion$Model$PrenatalPregnancyOutcome, $author$project$Backend$Completion$Model$PrenatalPregnancyTesting, $author$project$Backend$Completion$Model$PrenatalRandomBloodSugarTest, $author$project$Backend$Completion$Model$PrenatalRandomBloodSugarTestResult, $author$project$Backend$Completion$Model$PrenatalResource, $author$project$Backend$Completion$Model$PrenatalSendToHC, $author$project$Backend$Completion$Model$PrenatalSocialHistory, $author$project$Backend$Completion$Model$PrenatalSpecialityCare, $author$project$Backend$Completion$Model$PrenatalSymptomReview, $author$project$Backend$Completion$Model$PrenatalSyphilisTest, $author$project$Backend$Completion$Model$PrenatalSyphilisTestResult, $author$project$Backend$Completion$Model$PrenatalTetanusImmunisation, $author$project$Backend$Completion$Model$PrenatalTreatmentReview, $author$project$Backend$Completion$Model$PrenatalUrineDipstickTest, $author$project$Backend$Completion$Model$PrenatalUrineDipstickTestResult, $author$project$Backend$Completion$Model$PrenatalVitals, $author$project$Backend$Completion$Model$PrenatalVitalsRecheck]);
+	[$author$project$Backend$Completion$Model$PrenatalAspirin, $author$project$Backend$Completion$Model$PrenatalAppointmentConfirmation, $author$project$Backend$Completion$Model$PrenatalBirthPlan, $author$project$Backend$Completion$Model$PrenatalBloodGprsTest, $author$project$Backend$Completion$Model$PrenatalBloodGprsTestResult, $author$project$Backend$Completion$Model$PrenatalBreastExam, $author$project$Backend$Completion$Model$PrenatalBreastfeeding, $author$project$Backend$Completion$Model$PrenatalCalcium, $author$project$Backend$Completion$Model$PrenatalCorePhysicalExam, $author$project$Backend$Completion$Model$PrenatalDangerSigns, $author$project$Backend$Completion$Model$PrenatalFamilyPlanning, $author$project$Backend$Completion$Model$PrenatalFefol, $author$project$Backend$Completion$Model$PrenatalFolate, $author$project$Backend$Completion$Model$PrenatalFollowUp, $author$project$Backend$Completion$Model$PrenatalGuExam, $author$project$Backend$Completion$Model$PrenatalHealthEducation, $author$project$Backend$Completion$Model$PrenatalHemoglobinTest, $author$project$Backend$Completion$Model$PrenatalHemoglobinTestResult, $author$project$Backend$Completion$Model$PrenatalHepatitisBTest, $author$project$Backend$Completion$Model$PrenatalHepatitisBTestResult, $author$project$Backend$Completion$Model$PrenatalHIVPCRTest, $author$project$Backend$Completion$Model$PrenatalHIVPCRTestResult, $author$project$Backend$Completion$Model$PrenatalHIVTest, $author$project$Backend$Completion$Model$PrenatalHIVTestResult, $author$project$Backend$Completion$Model$PrenatalIron, $author$project$Backend$Completion$Model$PrenatalLastMenstrualPeriod, $author$project$Backend$Completion$Model$PrenatalMalariaTest, $author$project$Backend$Completion$Model$PrenatalMalariaTestResult, $author$project$Backend$Completion$Model$PrenatalMebendazole, $author$project$Backend$Completion$Model$PrenatalMedicalHistory, $author$project$Backend$Completion$Model$PrenatalMedication, $author$project$Backend$Completion$Model$PrenatalMedicationDistribution, $author$project$Backend$Completion$Model$PrenatalMentalHealth, $author$project$Backend$Completion$Model$PrenatalMMS, $author$project$Backend$Completion$Model$PrenatalNutrition, $author$project$Backend$Completion$Model$PrenatalObstetricalExam, $author$project$Backend$Completion$Model$PrenatalObstetricHistory, $author$project$Backend$Completion$Model$PrenatalObstetricHistoryStep2, $author$project$Backend$Completion$Model$PrenatalOutsideCare, $author$project$Backend$Completion$Model$PrenatalPartnerHIVTest, $author$project$Backend$Completion$Model$PrenatalPartnerHIVTestResult, $author$project$Backend$Completion$Model$PrenatalPhoto, $author$project$Backend$Completion$Model$PrenatalPostpartumTreatmentReview, $author$project$Backend$Completion$Model$PrenatalPregnancyOutcome, $author$project$Backend$Completion$Model$PrenatalPregnancyTesting, $author$project$Backend$Completion$Model$PrenatalRandomBloodSugarTest, $author$project$Backend$Completion$Model$PrenatalRandomBloodSugarTestResult, $author$project$Backend$Completion$Model$PrenatalResource, $author$project$Backend$Completion$Model$PrenatalSendToHC, $author$project$Backend$Completion$Model$PrenatalSocialHistory, $author$project$Backend$Completion$Model$PrenatalSpecialityCare, $author$project$Backend$Completion$Model$PrenatalSymptomReview, $author$project$Backend$Completion$Model$PrenatalSyphilisTest, $author$project$Backend$Completion$Model$PrenatalSyphilisTestResult, $author$project$Backend$Completion$Model$PrenatalTetanusImmunisation, $author$project$Backend$Completion$Model$PrenatalTreatmentReview, $author$project$Backend$Completion$Model$PrenatalUrineDipstickTest, $author$project$Backend$Completion$Model$PrenatalUrineDipstickTestResult, $author$project$Backend$Completion$Model$PrenatalVitals, $author$project$Backend$Completion$Model$PrenatalVitalsRecheck]);
 var $author$project$Pages$Completion$View$generatePrenatalReportData = F2(
 	function (language, records) {
 		return {

@@ -25,6 +25,7 @@ type NextStepsTask
     | NextStepsNewbornEnrolment
     | NextStepsMedicationDistribution
     | NextStepsWait
+    | NextStepsNextVisit
 
 
 type SymptomReviewStep
@@ -43,6 +44,7 @@ type TreatmentReviewTask
 
 type ImmunisationTask
     = TaskTetanus
+    | TaskOverview
 
 
 type WarningPopupType msg
@@ -57,3 +59,26 @@ type WarningPopupType msg
 type ObstetricHistoryStep
     = ObstetricHistoryFirstStep
     | ObstetricHistorySecondStep
+
+
+type MedicationTask
+    = TaskCalcium
+    | TaskFefol
+    | TaskFolate
+    | TaskIron
+    | TaskMebendazole
+    | TaskMMS
+
+
+type PrePregnancyClassification
+    = PrePregnancyUnderWeight
+    | PrePregnancyNormal
+    | PrePregnancyOverweight
+    | PrePregnancyObesity
+
+
+type GWGClassification
+    = GWGSeverelyInadequate
+    | GWGInadequate
+    | GWGAdequate
+    | GWGExcessive

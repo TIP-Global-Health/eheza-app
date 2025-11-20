@@ -15,6 +15,9 @@ type PrenatalDiagnosis
     | DiagnosisSeverePreeclampsiaRecurrentPhase
     | DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus
     | DiagnosisEclampsia
+    | DiagnosisHighRiskOfPreeclampsiaInitialPhase
+    | DiagnosisHighRiskOfPreeclampsiaRecurrentPhase
+    | DiagnosisModerateRiskOfPreeclampsia
     | DiagnosisHIVInitialPhase
     | DiagnosisHIVRecurrentPhase
     | DiagnosisHIVDetectableViralLoadInitialPhase

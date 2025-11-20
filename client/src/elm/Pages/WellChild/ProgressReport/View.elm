@@ -162,12 +162,12 @@ view language currentDate zscores site features id isChw db model =
                     in
                     ( Just <|
                         { showEndEncounterDialog = model.showEndEncounterDialog
-                        , allowEndEncounter = allowEndingEncounter currentDate site pendingActivities assembled
+                        , allowEndEncounter = allowEndingEncounter currentDate pendingActivities assembled
                         , closeEncounterMsg = CloseEncounter id
                         , setEndEncounterDialogStateMsg = SetEndEncounterDialogState
                         , startEncounterMsg = NoOp
                         }
-                    , mandatoryNutritionAssessmentTasksCompleted currentDate site assembled
+                    , mandatoryNutritionAssessmentTasksCompleted currentDate assembled
                     )
                 )
                 assembledData
@@ -1217,12 +1217,6 @@ viewGrowthPane language currentDate zscores child historical nutritionMeasuremen
                     )
                 |> Dict.fromList
 
-        heightValuesBySession =
-            valuesIndexedBySession .heights
-
-        weightValuesBySession =
-            valuesIndexedBySession .weights
-
         photoValuesBySession =
             valuesIndexedBySession .photos
 
@@ -1255,16 +1249,6 @@ viewGrowthPane language currentDate zscores child historical nutritionMeasuremen
                 )
                 >> Dict.fromList
 
-        heightValuesByEncounter =
-            Dict.union
-                (valuesIndexedByEncounter .height nutritionMeasurements)
-                (valuesIndexedByEncounter .height wellChildMeasurements)
-
-        weightValuesByEncounter =
-            Dict.union
-                (valuesIndexedByEncounter .weight nutritionMeasurements)
-                (valuesIndexedByEncounter .weight wellChildMeasurements)
-
         photoValuesByEncounter =
             Dict.union
                 (valuesIndexedByEncounter .photo nutritionMeasurements)
@@ -1278,12 +1262,6 @@ viewGrowthPane language currentDate zscores child historical nutritionMeasuremen
         --
         -- COMMON CONTEXT
         --
-        heightValues =
-            Dict.values heightValuesBySession ++ Dict.values heightValuesByEncounter
-
-        weightValues =
-            Dict.values weightValuesBySession ++ Dict.values weightValuesByEncounter
-
         nutritionValues =
             Dict.values nutritionValuesBySession
                 ++ Dict.values nutritionValuesByEncounter
@@ -1292,43 +1270,41 @@ viewGrowthPane language currentDate zscores child historical nutritionMeasuremen
         photoValues =
             Dict.values photoValuesBySession ++ Dict.values photoValuesByEncounter
 
-        heightForAgeData =
-            List.filterMap (chartHeightForAge child) heightValues
-
-        heightForAgeDaysData =
-            heightForAgeData
-                |> List.map (\( days, _, height ) -> ( days, height ))
-
-        heightForAgeMonthsData =
-            heightForAgeData
-                |> List.map (\( _, month, height ) -> ( month, height ))
-
-        weightForAgeData =
-            List.filterMap (chartWeightForAge child) weightValues
-
-        weightForAgeDaysData =
-            weightForAgeData
-                |> List.map (\( days, _, weight ) -> ( days, weight ))
-
-        weightForAgeMonthsData =
-            weightForAgeData
-                |> List.map (\( _, month, weight ) -> ( month, weight ))
-
-        weightForLengthAndHeightData =
-            List.filterMap (chartWeightForLengthAndHeight heightValues) weightValues
-
-        weightForLengthData =
-            weightForLengthAndHeightData
-                |> List.map (\( length, _, weight ) -> ( length, weight ))
-
-        weightForHeightData =
-            weightForLengthAndHeightData
-                |> List.map (\( _, height, weight ) -> ( height, weight ))
-
         charts =
             Maybe.map
                 (\birthDate ->
                     let
+                        heightValuesBySession =
+                            valuesIndexedBySession .heights
+
+                        weightValuesBySession =
+                            valuesIndexedBySession .weights
+
+                        heightValuesByEncounter =
+                            Dict.union
+                                (valuesIndexedByEncounter .height nutritionMeasurements)
+                                (valuesIndexedByEncounter .height wellChildMeasurements)
+
+                        weightValuesByEncounter =
+                            Dict.union
+                                (valuesIndexedByEncounter .weight nutritionMeasurements)
+                                (valuesIndexedByEncounter .weight wellChildMeasurements)
+
+                        heightValues =
+                            Dict.values heightValuesBySession ++ Dict.values heightValuesByEncounter
+
+                        weightValues =
+                            Dict.values weightValuesBySession ++ Dict.values weightValuesByEncounter
+
+                        heightForAgeData =
+                            List.filterMap (chartHeightForAge child) heightValues
+
+                        weightForAgeData =
+                            List.filterMap (chartWeightForAge child) weightValues
+
+                        weightForLengthAndHeightData =
+                            List.filterMap (chartWeightForLengthAndHeight heightValues) weightValues
+
                         headCircumferenceValuesByEncounter =
                             valuesIndexedByEncounter .headCircumference wellChildMeasurements
 
@@ -1370,6 +1346,14 @@ viewGrowthPane language currentDate zscores child historical nutritionMeasuremen
 
                         childAgeInMonths =
                             diffMonths birthDate currentDate
+
+                        weightForAgeDaysData =
+                            weightForAgeData
+                                |> List.map (\( days, _, weight ) -> ( days, weight ))
+
+                        heightForAgeDaysData =
+                            heightForAgeData
+                                |> List.map (\( days, _, height ) -> ( days, height ))
                     in
                     -- With exception of Sortwathe, children graduate from all
                     -- groups at the age of 26 month. Therefore, we will show
@@ -1387,6 +1371,10 @@ viewGrowthPane language currentDate zscores child historical nutritionMeasuremen
 
                                 else
                                     zScoreViewCharts.headCircumferenceForAge0To2 language zscores headCircumferenceForAgeData
+
+                            weightForLengthData =
+                                weightForLengthAndHeightData
+                                    |> List.map (\( length, _, weight ) -> ( length, weight ))
                         in
                         [ ZScore.View.viewMarkers
                         , zScoreViewCharts.heightForAge language zscores heightForAgeDaysData
@@ -1396,6 +1384,11 @@ viewGrowthPane language currentDate zscores child historical nutritionMeasuremen
                         ]
 
                     else if childAgeInMonths < 60 then
+                        let
+                            weightForHeightData =
+                                weightForLengthAndHeightData
+                                    |> List.map (\( _, height, weight ) -> ( height, weight ))
+                        in
                         [ ZScore.View.viewMarkers
                         , zScoreViewCharts.heightForAge0To5 language zscores heightForAgeDaysData
                         , zScoreViewCharts.weightForAge0To5 language zscores weightForAgeDaysData
@@ -1404,6 +1397,15 @@ viewGrowthPane language currentDate zscores child historical nutritionMeasuremen
                         ]
 
                     else
+                        let
+                            weightForAgeMonthsData =
+                                weightForAgeData
+                                    |> List.map (\( _, month, weight ) -> ( month, weight ))
+
+                            heightForAgeMonthsData =
+                                heightForAgeData
+                                    |> List.map (\( _, month, height ) -> ( month, height ))
+                        in
                         -- Child is older than 5 years.
                         [ ZScore.View.viewMarkers
                         , zScoreViewCharts.heightForAge5To19 language zscores heightForAgeMonthsData

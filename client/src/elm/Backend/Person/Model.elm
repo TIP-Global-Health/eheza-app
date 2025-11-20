@@ -31,6 +31,10 @@ type alias Person =
     , registrationLongitude : Maybe String
     , saveGPSLocation : Bool
     , telephoneNumber : Maybe String
+    , spouseName : Maybe String
+    , spousePhoneNumber : Maybe String
+    , nextOfKinName : Maybe String
+    , nextOfKinPhoneNumber : Maybe String
     , healthCenterId : Maybe HealthCenterId
     , deleted : Bool
     , shard : Maybe HealthCenterId

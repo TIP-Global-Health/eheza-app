@@ -35,7 +35,6 @@ import Pages.Utils
         ( ifEverySetEmpty
         , ifNullableTrue
         , resolveTasksCompletedFromTotal
-        , taskAllCompleted
         , taskCompleted
         )
 import Translate.Model exposing (Language(..))
@@ -362,6 +361,7 @@ expectNextStepsTask currentDate assembled task =
                            )
                         || diagnosedSyphilisByPhase PrenatalEncounterPhaseRecurrent assembled
                         || diagnosedHypertension PrenatalEncounterPhaseRecurrent assembled
+                        || diagnosedAnyOf [ DiagnosisModerateAnemiaRecurrentPhase ] assembled
                    )
 
         NextStepsHealthEducation ->
@@ -418,11 +418,19 @@ nextStepsTaskCompleted currentDate assembled task =
 
                     else
                         True
+
+                anemiaTreatmentCompleted =
+                    if diagnosed DiagnosisModerateAnemiaRecurrentPhase assembled then
+                        reinforceTreatmentSignsCompleted assembled.measurements
+
+                    else
+                        True
             in
             medicationDistributionCompleted
                 && malariaTreatmentCompleted
                 && syphilisTreatmentCompleted
                 && hypertensionTreatmentCompleted
+                && anemiaTreatmentCompleted
 
         NextStepsHealthEducation ->
             getMeasurementValueFunc assembled.measurements.healthEducation

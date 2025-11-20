@@ -71,7 +71,6 @@ import Backend.PrenatalEncounter.Update
 import Backend.Relationship.Encoder exposing (encodeRelationshipChanges)
 import Backend.Relationship.Model exposing (MyRelatedBy(..), MyRelationship, RelatedBy(..))
 import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
-import Backend.ResilienceMessage.Model
 import Backend.ResilienceSurvey.Model
 import Backend.ResilienceSurvey.Update
 import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession)
@@ -1908,7 +1907,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                Maybe.map (generateNutritionAssessmentIndividualMsgs currentDate site zscores features isChw model newModel)
+                                Maybe.map (generateNutritionAssessmentIndividualMsgs currentDate zscores features isChw model newModel)
                                     encounterId
                                     |> Maybe.withDefault []
                         in
@@ -5967,6 +5966,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        PrenatalAspirinRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | aspirin = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         PrenatalBloodGpRsTestRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
@@ -5979,6 +5986,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             ( mapPrenatalMeasurements
                 data.encounterId
                 (\measurements -> { measurements | breastfeeding = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalCalciumRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | calcium = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -6002,6 +6017,22 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             ( mapPrenatalMeasurements
                 data.encounterId
                 (\measurements -> { measurements | familyPlanning = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalFefolRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | fefol = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalFolateRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | folate = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -6069,6 +6100,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        PrenatalIronRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | iron = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         PrenatalLabsResultsRevision uuid data ->
             let
                 modelWithMappedFollowUp =
@@ -6092,6 +6131,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        PrenatalMebendazoleRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | mebendazole = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         PrenatalMentalHealthRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
@@ -6104,6 +6151,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             ( mapPrenatalMeasurements
                 data.encounterId
                 (\measurements -> { measurements | medicationDistribution = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalMMSRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | mms = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -7482,7 +7537,6 @@ saveNCDLabsResultsMsg encounterId personId labsResultsId labsResultsValue =
 
 generateNutritionAssessmentIndividualMsgs :
     NominalDate
-    -> Site
     -> ZScore.Model.Model
     -> EverySet SiteFeature
     -> Bool
@@ -7490,14 +7544,13 @@ generateNutritionAssessmentIndividualMsgs :
     -> ModelIndexedDb
     -> NutritionEncounterId
     -> List App.Model.Msg
-generateNutritionAssessmentIndividualMsgs currentDate site zscores features isChw before after id =
+generateNutritionAssessmentIndividualMsgs currentDate zscores features isChw before after id =
     Maybe.map2
         (\assembledBefore assembledAfter ->
             let
                 mandatoryActivitiesCompleted =
                     Pages.Nutrition.Activity.Utils.mandatoryActivitiesCompleted
                         currentDate
-                        site
                         zscores
                         features
                         assembledAfter.person
@@ -7779,7 +7832,6 @@ generateNutritionAssessmentWellChildlMsgs currentDate zscores site isChw before 
                 mandatoryActivitiesCompleted =
                     Pages.WellChild.Activity.Utils.mandatoryNutritionAssessmentTasksCompleted
                         currentDate
-                        site
                         assembledAfter
             in
             if not mandatoryActivitiesCompleted then

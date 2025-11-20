@@ -1,6 +1,6 @@
 module Backend.Nurse.Decoder exposing (decodeNurse)
 
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.Nurse.Model exposing (..)
 import Backend.Nurse.Utils exposing (resilienceRoleFromString)
 import Backend.Person.Decoder

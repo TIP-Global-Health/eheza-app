@@ -32,6 +32,9 @@ obstetricalDiagnoses : List PrenatalDiagnosis
 obstetricalDiagnoses =
     [ DiagnosisGestationalHypertensionImmediate
     , DiagnosisGestationalHypertensionAfterRecheck
+    , DiagnosisHighRiskOfPreeclampsiaInitialPhase
+    , DiagnosisHighRiskOfPreeclampsiaRecurrentPhase
+    , DiagnosisModerateRiskOfPreeclampsia
     , DiagnosisModeratePreeclampsiaInitialPhase
     , DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus
     , DiagnosisModeratePreeclampsiaRecurrentPhase
