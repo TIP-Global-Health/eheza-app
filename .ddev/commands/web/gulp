@@ -15,8 +15,8 @@ then
     exit 1
   fi
 
-  if [[ -z "${CONFIG_SITE}" ]]; then
-    echo "Please specify CONFIG_SITE in your DDEV local config, as for deployment, we must know for which site it's being performed."
+  if [[ -z "${PANTHEON_NAME}" ]]; then
+    echo "Please specify PANTHEON_NAME in your DDEV local config, as for deployment, we must know for which site it's being performed."
     exit 1
   fi
 
@@ -30,7 +30,7 @@ then
     cd -
   fi
 
-  cp ../../eheza-infra/elm/${CONFIG_SITE}/Config.Deploy.elm ${CLIENT_PATH}/src/elm/
+  cp ../../eheza-infra/elm/${PANTHEON_NAME}/Config.Deploy.elm ${CLIENT_PATH}/src/elm/
 fi
 
 export TZ=Europe/Budapest
