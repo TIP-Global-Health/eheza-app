@@ -19841,35 +19841,35 @@ var $author$project$Utils$GeoLocation$getGeoCellsForBurundi = $pzp1997$assoc_lis
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(48)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(56),
+			$author$project$Backend$Entities$toEntityId(54),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Donge',
+				'Donge-burasira',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(48)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(90),
+			$author$project$Backend$Entities$toEntityId(83),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Ntentamaza',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(48)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(98),
+			$author$project$Backend$Entities$toEntityId(91),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Nyatubuye',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(48)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(102),
+			$author$project$Backend$Entities$toEntityId(95),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Rukere',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(48)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(104),
+			$author$project$Backend$Entities$toEntityId(97),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Taba',
@@ -19879,107 +19879,114 @@ var $author$project$Utils$GeoLocation$getGeoCellsForBurundi = $pzp1997$assoc_lis
 			$author$project$Backend$Entities$toEntityId(52),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Donge',
+				'Donge-ruzi',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(51)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(66),
+			$author$project$Backend$Entities$toEntityId(62),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Kibezi',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(51)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(86),
+			$author$project$Backend$Entities$toEntityId(79),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Musho',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(51)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(61),
+			$author$project$Backend$Entities$toEntityId(57),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Gataka',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(60)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(68),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kirinzi',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(60)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(94),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Nyakimonyi',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(60)))),
+					$author$project$Backend$Entities$toEntityId(56)))),
 			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(64),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
+				'Kirinzi',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(56)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(87),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Nyakimonyi',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(56)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(60),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
 				'Gozi',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(63)))),
+					$author$project$Backend$Entities$toEntityId(59)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(88),
+			$author$project$Backend$Entities$toEntityId(81),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Mwumba',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(63)))),
+					$author$project$Backend$Entities$toEntityId(59)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(71),
+			$author$project$Backend$Entities$toEntityId(67),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Kivumu',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(70)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(84),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Munini',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(70)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(74),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mpota',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(73)))),
+					$author$project$Backend$Entities$toEntityId(66)))),
 			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(77),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mugendo',
+				'Munini',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(76)))),
+					$author$project$Backend$Entities$toEntityId(66)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(92),
+			$author$project$Backend$Entities$toEntityId(70),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Mpota',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(69)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(73),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Mugendo-ndengo',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(72)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(75),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Mugendo-ruko',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(72)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(85),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Nyakigano',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(76)))),
+					$author$project$Backend$Entities$toEntityId(72)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(96),
+			$author$project$Backend$Entities$toEntityId(89),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Nyamugari',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(76)))),
+					$author$project$Backend$Entities$toEntityId(72)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(100),
+			$author$project$Backend$Entities$toEntityId(93),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Ruhinga',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(76))))
+					$author$project$Backend$Entities$toEntityId(72))))
 		]));
 var $author$project$Utils$GeoLocation$getGeoCellsForRwanda = $pzp1997$assoc_list$AssocList$fromList(
 	_Utils_ap(
@@ -23259,149 +23266,149 @@ var $author$project$Utils$GeoLocation$getGeoVillagesForBurundi = $pzp1997$assoc_
 			$author$project$Backend$Entities$toEntityId(53),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Ruzi',
+				'Donge-ruzi',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(52)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(57),
+			$author$project$Backend$Entities$toEntityId(55),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Burasira',
+				'Donge-burasira',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(56)))),
+					$author$project$Backend$Entities$toEntityId(54)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(62),
+			$author$project$Backend$Entities$toEntityId(58),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Gataka',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(61)))),
+					$author$project$Backend$Entities$toEntityId(57)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(65),
+			$author$project$Backend$Entities$toEntityId(61),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Gozi',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(64)))),
+					$author$project$Backend$Entities$toEntityId(60)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(67),
+			$author$project$Backend$Entities$toEntityId(63),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Kibezi',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(66)))),
+					$author$project$Backend$Entities$toEntityId(62)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(69),
+			$author$project$Backend$Entities$toEntityId(65),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Kirinzi',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(68)))),
+					$author$project$Backend$Entities$toEntityId(64)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(72),
+			$author$project$Backend$Entities$toEntityId(68),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Kivumu',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(71)))),
+					$author$project$Backend$Entities$toEntityId(67)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(75),
+			$author$project$Backend$Entities$toEntityId(71),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Mpota',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(74)))),
+					$author$project$Backend$Entities$toEntityId(70)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(74),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Mugendo-ndengo',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(73)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(76),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Mugendo-ruko',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(75)))),
 			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(78),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Ndengo',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(77)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(81),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Ruko',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(77)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(85),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
 				'Munini',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(84)))),
+					$author$project$Backend$Entities$toEntityId(77)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(87),
+			$author$project$Backend$Entities$toEntityId(80),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Musho',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(86)))),
+					$author$project$Backend$Entities$toEntityId(79)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(89),
+			$author$project$Backend$Entities$toEntityId(82),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Mwumba',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(88)))),
+					$author$project$Backend$Entities$toEntityId(81)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(91),
+			$author$project$Backend$Entities$toEntityId(84),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Ntentamaza',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(90)))),
+					$author$project$Backend$Entities$toEntityId(83)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(93),
+			$author$project$Backend$Entities$toEntityId(86),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Nyakigano',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(92)))),
+					$author$project$Backend$Entities$toEntityId(85)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(95),
+			$author$project$Backend$Entities$toEntityId(88),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Nyakimonyi',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(94)))),
+					$author$project$Backend$Entities$toEntityId(87)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(97),
+			$author$project$Backend$Entities$toEntityId(90),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Nyamugari',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(96)))),
+					$author$project$Backend$Entities$toEntityId(89)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(99),
+			$author$project$Backend$Entities$toEntityId(92),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Nyatubuye',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(98)))),
+					$author$project$Backend$Entities$toEntityId(91)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(101),
+			$author$project$Backend$Entities$toEntityId(94),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Ruhinga',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(100)))),
+					$author$project$Backend$Entities$toEntityId(93)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(103),
+			$author$project$Backend$Entities$toEntityId(96),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Rukere',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(102)))),
+					$author$project$Backend$Entities$toEntityId(95)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(105),
+			$author$project$Backend$Entities$toEntityId(98),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Taba',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(104))))
+					$author$project$Backend$Entities$toEntityId(97))))
 		]));
 var $author$project$Utils$GeoLocation$getGeoVillagesForRwanda = $pzp1997$assoc_list$AssocList$fromList(
 	_Utils_ap(
