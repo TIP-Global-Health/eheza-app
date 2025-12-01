@@ -14446,6 +14446,7 @@ translationSet trans =
             { english = "Next of Kin"
             , kinyarwanda = Nothing
             , kirundi = Nothing
+            , somali = Nothing
             }
 
         NextPediatricVisit isChw ->
@@ -26178,6 +26179,7 @@ translationSet trans =
             { english = "Spouse / Partner"
             , kinyarwanda = Nothing
             , kirundi = Nothing
+            , somali = Nothing
             }
 
         StockCorrectionReason value ->
@@ -28657,12 +28659,14 @@ translationSet trans =
             case task of
                 VaccineBCG ->
                     { english = "Bacillus Calmette - Guérin (BCG)"
+                    , kinyarwanda = Nothing
                     , kirundi = Just "Urucanco rw'igituntu"
                     , somali = Nothing
                     }
 
                 VaccineDTP ->
                     { english = "Diptheria, Hepatitis B, Tetanus, and Pertussis"
+                    , kinyarwanda = Nothing
                     , kirundi = Just "Urucanco rw'ibigoga, rudadaza,inkorora y'akanira,igitigu na mugiga"
                     , somali = Nothing
                     }
