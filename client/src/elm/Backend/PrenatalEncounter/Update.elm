@@ -329,7 +329,7 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             )
 
         HandleSavedBirthPlan data ->
-            ( { model | savePrenatalPhoto = data }
+            ( { model | saveBirthPlan = data }
             , Cmd.none
             , triggerRollbarOnFailure data
             )
