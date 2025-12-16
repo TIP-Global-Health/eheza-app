@@ -87,6 +87,12 @@ function hedley_user_user_presave(&$edit, $account, $category) {
     if (function_exists($function)) {
       $function($edit, $data);
     }
+    else {
+      $measurement_types = hedley_general_get_measurement_types();
+      if (in_array($bundle, $measurement_types)) {
+        hedley_user_create_measurement_by_sync_incident($edit, $data);
+      }
+    }
   }
 }
 
@@ -170,6 +176,88 @@ function hedley_user_node_form_access_callback($op, $node) {
 
   // Only admin users have access to the node add or edit Drupal interface.
   return FALSE;
+}
+
+function hedley_user_create_measurement_by_sync_incident(array &$edit, $data) {
+  $bundle = $data->type;
+  $fields = field_info_instances('node', $bundle);
+  $entity = ['type' => $bundle];
+  foreach ($fields as $field) {
+    $name = $field['field_name'];
+    if ($name == 'field_shards') {
+      // Shards are assigned automatically.
+      continue;
+    }
+    $name_at_data = preg_replace('/^field_/', '', $name);
+    $value = $data->{$name_at_data};
+    $is_required = $field['required'];
+    if (empty($value)) {
+      if ($is_required) {
+        // We're missing a value for a required field.
+        return;
+      }
+      else {
+        // Skip, since the field is optional.
+        continue;
+      }
+    }
+
+    $info = field_info_field($name);
+    $type = $info['type'];
+    if (in_array($type, ['image', 'text_long', 'datestamp', 'text_with_summary', 'file'])) {
+      continue;
+    }
+
+    switch ($type) {
+      case 'entityreference':
+        $nid = hedley_restful_resolve_nid_for_uuid($value);
+        if (!$nid) {
+          if ($is_required) {
+            // We're missing a value for a required field.
+            return;
+          }
+          else {
+            // Skip, since the field is optional.
+            break;
+          }
+        }
+        $entity[$name][LANGUAGE_NONE][0]['target_id'] = $nid;
+        break;
+
+      case 'datetime':
+        if (in_array($name, ['expected', 'scheduled_date'])) {
+          $entity[$name][LANGUAGE_NONE][0]['value'] = "$value->value 00:00:00";
+          if (!empty($data->expected->value2)) {
+            $entity[$name][LANGUAGE_NONE][0]['value2'] = $value->value2;
+          }
+        }
+        else {
+          $entity[$name][LANGUAGE_NONE][0]['value'] = "$value 00:00:00";
+        }
+        break;
+
+      case 'list_integer':
+      case 'list_float':
+      case 'list_text':
+        foreach ($value as $item) {
+          $entity[$name][LANGUAGE_NONE][] = ['value' => $item];
+        }
+        break;
+
+      default:
+        $entity[$name][LANGUAGE_NONE][0]['value'] = $value;
+    }
+  }
+
+  try {
+    $node = entity_create('node', $entity);
+    node_save($node);
+  }
+  catch (Exception $e) {
+    return;
+  }
+
+  $edit['field_incident_details'][LANGUAGE_NONE] = [];
 }
 
 /**
