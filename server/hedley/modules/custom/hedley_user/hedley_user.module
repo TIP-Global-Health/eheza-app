@@ -187,6 +187,13 @@ function hedley_user_create_entity_by_sync_incident_data(array &$edit, $data) {
       // Shards are assigned automatically.
       continue;
     }
+
+    $info = field_info_field($name);
+    $type = $info['type'];
+    if (in_array($type, ['image', 'text_long', 'datestamp', 'text_with_summary', 'file'])) {
+      continue;
+    }
+
     $name_at_data = preg_replace('/^field_/', '', $name);
     $value = $data->{$name_at_data};
     $is_required = $field['required'];
@@ -199,12 +206,6 @@ function hedley_user_create_entity_by_sync_incident_data(array &$edit, $data) {
         // Skip, since the field is optional.
         continue;
       }
-    }
-
-    $info = field_info_field($name);
-    $type = $info['type'];
-    if (in_array($type, ['image', 'text_long', 'datestamp', 'text_with_summary', 'file'])) {
-      continue;
     }
 
     switch ($type) {
