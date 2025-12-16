@@ -83,15 +83,14 @@ function hedley_user_user_presave(&$edit, $account, $category) {
     }
 
     $bundle = $data->type;
-    $function = "hedley_user_create_{$bundle}_by_sync_incident";
-    if (function_exists($function)) {
-      $function($edit, $data);
-    }
-    else {
-      $measurement_types = hedley_general_get_measurement_types();
-      if (in_array($bundle, $measurement_types)) {
-        hedley_user_create_measurement_by_sync_incident($edit, $data);
-      }
+    $allowed_entities = array_merge(
+      ['person', 'individual_participant', 'session'],
+      hedley_general_get_encounter_types(),
+      hedley_general_get_measurement_types()
+    );
+
+    if (in_array($bundle, $allowed_entities)) {
+      hedley_user_create_entity_by_sync_incident_data($edit, $data);
     }
   }
 }
@@ -178,7 +177,7 @@ function hedley_user_node_form_access_callback($op, $node) {
   return FALSE;
 }
 
-function hedley_user_create_measurement_by_sync_incident(array &$edit, $data) {
+function hedley_user_create_entity_by_sync_incident_data(array &$edit, $data) {
   $bundle = $data->type;
   $fields = field_info_instances('node', $bundle);
   $entity = ['type' => $bundle];
@@ -225,10 +224,10 @@ function hedley_user_create_measurement_by_sync_incident(array &$edit, $data) {
         break;
 
       case 'datetime':
-        if (in_array($name, ['expected', 'scheduled_date'])) {
+        if (in_array($name, ['field_expected', 'field_scheduled_date'])) {
           $entity[$name][LANGUAGE_NONE][0]['value'] = "$value->value 00:00:00";
-          if (!empty($data->expected->value2)) {
-            $entity[$name][LANGUAGE_NONE][0]['value2'] = $value->value2;
+          if (!empty($value->value2)) {
+            $entity[$name][LANGUAGE_NONE][0]['value2'] = "$value->value2 00:00:00";
           }
         }
         else {
@@ -239,8 +238,13 @@ function hedley_user_create_measurement_by_sync_incident(array &$edit, $data) {
       case 'list_integer':
       case 'list_float':
       case 'list_text':
-        foreach ($value as $item) {
-          $entity[$name][LANGUAGE_NONE][] = ['value' => $item];
+        if (is_array($value)) {
+          foreach ($value as $item) {
+            $entity[$name][LANGUAGE_NONE][] = ['value' => $item];
+          }
+        }
+        else {
+          $entity[$name][LANGUAGE_NONE][0]['value'] = $value;
         }
         break;
 
