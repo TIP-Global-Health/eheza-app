@@ -200,7 +200,11 @@ function hedley_user_create_entity_by_sync_incident_data(array &$edit, $data) {
 
     $info = field_info_field($name);
     $type = $info['type'];
-    if (in_array($type, ['image', 'text_long', 'datestamp', 'text_with_summary', 'file'])) {
+
+    if (in_array(
+      $type,
+      ['image', 'text_long', 'datestamp', 'text_with_summary', 'file'])
+    ) {
       continue;
     }
 
