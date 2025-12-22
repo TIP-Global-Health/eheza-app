@@ -245,6 +245,11 @@ function hedley_user_create_entity_by_sync_incident_data(array &$edit, $data) {
             $entity[$name][LANGUAGE_NONE][0]['value2'] = "$value->value2 00:00:00";
           }
         }
+        elseif ($name == 'field_administration_dates') {
+          foreach ($value as $item) {
+            $entity[$name][LANGUAGE_NONE][] = ['value' => "$item 00:00:00"];
+          }
+        }
         else {
           $entity[$name][LANGUAGE_NONE][0]['value'] = "$value 00:00:00";
         }
