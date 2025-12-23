@@ -12,6 +12,7 @@
 define('PERSON_UUID', '9b062e92-b581-59f0-a04d-60f2a5cff28f');
 define('NURSE_UUID', '3375800e-33c7-5b17-a601-9a436d2387b8');
 define('HEALTH_CENTER_UUID', '764f6dc1-e6a6-5b4a-92e4-3238b86cb9c4');
+define('CLINIC_UUID', 'e9ebf07e-6835-5920-82eb-93bee47e98a9');
 define('TEST_USER_ID', 2);
 define('WAIT_TIME', 3);
 
@@ -75,7 +76,7 @@ function main() {
   drush_print("");
 
   // Get all test cases from data file.
-  $test_cases = get_test_cases(PERSON_UUID, NURSE_UUID, HEALTH_CENTER_UUID);
+  $test_cases = get_test_cases(PERSON_UUID, NURSE_UUID, HEALTH_CENTER_UUID, CLINIC_UUID);
 
   $passed = 0;
   $failed = 0;

@@ -32,11 +32,13 @@ function generate_uuid() {
  *   UUID of existing nurse.
  * @param string $health_center_uuid
  *   UUID of existing health center.
+ * @param string $clinic_uuid
+ *   UUID of existing clinic.
  *
  * @return array
  *   Array of test cases, keyed by test name.
  */
-function get_test_cases($person_uuid, $nurse_uuid, $health_center_uuid) {
+function get_test_cases($person_uuid, $nurse_uuid, $health_center_uuid, $clinic_uuid) {
   $date = date('Y-m-d');
 
   // Generate UUIDs upfront so they can be referenced across test cases.
@@ -2165,6 +2167,169 @@ function get_test_cases($person_uuid, $nurse_uuid, $health_center_uuid) {
     $test_cases[$key] = [
       'description' => $measurement['description'],
       'entity' => array_merge($hiv_base, $measurement['fields'], [
+        'deleted' => FALSE,
+        'uuid' => generate_uuid(),
+      ]),
+    ];
+  }
+
+  // =========================================================================
+  // GROUP SESSION AND MEASUREMENTS
+  // =========================================================================
+
+  $session_uuid = generate_uuid();
+  $test_cases['session'] = [
+    'description' => 'Group Session',
+    'entity' => [
+      'scheduled_date' => [
+        'value' => $date,
+        'value2' => NULL,
+      ],
+      'clinic' => $clinic_uuid,
+      'deleted' => FALSE,
+      'type' => 'session',
+      'uuid' => $session_uuid,
+      'status' => 1,
+      'shard' => $health_center_uuid,
+    ],
+  ];
+
+  $group_base = [
+    'person' => $person_uuid,
+    'session' => $session_uuid,
+    'date_measured' => $date,
+    'nurse' => $nurse_uuid,
+    'health_center' => $health_center_uuid,
+    'status' => 1,
+    'shard' => $health_center_uuid,
+  ];
+
+  $group_measurements = [
+    'height' => [
+      'description' => 'Group Height',
+      'fields' => [
+        'height' => 85.0,
+        'type' => 'height',
+      ],
+    ],
+    'muac' => [
+      'description' => 'Group MUAC',
+      'fields' => [
+        'muac' => 13.5,
+        'type' => 'muac',
+      ],
+    ],
+    'weight' => [
+      'description' => 'Group Weight',
+      'fields' => [
+        'weight' => 12.0,
+        'type' => 'weight',
+      ],
+    ],
+    'photo' => [
+      'description' => 'Group Photo',
+      'fields' => [
+        'photo' => 'https://example.com/group_photo.jpg',
+        'type' => 'photo',
+      ],
+    ],
+    'nutrition' => [
+      'description' => 'Group Nutrition',
+      'fields' => [
+        'nutrition_signs' => ['edema', 'brittle-hair'],
+        'nutrition_assesment' => ['assesment-underweight-moderate'],
+        'type' => 'nutrition',
+      ],
+    ],
+    'attendance' => [
+      'description' => 'Group Attendance',
+      'fields' => [
+        'attended' => TRUE,
+        'type' => 'attendance',
+      ],
+    ],
+    'family_planning' => [
+      'description' => 'Group Family Planning',
+      'fields' => [
+        'family_planning_signs' => ['pill', 'condoms'],
+        'type' => 'family_planning',
+      ],
+    ],
+    'lactation' => [
+      'description' => 'Group Lactation',
+      'fields' => [
+        'lactation_signs' => ['breastfeeding'],
+        'type' => 'lactation',
+      ],
+    ],
+    'child_fbf' => [
+      'description' => 'Group Child FBF',
+      'fields' => [
+        'distributed_amount' => 5.0,
+        'distribution_notice' => 'complete',
+        'type' => 'child_fbf',
+      ],
+    ],
+    'mother_fbf' => [
+      'description' => 'Group Mother FBF',
+      'fields' => [
+        'distributed_amount' => 7.0,
+        'distribution_notice' => 'lack-of-stock',
+        'type' => 'mother_fbf',
+      ],
+    ],
+    'contributing_factors' => [
+      'description' => 'Group Contributing Factors',
+      'fields' => [
+        'contributing_factors_signs' => ['lack-of-breast-milk', 'poor-suck'],
+        'type' => 'contributing_factors',
+      ],
+    ],
+    'follow_up' => [
+      'description' => 'Group Follow Up',
+      'fields' => [
+        'follow_up_options' => ['1-w'],
+        'nutrition_assesment' => ['assesment-underweight-moderate'],
+        'nutrition_signs' => ['edema'],
+        'date_concluded' => $date,
+        'type' => 'follow_up',
+      ],
+    ],
+    'group_send_to_hc' => [
+      'description' => 'Group Send To HC',
+      'fields' => [
+        'send_to_hc' => ['refer-to-hc', 'referral-form'],
+        'reason_not_sent_to_hc' => 'none',
+        'type' => 'group_send_to_hc',
+      ],
+    ],
+    'group_health_education' => [
+      'description' => 'Group Health Education',
+      'fields' => [
+        'health_education_signs' => ['education-for-diagnosis'],
+        'reason_not_given_education' => 'none',
+        'type' => 'group_health_education',
+      ],
+    ],
+    'group_ncda' => [
+      'description' => 'Group NCDA',
+      'fields' => [
+        'ncda_signs' => ['receive-vitamin-a', 'took-de-wormer'],
+        'anc_visits_dates' => [$date],
+        'receive_option' => 'yes',
+        'stunting_level' => 'green',
+        'birth_weight' => 3100.0,
+        'weight' => 12.0,
+        'muac' => 13.5,
+        'type' => 'group_ncda',
+      ],
+    ],
+  ];
+
+  foreach ($group_measurements as $key => $measurement) {
+    $test_cases[$key] = [
+      'description' => $measurement['description'],
+      'entity' => array_merge($group_base, $measurement['fields'], [
         'deleted' => FALSE,
         'uuid' => generate_uuid(),
       ]),
