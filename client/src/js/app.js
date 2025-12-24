@@ -1177,7 +1177,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
           }
         }
         else {
-          // Looking into case where entity is a type of a mesurement.
+          // Looking into case where entity is a type of a measurement.
           // it can belong to group encounter or individual encounter.
           const entityKeys = Object.keys(result[0]);
           // Identify measurement - only measurements got "nurse" field).
