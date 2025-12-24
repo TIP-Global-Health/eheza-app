@@ -84,7 +84,7 @@ function hedley_user_user_presave(&$edit, $account, $category) {
 
     $bundle = $data->type;
     $allowed_entities = array_merge(
-      ['person', 'individual_participant', 'session'],
+      ['person', 'individual_participant', 'pmtct_participant', 'session'],
       hedley_general_get_encounter_types(),
       hedley_general_get_measurement_types()
     );
