@@ -1232,8 +1232,8 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
               // It references session and person.
               if (entityKeys.includes("session")) {
                 // Resolving session.
-                uuidSession = result[0].session;
-                uuidPerson = result[0].person;
+                const uuidSession = result[0].session;
+                const uuidPerson = result[0].person;
                 result = await dbSync
                     .shards
                     .where('uuid')
