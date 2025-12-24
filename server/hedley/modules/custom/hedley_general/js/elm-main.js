@@ -6668,7 +6668,9 @@ var $author$project$Pages$Reports$Update$update = F4(
 						if ((((_v2.a.$ === 'Just') && (_v2.a.a.$ === 'Ok')) && (_v2.b.$ === 'Just')) && (_v2.b.a.$ === 'ReportNutrition')) {
 							var data = _v2.a.a.a;
 							var _v3 = _v2.b.a;
-							return $author$project$Pages$Reports$Utils$isWideScope(data.entityType) ? _Utils_Tuple2(model.nutritionReportData, $elm$core$Platform$Cmd$none) : _Utils_Tuple2(
+							return $author$project$Pages$Reports$Utils$isWideScope(data.entityType) ? _Utils_Tuple2(
+								$krisajenkins$remotedata$RemoteData$Loading,
+								A2($author$project$Pages$Reports$Update$performNutritionReportDataCalculation, currentDate, data.records)) : _Utils_Tuple2(
 								$krisajenkins$remotedata$RemoteData$Loading,
 								A2($author$project$Pages$Reports$Update$performNutritionReportDataCalculation, currentDate, data.records));
 						} else {
@@ -17287,182 +17289,6 @@ var $author$project$Translate$MonthYear = F3(
 	function (a, b, c) {
 		return {$: 'MonthYear', a: a, b: b, c: c};
 	});
-var $author$project$Translate$NutritionReportTableType = function (a) {
-	return {$: 'NutritionReportTableType', a: a};
-};
-var $author$project$Translate$QuarterYear = F2(
-	function (a, b) {
-		return {$: 'QuarterYear', a: a, b: b};
-	});
-var $author$project$Translate$StuntingModerate = {$: 'StuntingModerate'};
-var $author$project$Translate$StuntingSevere = {$: 'StuntingSevere'};
-var $author$project$Translate$UnderweightModerate = {$: 'UnderweightModerate'};
-var $author$project$Translate$UnderweightSevere = {$: 'UnderweightSevere'};
-var $author$project$Translate$WastingModerate = {$: 'WastingModerate'};
-var $author$project$Translate$WastingSevere = {$: 'WastingSevere'};
-var $author$project$Translate$Year = function (a) {
-	return {$: 'Year', a: a};
-};
-var $elm$core$Maybe$map2 = F3(
-	function (func, ma, mb) {
-		if (ma.$ === 'Nothing') {
-			return $elm$core$Maybe$Nothing;
-		} else {
-			var a = ma.a;
-			if (mb.$ === 'Nothing') {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var b = mb.a;
-				return $elm$core$Maybe$Just(
-					A2(func, a, b));
-			}
-		}
-	});
-var $author$project$Pages$Reports$View$backendGeneratedNutritionReportTableDateToMetricsResultsTableData = F2(
-	function (language, backendTableData) {
-		var translateCaption = function (caption) {
-			if (A2(
-				$elm$core$List$member,
-				backendTableData.tableType,
-				_List_fromArray(
-					[$author$project$Backend$Reports$Model$NutritionTableIncidenceQuarterOneOrMore, $author$project$Backend$Reports$Model$NutritionTableIncidenceQuarterTwoOrMore]))) {
-				var _v0 = A2($elm$core$String$split, '-', caption);
-				if ((_v0.b && _v0.b.b) && (!_v0.b.b.b)) {
-					var year = _v0.a;
-					var _v1 = _v0.b;
-					var quarter = _v1.a;
-					return A2(
-						$elm$core$Maybe$withDefault,
-						'',
-						A3(
-							$elm$core$Maybe$map2,
-							F2(
-								function (q, y) {
-									return A2(
-										$author$project$Translate$translate,
-										language,
-										A2($author$project$Translate$QuarterYear, q, y));
-								}),
-							$elm$core$String$toInt(quarter),
-							$elm$core$String$toInt(year)));
-				} else {
-					return '';
-				}
-			} else {
-				if (A2(
-					$elm$core$List$member,
-					backendTableData.tableType,
-					_List_fromArray(
-						[$author$project$Backend$Reports$Model$NutritionTableIncidenceYearOneOrMore, $author$project$Backend$Reports$Model$NutritionTableIncidenceYearTwoOrMore]))) {
-					return A2(
-						$elm$core$Maybe$withDefault,
-						'',
-						A2(
-							$elm$core$Maybe$map,
-							A2(
-								$elm$core$Basics$composeR,
-								$author$project$Translate$Year,
-								$author$project$Translate$translate(language)),
-							$elm$core$String$toInt(caption)));
-				} else {
-					var _v2 = A2($elm$core$String$split, '-', caption);
-					if ((_v2.b && _v2.b.b) && (!_v2.b.b.b)) {
-						var year = _v2.a;
-						var _v3 = _v2.b;
-						var month = _v3.a;
-						return A2(
-							$elm$core$Maybe$withDefault,
-							'',
-							A3(
-								$elm$core$Maybe$map2,
-								F2(
-									function (m, y) {
-										return A2(
-											$author$project$Translate$translate,
-											language,
-											A3($author$project$Translate$MonthYear, m, y, true));
-									}),
-								$elm$core$String$toInt(month),
-								$elm$core$String$toInt(year)));
-					} else {
-						return '';
-					}
-				}
-			}
-		};
-		return {
-			captions: A2(
-				$elm$core$List$cons,
-				'',
-				A2($elm$core$List$map, translateCaption, backendTableData.captions)),
-			heading: A2(
-				$author$project$Translate$translate,
-				language,
-				$author$project$Translate$NutritionReportTableType(backendTableData.tableType)),
-			rows: _List_fromArray(
-				[
-					A2(
-					$elm$core$List$cons,
-					A2($author$project$Translate$translate, language, $author$project$Translate$StuntingModerate),
-					backendTableData.stuntingModerate),
-					A2(
-					$elm$core$List$cons,
-					A2($author$project$Translate$translate, language, $author$project$Translate$StuntingSevere),
-					backendTableData.stuntingSevere),
-					A2(
-					$elm$core$List$cons,
-					A2($author$project$Translate$translate, language, $author$project$Translate$WastingModerate),
-					backendTableData.wastingModerate),
-					A2(
-					$elm$core$List$cons,
-					A2($author$project$Translate$translate, language, $author$project$Translate$WastingSevere),
-					backendTableData.wastingSevere),
-					A2(
-					$elm$core$List$cons,
-					A2($author$project$Translate$translate, language, $author$project$Translate$UnderweightModerate),
-					backendTableData.underweightModerate),
-					A2(
-					$elm$core$List$cons,
-					A2($author$project$Translate$translate, language, $author$project$Translate$UnderweightSevere),
-					backendTableData.underweightSevere)
-				])
-		};
-	});
-var $author$project$Pages$Reports$View$generareNutritionReportDataFromBackendGeneratedData = F3(
-	function (language, currentDate, data) {
-		var nutritionTableTypeToNumber = function (tableType) {
-			switch (tableType.$) {
-				case 'NutritionTablePrevalanceOneOrMore':
-					return 1;
-				case 'NutritionTablePrevalanceTwoOrMore':
-					return 2;
-				case 'NutritionTableIncidenceMonthOneOrMore':
-					return 3;
-				case 'NutritionTableIncidenceMonthTwoOrMore':
-					return 4;
-				case 'NutritionTableIncidenceQuarterOneOrMore':
-					return 5;
-				case 'NutritionTableIncidenceQuarterTwoOrMore':
-					return 6;
-				case 'NutritionTableIncidenceYearOneOrMore':
-					return 7;
-				default:
-					return 8;
-			}
-		};
-		return A2(
-			$elm$core$List$map,
-			$author$project$Pages$Reports$View$backendGeneratedNutritionReportTableDateToMetricsResultsTableData(language),
-			A2(
-				$elm$core$List$sortBy,
-				A2(
-					$elm$core$Basics$composeR,
-					function ($) {
-						return $.tableType;
-					},
-					nutritionTableTypeToNumber),
-				data));
-	});
 var $elm$core$Set$Set_elm_builtin = function (a) {
 	return {$: 'Set_elm_builtin', a: a};
 };
@@ -18059,17 +17885,6 @@ var $elm$core$Set$intersect = F2(
 		return $elm$core$Set$Set_elm_builtin(
 			A2($elm$core$Dict$intersect, dict1, dict2));
 	});
-var $elm$core$Dict$isEmpty = function (dict) {
-	if (dict.$ === 'RBEmpty_elm_builtin') {
-		return true;
-	} else {
-		return false;
-	}
-};
-var $elm$core$Set$isEmpty = function (_v0) {
-	var dict = _v0.a;
-	return $elm$core$Dict$isEmpty(dict);
-};
 var $elm$core$Dict$sizeHelp = F2(
 	function (n, dict) {
 		sizeHelp:
@@ -18193,35 +18008,22 @@ var $author$project$Pages$Reports$Utils$generateIncidenceNutritionMetricsResults
 			$elm$core$Set$diff,
 			$elm$core$Set$fromList(currentPeriodMetric.stuntingModerate),
 			$elm$core$Set$fromList(previousPeriodStuntingModerateSevere));
-		var calculatePercentage = F2(
-			function (nominator, total) {
-				return $elm$core$Set$isEmpty(total) ? 0 : (($elm$core$Set$size(nominator) / $elm$core$Set$size(total)) * 100);
-			});
 		return {
-			stuntingModerate: A2(
-				calculatePercentage,
-				A2($elm$core$Set$intersect, stuntingModerateTestedInPreviousPeriod, stuntingModerateNotIdentifiedInPreviousPeriod),
-				previousPeriodStuntingTotal),
-			stuntingSevere: A2(
-				calculatePercentage,
-				A2($elm$core$Set$intersect, stuntingSevereTestedInPreviousPeriod, stuntingSevereNotIdentifiedInPreviousPeriod),
-				previousPeriodStuntingTotal),
-			underweightModerate: A2(
-				calculatePercentage,
-				A2($elm$core$Set$intersect, underweightModerateTestedInPreviousPeriod, underweightModerateNotIdentifiedInPreviousPeriod),
-				previousPeriodUnderweightTotal),
-			underweightSevere: A2(
-				calculatePercentage,
-				A2($elm$core$Set$intersect, underweightSevereTestedInPreviousPeriod, underweightSevereNotIdentifiedInPreviousPeriod),
-				previousPeriodUnderweightTotal),
-			wastingModerate: A2(
-				calculatePercentage,
-				A2($elm$core$Set$intersect, wastingModerateTestedInPreviousPeriod, wastingModerateNotIdentifiedInPreviousPeriod),
-				previousPeriodWastingTotal),
-			wastingSevere: A2(
-				calculatePercentage,
-				A2($elm$core$Set$intersect, wastingSevereTestedInPreviousPeriod, wastingSevereNotIdentifiedInPreviousPeriod),
-				previousPeriodWastingTotal)
+			stuntingModerate: $elm$core$Set$size(
+				A2($elm$core$Set$intersect, stuntingModerateTestedInPreviousPeriod, stuntingModerateNotIdentifiedInPreviousPeriod)),
+			stuntingSevere: $elm$core$Set$size(
+				A2($elm$core$Set$intersect, stuntingSevereTestedInPreviousPeriod, stuntingSevereNotIdentifiedInPreviousPeriod)),
+			stuntingTotal: $elm$core$Set$size(previousPeriodStuntingTotal),
+			underweightModerate: $elm$core$Set$size(
+				A2($elm$core$Set$intersect, underweightModerateTestedInPreviousPeriod, underweightModerateNotIdentifiedInPreviousPeriod)),
+			underweightSevere: $elm$core$Set$size(
+				A2($elm$core$Set$intersect, underweightSevereTestedInPreviousPeriod, underweightSevereNotIdentifiedInPreviousPeriod)),
+			underweightTotal: $elm$core$Set$size(previousPeriodUnderweightTotal),
+			wastingModerate: $elm$core$Set$size(
+				A2($elm$core$Set$intersect, wastingModerateTestedInPreviousPeriod, wastingModerateNotIdentifiedInPreviousPeriod)),
+			wastingSevere: $elm$core$Set$size(
+				A2($elm$core$Set$intersect, wastingSevereTestedInPreviousPeriod, wastingSevereNotIdentifiedInPreviousPeriod)),
+			wastingTotal: $elm$core$Set$size(previousPeriodWastingTotal)
 		};
 	});
 var $author$project$Pages$Reports$Utils$resolveDataSetForMonth = F3(
@@ -18247,14 +18049,23 @@ var $author$project$Pages$Reports$Utils$resolvePreviousDataSetForMonth = F3(
 				},
 				A2($elm$core$List$range, 1, 3)));
 	});
+var $author$project$Translate$StuntingModerate = {$: 'StuntingModerate'};
+var $author$project$Translate$StuntingSevere = {$: 'StuntingSevere'};
+var $author$project$Translate$UnderweightModerate = {$: 'UnderweightModerate'};
+var $author$project$Translate$UnderweightSevere = {$: 'UnderweightSevere'};
+var $author$project$Translate$WastingModerate = {$: 'WastingModerate'};
+var $author$project$Translate$WastingSevere = {$: 'WastingSevere'};
 var $author$project$Pages$Reports$View$toMetricsResultsTableData = F3(
 	function (language, heading, data) {
 		var generateRow = function (label) {
 			return A2(
 				$elm$core$Basics$composeR,
 				$elm$core$List$map(
-					function (value) {
-						return A2($myrho$elm_round$Round$round, 3, value) + '%';
+					function (_v1) {
+						var nominator = _v1.a;
+						var denominator = _v1.b;
+						var value = (!denominator) ? 0 : ((nominator / denominator) * 100);
+						return A2($myrho$elm_round$Round$round, 3, value) + ('%   [ ' + ($elm$core$String$fromInt(nominator) + (' / ' + ($elm$core$String$fromInt(denominator) + ' ]'))));
 					}),
 				$elm$core$List$append(
 					_List_fromArray(
@@ -18286,8 +18097,8 @@ var $author$project$Pages$Reports$View$toMetricsResultsTableData = F3(
 						A2(
 							$elm$core$Basics$composeR,
 							$elm$core$Tuple$second,
-							function ($) {
-								return $.stuntingModerate;
+							function (info) {
+								return _Utils_Tuple2(info.stuntingModerate, info.stuntingTotal);
 							}),
 						data)),
 					A2(
@@ -18298,8 +18109,8 @@ var $author$project$Pages$Reports$View$toMetricsResultsTableData = F3(
 						A2(
 							$elm$core$Basics$composeR,
 							$elm$core$Tuple$second,
-							function ($) {
-								return $.stuntingSevere;
+							function (info) {
+								return _Utils_Tuple2(info.stuntingSevere, info.stuntingTotal);
 							}),
 						data)),
 					A2(
@@ -18310,8 +18121,8 @@ var $author$project$Pages$Reports$View$toMetricsResultsTableData = F3(
 						A2(
 							$elm$core$Basics$composeR,
 							$elm$core$Tuple$second,
-							function ($) {
-								return $.wastingModerate;
+							function (info) {
+								return _Utils_Tuple2(info.wastingModerate, info.wastingTotal);
 							}),
 						data)),
 					A2(
@@ -18322,8 +18133,8 @@ var $author$project$Pages$Reports$View$toMetricsResultsTableData = F3(
 						A2(
 							$elm$core$Basics$composeR,
 							$elm$core$Tuple$second,
-							function ($) {
-								return $.wastingSevere;
+							function (info) {
+								return _Utils_Tuple2(info.wastingSevere, info.wastingTotal);
 							}),
 						data)),
 					A2(
@@ -18334,8 +18145,8 @@ var $author$project$Pages$Reports$View$toMetricsResultsTableData = F3(
 						A2(
 							$elm$core$Basics$composeR,
 							$elm$core$Tuple$second,
-							function ($) {
-								return $.underweightModerate;
+							function (info) {
+								return _Utils_Tuple2(info.underweightModerate, info.underweightTotal);
 							}),
 						data)),
 					A2(
@@ -18346,8 +18157,8 @@ var $author$project$Pages$Reports$View$toMetricsResultsTableData = F3(
 						A2(
 							$elm$core$Basics$composeR,
 							$elm$core$Tuple$second,
-							function ($) {
-								return $.underweightSevere;
+							function (info) {
+								return _Utils_Tuple2(info.underweightSevere, info.underweightTotal);
 							}),
 						data))
 				])
@@ -18387,17 +18198,16 @@ var $author$project$Pages$Reports$Utils$generatePrevalenceNutritionMetricsResult
 		_Utils_ap(
 			metrics.stuntingModerate,
 			_Utils_ap(metrics.stuntingSevere, metrics.stuntingNormal)));
-	var calculatePercentage = F2(
-		function (nominator, total) {
-			return $elm$core$List$isEmpty(total) ? 0 : (($elm$core$List$length(nominator) / $elm$core$List$length(total)) * 100);
-		});
 	return {
-		stuntingModerate: A2(calculatePercentage, metrics.stuntingModerate, stuntingTotal),
-		stuntingSevere: A2(calculatePercentage, metrics.stuntingSevere, stuntingTotal),
-		underweightModerate: A2(calculatePercentage, metrics.underweightModerate, underweightTotal),
-		underweightSevere: A2(calculatePercentage, metrics.underweightSevere, underweightTotal),
-		wastingModerate: A2(calculatePercentage, metrics.wastingModerate, wastingTotal),
-		wastingSevere: A2(calculatePercentage, metrics.wastingSevere, wastingTotal)
+		stuntingModerate: $elm$core$List$length(metrics.stuntingModerate),
+		stuntingSevere: $elm$core$List$length(metrics.stuntingSevere),
+		stuntingTotal: $elm$core$List$length(stuntingTotal),
+		underweightModerate: $elm$core$List$length(metrics.underweightModerate),
+		underweightSevere: $elm$core$List$length(metrics.underweightSevere),
+		underweightTotal: $elm$core$List$length(underweightTotal),
+		wastingModerate: $elm$core$List$length(metrics.wastingModerate),
+		wastingSevere: $elm$core$List$length(metrics.wastingSevere),
+		wastingTotal: $elm$core$List$length(wastingTotal)
 	};
 };
 var $author$project$Pages$Reports$View$generateMonthlyPrevalenceTableData = F4(
@@ -18418,6 +18228,10 @@ var $author$project$Pages$Reports$View$generateMonthlyPrevalenceTableData = F4(
 							A3($author$project$Pages$Reports$Utils$resolveDataSetForMonth, currentDate, index, encountersByMonth)));
 				},
 				A2($elm$core$List$range, 1, 12)));
+	});
+var $author$project$Translate$QuarterYear = F2(
+	function (a, b) {
+		return {$: 'QuarterYear', a: a, b: b};
 	});
 var $elm_community$list_extra$List$Extra$getAt = F2(
 	function (idx, xs) {
@@ -18487,6 +18301,9 @@ var $author$project$Pages$Reports$View$generateQuarterlyIncidenceTableData = F4(
 				},
 				A2($elm$core$List$range, 1, 4)));
 	});
+var $author$project$Translate$Year = function (a) {
+	return {$: 'Year', a: a};
+};
 var $pzp1997$assoc_list$AssocList$filter = F2(
 	function (isGood, _v0) {
 		var alist = _v0.a;
@@ -18648,13 +18465,7 @@ var $author$project$Pages$Reports$View$reportTablesDataToCSV = A2(
 	$elm$core$String$join('\n\n'));
 var $author$project$Pages$Reports$View$viewNutritionReport = F5(
 	function (language, currentDate, scopeLabel, mBackendGeneratedData, reportData) {
-		var generatedData = A2(
-			$elm$core$Maybe$withDefault,
-			A3($author$project$Pages$Reports$View$generareNutritionReportDataFromRawData, language, currentDate, reportData),
-			A2(
-				$elm$core$Maybe$map,
-				A2($author$project$Pages$Reports$View$generareNutritionReportDataFromBackendGeneratedData, language, currentDate),
-				mBackendGeneratedData));
+		var generatedData = A3($author$project$Pages$Reports$View$generareNutritionReportDataFromRawData, language, currentDate, reportData);
 		var csvFileName = 'nutrition-report-' + ($elm$core$String$toLower(
 			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', currentDate) + '.csv')));
 		var csvContent = $author$project$Pages$Reports$View$reportTablesDataToCSV(generatedData);
@@ -19676,7 +19487,8 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 				]));
 	});
 var $author$project$Pages$Reports$View$view = F5(
-	function (language, currentDate, themePath, modelBackend, model) {
+	function (language, currentDate_, themePath, modelBackend, model) {
+		var currentDate = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, -139, currentDate_);
 		var _v0 = modelBackend.reportsData;
 		if (_v0.$ === 'Just') {
 			if (_v0.a.$ === 'Ok') {
