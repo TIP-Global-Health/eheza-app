@@ -421,7 +421,7 @@ type TranslationId
     | All
     | AllowedValuesRangeHelper FloatInputConstraints
     | AlmostEveryday
-    | AmbulancArrivalPeriodQuestion
+    | AmbulanceArrivalPeriodQuestion
     | ANCEncountersNotRecordedQuestion
     | ANCIndicateVisitsMonthsPhrase
     | ANCNewborn
@@ -432,7 +432,7 @@ type TranslationId
     | AntenatalVisistsHistory
     | AppName
     | AppointmentConfirmation
-    | AppointmentConfirmationInstrunction
+    | AppointmentConfirmationInstruction
     | AreYouSure
     | Assessment
     | Asthma
@@ -480,7 +480,7 @@ type TranslationId
     | BreastExamDischargeType DischargeType
     | BreastExamQuestion
     | BrittleHair
-    | ByMouthDaylyForXDays Int
+    | ByMouthDailyForXDays Int
     | ByMouthTwiceADayForXDays Int
     | ByMouthThreeTimesADayForXDays Int
     | Call114
@@ -537,7 +537,7 @@ type TranslationId
     | Commune
     | CompleteFacilityReferralForm ReferralFacility
     | CompletionDate
-    | ConditionsDuringPrevoiusPregnancy
+    | ConditionsDuringPreviousPregnancy
     | Contacted114
     | ContactedHC
     | ContactedHCQuestion
@@ -677,7 +677,7 @@ type TranslationId
     | Estimated
     | ExaminationTask ExaminationTask
     | ExaminationTaskRecurrent Pages.Prenatal.RecurrentActivity.Types.ExaminationTask
-    | ExpirityDate
+    | ExpiryDate
     | ExposureTask ExposureTask
     | Extremities
     | Eyes
@@ -931,7 +931,7 @@ type TranslationId
     | LateFirstANCVisitReason LateFirstANCVisitReason
     | LastChecked
     | LastContacted
-    | LastSuccesfulContactLabel
+    | LastSuccessfulContactLabel
     | LeaveEncounter
     | Left
     | LegCrampsReliefMethod LegCrampsReliefMethod
@@ -3469,7 +3469,7 @@ translationSet trans =
             , kirundi = Nothing
             }
 
-        AmbulancArrivalPeriodQuestion ->
+        AmbulanceArrivalPeriodQuestion ->
             { english = "How long did it take the ambulance to arrive"
             , kinyarwanda = Just "Bitwara igihe kingana gute ngo imbangukiragutabara ihagere"
             , kirundi = Just "Mbega Rusehabaniha (ambiranse) yafashe umwanya ungana gute kuhashisha"
@@ -3511,7 +3511,7 @@ translationSet trans =
             , kirundi = Just "Kwemeza isango"
             }
 
-        AppointmentConfirmationInstrunction ->
+        AppointmentConfirmationInstruction ->
             { english = "The patient should visit the health center on the following date"
             , kinyarwanda = Just "Umubyeyi agomba kujya ku kigo nderabuzima ku itariki ikurikira"
             , kirundi = Just "Umurwayi ategerezwa kuja k'ivuriro kw'itarike ikurikira"
@@ -4044,7 +4044,7 @@ translationSet trans =
             , kirundi = Just "Imishatsi ibenje"
             }
 
-        ByMouthDaylyForXDays days ->
+        ByMouthDailyForXDays days ->
             { english = "by mouth daily x " ++ String.fromInt days ++ " days"
             , kinyarwanda = Just <| "ku munsi / mu  minsi " ++ String.fromInt days
             , kirundi = Just <| "Gucisha mu kanwa buri munsi mu iminsi " ++ String.fromInt days
@@ -4597,7 +4597,7 @@ translationSet trans =
             , kirundi = Just "Itariki yaherejeko gufata umuti"
             }
 
-        ConditionsDuringPrevoiusPregnancy ->
+        ConditionsDuringPreviousPregnancy ->
             { english = "Conditions during previous pregnancy"
             , kinyarwanda = Just "Uko umubyeyi yari ameze igihe yari atwite inda iheruka"
             , kirundi = Nothing
@@ -6183,8 +6183,8 @@ translationSet trans =
                     , kirundi = Just "Ivyangombwa"
                     }
 
-        ExpirityDate ->
-            { english = "Expirity Date"
+        ExpiryDate ->
+            { english = "Expiry Date"
             , kinyarwanda = Just "Itariki bizarangiraho"
             , kirundi = Nothing
             }
@@ -10020,7 +10020,7 @@ translationSet trans =
             , kirundi = Just "Uwo bavuganye ubwanyuma"
             }
 
-        LastSuccesfulContactLabel ->
+        LastSuccessfulContactLabel ->
             { english = "Last Successful Contact"
             , kinyarwanda = Just "Itariki n'isaha yanyuma igikoresho giheruka gukoresherezaho interineti bikagenda neza"
             , kirundi = Just "Kuvugana kwa genze neza ubwanyuma"
