@@ -353,7 +353,7 @@ translationSet transId =
                     translationSet MedicationDistribution
 
                 AcuteIllnessSendToHC ->
-                    { english = "Referal"
+                    { english = "Referral"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
@@ -1331,7 +1331,7 @@ translationSet transId =
         NCDAUniversalInterventionItemLabel item ->
             case item of
                 Immunization ->
-                    { english = "Immunization"
+                    { english = "Immunisation"
                     , kinyarwanda = Just "Ikingira"
                     , kirundi = Nothing
                     }
