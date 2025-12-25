@@ -6184,7 +6184,7 @@ translationSet trans =
                     }
 
         ExpirityDate ->
-            { english = "Expirity Date"
+            { english = "Expiry Date"
             , kinyarwanda = Just "Itariki bizarangiraho"
             , kirundi = Nothing
             }
