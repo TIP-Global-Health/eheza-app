@@ -211,7 +211,7 @@ function hedley_user_create_entity_by_sync_incident_data(array &$edit, $data) {
     $name_at_data = preg_replace('/^field_/', '', $name);
     $value = $data->{$name_at_data};
     $is_required = $field['required'];
-    if (empty($value)) {
+    if (!isset($value)) {
       if ($is_required) {
         // We're missing a value for a required field.
         return;

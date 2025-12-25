@@ -1082,8 +1082,8 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         break;
 
     // Purpose of this query is to retrieve data that will help resolving
-    // sync incident in case referrenced entity is not recorded. For example,
-    // when nutrition height is being recored, but it's encounter is
+    // sync incident in case referenced entity is not recorded. For example,
+    // when nutrition height is being recorded, but it's encounter is
     // not found and shardChanges table.
     // To solve this, we try to pull the encounter from shards table.
     case 'IndexDbQueryGetShardsEntityByUuid':
@@ -1178,7 +1178,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
           }
         }
         else {
-          // Looking into case where entity is a type of a measurement.
+          // Looking into case where entity is a type of measurement.
           // it can belong to group encounter or individual encounter.
           const entityKeys = Object.keys(result[0]);
           // Identify measurement - only measurements got "nurse" field).
