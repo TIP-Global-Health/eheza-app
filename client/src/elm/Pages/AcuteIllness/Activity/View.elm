@@ -453,16 +453,16 @@ viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements
                             ( "symptoms-gi", isJust measurements.symptomsGI )
 
                         SymptomsENT ->
-                            ( "symptoms-gi", isJust measurements.symptomsENT )
+                            ( "symptoms-ent", isJust measurements.symptomsENT )
 
                         SymptomsEyes ->
-                            ( "symptoms-gi", isJust measurements.symptomsEyes )
+                            ( "symptoms-eyes", isJust measurements.symptomsEyes )
 
                         SymptomsGU ->
-                            ( "symptoms-gi", isJust measurements.symptomsGU )
+                            ( "symptoms-gu", isJust measurements.symptomsGU )
 
                         SymptomsOral ->
-                            ( "symptoms-gi", isJust measurements.symptomsOral )
+                            ( "symptoms-oral", isJust measurements.symptomsOral )
 
                 isActive =
                     activeTask == Just task
