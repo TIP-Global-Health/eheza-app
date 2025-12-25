@@ -435,7 +435,6 @@ individualEncounterFeatures isChw =
         [ FeatureAcuteIllness
         , FeatureAntenatal
         , FeatureHIVManagement
-        , FeatureNCD
         , FeatureNutritionIndividual
         , FeatureTuberculosisManagement
         , FeatureWellChild

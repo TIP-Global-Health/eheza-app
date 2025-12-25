@@ -340,10 +340,17 @@ update currentTime currentDate db msg model =
                 agreesToParticipate =
                     Maybe.withDefault False model.consentForm.agreesToParticipate
 
+                reasonsToNotConsent =
+                    if agreesToParticipate then
+                        Nothing
+
+                    else
+                        model.consentForm.reasonsToNotConsent
+
                 nurseWithConsent =
                     { nurse
                         | resilienceConsentGiven = agreesToParticipate
-                        , resilienceConsentReason = model.consentForm.reasonsToNotConsent
+                        , resilienceConsentReason = reasonsToNotConsent
                     }
 
                 ( redirectMsg, updatedModel ) =

@@ -267,7 +267,7 @@ viewContentForNurse language currentDate features isLabTech model db followUps =
                         else
                             []
 
-                    ncdLabsPanePane =
+                    ncdLabsPane =
                         if ncdEnabled features then
                             [ ( FilterNCDLabs, viewNCDLabsPane language currentDate followUps.ncdLabs db model ) ]
 
@@ -276,7 +276,7 @@ viewContentForNurse language currentDate features isLabTech model db followUps =
                 in
                 ( contactsTracingPane
                     ++ prenatalLabsPane
-                    ++ ncdLabsPanePane
+                    ++ ncdLabsPane
                 , nurseFilters features
                 )
 
