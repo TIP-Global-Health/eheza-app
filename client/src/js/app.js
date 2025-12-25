@@ -1122,10 +1122,11 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
                 .equals(uuidAdult)
                 .limit(1)
                 .toArray();
-                let adult = result[0];
-                if (adult) {
-                  entities.push(adult);
-                }
+
+            let adult = result[0];
+            if (adult) {
+              entities.push(adult);
+            }
           }
         }
         // Looking into case where entity is "individual_participant".
