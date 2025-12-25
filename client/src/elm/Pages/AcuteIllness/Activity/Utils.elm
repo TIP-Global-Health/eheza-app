@@ -1033,7 +1033,7 @@ medicationDistributionFormInutsAndTasks language currentDate person diagnosis fo
                                 [ viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign ORS) "icon-oral-solution" Nothing
                                 , viewOralSolutionPrescription language orsDosage
                                 , viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign Zinc) "icon-pills" Nothing
-                                , viewTabletsPrescription language zincDosage (Translate.ByMouthDaylyForXDays 10)
+                                , viewTabletsPrescription language zincDosage (Translate.ByMouthDailyForXDays 10)
                                 ]
                         )
                         (resolveORSDosage currentDate person)

@@ -10956,7 +10956,7 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'AcuteIllnessSendToHC':
-						return {english: 'Referal', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+						return {english: 'Referral', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'AcuteIllnessSymptomsGeneral':
 						return {english: 'Symptoms General', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'AcuteIllnessSymptomsGI':
@@ -12767,7 +12767,7 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'WellChildMebendezole':
-						return {english: 'Mebendezole', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+						return {english: 'Mebendazole', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'WellChildMRImmunisation':
 						var $temp$transId = $author$project$Translate$ImmunisationMR;
 						transId = $temp$transId;

@@ -329,7 +329,7 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             )
 
         HandleSavedBirthPlan data ->
-            ( { model | savePrenatalPhoto = data }
+            ( { model | saveBirthPlan = data }
             , Cmd.none
             , triggerRollbarOnFailure data
             )
@@ -490,6 +490,18 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             , triggerRollbarOnFailure data
             )
 
+        SaveSpecialityCare personId valueId value ->
+            ( { model | saveSpecialityCare = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalSpecialityCareEndpoint HandleSavedSpecialityCare
+            , []
+            )
+
+        HandleSavedSpecialityCare data ->
+            ( { model | saveSpecialityCare = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
+
         SaveLabsResults personId valueId value ->
             ( { model | saveLabsResults = Loading }
             , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalLabsResultsEndpoint HandleSavedLabsResults
@@ -610,17 +622,8 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             , triggerRollbarOnFailure data
             )
 
-        SaveSpecialityCare personId valueId value ->
-            ( { model | saveSpecialityCare = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalSpecialityCareEndpoint HandleSavedSpecialityCare
-            , []
-            )
-
-        HandleSavedSpecialityCare data ->
-            ( { model | saveSpecialityCare = data }
-            , Cmd.none
-            , triggerRollbarOnFailure data
-            )
+        NoOp ->
+            ( model, Cmd.none, [] )
 
 
 updateEncounter :
