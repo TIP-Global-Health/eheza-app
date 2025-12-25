@@ -8912,15 +8912,18 @@ function hedley_reports_prenatal_medical_history_sign_recorded_today(array $enco
 }
 
 /**
- * Checks if given obstetric history step2 sign was recorded at this encounter.
+ * Checks if given  obstetric history step2 sign was recorded previously.
+ *
+ * This function iterates over previous nurse encounters to determine if a
+ * specified sign was recorded in any of them.
  *
  * @param array $encounter_data
- *   The encounter data.
+ *   The encounter data, including previous nurse encounters.
  * @param string $sign_value
- *   The sign value to search for.
+ *   The sign value to search for in previous encounters.
  *
  * @return bool
- *   TRUE if the sign was recorded today; FALSE otherwise.
+ *   TRUE if the sign was recorded previously; FALSE otherwise.
  */
 function hedley_reports_prenatal_obstetric_history_step2_sign_recorded_previously(array $encounter_data, $sign_value) {
   $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
@@ -8940,18 +8943,15 @@ function hedley_reports_prenatal_obstetric_history_step2_sign_recorded_previousl
 }
 
 /**
- * Checks if given  obstetric history step2 sign was recorded previously.
- *
- * This function iterates over previous nurse encounters to determine if a
- * specified sign was recorded in any of them.
+ * Checks if given obstetric history step2 sign was recorded at this encounter.
  *
  * @param array $encounter_data
- *   The encounter data, including previous nurse encounters.
+ *   The encounter data.
  * @param string $sign_value
- *   The sign value to search for in previous encounters.
+ *   The sign value to search for.
  *
  * @return bool
- *   TRUE if the sign was recorded previously; FALSE otherwise.
+ *   TRUE if the sign was recorded today; FALSE otherwise.
  */
 function hedley_reports_prenatal_obstetric_history_step2_sign_recorded_today(array $encounter_data, $sign_value) {
   $measurement = $encounter_data['measurements_by_type']['obstetric_history_step2'];
