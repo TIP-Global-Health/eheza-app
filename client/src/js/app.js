@@ -1099,7 +1099,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         // In case we got entity of type "session", it's only reference is
         // "clinic". Since clinics are created on backend, we can assume
-        // they will aways exist, and there's no need to pull additional entities.
+        // they will always exist, and there's no need to pull additional entities.
         // Looking into case where entity is "pmtct_participant".
         // It references 2 persons - "adult" and "person" (for child).
         if (entities[0].type == 'pmtct_participant') {
