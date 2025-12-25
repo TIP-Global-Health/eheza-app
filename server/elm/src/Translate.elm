@@ -1331,7 +1331,7 @@ translationSet transId =
         NCDAUniversalInterventionItemLabel item ->
             case item of
                 Immunization ->
-                    { english = "Immunisation"
+                    { english = "Immunization"
                     , kinyarwanda = Just "Ikingira"
                     , kirundi = Nothing
                     }
