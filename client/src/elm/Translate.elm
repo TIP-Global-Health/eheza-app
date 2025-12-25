@@ -3676,7 +3676,7 @@ translationSet trans =
                     }
 
                 BreastfedFirstHour ->
-                    { english = "Was the baby breastfed withing and hour of delivery"
+                    { english = "Was the baby breastfed within an hour of delivery"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
