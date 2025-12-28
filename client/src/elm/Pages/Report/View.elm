@@ -629,37 +629,6 @@ viewLabResultsPane language currentDate viewForConfirmation mode setLabResultsMo
                     )
                 |> List.sortWith sortTuplesByDateDesc
 
-        hivPCRTestResults =
-            getTestResults .hivPCR
-                (\value ->
-                    Maybe.andThen
-                        (\status ->
-                            case status of
-                                ViralLoadUndetectable ->
-                                    Just ResultSuppressedViralLoad
-
-                                ViralLoadDetectable ->
-                                    Maybe.map ResultDetectibleViralLoad value.hivViralLoad
-                        )
-                        value.hivViralLoadStatus
-                )
-
-        bloodSmearTestResults =
-            data.malaria
-                |> List.filterMap
-                    (\value ->
-                        if
-                            (not <| testPerformedByExecutionNote value.executionNote)
-                                && bloodSmearResultNotSet value.bloodSmearResult
-                        then
-                            Maybe.map (\executionDate -> ( executionDate, Just value.bloodSmearResult ))
-                                value.executionDate
-
-                        else
-                            Nothing
-                    )
-                |> List.sortWith sortTuplesByDateDesc
-
         urineDipstickTestResults =
             List.filterMap
                 (\value ->
@@ -713,33 +682,6 @@ viewLabResultsPane language currentDate viewForConfirmation mode setLabResultsMo
         bilirubinResults =
             List.map (\( date, value ) -> ( date, value.bilirubin )) longUrineDipstickTestResults
 
-        bloodGpRsResults =
-            getTestResults .bloodGpRs (\value -> ( value.bloodGroup, value.rhesus ))
-
-        bloodGroupResults =
-            List.map (\( date, ( bloodGroup, _ ) ) -> ( date, bloodGroup )) bloodGpRsResults
-
-        rhesusResults =
-            List.map (\( date, ( _, rhesus ) ) -> ( date, rhesus )) bloodGpRsResults
-
-        creatinineTestResults =
-            getTestResults .creatinine (\value -> ( value.creatinineResult, value.bunResult ))
-
-        creatinineResults =
-            List.map (\( date, ( creatinineResult, _ ) ) -> ( date, creatinineResult )) creatinineTestResults
-
-        bunResults =
-            List.map (\( date, ( _, bunResult ) ) -> ( date, bunResult )) creatinineTestResults
-
-        liverFunctionResults =
-            getTestResults .liverFunction (\value -> ( value.altResult, value.astResult ))
-
-        altResults =
-            List.map (\( date, ( altResult, _ ) ) -> ( date, altResult )) liverFunctionResults
-
-        astResults =
-            List.map (\( date, ( _, astResult ) ) -> ( date, astResult )) liverFunctionResults
-
         lipidPanelTestResults =
             List.filterMap
                 (\value ->
@@ -778,6 +720,129 @@ viewLabResultsPane language currentDate viewForConfirmation mode setLabResultsMo
             case mode of
                 LabResultsCurrentMain ->
                     let
+                        dipstickShortEntry =
+                            let
+                                emptyEntry =
+                                    if viewForConfirmation then
+                                        emptyNode
+
+                                    else
+                                        emptyConsolidatedEntry (Translate.UrineDipstickTestLabel VariantShortTest)
+                            in
+                            List.head proteinResults
+                                |> Maybe.map
+                                    (\( date, proteinResult ) ->
+                                        let
+                                            proteinResultNormal_ =
+                                                Maybe.map proteinResultNormal proteinResult
+                                                    |> -- It's ok not to have a result, because test
+                                                       -- may have been not performed yet.
+                                                       Maybe.withDefault True
+
+                                            resultsNormal =
+                                                if not proteinResultNormal_ then
+                                                    False
+
+                                                else
+                                                    Maybe.map2
+                                                        (\phResult glucoseResult ->
+                                                            phResultNormal phResult && glucoseResultNormal glucoseResult
+                                                        )
+                                                        (List.head phResults |> Maybe.andThen Tuple.second)
+                                                        (List.head glucoseResults |> Maybe.andThen Tuple.second)
+                                                        |> -- We should never get here since protein result
+                                                           -- existed, and all 3 are entered together.
+                                                           Maybe.withDefault False
+
+                                            result =
+                                                if resultsNormal then
+                                                    translate language Translate.Normal
+
+                                                else
+                                                    translate language Translate.Abnormal
+                                        in
+                                        viewConsolidatedEntry (Translate.UrineDipstickTestLabel VariantShortTest)
+                                            (formatDDMMYYYY date)
+                                            result
+                                            (Just <| setLabResultsModeMsg <| Just <| LabResultsCurrent LabResultsCurrentDipstickShort)
+                                            resultsNormal
+                                    )
+                                |> Maybe.withDefault emptyEntry
+
+                        dipstickLongEntry =
+                            let
+                                emptyEntry =
+                                    if viewForConfirmation then
+                                        emptyNode
+
+                                    else
+                                        emptyConsolidatedEntry (Translate.UrineDipstickTestLabel VariantLongTest)
+                            in
+                            List.head leukocytesResults
+                                |> Maybe.map
+                                    (\( date, leukocytesResult ) ->
+                                        let
+                                            leukocytesResultNormal_ =
+                                                Maybe.map leukocytesResultNormal leukocytesResult
+                                                    |> -- It's ok not to have a result, because test
+                                                       -- may have been not performed yet.
+                                                       Maybe.withDefault True
+
+                                            resultsNormal =
+                                                if not leukocytesResultNormal_ then
+                                                    False
+
+                                                else
+                                                    let
+                                                        firstGroupResultsNormal =
+                                                            Maybe.map5
+                                                                (\proteinResult phResult glucoseResult nitriteResult urobilinogenResult ->
+                                                                    proteinResultNormal proteinResult
+                                                                        && phResultNormal phResult
+                                                                        && glucoseResultNormal glucoseResult
+                                                                        && nitriteResultNormal nitriteResult
+                                                                        && urobilinogenResultNormal urobilinogenResult
+                                                                )
+                                                                (List.head proteinResults |> Maybe.andThen Tuple.second)
+                                                                (List.head phResults |> Maybe.andThen Tuple.second)
+                                                                (List.head glucoseResults |> Maybe.andThen Tuple.second)
+                                                                (List.head nitriteResults |> Maybe.andThen Tuple.second)
+                                                                (List.head urobilinogenResults |> Maybe.andThen Tuple.second)
+                                                                |> -- We should never get here since leukocytes result
+                                                                   -- existed, and all the results are entered together.
+                                                                   Maybe.withDefault False
+
+                                                        secondGroupResultsNormal =
+                                                            Maybe.map3
+                                                                (\haemoglobinResult ketoneResult bilirubinResult ->
+                                                                    urineHaemoglobinValueResultNormal haemoglobinResult
+                                                                        && ketoneResultNormal ketoneResult
+                                                                        && bilirubinResultNormal bilirubinResult
+                                                                )
+                                                                (List.head haemoglobinResults |> Maybe.andThen Tuple.second)
+                                                                (List.head ketoneResults |> Maybe.andThen Tuple.second)
+                                                                (List.head bilirubinResults |> Maybe.andThen Tuple.second)
+                                                                |> -- We should never get here since leukocytes result
+                                                                   -- existed, and all the results are entered together.
+                                                                   Maybe.withDefault False
+                                                    in
+                                                    firstGroupResultsNormal && secondGroupResultsNormal
+
+                                            result =
+                                                if resultsNormal then
+                                                    translate language Translate.Normal
+
+                                                else
+                                                    translate language Translate.Abnormal
+                                        in
+                                        viewConsolidatedEntry (Translate.UrineDipstickTestLabel VariantLongTest)
+                                            (formatDDMMYYYY date)
+                                            result
+                                            (Just <| setLabResultsModeMsg <| Just <| LabResultsCurrent LabResultsCurrentDipstickLong)
+                                            resultsNormal
+                                    )
+                                |> Maybe.withDefault emptyEntry
+
                         dipstickEntries =
                             if viewForConfirmation then
                                 -- Confirmation view shows results only of current encounter.
@@ -818,6 +883,108 @@ viewLabResultsPane language currentDate viewForConfirmation mode setLabResultsMo
 
                         hba1cResults =
                             getTestResults .hba1c .hba1cResult
+
+                        lipidPanelEntry =
+                            List.head totalCholesterolResults
+                                |> Maybe.map
+                                    (\( date, totalCholesterolResult ) ->
+                                        let
+                                            totalCholesterolResultsNormal_ =
+                                                Maybe.map totalCholesterolResultNormal totalCholesterolResult
+                                                    |> -- It's ok not to have a result, because test
+                                                       -- may have been not performed yet.
+                                                       Maybe.withDefault True
+
+                                            resultsNormal =
+                                                if not totalCholesterolResultsNormal_ then
+                                                    False
+
+                                                else
+                                                    Maybe.map3
+                                                        (\ldlCholesterolResult hdlCholesterolResult triglyceridesResult ->
+                                                            ldlCholesterolResultNormal ldlCholesterolResult
+                                                                && hdlCholesterolResultNormal hdlCholesterolResult
+                                                                && triglyceridesResultNormal triglyceridesResult
+                                                        )
+                                                        (List.head ldlCholesterolResults |> Maybe.andThen Tuple.second)
+                                                        (List.head hdlCholesterolResults |> Maybe.andThen Tuple.second)
+                                                        (List.head triglyceridesResults |> Maybe.andThen Tuple.second)
+                                                        |> -- We should never get here since protein result
+                                                           -- existed, and all 4 are entered together.
+                                                           Maybe.withDefault False
+
+                                            result =
+                                                if resultsNormal then
+                                                    translate language Translate.Normal
+
+                                                else
+                                                    translate language Translate.Abnormal
+                                        in
+                                        viewConsolidatedEntry Translate.LipidPanel
+                                            (formatDDMMYYYY date)
+                                            result
+                                            (Just <| setLabResultsModeMsg <| Just <| LabResultsCurrent LabResultsCurrentLipidPanel)
+                                            resultsNormal
+                                    )
+                                |> Maybe.withDefault (emptyConsolidatedEntry Translate.LipidPanel)
+
+                        creatinineTestResults =
+                            getTestResults .creatinine (\value -> ( value.creatinineResult, value.bunResult ))
+
+                        creatinineResults =
+                            List.map (\( date, ( creatinineResult, _ ) ) -> ( date, creatinineResult )) creatinineTestResults
+
+                        bunResults =
+                            List.map (\( date, ( _, bunResult ) ) -> ( date, bunResult )) creatinineTestResults
+
+                        liverFunctionResults =
+                            getTestResults .liverFunction (\value -> ( value.altResult, value.astResult ))
+
+                        altResults =
+                            List.map (\( date, ( altResult, _ ) ) -> ( date, altResult )) liverFunctionResults
+
+                        astResults =
+                            List.map (\( date, ( _, astResult ) ) -> ( date, astResult )) liverFunctionResults
+
+                        bloodGpRsResults =
+                            getTestResults .bloodGpRs (\value -> ( value.bloodGroup, value.rhesus ))
+
+                        bloodGroupResults =
+                            List.map (\( date, ( bloodGroup, _ ) ) -> ( date, bloodGroup )) bloodGpRsResults
+
+                        rhesusResults =
+                            List.map (\( date, ( _, rhesus ) ) -> ( date, rhesus )) bloodGpRsResults
+
+                        hivPCRTestResults =
+                            getTestResults .hivPCR
+                                (\value ->
+                                    Maybe.andThen
+                                        (\status ->
+                                            case status of
+                                                ViralLoadUndetectable ->
+                                                    Just ResultSuppressedViralLoad
+
+                                                ViralLoadDetectable ->
+                                                    Maybe.map ResultDetectibleViralLoad value.hivViralLoad
+                                        )
+                                        value.hivViralLoadStatus
+                                )
+
+                        bloodSmearTestResults =
+                            data.malaria
+                                |> List.filterMap
+                                    (\value ->
+                                        if
+                                            (not <| testPerformedByExecutionNote value.executionNote)
+                                                && bloodSmearResultNotSet value.bloodSmearResult
+                                        then
+                                            Maybe.map (\executionDate -> ( executionDate, Just value.bloodSmearResult ))
+                                                value.executionDate
+
+                                        else
+                                            Nothing
+                                    )
+                                |> List.sortWith sortTuplesByDateDesc
                     in
                     [ viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryHIV hivTestResults)
                     , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryHIVPCR hivPCRTestResults)
@@ -889,173 +1056,6 @@ viewLabResultsPane language currentDate viewForConfirmation mode setLabResultsMo
 
         glucoseEntry =
             viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryGlucose glucoseResults)
-
-        dipstickShortEntry =
-            let
-                emptyEntry =
-                    if viewForConfirmation then
-                        emptyNode
-
-                    else
-                        emptyConsolidatedEntry (Translate.UrineDipstickTestLabel VariantShortTest)
-            in
-            List.head proteinResults
-                |> Maybe.map
-                    (\( date, proteinResult ) ->
-                        let
-                            proteinResultNormal_ =
-                                Maybe.map proteinResultNormal proteinResult
-                                    |> -- It's ok not to have a result, because test
-                                       -- may have been not performed yet.
-                                       Maybe.withDefault True
-
-                            resultsNormal =
-                                if not proteinResultNormal_ then
-                                    False
-
-                                else
-                                    Maybe.map2
-                                        (\phResult glucoseResult ->
-                                            phResultNormal phResult && glucoseResultNormal glucoseResult
-                                        )
-                                        (List.head phResults |> Maybe.andThen Tuple.second)
-                                        (List.head glucoseResults |> Maybe.andThen Tuple.second)
-                                        |> -- We should never get here since protein result
-                                           -- existed, and all 3 are entered together.
-                                           Maybe.withDefault False
-
-                            result =
-                                if resultsNormal then
-                                    translate language Translate.Normal
-
-                                else
-                                    translate language Translate.Abnormal
-                        in
-                        viewConsolidatedEntry (Translate.UrineDipstickTestLabel VariantShortTest)
-                            (formatDDMMYYYY date)
-                            result
-                            (Just <| setLabResultsModeMsg <| Just <| LabResultsCurrent LabResultsCurrentDipstickShort)
-                            resultsNormal
-                    )
-                |> Maybe.withDefault emptyEntry
-
-        dipstickLongEntry =
-            let
-                emptyEntry =
-                    if viewForConfirmation then
-                        emptyNode
-
-                    else
-                        emptyConsolidatedEntry (Translate.UrineDipstickTestLabel VariantLongTest)
-            in
-            List.head leukocytesResults
-                |> Maybe.map
-                    (\( date, leukocytesResult ) ->
-                        let
-                            leukocytesResultNormal_ =
-                                Maybe.map leukocytesResultNormal leukocytesResult
-                                    |> -- It's ok not to have a result, because test
-                                       -- may have been not performed yet.
-                                       Maybe.withDefault True
-
-                            resultsNormal =
-                                if not leukocytesResultNormal_ then
-                                    False
-
-                                else
-                                    let
-                                        firstGroupResultsNormal =
-                                            Maybe.map5
-                                                (\proteinResult phResult glucoseResult nitriteResult urobilinogenResult ->
-                                                    proteinResultNormal proteinResult
-                                                        && phResultNormal phResult
-                                                        && glucoseResultNormal glucoseResult
-                                                        && nitriteResultNormal nitriteResult
-                                                        && urobilinogenResultNormal urobilinogenResult
-                                                )
-                                                (List.head proteinResults |> Maybe.andThen Tuple.second)
-                                                (List.head phResults |> Maybe.andThen Tuple.second)
-                                                (List.head glucoseResults |> Maybe.andThen Tuple.second)
-                                                (List.head nitriteResults |> Maybe.andThen Tuple.second)
-                                                (List.head urobilinogenResults |> Maybe.andThen Tuple.second)
-                                                |> -- We should never get here since leukocytes result
-                                                   -- existed, and all the results are entered together.
-                                                   Maybe.withDefault False
-
-                                        secondGroupResultsNormal =
-                                            Maybe.map3
-                                                (\haemoglobinResult ketoneResult bilirubinResult ->
-                                                    urineHaemoglobinValueResultNormal haemoglobinResult
-                                                        && ketoneResultNormal ketoneResult
-                                                        && bilirubinResultNormal bilirubinResult
-                                                )
-                                                (List.head haemoglobinResults |> Maybe.andThen Tuple.second)
-                                                (List.head ketoneResults |> Maybe.andThen Tuple.second)
-                                                (List.head bilirubinResults |> Maybe.andThen Tuple.second)
-                                                |> -- We should never get here since leukocytes result
-                                                   -- existed, and all the results are entered together.
-                                                   Maybe.withDefault False
-                                    in
-                                    firstGroupResultsNormal && secondGroupResultsNormal
-
-                            result =
-                                if resultsNormal then
-                                    translate language Translate.Normal
-
-                                else
-                                    translate language Translate.Abnormal
-                        in
-                        viewConsolidatedEntry (Translate.UrineDipstickTestLabel VariantLongTest)
-                            (formatDDMMYYYY date)
-                            result
-                            (Just <| setLabResultsModeMsg <| Just <| LabResultsCurrent LabResultsCurrentDipstickLong)
-                            resultsNormal
-                    )
-                |> Maybe.withDefault emptyEntry
-
-        lipidPanelEntry =
-            List.head totalCholesterolResults
-                |> Maybe.map
-                    (\( date, totalCholesterolResult ) ->
-                        let
-                            totalCholesterolResultsNormal_ =
-                                Maybe.map totalCholesterolResultNormal totalCholesterolResult
-                                    |> -- It's ok not to have a result, because test
-                                       -- may have been not performed yet.
-                                       Maybe.withDefault True
-
-                            resultsNormal =
-                                if not totalCholesterolResultsNormal_ then
-                                    False
-
-                                else
-                                    Maybe.map3
-                                        (\ldlCholesterolResult hdlCholesterolResult triglyceridesResult ->
-                                            ldlCholesterolResultNormal ldlCholesterolResult
-                                                && hdlCholesterolResultNormal hdlCholesterolResult
-                                                && triglyceridesResultNormal triglyceridesResult
-                                        )
-                                        (List.head ldlCholesterolResults |> Maybe.andThen Tuple.second)
-                                        (List.head hdlCholesterolResults |> Maybe.andThen Tuple.second)
-                                        (List.head triglyceridesResults |> Maybe.andThen Tuple.second)
-                                        |> -- We should never get here since protein result
-                                           -- existed, and all 4 are entered together.
-                                           Maybe.withDefault False
-
-                            result =
-                                if resultsNormal then
-                                    translate language Translate.Normal
-
-                                else
-                                    translate language Translate.Abnormal
-                        in
-                        viewConsolidatedEntry Translate.LipidPanel
-                            (formatDDMMYYYY date)
-                            result
-                            (Just <| setLabResultsModeMsg <| Just <| LabResultsCurrent LabResultsCurrentLipidPanel)
-                            resultsNormal
-                    )
-                |> Maybe.withDefault (emptyConsolidatedEntry Translate.LipidPanel)
 
         emptyConsolidatedEntry label =
             viewConsolidatedEntry label "--/--/----" "---" Nothing True

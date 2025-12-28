@@ -1,8 +1,6 @@
 module Pages.Tuberculosis.ProgressReport.View exposing (view)
 
-import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model
     exposing
         ( FollowUpOption(..)
@@ -12,14 +10,10 @@ import Backend.Measurement.Model
         , TuberculosisDOTSign(..)
         , TuberculosisHealthEducationSign(..)
         , TuberculosisPrescribedMedication(..)
-        , TuberculosisSymptom(..)
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model exposing (Person)
-import Backend.TuberculosisActivity.Utils exposing (allActivities)
 import Components.ReportToWhatsAppDialog.Model
-import Components.ReportToWhatsAppDialog.Utils
 import Components.ReportToWhatsAppDialog.View
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
@@ -29,7 +23,6 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, isNothing)
-import Measurement.Model exposing (LaboratoryTask(..))
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Tuberculosis.Activity.Utils exposing (generateAllEncountersData, resolvePrescribedMedicationSets)
 import Pages.Tuberculosis.Encounter.Model exposing (AssembledData, EncounterData)
@@ -40,14 +33,11 @@ import Pages.Utils
     exposing
         ( viewConfirmationDialog
         , viewEndEncounterMenuForProgressReport
-        , viewPersonDetailsExtended
         )
 import Pages.WellChild.ProgressReport.View exposing (viewPaneHeading, viewPersonInfoPane)
-import RemoteData
 import SyncManager.Model exposing (Site, SiteFeature)
-import Translate exposing (Language, TranslationId, translate)
+import Translate exposing (Language, translate)
 import Utils.Html exposing (viewModal)
-import Utils.NominalDate exposing (sortTuplesByDateDesc)
 import Utils.WebData exposing (viewWebData)
 
 
