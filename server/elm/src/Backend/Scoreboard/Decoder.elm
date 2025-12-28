@@ -1,6 +1,6 @@
 module Backend.Scoreboard.Decoder exposing (decodeScoreboardData)
 
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
 import Backend.Decoder exposing (decodeSite)
 import Backend.Scoreboard.Model exposing (..)
 import Backend.Scoreboard.Utils exposing (..)
@@ -186,18 +186,6 @@ decodeUniqueDates =
 
 rawVaccinationDataToVaccinationProgressDict : RawVaccinationData -> VaccinationProgressDict
 rawVaccinationDataToVaccinationProgressDict data =
-    let
-        generateVaccinationProgressForVaccine dates =
-            EverySet.toList dates
-                |> List.sortWith Date.compare
-                |> List.indexedMap
-                    (\index date ->
-                        vaccineDoseFromOrder index
-                            |> Maybe.map (\dose -> ( dose, date ))
-                    )
-                |> Maybe.Extra.values
-                |> Dict.fromList
-    in
     [ ( VaccineBCG, generateVaccinationProgressForVaccine data.bcg )
     , ( VaccineOPV, generateVaccinationProgressForVaccine data.opv )
     , ( VaccineDTP, generateVaccinationProgressForVaccine data.dtp )

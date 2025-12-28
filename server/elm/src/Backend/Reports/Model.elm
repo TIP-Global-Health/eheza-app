@@ -1,6 +1,9 @@
 module Backend.Reports.Model exposing (..)
 
 import App.Types exposing (Site)
+import AssocList as Dict exposing (Dict)
+import Backend.Scoreboard.Model exposing (VaccineType)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Json.Encode exposing (Value)
 
@@ -32,7 +35,7 @@ type alias PatientData =
     , acuteIllnessData : Maybe (List (List AcuteIllnessEncounterData))
     , prenatalData : Maybe (List PrenatalParticipantData)
     , homeVisitData : Maybe (List (List HomeVisitEncounterData))
-    , wellChildData : Maybe (List (List NutritionEncounterData))
+    , wellChildData : Maybe (List (List WellChildEncounterData))
     , childScorecardData : Maybe (List (List ChildScorecardEncounterData))
     , ncdData : Maybe (List (List NCDEncounterData))
     , hivData : Maybe (List (List HIVEncounterData))
@@ -222,8 +225,16 @@ type alias NutritionEncounterData =
 
 type alias NutritionData =
     { stunting : Maybe Float
-    , wasting : Maybe Float
     , underweight : Maybe Float
+    , wasting : Maybe Float
+    , muac : Maybe Float
+    }
+
+
+type alias WellChildEncounterData =
+    { startDate : NominalDate
+    , nutritionData : Maybe NutritionData
+    , immunisationData : Maybe (Dict VaccineType (EverySet NominalDate))
     }
 
 

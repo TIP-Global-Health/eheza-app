@@ -1,6 +1,6 @@
 module Pages.Reports.View exposing (view)
 
-import App.Types exposing (Language)
+import App.Types exposing (Language, Site)
 import AssocList as Dict exposing (Dict)
 import Backend.Model exposing (ModelBackend)
 import Backend.Reports.Model
@@ -19,10 +19,21 @@ import Backend.Reports.Model
         , SelectedEntity(..)
         )
 import Backend.Reports.Utils exposing (allAcuteIllnessDiagnoses, allPrenatalDiagnoses)
+import Backend.Scoreboard.Utils exposing (generateVaccinationProgressForVaccine)
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
+import EverySet
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, customFormatDDMMYYYY, formatDDMMYYYY, sortByDate, sortByDateDesc)
+import Gizra.NominalDate
+    exposing
+        ( NominalDate
+        , customFormatDDMMYYYY
+        , diffMonths
+        , diffWeeks
+        , formatDDMMYYYY
+        , sortByDate
+        , sortByDateDesc
+        )
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
@@ -32,6 +43,7 @@ import Pages.Components.View exposing (viewCustomCells, viewMetricsResultsTable,
 import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Reports.Model exposing (..)
 import Pages.Reports.Utils exposing (..)
+import Pages.Scoreboard.Utils exposing (generateFutureVaccinationsData)
 import Pages.Utils
     exposing
         ( calculatePercentage
@@ -296,6 +308,9 @@ viewReportsData language currentDate themePath data model =
                             ReportPeripartum ->
                                 viewPeripartumReport language limitDate scopeLabel recordsTillLimitDate
 
+                            ReportPostnatalCare ->
+                                viewPostnatalCareReport language data.site limitDate scopeLabel recordsTillLimitDate
+
                             ReportPrenatal ->
                                 viewPrenatalReport language limitDate scopeLabel recordsTillLimitDate
 
@@ -329,6 +344,7 @@ viewReportsData language currentDate themePath data model =
                 , ReportDemographics
                 , ReportNutrition
                 , ReportPeripartum
+                , ReportPostnatalCare
                 ]
                 reportTypeToString
                 SetReportType
@@ -2473,6 +2489,172 @@ generatePeripartumReportData language limitDate records =
             (List.length <| pregnanciesWithIndicator IndicatorPrematureOnsetContractions pregnancies)
         , generateRow (Translate.PrenatalIndicatorLabel IndicatorBreastfedFirstHour)
             (List.length <| pregnanciesWithIndicator IndicatorBreastfedFirstHour pregnancies)
+        ]
+    }
+
+
+viewPostnatalCareReport : Language -> Site -> NominalDate -> String -> List PatientData -> Html Msg
+viewPostnatalCareReport language site limitDate scopeLabel records =
+    let
+        data =
+            generatePostnatalCareReportData language site limitDate records
+
+        captionsRow =
+            viewStandardCells data.captions
+                |> div [ class "row captions" ]
+
+        csvFileName =
+            "postnatal-care-report-"
+                ++ (String.toLower <| String.replace " " "-" scopeLabel)
+                ++ "-"
+                ++ customFormatDDMMYYYY "-" limitDate
+                ++ ".csv"
+
+        csvContent =
+            reportTableDataToCSV data
+    in
+    div [ class "report postnatal-care" ] <|
+        [ div [ class "table" ] <|
+            captionsRow
+                :: List.map viewStandardRow data.rows
+        , viewDownloadCSVButton language csvFileName csvContent
+        ]
+
+
+generatePostnatalCareReportData :
+    Language
+    -> Site
+    -> NominalDate
+    -> List PatientData
+    -> MetricsResultsTableData
+generatePostnatalCareReportData language site limitDate records =
+    let
+        totalEncountersWithin24HoursOfBirth =
+            List.filterMap
+                (\patientData ->
+                    Maybe.andThen
+                        (\wellChildData ->
+                            List.concat wellChildData
+                                |> List.sortWith (sortByDate .startDate)
+                                |> List.head
+                                |> Maybe.map (\firstEncounter -> ( patientData.birthDate, firstEncounter ))
+                        )
+                        patientData.wellChildData
+                )
+                records
+                |> List.filter
+                    (\( birthDate, encounter ) ->
+                        (Date.compare birthDate encounter.startDate == EQ)
+                            || (Date.compare (Date.add Days 1 birthDate) encounter.startDate == EQ)
+                    )
+                |> List.length
+
+        birthDatesOfUpToDateWithImmunizationPatients =
+            List.filterMap
+                (\patientData ->
+                    Maybe.andThen
+                        (\wellChildData ->
+                            let
+                                vaccinationProgressDict =
+                                    List.concat wellChildData
+                                        |> List.map .immunisationData
+                                        |> Maybe.Extra.values
+                                        |> List.foldl
+                                            (\immunisationsDict accumDict ->
+                                                Dict.merge
+                                                    (\key value -> Dict.insert key value)
+                                                    (\key value1 value2 -> Dict.insert key (EverySet.union value1 value2))
+                                                    (\key value -> Dict.insert key value)
+                                                    immunisationsDict
+                                                    accumDict
+                                                    Dict.empty
+                                            )
+                                            Dict.empty
+                                        |> Dict.map (\_ value -> generateVaccinationProgressForVaccine value)
+
+                                futureVaccinations =
+                                    generateFutureVaccinationsData site
+                                        patientData.birthDate
+                                        vaccinationProgressDict
+                                        allVaccineTypes
+
+                                closestDateForVaccination =
+                                    List.filterMap (Tuple.second >> Maybe.map Tuple.second) futureVaccinations
+                                        |> List.sortWith Date.compare
+                                        |> List.head
+                            in
+                            if isNothing closestDateForVaccination then
+                                -- Patient has completed the course of all vaccinations.
+                                Just patientData.birthDate
+
+                            else
+                                Maybe.andThen
+                                    (\closestDate ->
+                                        if Date.compare closestDate limitDate == GT then
+                                            Just patientData.birthDate
+
+                                        else
+                                            Nothing
+                                    )
+                                    closestDateForVaccination
+                        )
+                        patientData.wellChildData
+                )
+                records
+
+        totalUpToDateWithImmunizationInRange =
+            List.foldl
+                (\birthDate accum ->
+                    let
+                        diffInWeeks =
+                            diffWeeks birthDate limitDate
+
+                        diffInMonths =
+                            diffMonths birthDate limitDate
+                    in
+                    if (diffInWeeks >= 7) && (diffInWeeks < 11) then
+                        { accum | inRange7To11Weeks = accum.inRange7To11Weeks + 1 }
+
+                    else if (diffInWeeks >= 11) && (diffInWeeks < 15) then
+                        { accum | inRange11To15Weeks = accum.inRange11To15Weeks + 1 }
+
+                    else if (diffInWeeks >= 15) && (diffInMonths < 10) then
+                        { accum | inRange15WeeksTo10Months = accum.inRange15WeeksTo10Months + 1 }
+
+                    else if (diffInMonths >= 10) && (diffInMonths < 19) then
+                        { accum | inRange10To19Months = accum.inRange10To19Months + 1 }
+
+                    else if (diffInMonths >= 19) && (diffInMonths < 24) then
+                        { accum | inRange19To24Months = accum.inRange19To24Months + 1 }
+
+                    else
+                        accum
+                )
+                { inRange7To11Weeks = 0
+                , inRange11To15Weeks = 0
+                , inRange15WeeksTo10Months = 0
+                , inRange10To19Months = 0
+                , inRange19To24Months = 0
+                }
+                birthDatesOfUpToDateWithImmunizationPatients
+
+        generateRow label value =
+            [ translate language label
+            , String.fromInt value
+            ]
+    in
+    { heading = ""
+    , captions =
+        [ ""
+        , translate language Translate.Total
+        ]
+    , rows =
+        [ generateRow Translate.NewbornsWithSPVWithin24Hours totalEncountersWithin24HoursOfBirth
+        , generateRow Translate.UpToDateWithImmunization7To11WeeksLabel totalUpToDateWithImmunizationInRange.inRange7To11Weeks
+        , generateRow Translate.UpToDateWithImmunization11To15WeeksLabel totalUpToDateWithImmunizationInRange.inRange11To15Weeks
+        , generateRow Translate.UpToDateWithImmunization15WeeksTo10MonthsLabel totalUpToDateWithImmunizationInRange.inRange15WeeksTo10Months
+        , generateRow Translate.UpToDateWithImmunization10To19MonthsLabel totalUpToDateWithImmunizationInRange.inRange10To19Months
+        , generateRow Translate.UpToDateWithImmunization19To24MonthsLabel totalUpToDateWithImmunizationInRange.inRange19To24Months
         ]
     }
 
