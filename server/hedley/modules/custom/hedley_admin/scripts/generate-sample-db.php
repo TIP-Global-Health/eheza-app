@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Generates sample DB (form currently installed DB).
+ * Generates sample DB (from currently installed DB).
  *
  * Execution: drush scr
  *  profiles/hedley/modules/custom/hedley_admin/scripts/generate-sample-db.php.
