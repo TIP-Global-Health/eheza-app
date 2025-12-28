@@ -2655,12 +2655,6 @@ generatePostnatalCareReportData language site limitDate records =
         , generateRow Translate.UpToDateWithImmunization15WeeksTo10MonthsLabel totalUpToDateWithImmunizationInRange.inRange15WeeksTo10Months
         , generateRow Translate.UpToDateWithImmunization10To19MonthsLabel totalUpToDateWithImmunizationInRange.inRange10To19Months
         , generateRow Translate.UpToDateWithImmunization19To24MonthsLabel totalUpToDateWithImmunizationInRange.inRange19To24Months
-
-        -- , generateRow Translate.TotalLivePreTermBirths totalLivePreTerm
-        -- , generateRow (Translate.PrenatalIndicatorLabel IndicatorPrematureOnsetContractions)
-        --     (List.length <| pregnanciesWithIndicator IndicatorPrematureOnsetContractions pregnancies)
-        -- , generateRow (Translate.PrenatalIndicatorLabel IndicatorBreastfedFirstHour)
-        --     (List.length <| pregnanciesWithIndicator IndicatorBreastfedFirstHour pregnancies)
         ]
     }
 
