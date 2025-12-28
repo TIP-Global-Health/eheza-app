@@ -395,7 +395,7 @@ h3.ui.header {
 }
 
 .icon-task-planning {
-  background-image: url(#{$img-path}icon-planning-active.svg);
+  background-image: url(#{$img-path}icon-family-white.svg);
   background-size: 88px 80px;
 }
 
@@ -1052,6 +1052,14 @@ h3.ui.header {
       fieldset {
         border:none;
         margin-top: 35px;
+
+        .ui.header.secondary {
+          color: $color-text;
+          font-weight: normal;
+          margin-bottom: 20px;
+          margin-left: -5px;
+          text-decoration: underline;
+        }
       }
 
       input,
@@ -2000,21 +2008,6 @@ input::placeholder {
   }
 }
 
-.icon-planning {
-  .active &:after {
-    background-image: url(#{$img-path}icon-planning-active.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-planning-active.svg), url(#{$img-path}icon-completed-circle.svg);
-  }
-
-  &:after {
-    background-image: url(#{$img-path}icon-planning.svg);
-    background-size: 64px 60px;
-  }
-}
-
 .icon-lactation {
   .active &:after {
     background-image: url(#{$img-path}icon-lactation-active.svg);
@@ -2953,6 +2946,7 @@ input::placeholder {
   }
 }
 
+.icon-planning,
 .icon-family {
   .active &:after {
     background-image: url(#{$img-path}icon-family-white.svg);

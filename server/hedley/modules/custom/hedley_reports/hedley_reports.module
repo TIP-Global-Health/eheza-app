@@ -360,13 +360,7 @@ function hedley_reports_trigger_recalculation_for_edited_person($node) {
  * @throws EntityMetadataWrapperException
  */
 function hedley_reports_trigger_recalculation_by_new_content($node) {
-  $triggering_encounters = [
-    HEDLEY_ACTIVITY_ACUTE_ILLNESS_ENCOUNTER_CONTENT_TYPE,
-    HEDLEY_ACTIVITY_NUTRITION_ENCOUNTER_CONTENT_TYPE,
-    HEDLEY_ACTIVITY_HOME_VISIT_ENCOUNTER_CONTENT_TYPE,
-    HEDLEY_ACTIVITY_PRENATAL_ENCOUNTER_CONTENT_TYPE,
-    HEDLEY_ACTIVITY_WELL_CHILD_ENCOUNTER_CONTENT_TYPE,
-  ];
+  $triggering_encounters = hedley_reports_get_triggering_encounter_types();
   $triggering_measurements = hedley_reports_get_triggering_measurement_types();
 
   if (!in_array($node->type, array_merge($triggering_encounters, $triggering_measurements))) {
@@ -431,6 +425,26 @@ function hedley_reports_trigger_recalculation_by_edited_content($node) {
   hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA, $person_id, [
     'person_id' => $person_id,
   ]);
+}
+
+/**
+ * Retrieves encounter types that trigger Reports data recalculation.
+ *
+ * @return array
+ *   The array of triggering encounter types.
+ */
+function hedley_reports_get_triggering_encounter_types() {
+  return [
+    HEDLEY_ACTIVITY_ACUTE_ILLNESS_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_CHILD_SCOREBOARD_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_HIV_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_HOME_VISIT_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_NCD_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_NUTRITION_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_PRENATAL_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_WELL_CHILD_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_TUBERCULOSIS_ENCOUNTER_CONTENT_TYPE,
+  ];
 }
 
 /**
@@ -9047,15 +9061,18 @@ function hedley_reports_prenatal_medical_history_sign_recorded_today(array $enco
 }
 
 /**
- * Checks if given obstetric history step2 sign was recorded at this encounter.
+ * Checks if given  obstetric history step2 sign was recorded previously.
+ *
+ * This function iterates over previous nurse encounters to determine if a
+ * specified sign was recorded in any of them.
  *
  * @param array $encounter_data
- *   The encounter data.
+ *   The encounter data, including previous nurse encounters.
  * @param string $sign_value
- *   The sign value to search for.
+ *   The sign value to search for in previous encounters.
  *
  * @return bool
- *   TRUE if the sign was recorded today; FALSE otherwise.
+ *   TRUE if the sign was recorded previously; FALSE otherwise.
  */
 function hedley_reports_prenatal_obstetric_history_step2_sign_recorded_previously(array $encounter_data, $sign_value) {
   $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
@@ -9075,18 +9092,15 @@ function hedley_reports_prenatal_obstetric_history_step2_sign_recorded_previousl
 }
 
 /**
- * Checks if given  obstetric history step2 sign was recorded previously.
- *
- * This function iterates over previous nurse encounters to determine if a
- * specified sign was recorded in any of them.
+ * Checks if given obstetric history step2 sign was recorded at this encounter.
  *
  * @param array $encounter_data
- *   The encounter data, including previous nurse encounters.
+ *   The encounter data.
  * @param string $sign_value
- *   The sign value to search for in previous encounters.
+ *   The sign value to search for.
  *
  * @return bool
- *   TRUE if the sign was recorded previously; FALSE otherwise.
+ *   TRUE if the sign was recorded today; FALSE otherwise.
  */
 function hedley_reports_prenatal_obstetric_history_step2_sign_recorded_today(array $encounter_data, $sign_value) {
   $measurement = $encounter_data['measurements_by_type']['obstetric_history_step2'];

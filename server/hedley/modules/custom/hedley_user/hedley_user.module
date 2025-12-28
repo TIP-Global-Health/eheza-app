@@ -211,7 +211,10 @@ function hedley_user_create_person_by_sync_incident(array &$edit, $data) {
     'national_id_number',
     'number_of_children',
     'phone_number',
-    // @todo: add photo?
+    'spouse_name',
+    'spouse_phone_number',
+    'next_of_kin_name',
+    'next_of_kin_phone_number',
     'province',
     'sector',
     'ubudehe',
@@ -697,6 +700,47 @@ function hedley_user_create_well_child_encounter_by_sync_incident(array &$edit, 
     foreach ($data->encounter_warnings as $value) {
       $entity['field_encounter_warnings'][LANGUAGE_NONE][] = ['value' => $value];
     }
+  }
+
+  try {
+    $node = entity_create('node', $entity);
+    node_save($node);
+  }
+  catch (Exception $e) {
+    return;
+  }
+
+  $edit['field_incident_details'][LANGUAGE_NONE] = [];
+}
+
+/**
+ * Creates a session node based on a sync incident.
+ *
+ * This function takes data from a sync incident and creates a
+ * session node in the system.
+ *
+ * @param array $edit
+ *   An array that can be modified to include details about the incident.
+ * @param object $data
+ *   The data object from the sync incident, containing the necessary
+ *   information to create the session.
+ */
+function hedley_user_create_session_by_sync_incident(array &$edit, $data) {
+  $clinic_id = hedley_restful_resolve_nid_for_uuid($data->clinic);
+  if (!$clinic_id) {
+    return;
+  }
+
+  $scheduled_date_value = $data->scheduled_date->value;
+  $entity = [
+    'type' => 'session',
+    'field_uuid' => [LANGUAGE_NONE => [['value' => $data->uuid]]],
+    'field_clinic' => [LANGUAGE_NONE => [['target_id' => $clinic_id]]],
+    'field_scheduled_date' => [LANGUAGE_NONE => [['value' => "$scheduled_date_value 00:00:00"]]],
+  ];
+
+  if (!empty($data->scheduled_date->value2)) {
+    $entity['field_scheduled_date'][LANGUAGE_NONE][0]['value2'] = $data->scheduled_date->value2;
   }
 
   try {

@@ -18,7 +18,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (currentValues, expectNCDAActivity, getMeasurementValueFunc, mapMeasurementData, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
-import Backend.Person.Model exposing (Person, Ubudehe(..))
+import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.Session.Model exposing (..)
 import Backend.Session.Utils exposing (getChildMeasurementData2, getChildren, getMotherMeasurementData2, getMyMother)
