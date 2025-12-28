@@ -1081,7 +1081,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
       })();
         break;
 
-    // Purpose of this query is to retrieve data tha will help resolving
+    // Purpose of this query is to retrieve data that will help resolving
     // sync incident in case referrenced entity is not recorded. For example,
     // when nutrition height is being recored, but it's encounter is
     // not found and shardChanges table.

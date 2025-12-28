@@ -29,9 +29,9 @@ class RoboFile extends Tasks {
       throw new Exception('You need to fill the "PANTHEON_NAME" const in the Robo file, so it will know what is the name of your site.');
     }
 
-    $site = getenv('EHEZA_SITE');
+    $site = getenv('PANTHEON_NAME');
     if (!$site) {
-      throw new Exception('Please specify EHEZA_SITE in your DDEV local config, so it will be possible to resolve pantheon directory.');
+      throw new Exception('Please specify PANTHEON_NAME in your DDEV local config, so it will be possible to resolve pantheon directory.');
     }
 
     $pantheonDirectory = '.pantheon-' . $site;
@@ -53,7 +53,7 @@ class RoboFile extends Tasks {
 
     if ($result->getMessage()) {
       $this->yell($result->getMessage());
-      throw new Exception('The Pantheon working directory is dirty. Please commit any pending changes ör add to .gitignore.');
+      throw new Exception('The Pantheon working directory is dirty. Please commit any pending changes or add to .gitignore.');
     }
 
     // Validate pantheon.upstream.yml.
@@ -67,7 +67,14 @@ class RoboFile extends Tasks {
       throw new Exception("'php_version:' directive is missing from pantheon.upstream.yml in Pantheon directory ($pantheonDirectory)");
     }
 
-    $this->_exec("cd $pantheonDirectory && git checkout $branchName");
+    $result = $this
+      ->taskExec("cd $pantheonDirectory && git checkout $branchName")
+      ->printOutput(FALSE)
+      ->run();
+
+    if (!$result->wasSuccessful()) {
+      throw new Exception("Specified branch $branchName does not exist.");
+    }
 
     $rsyncExclude = [
       '.git',
