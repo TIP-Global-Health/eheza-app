@@ -634,13 +634,13 @@ immunisationDataFromString s =
                 |> List.filterMap
                     (\item ->
                         case String.split ":" item of
-                            [ mappedVaccineType, adminstrationDates ] ->
+                            [ mappedVaccineType, administrationDates ] ->
                                 vaccineTypeFromMapping mappedVaccineType
                                     |> Maybe.andThen
                                         (\vaccineType ->
                                             let
                                                 dates =
-                                                    String.split "+" adminstrationDates
+                                                    String.split "+" administrationDates
                                                         |> List.map (Date.fromIsoString >> Result.toMaybe)
                                                         |> Maybe.Extra.values
                                                         |> EverySet.fromList

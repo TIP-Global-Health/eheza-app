@@ -9541,7 +9541,7 @@ var $author$project$Backend$Reports$Decoder$immunisationDataFromString = functio
 			if ((_v0.b && _v0.b.b) && (!_v0.b.b.b)) {
 				var mappedVaccineType = _v0.a;
 				var _v1 = _v0.b;
-				var adminstrationDates = _v1.a;
+				var administrationDates = _v1.a;
 				return A2(
 					$elm$core$Maybe$andThen,
 					function (vaccineType) {
@@ -9550,7 +9550,7 @@ var $author$project$Backend$Reports$Decoder$immunisationDataFromString = functio
 								A2(
 									$elm$core$List$map,
 									A2($elm$core$Basics$composeR, $justinmimbs$date$Date$fromIsoString, $elm$core$Result$toMaybe),
-									A2($elm$core$String$split, '+', adminstrationDates))));
+									A2($elm$core$String$split, '+', administrationDates))));
 						return $Gizra$elm_all_set$EverySet$isEmpty(dates) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(
 							_Utils_Tuple2(vaccineType, dates));
 					},
