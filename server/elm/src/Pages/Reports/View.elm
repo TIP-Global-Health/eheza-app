@@ -2267,7 +2267,7 @@ generatePrenatalContactsReportData language limitDate records =
         ]
     , rows =
         prenatalContactRows
-            ++ [ generateRow Translate.PregnanciesWithFirstContactAtFirsTrimester
+            ++ [ generateRow Translate.PregnanciesWithFirstContactAtFirstTrimester
                     (countPregnanciesByContacts <| prenatalContactTypeToEncountersAtWeek PrenatalContact1)
                , generateRow Translate.PregnanciesWithAtLeast4Encounters
                     (countNumberOfPregnanciesWithAtLeastXEncounters 4)

@@ -641,7 +641,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
         }
         $abortions = $measurement->field_abortions[LANGUAGE_NONE][0]['value'];
         if (!empty($abortions) && $abortions > 0) {
-          $prenatal_indicators_by_encounter['abortions'][] = $encounter_id;
+          $prenatal_indicators_by_encounter['abortion'][] = $encounter_id;
         }
         break;
 
@@ -1551,8 +1551,8 @@ function hedley_reports_prenatal_indicator_mapping() {
     'calcium' => 'e',
     'preterm-birth' => 'f',
     'abortion' => 'g',
-    'stillbirth' => 'h',
-    'intrauterine-death' => 'i',
+    'intrauterine-death' => 'h',
+    'stillbirth' => 'i',
     'azithromycin' => 'j',
     'anemia-test' => 'k',
   ];
