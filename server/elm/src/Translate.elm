@@ -240,7 +240,7 @@ type TranslationId
     | TakenByLabel
     | TargetedInterventions
     | Total
-    | TotalDeliviries
+    | TotalDeliveries
     | TotalLiveBirths
     | TotalLivePreTermBirths
     | TreatmentReview
@@ -2824,7 +2824,7 @@ translationSet transId =
             , kirundi = Nothing
             }
 
-        TotalDeliviries ->
+        TotalDeliveries ->
             { english = "Total deliveries"
             , kinyarwanda = Nothing
             , kirundi = Nothing

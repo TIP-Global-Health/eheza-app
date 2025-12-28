@@ -12629,7 +12629,7 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Targeted Interventions', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Total':
 				return {english: 'Total', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
-			case 'TotalDeliviries':
+			case 'TotalDeliveries':
 				return {english: 'Total deliveries', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'TotalLiveBirths':
 				return {english: 'Total live births', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
@@ -18814,7 +18814,7 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F5(
 var $author$project$Translate$PrenatalIndicatorLabel = function (a) {
 	return {$: 'PrenatalIndicatorLabel', a: a};
 };
-var $author$project$Translate$TotalDeliviries = {$: 'TotalDeliviries'};
+var $author$project$Translate$TotalDeliveries = {$: 'TotalDeliveries'};
 var $author$project$Translate$TotalLiveBirths = {$: 'TotalLiveBirths'};
 var $author$project$Translate$TotalLivePreTermBirths = {$: 'TotalLivePreTermBirths'};
 var $author$project$Pages$Reports$View$generatePeripartumReportData = F3(
@@ -18876,7 +18876,7 @@ var $author$project$Pages$Reports$View$generatePeripartumReportData = F3(
 			heading: '',
 			rows: _List_fromArray(
 				[
-					A2(generateRow, $author$project$Translate$TotalDeliviries, ((totalLiveAtTerm + totalLivePreTerm) + totalStillAtTerm) + totalStillPreTerm),
+					A2(generateRow, $author$project$Translate$TotalDeliveries, ((totalLiveAtTerm + totalLivePreTerm) + totalStillAtTerm) + totalStillPreTerm),
 					A2(generateRow, $author$project$Translate$TotalLiveBirths, totalLiveAtTerm + totalLivePreTerm),
 					A2(generateRow, $author$project$Translate$TotalLivePreTermBirths, totalLivePreTerm),
 					A2(
