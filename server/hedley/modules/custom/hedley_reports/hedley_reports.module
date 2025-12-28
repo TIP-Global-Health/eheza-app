@@ -1123,6 +1123,7 @@ function hedley_reports_pregnancy_outcome_mapping() {
  *   - 's': The stunting metric.
  *   - 'w': The wasting metric.
  *   - 'u': The underweight metric.
+ *   - 'm': The MUAC metric.
  *
  * @return string
  *   A string with the stunting, wasting, and underweight metrics separated

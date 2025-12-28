@@ -8996,9 +8996,9 @@ var $author$project$Backend$Reports$Decoder$nutritionDataFromString = function (
 	if ((((_v0.b && _v0.b.b) && _v0.b.b.b) && _v0.b.b.b.b) && (!_v0.b.b.b.b.b)) {
 		var stunting = _v0.a;
 		var _v1 = _v0.b;
-		var underweight = _v1.a;
+		var wasting = _v1.a;
 		var _v2 = _v1.b;
-		var wasting = _v2.a;
+		var underweight = _v2.a;
 		var _v3 = _v2.b;
 		var muac = _v3.a;
 		return $elm$core$Maybe$Just(
