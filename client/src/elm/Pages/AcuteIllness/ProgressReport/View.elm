@@ -508,43 +508,46 @@ viewPhysicalExamPane language currentDate firstInitialWithSubsequent secondIniti
                                     )
                                     respiratoryRate
 
-                            muac =
-                                encounterData.measurements
-                                    |> .muac
-                                    |> getMeasurementValueFunc
-                                    |> Maybe.map (\(MuacInCm muac_) -> muac_)
-
-                            muacWarning =
-                                Maybe.map
-                                    (\muac_ ->
-                                        case muacIndication (MuacInCm muac_) of
-                                            ColorAlertRed ->
-                                                "red"
-
-                                            ColorAlertYellow ->
-                                                "orange"
-
-                                            ColorAlertGreen ->
-                                                "green"
-                                    )
-                                    muac
-
                             muacCell =
+                                let
+                                    muac =
+                                        encounterData.measurements
+                                            |> .muac
+                                            |> getMeasurementValueFunc
+                                            |> Maybe.map (\(MuacInCm muac_) -> muac_)
+                                in
                                 if not showMuac then
                                     emptyNode
 
                                 else if isNothing muac then
                                     viewNotTaken
 
-                                else if muacWarning == Just "green" then
-                                    td [ class "muac" ] [ text <| "(" ++ (String.toLower <| translate language Translate.Normal) ++ ")" ]
-
                                 else
                                     let
-                                        muacValue =
-                                            Maybe.map String.fromFloat muac
+                                        muacWarning =
+                                            Maybe.map
+                                                (\muac_ ->
+                                                    case muacIndication (MuacInCm muac_) of
+                                                        ColorAlertRed ->
+                                                            "red"
+
+                                                        ColorAlertYellow ->
+                                                            "orange"
+
+                                                        ColorAlertGreen ->
+                                                            "green"
+                                                )
+                                                muac
                                     in
-                                    viewValueWithAlert muacValue muacWarning "muac"
+                                    if muacWarning == Just "green" then
+                                        td [ class "muac" ] [ text <| "(" ++ (String.toLower <| translate language Translate.Normal) ++ ")" ]
+
+                                    else
+                                        let
+                                            muacValue =
+                                                Maybe.map String.fromFloat muac
+                                        in
+                                        viewValueWithAlert muacValue muacWarning "muac"
                         in
                         tr []
                             [ td [ class "date" ] [ text <| formatDDMMYYYY encounterData.startDate ]
@@ -1069,7 +1072,7 @@ viewActionsTakenMedicationDistribution language date person diagnosis measuremen
                         Maybe.map
                             (\dosage ->
                                 [ viewAdministeredMedicationLabel language Translate.Administered (Translate.MedicationDistributionSign Zinc) "icon-pills" (Just date)
-                                , viewTabletsPrescription language dosage (Translate.ByMouthDaylyForXDays 10)
+                                , viewTabletsPrescription language dosage (Translate.ByMouthDailyForXDays 10)
                                 ]
                             )
                             (resolveZincDosage date person)

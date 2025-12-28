@@ -199,7 +199,7 @@ type TranslationId
     | PregnanciesWithAtLeast4Encounters
     | PregnanciesWithAtLeast6Encounters
     | PregnanciesWithAtLeast8Encounters
-    | PregnanciesWithFirstContactAtFirsTrimester
+    | PregnanciesWithFirstContactAtFirstTrimester
     | PregnancyOutcome PregnancyOutcome
     | PregnancyOutcomeLabel
     | PregnancyTest
@@ -241,7 +241,7 @@ type TranslationId
     | TakenByLabel
     | TargetedInterventions
     | Total
-    | TotalDeliviries
+    | TotalDeliveries
     | TotalLiveBirths
     | TotalLivePreTermBirths
     | TreatmentReview
@@ -370,7 +370,7 @@ translationSet transId =
                     translationSet MedicationDistribution
 
                 AcuteIllnessSendToHC ->
-                    { english = "Referal"
+                    { english = "Referral"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
@@ -1662,7 +1662,7 @@ translationSet transId =
             , kirundi = Nothing
             }
 
-        PregnanciesWithFirstContactAtFirsTrimester ->
+        PregnanciesWithFirstContactAtFirstTrimester ->
             { english = "Pregnant women who attended ANC contact within 1st trimester"
             , kinyarwanda = Nothing
             , kirundi = Nothing
@@ -2842,7 +2842,7 @@ translationSet transId =
             , kirundi = Nothing
             }
 
-        TotalDeliviries ->
+        TotalDeliveries ->
             { english = "Total deliveries"
             , kinyarwanda = Nothing
             , kirundi = Nothing
@@ -3069,7 +3069,7 @@ translationSet transId =
                     translationSet ImmunisationIPV
 
                 WellChildMebendezole ->
-                    { english = "Mebendezole"
+                    { english = "Mebendazole"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }

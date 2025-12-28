@@ -24,17 +24,23 @@ import Backend.Measurement.Model
         , PrenatalHealthEducationSign(..)
         , PrenatalMeasurements
         , PrenatalSymptomQuestion(..)
+        , PreviousDeliveryPeriod(..)
         , ReasonForNonReferral(..)
         , RecommendedTreatmentSign(..)
         , ReferToFacilitySign(..)
         , ReferralFacility(..)
-        , Rhesus(..)
         , SendToHCSign(..)
         , SpecialityCareSign(..)
         , TestExecutionNote(..)
         , TestResult(..)
         )
-import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getHeightValue, getMeasurementValueFunc, weightValueFunc)
+import Backend.Measurement.Utils
+    exposing
+        ( getCurrentReasonForNonReferral
+        , getHeightValue
+        , getMeasurementValueFunc
+        , weightValueFunc
+        )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isLabTechnician)
@@ -86,7 +92,7 @@ import Pages.Prenatal.Activity.Utils
         )
 import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Encounter.View exposing (viewActionButton)
-import Pages.Prenatal.Model exposing (AssembledData, PreviousEncounterData, VaccinationProgressDict)
+import Pages.Prenatal.Model exposing (AssembledData, PreviousEncounterData)
 import Pages.Prenatal.ProgressReport.Model exposing (..)
 import Pages.Prenatal.ProgressReport.Svg exposing (viewBMIForEGA, viewFundalHeightForEGA, viewMarkers, viewWeightGainForEGA)
 import Pages.Prenatal.ProgressReport.Utils exposing (..)
@@ -712,6 +718,23 @@ viewObstetricHistoryPane language currentDate measurements =
                 |> Maybe.map
                     (\value ->
                         let
+                            periodFromPreviousDeliveryInfo =
+                                EverySet.toList value.previousDeliveryPeriod
+                                    |> -- There can be only single value.
+                                       List.head
+                                    |> Maybe.map
+                                        (\previousDeliveryPeriod ->
+                                            if previousDeliveryPeriod == Neither then
+                                                []
+
+                                            else
+                                                [ translate language Translate.PreviousDelivery
+                                                    ++ ": "
+                                                    ++ (translate language <| Translate.PreviousDeliveryPeriod previousDeliveryPeriod)
+                                                ]
+                                        )
+                                    |> Maybe.withDefault []
+
                             cSectionInfo =
                                 if EverySet.member Backend.Measurement.Model.CSectionInPast value.previousDelivery then
                                     Maybe.andThen (EverySet.toList >> List.head) value.cSectionReason
@@ -755,9 +778,9 @@ viewObstetricHistoryPane language currentDate measurements =
                                                     |> List.map (Translate.ObstetricHistoryStep2Sign >> translate language)
                                                     |> String.join ", "
                                         in
-                                        [ translate language Translate.ConditionsDuringPrevoiusPregnancy ++ ": " ++ conditions ]
+                                        [ translate language Translate.ConditionsDuringPreviousPregnancy ++ ": " ++ conditions ]
                         in
-                        cSectionInfo ++ conditionsDuringPrevoiusPregnancy
+                        periodFromPreviousDeliveryInfo ++ cSectionInfo ++ conditionsDuringPrevoiusPregnancy
                     )
                 |> Maybe.withDefault []
 
@@ -946,14 +969,15 @@ viewMedicalDiagnosisPane language currentDate isChw firstNurseEncounterMeasureme
                                         let
                                             partnerPositive =
                                                 EverySet.member PartnerHIVPositive hivSigns
-
-                                            takingARV =
-                                                EverySet.member PartnerTakingARV hivSigns
-
-                                            surpressedViralLoad =
-                                                EverySet.member PartnerSurpressedViralLoad hivSigns
                                         in
                                         if partnerPositive then
+                                            let
+                                                takingARV =
+                                                    EverySet.member PartnerTakingARV hivSigns
+
+                                                surpressedViralLoad =
+                                                    EverySet.member PartnerSurpressedViralLoad hivSigns
+                                            in
                                             Just <| Translate.DiscordantCoupleStatus takingARV surpressedViralLoad
 
                                         else
@@ -1262,8 +1286,6 @@ viewMedicationHistoryPane language currentDate isChw assembled =
         [ viewItemHeading language Translate.MedicationHistory "blue"
         , div [ class "pane-content" ]
             [ entriesHeading
-            , resolveMedicationAdministrationDate .aspirin
-                |> viewEntry Aspirin
             , resolveMedicationAdministrationDate .calcium
                 |> viewEntry Calcium
             , resolveMedicationAdministrationDate .fefol
@@ -2567,6 +2589,34 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                         ++ suffix
                         |> wrapWithLI
 
+        preeclampsiaRiskTreatmentMessage =
+            getMeasurementValueFunc measurements.medicationDistribution
+                |> Maybe.andThen
+                    (\value ->
+                        let
+                            nonAdministrationReasons =
+                                Measurement.Utils.resolveMedicationsNonAdministrationReasons value
+                        in
+                        treatmentMessageForMedication value.distributionSigns nonAdministrationReasons Aspirin
+                            |> Maybe.map
+                                (\treatmentMessage ->
+                                    let
+                                        diagnosisMessage =
+                                            diagnosisForProgressReport
+                                                ++ " "
+                                                ++ (String.toLower <| translate language Translate.On)
+                                                ++ " "
+                                                ++ formatDDMMYYYY date
+                                    in
+                                    [ li []
+                                        [ p [] [ text diagnosisMessage ]
+                                        , p [] [ text treatmentMessage ]
+                                        ]
+                                    ]
+                                )
+                    )
+                |> Maybe.withDefault noTreatmentRecordedMessage
+
         undeterminedDiagnosisMessage =
             diagnosisForProgressReport
                 ++ " - "
@@ -3200,16 +3250,13 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             mentalHealthMessage
 
         DiagnosisHighRiskOfPreeclampsiaInitialPhase ->
-            -- @todo
-            []
+            preeclampsiaRiskTreatmentMessage
 
         DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ->
-            -- @todo
-            []
+            preeclampsiaRiskTreatmentMessage
 
         DiagnosisModerateRiskOfPreeclampsia ->
-            -- @todo
-            []
+            preeclampsiaRiskTreatmentMessage
 
         DiagnosisPostpartumAbdominalPain ->
             undeterminedDiagnosisMessage

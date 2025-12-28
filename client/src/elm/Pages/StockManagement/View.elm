@@ -317,7 +317,7 @@ viewModeMonthDetails language currentDate monthGap lastUpdated data =
                         (translate language Translate.ReceivedFrom ++ " / " ++ translate language Translate.IssuedTo)
                     ]
                 , div [ class "cell batch" ] [ text <| translate language Translate.BatchNumberAbbrev ]
-                , div [ class "cell expirity" ] [ text <| translate language Translate.ExpirityDate ]
+                , div [ class "cell expirity" ] [ text <| translate language Translate.ExpiryDate ]
                 , div [ class "cell received" ] [ text <| translate language Translate.Received ]
                 , div [ class "cell issued" ] [ text <| translate language Translate.Issued ]
                 , div [ class "cell balance" ] [ text <| translate language Translate.Balance ]

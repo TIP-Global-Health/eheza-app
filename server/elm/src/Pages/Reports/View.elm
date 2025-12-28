@@ -2287,7 +2287,7 @@ generatePrenatalContactsReportData language limitDate records =
         ]
     , rows =
         prenatalContactRows
-            ++ [ generateRow Translate.PregnanciesWithFirstContactAtFirsTrimester
+            ++ [ generateRow Translate.PregnanciesWithFirstContactAtFirstTrimester
                     (countPregnanciesByContacts <| prenatalContactTypeToEncountersAtWeek PrenatalContact1)
                , generateRow Translate.PregnanciesWithAtLeast4Encounters
                     (countNumberOfPregnanciesWithAtLeastXEncounters 4)
@@ -2482,7 +2482,7 @@ generatePeripartumReportData language limitDate records =
         , translate language Translate.Total
         ]
     , rows =
-        [ generateRow Translate.TotalDeliviries (totalLiveAtTerm + totalLivePreTerm + totalStillAtTerm + totalStillPreTerm)
+        [ generateRow Translate.TotalDeliveries (totalLiveAtTerm + totalLivePreTerm + totalStillAtTerm + totalStillPreTerm)
         , generateRow Translate.TotalLiveBirths (totalLiveAtTerm + totalLivePreTerm)
         , generateRow Translate.TotalLivePreTermBirths totalLivePreTerm
         , generateRow (Translate.PrenatalIndicatorLabel IndicatorPrematureOnsetContractions)

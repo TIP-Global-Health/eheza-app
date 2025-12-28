@@ -60,7 +60,7 @@ import Pages.Utils
         , viewRedAlertForSelect
         )
 import SyncManager.Model exposing (Site(..), SiteFeature)
-import Translate exposing (Language, TranslationId, translate)
+import Translate exposing (TranslationId, translate)
 import Translate.Model exposing (Language(..))
 
 
@@ -1033,7 +1033,7 @@ medicationDistributionFormInutsAndTasks language currentDate person diagnosis fo
                                 [ viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign ORS) "icon-oral-solution" Nothing
                                 , viewOralSolutionPrescription language orsDosage
                                 , viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign Zinc) "icon-pills" Nothing
-                                , viewTabletsPrescription language zincDosage (Translate.ByMouthDaylyForXDays 10)
+                                , viewTabletsPrescription language zincDosage (Translate.ByMouthDailyForXDays 10)
                                 ]
                         )
                         (resolveORSDosage currentDate person)
