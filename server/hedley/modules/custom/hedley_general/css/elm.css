@@ -291,23 +291,30 @@ body.admin-menu #page-wrapper #header {
 }
 
 .page-content.reports,
-.page-content.reports-menu {
+.page-content.reports-menu,
+.page-content.completion,
+.page-content.completion-menu {
   background: white;
   margin-top: 0;
   padding-top: 0;
 }
 
 .page-content.reports .select-input-wrapper .select-input,
-.page-content.reports-menu .select-input-wrapper .select-input {
+.page-content.reports-menu .select-input-wrapper .select-input,
+.page-content.completion .select-input-wrapper .select-input,
+.page-content.completion-menu .select-input-wrapper .select-input {
   border: 2px solid #3b3b3b;
 }
 
 .page-content.reports .select-input-wrapper .select-input:focus,
-.page-content.reports-menu .select-input-wrapper .select-input:focus {
+.page-content.reports-menu .select-input-wrapper .select-input:focus,
+.page-content.completion .select-input-wrapper .select-input:focus,
+.page-content.completion-menu .select-input-wrapper .select-input:focus {
   outline-color: #3b3b3b;
 }
 
-.page-content.reports .inputs .form-input.date {
+.page-content.reports .inputs .form-input.date,
+.page-content.completion .inputs .form-input.date {
   border: 2px solid #3b3b3b;
 }
 
@@ -321,6 +328,7 @@ body.admin-menu #page-wrapper #header {
 
 .page-content .inputs .report .table {
   border: 2px solid #3b3b3b;
+  display: block;
   margin-bottom: 20px;
   padding: 15px;
 }
@@ -387,6 +395,42 @@ body.admin-menu #page-wrapper #header {
   width: 120%;
 }
 
+.page-content .inputs .report.acute-illness .table .row .item.row-label,
+.page-content .inputs .report.child-scoreboard .table .row .item.row-label,
+.page-content .inputs .report.hiv .table .row .item.row-label,
+.page-content .inputs .report.home-visit .table .row .item.row-label,
+.page-content .inputs .report.ncd .table .row .item.row-label,
+.page-content .inputs .report.nutrition-group .table .row .item.row-label,
+.page-content .inputs .report.nutrition-individual .table .row .item.row-label,
+.page-content .inputs .report.prenatal .table .row .item.row-label,
+.page-content .inputs .report.tuberculosis .table .row .item.row-label,
+.page-content .inputs .report.well-child .table .row .item.row-label {
+  width: 30%;
+}
+
+.page-content .inputs .report.acute-illness .table .row .item.heading,
+.page-content .inputs .report.acute-illness .table .row .item.value,
+.page-content .inputs .report.child-scoreboard .table .row .item.heading,
+.page-content .inputs .report.child-scoreboard .table .row .item.value,
+.page-content .inputs .report.hiv .table .row .item.heading,
+.page-content .inputs .report.hiv .table .row .item.value,
+.page-content .inputs .report.home-visit .table .row .item.heading,
+.page-content .inputs .report.home-visit .table .row .item.value,
+.page-content .inputs .report.ncd .table .row .item.heading,
+.page-content .inputs .report.ncd .table .row .item.value,
+.page-content .inputs .report.nutrition-group .table .row .item.heading,
+.page-content .inputs .report.nutrition-group .table .row .item.value,
+.page-content .inputs .report.nutrition-individual .table .row .item.heading,
+.page-content .inputs .report.nutrition-individual .table .row .item.value,
+.page-content .inputs .report.prenatal .table .row .item.heading,
+.page-content .inputs .report.prenatal .table .row .item.value,
+.page-content .inputs .report.tuberculosis .table .row .item.heading,
+.page-content .inputs .report.tuberculosis .table .row .item.value,
+.page-content .inputs .report.well-child .table .row .item.heading,
+.page-content .inputs .report.well-child .table .row .item.value {
+  width: 20%;
+}
+
 .page-content .inputs .report .download-csv-wrapper {
   height: 50px;
 }
@@ -399,6 +443,8 @@ body.admin-menu #page-wrapper #header {
 
 .page-content.reports-menu .actions a button,
 .page-content.reports .top-bar .new-selection a button,
+.page-content.completion-menu .actions a button,
+.page-content.completion .top-bar .new-selection a button,
 .page-content.reports .inputs .report button.download-csv {
   background-color: white;
   border: 2px solid #3b3b3b;

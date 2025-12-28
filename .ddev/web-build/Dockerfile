@@ -1,8 +1,17 @@
 ARG BASE_IMAGE
 FROM $BASE_IMAGE
 
-RUN apt-get update || true
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y -o Dpkg::Options::="--force-confold" --no-install-recommends --no-install-suggests inotify-tools build-essential mime-support
+RUN set -eux; \
+    apt-get update; \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+      -o Dpkg::Options::="--force-confold" \
+      --no-install-recommends \
+      --no-install-suggests \
+      inotify-tools \
+      build-essential \
+      mime-support; \
+    apt-get clean; \
+    rm -rf /var/lib/apt/lists/*
 
 RUN if [ "$(uname -m)" = "aarch64" ] || [ "$(uname -m)" = "arm64" ]; then \
       DEBIAN_FRONTEND=noninteractive apt-get install -y -o Dpkg::Options::="--force-confold" --no-install-recommends --no-install-suggests autoconf autotools-dev automake; \
@@ -32,7 +41,9 @@ RUN chmod +x /usr/bin/elm
 # gulp for the client compilation.
 RUN npm install -g gulp
 # For Elm Unit tests
-RUN npm -g config set user root
+ENV NPM_CONFIG_UNSAFE_PERM=true
 RUN npm install -g elm-test@0.19.1-revision6
 # Install svg2elm.
 RUN npm install -g svg2elm
+# Downgrade terminus.
+RUN curl -L --fail -o /usr/local/bin/terminus https://github.com/pantheon-systems/terminus/releases/download/3.6.2/terminus.phar && chmod +x /usr/local/bin/terminus

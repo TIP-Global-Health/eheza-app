@@ -311,6 +311,7 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
                         , ComponentAntenatalMedicalHistory
                         , ComponentAntenatalMedicalDiagnosis
                         , ComponentAntenatalObstetricalDiagnosis
+                        , ComponentAntenatalMedicationHistory
                         , ComponentAntenatalImmunizationHistory
                         , ComponentAntenatalCHWActivity
                         , ComponentAntenatalPatientProgress

@@ -914,7 +914,7 @@ expectLaboratoryTask currentDate assembled task =
             recurrentTestRequired 12 TaskLiverFunctionTest
 
         TaskLipidPanelTest ->
-            recurrentTestRequired 12 TaskLiverFunctionTest
+            recurrentTestRequired 12 TaskLipidPanelTest
 
         TaskHbA1cTest ->
             recurrentTestRequired 6 TaskHbA1cTest
@@ -941,6 +941,7 @@ generatePreviousLaboratoryTestsDatesDict currentDate assembled =
     , ( TaskPregnancyTest, generateTestDates .pregnancyTest (.testResult >> isJust) isTestResultValid )
     , ( TaskCreatinineTest, generateTestDates .creatinineTest (.creatinineResult >> isJust) (always True) )
     , ( TaskLiverFunctionTest, generateTestDates .liverFunctionTest (.altResult >> isJust) (always True) )
+    , ( TaskLipidPanelTest, generateTestDates .lipidPanelTest (.totalCholesterolResult >> isJust) (always True) )
     , ( TaskHbA1cTest, generateTestDates .hba1cTest (.hba1cResult >> isJust) (always True) )
     ]
         |> Dict.fromList

@@ -37,7 +37,8 @@ import Pages.ChildScoreboard.Encounter.Model
 import Pages.Session.Model
 import Pages.Utils
     exposing
-        ( ifEverySetEmpty
+        ( concatInputsAndTasksSections
+        , ifEverySetEmpty
         , ifNullableTrue
         , ifTrue
         , maybeToBoolTask
@@ -52,6 +53,7 @@ import Pages.Utils
         , viewCheckBoxSelectInput
         , viewCustomLabel
         , viewCustomSelectListInput
+        , viewInstructionsLabel
         , viewLabel
         , viewMeasurementInput
         , viewQuestionLabel
@@ -64,6 +66,7 @@ import SyncManager.Model exposing (Site(..))
 import Translate exposing (TranslationId, translate)
 import Translate.Model exposing (Language)
 import Utils.Html exposing (viewModal)
+import Utils.NominalDate exposing (renderDate)
 
 
 {-| This is a convenience for cases where the form values ought to be redefined
@@ -700,6 +703,9 @@ resolveMedicationsNonAdministrationReasons value =
                 case sign of
                     MedicationAmoxicillin reason ->
                         Just ( Amoxicillin, reason )
+
+                    MedicationAspirin reason ->
+                        Just ( Aspirin, reason )
 
                     MedicationCoartem reason ->
                         Just ( Coartem, reason )
@@ -2037,16 +2043,16 @@ toPartnerHIVTestValueWithDefault saved form =
 
 toPartnerHIVTestValue : PartnerHIVTestForm -> Maybe PartnerHIVTestValue
 toPartnerHIVTestValue form =
-    let
-        hivSigns =
-            [ ifNullableTrue PartnerTakingARV form.partnerTakingARV
-            , ifNullableTrue PartnerSurpressedViralLoad form.partnerSurpressedViralLoad
-            ]
-                |> Maybe.Extra.combine
-                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHIVSign)
-    in
     Maybe.map
         (\executionNote ->
+            let
+                hivSigns =
+                    [ ifNullableTrue PartnerTakingARV form.partnerTakingARV
+                    , ifNullableTrue PartnerSurpressedViralLoad form.partnerSurpressedViralLoad
+                    ]
+                        |> Maybe.Extra.combine
+                        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHIVSign)
+            in
             { executionNote = executionNote
             , executionDate = form.executionDate
             , testPrerequisites = testPrerequisitesByImmediateResult form.immediateResult
@@ -4267,9 +4273,6 @@ partnerARVViralLoadInputsAndTasks :
     -> ( List (Html msg), Int, Int )
 partnerARVViralLoadInputsAndTasks language setPartnerHIVTestFormBoolInputMsg partnerTakingARV partnerSurpressedViralLoad =
     let
-        emptySection =
-            ( [], 0, 0 )
-
         partnerTakingARVUpdateFunc =
             \value form_ ->
                 { form_
@@ -4299,7 +4302,7 @@ partnerARVViralLoadInputsAndTasks language setPartnerHIVTestFormBoolInputMsg par
                 )
 
             else
-                emptySection
+                ( [], 0, 0 )
     in
     ( [ viewQuestionLabel language <| Translate.PrenatalHIVSignQuestion PartnerTakingARV
       , viewBoolInput
@@ -8604,7 +8607,11 @@ resolveLabTestDate currentDate resultsExistFunc resultsValidFunc measurement =
         |> Maybe.andThen
             (\value ->
                 if testPerformedByExecutionNote value.executionNote then
-                    if resultsExistFunc value && (not <| resultsValidFunc value) then
+                    let
+                        resultsExist =
+                            resultsExistFunc value
+                    in
+                    if resultsExist && (not <| resultsValidFunc value) then
                         -- Entered result is not valid, therefore,
                         -- we treat the test as if it was not performed.
                         Nothing
@@ -8622,7 +8629,7 @@ resolveLabTestDate currentDate resultsExistFunc resultsValidFunc measurement =
                                 Maybe.map (Tuple.second >> .dateMeasured) measurement
                                     |> Maybe.withDefault currentDate
                         in
-                        if (not <| resultsExistFunc value) && (Date.diff Days dateMeasured currentDate >= labExpirationPeriod) then
+                        if not resultsExist && (Date.diff Days dateMeasured currentDate >= labExpirationPeriod) then
                             -- No results were entered for more than 35 days since the
                             -- day on which measurement was taken.
                             -- Test is considered expired, and is being ignored
@@ -9258,7 +9265,14 @@ latestVaccinationDataForVaccine vaccinationsData vaccineType =
             )
 
 
-nextVaccinationDataForVaccine : Site -> Maybe NominalDate -> WellChildVaccineType -> Bool -> NominalDate -> VaccineDose -> Maybe ( VaccineDose, NominalDate )
+nextVaccinationDataForVaccine :
+    Site
+    -> Maybe NominalDate
+    -> WellChildVaccineType
+    -> Bool
+    -> NominalDate
+    -> VaccineDose
+    -> Maybe ( VaccineDose, NominalDate )
 nextVaccinationDataForVaccine site maybeBirthDate vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered =
     Maybe.andThen
         (\birthDate ->
@@ -10281,3 +10295,164 @@ fromListWithDefaultValue default maybeList =
 
         Nothing ->
             EverySet.singleton default
+
+
+fromAdministrationNote : Maybe AdministrationNote -> MedicationAdministrationForm
+fromAdministrationNote saved =
+    Maybe.map
+        (\administrationNote ->
+            let
+                ( medicationAdministered, reasonForNonAdministration ) =
+                    if administrationNote == AdministeredToday then
+                        ( Just True, Nothing )
+
+                    else
+                        ( Just False, Just administrationNote )
+            in
+            MedicationAdministrationForm medicationAdministered reasonForNonAdministration
+        )
+        saved
+        |> Maybe.withDefault emptyMedicationAdministrationForm
+
+
+medicationAdministrationFormWithDefault : MedicationAdministrationForm -> Maybe AdministrationNote -> MedicationAdministrationForm
+medicationAdministrationFormWithDefault form saved =
+    let
+        fromSavedForm =
+            fromAdministrationNote saved
+    in
+    { medicationAdministered = or form.medicationAdministered fromSavedForm.medicationAdministered
+    , reasonForNonAdministration = or form.reasonForNonAdministration fromSavedForm.reasonForNonAdministration
+    }
+
+
+toAdministrationNoteWithDefault : Maybe AdministrationNote -> MedicationAdministrationForm -> Maybe AdministrationNote
+toAdministrationNoteWithDefault saved form =
+    medicationAdministrationFormWithDefault form saved
+        |> toAdministrationNote
+
+
+toAdministrationNote : MedicationAdministrationForm -> Maybe AdministrationNote
+toAdministrationNote form =
+    form.medicationAdministered
+        |> Maybe.andThen
+            (\medicationAdministered ->
+                if medicationAdministered then
+                    Just AdministeredToday
+
+                else
+                    form.reasonForNonAdministration
+            )
+
+
+medicationAdministrationFormInputsAndTasks :
+    Language
+    -> NominalDate
+    -> Person
+    -> MedicationAdministrationFormConfig msg
+    -> MedicationAdministrationForm
+    -> ( List (Html msg), List (Maybe Bool) )
+medicationAdministrationFormInputsAndTasks language currentDate person config form =
+    let
+        instructions =
+            config.resolveDosageAndIconFunc language currentDate person
+                |> Maybe.map
+                    (\( dosage, icon, helper ) ->
+                        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+                        , div [ class "instructions" ]
+                            [ viewAdministeredMedicationCustomLabel language
+                                Translate.Administer
+                                (Translate.MedicationDistributionSign config.medication)
+                                ""
+                                icon
+                                dosage
+                                Nothing
+                            , div [ class "prescription" ] [ text <| helper ++ "." ]
+                            ]
+                        ]
+                    )
+                |> Maybe.withDefault []
+
+        questions =
+            concatInputsAndTasksSections
+                [ ( [ viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign config.medication)
+                    , viewBoolInput
+                        language
+                        form.medicationAdministered
+                        config.setMedicationAdministeredMsg
+                        ""
+                        Nothing
+                    ]
+                  , [ form.medicationAdministered ]
+                  )
+                , derivedQuestion
+                ]
+
+        derivedQuestion =
+            if form.medicationAdministered == Just False then
+                ( [ viewQuestionLabel language Translate.WhyNot
+                  , viewCheckBoxSelectInput language
+                        [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientUnableToAfford ]
+                        [ NonAdministrationPatientDeclined, NonAdministrationOther ]
+                        form.reasonForNonAdministration
+                        config.setReasonForNonAdministration
+                        Translate.AdministrationNote
+                  ]
+                , [ maybeToBoolTask form.reasonForNonAdministration ]
+                )
+
+            else
+                ( [], [] )
+    in
+    concatInputsAndTasksSections
+        [ ( instructions
+          , []
+          )
+        , questions
+        ]
+
+
+viewAdministeredMedicationCustomLabel : Language -> TranslationId -> TranslationId -> String -> String -> String -> Maybe NominalDate -> Html any
+viewAdministeredMedicationCustomLabel language administerTranslationId medicineTranslationId medicineSuffix iconClass suffix maybeDate =
+    let
+        message =
+            div [] <|
+                [ text <| translate language administerTranslationId
+                , text ": "
+                , span [ class "medicine" ] [ text <| translate language medicineTranslationId ++ medicineSuffix ]
+                ]
+                    ++ renderDatePart language maybeDate
+                    ++ [ text <| " " ++ suffix ]
+    in
+    viewInstructionsLabel iconClass message
+
+
+viewAdministeredMedicationQuestion : Language -> TranslationId -> Html any
+viewAdministeredMedicationQuestion language medicineTranslationId =
+    div [ class "label" ]
+        [ text <|
+            translate language Translate.AdministeredMedicationQuestion
+                ++ " "
+                ++ translate language medicineTranslationId
+                ++ " "
+                ++ translate language Translate.ToThePatient
+                ++ "?"
+        ]
+
+
+viewReinforceAdherenceQuestion : Language -> TranslationId -> Html any
+viewReinforceAdherenceQuestion language medicineTranslationId =
+    div [ class "label" ]
+        [ text <|
+            translate language Translate.ReinforceAdherenceQuestion
+                ++ " "
+                ++ translate language medicineTranslationId
+                ++ "?"
+        ]
+
+
+renderDatePart : Language -> Maybe NominalDate -> List (Html any)
+renderDatePart language maybeDate =
+    maybeDate
+        |> Maybe.map (\date -> [ span [ class "date" ] [ text <| " (" ++ renderDate language date ++ ")" ] ])
+        |> Maybe.withDefault []

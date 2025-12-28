@@ -71,7 +71,6 @@ import Backend.PrenatalEncounter.Update
 import Backend.Relationship.Encoder exposing (encodeRelationshipChanges)
 import Backend.Relationship.Model exposing (MyRelatedBy(..), MyRelationship, RelatedBy(..))
 import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
-import Backend.ResilienceMessage.Model
 import Backend.ResilienceSurvey.Model
 import Backend.ResilienceSurvey.Update
 import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession)
@@ -5967,6 +5966,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        PrenatalAspirinRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | aspirin = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         PrenatalBloodGpRsTestRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
@@ -5979,6 +5986,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             ( mapPrenatalMeasurements
                 data.encounterId
                 (\measurements -> { measurements | breastfeeding = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalCalciumRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | calcium = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -6002,6 +6017,22 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             ( mapPrenatalMeasurements
                 data.encounterId
                 (\measurements -> { measurements | familyPlanning = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalFefolRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | fefol = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalFolateRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | folate = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -6069,6 +6100,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        PrenatalIronRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | iron = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         PrenatalLabsResultsRevision uuid data ->
             let
                 modelWithMappedFollowUp =
@@ -6092,6 +6131,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        PrenatalMebendazoleRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | mebendazole = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         PrenatalMentalHealthRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
@@ -6104,6 +6151,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             ( mapPrenatalMeasurements
                 data.encounterId
                 (\measurements -> { measurements | medicationDistribution = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalMMSRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | mms = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -6833,7 +6888,7 @@ generatePrenatalAssessmentMsgs currentDate language site isChw isLabTech activeP
                 let
                     diagnosesBefore =
                         -- At this stage new diagnoses were not updated yet, therefore,
-                        -- we can use the dignoses set for the encounter.
+                        -- we can use the diganoses set for the encounter.
                         assembledAfter.encounter.diagnoses
 
                     diagnosesAfter =
@@ -7318,7 +7373,7 @@ generateNCDAssessmentMsgs currentDate language activePage after id =
             let
                 diagnosesBefore =
                     -- At this stage new diagnoses were not updated yet, therefore,
-                    -- we can use the dignoses set for the encounter.
+                    -- we can use the diganoses set for the encounter.
                     assembledAfter.encounter.diagnoses
 
                 diagnosesAfter =

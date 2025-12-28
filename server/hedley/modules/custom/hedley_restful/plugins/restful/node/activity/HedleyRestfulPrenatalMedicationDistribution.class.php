@@ -18,6 +18,7 @@ class HedleyRestfulPrenatalMedicationDistribution extends HedleyRestfulPrenatalA
     'field_non_administration_reason',
     'field_recommended_treatment',
     'field_avoiding_guidance_reason',
+    'field_reinforce_treatment_signs',
   ];
 
 }

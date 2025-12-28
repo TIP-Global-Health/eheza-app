@@ -21,7 +21,7 @@ if (!drupal_is_cli()) {
 $batch = drush_get_option('batch', 500);
 
 // Get allowed memory limit.
-$memory_limit = drush_get_option('memory_limit', 200);
+$memory_limit = drush_get_option('memory_limit', 800);
 
 // Locate all Head Circumferences measurements that got value.
 // Note: when skipped, value is set to 0.

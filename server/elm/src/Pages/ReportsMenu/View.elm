@@ -1,16 +1,18 @@
 module Pages.ReportsMenu.View exposing (view)
 
 import App.Types exposing (Language)
+import Backend.Components.Model exposing (MenuScope(..))
 import Backend.Model exposing (ModelBackend)
 import Backend.ReportsMenu.Model exposing (MenuData)
 import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Maybe.Extra exposing (isJust)
+import Pages.Components.Model exposing (DemographicsSelection)
+import Pages.Components.Types exposing (PopulationSelectionOption(..))
+import Pages.Components.Utils exposing (populationSelectionOptionToString)
 import Pages.Components.View exposing (viewDemographicsSelection, viewDemographicsSelectionActionButton)
 import Pages.ReportsMenu.Model exposing (..)
-import Pages.ReportsMenu.Types exposing (..)
-import Pages.ReportsMenu.Utils exposing (populationSelectionOptionToString)
 import Pages.Utils
     exposing
         ( generateReportsHeaderImage
@@ -40,9 +42,26 @@ viewMenu : Language -> String -> MenuData -> Model -> Html Msg
 viewMenu language themePath data model =
     let
         populationSelectionInput =
+            let
+                allOptions =
+                    [ SelectionOptionGlobal, SelectionOptionDemographics, SelectionOptionHealthCenter ]
+
+                options =
+                    Maybe.map
+                        (\scope ->
+                            case scope of
+                                ScopeFull ->
+                                    allOptions
+
+                                ScopeHealthCenters ->
+                                    [ SelectionOptionHealthCenter ]
+                        )
+                        data.scope
+                        |> Maybe.withDefault allOptions
+            in
             viewSelectListInput language
                 model.populationSelection
-                [ SelectionOptionGlobal, SelectionOptionDemographics, SelectionOptionHealthCenter ]
+                options
                 populationSelectionOptionToString
                 SetPopulationSelection
                 Translate.PopulationSelectionOption
@@ -82,7 +101,7 @@ viewMenu language themePath data model =
                                     String.fromInt
                                     SetHealthCenter
                                     "select-input"
-                                    True
+                                    (Just "")
                                     |> wrapSelectListInput language Translate.HealthCenter False
                               ]
                             , Maybe.map

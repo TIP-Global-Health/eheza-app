@@ -653,8 +653,10 @@ type PostpartumChildDangerSign
 
 type alias LastMenstrualPeriodValue =
     { date : NominalDate
+    , prePregnancyWeight : Maybe WeightInKg
     , confident : Bool
     , notConfidentReason : Maybe LmpDateNotConfidentReason
+    , lateFirstVisitReason : Maybe LateFirstANCVisitReason
     , confirmation : Bool
     }
 
@@ -665,12 +667,26 @@ type LmpDateNotConfidentReason
     | ReasonCanNotRememberDates
 
 
+type LateFirstANCVisitReason
+    = ReasonLackOfFunds
+    | ReasonLackOfHealthInsurance
+    | ReasonPartnerAccompanimentRequirement
+    | ReasonUndetectedPregnancy
+    | ReasonLongDistancesToHealthFacilities
+    | ReasonNegativePastExperiences
+    | ReasonTraditionalBeliefs
+    | ReasonLackOfAwarenessToANC
+    | ReasonDelayedRecognitionOfSymptoms
+    | ReasonOtherReasons
+
+
 type alias LastMenstrualPeriod =
     PrenatalMeasurement LastMenstrualPeriodValue
 
 
 type MedicalHistorySign
     = Asthma
+    | AutoimmuneDisease
     | CardiacDisease
     | Diabetes
     | HypertensionBeforePregnancy
@@ -721,7 +737,14 @@ type alias MedicalHistoryValue =
     , physicalConditions : EverySet MedicalHistoryPhysicalCondition
     , infectiousDiseases : EverySet MedicalHistoryInfectiousDisease
     , mentalHealthIssues : EverySet MedicalHistoryMentalHealthIssue
+    , preeclampsiaInFamily : OccursInFamilySign
     }
+
+
+type OccursInFamilySign
+    = DoesOccur
+    | DoesNotOccur
+    | NotKnownIfOccurs
 
 
 type MedicationSign
@@ -791,6 +814,7 @@ type FetalPresentation
     | FetalBreech
     | Cephalic
     | Twins
+    | UnclearImprecise
     | Unknown
 
 
@@ -840,6 +864,7 @@ type CSectionReason
 type PreviousDeliveryPeriod
     = LessThan18Month
     | MoreThan5Years
+    | MoreThan10Years
     | Neither
 
 
@@ -874,9 +899,13 @@ type ObstetricHistoryStep2Sign
     | ObstetricHistoryIncompleteCervixPreviousPregnancy
     | ObstetricHistoryBabyDiedOnDayOfBirthPreviousDelivery
     | ObstetricHistoryPartialPlacentaPreviousDelivery
+    | ObstetricHistoryPlacentaAbruptionPreviousDelivery
     | ObstetricHistorySevereHemorrhagingPreviousDelivery
     | ObstetricHistoryConvulsionsPreviousDelivery
     | ObstetricHistoryConvulsionsAndUnconsciousPreviousDelivery
+    | ObstetricHistoryChildWithLowBirthweightPreviousDelivery
+    | ObstetricHistorySmallForGestationalAgePreviousDelivery
+    | ObstetricHistoryIntraUterineDeathPreviousDelivery
     | NoObstetricHistoryStep2Sign
     | MigrateObstetricHistoryStep2Sign
 
@@ -1439,6 +1468,7 @@ type alias PrenatalMedicationDistributionValue =
     , nonAdministrationSigns : EverySet MedicationNonAdministrationSign
     , recommendedTreatmentSigns : Maybe (EverySet RecommendedTreatmentSign)
     , avoidingGuidanceReason : Maybe (EverySet AvoidingGuidanceReason)
+    , reinforceTreatmentSigns : Maybe (EverySet ReinforceTreatmentSign)
     }
 
 
@@ -1506,6 +1536,13 @@ type AvoidingGuidanceReason
     | AvoidingGuidanceHypertensionPatientUnableToAfford
     | AvoidingGuidanceHypertensionReinforceAdherence
     | AvoidingGuidanceHypertensionOther
+
+
+type ReinforceTreatmentSign
+    = ReinforceSignFefol
+    | ReinforceSignMMS
+    | ReinforceSignRepeatHemoglobinTest
+    | NoReinforceTreatmentSigns
 
 
 type alias PrenatalSymptomReview =
@@ -1734,6 +1771,34 @@ type alias PartnerHIVTestValue =
     , testResult : Maybe TestResult
     , hivSigns : Maybe (EverySet PrenatalHIVSign)
     }
+
+
+type alias PrenatalAspirin =
+    PrenatalMeasurement AdministrationNote
+
+
+type alias PrenatalCalcium =
+    PrenatalMeasurement AdministrationNote
+
+
+type alias PrenatalFolate =
+    PrenatalMeasurement AdministrationNote
+
+
+type alias PrenatalFefol =
+    PrenatalMeasurement AdministrationNote
+
+
+type alias PrenatalIron =
+    PrenatalMeasurement AdministrationNote
+
+
+type alias PrenatalMMS =
+    PrenatalMeasurement AdministrationNote
+
+
+type alias PrenatalMebendazole =
+    PrenatalMeasurement AdministrationNote
 
 
 
@@ -2015,6 +2080,7 @@ type alias SendToHC =
 
 type MedicationDistributionSign
     = Amoxicillin
+    | Aspirin
     | Coartem
     | ORS
     | Zinc
@@ -2028,9 +2094,13 @@ type MedicationDistributionSign
     | Lamivudine
     | Dolutegravir
     | TDF3TC
-      -- Anemia medication
+      -- Anemia medication and pregnancy supplements.
     | Iron
     | FolicAcid
+      -- Pregnancy supplements - in addition to Iron and Folic acid.
+    | Calcium
+    | MMS
+    | Fefol
       -- Gonorhea medication
     | Ceftriaxone
     | Azithromycin
@@ -2055,6 +2125,7 @@ type AdministrationNote
 
 type MedicationNonAdministrationSign
     = MedicationAmoxicillin AdministrationNote
+    | MedicationAspirin AdministrationNote
     | MedicationCoartem AdministrationNote
     | MedicationORS AdministrationNote
     | MedicationZinc AdministrationNote
@@ -3319,6 +3390,13 @@ type alias PrenatalMeasurements =
     , guExam : Maybe ( PrenatalGUExamId, PrenatalGUExam )
     , specialityCare : Maybe ( PrenatalSpecialityCareId, PrenatalSpecialityCare )
     , partnerHIVTest : Maybe ( PrenatalPartnerHIVTestId, PrenatalPartnerHIVTest )
+    , aspirin : Maybe ( PrenatalAspirinId, PrenatalAspirin )
+    , calcium : Maybe ( PrenatalCalciumId, PrenatalCalcium )
+    , fefol : Maybe ( PrenatalFefolId, PrenatalFefol )
+    , folate : Maybe ( PrenatalFolateId, PrenatalFolate )
+    , iron : Maybe ( PrenatalIronId, PrenatalIron )
+    , mms : Maybe ( PrenatalMMSId, PrenatalMMS )
+    , mebendazole : Maybe ( PrenatalMebendazoleId, PrenatalMebendazole )
     }
 
 
@@ -3364,6 +3442,13 @@ emptyPrenatalMeasurements =
     , guExam = Nothing
     , specialityCare = Nothing
     , partnerHIVTest = Nothing
+    , aspirin = Nothing
+    , calcium = Nothing
+    , fefol = Nothing
+    , folate = Nothing
+    , iron = Nothing
+    , mms = Nothing
+    , mebendazole = Nothing
     }
 
 

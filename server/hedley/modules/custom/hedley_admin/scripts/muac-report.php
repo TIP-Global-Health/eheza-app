@@ -17,7 +17,7 @@ if (!drupal_is_cli()) {
 $batch = drush_get_option('batch', 500);
 
 // Get allowed memory limit.
-$memory_limit = drush_get_option('memory_limit', 500);
+$memory_limit = drush_get_option('memory_limit', 800);
 
 // Resolve all Health Centers (associate ID to name).
 $query = db_select('node', 'n');
@@ -29,12 +29,7 @@ foreach ($result as $row) {
   $health_centers[$row->nid] = $row->title;
 }
 
-// Resolve all Nurses. We need to determine if measurement was taken
-// by nurse or CHW.
-$query = db_select('field_data_field_role', 'fr')
-  ->fields('fr', ['entity_id']);
-$query->condition('fr.field_role_value', 'nurse');
-$nurses = $query->execute()->fetchCol();
+$nurses = hedley_ncda_resolve_nurses_ids();
 
 $encounter_types = [
   'acute_illness_muac' => 'Acute Illness',

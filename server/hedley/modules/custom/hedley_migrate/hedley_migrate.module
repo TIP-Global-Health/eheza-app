@@ -418,7 +418,12 @@ function hedley_migrate_generate_geolocation_structure_for_client() {
     $data[$index][$column] = hedley_migrate_generate_structure_for_terms_of_type($column, $data[$index]['tids']);
   }
 
-  return $data;
+  $output = [];
+  foreach ($column_mapping as $index => $mapping) {
+    $output[$mapping] = $data[$index][$mapping];
+  }
+
+  return $output;
 }
 
 /**
@@ -454,7 +459,7 @@ function hedley_migrate_generate_structure_for_terms_of_type($type, array $tids,
         $parent = "(Just <| toEntityId $parent_tid)";
       }
 
-      $entities[] = "( $id, GeoLocation \"$name\" $parent)";
+      $entities[] = "($id, GeoLocation \"$name\" $parent)";
     }
 
     $chunks[] = '[ ' . implode("\n, ", $entities) . ' ]';

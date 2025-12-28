@@ -56,8 +56,6 @@ import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.Relationship.Decoder exposing (decodeRelationship)
 import Backend.Relationship.Encoder exposing (encodeRelationship)
 import Backend.Relationship.Model exposing (Relationship)
-import Backend.ResilienceMessage.Decoder exposing (decodeResilienceMessage)
-import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
 import Backend.ResilienceSurvey.Decoder exposing (decodeResilienceSurvey)
 import Backend.ResilienceSurvey.Encoder exposing (encodeResilienceSurvey)
 import Backend.ResilienceSurvey.Model exposing (ResilienceSurvey)
@@ -1086,6 +1084,48 @@ prenatalSpecialityCareEndpoint : ReadWriteEndPoint Error PrenatalSpecialityCareI
 prenatalSpecialityCareEndpoint =
     swEndpoint "nodes/prenatal_speciality_care" decodePrenatalSpecialityCare
         |> withValueEncoder (object << encodePrenatalSpecialityCare)
+
+
+prenatalAspirinEndpoint : ReadWriteEndPoint Error PrenatalAspirinId PrenatalAspirin PrenatalAspirin ()
+prenatalAspirinEndpoint =
+    swEndpoint "nodes/prenatal_aspirin" decodePrenatalAspirin
+        |> withValueEncoder (object << encodePrenatalAspirin)
+
+
+prenatalCalciumEndpoint : ReadWriteEndPoint Error PrenatalCalciumId PrenatalCalcium PrenatalCalcium ()
+prenatalCalciumEndpoint =
+    swEndpoint "nodes/prenatal_calcium" decodePrenatalCalcium
+        |> withValueEncoder (object << encodePrenatalCalcium)
+
+
+prenatalFefolEndpoint : ReadWriteEndPoint Error PrenatalFefolId PrenatalFefol PrenatalFefol ()
+prenatalFefolEndpoint =
+    swEndpoint "nodes/prenatal_fefol" decodePrenatalFefol
+        |> withValueEncoder (object << encodePrenatalFefol)
+
+
+prenatalFolateEndpoint : ReadWriteEndPoint Error PrenatalFolateId PrenatalFolate PrenatalFolate ()
+prenatalFolateEndpoint =
+    swEndpoint "nodes/prenatal_folate" decodePrenatalFolate
+        |> withValueEncoder (object << encodePrenatalFolate)
+
+
+prenatalIronEndpoint : ReadWriteEndPoint Error PrenatalIronId PrenatalIron PrenatalIron ()
+prenatalIronEndpoint =
+    swEndpoint "nodes/prenatal_iron" decodePrenatalIron
+        |> withValueEncoder (object << encodePrenatalIron)
+
+
+prenatalMMSEndpoint : ReadWriteEndPoint Error PrenatalMMSId PrenatalMMS PrenatalMMS ()
+prenatalMMSEndpoint =
+    swEndpoint "nodes/prenatal_mms" decodePrenatalMMS
+        |> withValueEncoder (object << encodePrenatalMMS)
+
+
+prenatalMebendazoleEndpoint : ReadWriteEndPoint Error PrenatalMebendazoleId PrenatalMebendazole PrenatalMebendazole ()
+prenatalMebendazoleEndpoint =
+    swEndpoint "nodes/prenatal_mebendazole" decodePrenatalMebendazole
+        |> withValueEncoder (object << encodePrenatalMebendazole)
 
 
 ncdEncounterEndpoint : ReadWriteEndPoint Error NCDEncounterId NCDEncounter NCDEncounter (List IndividualEncounterParticipantId)

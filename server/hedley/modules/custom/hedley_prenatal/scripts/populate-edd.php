@@ -26,7 +26,7 @@ $query->leftJoin('field_data_field_expected_date_concluded', 'edd', 'edd.entity_
 $query->leftJoin('field_data_field_encounter_type', 'et', 'et.entity_id = n.nid');
 $query->condition('et.field_encounter_type_value', 'antenatal');
 $query->isNull('edd.field_expected_date_concluded_value');
-$query->range(0, 5000);
+$query->range(0, 10000);
 
 $result = $query->execute()->fetchAllAssoc('nid');
 if (empty($result)) {
@@ -47,6 +47,9 @@ foreach ($chunks as $ids) {
   foreach ($ids as $participant_id) {
     // Pull IDs of all encounters conducted for participant.
     $encounters = hedley_person_encounters_for_individual_participant($participant_id);
+    if (empty($encounters)) {
+      continue;
+    }
 
     // Pull most recent LMP measurement.
     $query = new EntityFieldQuery();

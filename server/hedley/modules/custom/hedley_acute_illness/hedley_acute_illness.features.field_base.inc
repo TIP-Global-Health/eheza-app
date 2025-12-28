@@ -814,6 +814,11 @@ function hedley_acute_illness_field_default_field_bases() {
         'amoxicillin-patient-declined' => 'Amoxicillin - Patient declined',
         'amoxicillin-patient-unable-to-afford' => 'Amoxicillin - Patient unable to afford',
         'amoxicillin-other' => 'Amoxicillin - Other',
+        'aspirin-lack-of-stock' => 'Aspirin - Lack of stock',
+        'aspirin-known-allergy' => 'Aspirin - Known allergy',
+        'aspirin-patient-declined' => 'Aspirin - Patient declined',
+        'aspirin-patient-unable-to-afford' => 'Aspirin - Patient unable to afford',
+        'aspirin-other' => 'Aspirin - Other',
         'coartem-lack-of-stock' => 'Coartem - Lack of stock',
         'coartem-known-allergy' => 'Coartem - Known allergy',
         'coartem-patient-declined' => 'Coartem - Patient declined',
@@ -944,6 +949,7 @@ function hedley_acute_illness_field_default_field_bases() {
     'settings' => array(
       'allowed_values' => array(
         'amoxicillin' => 'Amoxicillin',
+        'aspirin' => 'Aspirin',
         'coartem' => 'Coartem',
         'ors' => 'ORS',
         'zinc' => 'Zinc',

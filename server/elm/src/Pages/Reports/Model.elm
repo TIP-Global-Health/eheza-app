@@ -33,6 +33,7 @@ type ReportType
     | ReportDemographics
     | ReportNutrition
     | ReportPrenatal
+    | ReportPrenatalDiagnoses
 
 
 type alias NutritionReportData =
@@ -89,11 +90,10 @@ emptyNutritionMetricsResults =
     }
 
 
-type alias MetricsResultsTableData =
-    { heading : String
-    , captions : List String
-    , rows : List (List String)
-    }
+type PregnancyTrimester
+    = FirstTrimester
+    | SecondTrimester
+    | ThirdTrimester
 
 
 type Msg
