@@ -5,12 +5,19 @@
  * Generates sample DB (from currently installed DB).
  *
  * Execution: drush scr
- *  profiles/hedley/modules/custom/hedley_admin/scripts/generate-sample-db.php.
+ *  profiles/hedley/modules/custom/hedley_admin/scripts/generate-sample-db.php
+ *    --admin-pass=[Gizra admin user password].
  */
 
 if (!drupal_is_cli()) {
   // Prevent execution from browser.
   return;
+}
+
+$admin_password = drush_get_option('admin-pass', FALSE);
+if (!$admin_password) {
+  drush_print('Please specify --admin-pass option to indicate the password for Gizra admin user.');
+  exit;
 }
 
 // Get the last node id.
@@ -216,7 +223,7 @@ $role = user_role_load_by_name('administrator');
 $gizra_admin = [
   'name' => 'gizraAdmin',
   'mail' => 'gizraAdmin@example.com',
-  'pass' => '2ASC$Hvm',
+  'pass' => $admin_password,
   'roles' => [$role->rid => $role->name],
   'status' => 1,
 ];
