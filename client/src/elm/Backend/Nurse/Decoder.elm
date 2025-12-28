@@ -39,7 +39,7 @@ decodeNurse =
         |> optional "next_reminder" (nullable decodeSecondsAsPosix) Nothing
         |> optional "resilience_messages" decodeResilienceMessages Dict.empty
         |> optional "resilience_consent" bool False
-        |> optional "resilience_consent_reason" (map Just decodeReasonForNotConsenting) Nothing
+        |> optional "resilience_consent_reason" (nullable decodeReasonForNotConsenting) Nothing
 
 
 decodeRoles : Decoder (EverySet Role)
