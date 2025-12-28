@@ -225,8 +225,8 @@ type alias NutritionEncounterData =
 
 type alias NutritionData =
     { stunting : Maybe Float
-    , wasting : Maybe Float
     , underweight : Maybe Float
+    , wasting : Maybe Float
     , muac : Maybe Float
     }
 

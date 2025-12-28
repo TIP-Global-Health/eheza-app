@@ -615,11 +615,11 @@ decodeWellChildEncounterData =
 nutritionDataFromString : String -> Maybe NutritionData
 nutritionDataFromString s =
     case String.split "," s of
-        [ stunting, wasting, underweight, muac ] ->
+        [ stunting, underweight, wasting, muac ] ->
             Just <|
                 NutritionData (String.toFloat stunting)
-                    (String.toFloat wasting)
                     (String.toFloat underweight)
+                    (String.toFloat wasting)
                     (String.toFloat muac)
 
         _ ->

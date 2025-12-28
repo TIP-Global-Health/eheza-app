@@ -569,11 +569,11 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
         $zscore_length = $measurement->field_zscore_length[LANGUAGE_NONE][0]['value'];
         if (!empty($zscore_age)) {
           if (empty($zscores_by_encounter[$encounter_id])) {
-            $zscores_by_encounter[$encounter_id] = ['w' => $zscore_age, 'u' => $zscore_length];
+            $zscores_by_encounter[$encounter_id] = ['u' => $zscore_age, 'w' => $zscore_length];
           }
           else {
-            $zscores_by_encounter[$encounter_id]['w'] = $zscore_age;
-            $zscores_by_encounter[$encounter_id]['u'] = $zscore_length;
+            $zscores_by_encounter[$encounter_id]['u'] = $zscore_age;
+            $zscores_by_encounter[$encounter_id]['w'] = $zscore_length;
           }
         }
         break;
@@ -584,11 +584,11 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
         $zscore_length = $measurement->field_zscore_length[LANGUAGE_NONE][0]['value'];
         if (!empty($zscore_age)) {
           if (empty($zscores_by_encounter[$encounter_id])) {
-            $zscores_by_encounter[$encounter_id] = ['w' => $zscore_age, 'u' => $zscore_length];
+            $zscores_by_encounter[$encounter_id] = ['u' => $zscore_age, 'w' => $zscore_length];
           }
           else {
-            $zscores_by_encounter[$encounter_id]['w'] = $zscore_age;
-            $zscores_by_encounter[$encounter_id]['u'] = $zscore_length;
+            $zscores_by_encounter[$encounter_id]['u'] = $zscore_age;
+            $zscores_by_encounter[$encounter_id]['w'] = $zscore_length;
           }
         }
         break;
@@ -627,11 +627,11 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
         $zscore_length = $measurement->field_zscore_length[LANGUAGE_NONE][0]['value'];
         if (!empty($zscore_age)) {
           if (empty($zscores_by_encounter[$encounter_id])) {
-            $zscores_by_encounter[$encounter_id] = ['w' => $zscore_age, 'u' => $zscore_length];
+            $zscores_by_encounter[$encounter_id] = ['u' => $zscore_age, 'w' => $zscore_length];
           }
           else {
-            $zscores_by_encounter[$encounter_id]['w'] = $zscore_age;
-            $zscores_by_encounter[$encounter_id]['u'] = $zscore_length;
+            $zscores_by_encounter[$encounter_id]['u'] = $zscore_age;
+            $zscores_by_encounter[$encounter_id]['w'] = $zscore_length;
           }
         }
         break;
@@ -1135,11 +1135,11 @@ function hedley_reports_nutrition_metrics_to_string($values) {
   }
 
   $stunting = !empty($values['s']) ? $values['s'] : '';
-  $wasting = !empty($values['w']) ? $values['w'] : '';
   $underweight = !empty($values['u']) ? $values['u'] : '';
+  $wasting = !empty($values['w']) ? $values['w'] : '';
   $muac = !empty($values['m']) ? $values['m'] : '';
 
-  return "$stunting,$wasting,$underweight,$muac";
+  return "$stunting,$underweight,$wasting,$muac";
 }
 
 /**

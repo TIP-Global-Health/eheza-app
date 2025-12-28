@@ -8987,7 +8987,7 @@ var $author$project$Backend$Reports$Model$NutritionEncounterData = F2(
 		return {nutritionData: nutritionData, startDate: startDate};
 	});
 var $author$project$Backend$Reports$Model$NutritionData = F4(
-	function (stunting, wasting, underweight, muac) {
+	function (stunting, underweight, wasting, muac) {
 		return {muac: muac, stunting: stunting, underweight: underweight, wasting: wasting};
 	});
 var $elm$core$String$toFloat = _String_toFloat;
@@ -8996,17 +8996,17 @@ var $author$project$Backend$Reports$Decoder$nutritionDataFromString = function (
 	if ((((_v0.b && _v0.b.b) && _v0.b.b.b) && _v0.b.b.b.b) && (!_v0.b.b.b.b.b)) {
 		var stunting = _v0.a;
 		var _v1 = _v0.b;
-		var wasting = _v1.a;
+		var underweight = _v1.a;
 		var _v2 = _v1.b;
-		var underweight = _v2.a;
+		var wasting = _v2.a;
 		var _v3 = _v2.b;
 		var muac = _v3.a;
 		return $elm$core$Maybe$Just(
 			A4(
 				$author$project$Backend$Reports$Model$NutritionData,
 				$elm$core$String$toFloat(stunting),
-				$elm$core$String$toFloat(wasting),
 				$elm$core$String$toFloat(underweight),
+				$elm$core$String$toFloat(wasting),
 				$elm$core$String$toFloat(muac)));
 	} else {
 		return $elm$core$Maybe$Nothing;
