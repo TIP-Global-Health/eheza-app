@@ -8,20 +8,18 @@ module Pages.Nutrition.Activity.View exposing
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.NutritionEncounter.Utils
     exposing
-        ( calculateZScoreWeightForAge
-        , getNewbornExamPregnancySummary
+        ( getNewbornExamPregnancySummary
         , nutritionAssessmentForBackend
         , resolveNCDANeverFilled
         , resolveNCDANotFilledAfterAgeOfSixMonths
         , resolvePreviousValuesSetForChild
         )
-import Backend.Person.Model exposing (Person)
-import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
+import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -32,21 +30,15 @@ import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model
     exposing
         ( DropZoneFile
-        , HeightForm
-        , MuacForm
         , NCDAData
         , NextStepsTask(..)
-        , NutritionForm
-        , WeightForm
         )
 import Measurement.Utils exposing (..)
 import Measurement.View
     exposing
         ( heightFormAndTasks
-        , viewColorAlertIndication
         , viewContributingFactorsForm
         , viewHealthEducationForm
-        , viewMeasurementFloatDiff
         , viewNutritionFollowUpForm
         , viewNutritionForm
         , viewSendToHealthCenterForm
@@ -65,12 +57,8 @@ import Pages.Utils
         , resolveTasksCompletedFromTotal
         , taskCompleted
         , tasksBarId
-        , viewCheckBoxMultipleSelectInput
-        , viewLabel
-        , viewMeasurementInput
         , viewPersonDetails
         , viewPhotoThumbFromImageUrl
-        , viewPreviousMeasurement
         , viewSaveAction
         , viewTasksCount
         )
@@ -78,8 +66,7 @@ import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language, translate)
 import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
-import ZScore.Model exposing (Centimetres(..))
-import ZScore.Utils exposing (diffDays, viewZScore, zScoreLengthHeightForAge)
+import ZScore.Model
 
 
 view :

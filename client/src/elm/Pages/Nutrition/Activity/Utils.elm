@@ -33,8 +33,8 @@ import Measurement.View
         )
 import Pages.Nutrition.Activity.Model exposing (..)
 import Pages.Nutrition.Encounter.Model exposing (AssembledData)
-import Pages.Utils exposing (resolveTasksCompletedFromTotal, taskCompleted)
-import SyncManager.Model exposing (SiteFeature)
+import Pages.Utils exposing (resolveTasksCompletedFromTotal)
+import SyncManager.Model exposing (Site(..), SiteFeature)
 import Translate.Model exposing (Language(..))
 import ZScore.Model
 

@@ -49,7 +49,6 @@ import Pages.Utils
         , maybeToBoolTask
         , resolveTasksCompletedFromTotal
         , taskAnyCompleted
-        , taskCompleted
         , valueConsideringIsDirtyField
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
@@ -64,7 +63,7 @@ import Pages.WellChild.Activity.Model exposing (..)
 import Pages.WellChild.Activity.Types exposing (..)
 import Pages.WellChild.Encounter.Model exposing (AssembledData)
 import SyncManager.Model exposing (Site(..), SiteFeature)
-import Translate exposing (Language, TranslationId, translate)
+import Translate exposing (TranslationId, translate)
 import Translate.Model exposing (Language(..))
 import ZScore.Model
 import ZScore.Utils exposing (viewZScore)
@@ -414,7 +413,7 @@ resolveNutritionAssessmentTasks : AssembledData -> List NutritionAssessmentTask
 resolveNutritionAssessmentTasks assembled =
     case assembled.encounter.encounterType of
         NewbornExam ->
-            -- Height and Muac are not here, because Newbor Exam
+            -- Height and Muac are not here, because Newborn Exam
             -- is done for children that are less than 2 months old.
             [ TaskHeadCircumference, TaskNutrition, TaskWeight ]
 
