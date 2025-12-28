@@ -342,7 +342,7 @@ function process_node($node, $data) {
 }
 
 /**
- * Keep node, if any of it's shards appears in sample HCs list.
+ * Keep node, if any of its shards appears in sample HCs list.
  */
 function keep_by_shards($shards, $sample_health_centers_ids) {
   if (empty($shards)) {
