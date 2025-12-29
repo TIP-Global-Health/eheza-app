@@ -1123,7 +1123,7 @@ viewActionsTakenMedicationDistribution language date person diagnosis measuremen
                         Maybe.map
                             (\dosage ->
                                 [ viewAdministeredMedicationLabel language Translate.Administered (Translate.MedicationDistributionSign Zinc) "icon-pills" (Just date)
-                                , viewTabletsPrescription language dosage (Translate.ByMouthDaylyForXDays 10)
+                                , viewTabletsPrescription language dosage (Translate.ByMouthDailyForXDays 10)
                                 ]
                             )
                             (resolveZincDosage date person)

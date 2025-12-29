@@ -377,7 +377,7 @@ translationSet transId =
                     translationSet MedicationDistribution
 
                 AcuteIllnessSendToHC ->
-                    { english = "Referal"
+                    { english = "Referral"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
@@ -2815,7 +2815,7 @@ translationSet transId =
                     translationSet ImmunisationIPV
 
                 WellChildMebendezole ->
-                    { english = "Mebendezole"
+                    { english = "Mebendazole"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
