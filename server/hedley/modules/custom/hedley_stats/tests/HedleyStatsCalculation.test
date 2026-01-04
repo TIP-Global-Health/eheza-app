@@ -185,7 +185,8 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $timestamp = strtotime('-7 days');
     $muac_value = 11;
     $zscore_value = -1.5;
-    [$participant_id, $nutrition_encounter_id] = $this->createIndividualNutritionEncounterData($timestamp, $muac_value, $zscore_value);
+    $weight_value = 9;
+    [$participant_id, $nutrition_encounter_id] = $this->createIndividualNutritionEncounterData($timestamp, $muac_value, $zscore_value, 'edema', $weight_value);
 
     foreach ($sessions as $session) {
       if (!isset($session['session_data'])) {
@@ -423,11 +424,19 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    *
    * @param int $timestamp
    *   The date of the encounter.
+   * @param float $muac_value
+   *   MUAC value to record.
+   * @param float $zscore_value
+   *   Z-score (wasting) value to record.
+   * @param string $nutrition_sign
+   *   Nutrition sign value to record.
+   * @param float $weight_value
+   *   Weight value to record.
    *
    * @return array
    *   Participant ID and encounter ID.
    */
-  protected function createIndividualNutritionEncounterData($timestamp, $muac_value = 11, $zscore_value = -1.5, $nutrition_sign = 'edema') {
+  protected function createIndividualNutritionEncounterData($timestamp, $muac_value = 11, $zscore_value = -1.5, $nutrition_sign = 'edema', $weight_value = 9) {
     $mother_id = $this->createMother($this->clinicId);
     $child_id = $this->createChild($mother_id, $this->healthCenterId, $timestamp, $timestamp);
 
@@ -471,7 +480,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $weight_wrapper->field_date_measured->set($timestamp);
     $weight_wrapper->field_nurse->set($nurse_uid);
     $weight_wrapper->field_nutrition_encounter->set($encounter->nid);
-    $weight_wrapper->field_weight->set(9);
+    $weight_wrapper->field_weight->set($weight_value);
     $weight_wrapper->field_zscore_length->set($zscore_value);
     $weight_wrapper->field_shards->set([$this->healthCenterId]);
     $weight_wrapper->save();
