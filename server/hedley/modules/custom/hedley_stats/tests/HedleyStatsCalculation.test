@@ -180,6 +180,11 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $attendance = 40;
     $sessions = $this->createSessionsWithAttendance($attendance, $attendance);
 
+    // Add an individual Nutrition encounter with measurements to assert
+    // individual coverage.
+    $timestamp = strtotime('-1 week');
+    list($participant_id, $nutrition_encounter_id) = $this->createIndividualNutritionEncounterData($timestamp);
+
     foreach ($sessions as $session) {
       if (!isset($session['session_data'])) {
         continue;
@@ -238,6 +243,15 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $this->assertFalse(empty($stats['case_management']));
     $this->assertFalse(empty($stats['good_nutrition']));
     $this->assertFalse(empty($stats['total_encounters']));
+    $nutrition_individual_data = $stats['nutrition_individual_data'];
+    $this->assertTrue(isset($nutrition_individual_data[$participant_id]));
+    $encounters = $nutrition_individual_data[$participant_id]['encounters'];
+    $this->assertTrue(isset($encounters[$nutrition_encounter_id]));
+    $encounter = $encounters[$nutrition_encounter_id];
+    $this->assertEqual($encounter['encounter_type'], 'nurse');
+    $this->assertEqual($encounter['muac'], 11);
+    $this->assertEqual($encounter['zscore_wasting'], -1.5);
+    $this->assertTrue(in_array('edema', $encounter['nutrition_signs']));
 
     // Call again with cache hash to make sure we don't get the results this
     // time.
@@ -400,6 +414,83 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $queue = DrupalQueue::get($queue_name);
 
     advancedqueue_process_item($queue, $queue_name, $queue_info, $aq_item);
+  }
+
+  /**
+   * Create an individual Nutrition encounter with related measurements.
+   *
+   * @param int $timestamp
+   *   The date of the encounter.
+   *
+   * @return array
+   *   Participant ID and encounter ID.
+   */
+  protected function createIndividualNutritionEncounterData($timestamp) {
+    $mother_id = $this->createMother($this->clinicId);
+    $child_id = $this->createChild($mother_id, $this->healthCenterId, $timestamp, $timestamp);
+
+    $participant = $this->drupalCreateNode(['type' => 'individual_participant']);
+    $participant_wrapper = entity_metadata_wrapper('node', $participant);
+    $participant_wrapper->field_person->set($child_id);
+    $participant_wrapper->field_encounter_type->set('nutrition');
+    $participant_wrapper->field_expected->set([
+      'value' => date('Y-m-d', $timestamp),
+      'value2' => date('Y-m-d', $timestamp),
+    ]);
+    $participant_wrapper->field_shards->set([$this->healthCenterId]);
+    $participant_wrapper->save();
+
+    $encounter = $this->drupalCreateNode(['type' => 'nutrition_encounter']);
+    $encounter_wrapper = entity_metadata_wrapper('node', $encounter);
+    $encounter_wrapper->field_individual_participant->set($participant->nid);
+    $encounter_wrapper->field_nutrition_encounter_type->set('nurse');
+    $encounter_wrapper->field_scheduled_date->set([
+      'value' => date('Y-m-d', $timestamp),
+      'value2' => date('Y-m-d', $timestamp),
+    ]);
+    $encounter_wrapper->field_shards->set([$this->healthCenterId]);
+    $encounter_wrapper->save();
+
+    $nurse_uid = !empty($this->nurse) ? $this->nurse->uid : $this->createNurse($this->clinicId)->uid;
+
+    $muac = $this->drupalCreateNode(['type' => 'nutrition_muac']);
+    $muac_wrapper = entity_metadata_wrapper('node', $muac);
+    $muac_wrapper->field_person->set($child_id);
+    $muac_wrapper->field_date_measured->set($timestamp);
+    $muac_wrapper->field_nurse->set($nurse_uid);
+    $muac_wrapper->field_nutrition_encounter->set($encounter->nid);
+    $muac_wrapper->field_muac->set(11);
+    $muac_wrapper->field_shards->set([$this->healthCenterId]);
+    $muac_wrapper->save();
+
+    $weight = $this->drupalCreateNode(['type' => 'nutrition_weight']);
+    $weight_wrapper = entity_metadata_wrapper('node', $weight);
+    $weight_wrapper->field_person->set($child_id);
+    $weight_wrapper->field_date_measured->set($timestamp);
+    $weight_wrapper->field_nurse->set($nurse_uid);
+    $weight_wrapper->field_nutrition_encounter->set($encounter->nid);
+    $weight_wrapper->field_weight->set(9);
+    $weight_wrapper->field_zscore_length->set(-1.5);
+    $weight_wrapper->field_shards->set([$this->healthCenterId]);
+    $weight_wrapper->save();
+
+    $nutrition = $this->drupalCreateNode([
+      'type' => 'nutrition_nutrition',
+      'field_nutrition_signs' => [
+        LANGUAGE_NONE => [
+          ['value' => 'edema'],
+        ],
+      ],
+    ]);
+    $nutrition_wrapper = entity_metadata_wrapper('node', $nutrition);
+    $nutrition_wrapper->field_person->set($child_id);
+    $nutrition_wrapper->field_date_measured->set($timestamp);
+    $nutrition_wrapper->field_nurse->set($nurse_uid);
+    $nutrition_wrapper->field_nutrition_encounter->set($encounter->nid);
+    $nutrition_wrapper->field_shards->set([$this->healthCenterId]);
+    $nutrition_wrapper->save();
+
+    return [$participant->nid, $encounter->nid];
   }
 
 }
