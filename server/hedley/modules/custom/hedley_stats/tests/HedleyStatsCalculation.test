@@ -182,8 +182,10 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
 
     // Add an individual Nutrition encounter with measurements to assert
     // individual coverage.
-    $timestamp = strtotime('-1 week');
-    [$participant_id, $nutrition_encounter_id] = $this->createIndividualNutritionEncounterData($timestamp);
+    $timestamp = strtotime('-7 days');
+    $muac_value = 11;
+    $zscore_value = -1.5;
+    [$participant_id, $nutrition_encounter_id] = $this->createIndividualNutritionEncounterData($timestamp, $muac_value, $zscore_value);
 
     foreach ($sessions as $session) {
       if (!isset($session['session_data'])) {
@@ -249,8 +251,8 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $this->assertTrue(isset($encounters[$nutrition_encounter_id]));
     $encounter = $encounters[$nutrition_encounter_id];
     $this->assertEqual($encounter['encounter_type'], 'nurse');
-    $this->assertEqual($encounter['muac'], 11);
-    $this->assertEqual($encounter['zscore_wasting'], -1.5);
+    $this->assertEqual($encounter['muac'], $muac_value);
+    $this->assertEqual($encounter['zscore_wasting'], $zscore_value);
     $this->assertTrue(in_array('edema', $encounter['nutrition_signs']));
 
     // Call again with cache hash to make sure we don't get the results this
@@ -425,7 +427,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    * @return array
    *   Participant ID and encounter ID.
    */
-  protected function createIndividualNutritionEncounterData($timestamp) {
+  protected function createIndividualNutritionEncounterData($timestamp, $muac_value = 11, $zscore_value = -1.5, $nutrition_sign = 'edema') {
     $mother_id = $this->createMother($this->clinicId);
     $child_id = $this->createChild($mother_id, $this->healthCenterId, $timestamp, $timestamp);
 
@@ -459,7 +461,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $muac_wrapper->field_date_measured->set($timestamp);
     $muac_wrapper->field_nurse->set($nurse_uid);
     $muac_wrapper->field_nutrition_encounter->set($encounter->nid);
-    $muac_wrapper->field_muac->set(11);
+    $muac_wrapper->field_muac->set($muac_value);
     $muac_wrapper->field_shards->set([$this->healthCenterId]);
     $muac_wrapper->save();
 
@@ -470,7 +472,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $weight_wrapper->field_nurse->set($nurse_uid);
     $weight_wrapper->field_nutrition_encounter->set($encounter->nid);
     $weight_wrapper->field_weight->set(9);
-    $weight_wrapper->field_zscore_length->set(-1.5);
+    $weight_wrapper->field_zscore_length->set($zscore_value);
     $weight_wrapper->field_shards->set([$this->healthCenterId]);
     $weight_wrapper->save();
 
@@ -478,7 +480,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
       'type' => 'nutrition_nutrition',
       'field_nutrition_signs' => [
         LANGUAGE_NONE => [
-          ['value' => 'edema'],
+          ['value' => $nutrition_sign],
         ],
       ],
     ]);
