@@ -204,8 +204,8 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
         // Create measurements.
         $this->createWeight($session_nid, $child_nid, $measurements[$measurements_state]['weight'], $session['date']);
         $this->createHeight($session_nid, $child_nid, $measurements[$measurements_state]['height'], $session['date']);
-        $this->createMuac($session_nid, $child_nid, $measurements[$measurements_state]['muac'], $session['date']);;
-        $this->createNutrition($session_nid, $child_nid, $measurements[$measurements_state]['nutrition'], $session['date']);;
+        $this->createMuac($session_nid, $child_nid, $measurements[$measurements_state]['muac'], $session['date']);
+        $this->createNutrition($session_nid, $child_nid, $measurements[$measurements_state]['nutrition'], $session['date']);
       }
     }
 
@@ -427,7 +427,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    * @param float $muac_value
    *   MUAC value to record.
    * @param float $zscore_value
-   *   Z-score (wasting) value to record.
+   *   Length/height Z-score (wasting) value to record.
    * @param string $nutrition_sign
    *   Nutrition sign value to record.
    * @param float $weight_value
