@@ -183,7 +183,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     // Add an individual Nutrition encounter with measurements to assert
     // individual coverage.
     $timestamp = strtotime('-1 week');
-    list($participant_id, $nutrition_encounter_id) = $this->createIndividualNutritionEncounterData($timestamp);
+    [$participant_id, $nutrition_encounter_id] = $this->createIndividualNutritionEncounterData($timestamp);
 
     foreach ($sessions as $session) {
       if (!isset($session['session_data'])) {
