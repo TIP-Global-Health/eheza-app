@@ -186,7 +186,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $muac_value = 11;
     $zscore_value = -1.5;
     $weight_value = 9;
-    [$participant_id, $nutrition_encounter_id] = $this->createIndividualNutritionEncounterData($timestamp, $muac_value, $zscore_value, 'edema', $weight_value);
+    [$participant_id, $nutrition_encounter_id, $child_id] = $this->createIndividualNutritionEncounterData($timestamp, $muac_value, $zscore_value, 'edema', $weight_value);
 
     foreach ($sessions as $session) {
       if (!isset($session['session_data'])) {
@@ -247,14 +247,25 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $this->assertFalse(empty($stats['good_nutrition']));
     $this->assertFalse(empty($stats['total_encounters']));
     $nutrition_individual_data = $stats['nutrition_individual_data'];
-    $this->assertTrue(isset($nutrition_individual_data[$participant_id]));
-    $encounters = $nutrition_individual_data[$participant_id]['encounters'];
-    $this->assertTrue(isset($encounters[$nutrition_encounter_id]));
-    $encounter = $encounters[$nutrition_encounter_id];
-    $this->assertEqual($encounter['encounter_type'], 'nurse');
-    $this->assertEqual($encounter['muac'], $muac_value);
-    $this->assertEqual($encounter['zscore_wasting'], $zscore_value);
-    $this->assertTrue(in_array('edema', $encounter['nutrition_signs']));
+    $participant_entry = NULL;
+    foreach ($nutrition_individual_data as $participant) {
+      if (!empty($participant['id']) && $participant['id'] == $child_id) {
+        $participant_entry = $participant;
+        break;
+      }
+    }
+    $this->assertTrue(!empty($participant_entry));
+    $encounter_entry = NULL;
+    foreach ($participant_entry['encounters'] as $encounter) {
+      if (!empty($encounter['encounter_type']) && $encounter['encounter_type'] == 'nurse' &&
+        !empty($encounter['muac']) && $encounter['muac'] == $muac_value &&
+        !empty($encounter['zscore_wasting']) && $encounter['zscore_wasting'] == $zscore_value &&
+        !empty($encounter['nutrition_signs']) && in_array('edema', $encounter['nutrition_signs'])) {
+        $encounter_entry = $encounter;
+        break;
+      }
+    }
+    $this->assertTrue(!empty($encounter_entry));
 
     // Call again with cache hash to make sure we don't get the results this
     // time.
@@ -434,7 +445,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    *   Weight value to record.
    *
    * @return array
-   *   Participant ID and encounter ID.
+   *   Participant ID, encounter ID and child ID.
    */
   protected function createIndividualNutritionEncounterData($timestamp, $muac_value = 11, $zscore_value = -1.5, $nutrition_sign = 'edema', $weight_value = 9) {
     $mother_id = $this->createMother($this->clinicId);
@@ -501,7 +512,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $nutrition_wrapper->field_shards->set([$this->healthCenterId]);
     $nutrition_wrapper->save();
 
-    return [$participant->nid, $encounter->nid];
+    return [$participant->nid, $encounter->nid, $child_id];
   }
 
 }
