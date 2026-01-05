@@ -48,7 +48,12 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    * @inheritdoc
    */
   public function setUp() {
-    parent::setUp(['hedley_device']);
+    parent::setUp([
+      'hedley_device',
+      'hedley_schedule',
+      'hedley_activity',
+      'hedley_nutrition',
+    ]);
 
     // Create the base data for the test.
     $this->healthCenterId = $this->createHealthCenter();
