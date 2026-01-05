@@ -186,7 +186,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $muac_value = 11;
     $zscore_value = -1.5;
     $weight_value = 9;
-    [$participant_id, $nutrition_encounter_id, $child_id] = $this->createIndividualNutritionEncounterData($timestamp, $muac_value, $zscore_value, 'edema', $weight_value);
+    [, , $child_id] = $this->createIndividualNutritionEncounterData($timestamp, $muac_value, $zscore_value, 'edema', $weight_value);
 
     foreach ($sessions as $session) {
       if (!isset($session['session_data'])) {
