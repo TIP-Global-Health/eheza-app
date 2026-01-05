@@ -50,6 +50,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
   public function setUp() {
     parent::setUp([
       'hedley_device',
+      'hedley_person',
       'hedley_schedule',
       'hedley_activity',
       'hedley_nutrition',
