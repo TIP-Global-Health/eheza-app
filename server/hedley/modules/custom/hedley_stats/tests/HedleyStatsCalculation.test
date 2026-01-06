@@ -458,66 +458,173 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $mother_id = $this->createMother($this->clinicId);
     $child_id = $this->createChild($mother_id, $this->healthCenterId, $timestamp, $timestamp);
 
-    $participant = $this->drupalCreateNode(['type' => 'individual_participant']);
-    $participant_wrapper = entity_metadata_wrapper('node', $participant);
-    $participant_wrapper->field_person->set($child_id);
-    $participant_wrapper->field_encounter_type->set('nutrition');
-    $participant_wrapper->field_expected->set([
-      'value' => date('Y-m-d', $timestamp),
-      'value2' => date('Y-m-d', $timestamp),
-    ]);
-    $participant_wrapper->field_shards->set([$this->healthCenterId]);
-    $participant_wrapper->save();
+    $participant = (object) [
+      'type' => 'individual_participant',
+      'field_person' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $child_id],
+        ],
+      ],
+      'field_encounter_type' => [
+        LANGUAGE_NONE => [
+          ['value' => 'nutrition'],
+        ],
+      ],
+      'field_expected' => [
+        LANGUAGE_NONE => [
+          [
+            'value' => date('Y-m-d', $timestamp),
+            'value2' => date('Y-m-d', $timestamp),
+          ],
+        ],
+      ],
+      'field_shards' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $this->healthCenterId],
+        ],
+      ],
+    ];
+    node_save($participant);
 
-    $encounter = $this->drupalCreateNode(['type' => 'nutrition_encounter']);
-    $encounter_wrapper = entity_metadata_wrapper('node', $encounter);
-    $encounter_wrapper->field_individual_participant->set($participant->nid);
-    $encounter_wrapper->field_nutrition_encounter_type->set('nurse');
-    $encounter_wrapper->field_scheduled_date->set([
-      'value' => date('Y-m-d', $timestamp),
-      'value2' => date('Y-m-d', $timestamp),
-    ]);
-    $encounter_wrapper->field_shards->set([$this->healthCenterId]);
-    $encounter_wrapper->save();
+    $encounter = (object) [
+      'type' => 'nutrition_encounter',
+      'field_individual_participant' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $participant->nid],
+        ],
+      ],
+      'field_nutrition_encounter_type' => [
+        LANGUAGE_NONE => [
+          ['value' => 'nurse'],
+        ],
+      ],
+      'field_scheduled_date' => [
+        LANGUAGE_NONE => [
+          [
+            'value' => date('Y-m-d', $timestamp),
+            'value2' => date('Y-m-d', $timestamp),
+          ],
+        ],
+      ],
+      'field_shards' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $this->healthCenterId],
+        ],
+      ],
+    ];
+    node_save($encounter);
 
     $nurse_uid = !empty($this->nurse) ? $this->nurse->uid : $this->createNurse($this->clinicId)->uid;
 
-    $muac = $this->drupalCreateNode(['type' => 'nutrition_muac']);
-    $muac_wrapper = entity_metadata_wrapper('node', $muac);
-    $muac_wrapper->field_person->set($child_id);
-    $muac_wrapper->field_date_measured->set($timestamp);
-    $muac_wrapper->field_nurse->set($nurse_uid);
-    $muac_wrapper->field_nutrition_encounter->set($encounter->nid);
-    $muac_wrapper->field_muac->set($muac_value);
-    $muac_wrapper->field_shards->set([$this->healthCenterId]);
-    $muac_wrapper->save();
+    $muac = (object) [
+      'type' => 'nutrition_muac',
+      'field_person' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $child_id],
+        ],
+      ],
+      'field_date_measured' => [
+        LANGUAGE_NONE => [
+          ['value' => date('Y-m-d', $timestamp)],
+        ],
+      ],
+      'field_nurse' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $nurse_uid],
+        ],
+      ],
+      'field_nutrition_encounter' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $encounter->nid],
+        ],
+      ],
+      'field_muac' => [
+        LANGUAGE_NONE => [
+          ['value' => $muac_value],
+        ],
+      ],
+      'field_shards' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $this->healthCenterId],
+        ],
+      ],
+    ];
+    node_save($muac);
 
-    $weight = $this->drupalCreateNode(['type' => 'nutrition_weight']);
-    $weight_wrapper = entity_metadata_wrapper('node', $weight);
-    $weight_wrapper->field_person->set($child_id);
-    $weight_wrapper->field_date_measured->set($timestamp);
-    $weight_wrapper->field_nurse->set($nurse_uid);
-    $weight_wrapper->field_nutrition_encounter->set($encounter->nid);
-    $weight_wrapper->field_weight->set($weight_value);
-    $weight_wrapper->field_zscore_length->set($zscore_value);
-    $weight_wrapper->field_shards->set([$this->healthCenterId]);
-    $weight_wrapper->save();
+    $weight = (object) [
+      'type' => 'nutrition_weight',
+      'field_person' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $child_id],
+        ],
+      ],
+      'field_date_measured' => [
+        LANGUAGE_NONE => [
+          ['value' => date('Y-m-d', $timestamp)],
+        ],
+      ],
+      'field_nurse' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $nurse_uid],
+        ],
+      ],
+      'field_nutrition_encounter' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $encounter->nid],
+        ],
+      ],
+      'field_weight' => [
+        LANGUAGE_NONE => [
+          ['value' => $weight_value],
+        ],
+      ],
+      'field_zscore_length' => [
+        LANGUAGE_NONE => [
+          ['value' => $zscore_value],
+        ],
+      ],
+      'field_shards' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $this->healthCenterId],
+        ],
+      ],
+    ];
+    node_save($weight);
 
-    $nutrition = $this->drupalCreateNode([
+    $nutrition = (object) [
       'type' => 'nutrition_nutrition',
       'field_nutrition_signs' => [
         LANGUAGE_NONE => [
           ['value' => $nutrition_sign],
         ],
       ],
-    ]);
-    $nutrition_wrapper = entity_metadata_wrapper('node', $nutrition);
-    $nutrition_wrapper->field_person->set($child_id);
-    $nutrition_wrapper->field_date_measured->set($timestamp);
-    $nutrition_wrapper->field_nurse->set($nurse_uid);
-    $nutrition_wrapper->field_nutrition_encounter->set($encounter->nid);
-    $nutrition_wrapper->field_shards->set([$this->healthCenterId]);
-    $nutrition_wrapper->save();
+      'field_person' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $child_id],
+        ],
+      ],
+      'field_date_measured' => [
+        LANGUAGE_NONE => [
+          ['value' => date('Y-m-d', $timestamp)],
+        ],
+      ],
+      'field_nurse' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $nurse_uid],
+        ],
+      ],
+      'field_nutrition_encounter' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $encounter->nid],
+        ],
+      ],
+      'field_shards' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $this->healthCenterId],
+        ],
+      ],
+    ];
+    node_save($nutrition);
 
     return [$participant->nid, $encounter->nid, $child_id];
   }

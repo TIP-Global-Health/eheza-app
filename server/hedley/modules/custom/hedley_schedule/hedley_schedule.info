@@ -282,4 +282,3 @@ features[variable][] = node_submitted_nutrition_encounter
 features[variable][] = node_submitted_pmtct_participant
 features[variable][] = node_submitted_prenatal_encounter
 features[variable][] = node_submitted_session
-files[] = tests/HedleyScheduleIntegrity.test

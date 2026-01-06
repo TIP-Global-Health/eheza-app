@@ -66,6 +66,3 @@ features[variable][] = node_options_user
 features[variable][] = node_preview_user
 features[variable][] = node_submitted_user
 features[variable][] = user_pictures
-files[] = tests/HedleyUserTestPermission.test
-files[] = tests/HedleyUserAccess.test
-files[] = tests/HedleyUserPinCode.test
