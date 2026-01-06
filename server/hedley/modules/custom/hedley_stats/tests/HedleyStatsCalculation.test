@@ -51,6 +51,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     parent::setUp([
       'hedley_device',
       'hedley_person',
+      'hedley_patient',
       'hedley_schedule',
       'hedley_activity',
       'hedley_nutrition',
