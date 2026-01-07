@@ -12,6 +12,6 @@ $plugin = array(
   'entity_type' => 'node',
   'bundle' => 'healthy_start_encounter',
   'description' => t('Exports the Healthy Start Encounter bundle.'),
-  'class' => 'HedleyRestfulIndividualEncounter',
+  'class' => 'HedleyRestfulHealthyStartEncounter',
   'authentication_types' => TRUE,
 );
