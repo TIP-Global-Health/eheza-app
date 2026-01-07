@@ -68,6 +68,7 @@ type IndividualEncounterType
     = AcuteIllnessEncounter
     | AntenatalEncounter
     | ChildScoreboardEncounter
+    | HealthyStartEncounter
     | HIVEncounter
     | HomeVisitEncounter
     | NCDEncounter
