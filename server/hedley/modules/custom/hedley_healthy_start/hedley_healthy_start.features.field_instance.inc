@@ -296,7 +296,7 @@ function hedley_healthy_start_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_healthy_start_diagnoses',
+    'field_name' => 'field_past_healthy_start_diagnoses',
     'label' => 'Past Healthy Start Diagnoses',
     'required' => 0,
     'settings' => array(

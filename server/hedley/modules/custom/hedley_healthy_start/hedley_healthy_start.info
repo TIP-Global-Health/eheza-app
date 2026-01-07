@@ -18,6 +18,7 @@ features[features_api][] = api:2
 features[field_base][] = field_healthy_start_diagnoses
 features[field_base][] = field_healthy_start_encounter_type
 features[field_base][] = field_healthy_start_indicators
+features[field_base][] = field_past_healthy_start_diagnoses
 features[field_instance][] = node-healthy_start_encounter-field_healthy_start_diagnoses
 features[field_instance][] = node-healthy_start_encounter-field_healthy_start_encounter_type
 features[field_instance][] = node-healthy_start_encounter-field_healthy_start_indicators
