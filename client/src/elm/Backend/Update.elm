@@ -4280,6 +4280,9 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                                     AntenatalEncounter ->
                                                         PrenatalParticipantPage InitiatorParticipantsPage personId
 
+                                                    AntenatalHealthyStartEncounter ->
+                                                        PrenatalParticipantPage InitiatorParticipantsPage personId
+
                                                     ChildScoreboardEncounter ->
                                                         ChildScoreboardParticipantPage personId
 
@@ -4507,6 +4510,17 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                 AntenatalEncounter ->
                                     case extraData of
                                         AntenatalData prenatalEncounterType ->
+                                            [ emptyPrenatalEncounter sessionId currentDate prenatalEncounterType healthCenterId
+                                                |> Backend.Model.PostPrenatalEncounter DestinationEncounterPage
+                                                |> App.Model.MsgIndexedDb
+                                            ]
+
+                                        _ ->
+                                            []
+
+                                AntenatalHealthyStartEncounter ->
+                                    case extraData of
+                                        AntenatalHealthyStartData prenatalEncounterType ->
                                             [ emptyPrenatalEncounter sessionId currentDate prenatalEncounterType healthCenterId
                                                 |> Backend.Model.PostPrenatalEncounter DestinationEncounterPage
                                                 |> App.Model.MsgIndexedDb

@@ -7873,12 +7873,7 @@ translationSet trans =
                     { english = "Antenatal Encounter"
                     , kinyarwanda = Just "Isuzuma k’umugore utwite"
                     , kirundi = Just "Umubonano imbere yo kuvyara"
-                }
-
-                AntenatalHealthyStartEncounter ->
-                    { english = "Healthy Start Antenatal Encounter"
-                    , kinyarwanda = Just "Isuzuma k'umugore utwite – Healthy Start"
-                    , kirundi = Just "Umubonano imbere yo kuvyara – Healthy Start"
+                    }
 
                 ChildScoreboardEncounter ->
                     { english = "Child Scorecard Encounter"
@@ -7949,11 +7944,6 @@ translationSet trans =
                     , kirundi = Just "Hitamo isura ry'umukenyezi wibungenze"
                     }
 
-                AntenatalHealthyStartEncounter ->
-                    { english = "Select Healthy Start Antenatal Visit"
-                    , kinyarwanda = Just "Hitamo isuzuma k'umugore utwite – Healthy Start"
-                    , kirundi = Just "Hitamo isura ry'umukenyezi wibungenze – Healthy Start"
-
                 ChildScoreboardEncounter ->
                     { english = "Select Child Scorecard Visit"
                     , kinyarwanda = Just "Hitamo isuzuma ku ifishi y'imikurire y'umwana"
@@ -8016,12 +8006,7 @@ translationSet trans =
                     , kinyarwanda = Just "Ibikorwa bikurikiyeho kuri ubwo burwayi butunguraye"
                     , kirundi = Just "Umubonano ukurikira kuvyerekeye isuzumwa ku ngwara ikaze"
                     }
-                    }
 
-                AntenatalHealthyStartEncounter ->
-                    { english = "Subsequent Healthy Start Antenatal Encounter"
-                    , kinyarwanda = Just "Isuzuma rikurikiyeho ku mugore utwite – Healthy Start"
-                    , kirundi = Just "Umubonano ukurikira kuvyerekeye isura ry'umukenyezi wibungenze – Healthy Start"
                 AntenatalEncounter ->
                     { english = "Subsequent Antenatal Encounter"
                     , kinyarwanda = Just "Isuzuma rikurikiyeho ku mugore utwite"
@@ -25484,11 +25469,6 @@ translateActivePage page =
                             , kinyarwanda = Nothing
                             , kirundi = Nothing
                             }
-
-                        AntenatalHealthyStartEncounter ->
-                            { english = "Healthy Start Antenatal Participants"
-                            , kinyarwanda = Nothing
-                            , kirundi = Nothing
 
                         ChildScoreboardEncounter ->
                             { english = "Child Scorecard Participants"

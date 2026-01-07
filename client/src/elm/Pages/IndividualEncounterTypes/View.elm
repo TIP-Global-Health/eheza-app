@@ -78,6 +78,7 @@ viewContent language currentDate features healthCenterId isChw model =
                 in
                 [ encounterButton AcuteIllnessEncounter
                 , encounterButton AntenatalEncounter
+                , encounterButton AntenatalHealthyStartEncounter
                 , encounterButton NutritionEncounter
                 , encounterButton WellChildEncounter
                 , childScoreboardButton
@@ -88,6 +89,7 @@ viewContent language currentDate features healthCenterId isChw model =
             else
                 [ encounterButton AcuteIllnessEncounter
                 , encounterButton AntenatalEncounter
+                , encounterButton AntenatalHealthyStartEncounter
                 , encounterButton NutritionEncounter
                 , encounterButton NCDEncounter
                 , encounterButton WellChildEncounter

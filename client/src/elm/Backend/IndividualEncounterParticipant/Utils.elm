@@ -16,6 +16,9 @@ individualEncounterTypeToString encounterType =
         AntenatalEncounter ->
             "antenatal"
 
+        AntenatalHealthyStartEncounter ->
+            "antenatal-healthy-start"
+
         ChildScoreboardEncounter ->
             "child-scoreboard"
 
@@ -49,6 +52,9 @@ individualEncounterTypeFromString string =
 
         "antenatal" ->
             Just AntenatalEncounter
+
+        "antenatal-healthy-start" ->
+            Just AntenatalHealthyStartEncounter
 
         "child-scoreboard" ->
             Just ChildScoreboardEncounter

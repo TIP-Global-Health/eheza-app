@@ -594,6 +594,15 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             , title = Translate.People
                             }
 
+                        AntenatalHealthyStartEncounter ->
+                            { goBackPage = UserPage (IndividualEncounterParticipantsPage AntenatalHealthyStartEncounter)
+                            , expectedAge = ExpectAdult
+                            , expectedGender = ExpectFemale
+                            , birthDateSelectorFrom = Date.add Years -50 today
+                            , birthDateSelectorTo = Date.add Years -13 today
+                            , title = Translate.People
+                            }
+
                         ChildScoreboardEncounter ->
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage ChildScoreboardEncounter)
                             , expectedAge = ExpectChild
