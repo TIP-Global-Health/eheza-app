@@ -8,6 +8,7 @@ import Backend.Dashboard.Decoder exposing (decodeDashboardStatsRaw)
 import Backend.EducationSession.Decoder exposing (decodeEducationSession)
 import Backend.HIVEncounter.Decoder exposing (decodeHIVEncounter)
 import Backend.HealthCenter.Decoder exposing (decodeCatchmentArea, decodeHealthCenter)
+import Backend.HealthyStartEncounter.Decoder exposing (decodeHealthyStartEncounter)
 import Backend.HomeVisitEncounter.Decoder exposing (decodeHomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Decoder exposing (decodeIndividualEncounterParticipant)
 import Backend.Measurement.Decoder exposing (..)
@@ -175,6 +176,9 @@ decodeRevision =
 
                     "height" ->
                         decodeWithUuid HeightRevision decodeHeight
+
+                    "healthy_start_encounter" ->
+                        decodeWithUuid HealthyStartEncounterRevision decodeHealthyStartEncounter
 
                     "hiv_diagnostics" ->
                         decodeWithUuid HIVDiagnosticsRevision decodeHIVDiagnostics
