@@ -40,6 +40,7 @@ type PrenatalEncounterType
     | ChwSecondEncounter
     | ChwThirdPlusEncounter
     | ChwPostpartumEncounter
+    | HealthyStartEncounter
 
 
 type RecordPreganancyInitiator

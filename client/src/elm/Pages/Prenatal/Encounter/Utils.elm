@@ -79,6 +79,22 @@ getAllActivities assembled =
         ChwPostpartumEncounter ->
             [ PregnancyOutcome, DangerSigns, NextSteps ]
 
+        HealthyStartEncounter ->
+            [ PregnancyDating
+            , History
+            , Examination
+            , FamilyPlanning
+            , Medication
+            , Backend.PrenatalActivity.Model.MalariaPrevention
+            , DangerSigns
+            , SymptomReview
+            , PrenatalImmunisation
+            , Laboratory
+            , MaternalMentalHealth
+            , PrenatalPhoto
+            , NextSteps
+            ]
+
 
 getSubsequentEncounterType : PrenatalEncounterType -> Maybe PrenatalEncounterType
 getSubsequentEncounterType currentEncounterType =
@@ -99,6 +115,9 @@ getSubsequentEncounterType currentEncounterType =
             Just ChwThirdPlusEncounter
 
         ChwPostpartumEncounter ->
+            Nothing
+
+        HealthyStartEncounter ->
             Nothing
 
 
@@ -135,6 +154,9 @@ generatePostCreateDestination encounterType hasNurseEncounter =
 
         -- We should never get here.
         NursePostpartumEncounter ->
+            DestinationEncounterPage
+
+        HealthyStartEncounter ->
             DestinationEncounterPage
 
 

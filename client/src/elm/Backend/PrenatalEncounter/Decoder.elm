@@ -60,6 +60,9 @@ decodePrenatalEncounterType =
                     "chw-postpartum" ->
                         succeed ChwPostpartumEncounter
 
+                    "healthy-start" ->
+                        succeed HealthyStartEncounter
+
                     _ ->
                         fail <|
                             encounterType

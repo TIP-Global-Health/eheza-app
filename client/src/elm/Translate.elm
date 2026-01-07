@@ -2093,6 +2093,12 @@ type TranslationId
     | WasFbfDistirbuted Activity
     | WeekSinglePlural Int
     | Weight
+    | WeightGain
+    | GestationalWeightGain
+    | AdequateWeightGain
+    | NotAdequateWeightGain
+    | ExpectedWeightGain
+    | ActualWeightGain
     | WeightLossLabel
     | WeightLossQuestion
     | WelcomeUser String
@@ -15912,6 +15918,12 @@ translationSet trans =
                     , kirundi = Just "Inyuma yo kwibaruka"
                     }
 
+                HealthyStartEncounter ->
+                    { english = "Healthy Start Antenatal Visit"
+                    , kinyarwanda = Just "Gusura umugore utwite - Gutangira Ubuzima Bwiza"
+                    , kirundi = Just "Ukugenderwa umukenyezi wibungenze - Imigendeko myiza y'ubuzima"
+                    }
+
         PrenatalFlankPainSign sign ->
             case sign of
                 FlankPainLeftSide ->
@@ -24458,6 +24470,42 @@ translationSet trans =
             { english = "Weight"
             , kinyarwanda = Just "Ibiro"
             , kirundi = Just "Uburemere"
+            }
+
+        WeightGain ->
+            { english = "Weight Gain"
+            , kinyarwanda = Just "Kwiyongera ibiro"
+            , kirundi = Just "Kwiyongera uburemere"
+            }
+
+        GestationalWeightGain ->
+            { english = "Gestational Weight Gain (GWG)"
+            , kinyarwanda = Just "Kwiyongera ibiro mu gihe cyo gutwita"
+            , kirundi = Just "Kwiyongera uburemere ku kugira inda"
+            }
+
+        AdequateWeightGain ->
+            { english = "Adequate Weight Gain"
+            , kinyarwanda = Just "Kwiyongera ibiro bihagije"
+            , kirundi = Just "Kwiyongera uburemere buhagije"
+            }
+
+        NotAdequateWeightGain ->
+            { english = "Not Adequate Weight Gain"
+            , kinyarwanda = Just "Kwiyongera ibiro bitahagije"
+            , kirundi = Just "Kwiyongera uburemere butahagije"
+            }
+
+        ExpectedWeightGain ->
+            { english = "Expected Weight Gain"
+            , kinyarwanda = Just "Kwiyongera ibiro byitezwe"
+            , kirundi = Just "Kwiyongera uburemere buteganijwe"
+            }
+
+        ActualWeightGain ->
+            { english = "Actual Weight Gain"
+            , kinyarwanda = Just "Kwiyongera ibiro nyakuri"
+            , kirundi = Just "Kwiyongera uburemere nyakuri"
             }
 
         WeightLossLabel ->

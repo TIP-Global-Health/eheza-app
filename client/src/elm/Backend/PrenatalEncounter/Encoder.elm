@@ -68,6 +68,9 @@ encodePrenatalEncounterType encounterType =
             ChwPostpartumEncounter ->
                 "chw-postpartum"
 
+            HealthyStartEncounter ->
+                "healthy-start"
+
 
 encodePrenatalDiagnosis : PrenatalDiagnosis -> Value
 encodePrenatalDiagnosis diagnosis =
