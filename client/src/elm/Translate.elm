@@ -5781,10 +5781,10 @@ translationSet trans =
                     , kirundi = Just "Ni ubuhe bwoko bwo guhura mu gihe c'imbanyi ipfuza gutangura"
                     }
 
-                AntenatalHealthyStartEncounter ->
-                    { english = "What type of Healthy Start Antenatal encounter would you like to start for"
-                    , kinyarwanda = Just "Ni irihe suzuma ku mugore utwite (Healthy Start) ushaka gutangira kuri"
-                    , kirundi = Just "Ni ubuhe bwoko bwo guhura mu gihe c'imbanyi (Healthy Start) ipfuza gutangura"
+                HealthyStartEncounter ->
+                    { english = "What type of Healthy Start encounter would you like to start for"
+                    , kinyarwanda = Just "Ni irihe suzuma Healthy Start ushaka gutangira kuri"
+                    , kirundi = Just "Ni ubuhe bwoko bwo guhura Healthy Start ipfuza gutangura"
                     }
 
                 ChildScoreboardEncounter ->
@@ -7807,10 +7807,10 @@ translationSet trans =
                     , kirundi = Just "Ukubonana ubwa mbere mu gihe c'imbanyi/imbere yo kuvyara"
                     }
 
-                AntenatalHealthyStartEncounter ->
-                    { english = "First Healthy Start Antenatal Encounter"
-                    , kinyarwanda = Just "Isuzuma rya mbere ku mugore utwite – Healthy Start"
-                    , kirundi = Just "Ukubonana ubwa mbere mu gihe c'imbanyi – Healthy Start"
+                HealthyStartEncounter ->
+                    { english = "First Healthy Start Encounter"
+                    , kinyarwanda = Just "Isuzuma rya mbere – Healthy Start"
+                    , kirundi = Just "Ukubonana ubwa mbere – Healthy Start"
                     }
 
                 ChildScoreboardEncounter ->
@@ -7875,10 +7875,10 @@ translationSet trans =
                     , kirundi = Just "Umubonano imbere yo kuvyara"
                 }
 
-                AntenatalHealthyStartEncounter ->
-                    { english = "Healthy Start Antenatal Encounter"
-                    , kinyarwanda = Just "Isuzuma k'umugore utwite – Healthy Start"
-                    , kirundi = Just "Umubonano imbere yo kuvyara – Healthy Start"
+                HealthyStartEncounter ->
+                    { english = "Healthy Start Encounter"
+                    , kinyarwanda = Just "Isuzuma – Healthy Start"
+                    , kirundi = Just "Umubonano – Healthy Start"
 
                 ChildScoreboardEncounter ->
                     { english = "Child Scorecard Encounter"
@@ -7949,10 +7949,10 @@ translationSet trans =
                     , kirundi = Just "Hitamo isura ry'umukenyezi wibungenze"
                     }
 
-                AntenatalHealthyStartEncounter ->
-                    { english = "Select Healthy Start Antenatal Visit"
-                    , kinyarwanda = Just "Hitamo isuzuma k'umugore utwite – Healthy Start"
-                    , kirundi = Just "Hitamo isura ry'umukenyezi wibungenze – Healthy Start"
+                HealthyStartEncounter ->
+                    { english = "Select Healthy Start Visit"
+                    , kinyarwanda = Just "Hitamo isuzuma – Healthy Start"
+                    , kirundi = Just "Hitamo isura – Healthy Start"
 
                 ChildScoreboardEncounter ->
                     { english = "Select Child Scorecard Visit"
@@ -8018,10 +8018,12 @@ translationSet trans =
                     }
                     }
 
-                AntenatalHealthyStartEncounter ->
-                    { english = "Subsequent Healthy Start Antenatal Encounter"
-                    , kinyarwanda = Just "Isuzuma rikurikiyeho ku mugore utwite – Healthy Start"
-                    , kirundi = Just "Umubonano ukurikira kuvyerekeye isura ry'umukenyezi wibungenze – Healthy Start"
+                HealthyStartEncounter ->
+                    { english = "Subsequent Healthy Start Encounter"
+                    , kinyarwanda = Just "Isuzuma rikurikiyeho – Healthy Start"
+                    , kirundi = Just "Umubonano ukurikira – Healthy Start"
+                    }
+
                 AntenatalEncounter ->
                     { english = "Subsequent Antenatal Encounter"
                     , kinyarwanda = Just "Isuzuma rikurikiyeho ku mugore utwite"
@@ -8084,10 +8086,10 @@ translationSet trans =
                 AntenatalEncounter ->
                     translationSet AntenatalCare
 
-                AntenatalHealthyStartEncounter ->
-                    { english = "Healthy Start Antenatal Care"
-                    , kinyarwanda = Just "Kwita ku migore itwite – Healthy Start"
-                    , kirundi = Just "Gukurikira abagore babungenze – Healthy Start"
+                HealthyStartEncounter ->
+                    { english = "Healthy Start"
+                    , kinyarwanda = Just "Healthy Start"
+                    , kirundi = Just "Healthy Start"
                     }
 
                 ChildScoreboardEncounter ->
@@ -25485,10 +25487,11 @@ translateActivePage page =
                             , kirundi = Nothing
                             }
 
-                        AntenatalHealthyStartEncounter ->
-                            { english = "Healthy Start Antenatal Participants"
+                        HealthyStartEncounter ->
+                            { english = "Healthy Start Participants"
                             , kinyarwanda = Nothing
                             , kirundi = Nothing
+                            }
 
                         ChildScoreboardEncounter ->
                             { english = "Child Scorecard Participants"

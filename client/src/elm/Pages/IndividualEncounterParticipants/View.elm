@@ -90,7 +90,7 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
                 AntenatalEncounter ->
                     isPersonAFertileWoman currentDate person
 
-                AntenatalHealthyStartEncounter ->
+                HealthyStartEncounter ->
                     isPersonAFertileWoman currentDate person
 
                 ChildScoreboardEncounter ->
@@ -220,7 +220,7 @@ viewParticipant language currentDate encounterType db id person =
                 AntenatalEncounter ->
                     [ onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage InitiatorParticipantsPage id ]
 
-                AntenatalHealthyStartEncounter ->
+                HealthyStartEncounter ->
                     [ onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage InitiatorParticipantsPage id ]
 
                 ChildScoreboardEncounter ->

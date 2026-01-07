@@ -132,7 +132,7 @@ viewStartEncounterPage language currentDate isChw personId person patientType in
                     [ encounterButton AcuteIllnessEncounter AcuteIllnessParticipantPage
                     , encounterButton AntenatalEncounter PrenatalParticipantPage
                         |> showIf (person.gender == Female)
-                    , encounterButton AntenatalHealthyStartEncounter PrenatalParticipantPage
+                    , encounterButton HealthyStartEncounter PrenatalParticipantPage
                         |> showIf (person.gender == Female)
                     ]
 

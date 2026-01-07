@@ -33,7 +33,7 @@ emptyIndividualEncounterParticipant currentDate personId type_ healthCenterId =
 type IndividualParticipantExtraData
     = AcuteIllnessData AcuteIllnessEncounterType
     | AntenatalData PrenatalEncounterType
-    | AntenatalHealthyStartData PrenatalEncounterType
+    | HealthyStartData PrenatalEncounterType
     | WellChildData WellChildEncounterType
     | NutritionData NutritionEncounterType
     | NoIndividualParticipantExtraData
@@ -68,7 +68,7 @@ emptyModel =
 type IndividualEncounterType
     = AcuteIllnessEncounter
     | AntenatalEncounter
-    | AntenatalHealthyStartEncounter
+    | HealthyStartEncounter
     | ChildScoreboardEncounter
     | HIVEncounter
     | HomeVisitEncounter
