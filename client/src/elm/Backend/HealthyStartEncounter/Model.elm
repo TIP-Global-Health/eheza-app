@@ -1,7 +1,9 @@
 module Backend.HealthyStartEncounter.Model exposing (..)
 
 import Backend.Entities exposing (..)
-import Backend.HealthyStartEncounter.Types exposing (HealthyStartDiagnosis(..), HealthyStartEncounterType(..))
+import Backend.HealthyStartEncounter.Types exposing (HealthyStartEncounterType(..))
+import Backend.PrenatalEncounter.Model exposing (PrenatalIndicator)
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -12,9 +14,9 @@ type alias HealthyStartEncounter =
     , startDate : NominalDate
     , endDate : Maybe NominalDate
     , encounterType : HealthyStartEncounterType
-    , diagnoses : EverySet HealthyStartDiagnosis
-    , pastDiagnoses : EverySet HealthyStartDiagnosis
-    , indicators : EverySet HealthyStartIndicator
+    , diagnoses : EverySet PrenatalDiagnosis
+    , pastDiagnoses : EverySet PrenatalDiagnosis
+    , indicators : EverySet PrenatalIndicator
     , nextVisitDate : Maybe NominalDate
     , shard : Maybe HealthCenterId
     }
@@ -32,10 +34,6 @@ emptyHealthyStartEncounter participant startDate encounterType shard =
     , nextVisitDate = Nothing
     , shard = shard
     }
-
-
-type HealthyStartIndicator
-    = NoHealthyStartIndicators
 
 
 {-| This is a subdivision of ModelIndexedDb that tracks requests in-progress

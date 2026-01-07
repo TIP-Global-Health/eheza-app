@@ -1,7 +1,10 @@
 module Backend.HealthyStartEncounter.Encoder exposing (encodeHealthyStartEncounter)
 
 import Backend.HealthyStartEncounter.Model exposing (..)
-import Backend.HealthyStartEncounter.Types exposing (HealthyStartDiagnosis(..), HealthyStartEncounterType(..))
+import Backend.HealthyStartEncounter.Types exposing (HealthyStartEncounterType(..))
+import Backend.PrenatalEncounter.Encoder exposing (encodePrenatalDiagnosis)
+import Backend.PrenatalEncounter.Model exposing (PrenatalIndicator(..))
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import EverySet
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
@@ -17,14 +20,14 @@ encodeHealthyStartEncounter encounter =
     let
         diagnosesWithDefault diagnoses =
             if EverySet.isEmpty diagnoses then
-                List.singleton NoHealthyStartDiagnosis
+                List.singleton NoPrenatalDiagnosis
 
             else
                 EverySet.toList diagnoses
 
         healthyStartIndicators =
             if not <| EverySet.isEmpty encounter.indicators then
-                [ ( "healthy_start_indicators", encodeEverySet encodeHealthyStartIndicator encounter.indicators ) ]
+                [ ( "healthy_start_indicators", encodeEverySet encodePrenatalIndicatorLocal encounter.indicators ) ]
 
             else
                 []
@@ -37,8 +40,8 @@ encodeHealthyStartEncounter encounter =
       )
     , ( "individual_participant", encodeEntityUuid encounter.participant )
     , ( "healthy_start_encounter_type", encodeHealthyStartEncounterType encounter.encounterType )
-    , ( "healthy_start_diagnoses", list encodeHealthyStartDiagnosis (diagnosesWithDefault encounter.diagnoses) )
-    , ( "past_healthy_start_diagnoses", list encodeHealthyStartDiagnosis (diagnosesWithDefault encounter.pastDiagnoses) )
+    , ( "healthy_start_diagnoses", list encodePrenatalDiagnosis (diagnosesWithDefault encounter.diagnoses) )
+    , ( "past_healthy_start_diagnoses", list encodePrenatalDiagnosis (diagnosesWithDefault encounter.pastDiagnoses) )
     , ( "next_visit_date", maybe encodeYYYYMMDD encounter.nextVisitDate )
     , ( "deleted", bool False )
     , ( "type", string "healthy_start_encounter" )
@@ -58,17 +61,12 @@ encodeHealthyStartEncounterType encounterType =
                 "chw"
 
 
-encodeHealthyStartDiagnosis : HealthyStartDiagnosis -> Value
-encodeHealthyStartDiagnosis diagnosis =
-    string <|
-        case diagnosis of
-            NoHealthyStartDiagnosis ->
-                "none"
-
-
-encodeHealthyStartIndicator : HealthyStartIndicator -> Value
-encodeHealthyStartIndicator value =
+encodePrenatalIndicatorLocal : PrenatalIndicator -> Value
+encodePrenatalIndicatorLocal value =
     string <|
         case value of
-            NoHealthyStartIndicators ->
+            IndicatorHistoryLabsCompleted ->
+                "past-labs-completed"
+
+            NoPrenatalIndicators ->
                 "none"

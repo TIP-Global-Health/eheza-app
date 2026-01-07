@@ -1,7 +1,10 @@
 module Backend.HealthyStartEncounter.Decoder exposing (decodeHealthyStartEncounter)
 
 import Backend.HealthyStartEncounter.Model exposing (..)
-import Backend.HealthyStartEncounter.Types exposing (HealthyStartDiagnosis(..), HealthyStartEncounterType(..))
+import Backend.HealthyStartEncounter.Types exposing (HealthyStartEncounterType(..))
+import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalDiagnosis)
+import Backend.PrenatalEncounter.Model exposing (PrenatalIndicator(..))
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import EverySet
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, andThen, fail, list, map, nullable, string, succeed)
@@ -17,22 +20,22 @@ decodeHealthyStartEncounter =
             map
                 (\items ->
                     if List.isEmpty items then
-                        EverySet.singleton NoHealthyStartDiagnosis
+                        EverySet.singleton NoPrenatalDiagnosis
 
                     else
                         EverySet.fromList items
                 )
             <|
-                list (decodeWithFallback NoHealthyStartDiagnosis decodeHealthyStartDiagnosis)
+                list (decodeWithFallback NoPrenatalDiagnosis decodePrenatalDiagnosis)
     in
     succeed HealthyStartEncounter
         |> required "individual_participant" decodeEntityUuid
         |> requiredAt [ "scheduled_date", "value" ] decodeYYYYMMDD
         |> optionalAt [ "scheduled_date", "value2" ] (nullable decodeYYYYMMDD) Nothing
         |> required "healthy_start_encounter_type" (decodeWithFallback NurseEncounter decodeHealthyStartEncounterType)
-        |> optional "healthy_start_diagnoses" decodeDiagnoses (EverySet.singleton NoHealthyStartDiagnosis)
-        |> optional "past_healthy_start_diagnoses" decodeDiagnoses (EverySet.singleton NoHealthyStartDiagnosis)
-        |> optional "healthy_start_indicators" (decodeEverySet decodeHealthyStartIndicator) EverySet.empty
+        |> optional "healthy_start_diagnoses" decodeDiagnoses (EverySet.singleton NoPrenatalDiagnosis)
+        |> optional "past_healthy_start_diagnoses" decodeDiagnoses (EverySet.singleton NoPrenatalDiagnosis)
+        |> optional "healthy_start_indicators" (decodeEverySet decodePrenatalIndicatorLocal) EverySet.empty
         |> optional "next_visit_date" (nullable decodeYYYYMMDD) Nothing
         |> optional "shard" (nullable decodeEntityUuid) Nothing
 
@@ -56,33 +59,20 @@ decodeHealthyStartEncounterType =
             )
 
 
-decodeHealthyStartDiagnosis : Decoder HealthyStartDiagnosis
-decodeHealthyStartDiagnosis =
-    string
-        |> andThen
-            (\diagnosis ->
-                case diagnosis of
-                    "none" ->
-                        succeed NoHealthyStartDiagnosis
-
-                    _ ->
-                        fail <|
-                            diagnosis
-                                ++ " is not a recognized HealthyStartDiagnosis"
-            )
-
-
-decodeHealthyStartIndicator : Decoder HealthyStartIndicator
-decodeHealthyStartIndicator =
+decodePrenatalIndicatorLocal : Decoder PrenatalIndicator
+decodePrenatalIndicatorLocal =
     string
         |> andThen
             (\value ->
                 case value of
+                    "past-labs-completed" ->
+                        succeed IndicatorHistoryLabsCompleted
+
                     "none" ->
-                        succeed NoHealthyStartIndicators
+                        succeed NoPrenatalIndicators
 
                     _ ->
                         fail <|
                             value
-                                ++ " is not a recognized HealthyStartIndicator"
+                                ++ " is not a recognized PrenatalIndicator"
             )
