@@ -116,7 +116,7 @@ eddToLmpDate eddDate =
 
 isNurseEncounter : PrenatalEncounterType -> Bool
 isNurseEncounter encounterType =
-    List.member encounterType [ NurseEncounter, NursePostpartumEncounter ]
+    List.member encounterType [ NurseEncounter, NursePostpartumEncounter, HealthyStartEncounter ]
 
 
 {-| Determine if a woman is severely undernourished at booking

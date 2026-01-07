@@ -275,6 +275,57 @@ expectActivity currentDate site assembled activity =
                 _ ->
                     False
 
+        HealthyStartEncounter ->
+            case activity of
+                PregnancyDating ->
+                    True
+
+                History ->
+                    resolveHistoryTasks assembled
+                        |> List.isEmpty
+                        |> not
+
+                Examination ->
+                    True
+
+                FamilyPlanning ->
+                    True
+
+                Backend.PrenatalActivity.Model.MalariaPrevention ->
+                    expectMalariaPreventionActivity PhaseInitial assembled
+
+                Backend.PrenatalActivity.Model.Medication ->
+                    True
+
+                DangerSigns ->
+                    True
+
+                Laboratory ->
+                    True
+
+                PrenatalPhoto ->
+                    expectPrenatalPhoto currentDate assembled
+
+                NextSteps ->
+                    mandatoryActivitiesForNextStepsCompleted currentDate site assembled
+                        && (resolveNextStepsTasks currentDate assembled
+                                |> List.isEmpty
+                                |> not
+                           )
+
+                SymptomReview ->
+                    True
+
+                PrenatalImmunisation ->
+                    True
+
+                MaternalMentalHealth ->
+                    True
+
+                -- Activities that do not participate at Healthy Start encounter.
+                _ ->
+                    False
+
 
 activityCompleted : NominalDate -> Site -> AssembledData -> PrenatalActivity -> Bool
 activityCompleted currentDate site assembled activity =
@@ -1186,6 +1237,9 @@ mandatoryActivitiesForNextStepsCompleted currentDate site assembled =
         ChwPostpartumEncounter ->
             activityCompleted currentDate site assembled PregnancyOutcome
                 && activityCompleted currentDate site assembled DangerSigns
+
+        HealthyStartEncounter ->
+            mandatoryActivitiesForNurseCompleted
 
 
 expectPrenatalPhoto : NominalDate -> AssembledData -> Bool
@@ -3247,6 +3301,10 @@ healthEducationFormInputsAndTasksForChw language assembled form =
 
         -- We should never get here, as function is only for CHW.
         NursePostpartumEncounter ->
+            ( [], [] )
+
+        -- We should never get here, as function is only for CHW.
+        HealthyStartEncounter ->
             ( [], [] )
 
 

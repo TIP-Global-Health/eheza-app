@@ -412,6 +412,10 @@ viewActionsForChw language currentDate selectedHealthCenter id db activePregnanc
                     NursePostpartumEncounter ->
                         False
 
+                    -- We should never get here, as we deal only with CHW encounters.
+                    HealthyStartEncounter ->
+                        False
+
         encounterTypeButtonAction encounterType =
             maybeActiveEncounterId
                 -- If there's an active encounter, navigate to it.
