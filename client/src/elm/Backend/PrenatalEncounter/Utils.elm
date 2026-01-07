@@ -119,6 +119,63 @@ isNurseEncounter encounterType =
     List.member encounterType [ NurseEncounter, NursePostpartumEncounter, HealthyStartEncounter ]
 
 
+{-| Gestational Weight Gain (GWG) and Adequate Weight Gain (AWG) Calculation Functions
+
+These functions implement the method for calculating gestational weight gain and
+determining whether weight gain at a visit is adequate for pregnant women.
+
+## Overview
+
+Gestational weight gain (GWG) is the amount of weight a pregnant woman gains between
+two weight measurements taken during pregnancy. GWG is always assessed over a single
+observation period (from previous visit to current visit).
+
+Adequate weight gain (AWG) is determined by comparing actual weight gain to expected
+weight gain for the observation period.
+
+## Key Principles
+
+1. GWG cannot be assessed at the first ANC visit (no previous weight to compare)
+2. Expected weight gain is based on daily rates, not scheduled visit intervals
+3. Nutrition status at booking permanently determines expected gain rate after 13 weeks
+4. Adequate weight gain means meeting or exceeding the expected gain for time elapsed
+5. Classification is made independently at each visit
+
+## Calculation Steps
+
+### Step 1: Determine nutrition status at booking (isSeverelyUndernourished)
+At the first ANC visit (booking), classify the woman as severely undernourished if EITHER:
+- BMI < 17.5 kg/m², OR
+- MUAC < 21 cm
+This classification is permanent and does not change later.
+
+### Step 2: Identify observation period
+For any visit, identify:
+- Previous visit where weight was measured
+- Current visit where weight is measured
+Calculate the time between these visits in days.
+
+### Step 3: Calculate actual GWG (calculateGestationalWeightGain)
+Actual GWG = Current weight - Previous weight
+
+### Step 4: Determine expected weight gain (calculateExpectedWeightGain)
+Expected gain depends on:
+- Whether woman was severely undernourished at booking
+- Gestational age during observation period
+
+#### Expected daily rates (expectedDailyWeightGain):
+- Before 13 weeks of pregnancy: 23.5 grams/day (all women)
+- After 13 weeks, not severely undernourished: 60 grams/day
+- After 13 weeks, severely undernourished: 73 grams/day
+
+#### For periods spanning 13 weeks:
+- Apply 23.5 g/day to days before 13 weeks
+- Apply appropriate rate (60 or 73 g/day) to days from 13 weeks onward
+
+### Step 5: Classify AWG (isAdequateWeightGain)
+Weight gain is adequate if: actual weight gain >= expected weight gain
+
+-}
 {-| Determine if a woman is severely undernourished at booking
 A woman is severely undernourished if either:
 - BMI is less than 17.5 kg/m², or
