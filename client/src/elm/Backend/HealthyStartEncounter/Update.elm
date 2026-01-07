@@ -5,6 +5,7 @@ import App.Utils exposing (triggerRollbarOnFailure)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
 import Backend.HealthyStartEncounter.Model exposing (..)
+import Backend.Utils exposing (sw)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (unwrap)
 import RemoteData exposing (RemoteData(..))
@@ -28,7 +29,7 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
                     (\encounter ->
                         ( { model | closeHealthyStartEncounter = Loading }
                         , { encounter | endDate = Just currentDate }
-                            |> Backend.Utils.sw.patchFull healthyStartEncounterEndpoint encounterId
+                            |> sw.patchFull healthyStartEncounterEndpoint encounterId
                             |> withoutDecoder
                             |> toCmd (RemoteData.fromResult >> HandleClosedHealthyStartEncounter)
                         , []
