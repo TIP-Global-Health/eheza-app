@@ -3480,7 +3480,17 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
             )
 
         NextStepsNextVisit ->
-            ( 1, 1 )
+            let
+                completed =
+                    if nextStepsTaskCompleted currentDate assembled NextStepsNextVisit then
+                        1
+
+                    else
+                        0
+            in
+            ( completed
+            , 1
+            )
 
 
 appointmentConfirmationFormInutsAndTasks :

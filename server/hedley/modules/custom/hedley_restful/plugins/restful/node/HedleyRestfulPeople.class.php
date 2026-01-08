@@ -36,6 +36,10 @@ class HedleyRestfulPeople extends HedleyRestfulSyncBase {
       'field_mode_of_delivery',
       'field_hmis_number',
       'field_deleted',
+      'field_spouse_name',
+      'field_spouse_phone_number',
+      'field_next_of_kin_name',
+      'field_next_of_kin_phone_number',
       'field_latitude',
       'field_longitude',
     ];
@@ -94,6 +98,10 @@ class HedleyRestfulPeople extends HedleyRestfulSyncBase {
       'field_mode_of_delivery',
       'field_hmis_number',
       'field_deleted',
+      'field_spouse_name',
+      'field_spouse_phone_number',
+      'field_next_of_kin_name',
+      'field_next_of_kin_phone_number',
       'field_latitude',
       'field_longitude',
 

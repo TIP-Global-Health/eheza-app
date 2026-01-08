@@ -2,7 +2,6 @@ module Pages.Tuberculosis.ProgressReport.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Components.ReportToWhatsAppDialog.Model
-import EverySet exposing (EverySet)
 import Pages.Page exposing (Page)
 
 

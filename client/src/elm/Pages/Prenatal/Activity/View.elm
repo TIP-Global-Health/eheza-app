@@ -32,14 +32,12 @@ import Measurement.Model
         ( ContentAndTasksForPerformedLaboratoryUniversalTestConfig
         , ContentAndTasksLaboratoryUniversalTestInitialConfig
         , CorePhysicalExamForm
-        , InvokationModule(..)
         , LaboratoryTask(..)
         , MedicationAdministrationFormConfig
         , OutsideCareStep(..)
         , VaccinationFormViewMode(..)
         , VaccinationStatus(..)
         , VitalsForm
-        , VitalsFormMode(..)
         )
 import Measurement.Utils
     exposing
@@ -113,6 +111,7 @@ import Pages.Utils
         , viewCustomBoolInput
         , viewCustomLabel
         , viewCustomSelectListInput
+        , viewEncounterActionButton
         , viewInstructionsLabel
         , viewLabel
         , viewMeasurementInput
@@ -123,7 +122,6 @@ import Pages.Utils
         , viewRedAlertForBool
         , viewRedAlertForSelect
         , viewSaveAction
-        , viewSelectListInput
         , viewTasksCount
         , viewYellowAlertForSelect
         )
@@ -1727,10 +1725,6 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                 tasks
                 |> Dict.fromList
 
-        tasksCompletedFromTotalDict =
-            Dict.map (\_ ( _, completed, total ) -> ( completed, total ))
-                formHtmlAndTasks
-
         ( viewForm, tasksCompleted, totalTasks ) =
             Maybe.andThen
                 (\task -> Dict.get task formHtmlAndTasks)
@@ -1743,6 +1737,10 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                     let
                         personId =
                             assembled.participant.person
+
+                        tasksCompletedFromTotalDict =
+                            Dict.map (\_ ( _, completed, total ) -> ( completed, total ))
+                                formHtmlAndTasks
 
                         nextTask =
                             resolveNextTask task tasksCompletedFromTotalDict tasks
@@ -2310,14 +2308,21 @@ viewNextStepsContent language currentDate isChw assembled data =
                                 -- The encounter is closed on second phase.
                                 saveMsg
 
+                        NextStepsNextVisit ->
+                            viewEncounterActionButton language
+                                Translate.Save
+                                "primary"
+                                -- Button is enabled because there are
+                                -- no actual tasks to be performed.
+                                True
+                                saveMsg
+
                         _ ->
-                            div [ class "actions next-steps" ]
-                                [ button
-                                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                    , onClick saveMsg
-                                    ]
-                                    [ text <| translate language Translate.Save ]
-                                ]
+                            viewEncounterActionButton language
+                                Translate.Save
+                                "primary"
+                                (tasksCompleted == totalTasks)
+                                saveMsg
                 )
                 activeTask
                 |> Maybe.withDefault emptyNode
@@ -2594,24 +2599,28 @@ viewImmunisationContent language currentDate site assembled data =
                     ]
                 ]
 
-        tasksCompletedFromTotalDict =
-            List.map
-                (\task ->
-                    ( task
-                    , immunisationTasksCompletedFromTotal language
-                        currentDate
-                        site
-                        assembled
-                        data
-                        task
-                    )
-                )
-                tasks
-                |> Dict.fromList
-
         ( tasksCompleted, totalTasks ) =
             activeTask
-                |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
+                |> Maybe.andThen
+                    (\task ->
+                        let
+                            tasksCompletedFromTotalDict =
+                                List.map
+                                    (\task_ ->
+                                        ( task_
+                                        , immunisationTasksCompletedFromTotal language
+                                            currentDate
+                                            site
+                                            assembled
+                                            data
+                                            task_
+                                        )
+                                    )
+                                    tasks
+                                    |> Dict.fromList
+                        in
+                        Dict.get task tasksCompletedFromTotalDict
+                    )
                 |> Maybe.withDefault ( 0, 0 )
 
         ( formForView, fullScreen, allowSave ) =
@@ -3066,7 +3075,7 @@ obstetricFormSecondStepInputsAndTasks language currentDate assembled form =
             [ MoreThan10Years, Neither ]
             form.previousDeliveryPeriod
             SetPreviousDeliveryPeriod
-            Translate.PreviousDeliveryPeriods
+            Translate.PreviousDeliveryPeriod
       ]
         ++ cSectionsHtml
         ++ [ viewQuestionLabel language Translate.ObstetricHistorySignsReviewQuestion
