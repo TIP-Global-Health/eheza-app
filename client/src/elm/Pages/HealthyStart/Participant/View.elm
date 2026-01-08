@@ -1,7 +1,7 @@
 module Pages.HealthyStart.Participant.View exposing (view)
 
 import App.Model
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.HealthyStartEncounter.Model
 import Backend.IndividualEncounterParticipant.Model
@@ -65,10 +65,10 @@ viewActions :
 viewActions language currentDate selectedHealthCenter id db participants =
     div []
         [ p [ class "label-visit" ]
-            [ text <|
-                translate language <|
-                    Translate.IndividualEncounterSelectVisitLabel
-                        Backend.IndividualEncounterParticipant.Model.HealthyStartEncounter
+            [-- text <|
+             --    translate language <|
+             --        Translate.IndividualEncounterSelectVisitLabel
+             --            Backend.IndividualEncounterParticipant.Model.HealthyStartEncounter
             ]
         , div [ class "ui unstackable items" ] <|
             viewAction language currentDate selectedHealthCenter id participants db

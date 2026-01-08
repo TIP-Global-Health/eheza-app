@@ -22,6 +22,7 @@ import Backend.Entities exposing (..)
 import Backend.HIVEncounter.Model
 import Backend.HIVEncounter.Update
 import Backend.HealthyStartEncounter.Model
+import Backend.HealthyStartEncounter.Types
 import Backend.HealthyStartEncounter.Update
 import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
 import Backend.HomeVisitEncounter.Update
@@ -5466,6 +5467,21 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 data.encounterId
                 (\measurements -> { measurements | hcContact = Just ( uuid, data ) })
                 model
+            , recalc
+            )
+
+        HealthyStartEncounterRevision uuid data ->
+            let
+                healthyStartEncounters =
+                    Dict.update uuid (Maybe.map (always (Success data))) model.healthyStartEncounters
+
+                healthyStartEncountersByParticipant =
+                    Dict.remove data.participant model.healthyStartEncountersByParticipant
+            in
+            ( { model
+                | healthyStartEncounters = healthyStartEncounters
+                , healthyStartEncountersByParticipant = healthyStartEncountersByParticipant
+              }
             , recalc
             )
 
