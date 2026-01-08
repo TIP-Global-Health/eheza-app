@@ -299,6 +299,14 @@ function hedley_activity_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'ultrasound' => array(
+      'name' => t('Ultrasound'),
+      'base' => 'node_content',
+      'description' => t('Ultrasound scan results for pregnancy dating and assessment.'),
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'resource' => array(
       'name' => t('Resource'),
       'base' => 'node_content',
