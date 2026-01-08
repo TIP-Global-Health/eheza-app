@@ -669,6 +669,30 @@ type alias LastMenstrualPeriod =
     PrenatalMeasurement LastMenstrualPeriodValue
 
 
+type alias UltrasoundValue =
+    { gestationalAgeWeeks : Int
+    , gestationalAgeDays : Int
+    , edd : NominalDate
+    , viablePregnancy : Bool
+    , numberOfFetuses : NumberOfFetuses
+    , pregnancyLocation : PregnancyLocation
+    }
+
+
+type NumberOfFetuses
+    = Single
+    | Multiple
+
+
+type PregnancyLocation
+    = Intrauterine
+    | Ectopic
+
+
+type alias Ultrasound =
+    PrenatalMeasurement UltrasoundValue
+
+
 type MedicalHistorySign
     = Asthma
     | CardiacDisease
@@ -3319,6 +3343,7 @@ type alias PrenatalMeasurements =
     , guExam : Maybe ( PrenatalGUExamId, PrenatalGUExam )
     , specialityCare : Maybe ( PrenatalSpecialityCareId, PrenatalSpecialityCare )
     , partnerHIVTest : Maybe ( PrenatalPartnerHIVTestId, PrenatalPartnerHIVTest )
+    , ultrasound : Maybe ( UltrasoundId, Ultrasound )
     }
 
 
@@ -3364,6 +3389,7 @@ emptyPrenatalMeasurements =
     , guExam = Nothing
     , specialityCare = Nothing
     , partnerHIVTest = Nothing
+    , ultrasound = Nothing
     }
 
 

@@ -161,6 +161,7 @@ decodePrenatalMeasurements =
         |> optional "prenatal_gu_exam" (decodeHead decodePrenatalGUExam) Nothing
         |> optional "prenatal_speciality_care" (decodeHead decodePrenatalSpecialityCare) Nothing
         |> optional "prenatal_partner_hiv_test" (decodeHead decodePrenatalPartnerHIVTest) Nothing
+        |> optional "ultrasound" (decodeHead decodeUltrasound) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
@@ -648,6 +649,56 @@ decodePartnerHIVTestValue =
             (Just prerequisitesDefaultRDT)
         |> optional "test_result" (nullable decodeTestResult) Nothing
         |> optional "hiv_signs" (nullable (decodeEverySet decodePrenatalHIVSign)) Nothing
+
+
+decodeUltrasound : Decoder Ultrasound
+decodeUltrasound =
+    decodePrenatalMeasurement decodeUltrasoundValue
+
+
+decodeUltrasoundValue : Decoder UltrasoundValue
+decodeUltrasoundValue =
+    succeed UltrasoundValue
+        |> required "gestational_age_weeks" int
+        |> required "gestational_age_days" int
+        |> required "edd" Gizra.NominalDate.decodeYYYYMMDD
+        |> required "viable_pregnancy" bool
+        |> required "number_of_fetuses" decodeNumberOfFetuses
+        |> required "pregnancy_location" decodePregnancyLocation
+
+
+decodeNumberOfFetuses : Decoder NumberOfFetuses
+decodeNumberOfFetuses =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "single" ->
+                        succeed Single
+
+                    "multiple" ->
+                        succeed Multiple
+
+                    _ ->
+                        fail <| s ++ " is not a recognized NumberOfFetuses"
+            )
+
+
+decodePregnancyLocation : Decoder PregnancyLocation
+decodePregnancyLocation =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "intrauterine" ->
+                        succeed Intrauterine
+
+                    "ectopic" ->
+                        succeed Ectopic
+
+                    _ ->
+                        fail <| s ++ " is not a recognized PregnancyLocation"
+            )
 
 
 decodeViralLoadStatus : Decoder ViralLoadStatus

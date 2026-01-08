@@ -26,6 +26,7 @@ type PrenatalActivity
     | Breastfeeding
     | SpecialityCare
     | PostpartumTreatmentReview
+    | Ultrasound
 
 
 type PrenatalRecurrentActivity

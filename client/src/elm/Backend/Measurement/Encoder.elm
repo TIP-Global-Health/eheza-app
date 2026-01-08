@@ -441,6 +441,44 @@ encodePartnerHIVTestValue value =
            ]
 
 
+encodeUltrasound : Ultrasound -> List ( String, Value )
+encodeUltrasound =
+    encodePrenatalMeasurement encodeUltrasoundValue
+
+
+encodeUltrasoundValue : UltrasoundValue -> List ( String, Value )
+encodeUltrasoundValue value =
+    [ ( "gestational_age_weeks", int value.gestationalAgeWeeks )
+    , ( "gestational_age_days", int value.gestationalAgeDays )
+    , ( "edd", Gizra.NominalDate.encodeYYYYMMDD value.edd )
+    , ( "viable_pregnancy", bool value.viablePregnancy )
+    , ( "number_of_fetuses", encodeNumberOfFetuses value.numberOfFetuses )
+    , ( "pregnancy_location", encodePregnancyLocation value.pregnancyLocation )
+    , ( "deleted", bool False )
+    , ( "type", string "ultrasound" )
+    ]
+
+
+encodeNumberOfFetuses : NumberOfFetuses -> Value
+encodeNumberOfFetuses value =
+    case value of
+        Single ->
+            string "single"
+
+        Multiple ->
+            string "multiple"
+
+
+encodePregnancyLocation : PregnancyLocation -> Value
+encodePregnancyLocation value =
+    case value of
+        Intrauterine ->
+            string "intrauterine"
+
+        Ectopic ->
+            string "ectopic"
+
+
 encodePrenatalMalariaTest : PrenatalMalariaTest -> List ( String, Value )
 encodePrenatalMalariaTest =
     encodePrenatalMeasurement encodeMalariaTestValue

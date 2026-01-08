@@ -1411,6 +1411,14 @@ type PrenatalPartnerHIVTestUuidType
     = PrenatalPartnerHIVTestUuidType
 
 
+type alias UltrasoundId =
+    EntityUuid UltrasoundUuidType
+
+
+type UltrasoundUuidType
+    = UltrasoundUuidType
+
+
 type alias StockUpdateId =
     EntityUuid StockUpdateUuidType
 
