@@ -37,6 +37,7 @@ getAllActivities assembled =
                 , Laboratory
                 , MaternalMentalHealth
                 , PrenatalPhoto
+                , Ultrasound
                 , NextSteps
                 ]
 
@@ -52,6 +53,7 @@ getAllActivities assembled =
                 , Laboratory
                 , MaternalMentalHealth
                 , PrenatalPhoto
+                , Ultrasound
                 , NextSteps
                 ]
 

@@ -90,6 +90,9 @@ activityToString activity =
         PostpartumTreatmentReview ->
             "postpartum-treatment-review"
 
+        Ultrasound ->
+            "ultrasound"
+
 
 {-| The inverse of encodeActivityTypeAsString
 -}
@@ -155,6 +158,9 @@ activityFromString s =
 
         "postpartum-treatment-review" ->
             Just PostpartumTreatmentReview
+
+        "ultrasound" ->
+            Just Ultrasound
 
         _ ->
             Nothing
