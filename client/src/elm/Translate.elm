@@ -5874,6 +5874,12 @@ translationSet trans =
                     , kirundi = Just "Urashaka gutangura umubonano kuvyerekeye ingwara y'umugera wa SIDA kuri"
                     }
 
+                HealthyStartEncounter ->
+                    { english = "Do you want to start a Healthy Start encounter for"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 HomeVisitEncounter ->
                     { english = "Do you want to start a Home Visit assessment for"
                     , kinyarwanda = Just "Urashaka gutangira igikorwa cyo gusura mu rugo"
@@ -7953,6 +7959,12 @@ translationSet trans =
                     , kirundi = Just "Umubonano wambere werekeye ingwara y’umugera wa SIDA"
                     }
 
+                HealthyStartEncounter ->
+                    { english = "First Healthy Start Encounter"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 HomeVisitEncounter ->
                     { english = "First Home Visit Encounter"
                     , kinyarwanda = Just "Gusura abarwayi mu rugo bwambere"
@@ -8013,6 +8025,12 @@ translationSet trans =
                     { english = "HIV Encounter"
                     , kinyarwanda = Nothing
                     , kirundi = Just "Umubonano kuvyerekeye ingwara y'umugera wa SIDA"
+                    }
+
+                HealthyStartEncounter ->
+                    { english = "Healthy Start Encounter"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
                     }
 
                 HomeVisitEncounter ->
@@ -8084,6 +8102,12 @@ translationSet trans =
                     , kirundi = Just "Hitamo isuzuma kuvyerekeye ingwara y'umugera wa SIDA"
                     }
 
+                HealthyStartEncounter ->
+                    { english = "Select Healthy Start Visit"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 HomeVisitEncounter ->
                     { english = "Select Home Visit"
                     , kinyarwanda = Just "Hitamo Gusura Umurwayi"
@@ -8153,6 +8177,12 @@ translationSet trans =
                     , kirundi = Just "Umubonano kuvyerekeye isuzuma ku ngwara y'umugera wa SIDA"
                     }
 
+                HealthyStartEncounter ->
+                    { english = "Subsequent Healthy Start Visit"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 HomeVisitEncounter ->
                     { english = "Subsequent Home Visit"
                     , kinyarwanda = Nothing
@@ -8204,6 +8234,12 @@ translationSet trans =
                     { english = "HIV Management"
                     , kinyarwanda = Nothing
                     , kirundi = Just "Gukurikirana ingwara y'umugera wa SIDA"
+                    }
+
+                HealthyStartEncounter ->
+                    { english = "Healthy Start"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
                     }
 
                 HomeVisitEncounter ->
@@ -25934,6 +25970,12 @@ translateActivePage page =
                             { english = "HIV Participants"
                             , kinyarwanda = Nothing
                             , kirundi = Just "Abarwayi ba SIDA baje"
+                            }
+
+                        HealthyStartEncounter ->
+                            { english = "Healthy Start Participants"
+                            , kinyarwanda = Nothing
+                            , kirundi = Nothing
                             }
 
                         HomeVisitEncounter ->
