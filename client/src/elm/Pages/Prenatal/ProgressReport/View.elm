@@ -778,7 +778,7 @@ viewObstetricHistoryPane language currentDate measurements =
                                                     |> List.map (Translate.ObstetricHistoryStep2Sign >> translate language)
                                                     |> String.join ", "
                                         in
-                                        [ translate language Translate.ConditionsDuringPrevoiusPregnancy ++ ": " ++ conditions ]
+                                        [ translate language Translate.ConditionsDuringPreviousPregnancy ++ ": " ++ conditions ]
                         in
                         periodFromPreviousDeliveryInfo ++ cSectionInfo ++ conditionsDuringPrevoiusPregnancy
                     )

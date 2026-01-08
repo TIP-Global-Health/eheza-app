@@ -3512,7 +3512,7 @@ appointmentConfirmationFormInutsAndTasks language currentDate form =
             , dateDefault = Nothing
             }
     in
-    ( [ viewLabel language Translate.AppointmentConfirmationInstrunction
+    ( [ viewLabel language Translate.AppointmentConfirmationInstruction
       , div
             [ class "form-input date"
             , onClick <| SetAppointmentDateSelectorState (Just dateSelectorConfig)
