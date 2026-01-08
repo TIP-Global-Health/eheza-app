@@ -4391,6 +4391,9 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                                     HIVEncounter ->
                                                         HIVParticipantPage personId
 
+                                                    HealthyStartEncounter ->
+                                                        HealthyStartParticipantPage personId
+
                                                     -- We do not have a direct access to Home Visit
                                                     -- encounter, since it resides under Nutrition menu.
                                                     -- Providing 'default' page, to satisfy compiler.
@@ -4629,6 +4632,12 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                 HIVEncounter ->
                                     [ Backend.HIVEncounter.Model.emptyHIVEncounter sessionId currentDate healthCenterId
                                         |> Backend.Model.PostHIVEncounter
+                                        |> App.Model.MsgIndexedDb
+                                    ]
+
+                                HealthyStartEncounter ->
+                                    [ Backend.HealthyStartEncounter.Model.emptyHealthyStartEncounter sessionId currentDate Backend.HealthyStartEncounter.Types.NurseEncounter healthCenterId
+                                        |> Backend.Model.PostHealthyStartEncounter
                                         |> App.Model.MsgIndexedDb
                                     ]
 
