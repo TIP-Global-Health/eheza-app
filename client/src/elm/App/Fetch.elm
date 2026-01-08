@@ -27,6 +27,8 @@ import Pages.GroupEncounterTypes.Fetch
 import Pages.HIV.Activity.Fetch
 import Pages.HIV.Encounter.Fetch
 import Pages.HIV.Participant.Fetch
+import Pages.HealthyStart.Encounter.Fetch
+import Pages.HealthyStart.Participant.Fetch
 import Pages.HomeVisit.Activity.Fetch
 import Pages.HomeVisit.Encounter.Fetch
 import Pages.IndividualEncounterParticipants.Fetch

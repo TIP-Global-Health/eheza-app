@@ -47,6 +47,8 @@ import Pages.HIV.Activity.View
 import Pages.HIV.Encounter.Model
 import Pages.HIV.Encounter.View
 import Pages.HIV.Participant.View
+import Pages.HealthyStart.Encounter.View
+import Pages.HealthyStart.Participant.View
 import Pages.HomeVisit.Activity.Model
 import Pages.HomeVisit.Activity.View
 import Pages.HomeVisit.Encounter.Model
