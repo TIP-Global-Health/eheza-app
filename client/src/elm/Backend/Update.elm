@@ -22,7 +22,6 @@ import Backend.Entities exposing (..)
 import Backend.HIVEncounter.Model
 import Backend.HIVEncounter.Update
 import Backend.HealthyStartEncounter.Model
-import Backend.HealthyStartEncounter.Types
 import Backend.HealthyStartEncounter.Update
 import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
 import Backend.HomeVisitEncounter.Update
@@ -3836,6 +3835,24 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             , appMsgs
             )
 
+        MsgHealthyStartEncounter encounterId subMsg ->
+            let
+                encounter =
+                    Dict.get encounterId model.healthyStartEncounters
+                        |> Maybe.andThen RemoteData.toMaybe
+
+                requests =
+                    Dict.get encounterId model.healthyStartEncounterRequests
+                        |> Maybe.withDefault Backend.HealthyStartEncounter.Model.emptyModel
+
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.HealthyStartEncounter.Update.update currentDate nurseId healthCenterId encounterId encounter subMsg requests
+            in
+            ( { model | healthyStartEncounterRequests = Dict.insert encounterId subModel model.healthyStartEncounterRequests }
+            , Cmd.map (MsgHealthyStartEncounter encounterId) subCmd
+            , appMsgs
+            )
+
         MsgNutritionEncounter encounterId subMsg ->
             let
                 encounter =
@@ -4637,7 +4654,10 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                     ]
 
                                 HealthyStartEncounter ->
-                                    [ Backend.HealthyStartEncounter.Model.emptyHealthyStartEncounter sessionId currentDate Backend.HealthyStartEncounter.Types.NurseEncounter healthCenterId
+                                    [ Backend.HealthyStartEncounter.Model.emptyHealthyStartEncounter sessionId
+                                        currentDate
+                                        Backend.HealthyStartEncounter.Model.NurseEncounter
+                                        healthCenterId
                                         |> Backend.Model.PostHealthyStartEncounter
                                         |> App.Model.MsgIndexedDb
                                     ]

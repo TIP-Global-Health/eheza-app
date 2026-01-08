@@ -1737,3 +1737,19 @@ type alias HealthyStartEncounterId =
 
 type HealthyStartEncounterUuidType
     = HealthyStartEncounterUuidType
+
+
+type alias HealthyStartRecurrentEncounterId =
+    EntityUuid HealthyStartRecurrentEncounterUuidType
+
+
+type HealthyStartRecurrentEncounterUuidType
+    = HealthyStartRecurrentEncounterUuidType
+
+
+type alias HealthyStartLabsResultsId =
+    EntityUuid HealthyStartLabsResultsUuidType
+
+
+type HealthyStartLabsResultsUuidType
+    = HealthyStartLabsResultsUuidType

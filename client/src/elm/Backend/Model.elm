@@ -93,6 +93,7 @@ type alias ModelIndexedDb =
     -- Tracks requests in progress to update sessions, prenatal sessions or prenatal encounters.
     , sessionRequests : Dict SessionId Backend.Session.Model.Model
     , prenatalEncounterRequests : Dict PrenatalEncounterId Backend.PrenatalEncounter.Model.Model
+    , healthyStartEncounterRequests : Dict HealthyStartEncounterId Backend.HealthyStartEncounter.Model.Model
     , nutritionEncounterRequests : Dict NutritionEncounterId Backend.NutritionEncounter.Model.Model
     , acuteIllnessEncounterRequests : Dict AcuteIllnessEncounterId Backend.AcuteIllnessEncounter.Model.Model
     , individualEncounterParticipantRequests : Dict IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Model
@@ -261,6 +262,7 @@ emptyModelIndexedDb =
     , personSearchesByNationalId = Dict.empty
     , peopleInVillage = Dict.empty
     , prenatalEncounterRequests = Dict.empty
+    , healthyStartEncounterRequests = Dict.empty
     , nutritionEncounterRequests = Dict.empty
     , acuteIllnessEncounterRequests = Dict.empty
     , homeVisitEncounterRequests = Dict.empty
@@ -553,6 +555,7 @@ type MsgIndexedDb
     | MsgResilienceSurvey NurseId Backend.ResilienceSurvey.Model.Msg
     | MsgStockUpdate NurseId Backend.StockUpdate.Model.Msg
     | ResetFailedToFetchAuthorities
+    | MsgHealthyStartEncounter HealthyStartEncounterId Backend.HealthyStartEncounter.Model.Msg
 
 
 {-| Wrapper for all the revisions we can receive.

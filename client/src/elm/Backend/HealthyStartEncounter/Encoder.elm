@@ -1,9 +1,6 @@
-module Backend.HealthyStartEncounter.Encoder exposing (encodeHealthyStartEncounter)
+module Backend.HealthyStartEncounter.Encoder exposing (encodeHealthyStartEncounter, encodeHealthyStartEncounterType, encodePrenatalDiagnosis)
 
 import Backend.HealthyStartEncounter.Model exposing (..)
-import Backend.HealthyStartEncounter.Types exposing (HealthyStartEncounterType(..))
-import Backend.PrenatalEncounter.Encoder exposing (encodePrenatalDiagnosis)
-import Backend.PrenatalEncounter.Model exposing (PrenatalIndicator(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import EverySet
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
@@ -25,9 +22,9 @@ encodeHealthyStartEncounter encounter =
             else
                 EverySet.toList diagnoses
 
-        healthyStartIndicators =
+        prenatalIndicators =
             if not <| EverySet.isEmpty encounter.indicators then
-                [ ( "healthy_start_indicators", encodeEverySet encodePrenatalIndicatorLocal encounter.indicators ) ]
+                [ ( "prenatal_indicators", encodeEverySet encodeHealthyStartIndicator encounter.indicators ) ]
 
             else
                 []
@@ -39,14 +36,14 @@ encodeHealthyStartEncounter encounter =
             ]
       )
     , ( "individual_participant", encodeEntityUuid encounter.participant )
-    , ( "healthy_start_encounter_type", encodeHealthyStartEncounterType encounter.encounterType )
-    , ( "healthy_start_diagnoses", list encodePrenatalDiagnosis (diagnosesWithDefault encounter.diagnoses) )
-    , ( "past_healthy_start_diagnoses", list encodePrenatalDiagnosis (diagnosesWithDefault encounter.pastDiagnoses) )
+    , ( "prenatal_encounter_type", encodeHealthyStartEncounterType encounter.encounterType )
+    , ( "prenatal_diagnoses", list encodePrenatalDiagnosis (diagnosesWithDefault encounter.diagnoses) )
+    , ( "past_prenatal_diagnoses", list encodePrenatalDiagnosis (diagnosesWithDefault encounter.pastDiagnoses) )
     , ( "next_visit_date", maybe encodeYYYYMMDD encounter.nextVisitDate )
     , ( "deleted", bool False )
-    , ( "type", string "healthy_start_encounter" )
+    , ( "type", string "prenatal_encounter" )
     ]
-        ++ healthyStartIndicators
+        ++ prenatalIndicators
         ++ encodeIfSet "shard" encounter.shard encodeEntityUuid
 
 
@@ -57,16 +54,327 @@ encodeHealthyStartEncounterType encounterType =
             NurseEncounter ->
                 "nurse"
 
-            ChwEncounter ->
-                "chw"
+            NursePostpartumEncounter ->
+                "nurse-postpartum"
 
 
-encodePrenatalIndicatorLocal : PrenatalIndicator -> Value
-encodePrenatalIndicatorLocal value =
+encodePrenatalDiagnosis : PrenatalDiagnosis -> Value
+encodePrenatalDiagnosis diagnosis =
+    string <|
+        case diagnosis of
+            DiagnosisChronicHypertensionImmediate ->
+                "chronic-hypertension-immediate"
+
+            DiagnosisChronicHypertensionAfterRecheck ->
+                "chronic-hypertension-recheck"
+
+            DiagnosisGestationalHypertensionImmediate ->
+                "gestational-hypertension-immediate"
+
+            DiagnosisGestationalHypertensionAfterRecheck ->
+                "gestational-hypertension-recheck"
+
+            DiagnosisModeratePreeclampsiaInitialPhase ->
+                "moderate-preeclampsia-initial"
+
+            DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ->
+                "moderate-preeclampsia-initial-ega-37+"
+
+            DiagnosisModeratePreeclampsiaRecurrentPhase ->
+                "moderate-preeclampsia-recurrent"
+
+            DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus ->
+                "moderate-preeclampsia-recurrent-ega-37+"
+
+            DiagnosisSeverePreeclampsiaInitialPhase ->
+                "severe-preeclampsia-initial"
+
+            DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus ->
+                "severe-preeclampsia-initial-ega-37+"
+
+            DiagnosisSeverePreeclampsiaRecurrentPhase ->
+                "severe-preeclampsia-recurrent"
+
+            DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus ->
+                "severe-preeclampsia-recurrent-ega-37+"
+
+            DiagnosisEclampsia ->
+                "eclampsia"
+
+            DiagnosisHIVInitialPhase ->
+                "hiv"
+
+            DiagnosisHIVRecurrentPhase ->
+                "hiv-recurrent"
+
+            DiagnosisHIVDetectableViralLoadInitialPhase ->
+                "hiv-detectable-viral-load-initial"
+
+            DiagnosisHIVDetectableViralLoadRecurrentPhase ->
+                "hiv-detectable-viral-load"
+
+            DiagnosisDiscordantPartnershipInitialPhase ->
+                "partner-hiv"
+
+            DiagnosisDiscordantPartnershipRecurrentPhase ->
+                "partner-hiv-recurrent"
+
+            DiagnosisSyphilisInitialPhase ->
+                "syphilis-initial"
+
+            DiagnosisSyphilisRecurrentPhase ->
+                "syphilis"
+
+            DiagnosisSyphilisWithComplicationsInitialPhase ->
+                "syphilis-complications-initial"
+
+            DiagnosisSyphilisWithComplicationsRecurrentPhase ->
+                "syphilis-complications"
+
+            DiagnosisNeurosyphilisInitialPhase ->
+                "neurosyphilis-initial"
+
+            DiagnosisNeurosyphilisRecurrentPhase ->
+                "neurosyphilis"
+
+            DiagnosisHepatitisBInitialPhase ->
+                "hepatitis-b-initial"
+
+            DiagnosisHepatitisBRecurrentPhase ->
+                "hepatitis-b"
+
+            DiagnosisMalariaInitialPhase ->
+                "malaria"
+
+            DiagnosisMalariaRecurrentPhase ->
+                "malaria-recurrent"
+
+            DiagnosisMalariaMedicatedContinuedInitialPhase ->
+                "malaria-continued"
+
+            DiagnosisMalariaMedicatedContinuedRecurrentPhase ->
+                "malaria-continued-recurrent"
+
+            DiagnosisMalariaWithAnemiaInitialPhase ->
+                "malaria-anemia"
+
+            DiagnosisMalariaWithAnemiaRecurrentPhase ->
+                "malaria-anemia-recurrent"
+
+            DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase ->
+                "malaria-anemia-continued"
+
+            DiagnosisMalariaWithAnemiaMedicatedContinuedRecurrentPhase ->
+                "malaria-anemia-continued-recurrent"
+
+            DiagnosisMalariaWithSevereAnemiaInitialPhase ->
+                "malaria-severe-anemia"
+
+            DiagnosisMalariaWithSevereAnemiaRecurrentPhase ->
+                "malaria-severe-anemia-recurrent"
+
+            DiagnosisModerateAnemiaInitialPhase ->
+                "anemia-initial"
+
+            DiagnosisModerateAnemiaRecurrentPhase ->
+                "anemia"
+
+            DiagnosisSevereAnemiaInitialPhase ->
+                "severe-anemia-initial"
+
+            DiagnosisSevereAnemiaRecurrentPhase ->
+                "severe-anemia"
+
+            DiagnosisSevereAnemiaWithComplicationsInitialPhase ->
+                "severe-anemia-complications-initial"
+
+            DiagnosisSevereAnemiaWithComplicationsRecurrentPhase ->
+                "severe-anemia-complications"
+
+            DiagnosisMiscarriage ->
+                "miscarriage"
+
+            DiagnosisMolarPregnancy ->
+                "molar-pregnancy"
+
+            DiagnosisPlacentaPrevia ->
+                "placenta-previa"
+
+            DiagnosisPlacentalAbruption ->
+                "placental-abruption"
+
+            DiagnosisUterineRupture ->
+                "uterine-rupture"
+
+            DiagnosisObstructedLabor ->
+                "obstructed-labor"
+
+            DiagnosisPostAbortionSepsis ->
+                "post-abortion-sepsis"
+
+            DiagnosisEctopicPregnancy ->
+                "ectopic-pregnancy"
+
+            DiagnosisPROM ->
+                "prom"
+
+            DiagnosisPPROM ->
+                "pprom"
+
+            DiagnosisHyperemesisGravidum ->
+                "hyperemesis-gravidum"
+
+            DiagnosisHyperemesisGravidumBySymptoms ->
+                "hyperemesis-gravidum-by-symptoms"
+
+            DiagnosisSevereVomiting ->
+                "severe-vomiting"
+
+            DiagnosisSevereVomitingBySymptoms ->
+                "severe-vomiting-by-symptoms"
+
+            DiagnosisMaternalComplications ->
+                "maternal-complications"
+
+            DiagnosisInfection ->
+                "infection"
+
+            DiagnosisImminentDelivery ->
+                "imminent-delivery"
+
+            DiagnosisLaborAndDelivery ->
+                "labor"
+
+            DiagnosisHeartburn ->
+                "heartburn"
+
+            DiagnosisHeartburnPersistent ->
+                "heartburn-persistent"
+
+            DiagnosisDeepVeinThrombosis ->
+                "dvt"
+
+            DiagnosisPelvicPainIntense ->
+                "pelvic-pain-intense"
+
+            DiagnosisPelvicPainContinued ->
+                "pelvic-pain-continued"
+
+            DiagnosisUrinaryTractInfection ->
+                "urinary-tract-infection"
+
+            DiagnosisUrinaryTractInfectionContinued ->
+                "urinary-tract-infection-continued"
+
+            DiagnosisPyelonephritis ->
+                "pyelonephritis"
+
+            DiagnosisCandidiasis ->
+                "candidiasis"
+
+            DiagnosisCandidiasisContinued ->
+                "candidiasis-continued"
+
+            DiagnosisGonorrhea ->
+                "gonorrhea"
+
+            DiagnosisGonorrheaContinued ->
+                "gonorrhea-continued"
+
+            DiagnosisTrichomonasOrBacterialVaginosis ->
+                "trichomonas-or-bv"
+
+            DiagnosisTrichomonasOrBacterialVaginosisContinued ->
+                "trichomonas-or-bv-continued"
+
+            DiagnosisTuberculosis ->
+                "tuberculosis"
+
+            DiagnosisDiabetesInitialPhase ->
+                "diabetes-initial"
+
+            DiagnosisDiabetesRecurrentPhase ->
+                "diabetes"
+
+            DiagnosisGestationalDiabetesInitialPhase ->
+                "gestational-diabetes-initial"
+
+            DiagnosisGestationalDiabetesRecurrentPhase ->
+                "gestational-diabetes"
+
+            DiagnosisRhesusNegativeInitialPhase ->
+                "rhesus-negative-initial"
+
+            DiagnosisRhesusNegativeRecurrentPhase ->
+                "rhesus-negative"
+
+            DiagnosisDepressionNotLikely ->
+                "depression-not-likely"
+
+            DiagnosisDepressionPossible ->
+                "depression-possible"
+
+            DiagnosisDepressionHighlyPossible ->
+                "depression-highly-possible"
+
+            DiagnosisDepressionProbable ->
+                "depression-probable"
+
+            DiagnosisSuicideRisk ->
+                "suicide-risk"
+
+            DiagnosisHighRiskOfPreeclampsiaInitialPhase ->
+                "high-risk-of-preeclampsia-initial"
+
+            DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ->
+                "high-risk-of-preeclampsia-recurrent"
+
+            DiagnosisModerateRiskOfPreeclampsia ->
+                "moderate-risk-of-preeclampsia"
+
+            DiagnosisOther ->
+                "other"
+
+            DiagnosisPostpartumAbdominalPain ->
+                "postpartum-abdominal-pain"
+
+            DiagnosisPostpartumUrinaryIncontinence ->
+                "postpartum-urinary-incontinence"
+
+            DiagnosisPostpartumHeadache ->
+                "postpartum-headache"
+
+            DiagnosisPostpartumFatigue ->
+                "postpartum-fatigue"
+
+            DiagnosisPostpartumFever ->
+                "postpartum-fever"
+
+            DiagnosisPostpartumPerinealPainOrDischarge ->
+                "postpartum-perineal-pain-discharge"
+
+            DiagnosisPostpartumInfection ->
+                "postpartum-infection"
+
+            DiagnosisPostpartumExcessiveBleeding ->
+                "postpartum-excessive-bleeding"
+
+            DiagnosisPostpartumEarlyMastitisOrEngorgment ->
+                "postpartum-early-mastitis-engorgment"
+
+            DiagnosisPostpartumMastitis ->
+                "postpartum-mastitis"
+
+            NoPrenatalDiagnosis ->
+                "none"
+
+
+encodeHealthyStartIndicator : HealthyStartIndicator -> Value
+encodeHealthyStartIndicator value =
     string <|
         case value of
             IndicatorHistoryLabsCompleted ->
                 "past-labs-completed"
 
-            NoPrenatalIndicators ->
+            NoHealthyStartIndicators ->
                 "none"
