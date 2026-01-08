@@ -204,6 +204,12 @@ pageToFragment current =
                 HIVParticipantPage id ->
                     Just <| "hiv-participant/" ++ fromEntityUuid id
 
+                HealthyStartParticipantPage id ->
+                    Just <| "healthy-start-participant/" ++ fromEntityUuid id
+
+                HealthyStartEncounterPage id ->
+                    Just <| "healthy-start-encounter/" ++ fromEntityUuid id
+
                 IndividualEncounterParticipantsPage encounterType ->
                     Just <| "individual-participants/" ++ individualEncounterTypeToString encounterType
 
@@ -415,6 +421,8 @@ parser =
         , map (\id -> UserPage <| ChildScoreboardParticipantPage id) (s "child-scoreboard-participant" </> parseUuid)
         , map (\id -> UserPage <| HIVParticipantPage id) (s "hiv-participant" </> parseUuid)
         , map (\id -> UserPage <| TuberculosisParticipantPage id) (s "tuberculosis-participant" </> parseUuid)
+        , map (\id -> UserPage <| HealthyStartParticipantPage id) (s "healthy-start-participant" </> parseUuid)
+        , map (\id -> UserPage <| HealthyStartEncounterPage id) (s "healthy-start-encounter" </> parseUuid)
         , map (\id1 id2 origin -> UserPage <| RelationshipPage id1 id2 origin) (s "relationship" </> parseUuid </> parseUuid </> parseOrigin)
         , map (\id -> UserPage <| PrenatalEncounterPage id) (s "prenatal-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| PrenatalActivityPage id activity) (s "prenatal-activity" </> parseUuid </> parsePrenatalActivity)

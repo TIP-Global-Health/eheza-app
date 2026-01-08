@@ -95,6 +95,9 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
                 HIVEncounter ->
                     isChw
 
+                HealthyStartEncounter ->
+                    isChw
+
                 HomeVisitEncounter ->
                     -- We do not have direct access to Home Visit encounter.
                     False
@@ -221,6 +224,9 @@ viewParticipant language currentDate encounterType db id person =
 
                 HIVEncounter ->
                     [ onClick <| SetActivePage <| UserPage <| HIVParticipantPage id ]
+
+                HealthyStartEncounter ->
+                    [ onClick <| SetActivePage <| UserPage <| HealthyStartParticipantPage id ]
 
                 HomeVisitEncounter ->
                     -- We do not have direct access to Home Visit encounter.

@@ -247,6 +247,24 @@ fetch model =
                         )
                     |> Maybe.withDefault []
 
+            UserPage (HealthyStartParticipantPage personId) ->
+                getLoggedInData model
+                    |> Maybe.map
+                        (\_ ->
+                            Pages.HealthyStart.Participant.Fetch.fetch personId model.indexedDb
+                                |> List.map MsgIndexedDb
+                        )
+                    |> Maybe.withDefault []
+
+            UserPage (HealthyStartEncounterPage encounterId) ->
+                getLoggedInData model
+                    |> Maybe.map
+                        (\_ ->
+                            Pages.HealthyStart.Encounter.Fetch.fetch encounterId model.indexedDb
+                                |> List.map MsgIndexedDb
+                        )
+                    |> Maybe.withDefault []
+
             UserPage (IndividualEncounterParticipantsPage encounterType) ->
                 getLoggedInData model
                     |> Maybe.map

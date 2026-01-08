@@ -544,6 +544,14 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                         Pages.HIV.Participant.View.view model.language currentDate healthCenterId id model.indexedDb
                             |> flexPageWrapper configured.config model
 
+                    HealthyStartParticipantPage id ->
+                        Pages.HealthyStart.Participant.View.view model.language currentDate healthCenterId id model.indexedDb
+                            |> flexPageWrapper configured.config model
+
+                    HealthyStartEncounterPage id ->
+                        Pages.HealthyStart.Encounter.View.view model.language currentDate healthCenterId id model.indexedDb
+                            |> flexPageWrapper configured.config model
+
                     IndividualEncounterParticipantsPage encounterType ->
                         Pages.IndividualEncounterParticipants.View.view model.language
                             currentDate

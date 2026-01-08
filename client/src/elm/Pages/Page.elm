@@ -201,6 +201,8 @@ type UserPage
     | HIVParticipantPage PersonId
     | HIVEncounterPage HIVEncounterId -- HIV activities index.
     | HIVActivityPage HIVEncounterId HIVActivity -- record HIV activity.
+    | HealthyStartParticipantPage PersonId
+    | HealthyStartEncounterPage HealthyStartEncounterId -- Healthy Start activities index.
     | TraceContactPage AcuteIllnessTraceContactId
     | PatientRecordPage PatientRecordInitiator PersonId
     | MessagingCenterPage

@@ -26334,6 +26334,18 @@ translateActivePage page =
                     , kirundi = Just "Igikorwa ku barwayi ba SIDA"
                     }
 
+                HealthyStartParticipantPage _ ->
+                    { english = "Healthy Start Encounter"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                HealthyStartEncounterPage _ ->
+                    { english = "Healthy Start Encounter"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
 
 translateChartPhrase : ChartPhrase -> TranslationSet String
 translateChartPhrase phrase =
