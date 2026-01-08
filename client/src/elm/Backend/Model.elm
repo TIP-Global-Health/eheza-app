@@ -204,6 +204,7 @@ type alias ModelIndexedDb =
     , postChildScoreboardEncounter : Dict IndividualEncounterParticipantId (WebData ( ChildScoreboardEncounterId, ChildScoreboardEncounter ))
     , postTuberculosisEncounter : Dict IndividualEncounterParticipantId (WebData ( TuberculosisEncounterId, TuberculosisEncounter ))
     , postHIVEncounter : Dict IndividualEncounterParticipantId (WebData ( HIVEncounterId, HIVEncounter ))
+    , postHealthyStartEncounter : Dict IndividualEncounterParticipantId (WebData ( HealthyStartEncounterId, HealthyStartEncounter ))
     , postEducationSession : WebData ( EducationSessionId, EducationSession )
     }
 
@@ -300,6 +301,7 @@ emptyModelIndexedDb =
     , postChildScoreboardEncounter = Dict.empty
     , postTuberculosisEncounter = Dict.empty
     , postHIVEncounter = Dict.empty
+    , postHealthyStartEncounter = Dict.empty
     , postEducationSession = NotAsked
     }
 
@@ -507,6 +509,7 @@ type MsgIndexedDb
     | PostChildScoreboardEncounter ChildScoreboardEncounter
     | PostTuberculosisEncounter TuberculosisEncounter
     | PostHIVEncounter HIVEncounter
+    | PostHealthyStartEncounter HealthyStartEncounter
     | PostEducationSession EducationSession
       -- Messages which handle responses to mutating data
     | HandlePostedPerson (Maybe PersonId) Initiator (WebData PersonId)
@@ -524,6 +527,7 @@ type MsgIndexedDb
     | HandlePostedChildScoreboardEncounter IndividualEncounterParticipantId (WebData ( ChildScoreboardEncounterId, ChildScoreboardEncounter ))
     | HandlePostedTuberculosisEncounter IndividualEncounterParticipantId (WebData ( TuberculosisEncounterId, TuberculosisEncounter ))
     | HandlePostedHIVEncounter IndividualEncounterParticipantId (WebData ( HIVEncounterId, HIVEncounter ))
+    | HandlePostedHealthyStartEncounter IndividualEncounterParticipantId (WebData ( HealthyStartEncounterId, HealthyStartEncounter ))
     | HandlePostedEducationSession (WebData ( EducationSessionId, EducationSession ))
       -- Operations we may want to perform when logout is clicked.
     | HandleLogout

@@ -4963,6 +4963,34 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             , rollbarOnFailure ++ appMsgs
             )
 
+        PostHealthyStartEncounter healthyStartEncounter ->
+            ( { model | postHealthyStartEncounter = Dict.insert healthyStartEncounter.participant Loading model.postHealthyStartEncounter }
+            , sw.post healthyStartEncounterEndpoint healthyStartEncounter
+                |> toCmd (RemoteData.fromResult >> HandlePostedHealthyStartEncounter healthyStartEncounter.participant)
+            , []
+            )
+
+        HandlePostedHealthyStartEncounter participantId data ->
+            let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
+                appMsgs =
+                    RemoteData.map
+                        (\( healthyStartEncounterId, _ ) ->
+                            [ App.Model.SetActivePage <|
+                                UserPage <|
+                                    Pages.Page.HealthyStartEncounterPage healthyStartEncounterId
+                            ]
+                        )
+                        data
+                        |> RemoteData.withDefault []
+            in
+            ( { model | postHealthyStartEncounter = Dict.insert participantId data model.postHealthyStartEncounter }
+            , Cmd.none
+            , rollbarOnFailure ++ appMsgs
+            )
+
         PostEducationSession educationSession ->
             ( { model | postEducationSession = Loading }
             , sw.post educationSessionEndpoint educationSession
