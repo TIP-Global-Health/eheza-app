@@ -51,6 +51,9 @@ import Pages.EducationSession.Model
 import Pages.GlobalCaseManagement.Model
 import Pages.HIV.Activity.Model
 import Pages.HIV.Encounter.Model
+import Pages.HealthyStart.Encounter.Model
+import Pages.HealthyStart.Participant.Model
+import Pages.HealthyStart.RecurrentEncounter.Model
 import Pages.HomeVisit.Activity.Model
 import Pages.HomeVisit.Encounter.Model
 import Pages.IndividualEncounterParticipants.Model
@@ -293,6 +296,9 @@ type alias LoggedInModel =
 
     -- The nurse who has logged in.
     , nurse : ( NurseId, Nurse )
+    , healthyStartParticipantPages : Dict PersonId Pages.HealthyStart.Participant.Model.Model
+    , healthyStartEncounterPages : Dict HealthyStartEncounterId Pages.HealthyStart.Encounter.Model.Model
+    , healthyStartRecurrentEncounterPages : Dict HealthyStartEncounterId Pages.HealthyStart.RecurrentEncounter.Model.Model
     , prenatalParticipantPages : Dict PersonId Pages.Prenatal.Participant.Model.Model
     , prenatalEncounterPages : Dict PrenatalEncounterId Pages.Prenatal.Encounter.Model.Model
     , prenatalRecurrentEncounterPages : Dict PrenatalEncounterId Pages.Prenatal.RecurrentEncounter.Model.Model
@@ -382,6 +388,9 @@ emptyLoggedInModel site villageId nurse =
     , educationSessionPages = Dict.empty
     , hivEncounterPages = Dict.empty
     , hivActivityPages = Dict.empty
+    , healthyStartParticipantPages = Dict.empty
+    , healthyStartEncounterPages = Dict.empty
+    , healthyStartRecurrentEncounterPages = Dict.empty
     , traceContactPages = Dict.empty
     , clinicalProgressReportPages = Dict.empty
     , patientRecordPages = Dict.empty
@@ -435,6 +444,7 @@ type MsgLoggedIn
     | MsgPageEditPerson PersonId Pages.Person.Model.Msg
     | MsgPagePersons Pages.People.Model.Msg
     | MsgPagePrenatalParticipant PersonId Pages.Prenatal.Participant.Model.Msg
+    | MsgPageHealthyStartParticipant PersonId Pages.HealthyStart.Participant.Model.Msg
     | MsgPageIndividualEncounterParticipants Pages.IndividualEncounterParticipants.Model.Msg
     | MsgPageRelationship PersonId PersonId Pages.Relationship.Model.Msg
     | MsgPageAcuteIllnessParticipant PersonId Pages.AcuteIllness.Participant.Model.Msg
@@ -450,6 +460,8 @@ type MsgLoggedIn
     | MsgPageChildScoreboardEncounter ChildScoreboardEncounterId Pages.ChildScoreboard.Encounter.Model.Msg
     | MsgPageTuberculosisEncounter TuberculosisEncounterId Pages.Tuberculosis.Encounter.Model.Msg
     | MsgPageHIVEncounter HIVEncounterId Pages.HIV.Encounter.Model.Msg
+    | MsgPageHealthyStartEncounter HealthyStartEncounterId Pages.HealthyStart.Encounter.Model.Msg
+    | MsgPageHealthyStartRecurrentEncounter HealthyStartEncounterId Pages.HealthyStart.RecurrentEncounter.Model.Msg
     | MsgPageEducationSession EducationSessionId Pages.EducationSession.Model.Msg
     | MsgPagePrenatalActivity PrenatalEncounterId PrenatalActivity Pages.Prenatal.Activity.Model.Msg
     | MsgPagePrenatalRecurrentActivity PrenatalEncounterId PrenatalRecurrentActivity Pages.Prenatal.RecurrentActivity.Model.Msg

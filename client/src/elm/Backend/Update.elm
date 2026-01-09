@@ -21,6 +21,8 @@ import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
 import Backend.HIVEncounter.Model
 import Backend.HIVEncounter.Update
+import Backend.HealthyStartEncounter.Model
+import Backend.HealthyStartEncounter.Update
 import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
 import Backend.HomeVisitEncounter.Update
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantExtraData(..), IndividualParticipantInitiator(..))
@@ -1209,6 +1211,67 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             , []
             )
 
+        FetchHealthyStartEncountersForParticipant id ->
+            ( { model | healthyStartEncountersByParticipant = Dict.insert id Loading model.healthyStartEncountersByParticipant }
+            , sw.select healthyStartEncounterEndpoint [ id ]
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedHealthyStartEncountersForParticipant id)
+            , []
+            )
+
+        HandleFetchedHealthyStartEncountersForParticipant id data ->
+            ( { model | healthyStartEncountersByParticipant = Dict.insert id data model.healthyStartEncountersByParticipant }
+            , Cmd.none
+            , []
+            )
+
+        FetchHealthyStartEncountersForParticipants ids ->
+            let
+                healthyStartEncountersByParticipantUpdated =
+                    List.foldl (\id accum -> Dict.insert id Loading accum) model.healthyStartEncountersByParticipant ids
+            in
+            ( { model | healthyStartEncountersByParticipant = healthyStartEncountersByParticipantUpdated }
+            , sw.select healthyStartEncounterEndpoint ids
+                |> toCmd
+                    (RemoteData.fromResult
+                        >> RemoteData.map
+                            (.items
+                                >> List.foldl
+                                    (\( encounterId, encounter ) accum ->
+                                        let
+                                            dictParticipantUpdated =
+                                                Dict.get encounter.participant accum
+                                                    |> Maybe.map (Dict.insert encounterId encounter)
+                                                    |> Maybe.withDefault (Dict.singleton encounterId encounter)
+                                        in
+                                        Dict.insert encounter.participant dictParticipantUpdated accum
+                                    )
+                                    Dict.empty
+                            )
+                        >> HandleFetchedHealthyStartEncountersForParticipants
+                    )
+            , []
+            )
+
+        HandleFetchedHealthyStartEncountersForParticipants webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just allEncountersByParticipant ->
+                    let
+                        healthyStartEncountersByParticipantUpdated =
+                            Dict.foldl
+                                (\participantId encounters accum ->
+                                    Dict.insert participantId (Success encounters) accum
+                                )
+                                model.healthyStartEncountersByParticipant
+                                allEncountersByParticipant
+                    in
+                    ( { model | healthyStartEncountersByParticipant = healthyStartEncountersByParticipantUpdated }
+                    , Cmd.none
+                    , []
+                    )
+
         FetchFollowUpParticipants ids ->
             if List.isEmpty ids then
                 noChange
@@ -1754,6 +1817,49 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                             Dict.map (\_ v -> RemoteData.Success v) dict
                     in
                     ( { model | hivEncounters = Dict.union dictUpdated model.hivEncounters }
+                    , Cmd.none
+                    , []
+                    )
+
+        FetchHealthyStartEncounter id ->
+            ( { model | healthyStartEncounters = Dict.insert id Loading model.healthyStartEncounters }
+            , sw.get healthyStartEncounterEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedHealthyStartEncounter id)
+            , []
+            )
+
+        HandleFetchedHealthyStartEncounter id data ->
+            ( { model | healthyStartEncounters = Dict.insert id data model.healthyStartEncounters }
+            , Cmd.none
+            , []
+            )
+
+        FetchHealthyStartEncounters ids ->
+            if List.isEmpty ids then
+                noChange
+
+            else
+                let
+                    healthyStartEncountersUpdated =
+                        List.foldl (\id accum -> Dict.insert id Loading accum) model.healthyStartEncounters ids
+                in
+                ( { model | healthyStartEncounters = healthyStartEncountersUpdated }
+                , sw.getMany healthyStartEncounterEndpoint ids
+                    |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchedHealthyStartEncounters)
+                , []
+                )
+
+        HandleFetchedHealthyStartEncounters webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | healthyStartEncounters = Dict.union dictUpdated model.healthyStartEncounters }
                     , Cmd.none
                     , []
                     )
@@ -3729,6 +3835,24 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             , appMsgs
             )
 
+        MsgHealthyStartEncounter encounterId subMsg ->
+            let
+                encounter =
+                    Dict.get encounterId model.healthyStartEncounters
+                        |> Maybe.andThen RemoteData.toMaybe
+
+                requests =
+                    Dict.get encounterId model.healthyStartEncounterRequests
+                        |> Maybe.withDefault Backend.HealthyStartEncounter.Model.emptyModel
+
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.HealthyStartEncounter.Update.update currentDate nurseId healthCenterId encounterId encounter subMsg requests
+            in
+            ( { model | healthyStartEncounterRequests = Dict.insert encounterId subModel model.healthyStartEncounterRequests }
+            , Cmd.map (MsgHealthyStartEncounter encounterId) subCmd
+            , appMsgs
+            )
+
         MsgNutritionEncounter encounterId subMsg ->
             let
                 encounter =
@@ -4285,6 +4409,9 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                                     HIVEncounter ->
                                                         HIVParticipantPage personId
 
+                                                    HealthyStartEncounter ->
+                                                        HealthyStartParticipantPage InitiatorParticipantsPage personId
+
                                                     -- We do not have a direct access to Home Visit
                                                     -- encounter, since it resides under Nutrition menu.
                                                     -- Providing 'default' page, to satisfy compiler.
@@ -4508,6 +4635,20 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                         AntenatalData prenatalEncounterType ->
                                             [ emptyPrenatalEncounter sessionId currentDate prenatalEncounterType healthCenterId
                                                 |> Backend.Model.PostPrenatalEncounter DestinationEncounterPage
+                                                |> App.Model.MsgIndexedDb
+                                            ]
+
+                                        _ ->
+                                            []
+
+                                HealthyStartEncounter ->
+                                    case extraData of
+                                        HealthyStartData healthyStartEncounterType ->
+                                            [ Backend.HealthyStartEncounter.Model.emptyHealthyStartEncounter sessionId
+                                                currentDate
+                                                healthyStartEncounterType
+                                                healthCenterId
+                                                |> Backend.Model.PostHealthyStartEncounter
                                                 |> App.Model.MsgIndexedDb
                                             ]
 
@@ -4844,6 +4985,34 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         |> RemoteData.withDefault []
             in
             ( { model | postHIVEncounter = Dict.insert participantId data model.postHIVEncounter }
+            , Cmd.none
+            , rollbarOnFailure ++ appMsgs
+            )
+
+        PostHealthyStartEncounter healthyStartEncounter ->
+            ( { model | postHealthyStartEncounter = Dict.insert healthyStartEncounter.participant Loading model.postHealthyStartEncounter }
+            , sw.post healthyStartEncounterEndpoint healthyStartEncounter
+                |> toCmd (RemoteData.fromResult >> HandlePostedHealthyStartEncounter healthyStartEncounter.participant)
+            , []
+            )
+
+        HandlePostedHealthyStartEncounter participantId data ->
+            let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
+                appMsgs =
+                    RemoteData.map
+                        (\( healthyStartEncounterId, _ ) ->
+                            [ App.Model.SetActivePage <|
+                                UserPage <|
+                                    Pages.Page.HealthyStartEncounterPage healthyStartEncounterId
+                            ]
+                        )
+                        data
+                        |> RemoteData.withDefault []
+            in
+            ( { model | postHealthyStartEncounter = Dict.insert participantId data model.postHealthyStartEncounter }
             , Cmd.none
             , rollbarOnFailure ++ appMsgs
             )
@@ -5323,6 +5492,21 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 data.encounterId
                 (\measurements -> { measurements | hcContact = Just ( uuid, data ) })
                 model
+            , recalc
+            )
+
+        HealthyStartEncounterRevision uuid data ->
+            let
+                healthyStartEncounters =
+                    Dict.update uuid (Maybe.map (always (Success data))) model.healthyStartEncounters
+
+                healthyStartEncountersByParticipant =
+                    Dict.remove data.participant model.healthyStartEncountersByParticipant
+            in
+            ( { model
+                | healthyStartEncounters = healthyStartEncounters
+                , healthyStartEncountersByParticipant = healthyStartEncountersByParticipant
+              }
             , recalc
             )
 

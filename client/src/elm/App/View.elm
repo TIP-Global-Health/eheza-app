@@ -47,6 +47,12 @@ import Pages.HIV.Activity.View
 import Pages.HIV.Encounter.Model
 import Pages.HIV.Encounter.View
 import Pages.HIV.Participant.View
+import Pages.HealthyStart.Encounter.Model
+import Pages.HealthyStart.Encounter.View
+import Pages.HealthyStart.Participant.Model
+import Pages.HealthyStart.Participant.View
+import Pages.HealthyStart.RecurrentEncounter.Model
+import Pages.HealthyStart.RecurrentEncounter.View
 import Pages.HomeVisit.Activity.Model
 import Pages.HomeVisit.Activity.View
 import Pages.HomeVisit.Encounter.Model
@@ -542,6 +548,41 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
 
                     HIVParticipantPage id ->
                         Pages.HIV.Participant.View.view model.language currentDate healthCenterId id model.indexedDb
+                            |> flexPageWrapper configured.config model
+
+                    HealthyStartParticipantPage initiator id ->
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.healthyStartParticipantPages
+                                    |> Maybe.withDefault Pages.HealthyStart.Participant.Model.emptyModel
+                        in
+                        Pages.HealthyStart.Participant.View.view model.language currentDate healthCenterId id initiator model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageHealthyStartParticipant id)
+                            |> flexPageWrapper configured.config model
+
+                    HealthyStartEncounterPage id ->
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.healthyStartEncounterPages
+                                    |> Maybe.withDefault Pages.HealthyStart.Encounter.Model.emptyModel
+                        in
+                        Pages.HealthyStart.Encounter.View.view model.language
+                            currentDate
+                            site
+                            id
+                            model.indexedDb
+                            page_
+                            |> Html.map (MsgLoggedIn << MsgPageHealthyStartEncounter id)
+                            |> flexPageWrapper configured.config model
+
+                    HealthyStartRecurrentEncounterPage id ->
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.healthyStartRecurrentEncounterPages
+                                    |> Maybe.withDefault Pages.HealthyStart.RecurrentEncounter.Model.emptyModel
+                        in
+                        Pages.HealthyStart.RecurrentEncounter.View.view model.language currentDate (Tuple.second loggedInModel.nurse) id model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageHealthyStartRecurrentEncounter id)
                             |> flexPageWrapper configured.config model
 
                     IndividualEncounterParticipantsPage encounterType ->

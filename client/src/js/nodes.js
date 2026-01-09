@@ -136,6 +136,9 @@
                 else if (type === 'hiv-measurements') {
                     return viewMeasurements('hiv_encounter', uuid);
                 }
+                else if (type === 'healthy-start-measurements') {
+                    return viewMeasurements('healthy_start_encounter', uuid);
+                }
                 else if (type === 'follow-up-measurements') {
                     return viewFollowUpMeasurements(uuid);
                 }
@@ -529,6 +532,9 @@
                     }
                     else if (key === 'hiv_encounter') {
                         target = node.hiv_encounter;
+                    }
+                    else if (key === 'healthy_start_encounter') {
+                        target = node.healthy_start_encounter;
                     }
                     else if (key === 'newborn') {
                         target = node.newborn;
@@ -1004,6 +1010,7 @@
                 var encounterTypes = [
                   'acute_illness_encounter',
                   'child_scoreboard_encounter',
+                  'healthy_start_encounter',
                   'hiv_encounter',
                   'home_visit_encounter',
                   'ncd_encounter',

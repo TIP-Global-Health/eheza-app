@@ -23,6 +23,9 @@ import Backend.HIVEncounter.Encoder exposing (encodeHIVEncounter)
 import Backend.HIVEncounter.Model exposing (HIVEncounter)
 import Backend.HealthCenter.Decoder exposing (decodeHealthCenter)
 import Backend.HealthCenter.Model exposing (HealthCenter)
+import Backend.HealthyStartEncounter.Decoder exposing (decodeHealthyStartEncounter)
+import Backend.HealthyStartEncounter.Encoder exposing (encodeHealthyStartEncounter)
+import Backend.HealthyStartEncounter.Model exposing (HealthyStartEncounter)
 import Backend.HomeVisitEncounter.Decoder exposing (decodeHomeVisitEncounter)
 import Backend.HomeVisitEncounter.Encoder exposing (encodeHomeVisitEncounter)
 import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
@@ -1495,6 +1498,13 @@ hivEncounterEndpoint : ReadWriteEndPoint Error HIVEncounterId HIVEncounter HIVEn
 hivEncounterEndpoint =
     swEndpoint "nodes/hiv_encounter" decodeHIVEncounter
         |> withValueEncoder (object << encodeHIVEncounter)
+        |> withParamsEncoder encodeIndividualEncounterParams
+
+
+healthyStartEncounterEndpoint : ReadWriteEndPoint Error HealthyStartEncounterId HealthyStartEncounter HealthyStartEncounter (List IndividualEncounterParticipantId)
+healthyStartEncounterEndpoint =
+    swEndpoint "nodes/healthy_start_encounter" decodeHealthyStartEncounter
+        |> withValueEncoder (object << encodeHealthyStartEncounter)
         |> withParamsEncoder encodeIndividualEncounterParams
 
 

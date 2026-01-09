@@ -612,6 +612,15 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             , title = Translate.People
                             }
 
+                        HealthyStartEncounter ->
+                            { goBackPage = UserPage (IndividualEncounterParticipantsPage HealthyStartEncounter)
+                            , expectedAge = expectedAgeByForm currentDate personForm operation
+                            , expectedGender = ExpectMaleOrFemale
+                            , birthDateSelectorFrom = Date.add Years -120 today
+                            , birthDateSelectorTo = today
+                            , title = Translate.People
+                            }
+
                         -- We do not have a direct access to Home Visit
                         -- encounter, since it resides under Nutrition menu.
                         -- Providing 'default' values, to satisfy compiler.

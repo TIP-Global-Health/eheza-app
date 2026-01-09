@@ -1,0 +1,8 @@
+<?php
+
+/**
+ * @file
+ * Code for the Hedley Healthy Start feature.
+ */
+
+include_once 'hedley_healthy_start.features.inc';

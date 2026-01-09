@@ -3452,6 +3452,111 @@ emptyPrenatalMeasurements =
     }
 
 
+{-| A set of Healthy Start measurements that correspond to the same Healthy Start encounter.
+-}
+type alias HealthyStartMeasurements =
+    { -- breastExam : Maybe ( BreastExamId, BreastExam )
+      -- , corePhysicalExam : Maybe ( CorePhysicalExamId, CorePhysicalExam )
+      -- , dangerSigns : Maybe ( DangerSignsId, DangerSigns )
+      -- , lastMenstrualPeriod : Maybe ( LastMenstrualPeriodId, LastMenstrualPeriod )
+      -- , medicalHistory : Maybe ( MedicalHistoryId, MedicalHistory )
+      -- , medication : Maybe ( MedicationId, Medication )
+      -- , obstetricalExam : Maybe ( ObstetricalExamId, ObstetricalExam )
+      -- , obstetricHistory : Maybe ( ObstetricHistoryId, ObstetricHistory )
+      -- , obstetricHistoryStep2 : Maybe ( ObstetricHistoryStep2Id, ObstetricHistoryStep2 )
+      -- , familyPlanning : Maybe ( HealthyStartFamilyPlanningId, HealthyStartFamilyPlanning )
+      -- , nutrition : Maybe ( HealthyStartNutritionId, HealthyStartNutrition )
+      -- , malariaPrevention : Maybe ( MalariaPreventionId, MalariaPrevention )
+      -- , socialHistory : Maybe ( SocialHistoryId, SocialHistory )
+      -- , vitals : Maybe ( VitalsId, Vitals )
+      -- , prenatalPhoto : Maybe ( HealthyStartPhotoId, HealthyStartPhoto )
+      -- , birthPlan : Maybe ( BirthPlanId, BirthPlan )
+      -- , pregnancyTest : Maybe ( PregnancyTestId, PregnancyTest )
+      -- , healthEducation : Maybe ( HealthyStartHealthEducationId, HealthyStartHealthEducation )
+      -- , followUp : Maybe ( HealthyStartFollowUpId, HealthyStartFollowUp )
+      -- , sendToHC : Maybe ( HealthyStartSendToHCId, HealthyStartSendToHC )
+      -- , appointmentConfirmation : Maybe ( HealthyStartAppointmentConfirmationId, HealthyStartAppointmentConfirmation )
+      -- , bloodGpRsTest : Maybe ( HealthyStartBloodGpRsTestId, HealthyStartBloodGpRsTest )
+      -- , hemoglobinTest : Maybe ( HealthyStartHemoglobinTestId, HealthyStartHemoglobinTest )
+      -- , hepatitisBTest : Maybe ( HealthyStartHepatitisBTestId, HealthyStartHepatitisBTest )
+      -- , hivTest : Maybe ( HealthyStartHIVTestId, HealthyStartHIVTest )
+      -- , malariaTest : Maybe ( HealthyStartMalariaTestId, HealthyStartMalariaTest )
+      -- , randomBloodSugarTest : Maybe ( HealthyStartRandomBloodSugarTestId, HealthyStartRandomBloodSugarTest )
+      -- , syphilisTest : Maybe ( HealthyStartSyphilisTestId, HealthyStartSyphilisTest )
+      -- , urineDipstickTest : Maybe ( HealthyStartUrineDipstickTestId, HealthyStartUrineDipstickTest )
+      -- , labsResults : Maybe ( HealthyStartLabsResultsId, HealthyStartLabsResults )
+      -- , medicationDistribution : Maybe ( HealthyStartMedicationDistributionId, HealthyStartMedicationDistribution )
+      -- , symptomReview : Maybe ( HealthyStartSymptomReviewId, HealthyStartSymptomReview )
+      -- , outsideCare : Maybe ( HealthyStartOutsideCareId, HealthyStartOutsideCare )
+      -- , hivPCRTest : Maybe ( HealthyStartHIVPCRTestId, HealthyStartHIVPCRTest )
+      -- , mentalHealth : Maybe ( HealthyStartMentalHealthId, HealthyStartMentalHealth )
+      -- , tetanusImmunisation : Maybe ( HealthyStartTetanusImmunisationId, HealthyStartTetanusImmunisation )
+      -- , breastfeeding : Maybe ( HealthyStartBreastfeedingId, HealthyStartBreastfeeding )
+      -- , guExam : Maybe ( HealthyStartGUExamId, HealthyStartGUExam )
+      -- , specialityCare : Maybe ( HealthyStartSpecialityCareId, HealthyStartSpecialityCare )
+      -- , partnerHIVTest : Maybe ( HealthyStartPartnerHIVTestId, HealthyStartPartnerHIVTest )
+      -- , aspirin : Maybe ( HealthyStartAspirinId, HealthyStartAspirin )
+      -- , calcium : Maybe ( HealthyStartCalciumId, HealthyStartCalcium )
+      -- , fefol : Maybe ( HealthyStartFefolId, HealthyStartFefol )
+      -- , folate : Maybe ( HealthyStartFolateId, HealthyStartFolate )
+      -- , iron : Maybe ( HealthyStartIronId, HealthyStartIron )
+      -- , mms : Maybe ( HealthyStartMMSId, HealthyStartMMS )
+      -- , mebendazole : Maybe ( HealthyStartMebendazoleId, HealthyStartMebendazole )
+    }
+
+
+emptyHealthyStartMeasurements : HealthyStartMeasurements
+emptyHealthyStartMeasurements =
+    { -- breastExam = Nothing
+      -- , corePhysicalExam = Nothing
+      -- , dangerSigns = Nothing
+      -- , lastMenstrualPeriod = Nothing
+      -- , medicalHistory = Nothing
+      -- , medication = Nothing
+      -- , obstetricalExam = Nothing
+      -- , obstetricHistory = Nothing
+      -- , obstetricHistoryStep2 = Nothing
+      -- , familyPlanning = Nothing
+      -- , nutrition = Nothing
+      -- , malariaPrevention = Nothing
+      -- , socialHistory = Nothing
+      -- , vitals = Nothing
+      -- , prenatalPhoto = Nothing
+      -- , birthPlan = Nothing
+      -- , pregnancyTest = Nothing
+      -- , healthEducation = Nothing
+      -- , followUp = Nothing
+      -- , sendToHC = Nothing
+      -- , appointmentConfirmation = Nothing
+      -- , bloodGpRsTest = Nothing
+      -- , hemoglobinTest = Nothing
+      -- , hepatitisBTest = Nothing
+      -- , hivTest = Nothing
+      -- , malariaTest = Nothing
+      -- , randomBloodSugarTest = Nothing
+      -- , syphilisTest = Nothing
+      -- , urineDipstickTest = Nothing
+      -- , labsResults = Nothing
+      -- , medicationDistribution = Nothing
+      -- , symptomReview = Nothing
+      -- , outsideCare = Nothing
+      -- , hivPCRTest = Nothing
+      -- , mentalHealth = Nothing
+      -- , tetanusImmunisation = Nothing
+      -- , breastfeeding = Nothing
+      -- , guExam = Nothing
+      -- , specialityCare = Nothing
+      -- , partnerHIVTest = Nothing
+      -- , aspirin = Nothing
+      -- , calcium = Nothing
+      -- , fefol = Nothing
+      -- , folate = Nothing
+      -- , iron = Nothing
+      -- , mms = Nothing
+      -- , mebendazole = Nothing
+    }
+
+
 {-| A set of Nutrition measurements that correspond to the same Nutrition encounter.
 -}
 type alias NutritionMeasurements =

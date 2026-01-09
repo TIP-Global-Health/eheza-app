@@ -183,6 +183,9 @@ pageToFragment current =
                 PrenatalParticipantPage initiator id ->
                     Just <| "prenatal-participant/" ++ fromEntityUuid id ++ "/" ++ Backend.IndividualEncounterParticipant.Utils.initiatorToUrlFragment initiator
 
+                HealthyStartParticipantPage initiator id ->
+                    Just <| "healthy-start-participant/" ++ fromEntityUuid id ++ "/" ++ Backend.IndividualEncounterParticipant.Utils.initiatorToUrlFragment initiator
+
                 NutritionParticipantPage initiator id ->
                     Just <| "nutrition-participant/" ++ fromEntityUuid id ++ "/" ++ Backend.IndividualEncounterParticipant.Utils.initiatorToUrlFragment initiator
 
@@ -253,6 +256,12 @@ pageToFragment current =
                             "session/" ++ fromEntityUuid sessionId ++ subUrl
                     in
                     Just url
+
+                HealthyStartEncounterPage id ->
+                    Just <| "healthy-start-encounter/" ++ fromEntityUuid id
+
+                HealthyStartRecurrentEncounterPage id ->
+                    Just <| "healthy-start-recurrent-encounter/" ++ fromEntityUuid id
 
                 PrenatalEncounterPage id ->
                     Just <| "prenatal-encounter/" ++ fromEntityUuid id
@@ -408,6 +417,7 @@ parser =
         , map (\id -> UserPage <| EditPersonPage id) (s "person" </> parseUuid </> s "edit")
         , map (\id origin -> UserPage <| PersonPage id origin) (s "person" </> parseUuid </> parseOrigin)
         , map (\id initiator -> UserPage <| PrenatalParticipantPage initiator id) (s "prenatal-participant" </> parseUuid </> parseIndividualParticipantInitiator)
+        , map (\id initiator -> UserPage <| HealthyStartParticipantPage initiator id) (s "healthy-start-participant" </> parseUuid </> parseIndividualParticipantInitiator)
         , map (\id initiator -> UserPage <| NutritionParticipantPage initiator id) (s "nutrition-participant" </> parseUuid </> parseIndividualParticipantInitiator)
         , map (\id initiator -> UserPage <| AcuteIllnessParticipantPage initiator id) (s "acute-illness-participant" </> parseUuid </> parseIndividualParticipantInitiator)
         , map (\id initiator -> UserPage <| WellChildParticipantPage initiator id) (s "well-child-participant" </> parseUuid </> parseIndividualParticipantInitiator)
@@ -415,6 +425,8 @@ parser =
         , map (\id -> UserPage <| ChildScoreboardParticipantPage id) (s "child-scoreboard-participant" </> parseUuid)
         , map (\id -> UserPage <| HIVParticipantPage id) (s "hiv-participant" </> parseUuid)
         , map (\id -> UserPage <| TuberculosisParticipantPage id) (s "tuberculosis-participant" </> parseUuid)
+        , map (\id -> UserPage <| HealthyStartEncounterPage id) (s "healthy-start-encounter" </> parseUuid)
+        , map (\id -> UserPage <| HealthyStartRecurrentEncounterPage id) (s "healthy-start-recurrent-encounter" </> parseUuid)
         , map (\id1 id2 origin -> UserPage <| RelationshipPage id1 id2 origin) (s "relationship" </> parseUuid </> parseUuid </> parseOrigin)
         , map (\id -> UserPage <| PrenatalEncounterPage id) (s "prenatal-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| PrenatalActivityPage id activity) (s "prenatal-activity" </> parseUuid </> parsePrenatalActivity)
