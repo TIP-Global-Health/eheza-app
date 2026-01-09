@@ -4410,7 +4410,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                                         HIVParticipantPage personId
 
                                                     HealthyStartEncounter ->
-                                                        HealthyStartParticipantPage personId
+                                                        HealthyStartParticipantPage InitiatorParticipantsPage personId
 
                                                     -- We do not have a direct access to Home Visit
                                                     -- encounter, since it resides under Nutrition menu.
@@ -4641,6 +4641,20 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                         _ ->
                                             []
 
+                                HealthyStartEncounter ->
+                                    case extraData of
+                                        HealthyStartData healthyStartEncounterType ->
+                                            [ Backend.HealthyStartEncounter.Model.emptyHealthyStartEncounter sessionId
+                                                currentDate
+                                                healthyStartEncounterType
+                                                healthCenterId
+                                                |> Backend.Model.PostHealthyStartEncounter
+                                                |> App.Model.MsgIndexedDb
+                                            ]
+
+                                        _ ->
+                                            []
+
                                 ChildScoreboardEncounter ->
                                     [ Backend.ChildScoreboardEncounter.Model.emptyChildScoreboardEncounter sessionId currentDate healthCenterId
                                         |> Backend.Model.PostChildScoreboardEncounter
@@ -4650,15 +4664,6 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                 HIVEncounter ->
                                     [ Backend.HIVEncounter.Model.emptyHIVEncounter sessionId currentDate healthCenterId
                                         |> Backend.Model.PostHIVEncounter
-                                        |> App.Model.MsgIndexedDb
-                                    ]
-
-                                HealthyStartEncounter ->
-                                    [ Backend.HealthyStartEncounter.Model.emptyHealthyStartEncounter sessionId
-                                        currentDate
-                                        Backend.HealthyStartEncounter.Model.NurseEncounter
-                                        healthCenterId
-                                        |> Backend.Model.PostHealthyStartEncounter
                                         |> App.Model.MsgIndexedDb
                                     ]
 

@@ -406,17 +406,18 @@ update msg model =
                             )
 
                         MsgPageHealthyStartParticipant id subMsg ->
-                            let
-                                ( subModel, subCmd, appMsgs ) =
-                                    data.healthyStartParticipantPages
-                                        |> Dict.get id
-                                        |> Maybe.withDefault Pages.HealthyStart.Participant.Model.emptyModel
-                                        |> Pages.HealthyStart.Participant.Update.update currentDate id subMsg
-                            in
-                            ( { data | healthyStartParticipantPages = Dict.insert id subModel data.healthyStartParticipantPages }
-                            , Cmd.map (MsgLoggedIn << MsgPageHealthyStartParticipant id) subCmd
-                            , appMsgs
-                            )
+                            -- let
+                            --     ( subModel, subCmd, appMsgs ) =
+                            --         data.healthyStartParticipantPages
+                            --             |> Dict.get id
+                            --             |> Maybe.withDefault Pages.HealthyStart.Participant.Model.emptyModel
+                            --             |> Pages.HealthyStart.Participant.Update.update currentDate id subMsg
+                            -- in
+                            -- ( { data | healthyStartParticipantPages = Dict.insert id subModel data.healthyStartParticipantPages }
+                            -- , Cmd.map (MsgLoggedIn << MsgPageHealthyStartParticipant id) subCmd
+                            -- , appMsgs
+                            -- )
+                            ( data, Cmd.none, [] )
 
                         MsgPageIndividualEncounterParticipants subMsg ->
                             let
@@ -500,30 +501,32 @@ update msg model =
                             )
 
                         MsgPageHealthyStartEncounter id subMsg ->
-                            let
-                                ( subModel, subCmd, extraMsgs ) =
-                                    data.healthyStartEncounterPages
-                                        |> Dict.get id
-                                        |> Maybe.withDefault Pages.HealthyStart.Encounter.Model.emptyModel
-                                        |> Pages.HealthyStart.Encounter.Update.update id subMsg
-                            in
-                            ( { data | healthyStartEncounterPages = Dict.insert id subModel data.healthyStartEncounterPages }
-                            , Cmd.map (MsgLoggedIn << MsgPageHealthyStartEncounter id) subCmd
-                            , extraMsgs
-                            )
+                            -- let
+                            --     ( subModel, subCmd, extraMsgs ) =
+                            --         data.healthyStartEncounterPages
+                            --             |> Dict.get id
+                            --             |> Maybe.withDefault Pages.HealthyStart.Encounter.Model.emptyModel
+                            --             |> Pages.HealthyStart.Encounter.Update.update id subMsg
+                            -- in
+                            -- ( { data | healthyStartEncounterPages = Dict.insert id subModel data.healthyStartEncounterPages }
+                            -- , Cmd.map (MsgLoggedIn << MsgPageHealthyStartEncounter id) subCmd
+                            -- , extraMsgs
+                            -- )
+                            ( data, Cmd.none, [] )
 
                         MsgPageHealthyStartRecurrentEncounter id subMsg ->
-                            let
-                                ( subModel, subCmd, extraMsgs ) =
-                                    data.healthyStartRecurrentEncounterPages
-                                        |> Dict.get id
-                                        |> Maybe.withDefault Pages.HealthyStart.RecurrentEncounter.Model.emptyModel
-                                        |> Pages.HealthyStart.RecurrentEncounter.Update.update currentDate id subMsg
-                            in
-                            ( { data | healthyStartRecurrentEncounterPages = Dict.insert id subModel data.healthyStartRecurrentEncounterPages }
-                            , Cmd.map (MsgLoggedIn << MsgPageHealthyStartRecurrentEncounter id) subCmd
-                            , extraMsgs
-                            )
+                            -- let
+                            --     ( subModel, subCmd, extraMsgs ) =
+                            --         data.healthyStartRecurrentEncounterPages
+                            --             |> Dict.get id
+                            --             |> Maybe.withDefault Pages.HealthyStart.RecurrentEncounter.Model.emptyModel
+                            --             |> Pages.HealthyStart.RecurrentEncounter.Update.update currentDate id subMsg
+                            -- in
+                            -- ( { data | healthyStartRecurrentEncounterPages = Dict.insert id subModel data.healthyStartRecurrentEncounterPages }
+                            -- , Cmd.map (MsgLoggedIn << MsgPageHealthyStartRecurrentEncounter id) subCmd
+                            -- , extraMsgs
+                            -- )
+                            ( data, Cmd.none, [] )
 
                         MsgPageNutritionEncounter id subMsg ->
                             let

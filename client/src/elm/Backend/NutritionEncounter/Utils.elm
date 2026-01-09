@@ -5,6 +5,7 @@ import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
 import Backend.ChildScoreboardEncounter.Model exposing (ChildScoreboardEncounter)
 import Backend.Entities exposing (..)
 import Backend.HIVEncounter.Model exposing (HIVEncounter)
+import Backend.HealthyStartEncounter.Model exposing (HealthyStartEncounter)
 import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (..)
@@ -344,6 +345,11 @@ getHIVEncountersForParticipant =
 getPrenatalEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( PrenatalEncounterId, PrenatalEncounter )
 getPrenatalEncountersForParticipant =
     getParticipantEncountersByEncounterType .prenatalEncountersByParticipant
+
+
+getHealthyStartEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( HealthyStartEncounterId, HealthyStartEncounter )
+getHealthyStartEncountersForParticipant =
+    getParticipantEncountersByEncounterType .healthyStartEncountersByParticipant
 
 
 getParticipantEncountersByEncounterType :

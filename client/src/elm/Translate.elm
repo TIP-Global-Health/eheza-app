@@ -22,6 +22,7 @@ import Backend.Counseling.Model exposing (CounselingTopic)
 import Backend.EducationSession.Model exposing (EducationTopic(..))
 import Backend.Entities exposing (..)
 import Backend.HIVActivity.Model exposing (HIVActivity)
+import Backend.HealthyStartEncounter.Model exposing (HealthyStartEncounterType)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)
 import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), IndividualEncounterType(..), PregnancyOutcome(..))
 import Backend.Measurement.Model exposing (..)
@@ -769,6 +770,7 @@ type TranslationId
     | HealthInsuranceQuestion
     | HealthTopics
     | HealthTopicsQuestion
+    | HealthyStartEncounterType HealthyStartEncounterType
     | Heart
     | HeartburnReliefMethod HeartburnReliefMethod
     | HeartburnRecommendedTreatmentHeader
@@ -7058,6 +7060,17 @@ translationSet trans =
             , kinyarwanda = Nothing
             , kirundi = Just "Ni uwuhe mutwe w'icigwa c'amagara meza tuza kuraba uno musi"
             }
+
+        HealthyStartEncounterType encounterType ->
+            case encounterType of
+                Backend.HealthyStartEncounter.Model.NurseEncounter ->
+                    translationSet EmptyString
+
+                Backend.HealthyStartEncounter.Model.NursePostpartumEncounter ->
+                    { english = "Postpartum"
+                    , kinyarwanda = Just "Igihe cya nyuma cyo kubyara"
+                    , kirundi = Just "Inyuma yo kwibaruka"
+                    }
 
         Heart ->
             { english = "Heart"
@@ -16316,10 +16329,10 @@ translationSet trans =
 
         PrenatalEncounterType encounterType ->
             case encounterType of
-                NurseEncounter ->
+                Backend.PrenatalEncounter.Model.NurseEncounter ->
                     translationSet EmptyString
 
-                NursePostpartumEncounter ->
+                Backend.PrenatalEncounter.Model.NursePostpartumEncounter ->
                     { english = "Postpartum"
                     , kinyarwanda = Just "Igihe cya nyuma cyo kubyara"
                     , kirundi = Just "Inyuma yo kwibaruka"
@@ -26334,7 +26347,7 @@ translateActivePage page =
                     , kirundi = Just "Igikorwa ku barwayi ba SIDA"
                     }
 
-                HealthyStartParticipantPage _ ->
+                HealthyStartParticipantPage _ _ ->
                     { english = "Healthy Start Encounter"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
@@ -26342,6 +26355,12 @@ translateActivePage page =
 
                 HealthyStartEncounterPage _ ->
                     { english = "Healthy Start Encounter"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                HealthyStartRecurrentEncounterPage _ ->
+                    { english = "Healthy Start Recurrent Encounter"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }

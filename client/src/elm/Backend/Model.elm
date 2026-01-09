@@ -131,6 +131,7 @@ type alias ModelIndexedDb =
     -- A simple cache of several things.
     , people : Dict PersonId (WebData Person)
     , prenatalEncounters : Dict PrenatalEncounterId (WebData PrenatalEncounter)
+    , healthyStartEncounters : Dict HealthyStartEncounterId (WebData HealthyStartEncounter)
     , nutritionEncounters : Dict NutritionEncounterId (WebData NutritionEncounter)
     , acuteIllnessEncounters : Dict AcuteIllnessEncounterId (WebData AcuteIllnessEncounter)
     , homeVisitEncounters : Dict HomeVisitEncounterId (WebData HomeVisitEncounter)
@@ -139,7 +140,6 @@ type alias ModelIndexedDb =
     , childScoreboardEncounters : Dict ChildScoreboardEncounterId (WebData ChildScoreboardEncounter)
     , tuberculosisEncounters : Dict TuberculosisEncounterId (WebData TuberculosisEncounter)
     , hivEncounters : Dict HIVEncounterId (WebData HIVEncounter)
-    , healthyStartEncounters : Dict HealthyStartEncounterId (WebData HealthyStartEncounter)
     , individualParticipants : Dict IndividualEncounterParticipantId (WebData IndividualEncounterParticipant)
     , traceContacts : Dict AcuteIllnessTraceContactId (WebData AcuteIllnessTraceContact)
     , educationSessions : Dict EducationSessionId (WebData EducationSession)
@@ -147,6 +147,7 @@ type alias ModelIndexedDb =
     -- Cache things organized in certain ways.
     , individualParticipantsByPerson : Dict PersonId (WebData (Dict IndividualEncounterParticipantId IndividualEncounterParticipant))
     , prenatalEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict PrenatalEncounterId PrenatalEncounter))
+    , healthyStartEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict HealthyStartEncounterId HealthyStartEncounter))
     , nutritionEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict NutritionEncounterId NutritionEncounter))
     , acuteIllnessEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict AcuteIllnessEncounterId AcuteIllnessEncounter))
     , homeVisitEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict HomeVisitEncounterId HomeVisitEncounter))
@@ -155,8 +156,8 @@ type alias ModelIndexedDb =
     , childScoreboardEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict ChildScoreboardEncounterId ChildScoreboardEncounter))
     , tuberculosisEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict TuberculosisEncounterId TuberculosisEncounter))
     , hivEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict HIVEncounterId HIVEncounter))
-    , healthyStartEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict HealthyStartEncounterId HealthyStartEncounter))
     , prenatalMeasurements : Dict PrenatalEncounterId (WebData PrenatalMeasurements)
+    , healthyStartMeasurements : Dict HealthyStartEncounterId (WebData HealthyStartMeasurements)
     , nutritionMeasurements : Dict NutritionEncounterId (WebData NutritionMeasurements)
     , acuteIllnessMeasurements : Dict AcuteIllnessEncounterId (WebData AcuteIllnessMeasurements)
     , followUpMeasurements : Dict HealthCenterId (WebData FollowUpMeasurements)
@@ -224,6 +225,7 @@ emptyModelIndexedDb =
     , prenatalEncounters = Dict.empty
     , prenatalEncountersByParticipant = Dict.empty
     , prenatalMeasurements = Dict.empty
+    , healthyStartMeasurements = Dict.empty
     , nutritionEncounters = Dict.empty
     , nutritionEncountersByParticipant = Dict.empty
     , nutritionMeasurements = Dict.empty

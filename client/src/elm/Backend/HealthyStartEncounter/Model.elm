@@ -54,12 +54,6 @@ type HealthyStartProgressReportInitiator
     | InitiatorCaseManagement HealthyStartEncounterId
 
 
-type HealthyStartEncounterPostCreateDestination
-    = DestinationEncounterPage
-    | DestinationEncounterPageWithWarningPopup
-    | DestinationClinicalProgressReportPage
-
-
 type HealthyStartIndicator
     = IndicatorHistoryLabsCompleted
     | NoHealthyStartIndicators

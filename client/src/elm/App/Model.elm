@@ -296,6 +296,9 @@ type alias LoggedInModel =
 
     -- The nurse who has logged in.
     , nurse : ( NurseId, Nurse )
+    , healthyStartParticipantPages : Dict PersonId Pages.HealthyStart.Participant.Model.Model
+    , healthyStartEncounterPages : Dict HealthyStartEncounterId Pages.HealthyStart.Encounter.Model.Model
+    , healthyStartRecurrentEncounterPages : Dict HealthyStartEncounterId Pages.HealthyStart.RecurrentEncounter.Model.Model
     , prenatalParticipantPages : Dict PersonId Pages.Prenatal.Participant.Model.Model
     , prenatalEncounterPages : Dict PrenatalEncounterId Pages.Prenatal.Encounter.Model.Model
     , prenatalRecurrentEncounterPages : Dict PrenatalEncounterId Pages.Prenatal.RecurrentEncounter.Model.Model
@@ -331,9 +334,6 @@ type alias LoggedInModel =
     , educationSessionPages : Dict EducationSessionId Pages.EducationSession.Model.Model
     , hivEncounterPages : Dict HIVEncounterId Pages.HIV.Encounter.Model.Model
     , hivActivityPages : Dict ( HIVEncounterId, HIVActivity ) Pages.HIV.Activity.Model.Model
-    , healthyStartParticipantPages : Dict PersonId Pages.HealthyStart.Participant.Model.Model
-    , healthyStartEncounterPages : Dict HealthyStartEncounterId Pages.HealthyStart.Encounter.Model.Model
-    , healthyStartRecurrentEncounterPages : Dict HealthyStartRecurrentEncounterId Pages.HealthyStart.RecurrentEncounter.Model.Model
     , traceContactPages : Dict AcuteIllnessTraceContactId Pages.TraceContact.Model.Model
     , clinicalProgressReportPages : Dict PrenatalEncounterId Pages.Prenatal.ProgressReport.Model.Model
     , patientRecordPages : Dict PersonId Pages.PatientRecord.Model.Model

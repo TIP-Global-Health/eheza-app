@@ -2,6 +2,7 @@ module Backend.IndividualEncounterParticipant.Model exposing (..)
 
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessEncounterType)
 import Backend.Entities exposing (..)
+import Backend.HealthyStartEncounter.Model exposing (HealthyStartEncounterType)
 import Backend.NutritionEncounter.Model exposing (NutritionEncounterType)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType)
@@ -33,8 +34,9 @@ emptyIndividualEncounterParticipant currentDate personId type_ healthCenterId =
 type IndividualParticipantExtraData
     = AcuteIllnessData AcuteIllnessEncounterType
     | AntenatalData PrenatalEncounterType
-    | WellChildData WellChildEncounterType
     | NutritionData NutritionEncounterType
+    | HealthyStartData HealthyStartEncounterType
+    | WellChildData WellChildEncounterType
     | NoIndividualParticipantExtraData
 
 
