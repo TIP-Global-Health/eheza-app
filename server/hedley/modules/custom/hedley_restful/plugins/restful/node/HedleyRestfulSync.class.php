@@ -176,6 +176,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     $available_features = [
       'gps_coordinates',
       'group_education',
+      'healthy_start',
       'hiv_management',
       'ncda',
       'report_to_whatsapp',

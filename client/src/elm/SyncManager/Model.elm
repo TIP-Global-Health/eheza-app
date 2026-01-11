@@ -726,6 +726,7 @@ type Site
 type SiteFeature
     = FeatureGPSCoordinates
     | FeatureGroupEducation
+    | FeatureHealthyStart -- defines few slightly different behaviors at Prenatal flows.
     | FeatureHIVManagement
     | FeatureNCDA
     | FeatureReportToWhatsApp
