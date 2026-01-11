@@ -745,3 +745,21 @@ function hedley_update_7046() {
   $now = hedley_stats_convert_timestamp_to_nominal(time());
   variable_set('hedley_prenatal_change_medications', $now);
 }
+
+/**
+ * Activate newly defined features set.
+ */
+function hedley_update_7047() {
+  $features = [
+    'hedley_admin_feature_acute_illness_enabled',
+    'hedley_admin_feature_antenatal_enabled',
+    'hedley_admin_feature_ncd_enabled',
+    'hedley_admin_feature_nutrition_group_enabled',
+    'hedley_admin_feature_nutrition_individual_enabled',
+    'hedley_admin_feature_well_child_enabled',
+    ];
+
+  foreach ($features as $feature) {
+    variable_set($feature, 1);
+  }
+}

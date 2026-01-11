@@ -4,7 +4,7 @@ import Activity.Model exposing (Activity(..), ChildActivity(..))
 import App.Fetch
 import App.Model exposing (..)
 import App.Ports exposing (..)
-import App.Utils exposing (getLoggedInData, updateSubModel)
+import App.Utils exposing (getLoggedIn, updateSubModel)
 import AssocList as Dict
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
@@ -239,12 +239,11 @@ update msg model =
             fromLocalDateTime model.currentTime
 
         loggedInData =
-            getLoggedInData model
+            getLoggedIn model
 
         ( isChw, isLabTech ) =
             Maybe.map
-                (Tuple.second
-                    >> .nurse
+                (.nurse
                     >> Tuple.second
                     >> (\nurse ->
                             ( isCommunityHealthWorker nurse, isLabTechnician nurse )
@@ -266,7 +265,7 @@ update msg model =
         MsgIndexedDb subMsg ->
             let
                 nurseId =
-                    Maybe.map (Tuple.second >> .nurse >> Tuple.first) loggedInData
+                    Maybe.map (.nurse >> Tuple.first) loggedInData
 
                 ( subModel, subCmd, extraMsgs ) =
                     Backend.Update.updateIndexedDb model.language
@@ -1479,14 +1478,14 @@ handleRevision model revision =
     case revision of
         Backend.Model.NurseRevision uuid data ->
             Maybe.andThen
-                (\( _, loggedIn ) ->
+                (\loggedIn ->
                     if Tuple.first loggedIn.nurse == uuid then
                         Just (UpdateNurseData ( uuid, data ))
 
                     else
                         Nothing
                 )
-                (getLoggedInData model)
+                (getLoggedIn model)
 
         _ ->
             Nothing

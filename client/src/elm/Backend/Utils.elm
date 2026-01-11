@@ -271,29 +271,101 @@ everySetsEqual set1 set2 =
 -- FEATURES ON/OFF
 
 
-ncdaEnabled : EverySet SiteFeature -> Bool
-ncdaEnabled =
-    EverySet.member FeatureNCDA
+authoritySelectionRequired : Bool -> EverySet SiteFeature -> Bool
+authoritySelectionRequired isChw features =
+    anyOfEncounterTypesEnabled isChw features
+        || (stockManagementEnabled features && not isChw)
 
 
-reportToWhatsAppEnabled : EverySet SiteFeature -> Bool
-reportToWhatsAppEnabled =
-    EverySet.member FeatureReportToWhatsApp
+anyOfEncounterTypesEnabled : Bool -> EverySet SiteFeature -> Bool
+anyOfEncounterTypesEnabled isChw features =
+    individualEncountersEnabled isChw features
+        || groupEncountersEnabled isChw features
 
 
-stockManagementEnabled : EverySet SiteFeature -> Bool
-stockManagementEnabled =
-    EverySet.member FeatureStockManagement
+individualEncountersEnabled : Bool -> EverySet SiteFeature -> Bool
+individualEncountersEnabled isChw features =
+    individualEncounterFeatures isChw
+        |> List.any
+            (\feature ->
+                EverySet.member feature features
+            )
 
 
-tuberculosisManagementEnabled : EverySet SiteFeature -> Bool
-tuberculosisManagementEnabled =
-    EverySet.member FeatureTuberculosisManagement
+groupEncountersEnabled : Bool -> EverySet SiteFeature -> Bool
+groupEncountersEnabled isChw features =
+    if isChw then
+        groupEducationEnabled features
+            || nutritionGroupEnabled features
+
+    else
+        nutritionGroupEnabled features
 
 
-groupEducationEnabled : EverySet SiteFeature -> Bool
-groupEducationEnabled =
-    EverySet.member FeatureGroupEducation
+anyOfDashboardFeaturesEnabled : Bool -> EverySet SiteFeature -> Bool
+anyOfDashboardFeaturesEnabled isChw features =
+    let
+        dashboardFeatures =
+            if isChw then
+                [ FeatureAcuteIllness
+                , FeatureAntenatal
+                , FeatureGroupEducation
+                , FeatureNutritionIndividual
+                , FeatureNutritionGroup
+                ]
+
+            else
+                [ FeatureAcuteIllness
+                , FeatureAntenatal
+                , FeatureGroupEducation
+                , FeatureNCD
+                , FeatureNutritionIndividual
+                , FeatureNutritionGroup
+                , FeatureWellChild
+                ]
+    in
+    List.any
+        (\feature ->
+            EverySet.member feature features
+        )
+        dashboardFeatures
+
+
+anyOfCaseManagementFeaturesEnabled : Bool -> EverySet SiteFeature -> Bool
+anyOfCaseManagementFeaturesEnabled isChw features =
+    let
+        caseManagementFeatures =
+            if isChw then
+                [ FeatureAcuteIllness
+                , FeatureAntenatal
+                , FeatureHIVManagement
+                , FeatureNutritionIndividual
+                , FeatureNutritionGroup
+                , FeatureTuberculosisManagement
+                , FeatureWellChild
+                ]
+
+            else
+                [ FeatureAcuteIllness
+                , FeatureAntenatal
+                , FeatureNCD
+                ]
+    in
+    List.any
+        (\feature ->
+            EverySet.member feature features
+        )
+        caseManagementFeatures
+
+
+acuteIllnessEnabled : EverySet SiteFeature -> Bool
+acuteIllnessEnabled =
+    EverySet.member FeatureAcuteIllness
+
+
+antenatalEnabled : EverySet SiteFeature -> Bool
+antenatalEnabled =
+    EverySet.member FeatureAntenatal
 
 
 gpsCoordinatesEnabled : EverySet SiteFeature -> Bool
@@ -301,6 +373,77 @@ gpsCoordinatesEnabled =
     EverySet.member FeatureGPSCoordinates
 
 
+groupEducationEnabled : EverySet SiteFeature -> Bool
+groupEducationEnabled =
+    EverySet.member FeatureGroupEducation
+
+
 hivManagementEnabled : EverySet SiteFeature -> Bool
 hivManagementEnabled =
     EverySet.member FeatureHIVManagement
+
+
+ncdEnabled : EverySet SiteFeature -> Bool
+ncdEnabled =
+    EverySet.member FeatureNCD
+
+
+ncdaEnabled : EverySet SiteFeature -> Bool
+ncdaEnabled =
+    EverySet.member FeatureNCDA
+
+
+nutritionEnabled : EverySet SiteFeature -> Bool
+nutritionEnabled features =
+    nutritionGroupEnabled features
+        || nutritionIndividualEnabled features
+
+
+nutritionGroupEnabled : EverySet SiteFeature -> Bool
+nutritionGroupEnabled =
+    EverySet.member FeatureNutritionGroup
+
+
+nutritionIndividualEnabled : EverySet SiteFeature -> Bool
+nutritionIndividualEnabled =
+    EverySet.member FeatureNutritionIndividual
+
+
+reportToWhatsAppEnabled : EverySet SiteFeature -> Bool
+reportToWhatsAppEnabled =
+    EverySet.member FeatureReportToWhatsApp
+
+
+tuberculosisManagementEnabled : EverySet SiteFeature -> Bool
+tuberculosisManagementEnabled =
+    EverySet.member FeatureTuberculosisManagement
+
+
+wellChildEnabled : EverySet SiteFeature -> Bool
+wellChildEnabled =
+    EverySet.member FeatureWellChild
+
+
+stockManagementEnabled : EverySet SiteFeature -> Bool
+stockManagementEnabled =
+    EverySet.member FeatureStockManagement
+
+
+individualEncounterFeatures : Bool -> List SiteFeature
+individualEncounterFeatures isChw =
+    if isChw then
+        [ FeatureAcuteIllness
+        , FeatureAntenatal
+        , FeatureHIVManagement
+        , FeatureNutritionIndividual
+        , FeatureTuberculosisManagement
+        , FeatureWellChild
+        ]
+
+    else
+        [ FeatureAcuteIllness
+        , FeatureAntenatal
+        , FeatureNCD
+        , FeatureNutritionIndividual
+        , FeatureWellChild
+        ]

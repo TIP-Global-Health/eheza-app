@@ -35,7 +35,19 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.NutritionEncounter.Model exposing (NutritionEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
-import Backend.Utils exposing (groupEducationEnabled)
+import Backend.Utils
+    exposing
+        ( acuteIllnessEnabled
+        , antenatalEnabled
+        , groupEducationEnabled
+        , hivManagementEnabled
+        , ncdEnabled
+        , nutritionEnabled
+        , resolveIndividualParticipantForPerson
+        , resolveIndividualParticipantsForPerson
+        , tuberculosisManagementEnabled
+        , wellChildEnabled
+        )
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..))
 import Color exposing (Color)
 import Date exposing (Month, Unit(..), numberToMonth)
@@ -258,7 +270,16 @@ viewPageMainForChw language currentDate features healthCenterId assembled db mod
         dateLastDayOfSelectedMonth =
             resolveSelectedDateForMonthSelector currentDate model.monthGap
 
-        -- ANC
+        prenatalOn =
+            antenatalEnabled features
+
+        acuteIllnessOn =
+            acuteIllnessEnabled features
+
+        nutritionOn =
+            nutritionEnabled features
+
+        -- Acute Illness
         encountersForSelectedMonth =
             getEncountersForSelectedMonth dateLastDayOfSelectedMonth assembled.acuteIllnessData
 
@@ -272,14 +293,14 @@ viewPageMainForChw language currentDate features healthCenterId assembled db mod
         totalNewborn =
             countNewbornForSelectedMonth dateLastDayOfSelectedMonth assembled.prenatalData
 
-        limitDate =
-            Date.ceiling Date.Month dateLastDayOfSelectedMonth
-
+        -- Case Management
         followUps =
             Dict.get healthCenterId db.followUpMeasurements
                 |> Maybe.andThen RemoteData.toMaybe
 
-        -- Case Management
+        limitDate =
+            Date.ceiling Date.Month dateLastDayOfSelectedMonth
+
         ( totalNutritionFollowUps, totalAcuteIllnessFollowUps, totalPrenatalFollowUps ) =
             Maybe.map2 (getFollowUpsTotals language currentDate limitDate db)
                 model.selectedVillageFilter
@@ -291,16 +312,22 @@ viewPageMainForChw language currentDate features healthCenterId assembled db mod
     , div [ class "ui grid" ]
         [ div [ class "three column row" ]
             [ chwCard language (Translate.Dashboard Translate.AcuteIllnessDiagnosed) (String.fromInt diagnosedCases)
+                |> showIf acuteIllnessOn
             , chwCard language (Translate.Dashboard Translate.MothersInANC) (String.fromInt currentlyPregnant)
+                |> showIf prenatalOn
             , chwCard language (Translate.Dashboard Translate.NewbornsInCare) (String.fromInt totalNewborn)
+                |> showIf prenatalOn
             ]
         ]
     , div [ class "case-management-label" ] [ text <| translate language <| Translate.CaseManagement ]
     , div [ class "ui grid" ]
         [ div [ class "three column row" ]
             [ chwCard language Translate.AcuteIllness (String.fromInt totalAcuteIllnessFollowUps)
+                |> showIf acuteIllnessOn
             , chwCard language Translate.HomeVisit (String.fromInt totalNutritionFollowUps)
+                |> showIf nutritionOn
             , chwCard language Translate.AntenatalCare (String.fromInt totalPrenatalFollowUps)
+                |> showIf prenatalOn
             ]
         ]
     ]
@@ -686,45 +713,130 @@ viewFiltersPane language page db model =
 viewMenuForNurse : Language -> EverySet SiteFeature -> Html Msg
 viewMenuForNurse language features =
     let
+        prenatalButton =
+            if antenatalEnabled features then
+                Just <| viewMenuButton language PagePrenatal Nothing
+
+            else
+                Nothing
+
+        nutritionButton =
+            if nutritionEnabled features then
+                Just <| viewMenuButton language (PageNutrition PageCharts) Nothing
+
+            else
+                Nothing
+
+        acuteIllnessButton =
+            if acuteIllnessEnabled features then
+                Just <| viewMenuButton language (PageAcuteIllness PageAcuteIllnessOverview) Nothing
+
+            else
+                Nothing
+
+        ncdButton =
+            if ncdEnabled features then
+                Just <| viewMenuButton language (PageNCD PageHypertension) Nothing
+
+            else
+                Nothing
+
+        wellChildButton =
+            if wellChildEnabled features then
+                Just <| viewMenuButton language (PageChildWellness PageChildWellnessOverview) Nothing
+
+            else
+                Nothing
+
         groupEducationButton =
             if groupEducationEnabled features then
-                viewMenuButton language PageGroupEducation Nothing
+                Just <| viewMenuButton language PageGroupEducation Nothing
+
+            else
+                Nothing
+
+        allButtons =
+            Maybe.Extra.values
+                [ prenatalButton
+                , nutritionButton
+                , acuteIllnessButton
+                , ncdButton
+                , wellChildButton
+                , groupEducationButton
+                ]
+
+        ( topRowButtons, bottomRowButtons ) =
+            ( List.take 3 allButtons, List.drop 3 allButtons )
+
+        bottomRow =
+            if not <| List.isEmpty bottomRowButtons then
+                div [ class "ui segment page-filters center" ]
+                    bottomRowButtons
 
             else
                 emptyNode
     in
     div []
         [ div [ class "ui segment page-filters top-row" ]
-            [ viewMenuButton language PagePrenatal Nothing
-            , viewMenuButton language (PageNutrition PageCharts) Nothing
-            , viewMenuButton language (PageAcuteIllness PageAcuteIllnessOverview) Nothing
-            ]
-        , div [ class "ui segment page-filters center" ]
-            [ viewMenuButton language (PageNCD PageHypertension) Nothing
-            , viewMenuButton language (PageChildWellness PageChildWellnessOverview) Nothing
-            , groupEducationButton
-            ]
+            topRowButtons
+        , bottomRow
         ]
 
 
 viewMenuForChw : Language -> EverySet SiteFeature -> Html Msg
 viewMenuForChw language features =
     let
-        secondRow =
+        prenatalButton =
+            if antenatalEnabled features then
+                Just <| viewMenuButton language PagePrenatal Nothing
+
+            else
+                Nothing
+
+        nutritionButton =
+            if nutritionEnabled features then
+                Just <| viewMenuButton language (PageNutrition PageCharts) Nothing
+
+            else
+                Nothing
+
+        acuteIllnessButton =
+            if acuteIllnessEnabled features then
+                Just <| viewMenuButton language (PageAcuteIllness PageAcuteIllnessOverview) Nothing
+
+            else
+                Nothing
+
+        groupEducationButton =
             if groupEducationEnabled features then
+                Just <| viewMenuButton language PageGroupEducation Nothing
+
+            else
+                Nothing
+
+        allButtons =
+            Maybe.Extra.values
+                [ prenatalButton
+                , nutritionButton
+                , acuteIllnessButton
+                , groupEducationButton
+                ]
+
+        ( topRowButtons, bottomRowButtons ) =
+            ( List.take 3 allButtons, List.drop 3 allButtons )
+
+        bottomRow =
+            if not <| List.isEmpty bottomRowButtons then
                 div [ class "ui segment page-filters center" ]
-                    [ viewMenuButton language PageGroupEducation Nothing ]
+                    bottomRowButtons
 
             else
                 emptyNode
     in
     div []
         [ div [ class "ui segment page-filters top-row" ]
-            [ viewMenuButton language PagePrenatal Nothing
-            , viewMenuButton language (PageNutrition PageCharts) Nothing
-            , viewMenuButton language (PageAcuteIllness PageAcuteIllnessOverview) Nothing
-            ]
-        , secondRow
+            topRowButtons
+        , bottomRow
         ]
 
 

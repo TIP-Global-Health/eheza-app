@@ -47,7 +47,7 @@ update msg model =
 
                 outMsg =
                     if accept then
-                        Just <| SetActivePage <| UserPage MessagingCenterPage
+                        Just <| SetActivePage MessagingCenterPage
 
                     else
                         Nothing

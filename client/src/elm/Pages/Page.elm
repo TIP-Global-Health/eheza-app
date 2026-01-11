@@ -122,6 +122,9 @@ a URL, we could end up with a URL we don't understand.
 type Page
     = DevicePage -- page that shows the status of the device
     | PinCodePage -- page that allows for local login
+    | MessagingCenterPage
+    | WellbeingPage
+    | MessagingGuide
     | UserPage UserPage -- page that requires a logged-in user
     | PageNotFound String -- we couldn't interpret the URL ... the parameter is the URL
     | ServiceWorkerPage -- shows status of the service worker
@@ -203,9 +206,6 @@ type UserPage
     | HIVActivityPage HIVEncounterId HIVActivity -- record HIV activity.
     | TraceContactPage AcuteIllnessTraceContactId
     | PatientRecordPage PatientRecordInitiator PersonId
-    | MessagingCenterPage
-    | WellbeingPage
-    | MessagingGuide
     | StockManagementPage
 
 

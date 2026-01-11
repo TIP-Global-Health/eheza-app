@@ -1,7 +1,7 @@
 module App.View exposing (view)
 
 import App.Model exposing (..)
-import App.Utils exposing (getLoggedInData)
+import App.Utils exposing (getLoggedIn, getLoggedInData)
 import AssocList as Dict
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker, isLabTechnician)
@@ -270,6 +270,10 @@ don't have one.
 -}
 viewConfiguredModel : Model -> ConfiguredModel -> Html Msg
 viewConfiguredModel model configured =
+    let
+        features =
+            model.syncManager.syncInfoGeneral.features
+    in
     if not model.serviceWorker.active then
         -- If our service worker is not active, then the only thing we allow
         -- is showing the status of the service worker. (Since we need the
@@ -288,29 +292,13 @@ viewConfiguredModel model configured =
                     |> flexPageWrapper configured.config model
 
             _ ->
-                Pages.Device.View.view model.language configured.device model configured.devicePage
+                Pages.Device.View.view model.language features configured.device model configured.devicePage
                     |> Html.map MsgPageDevice
                     |> flexPageWrapper configured.config model
 
     else
         let
-            features =
-                model.syncManager.syncInfoGeneral.features
-
-            deviceName =
-                if String.isEmpty model.syncManager.syncInfoGeneral.deviceName then
-                    Nothing
-
-                else
-                    Just model.syncManager.syncInfoGeneral.deviceName
-        in
-        case model.activePage of
-            DevicePage ->
-                Pages.Device.View.view model.language configured.device model configured.devicePage
-                    |> Html.map MsgPageDevice
-                    |> flexPageWrapper configured.config model
-
-            PinCodePage ->
+            viewMainPage =
                 Pages.PinCode.View.view model.language
                     model.currentTime
                     features
@@ -321,6 +309,72 @@ viewConfiguredModel model configured =
                     configured.pinCodePage
                     model.indexedDb
                     |> Html.map MsgPagePinCode
+                    |> flexPageWrapper configured.config model
+
+            deviceName =
+                if String.isEmpty model.syncManager.syncInfoGeneral.deviceName then
+                    Nothing
+
+                else
+                    Just model.syncManager.syncInfoGeneral.deviceName
+        in
+        case model.activePage of
+            DevicePage ->
+                Pages.Device.View.view model.language features configured.device model configured.devicePage
+                    |> Html.map MsgPageDevice
+                    |> flexPageWrapper configured.config model
+
+            PinCodePage ->
+                viewMainPage
+
+            MessagingCenterPage ->
+                getLoggedIn model
+                    |> Maybe.map
+                        (\loggedInModel ->
+                            let
+                                ( nurseId, nurse ) =
+                                    loggedInModel.nurse
+
+                                page_ =
+                                    Dict.get nurseId loggedInModel.messagingCenterPages
+                                        |> Maybe.withDefault Pages.MessagingCenter.Model.emptyModel
+                            in
+                            Pages.MessagingCenter.View.view model.language
+                                model.currentTime
+                                nurseId
+                                nurse
+                                model.indexedDb
+                                page_
+                                |> Html.map (MsgLoggedIn << MsgPageMessagingCenter nurseId)
+                                |> flexPageWrapper configured.config model
+                        )
+                    |> Maybe.withDefault viewMainPage
+
+            WellbeingPage ->
+                getLoggedIn model
+                    |> Maybe.map
+                        (\loggedInModel ->
+                            let
+                                ( nurseId, nurse ) =
+                                    loggedInModel.nurse
+
+                                page_ =
+                                    Dict.get nurseId loggedInModel.messagingCenterPages
+                                        |> Maybe.withDefault Pages.MessagingCenter.Model.emptyModel
+                            in
+                            Pages.Wellbeing.View.view model.language
+                                model.currentTime
+                                nurseId
+                                nurse
+                                model.indexedDb
+                                page_
+                                |> Html.map (MsgLoggedIn << MsgPageMessagingCenter nurseId)
+                                |> flexPageWrapper configured.config model
+                        )
+                    |> Maybe.withDefault viewMainPage
+
+            MessagingGuide ->
+                Pages.MessagingGuide.View.view model.language
                     |> flexPageWrapper configured.config model
 
             PageNotFound url ->
@@ -373,7 +427,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             |> oldPageWrapper configured.config model
 
                     ClinicalPage ->
-                        Pages.Clinical.View.view model.language currentDate healthCenterId isChw model
+                        Pages.Clinical.View.view model.language currentDate features healthCenterId isChw model
                             |> flexPageWrapper configured.config model
 
                     ClinicsPage ->
@@ -1071,46 +1125,6 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             model.indexedDb
                             page_
                             |> Html.map (MsgLoggedIn << MsgPagePatientRecord personId)
-                            |> flexPageWrapper configured.config model
-
-                    MessagingCenterPage ->
-                        let
-                            ( nurseId, nurse ) =
-                                loggedInModel.nurse
-
-                            page_ =
-                                Dict.get nurseId loggedInModel.messagingCenterPages
-                                    |> Maybe.withDefault Pages.MessagingCenter.Model.emptyModel
-                        in
-                        Pages.MessagingCenter.View.view model.language
-                            model.currentTime
-                            nurseId
-                            nurse
-                            model.indexedDb
-                            page_
-                            |> Html.map (MsgLoggedIn << MsgPageMessagingCenter nurseId)
-                            |> flexPageWrapper configured.config model
-
-                    WellbeingPage ->
-                        let
-                            ( nurseId, nurse ) =
-                                loggedInModel.nurse
-
-                            page_ =
-                                Dict.get nurseId loggedInModel.messagingCenterPages
-                                    |> Maybe.withDefault Pages.MessagingCenter.Model.emptyModel
-                        in
-                        Pages.Wellbeing.View.view model.language
-                            model.currentTime
-                            nurseId
-                            nurse
-                            model.indexedDb
-                            page_
-                            |> Html.map (MsgLoggedIn << MsgPageMessagingCenter nurseId)
-                            |> flexPageWrapper configured.config model
-
-                    MessagingGuide ->
-                        Pages.MessagingGuide.View.view model.language
                             |> flexPageWrapper configured.config model
 
                     StockManagementPage ->
