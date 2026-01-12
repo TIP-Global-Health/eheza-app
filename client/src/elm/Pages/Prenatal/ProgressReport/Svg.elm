@@ -3,6 +3,7 @@ module Pages.Prenatal.ProgressReport.Svg exposing
     , viewFundalHeightForEGA
     , viewMarkers
     , viewWeightGainForEGA
+    , viewWeightGainForEGAHealthyStart
     )
 
 import Html exposing (Html)
@@ -294,6 +295,120 @@ viewWeightGainForEGA language ( firstTrimesterTotal, perWeek ) points =
             , drawPolygon remianingTrimestersGreenPoints "green-area"
             , drawPolygon remianingTrimestersTopRedPoints "red-area"
             , drawPolyline measurements "data"
+            ]
+                ++ drawPoints "#06B9FF" measurements
+        , (referenceVerticalLines verticalParts
+            ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.left - 17 |> String.fromFloat)
+            ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.right + 7.5 |> String.fromFloat)
+          )
+            |> g []
+        , referenceHorizontalLines 21 ++ referenceHorizontalNumbers 21 0 2 |> g []
+        ]
+
+
+viewWeightGainForEGAHealthyStart : Language -> ( Float, Float ) -> List ( Int, Float ) -> Html any
+viewWeightGainForEGAHealthyStart language ( perDayFirstTrimester, perDayOtherTrimesters ) points =
+    let
+        verticalParts =
+            13
+
+        verticalMin =
+            0
+
+        verticalMax =
+            26
+
+        verticalStep =
+            heightPx / toFloat (verticalMax - verticalMin)
+
+        horizontalMin =
+            0
+
+        horizontalMax =
+            42
+
+        horizontalStep =
+            widthPx / toFloat (horizontalMax - horizontalMin)
+
+        ( perWeekFirstTrimester, perWeekOtherTrimesters ) =
+            ( 7 * perDayFirstTrimester, 7 * perDayOtherTrimesters )
+
+        firstTrimesterRedPoints =
+            [ ( dimensionsPx.left, dimensionsPx.bottom )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (13 * perWeekFirstTrimester) * verticalStep )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom )
+            , ( dimensionsPx.left, dimensionsPx.bottom )
+            ]
+
+        firstTrimesterGreenPoints =
+            [ ( dimensionsPx.left, dimensionsPx.bottom )
+            , ( dimensionsPx.left, dimensionsPx.top )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.top )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (13 * perWeekFirstTrimester) * verticalStep )
+            , ( dimensionsPx.left, dimensionsPx.bottom )
+            ]
+
+        remianingTrimestersRedPoints =
+            [ ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (13 * perWeekFirstTrimester) * verticalStep )
+            , ( dimensionsPx.right, dimensionsPx.bottom - (13 * perWeekFirstTrimester + 29 * perWeekOtherTrimesters) * verticalStep )
+            , ( dimensionsPx.right, dimensionsPx.bottom )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom )
+            ]
+
+        remianingTrimestersGreenPoints =
+            [ ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (13 * perWeekFirstTrimester) * verticalStep )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.top )
+            , ( dimensionsPx.right, dimensionsPx.top )
+            , ( dimensionsPx.right, dimensionsPx.bottom - (13 * perWeekFirstTrimester + 29 * perWeekOtherTrimesters) * verticalStep )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (13 * perWeekFirstTrimester) * verticalStep )
+            ]
+
+        measurements =
+            List.filterMap
+                (\( egaDays, bmi ) ->
+                    if
+                        withinRange (toFloat egaDays / 7) horizontalMin horizontalMax
+                            && withinRange bmi verticalMin verticalMax
+                    then
+                        let
+                            egaGap =
+                                toFloat egaDays / 7 - horizontalMin
+
+                            bmiGap =
+                                bmi - verticalMin
+                        in
+                        Just ( dimensionsPx.left + egaGap * horizontalStep, dimensionsPx.bottom - bmiGap * verticalStep )
+
+                    else
+                        Nothing
+                )
+                points
+    in
+    svg
+        [ class "z-score"
+        , x "0px"
+        , y "0px"
+        , viewBox "25 25 841.9 595.3"
+        ]
+        [ frame
+        , g []
+            [ text_
+                [ transform "matrix(1 0 0 1 373 541)"
+                , class "z-score-semibold chart-label"
+                ]
+                [ text <| translate language Translate.EgaWeeks ]
+            , text_
+                [ transform "matrix(0 -1 1 0 81 380)"
+                , class "z-score-semibold chart-label"
+                ]
+                [ text <| translate language Translate.WeightGain ]
+            ]
+        , g [] <|
+            [ drawPolygon firstTrimesterRedPoints "red-area"
+            , drawPolygon firstTrimesterGreenPoints "green-area"
+            , drawPolygon remianingTrimestersRedPoints "red-area"
+            , drawPolygon remianingTrimestersGreenPoints "green-area"
             ]
                 ++ drawPoints "#06B9FF" measurements
         , (referenceVerticalLines verticalParts

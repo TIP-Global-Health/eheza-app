@@ -58,7 +58,7 @@ import Backend.PrenatalActivity.Utils exposing (getEncounterTrimesterData)
 import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
-import Backend.Utils exposing (reportToWhatsAppEnabled)
+import Backend.Utils exposing (healthyStartEnabled, reportToWhatsAppEnabled)
 import Components.ReportToWhatsAppDialog.Model
 import Components.ReportToWhatsAppDialog.Utils
 import Components.ReportToWhatsAppDialog.View
@@ -88,13 +88,21 @@ import Pages.Prenatal.Activity.Utils
         , resolvePrePregnancyClassification
         , resolvePrePregnancyWeight
         , respiratoryRateElevated
+        , weightGainStandardsByPrePregnancyClassificationHealthyStart
         , weightGainStandardsPerPrePregnancyClassification
         )
 import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Encounter.View exposing (viewActionButton)
 import Pages.Prenatal.Model exposing (AssembledData, PreviousEncounterData)
 import Pages.Prenatal.ProgressReport.Model exposing (..)
-import Pages.Prenatal.ProgressReport.Svg exposing (viewBMIForEGA, viewFundalHeightForEGA, viewMarkers, viewWeightGainForEGA)
+import Pages.Prenatal.ProgressReport.Svg
+    exposing
+        ( viewBMIForEGA
+        , viewFundalHeightForEGA
+        , viewMarkers
+        , viewWeightGainForEGA
+        , viewWeightGainForEGAHealthyStart
+        )
 import Pages.Prenatal.ProgressReport.Utils exposing (..)
 import Pages.Prenatal.RecurrentActivity.Utils
 import Pages.Prenatal.RecurrentEncounter.Utils
@@ -562,7 +570,7 @@ viewContent language currentDate zscores site features isChw isLabTech isResults
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalImmunizationHistory)
                     , viewChwActivityPane language currentDate isChw assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalCHWActivity)
-                    , viewPatientProgressPane language currentDate zscores isChw globalLmpValue assembled
+                    , viewPatientProgressPane language currentDate zscores features isChw globalLmpValue assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalPatientProgress)
                     , labsPane
                     , viewProgressPhotosPane language currentDate isChw assembled
@@ -1466,8 +1474,8 @@ matchCHWActivityAtEncounter measurements activity =
             isJust measurements.birthPlan
 
 
-viewPatientProgressPane : Language -> NominalDate -> ZScore.Model.Model -> Bool -> Maybe LastMenstrualPeriodValue -> AssembledData -> Html Msg
-viewPatientProgressPane language currentDate zscores isChw globalLmpValue assembled =
+viewPatientProgressPane : Language -> NominalDate -> ZScore.Model.Model -> EverySet SiteFeature -> Bool -> Maybe LastMenstrualPeriodValue -> AssembledData -> Html Msg
+viewPatientProgressPane language currentDate zscores features isChw globalLmpValue assembled =
     let
         allNurseEncountersData =
             generateAllNurseEncountersData isChw assembled
@@ -1861,10 +1869,12 @@ viewPatientProgressPane language currentDate zscores isChw globalLmpValue assemb
 
                 height =
                     resolveMeasuredHeight assembled |> Maybe.map getHeightValue
+
+                isHealthyStart =
+                    healthyStartEnabled features
             in
             calculateBmi height prePregnancyWeight
-                |> -- @todo: support Healthy start
-                   resolvePrePregnancyClassification zscores False assembled
+                |> resolvePrePregnancyClassification zscores isHealthyStart assembled
                 |> Maybe.map2
                     (\baselineWeight prePregnancyClassification ->
                         let
@@ -1888,13 +1898,22 @@ viewPatientProgressPane language currentDate zscores isChw globalLmpValue assemb
                                     )
                                     assembled.globalLmpDate
                                     |> Maybe.withDefault []
+
+                            chart =
+                                if isHealthyStart then
+                                    viewWeightGainForEGAHealthyStart language
+                                        (weightGainStandardsByPrePregnancyClassificationHealthyStart prePregnancyClassification)
+                                        egaWeightGainValues
+
+                                else
+                                    viewWeightGainForEGA language
+                                        (weightGainStandardsPerPrePregnancyClassification prePregnancyClassification)
+                                        egaWeightGainValues
                         in
                         div [ class "weight-gain-info" ]
                             [ viewChartHeading Translate.WeightGain
                             , weightGainTable language currentDate assembled.globalLmpDate baselineWeight allNurseEncountersData
-                            , viewWeightGainForEGA language
-                                (weightGainStandardsPerPrePregnancyClassification prePregnancyClassification)
-                                egaWeightGainValues
+                            , chart
                             , illustrativePurposes language
                             ]
                     )

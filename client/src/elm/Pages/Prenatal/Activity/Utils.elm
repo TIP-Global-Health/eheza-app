@@ -1746,15 +1746,12 @@ resolveGWGClassificationForHealthyStart currentDate prePregnancyClassification p
                         ( daysBefore, daysAfter )
 
                 expectedWeightGain =
-                    ((daysBefore13Weeks * 23.5)
-                        + (if prePregnancyClassification == PrePregnancyUnderWeight then
-                            daysAfter13Weeks * 73
-
-                           else
-                            daysAfter13Weeks * 60
-                          )
-                    )
-                        / 1000
+                    let
+                        ( perDayFirstTrimester, perDayOtherTrimesters ) =
+                            weightGainStandardsByPrePregnancyClassificationHealthyStart prePregnancyClassification
+                    in
+                    (daysBefore13Weeks * perDayFirstTrimester)
+                        + (daysAfter13Weeks * perDayOtherTrimesters)
 
                 actualWeightGain =
                     currentWeight - previousWeight
@@ -1782,6 +1779,17 @@ weightGainStandardsPerPrePregnancyClassification prePregnancyClassification =
 
         PrePregnancyObesity ->
             ( 0.5, 0.22 )
+
+
+{-| Weight gain per day.
+-}
+weightGainStandardsByPrePregnancyClassificationHealthyStart : PrePregnancyClassification -> ( Float, Float )
+weightGainStandardsByPrePregnancyClassificationHealthyStart prePregnancyClassification =
+    if prePregnancyClassification == PrePregnancyUnderWeight then
+        ( 0.0235, 0.073 )
+
+    else
+        ( 0.0235, 0.06 )
 
 
 generatePrenatalAssesmentForChw : AssembledData -> PrenatalAssesment

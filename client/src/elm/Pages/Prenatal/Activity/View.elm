@@ -16,6 +16,7 @@ import Backend.Person.Model
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
+import Backend.Utils exposing (healthyStartEnabled)
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet exposing (EverySet)
@@ -1043,7 +1044,7 @@ viewExaminationContent language currentDate zscores features assembled data =
                                 |> Maybe.map weightValueFunc
 
                         isHealthyStart =
-                            EverySet.member FeatureHealthyStart features
+                            healthyStartEnabled features
                     in
                     viewNutritionAssessmentForm language currentDate zscores isHealthyStart assembled formWithMeasuredHeight previouslyMeasuredHeight prePregnancyWeight
 
