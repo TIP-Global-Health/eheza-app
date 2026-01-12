@@ -3732,6 +3732,32 @@ function hedley_stats_get_clinic_sessions_by_period($clinic_id, $period = HEDLEY
 }
 
 /**
+ * Get all sessions that belong to clinics.
+ *
+ * @param array $clinics_ids
+ *   Cinics node IDs.
+ * @param int $range
+ *   The queries' range.
+ *
+ * @return array
+ *   Node IDs if they exist or empty array if no nodes exist.
+ */
+function hedley_stats_get_sessions_for_clinics(array $clinics_ids, $range = 100) {
+  $query = new EntityFieldQuery();
+  $query
+    ->entityCondition('entity_type', 'node')
+    ->propertyCondition('type', 'session')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_clinic', 'target_id', $clinics_ids, 'IN')
+    ->propertyOrderBy('nid')
+    ->range(0, $range);
+
+  $result = $query->execute();
+
+  return !empty($result['node']) ? array_keys($result['node']) : [];
+}
+
+/**
  * Handle stats cache.
  *
  * @param string $method
