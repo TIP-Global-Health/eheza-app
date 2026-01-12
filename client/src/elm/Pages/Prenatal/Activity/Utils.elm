@@ -1521,6 +1521,60 @@ resolvePrePregnancyWeight assembled =
         |> Maybe.Extra.or byCurrent
 
 
+{-| For Healthy Start.
+-}
+resolveBookingWeight : AssembledData -> Maybe WeightInKg
+resolveBookingWeight assembled =
+    let
+        resolveWeight measurements =
+            getMeasurementValueFunc measurements.nutrition
+                |> Maybe.map .weight
+
+        byNurse =
+            List.filterMap (.measurements >> resolveWeight)
+                assembled.nursePreviousEncountersData
+                |> List.head
+
+        byCHW =
+            List.filterMap
+                (\( _, _, measurements ) ->
+                    resolveWeight measurements
+                )
+                assembled.chwPreviousMeasurementsWithDates
+                |> List.head
+    in
+    Maybe.Extra.or byNurse byCHW
+
+
+{-| For Healthy Start.
+-}
+resolveBookingMUAC : AssembledData -> Maybe MuacInCm
+resolveBookingMUAC assembled =
+    let
+        resolveMuac measurements =
+            getMeasurementValueFunc measurements.nutrition
+                |> Maybe.map .muac
+
+        byCurrent =
+            resolveMuac assembled.measurements
+
+        byNurse =
+            List.filterMap (.measurements >> resolveMuac)
+                assembled.nursePreviousEncountersData
+                |> List.head
+
+        byCHW =
+            List.filterMap
+                (\( _, _, measurements ) ->
+                    resolveMuac measurements
+                )
+                assembled.chwPreviousMeasurementsWithDates
+                |> List.head
+    in
+    Maybe.Extra.or byNurse byCHW
+        |> Maybe.Extra.or byCurrent
+
+
 {-| Used for patients bellow 19 years of age.
 -}
 zscoreToPrePregnancyClassification : Float -> PrePregnancyClassification
@@ -1555,29 +1609,63 @@ bmiToPrePregnancyClassification bmi =
         PrePregnancyObesity
 
 
-resolvePrePregnancyClassification : ZScore.Model.Model -> AssembledData -> Maybe Float -> Maybe PrePregnancyClassification
-resolvePrePregnancyClassification zscores assembled prePregnancyBmi =
-    Maybe.Extra.andThen3
-        (\bmi lmpDate birthDate ->
-            let
-                ageInYearsOnLMP =
-                    diffYears birthDate lmpDate
-            in
-            if ageInYearsOnLMP < 19 then
-                let
-                    ageInDaysOnLMP =
-                        diffDays birthDate lmpDate
-                in
-                zScoreBmiForAge zscores (ZScore.Model.Days ageInDaysOnLMP) assembled.person.gender (ZScore.Model.BMI bmi)
-                    |> Maybe.andThen (viewZScore >> String.toFloat)
-                    |> Maybe.map zscoreToPrePregnancyClassification
+resolvePrePregnancyClassification : ZScore.Model.Model -> Bool -> AssembledData -> Maybe Float -> Maybe PrePregnancyClassification
+resolvePrePregnancyClassification zscores isHealthyStart assembled baselineBmi =
+    if isHealthyStart then
+        let
+            bookingMUAC =
+                resolveBookingMUAC assembled
+                    |> Maybe.map muacValueFunc
+        in
+        case ( bookingMUAC, baselineBmi ) of
+            ( Just muac, Just bmi ) ->
+                if bmi < 17.5 || muac < 21 then
+                    Just PrePregnancyUnderWeight
 
-            else
-                Just <| bmiToPrePregnancyClassification bmi
-        )
-        prePregnancyBmi
-        assembled.globalLmpDate
-        assembled.person.birthDate
+                else
+                    Just
+                        PrePregnancyNormal
+
+            ( Just muac, Nothing ) ->
+                if muac < 21 then
+                    Just PrePregnancyUnderWeight
+
+                else
+                    Just PrePregnancyNormal
+
+            ( Nothing, Just bmi ) ->
+                if bmi < 17.5 then
+                    Just PrePregnancyUnderWeight
+
+                else
+                    Just
+                        PrePregnancyNormal
+
+            ( Nothing, Nothing ) ->
+                Nothing
+
+    else
+        Maybe.Extra.andThen3
+            (\bmi lmpDate birthDate ->
+                let
+                    ageInYearsOnLMP =
+                        diffYears birthDate lmpDate
+                in
+                if ageInYearsOnLMP < 19 then
+                    let
+                        ageInDaysOnLMP =
+                            diffDays birthDate lmpDate
+                    in
+                    zScoreBmiForAge zscores (ZScore.Model.Days ageInDaysOnLMP) assembled.person.gender (ZScore.Model.BMI bmi)
+                        |> Maybe.andThen (viewZScore >> String.toFloat)
+                        |> Maybe.map zscoreToPrePregnancyClassification
+
+                else
+                    Just <| bmiToPrePregnancyClassification bmi
+            )
+            baselineBmi
+            assembled.globalLmpDate
+            assembled.person.birthDate
 
 
 resolveGWGClassification : NominalDate -> PrePregnancyClassification -> Float -> Float -> AssembledData -> Maybe GWGClassification
@@ -1619,6 +1707,63 @@ resolveGWGClassification currentDate prePregnancyClassification prePregnancyWeig
 
             else
                 GWGExcessive
+        )
+        assembled.globalLmpDate
+
+
+resolveGWGClassificationForHealthyStart : NominalDate -> PrePregnancyClassification -> Float -> NominalDate -> Float -> AssembledData -> Maybe GWGClassification
+resolveGWGClassificationForHealthyStart currentDate prePregnancyClassification previousWeight previousWeightDate currentWeight assembled =
+    Maybe.map
+        (\lmpDate ->
+            let
+                thirteenWeeksDate =
+                    Date.add Weeks 13 lmpDate
+
+                totalDays =
+                    Date.diff Days previousWeightDate currentDate
+                        |> toFloat
+
+                -- Determine how many days fall before and after 13 weeks
+                ( daysBefore13Weeks, daysAfter13Weeks ) =
+                    if Date.compare currentDate thirteenWeeksDate == LT then
+                        -- Entire period is before 13 weeks
+                        ( totalDays, 0 )
+
+                    else if not <| Date.compare previousWeightDate thirteenWeeksDate == LT then
+                        -- Entire period is at or after 13 weeks
+                        ( 0, totalDays )
+
+                    else
+                        -- Period spans 13 weeks boundary
+                        let
+                            daysBefore =
+                                Date.diff Days previousWeightDate thirteenWeeksDate
+                                    |> toFloat
+
+                            daysAfter =
+                                totalDays - daysBefore
+                        in
+                        ( daysBefore, daysAfter )
+
+                expectedWeightGain =
+                    ((daysBefore13Weeks * 23.5)
+                        + (if prePregnancyClassification == PrePregnancyUnderWeight then
+                            daysAfter13Weeks * 73
+
+                           else
+                            daysAfter13Weeks * 60
+                          )
+                    )
+                        / 1000
+
+                actualWeightGain =
+                    currentWeight - previousWeight
+            in
+            if expectedWeightGain < actualWeightGain then
+                GWGAdequate
+
+            else
+                GWGInadequate
         )
         assembled.globalLmpDate
 
@@ -3781,12 +3926,26 @@ resolveLastRecordedValue assembled measurementFunc valueFunc =
         |> List.head
 
 
+resolvePreviousValueWithDate : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe ( NominalDate, b )
+resolvePreviousValueWithDate assembled measurementFunc valueFunc =
+    assembled.nursePreviousEncountersData
+        |> List.filterMap
+            (.measurements
+                >> measurementFunc
+                >> Maybe.map
+                    (Tuple.second
+                        >> (\measurement ->
+                                ( measurement.dateMeasured, valueFunc measurement.value )
+                           )
+                    )
+            )
+        |> List.head
+
+
 resolvePreviousValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe b
 resolvePreviousValue assembled measurementFunc valueFunc =
-    assembled.nursePreviousEncountersData
-        |> List.filterMap (.measurements >> measurementFunc >> Maybe.map (Tuple.second >> .value >> valueFunc))
-        |> List.reverse
-        |> List.head
+    resolvePreviousValueWithDate assembled measurementFunc valueFunc
+        |> Maybe.map Tuple.second
 
 
 resolvePreviousMaybeValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> Maybe b) -> Maybe b

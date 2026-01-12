@@ -1863,7 +1863,8 @@ viewPatientProgressPane language currentDate zscores isChw globalLmpValue assemb
                     resolveMeasuredHeight assembled |> Maybe.map getHeightValue
             in
             calculateBmi height prePregnancyWeight
-                |> resolvePrePregnancyClassification zscores assembled
+                |> -- @todo: support Healthy start
+                   resolvePrePregnancyClassification zscores False assembled
                 |> Maybe.map2
                     (\baselineWeight prePregnancyClassification ->
                         let
