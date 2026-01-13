@@ -29,6 +29,7 @@ files[] = handlers/node/HedleyMigratePmtctParticipants.php
 files[] = handlers/node/HedleyMigratePrenatalEncounters.php
 files[] = handlers/node/HedleyMigrateIndividualParticipants.php
 files[] = handlers/node/HedleyMigrateRelationships.php
+files[] = handlers/node/HedleyMigrateResilienceSurveys.php
 files[] = handlers/node/HedleyMigrateSessions.php
 files[] = handlers/node/HedleyMigrateParticipantForms.php
 files[] = handlers/node/HedleyMigrateVillages.php
