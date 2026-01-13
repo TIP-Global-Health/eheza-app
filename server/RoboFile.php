@@ -457,4 +457,18 @@ class RoboFile extends Tasks {
     $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-nutrition-report.php --region=$region");
   }
 
+   /**
+   * Generates the chic report.
+   */
+  public function reportChic($start_date = NULL, $end_date = NULL) {
+    $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-chic-report.php --start_date=$start_date --end_date=$end_date");
+  } 
+
+   /**
+   * Generates the acute illness completion report
+   */
+  public function reportAiComplete($start_date = NULL, $end_date = NULL, $mode = NULL, $name = NULL) {
+    $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-acute-illness-completion-report.php --start_date=$start_date --end_date=$end_date --mode=$mode --name=$name");
+  }
+
 }
