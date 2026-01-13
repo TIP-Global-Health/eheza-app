@@ -12,8 +12,8 @@ decodeNutritionEncounter : Decoder NutritionEncounter
 decodeNutritionEncounter =
     succeed NutritionEncounter
         |> required "individual_participant" decodeEntityUuid
-        |> requiredAt [ "scheduled_date", "value" ] decodeYYYYMMDD
-        |> optionalAt [ "scheduled_date", "value2" ] (nullable decodeYYYYMMDD) Nothing
+        |> required "start_date" decodeYYYYMMDD
+        |> optional "end_date" (nullable decodeYYYYMMDD) Nothing
         |> optional "nutrition_encounter_type" (decodeWithFallback NutritionEncounterUnknown decodeNutritionEncounterType) NutritionEncounterUnknown
         |> optional "shard" (nullable decodeEntityUuid) Nothing
 

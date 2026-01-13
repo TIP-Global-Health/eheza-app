@@ -143,11 +143,12 @@ update currentDate currentTime activePage dbVersion device msg model =
                                             ( Just zipperUpdated, sendSyncInfoAuthoritiesCmd zipperUpdated )
 
                                     cmd =
-                                        HttpBuilder.get (device.backendUrl ++ "/api/sync/" ++ currentZipper.uuid)
+                                        HttpBuilder.get (device.backendUrl ++ "/ShowSyncManagerHealthCenter")
                                             |> withQueryParams
-                                                [ ( "access_token", device.accessToken )
+                                                [ ( "healthCenterId", currentZipper.uuid )
+                                                , ( "accessToken", device.accessToken )
                                                 , ( "db_version", String.fromInt dbVersion )
-                                                , ( "base_revision", String.fromInt currentZipper.lastFetchedRevisionId )
+                                                , ( "serial", String.fromInt currentZipper.lastFetchedRevisionId )
                                                 , ( "stats_cache_hash", currentZipper.statsCacheHash )
                                                 ]
                                             |> withExpectJson decodeDownloadSyncResponseAuthority
@@ -345,9 +346,10 @@ update currentDate currentTime activePage dbVersion device msg model =
                                             ( Just zipperUpdated, sendSyncInfoAuthoritiesCmd zipperUpdated )
 
                                     cmd =
-                                        HttpBuilder.get (device.backendUrl ++ "/api/sync/" ++ currentZipper.uuid)
+                                        HttpBuilder.get (device.backendUrl ++ "/ShowSyncManagerHealthCenterStats")
                                             |> withQueryParams
-                                                [ ( "access_token", device.accessToken )
+                                                [ ( "accessToken", device.accessToken )
+                                                , ( "healthCenterId", currentZipper.uuid )
                                                 , ( "db_version", String.fromInt dbVersion )
                                                 , ( "stats_cache_hash", currentZipper.statsCacheHash )
                                                 , ( "statistics", "1" )
@@ -687,11 +689,11 @@ update currentDate currentTime activePage dbVersion device msg model =
                                     sendSyncInfoGeneralCmd syncInfoGeneral
 
                             cmd =
-                                HttpBuilder.get (device.backendUrl ++ "/api/sync")
+                                HttpBuilder.get (device.backendUrl ++ "/ShowSyncManager")
                                     |> withQueryParams
-                                        [ ( "access_token", device.accessToken )
+                                        [ ( "accessToken", device.accessToken )
                                         , ( "db_version", String.fromInt dbVersion )
-                                        , ( "base_revision", String.fromInt model.syncInfoGeneral.lastFetchedRevisionId )
+                                        , ( "serial", String.fromInt model.syncInfoGeneral.lastFetchedRevisionId )
                                         ]
                                     |> withExpectJson decodeDownloadSyncResponseGeneral
                                     |> HttpBuilder.send (RemoteData.fromResult >> BackendGeneralFetchHandle)
@@ -1196,8 +1198,8 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 else
                                     ( RemoteData.Loading
                                     , RemoteData.Success (Just result)
-                                    , HttpBuilder.post (device.backendUrl ++ "/api/sync")
-                                        |> withQueryParams [ ( "access_token", device.accessToken ) ]
+                                    , HttpBuilder.post (device.backendUrl ++ "/CreateSyncManagerHealthCenter")
+                                        |> withQueryParams [ ( "accessToken", device.accessToken ) ]
                                         |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadAuthorityResultRecord dbVersion result)
                                         -- We don't need to decode anything, as we just want to have
                                         -- the browser download it.
@@ -1388,8 +1390,8 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 else
                                     ( RemoteData.Loading
                                     , RemoteData.Success (Just result)
-                                    , HttpBuilder.post (device.backendUrl ++ "/api/sync")
-                                        |> withQueryParams [ ( "access_token", device.accessToken ) ]
+                                    , HttpBuilder.post (device.backendUrl ++ "/CreateSyncManager")
+                                        |> withQueryParams [ ( "accessToken", device.accessToken ) ]
                                         |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadGeneralResultRecord dbVersion result)
                                         -- We don't need to decode anything, as we just want to have
                                         -- the browser download it.

@@ -4,7 +4,6 @@
 
 /**/*.example
 /.dbimageBuild
-/.dbimageExtra
 /.ddev-docker-*.yaml
 /.*downloads
 /.homeadditions
@@ -12,13 +11,8 @@
 /.sshimageBuild
 /.venv
 /.webimageBuild
-/.webimageExtra
 /apache/apache-site.conf
 /commands/.gitattributes
-/commands/db/mysql
-/commands/host/launch
-/commands/web/xdebug
-/commands/web/live
 /config.local.y*ml
 /config.*.local.y*ml
 /db_snapshots

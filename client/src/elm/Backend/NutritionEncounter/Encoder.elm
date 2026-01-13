@@ -12,12 +12,8 @@ import Utils.Json exposing (encodeIfSet)
 -}
 encodeNutritionEncounter : NutritionEncounter -> List ( String, Value )
 encodeNutritionEncounter encounter =
-    [ ( "scheduled_date"
-      , object
-            [ ( "value", encodeYYYYMMDD encounter.startDate )
-            , ( "value2", maybe encodeYYYYMMDD encounter.endDate )
-            ]
-      )
+    [ ( "start_date", encodeYYYYMMDD encounter.startDate )
+    , ( "end_date", maybe encodeYYYYMMDD encounter.endDate )
     , ( "individual_participant", encodeEntityUuid encounter.participant )
     , ( "nutrition_encounter_type", encodeNutritionEncounterType encounter.encounterType )
     , ( "deleted", bool False )
