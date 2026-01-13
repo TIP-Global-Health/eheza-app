@@ -1807,14 +1807,14 @@ type alias PrenatalUltrasound =
 
 type alias UltrasoundValue =
     { signs : EverySet PregnancySign
-    , eddWeeks : Int
-    , eddDays : Int
-    , eddDate : NominalDate
+    , eddWeeks : Maybe Int
+    , eddDays : Maybe Int
+    , eddDate : Maybe NominalDate
     }
 
 
 type PregnancySign
-    = PregnancyNonViable
+    = PregnancyNotViable
     | PregnancyEctopic
     | PregnancyMultipleFetuses
     | NoPregnancySigns
