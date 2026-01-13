@@ -1609,6 +1609,34 @@ bmiToPrePregnancyClassification bmi =
         PrePregnancyObesity
 
 
+{-| Resolve the pre-pregnancy nutritional status classification.
+
+    The classification approach depends on the `isHealthyStart` flag:
+
+    * When `isHealthyStart` is `True` (Healthy Start workflow), the function:
+        * Uses the booking MUAC, resolved via `resolveBookingMUAC` and converted with
+          `muacValueFunc`, together with the optional baseline BMI.
+        * Flags the woman as `PrePregnancyUnderWeight` if either:
+            * `baselineBmi < 17.5`, or
+            * `booking MUAC < 21` cm.
+          Otherwise it returns `PrePregnancyNormal`.
+        * Only the classifications `PrePregnancyUnderWeight` and `PrePregnancyNormal`
+          are used in this mode.
+        * Returns `Nothing` if neither MUAC nor BMI is available.
+
+    * When `isHealthyStart` is `False` (standard prenatal workflow), the function:
+        * Expects a baseline BMI, the global LMP date, and the woman's birth date.
+        * Computes age at LMP:
+            * If age is below 19 years, it:
+                * Computes a BMI-for-age z-score via `zScoreBmiForAge`, using the age
+                  in days at LMP and the woman's gender.
+                * Converts the resulting z-score to a pre-pregnancy classification
+                  using `zscoreToPrePregnancyClassification`.
+            * If age is 19 years or above, it:
+                * Applies adult BMI thresholds via `bmiToPrePregnancyClassification`.
+        * Returns `Nothing` if any of the required inputs (BMI, LMP date, birth date)
+          are missing or if a z-score cannot be computed.
+-}
 resolvePrePregnancyClassification : ZScore.Model.Model -> Bool -> AssembledData -> Maybe Float -> Maybe PrePregnancyClassification
 resolvePrePregnancyClassification zscores isHealthyStart assembled baselineBmi =
     if isHealthyStart then
