@@ -476,6 +476,9 @@ decodeRevision =
                     "prenatal_tetanus_immunisation" ->
                         decodeWithUuid PrenatalTetanusImmunisationRevision decodePrenatalTetanusImmunisation
 
+                    "prenatal_ultrasound" ->
+                        decodeWithUuid PrenatalUltrasoundRevision decodePrenatalUltrasound
+
                     "prenatal_urine_dipstick_test" ->
                         decodeWithUuid PrenatalUrineDipstickTestRevision decodePrenatalUrineDipstickTest
 
