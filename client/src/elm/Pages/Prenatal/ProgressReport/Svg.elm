@@ -247,19 +247,19 @@ viewWeightGainForEGA language ( firstTrimesterTotal, perWeek ) points =
 
         measurements =
             List.filterMap
-                (\( egaDays, bmi ) ->
+                (\( egaDays, weightGain ) ->
                     if
                         withinRange (toFloat egaDays / 7) horizontalMin horizontalMax
-                            && withinRange bmi verticalMin verticalMax
+                            && withinRange weightGain verticalMin verticalMax
                     then
                         let
                             egaGap =
                                 toFloat egaDays / 7 - horizontalMin
 
-                            bmiGap =
-                                bmi - verticalMin
+                            weightGainGap =
+                                weightGain - verticalMin
                         in
-                        Just ( dimensionsPx.left + egaGap * horizontalStep, dimensionsPx.bottom - bmiGap * verticalStep )
+                        Just ( dimensionsPx.left + egaGap * horizontalStep, dimensionsPx.bottom - weightGainGap * verticalStep )
 
                     else
                         Nothing
@@ -371,19 +371,19 @@ viewWeightGainForEGAHealthyStart language ( perDayFirstTrimester, perDayOtherTri
 
         measurements =
             List.filterMap
-                (\( egaDays, bmi ) ->
+                (\( egaDays, weightGain ) ->
                     if
                         withinRange (toFloat egaDays / 7) horizontalMin horizontalMax
-                            && withinRange bmi verticalMin verticalMax
+                            && withinRange weightGain verticalMin verticalMax
                     then
                         let
                             egaGap =
                                 toFloat egaDays / 7 - horizontalMin
 
-                            bmiGap =
-                                bmi - verticalMin
+                            weightGainGap =
+                                weightGain - verticalMin
                         in
-                        Just ( dimensionsPx.left + egaGap * horizontalStep, dimensionsPx.bottom - bmiGap * verticalStep )
+                        Just ( dimensionsPx.left + egaGap * horizontalStep, dimensionsPx.bottom - weightGainGap * verticalStep )
 
                     else
                         Nothing

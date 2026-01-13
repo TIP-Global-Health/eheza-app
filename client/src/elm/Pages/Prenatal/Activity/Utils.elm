@@ -1799,7 +1799,7 @@ resolveGWGClassificationForHealthyStart currentDate prePregnancyClassification p
                 actualWeightGain =
                     currentWeight - previousWeight
             in
-            if expectedWeightGain < actualWeightGain then
+            if actualWeightGain <= expectedWeightGain then
                 GWGAdequate
 
             else
