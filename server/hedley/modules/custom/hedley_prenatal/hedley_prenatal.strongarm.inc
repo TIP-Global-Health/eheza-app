@@ -21,6 +21,13 @@ function hedley_prenatal_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_node_prenatalultrasound';
+  $strongarm->value = '1';
+  $export['auto_entitylabel_node_prenatalultrasound'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
   $strongarm->name = 'auto_entitylabel_node_prenatal_aspirin';
   $strongarm->value = '1';
   $export['auto_entitylabel_node_prenatal_aspirin'] = $strongarm;
@@ -224,6 +231,13 @@ function hedley_prenatal_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_pattern_node_prenatalultrasound';
+  $strongarm->value = '[node:content-type] - [node:field-person:title] - [node:field-date-measured:custom:Y-m-d]';
+  $export['auto_entitylabel_pattern_node_prenatalultrasound'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
   $strongarm->name = 'auto_entitylabel_pattern_node_prenatal_aspirin';
   $strongarm->value = '[node:content-type] - [node:field-person:title] - [node:field-date-measured:custom:Y-m-d] ';
   $export['auto_entitylabel_pattern_node_prenatal_aspirin'] = $strongarm;
@@ -423,6 +437,13 @@ function hedley_prenatal_strongarm() {
   $strongarm->name = 'auto_entitylabel_php_node_appointment_confirmation';
   $strongarm->value = 0;
   $export['auto_entitylabel_php_node_appointment_confirmation'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_php_node_prenatalultrasound';
+  $strongarm->value = 0;
+  $export['auto_entitylabel_php_node_prenatalultrasound'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -636,6 +657,23 @@ function hedley_prenatal_strongarm() {
     'view_modes' => array(),
   );
   $export['field_bundle_settings_node__appointment_confirmation'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'field_bundle_settings_node__prenatalultrasound';
+  $strongarm->value = array(
+    'extra_fields' => array(
+      'display' => array(),
+      'form' => array(
+        'title' => array(
+          'weight' => '-5',
+        ),
+      ),
+    ),
+    'view_modes' => array(),
+  );
+  $export['field_bundle_settings_node__prenatalultrasound'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -1138,6 +1176,15 @@ function hedley_prenatal_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
+  $strongarm->name = 'menu_options_prenatalultrasound';
+  $strongarm->value = array(
+    0 => 'main-menu',
+  );
+  $export['menu_options_prenatalultrasound'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
   $strongarm->name = 'menu_options_prenatal_aspirin';
   $strongarm->value = array(
     0 => 'main-menu',
@@ -1397,6 +1444,13 @@ function hedley_prenatal_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
+  $strongarm->name = 'menu_parent_prenatalultrasound';
+  $strongarm->value = 'main-menu:0';
+  $export['menu_parent_prenatalultrasound'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
   $strongarm->name = 'menu_parent_prenatal_aspirin';
   $strongarm->value = 'main-menu:0';
   $export['menu_parent_prenatal_aspirin'] = $strongarm;
@@ -1599,6 +1653,16 @@ function hedley_prenatal_strongarm() {
     1 => 'promote',
   );
   $export['node_options_appointment_confirmation'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'node_options_prenatalultrasound';
+  $strongarm->value = array(
+    0 => 'status',
+    1 => 'promote',
+  );
+  $export['node_options_prenatalultrasound'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -1890,6 +1954,13 @@ function hedley_prenatal_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
+  $strongarm->name = 'node_preview_prenatalultrasound';
+  $strongarm->value = '1';
+  $export['node_preview_prenatalultrasound'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
   $strongarm->name = 'node_preview_prenatal_aspirin';
   $strongarm->value = '1';
   $export['node_preview_prenatal_aspirin'] = $strongarm;
@@ -2089,6 +2160,13 @@ function hedley_prenatal_strongarm() {
   $strongarm->name = 'node_submitted_appointment_confirmation';
   $strongarm->value = 1;
   $export['node_submitted_appointment_confirmation'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'node_submitted_prenatalultrasound';
+  $strongarm->value = 1;
+  $export['node_submitted_prenatalultrasound'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */

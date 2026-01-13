@@ -251,6 +251,14 @@ function hedley_prenatal_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'prenatalultrasound' => array(
+      'name' => t('PrenatalUltrasound'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
   );
   drupal_alter('node_info', $items);
   return $items;

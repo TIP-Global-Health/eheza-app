@@ -301,6 +301,16 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create prenatalultrasound content'.
+  $permissions['create prenatalultrasound content'] = array(
+    'name' => 'create prenatalultrasound content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any appointment_confirmation content'.
   $permissions['delete any appointment_confirmation content'] = array(
     'name' => 'delete any appointment_confirmation content',
@@ -562,6 +572,15 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any prenatalultrasound content'.
+  $permissions['delete any prenatalultrasound content'] = array(
+    'name' => 'delete any prenatalultrasound content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete own appointment_confirmation content'.
   $permissions['delete own appointment_confirmation content'] = array(
     'name' => 'delete own appointment_confirmation content',
@@ -817,6 +836,15 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'delete own prenatal_urine_dipstick_test content'.
   $permissions['delete own prenatal_urine_dipstick_test content'] = array(
     'name' => 'delete own prenatal_urine_dipstick_test content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own prenatalultrasound content'.
+  $permissions['delete own prenatalultrasound content'] = array(
+    'name' => 'delete own prenatalultrasound content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -1113,6 +1141,16 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit any prenatalultrasound content'.
+  $permissions['edit any prenatalultrasound content'] = array(
+    'name' => 'edit any prenatalultrasound content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit own appointment_confirmation content'.
   $permissions['edit own appointment_confirmation content'] = array(
     'name' => 'edit own appointment_confirmation content',
@@ -1396,6 +1434,16 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'edit own prenatal_urine_dipstick_test content'.
   $permissions['edit own prenatal_urine_dipstick_test content'] = array(
     'name' => 'edit own prenatal_urine_dipstick_test content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own prenatalultrasound content'.
+  $permissions['edit own prenatalultrasound content'] = array(
+    'name' => 'edit own prenatalultrasound content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
