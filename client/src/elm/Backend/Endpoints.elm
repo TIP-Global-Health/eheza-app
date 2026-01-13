@@ -1543,3 +1543,9 @@ hivTreatmentReviewEndpoint : ReadWriteEndPoint Error HIVTreatmentReviewId HIVTre
 hivTreatmentReviewEndpoint =
     swEndpoint "nodes/hiv_treatment_review" decodeHIVTreatmentReview
         |> withValueEncoder (object << encodeHIVTreatmentReview)
+
+
+prenatalUltrasoundEndpoint : ReadWriteEndPoint Error PrenatalUltrasoundId PrenatalUltrasound PrenatalUltrasound ()
+prenatalUltrasoundEndpoint =
+    swEndpoint "nodes/prenatal_ultrasound" decodePrenatalUltrasound
+        |> withValueEncoder (object << encodePrenatalUltrasound)
