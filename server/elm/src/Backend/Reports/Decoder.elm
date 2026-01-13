@@ -1,14 +1,14 @@
-module Backend.Reports.Decoder exposing (decodeReportsData)
+module Backend.Reports.Decoder exposing (decodeReportsData, decodeSyncResponse)
 
+import Backend.Components.Decoder exposing (decodeReportParams, decodeSelectedEntity)
 import Backend.Decoder exposing (decodeSite, decodeWithFallback)
 import Backend.Reports.Model exposing (..)
 import Backend.Reports.Utils exposing (..)
 import Date
-import EverySet exposing (EverySet)
-import Gizra.Json exposing (decodeFloat, decodeInt)
-import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffMonths)
-import Json.Decode exposing (Decoder, andThen, bool, fail, list, map, nullable, oneOf, string, succeed)
-import Json.Decode.Pipeline exposing (optional, optionalAt, required)
+import Gizra.Json exposing (decodeInt)
+import Gizra.NominalDate exposing (decodeYYYYMMDD)
+import Json.Decode exposing (Decoder, andThen, fail, field, list, nullable, string, succeed)
+import Json.Decode.Pipeline exposing (hardcoded, optional, optionalAt, required)
 import Maybe.Extra
 
 
@@ -18,40 +18,20 @@ decodeReportsData =
         |> required "site" decodeSite
         |> required "entity_name" string
         |> required "entity_type" decodeSelectedEntity
-        |> required "results" (list decodePatientData)
+        |> required "params" decodeReportParams
+        |> hardcoded []
         |> optionalAt [ "additional", "nutrition_report_data" ] (nullable (list decodeBackendGeneratedNutritionReportTableDate)) Nothing
+        |> hardcoded Nothing
 
 
-decodeSelectedEntity : Decoder SelectedEntity
-decodeSelectedEntity =
-    string
-        |> andThen
-            (\entityType ->
-                case entityType of
-                    "global" ->
-                        succeed EntityGlobal
-
-                    "province" ->
-                        succeed EntityProvince
-
-                    "district" ->
-                        succeed EntityDistrict
-
-                    "sector" ->
-                        succeed EntitySector
-
-                    "cell" ->
-                        succeed EntityCell
-
-                    "village" ->
-                        succeed EntityVillage
-
-                    "health-center" ->
-                        succeed EntityHealthCenter
-
-                    _ ->
-                        fail <| entityType ++ " is unknown SelectedEntity type"
-            )
+decodeSyncResponse : Decoder SyncResponse
+decodeSyncResponse =
+    field "data"
+        (succeed SyncResponse
+            |> required "batch" (list decodePatientData)
+            |> required "total_remaining" decodeInt
+            |> required "last" decodeInt
+        )
 
 
 decodePatientData : Decoder PatientData

@@ -2,6 +2,7 @@ module Pages.Reports.View exposing (view)
 
 import App.Types exposing (Language)
 import AssocList as Dict exposing (Dict)
+import Backend.Components.Model exposing (SelectedEntity(..))
 import Backend.Model exposing (ModelBackend)
 import Backend.Reports.Model
     exposing
@@ -15,7 +16,6 @@ import Backend.Reports.Model
         , PrenatalDiagnosis(..)
         , PrenatalEncounterType(..)
         , ReportsData
-        , SelectedEntity(..)
         )
 import Backend.Reports.Utils exposing (allAcuteIllnessDiagnoses, allPrenatalDiagnoses)
 import Date exposing (Unit(..))
@@ -27,7 +27,8 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
-import Pages.Components.View exposing (viewCustomCells, viewMetricsResultsTable, viewStandardCells, viewStandardRow)
+import Pages.Components.Utils exposing (syncStatusAndProgress)
+import Pages.Components.View exposing (viewMetricsResultsTable, viewStandardCells, viewStandardRow)
 import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Reports.Model exposing (..)
 import Pages.Reports.Utils exposing (..)
@@ -42,7 +43,6 @@ import Pages.Utils
         )
 import RemoteData exposing (RemoteData(..))
 import Round
-import Time exposing (Month(..))
 import Translate exposing (TranslationId, translate)
 import Utils.Html exposing (viewModal)
 
@@ -64,6 +64,10 @@ viewReportsData : Language -> NominalDate -> String -> ReportsData -> Model -> H
 viewReportsData language currentDate themePath data model =
     let
         topBar =
+            let
+                ( syncStatus, progress ) =
+                    syncStatusAndProgress data.records data.remainingForDownload
+            in
             div [ class "top-bar" ]
                 [ div [ class "new-selection" ]
                     [ a [ href "/admin/reports/statistical-queries" ]
@@ -73,6 +77,10 @@ viewReportsData language currentDate themePath data model =
                     ]
                 , div [ class "scope" ]
                     [ text <| translate language Translate.Scope ++ ": " ++ scopeLabel ]
+                , div [ class "download-status" ]
+                    [ div [] [ text <| "Download status: " ++ syncStatus ]
+                    , div [ class "progress" ] [ text <| "(" ++ progress ++ ")" ]
+                    ]
                 ]
 
         scopeLabel =
@@ -1588,9 +1596,6 @@ generatePrenatalReportData language limitDate records =
         completedChwVisits4 =
             resolveValueFromDict 4 partitionedVisitsForCompleted.chw
 
-        completedChwVisits5 =
-            resolveValueFromDict 5 partitionedVisitsForCompleted.chw
-
         completedChwVisits5AndMore =
             resolveValueFromDict -1 partitionedVisitsForCompleted.chw
 
@@ -1605,9 +1610,6 @@ generatePrenatalReportData language limitDate records =
 
         completedAllVisits4 =
             resolveValueFromDict 4 partitionedVisitsForCompleted.all
-
-        completedAllVisits5 =
-            resolveValueFromDict 5 partitionedVisitsForCompleted.all
 
         completedAllVisits5AndMore =
             resolveValueFromDict -1 partitionedVisitsForCompleted.all
@@ -1793,26 +1795,6 @@ generatePrenatalReportData language limitDate records =
                     ]
             }
 
-        -- Pregnancy delivery locations stats.
-        deliveryLocationsDict =
-            List.foldl
-                (\participantData accumDict ->
-                    Maybe.map
-                        (\location ->
-                            let
-                                updated =
-                                    Dict.get location accumDict
-                                        |> Maybe.map ((+) 1)
-                                        |> Maybe.withDefault 1
-                            in
-                            Dict.insert location updated accumDict
-                        )
-                        participantData.deliveryLocation
-                        |> Maybe.withDefault accumDict
-                )
-                Dict.empty
-                completed
-
         deliveryLocationsTable =
             let
                 facilityDeliveries =
@@ -1828,6 +1810,26 @@ generatePrenatalReportData language limitDate records =
 
                 totalCompletedPregnancies =
                     List.length completed
+
+                -- Pregnancy delivery locations stats.
+                deliveryLocationsDict =
+                    List.foldl
+                        (\participantData accumDict ->
+                            Maybe.map
+                                (\location ->
+                                    let
+                                        updated =
+                                            Dict.get location accumDict
+                                                |> Maybe.map ((+) 1)
+                                                |> Maybe.withDefault 1
+                                    in
+                                    Dict.insert location updated accumDict
+                                )
+                                participantData.deliveryLocation
+                                |> Maybe.withDefault accumDict
+                        )
+                        Dict.empty
+                        completed
             in
             { heading = translate language Translate.DeliveryLocationsTableHeading ++ ":"
             , captions = List.map (translate language) [ Translate.Location, Translate.EmptyString ]

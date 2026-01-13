@@ -1,14 +1,16 @@
-module Backend.Scoreboard.Decoder exposing (decodeScoreboardData)
+module Backend.Scoreboard.Decoder exposing (decodeScoreboardData, decodeSyncResponse)
 
 import AssocList as Dict
+import Backend.Components.Decoder exposing (decodeReportParams, decodeSelectedEntity)
 import Backend.Decoder exposing (decodeSite)
 import Backend.Scoreboard.Model exposing (..)
 import Backend.Scoreboard.Utils exposing (..)
 import Date
 import EverySet exposing (EverySet)
+import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffMonths)
-import Json.Decode exposing (Decoder, andThen, bool, fail, list, map, maybe, string, succeed)
-import Json.Decode.Pipeline exposing (optional, required)
+import Json.Decode exposing (Decoder, bool, field, list, map, maybe, string, succeed)
+import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Maybe.Extra exposing (isNothing)
 
 
@@ -18,30 +20,19 @@ decodeScoreboardData currentDate =
         |> required "site" decodeSite
         |> required "entity_name" string
         |> required "entity_type" decodeSelectedEntity
-        |> required "results" (list (decodePatientData currentDate))
+        |> required "params" decodeReportParams
+        |> hardcoded []
+        |> hardcoded Nothing
 
 
-decodeSelectedEntity : Decoder SelectedEntity
-decodeSelectedEntity =
-    string
-        |> andThen
-            (\entityType ->
-                case entityType of
-                    "district" ->
-                        succeed EntityDistrict
-
-                    "sector" ->
-                        succeed EntitySector
-
-                    "cell" ->
-                        succeed EntityCell
-
-                    "village" ->
-                        succeed EntityVillage
-
-                    _ ->
-                        fail <| entityType ++ " is unknown SelectedEntity type"
-            )
+decodeSyncResponse : NominalDate -> Decoder SyncResponse
+decodeSyncResponse currentDate =
+    field "data"
+        (succeed SyncResponse
+            |> required "batch" (list (decodePatientData currentDate))
+            |> required "total_remaining" decodeInt
+            |> required "last" decodeInt
+        )
 
 
 decodePatientData : NominalDate -> Decoder PatientData

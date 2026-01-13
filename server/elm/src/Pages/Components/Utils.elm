@@ -30,3 +30,22 @@ populationSelectionOptionFromString selectionOption =
 
         _ ->
             Nothing
+
+
+syncStatusAndProgress : List a -> Maybe Int -> ( String, String )
+syncStatusAndProgress records =
+    Maybe.map
+        (\remainingForDownload ->
+            let
+                totalDownloaded =
+                    List.length records
+            in
+            ( if remainingForDownload == 0 then
+                "COMPLETED"
+
+              else
+                "IN PROCESS"
+            , String.fromInt totalDownloaded ++ " / " ++ String.fromInt (totalDownloaded + remainingForDownload)
+            )
+        )
+        >> Maybe.withDefault ( "PENDING", "0 / 0" )
