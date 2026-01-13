@@ -654,7 +654,7 @@ countUncomplicatedMalariaSentToHC encounters =
     List.filter
         (\encounter ->
             -- Encounter which has produced Uncomplicated Malaria diagnosis,
-            -- patient is bellow age of 6 months and
+            -- patient is below age of 6 months and
             -- patient was sent to health center.
             (encounter.diagnosis == DiagnosisMalariaUncomplicated)
                 && (encounter.ageInMonths < 6)

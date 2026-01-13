@@ -213,7 +213,7 @@ viewWeightGainForEGA language ( firstTrimesterTotal, perWeek ) points =
             , ( dimensionsPx.left, dimensionsPx.bottom - (1.25 * firstTrimesterTotal) * verticalStep )
             ]
 
-        remianingTrimestersBottomRedPoints =
+        remainingTrimestersBottomRedPoints =
             [ ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom )
             , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (0.7 * firstTrimesterTotal) * verticalStep )
             , ( dimensionsPx.right, dimensionsPx.bottom - 0.7 * (firstTrimesterTotal + 29 * perWeek) * verticalStep )
@@ -221,7 +221,7 @@ viewWeightGainForEGA language ( firstTrimesterTotal, perWeek ) points =
             , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom )
             ]
 
-        remianingTrimestersYellowPoints =
+        remainingTrimestersYellowPoints =
             [ ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (0.7 * firstTrimesterTotal) * verticalStep )
             , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (0.9 * firstTrimesterTotal) * verticalStep )
             , ( dimensionsPx.right, dimensionsPx.bottom - 0.9 * (firstTrimesterTotal + 29 * perWeek) * verticalStep )
@@ -229,7 +229,7 @@ viewWeightGainForEGA language ( firstTrimesterTotal, perWeek ) points =
             , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (0.7 * firstTrimesterTotal) * verticalStep )
             ]
 
-        remianingTrimestersGreenPoints =
+        remainingTrimestersGreenPoints =
             [ ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (0.9 * firstTrimesterTotal) * verticalStep )
             , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (1.25 * firstTrimesterTotal) * verticalStep )
             , ( dimensionsPx.right, dimensionsPx.bottom - 1.25 * (firstTrimesterTotal + 29 * perWeek) * verticalStep )
@@ -237,7 +237,7 @@ viewWeightGainForEGA language ( firstTrimesterTotal, perWeek ) points =
             , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (0.9 * firstTrimesterTotal) * verticalStep )
             ]
 
-        remianingTrimestersTopRedPoints =
+        remainingTrimestersTopRedPoints =
             [ ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (1.25 * firstTrimesterTotal) * verticalStep )
             , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.top )
             , ( dimensionsPx.right, dimensionsPx.top )
@@ -290,10 +290,10 @@ viewWeightGainForEGA language ( firstTrimesterTotal, perWeek ) points =
             , drawPolygon firstTrimesterYellowPoints "yellow-area"
             , drawPolygon firstTrimesterGreenPoints "green-area"
             , drawPolygon firstTrimesterTopRedPoints "red-area"
-            , drawPolygon remianingTrimestersBottomRedPoints "red-area"
-            , drawPolygon remianingTrimestersYellowPoints "yellow-area"
-            , drawPolygon remianingTrimestersGreenPoints "green-area"
-            , drawPolygon remianingTrimestersTopRedPoints "red-area"
+            , drawPolygon remainingTrimestersBottomRedPoints "red-area"
+            , drawPolygon remainingTrimestersYellowPoints "yellow-area"
+            , drawPolygon remainingTrimestersGreenPoints "green-area"
+            , drawPolygon remainingTrimestersTopRedPoints "red-area"
             , drawPolyline measurements "data"
             ]
                 ++ drawPoints "#06B9FF" measurements
@@ -306,6 +306,11 @@ viewWeightGainForEGA language ( firstTrimesterTotal, perWeek ) points =
         ]
 
 
+{-| Render a weight gain chart for Healthy Start patients.
+Unlike `viewWeightGainForEGA`, which expects per-week weight gain rates,
+this function takes per-day weight gain rates for the first trimester and
+for the remaining trimesters and converts them internally to per-week rates.
+-}
 viewWeightGainForEGAHealthyStart : Language -> ( Float, Float ) -> List ( Int, Float ) -> Html any
 viewWeightGainForEGAHealthyStart language ( perDayFirstTrimester, perDayOtherTrimesters ) points =
     let
@@ -348,7 +353,7 @@ viewWeightGainForEGAHealthyStart language ( perDayFirstTrimester, perDayOtherTri
             , ( dimensionsPx.left, dimensionsPx.bottom )
             ]
 
-        remianingTrimestersRedPoints =
+        remainingTrimestersRedPoints =
             [ ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom )
             , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (13 * perWeekFirstTrimester) * verticalStep )
             , ( dimensionsPx.right, dimensionsPx.bottom - (13 * perWeekFirstTrimester + 29 * perWeekOtherTrimesters) * verticalStep )
@@ -356,7 +361,7 @@ viewWeightGainForEGAHealthyStart language ( perDayFirstTrimester, perDayOtherTri
             , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom )
             ]
 
-        remianingTrimestersGreenPoints =
+        remainingTrimestersGreenPoints =
             [ ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (13 * perWeekFirstTrimester) * verticalStep )
             , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.top )
             , ( dimensionsPx.right, dimensionsPx.top )
@@ -407,8 +412,8 @@ viewWeightGainForEGAHealthyStart language ( perDayFirstTrimester, perDayOtherTri
         , g [] <|
             [ drawPolygon firstTrimesterRedPoints "red-area"
             , drawPolygon firstTrimesterGreenPoints "green-area"
-            , drawPolygon remianingTrimestersRedPoints "red-area"
-            , drawPolygon remianingTrimestersGreenPoints "green-area"
+            , drawPolygon remainingTrimestersRedPoints "red-area"
+            , drawPolygon remainingTrimestersGreenPoints "green-area"
             ]
                 ++ drawPoints "#06B9FF" measurements
         , (referenceVerticalLines verticalParts

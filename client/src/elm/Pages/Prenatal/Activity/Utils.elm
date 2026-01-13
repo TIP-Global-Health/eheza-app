@@ -1516,9 +1516,11 @@ resolvePrePregnancyWeight assembled =
                 )
                 assembled.chwPreviousMeasurementsWithDates
                 |> List.head
+
+        withoutCurrent =
+            Maybe.Extra.or byNurse byCHW
     in
-    Maybe.Extra.or byNurse byCHW
-        |> Maybe.Extra.or byCurrent
+    Maybe.Extra.or withoutCurrent byCurrent
 
 
 {-| For Healthy Start.
@@ -1542,8 +1544,12 @@ resolveBookingWeight assembled =
                 )
                 assembled.chwPreviousMeasurementsWithDates
                 |> List.head
+
+        withoutCurrent =
+            Maybe.Extra.or byNurse byCHW
     in
-    Maybe.Extra.or byNurse byCHW
+    resolveWeight assembled.measurements
+        |> Maybe.Extra.or withoutCurrent
 
 
 {-| For Healthy Start.
@@ -1554,9 +1560,6 @@ resolveBookingMUAC assembled =
         resolveMuac measurements =
             getMeasurementValueFunc measurements.nutrition
                 |> Maybe.map .muac
-
-        byCurrent =
-            resolveMuac assembled.measurements
 
         byNurse =
             List.filterMap (.measurements >> resolveMuac)
@@ -1570,12 +1573,15 @@ resolveBookingMUAC assembled =
                 )
                 assembled.chwPreviousMeasurementsWithDates
                 |> List.head
+
+        withoutCurrent =
+            Maybe.Extra.or byNurse byCHW
     in
-    Maybe.Extra.or byNurse byCHW
-        |> Maybe.Extra.or byCurrent
+    resolveMuac assembled.measurements
+        |> Maybe.Extra.or withoutCurrent
 
 
-{-| Used for patients bellow 19 years of age.
+{-| Used for patients below 19 years of age.
 -}
 zscoreToPrePregnancyClassification : Float -> PrePregnancyClassification
 zscoreToPrePregnancyClassification zscore =
@@ -1610,32 +1616,30 @@ bmiToPrePregnancyClassification bmi =
 
 
 {-| Resolve the pre-pregnancy nutritional status classification.
+The classification approach depends on the `isHealthyStart` flag:
+When `isHealthyStart` is `True` (Healthy Start workflow), the function:
+Uses the booking MUAC, together with the optional baseline BMI.
+Flags the woman as `PrePregnancyUnderWeight` if either:
+`baselineBmi < 17.5`, or
+`booking MUAC < 21` cm.
+Otherwise it returns `PrePregnancyNormal`.
+Only the classifications `PrePregnancyUnderWeight` and `PrePregnancyNormal`
+are used in this mode.
+Returns `Nothing` if neither MUAC nor BMI is available.
 
-    The classification approach depends on the `isHealthyStart` flag:
+When `isHealthyStart` is `False` (standard prenatal workflow), the function:
+Expects a baseline BMI, the global LMP date, and the woman's birth date.
+Computes age at LMP:
+If age is below 19 years, it:
+Computes a BMI-for-age z-score via `zScoreBmiForAge`, using the age
+in days at LMP and the woman's gender.
+Converts the resulting z-score to a pre-pregnancy classification
+using `zscoreToPrePregnancyClassification`.
+If age is 19 years or above, it:
+Applies adult BMI thresholds via `bmiToPrePregnancyClassification`.
+Returns `Nothing` if any of the required inputs (BMI, LMP date, birth date)
+are missing or if a z-score cannot be computed.
 
-    * When `isHealthyStart` is `True` (Healthy Start workflow), the function:
-        * Uses the booking MUAC, resolved via `resolveBookingMUAC` and converted with
-          `muacValueFunc`, together with the optional baseline BMI.
-        * Flags the woman as `PrePregnancyUnderWeight` if either:
-            * `baselineBmi < 17.5`, or
-            * `booking MUAC < 21` cm.
-          Otherwise it returns `PrePregnancyNormal`.
-        * Only the classifications `PrePregnancyUnderWeight` and `PrePregnancyNormal`
-          are used in this mode.
-        * Returns `Nothing` if neither MUAC nor BMI is available.
-
-    * When `isHealthyStart` is `False` (standard prenatal workflow), the function:
-        * Expects a baseline BMI, the global LMP date, and the woman's birth date.
-        * Computes age at LMP:
-            * If age is below 19 years, it:
-                * Computes a BMI-for-age z-score via `zScoreBmiForAge`, using the age
-                  in days at LMP and the woman's gender.
-                * Converts the resulting z-score to a pre-pregnancy classification
-                  using `zscoreToPrePregnancyClassification`.
-            * If age is 19 years or above, it:
-                * Applies adult BMI thresholds via `bmiToPrePregnancyClassification`.
-        * Returns `Nothing` if any of the required inputs (BMI, LMP date, birth date)
-          are missing or if a z-score cannot be computed.
 -}
 resolvePrePregnancyClassification : ZScore.Model.Model -> Bool -> AssembledData -> Maybe Float -> Maybe PrePregnancyClassification
 resolvePrePregnancyClassification zscores isHealthyStart assembled baselineBmi =
@@ -1739,6 +1743,17 @@ resolveGWGClassification currentDate prePregnancyClassification prePregnancyWeig
         assembled.globalLmpDate
 
 
+{-| Healthy Start–specific variant of `resolveGWGClassification`.
+This function classifies gestational weight gain between two encounters
+using the Healthy Start protocol, which is based on _daily_ expected
+weight gain rates split at 13 weeks gestational age:
+
+  - From LMP up to (but not including) 13 weeks, it uses a first-trimester
+    per-day weight gain rate.
+  - From 13 weeks onward, it uses a different per-day rate for later
+    trimesters.
+
+-}
 resolveGWGClassificationForHealthyStart : NominalDate -> PrePregnancyClassification -> Float -> NominalDate -> Float -> AssembledData -> Maybe GWGClassification
 resolveGWGClassificationForHealthyStart currentDate prePregnancyClassification previousWeight previousWeightDate currentWeight assembled =
     Maybe.map
@@ -3975,6 +3990,7 @@ resolvePreviousValueWithDate assembled measurementFunc valueFunc =
                            )
                     )
             )
+        |> List.reverse
         |> List.head
 
 
