@@ -459,7 +459,9 @@ function hedley_reports_get_triggering_measurement_types() {
     HEDLEY_ACTIVITY_WEIGHT_BUNDLES,
     HEDLEY_ACTIVITY_REPORTS_GROUP_MEASUREMENT_BUNDLES,
     [
+      HEDLEY_ACTIVITY_DANGER_SIGNS_CONTENT_TYPE,
       HEDLEY_ACTIVITY_PRENATAL_ASPIRIN_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_PRENATAL_BREASTFEEDING_CONTENT_TYPE,
       HEDLEY_ACTIVITY_PRENATAL_CALCIUM_CONTENT_TYPE,
       HEDLEY_ACTIVITY_PRENATAL_HEMOGLOBIN_TEST_CONTENT_TYPE,
       HEDLEY_ACTIVITY_PRENATAL_MEDICATION_DISTRIBUTION_CONTENT_TYPE,
@@ -507,6 +509,8 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
     'intrauterine-death' => [],
     'azithromycin' => [],
     'anemia-test' => [],
+    'breastfed-first-hour' => [],
+    'premature-onset-contractions' => [],
   ];
   $measurements_bundles = hedley_reports_get_triggering_measurement_types();
   $measurements_ids = hedley_general_get_person_measurements($person->nid, $measurements_bundles);
@@ -698,6 +702,26 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
         }
         break;
 
+      case HEDLEY_ACTIVITY_PRENATAL_BREASTFEEDING_CONTENT_TYPE:
+        foreach ($measurement->field_breastfeeding_signs[LANGUAGE_NONE] as $item) {
+          if ($item['value'] == 'breastfed-first-hour') {
+            $encounter_id = $measurement->field_prenatal_encounter[LANGUAGE_NONE][0]['target_id'];
+            $prenatal_indicators_by_encounter['breastfed-first-hour'][] = $encounter_id;
+            break;
+          }
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_DANGER_SIGNS_CONTENT_TYPE:
+        foreach ($measurement->field_danger_signs[LANGUAGE_NONE] as $item) {
+          if ($item['value'] == 'premature-onset-contractions') {
+            $encounter_id = $measurement->field_prenatal_encounter[LANGUAGE_NONE][0]['target_id'];
+            $prenatal_indicators_by_encounter['premature-onset-contractions'][] = $encounter_id;
+            break;
+          }
+        }
+        break;
+
       default:
         $encounter_id = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
         $sessions_ids[] = $encounter_id;
@@ -758,7 +782,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
           $mapped_diagnoses = implode(",", array_unique($mapped_diagnoses));
 
           // Resolving indicators.
-          // First one is GWG adequate, second is MMS and third is Ultrasound.
+          // 'GWG adequate' indicator is recorded on encounter itself.
           $indicators = [];
           $prenatal_indicators = $encounter->field_prenatal_indicators[LANGUAGE_NONE];
           if (!empty($prenatal_indicators)) {
@@ -770,6 +794,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
             }
           }
 
+          // Other indicators are resolved from measurements.
           $keys = array_keys($prenatal_indicators_by_encounter);
           foreach ($keys as $key) {
             if (in_array($encounter->nid, $prenatal_indicators_by_encounter[$key])) {
@@ -1569,6 +1594,8 @@ function hedley_reports_prenatal_indicator_mapping() {
     'stillbirth' => 'i',
     'azithromycin' => 'j',
     'anemia-test' => 'k',
+    'breastfed-first-hour' => 'l',
+    'premature-onset-contractions' => 'm',
   ];
 }
 
