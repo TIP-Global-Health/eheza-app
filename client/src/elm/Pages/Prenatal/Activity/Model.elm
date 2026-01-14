@@ -734,7 +734,7 @@ emptyUltrasoundData =
 
 
 type alias UltrasoundForm =
-    { pregnancyViable : Maybe Bool
+    { pregnancyNotViable : Maybe Bool
     , pregnancyEctopic : Maybe Bool
     , pregnancyMultipleFetuses : Maybe Bool
     , eddWeeks : Maybe Int
@@ -745,7 +745,7 @@ type alias UltrasoundForm =
 
 emptyUltrasoundForm : UltrasoundForm
 emptyUltrasoundForm =
-    { pregnancyViable = Nothing
+    { pregnancyNotViable = Nothing
     , pregnancyEctopic = Nothing
     , pregnancyMultipleFetuses = Nothing
     , eddWeeks = Nothing

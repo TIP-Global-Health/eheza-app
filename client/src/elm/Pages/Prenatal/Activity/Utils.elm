@@ -6796,6 +6796,46 @@ toSpecialityCareValue form =
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSpecialityCareSigns)
 
 
+ultrasoundFormWithDefault : UltrasoundForm -> Maybe UltrasoundValue -> UltrasoundForm
+ultrasoundFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { pregnancyNotViable = or form.pregnancyNotViable (EverySet.member PregnancyNotViable value.signs |> Just)
+                , pregnancyEctopic = or form.pregnancyEctopic (EverySet.member PregnancyEctopic value.signs |> Just)
+                , pregnancyMultipleFetuses = or form.pregnancyMultipleFetuses (EverySet.member PregnancyMultipleFetuses value.signs |> Just)
+                , eddWeeks = or form.eddWeeks value.eddWeeks
+                , eddDays = or form.eddDays value.eddDays
+                , eddDate = or form.eddDate value.eddDate
+                }
+            )
+
+
+toUltrasoundValueWithDefault : Maybe UltrasoundValue -> UltrasoundForm -> Maybe UltrasoundValue
+toUltrasoundValueWithDefault saved form =
+    ultrasoundFormWithDefault form saved
+        |> toUltrasoundValue
+
+
+toUltrasoundValue : UltrasoundForm -> Maybe UltrasoundValue
+toUltrasoundValue form =
+    [ ifNullableTrue PregnancyNotViable form.pregnancyNotViable
+    , ifNullableTrue PregnancyEctopic form.pregnancyEctopic
+    , ifNullableTrue PregnancyMultipleFetuses form.pregnancyMultipleFetuses
+    ]
+        |> Maybe.Extra.combine
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPregnancySigns)
+        |> Maybe.map
+            (\signs ->
+                { signs = signs
+                , eddWeeks = form.eddWeeks
+                , eddDays = form.eddDays
+                , eddDate = form.eddDate
+                }
+            )
+
+
 resolveWarningPopupContentForUrgentDiagnoses : Language -> List PrenatalDiagnosis -> ( String, String )
 resolveWarningPopupContentForUrgentDiagnoses language urgentDiagnoses =
     let
