@@ -321,6 +321,10 @@ viewActivity language currentDate zscores site features isChw activity assembled
         PregnancyDating ->
             viewPregnancyDatingContent language currentDate assembled model.pregnancyDatingData
 
+        Ultrasound ->
+            -- @todo:
+            []
+
         History ->
             viewHistoryContent language currentDate assembled model.historyData
 

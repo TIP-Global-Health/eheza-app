@@ -14819,6 +14819,12 @@ translationSet trans =
                     , kirundi = Just "Ubuvuzi bw'ubuhinga"
                     }
 
+                Ultrasound ->
+                    { english = "Ultrasound"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 PostpartumTreatmentReview ->
                     translationSet TreatmentReview
 

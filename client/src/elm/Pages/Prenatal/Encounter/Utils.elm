@@ -10,50 +10,62 @@ import Backend.PrenatalActivity.Model exposing (..)
 import Backend.PrenatalEncounter.Model exposing (..)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
 import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter, lmpToEDDDate)
-import EverySet
+import Backend.Utils exposing (healthyStartEnabled)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Maybe.Extra exposing (isJust, orElse, unwrap)
 import Pages.Prenatal.Model exposing (AssembledData, PreviousEncounterData)
 import Pages.Prenatal.Utils exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
+import SyncManager.Model exposing (SiteFeature)
 import Translate exposing (Language, translate)
 import Utils.NominalDate exposing (sortEncounterTuples, sortEncounterTuplesDesc)
 
 
-getAllActivities : AssembledData -> List PrenatalActivity
-getAllActivities assembled =
+getAllActivities : EverySet SiteFeature -> AssembledData -> List PrenatalActivity
+getAllActivities features assembled =
     case assembled.encounter.encounterType of
         NurseEncounter ->
+            let
+                ultrasound =
+                    if healthyStartEnabled features then
+                        [ Ultrasound ]
+
+                    else
+                        []
+            in
             if nurseEncounterNotPerformed assembled then
-                [ PregnancyDating
-                , History
-                , Examination
-                , FamilyPlanning
-                , Medication
-                , Backend.PrenatalActivity.Model.MalariaPrevention
-                , DangerSigns
-                , SymptomReview
-                , PrenatalImmunisation
-                , Laboratory
-                , MaternalMentalHealth
-                , PrenatalPhoto
-                , NextSteps
-                ]
+                PregnancyDating
+                    :: ultrasound
+                    ++ [ History
+                       , Examination
+                       , FamilyPlanning
+                       , Medication
+                       , Backend.PrenatalActivity.Model.MalariaPrevention
+                       , DangerSigns
+                       , SymptomReview
+                       , PrenatalImmunisation
+                       , Laboratory
+                       , MaternalMentalHealth
+                       , PrenatalPhoto
+                       , NextSteps
+                       ]
 
             else
-                [ DangerSigns
-                , SymptomReview
-                , History
-                , Examination
-                , FamilyPlanning
-                , PrenatalTreatmentReview
-                , Backend.PrenatalActivity.Model.MalariaPrevention
-                , PrenatalImmunisation
-                , Laboratory
-                , MaternalMentalHealth
-                , PrenatalPhoto
-                , NextSteps
-                ]
+                DangerSigns
+                    :: ultrasound
+                    ++ [ SymptomReview
+                       , History
+                       , Examination
+                       , FamilyPlanning
+                       , PrenatalTreatmentReview
+                       , Backend.PrenatalActivity.Model.MalariaPrevention
+                       , PrenatalImmunisation
+                       , Laboratory
+                       , MaternalMentalHealth
+                       , PrenatalPhoto
+                       , NextSteps
+                       ]
 
         NursePostpartumEncounter ->
             [ PregnancyOutcome

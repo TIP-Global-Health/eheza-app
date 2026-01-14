@@ -441,6 +441,11 @@ h3.ui.header {
   background-size: 78px 78px;
 }
 
+.icon-task-ultrasound {
+  background-image: url(#{$img-path}icon-ultrasound-white.svg);
+  background-size: 78px 78px;
+}
+
 .icon-task-clinical,
 .icon-task-physical-exam {
   background-image: url(#{$img-path}icon-physical-exam.svg);

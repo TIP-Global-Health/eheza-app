@@ -25,6 +25,7 @@ type PrenatalActivity
     | PrenatalImmunisation
     | Breastfeeding
     | SpecialityCare
+    | Ultrasound
     | PostpartumTreatmentReview
 
 
