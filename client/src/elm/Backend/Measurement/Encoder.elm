@@ -905,12 +905,12 @@ encodePrenatalUltrasound =
 
 encodeUltrasoundValue : UltrasoundValue -> List ( String, Value )
 encodeUltrasoundValue value =
-    [ ( "speciality_care_signs", encodeEverySet encodePregnancySign value.signs )
+    [ ( "pregnancy_signs", encodeEverySet encodePregnancySign value.signs )
     , ( "deleted", bool False )
     , ( "type", string "prenatal_ultrasound" )
     ]
         ++ encodeNullable "edd_weeks" value.eddWeeks int
-        ++ encodeNullable "edd_days" value.eddWeeks int
+        ++ encodeNullable "edd_days" value.eddDays int
         ++ encodeNullable "expected_date_concluded" value.eddDate Gizra.NominalDate.encodeYYYYMMDD
 
 
