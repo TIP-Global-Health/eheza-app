@@ -294,7 +294,10 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'create prenatal_ultrasound content'.
   $permissions['create prenatal_ultrasound content'] = array(
     'name' => 'create prenatal_ultrasound content',
-    'roles' => array(),
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
     'module' => 'node',
   );
 
@@ -563,7 +566,9 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'delete any prenatal_ultrasound content'.
   $permissions['delete any prenatal_ultrasound content'] = array(
     'name' => 'delete any prenatal_ultrasound content',
-    'roles' => array(),
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
     'module' => 'node',
   );
 
@@ -831,7 +836,9 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'delete own prenatal_ultrasound content'.
   $permissions['delete own prenatal_ultrasound content'] = array(
     'name' => 'delete own prenatal_ultrasound content',
-    'roles' => array(),
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
     'module' => 'node',
   );
 
@@ -1127,7 +1134,10 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'edit any prenatal_ultrasound content'.
   $permissions['edit any prenatal_ultrasound content'] = array(
     'name' => 'edit any prenatal_ultrasound content',
-    'roles' => array(),
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
     'module' => 'node',
   );
 
@@ -1424,7 +1434,10 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'edit own prenatal_ultrasound content'.
   $permissions['edit own prenatal_ultrasound content'] = array(
     'name' => 'edit own prenatal_ultrasound content',
-    'roles' => array(),
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
     'module' => 'node',
   );
 
