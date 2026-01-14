@@ -70,6 +70,7 @@ type Msg
     | SetUltrasoundBoolInput (Bool -> UltrasoundForm -> UltrasoundForm) Bool
     | SetEDDWeeks (Maybe Int) String
     | SetEDDDays (Maybe Int) String
+    | SaveUltrasound IndividualEncounterParticipantId PersonId (Maybe ( PrenatalUltrasoundId, PrenatalUltrasound ))
       -- HistoryMsgs
     | SetActiveHistoryTask HistoryTask
       -- HistoryMsgs, OB, Step 1

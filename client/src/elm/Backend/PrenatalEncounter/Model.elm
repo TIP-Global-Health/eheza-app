@@ -114,6 +114,7 @@ type alias Model =
     , saveBreastfeeding : WebData ()
     , saveGUExam : WebData ()
     , saveSpecialityCare : WebData ()
+    , saveUltrasound : WebData ()
     , saveAspirin : WebData ()
     , saveCalcium : WebData ()
     , saveFefol : WebData ()
@@ -167,6 +168,7 @@ emptyModel =
     , saveBreastfeeding = NotAsked
     , saveGUExam = NotAsked
     , saveSpecialityCare = NotAsked
+    , saveUltrasound = NotAsked
     , saveAspirin = NotAsked
     , saveCalcium = NotAsked
     , saveFefol = NotAsked
@@ -278,4 +280,6 @@ type Msg
     | HandleSavedGUExam (WebData ())
     | SaveSpecialityCare PersonId (Maybe PrenatalSpecialityCareId) SpecialityCareValue
     | HandleSavedSpecialityCare (WebData ())
+    | SaveUltrasound PersonId (Maybe PrenatalUltrasoundId) UltrasoundValue
+    | HandleSavedUltrasound (WebData ())
     | NoOp

@@ -4356,9 +4356,6 @@ viewUltrasoundContent language currentDate assembled data =
 
         ( inputs, tasks ) =
             ultrasoundFormInputsAndTasks language assembled data.form
-
-        _ =
-            Debug.log "" data.form
     in
     [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
@@ -4366,10 +4363,12 @@ viewUltrasoundContent language currentDate assembled data =
             [ div [ class "ui form ultrasound" ]
                 inputs
             ]
-
-        -- , viewSaveAction language
-        --     (SaveUltrasound assembled.participant.person assembled.measurements.ultrasound)
-        --     (tasksCompleted /= totalTasks)
+        , viewSaveAction language
+            (SaveUltrasound assembled.encounter.participant
+                assembled.participant.person
+                assembled.measurements.ultrasound
+            )
+            (tasksCompleted /= totalTasks)
         ]
     ]
 

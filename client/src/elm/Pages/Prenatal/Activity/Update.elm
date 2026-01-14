@@ -461,6 +461,48 @@ update language currentDate id isLabTech db msg model =
             , []
             )
 
+        SaveUltrasound prenatalParticipantId personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                appMsgs =
+                    model.ultrasoundData.form
+                        |> toUltrasoundValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                let
+                                    -- We store EDD date on pregnancy, to be able
+                                    -- to decide that pregnancy has ended even if end date was
+                                    -- not set - that is when we're 3 month past EDD date.
+                                    updatePregnancyEDDMsg =
+                                        Maybe.map
+                                            (\date ->
+                                                [ Backend.IndividualEncounterParticipant.Model.SetEddDate date
+                                                    |> Backend.Model.MsgIndividualEncounterParticipant prenatalParticipantId
+                                                    |> App.Model.MsgIndexedDb
+                                                ]
+                                            )
+                                            value.eddDate
+                                            |> Maybe.withDefault []
+                                in
+                                [ Backend.PrenatalEncounter.Model.SaveUltrasound personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , PrenatalEncounterPage id |> UserPage |> App.Model.SetActivePage
+                                ]
+                                    ++ updatePregnancyEDDMsg
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+
         SetActiveHistoryTask task ->
             let
                 updatedData =

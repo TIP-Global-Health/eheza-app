@@ -502,6 +502,18 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             , triggerRollbarOnFailure data
             )
 
+        SaveUltrasound personId valueId value ->
+            ( { model | saveUltrasound = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalUltrasoundEndpoint HandleSavedUltrasound
+            , []
+            )
+
+        HandleSavedUltrasound data ->
+            ( { model | saveUltrasound = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
+
         SaveLabsResults personId valueId value ->
             ( { model | saveLabsResults = Loading }
             , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalLabsResultsEndpoint HandleSavedLabsResults
