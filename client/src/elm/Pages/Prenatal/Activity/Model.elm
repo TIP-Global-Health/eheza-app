@@ -66,6 +66,10 @@ type Msg
     | SetLateFirstVisitReason LateFirstANCVisitReason
     | SetPrePregnancyWeight String
     | SavePregnancyDating IndividualEncounterParticipantId PersonId (Maybe ( LastMenstrualPeriodId, LastMenstrualPeriod ))
+      -- UltrasoundMsgs
+    | SetUltrasoundBoolInput (Bool -> UltrasoundForm -> UltrasoundForm) Bool
+    | SetEDDWeeks (Maybe Int) String
+    | SetEDDDays (Maybe Int) String
       -- HistoryMsgs
     | SetActiveHistoryTask HistoryTask
       -- HistoryMsgs, OB, Step 1

@@ -369,6 +369,98 @@ update language currentDate id isLabTech db msg model =
             , appMsgs
             )
 
+        SetUltrasoundBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.ultrasoundData.form
+
+                updatedData =
+                    model.ultrasoundData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ultrasoundData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetEDDWeeks daysValue value ->
+            let
+                form =
+                    model.ultrasoundData.form
+
+                updatedForm =
+                    if String.isEmpty value then
+                        { form | eddWeeks = Nothing, eddDate = Nothing }
+
+                    else
+                        String.toInt value
+                            |> Maybe.map
+                                (\newValue ->
+                                    if newValue >= 0 && newValue <= 40 then
+                                        let
+                                            eddDate =
+                                                Maybe.map
+                                                    (\days ->
+                                                        Date.add Date.Weeks newValue currentDate
+                                                            |> Date.add Date.Days days
+                                                    )
+                                                    daysValue
+                                        in
+                                        { form | eddWeeks = Just newValue, eddDate = eddDate }
+
+                                    else
+                                        form
+                                )
+                            |> Maybe.withDefault form
+
+                updatedData =
+                    model.ultrasoundData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ultrasoundData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetEDDDays weeksValue value ->
+            let
+                form =
+                    model.ultrasoundData.form
+
+                updatedForm =
+                    if String.isEmpty value then
+                        { form | eddDays = Nothing, eddDate = Nothing }
+
+                    else
+                        String.toInt value
+                            |> Maybe.map
+                                (\newValue ->
+                                    if newValue >= 0 && newValue <= 6 then
+                                        let
+                                            eddDate =
+                                                Maybe.map
+                                                    (\weeks ->
+                                                        Date.add Date.Weeks weeks currentDate
+                                                            |> Date.add Date.Days newValue
+                                                    )
+                                                    weeksValue
+                                        in
+                                        { form | eddDays = Just newValue, eddDate = eddDate }
+
+                                    else
+                                        form
+                                )
+                            |> Maybe.withDefault form
+
+                updatedData =
+                    model.ultrasoundData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ultrasoundData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetActiveHistoryTask task ->
             let
                 updatedData =
