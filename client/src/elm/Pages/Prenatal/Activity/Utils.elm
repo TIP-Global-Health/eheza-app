@@ -3736,8 +3736,12 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
 
 
 ultrasoundFormInputsAndTasks : Language -> AssembledData -> UltrasoundForm -> ( List (Html Msg), List (Maybe Bool) )
-ultrasoundFormInputsAndTasks language assembled form =
+ultrasoundFormInputsAndTasks language assembled ultrasoundForm =
     let
+        form =
+            getMeasurementValueFunc assembled.measurements.ultrasound
+                |> ultrasoundFormWithDefault ultrasoundForm
+
         ( initialSection, initialTasks ) =
             let
                 pregnancyNotViableUpdateFunc value form_ =
