@@ -317,6 +317,7 @@ type alias Model =
     , postpartumTreatmentReviewData : PostpartumTreatmentReviewData
     , breastfeedingData : BreastfeedingData
     , specialityCareData : SpecialityCareData
+    , ultrasoundData : UltrasoundData
     , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
     , warningPopupState : Maybe (WarningPopupType Msg)
@@ -343,14 +344,11 @@ emptyModel =
     , postpartumTreatmentReviewData = emptyPostpartumTreatmentReviewData
     , breastfeedingData = emptyBreastfeedingData
     , specialityCareData = emptySpecialityCareData
+    , ultrasoundData = emptyUltrasoundData
     , nextStepsData = emptyNextStepsData
     , showAlertsDialog = False
     , warningPopupState = Nothing
     }
-
-
-
--- DATA
 
 
 type alias PregnancyDatingData =
@@ -724,6 +722,38 @@ emptySpecialityCareForm =
     }
 
 
+type alias UltrasoundData =
+    { form : UltrasoundForm
+    }
+
+
+emptyUltrasoundData : UltrasoundData
+emptyUltrasoundData =
+    { form = emptyUltrasoundForm
+    }
+
+
+type alias UltrasoundForm =
+    { pregnancyViable : Maybe Bool
+    , pregnancyEctopic : Maybe Bool
+    , pregnancyMultipleFetuses : Maybe Bool
+    , eddWeeks : Maybe Int
+    , eddDays : Maybe Int
+    , eddDate : Maybe NominalDate
+    }
+
+
+emptyUltrasoundForm : UltrasoundForm
+emptyUltrasoundForm =
+    { pregnancyViable = Nothing
+    , pregnancyEctopic = Nothing
+    , pregnancyMultipleFetuses = Nothing
+    , eddWeeks = Nothing
+    , eddDays = Nothing
+    , eddDate = Nothing
+    }
+
+
 type alias NextStepsData =
     { appointmentConfirmationForm : AppointmentConfirmationForm
     , followUpForm : FollowUpForm
@@ -745,10 +775,6 @@ emptyNextStepsData =
     , medicationDistributionForm = emptyMedicationDistributionForm
     , activeTask = Nothing
     }
-
-
-
--- FORMS
 
 
 type alias PregnancyDatingForm =
