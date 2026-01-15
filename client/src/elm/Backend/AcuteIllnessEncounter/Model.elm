@@ -42,6 +42,10 @@ type alias Model =
     , saveSymptomsGeneral : WebData ()
     , saveSymptomsRespiratory : WebData ()
     , saveSymptomsGI : WebData ()
+    , saveSymptomsENT : WebData ()
+    , saveSymptomsEyes : WebData ()
+    , saveSymptomsGU : WebData ()
+    , saveSymptomsOral : WebData ()
     , saveVitals : WebData ()
     , saveAcuteFindings : WebData ()
     , saveMalariaTesting : WebData ()
@@ -72,6 +76,10 @@ emptyModel =
     , saveSymptomsGeneral = NotAsked
     , saveSymptomsRespiratory = NotAsked
     , saveSymptomsGI = NotAsked
+    , saveSymptomsENT = NotAsked
+    , saveSymptomsEyes = NotAsked
+    , saveSymptomsGU = NotAsked
+    , saveSymptomsOral = NotAsked
     , saveVitals = NotAsked
     , saveAcuteFindings = NotAsked
     , saveMalariaTesting = NotAsked
@@ -106,6 +114,14 @@ type Msg
     | HandleSavedSymptomsRespiratory (WebData ())
     | SaveSymptomsGI PersonId (Maybe SymptomsGIId) SymptomsGIValue
     | HandleSavedSymptomsGI (WebData ())
+    | SaveSymptomsENT PersonId (Maybe AcuteIllnessENTId) (Dict SymptomsENTSign Int)
+    | HandleSavedSymptomsENT (WebData ())
+    | SaveSymptomsEyes PersonId (Maybe AcuteIllnessEyesId) (Dict SymptomsEyesSign Int)
+    | HandleSavedSymptomsEyes (WebData ())
+    | SaveSymptomsGU PersonId (Maybe AcuteIllnessGUId) (Dict SymptomsGUSign Int)
+    | HandleSavedSymptomsGU (WebData ())
+    | SaveSymptomsOral PersonId (Maybe AcuteIllnessOralId) (Dict SymptomsOralSign Int)
+    | HandleSavedSymptomsOral (WebData ())
     | SaveVitals PersonId (Maybe AcuteIllnessVitalsId) VitalsValue
     | HandleSavedVitals (WebData ())
     | SaveAcuteFindings PersonId (Maybe AcuteFindingsId) AcuteFindingsValue

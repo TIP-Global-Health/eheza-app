@@ -21,6 +21,7 @@ class HedleyRestfulSymptomsRespiratory extends HedleyRestfulAcuteIllnessActivity
     'field_sore_throat_period',
     'field_loss_of_smell_period',
     'field_stabbing_chest_pain_period',
+    'field_dificulty_breathing_period',
   ];
 
 }

@@ -6907,8 +6907,11 @@ var $author$project$Backend$Completion$Model$AcuteIllnessContactHC = {$: 'AcuteI
 var $author$project$Backend$Completion$Model$AcuteIllnessContactsTracing = {$: 'AcuteIllnessContactsTracing'};
 var $author$project$Backend$Completion$Model$AcuteIllnessCoreExam = {$: 'AcuteIllnessCoreExam'};
 var $author$project$Backend$Completion$Model$AcuteIllnessDangerSigns = {$: 'AcuteIllnessDangerSigns'};
+var $author$project$Backend$Completion$Model$AcuteIllnessENT = {$: 'AcuteIllnessENT'};
 var $author$project$Backend$Completion$Model$AcuteIllnessExposure = {$: 'AcuteIllnessExposure'};
+var $author$project$Backend$Completion$Model$AcuteIllnessEyes = {$: 'AcuteIllnessEyes'};
 var $author$project$Backend$Completion$Model$AcuteIllnessFollowUp = {$: 'AcuteIllnessFollowUp'};
+var $author$project$Backend$Completion$Model$AcuteIllnessGU = {$: 'AcuteIllnessGU'};
 var $author$project$Backend$Completion$Model$AcuteIllnessHealthEducation = {$: 'AcuteIllnessHealthEducation'};
 var $author$project$Backend$Completion$Model$AcuteIllnessIsolation = {$: 'AcuteIllnessIsolation'};
 var $author$project$Backend$Completion$Model$AcuteIllnessMUAC = {$: 'AcuteIllnessMUAC'};
@@ -6916,6 +6919,7 @@ var $author$project$Backend$Completion$Model$AcuteIllnessMalariaTesting = {$: 'A
 var $author$project$Backend$Completion$Model$AcuteIllnessMedicationDistribution = {$: 'AcuteIllnessMedicationDistribution'};
 var $author$project$Backend$Completion$Model$AcuteIllnessNutrition = {$: 'AcuteIllnessNutrition'};
 var $author$project$Backend$Completion$Model$AcuteIllnessOngoingTreatment = {$: 'AcuteIllnessOngoingTreatment'};
+var $author$project$Backend$Completion$Model$AcuteIllnessOral = {$: 'AcuteIllnessOral'};
 var $author$project$Backend$Completion$Model$AcuteIllnessPriorTreatment = {$: 'AcuteIllnessPriorTreatment'};
 var $author$project$Backend$Completion$Model$AcuteIllnessSendToHC = {$: 'AcuteIllnessSendToHC'};
 var $author$project$Backend$Completion$Model$AcuteIllnessSymptomsGI = {$: 'AcuteIllnessSymptomsGI'};
@@ -6971,6 +6975,14 @@ var $author$project$Backend$Completion$Utils$acuteIllnessActivityFromMapping = f
 			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$AcuteIllnessPriorTreatment);
 		case 'w':
 			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$AcuteIllnessOngoingTreatment);
+		case 'x':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$AcuteIllnessENT);
+		case 'y':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$AcuteIllnessEyes);
+		case 'z':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$AcuteIllnessGU);
+		case '0':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$AcuteIllnessOral);
 		default:
 			return $elm$core$Maybe$Nothing;
 	}
@@ -10888,6 +10900,14 @@ var $author$project$Translate$translationSet = function (transId) {
 						var $temp$transId = $author$project$Translate$DangerSigns;
 						transId = $temp$transId;
 						continue translationSet;
+					case 'AcuteIllnessENT':
+						return {english: 'Symptoms ENT', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'AcuteIllnessEyes':
+						return {english: 'Symptoms Eyes', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'AcuteIllnessGU':
+						return {english: 'Symptoms GU', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'AcuteIllnessOral':
+						return {english: 'Symptoms Oral', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'AcuteIllnessFollowUp':
 						var $temp$transId = $author$project$Translate$FollowUp;
 						transId = $temp$transId;
@@ -13640,7 +13660,7 @@ var $author$project$Translate$AcuteIllnessActivity = function (a) {
 	return {$: 'AcuteIllnessActivity', a: a};
 };
 var $author$project$Pages$Completion$Utils$allAcuteIllnessActivities = _List_fromArray(
-	[$author$project$Backend$Completion$Model$AcuteIllnessAcuteFindings, $author$project$Backend$Completion$Model$AcuteIllnessContactsTracing, $author$project$Backend$Completion$Model$AcuteIllnessCoreExam, $author$project$Backend$Completion$Model$AcuteIllnessDangerSigns, $author$project$Backend$Completion$Model$AcuteIllnessFollowUp, $author$project$Backend$Completion$Model$AcuteIllnessMUAC, $author$project$Backend$Completion$Model$AcuteIllnessNutrition, $author$project$Backend$Completion$Model$AcuteIllnessVitals, $author$project$Backend$Completion$Model$AcuteIllnessCall114, $author$project$Backend$Completion$Model$AcuteIllnessCOVIDTesting, $author$project$Backend$Completion$Model$AcuteIllnessExposure, $author$project$Backend$Completion$Model$AcuteIllnessContactHC, $author$project$Backend$Completion$Model$AcuteIllnessHealthEducation, $author$project$Backend$Completion$Model$AcuteIllnessIsolation, $author$project$Backend$Completion$Model$AcuteIllnessMalariaTesting, $author$project$Backend$Completion$Model$AcuteIllnessMedicationDistribution, $author$project$Backend$Completion$Model$AcuteIllnessSendToHC, $author$project$Backend$Completion$Model$AcuteIllnessSymptomsGeneral, $author$project$Backend$Completion$Model$AcuteIllnessSymptomsGI, $author$project$Backend$Completion$Model$AcuteIllnessSymptomsRespiratory, $author$project$Backend$Completion$Model$AcuteIllnessTravelHistory, $author$project$Backend$Completion$Model$AcuteIllnessPriorTreatment, $author$project$Backend$Completion$Model$AcuteIllnessOngoingTreatment]);
+	[$author$project$Backend$Completion$Model$AcuteIllnessAcuteFindings, $author$project$Backend$Completion$Model$AcuteIllnessContactsTracing, $author$project$Backend$Completion$Model$AcuteIllnessCoreExam, $author$project$Backend$Completion$Model$AcuteIllnessDangerSigns, $author$project$Backend$Completion$Model$AcuteIllnessFollowUp, $author$project$Backend$Completion$Model$AcuteIllnessMUAC, $author$project$Backend$Completion$Model$AcuteIllnessNutrition, $author$project$Backend$Completion$Model$AcuteIllnessVitals, $author$project$Backend$Completion$Model$AcuteIllnessCall114, $author$project$Backend$Completion$Model$AcuteIllnessCOVIDTesting, $author$project$Backend$Completion$Model$AcuteIllnessExposure, $author$project$Backend$Completion$Model$AcuteIllnessContactHC, $author$project$Backend$Completion$Model$AcuteIllnessHealthEducation, $author$project$Backend$Completion$Model$AcuteIllnessIsolation, $author$project$Backend$Completion$Model$AcuteIllnessMalariaTesting, $author$project$Backend$Completion$Model$AcuteIllnessMedicationDistribution, $author$project$Backend$Completion$Model$AcuteIllnessSendToHC, $author$project$Backend$Completion$Model$AcuteIllnessSymptomsGeneral, $author$project$Backend$Completion$Model$AcuteIllnessSymptomsGI, $author$project$Backend$Completion$Model$AcuteIllnessSymptomsRespiratory, $author$project$Backend$Completion$Model$AcuteIllnessENT, $author$project$Backend$Completion$Model$AcuteIllnessEyes, $author$project$Backend$Completion$Model$AcuteIllnessGU, $author$project$Backend$Completion$Model$AcuteIllnessOral, $author$project$Backend$Completion$Model$AcuteIllnessTravelHistory, $author$project$Backend$Completion$Model$AcuteIllnessPriorTreatment, $author$project$Backend$Completion$Model$AcuteIllnessOngoingTreatment]);
 var $myrho$elm_round$Round$addSign = F2(
 	function (signed, str) {
 		var isNotZero = A2(

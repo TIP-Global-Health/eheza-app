@@ -453,10 +453,25 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.AcuteIllnessEncounter.Decoder.decodeAcuteIllnessEncounter
                             BackendAuthorityAcuteIllnessEncounter
 
+                    "acute_illness_ent" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeAcuteIllnessENT
+                            BackendAuthorityAcuteIllnessENT
+
+                    "acute_illness_eyes" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeAcuteIllnessEyes
+                            BackendAuthorityAcuteIllnessEyes
+
                     "acute_illness_follow_up" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeAcuteIllnessFollowUp
                             BackendAuthorityAcuteIllnessFollowUp
+
+                    "acute_illness_gu" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeAcuteIllnessGU
+                            BackendAuthorityAcuteIllnessGU
 
                     "acute_illness_muac" ->
                         doDecode
@@ -467,6 +482,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeAcuteIllnessNutrition
                             BackendAuthorityAcuteIllnessNutrition
+
+                    "acute_illness_oral" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeAcuteIllnessOral
+                            BackendAuthorityAcuteIllnessOral
 
                     "acute_illness_trace_contact" ->
                         doDecode

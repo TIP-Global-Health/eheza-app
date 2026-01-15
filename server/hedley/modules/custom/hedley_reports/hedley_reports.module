@@ -2606,6 +2606,10 @@ function hedley_reports_generate_completion_data_for_acute_illness($participant,
     'travel_history' => 'u',
     'treatment_history' => 'v',
     'treatment_ongoing' => 'w',
+    'acute_illness_ent' => 'x',
+    'acute_illness_eyes' => 'y',
+    'acute_illness_gu' => 'z',
+    'acute_illness_oral' => '0',
   ];
 
   // Load all encounters of current participant.
@@ -2783,6 +2787,21 @@ function hedley_reports_acute_illness_generate_expected_initial_activities(array
     $expected[] = 'symptoms_respiratory';
     // Treatment review activity.
     $expected[] = 'treatment_history';
+
+    // 4 new symptoms activities were introduces.
+    // Adding them as expected, if encounter started after the change
+    // was deployed.
+    $change_date = variable_get('hedley_acute_illness_change_symptoms', FALSE);
+    if ($change_date) {
+      $change_date_obj = new DateTime($change_date);
+      if ($encounter_data['start_date_obj'] >= $change_date_obj) {
+        // Encounter has started after the change.
+        $expected[] = 'acute_illness_ent';
+        $expected[] = 'acute_illness_eyes';
+        $expected[] = 'acute_illness_gu';
+        $expected[] = 'acute_illness_oral';
+      }
+    }
   }
 
   // Activities that are only shown at subsequent encounters.
@@ -3497,6 +3516,7 @@ function hedley_reports_count_acute_illness_symptoms_respiratory($measurement) {
     'field_sore_throat_period',
     'field_loss_of_smell_period',
     'field_stabbing_chest_pain_period',
+    'field_dificulty_breathing_period',
   ];
 
   return hedley_reports_count_acute_illness_symptoms($measurement, $fields);
