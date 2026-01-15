@@ -586,40 +586,6 @@ function hedley_acute_illness_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'field_bundle_settings_node__acute_illness_ent';
-  $strongarm->value = array(
-    'extra_fields' => array(
-      'display' => array(),
-      'form' => array(
-        'title' => array(
-          'weight' => '0',
-        ),
-      ),
-    ),
-    'view_modes' => array(),
-  );
-  $export['field_bundle_settings_node__acute_illness_ent'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'field_bundle_settings_node__acute_illness_eyes';
-  $strongarm->value = array(
-    'extra_fields' => array(
-      'display' => array(),
-      'form' => array(
-        'title' => array(
-          'weight' => '-5',
-        ),
-      ),
-    ),
-    'view_modes' => array(),
-  );
-  $export['field_bundle_settings_node__acute_illness_eyes'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__acute_illness_follow_up';
   $strongarm->value = array(
     'extra_fields' => array(
@@ -633,23 +599,6 @@ function hedley_acute_illness_strongarm() {
     'view_modes' => array(),
   );
   $export['field_bundle_settings_node__acute_illness_follow_up'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'field_bundle_settings_node__acute_illness_gu';
-  $strongarm->value = array(
-    'extra_fields' => array(
-      'display' => array(),
-      'form' => array(
-        'title' => array(
-          'weight' => '-5',
-        ),
-      ),
-    ),
-    'view_modes' => array(),
-  );
-  $export['field_bundle_settings_node__acute_illness_gu'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -684,23 +633,6 @@ function hedley_acute_illness_strongarm() {
     'view_modes' => array(),
   );
   $export['field_bundle_settings_node__acute_illness_nutrition'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'field_bundle_settings_node__acute_illness_oral';
-  $strongarm->value = array(
-    'extra_fields' => array(
-      'display' => array(),
-      'form' => array(
-        'title' => array(
-          'weight' => '-5',
-        ),
-      ),
-    ),
-    'view_modes' => array(),
-  );
-  $export['field_bundle_settings_node__acute_illness_oral'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -962,38 +894,11 @@ function hedley_acute_illness_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'menu_options_acute_illness_ent';
-  $strongarm->value = array(
-    0 => 'main-menu',
-  );
-  $export['menu_options_acute_illness_ent'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'menu_options_acute_illness_eyes';
-  $strongarm->value = array(
-    0 => 'main-menu',
-  );
-  $export['menu_options_acute_illness_eyes'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
   $strongarm->name = 'menu_options_acute_illness_follow_up';
   $strongarm->value = array(
     0 => 'main-menu',
   );
   $export['menu_options_acute_illness_follow_up'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'menu_options_acute_illness_gu';
-  $strongarm->value = array(
-    0 => 'main-menu',
-  );
-  $export['menu_options_acute_illness_gu'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -1012,15 +917,6 @@ function hedley_acute_illness_strongarm() {
     0 => 'main-menu',
   );
   $export['menu_options_acute_illness_nutrition'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'menu_options_acute_illness_oral';
-  $strongarm->value = array(
-    0 => 'main-menu',
-  );
-  $export['menu_options_acute_illness_oral'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -1134,30 +1030,9 @@ function hedley_acute_illness_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'menu_parent_acute_illness_ent';
-  $strongarm->value = 'main-menu:0';
-  $export['menu_parent_acute_illness_ent'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'menu_parent_acute_illness_eyes';
-  $strongarm->value = 'main-menu:0';
-  $export['menu_parent_acute_illness_eyes'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
   $strongarm->name = 'menu_parent_acute_illness_follow_up';
   $strongarm->value = 'main-menu:0';
   $export['menu_parent_acute_illness_follow_up'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'menu_parent_acute_illness_gu';
-  $strongarm->value = 'main-menu:0';
-  $export['menu_parent_acute_illness_gu'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -1172,13 +1047,6 @@ function hedley_acute_illness_strongarm() {
   $strongarm->name = 'menu_parent_acute_illness_nutrition';
   $strongarm->value = 'main-menu:0';
   $export['menu_parent_acute_illness_nutrition'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'menu_parent_acute_illness_oral';
-  $strongarm->value = 'main-menu:0';
-  $export['menu_parent_acute_illness_oral'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -1286,42 +1154,12 @@ function hedley_acute_illness_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'node_options_acute_illness_ent';
-  $strongarm->value = array(
-    0 => 'status',
-    1 => 'promote',
-  );
-  $export['node_options_acute_illness_ent'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'node_options_acute_illness_eyes';
-  $strongarm->value = array(
-    0 => 'status',
-    1 => 'promote',
-  );
-  $export['node_options_acute_illness_eyes'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
   $strongarm->name = 'node_options_acute_illness_follow_up';
   $strongarm->value = array(
     0 => 'status',
     1 => 'promote',
   );
   $export['node_options_acute_illness_follow_up'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'node_options_acute_illness_gu';
-  $strongarm->value = array(
-    0 => 'status',
-    1 => 'promote',
-  );
-  $export['node_options_acute_illness_gu'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -1342,16 +1180,6 @@ function hedley_acute_illness_strongarm() {
     1 => 'promote',
   );
   $export['node_options_acute_illness_nutrition'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'node_options_acute_illness_oral';
-  $strongarm->value = array(
-    0 => 'status',
-    1 => 'promote',
-  );
-  $export['node_options_acute_illness_oral'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -1474,30 +1302,9 @@ function hedley_acute_illness_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'node_preview_acute_illness_ent';
-  $strongarm->value = '1';
-  $export['node_preview_acute_illness_ent'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'node_preview_acute_illness_eyes';
-  $strongarm->value = '1';
-  $export['node_preview_acute_illness_eyes'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
   $strongarm->name = 'node_preview_acute_illness_follow_up';
   $strongarm->value = '1';
   $export['node_preview_acute_illness_follow_up'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'node_preview_acute_illness_gu';
-  $strongarm->value = '1';
-  $export['node_preview_acute_illness_gu'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -1512,13 +1319,6 @@ function hedley_acute_illness_strongarm() {
   $strongarm->name = 'node_preview_acute_illness_nutrition';
   $strongarm->value = '1';
   $export['node_preview_acute_illness_nutrition'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'node_preview_acute_illness_oral';
-  $strongarm->value = '1';
-  $export['node_preview_acute_illness_oral'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -1614,30 +1414,9 @@ function hedley_acute_illness_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'node_submitted_acute_illness_ent';
-  $strongarm->value = 1;
-  $export['node_submitted_acute_illness_ent'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'node_submitted_acute_illness_eyes';
-  $strongarm->value = 1;
-  $export['node_submitted_acute_illness_eyes'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
   $strongarm->name = 'node_submitted_acute_illness_follow_up';
   $strongarm->value = 1;
   $export['node_submitted_acute_illness_follow_up'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'node_submitted_acute_illness_gu';
-  $strongarm->value = 1;
-  $export['node_submitted_acute_illness_gu'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -1652,13 +1431,6 @@ function hedley_acute_illness_strongarm() {
   $strongarm->name = 'node_submitted_acute_illness_nutrition';
   $strongarm->value = 1;
   $export['node_submitted_acute_illness_nutrition'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'node_submitted_acute_illness_oral';
-  $strongarm->value = 1;
-  $export['node_submitted_acute_illness_oral'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */

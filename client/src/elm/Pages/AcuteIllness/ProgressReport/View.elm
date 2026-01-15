@@ -277,25 +277,22 @@ viewSymptomsPane language currentDate firstInitialWithSubsequent secondInitialWi
                 |> Maybe.map
                     (\encounterData ->
                         let
-                            symptomsMaxDuration getFunc =
-                                Maybe.andThen (Tuple.second >> getFunc >> Dict.values >> List.maximum)
-                                    >> Maybe.withDefault 1
+                            symptomsMaxDuration getFunc measurement =
+                                measurement
+                                    |> Maybe.andThen (Tuple.second >> getFunc >> Dict.values >> List.maximum)
+                                    |> Maybe.withDefault 1
 
                             maxDuration =
                                 List.maximum
                                     [ symptomsMaxDuration .value encounterData.measurements.symptomsGeneral
                                     , symptomsMaxDuration .value encounterData.measurements.symptomsRespiratory
                                     , symptomsMaxDuration (.value >> .signs) encounterData.measurements.symptomsGI
-                                    , symptomsMaxDuration .value encounterData.measurements.symptomsENT
-                                    , symptomsMaxDuration .value encounterData.measurements.symptomsEyes
-                                    , symptomsMaxDuration .value encounterData.measurements.symptomsGU
-                                    , symptomsMaxDuration .value encounterData.measurements.symptomsOral
                                     ]
                                     |> Maybe.withDefault 1
 
-                            filterSymptoms symptomDuration exclusion =
-                                Dict.toList
-                                    >> List.filterMap
+                            filterSymptoms symptomDuration exclusion dict =
+                                Dict.toList dict
+                                    |> List.filterMap
                                         (\( symptom, count ) ->
                                             if symptom /= exclusion && count > symptomDuration then
                                                 Just symptom
@@ -351,60 +348,12 @@ viewSymptomsPane language currentDate firstInitialWithSubsequent secondInitialWi
                                         )
                                     |> Maybe.withDefault []
 
-                            symptomsENT duration =
-                                encounterData.measurements.symptomsENT
-                                    |> Maybe.map
-                                        (Tuple.second
-                                            >> .value
-                                            >> filterSymptoms duration NoSymptomsENT
-                                            >> List.map (\symptom -> li [ class "ent" ] [ text <| translate language (Translate.SymptomsENTSign symptom) ])
-                                        )
-                                    |> Maybe.withDefault []
-
-                            symptomsEyes duration =
-                                encounterData.measurements.symptomsEyes
-                                    |> Maybe.map
-                                        (Tuple.second
-                                            >> .value
-                                            >> filterSymptoms duration NoSymptomsEyes
-                                            >> List.map (\symptom -> li [ class "eyes" ] [ text <| translate language (Translate.SymptomsEyesSign symptom) ])
-                                        )
-                                    |> Maybe.withDefault []
-
-                            symptomsGU duration =
-                                encounterData.measurements.symptomsGU
-                                    |> Maybe.map
-                                        (Tuple.second
-                                            >> .value
-                                            >> filterSymptoms duration NoSymptomsGU
-                                            >> List.map (\symptom -> li [ class "gu" ] [ text <| translate language (Translate.SymptomsGUSign symptom) ])
-                                        )
-                                    |> Maybe.withDefault []
-
-                            symptomsOral duration =
-                                encounterData.measurements.symptomsOral
-                                    |> Maybe.map
-                                        (Tuple.second
-                                            >> .value
-                                            >> filterSymptoms duration NoSymptomsOral
-                                            >> List.map (\symptom -> li [ class "oral" ] [ text <| translate language (Translate.SymptomsOralSign symptom) ])
-                                        )
-                                    |> Maybe.withDefault []
-
                             values =
                                 List.repeat maxDuration encounterData.startDate
                                     |> List.indexedMap
                                         (\index date ->
                                             ( Date.add Date.Days (-1 * index) date |> formatDDMMYYYY
-                                            , List.concat
-                                                [ symptomsGeneral index
-                                                , symptomsRespiratory index
-                                                , symptomsGI index
-                                                , symptomsENT index
-                                                , symptomsEyes index
-                                                , symptomsGU index
-                                                , symptomsOral index
-                                                ]
+                                            , symptomsGeneral index ++ symptomsRespiratory index ++ symptomsGI index
                                             )
                                         )
                                     |> List.filter (Tuple.second >> List.isEmpty >> not)

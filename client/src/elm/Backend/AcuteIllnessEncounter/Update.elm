@@ -73,54 +73,6 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             , triggerRollbarOnFailure data
             )
 
-        SaveSymptomsENT personId valueId value ->
-            ( { model | saveSymptomsENT = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value acuteIllnessENTEndpoint HandleSavedSymptomsENT
-            , []
-            )
-
-        HandleSavedSymptomsENT data ->
-            ( { model | saveSymptomsENT = data }
-            , Cmd.none
-            , triggerRollbarOnFailure data
-            )
-
-        SaveSymptomsEyes personId valueId value ->
-            ( { model | saveSymptomsEyes = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value acuteIllnessEyesEndpoint HandleSavedSymptomsEyes
-            , []
-            )
-
-        HandleSavedSymptomsEyes data ->
-            ( { model | saveSymptomsEyes = data }
-            , Cmd.none
-            , triggerRollbarOnFailure data
-            )
-
-        SaveSymptomsGU personId valueId value ->
-            ( { model | saveSymptomsGU = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value acuteIllnessGUEndpoint HandleSavedSymptomsGU
-            , []
-            )
-
-        HandleSavedSymptomsGU data ->
-            ( { model | saveSymptomsGU = data }
-            , Cmd.none
-            , triggerRollbarOnFailure data
-            )
-
-        SaveSymptomsOral personId valueId value ->
-            ( { model | saveSymptomsOral = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value acuteIllnessOralEndpoint HandleSavedSymptomsOral
-            , []
-            )
-
-        HandleSavedSymptomsOral data ->
-            ( { model | saveSymptomsOral = data }
-            , Cmd.none
-            , triggerRollbarOnFailure data
-            )
-
         SaveVitals personId valueId value ->
             ( { model | saveVitals = Loading }
             , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value acuteIllnessVitalsEndpoint HandleSavedVitals

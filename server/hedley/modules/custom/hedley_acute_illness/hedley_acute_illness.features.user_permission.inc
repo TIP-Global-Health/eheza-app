@@ -51,39 +51,9 @@ function hedley_acute_illness_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'create acute_illness_ent content'.
-  $permissions['create acute_illness_ent content'] = array(
-    'name' => 'create acute_illness_ent content',
-    'roles' => array(
-      'administrator' => 'administrator',
-      'sync' => 'sync',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'create acute_illness_eyes content'.
-  $permissions['create acute_illness_eyes content'] = array(
-    'name' => 'create acute_illness_eyes content',
-    'roles' => array(
-      'administrator' => 'administrator',
-      'sync' => 'sync',
-    ),
-    'module' => 'node',
-  );
-
   // Exported permission: 'create acute_illness_follow_up content'.
   $permissions['create acute_illness_follow_up content'] = array(
     'name' => 'create acute_illness_follow_up content',
-    'roles' => array(
-      'administrator' => 'administrator',
-      'sync' => 'sync',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'create acute_illness_gu content'.
-  $permissions['create acute_illness_gu content'] = array(
-    'name' => 'create acute_illness_gu content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -104,16 +74,6 @@ function hedley_acute_illness_user_default_permissions() {
   // Exported permission: 'create acute_illness_nutrition content'.
   $permissions['create acute_illness_nutrition content'] = array(
     'name' => 'create acute_illness_nutrition content',
-    'roles' => array(
-      'administrator' => 'administrator',
-      'sync' => 'sync',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'create acute_illness_oral content'.
-  $permissions['create acute_illness_oral content'] = array(
-    'name' => 'create acute_illness_oral content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -327,36 +287,9 @@ function hedley_acute_illness_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'delete any acute_illness_ent content'.
-  $permissions['delete any acute_illness_ent content'] = array(
-    'name' => 'delete any acute_illness_ent content',
-    'roles' => array(
-      'administrator' => 'administrator',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'delete any acute_illness_eyes content'.
-  $permissions['delete any acute_illness_eyes content'] = array(
-    'name' => 'delete any acute_illness_eyes content',
-    'roles' => array(
-      'administrator' => 'administrator',
-    ),
-    'module' => 'node',
-  );
-
   // Exported permission: 'delete any acute_illness_follow_up content'.
   $permissions['delete any acute_illness_follow_up content'] = array(
     'name' => 'delete any acute_illness_follow_up content',
-    'roles' => array(
-      'administrator' => 'administrator',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'delete any acute_illness_gu content'.
-  $permissions['delete any acute_illness_gu content'] = array(
-    'name' => 'delete any acute_illness_gu content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -375,15 +308,6 @@ function hedley_acute_illness_user_default_permissions() {
   // Exported permission: 'delete any acute_illness_nutrition content'.
   $permissions['delete any acute_illness_nutrition content'] = array(
     'name' => 'delete any acute_illness_nutrition content',
-    'roles' => array(
-      'administrator' => 'administrator',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'delete any acute_illness_oral content'.
-  $permissions['delete any acute_illness_oral content'] = array(
-    'name' => 'delete any acute_illness_oral content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -579,36 +503,9 @@ function hedley_acute_illness_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'delete own acute_illness_ent content'.
-  $permissions['delete own acute_illness_ent content'] = array(
-    'name' => 'delete own acute_illness_ent content',
-    'roles' => array(
-      'administrator' => 'administrator',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'delete own acute_illness_eyes content'.
-  $permissions['delete own acute_illness_eyes content'] = array(
-    'name' => 'delete own acute_illness_eyes content',
-    'roles' => array(
-      'administrator' => 'administrator',
-    ),
-    'module' => 'node',
-  );
-
   // Exported permission: 'delete own acute_illness_follow_up content'.
   $permissions['delete own acute_illness_follow_up content'] = array(
     'name' => 'delete own acute_illness_follow_up content',
-    'roles' => array(
-      'administrator' => 'administrator',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'delete own acute_illness_gu content'.
-  $permissions['delete own acute_illness_gu content'] = array(
-    'name' => 'delete own acute_illness_gu content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -627,15 +524,6 @@ function hedley_acute_illness_user_default_permissions() {
   // Exported permission: 'delete own acute_illness_nutrition content'.
   $permissions['delete own acute_illness_nutrition content'] = array(
     'name' => 'delete own acute_illness_nutrition content',
-    'roles' => array(
-      'administrator' => 'administrator',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'delete own acute_illness_oral content'.
-  $permissions['delete own acute_illness_oral content'] = array(
-    'name' => 'delete own acute_illness_oral content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -835,39 +723,9 @@ function hedley_acute_illness_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'edit any acute_illness_ent content'.
-  $permissions['edit any acute_illness_ent content'] = array(
-    'name' => 'edit any acute_illness_ent content',
-    'roles' => array(
-      'administrator' => 'administrator',
-      'sync' => 'sync',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'edit any acute_illness_eyes content'.
-  $permissions['edit any acute_illness_eyes content'] = array(
-    'name' => 'edit any acute_illness_eyes content',
-    'roles' => array(
-      'administrator' => 'administrator',
-      'sync' => 'sync',
-    ),
-    'module' => 'node',
-  );
-
   // Exported permission: 'edit any acute_illness_follow_up content'.
   $permissions['edit any acute_illness_follow_up content'] = array(
     'name' => 'edit any acute_illness_follow_up content',
-    'roles' => array(
-      'administrator' => 'administrator',
-      'sync' => 'sync',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'edit any acute_illness_gu content'.
-  $permissions['edit any acute_illness_gu content'] = array(
-    'name' => 'edit any acute_illness_gu content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -888,16 +746,6 @@ function hedley_acute_illness_user_default_permissions() {
   // Exported permission: 'edit any acute_illness_nutrition content'.
   $permissions['edit any acute_illness_nutrition content'] = array(
     'name' => 'edit any acute_illness_nutrition content',
-    'roles' => array(
-      'administrator' => 'administrator',
-      'sync' => 'sync',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'edit any acute_illness_oral content'.
-  $permissions['edit any acute_illness_oral content'] = array(
-    'name' => 'edit any acute_illness_oral content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -1115,39 +963,9 @@ function hedley_acute_illness_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'edit own acute_illness_ent content'.
-  $permissions['edit own acute_illness_ent content'] = array(
-    'name' => 'edit own acute_illness_ent content',
-    'roles' => array(
-      'administrator' => 'administrator',
-      'sync' => 'sync',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'edit own acute_illness_eyes content'.
-  $permissions['edit own acute_illness_eyes content'] = array(
-    'name' => 'edit own acute_illness_eyes content',
-    'roles' => array(
-      'administrator' => 'administrator',
-      'sync' => 'sync',
-    ),
-    'module' => 'node',
-  );
-
   // Exported permission: 'edit own acute_illness_follow_up content'.
   $permissions['edit own acute_illness_follow_up content'] = array(
     'name' => 'edit own acute_illness_follow_up content',
-    'roles' => array(
-      'administrator' => 'administrator',
-      'sync' => 'sync',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'edit own acute_illness_gu content'.
-  $permissions['edit own acute_illness_gu content'] = array(
-    'name' => 'edit own acute_illness_gu content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -1168,16 +986,6 @@ function hedley_acute_illness_user_default_permissions() {
   // Exported permission: 'edit own acute_illness_nutrition content'.
   $permissions['edit own acute_illness_nutrition content'] = array(
     'name' => 'edit own acute_illness_nutrition content',
-    'roles' => array(
-      'administrator' => 'administrator',
-      'sync' => 'sync',
-    ),
-    'module' => 'node',
-  );
-
-  // Exported permission: 'edit own acute_illness_oral content'.
-  $permissions['edit own acute_illness_oral content'] = array(
-    'name' => 'edit own acute_illness_oral content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',

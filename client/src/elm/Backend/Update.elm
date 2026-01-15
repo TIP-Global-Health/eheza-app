@@ -4993,22 +4993,6 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
-        AcuteIllnessENTRevision uuid data ->
-            ( mapAcuteIllnessMeasurements
-                data.encounterId
-                (\measurements -> { measurements | symptomsENT = Just ( uuid, data ) })
-                model
-            , recalc
-            )
-
-        AcuteIllnessEyesRevision uuid data ->
-            ( mapAcuteIllnessMeasurements
-                data.encounterId
-                (\measurements -> { measurements | symptomsEyes = Just ( uuid, data ) })
-                model
-            , recalc
-            )
-
         AcuteIllnessFollowUpRevision uuid data ->
             let
                 modelWithMappedFollowUp =
@@ -5030,14 +5014,6 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                     }
                 )
                 modelWithMappedFollowUp
-            , recalc
-            )
-
-        AcuteIllnessGURevision uuid data ->
-            ( mapAcuteIllnessMeasurements
-                data.encounterId
-                (\measurements -> { measurements | symptomsGU = Just ( uuid, data ) })
-                model
             , recalc
             )
 
@@ -5071,14 +5047,6 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                                 Just ( uuid, data )
                     }
                 )
-                model
-            , recalc
-            )
-
-        AcuteIllnessOralRevision uuid data ->
-            ( mapAcuteIllnessMeasurements
-                data.encounterId
-                (\measurements -> { measurements | symptomsOral = Just ( uuid, data ) })
                 model
             , recalc
             )

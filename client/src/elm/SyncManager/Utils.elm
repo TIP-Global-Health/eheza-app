@@ -469,17 +469,8 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityAcuteIllnessEncounter identifier ->
             getIdentifier identifier "acute_illness_encounter"
 
-        BackendAuthorityAcuteIllnessENT identifier ->
-            getIdentifier identifier "acute_illness_ent"
-
-        BackendAuthorityAcuteIllnessEyes identifier ->
-            getIdentifier identifier "acute_illness_eyes"
-
         BackendAuthorityAcuteIllnessFollowUp identifier ->
             getIdentifier identifier "acute_illness_follow_up"
-
-        BackendAuthorityAcuteIllnessVitals identifier ->
-            getIdentifier identifier "acute_illness_vitals"
 
         BackendAuthorityAcuteIllnessMuac identifier ->
             getIdentifier identifier "acute_illness_muac"
@@ -487,14 +478,11 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityAcuteIllnessNutrition identifier ->
             getIdentifier identifier "acute_illness_nutrition"
 
-        BackendAuthorityAcuteIllnessGU identifier ->
-            getIdentifier identifier "acute_illness_gu"
-
         BackendAuthorityAcuteIllnessTraceContact identifier ->
             getIdentifier identifier "acute_illness_trace_contact"
 
-        BackendAuthorityAcuteIllnessOral identifier ->
-            getIdentifier identifier "acute_illness_oral"
+        BackendAuthorityAcuteIllnessVitals identifier ->
+            getIdentifier identifier "acute_illness_vitals"
 
         BackendAuthorityAppointmentConfirmation identifier ->
             getIdentifier identifier "appointment_confirmation"
@@ -1267,26 +1255,14 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityAcuteIllnessEncounter identifier ->
             encode Backend.AcuteIllnessEncounter.Encoder.encodeAcuteIllnessEncounter identifier
 
-        BackendAuthorityAcuteIllnessENT identifier ->
-            encode Backend.Measurement.Encoder.encodeAcuteIllnessENT identifier
-
-        BackendAuthorityAcuteIllnessEyes identifier ->
-            encode Backend.Measurement.Encoder.encodeAcuteIllnessEyes identifier
-
         BackendAuthorityAcuteIllnessFollowUp identifier ->
             encode Backend.Measurement.Encoder.encodeAcuteIllnessFollowUp identifier
-
-        BackendAuthorityAcuteIllnessGU identifier ->
-            encode Backend.Measurement.Encoder.encodeAcuteIllnessGU identifier
 
         BackendAuthorityAcuteIllnessMuac identifier ->
             encode Backend.Measurement.Encoder.encodeAcuteIllnessMuac identifier
 
         BackendAuthorityAcuteIllnessNutrition identifier ->
             encode Backend.Measurement.Encoder.encodeAcuteIllnessNutrition identifier
-
-        BackendAuthorityAcuteIllnessOral identifier ->
-            encode Backend.Measurement.Encoder.encodeAcuteIllnessOral identifier
 
         BackendAuthorityAcuteIllnessTraceContact identifier ->
             encode Backend.Measurement.Encoder.encodeAcuteIllnessTraceContact identifier
@@ -2131,26 +2107,14 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityAcuteIllnessEncounter identifier ->
             AcuteIllnessEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
 
-        BackendAuthorityAcuteIllnessENT identifier ->
-            AcuteIllnessENTRevision (toEntityUuid identifier.uuid) identifier.entity
-
-        BackendAuthorityAcuteIllnessEyes identifier ->
-            AcuteIllnessEyesRevision (toEntityUuid identifier.uuid) identifier.entity
-
         BackendAuthorityAcuteIllnessFollowUp identifier ->
             AcuteIllnessFollowUpRevision (toEntityUuid identifier.uuid) identifier.entity
-
-        BackendAuthorityAcuteIllnessGU identifier ->
-            AcuteIllnessGURevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityAcuteIllnessMuac identifier ->
             AcuteIllnessMuacRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityAcuteIllnessNutrition identifier ->
             AcuteIllnessNutritionRevision (toEntityUuid identifier.uuid) identifier.entity
-
-        BackendAuthorityAcuteIllnessOral identifier ->
-            AcuteIllnessOralRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityAcuteIllnessTraceContact identifier ->
             AcuteIllnessTraceContactRevision (toEntityUuid identifier.uuid) identifier.entity

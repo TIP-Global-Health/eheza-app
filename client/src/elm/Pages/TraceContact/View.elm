@@ -12,7 +12,8 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Pages.AcuteIllness.Activity.Utils exposing (allSymptomsGISigns, allSymptomsGeneralSignsForTraceContact, allSymptomsRespiratorySigns)
+import Pages.AcuteIllness.Activity.Types exposing (SymptomsTask(..))
+import Pages.AcuteIllness.Activity.Utils exposing (allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.TraceContact.Model exposing (..)
 import Pages.Utils
@@ -243,7 +244,7 @@ viewStepRecordSymptoms language currentDate contact data =
             div [ class "column" ]
                 [ div attributes
                     [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
-                    , text <| translate language (Translate.TraceContactSymptomsTask task)
+                    , text <| translate language (Translate.SymptomsTask task)
                     ]
                 ]
 
@@ -344,7 +345,7 @@ viewSymptomsGeneralForm : Language -> NominalDate -> SymptomsGeneralForm -> Html
 viewSymptomsGeneralForm language currentDate form =
     let
         signs =
-            Tuple.first allSymptomsGeneralSignsForTraceContact ++ [ Tuple.second allSymptomsGeneralSignsForTraceContact ]
+            Tuple.first allSymptomsGeneralSigns ++ [ Tuple.second allSymptomsGeneralSigns ]
     in
     div [ class "symptoms-form general" ]
         [ viewQuestionLabel language Translate.PatientGotAnySymptoms

@@ -824,9 +824,6 @@ symptomsRespiratorySignToString sign =
         StabbingChestPain ->
             "stabbing-chest-pain"
 
-        SymptomDifficultyBreathing ->
-            "difficulty-breathing"
-
         NoSymptomsRespiratory ->
             "none"
 
@@ -854,9 +851,6 @@ symptomsRespiratorySignFromString s =
 
         "stabbing-chest-pain" ->
             Just StabbingChestPain
-
-        "difficulty-breathing" ->
-            Just SymptomDifficultyBreathing
 
         "none" ->
             Just NoSymptomsRespiratory

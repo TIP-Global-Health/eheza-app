@@ -183,6 +183,22 @@ physicalExamTasks =
     ]
 
 
+symptomsGeneralDangerSigns : List SymptomsGeneralSign
+symptomsGeneralDangerSigns =
+    [ Lethargy
+    , PoorSuck
+    , UnableToDrink
+    , UnableToEat
+    , IncreasedThirst
+    , DryMouth
+    , SevereWeakness
+    , YellowEyes
+    , CokeColoredUrine
+    , SymptomsGeneralConvulsions
+    , SpontaneousBleeding
+    ]
+
+
 allSymptomsGeneralSigns : ( List SymptomsGeneralSign, SymptomsGeneralSign )
 allSymptomsGeneralSigns =
     ( [ SymptomGeneralFever
@@ -196,38 +212,6 @@ allSymptomsGeneralSigns =
     )
 
 
-symptomsGeneralDangerSigns : List SymptomsGeneralSign
-symptomsGeneralDangerSigns =
-    [ Lethargy
-    , PoorSuck
-    , UnableToDrink
-    , UnableToEat
-    , IncreasedThirst
-    , DryMouth
-    , SevereWeakness
-    , SymptomsGeneralConvulsions
-    , SpontaneousBleeding
-    ]
-
-
-allSymptomsGeneralSignsForTraceContact : ( List SymptomsGeneralSign, SymptomsGeneralSign )
-allSymptomsGeneralSignsForTraceContact =
-    ( [ SymptomGeneralFever
-      , Chills
-      , NightSweats
-      , BodyAches
-      , Headache
-      ]
-        ++ symptomsGeneralDangerSignsForTraceContact
-    , NoSymptomsGeneral
-    )
-
-
-symptomsGeneralDangerSignsForTraceContact : List SymptomsGeneralSign
-symptomsGeneralDangerSignsForTraceContact =
-    symptomsGeneralDangerSigns ++ [ YellowEyes, CokeColoredUrine ]
-
-
 allSymptomsRespiratorySigns : ( List SymptomsRespiratorySign, SymptomsRespiratorySign )
 allSymptomsRespiratorySigns =
     ( [ Cough
@@ -237,7 +221,6 @@ allSymptomsRespiratorySigns =
       , SoreThroat
       , LossOfSmell
       , StabbingChestPain
-      , SymptomDifficultyBreathing
       ]
     , NoSymptomsRespiratory
     )
@@ -252,52 +235,6 @@ allSymptomsGISigns =
       , SymptomGIAbdominalPain
       ]
     , NoSymptomsGI
-    )
-
-
-allSymptomsENTSigns : ( List SymptomsENTSign, SymptomsENTSign )
-allSymptomsENTSigns =
-    ( [ EarPain
-      , EarPusDischarge
-      , DifficultSwallowing
-      ]
-    , NoSymptomsENT
-    )
-
-
-allSymptomsEyesSigns : ( List SymptomsEyesSign, SymptomsEyesSign )
-allSymptomsEyesSigns =
-    ( [ EyePusDischarge
-      , SwollenEyes
-      , YellowEyes_
-      , RedEyes
-      , CloudyAppearance
-      , EyeIrritation
-      ]
-    , NoSymptomsEyes
-    )
-
-
-allSymptomsGUSigns : ( List SymptomsGUSign, SymptomsGUSign )
-allSymptomsGUSigns =
-    ( [ CokeColoredUrine_
-      , FrequentUrination
-      , Dysuria
-      , CBDUrine
-      , AbnormalDischarge
-      , GenitalItching
-      ]
-    , NoSymptomsGU
-    )
-
-
-allSymptomsOralSigns : ( List SymptomsOralSign, SymptomsOralSign )
-allSymptomsOralSigns =
-    ( [ MouthUlcer
-      , Toothache
-      , SwollenGums
-      ]
-    , NoSymptomsOral
     )
 
 
@@ -381,46 +318,6 @@ symptomsTasksCompletedFromTotal measurements data task =
             in
             ( taskNotCompleted (Dict.isEmpty form.signs) + completedDerived
             , 1 + totalDerived
-            )
-
-        SymptomsENT ->
-            let
-                form =
-                    getMeasurementValueFunc measurements.symptomsENT
-                        |> symptomsENTFormWithDefault data.symptomsENTForm
-            in
-            ( taskNotCompleted (Dict.isEmpty form.signs)
-            , 1
-            )
-
-        SymptomsEyes ->
-            let
-                form =
-                    getMeasurementValueFunc measurements.symptomsEyes
-                        |> symptomsEyesFormWithDefault data.symptomsEyesForm
-            in
-            ( taskNotCompleted (Dict.isEmpty form.signs)
-            , 1
-            )
-
-        SymptomsGU ->
-            let
-                form =
-                    getMeasurementValueFunc measurements.symptomsGU
-                        |> symptomsGUFormWithDefault data.symptomsGUForm
-            in
-            ( taskNotCompleted (Dict.isEmpty form.signs)
-            , 1
-            )
-
-        SymptomsOral ->
-            let
-                form =
-                    getMeasurementValueFunc measurements.symptomsOral
-                        |> symptomsOralFormWithDefault data.symptomsOralForm
-            in
-            ( taskNotCompleted (Dict.isEmpty form.signs)
-            , 1
             )
 
 
@@ -1656,102 +1553,6 @@ toSymptomsGIValueWithDefault saved form =
     }
 
 
-symptomsENTFormWithDefault : SymptomsENTForm -> Maybe (Dict SymptomsENTSign Int) -> SymptomsENTForm
-symptomsENTFormWithDefault form saved =
-    if form.signsDirty then
-        form
-
-    else
-        saved
-            |> unwrap
-                form
-                (\value ->
-                    if Dict.isEmpty form.signs then
-                        SymptomsENTForm value False
-
-                    else
-                        form
-                )
-
-
-toSymptomsENTValueWithDefault : Maybe (Dict SymptomsENTSign Int) -> SymptomsENTForm -> Dict SymptomsENTSign Int
-toSymptomsENTValueWithDefault saved form =
-    symptomsENTFormWithDefault form saved
-        |> .signs
-
-
-symptomsEyesFormWithDefault : SymptomsEyesForm -> Maybe (Dict SymptomsEyesSign Int) -> SymptomsEyesForm
-symptomsEyesFormWithDefault form saved =
-    if form.signsDirty then
-        form
-
-    else
-        saved
-            |> unwrap
-                form
-                (\value ->
-                    if Dict.isEmpty form.signs then
-                        SymptomsEyesForm value False
-
-                    else
-                        form
-                )
-
-
-toSymptomsEyesValueWithDefault : Maybe (Dict SymptomsEyesSign Int) -> SymptomsEyesForm -> Dict SymptomsEyesSign Int
-toSymptomsEyesValueWithDefault saved form =
-    symptomsEyesFormWithDefault form saved
-        |> .signs
-
-
-symptomsGUFormWithDefault : SymptomsGUForm -> Maybe (Dict SymptomsGUSign Int) -> SymptomsGUForm
-symptomsGUFormWithDefault form saved =
-    if form.signsDirty then
-        form
-
-    else
-        saved
-            |> unwrap
-                form
-                (\value ->
-                    if Dict.isEmpty form.signs then
-                        SymptomsGUForm value False
-
-                    else
-                        form
-                )
-
-
-toSymptomsGUValueWithDefault : Maybe (Dict SymptomsGUSign Int) -> SymptomsGUForm -> Dict SymptomsGUSign Int
-toSymptomsGUValueWithDefault saved form =
-    symptomsGUFormWithDefault form saved
-        |> .signs
-
-
-symptomsOralFormWithDefault : SymptomsOralForm -> Maybe (Dict SymptomsOralSign Int) -> SymptomsOralForm
-symptomsOralFormWithDefault form saved =
-    if form.signsDirty then
-        form
-
-    else
-        saved
-            |> unwrap
-                form
-                (\value ->
-                    if Dict.isEmpty form.signs then
-                        SymptomsOralForm value False
-
-                    else
-                        form
-                )
-
-
-toSymptomsOralValueWithDefault : Maybe (Dict SymptomsOralSign Int) -> SymptomsOralForm -> Dict SymptomsOralSign Int
-toSymptomsOralValueWithDefault saved form =
-    symptomsOralFormWithDefault form saved
-        |> .signs
-
-
 fromAcuteFindingsValue : Maybe AcuteFindingsValue -> AcuteFindingsForm
 fromAcuteFindingsValue saved =
     { signsGeneral = Maybe.map (.signsGeneral >> EverySet.toList) saved
@@ -2912,10 +2713,6 @@ mandatoryActivityCompletedFirstEncounter currentDate person isChw measurements a
             isJust measurements.symptomsGeneral
                 && isJust measurements.symptomsRespiratory
                 && isJust measurements.symptomsGI
-                && isJust measurements.symptomsENT
-                && isJust measurements.symptomsEyes
-                && isJust measurements.symptomsGU
-                && isJust measurements.symptomsOral
 
         AcuteIllnessPhysicalExam ->
             isJust measurements.vitals
@@ -3440,8 +3237,8 @@ malariaRapidTestResult measurements =
 
 malariaDangerSignsPresent : AcuteIllnessMeasurements -> Bool
 malariaDangerSignsPresent measurements =
-    Maybe.map4
-        (\symptomsGeneral symptomsGI symptomsGU acuteFindings ->
+    Maybe.map3
+        (\symptomsGeneral symptomsGI acuteFindings ->
             let
                 symptomsGeneralDict =
                     Tuple.second symptomsGeneral |> .value
@@ -3451,9 +3248,6 @@ malariaDangerSignsPresent measurements =
 
                 symptomsGISet =
                     Tuple.second symptomsGI |> .value |> .derivedSigns
-
-                symptomsGUDict =
-                    Tuple.second symptomsGU |> .value
 
                 acuteFindingsValue =
                     Tuple.second acuteFindings |> .value
@@ -3476,7 +3270,7 @@ malariaDangerSignsPresent measurements =
                     symptomAppearsAtSymptomsDict SevereWeakness symptomsGeneralDict
 
                 cokeColoredUrine =
-                    symptomAppearsAtSymptomsDict CokeColoredUrine_ symptomsGUDict
+                    symptomAppearsAtSymptomsDict CokeColoredUrine symptomsGeneralDict
 
                 convulsions =
                     symptomAppearsAtSymptomsDict SymptomsGeneralConvulsions symptomsGeneralDict
@@ -3536,7 +3330,6 @@ malariaDangerSignsPresent measurements =
         )
         measurements.symptomsGeneral
         measurements.symptomsGI
-        measurements.symptomsGU
         measurements.acuteFindings
         |> Maybe.withDefault False
 

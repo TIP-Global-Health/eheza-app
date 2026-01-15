@@ -131,18 +131,6 @@ acuteIllnessActivityFromMapping mapped =
         "w" ->
             Just AcuteIllnessOngoingTreatment
 
-        "x" ->
-            Just AcuteIllnessENT
-
-        "y" ->
-            Just AcuteIllnessEyes
-
-        "z" ->
-            Just AcuteIllnessGU
-
-        "0" ->
-            Just AcuteIllnessOral
-
         _ ->
             Nothing
 

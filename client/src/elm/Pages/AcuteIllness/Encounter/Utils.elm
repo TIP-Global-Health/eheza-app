@@ -121,7 +121,7 @@ generateAssembledData currentDate features id isChw db =
                                 )
                         )
                         nurseEncounterIndex
-                        |> Maybe.withDefault ( [ currentEncounterData ], [] )
+                        |> Maybe.withDefault ( data.previousEncountersData, [] )
             in
             { data
                 | initialEncounter = initialEncounter

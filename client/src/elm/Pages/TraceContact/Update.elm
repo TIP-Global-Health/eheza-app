@@ -8,6 +8,7 @@ import Backend.TraceContact.Model
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
+import Pages.AcuteIllness.Activity.Types exposing (SymptomsTask(..))
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.TraceContact.Model exposing (..)
 

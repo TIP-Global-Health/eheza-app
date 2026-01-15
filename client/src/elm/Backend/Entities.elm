@@ -1729,35 +1729,3 @@ type alias HIVTreatmentReviewId =
 
 type HIVTreatmentReviewUuidType
     = HIVTreatmentReviewUuidType
-
-
-type alias AcuteIllnessENTId =
-    EntityUuid AcuteIllnessENTUuidType
-
-
-type AcuteIllnessENTUuidType
-    = AcuteIllnessENTUuidType
-
-
-type alias AcuteIllnessEyesId =
-    EntityUuid AcuteIllnessEyesUuidType
-
-
-type AcuteIllnessEyesUuidType
-    = AcuteIllnessEyesUuidType
-
-
-type alias AcuteIllnessGUId =
-    EntityUuid AcuteIllnessGUUuidType
-
-
-type AcuteIllnessGUUuidType
-    = AcuteIllnessGUUuidType
-
-
-type alias AcuteIllnessOralId =
-    EntityUuid AcuteIllnessOralUuidType
-
-
-type AcuteIllnessOralUuidType
-    = AcuteIllnessOralUuidType

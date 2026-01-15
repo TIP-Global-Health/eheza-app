@@ -27,26 +27,14 @@ type Msg
     | ToggleSymptomsGeneralSign SymptomsGeneralSign
     | ToggleSymptomsGISign SymptomsGISign
     | ToggleSymptomsRespiratorySign SymptomsRespiratorySign
-    | ToggleSymptomsENTSign SymptomsENTSign
-    | ToggleSymptomsEyesSign SymptomsEyesSign
-    | ToggleSymptomsGUSign SymptomsGUSign
-    | ToggleSymptomsOralSign SymptomsOralSign
     | SetSymptomsGeneralSignValue SymptomsGeneralSign String
     | SetSymptomsGISignValue SymptomsGISign String
     | SetSymptomsRespiratorySignValue SymptomsRespiratorySign String
-    | SetSymptomsENTSignValue SymptomsENTSign String
-    | SetSymptomsEyesSignValue SymptomsEyesSign String
-    | SetSymptomsGUSignValue SymptomsGUSign String
-    | SetSymptomsOralSignValue SymptomsOralSign String
     | SetSymptomsRespiratoryCough Bool
     | SetSymptomsGIIntractableVomiting Bool
     | SaveSymptomsGeneral PersonId (Maybe ( SymptomsGeneralId, SymptomsGeneral )) (Maybe SymptomsTask)
     | SaveSymptomsRespiratory PersonId (Maybe ( SymptomsRespiratoryId, SymptomsRespiratory )) (Maybe SymptomsTask)
     | SaveSymptomsGI PersonId (Maybe ( SymptomsGIId, SymptomsGI )) (Maybe SymptomsTask)
-    | SaveSymptomsENT PersonId (Maybe ( AcuteIllnessENTId, AcuteIllnessENT )) (Maybe SymptomsTask)
-    | SaveSymptomsEyes PersonId (Maybe ( AcuteIllnessEyesId, AcuteIllnessEyes )) (Maybe SymptomsTask)
-    | SaveSymptomsGU PersonId (Maybe ( AcuteIllnessGUId, AcuteIllnessGU )) (Maybe SymptomsTask)
-    | SaveSymptomsOral PersonId (Maybe ( AcuteIllnessOralId, AcuteIllnessOral )) (Maybe SymptomsTask)
       -- PHYSICAL EXAM Msgs
     | SetActivePhysicalExamTask PhysicalExamTask
     | SetVitalsIntInput (Maybe Int -> VitalsForm -> VitalsForm) String
@@ -152,10 +140,6 @@ type alias SymptomsData =
     { symptomsGeneralForm : SymptomsGeneralForm
     , symptomsRespiratoryForm : SymptomsRespiratoryForm
     , symptomsGIForm : SymptomsGIForm
-    , symptomsENTForm : SymptomsENTForm
-    , symptomsEyesForm : SymptomsEyesForm
-    , symptomsGUForm : SymptomsGUForm
-    , symptomsOralForm : SymptomsOralForm
     , activeTask : Maybe SymptomsTask
     }
 
@@ -165,10 +149,6 @@ emptySymptomsData =
     { symptomsGeneralForm = SymptomsGeneralForm Dict.empty False
     , symptomsRespiratoryForm = SymptomsRespiratoryForm Dict.empty False
     , symptomsGIForm = SymptomsGIForm Dict.empty False Nothing False
-    , symptomsENTForm = SymptomsENTForm Dict.empty False
-    , symptomsEyesForm = SymptomsEyesForm Dict.empty False
-    , symptomsGUForm = SymptomsGUForm Dict.empty False
-    , symptomsOralForm = SymptomsOralForm Dict.empty False
     , activeTask = Nothing
     }
 
@@ -190,30 +170,6 @@ type alias SymptomsGIForm =
     , signsDirty : Bool
     , intractableVomiting : Maybe Bool
     , intractableVomitingDirty : Bool
-    }
-
-
-type alias SymptomsENTForm =
-    { signs : Dict SymptomsENTSign Int
-    , signsDirty : Bool
-    }
-
-
-type alias SymptomsEyesForm =
-    { signs : Dict SymptomsEyesSign Int
-    , signsDirty : Bool
-    }
-
-
-type alias SymptomsGUForm =
-    { signs : Dict SymptomsGUSign Int
-    , signsDirty : Bool
-    }
-
-
-type alias SymptomsOralForm =
-    { signs : Dict SymptomsOralSign Int
-    , signsDirty : Bool
     }
 
 

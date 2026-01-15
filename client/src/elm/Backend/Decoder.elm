@@ -53,26 +53,14 @@ decodeRevision =
                     "acute_illness_encounter" ->
                         decodeWithUuid AcuteIllnessEncounterRevision decodeAcuteIllnessEncounter
 
-                    "acute_illness_ent" ->
-                        decodeWithUuid AcuteIllnessENTRevision decodeAcuteIllnessENT
-
-                    "acute_illness_eyes" ->
-                        decodeWithUuid AcuteIllnessEyesRevision decodeAcuteIllnessEyes
-
                     "acute_illness_follow_up" ->
                         decodeWithUuid AcuteIllnessFollowUpRevision decodeAcuteIllnessFollowUp
-
-                    "acute_illness_gu" ->
-                        decodeWithUuid AcuteIllnessGURevision decodeAcuteIllnessGU
 
                     "acute_illness_muac" ->
                         decodeWithUuid AcuteIllnessMuacRevision decodeAcuteIllnessMuac
 
                     "acute_illness_nutrition" ->
                         decodeWithUuid AcuteIllnessNutritionRevision decodeAcuteIllnessNutrition
-
-                    "acute_illness_oral" ->
-                        decodeWithUuid AcuteIllnessOralRevision decodeAcuteIllnessOral
 
                     "acute_illness_trace_contact" ->
                         decodeWithUuid AcuteIllnessTraceContactRevision decodeAcuteIllnessTraceContact

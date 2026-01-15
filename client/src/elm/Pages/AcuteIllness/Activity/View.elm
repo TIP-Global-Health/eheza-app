@@ -427,14 +427,7 @@ viewAcuteIllnessSymptomsContent : Language -> NominalDate -> AcuteIllnessEncount
 viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements ) data =
     let
         tasks =
-            [ SymptomsGeneral
-            , SymptomsRespiratory
-            , SymptomsGI
-            , SymptomsENT
-            , SymptomsEyes
-            , SymptomsGU
-            , SymptomsOral
-            ]
+            [ SymptomsGeneral, SymptomsRespiratory, SymptomsGI ]
 
         activeTask =
             resolveActiveTask tasks data.activeTask
@@ -451,18 +444,6 @@ viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements
 
                         SymptomsGI ->
                             ( "symptoms-gi", isJust measurements.symptomsGI )
-
-                        SymptomsENT ->
-                            ( "symptoms-ent", isJust measurements.symptomsENT )
-
-                        SymptomsEyes ->
-                            ( "symptoms-eyes", isJust measurements.symptomsEyes )
-
-                        SymptomsGU ->
-                            ( "symptoms-gu", isJust measurements.symptomsGU )
-
-                        SymptomsOral ->
-                            ( "symptoms-oral", isJust measurements.symptomsOral )
 
                 isActive =
                     activeTask == Just task
@@ -512,26 +493,6 @@ viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements
                         |> symptomsGIFormWithDefault data.symptomsGIForm
                         |> viewSymptomsGIForm language currentDate measurements
 
-                Just SymptomsENT ->
-                    getMeasurementValueFunc measurements.symptomsENT
-                        |> symptomsENTFormWithDefault data.symptomsENTForm
-                        |> viewSymptomsENTForm language currentDate measurements
-
-                Just SymptomsEyes ->
-                    getMeasurementValueFunc measurements.symptomsEyes
-                        |> symptomsEyesFormWithDefault data.symptomsEyesForm
-                        |> viewSymptomsEyesForm language currentDate measurements
-
-                Just SymptomsGU ->
-                    getMeasurementValueFunc measurements.symptomsGU
-                        |> symptomsGUFormWithDefault data.symptomsGUForm
-                        |> viewSymptomsGUForm language currentDate measurements
-
-                Just SymptomsOral ->
-                    getMeasurementValueFunc measurements.symptomsOral
-                        |> symptomsOralFormWithDefault data.symptomsOralForm
-                        |> viewSymptomsOralForm language currentDate measurements
-
                 Nothing ->
                     emptyNode
 
@@ -552,18 +513,6 @@ viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements
 
                                 SymptomsGI ->
                                     SaveSymptomsGI personId measurements.symptomsGI nextTask
-
-                                SymptomsENT ->
-                                    SaveSymptomsENT personId measurements.symptomsENT nextTask
-
-                                SymptomsEyes ->
-                                    SaveSymptomsEyes personId measurements.symptomsEyes nextTask
-
-                                SymptomsGU ->
-                                    SaveSymptomsGU personId measurements.symptomsGU nextTask
-
-                                SymptomsOral ->
-                                    SaveSymptomsOral personId measurements.symptomsOral nextTask
                     in
                     div [ class "actions symptoms" ]
                         [ button
@@ -714,66 +663,6 @@ viewSymptomsGIForm language currentDate measurements form =
         [ div [ class "symptoms" ] symptoms
         , div [ class "derived-questions" ] derivedQuestions
         ]
-
-
-viewSymptomsENTForm : Language -> NominalDate -> AcuteIllnessMeasurements -> SymptomsENTForm -> Html Msg
-viewSymptomsENTForm language currentDate measurements form =
-    viewCheckBoxValueInput language
-        allSymptomsENTSigns
-        form.signs
-        ToggleSymptomsENTSign
-        SetSymptomsENTSignValue
-        Translate.SymptomsENTSign
-        |> List.append
-            [ viewQuestionLabel language Translate.PatientGotAnySymptoms
-            , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
-            ]
-        |> div [ class "symptoms-form ent" ]
-
-
-viewSymptomsEyesForm : Language -> NominalDate -> AcuteIllnessMeasurements -> SymptomsEyesForm -> Html Msg
-viewSymptomsEyesForm language currentDate measurements form =
-    viewCheckBoxValueInput language
-        allSymptomsEyesSigns
-        form.signs
-        ToggleSymptomsEyesSign
-        SetSymptomsEyesSignValue
-        Translate.SymptomsEyesSign
-        |> List.append
-            [ viewQuestionLabel language Translate.PatientGotAnySymptoms
-            , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
-            ]
-        |> div [ class "symptoms-form eyes" ]
-
-
-viewSymptomsGUForm : Language -> NominalDate -> AcuteIllnessMeasurements -> SymptomsGUForm -> Html Msg
-viewSymptomsGUForm language currentDate measurements form =
-    viewCheckBoxValueInput language
-        allSymptomsGUSigns
-        form.signs
-        ToggleSymptomsGUSign
-        SetSymptomsGUSignValue
-        Translate.SymptomsGUSign
-        |> List.append
-            [ viewQuestionLabel language Translate.PatientGotAnySymptoms
-            , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
-            ]
-        |> div [ class "symptoms-form gu" ]
-
-
-viewSymptomsOralForm : Language -> NominalDate -> AcuteIllnessMeasurements -> SymptomsOralForm -> Html Msg
-viewSymptomsOralForm language currentDate measurements form =
-    viewCheckBoxValueInput language
-        allSymptomsOralSigns
-        form.signs
-        ToggleSymptomsOralSign
-        SetSymptomsOralSignValue
-        Translate.SymptomsOralSign
-        |> List.append
-            [ viewQuestionLabel language Translate.PatientGotAnySymptoms
-            , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
-            ]
-        |> div [ class "symptoms-form oral" ]
 
 
 viewAcuteIllnessPhysicalExam :

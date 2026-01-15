@@ -2,6 +2,7 @@ module Pages.TraceContact.Model exposing (..)
 
 import Backend.Measurement.Model exposing (ContactTraceItem, SymptomsGISign, SymptomsGeneralSign, SymptomsRespiratorySign)
 import EverySet exposing (EverySet)
+import Pages.AcuteIllness.Activity.Types exposing (SymptomsTask)
 import Pages.Page exposing (Page)
 
 
@@ -34,12 +35,6 @@ type NoContactReason
     = ReasonNoAnswer
     | ReasonWrongContactInfo
     | ReasonDeclinedFollowUp
-
-
-type SymptomsTask
-    = SymptomsGeneral
-    | SymptomsRespiratory
-    | SymptomsGI
 
 
 type alias StepRecordSymptomsData =

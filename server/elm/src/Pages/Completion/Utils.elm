@@ -118,10 +118,6 @@ allAcuteIllnessActivities =
     , AcuteIllnessSymptomsGeneral
     , AcuteIllnessSymptomsGI
     , AcuteIllnessSymptomsRespiratory
-    , AcuteIllnessENT
-    , AcuteIllnessEyes
-    , AcuteIllnessGU
-    , AcuteIllnessOral
     , AcuteIllnessTravelHistory
     , AcuteIllnessPriorTreatment
     , AcuteIllnessOngoingTreatment
