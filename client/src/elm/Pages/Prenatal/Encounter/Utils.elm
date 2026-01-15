@@ -9,7 +9,7 @@ import Backend.NutritionEncounter.Utils
 import Backend.PrenatalActivity.Model exposing (..)
 import Backend.PrenatalEncounter.Model exposing (..)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
-import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter, lmpToEDDDate)
+import Backend.PrenatalEncounter.Utils exposing (eddToLmpDate, isNurseEncounter, lmpToEDDDate)
 import Backend.Utils exposing (healthyStartEnabled)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
@@ -213,11 +213,6 @@ generatePara value =
         ++ String.fromInt value.liveChildren
 
 
-getLmpValue : PrenatalMeasurements -> Maybe LastMenstrualPeriodValue
-getLmpValue =
-    .lastMenstrualPeriod >> getMeasurementValueFunc
-
-
 getObstetricHistory : PrenatalMeasurements -> Maybe ObstetricHistoryValue
 getObstetricHistory measurements =
     measurements.obstetricHistory
@@ -240,10 +235,27 @@ resolveGlobalLmpValue nursePreviousMeasurements chwPreviousMeasurements measurem
         |> orElse (getLmpValueFromList chwPreviousMeasurements)
 
 
+getLmpValue : PrenatalMeasurements -> Maybe LastMenstrualPeriodValue
+getLmpValue =
+    .lastMenstrualPeriod >> getMeasurementValueFunc
+
+
 resolveGlobalLmpDate : List PrenatalMeasurements -> List PrenatalMeasurements -> PrenatalMeasurements -> Maybe NominalDate
 resolveGlobalLmpDate nursePreviousMeasurements chwPreviousMeasurements measurements =
-    resolveGlobalLmpValue nursePreviousMeasurements chwPreviousMeasurements measurements
-        |> Maybe.map .date
+    let
+        byUltrasound =
+            nursePreviousMeasurements
+                ++ [ measurements ]
+                |> List.filterMap (.ultrasound >> getMeasurementValueFunc)
+                |> List.head
+                |> Maybe.andThen .eddDate
+                |> Maybe.map eddToLmpDate
+
+        byPregnancyDating =
+            resolveGlobalLmpValue nursePreviousMeasurements chwPreviousMeasurements measurements
+                |> Maybe.map .date
+    in
+    Maybe.Extra.or byUltrasound byPregnancyDating
 
 
 resolveGlobalObstetricHistory : List PrenatalMeasurements -> PrenatalMeasurements -> Maybe ObstetricHistoryValue
@@ -358,8 +370,7 @@ generateAssembledData id db =
             List.map (\( _, _, previousMeasurements ) -> previousMeasurements) chwPreviousMeasurementsWithDates
 
         globalLmpDate =
-            measurements
-                |> RemoteData.map (resolveGlobalLmpDate nursePreviousMeasurements chwPreviousMeasurements)
+            RemoteData.map (resolveGlobalLmpDate nursePreviousMeasurements chwPreviousMeasurements) measurements
                 |> RemoteData.withDefault Nothing
 
         globalObstetricHistory =
