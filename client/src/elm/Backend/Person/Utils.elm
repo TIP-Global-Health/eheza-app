@@ -62,7 +62,7 @@ isPersonAFertileWoman currentDate person =
             |> Maybe.map
                 (\birthDate ->
                     diffYears birthDate currentDate
-                        |> (\age -> age > 12 && age < 50)
+                        |> (\age -> age > 12)
                 )
             |> Maybe.withDefault False
 
