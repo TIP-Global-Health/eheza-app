@@ -35,7 +35,7 @@ import Backend.Measurement.Utils exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
-import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
+import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate, pregnancyDurationInWeeks)
 import Date
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
@@ -396,7 +396,7 @@ update language currentDate id isLabTech db msg model =
                         String.toInt value
                             |> Maybe.map
                                 (\newValue ->
-                                    if newValue >= 0 && newValue <= 40 then
+                                    if newValue >= 0 && newValue <= pregnancyDurationInWeeks then
                                         let
                                             eddDate =
                                                 Maybe.map
