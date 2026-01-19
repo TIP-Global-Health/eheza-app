@@ -171,7 +171,7 @@ function hedley_case_management_handle_acute_illness_insert_trigger($node) {
   }
 
   // Load all encounters that were performed to the illness.
-  $encounters = hedley_person_encounters_for_individual_participant($participant);
+  $encounters = hedley_person_load_individual_participant_encounters_ids($participant);
   if (count($encounters) < 2) {
     // One or less encounter was performed - there can be no
     // follow-ups that require resolution.
@@ -526,7 +526,7 @@ function hedley_case_management_handle_update_trigger($node) {
   if ($type === 'acute-illness') {
     // Dealing with acute illness.
     // Load all encounters that were performed to the illness.
-    $encounters = hedley_person_encounters_for_individual_participant($node->nid);
+    $encounters = hedley_person_load_individual_participant_encounters_ids($node->nid);
     // Trigger follow ups resolution.
     hedley_case_management_resolve_acute_illness_follow_ups($person_id, $encounters);
     return;

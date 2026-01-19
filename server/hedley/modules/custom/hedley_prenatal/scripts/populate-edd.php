@@ -46,7 +46,7 @@ foreach ($chunks as $ids) {
 
   foreach ($ids as $participant_id) {
     // Pull IDs of all encounters conducted for participant.
-    $encounters = hedley_person_encounters_for_individual_participant($participant_id);
+    $encounters = hedley_person_load_individual_participant_encounters_ids($participant_id);
     if (empty($encounters)) {
       continue;
     }

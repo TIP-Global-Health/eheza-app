@@ -645,7 +645,7 @@ function hedley_ncda_calculate_aggregated_data_for_person($person, $birth_date_f
       $data['edd_date'] = $edd_date;
     }
     // Resolving the dates of ANC visits that took place during the pregnancy.
-    $encounters_ids = hedley_person_encounters_for_individual_participant($newborn_participant_id);
+    $encounters_ids = hedley_person_load_individual_participant_encounters_ids($newborn_participant_id);
     if (!empty($encounters_ids)) {
       $encounters = node_load_multiple($encounters_ids);
       foreach ($encounters as $encounter) {

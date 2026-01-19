@@ -1201,11 +1201,10 @@ function hedley_person_node_presave($node) {
  * it's pmtct_participants.
  */
 function hedley_person_node_update($node) {
-  if ($node->type != 'person') {
-    return;
+  if ($node->type == 'person') {
+    hedley_person_process_birth_date_update($node);
   }
 
-  hedley_person_process_birth_date_update($node);
   hedley_person_process_deleted_update($node);
 }
 
@@ -1295,16 +1294,40 @@ function hedley_person_process_deleted_update($node) {
     return;
   }
 
-  $ids = hedley_person_content_affected_by_deletion($node->nid);
-  if (empty($ids)) {
-    return;
-  }
+  if ($node->type == 'person') {
+    $ids = hedley_person_content_affected_by_deletion($node->nid);
+    if (empty($ids)) {
+      return;
+    }
 
-  $items = node_load_multiple($ids);
-  foreach ($items as $item) {
-    $item_wrapper = entity_metadata_wrapper('node', $item);
-    $item_wrapper->field_deleted->set($deleted);
-    $item_wrapper->save();
+    $items = node_load_multiple($ids);
+    foreach ($items as $item) {
+      $item_wrapper = entity_metadata_wrapper('node', $item);
+      $item_wrapper->field_deleted->set($deleted);
+      $item_wrapper->save();
+    }
+  }
+  elseif ($node->type == 'individual_participant' && $deleted) {
+    // When "deleting" individual participant, "delete" all its encounters too.
+    $encounters_ids = hedley_person_load_individual_participant_encounters_ids($node->nid);
+    foreach ($encounters_ids as $encounter_id) {
+      $item_wrapper = entity_metadata_wrapper('node', $encounter_id);
+      $item_wrapper->field_deleted->set($deleted);
+      $item_wrapper->save();
+    }
+  }
+  else {
+    $encounter_types = hedley_general_get_encounter_types();
+    $encounter_types[] = 'session';
+
+    if (in_array($node->type, $encounter_types) && $deleted) {
+      $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($node->nid);
+      foreach ($measurements_ids as $measurement_id) {
+        $item_wrapper = entity_metadata_wrapper('node', $measurement_id);
+        $item_wrapper->field_deleted->set($deleted);
+        $item_wrapper->save();
+      }
+    }
   }
 }
 
@@ -1363,18 +1386,39 @@ function hedley_person_individual_participants_for_person($nid, array $types, $o
 }
 
 /**
- * Resolves all encounters of given type that belong to individual participant.
+ * Resolves the encounters IDs associated with an individual participant.
+ *
+ * @param int $nid
+ *   Individual participant node ID.
+ *
+ * @return array
+ *   An array of encounters nodes IDs associated with the participant.
+ */
+function hedley_person_load_individual_participant_encounters_ids($nid) {
+  $query = hedley_general_create_db_select_query_excluding_deleted();
+  $query->join('field_data_field_individual_participant', 'p', 'p.entity_id = n.nid');
+  $query->condition('p.field_individual_participant_target_id', $nid);
+  $query->addField('n', 'nid');
+
+  return $query->execute()->fetchCol();
+}
+
+/**
+ * Resolves measurements IDs associated with an individual encounter / session.
  *
  * @param int $nid
  *   Individual encounter node ID.
  *
  * @return array
- *   List of encounters nodes IDs.
+ *   An array of measurements nodes IDs associated with the encounter.
  */
-function hedley_person_encounters_for_individual_participant($nid) {
+function hedley_person_load_individual_encounter_measurements_ids($nid) {
   $query = hedley_general_create_db_select_query_excluding_deleted();
-  $query->join('field_data_field_individual_participant', 'p', 'p.entity_id = n.nid');
-  $query->condition('p.field_individual_participant_target_id', $nid);
+  $encounter = node_load($nid);
+  $bundle = $encounter->type;
+  $encounter_field = "field_$bundle";
+  $query->join("field_data_$encounter_field", 'p', 'p.entity_id = n.nid');
+  $query->condition("p.{$encounter_field}_target_id", $encounter->nid);
   $query->addField('n', 'nid');
 
   return $query->execute()->fetchCol();
