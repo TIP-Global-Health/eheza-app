@@ -1022,11 +1022,16 @@
                     modifyQuery = modifyQuery.then(function () {
                         // Encounters curently don't have option to be deleted,
                         // so there's no need to check for that.
-                        query = table.where('[type+individual_participant]').anyOf(tuples);
+                        query = table.where('[type+individual_participant]').anyOf(tuples).and(function (encounter) {
+                            // If encounter is marked as deleted, do not include it in results.
+                            return encounter.deleted === false;
+                        });
 
                         // Cloning doesn't seem to work for this one.
                         // If done, it corrupts the results of original query.
-                        countQuery = table.where('[type+individual_participant]').anyOf(tuples);
+                        countQuery = table.where('[type+individual_participant]').anyOf(tuples).and(function (encounter) {
+                            return encounter.deleted === false;
+                        });
 
                         return Promise.resolve();
                     });
@@ -1051,11 +1056,15 @@
                                     }
                                 })
 
-                                query = table.where('[type+clinic]').anyOf(clinics);
+                                query = table.where('[type+clinic]').anyOf(clinics).and(function (item) {
+                                    return item.deleted === false;
+                                });
 
                                 // Cloning doesn't seem to work for this one.
                                 // If done, it corrupts the results of original query.
-                                countQuery = table.where('[type+clinic]').anyOf(clinics);
+                                countQuery = table.where('[type+clinic]').anyOf(clinics).and(function (item) {
+                                    return item.deleted === false;
+                                });
 
                                 return Promise.resolve();
                             });
