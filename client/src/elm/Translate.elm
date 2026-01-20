@@ -24614,7 +24614,7 @@ translationSet trans =
             , kirundi = Nothing
             }
 
-        UltrasoundExecutionDateLabel->
+        UltrasoundExecutionDateLabel ->
             { english = "Date Ultrasound was performed"
             , kinyarwanda = Nothing
             , kirundi = Nothing
