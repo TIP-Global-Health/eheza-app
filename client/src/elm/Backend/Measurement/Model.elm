@@ -1807,9 +1807,10 @@ type alias PrenatalUltrasound =
 
 type alias UltrasoundValue =
     { signs : EverySet PregnancySign
-    , eddWeeks : Maybe Int
-    , eddDays : Maybe Int
-    , eddDate : Maybe NominalDate
+    , executionDate : NominalDate
+    , eddWeeks : Int
+    , eddDays : Int
+    , eddDate : NominalDate
     }
 
 

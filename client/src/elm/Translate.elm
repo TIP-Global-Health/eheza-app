@@ -2090,6 +2090,7 @@ type TranslationId
     | UbudeheLabel
     | UbudeheNumber Ubudehe
     | UltrasoundEDDQuestion
+    | UltrasoundExecutionDateLabel
     | Underweight
     | UndeterminedDiagnoses
     | UndeterminedDiagnosisMessage
@@ -24609,6 +24610,12 @@ translationSet trans =
 
         UltrasoundEDDQuestion ->
             { english = "How far along the pregnancy is (weeks + days) based on the ultrasound"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        UltrasoundExecutionDateLabel->
+            { english = "Date Ultrasound was performed"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

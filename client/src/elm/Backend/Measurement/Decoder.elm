@@ -5073,9 +5073,10 @@ decodeUltrasoundValue : Decoder UltrasoundValue
 decodeUltrasoundValue =
     succeed UltrasoundValue
         |> required "pregnancy_signs" (decodeEverySet decodePregnancySign)
-        |> optional "edd_weeks" (nullable decodeInt) Nothing
-        |> optional "edd_days" (nullable decodeInt) Nothing
-        |> optional "expected_date_concluded" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> required "execution_date" Gizra.NominalDate.decodeYYYYMMDD
+        |> required "edd_weeks" decodeInt
+        |> required "edd_days" decodeInt
+        |> required "expected_date_concluded" Gizra.NominalDate.decodeYYYYMMDD
 
 
 decodePregnancySign : Decoder PregnancySign

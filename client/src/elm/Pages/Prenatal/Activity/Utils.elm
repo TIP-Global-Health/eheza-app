@@ -3735,106 +3735,116 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
             healthEducationFormInputsAndTasksForChw language assembled form
 
 
-ultrasoundFormInputsAndTasks : Language -> AssembledData -> UltrasoundForm -> ( List (Html Msg), List (Maybe Bool) )
-ultrasoundFormInputsAndTasks language assembled ultrasoundForm =
+ultrasoundFormInputsAndTasks : Language -> NominalDate -> AssembledData -> UltrasoundForm -> ( List (Html Msg), List (Maybe Bool) )
+ultrasoundFormInputsAndTasks language currentDate assembled ultrasoundForm =
     let
         form =
             getMeasurementValueFunc assembled.measurements.ultrasound
                 |> ultrasoundFormWithDefault ultrasoundForm
 
-        ( initialSection, initialTasks ) =
+        pregnancyNotViableUpdateFunc value form_ =
+            { form_ | pregnancyNotViable = Just value }
+
+        pregnancyMultipleFetusesUpdateFunc value form_ =
+            { form_ | pregnancyMultipleFetuses = Just value }
+
+        pregnancyEctopicUpdateFunc value form_ =
+            { form_ | pregnancyEctopic = Just value }
+
+        executionDateInput =
             let
-                pregnancyNotViableUpdateFunc value form_ =
-                    { form_ | pregnancyNotViable = Just value, eddWeeks = Nothing, eddDays = Nothing, eddDate = Nothing }
+                dateSelectorConfig =
+                    { select = SetExecutionDate form.eddWeeks form.eddDays
+                    , close = SetExecutionDateSelectorState Nothing
+                    , dateFrom = Date.add Months -9 currentDate
+                    , dateTo = currentDate
+                    , dateDefault = Maybe.Extra.or form.executionDate (Just currentDate)
+                    }
 
-                pregnancyMultipleFetusesUpdateFunc value form_ =
-                    { form_ | pregnancyMultipleFetuses = Just value }
-
-                pregnancyEctopicUpdateFunc value form_ =
-                    { form_ | pregnancyEctopic = Just value }
+                executiondDateForView =
+                    Maybe.map formatDDMMYYYY form.executionDate
+                        |> Maybe.withDefault ""
             in
-            ( [ viewQuestionLabel language <| Translate.PregnancySignQuestion PregnancyNotViable
-              , viewBoolInputReverted
-                    language
-                    form.pregnancyNotViable
-                    (SetUltrasoundBoolInput pregnancyNotViableUpdateFunc)
-                    "viable"
-                    (Just
-                        ( Translate.PregnancySignAnswerPositive PregnancyNotViable
-                        , Translate.PregnancySignAnswerNegative PregnancyNotViable
-                        )
-                    )
-              , viewQuestionLabel language <| Translate.PregnancySignQuestion PregnancyMultipleFetuses
-              , viewBoolInputReverted
-                    language
-                    form.pregnancyMultipleFetuses
-                    (SetUltrasoundBoolInput pregnancyMultipleFetusesUpdateFunc)
-                    "fetuses"
-                    (Just
-                        ( Translate.PregnancySignAnswerPositive PregnancyMultipleFetuses
-                        , Translate.PregnancySignAnswerNegative PregnancyMultipleFetuses
-                        )
-                    )
-              , viewQuestionLabel language <| Translate.PregnancySignQuestion PregnancyEctopic
-              , viewBoolInputReverted
-                    language
-                    form.pregnancyEctopic
-                    (SetUltrasoundBoolInput pregnancyEctopicUpdateFunc)
-                    "location"
-                    (Just
-                        ( Translate.PregnancySignAnswerPositive PregnancyEctopic
-                        , Translate.PregnancySignAnswerNegative PregnancyEctopic
-                        )
-                    )
-              ]
-            , [ form.pregnancyNotViable
-              , form.pregnancyMultipleFetuses
-              , form.pregnancyEctopic
-              ]
-            )
+            div
+                [ class "form-input date"
+                , onClick <| SetExecutionDateSelectorState (Just dateSelectorConfig)
+                ]
+                [ text executiondDateForView ]
 
-        ( derivedSection, derivedTasks ) =
-            if form.pregnancyNotViable == Just False then
-                let
-                    eddDateIndicator =
-                        Maybe.map
-                            (\eddDate ->
-                                [ div [ class "separator" ] []
-                                , viewLabel language Translate.EstimatedDeliveryDate
-                                , div [ class "form-input measurement" ]
-                                    [ viewTextInput language
-                                        (formatDDMMYYYY eddDate)
-                                        (always NoOp)
-                                        Nothing
-                                        (Just "edd-indicator")
-                                    ]
-                                ]
-                            )
-                            form.eddDate
-                            |> Maybe.withDefault []
-                in
-                ( [ viewQuestionLabel language Translate.UltrasoundEDDQuestion
-                  , viewMeasurementInput language
-                        (Maybe.map toFloat form.eddWeeks)
-                        (SetEDDWeeks form.eddDays)
-                        "weeks"
-                        Translate.WeeksAbbrev
-                  , viewMeasurementInput language
-                        (Maybe.map toFloat form.eddDays)
-                        (SetEDDDays form.eddWeeks)
-                        "days"
-                        Translate.DaysAbbrev
-                  ]
-                    ++ eddDateIndicator
-                , [ maybeToBoolTask form.eddWeeks
-                  , maybeToBoolTask form.eddDays
-                  ]
+        eddDateIndicator =
+            Maybe.map
+                (\eddDate ->
+                    [ div [ class "separator" ] []
+                    , viewLabel language Translate.EstimatedDeliveryDate
+                    , div [ class "form-input measurement" ]
+                        [ viewTextInput language
+                            (formatDDMMYYYY eddDate)
+                            (always NoOp)
+                            Nothing
+                            (Just "edd-indicator")
+                        ]
+                    ]
                 )
-
-            else
-                ( [], [] )
+                form.eddDate
+                |> Maybe.withDefault []
     in
-    ( initialSection ++ derivedSection, initialTasks ++ derivedTasks )
+    ( [ viewQuestionLabel language <| Translate.PregnancySignQuestion PregnancyNotViable
+      , viewBoolInputReverted
+            language
+            form.pregnancyNotViable
+            (SetUltrasoundBoolInput pregnancyNotViableUpdateFunc)
+            "viable"
+            (Just
+                ( Translate.PregnancySignAnswerPositive PregnancyNotViable
+                , Translate.PregnancySignAnswerNegative PregnancyNotViable
+                )
+            )
+      , viewQuestionLabel language <| Translate.PregnancySignQuestion PregnancyMultipleFetuses
+      , viewBoolInputReverted
+            language
+            form.pregnancyMultipleFetuses
+            (SetUltrasoundBoolInput pregnancyMultipleFetusesUpdateFunc)
+            "fetuses"
+            (Just
+                ( Translate.PregnancySignAnswerPositive PregnancyMultipleFetuses
+                , Translate.PregnancySignAnswerNegative PregnancyMultipleFetuses
+                )
+            )
+      , viewQuestionLabel language <| Translate.PregnancySignQuestion PregnancyEctopic
+      , viewBoolInputReverted
+            language
+            form.pregnancyEctopic
+            (SetUltrasoundBoolInput pregnancyEctopicUpdateFunc)
+            "location"
+            (Just
+                ( Translate.PregnancySignAnswerPositive PregnancyEctopic
+                , Translate.PregnancySignAnswerNegative PregnancyEctopic
+                )
+            )
+      , viewLabel language Translate.UltrasoundExecutionDateLabel
+      , executionDateInput
+      , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.executionDate
+      , viewQuestionLabel language Translate.UltrasoundEDDQuestion
+      , viewMeasurementInput language
+            (Maybe.map toFloat form.eddWeeks)
+            (SetEDDWeeks form.executionDate form.eddDays)
+            "weeks"
+            Translate.WeeksAbbrev
+      , viewMeasurementInput language
+            (Maybe.map toFloat form.eddDays)
+            (SetEDDDays form.executionDate form.eddWeeks)
+            "days"
+            Translate.DaysAbbrev
+      ]
+        ++ eddDateIndicator
+    , [ form.pregnancyNotViable
+      , form.pregnancyMultipleFetuses
+      , form.pregnancyEctopic
+      , maybeToBoolTask form.executionDate
+      , maybeToBoolTask form.eddWeeks
+      , maybeToBoolTask form.eddDays
+      ]
+    )
 
 
 healthEducationFormInputsAndTasksForChw : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
@@ -6908,19 +6918,20 @@ toSpecialityCareValue form =
 
 
 ultrasoundFormWithDefault : UltrasoundForm -> Maybe UltrasoundValue -> UltrasoundForm
-ultrasoundFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { pregnancyNotViable = or form.pregnancyNotViable (EverySet.member PregnancyNotViable value.signs |> Just)
-                , pregnancyEctopic = or form.pregnancyEctopic (EverySet.member PregnancyEctopic value.signs |> Just)
-                , pregnancyMultipleFetuses = or form.pregnancyMultipleFetuses (EverySet.member PregnancyMultipleFetuses value.signs |> Just)
-                , eddWeeks = or form.eddWeeks value.eddWeeks
-                , eddDays = or form.eddDays value.eddDays
-                , eddDate = or form.eddDate value.eddDate
-                }
-            )
+ultrasoundFormWithDefault form =
+    unwrap
+        form
+        (\value ->
+            { pregnancyNotViable = or form.pregnancyNotViable (EverySet.member PregnancyNotViable value.signs |> Just)
+            , pregnancyEctopic = or form.pregnancyEctopic (EverySet.member PregnancyEctopic value.signs |> Just)
+            , pregnancyMultipleFetuses = or form.pregnancyMultipleFetuses (EverySet.member PregnancyMultipleFetuses value.signs |> Just)
+            , executionDate = or form.executionDate (Just value.executionDate)
+            , eddWeeks = or form.eddWeeks (Just value.eddWeeks)
+            , eddDays = or form.eddDays (Just value.eddDays)
+            , eddDate = or form.eddDate (Just value.eddDate)
+            , dateSelectorPopupState = form.dateSelectorPopupState
+            }
+        )
 
 
 toUltrasoundValueWithDefault : Maybe UltrasoundValue -> UltrasoundForm -> Maybe UltrasoundValue
@@ -6937,14 +6948,11 @@ toUltrasoundValue form =
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPregnancySigns)
-        |> Maybe.map
-            (\signs ->
-                { signs = signs
-                , eddWeeks = form.eddWeeks
-                , eddDays = form.eddDays
-                , eddDate = form.eddDate
-                }
-            )
+        |> Maybe.map UltrasoundValue
+        |> andMap form.executionDate
+        |> andMap form.eddWeeks
+        |> andMap form.eddDays
+        |> andMap form.eddDate
 
 
 resolveWarningPopupContentForUrgentDiagnoses : Language -> List PrenatalDiagnosis -> ( String, String )

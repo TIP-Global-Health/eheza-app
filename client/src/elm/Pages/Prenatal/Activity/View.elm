@@ -4355,7 +4355,7 @@ viewUltrasoundContent language currentDate assembled data =
                 |> List.sum
 
         ( inputs, tasks ) =
-            ultrasoundFormInputsAndTasks language assembled data.form
+            ultrasoundFormInputsAndTasks language currentDate assembled data.form
     in
     [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
