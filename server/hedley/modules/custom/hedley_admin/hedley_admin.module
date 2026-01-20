@@ -8,6 +8,38 @@
 include_once 'hedley_admin.features.inc';
 
 /**
+ * Implements hook_action_info().
+ */
+function hedley_admin_action_info() {
+  return [
+    'hedley_admin_mark_as_deleted_action' => [
+      'type' => 'node',
+      'label' => t('Mark as deleted'),
+      'configurable' => FALSE,
+      'triggers' => ['any'],
+      'behavior' => ['changes_node_property'],
+    ],
+  ];
+}
+
+/**
+ * Marks a node as deleted by setting field_deleted to TRUE.
+ */
+function hedley_admin_mark_as_deleted_action($node, $context = []) {
+  if (!field_info_field('field_deleted')) {
+    return;
+  }
+
+  $langcode = field_language('node', $node, 'field_deleted');
+  if ($langcode === FALSE) {
+    $langcode = LANGUAGE_NONE;
+  }
+
+  $node->field_deleted[$langcode][0]['value'] = TRUE;
+  node_save($node);
+}
+
+/**
  * Implements hook_menu().
  */
 function hedley_admin_menu() {
