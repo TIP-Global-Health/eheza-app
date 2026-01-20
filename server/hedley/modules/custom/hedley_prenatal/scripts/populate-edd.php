@@ -56,8 +56,9 @@ foreach ($chunks as $ids) {
     $result = $query
       ->entityCondition('entity_type', 'node')
       ->entityCondition('bundle', 'last_menstrual_period')
+      ->propertyCondition('status', NODE_PUBLISHED)
       ->fieldCondition('field_prenatal_encounter', 'target_id', $encounters, 'IN')
-      ->entityOrderBy('entity_id', 'DESC')
+      ->propertyOrderBy('nid', 'DESC')
       ->range(0, 1)
       ->execute();
 
