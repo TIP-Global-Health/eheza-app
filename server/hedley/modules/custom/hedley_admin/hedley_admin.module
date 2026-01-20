@@ -25,19 +25,14 @@ function hedley_admin_action_info() {
 /**
  * Marks a node as deleted by setting field_deleted to TRUE.
  *
- * @param \stdClass $node
+ * @param object $node
  *   Node object being processed by the action. Must include nid and type.
  * @param array $context
  *   Action context (not used).
  */
-function hedley_admin_mark_as_deleted_action($node, $context = []) {
-  if (empty($node) || empty($node->nid) || empty($node->type)) {
+function hedley_admin_mark_as_deleted_action($node, array $context = []) {
+  if (empty($node)) {
     watchdog('hedley_admin', 'Unable to mark node as deleted: invalid node provided.', [], WATCHDOG_WARNING);
-    return;
-  }
-
-  if (!field_info_field('field_deleted')) {
-    watchdog('hedley_admin', 'Unable to mark node @nid as deleted: field_deleted is missing.', ['@nid' => $node->nid], WATCHDOG_WARNING);
     return;
   }
 
