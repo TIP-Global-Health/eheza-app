@@ -14,6 +14,7 @@ class HedleyRestfulPrenatalUltrasound extends HedleyRestfulPrenatalActivityBase 
    * {@inheritdoc}
    */
   protected $fields = [
+    'field_execution_date',
     'field_edd_weeks',
     'field_edd_days',
     'field_expected_date_concluded',
@@ -30,6 +31,7 @@ class HedleyRestfulPrenatalUltrasound extends HedleyRestfulPrenatalActivityBase 
    * {@inheritdoc}
    */
   protected $dateFields = [
+    'field_execution_date',
     'field_expected_date_concluded',
   ];
 
