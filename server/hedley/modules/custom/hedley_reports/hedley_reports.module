@@ -1196,7 +1196,7 @@ function hedley_reports_create_or_update_results_data_node(array $data, $report_
  *   Report Data node ID, or False, if not found.
  */
 function hedley_reports_load_results_data_node($report_variant, $scope, $province = NULL, $district = NULL, $health_center = NULL) {
-  $query = hedley_general_create_entity_field_query_excluding_deleted();
+  $query = new EntityFieldQuery();
   $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'report_data')
