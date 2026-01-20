@@ -1205,7 +1205,10 @@ function hedley_person_node_update($node) {
     hedley_person_process_birth_date_update($node);
   }
 
-  hedley_person_process_deleted_update($node);
+  $field_instance = field_info_instance('node', 'field_deleted', $node->type);
+  if (!empty($field_instance)) {
+    hedley_person_process_deleted_update($node);
+  }
 }
 
 /**
