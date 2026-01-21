@@ -10,6 +10,7 @@ type alias ChildScoreboardEncounter =
     { participant : IndividualEncounterParticipantId
     , startDate : NominalDate
     , endDate : Maybe NominalDate
+    , deleted : Bool
     , shard : Maybe HealthCenterId
     }
 
@@ -19,6 +20,7 @@ emptyChildScoreboardEncounter participant startDate shard =
     { participant = participant
     , startDate = startDate
     , endDate = Nothing
+    , deleted = False
     , shard = shard
     }
 

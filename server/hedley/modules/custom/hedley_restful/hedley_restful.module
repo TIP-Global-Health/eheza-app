@@ -504,7 +504,7 @@ function hedley_restful_resolve_device_by_token($token) {
  */
 function hedley_restful_report_sync_incident($incident_type, $content_identifier, $device_id, $details = '') {
   // Check if we already know about this incident.
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
   $result = $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'sync_incident')

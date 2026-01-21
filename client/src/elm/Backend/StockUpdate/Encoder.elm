@@ -22,7 +22,7 @@ encodeStockUpdate stockUpdate =
     , ( "health_center", encodeEntityUuid stockUpdate.healthCenter )
     , ( "shard", encodeEntityUuid stockUpdate.healthCenter )
     , ( "signature", string url )
-    , ( "deleted", bool False )
+    , ( "deleted", bool stockUpdate.deleted )
     , ( "type", string "stock_update" )
     ]
         ++ encodeNullable "expiration_date" stockUpdate.dateExpires Gizra.NominalDate.encodeYYYYMMDD
