@@ -48,7 +48,6 @@ if ($count == 0) {
 
 drush_print("$count nodes of specified types located.");
 
-$processed = 0;
 while (TRUE) {
   // Free up memory.
   drupal_static_reset();
@@ -75,7 +74,6 @@ while (TRUE) {
   }
 
   $nid = end($ids);
-  $processed += count($nodes);
 
   // Explicitly unset large variables after use for memory optimization.
   unset($nodes);

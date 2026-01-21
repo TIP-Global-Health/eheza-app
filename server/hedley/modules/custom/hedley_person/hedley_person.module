@@ -1187,22 +1187,18 @@ function hedley_person_node_presave($node) {
 
   $measurements_ids = hedley_general_get_person_measurements($node->nid);
   $count = count($measurements_ids);
-  if ($count > 0) {
-    $measurements = node_load_multiple($measurements_ids);
-    foreach ($measurements as $measurement) {
-      if (empty($measurement->field_deleted) || $measurement->field_deleted[LANGUAGE_NONE][0]['value'] != TRUE) {
-        $measurements_list = implode(', ', $measurements_ids);
-        watchdog('hedley_person', 'Failed to mark person @nid as deleted: @message', [
-          '@nid' => $node->nid,
-          '@message' => "Person got measurements: $measurements_list",
-        ], WATCHDOG_ERROR);
-        drupal_set_message(t('Person got measurements. Can not be marked as Deleted.'), 'error');
-        // Restore 'undeleted' status.
-        $wrapper->field_deleted->set(FALSE);
-        return;
-      }
-    }
+  if ($count == 0) {
+    return;
   }
+
+  $measurements_list = implode(', ', $measurements_ids);
+  watchdog('hedley_person', 'Failed to mark person @nid as deleted: @message', [
+    '@nid' => $node->nid,
+    '@message' => "Person got measurements: $measurements_list",
+  ], WATCHDOG_ERROR);
+  drupal_set_message(t('Person got measurements. Can not be marked as Deleted.'), 'error');
+  // Restore 'undeleted' status.
+  $wrapper->field_deleted->set(FALSE);
 }
 
 /**
