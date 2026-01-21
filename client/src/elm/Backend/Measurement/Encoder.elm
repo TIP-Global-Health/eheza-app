@@ -905,21 +905,14 @@ encodePrenatalUltrasound =
 
 encodeUltrasoundValue : UltrasoundValue -> List ( String, Value )
 encodeUltrasoundValue value =
-    let
-        ( eddWeeks, eddDays, eddDate ) =
-            if EverySet.member PregnancyNotViable value.signs then
-                ( Nothing, Nothing, Nothing )
-
-            else
-                ( value.eddWeeks, value.eddDays, value.eddDate )
-    in
     [ ( "pregnancy_signs", encodeEverySet encodePregnancySign value.signs )
+    , ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD value.executionDate )
+    , ( "edd_weeks", int value.eddWeeks )
+    , ( "edd_days", int value.eddDays )
+    , ( "expected_date_concluded", Gizra.NominalDate.encodeYYYYMMDD value.eddDate )
     , ( "deleted", bool False )
     , ( "type", string "prenatal_ultrasound" )
     ]
-        ++ encodeNullable "edd_weeks" eddWeeks int
-        ++ encodeNullable "edd_days" eddDays int
-        ++ encodeNullable "expected_date_concluded" eddDate Gizra.NominalDate.encodeYYYYMMDD
 
 
 encodePregnancySign : PregnancySign -> Value

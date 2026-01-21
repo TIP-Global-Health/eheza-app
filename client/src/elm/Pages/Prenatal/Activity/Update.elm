@@ -383,7 +383,54 @@ update language currentDate id isLabTech db msg model =
             , []
             )
 
-        SetEDDWeeks daysValue value ->
+        SetExecutionDate weeksValue daysValue value ->
+            let
+                updatedForm =
+                    model.ultrasoundData.form
+                        |> (\form ->
+                                let
+                                    eddDate =
+                                        Maybe.map2
+                                            (\weeks days ->
+                                                Date.add Date.Weeks weeks value
+                                                    |> Date.add Date.Days days
+                                            )
+                                            weeksValue
+                                            daysValue
+                                in
+                                { form | executionDate = Just value, eddDate = eddDate }
+                           )
+
+                updatedData =
+                    model.ultrasoundData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ultrasoundData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetExecutionDateSelectorState state ->
+            let
+                form =
+                    model.ultrasoundData.form
+
+                defaultSelection =
+                    Maybe.Extra.or form.executionDate (Maybe.andThen .dateDefault state)
+
+                updatedForm =
+                    { form | dateSelectorPopupState = state, executionDate = defaultSelection }
+
+                updatedData =
+                    model.ultrasoundData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ultrasoundData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetEDDWeeks executionDateValue daysValue value ->
             let
                 form =
                     model.ultrasoundData.form
@@ -399,11 +446,12 @@ update language currentDate id isLabTech db msg model =
                                     if newValue >= 0 && newValue <= pregnancyDurationInWeeks then
                                         let
                                             eddDate =
-                                                Maybe.map
-                                                    (\days ->
-                                                        Date.add Date.Weeks newValue currentDate
+                                                Maybe.map2
+                                                    (\executionDate days ->
+                                                        Date.add Date.Weeks newValue executionDate
                                                             |> Date.add Date.Days days
                                                     )
+                                                    executionDateValue
                                                     daysValue
                                         in
                                         { form | eddWeeks = Just newValue, eddDate = eddDate }
@@ -422,7 +470,7 @@ update language currentDate id isLabTech db msg model =
             , []
             )
 
-        SetEDDDays weeksValue value ->
+        SetEDDDays executionDateValue weeksValue value ->
             let
                 form =
                     model.ultrasoundData.form
@@ -438,11 +486,12 @@ update language currentDate id isLabTech db msg model =
                                     if newValue >= 0 && newValue <= 6 then
                                         let
                                             eddDate =
-                                                Maybe.map
-                                                    (\weeks ->
-                                                        Date.add Date.Weeks weeks currentDate
+                                                Maybe.map2
+                                                    (\executionDate weeks ->
+                                                        Date.add Date.Weeks weeks executionDate
                                                             |> Date.add Date.Days newValue
                                                     )
+                                                    executionDateValue
                                                     weeksValue
                                         in
                                         { form | eddDays = Just newValue, eddDate = eddDate }
@@ -475,27 +524,17 @@ update language currentDate id isLabTech db msg model =
                         |> unwrap
                             []
                             (\value ->
-                                let
-                                    -- We store EDD date on pregnancy, to be able
-                                    -- to decide that pregnancy has ended even if end date was
-                                    -- not set - that is when we're 3 month past EDD date.
-                                    updatePregnancyEDDMsg =
-                                        Maybe.map
-                                            (\date ->
-                                                [ Backend.IndividualEncounterParticipant.Model.SetEddDate date
-                                                    |> Backend.Model.MsgIndividualEncounterParticipant prenatalParticipantId
-                                                    |> App.Model.MsgIndexedDb
-                                                ]
-                                            )
-                                            value.eddDate
-                                            |> Maybe.withDefault []
-                                in
                                 [ Backend.PrenatalEncounter.Model.SaveUltrasound personId measurementId value
                                     |> Backend.Model.MsgPrenatalEncounter id
                                     |> App.Model.MsgIndexedDb
                                 , PrenatalEncounterPage id |> UserPage |> App.Model.SetActivePage
+                                , -- We store EDD date on pregnancy, to be able
+                                  -- to decide that pregnancy has ended even if end date was
+                                  -- not set - that is when we're 3 month past EDD date.
+                                  Backend.IndividualEncounterParticipant.Model.SetEddDate value.eddDate
+                                    |> Backend.Model.MsgIndividualEncounterParticipant prenatalParticipantId
+                                    |> App.Model.MsgIndexedDb
                                 ]
-                                    ++ updatePregnancyEDDMsg
                             )
             in
             ( model

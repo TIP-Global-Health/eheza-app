@@ -248,7 +248,7 @@ resolveGlobalLmpDate nursePreviousMeasurements chwPreviousMeasurements measureme
                 ++ [ measurements ]
                 |> List.filterMap (.ultrasound >> getMeasurementValueFunc)
                 |> List.head
-                |> Maybe.andThen .eddDate
+                |> Maybe.map .eddDate
                 |> Maybe.map eddToLmpDate
 
         byPregnancyDating =
