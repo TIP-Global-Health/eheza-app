@@ -8,6 +8,54 @@
 include_once 'hedley_admin.features.inc';
 
 /**
+ * Implements hook_action_info().
+ */
+function hedley_admin_action_info() {
+  return [
+    'hedley_admin_mark_as_deleted_action' => [
+      'type' => 'node',
+      'label' => t('Mark as deleted'),
+      'configurable' => FALSE,
+      'triggers' => ['any'],
+      'behavior' => ['changes_node_property'],
+    ],
+  ];
+}
+
+/**
+ * Marks a node as deleted by setting field_deleted to TRUE.
+ *
+ * @param object $node
+ *   Node object being processed by the action. Must include nid and type.
+ * @param array $context
+ *   Action context (not used).
+ */
+function hedley_admin_mark_as_deleted_action($node, array $context = []) {
+  if (empty($node)) {
+    watchdog('hedley_admin', 'Unable to mark node as deleted: invalid node provided.', [], WATCHDOG_WARNING);
+    return;
+  }
+
+  $field_instance = field_info_instance('node', 'field_deleted', $node->type);
+  if (empty($field_instance)) {
+    watchdog('hedley_admin', 'Unable to mark node @nid as deleted: field_deleted is not attached to bundle @bundle.', ['@nid' => $node->nid, '@bundle' => $node->type], WATCHDOG_WARNING);
+    return;
+  }
+
+  try {
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_deleted->set(TRUE);
+    $wrapper->save();
+  }
+  catch (EntityMetadataWrapperException $e) {
+    watchdog('hedley_admin', 'Failed to mark node @nid as deleted: @message', [
+      '@nid' => $node->nid,
+      '@message' => $e->getMessage(),
+    ], WATCHDOG_ERROR);
+  }
+}
+
+/**
  * Implements hook_menu().
  */
 function hedley_admin_menu() {
