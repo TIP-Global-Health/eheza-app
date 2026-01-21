@@ -3761,7 +3761,7 @@ ultrasoundFormInputsAndTasks language currentDate assembled ultrasoundForm =
                     , dateDefault = Maybe.Extra.or form.executionDate (Just currentDate)
                     }
 
-                executiondDateForView =
+                executionDateForView =
                     Maybe.map formatDDMMYYYY form.executionDate
                         |> Maybe.withDefault ""
             in
@@ -3769,7 +3769,7 @@ ultrasoundFormInputsAndTasks language currentDate assembled ultrasoundForm =
                 [ class "form-input date"
                 , onClick <| SetExecutionDateSelectorState (Just dateSelectorConfig)
                 ]
-                [ text executiondDateForView ]
+                [ text executionDateForView ]
 
         eddDateIndicator =
             Maybe.map
