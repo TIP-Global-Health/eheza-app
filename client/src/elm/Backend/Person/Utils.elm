@@ -67,6 +67,21 @@ isPersonAFertileWoman currentDate person =
             |> Maybe.withDefault False
 
 
+eligibleForPrenatalEncounter : NominalDate -> Person -> Bool
+eligibleForPrenatalEncounter currentDate person =
+    if person.gender == Male then
+        False
+
+    else
+        person.birthDate
+            |> Maybe.map
+                (\birthDate ->
+                    diffYears birthDate currentDate
+                        |> (\age -> age > 12)
+                )
+            |> Maybe.withDefault False
+
+
 isChildUnderAgeOf2 : NominalDate -> Person -> Bool
 isChildUnderAgeOf2 =
     isChildUnderAgeOf 2
