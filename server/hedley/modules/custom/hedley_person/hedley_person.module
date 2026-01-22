@@ -1033,7 +1033,7 @@ function hedley_person_resolve_adult_for_child($adult_national_id, $adult_name) 
 }
 
 /**
- * Resolves content node ID by it's type and name.
+ * Resolves content node ID by its type and name.
  *
  * @param string $type
  *   Content type.
@@ -1185,13 +1185,20 @@ function hedley_person_node_presave($node) {
     return;
   }
 
-  $measurements = hedley_general_get_person_measurements($node->nid);
-  if (count($measurements) == 0) {
+  $measurements_ids = hedley_general_get_person_measurements($node->nid);
+  $count = count($measurements_ids);
+  if ($count == 0) {
     return;
   }
 
-  $wrapper->field_deleted->set(FALSE);
+  $measurements_list = implode(', ', $measurements_ids);
+  watchdog('hedley_person', 'Failed to mark person @nid as deleted: @message', [
+    '@nid' => $node->nid,
+    '@message' => "Person got measurements: $measurements_list",
+  ], WATCHDOG_ERROR);
   drupal_set_message(t('Person got measurements. Can not be marked as Deleted.'), 'error');
+  // Restore 'undeleted' status.
+  $wrapper->field_deleted->set(FALSE);
 }
 
 /**
