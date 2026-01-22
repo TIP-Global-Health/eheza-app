@@ -12,6 +12,9 @@ database:
     type: mariadb
     version: "10.5"
 use_dns_when_possible: true
+# Composer version is set to 2, because Simpletest fails otherwise.
+# For deployments however, we need to keep it at 1. Therefore, it's
+# overridden at config.local.yaml.
 composer_version: "2"
 web_environment: []
 nodejs_version: "16"

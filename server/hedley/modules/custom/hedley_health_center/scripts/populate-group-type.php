@@ -59,7 +59,7 @@ $mapping = [
   'Training Development Clinic' => 'pmtct',
 ];
 
-$query = new EntityFieldQuery();
+$query = hedley_general_create_entity_field_query_excluding_deleted();
 $query
   ->entityCondition('entity_type', 'node')
   ->propertyCondition('type', 'clinic')

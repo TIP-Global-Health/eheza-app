@@ -31,7 +31,7 @@ var screenshotsUploadUrlRegex = /\/cache-upload\/screenshots/;
  *
  * @type {number}
  */
-var dbVerno = 30;
+var dbVerno = 31;
 
 // All those entities are the entities we're going to get from the backend.
 // They should also be mapped in SyncManager.Model.BackendGeneralEntity (for

@@ -3466,7 +3466,7 @@ function hedley_stats_run_node_query_in_batches(SelectQuery $query, $batch = 100
  * @throws \Exception
  */
 function hedley_stats_get_base_query($health_center_id, $node_type, $period = FALSE, $extend = FALSE) {
-  $query = db_select('node', 'node');
+  $query = hedley_general_create_db_select_query_excluding_deleted('node');
   $query->fields('node', ['nid', 'type', 'created']);
   $node_type_operator = is_array($node_type) ? 'IN' : '=';
   $query
@@ -3689,7 +3689,7 @@ function heldey_stats_get_nutrition_measurements_mapping_for_individual_encounte
  */
 function hedley_stats_get_pmtct_participants_by_clinic($clinic_id, $range = 100) {
 
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
   $query
     ->entityCondition('entity_type', 'node')
     ->propertyCondition('type', 'pmtct_participant')
@@ -3718,7 +3718,7 @@ function hedley_stats_get_pmtct_participants_by_clinic($clinic_id, $range = 100)
 function hedley_stats_get_clinic_sessions_by_period($clinic_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR, $range = 100) {
   $dates = hedley_stats_get_period($period);
 
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
   $query
     ->entityCondition('entity_type', 'node')
     ->propertyCondition('type', 'session')

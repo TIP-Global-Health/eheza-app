@@ -480,7 +480,9 @@
         // UUID may be multiple list of UUIDs, so we split by it.
         var uuids = uuid.split(',');
 
-        var query = dbSync.shards.where(key).anyOf(uuids);
+        var query = dbSync.shards.where(key).anyOf(uuids).and(function (item) {
+          return (item.deleted !== true);
+        });
 
         // Build an empty list of measurements, so we return some value, even
         // if no measurements were ever taken.
@@ -614,7 +616,7 @@
         // that belong to provided healh center.
         var typesToLoad = followUpMeasurementsTypes.concat(hivTestTypes);
         var query = dbSync.shards.where('type').anyOf(typesToLoad).and(function (item) {
-          return item.shard === shard;
+          return (item.deleted !== true && item.shard === shard);
         });
 
         // Build an empty list of measurements, so we return some value, even
@@ -763,7 +765,7 @@
     function viewStockManagementMeasurements (shard) {
         // Load all types of follow up measurements that belong to provided healh center.
         var query = dbSync.shards.where('type').anyOf(stockManagementMeasurementsTypes).and(function (item) {
-          return item.shard === shard;
+          return (item.deleted !== true && item.shard === shard);
         });
 
         // Build an empty list of measurements, so we return some value, even
@@ -1020,11 +1022,16 @@
                     modifyQuery = modifyQuery.then(function () {
                         // Encounters curently don't have option to be deleted,
                         // so there's no need to check for that.
-                        query = table.where('[type+individual_participant]').anyOf(tuples);
+                        query = table.where('[type+individual_participant]').anyOf(tuples).and(function (encounter) {
+                            // If encounter is marked as deleted, do not include it in results.
+                            return encounter.deleted === false;
+                        });
 
                         // Cloning doesn't seem to work for this one.
                         // If done, it corrupts the results of original query.
-                        countQuery = table.where('[type+individual_participant]').anyOf(tuples);
+                        countQuery = table.where('[type+individual_participant]').anyOf(tuples).and(function (encounter) {
+                            return encounter.deleted === false;
+                        });
 
                         return Promise.resolve();
                     });
@@ -1049,11 +1056,15 @@
                                     }
                                 })
 
-                                query = table.where('[type+clinic]').anyOf(clinics);
+                                query = table.where('[type+clinic]').anyOf(clinics).and(function (item) {
+                                    return item.deleted === false;
+                                });
 
                                 // Cloning doesn't seem to work for this one.
                                 // If done, it corrupts the results of original query.
-                                countQuery = table.where('[type+clinic]').anyOf(clinics);
+                                countQuery = table.where('[type+clinic]').anyOf(clinics).and(function (item) {
+                                    return item.deleted === false;
+                                });
 
                                 return Promise.resolve();
                             });
