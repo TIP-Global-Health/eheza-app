@@ -6637,6 +6637,7 @@ var $author$project$Pages$Reports$Model$ReportAcuteIllness = {$: 'ReportAcuteIll
 var $author$project$Pages$Reports$Model$ReportDemographics = {$: 'ReportDemographics'};
 var $author$project$Pages$Reports$Model$ReportNutrition = {$: 'ReportNutrition'};
 var $author$project$Pages$Reports$Model$ReportPrenatal = {$: 'ReportPrenatal'};
+var $author$project$Pages$Reports$Model$ReportPrenatalContacts = {$: 'ReportPrenatalContacts'};
 var $author$project$Pages$Reports$Model$ReportPrenatalDiagnoses = {$: 'ReportPrenatalDiagnoses'};
 var $author$project$Pages$Reports$Utils$reportTypeFromString = function (reportType) {
 	switch (reportType) {
@@ -6650,6 +6651,8 @@ var $author$project$Pages$Reports$Utils$reportTypeFromString = function (reportT
 			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportPrenatal);
 		case 'prenatal-diagnoses':
 			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportPrenatalDiagnoses);
+		case 'prenatal-contacts':
+			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportPrenatalContacts);
 		default:
 			return $elm$core$Maybe$Nothing;
 	}
@@ -9110,9 +9113,9 @@ var $author$project$Backend$Reports$Decoder$decodePregnancyOutcome = A2(
 				$author$project$Backend$Reports$Decoder$pregnancyOutcomeFromString(s)));
 	},
 	$elm$json$Json$Decode$string);
-var $author$project$Backend$Reports$Model$PrenatalEncounterData = F3(
-	function (startDate, encounterType, diagnoses) {
-		return {diagnoses: diagnoses, encounterType: encounterType, startDate: startDate};
+var $author$project$Backend$Reports$Model$PrenatalEncounterData = F4(
+	function (startDate, encounterType, diagnoses, indicators) {
+		return {diagnoses: diagnoses, encounterType: encounterType, indicators: indicators, startDate: startDate};
 	});
 var $author$project$Backend$Reports$Model$DiagnosisCandidiasis = {$: 'DiagnosisCandidiasis'};
 var $author$project$Backend$Reports$Model$DiagnosisChronicHypertension = {$: 'DiagnosisChronicHypertension'};
@@ -9330,6 +9333,45 @@ var $author$project$Backend$Reports$Decoder$prenatalEncounterTypeFromString = fu
 			return $author$project$Backend$Reports$Model$NurseEncounter;
 	}
 };
+var $author$project$Backend$Reports$Model$IndicatorAbortion = {$: 'IndicatorAbortion'};
+var $author$project$Backend$Reports$Model$IndicatorAdequateGWG = {$: 'IndicatorAdequateGWG'};
+var $author$project$Backend$Reports$Model$IndicatorAnemiaTest = {$: 'IndicatorAnemiaTest'};
+var $author$project$Backend$Reports$Model$IndicatorIntrauterineDeath = {$: 'IndicatorIntrauterineDeath'};
+var $author$project$Backend$Reports$Model$IndicatorPretermBirth = {$: 'IndicatorPretermBirth'};
+var $author$project$Backend$Reports$Model$IndicatorReceivedAspirin = {$: 'IndicatorReceivedAspirin'};
+var $author$project$Backend$Reports$Model$IndicatorReceivedAzithromycin = {$: 'IndicatorReceivedAzithromycin'};
+var $author$project$Backend$Reports$Model$IndicatorReceivedCalcium = {$: 'IndicatorReceivedCalcium'};
+var $author$project$Backend$Reports$Model$IndicatorReceivedMMS = {$: 'IndicatorReceivedMMS'};
+var $author$project$Backend$Reports$Model$IndicatorReferredToUltrasound = {$: 'IndicatorReferredToUltrasound'};
+var $author$project$Backend$Reports$Model$IndicatorStillbirth = {$: 'IndicatorStillbirth'};
+var $author$project$Backend$Reports$Decoder$prenatalIndicatorFromMapping = function (s) {
+	switch (s) {
+		case 'a':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorAdequateGWG);
+		case 'b':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorReceivedMMS);
+		case 'c':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorReferredToUltrasound);
+		case 'd':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorReceivedAspirin);
+		case 'e':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorReceivedCalcium);
+		case 'f':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorPretermBirth);
+		case 'g':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorAbortion);
+		case 'h':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorIntrauterineDeath);
+		case 'i':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorStillbirth);
+		case 'j':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorReceivedAzithromycin);
+		case 'k':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorAnemiaTest);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
 var $author$project$Backend$Reports$Decoder$decodePrenatalEncounterData = A2(
 	$elm$json$Json$Decode$andThen,
 	function (s) {
@@ -9337,18 +9379,25 @@ var $author$project$Backend$Reports$Decoder$decodePrenatalEncounterData = A2(
 			$elm$core$String$split,
 			'|',
 			$elm$core$String$trim(s));
-		if (((_v0.b && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
+		if ((((_v0.b && _v0.b.b) && _v0.b.b.b) && _v0.b.b.b.b) && (!_v0.b.b.b.b.b)) {
 			var first = _v0.a;
 			var _v1 = _v0.b;
 			var second = _v1.a;
 			var _v2 = _v1.b;
 			var third = _v2.a;
+			var _v3 = _v2.b;
+			var fourth = _v3.a;
 			return A2(
 				$elm$core$Maybe$withDefault,
 				$elm$json$Json$Decode$fail('Failed to decode PrenatalEncounterData'),
 				A2(
 					$elm$core$Maybe$map,
 					function (startDate) {
+						var indicators = $elm$core$String$isEmpty(fourth) ? _List_Nil : $elm_community$maybe_extra$Maybe$Extra$values(
+							A2(
+								$elm$core$List$map,
+								$author$project$Backend$Reports$Decoder$prenatalIndicatorFromMapping,
+								A2($elm$core$String$split, ',', fourth)));
 						var encounterType = $author$project$Backend$Reports$Decoder$prenatalEncounterTypeFromString(second);
 						var diagnoses = $elm$core$String$isEmpty(third) ? _List_Nil : $elm_community$maybe_extra$Maybe$Extra$values(
 							A2(
@@ -9356,7 +9405,7 @@ var $author$project$Backend$Reports$Decoder$decodePrenatalEncounterData = A2(
 								$author$project$Backend$Reports$Decoder$prenatalDiagnosisFromMapping,
 								A2($elm$core$String$split, ',', third)));
 						return $elm$json$Json$Decode$succeed(
-							A3($author$project$Backend$Reports$Model$PrenatalEncounterData, startDate, encounterType, diagnoses));
+							A4($author$project$Backend$Reports$Model$PrenatalEncounterData, startDate, encounterType, diagnoses, indicators));
 					},
 					$elm$core$Result$toMaybe(
 						$justinmimbs$date$Date$fromIsoString(first))));
@@ -11155,6 +11204,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				}
 			case 'CHW':
 				return {english: 'CHW', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'ContactType':
+				return {english: 'Contact Type', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'CoreExam':
 				return {english: 'Core Exam', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'DangerSigns':
@@ -11745,6 +11796,14 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'All Pregnancies', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'PregnanciesCompleted':
 				return {english: 'Completed Pregnancies', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'PregnanciesWithAtLeast4Encounters':
+				return {english: 'Pregnant women who attended at least 4 ANC contacts', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'PregnanciesWithAtLeast6Encounters':
+				return {english: 'Pregnant women who attended at least 6 ANC contacts', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'PregnanciesWithAtLeast8Encounters':
+				return {english: 'Pregnant women who attended at least 8 ANC contacts', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'PregnanciesWithFirstContactAtFirstTrimester':
+				return {english: 'Pregnant women who attended ANC contact within 1st trimester', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'PregnancyOutcome':
 				var outcome = transId.a;
 				switch (outcome.$) {
@@ -11968,6 +12027,26 @@ var $author$project$Translate$translationSet = function (transId) {
 						continue translationSet;
 					default:
 						return {english: 'Vitals Recheck', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				}
+			case 'PrenatalContactType':
+				var prenatalContactType = transId.a;
+				switch (prenatalContactType.$) {
+					case 'PrenatalContact1':
+						return {english: 'First ANC contact (≤12 weeks)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalContact2':
+						return {english: '2nd ANC contact (20 weeks)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalContact3':
+						return {english: '3rd ANC contact (26 weeks)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalContact4':
+						return {english: '4th ANC contact (30 weeks)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalContact5':
+						return {english: '5th ANC contact (34 weeks)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalContact6':
+						return {english: '6th ANC contact (36 weeks)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalContact7':
+						return {english: '7th ANC contact (38 weeks)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					default:
+						return {english: '8th ANC contact (40 weeks)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 				}
 			case 'PrenatalDiagnosis':
 				var diagnosis = transId.a;
@@ -12347,6 +12426,40 @@ var $author$project$Translate$translationSet = function (transId) {
 							kirundi: $elm$core$Maybe$Just('Nta na kimwe')
 						};
 				}
+			case 'PrenatalIndicatorLabel':
+				var indicator = transId.a;
+				switch (indicator.$) {
+					case 'IndicatorAbortion':
+						return {english: '', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'IndicatorAdequateGWG':
+						return {english: 'Number of encounters where adequate gestational weight gain was recorded', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'IndicatorAnemiaTest':
+						return {english: 'Pregnant women tested for anemia', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'IndicatorDiagnosedAnemia':
+						return {english: 'Pregnant women diagnosed with anemia', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'IndicatorHistoryOfAdversePregnancyOutcomes':
+						return {english: 'Pregnant women with a history of preterm births, spontaneous abortion, stillbirth, or intrauterine fetal deaths', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'IndicatorHistoryOfAdversePregnancyOutcomesReceivedAzithromycin':
+						return {english: 'Pregnant women with a history of adverse pregnancy outcomes, who received Azithromycin', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'IndicatorIntrauterineDeath':
+						return {english: '', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'IndicatorReceivedAspirin':
+						return {english: 'Pregnant women who received low-dose aspirin', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'IndicatorReceivedAzithromycin':
+						return {english: '', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'IndicatorReceivedCalcium':
+						return {english: 'Pregnant women who received low-dose antenatal calcium', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'IndicatorReceivedMMS':
+						return {english: 'Pregnant women who received MMS', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'IndicatorPretermBirth':
+						return {english: '', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'IndicatorReferredToUltrasound':
+						return {english: 'Pregnant women who received ultrasound exams', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'IndicatorReferredToUltrasoundBeforeEGA24':
+						return {english: 'Pregnant women who received at least one ultrasound before 24 weeks’ gestation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					default:
+						return {english: '', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				}
 			case 'PrevalenceByMonthOneVisitOrMore':
 				return {english: 'Prevalence by month - one visit or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'PrevalenceByMonthTwoVisitsOrMore':
@@ -12388,6 +12501,8 @@ var $author$project$Translate$translationSet = function (transId) {
 						var $temp$transId = $author$project$Translate$Antenatal;
 						transId = $temp$transId;
 						continue translationSet;
+					case 'ReportPrenatalContacts':
+						return {english: 'ANC Contacts', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					default:
 						return {english: 'ANC Diagnoses', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 				}
@@ -16357,6 +16472,8 @@ var $author$project$Pages$Reports$Utils$reportTypeToString = function (reportTyp
 			return 'nutrition';
 		case 'ReportPrenatal':
 			return 'prenatal';
+		case 'ReportPrenatalContacts':
+			return 'prenatal-contacts';
 		default:
 			return 'prenatal-diagnoses';
 	}
@@ -18671,6 +18788,328 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F5(
 						A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
 					])));
 	});
+var $author$project$Translate$ContactType = {$: 'ContactType'};
+var $author$project$Backend$Reports$Model$IndicatorDiagnosedAnemia = {$: 'IndicatorDiagnosedAnemia'};
+var $author$project$Backend$Reports$Model$IndicatorHistoryOfAdversePregnancyOutcomes = {$: 'IndicatorHistoryOfAdversePregnancyOutcomes'};
+var $author$project$Backend$Reports$Model$IndicatorHistoryOfAdversePregnancyOutcomesReceivedAzithromycin = {$: 'IndicatorHistoryOfAdversePregnancyOutcomesReceivedAzithromycin'};
+var $author$project$Backend$Reports$Model$IndicatorReferredToUltrasoundBeforeEGA24 = {$: 'IndicatorReferredToUltrasoundBeforeEGA24'};
+var $author$project$Translate$PregnanciesWithAtLeast4Encounters = {$: 'PregnanciesWithAtLeast4Encounters'};
+var $author$project$Translate$PregnanciesWithAtLeast6Encounters = {$: 'PregnanciesWithAtLeast6Encounters'};
+var $author$project$Translate$PregnanciesWithAtLeast8Encounters = {$: 'PregnanciesWithAtLeast8Encounters'};
+var $author$project$Translate$PregnanciesWithFirstContactAtFirstTrimester = {$: 'PregnanciesWithFirstContactAtFirstTrimester'};
+var $author$project$Pages$Reports$Model$PrenatalContact1 = {$: 'PrenatalContact1'};
+var $author$project$Pages$Reports$Model$PrenatalContact2 = {$: 'PrenatalContact2'};
+var $author$project$Pages$Reports$Model$PrenatalContact3 = {$: 'PrenatalContact3'};
+var $author$project$Pages$Reports$Model$PrenatalContact4 = {$: 'PrenatalContact4'};
+var $author$project$Pages$Reports$Model$PrenatalContact5 = {$: 'PrenatalContact5'};
+var $author$project$Pages$Reports$Model$PrenatalContact6 = {$: 'PrenatalContact6'};
+var $author$project$Pages$Reports$Model$PrenatalContact7 = {$: 'PrenatalContact7'};
+var $author$project$Pages$Reports$Model$PrenatalContact8 = {$: 'PrenatalContact8'};
+var $author$project$Translate$PrenatalContactType = function (a) {
+	return {$: 'PrenatalContactType', a: a};
+};
+var $author$project$Translate$PrenatalIndicatorLabel = function (a) {
+	return {$: 'PrenatalIndicatorLabel', a: a};
+};
+var $author$project$Pages$Reports$Utils$eddToLmpDate = function (eddDate) {
+	return A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, -280, eddDate);
+};
+var $author$project$Pages$Reports$Utils$prenatalContactTypeToEncountersAtWeek = function (prenatalContactType) {
+	switch (prenatalContactType.$) {
+		case 'PrenatalContact1':
+			return _Utils_Tuple2(1, 12);
+		case 'PrenatalContact2':
+			return _Utils_Tuple2(2, 20);
+		case 'PrenatalContact3':
+			return _Utils_Tuple2(3, 26);
+		case 'PrenatalContact4':
+			return _Utils_Tuple2(4, 30);
+		case 'PrenatalContact5':
+			return _Utils_Tuple2(5, 34);
+		case 'PrenatalContact6':
+			return _Utils_Tuple2(6, 36);
+		case 'PrenatalContact7':
+			return _Utils_Tuple2(7, 38);
+		default:
+			return _Utils_Tuple2(8, 40);
+	}
+};
+var $author$project$Pages$Reports$View$generatePrenatalContactsReportData = F3(
+	function (language, limitDate, records) {
+		var pregnanciesWithLMP = A2(
+			$elm$core$List$filterMap,
+			function (pregnancy) {
+				return A2(
+					$elm$core$Maybe$map,
+					function (edd) {
+						return _Utils_Tuple2(
+							$author$project$Pages$Reports$Utils$eddToLmpDate(edd),
+							pregnancy);
+					},
+					pregnancy.eddDate);
+			},
+			$elm$core$List$concat(
+				$elm_community$maybe_extra$Maybe$Extra$values(
+					A2(
+						$elm$core$List$map,
+						function ($) {
+							return $.prenatalData;
+						},
+						records))));
+		var pregnanciesWithDiagnosedAnemia = A2(
+			$elm$core$List$filter,
+			function (_v5) {
+				var lmpDate = _v5.a;
+				var pregnancy = _v5.b;
+				var anemiaDiagnoses = _List_fromArray(
+					[$author$project$Backend$Reports$Model$DiagnosisMalariaWithAnemia, $author$project$Backend$Reports$Model$DiagnosisMalariaWithSevereAnemia, $author$project$Backend$Reports$Model$DiagnosisModerateAnemia, $author$project$Backend$Reports$Model$DiagnosisSevereAnemia, $author$project$Backend$Reports$Model$DiagnosisSevereAnemiaWithComplications]);
+				return A2(
+					$elm$core$List$any,
+					function (encounter) {
+						return A2(
+							$elm$core$List$any,
+							function (diagnosis) {
+								return A2($elm$core$List$member, diagnosis, anemiaDiagnoses);
+							},
+							encounter.diagnoses);
+					},
+					pregnancy.encounters);
+			},
+			pregnanciesWithLMP);
+		var pregnanciesWithAnyOfIndicators = function (indicators) {
+			return $elm$core$List$filter(
+				function (_v4) {
+					var pregnancy = _v4.b;
+					return A2(
+						$elm$core$List$any,
+						function (encounter) {
+							return A2(
+								$elm$core$List$any,
+								function (indicator) {
+									return A2($elm$core$List$member, indicator, encounter.indicators);
+								},
+								indicators);
+						},
+						pregnancy.encounters);
+				});
+		};
+		var pregnanciesWithHistoryOfAdversePregnancyOutcomes = A2(
+			pregnanciesWithAnyOfIndicators,
+			_List_fromArray(
+				[$author$project$Backend$Reports$Model$IndicatorPretermBirth, $author$project$Backend$Reports$Model$IndicatorAbortion, $author$project$Backend$Reports$Model$IndicatorStillbirth, $author$project$Backend$Reports$Model$IndicatorIntrauterineDeath]),
+			pregnanciesWithLMP);
+		var pregnanciesWithIndicator = function (indicator) {
+			return pregnanciesWithAnyOfIndicators(
+				_List_fromArray(
+					[indicator]));
+		};
+		var pregnanciesWithHistoryOfAdversePregnancyOutcomesReceivedAzithromycin = A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorReceivedAzithromycin, pregnanciesWithHistoryOfAdversePregnancyOutcomes);
+		var pregnanciesWithUltrasound = A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorReferredToUltrasound, pregnanciesWithLMP);
+		var pregnanciesWithUltrasoundBeforeEGA24 = A2(
+			$elm$core$List$filter,
+			function (_v3) {
+				var lmpDate = _v3.a;
+				var pregnancy = _v3.b;
+				var ega24Date = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Weeks, 24, lmpDate);
+				return A2(
+					$elm$core$List$any,
+					function (encounter) {
+						return A2($elm$core$List$member, $author$project$Backend$Reports$Model$IndicatorReferredToUltrasound, encounter.indicators) && _Utils_eq(
+							A2($justinmimbs$date$Date$compare, encounter.startDate, ega24Date),
+							$elm$core$Basics$LT);
+					},
+					pregnancy.encounters);
+			},
+			pregnanciesWithUltrasound);
+		var generateRow = F2(
+			function (label, value) {
+				return _List_fromArray(
+					[
+						A2($author$project$Translate$translate, language, label),
+						$elm$core$String$fromInt(value)
+					]);
+			});
+		var encountersAtCompletedPregnancies = A2(
+			$elm$core$List$filterMap,
+			function (_v2) {
+				var lmpDate = _v2.a;
+				var pregnancy = _v2.b;
+				var nonPostpartumEncounters = A2(
+					$elm$core$List$filter,
+					function (encounter) {
+						return !A2(
+							$elm$core$List$member,
+							encounter.encounterType,
+							_List_fromArray(
+								[$author$project$Backend$Reports$Model$NursePostpartumEncounter, $author$project$Backend$Reports$Model$ChwPostpartumEncounter]));
+					},
+					pregnancy.encounters);
+				var completed = function () {
+					var thirtyDaysAfterEDD = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, 310, lmpDate);
+					return $elm_community$maybe_extra$Maybe$Extra$isJust(pregnancy.dateConcluded) || (!_Utils_eq(
+						A2($justinmimbs$date$Date$compare, thirtyDaysAfterEDD, limitDate),
+						$elm$core$Basics$GT));
+				}();
+				return completed ? $elm$core$Maybe$Just(
+					$elm$core$List$length(nonPostpartumEncounters)) : $elm$core$Maybe$Nothing;
+			},
+			pregnanciesWithLMP);
+		var countPregnanciesByContacts = function (_v1) {
+			var numberOfContacts = _v1.a;
+			var egaWeeks = _v1.b;
+			return $elm$core$List$length(
+				A2(
+					$elm$core$List$filter,
+					function (_v0) {
+						var lmpDate = _v0.a;
+						var pregnancy = _v0.b;
+						var egaXDate = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, egaWeeks * 7, lmpDate);
+						var encountersBeforeEGAX = A2(
+							$elm$core$List$filter,
+							function (encounter) {
+								return !_Utils_eq(
+									A2($justinmimbs$date$Date$compare, encounter.startDate, egaXDate),
+									$elm$core$Basics$GT);
+							},
+							pregnancy.encounters);
+						return (!_Utils_eq(
+							A2($justinmimbs$date$Date$compare, egaXDate, limitDate),
+							$elm$core$Basics$GT)) && _Utils_eq(
+							$elm$core$List$length(encountersBeforeEGAX),
+							numberOfContacts);
+					},
+					pregnanciesWithLMP));
+		};
+		var prenatalContactRows = A2(
+			$elm$core$List$map,
+			function (contactType) {
+				return A2(
+					generateRow,
+					$author$project$Translate$PrenatalContactType(contactType),
+					countPregnanciesByContacts(
+						$author$project$Pages$Reports$Utils$prenatalContactTypeToEncountersAtWeek(contactType)));
+			},
+			_List_fromArray(
+				[$author$project$Pages$Reports$Model$PrenatalContact1, $author$project$Pages$Reports$Model$PrenatalContact2, $author$project$Pages$Reports$Model$PrenatalContact3, $author$project$Pages$Reports$Model$PrenatalContact4, $author$project$Pages$Reports$Model$PrenatalContact5, $author$project$Pages$Reports$Model$PrenatalContact6, $author$project$Pages$Reports$Model$PrenatalContact7, $author$project$Pages$Reports$Model$PrenatalContact8]));
+		var countNumberOfPregnanciesWithAtLeastXEncounters = function (x) {
+			return $elm$core$List$length(
+				A2(
+					$elm$core$List$filter,
+					function (numberOfEncounters) {
+						return _Utils_cmp(numberOfEncounters, x) > -1;
+					},
+					encountersAtCompletedPregnancies));
+		};
+		return {
+			captions: _List_fromArray(
+				[
+					A2($author$project$Translate$translate, language, $author$project$Translate$ContactType),
+					A2($author$project$Translate$translate, language, $author$project$Translate$Total)
+				]),
+			heading: '',
+			rows: _Utils_ap(
+				prenatalContactRows,
+				_List_fromArray(
+					[
+						A2(
+						generateRow,
+						$author$project$Translate$PregnanciesWithFirstContactAtFirstTrimester,
+						countPregnanciesByContacts(
+							$author$project$Pages$Reports$Utils$prenatalContactTypeToEncountersAtWeek($author$project$Pages$Reports$Model$PrenatalContact1))),
+						A2(
+						generateRow,
+						$author$project$Translate$PregnanciesWithAtLeast4Encounters,
+						countNumberOfPregnanciesWithAtLeastXEncounters(4)),
+						A2(
+						generateRow,
+						$author$project$Translate$PregnanciesWithAtLeast6Encounters,
+						countNumberOfPregnanciesWithAtLeastXEncounters(6)),
+						A2(
+						generateRow,
+						$author$project$Translate$PregnanciesWithAtLeast8Encounters,
+						countNumberOfPregnanciesWithAtLeastXEncounters(8)),
+						A2(
+						generateRow,
+						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorAdequateGWG),
+						$elm$core$List$length(
+							A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorAdequateGWG, pregnanciesWithLMP))),
+						A2(
+						generateRow,
+						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorReceivedMMS),
+						$elm$core$List$length(
+							A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorReceivedMMS, pregnanciesWithLMP))),
+						A2(
+						generateRow,
+						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorReferredToUltrasound),
+						$elm$core$List$length(pregnanciesWithUltrasound)),
+						A2(
+						generateRow,
+						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorReferredToUltrasoundBeforeEGA24),
+						$elm$core$List$length(pregnanciesWithUltrasoundBeforeEGA24)),
+						A2(
+						generateRow,
+						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorReceivedAspirin),
+						$elm$core$List$length(
+							A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorReceivedAspirin, pregnanciesWithLMP))),
+						A2(
+						generateRow,
+						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorReceivedCalcium),
+						$elm$core$List$length(
+							A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorReceivedCalcium, pregnanciesWithLMP))),
+						A2(
+						generateRow,
+						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorHistoryOfAdversePregnancyOutcomes),
+						$elm$core$List$length(pregnanciesWithHistoryOfAdversePregnancyOutcomes)),
+						A2(
+						generateRow,
+						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorHistoryOfAdversePregnancyOutcomesReceivedAzithromycin),
+						$elm$core$List$length(pregnanciesWithHistoryOfAdversePregnancyOutcomesReceivedAzithromycin)),
+						A2(
+						generateRow,
+						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorAnemiaTest),
+						$elm$core$List$length(
+							A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorAnemiaTest, pregnanciesWithLMP))),
+						A2(
+						generateRow,
+						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorDiagnosedAnemia),
+						$elm$core$List$length(pregnanciesWithDiagnosedAnemia))
+					]))
+		};
+	});
+var $author$project$Pages$Reports$View$viewPrenatalContactsReport = F4(
+	function (language, limitDate, scopeLabel, records) {
+		var data = A3($author$project$Pages$Reports$View$generatePrenatalContactsReportData, language, limitDate, records);
+		var csvFileName = 'anc-contacts-report-' + ($elm$core$String$toLower(
+			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
+		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
+		var captionsRow = A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('row captions')
+				]),
+			$author$project$Pages$Components$View$viewStandardCells(data.captions));
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('report prenatal-contacts')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('table')
+						]),
+					A2(
+						$elm$core$List$cons,
+						captionsRow,
+						A2($elm$core$List$map, $author$project$Pages$Components$View$viewStandardRow, data.rows))),
+					A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
+				]));
+	});
 var $author$project$Backend$Reports$Model$NoPrenatalDiagnosis = {$: 'NoPrenatalDiagnosis'};
 var $author$project$Translate$PrenatalDiagnosis = function (a) {
 	return {$: 'PrenatalDiagnosis', a: a};
@@ -18816,9 +19255,6 @@ var $author$project$Translate$PregnancyTrimester = function (a) {
 var $author$project$Pages$Reports$Model$SecondTrimester = {$: 'SecondTrimester'};
 var $author$project$Pages$Reports$Model$ThirdTrimester = {$: 'ThirdTrimester'};
 var $author$project$Translate$Trimester = {$: 'Trimester'};
-var $author$project$Pages$Reports$Utils$eddToLmpDate = function (eddDate) {
-	return A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, -280, eddDate);
-};
 var $author$project$Gizra$NominalDate$diffDays = F2(
 	function (low, high) {
 		return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Days, low, high);
@@ -19625,6 +20061,8 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 								return A5($author$project$Pages$Reports$View$viewNutritionReport, language, limitDate, scopeLabel, data.nutritionReportData, model.nutritionReportData);
 							case 'ReportPrenatal':
 								return A4($author$project$Pages$Reports$View$viewPrenatalReport, language, limitDate, scopeLabel, recordsTillLimitDate);
+							case 'ReportPrenatalContacts':
+								return A4($author$project$Pages$Reports$View$viewPrenatalContactsReport, language, limitDate, scopeLabel, recordsTillLimitDate);
 							default:
 								return A4($author$project$Pages$Reports$View$viewPrenatalDiagnosesReport, language, limitDate, scopeLabel, recordsTillLimitDate);
 						}
@@ -19660,7 +20098,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 								language,
 								model.reportType,
 								_List_fromArray(
-									[$author$project$Pages$Reports$Model$ReportAcuteIllness, $author$project$Pages$Reports$Model$ReportPrenatal, $author$project$Pages$Reports$Model$ReportPrenatalDiagnoses, $author$project$Pages$Reports$Model$ReportDemographics, $author$project$Pages$Reports$Model$ReportNutrition]),
+									[$author$project$Pages$Reports$Model$ReportAcuteIllness, $author$project$Pages$Reports$Model$ReportPrenatal, $author$project$Pages$Reports$Model$ReportPrenatalContacts, $author$project$Pages$Reports$Model$ReportPrenatalDiagnoses, $author$project$Pages$Reports$Model$ReportDemographics, $author$project$Pages$Reports$Model$ReportNutrition]),
 								$author$project$Pages$Reports$Utils$reportTypeToString,
 								$author$project$Pages$Reports$Model$SetReportType,
 								$author$project$Translate$ReportType,

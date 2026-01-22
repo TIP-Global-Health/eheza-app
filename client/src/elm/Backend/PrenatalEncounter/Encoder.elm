@@ -387,5 +387,11 @@ encodePrenatalIndicator value =
             IndicatorHistoryLabsCompleted ->
                 "past-labs-completed"
 
+            IndicatorAdequateGWG ->
+                "adequate-gwg"
+
+            IndicatorInadequateGWG ->
+                "inadequate-gwg"
+
             NoPrenatalIndicators ->
                 "none"

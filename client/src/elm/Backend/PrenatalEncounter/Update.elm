@@ -52,6 +52,29 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
         SetNextVisitDate date ->
             updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | nextVisitDate = Just date }) model
 
+        SetGWGIndicator adequateGWG ->
+            updateEncounter currentDate
+                encounterId
+                maybeEncounter
+                (\encounter ->
+                    if adequateGWG then
+                        { encounter
+                            | indicators =
+                                EverySet.remove NoPrenatalIndicators encounter.indicators
+                                    |> EverySet.remove IndicatorInadequateGWG
+                                    |> EverySet.insert IndicatorAdequateGWG
+                        }
+
+                    else
+                        { encounter
+                            | indicators =
+                                EverySet.remove NoPrenatalIndicators encounter.indicators
+                                    |> EverySet.remove IndicatorAdequateGWG
+                                    |> EverySet.insert IndicatorInadequateGWG
+                        }
+                )
+                model
+
         HandleUpdatedPrenatalEncounter data ->
             ( { model | updatePrenatalEncounter = data }
             , Cmd.none

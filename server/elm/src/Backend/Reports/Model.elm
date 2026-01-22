@@ -113,6 +113,7 @@ type alias PrenatalEncounterData =
     { startDate : NominalDate
     , encounterType : PrenatalEncounterType
     , diagnoses : List PrenatalDiagnosis
+    , indicators : List PrenatalIndicator
     }
 
 
@@ -190,6 +191,25 @@ type PrenatalDiagnosis
     | DiagnosisPostpartumEarlyMastitisOrEngorgment
     | DiagnosisPostpartumMastitis
     | NoPrenatalDiagnosis
+
+
+type PrenatalIndicator
+    = IndicatorAbortion
+    | IndicatorAdequateGWG
+    | IndicatorAnemiaTest
+    | IndicatorIntrauterineDeath
+    | IndicatorReceivedAspirin
+    | IndicatorReceivedAzithromycin
+    | IndicatorReceivedCalcium
+    | IndicatorReceivedMMS
+    | IndicatorPretermBirth
+    | IndicatorReferredToUltrasound
+    | IndicatorStillbirth
+    | -- Indicators bellow are not passed from backend.
+      IndicatorDiagnosedAnemia
+    | IndicatorHistoryOfAdversePregnancyOutcomes
+    | IndicatorHistoryOfAdversePregnancyOutcomesReceivedAzithromycin
+    | IndicatorReferredToUltrasoundBeforeEGA24
 
 
 type alias NutritionEncounterData =

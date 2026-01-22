@@ -10,6 +10,34 @@ import Pages.Reports.Model exposing (..)
 import Set
 
 
+prenatalContactTypeToEncountersAtWeek : PrenatalContactType -> ( Int, Int )
+prenatalContactTypeToEncountersAtWeek prenatalContactType =
+    case prenatalContactType of
+        PrenatalContact1 ->
+            ( 1, 12 )
+
+        PrenatalContact2 ->
+            ( 2, 20 )
+
+        PrenatalContact3 ->
+            ( 3, 26 )
+
+        PrenatalContact4 ->
+            ( 4, 30 )
+
+        PrenatalContact5 ->
+            ( 5, 34 )
+
+        PrenatalContact6 ->
+            ( 6, 36 )
+
+        PrenatalContact7 ->
+            ( 7, 38 )
+
+        PrenatalContact8 ->
+            ( 8, 40 )
+
+
 eddToLmpDate : NominalDate -> NominalDate
 eddToLmpDate eddDate =
     Date.add Days -280 eddDate
@@ -46,6 +74,9 @@ reportTypeToString reportType =
         ReportPrenatal ->
             "prenatal"
 
+        ReportPrenatalContacts ->
+            "prenatal-contacts"
+
         ReportPrenatalDiagnoses ->
             "prenatal-diagnoses"
 
@@ -67,6 +98,9 @@ reportTypeFromString reportType =
 
         "prenatal-diagnoses" ->
             Just ReportPrenatalDiagnoses
+
+        "prenatal-contacts" ->
+            Just ReportPrenatalContacts
 
         _ ->
             Nothing
