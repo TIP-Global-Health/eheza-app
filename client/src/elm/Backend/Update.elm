@@ -2846,7 +2846,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         let
                             -- We do not catch changes done to model, because
                             -- it's handled by `processRevisionAndAssessPrenatal`
-                            -- activation that comes bellow.
+                            -- activation that comes below.
                             ( _, extraMsgsForLabsResults ) =
                                 processVitalsRevisionAndUpdatePrenatalLabsResults
                                     data.participantId
@@ -2905,7 +2905,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         let
                             -- We do not catch changes done to model, because
                             -- it's handled by `processRevisionAndAssessPrenatal`
-                            -- activation that comes bellow.
+                            -- activation that comes below.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdatePrenatalLabsResults
                                     data.participantId
@@ -2943,7 +2943,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         let
                             -- We do not catch changes done to model, because
                             -- it's handled by `processRevisionAndAssessPrenatal`
-                            -- activation that comes bellow.
+                            -- activation that comes below.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdatePrenatalLabsResults
                                     data.participantId
@@ -2965,7 +2965,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         let
                             -- We do not catch changes done to model, because
                             -- it's handled by `processRevisionAndAssessPrenatal`
-                            -- activation that comes bellow.
+                            -- activation that comes below.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdatePrenatalLabsResults
                                     data.participantId
@@ -2994,7 +2994,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         let
                             -- We do not catch changes done to model, because
                             -- it's handled by `processRevisionAndAssessPrenatal`
-                            -- activation that comes bellow.
+                            -- activation that comes below.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdatePrenatalLabsResults
                                     data.participantId
@@ -3019,7 +3019,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         let
                             -- We do not catch changes done to model, because
                             -- it's handled by `processRevisionAndAssessPrenatal`
-                            -- activation that comes bellow.
+                            -- activation that comes below.
                             ( _, extraMsgsForLabsResults ) =
                                 let
                                     executionNote =
@@ -3053,7 +3053,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         let
                             -- We do not catch changes done to model, because
                             -- it's handled by `processRevisionAndAssessPrenatal`
-                            -- activation that comes bellow.
+                            -- activation that comes below.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdatePrenatalLabsResults
                                     data.participantId
@@ -3075,7 +3075,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         let
                             -- We do not catch changes done to the model, because
                             -- it's handled by `processRevisionAndAssessPrenatal`
-                            -- activation that comes bellow.
+                            -- activation that comes below.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdatePrenatalLabsResults
                                     data.participantId
@@ -3100,7 +3100,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         let
                             -- We do not catch changes done to model, because
                             -- it's handled by `processRevisionAndAssessPrenatal`
-                            -- activation that comes bellow.
+                            -- activation that comes below.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdatePrenatalLabsResults
                                     data.participantId
@@ -3122,7 +3122,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         let
                             -- We do not catch changes done to model, because
                             -- it's handled by `processRevisionAndAssessPrenatal`
-                            -- activation that comes bellow.
+                            -- activation that comes below.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdatePrenatalLabsResults
                                     data.participantId
@@ -3393,7 +3393,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         let
                             -- We do not catch changes done to model, because
                             -- it's handled by `processRevisionAndAssessNCD`
-                            -- activation that comes bellow.
+                            -- activation that comes below.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdateNCDLabsResults
                                     data.participantId
@@ -3414,7 +3414,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         let
                             -- We do not catch changes done to model, because
                             -- it's handled by `processRevisionAndAssessNCD`
-                            -- activation that comes bellow.
+                            -- activation that comes below.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdateNCDLabsResults
                                     data.participantId
@@ -3435,7 +3435,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         let
                             -- We do not catch changes done to model, because
                             -- it's handled by `processRevisionAndAssessNCD`
-                            -- activation that comes bellow.
+                            -- activation that comes below.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdateNCDLabsResults
                                     data.participantId

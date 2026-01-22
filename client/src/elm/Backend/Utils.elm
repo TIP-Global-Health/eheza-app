@@ -305,3 +305,8 @@ gpsCoordinatesEnabled =
 hivManagementEnabled : EverySet SiteFeature -> Bool
 hivManagementEnabled =
     EverySet.member FeatureHIVManagement
+
+
+healthyStartEnabled : EverySet SiteFeature -> Bool
+healthyStartEnabled =
+    EverySet.member FeatureHealthyStart

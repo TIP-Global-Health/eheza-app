@@ -511,7 +511,7 @@ type alias SubModelReturn subModel subMsg =
 
 
 type RollbarErrorSource
-    = -- 2 error sources bellow are relevant only when device is online,
+    = -- 2 error sources below are relevant only when device is online,
       -- so error has will be written into DB, to make sure we don't send
       -- same error twice, and notification will be sent right away.
       SyncProcess

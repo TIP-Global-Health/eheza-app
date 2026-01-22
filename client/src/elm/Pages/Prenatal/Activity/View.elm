@@ -16,6 +16,7 @@ import Backend.Person.Model
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
+import Backend.Utils exposing (healthyStartEnabled)
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet exposing (EverySet)
@@ -126,7 +127,7 @@ import Pages.Utils
         , viewYellowAlertForSelect
         )
 import Round
-import SyncManager.Model exposing (Site)
+import SyncManager.Model exposing (Site, SiteFeature(..))
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
@@ -134,20 +135,31 @@ import ZScore.Model
 import ZScore.Utils exposing (viewZScore, zScoreBmiForAge)
 
 
-view : Language -> NominalDate -> ZScore.Model.Model -> Site -> PrenatalEncounterId -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate zscores site id isChw activity db model =
+view :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
+    -> PrenatalEncounterId
+    -> Bool
+    -> PrenatalActivity
+    -> ModelIndexedDb
+    -> Model
+    -> Html Msg
+view language currentDate zscores site features id isChw activity db model =
     let
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate zscores site id isChw activity db model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate zscores site features id isChw activity db model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> ZScore.Model.Model -> Site -> PrenatalEncounterId -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate zscores site id isChw activity db model assembled =
+viewHeaderAndContent : Language -> NominalDate -> ZScore.Model.Model -> Site -> EverySet SiteFeature -> PrenatalEncounterId -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate zscores site features id isChw activity db model assembled =
     div [ class "page-activity prenatal" ] <|
         [ viewHeader language id activity assembled
-        , viewContent language currentDate zscores site isChw activity db model assembled
+        , viewContent language currentDate zscores site features isChw activity db model assembled
         , viewModal <|
             warningPopup language currentDate isChw assembled.encounter.diagnoses SetWarningPopupState model.warningPopupState
         ]
@@ -180,11 +192,11 @@ viewHeader language id activity assembled =
         ]
 
 
-viewContent : Language -> NominalDate -> ZScore.Model.Model -> Site -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate zscores site isChw activity db model assembled =
+viewContent : Language -> NominalDate -> ZScore.Model.Model -> Site -> EverySet SiteFeature -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate zscores site features isChw activity db model assembled =
     div [ class "ui unstackable items" ] <|
         viewMotherAndMeasurements language currentDate isChw assembled (Just ( model.showAlertsDialog, SetAlertsDialogState ))
-            ++ viewActivity language currentDate zscores site isChw activity assembled db model
+            ++ viewActivity language currentDate zscores site features isChw activity assembled db model
 
 
 warningPopup :
@@ -303,8 +315,8 @@ warningPopup language currentDate isChw encounterDiagnoses setStateMsg state =
         state
 
 
-viewActivity : Language -> NominalDate -> ZScore.Model.Model -> Site -> Bool -> PrenatalActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewActivity language currentDate zscores site isChw activity assembled db model =
+viewActivity : Language -> NominalDate -> ZScore.Model.Model -> Site -> EverySet SiteFeature -> Bool -> PrenatalActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewActivity language currentDate zscores site features isChw activity assembled db model =
     case activity of
         PregnancyDating ->
             viewPregnancyDatingContent language currentDate assembled model.pregnancyDatingData
@@ -313,7 +325,7 @@ viewActivity language currentDate zscores site isChw activity assembled db model
             viewHistoryContent language currentDate assembled model.historyData
 
         Examination ->
-            viewExaminationContent language currentDate zscores assembled model.examinationData
+            viewExaminationContent language currentDate zscores features assembled model.examinationData
 
         FamilyPlanning ->
             viewFamilyPlanningContent language currentDate assembled model.familyPlanningData
@@ -907,8 +919,8 @@ viewHistoryContent language currentDate assembled data =
     ]
 
 
-viewExaminationContent : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> ExaminationData -> List (Html Msg)
-viewExaminationContent language currentDate zscores assembled data =
+viewExaminationContent : Language -> NominalDate -> ZScore.Model.Model -> EverySet SiteFeature -> AssembledData -> ExaminationData -> List (Html Msg)
+viewExaminationContent language currentDate zscores features assembled data =
     let
         tasks =
             resolveExaminationTasks assembled
@@ -1030,8 +1042,11 @@ viewExaminationContent language currentDate zscores assembled data =
                         prePregnancyWeight =
                             resolvePrePregnancyWeight assembled
                                 |> Maybe.map weightValueFunc
+
+                        isHealthyStart =
+                            healthyStartEnabled features
                     in
-                    viewNutritionAssessmentForm language currentDate zscores assembled formWithMeasuredHeight previouslyMeasuredHeight prePregnancyWeight
+                    viewNutritionAssessmentForm language currentDate zscores isHealthyStart assembled formWithMeasuredHeight previouslyMeasuredHeight prePregnancyWeight
 
                 Just CorePhysicalExam ->
                     getMeasurementValueFunc assembled.measurements.corePhysicalExam
@@ -3227,8 +3242,8 @@ viewVitalsForm language currentDate assembled form =
     Measurement.View.viewVitalsForm language currentDate formConfig form
 
 
-viewNutritionAssessmentForm : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> NutritionAssessmentForm -> Maybe Float -> Maybe Float -> Html Msg
-viewNutritionAssessmentForm language currentDate zscores assembled form previouslyMeasuredHeight prePregnancyWeight =
+viewNutritionAssessmentForm : Language -> NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> NutritionAssessmentForm -> Maybe Float -> Maybe Float -> Html Msg
+viewNutritionAssessmentForm language currentDate zscores isHealthyStart assembled form previouslyMeasuredHeight prePregnancyWeight =
     let
         hideHeightInput =
             isJust previouslyMeasuredHeight
@@ -3249,9 +3264,11 @@ viewNutritionAssessmentForm language currentDate zscores assembled form previous
             resolvePreviousValue assembled .nutrition .height
                 |> Maybe.map getHeightValue
 
+        weightPreviousValueWithDate =
+            resolvePreviousValueWithDate assembled .nutrition .weight
+
         weightPreviousValue =
-            resolvePreviousValue assembled .nutrition .weight
-                |> Maybe.map weightValueFunc
+            Maybe.map (Tuple.second >> weightValueFunc) weightPreviousValueWithDate
 
         bmiPreviousValue =
             calculateBmi heightPreviousValue weightPreviousValue
@@ -3274,50 +3291,108 @@ viewNutritionAssessmentForm language currentDate zscores assembled form previous
                 weightPreviousValue
 
         baselineClassification =
-            resolvePrePregnancyClassification zscores assembled baselineBmi
+            resolvePrePregnancyClassification zscores isHealthyStart assembled baselineBmi
 
         baselineBmi =
-            calculateBmi form.height prePregnancyWeight
+            if isHealthyStart then
+                let
+                    bookingWeight =
+                        resolveBookingWeight assembled
+                            |> Maybe.map weightValueFunc
+                in
+                Maybe.Extra.or bookingWeight form.weight
+                    |> calculateBmi form.height
+
+            else
+                calculateBmi form.height prePregnancyWeight
 
         viewBaselineBmi =
-            Maybe.map2
-                (\bmi classification ->
-                    let
-                        message =
-                            (translate language <| Translate.BaselineBMI bmi)
-                                ++ " "
-                                ++ translate language Translate.BMIUnit
-                                ++ " - "
-                                ++ (translate language <| Translate.PrePregnancyClassification classification)
-                    in
-                    div [ class "previous-value" ] [ text message ]
-                )
-                baselineBmi
-                baselineClassification
+            if isHealthyStart then
+                Nothing
+
+            else
+                Maybe.map2
+                    (\bmi classification ->
+                        let
+                            message =
+                                (translate language <| Translate.BaselineBMI bmi)
+                                    ++ " "
+                                    ++ translate language Translate.BMIUnit
+                                    ++ " - "
+                                    ++ (translate language <| Translate.PrePregnancyClassification classification)
+                        in
+                        div [ class "previous-value" ] [ text message ]
+                    )
+                    baselineBmi
+                    baselineClassification
 
         gwgIndicator =
-            Maybe.Extra.andThen3
-                (\prePregnancyClassification baselineWeight currentWeight ->
-                    resolveGWGClassification currentDate prePregnancyClassification baselineWeight currentWeight assembled
-                        |> Maybe.map
-                            (\classification ->
-                                let
-                                    color =
-                                        if classification == GWGSeverelyInadequate then
-                                            "red"
+            if isHealthyStart then
+                Maybe.Extra.andThen4
+                    (\prePregnancyClassification previousWeight previousWeightDate currentWeight ->
+                        resolveGWGClassificationForHealthyStart currentDate prePregnancyClassification previousWeight previousWeightDate currentWeight assembled
+                            |> Maybe.map
+                                (\classification ->
+                                    let
+                                        color =
+                                            if classification == GWGInadequate then
+                                                "red"
 
-                                        else if classification == GWGAdequate then
-                                            "green"
+                                            else
+                                                "green"
+                                    in
+                                    p [ class color ] [ text <| translate language <| Translate.GWGClassification classification ]
+                                )
+                    )
+                    baselineClassification
+                    weightPreviousValue
+                    (Maybe.map Tuple.first weightPreviousValueWithDate)
+                    form.weight
 
-                                        else
-                                            "yellow"
-                                in
-                                p [ class color ] [ text <| translate language <| Translate.GWGClassification classification ]
-                            )
+            else
+                Maybe.Extra.andThen3
+                    (\prePregnancyClassification baselineWeight currentWeight ->
+                        resolveGWGClassification currentDate prePregnancyClassification baselineWeight currentWeight assembled
+                            |> Maybe.map
+                                (\classification ->
+                                    let
+                                        color =
+                                            if classification == GWGSeverelyInadequate then
+                                                "red"
+
+                                            else if classification == GWGAdequate then
+                                                "green"
+
+                                            else
+                                                "yellow"
+                                    in
+                                    p [ class color ] [ text <| translate language <| Translate.GWGClassification classification ]
+                                )
+                    )
+                    baselineClassification
+                    prePregnancyWeight
+                    form.weight
+
+        viewGestationalWeightGain =
+            let
+                baseWeight =
+                    if isHealthyStart then
+                        weightPreviousValue
+
+                    else
+                        prePregnancyWeight
+            in
+            Maybe.map2
+                (\currentWeight baselineWeight ->
+                    viewPreviousMeasurementCustom language
+                        (Just <| currentWeight - baselineWeight)
+                        Translate.GestationalWeightGain
+                        Translate.EmptyString
+                        Translate.KilogramShorthand
                 )
-                baselineClassification
-                prePregnancyWeight
                 form.weight
+                baseWeight
+                |> Maybe.withDefault emptyNode
 
         heightSection =
             if not hideHeightInput then
@@ -3338,19 +3413,6 @@ viewNutritionAssessmentForm language currentDate zscores assembled form previous
 
             else
                 []
-
-        viewGestationalWeightGain =
-            Maybe.map2
-                (\currentWeight baselineWeight ->
-                    viewPreviousMeasurementCustom language
-                        (Just <| currentWeight - baselineWeight)
-                        Translate.GestationalWeightGain
-                        Translate.EmptyString
-                        Translate.KilogramShorthand
-                )
-                form.weight
-                prePregnancyWeight
-                |> Maybe.withDefault emptyNode
 
         nutritionalSupplementAlert =
             Maybe.map

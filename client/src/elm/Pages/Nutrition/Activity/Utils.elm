@@ -71,7 +71,7 @@ expectActivity currentDate zscores features isChw assembled db activity =
                 |> Maybe.map (\ageMonths -> ageMonths > 5)
                 |> Maybe.withDefault False
 
-        -- For nurses only, show if child is bellow age of 24 months.
+        -- For nurses only, show if child is below age of 24 months.
         NCDA ->
             expectNCDAActivity currentDate features isChw assembled.person
 

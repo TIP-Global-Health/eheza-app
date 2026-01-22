@@ -1516,12 +1516,72 @@ resolvePrePregnancyWeight assembled =
                 )
                 assembled.chwPreviousMeasurementsWithDates
                 |> List.head
+
+        withoutCurrent =
+            Maybe.Extra.or byNurse byCHW
     in
-    Maybe.Extra.or byNurse byCHW
-        |> Maybe.Extra.or byCurrent
+    Maybe.Extra.or withoutCurrent byCurrent
 
 
-{-| Used for patients bellow 19 years of age.
+{-| For Healthy Start.
+-}
+resolveBookingWeight : AssembledData -> Maybe WeightInKg
+resolveBookingWeight assembled =
+    let
+        resolveWeight measurements =
+            getMeasurementValueFunc measurements.nutrition
+                |> Maybe.map .weight
+
+        byNurse =
+            List.filterMap (.measurements >> resolveWeight)
+                assembled.nursePreviousEncountersData
+                |> List.head
+
+        byCHW =
+            List.filterMap
+                (\( _, _, measurements ) ->
+                    resolveWeight measurements
+                )
+                assembled.chwPreviousMeasurementsWithDates
+                |> List.head
+
+        withoutCurrent =
+            Maybe.Extra.or byNurse byCHW
+    in
+    resolveWeight assembled.measurements
+        |> Maybe.Extra.or withoutCurrent
+
+
+{-| For Healthy Start.
+-}
+resolveBookingMUAC : AssembledData -> Maybe MuacInCm
+resolveBookingMUAC assembled =
+    let
+        resolveMuac measurements =
+            getMeasurementValueFunc measurements.nutrition
+                |> Maybe.map .muac
+
+        byNurse =
+            List.filterMap (.measurements >> resolveMuac)
+                assembled.nursePreviousEncountersData
+                |> List.head
+
+        byCHW =
+            List.filterMap
+                (\( _, _, measurements ) ->
+                    resolveMuac measurements
+                )
+                assembled.chwPreviousMeasurementsWithDates
+                |> List.head
+
+        withoutCurrent =
+            Maybe.Extra.or byNurse byCHW
+    in
+    resolveMuac assembled.measurements
+        |> Maybe.Extra.or withoutCurrent
+
+
+{-| Used for patients below 19 years of age.
 -}
 zscoreToPrePregnancyClassification : Float -> PrePregnancyClassification
 zscoreToPrePregnancyClassification zscore =
@@ -1555,29 +1615,89 @@ bmiToPrePregnancyClassification bmi =
         PrePregnancyObesity
 
 
-resolvePrePregnancyClassification : ZScore.Model.Model -> AssembledData -> Maybe Float -> Maybe PrePregnancyClassification
-resolvePrePregnancyClassification zscores assembled prePregnancyBmi =
-    Maybe.Extra.andThen3
-        (\bmi lmpDate birthDate ->
-            let
-                ageInYearsOnLMP =
-                    diffYears birthDate lmpDate
-            in
-            if ageInYearsOnLMP < 19 then
-                let
-                    ageInDaysOnLMP =
-                        diffDays birthDate lmpDate
-                in
-                zScoreBmiForAge zscores (ZScore.Model.Days ageInDaysOnLMP) assembled.person.gender (ZScore.Model.BMI bmi)
-                    |> Maybe.andThen (viewZScore >> String.toFloat)
-                    |> Maybe.map zscoreToPrePregnancyClassification
+{-| Resolve the pre-pregnancy nutritional status classification.
+The classification approach depends on the `isHealthyStart` flag:
+When `isHealthyStart` is `True` (Healthy Start workflow), the function:
+Uses the booking MUAC, together with the optional baseline BMI.
+Flags the woman as `PrePregnancyUnderWeight` if either:
+`baselineBmi < 17.5`, or
+`booking MUAC < 21` cm.
+Otherwise it returns `PrePregnancyNormal`.
+Only the classifications `PrePregnancyUnderWeight` and `PrePregnancyNormal`
+are used in this mode.
+Returns `Nothing` if neither MUAC nor BMI is available.
 
-            else
-                Just <| bmiToPrePregnancyClassification bmi
-        )
-        prePregnancyBmi
-        assembled.globalLmpDate
-        assembled.person.birthDate
+When `isHealthyStart` is `False` (standard prenatal workflow), the function:
+Expects a baseline BMI, the global LMP date, and the woman's birth date.
+Computes age at LMP:
+If age is below 19 years, it:
+Computes a BMI-for-age z-score via `zScoreBmiForAge`, using the age
+in days at LMP and the woman's gender.
+Converts the resulting z-score to a pre-pregnancy classification
+using `zscoreToPrePregnancyClassification`.
+If age is 19 years or above, it:
+Applies adult BMI thresholds via `bmiToPrePregnancyClassification`.
+Returns `Nothing` if any of the required inputs (BMI, LMP date, birth date)
+are missing or if a z-score cannot be computed.
+
+-}
+resolvePrePregnancyClassification : ZScore.Model.Model -> Bool -> AssembledData -> Maybe Float -> Maybe PrePregnancyClassification
+resolvePrePregnancyClassification zscores isHealthyStart assembled baselineBmi =
+    if isHealthyStart then
+        let
+            bookingMUAC =
+                resolveBookingMUAC assembled
+                    |> Maybe.map muacValueFunc
+        in
+        case ( bookingMUAC, baselineBmi ) of
+            ( Just muac, Just bmi ) ->
+                if bmi < 17.5 || muac < 21 then
+                    Just PrePregnancyUnderWeight
+
+                else
+                    Just
+                        PrePregnancyNormal
+
+            ( Just muac, Nothing ) ->
+                if muac < 21 then
+                    Just PrePregnancyUnderWeight
+
+                else
+                    Just PrePregnancyNormal
+
+            ( Nothing, Just bmi ) ->
+                if bmi < 17.5 then
+                    Just PrePregnancyUnderWeight
+
+                else
+                    Just
+                        PrePregnancyNormal
+
+            ( Nothing, Nothing ) ->
+                Nothing
+
+    else
+        Maybe.Extra.andThen3
+            (\bmi lmpDate birthDate ->
+                let
+                    ageInYearsOnLMP =
+                        diffYears birthDate lmpDate
+                in
+                if ageInYearsOnLMP < 19 then
+                    let
+                        ageInDaysOnLMP =
+                            diffDays birthDate lmpDate
+                    in
+                    zScoreBmiForAge zscores (ZScore.Model.Days ageInDaysOnLMP) assembled.person.gender (ZScore.Model.BMI bmi)
+                        |> Maybe.andThen (viewZScore >> String.toFloat)
+                        |> Maybe.map zscoreToPrePregnancyClassification
+
+                else
+                    Just <| bmiToPrePregnancyClassification bmi
+            )
+            baselineBmi
+            assembled.globalLmpDate
+            assembled.person.birthDate
 
 
 resolveGWGClassification : NominalDate -> PrePregnancyClassification -> Float -> Float -> AssembledData -> Maybe GWGClassification
@@ -1623,6 +1743,71 @@ resolveGWGClassification currentDate prePregnancyClassification prePregnancyWeig
         assembled.globalLmpDate
 
 
+{-| Healthy Start–specific variant of `resolveGWGClassification`.
+This function classifies gestational weight gain between two encounters
+using the Healthy Start protocol, which is based on _daily_ expected
+weight gain rates split at 13 weeks gestational age:
+
+  - From LMP up to (but not including) 13 weeks, it uses a first-trimester
+    per-day weight gain rate.
+  - From 13 weeks onward, it uses a different per-day rate for later
+    trimesters.
+
+-}
+resolveGWGClassificationForHealthyStart : NominalDate -> PrePregnancyClassification -> Float -> NominalDate -> Float -> AssembledData -> Maybe GWGClassification
+resolveGWGClassificationForHealthyStart currentDate prePregnancyClassification previousWeight previousWeightDate currentWeight assembled =
+    Maybe.map
+        (\lmpDate ->
+            let
+                thirteenWeeksDate =
+                    Date.add Weeks 13 lmpDate
+
+                totalDays =
+                    Date.diff Days previousWeightDate currentDate
+                        |> toFloat
+
+                -- Determine how many days fall before and after 13 weeks
+                ( daysBefore13Weeks, daysAfter13Weeks ) =
+                    if Date.compare currentDate thirteenWeeksDate == LT then
+                        -- Entire period is before 13 weeks
+                        ( totalDays, 0 )
+
+                    else if not <| Date.compare previousWeightDate thirteenWeeksDate == LT then
+                        -- Entire period is at or after 13 weeks
+                        ( 0, totalDays )
+
+                    else
+                        -- Period spans 13 weeks boundary
+                        let
+                            daysBefore =
+                                Date.diff Days previousWeightDate thirteenWeeksDate
+                                    |> toFloat
+
+                            daysAfter =
+                                totalDays - daysBefore
+                        in
+                        ( daysBefore, daysAfter )
+
+                expectedWeightGain =
+                    let
+                        ( perDayFirstTrimester, perDayOtherTrimesters ) =
+                            weightGainStandardsByPrePregnancyClassificationHealthyStart prePregnancyClassification
+                    in
+                    (daysBefore13Weeks * perDayFirstTrimester)
+                        + (daysAfter13Weeks * perDayOtherTrimesters)
+
+                actualWeightGain =
+                    currentWeight - previousWeight
+            in
+            if actualWeightGain <= expectedWeightGain then
+                GWGAdequate
+
+            else
+                GWGInadequate
+        )
+        assembled.globalLmpDate
+
+
 weightGainStandardsPerPrePregnancyClassification : PrePregnancyClassification -> ( Float, Float )
 weightGainStandardsPerPrePregnancyClassification prePregnancyClassification =
     case prePregnancyClassification of
@@ -1637,6 +1822,17 @@ weightGainStandardsPerPrePregnancyClassification prePregnancyClassification =
 
         PrePregnancyObesity ->
             ( 0.5, 0.22 )
+
+
+{-| Weight gain per day.
+-}
+weightGainStandardsByPrePregnancyClassificationHealthyStart : PrePregnancyClassification -> ( Float, Float )
+weightGainStandardsByPrePregnancyClassificationHealthyStart prePregnancyClassification =
+    if prePregnancyClassification == PrePregnancyUnderWeight then
+        ( 0.0235, 0.073 )
+
+    else
+        ( 0.0235, 0.06 )
 
 
 generatePrenatalAssesmentForChw : AssembledData -> PrenatalAssesment
@@ -3781,12 +3977,27 @@ resolveLastRecordedValue assembled measurementFunc valueFunc =
         |> List.head
 
 
-resolvePreviousValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe b
-resolvePreviousValue assembled measurementFunc valueFunc =
+resolvePreviousValueWithDate : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe ( NominalDate, b )
+resolvePreviousValueWithDate assembled measurementFunc valueFunc =
     assembled.nursePreviousEncountersData
-        |> List.filterMap (.measurements >> measurementFunc >> Maybe.map (Tuple.second >> .value >> valueFunc))
+        |> List.filterMap
+            (.measurements
+                >> measurementFunc
+                >> Maybe.map
+                    (Tuple.second
+                        >> (\measurement ->
+                                ( measurement.dateMeasured, valueFunc measurement.value )
+                           )
+                    )
+            )
         |> List.reverse
         |> List.head
+
+
+resolvePreviousValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe b
+resolvePreviousValue assembled measurementFunc valueFunc =
+    resolvePreviousValueWithDate assembled measurementFunc valueFunc
+        |> Maybe.map Tuple.second
 
 
 resolvePreviousMaybeValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> Maybe b) -> Maybe b
