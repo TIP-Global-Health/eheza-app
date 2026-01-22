@@ -28,7 +28,7 @@ encodeNCDEncounter encounter =
       )
     , ( "individual_participant", encodeEntityUuid encounter.participant )
     , ( "ncd_diagnoses", list encodeNCDDiagnosis (diagnosesWithDefault encounter.diagnoses) )
-    , ( "deleted", bool False )
+    , ( "deleted", bool encounter.deleted )
     , ( "type", string "ncd_encounter" )
     ]
         ++ encodeIfSet "shard" encounter.shard encodeEntityUuid

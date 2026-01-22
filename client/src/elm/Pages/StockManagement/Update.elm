@@ -263,6 +263,7 @@ update currentDate maybeHealthCenterId msg model =
                                     , notes = form.notes
                                     , correctionReason = Nothing
                                     , healthCenter = healthCenterId
+                                    , deleted = False
                                     , shard = Just healthCenterId
                                     , signature = signature
                                     }
@@ -426,6 +427,7 @@ update currentDate maybeHealthCenterId msg model =
                                     , notes = Nothing
                                     , correctionReason = form.reason
                                     , healthCenter = healthCenterId
+                                    , deleted = False
                                     , shard = Just healthCenterId
                                     , signature = signature
                                     }
