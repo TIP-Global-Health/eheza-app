@@ -6179,6 +6179,8 @@ breastfeedingFormWithDefault form saved =
                 , enoughMilkDirty = form.enoughMilkDirty
                 , latchingWell = maybeValueConsideringIsDirtyField form.latchingWellDirty form.latchingWell (EverySet.member LatchingWell value |> Just)
                 , latchingWellDirty = form.latchingWellDirty
+                , breastfedFirstHour = maybeValueConsideringIsDirtyField form.breastfedFirstHourDirty form.breastfedFirstHour (EverySet.member BreastfedFirstHour value |> Just)
+                , breastfedFirstHourDirty = form.breastfedFirstHourDirty
                 }
             )
 
@@ -6196,6 +6198,7 @@ toBreastfeedingValue form =
     , ifNullableTrue BreastRedness form.breastRedness
     , ifNullableTrue EnoughMilk form.enoughMilk
     , ifNullableTrue LatchingWell form.latchingWell
+    , ifNullableTrue BreastfedFirstHour form.breastfedFirstHour
     , Maybe.map (EverySet.singleton >> Just) form.reasonForNotBreastfeeding
         |> Maybe.withDefault (Just EverySet.empty)
     ]

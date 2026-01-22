@@ -3677,6 +3677,12 @@ translationSet trans =
                     , kirundi = Just "Mbega umwana aronka neza"
                     }
 
+                BreastfedFirstHour ->
+                    { english = "Was the baby breastfed within an hour of delivery"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 _ ->
                     translationSet EmptyString
 

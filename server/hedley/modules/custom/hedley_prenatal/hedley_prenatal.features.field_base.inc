@@ -187,6 +187,7 @@ function hedley_prenatal_field_default_field_bases() {
         'breast-redness' => 'Breast redness',
         'enough-milk' => 'Enough milk for 8 feeds',
         'latching-well' => 'Baby latching well',
+        'breastfed-first-hour' => 'Breastfed within first hour',
       ),
       'allowed_values_function' => '',
     ),

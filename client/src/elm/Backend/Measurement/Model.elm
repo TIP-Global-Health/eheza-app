@@ -1712,6 +1712,7 @@ type BreastfeedingSign
     | BreastRedness
     | EnoughMilk
     | LatchingWell
+    | BreastfedFirstHour
     | NoBreastfeedingSigns
 
 

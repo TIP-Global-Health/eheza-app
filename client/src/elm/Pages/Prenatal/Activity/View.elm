@@ -4024,6 +4024,9 @@ viewBreastfeedingContent language currentDate assembled data =
                 (\isBreastfeeding ->
                     if isBreastfeeding then
                         let
+                            breastfedFirstHourUpdateFunc value form_ =
+                                { form_ | breastfedFirstHour = Just value, breastfedFirstHourDirty = True }
+
                             breastPainUpdateFunc value form_ =
                                 { form_ | breastPain = Just value, breastPainDirty = True }
 
@@ -4036,7 +4039,14 @@ viewBreastfeedingContent language currentDate assembled data =
                             latchingWellUpdateFunc value form_ =
                                 { form_ | latchingWell = Just value, latchingWellDirty = True }
                         in
-                        ( [ viewQuestionLabel language <| Translate.BreastfeedingSignQuestion BreastPain
+                        ( [ viewQuestionLabel language <| Translate.BreastfeedingSignQuestion BreastfedFirstHour
+                          , viewBoolInput
+                                language
+                                form.breastfedFirstHour
+                                (SetBreastfeedingBoolInput breastfedFirstHourUpdateFunc)
+                                "breastfed-first-hour"
+                                Nothing
+                          , viewQuestionLabel language <| Translate.BreastfeedingSignQuestion BreastPain
                           , viewBoolInput
                                 language
                                 form.breastPain
@@ -4065,7 +4075,12 @@ viewBreastfeedingContent language currentDate assembled data =
                                 "latching-well"
                                 Nothing
                           ]
-                        , [ form.breastPain, form.breastRedness, form.enoughMilk, form.latchingWell ]
+                        , [ form.breastfedFirstHour
+                          , form.breastPain
+                          , form.breastRedness
+                          , form.enoughMilk
+                          , form.latchingWell
+                          ]
                         )
 
                     else
@@ -4102,6 +4117,8 @@ viewBreastfeedingContent language currentDate assembled data =
                 , enoughMilkDirty = True
                 , latchingWell = Nothing
                 , latchingWellDirty = True
+                , breastfedFirstHour = Nothing
+                , breastfedFirstHourDirty = True
             }
     in
     [ viewTasksCount language tasksCompleted totalTasks
