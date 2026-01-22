@@ -362,6 +362,7 @@ features[field_instance][] = node-prenatal_tetanus_immunisation-field_prenatal_e
 features[field_instance][] = node-prenatal_tetanus_immunisation-field_shards
 features[field_instance][] = node-prenatal_tetanus_immunisation-field_uuid
 features[field_instance][] = node-prenatal_ultrasound-field_date_measured
+features[field_instance][] = node-prenatal_ultrasound-field_deleted
 features[field_instance][] = node-prenatal_ultrasound-field_edd_days
 features[field_instance][] = node-prenatal_ultrasound-field_edd_weeks
 features[field_instance][] = node-prenatal_ultrasound-field_execution_date

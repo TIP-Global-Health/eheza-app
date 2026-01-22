@@ -7247,7 +7247,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalUltrasoundRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | ultrasound = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | ultrasound =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
