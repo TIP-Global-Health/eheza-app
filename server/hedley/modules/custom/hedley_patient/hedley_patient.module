@@ -174,7 +174,7 @@ function hedley_patient_recalculate_shards_for_person_content($person_id) {
   // by individual_participant field.
   // These are individual encounters - antenatal, nutrition, ...
   if (!empty($individual_participants)) {
-    $query = db_select('node', 'n');
+    $query = hedley_general_create_db_select_query_excluding_deleted();
     $query->join('field_data_field_individual_participant', 'ip', 'ip.entity_id = n.nid');
 
     // Limit to individual participants we're interested in.

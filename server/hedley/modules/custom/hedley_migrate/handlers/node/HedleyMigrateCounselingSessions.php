@@ -77,7 +77,7 @@ class HedleyMigrateCounselingSessions extends HedleyMigrateBase {
    */
   public function prepare($entity) {
     // Get one random child to reference in this counseling session.
-    $child_query = new EntityFieldQuery();
+    $child_query = hedley_general_create_entity_field_query_excluding_deleted();
     $child_result = $child_query
       ->entityCondition('entity_type', 'node')
       ->entityCondition('bundle', 'person')
@@ -92,7 +92,7 @@ class HedleyMigrateCounselingSessions extends HedleyMigrateBase {
 
     // Get one random session to reference in this counseling session.
     $today = date('Y-m-d');
-    $session_query = new EntityFieldQuery();
+    $session_query = hedley_general_create_entity_field_query_excluding_deleted();
     $session_result = $session_query
       ->entityCondition('entity_type', 'node')
       ->entityCondition('bundle', 'session')
