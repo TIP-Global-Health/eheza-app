@@ -169,6 +169,7 @@ decodePrenatalMeasurements =
         |> optional "prenatal_iron" (decodeHead decodePrenatalIron) Nothing
         |> optional "prenatal_mms" (decodeHead decodePrenatalMMS) Nothing
         |> optional "prenatal_mebendazole" (decodeHead decodePrenatalMebendazole) Nothing
+        |> optional "prenatal_ultrasound" (decodeHead decodePrenatalUltrasound) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
@@ -5062,6 +5063,46 @@ decodePrenatalMMS =
 decodePrenatalMebendazole : Decoder PrenatalMebendazole
 decodePrenatalMebendazole =
     decodePrenatalMeasurement decodeAdministrationNoteField
+
+
+decodePrenatalUltrasound : Decoder PrenatalUltrasound
+decodePrenatalUltrasound =
+    decodePrenatalMeasurement decodeUltrasoundValue
+
+
+decodeUltrasoundValue : Decoder UltrasoundValue
+decodeUltrasoundValue =
+    succeed UltrasoundValue
+        |> required "pregnancy_signs" (decodeEverySet decodePregnancySign)
+        |> required "execution_date" Gizra.NominalDate.decodeYYYYMMDD
+        |> required "edd_weeks" decodeInt
+        |> required "edd_days" decodeInt
+        |> required "expected_date_concluded" Gizra.NominalDate.decodeYYYYMMDD
+
+
+decodePregnancySign : Decoder PregnancySign
+decodePregnancySign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "not-viable" ->
+                        succeed PregnancyNotViable
+
+                    "ectopic" ->
+                        succeed PregnancyEctopic
+
+                    "multiple-fetuses" ->
+                        succeed PregnancyMultipleFetuses
+
+                    "none" ->
+                        succeed NoPregnancySigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized PregnancySign"
+            )
 
 
 decodeNCDCoMorbidities : Decoder NCDCoMorbidities

@@ -67,14 +67,17 @@ import Pages.Utils
         , taskCompleted
         , valueConsideringIsDirtyField
         , viewBoolInput
+        , viewBoolInputReverted
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
         , viewCustomBoolInput
         , viewCustomLabel
         , viewLabel
+        , viewMeasurementInput
         , viewQuestionLabel
+        , viewTextInput
         )
-import SyncManager.Model exposing (Site)
+import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (translate)
 import Translate.Model exposing (Language(..))
 import Utils.Html exposing (viewModal)
@@ -82,8 +85,8 @@ import ZScore.Model
 import ZScore.Utils exposing (viewZScore, zScoreBmiForAge)
 
 
-expectActivity : NominalDate -> Site -> AssembledData -> PrenatalActivity -> Bool
-expectActivity currentDate site assembled activity =
+expectActivity : NominalDate -> Site -> EverySet SiteFeature -> AssembledData -> PrenatalActivity -> Bool
+expectActivity currentDate site features assembled activity =
     let
         noNurseEncounters =
             nurseEncounterNotPerformed assembled
@@ -97,6 +100,10 @@ expectActivity currentDate site assembled activity =
             case activity of
                 PregnancyDating ->
                     noNurseEncounters
+
+                Ultrasound ->
+                    List.filter (.measurements >> .ultrasound >> isJust) assembled.nursePreviousEncountersData
+                        |> List.isEmpty
 
                 History ->
                     resolveHistoryTasks assembled
@@ -129,7 +136,7 @@ expectActivity currentDate site assembled activity =
                     expectPrenatalPhoto currentDate assembled
 
                 NextSteps ->
-                    mandatoryActivitiesForNextStepsCompleted currentDate site assembled
+                    mandatoryActivitiesForNextStepsCompleted currentDate site features assembled
                         && (resolveNextStepsTasks currentDate assembled
                                 |> List.isEmpty
                                 |> not
@@ -149,13 +156,11 @@ expectActivity currentDate site assembled activity =
                                 egaInWeeks =
                                     calculateEGAWeeks currentDate lmpDate
 
-                                performedPreviously =
-                                    assembled.nursePreviousEncountersData
-                                        |> List.filter (.measurements >> .mentalHealth >> isJust)
+                                notPerformedPreviously =
+                                    List.filter (.measurements >> .mentalHealth >> isJust) assembled.nursePreviousEncountersData
                                         |> List.isEmpty
-                                        |> not
                             in
-                            egaInWeeks >= 28 && not performedPreviously
+                            egaInWeeks >= 28 && notPerformedPreviously
                         )
                         assembled.globalLmpDate
                         |> Maybe.withDefault False
@@ -206,7 +211,7 @@ expectActivity currentDate site assembled activity =
                         specialityCareSections
 
                 NextSteps ->
-                    mandatoryActivitiesForNextStepsCompleted currentDate site assembled
+                    mandatoryActivitiesForNextStepsCompleted currentDate site features assembled
                         && (resolveNextStepsTasks currentDate assembled
                                 |> List.isEmpty
                                 |> not
@@ -230,11 +235,11 @@ expectActivity currentDate site assembled activity =
                     True
 
                 Backend.PrenatalActivity.Model.HealthEducation ->
-                    activityCompleted currentDate site assembled DangerSigns
+                    activityCompleted currentDate site features assembled DangerSigns
                         && noDangerSigns assembled
 
                 NextSteps ->
-                    mandatoryActivitiesForNextStepsCompleted currentDate site assembled
+                    mandatoryActivitiesForNextStepsCompleted currentDate site features assembled
 
                 -- Activities that do not participate at CHW encounter 1.
                 _ ->
@@ -246,15 +251,15 @@ expectActivity currentDate site assembled activity =
                     True
 
                 BirthPlan ->
-                    activityCompleted currentDate site assembled DangerSigns
+                    activityCompleted currentDate site features assembled DangerSigns
                         && noDangerSigns assembled
 
                 Backend.PrenatalActivity.Model.HealthEducation ->
-                    activityCompleted currentDate site assembled DangerSigns
+                    activityCompleted currentDate site features assembled DangerSigns
                         && noDangerSigns assembled
 
                 NextSteps ->
-                    mandatoryActivitiesForNextStepsCompleted currentDate site assembled
+                    mandatoryActivitiesForNextStepsCompleted currentDate site features assembled
 
                 -- Activities that do not participate at CHW encounter 2.
                 _ ->
@@ -266,11 +271,11 @@ expectActivity currentDate site assembled activity =
                     True
 
                 Backend.PrenatalActivity.Model.HealthEducation ->
-                    activityCompleted currentDate site assembled DangerSigns
+                    activityCompleted currentDate site features assembled DangerSigns
                         && noDangerSigns assembled
 
                 NextSteps ->
-                    mandatoryActivitiesForNextStepsCompleted currentDate site assembled
+                    mandatoryActivitiesForNextStepsCompleted currentDate site features assembled
 
                 -- Activities that do not participate at CHW encounter 3.
                 _ ->
@@ -285,18 +290,21 @@ expectActivity currentDate site assembled activity =
                     True
 
                 NextSteps ->
-                    mandatoryActivitiesForNextStepsCompleted currentDate site assembled
+                    mandatoryActivitiesForNextStepsCompleted currentDate site features assembled
 
                 -- Activities that do not participate at CHW Postpartum encounter.
                 _ ->
                     False
 
 
-activityCompleted : NominalDate -> Site -> AssembledData -> PrenatalActivity -> Bool
-activityCompleted currentDate site assembled activity =
+activityCompleted : NominalDate -> Site -> EverySet SiteFeature -> AssembledData -> PrenatalActivity -> Bool
+activityCompleted currentDate site features assembled activity =
     case activity of
         PregnancyDating ->
             isJust assembled.measurements.lastMenstrualPeriod
+
+        Ultrasound ->
+            isJust assembled.measurements.ultrasound
 
         History ->
             resolveHistoryTasks assembled
@@ -354,7 +362,7 @@ activityCompleted currentDate site assembled activity =
             isJust assembled.measurements.mentalHealth
 
         PrenatalImmunisation ->
-            (not <| expectActivity currentDate site assembled PrenatalImmunisation)
+            (not <| expectActivity currentDate site features assembled PrenatalImmunisation)
                 || List.all (immunisationTaskCompleted currentDate assembled) immunisationVaccinationTasks
 
         Backend.PrenatalActivity.Model.Breastfeeding ->
@@ -1218,35 +1226,36 @@ hospitalizeDueToPelvicPain assembled =
         |> Maybe.withDefault False
 
 
-mandatoryActivitiesForAssessmentCompleted : NominalDate -> Site -> AssembledData -> Bool
-mandatoryActivitiesForAssessmentCompleted currentDate site assembled =
+mandatoryActivitiesForAssessmentCompleted : NominalDate -> Site -> EverySet SiteFeature -> AssembledData -> Bool
+mandatoryActivitiesForAssessmentCompleted currentDate site features assembled =
     case assembled.encounter.encounterType of
         NurseEncounter ->
-            activityCompleted currentDate site assembled DangerSigns
+            activityCompleted currentDate site features assembled DangerSigns
 
         NursePostpartumEncounter ->
             True
 
         _ ->
-            mandatoryActivitiesForNextStepsCompleted currentDate site assembled
+            mandatoryActivitiesForNextStepsCompleted currentDate site features assembled
 
 
-mandatoryActivitiesForNextStepsCompleted : NominalDate -> Site -> AssembledData -> Bool
-mandatoryActivitiesForNextStepsCompleted currentDate site assembled =
+mandatoryActivitiesForNextStepsCompleted : NominalDate -> Site -> EverySet SiteFeature -> AssembledData -> Bool
+mandatoryActivitiesForNextStepsCompleted currentDate site features assembled =
     let
         mandatoryActivitiesForNurseCompleted =
             -- All activities that will appear at
             -- current encounter are completed, besides
             -- Malaria Prevention and Photo (optional)
             --and the Next Steps itself.
-            getAllActivities assembled
+            getAllActivities features assembled
                 |> EverySet.fromList
                 |> EverySet.remove Backend.PrenatalActivity.Model.MalariaPrevention
                 |> EverySet.remove PrenatalPhoto
+                |> EverySet.remove Ultrasound
                 |> EverySet.remove NextSteps
                 |> EverySet.toList
-                |> List.filter (expectActivity currentDate site assembled)
-                |> List.all (activityCompleted currentDate site assembled)
+                |> List.filter (expectActivity currentDate site features assembled)
+                |> List.all (activityCompleted currentDate site features assembled)
     in
     case assembled.encounter.encounterType of
         NurseEncounter ->
@@ -1264,49 +1273,49 @@ mandatoryActivitiesForNextStepsCompleted currentDate site assembled =
         ChwFirstEncounter ->
             let
                 commonMandatoryActivitiesCompleted =
-                    ((not <| expectActivity currentDate site assembled PregnancyDating)
-                        || activityCompleted currentDate site assembled PregnancyDating
+                    ((not <| expectActivity currentDate site features assembled PregnancyDating)
+                        || activityCompleted currentDate site features assembled PregnancyDating
                     )
-                        && ((not <| expectActivity currentDate site assembled Laboratory)
-                                || activityCompleted currentDate site assembled Laboratory
+                        && ((not <| expectActivity currentDate site features assembled Laboratory)
+                                || activityCompleted currentDate site features assembled Laboratory
                            )
-                        && activityCompleted currentDate site assembled DangerSigns
+                        && activityCompleted currentDate site features assembled DangerSigns
             in
             if dangerSignsPresent assembled then
                 commonMandatoryActivitiesCompleted
 
             else
                 commonMandatoryActivitiesCompleted
-                    && activityCompleted currentDate site assembled Backend.PrenatalActivity.Model.HealthEducation
+                    && activityCompleted currentDate site features assembled Backend.PrenatalActivity.Model.HealthEducation
 
         ChwSecondEncounter ->
             let
                 commonMandatoryActivitiesCompleted =
-                    activityCompleted currentDate site assembled DangerSigns
+                    activityCompleted currentDate site features assembled DangerSigns
             in
             if dangerSignsPresent assembled then
                 commonMandatoryActivitiesCompleted
 
             else
                 commonMandatoryActivitiesCompleted
-                    && activityCompleted currentDate site assembled BirthPlan
-                    && activityCompleted currentDate site assembled Backend.PrenatalActivity.Model.HealthEducation
+                    && activityCompleted currentDate site features assembled BirthPlan
+                    && activityCompleted currentDate site features assembled Backend.PrenatalActivity.Model.HealthEducation
 
         ChwThirdPlusEncounter ->
             let
                 commonMandatoryActivitiesCompleted =
-                    activityCompleted currentDate site assembled DangerSigns
+                    activityCompleted currentDate site features assembled DangerSigns
             in
             if dangerSignsPresent assembled then
                 commonMandatoryActivitiesCompleted
 
             else
                 commonMandatoryActivitiesCompleted
-                    && activityCompleted currentDate site assembled Backend.PrenatalActivity.Model.HealthEducation
+                    && activityCompleted currentDate site features assembled Backend.PrenatalActivity.Model.HealthEducation
 
         ChwPostpartumEncounter ->
-            activityCompleted currentDate site assembled PregnancyOutcome
-                && activityCompleted currentDate site assembled DangerSigns
+            activityCompleted currentDate site features assembled PregnancyOutcome
+                && activityCompleted currentDate site features assembled DangerSigns
 
 
 expectPrenatalPhoto : NominalDate -> AssembledData -> Bool
@@ -3724,6 +3733,118 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
 
         _ ->
             healthEducationFormInputsAndTasksForChw language assembled form
+
+
+ultrasoundFormInputsAndTasks : Language -> NominalDate -> AssembledData -> UltrasoundForm -> ( List (Html Msg), List (Maybe Bool) )
+ultrasoundFormInputsAndTasks language currentDate assembled ultrasoundForm =
+    let
+        form =
+            getMeasurementValueFunc assembled.measurements.ultrasound
+                |> ultrasoundFormWithDefault ultrasoundForm
+
+        pregnancyNotViableUpdateFunc value form_ =
+            { form_ | pregnancyNotViable = Just value }
+
+        pregnancyMultipleFetusesUpdateFunc value form_ =
+            { form_ | pregnancyMultipleFetuses = Just value }
+
+        pregnancyEctopicUpdateFunc value form_ =
+            { form_ | pregnancyEctopic = Just value }
+
+        executionDateInput =
+            let
+                dateSelectorConfig =
+                    { select = SetExecutionDate form.eddWeeks form.eddDays
+                    , close = SetExecutionDateSelectorState Nothing
+                    , dateFrom = Date.add Months -9 currentDate
+                    , dateTo = currentDate
+                    , dateDefault = Maybe.Extra.or form.executionDate (Just currentDate)
+                    }
+
+                executionDateForView =
+                    Maybe.map formatDDMMYYYY form.executionDate
+                        |> Maybe.withDefault ""
+            in
+            div
+                [ class "form-input date"
+                , onClick <| SetExecutionDateSelectorState (Just dateSelectorConfig)
+                ]
+                [ text executionDateForView ]
+
+        eddDateIndicator =
+            Maybe.map
+                (\eddDate ->
+                    [ div [ class "separator" ] []
+                    , viewLabel language Translate.EstimatedDeliveryDate
+                    , div [ class "form-input measurement" ]
+                        [ viewTextInput language
+                            (formatDDMMYYYY eddDate)
+                            (always NoOp)
+                            Nothing
+                            (Just "edd-indicator")
+                        ]
+                    ]
+                )
+                form.eddDate
+                |> Maybe.withDefault []
+    in
+    ( [ viewQuestionLabel language <| Translate.PregnancySignQuestion PregnancyNotViable
+      , viewBoolInputReverted
+            language
+            form.pregnancyNotViable
+            (SetUltrasoundBoolInput pregnancyNotViableUpdateFunc)
+            "viable"
+            (Just
+                ( Translate.PregnancySignAnswerPositive PregnancyNotViable
+                , Translate.PregnancySignAnswerNegative PregnancyNotViable
+                )
+            )
+      , viewQuestionLabel language <| Translate.PregnancySignQuestion PregnancyMultipleFetuses
+      , viewBoolInputReverted
+            language
+            form.pregnancyMultipleFetuses
+            (SetUltrasoundBoolInput pregnancyMultipleFetusesUpdateFunc)
+            "fetuses"
+            (Just
+                ( Translate.PregnancySignAnswerPositive PregnancyMultipleFetuses
+                , Translate.PregnancySignAnswerNegative PregnancyMultipleFetuses
+                )
+            )
+      , viewQuestionLabel language <| Translate.PregnancySignQuestion PregnancyEctopic
+      , viewBoolInputReverted
+            language
+            form.pregnancyEctopic
+            (SetUltrasoundBoolInput pregnancyEctopicUpdateFunc)
+            "location"
+            (Just
+                ( Translate.PregnancySignAnswerPositive PregnancyEctopic
+                , Translate.PregnancySignAnswerNegative PregnancyEctopic
+                )
+            )
+      , viewLabel language Translate.UltrasoundExecutionDateLabel
+      , executionDateInput
+      , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.executionDate
+      , viewQuestionLabel language Translate.UltrasoundEDDQuestion
+      , viewMeasurementInput language
+            (Maybe.map toFloat form.eddWeeks)
+            (SetEDDWeeks form.executionDate form.eddDays)
+            "weeks"
+            Translate.WeeksAbbrev
+      , viewMeasurementInput language
+            (Maybe.map toFloat form.eddDays)
+            (SetEDDDays form.executionDate form.eddWeeks)
+            "days"
+            Translate.DaysAbbrev
+      ]
+        ++ eddDateIndicator
+    , [ form.pregnancyNotViable
+      , form.pregnancyMultipleFetuses
+      , form.pregnancyEctopic
+      , maybeToBoolTask form.executionDate
+      , maybeToBoolTask form.eddWeeks
+      , maybeToBoolTask form.eddDays
+      ]
+    )
 
 
 healthEducationFormInputsAndTasksForChw : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
@@ -6794,6 +6915,44 @@ toSpecialityCareValue form =
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSpecialityCareSigns)
+
+
+ultrasoundFormWithDefault : UltrasoundForm -> Maybe UltrasoundValue -> UltrasoundForm
+ultrasoundFormWithDefault form =
+    unwrap
+        form
+        (\value ->
+            { pregnancyNotViable = or form.pregnancyNotViable (EverySet.member PregnancyNotViable value.signs |> Just)
+            , pregnancyEctopic = or form.pregnancyEctopic (EverySet.member PregnancyEctopic value.signs |> Just)
+            , pregnancyMultipleFetuses = or form.pregnancyMultipleFetuses (EverySet.member PregnancyMultipleFetuses value.signs |> Just)
+            , executionDate = or form.executionDate (Just value.executionDate)
+            , eddWeeks = or form.eddWeeks (Just value.eddWeeks)
+            , eddDays = or form.eddDays (Just value.eddDays)
+            , eddDate = or form.eddDate (Just value.eddDate)
+            , dateSelectorPopupState = form.dateSelectorPopupState
+            }
+        )
+
+
+toUltrasoundValueWithDefault : Maybe UltrasoundValue -> UltrasoundForm -> Maybe UltrasoundValue
+toUltrasoundValueWithDefault saved form =
+    ultrasoundFormWithDefault form saved
+        |> toUltrasoundValue
+
+
+toUltrasoundValue : UltrasoundForm -> Maybe UltrasoundValue
+toUltrasoundValue form =
+    [ ifNullableTrue PregnancyNotViable form.pregnancyNotViable
+    , ifNullableTrue PregnancyEctopic form.pregnancyEctopic
+    , ifNullableTrue PregnancyMultipleFetuses form.pregnancyMultipleFetuses
+    ]
+        |> Maybe.Extra.combine
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPregnancySigns)
+        |> Maybe.map UltrasoundValue
+        |> andMap form.executionDate
+        |> andMap form.eddWeeks
+        |> andMap form.eddDays
+        |> andMap form.eddDate
 
 
 resolveWarningPopupContentForUrgentDiagnoses : Language -> List PrenatalDiagnosis -> ( String, String )

@@ -321,6 +321,9 @@ viewActivity language currentDate zscores site features isChw activity assembled
         PregnancyDating ->
             viewPregnancyDatingContent language currentDate assembled model.pregnancyDatingData
 
+        Ultrasound ->
+            viewUltrasoundContent language currentDate assembled model.ultrasoundData
+
         History ->
             viewHistoryContent language currentDate assembled model.historyData
 
@@ -4339,6 +4342,35 @@ resolveNextVisitDate assembled =
                 in
                 Date.add Weeks gap assembled.encounter.startDate
             )
+
+
+viewUltrasoundContent : Language -> NominalDate -> AssembledData -> UltrasoundData -> List (Html Msg)
+viewUltrasoundContent language currentDate assembled data =
+    let
+        totalTasks =
+            List.length tasks
+
+        tasksCompleted =
+            List.map taskCompleted tasks
+                |> List.sum
+
+        ( inputs, tasks ) =
+            ultrasoundFormInputsAndTasks language currentDate assembled data.form
+    in
+    [ viewTasksCount language tasksCompleted totalTasks
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form ultrasound" ]
+                inputs
+            ]
+        , viewSaveAction language
+            (SaveUltrasound assembled.encounter.participant
+                assembled.participant.person
+                assembled.measurements.ultrasound
+            )
+            (tasksCompleted /= totalTasks)
+        ]
+    ]
 
 
 

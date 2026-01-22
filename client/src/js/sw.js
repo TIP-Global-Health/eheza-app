@@ -185,6 +185,7 @@ var tableForType = {
     prenatal_symptom_review: 'shards',
     prenatal_syphilis_test: 'shards',
     prenatal_tetanus_immunisation: 'shards',
+    prenatal_ultrasound: 'shards',
     prenatal_urine_dipstick_test: 'shards',
     relationship: 'shards',
     resilience_survey: 'nodes',

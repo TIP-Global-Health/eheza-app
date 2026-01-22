@@ -675,6 +675,7 @@ type TranslationId
     | ErrorCheckLocalConfig
     | ErrorConfigurationError
     | Estimated
+    | EstimatedDeliveryDate
     | ExaminationTask ExaminationTask
     | ExaminationTaskRecurrent Pages.Prenatal.RecurrentActivity.Types.ExaminationTask
     | ExpiryDate
@@ -1267,6 +1268,9 @@ type TranslationId
     | Preeclampsia
     | Pregnancy
     | PregnancyConclusion
+    | PregnancySignAnswerNegative PregnancySign
+    | PregnancySignAnswerPositive PregnancySign
+    | PregnancySignQuestion PregnancySign
     | PregnancyStart
     | PregnancySummarySignQuestion PregnancySummarySign
     | PregnancyTestResult PregnancyTestResult
@@ -2085,6 +2089,8 @@ type TranslationId
     | Type
     | UbudeheLabel
     | UbudeheNumber Ubudehe
+    | UltrasoundEDDQuestion
+    | UltrasoundExecutionDateLabel
     | Underweight
     | UndeterminedDiagnoses
     | UndeterminedDiagnosisMessage
@@ -2134,6 +2140,7 @@ type TranslationId
     | WeightGain
     | WeightLossLabel
     | WeightLossQuestion
+    | WeeksAbbrev
     | WelcomeUser String
     | Wellbeing
     | WellChildActivityTitle WellChildActivity
@@ -6141,6 +6148,12 @@ translationSet trans =
             { english = "Estimated"
             , kinyarwanda = Just "Itariki y'amavuko igenekerejwe"
             , kirundi = Just "Bigereranijwe"
+            }
+
+        EstimatedDeliveryDate ->
+            { english = "Estimated Delivery Date"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         ExaminationTask task ->
@@ -14642,6 +14655,69 @@ translationSet trans =
             , kirundi = Just "Icemezo c'imbanyi n'igihe cayo"
             }
 
+        PregnancySignAnswerNegative sign ->
+            case sign of
+                PregnancyNotViable ->
+                    translationSet Yes
+
+                PregnancyEctopic ->
+                    { english = "Normal (intrauterine)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PregnancyMultipleFetuses ->
+                    { english = "Single"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NoPregnancySigns ->
+                    translationSet EmptyString
+
+        PregnancySignAnswerPositive sign ->
+            case sign of
+                PregnancyNotViable ->
+                    translationSet No
+
+                PregnancyEctopic ->
+                    { english = "Ectopic (extrauterine)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PregnancyMultipleFetuses ->
+                    { english = "Multiple"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                _ ->
+                    translationSet EmptyString
+
+        PregnancySignQuestion sign ->
+            case sign of
+                PregnancyNotViable ->
+                    { english = "Is the pregnancy viable"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PregnancyEctopic ->
+                    { english = "Where is the pregnancy located"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PregnancyMultipleFetuses ->
+                    { english = "How many fetuses are present"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NoPregnancySigns ->
+                    translationSet EmptyString
+
         PregnancyStart ->
             { english = "Pregnancy Start"
             , kinyarwanda = Just "Itangira ryo Gutwita"
@@ -14817,6 +14893,12 @@ translationSet trans =
                     { english = "Specialty Care"
                     , kinyarwanda = Just "Ubuvuzi bw'inzobere"
                     , kirundi = Just "Ubuvuzi bw'ubuhinga"
+                    }
+
+                Ultrasound ->
+                    { english = "Ultrasound"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
                     }
 
                 PostpartumTreatmentReview ->
@@ -24526,6 +24608,18 @@ translationSet trans =
                 NoUbudehe ->
                     translationSet EmptyString
 
+        UltrasoundEDDQuestion ->
+            { english = "How far along the pregnancy is (weeks + days) based on the ultrasound"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        UltrasoundExecutionDateLabel ->
+            { english = "Date Ultrasound was performed"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         Underweight ->
             { english = "Underweight"
             , kinyarwanda = Just "Ibiro bidahagije"
@@ -24942,6 +25036,12 @@ translationSet trans =
             { english = "Do you have weight loss"
             , kinyarwanda = Just "Waba waratakaje ibiro"
             , kirundi = Just "Mbega urata ibiro"
+            }
+
+        WeeksAbbrev ->
+            { english = "weeks"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         WelcomeUser name ->

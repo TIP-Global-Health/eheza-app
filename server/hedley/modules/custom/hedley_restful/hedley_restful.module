@@ -184,6 +184,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'prenatal_symptom_review' => 'prenatal-symptom-review',
   'prenatal_syphilis_test' => 'prenatal-syphilis-test',
   'prenatal_tetanus_immunisation' => 'prenatal-tetanus-immunisation',
+  'prenatal_ultrasound' => 'prenatal-ultrasound',
   'prenatal_urine_dipstick_test' => 'prenatal-urine-dipstick-test',
   'resource' => 'resources',
   'send_to_hc' => 'send-to-hcs',

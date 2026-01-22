@@ -9,51 +9,63 @@ import Backend.NutritionEncounter.Utils
 import Backend.PrenatalActivity.Model exposing (..)
 import Backend.PrenatalEncounter.Model exposing (..)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
-import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter, lmpToEDDDate)
-import EverySet
+import Backend.PrenatalEncounter.Utils exposing (eddToLmpDate, isNurseEncounter, lmpToEDDDate)
+import Backend.Utils exposing (healthyStartEnabled)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Maybe.Extra exposing (isJust, orElse, unwrap)
 import Pages.Prenatal.Model exposing (AssembledData, PreviousEncounterData)
 import Pages.Prenatal.Utils exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
+import SyncManager.Model exposing (SiteFeature)
 import Translate exposing (Language, translate)
 import Utils.NominalDate exposing (sortEncounterTuples, sortEncounterTuplesDesc)
 
 
-getAllActivities : AssembledData -> List PrenatalActivity
-getAllActivities assembled =
+getAllActivities : EverySet SiteFeature -> AssembledData -> List PrenatalActivity
+getAllActivities features assembled =
     case assembled.encounter.encounterType of
         NurseEncounter ->
+            let
+                ultrasound =
+                    if healthyStartEnabled features then
+                        [ Ultrasound ]
+
+                    else
+                        []
+            in
             if nurseEncounterNotPerformed assembled then
-                [ PregnancyDating
-                , History
-                , Examination
-                , FamilyPlanning
-                , Medication
-                , Backend.PrenatalActivity.Model.MalariaPrevention
-                , DangerSigns
-                , SymptomReview
-                , PrenatalImmunisation
-                , Laboratory
-                , MaternalMentalHealth
-                , PrenatalPhoto
-                , NextSteps
-                ]
+                PregnancyDating
+                    :: ultrasound
+                    ++ [ History
+                       , Examination
+                       , FamilyPlanning
+                       , Medication
+                       , Backend.PrenatalActivity.Model.MalariaPrevention
+                       , DangerSigns
+                       , SymptomReview
+                       , PrenatalImmunisation
+                       , Laboratory
+                       , MaternalMentalHealth
+                       , PrenatalPhoto
+                       , NextSteps
+                       ]
 
             else
-                [ DangerSigns
-                , SymptomReview
-                , History
-                , Examination
-                , FamilyPlanning
-                , PrenatalTreatmentReview
-                , Backend.PrenatalActivity.Model.MalariaPrevention
-                , PrenatalImmunisation
-                , Laboratory
-                , MaternalMentalHealth
-                , PrenatalPhoto
-                , NextSteps
-                ]
+                DangerSigns
+                    :: ultrasound
+                    ++ [ SymptomReview
+                       , History
+                       , Examination
+                       , FamilyPlanning
+                       , PrenatalTreatmentReview
+                       , Backend.PrenatalActivity.Model.MalariaPrevention
+                       , PrenatalImmunisation
+                       , Laboratory
+                       , MaternalMentalHealth
+                       , PrenatalPhoto
+                       , NextSteps
+                       ]
 
         NursePostpartumEncounter ->
             [ PregnancyOutcome
@@ -201,11 +213,6 @@ generatePara value =
         ++ String.fromInt value.liveChildren
 
 
-getLmpValue : PrenatalMeasurements -> Maybe LastMenstrualPeriodValue
-getLmpValue =
-    .lastMenstrualPeriod >> getMeasurementValueFunc
-
-
 getObstetricHistory : PrenatalMeasurements -> Maybe ObstetricHistoryValue
 getObstetricHistory measurements =
     measurements.obstetricHistory
@@ -228,10 +235,27 @@ resolveGlobalLmpValue nursePreviousMeasurements chwPreviousMeasurements measurem
         |> orElse (getLmpValueFromList chwPreviousMeasurements)
 
 
+getLmpValue : PrenatalMeasurements -> Maybe LastMenstrualPeriodValue
+getLmpValue =
+    .lastMenstrualPeriod >> getMeasurementValueFunc
+
+
 resolveGlobalLmpDate : List PrenatalMeasurements -> List PrenatalMeasurements -> PrenatalMeasurements -> Maybe NominalDate
 resolveGlobalLmpDate nursePreviousMeasurements chwPreviousMeasurements measurements =
-    resolveGlobalLmpValue nursePreviousMeasurements chwPreviousMeasurements measurements
-        |> Maybe.map .date
+    let
+        byUltrasound =
+            nursePreviousMeasurements
+                ++ [ measurements ]
+                |> List.filterMap (.ultrasound >> getMeasurementValueFunc)
+                |> List.head
+                |> Maybe.map .eddDate
+                |> Maybe.map eddToLmpDate
+
+        byPregnancyDating =
+            resolveGlobalLmpValue nursePreviousMeasurements chwPreviousMeasurements measurements
+                |> Maybe.map .date
+    in
+    Maybe.Extra.or byUltrasound byPregnancyDating
 
 
 resolveGlobalObstetricHistory : List PrenatalMeasurements -> PrenatalMeasurements -> Maybe ObstetricHistoryValue
@@ -346,8 +370,7 @@ generateAssembledData id db =
             List.map (\( _, _, previousMeasurements ) -> previousMeasurements) chwPreviousMeasurementsWithDates
 
         globalLmpDate =
-            measurements
-                |> RemoteData.map (resolveGlobalLmpDate nursePreviousMeasurements chwPreviousMeasurements)
+            RemoteData.map (resolveGlobalLmpDate nursePreviousMeasurements chwPreviousMeasurements) measurements
                 |> RemoteData.withDefault Nothing
 
         globalObstetricHistory =

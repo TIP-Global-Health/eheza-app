@@ -200,6 +200,7 @@ type BackendAuthorityEntity
     | BackendAuthorityPrenatalSymptomReview (BackendEntity PrenatalSymptomReview)
     | BackendAuthorityPrenatalSyphilisTest (BackendEntity PrenatalSyphilisTest)
     | BackendAuthorityPrenatalTetanusImmunisation (BackendEntity PrenatalTetanusImmunisation)
+    | BackendAuthorityPrenatalUltrasound (BackendEntity PrenatalUltrasound)
     | BackendAuthorityPrenatalUrineDipstickTest (BackendEntity PrenatalUrineDipstickTest)
     | BackendAuthorityRelationship (BackendEntity Relationship)
     | BackendAuthorityMalariaPrevention (BackendEntity MalariaPrevention)

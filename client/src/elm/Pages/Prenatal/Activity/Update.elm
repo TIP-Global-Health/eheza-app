@@ -35,7 +35,7 @@ import Backend.Measurement.Utils exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
-import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
+import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate, pregnancyDurationInWeeks)
 import Date
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
@@ -361,6 +361,179 @@ update language currentDate id isLabTech db msg model =
                                     |> Backend.Model.MsgIndividualEncounterParticipant prenatalParticipantId
                                     |> App.Model.MsgIndexedDb
                                 , PrenatalEncounterPage id |> UserPage |> App.Model.SetActivePage
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+
+        SetUltrasoundBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.ultrasoundData.form
+
+                updatedData =
+                    model.ultrasoundData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ultrasoundData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetExecutionDate weeksValue daysValue value ->
+            let
+                updatedForm =
+                    model.ultrasoundData.form
+                        |> (\form ->
+                                let
+                                    eddDate =
+                                        Maybe.map2
+                                            (\weeks days ->
+                                                Date.add Date.Weeks weeks value
+                                                    |> Date.add Date.Days days
+                                            )
+                                            weeksValue
+                                            daysValue
+                                in
+                                { form | executionDate = Just value, eddDate = eddDate }
+                           )
+
+                updatedData =
+                    model.ultrasoundData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ultrasoundData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetExecutionDateSelectorState state ->
+            let
+                form =
+                    model.ultrasoundData.form
+
+                defaultSelection =
+                    Maybe.Extra.or form.executionDate (Maybe.andThen .dateDefault state)
+
+                updatedForm =
+                    { form | dateSelectorPopupState = state, executionDate = defaultSelection }
+
+                updatedData =
+                    model.ultrasoundData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ultrasoundData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetEDDWeeks executionDateValue daysValue value ->
+            let
+                form =
+                    model.ultrasoundData.form
+
+                updatedForm =
+                    if String.isEmpty value then
+                        { form | eddWeeks = Nothing, eddDate = Nothing }
+
+                    else
+                        String.toInt value
+                            |> Maybe.map
+                                (\newValue ->
+                                    if newValue >= 0 && newValue <= pregnancyDurationInWeeks then
+                                        let
+                                            eddDate =
+                                                Maybe.map2
+                                                    (\executionDate days ->
+                                                        Date.add Date.Weeks newValue executionDate
+                                                            |> Date.add Date.Days days
+                                                    )
+                                                    executionDateValue
+                                                    daysValue
+                                        in
+                                        { form | eddWeeks = Just newValue, eddDate = eddDate }
+
+                                    else
+                                        form
+                                )
+                            |> Maybe.withDefault form
+
+                updatedData =
+                    model.ultrasoundData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ultrasoundData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetEDDDays executionDateValue weeksValue value ->
+            let
+                form =
+                    model.ultrasoundData.form
+
+                updatedForm =
+                    if String.isEmpty value then
+                        { form | eddDays = Nothing, eddDate = Nothing }
+
+                    else
+                        String.toInt value
+                            |> Maybe.map
+                                (\newValue ->
+                                    if newValue >= 0 && newValue <= 6 then
+                                        let
+                                            eddDate =
+                                                Maybe.map2
+                                                    (\executionDate weeks ->
+                                                        Date.add Date.Weeks weeks executionDate
+                                                            |> Date.add Date.Days newValue
+                                                    )
+                                                    executionDateValue
+                                                    weeksValue
+                                        in
+                                        { form | eddDays = Just newValue, eddDate = eddDate }
+
+                                    else
+                                        form
+                                )
+                            |> Maybe.withDefault form
+
+                updatedData =
+                    model.ultrasoundData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ultrasoundData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveUltrasound prenatalParticipantId personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                appMsgs =
+                    model.ultrasoundData.form
+                        |> toUltrasoundValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.PrenatalEncounter.Model.SaveUltrasound personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , PrenatalEncounterPage id |> UserPage |> App.Model.SetActivePage
+                                , -- We store EDD date on pregnancy, to be able
+                                  -- to decide that pregnancy has ended even if end date was
+                                  -- not set - that is when we're 3 month past EDD date.
+                                  Backend.IndividualEncounterParticipant.Model.SetEddDate value.eddDate
+                                    |> Backend.Model.MsgIndividualEncounterParticipant prenatalParticipantId
+                                    |> App.Model.MsgIndexedDb
                                 ]
                             )
             in
