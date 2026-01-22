@@ -39,6 +39,7 @@ class HedleyRestfulStockUpdate extends HedleyRestfulSyncBase {
     'field_stock_update_type',
     'field_notes',
     'field_signature',
+    'field_deleted',
   ];
 
   /**

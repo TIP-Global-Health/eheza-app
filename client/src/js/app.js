@@ -317,6 +317,10 @@ dbSync.version(30).stores({
     shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter,acute_illness_encounter,home_visit_encounter,well_child_encounter,ncd_encounter,child_scoreboard_encounter,tuberculosis_encounter,hiv_encounter,*name_search,[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult],[type+province+district+sector+cell+village],newborn,*participating_patients,*national_id_number',
 });
 
+dbSync.version(31).upgrade(function (tx) {
+  return tx.dbErrors.clear();
+});
+
 /**
  * --- !!! IMPORTANT !!! ---
  *
@@ -375,7 +379,7 @@ function gatherWords (text) {
  *
  * @type {number}
  */
-const dbVersion = 30;
+const dbVersion = 31;
 
 /**
  * Return saved info for General sync.
@@ -1081,7 +1085,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
       })();
         break;
 
-    // Purpose of this query is to retrieve data tha will help resolving
+    // Purpose of this query is to retrieve data that will help resolving
     // sync incident in case referrenced entity is not recorded. For example,
     // when nutrition height is being recored, but it's encounter is
     // not found and shardChanges table.

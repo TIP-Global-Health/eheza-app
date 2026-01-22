@@ -9,9 +9,9 @@ import Backend.Measurement.Utils exposing (covidIsolationPeriod, getMeasurementV
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Form
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (defaultIconForPerson, generateFullName, isPersonAFertileWoman)
+import Backend.Person.Utils exposing (defaultIconForPerson, generateFullName)
 import Components.PatientsSearchForm.Model
-import Components.PatientsSearchForm.Utils exposing (..)
+import Components.PatientsSearchForm.Utils
 import Components.PatientsSearchForm.View
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
@@ -29,21 +29,21 @@ import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.Model
     exposing
         ( HealthEducationForm
-        , InvokationModule(..)
         , OngoingTreatmentReviewForm
         , VitalsForm
-        , VitalsFormMode(..)
         )
 import Measurement.Utils
     exposing
         ( healthEducationFormWithDefault
         , muacFormWithDefault
         , ongoingTreatmentReviewFormWithDefault
+        , renderDatePart
         , sendToHCFormWithDefault
         , treatmentReviewInputsAndTasks
+        , viewAdministeredMedicationCustomLabel
         , vitalsFormWithDefault
         )
-import Measurement.View exposing (renderDatePart, viewSendToHealthCenterForm, viewSendToHospitalForm)
+import Measurement.View exposing (viewSendToHealthCenterForm, viewSendToHospitalForm)
 import Pages.AcuteIllness.Activity.Model exposing (..)
 import Pages.AcuteIllness.Activity.Types exposing (..)
 import Pages.AcuteIllness.Activity.Utils exposing (..)
@@ -54,29 +54,21 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.View
 import Pages.Utils
     exposing
-        ( getCurrentReasonForMedicationNonAdministration
-        , nonAdministrationReasonToSign
-        , resolveActiveTask
+        ( resolveActiveTask
         , resolveNextTask
         , tasksBarId
         , viewBoolInput
-        , viewCheckBoxMultipleSelectInput
-        , viewCheckBoxSelectCustomInput
-        , viewCheckBoxSelectInput
         , viewCheckBoxValueInput
         , viewCustomAction
         , viewCustomLabel
-        , viewCustomSelectListInput
-        , viewInstructionsLabel
         , viewLabel
         , viewQuestionLabel
-        , viewRedAlertForSelect
         , viewTasksCount
         , viewTextInput
         )
 import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (Site(..), SiteFeature)
-import Translate exposing (Language, TranslationId, translate)
+import Translate exposing (Language, translate)
 import Utils.Form exposing (getValueAsInt, isFormFieldSet, viewFormError)
 import Utils.Html exposing (thumbnailImage, viewLoading, viewModal)
 import Utils.NominalDate exposing (renderDate)
@@ -1081,16 +1073,21 @@ viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements 
                     ]
                 ]
 
-        tasksCompletedFromTotalDict =
-            List.map
-                (\task ->
-                    ( task, treatmentTasksCompletedFromTotal currentDate measurements data task )
-                )
-                tasks
-                |> Dict.fromList
-
         ( tasksCompleted, totalTasks ) =
-            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
+            Maybe.andThen
+                (\task ->
+                    let
+                        tasksCompletedFromTotalDict =
+                            List.map
+                                (\task_ ->
+                                    ( task_, treatmentTasksCompletedFromTotal currentDate measurements data task_ )
+                                )
+                                tasks
+                                |> Dict.fromList
+                    in
+                    Dict.get task tasksCompletedFromTotalDict
+                )
+                activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
         viewForm =
@@ -1444,51 +1441,6 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
         inputs
 
 
-viewAmoxicillinAdministrationInstructions : Language -> String -> String -> TranslationId -> Maybe NominalDate -> List (Html any)
-viewAmoxicillinAdministrationInstructions language numberOfPills pillMassInMg duration maybeDate =
-    let
-        ( medicationLabelSuffix, prescription ) =
-            if numberOfPills == "0.5" then
-                ( " (" ++ (translate language <| Translate.HalfOfDosage pillMassInMg) ++ ")"
-                , div [ class "prescription" ]
-                    [ text <| translate language Translate.SeeDosageScheduleByWeight ]
-                )
-
-            else
-                ( " (" ++ pillMassInMg ++ ")"
-                , viewTabletsPrescription language numberOfPills duration
-                )
-
-        alternateMedicineSection =
-            if pillMassInMg == "500" then
-                [ p [ class "or" ] [ text <| translate language Translate.Or ]
-                , viewAdministeredMedicationCustomLabel
-                    language
-                    Translate.Administer
-                    Translate.MedicationDoxycycline
-                    ""
-                    "icon-pills"
-                    ":"
-                    maybeDate
-                , viewTabletsPrescription language "1" (Translate.ByMouthTwiceADayForXDays 5)
-                ]
-
-            else
-                []
-    in
-    [ viewAdministeredMedicationCustomLabel
-        language
-        Translate.Administer
-        (Translate.MedicationDistributionSign Amoxicillin)
-        medicationLabelSuffix
-        "icon-pills"
-        ":"
-        maybeDate
-    , prescription
-    ]
-        ++ alternateMedicineSection
-
-
 viewAcuteIllnessOngoingTreatment : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> OngoingTreatmentData -> List (Html Msg)
 viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurements ) data =
     let
@@ -1526,16 +1478,21 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
                     ]
                 ]
 
-        tasksCompletedFromTotalDict =
-            List.map
-                (\task ->
-                    ( task, ongoingTreatmentTasksCompletedFromTotal currentDate measurements data task )
-                )
-                tasks
-                |> Dict.fromList
-
         ( tasksCompleted, totalTasks ) =
-            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
+            Maybe.andThen
+                (\task ->
+                    let
+                        tasksCompletedFromTotalDict =
+                            List.map
+                                (\task_ ->
+                                    ( task_, ongoingTreatmentTasksCompletedFromTotal currentDate measurements data task )
+                                )
+                                tasks
+                                |> Dict.fromList
+                    in
+                    Dict.get task tasksCompletedFromTotalDict
+                )
+                activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
         viewForm =
@@ -1635,16 +1592,21 @@ viewAcuteIllnessDangerSigns language currentDate id ( personId, measurements ) d
                     ]
                 ]
 
-        tasksCompletedFromTotalDict =
-            List.map
-                (\task ->
-                    ( task, dangerSignsTasksCompletedFromTotal currentDate measurements data task )
-                )
-                tasks
-                |> Dict.fromList
-
         ( tasksCompleted, totalTasks ) =
-            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
+            Maybe.andThen
+                (\task ->
+                    let
+                        tasksCompletedFromTotalDict =
+                            List.map
+                                (\task_ ->
+                                    ( task_, dangerSignsTasksCompletedFromTotal currentDate measurements data task_ )
+                                )
+                                tasks
+                                |> Dict.fromList
+                    in
+                    Dict.get task tasksCompletedFromTotalDict
+                )
+                activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
         viewForm =

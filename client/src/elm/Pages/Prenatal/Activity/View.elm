@@ -20,7 +20,7 @@ import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate, diffDays, diffYears, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -32,12 +32,12 @@ import Measurement.Model
         ( ContentAndTasksForPerformedLaboratoryUniversalTestConfig
         , ContentAndTasksLaboratoryUniversalTestInitialConfig
         , CorePhysicalExamForm
-        , InvokationModule(..)
         , LaboratoryTask(..)
+        , MedicationAdministrationFormConfig
         , OutsideCareStep(..)
         , VaccinationFormViewMode(..)
+        , VaccinationStatus(..)
         , VitalsForm
-        , VitalsFormMode(..)
         )
 import Measurement.Utils
     exposing
@@ -52,6 +52,7 @@ import Measurement.Utils
         , hivTestUniversalFormWithDefault
         , laboratoryTaskIconClass
         , malariaTestFormWithDefault
+        , medicationAdministrationFormWithDefault
         , outsideCareFormInputsAndTasks
         , outsideCareFormWithDefault
         , partnerHIVTestFormWithDefault
@@ -75,6 +76,8 @@ import Measurement.View
     exposing
         ( viewFamilyPlanningForm
         , viewFamilyPlanningInput
+        , viewMeasurementFloatDiff
+        , viewMedicationAdministrationForm
         )
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Model exposing (..)
@@ -108,16 +111,17 @@ import Pages.Utils
         , viewCustomBoolInput
         , viewCustomLabel
         , viewCustomSelectListInput
+        , viewEncounterActionButton
         , viewInstructionsLabel
         , viewLabel
         , viewMeasurementInput
         , viewPhotoThumbFromImageUrl
         , viewPreviousMeasurement
+        , viewPreviousMeasurementCustom
         , viewQuestionLabel
         , viewRedAlertForBool
         , viewRedAlertForSelect
         , viewSaveAction
-        , viewSelectListInput
         , viewTasksCount
         , viewYellowAlertForSelect
         )
@@ -126,22 +130,24 @@ import SyncManager.Model exposing (Site)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
+import ZScore.Model
+import ZScore.Utils exposing (viewZScore, zScoreBmiForAge)
 
 
-view : Language -> NominalDate -> Site -> PrenatalEncounterId -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate site id isChw activity db model =
+view : Language -> NominalDate -> ZScore.Model.Model -> Site -> PrenatalEncounterId -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate zscores site id isChw activity db model =
     let
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate site id isChw activity db model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate zscores site id isChw activity db model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> Site -> PrenatalEncounterId -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate site id isChw activity db model assembled =
+viewHeaderAndContent : Language -> NominalDate -> ZScore.Model.Model -> Site -> PrenatalEncounterId -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate zscores site id isChw activity db model assembled =
     div [ class "page-activity prenatal" ] <|
         [ viewHeader language id activity assembled
-        , viewContent language currentDate site isChw activity db model assembled
+        , viewContent language currentDate zscores site isChw activity db model assembled
         , viewModal <|
             warningPopup language currentDate isChw assembled.encounter.diagnoses SetWarningPopupState model.warningPopupState
         ]
@@ -174,11 +180,11 @@ viewHeader language id activity assembled =
         ]
 
 
-viewContent : Language -> NominalDate -> Site -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate site isChw activity db model assembled =
+viewContent : Language -> NominalDate -> ZScore.Model.Model -> Site -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate zscores site isChw activity db model assembled =
     div [ class "ui unstackable items" ] <|
         viewMotherAndMeasurements language currentDate isChw assembled (Just ( model.showAlertsDialog, SetAlertsDialogState ))
-            ++ viewActivity language currentDate site isChw activity assembled db model
+            ++ viewActivity language currentDate zscores site isChw activity assembled db model
 
 
 warningPopup :
@@ -297,8 +303,8 @@ warningPopup language currentDate isChw encounterDiagnoses setStateMsg state =
         state
 
 
-viewActivity : Language -> NominalDate -> Site -> Bool -> PrenatalActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewActivity language currentDate site isChw activity assembled db model =
+viewActivity : Language -> NominalDate -> ZScore.Model.Model -> Site -> Bool -> PrenatalActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewActivity language currentDate zscores site isChw activity assembled db model =
     case activity of
         PregnancyDating ->
             viewPregnancyDatingContent language currentDate assembled model.pregnancyDatingData
@@ -307,7 +313,7 @@ viewActivity language currentDate site isChw activity assembled db model =
             viewHistoryContent language currentDate assembled model.historyData
 
         Examination ->
-            viewExaminationContent language currentDate assembled model.examinationData
+            viewExaminationContent language currentDate zscores assembled model.examinationData
 
         FamilyPlanning ->
             viewFamilyPlanningContent language currentDate assembled model.familyPlanningData
@@ -371,21 +377,8 @@ viewPregnancyDatingContent : Language -> NominalDate -> AssembledData -> Pregnan
 viewPregnancyDatingContent language currentDate assembled data =
     let
         form =
-            assembled.measurements.lastMenstrualPeriod
-                |> getMeasurementValueFunc
+            getMeasurementValueFunc assembled.measurements.lastMenstrualPeriod
                 |> lastMenstrualPeriodFormWithDefault data.form
-
-        chwLmpConfirmationSection lmpValueByChw =
-            [ viewCustomLabel language Translate.LmpDateConfirmationLabel "." "label"
-            , viewLabel language Translate.LmpLabel
-            , p [ class "chw-lmp" ] [ text <| formatDDMMYYYY lmpValueByChw.date ]
-            , viewQuestionLabel language Translate.LmpDateConfirmationQuestion
-            , viewBoolInput language
-                form.chwLmpConfirmation
-                (SetConfirmLmpDate lmpValueByChw)
-                "confirm-lmp"
-                Nothing
-            ]
 
         ( newLmpInputSection, newLmpInputTasksCompleted, newLmpInputTasksTotal ) =
             let
@@ -408,8 +401,7 @@ viewPregnancyDatingContent language currentDate assembled data =
 
                     else
                         ( [], 0, 0 )
-            in
-            ( let
+
                 lmpDateInput =
                     let
                         dateSelectorConfig =
@@ -429,9 +421,16 @@ viewPregnancyDatingContent language currentDate assembled data =
                         , onClick <| SetLmpDateSelectorState (Just dateSelectorConfig)
                         ]
                         [ text lmpdDateForView ]
-              in
-              [ viewLabel language Translate.LmpDateHeader
+            in
+            ( [ viewLabel language Translate.LmpDateHeader
               , lmpDateInput
+              , viewQuestionLabel language Translate.PrePregnancyWeightQuestion
+              , viewMeasurementInput
+                    language
+                    form.prePregnancyWeight
+                    SetPrePregnancyWeight
+                    "weight"
+                    Translate.KilogramShorthand
               , viewQuestionLabel language Translate.LmpDateConfidentHeader
               , viewBoolInput language form.lmpDateConfident SetLmpDateConfident "is-confident" Nothing
               , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.lmpDate
@@ -439,9 +438,49 @@ viewPregnancyDatingContent language currentDate assembled data =
                 ++ derivedSection
             , taskCompleted form.lmpDate
                 + taskCompleted form.lmpDateConfident
+                + taskCompleted form.prePregnancyWeight
                 + derivedTasksCompleted
-            , 2 + derivedTasksTotal
+            , 3 + derivedTasksTotal
             )
+
+        ( lateFirstVisitInput, lateFirstVisitTasksCompleted, lateFirstVisitTasksTotal ) =
+            Maybe.map2 calculateEGAWeeks
+                (assembled.encounter.startDate
+                    :: List.map (\( date, _, _ ) -> date) assembled.chwPreviousMeasurementsWithDates
+                    ++ List.map .startDate assembled.nursePreviousEncountersData
+                    |> List.sortWith Date.compare
+                    |> List.head
+                )
+                form.lmpDate
+                |> Maybe.map
+                    (\firstVisitEGAWeek ->
+                        if firstVisitEGAWeek > 12 then
+                            ( [ viewQuestionLabel language Translate.LateFirstANCVisitQuestion
+                              , viewCheckBoxSelectInput language
+                                    [ ReasonLackOfFunds
+                                    , ReasonLackOfHealthInsurance
+                                    , ReasonPartnerAccompanimentRequirement
+                                    , ReasonUndetectedPregnancy
+                                    , ReasonLongDistancesToHealthFacilities
+                                    , ReasonNegativePastExperiences
+                                    , ReasonTraditionalBeliefs
+                                    , ReasonLackOfAwarenessToANC
+                                    , ReasonDelayedRecognitionOfSymptoms
+                                    , ReasonOtherReasons
+                                    ]
+                                    []
+                                    form.lateFirstVisitReason
+                                    SetLateFirstVisitReason
+                                    Translate.LateFirstANCVisitReason
+                              ]
+                            , taskCompleted form.lateFirstVisitReason
+                            , 1
+                            )
+
+                        else
+                            ( [], 0, 0 )
+                    )
+                |> Maybe.withDefault ( [], 0, 0 )
 
         ( inputs, tasksCompleted, totalTasks ) =
             if assembled.encounter.encounterType == NurseEncounter then
@@ -458,30 +497,50 @@ viewPregnancyDatingContent language currentDate assembled data =
                         let
                             chwLmpConfirmationTasksCompleted =
                                 taskCompleted form.chwLmpConfirmation
+
+                            chwLmpConfirmationSection value =
+                                let
+                                    prePregnancyWeight =
+                                        Maybe.map (\(WeightInKg weight) -> String.fromFloat weight ++ "kg")
+                                            value.prePregnancyWeight
+                                            |> Maybe.withDefault "Not Set"
+                                in
+                                [ viewCustomLabel language Translate.LmpDateConfirmationLabel "." "label"
+                                , viewLabel language Translate.LmpLabel
+                                , p [ class "chw-lmp" ] [ text <| formatDDMMYYYY value.date ]
+                                , viewLabel language Translate.PrePregnancyWeight
+                                , p [ class "chw-lmp" ] [ text prePregnancyWeight ]
+                                , viewQuestionLabel language Translate.LmpDateConfirmationQuestion
+                                , viewBoolInput language
+                                    form.chwLmpConfirmation
+                                    (SetConfirmLmpDate value)
+                                    "confirm-lmp"
+                                    Nothing
+                                ]
                         in
                         if form.chwLmpConfirmation == Just False then
-                            ( chwLmpConfirmationSection lmpValueByChw ++ newLmpInputSection
-                            , chwLmpConfirmationTasksCompleted + newLmpInputTasksCompleted
-                            , 1 + newLmpInputTasksTotal
+                            ( chwLmpConfirmationSection lmpValueByChw ++ newLmpInputSection ++ lateFirstVisitInput
+                            , chwLmpConfirmationTasksCompleted + newLmpInputTasksCompleted + lateFirstVisitTasksCompleted
+                            , 1 + newLmpInputTasksTotal + lateFirstVisitTasksTotal
                             )
 
                         else
-                            ( chwLmpConfirmationSection lmpValueByChw
-                            , chwLmpConfirmationTasksCompleted
-                            , 1
+                            ( chwLmpConfirmationSection lmpValueByChw ++ lateFirstVisitInput
+                            , chwLmpConfirmationTasksCompleted + lateFirstVisitTasksCompleted
+                            , 1 + lateFirstVisitTasksTotal
                             )
                     )
                     lmpValueTakenByChw
                     |> Maybe.withDefault
-                        ( newLmpInputSection
-                        , newLmpInputTasksCompleted
-                        , newLmpInputTasksTotal
+                        ( newLmpInputSection ++ lateFirstVisitInput
+                        , newLmpInputTasksCompleted + lateFirstVisitTasksCompleted
+                        , newLmpInputTasksTotal + lateFirstVisitTasksTotal
                         )
 
             else
-                ( newLmpInputSection
-                , newLmpInputTasksCompleted
-                , newLmpInputTasksTotal
+                ( newLmpInputSection ++ lateFirstVisitInput
+                , newLmpInputTasksCompleted + lateFirstVisitTasksCompleted
+                , newLmpInputTasksTotal + lateFirstVisitTasksTotal
                 )
 
         ( edd, ega ) =
@@ -848,8 +907,8 @@ viewHistoryContent language currentDate assembled data =
     ]
 
 
-viewExaminationContent : Language -> NominalDate -> AssembledData -> ExaminationData -> List (Html Msg)
-viewExaminationContent language currentDate assembled data =
+viewExaminationContent : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> ExaminationData -> List (Html Msg)
+viewExaminationContent language currentDate zscores assembled data =
     let
         tasks =
             resolveExaminationTasks assembled
@@ -937,8 +996,9 @@ viewExaminationContent language currentDate assembled data =
             Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
-        measuredHeight =
-            resolveMeasuredHeight assembled
+        previouslyMeasuredHeight =
+            resolvePreviouslyMeasuredHeight assembled
+                |> Maybe.map getHeightValue
 
         ( obstetricalExamInputs, obstetricalExamTasks ) =
             getMeasurementValueFunc assembled.measurements.obstetricalExam
@@ -960,18 +1020,18 @@ viewExaminationContent language currentDate assembled data =
                 Just NutritionAssessment ->
                     let
                         form =
-                            assembled.measurements.nutrition
-                                |> getMeasurementValueFunc
+                            getMeasurementValueFunc assembled.measurements.nutrition
                                 |> prenatalNutritionFormWithDefault data.nutritionAssessmentForm
 
                         formWithMeasuredHeight =
-                            Maybe.map (\(HeightInCm height) -> { form | height = Just height }) measuredHeight
+                            Maybe.map (\height -> { form | height = Just height }) previouslyMeasuredHeight
                                 |> Maybe.withDefault form
 
-                        hideHeightInput =
-                            isJust measuredHeight
+                        prePregnancyWeight =
+                            resolvePrePregnancyWeight assembled
+                                |> Maybe.map weightValueFunc
                     in
-                    viewNutritionAssessmentForm language currentDate assembled formWithMeasuredHeight hideHeightInput
+                    viewNutritionAssessmentForm language currentDate zscores assembled formWithMeasuredHeight previouslyMeasuredHeight prePregnancyWeight
 
                 Just CorePhysicalExam ->
                     getMeasurementValueFunc assembled.measurements.corePhysicalExam
@@ -1013,7 +1073,7 @@ viewExaminationContent language currentDate assembled data =
                                     SaveVitals personId measurements.vitals nextTask
 
                                 NutritionAssessment ->
-                                    SaveNutritionAssessment personId measurements.nutrition (Maybe.map getHeightValue measuredHeight) nextTask
+                                    SaveNutritionAssessment personId measurements.nutrition previouslyMeasuredHeight nextTask
 
                                 CorePhysicalExam ->
                                     SaveCorePhysicalExam personId measurements.corePhysicalExam nextTask
@@ -1082,41 +1142,166 @@ viewFamilyPlanningContent language currentDate assembled data =
 viewMedicationContent : Language -> NominalDate -> AssembledData -> MedicationData -> List (Html Msg)
 viewMedicationContent language currentDate assembled data =
     let
-        form =
-            assembled.measurements.medication
-                |> getMeasurementValueFunc
-                |> medicationFormWithDefault data.form
+        measurements =
+            assembled.measurements
+
+        tasks =
+            resolveMedicationTasks currentDate assembled
+
+        activeTask =
+            resolveActiveTask tasks data.activeTask
+
+        viewTask task =
+            let
+                iconClass =
+                    case task of
+                        TaskCalcium ->
+                            "calcium"
+
+                        TaskFefol ->
+                            "fefol"
+
+                        TaskFolate ->
+                            "folate"
+
+                        TaskIron ->
+                            "iron"
+
+                        TaskMMS ->
+                            "mms"
+
+                        TaskMebendazole ->
+                            "mebendezole"
+
+                isActive =
+                    activeTask == Just task
+
+                isCompleted =
+                    medicationTaskCompleted assembled task
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActiveMedicationTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ div attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.PrenatalMedicationTask task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            List.map (\task -> ( task, medicationTasksCompletedFromTotal currentDate assembled data task )) tasks
+                |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
-            let
-                displayMebendazoleQuestion =
-                    showMebendazoleQuestion currentDate assembled
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
+                |> Maybe.withDefault ( 0, 0 )
 
-                tasks =
-                    [ ( form.receivedIronFolicAcid, True )
-                    , ( form.receivedMebendazole, displayMebendazoleQuestion )
-                    ]
-                        |> List.filterMap
-                            (\( task, showTask ) ->
-                                if showTask then
-                                    Just task
+        viewForm =
+            case activeTask of
+                Just TaskCalcium ->
+                    getMeasurementValueFunc measurements.calcium
+                        |> medicationAdministrationFormWithDefault data.calciumForm
+                        |> viewMedicationAdministrationForm language
+                            currentDate
+                            assembled.person
+                            calciumAdministrationFormConfig
 
-                                else
-                                    Nothing
-                            )
-            in
-            ( List.map taskCompleted tasks
-                |> List.sum
-            , List.length tasks
-            )
+                Just TaskFefol ->
+                    getMeasurementValueFunc measurements.fefol
+                        |> medicationAdministrationFormWithDefault data.fefolForm
+                        |> viewMedicationAdministrationForm language
+                            currentDate
+                            assembled.person
+                            fefolAdministrationFormConfig
+
+                Just TaskFolate ->
+                    getMeasurementValueFunc measurements.folate
+                        |> medicationAdministrationFormWithDefault data.folateForm
+                        |> viewMedicationAdministrationForm language
+                            currentDate
+                            assembled.person
+                            folateAdministrationFormConfig
+
+                Just TaskIron ->
+                    getMeasurementValueFunc measurements.iron
+                        |> medicationAdministrationFormWithDefault data.ironForm
+                        |> viewMedicationAdministrationForm language
+                            currentDate
+                            assembled.person
+                            ironAdministrationFormConfig
+
+                Just TaskMMS ->
+                    getMeasurementValueFunc measurements.mms
+                        |> medicationAdministrationFormWithDefault data.mmsForm
+                        |> viewMedicationAdministrationForm language
+                            currentDate
+                            assembled.person
+                            mmsAdministrationFormConfig
+
+                Just TaskMebendazole ->
+                    getMeasurementValueFunc measurements.mebendazole
+                        |> medicationAdministrationFormWithDefault data.mebendazoleForm
+                        |> viewMedicationAdministrationForm language
+                            currentDate
+                            assembled.person
+                            mebendazoleAdministrationFormConfig
+
+                Nothing ->
+                    []
+
+        actions =
+            Maybe.map
+                (\task ->
+                    let
+                        personId =
+                            assembled.participant.person
+
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
+
+                        saveMsg =
+                            case task of
+                                TaskCalcium ->
+                                    SaveCalcium personId measurements.calcium nextTask
+
+                                TaskFefol ->
+                                    SaveFefol personId measurements.fefol nextTask
+
+                                TaskFolate ->
+                                    SaveFolate personId measurements.folate nextTask
+
+                                TaskIron ->
+                                    SaveIron personId measurements.iron nextTask
+
+                                TaskMMS ->
+                                    SaveMMS personId measurements.mms nextTask
+
+                                TaskMebendazole ->
+                                    SaveMebendazole personId measurements.mebendazole nextTask
+
+                        disabled =
+                            tasksCompleted /= totalTasks
+                    in
+                    viewSaveAction language saveMsg disabled
+                )
+                activeTask
+                |> Maybe.withDefault emptyNode
     in
-    [ viewTasksCount language tasksCompleted totalTasks
+    [ div [ class "ui task segment blue" ]
+        [ div [ class "ui four column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
-        [ div [ class "full content" ]
-            [ viewPrenatalMedicationForm language currentDate SetMedicationBoolInput assembled form ]
-        , viewSaveAction language
-            (SaveMedication assembled.participant.person assembled.measurements.medication)
-            (tasksCompleted /= totalTasks)
+        [ div [ class "full content" ] <|
+            (viewForm ++ [ actions ])
         ]
     ]
 
@@ -1516,10 +1701,6 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                 tasks
                 |> Dict.fromList
 
-        tasksCompletedFromTotalDict =
-            Dict.map (\_ ( _, completed, total ) -> ( completed, total ))
-                formHtmlAndTasks
-
         ( viewForm, tasksCompleted, totalTasks ) =
             Maybe.andThen
                 (\task -> Dict.get task formHtmlAndTasks)
@@ -1532,6 +1713,10 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                     let
                         personId =
                             assembled.participant.person
+
+                        tasksCompletedFromTotalDict =
+                            Dict.map (\_ ( _, completed, total ) -> ( completed, total ))
+                                formHtmlAndTasks
 
                         nextTask =
                             resolveNextTask task tasksCompletedFromTotalDict tasks
@@ -1903,6 +2088,9 @@ viewNextStepsContent language currentDate isChw assembled data =
                         NextStepsWait ->
                             "next-steps-wait"
 
+                        NextStepsNextVisit ->
+                            "next-steps-next-visit"
+
                 isActive =
                     activeTask == Just task
 
@@ -1943,6 +2131,9 @@ viewNextStepsContent language currentDate isChw assembled data =
             Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
+        nextVisitDate =
+            resolveNextVisitDate assembled
+
         viewForm =
             case activeTask of
                 Just NextStepsAppointmentConfirmation ->
@@ -1981,6 +2172,9 @@ viewNextStepsContent language currentDate isChw assembled data =
 
                 Just NextStepsWait ->
                     viewWaitForm language currentDate assembled
+
+                Just NextStepsNextVisit ->
+                    viewNextVisitForm language currentDate nextVisitDate assembled
 
                 Nothing ->
                     emptyNode
@@ -2073,6 +2267,10 @@ viewNextStepsContent language currentDate isChw assembled data =
                                         )
                                         measurements.labsResults
                                         |> Maybe.withDefault NoOp
+
+                                NextStepsNextVisit ->
+                                    Maybe.map (\date -> SaveNextVisitDate date secondPhase nextTask) nextVisitDate
+                                        |> Maybe.withDefault NoOp
                     in
                     case task of
                         NextStepsWait ->
@@ -2086,14 +2284,21 @@ viewNextStepsContent language currentDate isChw assembled data =
                                 -- The encounter is closed on second phase.
                                 saveMsg
 
+                        NextStepsNextVisit ->
+                            viewEncounterActionButton language
+                                Translate.Save
+                                "primary"
+                                -- Button is enabled because there are
+                                -- no actual tasks to be performed.
+                                True
+                                saveMsg
+
                         _ ->
-                            div [ class "actions next-steps" ]
-                                [ button
-                                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                    , onClick saveMsg
-                                    ]
-                                    [ text <| translate language Translate.Save ]
-                                ]
+                            viewEncounterActionButton language
+                                Translate.Save
+                                "primary"
+                                (tasksCompleted == totalTasks)
+                                saveMsg
                 )
                 activeTask
                 |> Maybe.withDefault emptyNode
@@ -2342,6 +2547,11 @@ viewImmunisationContent language currentDate site assembled data =
                             , isJust measurements.tetanusImmunisation
                             )
 
+                        TaskOverview ->
+                            ( "vaccination-overview"
+                            , False
+                            )
+
                 isActive =
                     activeTask == Just task
 
@@ -2365,28 +2575,32 @@ viewImmunisationContent language currentDate site assembled data =
                     ]
                 ]
 
-        tasksCompletedFromTotalDict =
-            List.map
-                (\task ->
-                    ( task
-                    , immunisationTasksCompletedFromTotal language
-                        currentDate
-                        site
-                        assembled
-                        data
-                        task
-                    )
-                )
-                tasks
-                |> Dict.fromList
-
         ( tasksCompleted, totalTasks ) =
             activeTask
-                |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
+                |> Maybe.andThen
+                    (\task ->
+                        let
+                            tasksCompletedFromTotalDict =
+                                List.map
+                                    (\task_ ->
+                                        ( task_
+                                        , immunisationTasksCompletedFromTotal language
+                                            currentDate
+                                            site
+                                            assembled
+                                            data
+                                            task_
+                                        )
+                                    )
+                                    tasks
+                                    |> Dict.fromList
+                        in
+                        Dict.get task tasksCompletedFromTotalDict
+                    )
                 |> Maybe.withDefault ( 0, 0 )
 
         ( formForView, fullScreen, allowSave ) =
-            Maybe.map immunisationTaskToVaccineType activeTask
+            Maybe.andThen immunisationTaskToVaccineType activeTask
                 |> Maybe.map
                     (\vaccineType ->
                         let
@@ -2402,7 +2616,11 @@ viewImmunisationContent language currentDate site assembled data =
                         , vaccinationForm.viewMode == ViewModeInitial
                         )
                     )
-                |> Maybe.withDefault ( emptyNode, False, False )
+                |> Maybe.withDefault
+                    ( viewVaccinationOverviewForm language currentDate assembled
+                    , True
+                    , True
+                    )
 
         actions =
             Maybe.map
@@ -2411,11 +2629,10 @@ viewImmunisationContent language currentDate site assembled data =
                         saveMsg =
                             case task of
                                 TaskTetanus ->
-                                    let
-                                        personId =
-                                            assembled.participant.person
-                                    in
-                                    SaveTetanusImmunisation personId measurements.tetanusImmunisation
+                                    SaveTetanusImmunisation assembled.participant.person measurements.tetanusImmunisation
+
+                                TaskOverview ->
+                                    SetActivePage <| UserPage <| PrenatalEncounterPage assembled.id
 
                         disabled =
                             tasksCompleted /= totalTasks
@@ -2449,6 +2666,69 @@ viewImmunisationContent language currentDate site assembled data =
             ]
         ]
     ]
+
+
+viewVaccinationOverviewForm : Language -> NominalDate -> AssembledData -> Html any
+viewVaccinationOverviewForm language currentDate assembled =
+    div [ class "ui form vaccination-overview" ] <|
+        viewVaccinationOverview language currentDate assembled
+
+
+viewVaccinationOverview : Language -> NominalDate -> AssembledData -> List (Html any)
+viewVaccinationOverview language currentDate assembled =
+    let
+        entriesHeading =
+            div [ class "heading vaccination" ]
+                [ div [ class "name" ] [ text <| translate language Translate.Immunisation ]
+                , div [ class "date" ] [ text <| translate language Translate.DateReceived ]
+                , div [ class "next-due" ] [ text <| translate language Translate.NextDue ]
+                , div [ class "status" ] [ text <| translate language Translate.StatusLabel ]
+                ]
+
+        futureVaccinationsData =
+            generateFutureVaccinationsDataByProgress currentDate assembled
+                |> Dict.fromList
+
+        entries =
+            Dict.toList assembled.vaccinationProgress
+                |> List.map viewVaccinationEntry
+
+        viewVaccinationEntry ( vaccineType, doses ) =
+            let
+                nextDue =
+                    Dict.get vaccineType futureVaccinationsData
+                        |> Maybe.Extra.join
+                        |> Maybe.map Tuple.second
+
+                nextDueText =
+                    Maybe.map formatDDMMYYYY nextDue
+                        |> Maybe.withDefault ""
+
+                ( status, statusClass ) =
+                    Maybe.map
+                        (\dueDate ->
+                            if Date.compare dueDate currentDate == LT then
+                                ( StatusBehind, "behind" )
+
+                            else
+                                ( StatusUpToDate, "up-to-date" )
+                        )
+                        nextDue
+                        |> Maybe.withDefault ( StatusCompleted, "completed" )
+            in
+            div [ class "entry vaccination" ]
+                [ div [ class "cell name" ] [ text <| translate language <| Translate.PrenatalVaccineLabel vaccineType ]
+                , Dict.values doses
+                    |> List.sortWith Date.compare
+                    |> List.map (formatDDMMYYYY >> text >> List.singleton >> p [])
+                    |> div [ class "cell date" ]
+                , div [ classList [ ( "cell next-due ", True ), ( "red", status == StatusBehind ) ] ]
+                    [ text nextDueText ]
+                , div [ class <| "cell status " ++ statusClass ]
+                    [ text <| translate language <| Translate.VaccinationStatus status ]
+                ]
+    in
+    entriesHeading :: entries
 
 
 viewSpecialityCareContent : Language -> NominalDate -> AssembledData -> SpecialityCareData -> List (Html Msg)
@@ -2768,10 +3048,10 @@ obstetricFormSecondStepInputsAndTasks language currentDate assembled form =
             ]
       , viewCheckBoxSelectInput language
             [ LessThan18Month, MoreThan5Years ]
-            [ Neither ]
+            [ MoreThan10Years, Neither ]
             form.previousDeliveryPeriod
             SetPreviousDeliveryPeriod
-            Translate.PreviousDeliveryPeriods
+            Translate.PreviousDeliveryPeriod
       ]
         ++ cSectionsHtml
         ++ [ viewQuestionLabel language Translate.ObstetricHistorySignsReviewQuestion
@@ -2780,11 +3060,15 @@ obstetricFormSecondStepInputsAndTasks language currentDate assembled form =
                 , ObstetricHistoryGestationalDiabetesPreviousPregnancy
                 , ObstetricHistoryIncompleteCervixPreviousPregnancy
                 , ObstetricHistoryBabyDiedOnDayOfBirthPreviousDelivery
-                ]
-                [ ObstetricHistoryPartialPlacentaPreviousDelivery
+                , ObstetricHistoryPartialPlacentaPreviousDelivery
+                , ObstetricHistoryPlacentaAbruptionPreviousDelivery
                 , ObstetricHistorySevereHemorrhagingPreviousDelivery
-                , ObstetricHistoryConvulsionsPreviousDelivery
+                ]
+                [ ObstetricHistoryConvulsionsPreviousDelivery
                 , ObstetricHistoryConvulsionsAndUnconsciousPreviousDelivery
+                , ObstetricHistoryChildWithLowBirthweightPreviousDelivery
+                , ObstetricHistorySmallForGestationalAgePreviousDelivery
+                , ObstetricHistoryIntraUterineDeathPreviousDelivery
                 ]
                 (Maybe.withDefault [] form.signs)
                 (Just NoObstetricHistoryStep2Sign)
@@ -2808,16 +3092,24 @@ medicalFormInputsAndTasks language currentDate assembled form =
     ( [ viewQuestionLabel language Translate.MedicalHistorySignsReviewQuestion
       , viewCheckBoxMultipleSelectInput language
             [ Asthma
+            , AutoimmuneDisease
             , CardiacDisease
-            , Diabetes
             ]
-            [ HypertensionBeforePregnancy
+            [ Diabetes
+            , HypertensionBeforePregnancy
             , RenalDisease
             ]
             (Maybe.withDefault [] form.signs)
             (Just NoMedicalHistorySigns)
             SetMedicalHistorySigns
             Translate.MedicalHistorySign
+      , viewQuestionLabel language Translate.MedicalHistoryPreeclampsiaInFamilyQuestion
+      , viewCheckBoxSelectInput language
+            [ DoesOccur, DoesNotOccur ]
+            [ NotKnownIfOccurs ]
+            form.preeclampsiaInFamily
+            SetPreeclampsiaInFamily
+            Translate.OccursInFamilySign
       , viewQuestionLabel language Translate.MedicalHistoryPhysicalConditionsReviewQuestion
       , viewCheckBoxMultipleSelectInput language
             [ PhysicalConditionUterineMyomaCurrent
@@ -2935,9 +3227,12 @@ viewVitalsForm language currentDate assembled form =
     Measurement.View.viewVitalsForm language currentDate formConfig form
 
 
-viewNutritionAssessmentForm : Language -> NominalDate -> AssembledData -> NutritionAssessmentForm -> Bool -> Html Msg
-viewNutritionAssessmentForm language currentDate assembled form hideHeightInput =
+viewNutritionAssessmentForm : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> NutritionAssessmentForm -> Maybe Float -> Maybe Float -> Html Msg
+viewNutritionAssessmentForm language currentDate zscores assembled form previouslyMeasuredHeight prePregnancyWeight =
     let
+        hideHeightInput =
+            isJust previouslyMeasuredHeight
+
         heightUpdateFunc value form_ =
             { form_ | height = value, heightDirty = True }
 
@@ -2970,6 +3265,60 @@ viewNutritionAssessmentForm language currentDate assembled form hideHeightInput 
             calculateBmi form.height form.weight
                 |> Maybe.map (Round.roundNum 1)
 
+        weightDiff =
+            Maybe.map2
+                (\currentWeight previousWeight ->
+                    viewMeasurementFloatDiff language Translate.KilogramShorthand currentWeight previousWeight
+                )
+                form.weight
+                weightPreviousValue
+
+        baselineClassification =
+            resolvePrePregnancyClassification zscores assembled baselineBmi
+
+        baselineBmi =
+            calculateBmi form.height prePregnancyWeight
+
+        viewBaselineBmi =
+            Maybe.map2
+                (\bmi classification ->
+                    let
+                        message =
+                            (translate language <| Translate.BaselineBMI bmi)
+                                ++ " "
+                                ++ translate language Translate.BMIUnit
+                                ++ " - "
+                                ++ (translate language <| Translate.PrePregnancyClassification classification)
+                    in
+                    div [ class "previous-value" ] [ text message ]
+                )
+                baselineBmi
+                baselineClassification
+
+        gwgIndicator =
+            Maybe.Extra.andThen3
+                (\prePregnancyClassification baselineWeight currentWeight ->
+                    resolveGWGClassification currentDate prePregnancyClassification baselineWeight currentWeight assembled
+                        |> Maybe.map
+                            (\classification ->
+                                let
+                                    color =
+                                        if classification == GWGSeverelyInadequate then
+                                            "red"
+
+                                        else if classification == GWGAdequate then
+                                            "green"
+
+                                        else
+                                            "yellow"
+                                in
+                                p [ class color ] [ text <| translate language <| Translate.GWGClassification classification ]
+                            )
+                )
+                baselineClassification
+                prePregnancyWeight
+                form.weight
+
         heightSection =
             if not hideHeightInput then
                 [ div [ class "ui grid" ]
@@ -2989,21 +3338,61 @@ viewNutritionAssessmentForm language currentDate assembled form hideHeightInput 
 
             else
                 []
+
+        viewGestationalWeightGain =
+            Maybe.map2
+                (\currentWeight baselineWeight ->
+                    viewPreviousMeasurementCustom language
+                        (Just <| currentWeight - baselineWeight)
+                        Translate.GestationalWeightGain
+                        Translate.EmptyString
+                        Translate.KilogramShorthand
+                )
+                form.weight
+                prePregnancyWeight
+                |> Maybe.withDefault emptyNode
+
+        nutritionalSupplementAlert =
+            Maybe.map
+                (\muac ->
+                    if muac < 22 then
+                        p [ class "nutritional-supplement-alert" ] [ text <| translate language Translate.ProvideNutritionalSupplement ]
+
+                    else
+                        emptyNode
+                )
+                form.muac
+                |> Maybe.withDefault emptyNode
     in
     div [ class "ui form examination nutrition-assessment" ] <|
         heightSection
             ++ [ div [ class "ui grid" ]
-                    [ div [ class "eleven wide column" ]
+                    [ div [ class "twelve wide column" ]
                         [ viewLabel language Translate.Weight ]
-                    , viewWarning language Nothing
+                    , div [ class "four wide column gwg-label" ]
+                        [ viewLabel language Translate.GWGClassificationLabel |> showIf (isJust gwgIndicator) ]
                     ]
-               , viewMeasurementInput
-                    language
-                    form.weight
-                    (SetNutritionAssessmentMeasurement weightUpdateFunc)
-                    "weight"
-                    Translate.KilogramShorthand
+               , div [ class "ui grid" ]
+                    [ div [ class "eight wide column" ]
+                        [ viewMeasurementInput
+                            language
+                            form.weight
+                            (SetNutritionAssessmentMeasurement weightUpdateFunc)
+                            "weight"
+                            Translate.KilogramShorthand
+                        ]
+                    , div [ class "four wide column" ]
+                        [ showMaybe weightDiff ]
+                    , div [ class "four wide column gwg-value" ]
+                        [ showMaybe gwgIndicator ]
+                    ]
                , viewPreviousMeasurement language weightPreviousValue Translate.KilogramShorthand
+               , viewPreviousMeasurementCustom language
+                    prePregnancyWeight
+                    Translate.BaselineWeight
+                    Translate.BaselineWeightNotFound
+                    Translate.KilogramShorthand
+               , viewGestationalWeightGain
                , div [ class "separator" ] []
                , div [ class "ui grid" ]
                     [ div [ class "twelve wide column" ]
@@ -3020,8 +3409,9 @@ viewNutritionAssessmentForm language currentDate assembled form hideHeightInput 
                     calculatedBmi
                     (SetNutritionAssessmentMeasurement bmiUpdateFunc)
                     "bmi disabled"
-                    Translate.EmptyString
+                    Translate.BMIUnit
                , viewPreviousMeasurement language bmiPreviousValue Translate.EmptyString
+               , showMaybe viewBaselineBmi
                , div [ class "separator" ] []
                , div [ class "ui grid" ]
                     [ div [ class "twelve wide column" ]
@@ -3032,12 +3422,19 @@ viewNutritionAssessmentForm language currentDate assembled form hideHeightInput 
                             [ [ (<=) 18.5, (>) 22 ] ]
                         ]
                     ]
-               , viewMeasurementInput
-                    language
-                    form.muac
-                    (SetNutritionAssessmentMeasurement muacUpdateFunc)
-                    "muac"
-                    Translate.UnitCentimeter
+               , div [ class "ui grid" ]
+                    [ div [ class "twelve wide column" ]
+                        [ viewMeasurementInput
+                            language
+                            form.muac
+                            (SetNutritionAssessmentMeasurement muacUpdateFunc)
+                            "muac"
+                            Translate.UnitCentimeter
+                        ]
+                    , div [ class "four wide column" ]
+                        [ nutritionalSupplementAlert
+                        ]
+                    ]
                , viewPreviousMeasurement language muacPreviousValue Translate.UnitCentimeter
                ]
 
@@ -3192,7 +3589,7 @@ obstetricalExamFormInputsAndTasks language currentDate assembled form =
                     }
 
         fetalHeartRateUpdateFunc value form_ =
-            { form_ | fetalHeartRate = value, fetalHeartRateDirty = True }
+            { form_ | fetalHeartRate = value, fetalHeartRateDirty = True, fetalHeartRateNotAudible = Just False }
 
         fetalMovementUpdateFunc value form_ =
             { form_ | fetalMovement = Just value }
@@ -3200,6 +3597,21 @@ obstetricalExamFormInputsAndTasks language currentDate assembled form =
         fetalHeartRatePreviousValue =
             resolvePreviousValue assembled .obstetricalExam .fetalHeartRate
                 |> Maybe.map toFloat
+
+        fetalHeartRateInput =
+            if fetalHeartRateNotAudibleChecked then
+                emptyNode
+
+            else
+                viewMeasurementInput
+                    language
+                    (Maybe.map toFloat form.fetalHeartRate)
+                    (SetObstetricalExamIntMeasurement fetalHeartRateUpdateFunc)
+                    "fetal-heart-rate"
+                    Translate.BeatsPerMinuteUnitLabel
+
+        fetalHeartRateNotAudibleChecked =
+            form.fetalHeartRateNotAudible == Just True
     in
     ( fundalHeightHtml
         ++ [ div [ class "ui grid" ]
@@ -3210,7 +3622,7 @@ obstetricalExamFormInputsAndTasks language currentDate assembled form =
                 ]
            , viewCheckBoxSelectInput language
                 [ Transverse, Cephalic, Unknown ]
-                [ FetalBreech, Twins ]
+                [ FetalBreech, Twins, UnclearImprecise ]
                 form.fetalPresentation
                 SetObstetricalExamFetalPresentation
                 Translate.FetalPresentation
@@ -3234,13 +3646,20 @@ obstetricalExamFormInputsAndTasks language currentDate assembled form =
                 , div [ class "four wide column" ]
                     [ alerts.fetalHeartRate ]
                 ]
-           , viewMeasurementInput
-                language
-                (Maybe.map toFloat form.fetalHeartRate)
-                (SetObstetricalExamIntMeasurement fetalHeartRateUpdateFunc)
-                "fetal-heart-rate"
-                Translate.BeatsPerMinuteUnitLabel
+           , fetalHeartRateInput
            , viewPreviousMeasurement language fetalHeartRatePreviousValue Translate.BeatsPerMinuteUnitLabel
+           , div
+                [ class "ui checkbox activity"
+                , onClick ToggleFetalHeartRateNotAudible
+                ]
+                [ input
+                    [ type_ "checkbox"
+                    , checked fetalHeartRateNotAudibleChecked
+                    , classList [ ( "checked", fetalHeartRateNotAudibleChecked ) ]
+                    ]
+                    []
+                , label [] [ text <| translate language Translate.HeartRateNotAudible ]
+                ]
            , div [ class "separator" ] []
            , viewLabel language Translate.PreviousCSectionScar
            , viewCheckBoxSelectInput language
@@ -3773,6 +4192,91 @@ viewReferralForm language currentDate assembled form =
     in
     div [ class "ui form referral" ]
         inputs
+
+
+viewNextVisitForm : Language -> NominalDate -> Maybe NominalDate -> AssembledData -> Html Msg
+viewNextVisitForm language currentDate nextVisitDate assembled =
+    Maybe.map
+        (\date ->
+            [ viewLabel language Translate.NextVisit
+            , div [ class "date" ] [ text <| formatDDMMYYYY date ]
+            ]
+        )
+        nextVisitDate
+        |> Maybe.withDefault []
+        |> div [ class "ui form next-visit" ]
+
+
+resolveNextVisitDate : AssembledData -> Maybe NominalDate
+resolveNextVisitDate assembled =
+    let
+        egaWeekOnFirstVisit =
+            Maybe.map2 calculateEGAWeeks
+                (assembled.encounter.startDate
+                    :: List.map (\( date, _, _ ) -> date) assembled.chwPreviousMeasurementsWithDates
+                    ++ List.map .startDate assembled.nursePreviousEncountersData
+                    |> List.sortWith Date.compare
+                    |> List.head
+                )
+                assembled.globalLmpDate
+
+        firstVisitAt28Plus =
+            Maybe.map (\date -> date >= 28) egaWeekOnFirstVisit
+                |> Maybe.withDefault False
+
+        firstVisitAt22To27 =
+            Maybe.map (\date -> (date >= 22) && (date < 28)) egaWeekOnFirstVisit
+                |> Maybe.withDefault False
+    in
+    Maybe.map (calculateEGAWeeks assembled.encounter.startDate) assembled.globalLmpDate
+        |> Maybe.map
+            (\egaWeekCurrent ->
+                let
+                    -- If moderate Anemia was diagnosed, next visit is supposed
+                    -- to take place within 4 weeks.
+                    moderateAnemiaDiagnosed =
+                        diagnosedAnyOf [ DiagnosisModerateAnemiaInitialPhase, DiagnosisModerateAnemiaRecurrentPhase ] assembled
+
+                    gap =
+                        if egaWeekCurrent < 20 then
+                            if moderateAnemiaDiagnosed then
+                                4
+
+                            else
+                                8
+
+                        else if egaWeekCurrent < 26 then
+                            if moderateAnemiaDiagnosed then
+                                4
+
+                            else
+                                6
+
+                        else if egaWeekCurrent < 30 then
+                            4
+
+                        else if egaWeekCurrent < 32 then
+                            if firstVisitAt22To27 then
+                                2
+
+                            else
+                                4
+
+                        else if egaWeekCurrent < 34 then
+                            if firstVisitAt28Plus then
+                                2
+
+                            else
+                                4
+
+                        else if egaWeekCurrent < 40 then
+                            2
+
+                        else
+                            1
+                in
+                Date.add Weeks gap assembled.encounter.startDate
+            )
 
 
 

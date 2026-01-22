@@ -107,7 +107,7 @@ viewSyncInfo language info =
             viewDateTime (Time.millisToPosix info.lastSuccesfulContact)
     in
     div [ class "sync-status" ]
-        [ div [] [ text <| translate language Translate.LastSuccesfulContactLabel ++ ": " ++ lastSuccessfulContact ]
+        [ div [] [ text <| translate language Translate.LastSuccessfulContactLabel ++ ": " ++ lastSuccessfulContact ]
         , div [] [ text <| translate language Translate.RemainingForUploadLabel ++ ": " ++ String.fromInt info.remainingToUpload ]
         , div [] [ text <| translate language Translate.RemainingForDownloadLabel ++ ": " ++ String.fromInt info.remainingToDownload ]
         , div [] [ text <| translate language Translate.StatusLabel ++ ": " ++ syncInfoStatusToString info.status ]

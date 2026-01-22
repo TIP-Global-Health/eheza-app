@@ -254,7 +254,7 @@ function classify_by_malnutrition_type($wrapper, $field): array {
  * Generate base query.
  */
 function base_query_for_bundle($bundle): EntityFieldQuery {
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
   $query
     ->entityCondition('entity_type', 'node')
     ->propertyCondition('type', $bundle)
