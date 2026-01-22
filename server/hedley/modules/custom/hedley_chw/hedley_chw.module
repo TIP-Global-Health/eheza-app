@@ -65,7 +65,7 @@ function hedley_chw_process_new_village($node) {
 
   // A query that loads relationship for village. Since we create relations
   // only for adults, we won't get duplicates here.
-  $relationships_query = new EntityFieldQuery();
+  $relationships_query = hedley_general_create_entity_field_query_excluding_deleted();
   $relationships_query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'relationship')
@@ -204,7 +204,7 @@ function hedley_chw_find_person_village($person_id) {
   $cell = $wrapper->field_cell->value();
   $village = $wrapper->field_village->value();
 
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
 
   $result = $query
     ->entityCondition('entity_type', 'node')
@@ -231,7 +231,7 @@ function hedley_chw_find_person_village($person_id) {
  *   CHW group node ID, or False, if not found.
  */
 function hedley_chw_find_village_group($village_id) {
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
 
   $result = $query
     ->entityCondition('entity_type', 'node')
@@ -258,7 +258,7 @@ function hedley_chw_find_village_group($village_id) {
  *   True, if adult+child pair participate in group.
  */
 function hedley_chw_participate_in_group($child_id, $adult_id, $group_id) {
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
 
   $result = $query
     ->entityCondition('entity_type', 'node')
@@ -267,7 +267,6 @@ function hedley_chw_participate_in_group($child_id, $adult_id, $group_id) {
     ->fieldCondition('field_person', 'target_id', $child_id)
     ->fieldCondition('field_adult', 'target_id', $adult_id)
     ->fieldCondition('field_clinic', 'target_id', $group_id)
-    ->addTag('exclude_deleted')
     ->range(0, 1)
     ->execute();
 
@@ -295,7 +294,7 @@ function hedley_chw_get_village_residents($nid, $range = 5000) {
   $cell = $node->field_cell[LANGUAGE_NONE][0]['value'];
   $village = $node->field_village[LANGUAGE_NONE][0]['value'];
 
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
   $result = $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'person')
@@ -305,7 +304,6 @@ function hedley_chw_get_village_residents($nid, $range = 5000) {
     ->fieldCondition('field_sector', 'value', $sector)
     ->fieldCondition('field_cell', 'value', $cell)
     ->fieldCondition('field_village', 'value', $village)
-    ->addTag('exclude_deleted')
     ->range(0, $range)
     ->execute();
 

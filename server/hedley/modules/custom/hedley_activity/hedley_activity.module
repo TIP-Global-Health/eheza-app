@@ -240,7 +240,7 @@ function hedley_activity_handle_child_zscores($nid) {
   $bundles = array_merge(HEDLEY_ACTIVITY_HEIGHT_BUNDLES, HEDLEY_ACTIVITY_WEIGHT_BUNDLES);
   $bundles[] = HEDLEY_ACTIVITY_WELL_CHILD_HEAD_CIRCUMFERENCE_CONTENT_TYPE;
 
-  $base_query = new EntityFieldQuery();
+  $base_query = hedley_general_create_entity_field_query_excluding_deleted();
   $base_query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', $bundles, 'IN')
@@ -429,7 +429,7 @@ function hedley_activity_node_by_peer_in_session(\EntityMetadataWrapper $wrapper
     return NULL;
   }
 
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
   $result = $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', $target_bundle)
@@ -454,7 +454,7 @@ function hedley_activity_node_by_peer_in_session(\EntityMetadataWrapper $wrapper
  *   Number of measurements.
  */
 function hedley_activity_count_person_measurements_taken_during_sessions($person_id, array $sessions_ids) {
-  $query = db_select('node', 'node');
+  $query = hedley_general_create_db_select_query_excluding_deleted('node');
   $query->fields('node', ['nid']);
   $query->condition('status', NODE_PUBLISHED);
 
