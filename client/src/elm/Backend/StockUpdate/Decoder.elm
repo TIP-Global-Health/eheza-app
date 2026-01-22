@@ -7,6 +7,7 @@ import Gizra.NominalDate
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import Restful.Endpoint exposing (decodeEntityUuid)
+import Utils.Json exposing (decodeWithFallback)
 
 
 decodeStockUpdate : Decoder StockUpdate
@@ -23,6 +24,7 @@ decodeStockUpdate =
         |> optional "notes" (nullable string) Nothing
         |> optional "stock_correction_reason" (nullable decodeStockCorrectionReason) Nothing
         |> required "health_center" decodeEntityUuid
+        |> required "deleted" (decodeWithFallback False bool)
         |> optional "shard" (nullable decodeEntityUuid) Nothing
         |> optional "signature" (map ImageUrl (decodeStringWithDefault "")) (ImageUrl "")
 

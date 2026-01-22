@@ -28,7 +28,7 @@ if (!$type) {
   exit;
 }
 
-$base_query = new EntityFieldQuery();
+$base_query = hedley_general_create_entity_field_query_excluding_deleted();
 $base_query
   ->entityCondition('entity_type', 'node')
   ->propertyCondition('type', $type)

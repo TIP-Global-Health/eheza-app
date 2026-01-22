@@ -32,6 +32,7 @@ type alias Measurement encounter value =
     , nurse : Maybe NurseId
     , healthCenter : Maybe HealthCenterId
     , participantId : PersonId
+    , deleted : Bool
     , encounterId : Maybe encounter
     , value : value
     }
@@ -3238,6 +3239,7 @@ type alias StockUpdate =
     , notes : Maybe String
     , correctionReason : Maybe StockCorrectionReason
     , healthCenter : HealthCenterId
+    , deleted : Bool
     , shard : Maybe HealthCenterId
     , signature : ImageUrl
     }
