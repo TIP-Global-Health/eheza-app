@@ -1214,8 +1214,8 @@ toCorePhysicalExamValueWithDefault saved form =
 
 toCorePhysicalExamValue : CorePhysicalExamForm -> Maybe CorePhysicalExamValue
 toCorePhysicalExamValue form =
-    -- Always use NormalHairHead since the Head/Hair field is no longer displayed in the UI
-    Maybe.map CorePhysicalExamValue (Just (EverySet.singleton NormalHairHead))
+    -- Always use NormalHairHead (False) since the Head/Hair field is no longer displayed in the UI
+    Maybe.map CorePhysicalExamValue (Just (toEverySet BrittleHairCPE NormalHairHead False))
         |> andMap (Maybe.map (toEverySet PaleConjuctiva NormalEyes) form.paleConjuctiva)
         |> andMap (Maybe.map EverySet.singleton form.heart)
         |> andMap form.heartMurmur
