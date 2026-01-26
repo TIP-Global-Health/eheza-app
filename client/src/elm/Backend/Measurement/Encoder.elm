@@ -1366,7 +1366,6 @@ encodeLastMenstrualPeriodValue value =
     ]
         ++ encodeNullable "not_confident_reason" value.notConfidentReason encodeLmpDateNotConfidentReason
         ++ encodeNullable "late_first_visit_reason" value.lateFirstVisitReason encodeLateFirstANCVisitReason
-        ++ encodeNullable "weight" value.prePregnancyWeight encodeWeightInKg
 
 
 encodeLmpDateNotConfidentReason : LmpDateNotConfidentReason -> Value

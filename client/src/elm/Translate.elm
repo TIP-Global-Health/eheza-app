@@ -444,8 +444,6 @@ type TranslationId
     | BackendError
     | Balance
     | BaselineBMI Float
-    | BaselineWeight Float
-    | BaselineWeightNotFound
     | BatchNumberAbbrev
     | BreastfeedingSignQuestion BreastfeedingSign
     | BeatsPerMinuteUnitLabel
@@ -1331,8 +1329,6 @@ type TranslationId
     | PrenatalUltrasoundHeader
     | PrenatalUltrasoundInstructions
     | PrenatalVaccineLabel PrenatalVaccineType
-    | PrePregnancyWeight
-    | PrePregnancyWeightQuestion
     | PreTerm
     | PregnancyConcludedLabel
     | PregnancyOutcomeLabel
@@ -3624,18 +3620,6 @@ translationSet trans =
         BaselineBMI value ->
             { english = "Pre-pregnancy baseline BMI: " ++ Round.round 1 value
             , kinyarwanda = Just <| "BMI yarafite mbere yo gutwita: " ++ Round.round 1 value
-            , kirundi = Nothing
-            }
-
-        BaselineWeight value ->
-            { english = "Pre-pregnancy baseline weight: " ++ String.fromFloat value
-            , kinyarwanda = Just <| "Ibiro yarafite mbere yo gutwita: " ++ String.fromFloat value
-            , kirundi = Nothing
-            }
-
-        BaselineWeightNotFound ->
-            { english = "No pre-pregnancy baseline weight on record"
-            , kinyarwanda = Just "Nta biro bya mbere yo kubyara byafashwe"
             , kirundi = Nothing
             }
 
@@ -17784,18 +17768,6 @@ translationSet trans =
                     , kinyarwanda = Just "Agakwega"
                     , kirundi = Just "Rudadaza"
                     }
-
-        PrePregnancyWeight ->
-            { english = "Pre-pregnancy Weight"
-            , kinyarwanda = Just "Ibiro bya mbere yo gutwita"
-            , kirundi = Nothing
-            }
-
-        PrePregnancyWeightQuestion ->
-            { english = "What is the patient's baseline (pre-pregnancy) weight"
-            , kinyarwanda = Just "Umubyeyi yari afite ibiro bingahe mbere yo gutwita"
-            , kirundi = Nothing
-            }
 
         PreTerm ->
             { english = "Pre Term"

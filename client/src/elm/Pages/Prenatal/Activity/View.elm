@@ -424,13 +424,6 @@ viewPregnancyDatingContent language currentDate assembled data =
             in
             ( [ viewLabel language Translate.LmpDateHeader
               , lmpDateInput
-              , viewQuestionLabel language Translate.PrePregnancyWeightQuestion
-              , viewMeasurementInput
-                    language
-                    form.prePregnancyWeight
-                    SetPrePregnancyWeight
-                    "weight"
-                    Translate.KilogramShorthand
               , viewQuestionLabel language Translate.LmpDateConfidentHeader
               , viewBoolInput language form.lmpDateConfident SetLmpDateConfident "is-confident" Nothing
               , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.lmpDate
@@ -438,9 +431,8 @@ viewPregnancyDatingContent language currentDate assembled data =
                 ++ derivedSection
             , taskCompleted form.lmpDate
                 + taskCompleted form.lmpDateConfident
-                + taskCompleted form.prePregnancyWeight
                 + derivedTasksCompleted
-            , 3 + derivedTasksTotal
+            , 2 + derivedTasksTotal
             )
 
         ( lateFirstVisitInput, lateFirstVisitTasksCompleted, lateFirstVisitTasksTotal ) =
@@ -500,16 +492,10 @@ viewPregnancyDatingContent language currentDate assembled data =
 
                             chwLmpConfirmationSection value =
                                 let
-                                    prePregnancyWeight =
-                                        Maybe.map (\(WeightInKg weight) -> String.fromFloat weight ++ "kg")
-                                            value.prePregnancyWeight
-                                            |> Maybe.withDefault "Not Set"
                                 in
                                 [ viewCustomLabel language Translate.LmpDateConfirmationLabel "." "label"
                                 , viewLabel language Translate.LmpLabel
                                 , p [ class "chw-lmp" ] [ text <| formatDDMMYYYY value.date ]
-                                , viewLabel language Translate.PrePregnancyWeight
-                                , p [ class "chw-lmp" ] [ text prePregnancyWeight ]
                                 , viewQuestionLabel language Translate.LmpDateConfirmationQuestion
                                 , viewBoolInput language
                                     form.chwLmpConfirmation
@@ -1026,12 +1012,8 @@ viewExaminationContent language currentDate zscores assembled data =
                         formWithMeasuredHeight =
                             Maybe.map (\height -> { form | height = Just height }) previouslyMeasuredHeight
                                 |> Maybe.withDefault form
-
-                        prePregnancyWeight =
-                            resolvePrePregnancyWeight assembled
-                                |> Maybe.map weightValueFunc
                     in
-                    viewNutritionAssessmentForm language currentDate zscores assembled formWithMeasuredHeight previouslyMeasuredHeight prePregnancyWeight
+                    viewNutritionAssessmentForm language currentDate zscores assembled formWithMeasuredHeight previouslyMeasuredHeight
 
                 Just CorePhysicalExam ->
                     getMeasurementValueFunc assembled.measurements.corePhysicalExam
@@ -3227,8 +3209,8 @@ viewVitalsForm language currentDate assembled form =
     Measurement.View.viewVitalsForm language currentDate formConfig form
 
 
-viewNutritionAssessmentForm : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> NutritionAssessmentForm -> Maybe Float -> Maybe Float -> Html Msg
-viewNutritionAssessmentForm language currentDate zscores assembled form previouslyMeasuredHeight prePregnancyWeight =
+viewNutritionAssessmentForm : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> NutritionAssessmentForm -> Maybe Float -> Html Msg
+viewNutritionAssessmentForm language currentDate zscores assembled form previouslyMeasuredHeight =
     let
         hideHeightInput =
             isJust previouslyMeasuredHeight
@@ -3273,52 +3255,6 @@ viewNutritionAssessmentForm language currentDate zscores assembled form previous
                 form.weight
                 weightPreviousValue
 
-        baselineClassification =
-            resolvePrePregnancyClassification zscores assembled baselineBmi
-
-        baselineBmi =
-            calculateBmi form.height prePregnancyWeight
-
-        viewBaselineBmi =
-            Maybe.map2
-                (\bmi classification ->
-                    let
-                        message =
-                            (translate language <| Translate.BaselineBMI bmi)
-                                ++ " "
-                                ++ translate language Translate.BMIUnit
-                                ++ " - "
-                                ++ (translate language <| Translate.PrePregnancyClassification classification)
-                    in
-                    div [ class "previous-value" ] [ text message ]
-                )
-                baselineBmi
-                baselineClassification
-
-        gwgIndicator =
-            Maybe.Extra.andThen3
-                (\prePregnancyClassification baselineWeight currentWeight ->
-                    resolveGWGClassification currentDate prePregnancyClassification baselineWeight currentWeight assembled
-                        |> Maybe.map
-                            (\classification ->
-                                let
-                                    color =
-                                        if classification == GWGSeverelyInadequate then
-                                            "red"
-
-                                        else if classification == GWGAdequate then
-                                            "green"
-
-                                        else
-                                            "yellow"
-                                in
-                                p [ class color ] [ text <| translate language <| Translate.GWGClassification classification ]
-                            )
-                )
-                baselineClassification
-                prePregnancyWeight
-                form.weight
-
         heightSection =
             if not hideHeightInput then
                 [ div [ class "ui grid" ]
@@ -3339,19 +3275,6 @@ viewNutritionAssessmentForm language currentDate zscores assembled form previous
             else
                 []
 
-        viewGestationalWeightGain =
-            Maybe.map2
-                (\currentWeight baselineWeight ->
-                    viewPreviousMeasurementCustom language
-                        (Just <| currentWeight - baselineWeight)
-                        Translate.GestationalWeightGain
-                        Translate.EmptyString
-                        Translate.KilogramShorthand
-                )
-                form.weight
-                prePregnancyWeight
-                |> Maybe.withDefault emptyNode
-
         nutritionalSupplementAlert =
             Maybe.map
                 (\muac ->
@@ -3369,8 +3292,6 @@ viewNutritionAssessmentForm language currentDate zscores assembled form previous
             ++ [ div [ class "ui grid" ]
                     [ div [ class "twelve wide column" ]
                         [ viewLabel language Translate.Weight ]
-                    , div [ class "four wide column gwg-label" ]
-                        [ viewLabel language Translate.GWGClassificationLabel |> showIf (isJust gwgIndicator) ]
                     ]
                , div [ class "ui grid" ]
                     [ div [ class "eight wide column" ]
@@ -3383,16 +3304,8 @@ viewNutritionAssessmentForm language currentDate zscores assembled form previous
                         ]
                     , div [ class "four wide column" ]
                         [ showMaybe weightDiff ]
-                    , div [ class "four wide column gwg-value" ]
-                        [ showMaybe gwgIndicator ]
                     ]
                , viewPreviousMeasurement language weightPreviousValue Translate.KilogramShorthand
-               , viewPreviousMeasurementCustom language
-                    prePregnancyWeight
-                    Translate.BaselineWeight
-                    Translate.BaselineWeightNotFound
-                    Translate.KilogramShorthand
-               , viewGestationalWeightGain
                , div [ class "separator" ] []
                , div [ class "ui grid" ]
                     [ div [ class "twelve wide column" ]
@@ -3411,7 +3324,6 @@ viewNutritionAssessmentForm language currentDate zscores assembled form previous
                     "bmi disabled"
                     Translate.BMIUnit
                , viewPreviousMeasurement language bmiPreviousValue Translate.EmptyString
-               , showMaybe viewBaselineBmi
                , div [ class "separator" ] []
                , div [ class "ui grid" ]
                     [ div [ class "twelve wide column" ]

@@ -1932,7 +1932,6 @@ decodeLastMenstrualPeriod : Decoder LastMenstrualPeriod
 decodeLastMenstrualPeriod =
     succeed LastMenstrualPeriodValue
         |> required "last_menstrual_period" Gizra.NominalDate.decodeYYYYMMDD
-        |> optional "weight" (nullable (map WeightInKg decodeFloat)) Nothing
         |> required "confident" bool
         |> optional "not_confident_reason" (nullable decodeLmpDateNotConfidentReason) Nothing
         |> optional "late_first_visit_reason" (nullable decodeLateFirstANCVisitReason) Nothing

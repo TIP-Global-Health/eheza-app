@@ -1494,33 +1494,6 @@ resolvePreviouslyMeasuredHeight assembled =
     Maybe.Extra.or heightMeasuredByNurse heightMeasuredByCHW
 
 
-resolvePrePregnancyWeight : AssembledData -> Maybe WeightInKg
-resolvePrePregnancyWeight assembled =
-    let
-        resolveWeight measurements =
-            getMeasurementValueFunc measurements.lastMenstrualPeriod
-                |> Maybe.andThen .prePregnancyWeight
-
-        byCurrent =
-            resolveWeight assembled.measurements
-
-        byNurse =
-            List.filterMap (.measurements >> resolveWeight)
-                assembled.nursePreviousEncountersData
-                |> List.head
-
-        byCHW =
-            List.filterMap
-                (\( _, _, measurements ) ->
-                    resolveWeight measurements
-                )
-                assembled.chwPreviousMeasurementsWithDates
-                |> List.head
-    in
-    Maybe.Extra.or byNurse byCHW
-        |> Maybe.Extra.or byCurrent
-
-
 {-| Used for patients bellow 19 years of age.
 -}
 zscoreToPrePregnancyClassification : Float -> PrePregnancyClassification
@@ -3882,11 +3855,6 @@ lastMenstrualPeriodFormWithDefault form saved =
             form
             (\value ->
                 { lmpDate = or form.lmpDate (Just value.date)
-                , prePregnancyWeight =
-                    maybeValueConsideringIsDirtyField form.prePregnancyWeightDirty
-                        form.prePregnancyWeight
-                        (Maybe.map weightValueFunc value.prePregnancyWeight)
-                , prePregnancyWeightDirty = form.prePregnancyWeightDirty
                 , lmpDateConfident = or form.lmpDateConfident (Just value.confident)
                 , lmpDateNotConfidentReason = or form.lmpDateNotConfidentReason value.notConfidentReason
                 , lateFirstVisitReason = or form.lateFirstVisitReason value.lateFirstVisitReason
@@ -3909,7 +3877,6 @@ toLastMenstrualPeriodValue form =
             Maybe.withDefault False form.chwLmpConfirmation
     in
     Maybe.map LastMenstrualPeriodValue form.lmpDate
-        |> andMap (Just <| Maybe.map WeightInKg form.prePregnancyWeight)
         |> andMap form.lmpDateConfident
         |> andMap (Just form.lmpDateNotConfidentReason)
         |> andMap (Just form.lateFirstVisitReason)

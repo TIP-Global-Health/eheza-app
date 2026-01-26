@@ -86,7 +86,6 @@ import Pages.Prenatal.Activity.Utils
         ( generateFutureVaccinationsDataByProgress
         , resolveMeasuredHeight
         , resolvePrePregnancyClassification
-        , resolvePrePregnancyWeight
         , respiratoryRateElevated
         , weightGainStandardsPerPrePregnancyClassification
         )
@@ -1853,52 +1852,6 @@ viewPatientProgressPane language currentDate zscores isChw globalLmpValue assemb
                 )
                 globalLmpValue
                 |> Maybe.withDefault emptyNode
-
-        weightGainForEGAChart =
-            let
-                prePregnancyWeight =
-                    resolvePrePregnancyWeight assembled |> Maybe.map weightValueFunc
-
-                height =
-                    resolveMeasuredHeight assembled |> Maybe.map getHeightValue
-            in
-            calculateBmi height prePregnancyWeight
-                |> resolvePrePregnancyClassification zscores assembled
-                |> Maybe.map2
-                    (\baselineWeight prePregnancyClassification ->
-                        let
-                            egaWeightGainValues =
-                                Maybe.map
-                                    (\lmpDate ->
-                                        List.filterMap
-                                            (\( date, measurements ) ->
-                                                measurements.nutrition
-                                                    |> Maybe.map
-                                                        (Tuple.second
-                                                            >> .value
-                                                            >> .weight
-                                                            >> weightValueFunc
-                                                            >> (\weight ->
-                                                                    ( diffDays lmpDate date, weight - baselineWeight )
-                                                               )
-                                                        )
-                                            )
-                                            allNurseEncountersData
-                                    )
-                                    assembled.globalLmpDate
-                                    |> Maybe.withDefault []
-                        in
-                        div [ class "weight-gain-info" ]
-                            [ viewChartHeading Translate.WeightGain
-                            , weightGainTable language currentDate assembled.globalLmpDate baselineWeight allNurseEncountersData
-                            , viewWeightGainForEGA language
-                                (weightGainStandardsPerPrePregnancyClassification prePregnancyClassification)
-                                egaWeightGainValues
-                            , illustrativePurposes language
-                            ]
-                    )
-                    prePregnancyWeight
-                |> Maybe.withDefault emptyNode
     in
     div [ class "patient-progress" ]
         [ viewItemHeading language Translate.PatientProgress "blue"
@@ -1926,7 +1879,6 @@ viewPatientProgressPane language currentDate zscores isChw globalLmpValue assemb
                     , viewBMIForEGA language egaBmiValues
                     , illustrativePurposes language
                     ]
-                , weightGainForEGAChart
                 , div [ class "fundal-height-info" ]
                     [ viewChartHeading Translate.FundalHeight
                     , fundalHeightTable language currentDate assembled.globalLmpDate allNurseEncountersData
