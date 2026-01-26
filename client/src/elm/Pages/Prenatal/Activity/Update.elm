@@ -306,21 +306,6 @@ update language currentDate id isLabTech db msg model =
             , []
             )
 
-        SetLateFirstVisitReason value ->
-            let
-                updatedForm =
-                    model.pregnancyDatingData.form
-                        |> (\form -> { form | lateFirstVisitReason = Just value })
-
-                updatedData =
-                    model.pregnancyDatingData
-                        |> (\data -> { data | form = updatedForm })
-            in
-            ( { model | pregnancyDatingData = updatedData }
-            , Cmd.none
-            , []
-            )
-
         SetPrePregnancyWeight value ->
             let
                 updatedForm =

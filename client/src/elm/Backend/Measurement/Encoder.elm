@@ -1365,18 +1365,12 @@ encodeLastMenstrualPeriodValue value =
     , ( "type", string "last_menstrual_period" )
     ]
         ++ encodeNullable "not_confident_reason" value.notConfidentReason encodeLmpDateNotConfidentReason
-        ++ encodeNullable "late_first_visit_reason" value.lateFirstVisitReason encodeLateFirstANCVisitReason
         ++ encodeNullable "weight" value.prePregnancyWeight encodeWeightInKg
 
 
 encodeLmpDateNotConfidentReason : LmpDateNotConfidentReason -> Value
 encodeLmpDateNotConfidentReason =
     lmpDateNotConfidentReasonToString >> string
-
-
-encodeLateFirstANCVisitReason : LateFirstANCVisitReason -> Value
-encodeLateFirstANCVisitReason =
-    lateFirstANCVisitReasonToString >> string
 
 
 encodeMedicalHistory : MedicalHistory -> List ( String, Value )

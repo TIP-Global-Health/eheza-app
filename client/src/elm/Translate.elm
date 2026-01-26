@@ -927,8 +927,6 @@ type TranslationId
     | LabResultsHistoryModeLabel LabResultsHistoryMode
     | LabResultsNormalRange LabResultsHistoryMode
     | LabResultsPaneHeader LabResultsCurrentMode
-    | LateFirstANCVisitQuestion
-    | LateFirstANCVisitReason LateFirstANCVisitReason
     | LastChecked
     | LastContacted
     | LastSuccessfulContactLabel
@@ -9945,74 +9943,6 @@ translationSet trans =
             , kinyarwanda = Just "Isuzuma riheruka"
             , kirundi = Just "Kurabwa ubwanyuma"
             }
-
-        LateFirstANCVisitQuestion ->
-            { english = "Why has the patient NOT had an ANC visit in her first trimester"
-            , kinyarwanda = Just "Kubera iki umubyeyi atitabiriye isuzuma ku mugore utwite mu gihembwe cyambere"
-            , kirundi = Nothing
-            }
-
-        LateFirstANCVisitReason reason ->
-            case reason of
-                ReasonLackOfFunds ->
-                    { english = "Poverty/lack of funds for transport or services"
-                    , kinyarwanda = Just "Ubukene/kubura amafaranga y'itike cyangwa kwishyura serivise"
-                    , kirundi = Nothing
-                    }
-
-                ReasonLackOfHealthInsurance ->
-                    { english = "Lack of health insurance"
-                    , kinyarwanda = Just "Kubura ubwishingizi mu kwivuza"
-                    , kirundi = Nothing
-                    }
-
-                ReasonPartnerAccompanimentRequirement ->
-                    { english = "Partner accompaniment requirement for 1st visit"
-                    , kinyarwanda = Just "Gusabwa ko umubyeyi aherekezwa n’uwo bashakanye cg n’uwo babana ku nshuro ya mbere yo kwipimisha inda"
-                    , kirundi = Nothing
-                    }
-
-                ReasonUndetectedPregnancy ->
-                    { english = "Unplanned or undetected pregnancies"
-                    , kinyarwanda = Just "Inda itateganyijwe cyangwa kutamenya ko atwite"
-                    , kirundi = Nothing
-                    }
-
-                ReasonLongDistancesToHealthFacilities ->
-                    { english = "Long distances to health facilities"
-                    , kinyarwanda = Just "Ikigo nderabuzima kiri kure"
-                    , kirundi = Nothing
-                    }
-
-                ReasonNegativePastExperiences ->
-                    { english = "Negative past experiences with providers/ facility"
-                    , kinyarwanda = Just "Kudahabwa serivise nziza ubushize"
-                    , kirundi = Nothing
-                    }
-
-                ReasonTraditionalBeliefs ->
-                    { english = "Traditional beliefs about hiding early pregnancy"
-                    , kinyarwanda = Just "Imyemerere ya gakondo yo guhisha inda ikiri nto"
-                    , kirundi = Nothing
-                    }
-
-                ReasonLackOfAwarenessToANC ->
-                    { english = "Lack of awareness about the importance of early ANC"
-                    , kinyarwanda = Just "Kutagira ubumenyi ku kamaro ko gutangira isuzuma k'umugore utwite hakiri kare"
-                    , kirundi = Nothing
-                    }
-
-                ReasonDelayedRecognitionOfSymptoms ->
-                    { english = "Delayed recognition of pregnancy symptoms"
-                    , kinyarwanda = Just "Gutinda kumenya ibimenyetso by’inda"
-                    , kirundi = Nothing
-                    }
-
-                ReasonOtherReasons ->
-                    { english = "Other reasons"
-                    , kinyarwanda = Just "Izindi mpamvu"
-                    , kirundi = Nothing
-                    }
 
         LastContacted ->
             { english = "Last Contacted"

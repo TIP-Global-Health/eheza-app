@@ -3889,7 +3889,6 @@ lastMenstrualPeriodFormWithDefault form saved =
                 , prePregnancyWeightDirty = form.prePregnancyWeightDirty
                 , lmpDateConfident = or form.lmpDateConfident (Just value.confident)
                 , lmpDateNotConfidentReason = or form.lmpDateNotConfidentReason value.notConfidentReason
-                , lateFirstVisitReason = or form.lateFirstVisitReason value.lateFirstVisitReason
                 , chwLmpConfirmation = or form.chwLmpConfirmation (Just value.confirmation)
                 , dateSelectorPopupState = form.dateSelectorPopupState
                 }
@@ -3912,7 +3911,6 @@ toLastMenstrualPeriodValue form =
         |> andMap (Just <| Maybe.map WeightInKg form.prePregnancyWeight)
         |> andMap form.lmpDateConfident
         |> andMap (Just form.lmpDateNotConfidentReason)
-        |> andMap (Just form.lateFirstVisitReason)
         |> andMap (Just chwLmpConfirmation)
 
 
