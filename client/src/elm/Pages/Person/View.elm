@@ -580,7 +580,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage AcuteIllnessEncounter)
                             , expectedAge = expectedAgeByForm currentDate personForm operation
                             , expectedGender = ExpectMaleOrFemale
-                            , birthDateSelectorFrom = Date.add Years -90 today
+                            , birthDateSelectorFrom = Date.add Years -120 today
                             , birthDateSelectorTo = today
                             , title = Translate.People
                             }
@@ -589,7 +589,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage AntenatalEncounter)
                             , expectedAge = ExpectAdult
                             , expectedGender = ExpectFemale
-                            , birthDateSelectorFrom = Date.add Years -50 today
+                            , birthDateSelectorFrom = Date.add Years -120 today
                             , birthDateSelectorTo = Date.add Years -13 today
                             , title = Translate.People
                             }
@@ -628,7 +628,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage NCDEncounter)
                             , expectedAge = expectedAgeByForm currentDate personForm operation
                             , expectedGender = ExpectMaleOrFemale
-                            , birthDateSelectorFrom = Date.add Years -90 today
+                            , birthDateSelectorFrom = Date.add Years -120 today
                             , birthDateSelectorTo = Date.add Years -12 today
                             , title = Translate.People
                             }

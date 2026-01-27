@@ -125,6 +125,49 @@ function hedley_prenatal_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-appointment_confirmation-field_deleted'.
+  $field_instances['node-appointment_confirmation-field_deleted'] = array(
+    'bundle' => 'appointment_confirmation',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance: 'node-appointment_confirmation-field_nurse'.
   $field_instances['node-appointment_confirmation-field_nurse'] = array(
     'bundle' => 'appointment_confirmation',
@@ -439,6 +482,49 @@ function hedley_prenatal_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-prenatal_aspirin-field_deleted'.
+  $field_instances['node-prenatal_aspirin-field_deleted'] = array(
+    'bundle' => 'prenatal_aspirin',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance: 'node-prenatal_aspirin-field_nurse'.
   $field_instances['node-prenatal_aspirin-field_nurse'] = array(
     'bundle' => 'prenatal_aspirin',
@@ -750,6 +836,49 @@ function hedley_prenatal_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance: 'node-prenatal_blood_gprs_test-field_deleted'.
+  $field_instances['node-prenatal_blood_gprs_test-field_deleted'] = array(
+    'bundle' => 'prenatal_blood_gprs_test',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -1284,6 +1413,49 @@ function hedley_prenatal_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-prenatal_breastfeeding-field_deleted'.
+  $field_instances['node-prenatal_breastfeeding-field_deleted'] = array(
+    'bundle' => 'prenatal_breastfeeding',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance: 'node-prenatal_breastfeeding-field_nurse'.
   $field_instances['node-prenatal_breastfeeding-field_nurse'] = array(
     'bundle' => 'prenatal_breastfeeding',
@@ -1595,6 +1767,49 @@ function hedley_prenatal_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => -1,
+    ),
+  );
+
+  // Exported field_instance: 'node-prenatal_calcium-field_deleted'.
+  $field_instances['node-prenatal_calcium-field_deleted'] = array(
+    'bundle' => 'prenatal_calcium',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -2025,6 +2240,49 @@ function hedley_prenatal_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-prenatal_fefol-field_deleted'.
+  $field_instances['node-prenatal_fefol-field_deleted'] = array(
+    'bundle' => 'prenatal_fefol',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance: 'node-prenatal_fefol-field_nurse'.
   $field_instances['node-prenatal_fefol-field_nurse'] = array(
     'bundle' => 'prenatal_fefol',
@@ -2335,6 +2593,49 @@ function hedley_prenatal_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => -1,
+    ),
+  );
+
+  // Exported field_instance: 'node-prenatal_folate-field_deleted'.
+  $field_instances['node-prenatal_folate-field_deleted'] = array(
+    'bundle' => 'prenatal_folate',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -2667,6 +2968,49 @@ function hedley_prenatal_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => -1,
+    ),
+  );
+
+  // Exported field_instance: 'node-prenatal_follow_up-field_deleted'.
+  $field_instances['node-prenatal_follow_up-field_deleted'] = array(
+    'bundle' => 'prenatal_follow_up',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -3019,6 +3363,49 @@ function hedley_prenatal_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance: 'node-prenatal_gu_exam-field_deleted'.
+  $field_instances['node-prenatal_gu_exam-field_deleted'] = array(
+    'bundle' => 'prenatal_gu_exam',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -3408,6 +3795,49 @@ function hedley_prenatal_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance: 'node-prenatal_hemoglobin_test-field_deleted'.
+  $field_instances['node-prenatal_hemoglobin_test-field_deleted'] = array(
+    'bundle' => 'prenatal_hemoglobin_test',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -3866,6 +4296,49 @@ function hedley_prenatal_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance: 'node-prenatal_hepatitis_b_test-field_deleted'.
+  $field_instances['node-prenatal_hepatitis_b_test-field_deleted'] = array(
+    'bundle' => 'prenatal_hepatitis_b_test',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -4363,6 +4836,49 @@ function hedley_prenatal_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-prenatal_hiv_pcr_test-field_deleted'.
+  $field_instances['node-prenatal_hiv_pcr_test-field_deleted'] = array(
+    'bundle' => 'prenatal_hiv_pcr_test',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance: 'node-prenatal_hiv_pcr_test-field_execution_date'.
   $field_instances['node-prenatal_hiv_pcr_test-field_execution_date'] = array(
     'bundle' => 'prenatal_hiv_pcr_test',
@@ -4853,6 +5369,49 @@ function hedley_prenatal_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance: 'node-prenatal_hiv_test-field_deleted'.
+  $field_instances['node-prenatal_hiv_test-field_deleted'] = array(
+    'bundle' => 'prenatal_hiv_test',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -5374,6 +5933,49 @@ function hedley_prenatal_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-prenatal_iron-field_deleted'.
+  $field_instances['node-prenatal_iron-field_deleted'] = array(
+    'bundle' => 'prenatal_iron',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance: 'node-prenatal_iron-field_nurse'.
   $field_instances['node-prenatal_iron-field_nurse'] = array(
     'bundle' => 'prenatal_iron',
@@ -5741,6 +6343,49 @@ function hedley_prenatal_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance: 'node-prenatal_labs_results-field_deleted'.
+  $field_instances['node-prenatal_labs_results-field_deleted'] = array(
+    'bundle' => 'prenatal_labs_results',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -6207,6 +6852,49 @@ function hedley_prenatal_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance: 'node-prenatal_malaria_test-field_deleted'.
+  $field_instances['node-prenatal_malaria_test-field_deleted'] = array(
+    'bundle' => 'prenatal_malaria_test',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -6694,6 +7382,49 @@ function hedley_prenatal_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-prenatal_mebendazole-field_deleted'.
+  $field_instances['node-prenatal_mebendazole-field_deleted'] = array(
+    'bundle' => 'prenatal_mebendazole',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance: 'node-prenatal_mebendazole-field_nurse'.
   $field_instances['node-prenatal_mebendazole-field_nurse'] = array(
     'bundle' => 'prenatal_mebendazole',
@@ -7007,6 +7738,50 @@ function hedley_prenatal_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => -1,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-prenatal_medication_distribution-field_deleted'.
+  $field_instances['node-prenatal_medication_distribution-field_deleted'] = array(
+    'bundle' => 'prenatal_medication_distribution',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -7443,6 +8218,49 @@ function hedley_prenatal_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-prenatal_mental_health-field_deleted'.
+  $field_instances['node-prenatal_mental_health-field_deleted'] = array(
+    'bundle' => 'prenatal_mental_health',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance:
   // 'node-prenatal_mental_health-field_mental_health_signs'.
   $field_instances['node-prenatal_mental_health-field_mental_health_signs'] = array(
@@ -7839,6 +8657,49 @@ function hedley_prenatal_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-prenatal_mms-field_deleted'.
+  $field_instances['node-prenatal_mms-field_deleted'] = array(
+    'bundle' => 'prenatal_mms',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance: 'node-prenatal_mms-field_nurse'.
   $field_instances['node-prenatal_mms-field_nurse'] = array(
     'bundle' => 'prenatal_mms',
@@ -8112,6 +8973,49 @@ function hedley_prenatal_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance: 'node-prenatal_outside_care-field_deleted'.
+  $field_instances['node-prenatal_outside_care-field_deleted'] = array(
+    'bundle' => 'prenatal_outside_care',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -8504,6 +9408,49 @@ function hedley_prenatal_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance: 'node-prenatal_partner_hiv_test-field_deleted'.
+  $field_instances['node-prenatal_partner_hiv_test-field_deleted'] = array(
+    'bundle' => 'prenatal_partner_hiv_test',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -8990,6 +9937,50 @@ function hedley_prenatal_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-prenatal_random_blood_sugar_test-field_deleted'.
+  $field_instances['node-prenatal_random_blood_sugar_test-field_deleted'] = array(
+    'bundle' => 'prenatal_random_blood_sugar_test',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -9500,6 +10491,49 @@ function hedley_prenatal_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-prenatal_send_to_hc-field_deleted'.
+  $field_instances['node-prenatal_send_to_hc-field_deleted'] = array(
+    'bundle' => 'prenatal_send_to_hc',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance: 'node-prenatal_send_to_hc-field_nurse'.
   $field_instances['node-prenatal_send_to_hc-field_nurse'] = array(
     'bundle' => 'prenatal_send_to_hc',
@@ -9928,6 +10962,49 @@ function hedley_prenatal_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-prenatal_speciality_care-field_deleted'.
+  $field_instances['node-prenatal_speciality_care-field_deleted'] = array(
+    'bundle' => 'prenatal_speciality_care',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance: 'node-prenatal_speciality_care-field_nurse'.
   $field_instances['node-prenatal_speciality_care-field_nurse'] = array(
     'bundle' => 'prenatal_speciality_care',
@@ -10241,6 +11318,49 @@ function hedley_prenatal_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => -1,
+    ),
+  );
+
+  // Exported field_instance: 'node-prenatal_symptom_review-field_deleted'.
+  $field_instances['node-prenatal_symptom_review-field_deleted'] = array(
+    'bundle' => 'prenatal_symptom_review',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -10632,6 +11752,49 @@ function hedley_prenatal_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance: 'node-prenatal_syphilis_test-field_deleted'.
+  $field_instances['node-prenatal_syphilis_test-field_deleted'] = array(
+    'bundle' => 'prenatal_syphilis_test',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -11300,6 +12463,50 @@ function hedley_prenatal_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-prenatal_tetanus_immunisation-field_deleted'.
+  $field_instances['node-prenatal_tetanus_immunisation-field_deleted'] = array(
+    'bundle' => 'prenatal_tetanus_immunisation',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance: 'node-prenatal_tetanus_immunisation-field_nurse'.
   $field_instances['node-prenatal_tetanus_immunisation-field_nurse'] = array(
     'bundle' => 'prenatal_tetanus_immunisation',
@@ -11613,6 +12820,49 @@ function hedley_prenatal_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance: 'node-prenatal_urine_dipstick_test-field_deleted'.
+  $field_instances['node-prenatal_urine_dipstick_test-field_deleted'] = array(
+    'bundle' => 'prenatal_urine_dipstick_test',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -12413,6 +13663,7 @@ function hedley_prenatal_field_default_field_instances() {
   t('Completed Tests');
   t('Date Measured');
   t('Date concluded');
+  t('Deleted');
   t('Dia Repeated');
   t('Execution Date');
   t('Field is used for storing data of reason for which patient was not referred to Health Center.');
