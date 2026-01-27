@@ -80,6 +80,7 @@ decodeMeasurement encounterTag valueDecoder =
         |> optional "nurse" (nullable decodeEntityUuid) Nothing
         |> optional "health_center" (nullable decodeEntityUuid) Nothing
         |> required "person" decodeEntityUuid
+        |> required "deleted" (decodeWithFallback False bool)
         |> optional encounterTag (nullable decodeEntityUuid) Nothing
         |> custom valueDecoder
 
@@ -161,6 +162,13 @@ decodePrenatalMeasurements =
         |> optional "prenatal_gu_exam" (decodeHead decodePrenatalGUExam) Nothing
         |> optional "prenatal_speciality_care" (decodeHead decodePrenatalSpecialityCare) Nothing
         |> optional "prenatal_partner_hiv_test" (decodeHead decodePrenatalPartnerHIVTest) Nothing
+        |> optional "prenatal_aspirin" (decodeHead decodePrenatalAspirin) Nothing
+        |> optional "prenatal_calcium" (decodeHead decodePrenatalCalcium) Nothing
+        |> optional "prenatal_fefol" (decodeHead decodePrenatalFefol) Nothing
+        |> optional "prenatal_folate" (decodeHead decodePrenatalFolate) Nothing
+        |> optional "prenatal_iron" (decodeHead decodePrenatalIron) Nothing
+        |> optional "prenatal_mms" (decodeHead decodePrenatalMMS) Nothing
+        |> optional "prenatal_mebendazole" (decodeHead decodePrenatalMebendazole) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
@@ -1038,6 +1046,7 @@ decodePrenatalMedicationDistributionValue =
         |> required "non_administration_reason" (decodeEverySet decodeMedicationNonAdministrationSign)
         |> optional "recommended_treatment" (nullable (decodeEverySet decodeRecommendedTreatmentSign)) Nothing
         |> optional "avoiding_guidance_reason" (nullable (decodeEverySet decodeAvoidingGuidanceReason)) Nothing
+        |> optional "reinforce_treatment_signs" (nullable (decodeEverySet decodeReinforceTreatmentSign)) Nothing
 
 
 decodeRecommendedTreatmentSign : Decoder RecommendedTreatmentSign
@@ -1059,6 +1068,17 @@ decodeAvoidingGuidanceReason =
                 avoidingGuidanceReasonFromString s
                     |> Maybe.map succeed
                     |> Maybe.withDefault (fail <| s ++ " is not a recognized AvoidingGuidanceReason")
+            )
+
+
+decodeReinforceTreatmentSign : Decoder ReinforceTreatmentSign
+decodeReinforceTreatmentSign =
+    string
+        |> andThen
+            (\s ->
+                reinforceTreatmentSignFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized ReinforceTreatmentSign")
             )
 
 
@@ -1912,8 +1932,10 @@ decodeLastMenstrualPeriod : Decoder LastMenstrualPeriod
 decodeLastMenstrualPeriod =
     succeed LastMenstrualPeriodValue
         |> required "last_menstrual_period" Gizra.NominalDate.decodeYYYYMMDD
+        |> optional "weight" (nullable (map WeightInKg decodeFloat)) Nothing
         |> required "confident" bool
         |> optional "not_confident_reason" (nullable decodeLmpDateNotConfidentReason) Nothing
+        |> optional "late_first_visit_reason" (nullable decodeLateFirstANCVisitReason) Nothing
         |> optional "confirmation" (decodeWithFallback False bool) False
         |> decodePrenatalMeasurement
 
@@ -1926,6 +1948,17 @@ decodeLmpDateNotConfidentReason =
                 lmpDateNotConfidentReasonFromString reason
                     |> Maybe.map succeed
                     |> Maybe.withDefault (reason ++ " is not a recognized LmpDateNotConfidentReason" |> fail)
+            )
+
+
+decodeLateFirstANCVisitReason : Decoder LateFirstANCVisitReason
+decodeLateFirstANCVisitReason =
+    string
+        |> andThen
+            (\reason ->
+                lateFirstANCVisitReasonFromString reason
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (reason ++ " is not a recognized LateFirstANCVisitReason" |> fail)
             )
 
 
@@ -1947,6 +1980,7 @@ decodeMedicalHistoryValue =
         |> optional "mental_health_issues"
             (decodeEverySet decodeMedicalHistoryMentalHealthIssue)
             (EverySet.singleton NoMedicalHistoryMentalHealthIssue)
+        |> optional "preeclampsia_in_family" decodeOccursInFamilySign NotKnownIfOccurs
 
 
 decodeMedicalHistorySign : Decoder MedicalHistorySign
@@ -1990,6 +2024,17 @@ decodeMedicalHistoryMentalHealthIssue =
                 medicalHistoryMentalHealthIssueFromString s
                     |> Maybe.map succeed
                     |> Maybe.withDefault (s ++ " is not a recognized MedicalHistoryMentalHealthIssue" |> fail)
+            )
+
+
+decodeOccursInFamilySign : Decoder OccursInFamilySign
+decodeOccursInFamilySign =
+    string
+        |> andThen
+            (\s ->
+                occursInFamilySignFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (s ++ " is not a recognized OccursInFamilySign" |> fail)
             )
 
 
@@ -2122,6 +2167,9 @@ decodeFetalPresentation =
 
                     "twins" ->
                         succeed Twins
+
+                    "unclear-imprecise" ->
+                        succeed UnclearImprecise
 
                     "unknown" ->
                         succeed Unknown
@@ -2322,6 +2370,9 @@ decodePreviousDeliveryPeriod =
 
                     "more-than-5-years" ->
                         succeed MoreThan5Years
+
+                    "more-than-10-years" ->
+                        succeed MoreThan10Years
 
                     "neither" ->
                         succeed Neither
@@ -3429,6 +3480,9 @@ decodeMedicationDistributionSign =
                     "amoxicillin" ->
                         succeed Amoxicillin
 
+                    "aspirin" ->
+                        succeed Aspirin
+
                     "coartem" ->
                         succeed Coartem
 
@@ -3480,6 +3534,15 @@ decodeMedicationDistributionSign =
                     "metronidazole" ->
                         succeed Metronidazole
 
+                    "calcium" ->
+                        succeed Calcium
+
+                    "mms" ->
+                        succeed MMS
+
+                    "fefol" ->
+                        succeed Fefol
+
                     "none" ->
                         succeed NoMedicationDistributionSigns
 
@@ -3523,6 +3586,11 @@ decodeMedicationNonAdministrationSign =
                                     "amoxicillin" ->
                                         administrationNote
                                             |> Maybe.map (MedicationAmoxicillin >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "aspirin" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationAspirin >> succeed)
                                             |> Maybe.withDefault failure
 
                                     "coartem" ->
@@ -4640,21 +4708,21 @@ decodeVaccineDose =
 
 decodeWellChildAlbendazole : Decoder WellChildAlbendazole
 decodeWellChildAlbendazole =
-    decodeWellChildMeasurement decodeWellChildMedication
+    decodeWellChildMeasurement decodeAdministrationNoteField
 
 
 decodeWellChildMebendezole : Decoder WellChildMebendezole
 decodeWellChildMebendezole =
-    decodeWellChildMeasurement decodeWellChildMedication
+    decodeWellChildMeasurement decodeAdministrationNoteField
 
 
 decodeWellChildVitaminA : Decoder WellChildVitaminA
 decodeWellChildVitaminA =
-    decodeWellChildMeasurement decodeWellChildMedication
+    decodeWellChildMeasurement decodeAdministrationNoteField
 
 
-decodeWellChildMedication : Decoder AdministrationNote
-decodeWellChildMedication =
+decodeAdministrationNoteField : Decoder AdministrationNote
+decodeAdministrationNoteField =
     decodeAdministrationNote
         |> field "administration_note"
 
@@ -4959,6 +5027,41 @@ decodeOutsideCareMedication =
                     |> Maybe.map succeed
                     |> Maybe.withDefault (fail <| s ++ " is not a recognized OutsideCareMedication")
             )
+
+
+decodePrenatalAspirin : Decoder PrenatalAspirin
+decodePrenatalAspirin =
+    decodePrenatalMeasurement decodeAdministrationNoteField
+
+
+decodePrenatalCalcium : Decoder PrenatalCalcium
+decodePrenatalCalcium =
+    decodePrenatalMeasurement decodeAdministrationNoteField
+
+
+decodePrenatalFefol : Decoder PrenatalFefol
+decodePrenatalFefol =
+    decodePrenatalMeasurement decodeAdministrationNoteField
+
+
+decodePrenatalFolate : Decoder PrenatalFolate
+decodePrenatalFolate =
+    decodePrenatalMeasurement decodeAdministrationNoteField
+
+
+decodePrenatalIron : Decoder PrenatalIron
+decodePrenatalIron =
+    decodePrenatalMeasurement decodeAdministrationNoteField
+
+
+decodePrenatalMMS : Decoder PrenatalMMS
+decodePrenatalMMS =
+    decodePrenatalMeasurement decodeAdministrationNoteField
+
+
+decodePrenatalMebendazole : Decoder PrenatalMebendazole
+decodePrenatalMebendazole =
+    decodePrenatalMeasurement decodeAdministrationNoteField
 
 
 decodeNCDCoMorbidities : Decoder NCDCoMorbidities

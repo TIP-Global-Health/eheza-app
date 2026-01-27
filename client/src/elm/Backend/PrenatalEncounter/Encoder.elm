@@ -39,7 +39,7 @@ encodePrenatalEncounter encounter =
     , ( "prenatal_encounter_type", encodePrenatalEncounterType encounter.encounterType )
     , ( "prenatal_diagnoses", list encodePrenatalDiagnosis (diagnosesWithDefault encounter.diagnoses) )
     , ( "past_prenatal_diagnoses", list encodePrenatalDiagnosis (diagnosesWithDefault encounter.pastDiagnoses) )
-    , ( "deleted", bool False )
+    , ( "deleted", bool encounter.deleted )
     , ( "type", string "prenatal_encounter" )
     ]
         ++ prenatalIndicators
@@ -333,6 +333,15 @@ encodePrenatalDiagnosis diagnosis =
 
             DiagnosisSuicideRisk ->
                 "suicide-risk"
+
+            DiagnosisHighRiskOfPreeclampsiaInitialPhase ->
+                "high-risk-of-preeclampsia-initial"
+
+            DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ->
+                "high-risk-of-preeclampsia-recurrent"
+
+            DiagnosisModerateRiskOfPreeclampsia ->
+                "moderate-risk-of-preeclampsia"
 
             DiagnosisOther ->
                 "other"

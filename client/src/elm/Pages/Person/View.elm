@@ -580,7 +580,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage AcuteIllnessEncounter)
                             , expectedAge = expectedAgeByForm currentDate personForm operation
                             , expectedGender = ExpectMaleOrFemale
-                            , birthDateSelectorFrom = Date.add Years -90 today
+                            , birthDateSelectorFrom = Date.add Years -120 today
                             , birthDateSelectorTo = today
                             , title = Translate.People
                             }
@@ -589,7 +589,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage AntenatalEncounter)
                             , expectedAge = ExpectAdult
                             , expectedGender = ExpectFemale
-                            , birthDateSelectorFrom = Date.add Years -50 today
+                            , birthDateSelectorFrom = Date.add Years -120 today
                             , birthDateSelectorTo = Date.add Years -13 today
                             , title = Translate.People
                             }
@@ -628,7 +628,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage NCDEncounter)
                             , expectedAge = expectedAgeByForm currentDate personForm operation
                             , expectedGender = ExpectMaleOrFemale
-                            , birthDateSelectorFrom = Date.add Years -90 today
+                            , birthDateSelectorFrom = Date.add Years -120 today
                             , birthDateSelectorTo = Date.add Years -12 today
                             , title = Translate.People
                             }
@@ -1319,17 +1319,33 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                 []
 
         contactInformationSection =
-            if originBasedSettings.expectedAge /= ExpectChild then
-                [ h3
-                    [ class "ui header" ]
-                    [ text <| translate language Translate.ContactInformation ++ ":" ]
-                , [ viewTextInput language Translate.TelephoneNumber Backend.Person.Form.phoneNumber False personForm ]
-                    |> fieldset [ class "registration-form address-info" ]
-                    |> Html.map (MsgForm operation initiator)
-                ]
+            let
+                content =
+                    if originBasedSettings.expectedAge == ExpectChild then
+                        [ div [ class "ui header secondary" ]
+                            [ text <| translate language Translate.NextOfKin ++ ":" ]
+                        , viewTextInput language Translate.Name Backend.Person.Form.nextOfKinName False personForm
+                        , viewTextInput language Translate.TelephoneNumber Backend.Person.Form.nextOfKinPhoneNumber False personForm
+                        ]
 
-            else
-                []
+                    else
+                        [ viewTextInput language Translate.TelephoneNumber Backend.Person.Form.phoneNumber False personForm
+                        , div [ class "ui header secondary" ]
+                            [ text <| translate language Translate.SpousePartner ++ ":" ]
+                        , viewTextInput language Translate.Name Backend.Person.Form.spouseName False personForm
+                        , viewTextInput language Translate.TelephoneNumber Backend.Person.Form.spousePhoneNumber False personForm
+                        , div [ class "ui header secondary" ]
+                            [ text <| translate language Translate.NextOfKin ++ ":" ]
+                        , viewTextInput language Translate.Name Backend.Person.Form.nextOfKinName False personForm
+                        , viewTextInput language Translate.TelephoneNumber Backend.Person.Form.nextOfKinPhoneNumber False personForm
+                        ]
+            in
+            [ h3 [ class "ui header" ]
+                [ text <| translate language Translate.ContactInformation ++ ":" ]
+            , fieldset [ class "registration-form contact-info" ]
+                content
+                |> Html.map (MsgForm operation initiator)
+            ]
 
         healthCenterSection =
             if isChw then

@@ -5,9 +5,9 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantInitiator(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Initiator(..), Person)
-import Backend.Person.Utils exposing (defaultIconForPerson, isChildUnderAgeOf2, isPersonAFertileWoman, isPersonAnAdult)
+import Backend.Person.Utils exposing (defaultIconForPerson, eligibleForPrenatalEncounter, isChildUnderAgeOf2, isPersonAnAdult)
 import Backend.Village.Utils exposing (personLivesInVillage)
-import Components.PatientsSearchForm.Utils exposing (..)
+import Components.PatientsSearchForm.Utils
 import Components.PatientsSearchForm.View
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffYears)
@@ -16,7 +16,6 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.IndividualEncounterParticipants.Model exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
@@ -88,7 +87,7 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
                     True
 
                 AntenatalEncounter ->
-                    isPersonAFertileWoman currentDate person
+                    eligibleForPrenatalEncounter currentDate person
 
                 ChildScoreboardEncounter ->
                     isChw && isChildUnderAgeOf2 currentDate person

@@ -67,6 +67,21 @@ isPersonAFertileWoman currentDate person =
             |> Maybe.withDefault False
 
 
+eligibleForPrenatalEncounter : NominalDate -> Person -> Bool
+eligibleForPrenatalEncounter currentDate person =
+    if person.gender == Male then
+        False
+
+    else
+        person.birthDate
+            |> Maybe.map
+                (\birthDate ->
+                    diffYears birthDate currentDate
+                        |> (\age -> age > 12)
+                )
+            |> Maybe.withDefault False
+
+
 isChildUnderAgeOf2 : NominalDate -> Person -> Bool
 isChildUnderAgeOf2 =
     isChildUnderAgeOf 2
@@ -210,14 +225,15 @@ initiatorFromUrlFragment s =
 
                     birthDate =
                         String.left 10 birthDateWithUuid
-
-                    uuid =
-                        String.dropLeft 11 birthDateWithUuid
                 in
                 case String.split "-" birthDate of
                     [ yyyy, mm, dd ] ->
                         Maybe.map3
                             (\year month day ->
+                                let
+                                    uuid =
+                                        String.dropLeft 11 birthDateWithUuid
+                                in
                                 Just <|
                                     PrenatalNextStepsNewbornEnrolmentOrigin
                                         (Date.fromCalendarDate year (Date.numberToMonth month) day)

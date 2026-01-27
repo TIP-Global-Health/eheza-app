@@ -33,11 +33,9 @@ import Pages.Utils
     exposing
         ( resolveActiveTask
         , resolveNextTask
-        , saveButton
         , taskCompleted
         , tasksBarId
         , viewBoolInput
-        , viewCheckBoxMultipleSelectInput
         , viewConfirmationDialog
         , viewCustomBoolInput
         , viewPersonDetailsExtended

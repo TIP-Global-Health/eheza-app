@@ -299,15 +299,19 @@ allTuberculosisActivities =
 
 allPrenatalActivities : List PrenatalActivity
 allPrenatalActivities =
-    [ PrenatalAppointmentConfirmation
+    [ PrenatalAspirin
+    , PrenatalAppointmentConfirmation
     , PrenatalBirthPlan
     , PrenatalBloodGprsTest
     , PrenatalBloodGprsTestResult
     , PrenatalBreastExam
     , PrenatalBreastfeeding
+    , PrenatalCalcium
     , PrenatalCorePhysicalExam
     , PrenatalDangerSigns
     , PrenatalFamilyPlanning
+    , PrenatalFefol
+    , PrenatalFolate
     , PrenatalFollowUp
     , PrenatalGuExam
     , PrenatalHealthEducation
@@ -319,13 +323,16 @@ allPrenatalActivities =
     , PrenatalHIVPCRTestResult
     , PrenatalHIVTest
     , PrenatalHIVTestResult
+    , PrenatalIron
     , PrenatalLastMenstrualPeriod
     , PrenatalMalariaTest
     , PrenatalMalariaTestResult
+    , PrenatalMebendazole
     , PrenatalMedicalHistory
     , PrenatalMedication
     , PrenatalMedicationDistribution
     , PrenatalMentalHealth
+    , PrenatalMMS
     , PrenatalNutrition
     , PrenatalObstetricalExam
     , PrenatalObstetricHistory
