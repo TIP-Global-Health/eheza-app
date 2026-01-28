@@ -2266,6 +2266,9 @@ viewFamilyPlanningInput language setFamilyPlanningSignMsg currentValue =
 viewCorePhysicalExamForm : Language -> NominalDate -> CorePhysicalExamFormConfig msg -> CorePhysicalExamForm -> Html msg
 viewCorePhysicalExamForm language currentDate config form =
     let
+        brittleHairUpdateFunc value form_ =
+            { form_ | brittleHair = Just value }
+
         paleConjuctivaUpdateFunc value form_ =
             { form_ | paleConjuctiva = Just value }
 
@@ -2274,6 +2277,19 @@ viewCorePhysicalExamForm language currentDate config form =
     in
     div [ class "ui form examination core-physical-exam" ]
         [ div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.HeadHair ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForBool form.brittleHair False ]
+            ]
+        , viewBoolInput
+            language
+            form.brittleHair
+            (config.setBoolInputMsg brittleHairUpdateFunc)
+            "head-hair"
+            (Just ( Translate.BrittleHair, Translate.Normal ))
+        , div [ class "separator" ] []
+        , div [ class "ui grid" ]
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.Eyes ]
             , div [ class "four wide column" ]

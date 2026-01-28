@@ -314,8 +314,13 @@ examinationTasksCompletedFromTotal currentDate assembled data task =
                 + taskCompleted form.lungs
                 + taskCompleted form.abdomen
                 + taskCompleted form.heart
-                + taskCompleted form.paleConjuctiva
-            , 6
+                + ([ form.brittleHair
+                   , form.paleConjuctiva
+                   ]
+                    |> List.map taskCompleted
+                    |> List.sum
+                  )
+            , 7
             )
 
 
