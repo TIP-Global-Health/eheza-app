@@ -757,7 +757,7 @@ type alias PregnancyDatingForm =
     , lmpDateConfident : Maybe Bool
     , chwLmpConfirmation : Maybe Bool
     , lmpDateNotConfidentReason : Maybe LmpDateNotConfidentReason
-    , -- Deprecated, but kept for backward comaptibility.
+    , -- Deprecated, but kept for backward compatibility.
       lateFirstVisitReason : Maybe LateFirstANCVisitReason
     , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
     }
