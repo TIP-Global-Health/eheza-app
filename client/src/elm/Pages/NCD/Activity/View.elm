@@ -397,6 +397,7 @@ viewCoreExamForm language currentDate form =
             , setAbdomenMsg = SetCoreExamAbdomen
             , setHandsMsg = SetCoreExamHands
             , setLegsMsg = SetCoreExamLegs
+            , showHeadHairInput = True -- Show Head/Hair for NCD module
             }
     in
     Measurement.View.viewCorePhysicalExamForm language currentDate config form
