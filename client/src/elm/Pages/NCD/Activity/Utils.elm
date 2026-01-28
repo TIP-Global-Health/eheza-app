@@ -297,31 +297,9 @@ examinationTasksCompletedFromTotal currentDate assembled data task =
             resolveTasksCompletedFromTotal tasks
 
         TaskCoreExam ->
-            let
-                form =
-                    getMeasurementValueFunc assembled.measurements.coreExam
-                        |> corePhysicalExamFormWithDefault data.coreExamForm
-
-                extremitiesTaskCompleted =
-                    if isJust form.hands && isJust form.legs then
-                        1
-
-                    else
-                        0
-            in
-            ( extremitiesTaskCompleted
-                + taskCompleted form.neck
-                + taskCompleted form.lungs
-                + taskCompleted form.abdomen
-                + taskCompleted form.heart
-                + ([ form.brittleHair
-                   , form.paleConjuctiva
-                   ]
-                    |> List.map taskCompleted
-                    |> List.sum
-                  )
-            , 7
-            )
+            -- This is not in use, because TaskCoreExam task got
+            -- special treatment at viewExaminationContent().
+            ( 0, 0 )
 
 
 generateVitalsFormConfig : AssembledData -> VitalsFormConfig Msg

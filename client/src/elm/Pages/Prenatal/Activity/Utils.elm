@@ -4866,26 +4866,9 @@ examinationTasksCompletedFromTotal currentDate assembled data task =
             )
 
         CorePhysicalExam ->
-            let
-                form =
-                    getMeasurementValueFunc assembled.measurements.corePhysicalExam
-                        |> corePhysicalExamFormWithDefault data.corePhysicalExamForm
-
-                extremitiesTaskCompleted =
-                    if isJust form.hands && isJust form.legs then
-                        1
-
-                    else
-                        0
-            in
-            ( extremitiesTaskCompleted
-                + taskCompleted form.neck
-                + taskCompleted form.lungs
-                + taskCompleted form.abdomen
-                + taskCompleted form.heart
-                + taskCompleted form.paleConjuctiva
-            , 6
-            )
+            -- This is not in use, because CorePhysicalExam task got
+            -- special treatment at viewExaminationContent().
+            ( 0, 0 )
 
         ObstetricalExam ->
             -- This is not in use, because ObstetricalExam task got

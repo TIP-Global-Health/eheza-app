@@ -26,6 +26,7 @@ import Measurement.Utils
     exposing
         ( OutsideCareConfig
         , corePhysicalExamFormWithDefault
+        , corePhysicalExamInputsAndTasks
         , emptyContentAndTasksForPerformedLaboratoryTestConfig
         , emptyContentAndTasksLaboratoryTestInitialConfig
         , familyPlanningFormWithDefault
@@ -58,6 +59,7 @@ import Pages.Utils
     exposing
         ( resolveActiveTask
         , resolveNextTask
+        , resolveTasksCompletedFromTotal
         , saveButton
         , taskCompleted
         , tasksBarId
@@ -313,7 +315,14 @@ viewExaminationContent language currentDate assembled data =
         tasksCompletedFromTotalDict =
             List.map
                 (\task ->
-                    ( task, examinationTasksCompletedFromTotal currentDate assembled data task )
+                    case task of
+                        TaskCoreExam ->
+                            ( TaskCoreExam
+                            , resolveTasksCompletedFromTotal coreExamTasks
+                            )
+
+                        _ ->
+                            ( task, examinationTasksCompletedFromTotal currentDate assembled data task )
                 )
                 tasks
                 |> Dict.fromList
@@ -321,6 +330,23 @@ viewExaminationContent language currentDate assembled data =
         ( tasksCompleted, totalTasks ) =
             Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
+
+        ( coreExamInputs, coreExamTasks ) =
+            let
+                config =
+                    { setBoolInputMsg = SetCoreExamBoolInput
+                    , setNeckMsg = SetCoreExamNeck
+                    , setHeartMsg = SetCoreExamHeart
+                    , setLungsMsg = SetCoreExamLungs
+                    , setAbdomenMsg = SetCoreExamAbdomen
+                    , setHandsMsg = SetCoreExamHands
+                    , setLegsMsg = SetCoreExamLegs
+                    , showHeadHairInput = True
+                    }
+            in
+            getMeasurementValueFunc assembled.measurements.coreExam
+                |> corePhysicalExamFormWithDefault data.coreExamForm
+                |> corePhysicalExamInputsAndTasks language currentDate config
 
         viewForm =
             case activeTask of
@@ -330,9 +356,8 @@ viewExaminationContent language currentDate assembled data =
                         |> viewVitalsForm language currentDate assembled
 
                 Just TaskCoreExam ->
-                    getMeasurementValueFunc assembled.measurements.coreExam
-                        |> corePhysicalExamFormWithDefault data.coreExamForm
-                        |> viewCoreExamForm language currentDate
+                    div [ class "ui form examination core-physical-exam" ]
+                        coreExamInputs
 
                 Nothing ->
                     emptyNode
@@ -384,23 +409,6 @@ viewVitalsForm language currentDate assembled form =
             generateVitalsFormConfig assembled
     in
     Measurement.View.viewVitalsForm language currentDate config form
-
-
-viewCoreExamForm : Language -> NominalDate -> CorePhysicalExamForm -> Html Msg
-viewCoreExamForm language currentDate form =
-    let
-        config =
-            { setBoolInputMsg = SetCoreExamBoolInput
-            , setNeckMsg = SetCoreExamNeck
-            , setHeartMsg = SetCoreExamHeart
-            , setLungsMsg = SetCoreExamLungs
-            , setAbdomenMsg = SetCoreExamAbdomen
-            , setHandsMsg = SetCoreExamHands
-            , setLegsMsg = SetCoreExamLegs
-            , showHeadHairInput = True -- Show Head/Hair for NCD module
-            }
-    in
-    Measurement.View.viewCorePhysicalExamForm language currentDate config form
 
 
 viewMedicalHistoryContent : Language -> NominalDate -> Site -> AssembledData -> MedicalHistoryData -> List (Html Msg)
@@ -467,10 +475,7 @@ viewMedicalHistoryContent language currentDate site assembled data =
                     case task of
                         TaskOutsideCare ->
                             ( TaskOutsideCare
-                            , ( Maybe.Extra.values outsideCareTasks
-                                    |> List.length
-                              , List.length outsideCareTasks
-                              )
+                            , resolveTasksCompletedFromTotal outsideCareTasks
                             )
 
                         _ ->
