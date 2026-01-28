@@ -758,7 +758,7 @@ type alias PregnancyDatingForm =
     , lateFirstVisitReason : Maybe LateFirstANCVisitReason
     , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
 
-    -- Depricated, but kept for backward compatibility.
+    -- Deprecated, but kept for backward compatibility.
     , prePregnancyWeightKnown : Maybe Bool
     , prePregnancyWeight : Maybe Float
     , prePregnancyWeightDirty : Bool
@@ -774,7 +774,7 @@ emptyPregnancyDatingForm =
     , lateFirstVisitReason = Nothing
     , dateSelectorPopupState = Nothing
 
-    -- Depricated, but kept for backward compatibility.
+    -- Deprecated, but kept for backward compatibility.
     , prePregnancyWeightKnown = Nothing
     , prePregnancyWeight = Nothing
     , prePregnancyWeightDirty = False

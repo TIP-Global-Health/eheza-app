@@ -654,7 +654,7 @@ type PostpartumChildDangerSign
 
 type alias LastMenstrualPeriodValue =
     { date : NominalDate
-    , -- Depricated, but kept for backward compatibility.
+    , -- Deprecated, but kept for backward compatibility.
       prePregnancyWeight : Maybe WeightInKg
     , confident : Bool
     , notConfidentReason : Maybe LmpDateNotConfidentReason
