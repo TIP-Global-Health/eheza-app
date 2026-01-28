@@ -1220,7 +1220,7 @@ toCorePhysicalExamValue form =
         -- Use form.brittleHair if available, otherwise default to False (NormalHairHead)
         -- This allows NCD to submit user input while Prenatal defaults to Normal
         hairHeadValue =
-            form.brittleHair |> Maybe.withDefault False
+            Maybe.withDefault False form.brittleHair
     in
     Maybe.map CorePhysicalExamValue (Just (toEverySet BrittleHairCPE NormalHairHead hairHeadValue))
         |> andMap (Maybe.map (toEverySet PaleConjuctiva NormalEyes) form.paleConjuctiva)
@@ -10640,6 +10640,7 @@ corePhysicalExamInputsAndTasks language currentDate config form =
            , form.paleConjuctiva
            , maybeToBoolTask form.neck
            , maybeToBoolTask form.heart
+           , form.heartMurmur
            , maybeToBoolTask form.lungs
            , maybeToBoolTask form.abdomen
            ]
