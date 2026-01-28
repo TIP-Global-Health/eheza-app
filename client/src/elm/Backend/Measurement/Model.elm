@@ -657,7 +657,8 @@ type alias LastMenstrualPeriodValue =
     , prePregnancyWeight : Maybe WeightInKg
     , confident : Bool
     , notConfidentReason : Maybe LmpDateNotConfidentReason
-    , lateFirstVisitReason : Maybe LateFirstANCVisitReason
+    , -- Deprecated, but kept for backward comaptibility.
+      lateFirstVisitReason : Maybe LateFirstANCVisitReason
     , confirmation : Bool
     }
 
