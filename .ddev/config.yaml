@@ -12,7 +12,9 @@ database:
     type: mariadb
     version: "10.5"
 use_dns_when_possible: true
-composer_version: "2"
+# Composer version is set to 1, since Drupal 7 Composer Manager doesn't
+# support Composer 2.
+composer_version: "1"
 web_environment: []
 nodejs_version: "16"
 corepack_enable: false
