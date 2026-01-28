@@ -1332,8 +1332,6 @@ type TranslationId
     | PrenatalUltrasoundInstructions
     | PrenatalVaccineLabel PrenatalVaccineType
     | PrePregnancyWeight
-    | PrePregnancyWeightQuestion
-    | PrePregnancyWeightKnownQuestion
     | PreTerm
     | PregnancyConcludedLabel
     | PregnancyOutcomeLabel
@@ -17789,18 +17787,6 @@ translationSet trans =
         PrePregnancyWeight ->
             { english = "Pre-pregnancy Weight"
             , kinyarwanda = Just "Ibiro bya mbere yo gutwita"
-            , kirundi = Nothing
-            }
-
-        PrePregnancyWeightQuestion ->
-            { english = "What is the patient's baseline (pre-pregnancy) weight"
-            , kinyarwanda = Just "Umubyeyi yari afite ibiro bingahe mbere yo gutwita"
-            , kirundi = Nothing
-            }
-
-        PrePregnancyWeightKnownQuestion ->
-            { english = "Does the mother know her pre-pregnancy weight"
-            , kinyarwanda = Nothing
             , kirundi = Nothing
             }
 
