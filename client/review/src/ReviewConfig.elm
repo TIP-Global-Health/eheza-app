@@ -112,6 +112,10 @@ rules =
     --         ]
     , NoUnused.Dependencies.rule
     , NoUnused.Exports.rule
+        |> Rule.ignoreErrorsForFiles
+            [ "src/elm/LocalConfig.Example.elm"
+            , "src/elm/Config.Deploy.elm"
+            ]
     , NoUnused.Parameters.rule
     , NoUnused.Patterns.rule
     , NoUnused.Variables.rule

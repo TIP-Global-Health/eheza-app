@@ -60,6 +60,7 @@ module Backend.Entities exposing
     , CorePhysicalExamId
     , CorePhysicalExamUuidType
     , CounselingScheduleId
+    , CounselingScheduleUuidType
     , CounselingSessionId
     , CounselingSessionUuidType
     , CounselingTopicId
@@ -295,6 +296,7 @@ module Backend.Entities exposing
     , PrenatalUrineDipstickTestId
     , PrenatalUrineDipstickTestUuidType
     , RelationshipId
+    , RelationshipUuidType
     , ResilienceMessageId
     , ResilienceSurveyId
     , ResilienceSurveyUuidType
