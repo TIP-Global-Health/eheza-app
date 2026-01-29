@@ -7,8 +7,11 @@ set -e
 #
 # ---------------------------------------------------------------------------- #
 
-# No installation needed - npx will automatically fetch elm-review when needed
-# This avoids issues with installing all client dependencies which may have
-# native compilation requirements not needed for elm-review
+# Install Elm compiler (required by elm-review)
+# Using the official binary release for Linux x64
+wget -q https://github.com/elm/compiler/releases/download/0.19.1/binary-for-linux-64-bit.gz
+gunzip binary-for-linux-64-bit.gz
+chmod +x binary-for-linux-64-bit
+sudo mv binary-for-linux-64-bit /usr/local/bin/elm
 
-echo "elm-review will be fetched by npx on first use"
+echo "Elm compiler installed successfully"
