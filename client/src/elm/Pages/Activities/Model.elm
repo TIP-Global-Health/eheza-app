@@ -38,8 +38,7 @@ emptyModel =
 
 
 type Msg
-    = CloseSession
-    | SetRedirectPage Page
+    = SetRedirectPage Page
     | SetSelectedTab Tab
     | SkipActivity Activity
     | SetDialogState (Maybe DialogType)
@@ -56,5 +55,4 @@ type Tab
 
 
 type DialogType
-    = DialogEndSession
-    | DialogSkipNCDA
+    = DialogSkipNCDA

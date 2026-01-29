@@ -26,8 +26,7 @@ type ViewMode
 
 
 type Msg
-    = NoOp
-    | CloseEncounter TuberculosisEncounterId
+    = CloseEncounter TuberculosisEncounterId
     | SetActivePage Page
     | SetViewMode ViewMode
     | SetEndEncounterDialogState Bool

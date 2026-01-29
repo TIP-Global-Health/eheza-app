@@ -1,4 +1,48 @@
-module Pages.AcuteIllness.Activity.Model exposing (AcuteFindingsForm, AcuteIllnessCoreExamForm, AcuteIllnessNutritionForm, Call114Form, ContactsTracingForm, ContactsTracingFormState(..), CovidTestingForm, DangerSignsData, ExposureData, ExposureForm, FollowUpForm, HCContactForm, IsolationForm, LaboratoryData, MalariaTestingForm, MedicationDistributionForm, Model, Msg(..), NextStepsData, OngoingTreatmentData, PhysicalExamData, PriorTreatmentData, RecordContactDetailsData, RegisterContactData, ReviewDangerSignsForm, SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, TravelHistoryForm, TreatmentReviewForm, emptyCall114Form, emptyContactsTracingForm, emptyCovidTestingForm, emptyDangerSignsData, emptyExposureData, emptyLaboratoryData, emptyModel, emptyNextStepsData, emptyOngoingTreatmentData, emptyPhysicalExamData, emptyPriorTreatmentData, emptyRecordContactDetailsData, emptyRegisterContactData, emptyReviewDangerSignsForm, emptySymptomsData, emptyTreatmentReviewForm)
+module Pages.AcuteIllness.Activity.Model exposing
+    ( AcuteFindingsForm
+    , AcuteIllnessCoreExamForm
+    , AcuteIllnessNutritionForm
+    , Call114Form
+    , ContactsTracingForm
+    , ContactsTracingFormState(..)
+    , CovidTestingForm
+    , DangerSignsData
+    , FollowUpForm
+    , HCContactForm
+    , IsolationForm
+    , LaboratoryData
+    , MalariaTestingForm
+    , MedicationDistributionForm
+    , Model
+    , Msg(..)
+    , NextStepsData
+    , OngoingTreatmentData
+    , PhysicalExamData
+    , PriorTreatmentData
+    , RecordContactDetailsData
+    , RegisterContactData
+    , ReviewDangerSignsForm
+    , SymptomsData
+    , SymptomsGIForm
+    , SymptomsGeneralForm
+    , SymptomsRespiratoryForm
+    , TreatmentReviewForm
+    , emptyCall114Form
+    , emptyContactsTracingForm
+    , emptyCovidTestingForm
+    , emptyDangerSignsData
+    , emptyLaboratoryData
+    , emptyModel
+    , emptyNextStepsData
+    , emptyOngoingTreatmentData
+    , emptyPhysicalExamData
+    , emptyPriorTreatmentData
+    , emptyRecordContactDetailsData
+    , emptyRegisterContactData
+    , emptyReviewDangerSignsForm
+    , emptySymptomsData
+    , emptyTreatmentReviewForm
+    )
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis)
@@ -12,7 +56,7 @@ import EverySet exposing (EverySet)
 import Form
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (HealthEducationForm, MuacForm, OngoingTreatmentReviewForm, SendToHCForm, VitalsForm, emptyHealthEducationForm, emptyMuacForm, emptyOngoingTreatmentReviewForm, emptySendToHCForm, emptyVitalsForm)
-import Pages.AcuteIllness.Activity.Types exposing (AILaboratoryTask, DangerSignsTask, ExposureTask, OngoingTreatmentTask, PhysicalExamTask, PriorTreatmentTask, SymptomsTask)
+import Pages.AcuteIllness.Activity.Types exposing (AILaboratoryTask, DangerSignsTask, OngoingTreatmentTask, PhysicalExamTask, PriorTreatmentTask, SymptomsTask)
 import Pages.Page exposing (Page)
 import SyncManager.Model exposing (Site)
 
@@ -64,7 +108,6 @@ type Msg
     | SaveTreatmentReview PersonId (Maybe ( TreatmentReviewId, TreatmentReview ))
       -- NEXT STEPS
     | SetActiveNextStepsTask Pages.AcuteIllness.Activity.Types.NextStepsTask
-    | SetHealthEducation Bool
     | SetProvidedEducationForDiagnosis Bool
     | SetReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
     | SetReferToHealthCenter Bool
@@ -105,7 +148,6 @@ type alias Model =
     { symptomsData : SymptomsData
     , physicalExamData : PhysicalExamData
     , laboratoryData : LaboratoryData
-    , exposureData : ExposureData
     , priorTreatmentData : PriorTreatmentData
     , nextStepsData : NextStepsData
     , ongoingTreatmentData : OngoingTreatmentData
@@ -121,7 +163,6 @@ emptyModel =
     { symptomsData = emptySymptomsData
     , physicalExamData = emptyPhysicalExamData
     , laboratoryData = emptyLaboratoryData
-    , exposureData = emptyExposureData
     , priorTreatmentData = emptyPriorTreatmentData
     , nextStepsData = emptyNextStepsData
     , ongoingTreatmentData = emptyOngoingTreatmentData
@@ -251,35 +292,6 @@ type alias CovidTestingForm =
 emptyCovidTestingForm : CovidTestingForm
 emptyCovidTestingForm =
     CovidTestingForm Nothing Nothing Nothing Nothing
-
-
-
--- EXPOSURE
-
-
-type alias ExposureData =
-    { travelHistoryForm : TravelHistoryForm
-    , exposureForm : ExposureForm
-    , activeTask : Maybe ExposureTask
-    }
-
-
-emptyExposureData : ExposureData
-emptyExposureData =
-    { travelHistoryForm = TravelHistoryForm Nothing
-    , exposureForm = ExposureForm Nothing
-    , activeTask = Nothing
-    }
-
-
-type alias TravelHistoryForm =
-    { covid19Country : Maybe Bool
-    }
-
-
-type alias ExposureForm =
-    { covid19Symptoms : Maybe Bool
-    }
 
 
 

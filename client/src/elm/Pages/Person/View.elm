@@ -846,15 +846,6 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                     div [ class "six wide column required" ]
                         [ text <| translate language Translate.GenderLabel ++ ":" ]
 
-                maleOption =
-                    [ Form.Input.radioInput "male"
-                        genderField
-                        [ class "one wide column gender-input" ]
-                    , div
-                        [ class "three wide column" ]
-                        [ text <| translate language (Translate.Gender Male) ]
-                    ]
-
                 femaleOption =
                     [ Form.Input.radioInput "female"
                         genderField
@@ -866,13 +857,20 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
 
                 options =
                     case originBasedSettings.expectedGender of
-                        ExpectMale ->
-                            maleOption
-
                         ExpectFemale ->
                             femaleOption
 
                         ExpectMaleOrFemale ->
+                            let
+                                maleOption =
+                                    [ Form.Input.radioInput "male"
+                                        genderField
+                                        [ class "one wide column gender-input" ]
+                                    , div
+                                        [ class "three wide column" ]
+                                        [ text <| translate language (Translate.Gender Male) ]
+                                    ]
+                            in
                             maleOption ++ femaleOption
             in
             div [ class "ui grid" ] <|

@@ -280,4 +280,3 @@ type Msg
     | HandleSavedGUExam (WebData ())
     | SaveSpecialityCare PersonId (Maybe PrenatalSpecialityCareId) SpecialityCareValue
     | HandleSavedSpecialityCare (WebData ())
-    | NoOp

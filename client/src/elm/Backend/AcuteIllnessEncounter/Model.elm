@@ -118,16 +118,6 @@ type Msg
     | HandleSavedSendToHC (WebData ())
     | SaveMedicationDistribution PersonId (Maybe MedicationDistributionId) MedicationDistributionValue
     | HandleSavedMedicationDistribution (WebData ())
-    | SaveTravelHistory PersonId (Maybe TravelHistoryId) (EverySet TravelHistorySign)
-    | HandleSavedTravelHistory (WebData ())
-    | SaveExposure PersonId (Maybe ExposureId) (EverySet ExposureSign)
-    | HandleSavedExposure (WebData ())
-    | SaveIsolation PersonId (Maybe IsolationId) IsolationValue
-    | HandleSavedIsolation (WebData ())
-    | SaveHCContact PersonId (Maybe HCContactId) HCContactValue
-    | HandleSavedHCContact (WebData ())
-    | SaveCall114 PersonId (Maybe Call114Id) Call114Value
-    | HandleSavedCall114 (WebData ())
     | SaveTreatmentReview PersonId (Maybe TreatmentReviewId) (EverySet TreatmentReviewSign)
     | HandleSavedTreatmentReview (WebData ())
     | SaveMuac PersonId (Maybe AcuteIllnessMuacId) MuacInCm

@@ -1179,23 +1179,6 @@ update currentDate site selectedHealthCenter id db msg model =
             , appMsgs
             )
 
-        SetHealthEducation value ->
-            let
-                form =
-                    model.nextStepsData.isolationForm
-
-                updatedForm =
-                    { form | healthEducation = Just value }
-
-                updatedData =
-                    model.nextStepsData
-                        |> (\data -> { data | isolationForm = updatedForm })
-            in
-            ( { model | nextStepsData = updatedData }
-            , Cmd.none
-            , []
-            )
-
         SetProvidedEducationForDiagnosis value ->
             let
                 form =

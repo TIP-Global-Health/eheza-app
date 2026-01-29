@@ -12,9 +12,6 @@ import Pages.Tuberculosis.ProgressReport.Model exposing (Model, Msg(..))
 update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update msg model =
     case msg of
-        NoOp ->
-            ( model, Cmd.none, [] )
-
         CloseEncounter id ->
             ( { model | showEndEncounterDialog = False }
             , Cmd.none

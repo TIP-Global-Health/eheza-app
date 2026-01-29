@@ -1,4 +1,13 @@
-module Pages.AcuteIllness.Activity.Types exposing (AILaboratoryTask(..), DangerSignsTask(..), ExposureTask(..), NextStepsTask(..), OngoingTreatmentTask(..), PhysicalExamTask(..), PriorTreatmentTask(..), SymptomReliefType(..), SymptomsTask(..))
+module Pages.AcuteIllness.Activity.Types exposing
+    ( AILaboratoryTask(..)
+    , DangerSignsTask(..)
+    , NextStepsTask(..)
+    , OngoingTreatmentTask(..)
+    , PhysicalExamTask(..)
+    , PriorTreatmentTask(..)
+    , SymptomReliefType(..)
+    , SymptomsTask(..)
+    )
 
 
 type SymptomReliefType
@@ -33,15 +42,6 @@ type PhysicalExamTask
 type AILaboratoryTask
     = LaboratoryMalariaTesting
     | LaboratoryCovidTesting
-
-
-
--- EXPOSURE
-
-
-type ExposureTask
-    = ExposureTravel
-    | ExposureExposure
 
 
 

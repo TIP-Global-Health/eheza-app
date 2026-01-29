@@ -167,8 +167,7 @@ type ExpectedAge
 
 
 type ExpectedGender
-    = ExpectMale
-    | ExpectFemale
+    = ExpectFemale
     | ExpectMaleOrFemale
 
 

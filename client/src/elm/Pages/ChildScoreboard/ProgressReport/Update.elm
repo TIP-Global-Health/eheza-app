@@ -42,13 +42,6 @@ update msg model =
             , []
             )
 
-        TriggerAcuteIllnessEncounter assembled ->
-            ( { model | showAIEncounterPopup = False }
-            , Cmd.none
-            , [ App.Model.SetActivePage <| UserPage (AcuteIllnessParticipantPage InitiatorParticipantsPage assembled.participant.person) ]
-            )
-                |> sequenceExtra update [ CloseEncounter assembled.id ]
-
         SetDiagnosisMode mode ->
             ( { model | diagnosisMode = mode }, Cmd.none, [] )
 

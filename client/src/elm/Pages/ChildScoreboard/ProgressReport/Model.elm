@@ -32,7 +32,6 @@ type Msg
     | CloseEncounter ChildScoreboardEncounterId
     | SetActivePage Page
     | ShowAIEncounterPopup
-    | TriggerAcuteIllnessEncounter AssembledData
     | SetDiagnosisMode DiagnosisMode
     | MsgReportToWhatsAppDialog (Components.ReportToWhatsAppDialog.Model.Msg Msg)
     | SetReportComponents (Maybe Components.ReportToWhatsAppDialog.Model.ReportComponentsList)

@@ -104,13 +104,6 @@ view language isChw ( sessionId, session ) model =
             Maybe.map
                 (\state ->
                     case state of
-                        DialogEndSession ->
-                            viewConfirmationDialog language
-                                Trans.AreYouSure
-                                Trans.OnceYouEndYourGroupEncounter
-                                CloseSession
-                                (SetDialogState Nothing)
-
                         DialogSkipNCDA ->
                             viewSkipNCDADialog language
                                 (SetRedirectPage <|

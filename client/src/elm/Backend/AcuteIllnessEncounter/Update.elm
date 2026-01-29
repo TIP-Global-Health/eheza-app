@@ -145,66 +145,6 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             , triggerRollbarOnFailure data
             )
 
-        SaveTravelHistory personId valueId value ->
-            ( { model | saveTravelHistory = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value travelHistoryEndpoint HandleSavedTravelHistory
-            , []
-            )
-
-        HandleSavedTravelHistory data ->
-            ( { model | saveTravelHistory = data }
-            , Cmd.none
-            , triggerRollbarOnFailure data
-            )
-
-        SaveExposure personId valueId value ->
-            ( { model | saveExposure = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value exposureEndpoint HandleSavedExposure
-            , []
-            )
-
-        HandleSavedExposure data ->
-            ( { model | saveExposure = data }
-            , Cmd.none
-            , triggerRollbarOnFailure data
-            )
-
-        SaveIsolation personId valueId value ->
-            ( { model | saveIsolation = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value isolationEndpoint HandleSavedIsolation
-            , []
-            )
-
-        HandleSavedIsolation data ->
-            ( { model | saveIsolation = data }
-            , Cmd.none
-            , triggerRollbarOnFailure data
-            )
-
-        SaveHCContact personId valueId value ->
-            ( { model | saveHCContact = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value hcContactEndpoint HandleSavedHCContact
-            , []
-            )
-
-        HandleSavedHCContact data ->
-            ( { model | saveHCContact = data }
-            , Cmd.none
-            , triggerRollbarOnFailure data
-            )
-
-        SaveCall114 personId valueId value ->
-            ( { model | saveCall114 = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value call114Endpoint HandleSavedCall114
-            , []
-            )
-
-        HandleSavedCall114 data ->
-            ( { model | saveCall114 = data }
-            , Cmd.none
-            , triggerRollbarOnFailure data
-            )
-
         SaveTreatmentReview personId valueId value ->
             ( { model | saveTreatmentReview = Loading }
             , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value treatmentReviewEndpoint HandleSavedTreatmentReview

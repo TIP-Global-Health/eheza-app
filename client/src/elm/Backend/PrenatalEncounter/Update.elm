@@ -622,9 +622,6 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             , triggerRollbarOnFailure data
             )
 
-        NoOp ->
-            ( model, Cmd.none, [] )
-
 
 updateEncounter :
     NominalDate

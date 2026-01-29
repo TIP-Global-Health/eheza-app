@@ -1,4 +1,182 @@
-module Pages.AcuteIllness.Activity.Utils exposing (activityCompleted, acuteFindingsFormInutsAndTasks, acuteFindingsFormWithDefault, acuteFindinsgRespiratoryDangerSignPresent, ageDependentARINextStep, ageDependentUncomplicatedMalariaNextStep, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, bloodPressureIndicatesCovid19WithPneumonia, bloodPressureIndicatesSevereCovid19, call114FormWithDefault, call114ValuePostProcess, conditionNotImprovingOnSubsequentVisit, contactsTracingFormWithDefault, coreExamFormInutsAndTasks, coreExamFormWithDefault, coughForMoreThan2Weeks, coughLessThan2WeeksConstant, countGISymptoms, countGeneralSymptoms, countRespiratorySymptoms, countSymptoms, covid19Diagnosed, covid19DiagnosisPath, covid19SuspectDiagnosed, covidCaseConfirmed, covidRapidTestResult, covidTestingFormInputsAndTasks, covidTestingFormWithDefault, cracklesAtCoreExam, dangerSignPresentOnSubsequentVisit, dangerSignsTasksCompletedFromTotal, expectActivity, expectLaboratoryTask, expectNextStepsTask, expectNextStepsTaskFirstEncounter, expectNextStepsTaskSubsequentEncounter, expectPhysicalExamTask, exposureFormWithDefault, feverAtPhysicalExam, feverAtSymptoms, feverRecorded, followUpFormInutsAndTasks, followUpFormWithDefault, fromAcuteFindingsValue, fromCall114Value, fromContactsTracingValue, fromCoreExamValue, fromCovidTestingValue, fromExposureValue, fromHCContactValue, fromIsolationValue, fromMalariaTestingValue, fromNutritionValue, fromReviewDangerSignsValue, fromTravelHistoryValue, fromTreatmentReviewValue, gastrointestinalInfectionDangerSignsPresent, generateContactsFromTraceItems, generateVitalsFormConfig, hcContactFormWithDefault, hcContactValuePostProcess, healthCenterRecommendedToCome, healthEducationFormInutsAndTasks, isPregnantInputsAndTasks, isolationFormWithDefault, isolationValuePostProcess, laboratoryTaskCompleted, laboratoryTasks, laboratoryTasksCompletedFromTotal, lethargicOrUnconsciousAtAcuteFindings, lethargyAtSymptoms, malariaDangerSignsPresent, malariaRapidTestResult, malariaTestingFormInputsAndTasks, malariaTestingFormWithDefault, malariaTypeForPositiveRDT, mandatoryActivitiesCompletedFirstEncounter, mandatoryActivitiesCompletedSubsequentVisit, mandatoryActivityCompletedFirstEncounter, mandatoryActivityCompletedSubsequentVisit, medicationDistributionFormInutsAndTasks, medicationDistributionFormWithDefault, mildGastrointestinalInfectionSymptomsPresent, muacRedOnSubsequentVisit, naListTaskCompleted, naTaskCompleted, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, noImprovementOnSubsequentVisit, noImprovementOnSubsequentVisitWithoutDangerSigns, nonBloodyDiarrheaAtSymptoms, nonCovid19DiagnosisPath, nutritionFormInutsAndTasks, nutritionFormWithDefault, ongoingTreatmentTasksCompletedFromTotal, physicalExamTasks, physicalExamTasksCompletedFromTotal, rapidTestPositive, resolveAcuteIllnessDiagnosis, resolveAcuteIllnessDiagnosisByMalariaRDT, resolveAmoxicillinDosage, resolveCoartemDosage, resolveMedicationsNonAdministrationReasons, resolveNextStepFirstEncounter, resolveNextStepSubsequentEncounter, resolveNextStepsTasks, resolveORSDosage, resolvePreviousMaybeValue, resolvePreviousValue, resolveZincDosage, respiratoryInfectionDangerSignsPresent, respiratoryInfectionSymptomsPresent, respiratoryRateAbnormalForAge, respiratoryRateElevated, respiratoryRateElevatedByAge, respiratoryRateElevatedByAgeForCovid19, respiratoryRateElevatedForCovid19, respiratoryRateRecessedByAge, reviewDangerSignsFormInutsAndTasks, reviewDangerSignsFormWithDefault, sendToHCByMalariaTesting, sendToHCDueToMedicationNonAdministration, sendToHCOnSubsequentVisitByMuac, sendToHCOnSubsequentVisitByNutrition, sendToHCOnSubsequentVisitByVitals, symptomAppearsAtSymptomsDict, symptomMaxDuration, symptomsGIFormWithDefault, symptomsGeneralDangerSigns, symptomsGeneralFormWithDefault, symptomsReliefFormInutsAndTasks, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, talkedTo114, taskNotCompleted, toAcuteFindingsValue, toAcuteFindingsValueWithDefault, toCall114Value, toCall114ValueWithDefault, toContactsTracingValue, toContactsTracingValueWithDefault, toCoreExamValue, toCoreExamValueWithDefault, toCovidTestingValue, toCovidTestingValueWithDefault, toExposureValue, toExposureValueWithDefault, toFollowUpValue, toFollowUpValueWithDefault, toHCContactValue, toHCContactValueWithDefault, toIsolationValue, toIsolationValueWithDefault, toMalariaTestingValue, toMalariaTestingValueWithDefault, toMedicationDistributionValue, toMedicationDistributionValueWithDefault, toNutritionValue, toNutritionValueWithDefault, toReviewDangerSignsValue, toReviewDangerSignsValueWithDefault, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toTravelHistoryValue, toTravelHistoryValueWithDefault, toTreatmentReviewValue, toTreatmentReviewValueWithDefault, toggleSymptomsSign, travelHistoryFormWithDefault, treatmentReviewFormInutsAndTasks, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, viewAdministeredMedicationLabel, viewAmoxicillinAdministrationInstructions, viewFollowUpLabel, viewHCRecommendation, viewHealthEducationLabel, viewOralSolutionPrescription, viewParacetamolAdministrationInstructions, viewTabletsPrescription, vomitingAtSymptoms, withDefaultValue)
+module Pages.AcuteIllness.Activity.Utils exposing
+    ( activityCompleted
+    , acuteFindingsFormInutsAndTasks
+    , acuteFindingsFormWithDefault
+    , acuteFindinsgRespiratoryDangerSignPresent
+    , ageDependentARINextStep
+    , ageDependentUncomplicatedMalariaNextStep
+    , allSymptomsGISigns
+    , allSymptomsGeneralSigns
+    , allSymptomsRespiratorySigns
+    , bloodPressureIndicatesCovid19WithPneumonia
+    , bloodPressureIndicatesSevereCovid19
+    , call114FormWithDefault
+    , call114ValuePostProcess
+    , conditionNotImprovingOnSubsequentVisit
+    , contactsTracingFormWithDefault
+    , coreExamFormInutsAndTasks
+    , coreExamFormWithDefault
+    , coughForMoreThan2Weeks
+    , coughLessThan2WeeksConstant
+    , countGISymptoms
+    , countGeneralSymptoms
+    , countRespiratorySymptoms
+    , countSymptoms
+    , covid19Diagnosed
+    , covid19DiagnosisPath
+    , covid19SuspectDiagnosed
+    , covidCaseConfirmed
+    , covidRapidTestResult
+    , covidTestingFormInputsAndTasks
+    , covidTestingFormWithDefault
+    , cracklesAtCoreExam
+    , dangerSignPresentOnSubsequentVisit
+    , dangerSignsTasksCompletedFromTotal
+    , expectActivity
+    , expectLaboratoryTask
+    , expectNextStepsTask
+    , expectNextStepsTaskFirstEncounter
+    , expectNextStepsTaskSubsequentEncounter
+    , expectPhysicalExamTask
+    , feverAtPhysicalExam
+    , feverAtSymptoms
+    , feverRecorded
+    , followUpFormInutsAndTasks
+    , followUpFormWithDefault
+    , fromAcuteFindingsValue
+    , fromCall114Value
+    , fromContactsTracingValue
+    , fromCoreExamValue
+    , fromCovidTestingValue
+    , fromHCContactValue
+    , fromIsolationValue
+    , fromMalariaTestingValue
+    , fromNutritionValue
+    , fromReviewDangerSignsValue
+    , fromTreatmentReviewValue
+    , gastrointestinalInfectionDangerSignsPresent
+    , generateContactsFromTraceItems
+    , generateVitalsFormConfig
+    , hcContactFormWithDefault
+    , hcContactValuePostProcess
+    , healthCenterRecommendedToCome
+    , healthEducationFormInutsAndTasks
+    , isPregnantInputsAndTasks
+    , isolationFormWithDefault
+    , isolationValuePostProcess
+    , laboratoryTaskCompleted
+    , laboratoryTasks
+    , laboratoryTasksCompletedFromTotal
+    , lethargicOrUnconsciousAtAcuteFindings
+    , lethargyAtSymptoms
+    , malariaDangerSignsPresent
+    , malariaRapidTestResult
+    , malariaTestingFormInputsAndTasks
+    , malariaTestingFormWithDefault
+    , malariaTypeForPositiveRDT
+    , mandatoryActivitiesCompletedFirstEncounter
+    , mandatoryActivitiesCompletedSubsequentVisit
+    , mandatoryActivityCompletedFirstEncounter
+    , mandatoryActivityCompletedSubsequentVisit
+    , medicationDistributionFormInutsAndTasks
+    , medicationDistributionFormWithDefault
+    , mildGastrointestinalInfectionSymptomsPresent
+    , muacRedOnSubsequentVisit
+    , naListTaskCompleted
+    , naTaskCompleted
+    , nextStepsTaskCompleted
+    , nextStepsTasksCompletedFromTotal
+    , noImprovementOnSubsequentVisit
+    , noImprovementOnSubsequentVisitWithoutDangerSigns
+    , nonBloodyDiarrheaAtSymptoms
+    , nonCovid19DiagnosisPath
+    , nutritionFormInutsAndTasks
+    , nutritionFormWithDefault
+    , ongoingTreatmentTasksCompletedFromTotal
+    , physicalExamTasks
+    , physicalExamTasksCompletedFromTotal
+    , rapidTestPositive
+    , resolveAcuteIllnessDiagnosis
+    , resolveAcuteIllnessDiagnosisByMalariaRDT
+    , resolveAmoxicillinDosage
+    , resolveCoartemDosage
+    , resolveMedicationsNonAdministrationReasons
+    , resolveNextStepFirstEncounter
+    , resolveNextStepSubsequentEncounter
+    , resolveNextStepsTasks
+    , resolveORSDosage
+    , resolvePreviousMaybeValue
+    , resolvePreviousValue
+    , resolveZincDosage
+    , respiratoryInfectionDangerSignsPresent
+    , respiratoryInfectionSymptomsPresent
+    , respiratoryRateAbnormalForAge
+    , respiratoryRateElevated
+    , respiratoryRateElevatedByAge
+    , respiratoryRateElevatedByAgeForCovid19
+    , respiratoryRateElevatedForCovid19
+    , respiratoryRateRecessedByAge
+    , reviewDangerSignsFormInutsAndTasks
+    , reviewDangerSignsFormWithDefault
+    , sendToHCByMalariaTesting
+    , sendToHCDueToMedicationNonAdministration
+    , sendToHCOnSubsequentVisitByMuac
+    , sendToHCOnSubsequentVisitByNutrition
+    , sendToHCOnSubsequentVisitByVitals
+    , symptomAppearsAtSymptomsDict
+    , symptomMaxDuration
+    , symptomsGIFormWithDefault
+    , symptomsGeneralDangerSigns
+    , symptomsGeneralFormWithDefault
+    , symptomsReliefFormInutsAndTasks
+    , symptomsRespiratoryFormWithDefault
+    , symptomsTasksCompletedFromTotal
+    , talkedTo114
+    , taskNotCompleted
+    , toAcuteFindingsValue
+    , toAcuteFindingsValueWithDefault
+    , toCall114Value
+    , toCall114ValueWithDefault
+    , toContactsTracingValue
+    , toContactsTracingValueWithDefault
+    , toCoreExamValue
+    , toCoreExamValueWithDefault
+    , toCovidTestingValue
+    , toCovidTestingValueWithDefault
+    , toFollowUpValue
+    , toFollowUpValueWithDefault
+    , toHCContactValue
+    , toHCContactValueWithDefault
+    , toIsolationValue
+    , toIsolationValueWithDefault
+    , toMalariaTestingValue
+    , toMalariaTestingValueWithDefault
+    , toMedicationDistributionValue
+    , toMedicationDistributionValueWithDefault
+    , toNutritionValue
+    , toNutritionValueWithDefault
+    , toReviewDangerSignsValue
+    , toReviewDangerSignsValueWithDefault
+    , toSymptomsGIValueWithDefault
+    , toSymptomsGeneralValueWithDefault
+    , toSymptomsRespiratoryValueWithDefault
+    , toTreatmentReviewValue
+    , toTreatmentReviewValueWithDefault
+    , toggleSymptomsSign
+    , treatmentReviewFormInutsAndTasks
+    , treatmentReviewFormWithDefault
+    , treatmentTasksCompletedFromTotal
+    , viewAdministeredMedicationLabel
+    , viewAmoxicillinAdministrationInstructions
+    , viewFollowUpLabel
+    , viewHCRecommendation
+    , viewHealthEducationLabel
+    , viewOralSolutionPrescription
+    , viewParacetamolAdministrationInstructions
+    , viewTabletsPrescription
+    , vomitingAtSymptoms
+    , withDefaultValue
+    )
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
@@ -32,7 +210,35 @@ import Measurement.Utils
         , vitalsFormWithDefault
         )
 import Measurement.View exposing (sendToFacilityInputsAndTasks, vitalsFormInputsAndTasks)
-import Pages.AcuteIllness.Activity.Model exposing (AcuteFindingsForm, AcuteIllnessCoreExamForm, AcuteIllnessNutritionForm, Call114Form, ContactsTracingForm, ContactsTracingFormState(..), CovidTestingForm, DangerSignsData, ExposureForm, FollowUpForm, HCContactForm, IsolationForm, LaboratoryData, MalariaTestingForm, MedicationDistributionForm, Msg(..), NextStepsData, OngoingTreatmentData, PhysicalExamData, PriorTreatmentData, ReviewDangerSignsForm, SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, TravelHistoryForm, TreatmentReviewForm, emptyCovidTestingForm)
+import Pages.AcuteIllness.Activity.Model
+    exposing
+        ( AcuteFindingsForm
+        , AcuteIllnessCoreExamForm
+        , AcuteIllnessNutritionForm
+        , Call114Form
+        , ContactsTracingForm
+        , ContactsTracingFormState(..)
+        , CovidTestingForm
+        , DangerSignsData
+        , FollowUpForm
+        , HCContactForm
+        , IsolationForm
+        , LaboratoryData
+        , MalariaTestingForm
+        , MedicationDistributionForm
+        , Msg(..)
+        , NextStepsData
+        , OngoingTreatmentData
+        , PhysicalExamData
+        , PriorTreatmentData
+        , ReviewDangerSignsForm
+        , SymptomsData
+        , SymptomsGIForm
+        , SymptomsGeneralForm
+        , SymptomsRespiratoryForm
+        , TreatmentReviewForm
+        , emptyCovidTestingForm
+        )
 import Pages.AcuteIllness.Activity.Types exposing (AILaboratoryTask(..), DangerSignsTask(..), NextStepsTask(..), OngoingTreatmentTask(..), PhysicalExamTask(..), PriorTreatmentTask(..), SymptomReliefType(..), SymptomsTask(..))
 import Pages.AcuteIllness.Encounter.Model exposing (AssembledData)
 import Pages.Utils
@@ -1638,66 +1844,6 @@ toMalariaTestingValueWithDefault saved form =
 toMalariaTestingValue : MalariaTestingForm -> Maybe RapidTestResult
 toMalariaTestingValue form =
     form.rapidTestResult
-
-
-fromTravelHistoryValue : Maybe (EverySet TravelHistorySign) -> TravelHistoryForm
-fromTravelHistoryValue saved =
-    { covid19Country = Maybe.map (EverySet.member COVID19Country) saved
-    }
-
-
-travelHistoryFormWithDefault : TravelHistoryForm -> Maybe (EverySet TravelHistorySign) -> TravelHistoryForm
-travelHistoryFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { covid19Country = or form.covid19Country (EverySet.member COVID19Country value |> Just)
-                }
-            )
-
-
-toTravelHistoryValueWithDefault : Maybe (EverySet TravelHistorySign) -> TravelHistoryForm -> Maybe (EverySet TravelHistorySign)
-toTravelHistoryValueWithDefault saved form =
-    travelHistoryFormWithDefault form saved
-        |> toTravelHistoryValue
-
-
-toTravelHistoryValue : TravelHistoryForm -> Maybe (EverySet TravelHistorySign)
-toTravelHistoryValue form =
-    [ Maybe.map (ifTrue COVID19Country) form.covid19Country ]
-        |> Maybe.Extra.combine
-        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoTravelHistorySigns)
-
-
-fromExposureValue : Maybe (EverySet ExposureSign) -> ExposureForm
-fromExposureValue saved =
-    { covid19Symptoms = Maybe.map (EverySet.member COVID19Symptoms) saved
-    }
-
-
-exposureFormWithDefault : ExposureForm -> Maybe (EverySet ExposureSign) -> ExposureForm
-exposureFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { covid19Symptoms = or form.covid19Symptoms (EverySet.member COVID19Symptoms value |> Just)
-                }
-            )
-
-
-toExposureValueWithDefault : Maybe (EverySet ExposureSign) -> ExposureForm -> Maybe (EverySet ExposureSign)
-toExposureValueWithDefault saved form =
-    exposureFormWithDefault form saved
-        |> toExposureValue
-
-
-toExposureValue : ExposureForm -> Maybe (EverySet ExposureSign)
-toExposureValue form =
-    [ Maybe.map (ifTrue COVID19Symptoms) form.covid19Symptoms ]
-        |> Maybe.Extra.combine
-        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoExposureSigns)
 
 
 fromIsolationValue : Maybe IsolationValue -> IsolationForm
