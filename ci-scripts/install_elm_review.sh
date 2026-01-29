@@ -14,8 +14,4 @@ gunzip binary-for-linux-64-bit.gz
 chmod +x binary-for-linux-64-bit
 sudo mv binary-for-linux-64-bit /usr/local/bin/elm
 
-ls -ltra
-rm -f ./src/elm/ConfigDeploy.elm
-rm -f ./src/elm/ZScore/Test.elm
-
 echo "Elm compiler installed successfully"
