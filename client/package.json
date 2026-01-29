@@ -16,7 +16,7 @@
     "chance": "^1.0.18",
     "csv-parse": "^4.4.1",
     "del": "^4.1.1",
-    "elm-review": "^2.10.2",
+    "elm-review": "^2.13.5",
     "elm-test": "^0.19.1-revision6",
     "git-rev": "^0.2.1",
     "gulp": "^3.9.1",

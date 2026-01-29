@@ -49,7 +49,10 @@ rules =
     , NoDebug.Log.rule
 
     --, NoDebug.TodoOrToString.rule
+    , NoExposingEverything.rule
+    , NoImportingEverything.rule []
     , NoMissingTypeAnnotation.rule
+    , NoMissingTypeAnnotationInLetIn.rule
     , NoMissingTypeExpose.rule
     , NoSimpleLetBody.rule
     , NoPrematureLetComputation.rule

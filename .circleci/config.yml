@@ -6,11 +6,13 @@ workflows:
     jobs:
       - lint_phpcs
       - lint_elm
+      - lint_elm_review
       - lint_shellcheck
       - test_simpletest_linux:
           requires:
             - lint_phpcs
             - lint_elm
+            - lint_elm_review
             - lint_shellcheck
 
 jobs:
@@ -29,6 +31,13 @@ jobs:
       - checkout
       - run: ci-scripts/install_elm_format.sh
       - run: ci-scripts/test_elm_format.sh
+  lint_elm_review:
+    docker:
+      - image: cimg/node:18.20
+    steps:
+      - checkout
+      - run: ci-scripts/install_elm_review.sh
+      - run: ci-scripts/test_elm_review.sh
   lint_shellcheck:
     machine:
       image: ubuntu-2204:current
