@@ -39,9 +39,9 @@ import Measurement.Utils
         , toSendToHCValueWithDefault
         , toVitalsValueWithDefault
         )
-import Pages.AcuteIllness.Activity.Model exposing (..)
-import Pages.AcuteIllness.Activity.Types exposing (..)
-import Pages.AcuteIllness.Activity.Utils exposing (..)
+import Pages.AcuteIllness.Activity.Model exposing (ContactsTracingFormState(..), Model, Msg(..))
+import Pages.AcuteIllness.Activity.Types exposing (SymptomsTask(..))
+import Pages.AcuteIllness.Activity.Utils exposing (acuteFindingsFormWithDefault, coreExamFormWithDefault, coughLessThan2WeeksConstant, reviewDangerSignsFormWithDefault, symptomMaxDuration, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, toAcuteFindingsValueWithDefault, toContactsTracingValueWithDefault, toCoreExamValueWithDefault, toCovidTestingValueWithDefault, toFollowUpValueWithDefault, toMalariaTestingValueWithDefault, toMedicationDistributionValueWithDefault, toReviewDangerSignsValueWithDefault, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toTreatmentReviewValueWithDefault, toggleSymptomsSign)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (nonAdministrationReasonToSign, setMuacValueForSite, setMultiSelectInputValue)
 import RemoteData exposing (RemoteData(..))

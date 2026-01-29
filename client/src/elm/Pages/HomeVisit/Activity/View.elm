@@ -23,7 +23,7 @@ import Measurement.View
         , nutritionFoodSecurityInputsAndTasks
         , nutritionHygieneInputsAndTasks
         )
-import Pages.HomeVisit.Activity.Model exposing (..)
+import Pages.HomeVisit.Activity.Model exposing (Model, Msg(..))
 import Pages.HomeVisit.Encounter.Model exposing (AssembledData)
 import Pages.HomeVisit.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))

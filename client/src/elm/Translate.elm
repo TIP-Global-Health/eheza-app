@@ -110,7 +110,7 @@ import Pages.MessagingCenter.Model exposing (MessagingTab(..))
 import Pages.NCD.Activity.Types exposing (ExaminationTask(..), MedicalHistoryTask(..))
 import Pages.NCD.ProgressReport.Model exposing (NCDRiskFactor(..))
 import Pages.NCD.RecurrentActivity.Types
-import Pages.Page exposing (..)
+import Pages.Page exposing (AcuteIllnessSubPage(..), ChildWellnessSubPage(..), DashboardPage(..), NCDSubPage(..), Page(..), SessionPage(..), UserPage(..))
 import Pages.PatientRecord.Model exposing (PatientRecordFilter(..))
 import Pages.PinCode.Model exposing (MainMenuActivity(..), ResilienceReminderType(..))
 import Pages.Prenatal.Activity.Types
@@ -164,7 +164,7 @@ import Round
 import SyncManager.Model exposing (Site(..))
 import Time exposing (Month(..))
 import Translate.Model exposing (TranslationSet)
-import Translate.Utils exposing (..)
+import Translate.Utils exposing (selectLanguage)
 import ZScore.Model exposing (ChartAgeRange(..))
 
 

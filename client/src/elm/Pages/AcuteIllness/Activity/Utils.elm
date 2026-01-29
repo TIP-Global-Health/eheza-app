@@ -32,8 +32,8 @@ import Measurement.Utils
         , vitalsFormWithDefault
         )
 import Measurement.View exposing (sendToFacilityInputsAndTasks, vitalsFormInputsAndTasks)
-import Pages.AcuteIllness.Activity.Model exposing (..)
-import Pages.AcuteIllness.Activity.Types exposing (..)
+import Pages.AcuteIllness.Activity.Model exposing (AcuteFindingsForm, AcuteIllnessCoreExamForm, AcuteIllnessNutritionForm, Call114Form, ContactsTracingForm, ContactsTracingFormState(..), CovidTestingForm, DangerSignsData, ExposureForm, FollowUpForm, HCContactForm, IsolationForm, LaboratoryData, MalariaTestingForm, MedicationDistributionForm, Msg(..), NextStepsData, OngoingTreatmentData, PhysicalExamData, PriorTreatmentData, ReviewDangerSignsForm, SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, TravelHistoryForm, TreatmentReviewForm, emptyCovidTestingForm)
+import Pages.AcuteIllness.Activity.Types exposing (AILaboratoryTask(..), DangerSignsTask(..), NextStepsTask(..), OngoingTreatmentTask(..), PhysicalExamTask(..), PriorTreatmentTask(..), SymptomReliefType(..), SymptomsTask(..))
 import Pages.AcuteIllness.Encounter.Model exposing (AssembledData)
 import Pages.Utils
     exposing

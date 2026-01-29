@@ -11,8 +11,8 @@ import DateSelector.Model exposing (DateSelectorConfig)
 import EverySet exposing (EverySet)
 import Form
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model exposing (..)
-import Pages.AcuteIllness.Activity.Types exposing (..)
+import Measurement.Model exposing (HealthEducationForm, MuacForm, OngoingTreatmentReviewForm, SendToHCForm, VitalsForm, emptyHealthEducationForm, emptyMuacForm, emptyOngoingTreatmentReviewForm, emptySendToHCForm, emptyVitalsForm)
+import Pages.AcuteIllness.Activity.Types exposing (AILaboratoryTask, DangerSignsTask, ExposureTask, OngoingTreatmentTask, PhysicalExamTask, PriorTreatmentTask, SymptomsTask)
 import Pages.Page exposing (Page)
 import SyncManager.Model exposing (Site)
 

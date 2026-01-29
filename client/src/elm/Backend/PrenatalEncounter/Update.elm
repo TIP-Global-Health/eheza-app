@@ -2,9 +2,9 @@ module Backend.PrenatalEncounter.Update exposing (update)
 
 import App.Model
 import App.Utils exposing (triggerRollbarOnFailure)
-import Backend.Endpoints exposing (..)
+import Backend.Endpoints exposing (appointmentConfirmationEndpoint, birthPlanEndpoint, breastExamEndpoint, corePhysicalExamEndpoint, dangerSignsEndpoint, lastMenstrualPeriodEndpoint, malariaPreventionEndpoint, medicalHistoryEndpoint, medicationEndpoint, obstetricHistoryEndpoint, obstetricHistoryStep2Endpoint, obstetricalExamEndpoint, pregnancyTestEndpoint, prenatalAspirinEndpoint, prenatalBloodGpRsTestEndpoint, prenatalBreastfeedingEndpoint, prenatalCalciumEndpoint, prenatalEncounterEndpoint, prenatalFamilyPlanningEndpoint, prenatalFefolEndpoint, prenatalFolateEndpoint, prenatalFollowUpEndpoint, prenatalGUExamEndpoint, prenatalHIVPCRTestEndpoint, prenatalHIVTestEndpoint, prenatalHealthEducationEndpoint, prenatalHemoglobinTestEndpoint, prenatalHepatitisBTestEndpoint, prenatalIronEndpoint, prenatalLabsResultsEndpoint, prenatalMMSEndpoint, prenatalMalariaTestEndpoint, prenatalMebendazoleEndpoint, prenatalMedicationDistributionEndpoint, prenatalMentalHealthEndpoint, prenatalNutritionEndpoint, prenatalOutsideCareEndpoint, prenatalPartnerHIVTestEndpoint, prenatalPhotoEndpoint, prenatalRandomBloodSugarTestEndpoint, prenatalSendToHcEndpoint, prenatalSpecialityCareEndpoint, prenatalSymptomReviewEndpoint, prenatalSyphilisTestEndpoint, prenatalTetanusImmunisationEndpoint, prenatalUrineDipstickTestEndpoint, socialHistoryEndpoint, vitalsEndpoint)
 import Backend.Entities exposing (..)
-import Backend.PrenatalEncounter.Model exposing (..)
+import Backend.PrenatalEncounter.Model exposing (Model, Msg(..), PrenatalEncounter, PrenatalIndicator(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.Utils exposing (saveMeasurementCmd, sw)
 import EverySet

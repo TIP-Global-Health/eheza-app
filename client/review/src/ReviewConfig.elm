@@ -68,8 +68,17 @@ rules =
             , "src/elm/Pages/Prenatal/Activity/View.elm"
             ]
     , NoExposingEverything.rule
+    , NoImportingEverything.rule
+        [ "Backend.Entities"
+        , "Backend.Measurement.Model"
+        , "Html"
+        , "Html.Attributes"
+        , "Html.Events"
+        , "Svg"
+        , "Svg.Attributes"
+        , "SyncManager.Model"
+        ]
 
-    -- , NoImportingEverything.rule []
     -- , NoMissingTypeAnnotation.rule
     -- , NoMissingTypeAnnotationInLetIn.rule
     -- , NoMissingTypeExpose.rule

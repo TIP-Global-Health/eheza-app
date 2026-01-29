@@ -2,9 +2,9 @@ module Backend.NCDEncounter.Update exposing (update)
 
 import App.Model
 import App.Utils exposing (triggerRollbarOnFailure)
-import Backend.Endpoints exposing (..)
+import Backend.Endpoints exposing (ncdCoMorbiditiesEndpoint, ncdCoreExamEndpoint, ncdCreatinineTestEndpoint, ncdDangerSignsEndpoint, ncdEncounterEndpoint, ncdFamilyHistoryEndpoint, ncdFamilyPlanningEndpoint, ncdHIVTestEndpoint, ncdHbA1cTestEndpoint, ncdHealthEducationEndpoint, ncdLabsResultsEndpoint, ncdLipidPanelTestEndpoint, ncdLiverFunctionTestEndpoint, ncdMedicationDistributionEndpoint, ncdMedicationHistoryEndpoint, ncdOutsideCareEndpoint, ncdPregnancyTestEndpoint, ncdRandomBloodSugarTestEndpoint, ncdReferralEndpoint, ncdSocialHistoryEndpoint, ncdSymptomReviewEndpoint, ncdUrineDipstickTestEndpoint, ncdVitalsEndpoint)
 import Backend.Entities exposing (..)
-import Backend.NCDEncounter.Model exposing (..)
+import Backend.NCDEncounter.Model exposing (Model, Msg(..), NCDEncounter)
 import Backend.Utils exposing (saveMeasurementCmd, sw)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (unwrap)

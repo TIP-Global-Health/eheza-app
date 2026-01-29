@@ -36,7 +36,7 @@ import Measurement.Model exposing (LaboratoryTask(..))
 import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
 import Pages.NCD.Activity.Utils exposing (expectLaboratoryTask)
 import Pages.NCD.Model exposing (AssembledData)
-import Pages.NCD.ProgressReport.Model exposing (..)
+import Pages.NCD.ProgressReport.Model exposing (Model, Msg(..), NCDRiskFactor(..))
 import Pages.NCD.ProgressReport.Svg exposing (viewBloodGlucoseByTime, viewBloodPressureByTime, viewHbA1cByTime, viewMarkers)
 import Pages.NCD.Utils
     exposing
@@ -48,9 +48,9 @@ import Pages.NCD.Utils
         , updateChronicDiagnoses
         )
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Report.Model exposing (..)
-import Pages.Report.Utils exposing (..)
-import Pages.Report.View exposing (..)
+import Pages.Report.Model exposing (DiagnosisMode(..), LabResultsCurrentMode(..), LabResultsMode(..), LabsResultsValues, PaneEntryStatus(..))
+import Pages.Report.Utils exposing (randomBloodSugarResultFromValue)
+import Pages.Report.View exposing (viewAcuteIllnessDiagnosisEntry, viewEntries, viewItemHeading, viewLabResultsHistoryPane, viewLabResultsPane, viewLabsPane)
 import Pages.Utils
     exposing
         ( viewConfirmationDialog

@@ -6,7 +6,7 @@ import Backend.TuberculosisEncounter.Model
 import Components.ReportToWhatsAppDialog.Update
 import Gizra.Update exposing (sequenceExtra)
 import Pages.Page exposing (Page(..))
-import Pages.Tuberculosis.ProgressReport.Model exposing (..)
+import Pages.Tuberculosis.ProgressReport.Model exposing (Model, Msg(..))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )

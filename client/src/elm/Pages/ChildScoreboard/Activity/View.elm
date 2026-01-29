@@ -1,7 +1,7 @@
 module Pages.ChildScoreboard.Activity.View exposing (view)
 
 import AssocList as Dict
-import Backend.ChildScoreboardActivity.Model exposing (..)
+import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
@@ -43,8 +43,8 @@ import Measurement.Utils
         , wasInitialOpvAdministeredByVaccinationProgress
         )
 import Measurement.View
-import Pages.ChildScoreboard.Activity.Model exposing (..)
-import Pages.ChildScoreboard.Activity.Utils exposing (..)
+import Pages.ChildScoreboard.Activity.Model exposing (ChildScoreboardVaccinationForm, ImmunisationData, Model, Msg(..))
+import Pages.ChildScoreboard.Activity.Utils exposing (expectImmunisationTask, immunisationTasks)
 import Pages.ChildScoreboard.Encounter.Model exposing (AssembledData)
 import Pages.ChildScoreboard.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))

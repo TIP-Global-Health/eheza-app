@@ -1,14 +1,14 @@
 module Backend.Nurse.Encoder exposing (encodeNurse)
 
 import AssocList as Dict
-import Backend.Nurse.Model exposing (..)
+import Backend.Nurse.Model exposing (Nurse, ResilienceRole, Role(..))
 import Backend.Nurse.Utils exposing (resilienceRoleToString)
 import Backend.Person.Encoder exposing (encodeEducationLevel, encodeGender, encodeMaritalStatus, encodeUbudehe)
 import Backend.ResilienceMessage.Encoder exposing (encodeResilienceMessage)
 import EverySet
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Gizra.TimePosix exposing (encodePosixAsSeconds)
-import Json.Encode exposing (..)
+import Json.Encode exposing (Value, bool, list, string)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid)
 import Utils.Json exposing (encodeIfSet)

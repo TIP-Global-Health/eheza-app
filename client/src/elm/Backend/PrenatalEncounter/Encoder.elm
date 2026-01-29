@@ -1,10 +1,10 @@
 module Backend.PrenatalEncounter.Encoder exposing (encodePrenatalDiagnosis, encodePrenatalEncounter, encodePrenatalEncounterType)
 
-import Backend.PrenatalEncounter.Model exposing (..)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..), PrenatalIndicator(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import EverySet
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
-import Json.Encode exposing (..)
+import Json.Encode exposing (Value, bool, list, object, string)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid)
 import Utils.Json exposing (encodeEverySet, encodeIfSet)

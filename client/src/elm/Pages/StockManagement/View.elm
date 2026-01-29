@@ -11,7 +11,7 @@ import Backend.Measurement.Model
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.StockUpdate.Model exposing (StockManagementData)
-import Backend.StockUpdate.Utils exposing (..)
+import Backend.StockUpdate.Utils exposing (dateToMonthYear, monthYearDiff, stockSupplierToString)
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import Gizra.Html exposing (emptyNode, showIf)
@@ -27,8 +27,8 @@ import Maybe exposing (Maybe)
 import Maybe.Extra
 import Pages.Dashboard.View exposing (chwCard)
 import Pages.Page exposing (Page(..))
-import Pages.StockManagement.Model exposing (..)
-import Pages.StockManagement.Utils exposing (..)
+import Pages.StockManagement.Model exposing (CorrectEntryForm, CorrectionEntryType(..), DisplayMode(..), Model, Msg(..), ReceiveStockForm, StockManagementMenu(..), maxMonthGap)
+import Pages.StockManagement.Utils exposing (correctionEntryTypeToString)
 import Pages.Utils
     exposing
         ( customPopup

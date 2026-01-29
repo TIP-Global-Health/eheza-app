@@ -2,7 +2,7 @@ module Backend.ResilienceMessage.Utils exposing (emptyMessagesDict, generateEmpt
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (ResilienceMessageId)
-import Backend.ResilienceMessage.Model exposing (..)
+import Backend.ResilienceMessage.Model exposing (ResilienceCategory(..), ResilienceMessage, ResilienceMessageOrder(..))
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
 

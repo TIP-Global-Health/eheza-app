@@ -8,7 +8,7 @@ import Backend.Measurement.Model
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, mapMeasurementData)
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model exposing (..)
+import Measurement.Model exposing (NextStepsTask(..))
 import Measurement.Utils
     exposing
         ( contributingFactorsFormWithDefault
@@ -23,7 +23,7 @@ import Measurement.View
         , healthEducationFormInutsAndTasks
         , sendToFacilityInputsAndTasks
         )
-import Pages.NextSteps.Model exposing (..)
+import Pages.NextSteps.Model exposing (Model)
 import Pages.Utils exposing (resolveTasksCompletedFromTotal)
 import Translate.Model exposing (Language(..))
 

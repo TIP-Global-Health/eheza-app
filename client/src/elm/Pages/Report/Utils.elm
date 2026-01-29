@@ -10,7 +10,7 @@ import Date
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Utils exposing (bloodSmearResultNotSet, testPerformedByExecutionNote)
-import Pages.Report.Model exposing (..)
+import Pages.Report.Model exposing (PaneEntryStatus(..), RandomBloodSugarResult(..), TestReport(..))
 
 
 hivResultNormal : TestReport -> Bool

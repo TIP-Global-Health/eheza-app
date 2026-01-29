@@ -2,7 +2,7 @@ module Measurement.Test exposing (all)
 
 import Backend.Measurement.Model exposing (ColorAlertIndication(..))
 import Expect
-import Measurement.View exposing (..)
+import Measurement.View exposing (viewColorAlertIndication)
 import Test exposing (Test, describe, test)
 import Test.Html.Query as Query
 import Test.Html.Selector exposing (classes, text)

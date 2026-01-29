@@ -4,7 +4,7 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (getHIVEncountersForParticipant)
-import Pages.HIV.Encounter.Model exposing (..)
+import Pages.HIV.Encounter.Model exposing (AssembledData, EncounterData)
 import RemoteData exposing (RemoteData(..), WebData)
 import Utils.NominalDate exposing (sortByStartDateDesc)
 

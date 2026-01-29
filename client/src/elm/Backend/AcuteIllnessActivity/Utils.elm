@@ -10,7 +10,7 @@ expected (and not completed).
 
 -}
 
-import Backend.AcuteIllnessActivity.Model exposing (..)
+import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 
 
 {-| Used for URL etc., not for display in the normal UI (since we'd translate

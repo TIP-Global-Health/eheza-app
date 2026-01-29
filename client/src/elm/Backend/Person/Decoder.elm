@@ -10,12 +10,12 @@ module Backend.Person.Decoder exposing
     )
 
 import Backend.Measurement.Model exposing (Gender(..))
-import Backend.Person.Model exposing (..)
-import Backend.Person.Utils exposing (..)
+import Backend.Person.Model exposing (EducationLevel, HIVStatus(..), MaritalStatus, ModeOfDelivery(..), Person, Ubudehe, VaginalDelivery(..))
+import Backend.Person.Utils exposing (educationLevelFromInt, genderFromString, maritalStatusFromString, ubudeheFromInt)
 import Gizra.Json exposing (decodeInt, decodeStringWithDefault)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
-import Json.Decode exposing (..)
-import Json.Decode.Pipeline exposing (..)
+import Json.Decode exposing (Decoder, andThen, bool, fail, nullable, string, succeed)
+import Json.Decode.Pipeline exposing (optional, required)
 import Restful.Endpoint exposing (decodeEntityUuid)
 import String.Extra exposing (toTitleCase)
 

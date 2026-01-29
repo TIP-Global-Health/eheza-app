@@ -1,6 +1,6 @@
 module Backend.PrenatalEncounter.Decoder exposing (decodePrenatalDiagnosis, decodePrenatalEncounter, decodePrenatalEncounterType)
 
-import Backend.PrenatalEncounter.Model exposing (..)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..), PrenatalIndicator(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import EverySet
 import Gizra.NominalDate exposing (decodeYYYYMMDD)

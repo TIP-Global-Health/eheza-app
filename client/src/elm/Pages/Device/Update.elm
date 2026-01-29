@@ -1,7 +1,7 @@
 module Pages.Device.Update exposing (update)
 
 import App.Model
-import Pages.Device.Model exposing (..)
+import Pages.Device.Model exposing (Model, Msg(..))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )

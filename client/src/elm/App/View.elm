@@ -1,6 +1,6 @@
 module App.View exposing (view)
 
-import App.Model exposing (..)
+import App.Model exposing (ConfiguredModel, Model, Msg(..), MsgLoggedIn(..))
 import App.Utils exposing (getLoggedInData)
 import AssocList as Dict
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))

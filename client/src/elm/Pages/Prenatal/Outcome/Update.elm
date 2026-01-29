@@ -6,7 +6,7 @@ import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation(.
 import Backend.IndividualEncounterParticipant.Utils exposing (pregnancyOutcomeFromString)
 import Backend.Model
 import Gizra.NominalDate exposing (NominalDate)
-import Pages.Prenatal.Outcome.Model exposing (..)
+import Pages.Prenatal.Outcome.Model exposing (Model, Msg(..))
 
 
 update : NominalDate -> IndividualEncounterParticipantId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )

@@ -2,10 +2,10 @@ module Backend.TraceContact.Update exposing (update)
 
 import App.Model
 import App.Utils exposing (triggerRollbarOnFailure)
-import Backend.Endpoints exposing (..)
+import Backend.Endpoints exposing (acuteIllnessTraceContactEndpoint)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (AcuteIllnessTraceContact)
-import Backend.TraceContact.Model exposing (..)
+import Backend.TraceContact.Model exposing (Model, Msg(..))
 import Backend.Utils exposing (editMeasurementCmd)
 import RemoteData exposing (RemoteData(..))
 

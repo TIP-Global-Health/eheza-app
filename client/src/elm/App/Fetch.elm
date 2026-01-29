@@ -1,6 +1,6 @@
 module App.Fetch exposing (fetch, forget, shouldFetch)
 
-import App.Model exposing (..)
+import App.Model exposing (Model, Msg(..))
 import App.Utils exposing (getLoggedInData)
 import AssocList as Dict
 import Backend.Fetch

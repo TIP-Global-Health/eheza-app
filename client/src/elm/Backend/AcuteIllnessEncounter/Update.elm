@@ -3,8 +3,8 @@ module Backend.AcuteIllnessEncounter.Update exposing (update)
 import App.Model
 import App.Utils exposing (triggerRollbarOnFailure)
 import AssocList as Dict
-import Backend.AcuteIllnessEncounter.Model exposing (..)
-import Backend.Endpoints exposing (..)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter, Model, Msg(..))
+import Backend.Endpoints exposing (acuteFindingsEndpoint, acuteIllnessContactsTracingEndpoint, acuteIllnessCoreExamEndpoint, acuteIllnessDangerSignsEndpoint, acuteIllnessEncounterEndpoint, acuteIllnessFollowUpEndpoint, acuteIllnessMuacEndpoint, acuteIllnessNutritionEndpoint, acuteIllnessTraceContactEndpoint, acuteIllnessVitalsEndpoint, call114Endpoint, covidTestingEndpoint, exposureEndpoint, hcContactEndpoint, healthEducationEndpoint, isolationEndpoint, malariaTestingEndpoint, medicationDistributionEndpoint, sendToHCEndpoint, symptomsGIEndpoint, symptomsGeneralEndpoint, symptomsRespiratoryEndpoint, travelHistoryEndpoint, treatmentOngoingEndpoint, treatmentReviewEndpoint)
 import Backend.Entities exposing (..)
 import Backend.Utils exposing (saveMeasurementCmd, sw)
 import Gizra.NominalDate exposing (NominalDate)

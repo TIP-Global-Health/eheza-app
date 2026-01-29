@@ -13,7 +13,7 @@ import Error.Utils exposing (decoderError, maybeHttpError, noError)
 import GeoLocation.Utils exposing (getGeoInfo, getReverseGeoInfo)
 import Gizra.NominalDate exposing (NominalDate)
 import Http exposing (Error)
-import HttpBuilder exposing (..)
+import HttpBuilder exposing (withExpectJson, withJsonBody, withQueryParams)
 import Json.Decode exposing (Value, decodeValue)
 import Json.Encode
 import List.Zipper as Zipper

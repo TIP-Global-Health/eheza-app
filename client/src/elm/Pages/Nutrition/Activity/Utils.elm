@@ -15,7 +15,7 @@ import Backend.Person.Utils exposing (ageInMonths)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
-import Measurement.Model exposing (..)
+import Measurement.Model exposing (NextStepsTask(..))
 import Measurement.Utils
     exposing
         ( contributingFactorsFormWithDefault
@@ -30,7 +30,7 @@ import Measurement.View
         , healthEducationFormInutsAndTasks
         , sendToFacilityInputsAndTasks
         )
-import Pages.Nutrition.Activity.Model exposing (..)
+import Pages.Nutrition.Activity.Model exposing (NextStepsData)
 import Pages.Nutrition.Encounter.Model exposing (AssembledData)
 import Pages.Utils exposing (resolveTasksCompletedFromTotal)
 import SyncManager.Model exposing (Site(..), SiteFeature)

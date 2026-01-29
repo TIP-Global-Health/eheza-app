@@ -3,7 +3,7 @@ module Pages.Prenatal.RecurrentActivity.View exposing (view, viewLabsHistory)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (..)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isLabTechnician)
@@ -46,13 +46,13 @@ import Measurement.Utils
 import Measurement.View
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.View exposing (warningPopup)
-import Pages.Prenatal.Encounter.Utils exposing (..)
+import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData)
 import Pages.Prenatal.Encounter.View exposing (viewMotherAndMeasurements)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm)
-import Pages.Prenatal.RecurrentActivity.Model exposing (..)
-import Pages.Prenatal.RecurrentActivity.Types exposing (..)
-import Pages.Prenatal.RecurrentActivity.Utils exposing (..)
-import Pages.Prenatal.Utils exposing (..)
+import Pages.Prenatal.RecurrentActivity.Model exposing (ExaminationData, LabResultsData, Model, Msg(..), NextStepsData)
+import Pages.Prenatal.RecurrentActivity.Types exposing (ExaminationTask(..), NextStepsTask(..))
+import Pages.Prenatal.RecurrentActivity.Utils exposing (examinationMeasurementTaken, examinationTasksCompletedFromTotal, generateVitalsFormConfig, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, laboratoryResultFollowUpsTaskCompleted, laboratoryResultTaskCompleted, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultFollowUpsTasks, resolveLaboratoryResultTasks, resolveNextStepsTasks, resolveReferralInputsAndTasks)
+import Pages.Prenatal.Utils exposing (medicationDistributionFormWithDefaultRecurrentPhase, referralFormWithDefault, resolvePartnerHIVTestResult)
 import Pages.Prenatal.View exposing (viewMalariaPreventionContent, viewMedicationDistributionForm)
 import Pages.Utils
     exposing

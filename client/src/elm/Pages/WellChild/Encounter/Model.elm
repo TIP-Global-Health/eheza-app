@@ -5,7 +5,7 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Measurement.Model exposing (WellChildMeasurements)
 import Backend.Person.Model exposing (Person)
 import Backend.WellChildActivity.Model exposing (WellChildActivity)
-import Backend.WellChildEncounter.Model exposing (..)
+import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (VaccinationProgressDict)

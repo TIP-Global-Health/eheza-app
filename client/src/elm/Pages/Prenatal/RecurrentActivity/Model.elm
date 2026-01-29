@@ -30,8 +30,8 @@ import Measurement.Model
         )
 import Pages.Page exposing (Page)
 import Pages.Prenatal.Activity.Types exposing (WarningPopupType)
-import Pages.Prenatal.Model exposing (..)
-import Pages.Prenatal.RecurrentActivity.Types exposing (..)
+import Pages.Prenatal.Model exposing (HealthEducationForm, MalariaPreventionData, MalariaPreventionForm, MedicationDistributionForm, ReferralForm, emptyHealthEducationForm, emptyMalariaPreventionData, emptyMedicationDistributionForm, emptyReferralForm)
+import Pages.Prenatal.RecurrentActivity.Types exposing (ExaminationTask, NextStepsTask)
 
 
 type Msg

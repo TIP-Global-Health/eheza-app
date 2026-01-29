@@ -62,7 +62,7 @@ import List.Extra
 import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (VaccinationProgressDict)
 import Measurement.Utils exposing (allVaccineTypes)
-import Pages.Dashboard.Model exposing (..)
+import Pages.Dashboard.Model exposing (FilterPeriod(..), FilterProgramType(..), Model)
 import Pages.GlobalCaseManagement.Utils
     exposing
         ( fillPersonName

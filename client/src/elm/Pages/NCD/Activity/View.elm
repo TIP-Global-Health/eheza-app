@@ -47,12 +47,12 @@ import Measurement.Utils
         , vitalsFormWithDefault
         )
 import Measurement.View exposing (viewFamilyPlanningForm)
-import Pages.NCD.Activity.Model exposing (..)
-import Pages.NCD.Activity.Types exposing (..)
-import Pages.NCD.Activity.Utils exposing (..)
-import Pages.NCD.Model exposing (..)
+import Pages.NCD.Activity.Model exposing (CoMorbiditiesForm, DangerSignsData, ExaminationData, FamilyHistoryForm, FamilyPlanningData, HealthEducationForm, LaboratoryData, MedicalHistoryData, MedicationHistoryForm, Model, Msg(..), NextStepsData, SocialHistoryForm, SymptomReviewData)
+import Pages.NCD.Activity.Types exposing (ExaminationTask(..), MedicalHistoryTask(..), NextStepsTask(..))
+import Pages.NCD.Activity.Utils exposing (coMorbiditiesFormInputsAndTasks, coMorbiditiesFormWithDefault, dangerSignsFormWithDefault, examinationTasksCompletedFromTotal, expectLaboratoryTask, familyHistoryFormInputsAndTasks, familyHistoryFormWithDefault, generatePreviousLaboratoryTestsDatesDict, generateVitalsFormConfig, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, laboratoryTaskCompleted, laboratoryTasks, medicalHistoryTasksCompletedFromTotal, medicationHistoryFormInputsAndTasks, medicationHistoryFormWithDefault, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, outsideCareDiagnosesLeftColumn, outsideCareDiagnosesRightColumn, resolveNextStepsTasks, socialHistoryFormInputsAndTasks, socialHistoryFormWithDefault, symptomReviewFormWithDefault)
+import Pages.NCD.Model exposing (AssembledData, NCDEncounterPhase(..))
 import Pages.NCD.Utils exposing (generateAssembledData, medicationDistributionFormWithDefault, referralFormWithDefault)
-import Pages.NCD.View exposing (..)
+import Pages.NCD.View exposing (viewMedicationDistributionForm, viewReferralForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing

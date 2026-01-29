@@ -1,8 +1,8 @@
 module Backend.Relationship.Encoder exposing (encodeRelationship, encodeRelationshipChanges)
 
 import Backend.Entities exposing (..)
-import Backend.Relationship.Model exposing (..)
-import Json.Encode exposing (..)
+import Backend.Relationship.Model exposing (RelatedBy(..), Relationship)
+import Json.Encode exposing (Value, bool, string)
 import Restful.Endpoint exposing (encodeEntityUuid)
 import Utils.Json exposing (encodeIfSet)
 

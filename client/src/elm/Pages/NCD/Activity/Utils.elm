@@ -5,7 +5,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.NCDActivity.Model exposing (NCDActivity(..))
 import Backend.NCDActivity.Utils exposing (allActivities)
-import Backend.NCDEncounter.Types exposing (..)
+import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.Person.Utils exposing (isPersonAFertileWoman)
 import Date
 import EverySet
@@ -13,7 +13,7 @@ import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Maybe.Extra exposing (andMap, isJust, or, unwrap)
-import Measurement.Model exposing (..)
+import Measurement.Model exposing (InvokationModule(..), LaboratoryTask(..), VitalsFormConfig, VitalsFormMode(..))
 import Measurement.Utils
     exposing
         ( corePhysicalExamFormWithDefault
@@ -22,10 +22,10 @@ import Measurement.Utils
         , vitalsFormWithDefault
         )
 import Measurement.View exposing (vitalsFormInputsAndTasks)
-import Pages.NCD.Activity.Model exposing (..)
-import Pages.NCD.Activity.Types exposing (..)
-import Pages.NCD.Model exposing (..)
-import Pages.NCD.Utils exposing (..)
+import Pages.NCD.Activity.Model exposing (CoMorbiditiesForm, DangerSignsForm, ExaminationData, FamilyHistoryForm, MedicalHistoryData, MedicationHistoryForm, Msg(..), NextStepsData, SocialHistoryForm, SymptomReviewForm)
+import Pages.NCD.Activity.Types exposing (ExaminationTask(..), MedicalHistoryTask(..), NextStepsTask(..))
+import Pages.NCD.Model exposing (AssembledData, NCDEncounterPhase(..))
+import Pages.NCD.Utils exposing (diabetesDiagnoses, diagnosed, diagnosedAnyOf, diagnosedPreviouslyAnyOf, generateRecommendedTreatmentSignsForHypertension, hypertensionDiagnoses, medicateForDiabetes, medicateForHypertension, medicationDistributionFormWithDefault, patientIsPregnant, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForDiabetes, referForDiabetes, referForHypertension, referForRenalComplications, referralFormWithDefault, resolveMedicationDistributionInputsAndTasks, resolveReferralInputsAndTasks)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty

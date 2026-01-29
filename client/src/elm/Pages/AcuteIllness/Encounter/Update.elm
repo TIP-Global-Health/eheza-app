@@ -3,7 +3,7 @@ module Pages.AcuteIllness.Encounter.Update exposing (update)
 import App.Model
 import Backend.AcuteIllnessEncounter.Model
 import Backend.Model
-import Pages.AcuteIllness.Encounter.Model exposing (..)
+import Pages.AcuteIllness.Encounter.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..))
 
 

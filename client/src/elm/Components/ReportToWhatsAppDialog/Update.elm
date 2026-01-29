@@ -4,8 +4,8 @@ import App.Model
 import App.Ports
 import Backend.Model
 import Backend.Person.Model exposing (PatchPersonInitator(..))
-import Components.ReportToWhatsAppDialog.Model exposing (..)
-import Components.ReportToWhatsAppDialog.Utils exposing (..)
+import Components.ReportToWhatsAppDialog.Model exposing (DialogState(..), Model, Msg(..))
+import Components.ReportToWhatsAppDialog.Utils exposing (countryCodeFromString, reportTypeToString)
 import Maybe.Extra exposing (isJust)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Translate.Utils exposing (languageToCode)

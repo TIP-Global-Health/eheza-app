@@ -14,7 +14,7 @@ import GeoLocation.Model exposing (ReverseGeoInfo)
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust)
-import Pages.Person.Model exposing (..)
+import Pages.Person.Model exposing (Model, Msg(..))
 import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (Site)
 

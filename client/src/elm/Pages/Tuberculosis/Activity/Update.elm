@@ -13,8 +13,8 @@ import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (unwrap)
 import Measurement.Utils exposing (ongoingTreatmentReviewFormWithDefault, toFollowUpValueWithDefault, toOngoingTreatmentReviewValueWithDefault, toSendToHCValueWithDefault)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Tuberculosis.Activity.Model exposing (..)
-import Pages.Tuberculosis.Activity.Utils exposing (..)
+import Pages.Tuberculosis.Activity.Model exposing (Model, Msg(..))
+import Pages.Tuberculosis.Activity.Utils exposing (diagnosticsFormWithDefault, dotFormWithDefault, prescribedMedicationFormWithDefault, toDOTValueWithDefault, toDiagnosticsValueWithDefault, toHealthEducationValueWithDefault, toPrescribedMedicationValueWithDefault, toSymptomReviewValueWithDefault)
 import Pages.Utils exposing (setMultiSelectInputValue)
 import RemoteData
 

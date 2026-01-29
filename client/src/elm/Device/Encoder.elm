@@ -1,7 +1,7 @@
 module Device.Encoder exposing (encode)
 
-import Device.Model exposing (..)
-import Json.Encode exposing (..)
+import Device.Model exposing (Device)
+import Json.Encode exposing (Value, int, object, string)
 import Json.Encode.Extra exposing (maybe)
 
 

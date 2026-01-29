@@ -10,7 +10,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Pages.AcuteIllness.Activity.Types exposing (SymptomsTask(..))
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.TraceContact.Model exposing (..)
+import Pages.TraceContact.Model exposing (Model, Msg(..), NoContactReason(..), RecordSymptomsPopupState(..), TraceContactStep(..), emptyStepRecordSymptomsData)
 
 
 update : NominalDate -> AcuteIllnessTraceContactId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )

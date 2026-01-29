@@ -15,7 +15,7 @@ import Html.Events exposing (..)
 import Pages.AcuteIllness.Activity.Types exposing (SymptomsTask(..))
 import Pages.AcuteIllness.Activity.Utils exposing (allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.TraceContact.Model exposing (..)
+import Pages.TraceContact.Model exposing (Model, Msg(..), NoContactReason(..), RecordSymptomsPopupState(..), StepInitiateContactData, StepRecordSymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, TraceContactStep(..))
 import Pages.Utils
     exposing
         ( resolveActiveTask

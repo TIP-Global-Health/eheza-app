@@ -7,7 +7,7 @@ import Components.ReportToWhatsAppDialog.Update
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.PatientRecord.Model exposing (..)
+import Pages.PatientRecord.Model exposing (Model, Msg(..), PatientRecordFilter(..), ViewMode(..))
 
 
 update : NominalDate -> PersonId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )

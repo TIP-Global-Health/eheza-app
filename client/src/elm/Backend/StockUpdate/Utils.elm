@@ -2,7 +2,7 @@ module Backend.StockUpdate.Utils exposing (compareMonthYear, dateToMonthYear, ge
 
 import AssocList as Dict
 import Backend.Measurement.Model exposing (StockCorrectionReason(..), StockManagementMeasurements, StockSupplier(..), StockUpdateType(..))
-import Backend.StockUpdate.Model exposing (..)
+import Backend.StockUpdate.Model exposing (MonthYear, StockManagementData)
 import Date
 import Gizra.NominalDate exposing (NominalDate)
 import List.Extra

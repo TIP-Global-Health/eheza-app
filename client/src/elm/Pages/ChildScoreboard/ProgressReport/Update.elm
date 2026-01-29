@@ -7,7 +7,7 @@ import Backend.Model
 import Components.ReportToWhatsAppDialog.Model
 import Components.ReportToWhatsAppDialog.Update
 import Gizra.Update exposing (sequenceExtra)
-import Pages.ChildScoreboard.ProgressReport.Model exposing (..)
+import Pages.ChildScoreboard.ProgressReport.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..), UserPage(..))
 
 

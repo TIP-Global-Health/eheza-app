@@ -2,8 +2,8 @@ module Backend.EducationSession.Update exposing (update)
 
 import App.Model
 import App.Utils exposing (triggerRollbarOnFailure)
-import Backend.EducationSession.Model exposing (..)
-import Backend.Endpoints exposing (..)
+import Backend.EducationSession.Model exposing (EducationSession, Model, Msg(..))
+import Backend.Endpoints exposing (educationSessionEndpoint)
 import Backend.Entities exposing (..)
 import Backend.Utils exposing (sw)
 import Gizra.NominalDate exposing (NominalDate)

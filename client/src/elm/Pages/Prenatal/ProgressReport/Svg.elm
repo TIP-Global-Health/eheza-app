@@ -6,7 +6,7 @@ module Pages.Prenatal.ProgressReport.Svg exposing
     )
 
 import Html exposing (Html)
-import Pages.Report.Svg exposing (..)
+import Pages.Report.Svg exposing (dimensionsPx, drawPoints, drawPolygon, drawPolyline, heightPx, referenceHorizontalLines, referenceHorizontalNumbers, referenceVerticalLines, referenceVerticalNumbers, widthPx, withinRange)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Translate exposing (Language, translate)

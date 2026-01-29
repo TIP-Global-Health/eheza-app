@@ -1,6 +1,6 @@
 module Backend.HomeVisitEncounter.Decoder exposing (decodeHomeVisitEncounter)
 
-import Backend.HomeVisitEncounter.Model exposing (..)
+import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, bool, nullable, succeed)
 import Json.Decode.Pipeline exposing (optional, optionalAt, required, requiredAt)

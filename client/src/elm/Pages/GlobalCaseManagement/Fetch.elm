@@ -9,7 +9,7 @@ import Backend.Utils exposing (resolveIndividualParticipantsForPerson)
 import Backend.Village.Utils exposing (resolveVillageResidents)
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
-import Pages.GlobalCaseManagement.Utils exposing (..)
+import Pages.GlobalCaseManagement.Utils exposing (filterFollowUpsOfResidents, generateAcuteIllnessEncounters, generateAcuteIllnessParticipants, generateHIVParticipants, generatePrenatalEncounters, generatePrenatalParticipants, generateTuberculosisEncounters, generateTuberculosisParticipants, resolveUniquePatientsFromFollowUps)
 import Pages.Utils
 import RemoteData
 import Restful.Endpoint exposing (fromEntityUuid)

@@ -90,12 +90,12 @@ import Pages.Prenatal.Activity.Utils
         , respiratoryRateElevated
         , weightGainStandardsPerPrePregnancyClassification
         )
-import Pages.Prenatal.Encounter.Utils exposing (..)
+import Pages.Prenatal.Encounter.Utils exposing (calculateBmi, generateAssembledData, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generateMedicalDiagnosisAlertData, generateObstetricalDiagnosisAlertData, generatePara, getAllActivities, getFirstNurseEncounterMeasurements, resolveGlobalLmpValue)
 import Pages.Prenatal.Encounter.View exposing (viewActionButton)
 import Pages.Prenatal.Model exposing (AssembledData, PreviousEncounterData)
-import Pages.Prenatal.ProgressReport.Model exposing (..)
+import Pages.Prenatal.ProgressReport.Model exposing (CHWAction(..), Model, Msg(..), medicalDiagnoses, obstetricalDiagnoses)
 import Pages.Prenatal.ProgressReport.Svg exposing (viewBMIForEGA, viewFundalHeightForEGA, viewMarkers, viewWeightGainForEGA)
-import Pages.Prenatal.ProgressReport.Utils exposing (..)
+import Pages.Prenatal.ProgressReport.Utils exposing (allCHWActions, chwActionToColor, diagnosisForProgressReportToString, thumbnailDimensions, updateChronicHypertensionDiagnoses, wrapWithLI)
 import Pages.Prenatal.RecurrentActivity.Utils
 import Pages.Prenatal.RecurrentEncounter.Utils
 import Pages.Prenatal.Utils
@@ -109,8 +109,8 @@ import Pages.Prenatal.Utils
         , resolveARVReferralDiagnosis
         , resolveNCDReferralDiagnoses
         )
-import Pages.Report.Model exposing (..)
-import Pages.Report.View exposing (..)
+import Pages.Report.Model exposing (LabResultsCurrentMode(..), LabResultsMode(..), LabsResultsValues)
+import Pages.Report.View exposing (viewItemHeading, viewLabResultsHistoryPane, viewLabResultsPane, viewLabsPane)
 import Pages.Utils
     exposing
         ( viewConfirmationDialog

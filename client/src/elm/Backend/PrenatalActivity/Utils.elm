@@ -15,7 +15,7 @@ import Backend.Measurement.Model
         ( PrenatalMeasurements
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
-import Backend.PrenatalActivity.Model exposing (..)
+import Backend.PrenatalActivity.Model exposing (HighRiskFactor(..), HighSeverityAlert(..), PregnancyTrimester(..), PrenatalActivity(..), PrenatalRecurrentActivity(..))
 import EverySet
 import Gizra.NominalDate exposing (NominalDate, diffDays)
 import Maybe.Extra exposing (isJust)

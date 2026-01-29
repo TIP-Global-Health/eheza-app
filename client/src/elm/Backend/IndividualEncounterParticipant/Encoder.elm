@@ -1,9 +1,9 @@
 module Backend.IndividualEncounterParticipant.Encoder exposing (encodeAcuteIllnessOutcome, encodeDeliveryLocation, encodeHIVOutcome, encodeIndividualEncounterParticipant, encodeIndividualEncounterParticipantOutcome, encodeIndividualEncounterType, encodePregnancyOutcome, encodeTuberculosisOutcome)
 
-import Backend.IndividualEncounterParticipant.Model exposing (..)
-import Backend.IndividualEncounterParticipant.Utils exposing (..)
+import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome, DeliveryLocation, HIVOutcome, IndividualEncounterParticipant, IndividualEncounterParticipantOutcome(..), IndividualEncounterType, PregnancyOutcome, TuberculosisOutcome)
+import Backend.IndividualEncounterParticipant.Utils exposing (acuteIllnessOutcomeToString, deliveryLocationToString, hivOutcomeToString, individualEncounterTypeToString, pregnancyOutcomeToString, tuberculosisOutcomeToString)
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
-import Json.Encode exposing (..)
+import Json.Encode exposing (Value, bool, object, string)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid)
 import Utils.Json exposing (encodeIfSet)

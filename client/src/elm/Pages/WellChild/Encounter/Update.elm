@@ -11,7 +11,7 @@ import Gizra.Update exposing (sequenceExtra)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.WellChild.Activity.Model
 import Pages.WellChild.Activity.Utils
-import Pages.WellChild.Encounter.Model exposing (..)
+import Pages.WellChild.Encounter.Model exposing (Model, Msg(..))
 import Pages.WellChild.Encounter.Utils
 import RemoteData
 import SyncManager.Model exposing (Site)

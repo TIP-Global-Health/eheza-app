@@ -2,9 +2,9 @@ module Backend.StockUpdate.Update exposing (update)
 
 import App.Model
 import App.Utils exposing (triggerRollbarOnFailure)
-import Backend.Endpoints exposing (..)
+import Backend.Endpoints exposing (stockUpdateEndpoint)
 import Backend.Measurement.Model exposing (StockUpdate)
-import Backend.StockUpdate.Model exposing (..)
+import Backend.StockUpdate.Model exposing (Model, Msg(..))
 import Backend.Utils exposing (sw)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..))

@@ -26,7 +26,7 @@ import Pages.Participant.View
 import Pages.Participants.View
 import Pages.ProgressReport.Model
 import Pages.ProgressReport.View
-import Pages.Session.Model exposing (..)
+import Pages.Session.Model exposing (Model, Msg(..))
 import Participant.Utils exposing (childParticipant, motherParticipant)
 import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (Site, SiteFeature)

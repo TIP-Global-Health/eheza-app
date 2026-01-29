@@ -10,7 +10,7 @@ expected (and not completed).
 
 -}
 
-import Activity.Model exposing (..)
+import Activity.Model exposing (Activity(..), ChildActivity(..), CompletedAndPending, MotherActivity(..), SummaryByActivity, SummaryByParticipant)
 import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
@@ -20,7 +20,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
 import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
-import Backend.Session.Model exposing (..)
+import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession)
 import Backend.Session.Utils exposing (getChildMeasurementData2, getChildren, getMotherMeasurementData2, getMyMother)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffMonths)

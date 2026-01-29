@@ -2,7 +2,7 @@ module Backend.Dashboard.Encoder exposing (encodeDashboardStatsRaw)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Encoder exposing (encodeAcuteIllnessDiagnosis, encodeAcuteIllnessEncounterType)
-import Backend.Dashboard.Model exposing (..)
+import Backend.Dashboard.Model exposing (AcuteIllnessDataItem, AcuteIllnessEncounterDataItem, CaseManagement, CaseManagementData, CaseNutrition, ChildScoreboardDataItem, ChildScoreboardEncounterDataItem, ChildrenBeneficiariesStats, DashboardStatsRaw, EducationSessionData, FamilyPlanningStats, NCDDataItem, NCDEncounterDataItem, NutritionGroupDataItem, NutritionGroupEncounterDataItem, NutritionIndividualDataItem, NutritionIndividualEncounterDataItem, NutritionStatus(..), NutritionValue, PMTCTDataItem, ParticipantStats, PatientDetails, Periods, PersonIdentifier, PrenatalDataItem, PrenatalEncounterDataItem, ProgramType(..), SPVDataItem, SPVEncounterDataItem, TotalEncountersData)
 import Backend.EducationSession.Encoder exposing (encodeEducationTopic)
 import Backend.Entities exposing (VillageId)
 import Backend.IndividualEncounterParticipant.Encoder exposing (encodeDeliveryLocation, encodeIndividualEncounterParticipantOutcome)
@@ -32,7 +32,7 @@ import Backend.WellChildEncounter.Model exposing (EncounterWarning(..))
 import Dict as LegacyDict
 import EverySet
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
-import Json.Encode exposing (..)
+import Json.Encode exposing (Value, bool, dict, float, int, list, null, object, string)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Utils.Json exposing (encodeEverySet, encodeIfSet)

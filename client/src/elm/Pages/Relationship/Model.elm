@@ -2,7 +2,7 @@ module Pages.Relationship.Model exposing (Model, Msg(..), emptyModel)
 
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Initiator)
-import Backend.Relationship.Model exposing (..)
+import Backend.Relationship.Model exposing (MyRelatedBy)
 import Pages.Page exposing (Page)
 
 

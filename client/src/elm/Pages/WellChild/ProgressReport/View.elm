@@ -94,7 +94,7 @@ import Pages.WellChild.Encounter.Utils
         , resolvePediatricCareMilestoneOnDate
         )
 import Pages.WellChild.Encounter.View exposing (partitionActivities)
-import Pages.WellChild.ProgressReport.Model exposing (..)
+import Pages.WellChild.ProgressReport.Model exposing (BottomActionData, ECDStatus(..), Model, Msg(..), NCDAANCNewbornItem(..), NCDACellValue(..), NCDAFillTheBlanksItem(..), NCDANutritionBehaviorItem(..), NCDATargetedInterventionsItem(..), NCDAUniversalInterventionsItem(..), WellChildProgressReportInitiator(..))
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import SyncManager.Model exposing (Site(..), SiteFeature)

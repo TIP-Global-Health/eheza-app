@@ -1,9 +1,9 @@
 module Backend.Village.Decoder exposing (decodeVillage)
 
 import Backend.Person.Decoder exposing (decodeGeoField)
-import Backend.Village.Model exposing (..)
-import Json.Decode exposing (..)
-import Json.Decode.Pipeline exposing (..)
+import Backend.Village.Model exposing (Village)
+import Json.Decode exposing (Decoder, string, succeed)
+import Json.Decode.Pipeline exposing (required)
 import Restful.Endpoint exposing (decodeEntityUuid)
 
 

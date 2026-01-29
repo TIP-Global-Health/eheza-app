@@ -16,7 +16,7 @@ import Backend.Measurement.Model
         , VaccineDose
         )
 import Backend.Person.Model exposing (Person)
-import Backend.PrenatalEncounter.Model exposing (..)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)

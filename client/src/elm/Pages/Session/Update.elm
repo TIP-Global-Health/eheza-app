@@ -23,7 +23,7 @@ import Pages.Participant.Update
 import Pages.Participants.Update
 import Pages.ProgressReport.Model
 import Pages.ProgressReport.Update
-import Pages.Session.Model exposing (..)
+import Pages.Session.Model exposing (Model, Msg(..))
 import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (Site, SiteFeature)
 import ZScore.Model

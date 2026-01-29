@@ -31,8 +31,8 @@ import Measurement.View
         ( viewFollowUpForm
         , viewSendToHealthCenterForm
         )
-import Pages.HIV.Activity.Model exposing (..)
-import Pages.HIV.Activity.Utils exposing (..)
+import Pages.HIV.Activity.Model exposing (DiagnosticsData, DiagnosticsForm, HealthEducationForm, MedicationData, MedicationTask(..), Model, Msg(..), NextStepsData, NextStepsTask(..), PrescribedMedicationForm, SymptomReviewData)
+import Pages.HIV.Activity.Utils exposing (diagnosticsFormWithDefault, expectMedicationTask, expectNextStepsTask, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, medicationTaskCompleted, medicationTasks, medicationTasksCompletedFromTotal, nextStepsTaskCompleted, nextStepsTasks, nextStepsTasksCompletedFromTotal, prescribedMedicationFormWithDefault, prescribedMedicationsInputsAndTasks, symptomReviewFormWithDefault)
 import Pages.HIV.Encounter.Model exposing (AssembledData)
 import Pages.HIV.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))

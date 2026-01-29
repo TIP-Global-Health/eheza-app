@@ -3,7 +3,7 @@ module Pages.NCD.RecurrentActivity.Update exposing (update)
 import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Measurement.Utils exposing (..)
+import Backend.Measurement.Utils exposing (bilirubinValueFromString, getMeasurementValueFunc, glucoseValueFromString, haemoglobinValueFromString, ketoneValueFromString, leukocytesValueFromString, nitriteValueFromString, nonReferralReasonToSign, phValueFromString, proteinValueFromString, unitOfMeasurementFromString, urobilinogenValueFromString)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDEncounter.Model
 import EverySet
@@ -18,8 +18,8 @@ import Measurement.Utils
         , toUrineDipstickResultValueWithDefault
         )
 import Pages.GlobalCaseManagement.Utils exposing (labsResultsTestData)
-import Pages.NCD.RecurrentActivity.Model exposing (..)
-import Pages.NCD.Utils exposing (..)
+import Pages.NCD.RecurrentActivity.Model exposing (Model, Msg(..))
+import Pages.NCD.Utils exposing (medicationDistributionFormWithDefault, referralFormWithDefault, toMedicationDistributionValueWithDefault, toReferralValueWithDefault)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (setMultiSelectInputValue)
 import RemoteData

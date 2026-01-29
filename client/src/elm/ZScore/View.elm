@@ -59,7 +59,7 @@ import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Translate exposing (ChartPhrase, Language, TranslationId(..), translate)
 import Utils.AllDict as AllDict
-import ZScore.Model exposing (..)
+import ZScore.Model exposing (Centimetres(..), ChartAgeRange(..), Days, Height, Kilograms(..), Length(..), Model, Months, ZScoreEntry)
 import ZScore.Utils exposing (valueForZScore)
 
 

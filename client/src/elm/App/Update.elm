@@ -2,8 +2,8 @@ module App.Update exposing (init, subscriptions, updateAndThenFetch)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import App.Fetch
-import App.Model exposing (..)
-import App.Ports exposing (..)
+import App.Model exposing (ConfiguredModel, Flags, LoggedInModel, Model, Msg(..), MsgLoggedIn(..), RollbarErrorSource(..), emptyLoggedInModel, emptyModel)
+import App.Ports exposing (cacheHealthCenter, cachePinCode, cacheVillage, coordinates, logByRollbar, memoryQuota, persistentStorage, scrollToElement, setLanguage, storageQuota)
 import App.Utils exposing (getLoggedInData, updateSubModel)
 import AssocList as Dict
 import Backend.Endpoints exposing (nurseEndpoint)
@@ -79,7 +79,7 @@ import Pages.Nutrition.Encounter.Model
 import Pages.Nutrition.Encounter.Update
 import Pages.Nutrition.ProgressReport.Model
 import Pages.Nutrition.ProgressReport.Update
-import Pages.Page exposing (..)
+import Pages.Page exposing (DashboardPage(..), Page(..), SessionPage(..), UserPage(..))
 import Pages.PatientRecord.Model
 import Pages.PatientRecord.Update
 import Pages.People.Update

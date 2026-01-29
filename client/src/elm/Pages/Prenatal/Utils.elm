@@ -21,8 +21,8 @@ import Measurement.Utils
         , viewReinforceAdherenceQuestion
         )
 import Measurement.View exposing (viewActionTakenLabel, viewMultipleTreatmentWithDosage, viewTreatmentOptionWithDosage)
-import Pages.Prenatal.Model exposing (..)
-import Pages.Prenatal.Types exposing (..)
+import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, HypertensionTreatementUpdateOption(..), MalariaPreventionForm, MedicationDistributionForm, PrenatalEncounterPhase(..), PreviousEncounterData, ReferralForm, VaccinationProgressDict)
+import Pages.Prenatal.Types exposing (EarlyMastitisOrEngorgmentReliefMethod(..), HeartburnReliefMethod(..), LegCrampsReliefMethod(..))
 import Pages.Utils
     exposing
         ( getCurrentReasonForMedicationNonAdministration

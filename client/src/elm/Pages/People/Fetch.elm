@@ -4,7 +4,7 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (MsgIndexedDb(..))
 import Components.PatientsSearchForm.Fetch
 import Maybe.Extra
-import Pages.People.Model exposing (..)
+import Pages.People.Model exposing (Model)
 
 
 fetch : Maybe PersonId -> Model -> List MsgIndexedDb

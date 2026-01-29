@@ -33,7 +33,7 @@ import Measurement.Model
         , NCDAData
         , NextStepsTask(..)
         )
-import Measurement.Utils exposing (..)
+import Measurement.Utils exposing (allNextStepsTasks, contributingFactorsFormWithDefault, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, healthEducationFormWithDefault, heightFormWithDefault, muacFormWithDefault, ncdaFormWithDefault, nutritionFollowUpFormWithDefault, nutritionFormWithDefault, sendToHCFormWithDefault, weightFormWithDefault, withinConstraints)
 import Measurement.View
     exposing
         ( viewContributingFactorsForm
@@ -44,8 +44,8 @@ import Measurement.View
         , viewSendToHealthCenterForm
         , viewWeightForm
         )
-import Pages.Nutrition.Activity.Model exposing (..)
-import Pages.Nutrition.Activity.Utils exposing (..)
+import Pages.Nutrition.Activity.Model exposing (HeightData, Model, Msg(..), MuacData, NextStepsData, NutritionData, PhotoData, WeightData)
+import Pages.Nutrition.Activity.Utils exposing (generateNutritionAssessment, nextStepsTasksCompletedFromTotal)
 import Pages.Nutrition.Encounter.Model exposing (AssembledData)
 import Pages.Nutrition.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))

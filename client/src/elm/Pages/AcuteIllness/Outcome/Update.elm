@@ -6,7 +6,7 @@ import Backend.IndividualEncounterParticipant.Model
 import Backend.IndividualEncounterParticipant.Utils exposing (acuteIllnessOutcomeFromString)
 import Backend.Model
 import Gizra.NominalDate exposing (NominalDate)
-import Pages.AcuteIllness.Outcome.Model exposing (..)
+import Pages.AcuteIllness.Outcome.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..))
 
 

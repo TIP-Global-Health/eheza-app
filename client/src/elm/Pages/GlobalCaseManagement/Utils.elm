@@ -14,7 +14,7 @@ import Backend.Utils exposing (hivManagementEnabled, tuberculosisManagementEnabl
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays)
-import Pages.GlobalCaseManagement.Model exposing (..)
+import Pages.GlobalCaseManagement.Model exposing (AcuteIllnessFollowUpItem, CaseManagementFilter(..), FollowUpDueOption(..), FollowUpPatients, HIVFollowUpItem, ImmunizationFollowUpItem, NutritionFollowUpItem, PrenatalFollowUpItem, TuberculosisFollowUpItem)
 import Pages.Utils
 import RemoteData exposing (WebData)
 import Restful.Endpoint exposing (fromEntityUuid)

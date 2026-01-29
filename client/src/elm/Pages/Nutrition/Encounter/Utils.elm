@@ -7,7 +7,7 @@ import Backend.Measurement.Utils
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (getNutritionEncountersForParticipant)
 import Gizra.NominalDate exposing (NominalDate)
-import Pages.Nutrition.Encounter.Model exposing (..)
+import Pages.Nutrition.Encounter.Model exposing (AssembledData)
 import RemoteData exposing (RemoteData(..), WebData)
 
 

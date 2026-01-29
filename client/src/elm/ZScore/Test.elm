@@ -7,7 +7,7 @@ import Json.Decode exposing (Decoder, decodeString)
 import RemoteData exposing (RemoteData(..), WebData)
 import Test exposing (Test, describe, test)
 import Utils.AllDict exposing (AllDict)
-import ZScore.Decoder exposing (..)
+import ZScore.Decoder exposing (decodeForAge, decodeForCentimetres)
 import ZScore.Fixture.Bfawho2007
 import ZScore.Fixture.Bmianthro
 import ZScore.Fixture.Hfawho2007
@@ -16,8 +16,8 @@ import ZScore.Fixture.Weianthro
 import ZScore.Fixture.Wfawho2007
 import ZScore.Fixture.Wfhanthro
 import ZScore.Fixture.Wflanthro
-import ZScore.Model exposing (..)
-import ZScore.Utils exposing (..)
+import ZScore.Model exposing (BMI(..), ByDaysAndMonths, Centimetres(..), Days(..), Height(..), Kilograms(..), Length(..), MaleAndFemale, Model, Months(..), ZScore, ZScoreEntry)
+import ZScore.Utils exposing (zScoreBmiForAge, zScoreLengthHeightForAge, zScoreWeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
 
 
 type alias MonthsAndDays a =

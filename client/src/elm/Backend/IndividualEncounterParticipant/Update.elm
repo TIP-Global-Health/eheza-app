@@ -4,7 +4,7 @@ import App.Model
 import App.Utils exposing (triggerRollbarOnFailure)
 import Backend.Endpoints exposing (individualEncounterParticipantEndpoint)
 import Backend.Entities exposing (IndividualEncounterParticipantId)
-import Backend.IndividualEncounterParticipant.Model exposing (..)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterParticipantOutcome(..), Model, Msg(..))
 import Backend.Utils exposing (sw)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (unwrap)

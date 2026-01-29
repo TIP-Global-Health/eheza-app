@@ -14,7 +14,7 @@ import Backend.Measurement.Utils
         , weightValueFunc
         )
 import Backend.Person.Model exposing (Person)
-import Backend.PrenatalActivity.Model exposing (..)
+import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..), PrenatalIndicator(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter)
@@ -50,11 +50,11 @@ import Measurement.Utils
         , vitalsFormWithDefault
         )
 import Measurement.View exposing (viewActionTakenLabel, vitalsFormInputsAndTasks)
-import Pages.Prenatal.Activity.Model exposing (..)
-import Pages.Prenatal.Activity.Types exposing (..)
+import Pages.Prenatal.Activity.Model exposing (AppointmentConfirmationForm, BirthPlanForm, BreastExamForm, BreastfeedingForm, DangerSignsForm, ExaminationData, FollowUpForm, GUExamForm, ImmunisationData, MedicalHistoryForm, MedicationData, MedicationForm, MentalHealthForm, Msg(..), NextStepsData, NutritionAssessmentForm, ObstetricFormFirstStep, ObstetricFormSecondStep, ObstetricalExamForm, PregnancyDatingForm, PregnancyTestForm, PrenatalVaccinationForm, SocialHistoryForm, SpecialityCareForm, SymptomReviewForm, TreatmentReviewData)
+import Pages.Prenatal.Activity.Types exposing (ExaminationTask(..), GWGClassification(..), HistoryTask(..), ImmunisationTask(..), MedicationTask(..), NextStepsTask(..), PrePregnancyClassification(..), SymptomReviewStep(..), TreatmentReviewTask(..))
 import Pages.Prenatal.Encounter.Utils exposing (calculateBmi, emergencyReferalRequired, generateGravida, generatePara, getAllActivities)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm, VaccinationProgressDict)
-import Pages.Prenatal.Utils exposing (..)
+import Pages.Prenatal.Utils exposing (applyDiagnosesHierarchy, bloodPressureAtHypertensionTreatmentRequiresHospitalization, calculateEGAWeeks, diabetesDiagnoses, diabetesDiagnosesInitialPhase, diagnosed, diagnosedAnyOf, diagnosedDiabetesPrevoiusly, diagnosedHighRiskOfPreeclampsiaPrevoiusly, diagnosedHypertension, diagnosedHypertensionPrevoiusly, diagnosedMalariaByPhase, diagnosedModeratePreeclampsiaPrevoiusly, diagnosedPreviously, diagnosedPreviouslyAnyOf, diagnosedRiskOfPreeclampsiaPrevoiusly, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, emergencyReferralDiagnoses, expectMalariaPreventionActivity, getLatestTreatmentByTreatmentOptions, healthEducationFormFamilyPlanningInput, healthEducationFormInputsAndTasksForNurse, hivProgramAtHC, hypertensionDiagnoses, labTestWithImmediateResult, medicationDistributionFormWithDefaultInitialPhase, medicationDistributionMeasurementTaken, medicationsInitialPhase, mentalHealthDiagnosesRequiringTreatment, mentalHealthSpecialistAtHC, moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis, moderatePreeclampsiaDiagnoses, nurseEncounterNotPerformed, preeclampsiaDiagnoses, provideHIVEducation, provideHIVPartnerPresenceEducation, provideLegPainRednessEducation, provideMentalHealthEducation, provideNauseaAndVomitingEducation, providePelvicPainEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForCandidiasis, recommendedTreatmentSignsForHeartburn, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForMastitis, recommendedTreatmentSignsForSyphilis, recommendedTreatmentSignsForUrinaryTractInfection, referToHospitalDueToAdverseEventForHypertensionTreatment, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefault, referralToFacilityCompleted, referredToSpecialityCareProgram, reinforceTreatmentSignsCompleted, resolveARVReferralDiagnosis, resolveFefolDosageAndIcon, resolveMMSDosageAndIcon, resolveMedicationDistributionInputsAndTasks, resolveNCDReferralDiagnoses, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet, showMebendazoleQuestion, symptomRecorded, symptomRecordedPreviously, syphilisDiagnosesIncludingNeurosyphilis, updateHypertensionTreatmentWithMedication)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty

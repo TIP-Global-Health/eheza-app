@@ -10,7 +10,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.HIV.Activity.Utils exposing (activityCompleted, expectActivity)
-import Pages.HIV.Encounter.Model exposing (..)
+import Pages.HIV.Encounter.Model exposing (AssembledData, Model, Msg(..), Tab(..))
 import Pages.HIV.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils

@@ -10,8 +10,8 @@ import Backend.StockUpdate.Utils exposing (stockSupplierFromString)
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra
-import Pages.StockManagement.Model exposing (..)
-import Pages.StockManagement.Utils exposing (..)
+import Pages.StockManagement.Model exposing (CorrectionEntryType(..), DisplayMode(..), Model, Msg(..), emptyModel)
+import Pages.StockManagement.Utils exposing (correctionEntryTypeFromString)
 
 
 update : NominalDate -> Maybe HealthCenterId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )

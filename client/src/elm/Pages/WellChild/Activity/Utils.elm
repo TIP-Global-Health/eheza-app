@@ -25,8 +25,8 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra
 import Maybe.Extra exposing (andMap, isJust, or, unwrap)
-import Measurement.Model exposing (..)
-import Measurement.Utils exposing (..)
+import Measurement.Model exposing (ImmunisationTask(..), InvokationModule(..), MedicationAdministrationFormConfig, VaccinationProgressDict, VitalsFormConfig, VitalsFormMode(..))
+import Measurement.Utils exposing (behindOnVaccinationsByHistory, contributingFactorsFormWithDefault, expectVaccineDoseForPerson, generateFutureVaccinationsData, getAllDosesForVaccine, getIntervalForVaccine, getPreviousMeasurements, healthEducationFormWithDefault, heightFormWithDefault, immunisationTaskToVaccineType, initialVaccinationDateByBirthDate, isBehindOnVaccinationsByProgress, medicationAdministrationFormInputsAndTasks, medicationAdministrationFormWithDefault, muacFormWithDefault, nextVaccinationDataForVaccine, nutritionFollowUpFormWithDefault, nutritionFormWithDefault, sendToHCFormWithDefault, vaccinationFormWithDefault, vaccineDoseToComparable, vitalsFormWithDefault, wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm, wasInitialOpvAdministeredByVaccinationProgress, weightFormWithDefault)
 import Measurement.View
     exposing
         ( contributingFactorsFormInutsAndTasks
@@ -59,8 +59,8 @@ import Pages.Utils
         , viewPreviousMeasurement
         , viewQuestionLabel
         )
-import Pages.WellChild.Activity.Model exposing (..)
-import Pages.WellChild.Activity.Types exposing (..)
+import Pages.WellChild.Activity.Model exposing (DangerSignsData, HeadCircumferenceForm, ImmunisationData, MedicationData, Msg(..), NextStepsData, NextVisitForm, NutritionAssessmentData, PregnancySummaryForm, SymptomsReviewForm, WellChildECDForm, WellChildVaccinationForm, medicationTasks)
+import Pages.WellChild.Activity.Types exposing (DangerSignsTask(..), MedicationTask(..), NextStepsTask(..), NutritionAssessmentTask(..))
 import Pages.WellChild.Encounter.Model exposing (AssembledData)
 import SyncManager.Model exposing (Site(..), SiteFeature)
 import Translate exposing (TranslationId, translate)

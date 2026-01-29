@@ -6,7 +6,7 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.IndividualEncounterParticipant.Utils exposing (individualEncounterTypeToString)
 import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model exposing (..)
+import Backend.Person.Model exposing (EducationLevel(..), ExpectedAge(..), HIVStatus(..), Initiator(..), MaritalStatus(..), ModeOfDelivery(..), ParticipantDirectoryOperation(..), Person, Ubudehe(..), VaginalDelivery(..))
 import Date
 import Gizra.NominalDate exposing (NominalDate, diffMonths, diffYears, formatYYYYMMDD)
 import Maybe.Extra exposing (isJust)

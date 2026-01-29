@@ -2,8 +2,8 @@ module Components.ReportToWhatsAppDialog.View exposing (view)
 
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
-import Components.ReportToWhatsAppDialog.Model exposing (..)
-import Components.ReportToWhatsAppDialog.Utils exposing (..)
+import Components.ReportToWhatsAppDialog.Model exposing (DialogState(..), Model, Msg(..), PhoneData, ReportComponentAntenatal(..), ReportComponentNCD(..), ReportComponentWellChild(..), ReportComponentsConfig, ReportComponentsList(..), ReportType(..), emptyPhoneData)
+import Components.ReportToWhatsAppDialog.Utils exposing (allCountryCodes, countryCodeToString, minimalNumberLength, siteToCountryCode, trimLeadingZeros)
 import EverySet
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)

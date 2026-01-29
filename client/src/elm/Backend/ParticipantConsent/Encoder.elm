@@ -1,7 +1,7 @@
 module Backend.ParticipantConsent.Encoder exposing (encodeParticipantForm)
 
-import Backend.ParticipantConsent.Model exposing (..)
-import Json.Encode exposing (..)
+import Backend.ParticipantConsent.Model exposing (ParticipantForm)
+import Json.Encode exposing (Value, bool, string)
 import Json.Encode.Extra exposing (maybe)
 
 

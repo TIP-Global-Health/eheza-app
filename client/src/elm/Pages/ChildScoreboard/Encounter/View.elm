@@ -1,6 +1,6 @@
 module Pages.ChildScoreboard.Encounter.View exposing (view)
 
-import Backend.ChildScoreboardActivity.Utils exposing (..)
+import Backend.ChildScoreboardActivity.Utils exposing (allActivities, getActivityIcon)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (NCDASign(..))
@@ -12,7 +12,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.ChildScoreboard.Activity.Utils exposing (activityCompleted, expectActivity)
-import Pages.ChildScoreboard.Encounter.Model exposing (..)
+import Pages.ChildScoreboard.Encounter.Model exposing (AssembledData, Model, Msg(..), Tab(..))
 import Pages.ChildScoreboard.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewCustomAction, viewEncounterActionButton, viewPersonDetailsExtended)

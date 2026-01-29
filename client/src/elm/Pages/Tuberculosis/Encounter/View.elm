@@ -10,7 +10,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Tuberculosis.Encounter.Model exposing (..)
+import Pages.Tuberculosis.Encounter.Model exposing (AssembledData, Model, Msg(..), Tab(..))
 import Pages.Tuberculosis.Encounter.Utils exposing (generateAssembledData, partitionActivities)
 import Pages.Utils
     exposing

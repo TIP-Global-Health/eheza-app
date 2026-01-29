@@ -1,6 +1,6 @@
 module Backend.Clinic.Decoder exposing (decodeClinic, decodeClinicType)
 
-import Backend.Clinic.Model exposing (..)
+import Backend.Clinic.Model exposing (Clinic, ClinicType(..))
 import Json.Decode exposing (Decoder, andThen, fail, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (optional, required)
 import Restful.Endpoint exposing (decodeEntityUuid)

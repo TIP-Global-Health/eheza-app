@@ -1,7 +1,7 @@
 module Pages.AcuteIllness.Encounter.Model exposing (AcuteIllnessEncounterData, AssembledData, Model, Msg(..), Tab(..), emptyModel)
 
-import Backend.AcuteIllnessEncounter.Model exposing (..)
-import Backend.AcuteIllnessEncounter.Types exposing (..)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis, AcuteIllnessEncounterType)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (AcuteIllnessMeasurements)

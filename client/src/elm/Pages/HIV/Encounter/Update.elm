@@ -3,7 +3,7 @@ module Pages.HIV.Encounter.Update exposing (update)
 import App.Model
 import Backend.HIVEncounter.Model
 import Backend.Model
-import Pages.HIV.Encounter.Model exposing (..)
+import Pages.HIV.Encounter.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..))
 
 

@@ -2,9 +2,9 @@ module Backend.Nurse.Update exposing (update)
 
 import App.Model
 import App.Utils exposing (triggerRollbarOnFailure)
-import Backend.Endpoints exposing (..)
+import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Entities exposing (..)
-import Backend.Nurse.Model exposing (..)
+import Backend.Nurse.Model exposing (Model, Msg(..), Nurse)
 import Backend.Utils exposing (sw)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..))

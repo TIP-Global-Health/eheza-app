@@ -1,10 +1,10 @@
 module ZScore.Decoder exposing (decodeForAge, decodeForCentimetres)
 
 import Backend.Measurement.Model exposing (Gender(..))
-import Json.Decode exposing (..)
-import Json.Decode.Pipeline exposing (..)
+import Json.Decode exposing (Decoder, andThen, fail, float, int, list, map, succeed)
+import Json.Decode.Pipeline exposing (required)
 import Utils.AllDict as AllDict exposing (AllDict)
-import ZScore.Model exposing (..)
+import ZScore.Model exposing (Kilograms(..), MaleAndFemale, ZScoreEntry)
 
 
 {-| This is a type which matches the structure of our JSON. We initially

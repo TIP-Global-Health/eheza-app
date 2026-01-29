@@ -25,8 +25,8 @@ import Measurement.View
         , viewSendToHealthCenterForm
         )
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Tuberculosis.Activity.Model exposing (..)
-import Pages.Tuberculosis.Activity.Utils exposing (..)
+import Pages.Tuberculosis.Activity.Model exposing (DOTForm, DiagnosticsData, HealthEducationForm, MedicationData, MedicationTask(..), Model, Msg(..), NextStepsData, NextStepsTask(..), PrescribedMedicationForm, SymptomReviewData)
+import Pages.Tuberculosis.Activity.Utils exposing (diagnosticsFormWithDefault, dotFormWithDefault, dotInputsAndTasks, expectMedicationTask, expectNextStepsTask, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, medicationTaskCompleted, medicationTasks, medicationTasksCompletedFromTotal, nextStepsTaskCompleted, nextStepsTasks, nextStepsTasksCompletedFromTotal, prescribedMedicationFormWithDefault, prescribedMedicationsInputsAndTasks, symptomReviewFormWithDefault)
 import Pages.Tuberculosis.Encounter.Model exposing (AssembledData)
 import Pages.Tuberculosis.Encounter.Utils exposing (generateAssembledData)
 import Pages.Utils

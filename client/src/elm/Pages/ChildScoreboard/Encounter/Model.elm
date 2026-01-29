@@ -1,6 +1,6 @@
 module Pages.ChildScoreboard.Encounter.Model exposing (AssembledData, Model, Msg(..), Tab(..), emptyModel)
 
-import Backend.ChildScoreboardEncounter.Model exposing (..)
+import Backend.ChildScoreboardEncounter.Model exposing (ChildScoreboardEncounter)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (ChildScoreboardMeasurements)

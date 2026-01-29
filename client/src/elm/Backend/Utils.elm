@@ -19,7 +19,7 @@ import Backend.Measurement.Model
         , TuberculosisMeasurements
         , WellChildMeasurements
         )
-import Backend.Model exposing (..)
+import Backend.Model exposing (ModelIndexedDb)
 import EverySet exposing (EverySet)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (applyBackendUrl, toCmd, withoutDecoder)

@@ -4,7 +4,7 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
-import Pages.Dashboard.Model exposing (..)
+import Pages.Dashboard.Model exposing (Model)
 import Pages.GlobalCaseManagement.Fetch
 
 

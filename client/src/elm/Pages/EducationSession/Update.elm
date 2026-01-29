@@ -7,7 +7,7 @@ import Backend.Model
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
-import Pages.EducationSession.Model exposing (..)
+import Pages.EducationSession.Model exposing (InitialResultsDisplay(..), Model, Msg(..), ViewMode(..))
 import Pages.Page exposing (Page(..))
 
 

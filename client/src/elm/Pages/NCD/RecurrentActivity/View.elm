@@ -2,7 +2,7 @@ module Pages.NCD.RecurrentActivity.View exposing (view)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Measurement.Utils exposing (..)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDActivity.Model exposing (NCDRecurrentActivity(..))
 import Gizra.Html exposing (emptyNode)
@@ -26,12 +26,12 @@ import Measurement.Utils
         , urineDipstickResultFormAndTasks
         , urineDipstickResultFormWithDefault
         )
-import Pages.NCD.Model exposing (..)
-import Pages.NCD.RecurrentActivity.Model exposing (..)
-import Pages.NCD.RecurrentActivity.Types exposing (..)
-import Pages.NCD.RecurrentActivity.Utils exposing (..)
-import Pages.NCD.Utils exposing (..)
-import Pages.NCD.View exposing (..)
+import Pages.NCD.Model exposing (AssembledData, NCDEncounterPhase(..))
+import Pages.NCD.RecurrentActivity.Model exposing (Model, Msg(..), NextStepsData)
+import Pages.NCD.RecurrentActivity.Types exposing (NextStepsTask(..))
+import Pages.NCD.RecurrentActivity.Utils exposing (laboratoryResultTaskCompleted, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultTasks, resolveNextStepsTasks)
+import Pages.NCD.Utils exposing (generateAssembledData, medicationDistributionFormWithDefault, referralFormWithDefault)
+import Pages.NCD.View exposing (viewMedicationDistributionForm, viewReferralForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing

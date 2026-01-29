@@ -17,7 +17,7 @@ import Measurement.Utils
         , treatmentReviewInputsAndTasks
         )
 import Measurement.View exposing (followUpFormInputsAndTasks, sendToFacilityInputsAndTasks)
-import Pages.Tuberculosis.Activity.Model exposing (..)
+import Pages.Tuberculosis.Activity.Model exposing (DOTForm, DiagnosticsForm, HealthEducationForm, MedicationData, MedicationTask(..), Msg(..), NextStepsData, NextStepsTask(..), PrescribedMedicationForm, SymptomReviewForm, TuberculosisFollowUpTestingStage(..))
 import Pages.Tuberculosis.Encounter.Model exposing (AssembledData, EncounterData)
 import Pages.Utils
     exposing

@@ -5,7 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (diabetesBySugarCount, diabetesByUrineGlucose, getCurrentReasonForNonReferral, getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NCDEncounter.Types exposing (..)
+import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.NutritionEncounter.Utils exposing (getNCDEncountersForParticipant)
 import Date
 import EverySet exposing (EverySet)
@@ -14,7 +14,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Maybe.Extra exposing (andMap, isJust, or, unwrap)
 import Measurement.View exposing (viewActionTakenLabel, viewMultipleTreatmentWithDosage, viewTreatmentOptionWithDosage)
-import Pages.NCD.Model exposing (..)
+import Pages.NCD.Model exposing (AssembledData, MedicationDistributionForm, NCDEncounterPhase(..), PreviousEncounterData, ReferralForm)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty

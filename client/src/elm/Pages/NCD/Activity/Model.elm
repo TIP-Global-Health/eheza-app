@@ -29,8 +29,8 @@ import Measurement.Model
         , emptyUrineDipstickTestForm
         , emptyVitalsForm
         )
-import Pages.NCD.Activity.Types exposing (..)
-import Pages.NCD.Model exposing (..)
+import Pages.NCD.Activity.Types exposing (ExaminationTask, MedicalHistoryTask, NextStepsTask)
+import Pages.NCD.Model exposing (MedicationDistributionForm, ReferralForm, emptyMedicationDistributionForm, emptyReferralForm)
 import Pages.Page exposing (Page)
 
 

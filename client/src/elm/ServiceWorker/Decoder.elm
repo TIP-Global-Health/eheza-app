@@ -1,8 +1,8 @@
 module ServiceWorker.Decoder exposing (decodeIncomingMsg)
 
 import Backend.Decoder exposing (decodeRevision)
-import Json.Decode exposing (..)
-import ServiceWorker.Model exposing (..)
+import Json.Decode exposing (Decoder, andThen, fail, field, list, map, string, succeed)
+import ServiceWorker.Model exposing (IncomingMsg(..), NewWorker(..))
 
 
 {-| Given some JSON our port sends in, decode it into a Msg we can handle. So,

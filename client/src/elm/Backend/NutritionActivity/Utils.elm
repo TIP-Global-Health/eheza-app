@@ -10,7 +10,7 @@ expected (and not completed).
 
 -}
 
-import Backend.NutritionActivity.Model exposing (..)
+import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 
 
 {-| Used for URL etc., not for display in the normal UI (since we'd translate

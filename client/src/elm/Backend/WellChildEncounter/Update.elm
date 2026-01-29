@@ -2,10 +2,10 @@ module Backend.WellChildEncounter.Update exposing (update)
 
 import App.Model
 import App.Utils exposing (triggerRollbarOnFailure)
-import Backend.Endpoints exposing (..)
+import Backend.Endpoints exposing (wellChildAlbendazoleEndpoint, wellChildBCGImmunisationEndpoint, wellChildCaringEndpoint, wellChildContributingFactorsEndpoint, wellChildDTPImmunisationEndpoint, wellChildDTPStandaloneImmunisationEndpoint, wellChildECDEndpoint, wellChildEncounterEndpoint, wellChildFeedingEndpoint, wellChildFollowUpEndpoint, wellChildFoodSecurityEndpoint, wellChildHPVImmunisationEndpoint, wellChildHeadCircumferenceEndpoint, wellChildHealthEducationEndpoint, wellChildHeightEndpoint, wellChildHygieneEndpoint, wellChildIPVImmunisationEndpoint, wellChildMRImmunisationEndpoint, wellChildMebendezoleEndpoint, wellChildMuacEndpoint, wellChildNCDAEndpoint, wellChildNextVisitEndpoint, wellChildNutritionEndpoint, wellChildOPVImmunisationEndpoint, wellChildPCV13ImmunisationEndpoint, wellChildPhotoEndpoint, wellChildPregnancySummaryEndpoint, wellChildRotarixImmunisationEndpoint, wellChildSendToHCEndpoint, wellChildSymptomsReviewEndpoint, wellChildVitalsEndpoint, wellChildVitaminAEndpoint, wellChildWeightEndpoint)
 import Backend.Entities exposing (..)
 import Backend.Utils exposing (saveMeasurementCmd, sw)
-import Backend.WellChildEncounter.Model exposing (..)
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), Model, Msg(..), WellChildEncounter, ecdMilestoneWarnings, headCircumferenceWarnings)
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (unwrap)

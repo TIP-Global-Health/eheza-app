@@ -1,9 +1,9 @@
 module Measurement.Decoder exposing (decodeDropZoneFile)
 
 import Gizra.Json exposing (decodeJsonInString)
-import Json.Decode exposing (..)
-import Json.Decode.Pipeline exposing (..)
-import Measurement.Model exposing (..)
+import Json.Decode exposing (Decoder, field, string, succeed)
+import Json.Decode.Pipeline exposing (requiredAt)
+import Measurement.Model exposing (DropZoneFile)
 
 
 decodeDropZoneFile : Decoder DropZoneFile

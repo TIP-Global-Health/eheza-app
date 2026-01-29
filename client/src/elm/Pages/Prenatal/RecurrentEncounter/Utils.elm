@@ -1,6 +1,6 @@
 module Pages.Prenatal.RecurrentEncounter.Utils exposing (getAllActivities)
 
-import Backend.PrenatalActivity.Model exposing (..)
+import Backend.PrenatalActivity.Model exposing (PrenatalRecurrentActivity(..))
 
 
 getAllActivities : Bool -> List PrenatalRecurrentActivity

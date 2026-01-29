@@ -3,7 +3,7 @@ module Pages.AcuteIllness.Participant.Update exposing (update)
 import App.Model
 import Backend.Entities exposing (PersonId)
 import Gizra.NominalDate exposing (NominalDate)
-import Pages.AcuteIllness.Participant.Model exposing (..)
+import Pages.AcuteIllness.Participant.Model exposing (Model, Msg(..))
 
 
 update : NominalDate -> PersonId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )

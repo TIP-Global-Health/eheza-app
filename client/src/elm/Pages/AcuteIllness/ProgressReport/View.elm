@@ -38,7 +38,7 @@ import Pages.AcuteIllness.Activity.Utils
 import Pages.AcuteIllness.Encounter.Model exposing (AcuteIllnessEncounterData, AssembledData)
 import Pages.AcuteIllness.Encounter.Utils exposing (generateAssembledData)
 import Pages.AcuteIllness.Encounter.View exposing (allowEndingEncounter, partitionActivities)
-import Pages.AcuteIllness.ProgressReport.Model exposing (..)
+import Pages.AcuteIllness.ProgressReport.Model exposing (AcuteIllnessStatus(..), Model, Msg(..))
 import Pages.GlobalCaseManagement.Utils exposing (calculateDueDate)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Utils exposing (viewConfirmationDialog, viewEndEncounterMenuForProgressReport)

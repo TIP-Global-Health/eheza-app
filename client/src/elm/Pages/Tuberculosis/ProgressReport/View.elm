@@ -28,7 +28,7 @@ import Pages.Tuberculosis.Activity.Utils exposing (generateAllEncountersData, re
 import Pages.Tuberculosis.Encounter.Model exposing (AssembledData, EncounterData)
 import Pages.Tuberculosis.Encounter.Utils exposing (generateAssembledData, partitionActivities)
 import Pages.Tuberculosis.Encounter.View exposing (allowEndingEncounter)
-import Pages.Tuberculosis.ProgressReport.Model exposing (..)
+import Pages.Tuberculosis.ProgressReport.Model exposing (Model, Msg(..), ViewMode(..))
 import Pages.Utils
     exposing
         ( viewConfirmationDialog

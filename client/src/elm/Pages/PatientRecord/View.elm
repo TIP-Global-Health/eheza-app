@@ -23,7 +23,7 @@ import Html.Events exposing (..)
 import Maybe.Extra
 import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.PatientRecord.Model exposing (..)
+import Pages.PatientRecord.Model exposing (Model, Msg(..), PatientRecordFilter(..), PatientType(..), ViewMode(..))
 import Pages.Prenatal.Encounter.Utils exposing (getPrenatalEncountersForParticipant)
 import Pages.Prenatal.Participant.Utils exposing (isPregnancyActive)
 import Pages.Report.Model exposing (PaneEntryStatus(..))

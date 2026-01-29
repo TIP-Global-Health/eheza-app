@@ -2,7 +2,7 @@ module Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, diagn
 
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
-import Backend.PrenatalActivity.Model exposing (..)
+import Backend.PrenatalActivity.Model exposing (PrenatalRecurrentActivity(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
@@ -27,9 +27,9 @@ import Measurement.Utils
         )
 import Measurement.View exposing (vitalsFormInputsAndTasks)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm)
-import Pages.Prenatal.RecurrentActivity.Model exposing (..)
-import Pages.Prenatal.RecurrentActivity.Types exposing (..)
-import Pages.Prenatal.Utils exposing (..)
+import Pages.Prenatal.RecurrentActivity.Model exposing (ExaminationData, Msg(..), NextStepsData)
+import Pages.Prenatal.RecurrentActivity.Types exposing (ExaminationTask(..), NextStepsTask(..))
+import Pages.Prenatal.Utils exposing (diabetesDiagnosesRecurrentPhase, diagnosed, diagnosedAnyOf, diagnosedHypertension, diagnosedHypertensionPrevoiusly, diagnosedMalariaByPhase, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, emergencyReferralDiagnosesRecurrent, expectMalariaPreventionActivity, healthEducationFormInputsAndTasksForNurse, hierarchalBloodPressureDiagnosesInitialPhase, hivProgramAtHC, marginalBloodPressureCondition, medicationDistributionFormWithDefaultRecurrentPhase, medicationDistributionMeasurementTaken, medicationsRecurrentPhase, provideHIVEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForSyphilis, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefault, referralToFacilityCompleted, reinforceTreatmentSignsCompleted, resolveMedicationDistributionInputsAndTasks, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty

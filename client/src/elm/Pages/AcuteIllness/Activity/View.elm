@@ -19,7 +19,7 @@ import EverySet exposing (EverySet)
 import Form
 import Form.Input
 import GeoLocation.Model exposing (GeoInfo)
-import GeoLocation.Utils exposing (..)
+import GeoLocation.Utils exposing (filterGeoLocationDictByParent, geoLocationDictToOptions, resolveGeoSructureLabelLevel1, resolveGeoSructureLabelLevel2, resolveGeoSructureLabelLevel3, resolveGeoSructureLabelLevel4, resolveGeoSructureLabelLevel5)
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
@@ -44,11 +44,11 @@ import Measurement.Utils
         , vitalsFormWithDefault
         )
 import Measurement.View exposing (viewSendToHealthCenterForm, viewSendToHospitalForm)
-import Pages.AcuteIllness.Activity.Model exposing (..)
-import Pages.AcuteIllness.Activity.Types exposing (..)
-import Pages.AcuteIllness.Activity.Utils exposing (..)
+import Pages.AcuteIllness.Activity.Model exposing (AcuteFindingsForm, AcuteIllnessCoreExamForm, AcuteIllnessNutritionForm, ContactsTracingForm, ContactsTracingFormState(..), CovidTestingForm, DangerSignsData, FollowUpForm, LaboratoryData, MalariaTestingForm, MedicationDistributionForm, Model, Msg(..), NextStepsData, OngoingTreatmentData, PhysicalExamData, PriorTreatmentData, RecordContactDetailsData, RegisterContactData, ReviewDangerSignsForm, SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, TreatmentReviewForm, emptyRecordContactDetailsData, emptyRegisterContactData)
+import Pages.AcuteIllness.Activity.Types exposing (AILaboratoryTask(..), DangerSignsTask(..), NextStepsTask(..), OngoingTreatmentTask(..), PhysicalExamTask(..), PriorTreatmentTask(..), SymptomsTask(..))
+import Pages.AcuteIllness.Activity.Utils exposing (acuteFindingsFormInutsAndTasks, acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, call114FormWithDefault, contactsTracingFormWithDefault, coreExamFormInutsAndTasks, coreExamFormWithDefault, coughLessThan2WeeksConstant, covidTestingFormInputsAndTasks, covidTestingFormWithDefault, dangerSignsTasksCompletedFromTotal, expectLaboratoryTask, expectPhysicalExamTask, feverRecorded, followUpFormInutsAndTasks, followUpFormWithDefault, generateVitalsFormConfig, healthEducationFormInutsAndTasks, laboratoryTasks, laboratoryTasksCompletedFromTotal, malariaTestingFormInputsAndTasks, malariaTestingFormWithDefault, medicationDistributionFormInutsAndTasks, medicationDistributionFormWithDefault, nextStepsTasksCompletedFromTotal, noImprovementOnSubsequentVisit, nutritionFormInutsAndTasks, ongoingTreatmentTasksCompletedFromTotal, physicalExamTasks, physicalExamTasksCompletedFromTotal, resolveNextStepsTasks, resolvePreviousValue, reviewDangerSignsFormInutsAndTasks, reviewDangerSignsFormWithDefault, symptomMaxDuration, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsReliefFormInutsAndTasks, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, treatmentReviewFormInutsAndTasks, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, vomitingAtSymptoms)
 import Pages.AcuteIllness.Encounter.Model exposing (AssembledData)
-import Pages.AcuteIllness.Encounter.Utils exposing (..)
+import Pages.AcuteIllness.Encounter.Utils exposing (generateAssembledData)
 import Pages.AcuteIllness.Encounter.View exposing (viewPersonDetailsWithAlert, warningPopup)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.View

@@ -48,7 +48,7 @@ import Form exposing (Form)
 import Form.Field
 import Form.Input
 import GeoLocation.Model exposing (GeoInfo, ReverseGeoInfo)
-import GeoLocation.Utils exposing (..)
+import GeoLocation.Utils exposing (filterGeoLocationDictByParent, geoLocationDictToOptions, resolveGeoSructureLabelLevel1, resolveGeoSructureLabelLevel2, resolveGeoSructureLabelLevel3, resolveGeoSructureLabelLevel4, resolveGeoSructureLabelLevel5)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffMonths, formatDDMMYYYY)
 import Html exposing (..)
@@ -58,7 +58,7 @@ import Json.Decode
 import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Person.Model exposing (..)
+import Pages.Person.Model exposing (Model, Msg(..))
 import Pages.Utils exposing (viewConfirmationDialog)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid)

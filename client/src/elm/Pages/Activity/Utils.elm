@@ -13,7 +13,7 @@ import LocalData
 import Measurement.Model
 import Measurement.Utils exposing (getChildForm, getMotherForm)
 import Measurement.View
-import Pages.Activity.Model exposing (..)
+import Pages.Activity.Model exposing (Msg(..))
 import Pages.Session.Model
 import SyncManager.Model exposing (Site)
 import Translate exposing (Language)

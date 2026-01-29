@@ -4,7 +4,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (TuberculosisMeasurements)
 import Backend.Person.Model exposing (Person)
-import Backend.TuberculosisEncounter.Model exposing (..)
+import Backend.TuberculosisEncounter.Model exposing (TuberculosisEncounter)
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (Page)
 

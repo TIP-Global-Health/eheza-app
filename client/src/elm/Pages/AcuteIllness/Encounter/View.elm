@@ -21,8 +21,8 @@ import Pages.AcuteIllness.Activity.Utils
         , respiratoryRateElevated
         , sendToHCOnSubsequentVisitByNutrition
         )
-import Pages.AcuteIllness.Encounter.Model exposing (..)
-import Pages.AcuteIllness.Encounter.Utils exposing (..)
+import Pages.AcuteIllness.Encounter.Model exposing (AssembledData, Model, Msg(..), Tab(..))
+import Pages.AcuteIllness.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewConfirmationDialog, viewEndEncounterButton, viewPersonDetails, viewReportLink)
 import SyncManager.Model exposing (SiteFeature)

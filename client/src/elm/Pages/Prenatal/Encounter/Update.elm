@@ -8,7 +8,7 @@ import Backend.PrenatalEncounter.Model
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Model
 import Pages.Prenatal.Activity.Types exposing (WarningPopupType(..))
-import Pages.Prenatal.Encounter.Model exposing (..)
+import Pages.Prenatal.Encounter.Model exposing (Model, Msg(..))
 
 
 update : PrenatalEncounterId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )

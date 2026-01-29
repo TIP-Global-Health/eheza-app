@@ -16,14 +16,14 @@ import Date
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
-import Measurement.Model exposing (..)
+import Measurement.Model exposing (ImmunisationTask(..), VaccinationProgressDict, emptyVaccinationForm)
 import Measurement.Utils
     exposing
         ( behindOnVaccinationsByHistory
         , generateFutureVaccinationsData
         , immunisationTaskToVaccineType
         )
-import Pages.ChildScoreboard.Activity.Model exposing (..)
+import Pages.ChildScoreboard.Activity.Model exposing (ChildScoreboardVaccinationForm, ImmunisationData)
 import Pages.ChildScoreboard.Encounter.Model exposing (AssembledData)
 import SyncManager.Model exposing (Site)
 
