@@ -1,4 +1,4 @@
-module Pages.HIV.Encounter.Model exposing (..)
+module Pages.HIV.Encounter.Model exposing (AssembledData, EncounterData, Model, Msg(..), Tab(..), emptyModel)
 
 import Backend.Entities exposing (..)
 import Backend.HIVEncounter.Model exposing (..)

@@ -1,4 +1,4 @@
-module Pages.ChildScoreboard.Activity.Utils exposing (..)
+module Pages.ChildScoreboard.Activity.Utils exposing (activityCompleted, expectActivity, expectImmunisationTask, generateVaccinationProgress, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, immunisationTaskCompleted, immunisationTasks, updateVaccinationFormByVaccineType)
 
 import AssocList as Dict
 import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity(..))

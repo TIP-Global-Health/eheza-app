@@ -1,4 +1,4 @@
-module Pages.NCD.RecurrentEncounter.Model exposing (..)
+module Pages.NCD.RecurrentEncounter.Model exposing (Model, Msg(..), Tab(..), emptyModel)
 
 import Pages.Page exposing (Page)
 

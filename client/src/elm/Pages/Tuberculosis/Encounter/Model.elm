@@ -1,4 +1,4 @@
-module Pages.Tuberculosis.Encounter.Model exposing (..)
+module Pages.Tuberculosis.Encounter.Model exposing (AssembledData, EncounterData, Model, Msg(..), Tab(..), emptyModel)
 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)

@@ -1,4 +1,4 @@
-module Backend.Village.Utils exposing (..)
+module Backend.Village.Utils exposing (getVillageById, getVillageClinicId, getVillageHealthCenterId, getVillageIdByGeoFields, isVillageResident, personLivesInVillage, resolveVillageResidents)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)

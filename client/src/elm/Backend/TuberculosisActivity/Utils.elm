@@ -1,4 +1,4 @@
-module Backend.TuberculosisActivity.Utils exposing (..)
+module Backend.TuberculosisActivity.Utils exposing (activityFromString, activityToString, allActivities, getActivityIcon)
 
 import Backend.TuberculosisActivity.Model exposing (..)
 

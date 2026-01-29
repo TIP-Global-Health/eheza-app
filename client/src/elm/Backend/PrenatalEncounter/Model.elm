@@ -1,4 +1,4 @@
-module Backend.PrenatalEncounter.Model exposing (..)
+module Backend.PrenatalEncounter.Model exposing (Model, Msg(..), PrenatalEncounter, PrenatalEncounterPostCreateDestination(..), PrenatalEncounterType(..), PrenatalIndicator(..), PrenatalProgressReportInitiator(..), RecordPreganancyInitiator(..), emptyModel, emptyPrenatalEncounter)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)

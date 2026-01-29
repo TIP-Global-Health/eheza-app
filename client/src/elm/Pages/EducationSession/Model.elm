@@ -1,4 +1,4 @@
-module Pages.EducationSession.Model exposing (..)
+module Pages.EducationSession.Model exposing (InitialResultsDisplay(..), Model, Msg(..), ViewMode(..), emptyModel)
 
 import Backend.EducationSession.Model exposing (..)
 import Backend.Entities exposing (..)

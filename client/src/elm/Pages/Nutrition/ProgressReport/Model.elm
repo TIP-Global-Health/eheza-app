@@ -1,4 +1,4 @@
-module Pages.Nutrition.ProgressReport.Model exposing (..)
+module Pages.Nutrition.ProgressReport.Model exposing (Model, Msg(..), emptyModel)
 
 import Backend.Entities exposing (..)
 import Components.ReportToWhatsAppDialog.Model

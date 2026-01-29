@@ -1,4 +1,4 @@
-module Pages.Nutrition.Encounter.Model exposing (..)
+module Pages.Nutrition.Encounter.Model exposing (AssembledData, DialogType(..), Model, Msg(..), Tab(..), emptyModel)
 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)

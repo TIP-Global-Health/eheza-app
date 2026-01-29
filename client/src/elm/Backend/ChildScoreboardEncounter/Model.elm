@@ -1,4 +1,4 @@
-module Backend.ChildScoreboardEncounter.Model exposing (..)
+module Backend.ChildScoreboardEncounter.Model exposing (ChildScoreboardEncounter, Model, Msg(..), emptyChildScoreboardEncounter, emptyModel)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)

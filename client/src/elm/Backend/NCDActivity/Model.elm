@@ -1,4 +1,4 @@
-module Backend.NCDActivity.Model exposing (..)
+module Backend.NCDActivity.Model exposing (NCDActivity(..), NCDRecurrentActivity(..))
 
 
 type NCDActivity

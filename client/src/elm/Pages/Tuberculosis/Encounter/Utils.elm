@@ -1,4 +1,4 @@
-module Pages.Tuberculosis.Encounter.Utils exposing (..)
+module Pages.Tuberculosis.Encounter.Utils exposing (generateAssembledData, generatePreviousEncountersData, partitionActivities)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)

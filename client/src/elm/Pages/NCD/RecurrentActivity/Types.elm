@@ -1,4 +1,4 @@
-module Pages.NCD.RecurrentActivity.Types exposing (..)
+module Pages.NCD.RecurrentActivity.Types exposing (NextStepsTask(..))
 
 
 type NextStepsTask

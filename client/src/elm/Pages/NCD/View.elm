@@ -1,4 +1,4 @@
-module Pages.NCD.View exposing (..)
+module Pages.NCD.View exposing (viewMedicationDistributionForm, viewReferralForm)
 
 import Backend.Measurement.Model exposing (..)
 import Gizra.NominalDate exposing (NominalDate)

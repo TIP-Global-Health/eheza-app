@@ -1,4 +1,4 @@
-module Pages.HomeVisit.Activity.Utils exposing (..)
+module Pages.HomeVisit.Activity.Utils exposing (activityCompleted, expectActivity)
 
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.Model exposing (ModelIndexedDb)

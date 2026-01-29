@@ -1,4 +1,4 @@
-module Backend.NCDEncounter.Utils exposing (..)
+module Backend.NCDEncounter.Utils exposing (progressReportInitiatorFromUrlFragment, progressReportInitiatorToUrlFragment)
 
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)

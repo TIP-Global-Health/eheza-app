@@ -1,4 +1,4 @@
-module Pages.AcuteIllness.Encounter.Utils exposing (..)
+module Pages.AcuteIllness.Encounter.Utils exposing (generateAssembledData, generatePreviousMeasurements, getAcuteIllnessDiagnosisByPreviousEncounters, getAcuteIllnessDiagnosisForParticipant)
 
 import AssocList as Dict
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))

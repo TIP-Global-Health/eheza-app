@@ -1,4 +1,4 @@
-module Pages.Nutrition.Activity.Model exposing (..)
+module Pages.Nutrition.Activity.Model exposing (HeightData, Model, Msg(..), MuacData, NextStepsData, NutritionData, PhotoData, WeightData, emptyHeightData, emptyModel, emptyMuacData, emptyNextStepsData, emptyNutritionData, emptyPhotoData, emptyWeightData)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)

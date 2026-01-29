@@ -1,4 +1,4 @@
-module SyncManager.Utils exposing (..)
+module SyncManager.Utils exposing (backendAuthorityEntityToRevision, backendGeneralEntityToRevision, determineDownloadPhotosStatus, determineSyncStatus, encode, encodeBackendAuthorityEntity, encodeBackendGeneralEntity, fileUploadFailureThreshold, getBackendAuthorityEntityIdentifier, getBackendGeneralEntityIdentifier, getDataToSendAuthority, getDataToSendGeneral, getDownloadPhotosSpeedForSubscriptions, getImageFromBackendAuthorityEntity, getSyncSpeedForSubscriptions, getSyncedHealthCenters, resetDownloadPhotosBatchCounter, resolveIncidentDetailsMsg, siteFeatureFromString, siteFeatureToString, siteFeaturesFromString, siteFeaturesToString, siteFromString, siteToString, syncInfoAuthorityForPort, syncInfoAuthorityFromPort, syncInfoGeneralForPort, syncInfoGeneralFromPort, syncInfoStatusFromString, syncInfoStatusToString)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import Backend.AcuteIllnessEncounter.Encoder

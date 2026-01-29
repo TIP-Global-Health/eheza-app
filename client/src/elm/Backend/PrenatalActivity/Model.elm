@@ -1,4 +1,4 @@
-module Backend.PrenatalActivity.Model exposing (..)
+module Backend.PrenatalActivity.Model exposing (HighRiskFactor(..), HighSeverityAlert(..), MedicalDiagnosis(..), ObstetricalDiagnosis(..), PregnancyTrimester(..), PrenatalActivity(..), PrenatalRecurrentActivity(..), RecurringHighSeverityAlert(..), allHighRiskFactors, allHighSeverityAlerts, allMedicalDiagnoses, allObstetricalDiagnoses, allRecurringHighSeverityAlerts, allTrimesters)
 
 {-| This module provides types relating to the UI for presenting
 prenatal activities.

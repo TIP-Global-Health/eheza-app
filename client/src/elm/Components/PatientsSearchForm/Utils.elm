@@ -1,4 +1,4 @@
-module Components.PatientsSearchForm.Utils exposing (..)
+module Components.PatientsSearchForm.Utils exposing (getSearchResults, getSearchValue)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)

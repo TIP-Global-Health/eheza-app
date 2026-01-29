@@ -1,4 +1,4 @@
-module Backend.PrenatalActivity.Utils exposing (..)
+module Backend.PrenatalActivity.Utils exposing (activityFromString, activityToString, generateHighRiskAlertData, generateHighSeverityAlertData, getActivityIcon, getEncounterTrimesterData, getRecurrentActivityIcon, recurrentActivityFromString, recurrentActivityToString)
 
 {-| Various utilities that deal with "activities". An activity represents the
 need for a nurse to do something with respect to a person who is checked in.

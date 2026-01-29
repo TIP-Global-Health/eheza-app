@@ -1,4 +1,4 @@
-module Pages.IndividualEncounterParticipants.Model exposing (..)
+module Pages.IndividualEncounterParticipants.Model exposing (Model, Msg(..))
 
 import Components.PatientsSearchForm.Model
 import Pages.Page exposing (Page)

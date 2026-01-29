@@ -1,4 +1,4 @@
-module Pages.AcuteIllness.Participant.Utils exposing (..)
+module Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive, noPursueAcuteIllnessDiagnoses)
 
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..))
 import Backend.IndividualEncounterParticipant.Model exposing (..)

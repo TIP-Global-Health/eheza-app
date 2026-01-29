@@ -1,4 +1,4 @@
-module Pages.AcuteIllness.ProgressReport.Model exposing (..)
+module Pages.AcuteIllness.ProgressReport.Model exposing (AcuteIllnessStatus(..), Model, Msg(..), emptyModel)
 
 import Backend.Entities exposing (..)
 import Components.ReportToWhatsAppDialog.Model

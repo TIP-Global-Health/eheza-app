@@ -1,4 +1,4 @@
-module Pages.NCD.RecurrentActivity.Utils exposing (..)
+module Pages.NCD.RecurrentActivity.Utils exposing (activityCompleted, expectActivity, expectLaboratoryResultTask, expectNextStepsTask, laboratoryResultTaskCompleted, laboratoryResultTasks, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultTasks, resolveNextStepsTasks)
 
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)

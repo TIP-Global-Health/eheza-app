@@ -1,4 +1,4 @@
-module Pages.NCD.RecurrentEncounter.Utils exposing (..)
+module Pages.NCD.RecurrentEncounter.Utils exposing (allActivities)
 
 import Backend.NCDActivity.Model exposing (..)
 

@@ -1,4 +1,4 @@
-module Backend.Dashboard.Model exposing (..)
+module Backend.Dashboard.Model exposing (AcuteIllnessDataItem, AcuteIllnessEncounterDataItem, AssembledData, CaseManagement, CaseManagementData, CaseManagementPast2Years, CaseNutrition, CaseNutritionTotal, ChildScoreboardDataItem, ChildScoreboardEncounterDataItem, ChildrenBeneficiariesData, ChildrenBeneficiariesStats, DashboardStats, DashboardStatsRaw, EducationSessionData, FamilyPlanningStats, NCDDataItem, NCDEncounterDataItem, Nutrition, NutritionDataItem, NutritionEncounterDataItem, NutritionGroupDataItem, NutritionGroupEncounterDataItem, NutritionIndividualDataItem, NutritionIndividualEncounterDataItem, NutritionPageData, NutritionStatus(..), NutritionValue, PMTCTDataItem, ParticipantStats, PatientDetails, Periods, PersonIdentifier, PrenatalDataItem, PrenatalEncounterDataItem, ProgramType(..), SPVDataItem, SPVEncounterDataItem, TotalBeneficiaries, TotalEncountersData, ZScore, emptyModel, emptyNutrition, emptyNutritionValue, emptyTotalBeneficiaries)
 
 {-| The stats for the dashboard.
 -}

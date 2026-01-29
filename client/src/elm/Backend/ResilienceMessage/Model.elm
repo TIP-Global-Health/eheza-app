@@ -1,4 +1,4 @@
-module Backend.ResilienceMessage.Model exposing (..)
+module Backend.ResilienceMessage.Model exposing (Model, ResilienceCategory(..), ResilienceMessage, ResilienceMessageOrder(..), emptyModel)
 
 import RemoteData exposing (RemoteData(..), WebData)
 import Time

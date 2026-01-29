@@ -1,4 +1,4 @@
-module Pages.HomeVisit.Encounter.Utils exposing (..)
+module Pages.HomeVisit.Encounter.Utils exposing (generateAssembledData, generatePreviousMeasurements)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)

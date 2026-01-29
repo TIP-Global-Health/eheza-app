@@ -1,4 +1,4 @@
-module Pages.NCD.Encounter.Model exposing (..)
+module Pages.NCD.Encounter.Model exposing (Model, Msg(..), Tab(..), emptyModel)
 
 import Backend.Entities exposing (..)
 import Pages.Page exposing (Page)

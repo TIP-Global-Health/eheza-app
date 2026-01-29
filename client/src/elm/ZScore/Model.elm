@@ -1,4 +1,4 @@
-module ZScore.Model exposing (..)
+module ZScore.Model exposing (BMI(..), BmiForAgeTables, ByDaysAndMonths, Centimetres(..), ChartAgeRange(..), Days(..), HeadCircumferenceForAgeTables, Height(..), Kilograms(..), Length(..), LengthHeightForAgeTables, MaleAndFemale, Model, Months(..), Msg(..), WeightForAgeTables, WeightForHeightTables, WeightForLengthTables, ZScore, ZScoreEntry, emptyModel)
 
 import RemoteData exposing (RemoteData(..), WebData)
 import Utils.AllDict exposing (AllDict)

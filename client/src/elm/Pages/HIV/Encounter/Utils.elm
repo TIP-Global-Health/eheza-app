@@ -1,4 +1,4 @@
-module Pages.HIV.Encounter.Utils exposing (..)
+module Pages.HIV.Encounter.Utils exposing (generateAssembledData, generatePreviousEncountersData)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)

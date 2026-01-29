@@ -1,4 +1,4 @@
-module Pages.Nutrition.Activity.Utils exposing (..)
+module Pages.Nutrition.Activity.Utils exposing (activityCompleted, allMandatoryActivities, expectActivity, generateNutritionAssessment, mandatoryActivitiesCompleted, nextStepsTasksCompletedFromTotal)
 
 import Backend.Measurement.Model
     exposing

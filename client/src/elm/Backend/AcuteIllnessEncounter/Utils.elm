@@ -1,4 +1,4 @@
-module Backend.AcuteIllnessEncounter.Utils exposing (..)
+module Backend.AcuteIllnessEncounter.Utils exposing (acuteIllnessDiagnosisFromString, acuteIllnessDiagnosisToString, progressReportInitiatorFromUrlFragment, progressReportInitiatorToUrlFragment)
 
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessProgressReportInitiator(..))
 import Backend.NCDEncounter.Utils

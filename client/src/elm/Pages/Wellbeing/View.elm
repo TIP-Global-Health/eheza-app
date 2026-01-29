@@ -1,4 +1,4 @@
-module Pages.Wellbeing.View exposing (..)
+module Pages.Wellbeing.View exposing (view)
 
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)

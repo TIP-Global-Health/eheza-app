@@ -1,4 +1,4 @@
-module Pages.Prenatal.View exposing (..)
+module Pages.Prenatal.View exposing (customWarningPopup, viewMalariaPreventionContent, viewMedicationDistributionForm, viewPauseEncounterButton)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)

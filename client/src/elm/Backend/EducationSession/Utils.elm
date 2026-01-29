@@ -1,4 +1,4 @@
-module Backend.EducationSession.Utils exposing (..)
+module Backend.EducationSession.Utils exposing (educationTopicFromString, educationTopicToString)
 
 import Backend.EducationSession.Model exposing (EducationTopic(..))
 

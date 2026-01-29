@@ -1,4 +1,4 @@
-module Backend.Person.Encoder exposing (..)
+module Backend.Person.Encoder exposing (encodeEducationLevel, encodeGender, encodeHIVStatus, encodeMaritalStatus, encodeModeOfDelivery, encodePerson, encodeUbudehe)
 
 import Backend.Measurement.Model exposing (Gender)
 import Backend.Person.Model exposing (..)

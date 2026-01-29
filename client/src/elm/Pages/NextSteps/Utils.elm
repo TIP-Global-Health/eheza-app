@@ -1,4 +1,4 @@
-module Pages.NextSteps.Utils exposing (..)
+module Pages.NextSteps.Utils exposing (nextStepsTasksCompletedFromTotal)
 
 import Backend.Measurement.Model
     exposing

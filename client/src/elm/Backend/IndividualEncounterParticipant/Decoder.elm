@@ -1,4 +1,4 @@
-module Backend.IndividualEncounterParticipant.Decoder exposing (..)
+module Backend.IndividualEncounterParticipant.Decoder exposing (decodeDeliveryLocation, decodeIndividualEncounterParticipant, decodeIndividualEncounterParticipantOutcome, decodeIndividualEncounterType)
 
 import Backend.IndividualEncounterParticipant.Model exposing (..)
 import Backend.IndividualEncounterParticipant.Utils exposing (..)

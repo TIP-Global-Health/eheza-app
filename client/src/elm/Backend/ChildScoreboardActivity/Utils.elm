@@ -1,4 +1,4 @@
-module Backend.ChildScoreboardActivity.Utils exposing (..)
+module Backend.ChildScoreboardActivity.Utils exposing (activityFromString, activityToString, allActivities, getActivityIcon)
 
 import Backend.ChildScoreboardActivity.Model exposing (..)
 

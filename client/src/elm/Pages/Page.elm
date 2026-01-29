@@ -1,4 +1,4 @@
-module Pages.Page exposing (..)
+module Pages.Page exposing (AcuteIllnessSubPage(..), ChildWellnessSubPage(..), DashboardPage(..), NCDSubPage(..), NutritionSubPage(..), Page(..), SessionPage(..), UserPage(..))
 
 {-| A module that defines a type which controls what the user wishes
 to be shown at the moment.

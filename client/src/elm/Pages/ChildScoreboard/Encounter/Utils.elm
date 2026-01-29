@@ -1,4 +1,4 @@
-module Pages.ChildScoreboard.Encounter.Utils exposing (..)
+module Pages.ChildScoreboard.Encounter.Utils exposing (generateAssembledData)
 
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)

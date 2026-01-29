@@ -1,4 +1,4 @@
-module Pages.Report.View exposing (..)
+module Pages.Report.View exposing (translateTestReport, viewAcuteIllnessDiagnosisEntry, viewEntries, viewItemHeading, viewKnownAsPositiveResult, viewLabResultsEntry, viewLabResultsHistoryPane, viewLabResultsPane, viewLabsPane, viewUncompetedResult)
 
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessProgressReportInitiator)
 import Backend.Entities exposing (..)

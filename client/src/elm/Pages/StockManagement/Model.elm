@@ -1,4 +1,4 @@
-module Pages.StockManagement.Model exposing (..)
+module Pages.StockManagement.Model exposing (AssembledData, CorrectEntryForm, CorrectionEntryType(..), DataForMonth, DisplayMode(..), Model, MonthYear, Msg(..), ReceiveStockForm, StockManagementMenu(..), emptyCorrectEntryForm, emptyModel, emptyReceiveStockForm, maxMonthGap)
 
 import AssocList exposing (Dict)
 import Backend.Entities exposing (..)

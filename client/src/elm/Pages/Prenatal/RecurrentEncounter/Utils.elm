@@ -1,4 +1,4 @@
-module Pages.Prenatal.RecurrentEncounter.Utils exposing (..)
+module Pages.Prenatal.RecurrentEncounter.Utils exposing (getAllActivities)
 
 import Backend.PrenatalActivity.Model exposing (..)
 

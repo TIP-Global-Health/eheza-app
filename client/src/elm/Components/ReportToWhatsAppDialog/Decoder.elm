@@ -1,4 +1,4 @@
-module Components.ReportToWhatsAppDialog.Decoder exposing (..)
+module Components.ReportToWhatsAppDialog.Decoder exposing (decodeReportType)
 
 import Components.ReportToWhatsAppDialog.Model exposing (ReportType)
 import Components.ReportToWhatsAppDialog.Utils exposing (reportTypeFromString)

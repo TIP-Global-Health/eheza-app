@@ -1,4 +1,4 @@
-module Pages.WellChild.Encounter.Utils exposing (..)
+module Pages.WellChild.Encounter.Utils exposing (allowEndingEncounter, generateAssembledData, pediatricCareMilestoneToComparable, resolveDateForPediatricCareMilestone, resolvePediatricCareMilestoneOnDate)
 
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)

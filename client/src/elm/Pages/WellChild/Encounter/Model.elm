@@ -1,4 +1,4 @@
-module Pages.WellChild.Encounter.Model exposing (..)
+module Pages.WellChild.Encounter.Model exposing (AssembledData, DialogType(..), ECDPopupType(..), Model, Msg(..), Tab(..), WarningPopupType(..), emptyModel)
 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)

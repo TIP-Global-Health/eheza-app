@@ -1,4 +1,4 @@
-module App.Utils exposing (..)
+module App.Utils exposing (focusOnCalendarMsg, getLoggedInData, handleErrors, sequenceSubModelReturn, triggerRollbarOnFailure, updateSubModel)
 
 import App.Model exposing (..)
 import Backend.Entities exposing (HealthCenterId)

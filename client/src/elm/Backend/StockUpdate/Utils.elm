@@ -1,4 +1,4 @@
-module Backend.StockUpdate.Utils exposing (..)
+module Backend.StockUpdate.Utils exposing (compareMonthYear, dateToMonthYear, generateStockManagementData, getPrevMonthYear, monthYearDiff, stockCorrectionReasonFromString, stockCorrectionReasonToString, stockSupplierFromString, stockSupplierToString, stockUpdateTypeFromString, stockUpdateTypeToString)
 
 import AssocList as Dict
 import Backend.Measurement.Model exposing (StockCorrectionReason(..), StockManagementMeasurements, StockSupplier(..), StockUpdateType(..))
