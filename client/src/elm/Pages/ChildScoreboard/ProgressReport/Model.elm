@@ -3,7 +3,6 @@ module Pages.ChildScoreboard.ProgressReport.Model exposing (Model, Msg(..), empt
 import Backend.Entities exposing (..)
 import Components.ReportToWhatsAppDialog.Model
 import EverySet exposing (EverySet)
-import Pages.ChildScoreboard.Encounter.Model exposing (AssembledData)
 import Pages.Page exposing (Page)
 import Pages.Report.Model exposing (DiagnosisMode(..), ReportTab(..))
 

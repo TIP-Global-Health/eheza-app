@@ -6,7 +6,6 @@ import Components.ReportToWhatsAppDialog.Model exposing (DialogState(..), Model,
 import Components.ReportToWhatsAppDialog.Utils exposing (allCountryCodes, countryCodeToString, minimalNumberLength, siteToCountryCode, trimLeadingZeros)
 import EverySet
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -18,34 +17,34 @@ import Translate exposing (Language, translate, translateText)
 import Utils.Html exposing (viewCustomModal)
 
 
-view : Language -> NominalDate -> Site -> ( PersonId, Person ) -> ReportType -> Maybe (ReportComponentsConfig msg) -> Model -> Html (Msg msg)
-view language currentDate site ( personId, person ) reportType componentsConfig model =
+view : Language -> Site -> ( PersonId, Person ) -> ReportType -> Maybe (ReportComponentsConfig msg) -> Model -> Html (Msg msg)
+view language site ( personId, person ) reportType componentsConfig model =
     viewCustomModal [ "bright" ] <|
-        Maybe.map (viewDialog language currentDate site ( personId, person ) reportType componentsConfig) model.state
+        Maybe.map (viewDialog language site ( personId, person ) reportType componentsConfig) model.state
 
 
-viewDialog : Language -> NominalDate -> Site -> ( PersonId, Person ) -> ReportType -> Maybe (ReportComponentsConfig msg) -> DialogState -> Html (Msg msg)
-viewDialog language currentDate site ( personId, person ) reportType componentsConfig state =
+viewDialog : Language -> Site -> ( PersonId, Person ) -> ReportType -> Maybe (ReportComponentsConfig msg) -> DialogState -> Html (Msg msg)
+viewDialog language site ( personId, person ) reportType componentsConfig state =
     let
         content =
             case state of
                 Consent ->
-                    viewConsent language currentDate person
+                    viewConsent language person
 
                 PhoneVerification phoneNumber ->
-                    viewPhoneVerification language currentDate allowComponentsSelection phoneNumber
+                    viewPhoneVerification language allowComponentsSelection phoneNumber
 
                 PhoneInput data ->
-                    viewPhoneInput language currentDate site data
+                    viewPhoneInput language site data
 
                 PhoneUpdateAtProfile phoneNumber ->
-                    viewPhoneUpdateAtProfile language currentDate allowComponentsSelection personId person phoneNumber
+                    viewPhoneUpdateAtProfile language allowComponentsSelection personId person phoneNumber
 
                 PhoneUpdateConfirmation phoneNumber ->
-                    viewPhoneUpdateConfirmation language currentDate allowComponentsSelection phoneNumber
+                    viewPhoneUpdateConfirmation language allowComponentsSelection phoneNumber
 
                 ComponentsSelection phoneNumber componentsList ->
-                    Maybe.map (viewComponentsSelection language currentDate phoneNumber componentsList reportType)
+                    Maybe.map (viewComponentsSelection language phoneNumber componentsList reportType)
                         componentsConfig
                         |> Maybe.withDefault []
 
@@ -55,7 +54,7 @@ viewDialog language currentDate site ( personId, person ) reportType componentsC
                             config.setReportComponentsMsg Nothing
                         )
                         componentsConfig
-                        |> viewConfirmationBeforeExecuting language currentDate site reportType personId phoneNumber
+                        |> viewConfirmationBeforeExecuting language site reportType personId phoneNumber
 
                 ExecutionResult result ->
                     Maybe.map
@@ -63,7 +62,7 @@ viewDialog language currentDate site ( personId, person ) reportType componentsC
                             config.setReportComponentsMsg Nothing
                         )
                         componentsConfig
-                        |> viewExecutionResult language currentDate result
+                        |> viewExecutionResult language result
 
         allowComponentsSelection =
             isJust componentsConfig
@@ -72,8 +71,8 @@ viewDialog language currentDate site ( personId, person ) reportType componentsC
         content
 
 
-viewConsent : Language -> NominalDate -> Person -> List (Html (Msg msg))
-viewConsent language currentDate person =
+viewConsent : Language -> Person -> List (Html (Msg msg))
+viewConsent language person =
     let
         nextState =
             Maybe.map
@@ -112,8 +111,8 @@ viewConsent language currentDate person =
     ]
 
 
-viewPhoneVerification : Language -> NominalDate -> Bool -> String -> List (Html (Msg msg))
-viewPhoneVerification language currentDate allowComponentsSelection phoneNumber =
+viewPhoneVerification : Language -> Bool -> String -> List (Html (Msg msg))
+viewPhoneVerification language allowComponentsSelection phoneNumber =
     let
         nextStateForYes =
             if allowComponentsSelection then
@@ -144,8 +143,8 @@ viewPhoneVerification language currentDate allowComponentsSelection phoneNumber 
     ]
 
 
-viewPhoneInput : Language -> NominalDate -> Site -> PhoneData -> List (Html (Msg msg))
-viewPhoneInput language currentDate site data =
+viewPhoneInput : Language -> Site -> PhoneData -> List (Html (Msg msg))
+viewPhoneInput language site data =
     let
         countryCodeOptions =
             List.map
@@ -205,8 +204,8 @@ viewPhoneInput language currentDate site data =
     ]
 
 
-viewPhoneUpdateAtProfile : Language -> NominalDate -> Bool -> PersonId -> Person -> String -> List (Html (Msg msg))
-viewPhoneUpdateAtProfile language currentDate allowComponentsSelection personId person phoneNumber =
+viewPhoneUpdateAtProfile : Language -> Bool -> PersonId -> Person -> String -> List (Html (Msg msg))
+viewPhoneUpdateAtProfile language allowComponentsSelection personId person phoneNumber =
     let
         nextStateForNo =
             if allowComponentsSelection then
@@ -239,8 +238,8 @@ viewPhoneUpdateAtProfile language currentDate allowComponentsSelection personId 
     ]
 
 
-viewPhoneUpdateConfirmation : Language -> NominalDate -> Bool -> String -> List (Html (Msg msg))
-viewPhoneUpdateConfirmation language currentDate allowComponentsSelection phoneNumber =
+viewPhoneUpdateConfirmation : Language -> Bool -> String -> List (Html (Msg msg))
+viewPhoneUpdateConfirmation language allowComponentsSelection phoneNumber =
     let
         nextState =
             if allowComponentsSelection then
@@ -257,13 +256,12 @@ viewPhoneUpdateConfirmation language currentDate allowComponentsSelection phoneN
 
 viewComponentsSelection :
     Language
-    -> NominalDate
     -> String
     -> Maybe ReportComponentsList
     -> ReportType
     -> ReportComponentsConfig msg
     -> List (Html (Msg msg))
-viewComponentsSelection language currentDate phoneNumber componentsList reportType config =
+viewComponentsSelection language phoneNumber componentsList reportType config =
     let
         componentsSelectionInput =
             case reportType of
@@ -494,8 +492,8 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
     ]
 
 
-viewConfirmationBeforeExecuting : Language -> NominalDate -> Site -> ReportType -> PersonId -> String -> Maybe msg -> List (Html (Msg msg))
-viewConfirmationBeforeExecuting language currentDate site reportType personId phoneNumber clearComponentsMsg =
+viewConfirmationBeforeExecuting : Language -> Site -> ReportType -> PersonId -> String -> Maybe msg -> List (Html (Msg msg))
+viewConfirmationBeforeExecuting language site reportType personId phoneNumber clearComponentsMsg =
     let
         phoneNumberForWhatsApp =
             if String.startsWith "+" phoneNumber then
@@ -540,8 +538,8 @@ viewConfirmationBeforeExecuting language currentDate site reportType personId ph
     ]
 
 
-viewExecutionResult : Language -> NominalDate -> Maybe String -> Maybe msg -> List (Html (Msg msg))
-viewExecutionResult language currentDate maybeResult clearComponentsMsg =
+viewExecutionResult : Language -> Maybe String -> Maybe msg -> List (Html (Msg msg))
+viewExecutionResult language maybeResult clearComponentsMsg =
     let
         ( message, actions ) =
             Maybe.map

@@ -23,5 +23,5 @@ type Msg
     = AssignToClinicId String
     | RelationshipSelected MyRelatedBy
     | Save (Maybe MyRelatedBy) (Maybe ClinicId) Initiator
-    | Reset Initiator
+    | Reset
     | SetActivePage Page

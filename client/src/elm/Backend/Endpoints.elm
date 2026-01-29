@@ -1,4 +1,4 @@
-module Backend.Endpoints exposing (ComputedDashboardParams, NurseParams, PersonParams(..), PmtctParticipantParams(..), RelationshipParams, SessionParams(..), acuteFindingsEndpoint, acuteIllnessContactsTracingEndpoint, acuteIllnessCoreExamEndpoint, acuteIllnessDangerSignsEndpoint, acuteIllnessEncounterEndpoint, acuteIllnessFollowUpEndpoint, acuteIllnessMeasurementsEndpoint, acuteIllnessMuacEndpoint, acuteIllnessNutritionEndpoint, acuteIllnessTraceContactEndpoint, acuteIllnessVitalsEndpoint, appointmentConfirmationEndpoint, attendanceEndpoint, birthPlanEndpoint, breastExamEndpoint, call114Endpoint, childFbfEndpoint, childMeasurementListEndpoint, childScoreboardBCGImmunisationEndpoint, childScoreboardDTPImmunisationEndpoint, childScoreboardDTPStandaloneImmunisationEndpoint, childScoreboardEncounterEndpoint, childScoreboardIPVImmunisationEndpoint, childScoreboardMRImmunisationEndpoint, childScoreboardMeasurementsEndpoint, childScoreboardNCDAEndpoint, childScoreboardOPVImmunisationEndpoint, childScoreboardPCV13ImmunisationEndpoint, childScoreboardRotarixImmunisationEndpoint, clinicEndpoint, computedDashboardEndpoint, contributingFactorsEndpoint, corePhysicalExamEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, covidTestingEndpoint, dangerSignsEndpoint, educationSessionEndpoint, encodeByNurseParam, encodeComputedDashboardParams, encodeEducationSessionParams, encodeIndividualEncounterParams, encodeIndividualEncounterParticipantParams, encodeNurseParams, encodePersonParams, encodePmtctParticipantParams, encodeRelationshipParams, encodeSessionParams, exposureEndpoint, familyPlanningEndpoint, followUpEndpoint, followUpMeasurementsEndpoint, groupHealthEducationEndpoint, groupNCDAEndpoint, groupSendToHCEndpoint, hcContactEndpoint, healthCenterEndpoint, healthEducationEndpoint, heightEndpoint, hivDiagnosticsEndpoint, hivEncounterEndpoint, hivFollowUpEndpoint, hivHealthEducationEndpoint, hivMeasurementsEndpoint, hivMedicationEndpoint, hivReferralEndpoint, hivSymptomReviewEndpoint, hivTreatmentReviewEndpoint, homeVisitEncounterEndpoint, homeVisitMeasurementsEndpoint, individualEncounterParticipantEndpoint, isolationEndpoint, lactationEndpoint, lastMenstrualPeriodEndpoint, malariaPreventionEndpoint, malariaTestingEndpoint, medicalHistoryEndpoint, medicationDistributionEndpoint, medicationEndpoint, motherFbfEndpoint, motherMeasurementListEndpoint, muacEndpoint, ncdCoMorbiditiesEndpoint, ncdCoreExamEndpoint, ncdCreatinineTestEndpoint, ncdDangerSignsEndpoint, ncdEncounterEndpoint, ncdFamilyHistoryEndpoint, ncdFamilyPlanningEndpoint, ncdHIVTestEndpoint, ncdHbA1cTestEndpoint, ncdHealthEducationEndpoint, ncdLabsResultsEndpoint, ncdLipidPanelTestEndpoint, ncdLiverFunctionTestEndpoint, ncdMeasurementsEndpoint, ncdMedicationDistributionEndpoint, ncdMedicationHistoryEndpoint, ncdOutsideCareEndpoint, ncdPregnancyTestEndpoint, ncdRandomBloodSugarTestEndpoint, ncdReferralEndpoint, ncdSocialHistoryEndpoint, ncdSymptomReviewEndpoint, ncdUrineDipstickTestEndpoint, ncdVitalsEndpoint, nurseEndpoint, nutritionCaringEndpoint, nutritionContributingFactorsEndpoint, nutritionEncounterEndpoint, nutritionEndpoint, nutritionFeedingEndpoint, nutritionFollowUpEndpoint, nutritionFoodSecurityEndpoint, nutritionHealthEducationEndpoint, nutritionHeightEndpoint, nutritionHygieneEndpoint, nutritionMeasurementsEndpoint, nutritionMuacEndpoint, nutritionNCDAEndpoint, nutritionNutritionEndpoint, nutritionPhotoEndpoint, nutritionSendToHCEndpoint, nutritionWeightEndpoint, obstetricHistoryEndpoint, obstetricHistoryStep2Endpoint, obstetricalExamEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, pmtctParticipantEndpoint, pregnancyByNewbornEndpoint, pregnancyTestEndpoint, prenatalAspirinEndpoint, prenatalBloodGpRsTestEndpoint, prenatalBreastfeedingEndpoint, prenatalCalciumEndpoint, prenatalEncounterEndpoint, prenatalFamilyPlanningEndpoint, prenatalFefolEndpoint, prenatalFolateEndpoint, prenatalFollowUpEndpoint, prenatalGUExamEndpoint, prenatalHIVPCRTestEndpoint, prenatalHIVTestEndpoint, prenatalHealthEducationEndpoint, prenatalHemoglobinTestEndpoint, prenatalHepatitisBTestEndpoint, prenatalIronEndpoint, prenatalLabsResultsEndpoint, prenatalMMSEndpoint, prenatalMalariaTestEndpoint, prenatalMeasurementsEndpoint, prenatalMebendazoleEndpoint, prenatalMedicationDistributionEndpoint, prenatalMentalHealthEndpoint, prenatalNutritionEndpoint, prenatalOutsideCareEndpoint, prenatalPartnerHIVTestEndpoint, prenatalPhotoEndpoint, prenatalRandomBloodSugarTestEndpoint, prenatalSendToHcEndpoint, prenatalSpecialityCareEndpoint, prenatalSymptomReviewEndpoint, prenatalSyphilisTestEndpoint, prenatalTetanusImmunisationEndpoint, prenatalUrineDipstickTestEndpoint, relationshipEndpoint, resilienceSurveyEndpoint, sendToHCEndpoint, sessionEndpoint, socialHistoryEndpoint, stockManagementMeasurementsEndpoint, stockUpdateEndpoint, swEndpoint, symptomsGIEndpoint, symptomsGeneralEndpoint, symptomsRespiratoryEndpoint, travelHistoryEndpoint, treatmentOngoingEndpoint, treatmentReviewEndpoint, tuberculosisDOTEndpoint, tuberculosisDiagnosticsEndpoint, tuberculosisEncounterEndpoint, tuberculosisFollowUpEndpoint, tuberculosisHealthEducationEndpoint, tuberculosisMeasurementsEndpoint, tuberculosisMedicationEndpoint, tuberculosisReferralEndpoint, tuberculosisSymptomReviewEndpoint, tuberculosisTreatmentReviewEndpoint, villageEndpoint, vitalsEndpoint, weightEndpoint, wellChildAlbendazoleEndpoint, wellChildBCGImmunisationEndpoint, wellChildCaringEndpoint, wellChildContributingFactorsEndpoint, wellChildDTPImmunisationEndpoint, wellChildDTPStandaloneImmunisationEndpoint, wellChildECDEndpoint, wellChildEncounterEndpoint, wellChildFeedingEndpoint, wellChildFollowUpEndpoint, wellChildFoodSecurityEndpoint, wellChildHPVImmunisationEndpoint, wellChildHeadCircumferenceEndpoint, wellChildHealthEducationEndpoint, wellChildHeightEndpoint, wellChildHygieneEndpoint, wellChildIPVImmunisationEndpoint, wellChildMRImmunisationEndpoint, wellChildMeasurementsEndpoint, wellChildMebendezoleEndpoint, wellChildMuacEndpoint, wellChildNCDAEndpoint, wellChildNextVisitEndpoint, wellChildNutritionEndpoint, wellChildOPVImmunisationEndpoint, wellChildPCV13ImmunisationEndpoint, wellChildPhotoEndpoint, wellChildPregnancySummaryEndpoint, wellChildRotarixImmunisationEndpoint, wellChildSendToHCEndpoint, wellChildSymptomsReviewEndpoint, wellChildVitalsEndpoint, wellChildVitaminAEndpoint, wellChildWeightEndpoint)
+module Backend.Endpoints exposing (ComputedDashboardParams, NurseParams, PersonParams(..), PmtctParticipantParams(..), RelationshipParams, SessionParams(..), acuteFindingsEndpoint, acuteIllnessContactsTracingEndpoint, acuteIllnessCoreExamEndpoint, acuteIllnessDangerSignsEndpoint, acuteIllnessEncounterEndpoint, acuteIllnessFollowUpEndpoint, acuteIllnessMeasurementsEndpoint, acuteIllnessMuacEndpoint, acuteIllnessNutritionEndpoint, acuteIllnessTraceContactEndpoint, acuteIllnessVitalsEndpoint, appointmentConfirmationEndpoint, attendanceEndpoint, birthPlanEndpoint, breastExamEndpoint, childFbfEndpoint, childMeasurementListEndpoint, childScoreboardBCGImmunisationEndpoint, childScoreboardDTPImmunisationEndpoint, childScoreboardDTPStandaloneImmunisationEndpoint, childScoreboardEncounterEndpoint, childScoreboardIPVImmunisationEndpoint, childScoreboardMRImmunisationEndpoint, childScoreboardMeasurementsEndpoint, childScoreboardNCDAEndpoint, childScoreboardOPVImmunisationEndpoint, childScoreboardPCV13ImmunisationEndpoint, childScoreboardRotarixImmunisationEndpoint, clinicEndpoint, computedDashboardEndpoint, contributingFactorsEndpoint, corePhysicalExamEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, covidTestingEndpoint, dangerSignsEndpoint, educationSessionEndpoint, familyPlanningEndpoint, followUpEndpoint, followUpMeasurementsEndpoint, groupHealthEducationEndpoint, groupNCDAEndpoint, groupSendToHCEndpoint, healthCenterEndpoint, healthEducationEndpoint, heightEndpoint, hivDiagnosticsEndpoint, hivEncounterEndpoint, hivFollowUpEndpoint, hivHealthEducationEndpoint, hivMeasurementsEndpoint, hivMedicationEndpoint, hivReferralEndpoint, hivSymptomReviewEndpoint, hivTreatmentReviewEndpoint, homeVisitEncounterEndpoint, homeVisitMeasurementsEndpoint, individualEncounterParticipantEndpoint, lactationEndpoint, lastMenstrualPeriodEndpoint, malariaPreventionEndpoint, malariaTestingEndpoint, medicalHistoryEndpoint, medicationDistributionEndpoint, medicationEndpoint, motherFbfEndpoint, motherMeasurementListEndpoint, muacEndpoint, ncdCoMorbiditiesEndpoint, ncdCoreExamEndpoint, ncdCreatinineTestEndpoint, ncdDangerSignsEndpoint, ncdEncounterEndpoint, ncdFamilyHistoryEndpoint, ncdFamilyPlanningEndpoint, ncdHIVTestEndpoint, ncdHbA1cTestEndpoint, ncdHealthEducationEndpoint, ncdLabsResultsEndpoint, ncdLipidPanelTestEndpoint, ncdLiverFunctionTestEndpoint, ncdMeasurementsEndpoint, ncdMedicationDistributionEndpoint, ncdMedicationHistoryEndpoint, ncdOutsideCareEndpoint, ncdPregnancyTestEndpoint, ncdRandomBloodSugarTestEndpoint, ncdReferralEndpoint, ncdSocialHistoryEndpoint, ncdSymptomReviewEndpoint, ncdUrineDipstickTestEndpoint, ncdVitalsEndpoint, nurseEndpoint, nutritionCaringEndpoint, nutritionContributingFactorsEndpoint, nutritionEncounterEndpoint, nutritionEndpoint, nutritionFeedingEndpoint, nutritionFollowUpEndpoint, nutritionFoodSecurityEndpoint, nutritionHealthEducationEndpoint, nutritionHeightEndpoint, nutritionHygieneEndpoint, nutritionMeasurementsEndpoint, nutritionMuacEndpoint, nutritionNCDAEndpoint, nutritionNutritionEndpoint, nutritionPhotoEndpoint, nutritionSendToHCEndpoint, nutritionWeightEndpoint, obstetricHistoryEndpoint, obstetricHistoryStep2Endpoint, obstetricalExamEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, pmtctParticipantEndpoint, pregnancyByNewbornEndpoint, pregnancyTestEndpoint, prenatalAspirinEndpoint, prenatalBloodGpRsTestEndpoint, prenatalBreastfeedingEndpoint, prenatalCalciumEndpoint, prenatalEncounterEndpoint, prenatalFamilyPlanningEndpoint, prenatalFefolEndpoint, prenatalFolateEndpoint, prenatalFollowUpEndpoint, prenatalGUExamEndpoint, prenatalHIVPCRTestEndpoint, prenatalHIVTestEndpoint, prenatalHealthEducationEndpoint, prenatalHemoglobinTestEndpoint, prenatalHepatitisBTestEndpoint, prenatalIronEndpoint, prenatalLabsResultsEndpoint, prenatalMMSEndpoint, prenatalMalariaTestEndpoint, prenatalMeasurementsEndpoint, prenatalMebendazoleEndpoint, prenatalMedicationDistributionEndpoint, prenatalMentalHealthEndpoint, prenatalNutritionEndpoint, prenatalOutsideCareEndpoint, prenatalPartnerHIVTestEndpoint, prenatalPhotoEndpoint, prenatalRandomBloodSugarTestEndpoint, prenatalSendToHcEndpoint, prenatalSpecialityCareEndpoint, prenatalSymptomReviewEndpoint, prenatalSyphilisTestEndpoint, prenatalTetanusImmunisationEndpoint, prenatalUrineDipstickTestEndpoint, relationshipEndpoint, resilienceSurveyEndpoint, sendToHCEndpoint, sessionEndpoint, socialHistoryEndpoint, stockManagementMeasurementsEndpoint, stockUpdateEndpoint, symptomsGIEndpoint, symptomsGeneralEndpoint, symptomsRespiratoryEndpoint, treatmentOngoingEndpoint, treatmentReviewEndpoint, tuberculosisDOTEndpoint, tuberculosisDiagnosticsEndpoint, tuberculosisEncounterEndpoint, tuberculosisFollowUpEndpoint, tuberculosisHealthEducationEndpoint, tuberculosisMeasurementsEndpoint, tuberculosisMedicationEndpoint, tuberculosisReferralEndpoint, tuberculosisSymptomReviewEndpoint, tuberculosisTreatmentReviewEndpoint, villageEndpoint, vitalsEndpoint, weightEndpoint, wellChildAlbendazoleEndpoint, wellChildBCGImmunisationEndpoint, wellChildCaringEndpoint, wellChildContributingFactorsEndpoint, wellChildDTPImmunisationEndpoint, wellChildDTPStandaloneImmunisationEndpoint, wellChildECDEndpoint, wellChildEncounterEndpoint, wellChildFeedingEndpoint, wellChildFollowUpEndpoint, wellChildFoodSecurityEndpoint, wellChildHPVImmunisationEndpoint, wellChildHeadCircumferenceEndpoint, wellChildHealthEducationEndpoint, wellChildHeightEndpoint, wellChildHygieneEndpoint, wellChildIPVImmunisationEndpoint, wellChildMRImmunisationEndpoint, wellChildMeasurementsEndpoint, wellChildMebendezoleEndpoint, wellChildMuacEndpoint, wellChildNCDAEndpoint, wellChildNextVisitEndpoint, wellChildNutritionEndpoint, wellChildOPVImmunisationEndpoint, wellChildPCV13ImmunisationEndpoint, wellChildPhotoEndpoint, wellChildPregnancySummaryEndpoint, wellChildRotarixImmunisationEndpoint, wellChildSendToHCEndpoint, wellChildSymptomsReviewEndpoint, wellChildVitalsEndpoint, wellChildVitaminAEndpoint, wellChildWeightEndpoint)
 
 import Backend.AcuteIllnessEncounter.Decoder exposing (decodeAcuteIllnessEncounter)
 import Backend.AcuteIllnessEncounter.Encoder exposing (encodeAcuteIllnessEncounter)
@@ -29,8 +29,198 @@ import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Decoder exposing (decodeIndividualEncounterParticipant)
 import Backend.IndividualEncounterParticipant.Encoder exposing (encodeIndividualEncounterParticipant)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
-import Backend.Measurement.Decoder exposing (decodeAcuteFindings, decodeAcuteIllnessContactsTracing, decodeAcuteIllnessCoreExam, decodeAcuteIllnessDangerSigns, decodeAcuteIllnessFollowUp, decodeAcuteIllnessMeasurements, decodeAcuteIllnessMuac, decodeAcuteIllnessNutrition, decodeAcuteIllnessTraceContact, decodeAcuteIllnessVitals, decodeAppointmentConfirmation, decodeAttendance, decodeBirthPlan, decodeBreastExam, decodeCall114, decodeChildMeasurementList, decodeChildScoreboardBCGImmunisation, decodeChildScoreboardDTPImmunisation, decodeChildScoreboardDTPStandaloneImmunisation, decodeChildScoreboardIPVImmunisation, decodeChildScoreboardMRImmunisation, decodeChildScoreboardMeasurements, decodeChildScoreboardNCDA, decodeChildScoreboardOPVImmunisation, decodeChildScoreboardPCV13Immunisation, decodeChildScoreboardRotarixImmunisation, decodeContributingFactors, decodeCorePhysicalExam, decodeCounselingSession, decodeCovidTesting, decodeDangerSigns, decodeExposure, decodeFamilyPlanning, decodeFbf, decodeFollowUp, decodeFollowUpMeasurements, decodeGroupHealthEducation, decodeGroupNCDA, decodeGroupSendToHC, decodeHCContact, decodeHIVDiagnostics, decodeHIVFollowUp, decodeHIVHealthEducation, decodeHIVMeasurements, decodeHIVMedication, decodeHIVReferral, decodeHIVSymptomReview, decodeHIVTreatmentReview, decodeHealthEducation, decodeHeight, decodeHomeVisitMeasurements, decodeIsolation, decodeLactation, decodeLastMenstrualPeriod, decodeMalariaPrevention, decodeMalariaTesting, decodeMedicalHistory, decodeMedication, decodeMedicationDistribution, decodeMotherMeasurementList, decodeMuac, decodeNCDCoMorbidities, decodeNCDCoreExam, decodeNCDCreatinineTest, decodeNCDDangerSigns, decodeNCDFamilyHistory, decodeNCDFamilyPlanning, decodeNCDHIVTest, decodeNCDHbA1cTest, decodeNCDHealthEducation, decodeNCDLabsResults, decodeNCDLipidPanelTest, decodeNCDLiverFunctionTest, decodeNCDMeasurements, decodeNCDMedicationDistribution, decodeNCDMedicationHistory, decodeNCDOutsideCare, decodeNCDPregnancyTest, decodeNCDRandomBloodSugarTest, decodeNCDReferral, decodeNCDSocialHistory, decodeNCDSymptomReview, decodeNCDUrineDipstickTest, decodeNCDVitals, decodeNutrition, decodeNutritionCaring, decodeNutritionContributingFactors, decodeNutritionFeeding, decodeNutritionFollowUp, decodeNutritionFoodSecurity, decodeNutritionHealthEducation, decodeNutritionHeight, decodeNutritionHygiene, decodeNutritionMeasurements, decodeNutritionMuac, decodeNutritionNCDA, decodeNutritionNutrition, decodeNutritionPhoto, decodeNutritionSendToHC, decodeNutritionWeight, decodeObstetricHistory, decodeObstetricHistoryStep2, decodeObstetricalExam, decodeParticipantConsent, decodePhoto, decodePregnancyByNewborn, decodePregnancyTest, decodePrenatalAspirin, decodePrenatalBloodGpRsTest, decodePrenatalBreastfeeding, decodePrenatalCalcium, decodePrenatalFamilyPlanning, decodePrenatalFefol, decodePrenatalFolate, decodePrenatalFollowUp, decodePrenatalGUExam, decodePrenatalHIVPCRTest, decodePrenatalHIVTest, decodePrenatalHealthEducation, decodePrenatalHemoglobinTest, decodePrenatalHepatitisBTest, decodePrenatalIron, decodePrenatalLabsResults, decodePrenatalMMS, decodePrenatalMalariaTest, decodePrenatalMeasurements, decodePrenatalMebendazole, decodePrenatalMedicationDistribution, decodePrenatalMentalHealth, decodePrenatalNutrition, decodePrenatalOutsideCare, decodePrenatalPartnerHIVTest, decodePrenatalPhoto, decodePrenatalRandomBloodSugarTest, decodePrenatalSendToHc, decodePrenatalSpecialityCare, decodePrenatalSymptomReview, decodePrenatalSyphilisTest, decodePrenatalTetanusImmunisation, decodePrenatalUrineDipstickTest, decodeSendToHC, decodeSocialHistory, decodeStockManagementMeasurements, decodeSymptomsGI, decodeSymptomsGeneral, decodeSymptomsRespiratory, decodeTravelHistory, decodeTreatmentOngoing, decodeTreatmentReview, decodeTuberculosisDOT, decodeTuberculosisDiagnostics, decodeTuberculosisFollowUp, decodeTuberculosisHealthEducation, decodeTuberculosisMeasurements, decodeTuberculosisMedication, decodeTuberculosisReferral, decodeTuberculosisSymptomReview, decodeTuberculosisTreatmentReview, decodeVitals, decodeWeight, decodeWellChildAlbendazole, decodeWellChildBCGImmunisation, decodeWellChildCaring, decodeWellChildContributingFactors, decodeWellChildDTPImmunisation, decodeWellChildDTPStandaloneImmunisation, decodeWellChildECD, decodeWellChildFeeding, decodeWellChildFollowUp, decodeWellChildFoodSecurity, decodeWellChildHPVImmunisation, decodeWellChildHeadCircumference, decodeWellChildHealthEducation, decodeWellChildHeight, decodeWellChildHygiene, decodeWellChildIPVImmunisation, decodeWellChildMRImmunisation, decodeWellChildMeasurements, decodeWellChildMebendezole, decodeWellChildMuac, decodeWellChildNCDA, decodeWellChildNextVisit, decodeWellChildNutrition, decodeWellChildOPVImmunisation, decodeWellChildPCV13Immunisation, decodeWellChildPhoto, decodeWellChildPregnancySummary, decodeWellChildRotarixImmunisation, decodeWellChildSendToHC, decodeWellChildSymptomsReview, decodeWellChildVitals, decodeWellChildVitaminA, decodeWellChildWeight)
-import Backend.Measurement.Encoder exposing (encodeAcuteFindings, encodeAcuteIllnessContactsTracing, encodeAcuteIllnessCoreExam, encodeAcuteIllnessDangerSigns, encodeAcuteIllnessFollowUp, encodeAcuteIllnessMuac, encodeAcuteIllnessNutrition, encodeAcuteIllnessTraceContact, encodeAcuteIllnessVitals, encodeAppointmentConfirmation, encodeAttendance, encodeBirthPlan, encodeBreastExam, encodeCall114, encodeChildFbf, encodeChildScoreboardBCGImmunisation, encodeChildScoreboardDTPImmunisation, encodeChildScoreboardDTPStandaloneImmunisation, encodeChildScoreboardIPVImmunisation, encodeChildScoreboardMRImmunisation, encodeChildScoreboardNCDA, encodeChildScoreboardOPVImmunisation, encodeChildScoreboardPCV13Immunisation, encodeChildScoreboardRotarixImmunisation, encodeContributingFactors, encodeCorePhysicalExam, encodeCounselingSession, encodeCovidTesting, encodeDangerSigns, encodeExposure, encodeFamilyPlanning, encodeFollowUp, encodeGroupHealthEducation, encodeGroupNCDA, encodeGroupSendToHC, encodeHCContact, encodeHIVDiagnostics, encodeHIVFollowUp, encodeHIVHealthEducation, encodeHIVMedication, encodeHIVReferral, encodeHIVSymptomReview, encodeHIVTreatmentReview, encodeHealthEducation, encodeHeight, encodeIsolation, encodeLactation, encodeLastMenstrualPeriod, encodeMalariaPrevention, encodeMalariaTesting, encodeMedicalHistory, encodeMedication, encodeMedicationDistribution, encodeMotherFbf, encodeMuac, encodeNCDCoMorbidities, encodeNCDCoreExam, encodeNCDCreatinineTest, encodeNCDDangerSigns, encodeNCDFamilyHistory, encodeNCDFamilyPlanning, encodeNCDHIVTest, encodeNCDHbA1cTest, encodeNCDHealthEducation, encodeNCDLabsResults, encodeNCDLipidPanelTest, encodeNCDLiverFunctionTest, encodeNCDMedicationDistribution, encodeNCDMedicationHistory, encodeNCDOutsideCare, encodeNCDPregnancyTest, encodeNCDRandomBloodSugarTest, encodeNCDReferral, encodeNCDSocialHistory, encodeNCDSymptomReview, encodeNCDUrineDipstickTest, encodeNCDVitals, encodeNutrition, encodeNutritionCaring, encodeNutritionContributingFactors, encodeNutritionFeeding, encodeNutritionFollowUp, encodeNutritionFoodSecurity, encodeNutritionHealthEducation, encodeNutritionHeight, encodeNutritionHygiene, encodeNutritionMuac, encodeNutritionNCDA, encodeNutritionNutrition, encodeNutritionPhoto, encodeNutritionSendToHC, encodeNutritionWeight, encodeObstetricHistory, encodeObstetricHistoryStep2, encodeObstetricalExam, encodeParticipantConsent, encodePhoto, encodePregnancyTest, encodePrenatalAspirin, encodePrenatalBloodGpRsTest, encodePrenatalBreastfeeding, encodePrenatalCalcium, encodePrenatalFamilyPlanning, encodePrenatalFefol, encodePrenatalFolate, encodePrenatalFollowUp, encodePrenatalGUExam, encodePrenatalHIVPCRTest, encodePrenatalHIVTest, encodePrenatalHealthEducation, encodePrenatalHemoglobinTest, encodePrenatalHepatitisBTest, encodePrenatalIron, encodePrenatalLabsResults, encodePrenatalMMS, encodePrenatalMalariaTest, encodePrenatalMebendazole, encodePrenatalMedicationDistribution, encodePrenatalMentalHealth, encodePrenatalNutrition, encodePrenatalOutsideCare, encodePrenatalPartnerHIVTest, encodePrenatalPhoto, encodePrenatalRandomBloodSugarTest, encodePrenatalSendToHC, encodePrenatalSpecialityCare, encodePrenatalSymptomReview, encodePrenatalSyphilisTest, encodePrenatalTetanusImmunisation, encodePrenatalUrineDipstickTest, encodeSendToHC, encodeSocialHistory, encodeSymptomsGI, encodeSymptomsGeneral, encodeSymptomsRespiratory, encodeTravelHistory, encodeTreatmentOngoing, encodeTreatmentReview, encodeTuberculosisDOT, encodeTuberculosisDiagnostics, encodeTuberculosisFollowUp, encodeTuberculosisHealthEducation, encodeTuberculosisMedication, encodeTuberculosisReferral, encodeTuberculosisSymptomReview, encodeTuberculosisTreatmentReview, encodeVitals, encodeWeight, encodeWellChildAlbendazole, encodeWellChildBCGImmunisation, encodeWellChildCaring, encodeWellChildContributingFactors, encodeWellChildDTPImmunisation, encodeWellChildDTPStandaloneImmunisation, encodeWellChildECD, encodeWellChildFeeding, encodeWellChildFollowUp, encodeWellChildFoodSecurity, encodeWellChildHPVImmunisation, encodeWellChildHeadCircumference, encodeWellChildHealthEducation, encodeWellChildHeight, encodeWellChildHygiene, encodeWellChildIPVImmunisation, encodeWellChildMRImmunisation, encodeWellChildMebendezole, encodeWellChildMuac, encodeWellChildNCDA, encodeWellChildNextVisit, encodeWellChildNutrition, encodeWellChildOPVImmunisation, encodeWellChildPCV13Immunisation, encodeWellChildPhoto, encodeWellChildPregnancySummary, encodeWellChildRotarixImmunisation, encodeWellChildSendToHC, encodeWellChildSymptomsReview, encodeWellChildVitals, encodeWellChildVitaminA, encodeWellChildWeight)
+import Backend.Measurement.Decoder
+    exposing
+        ( decodeAcuteFindings
+        , decodeAcuteIllnessContactsTracing
+        , decodeAcuteIllnessCoreExam
+        , decodeAcuteIllnessDangerSigns
+        , decodeAcuteIllnessFollowUp
+        , decodeAcuteIllnessMeasurements
+        , decodeAcuteIllnessMuac
+        , decodeAcuteIllnessNutrition
+        , decodeAcuteIllnessTraceContact
+        , decodeAcuteIllnessVitals
+        , decodeAppointmentConfirmation
+        , decodeAttendance
+        , decodeBirthPlan
+        , decodeBreastExam
+        , decodeChildMeasurementList
+        , decodeChildScoreboardBCGImmunisation
+        , decodeChildScoreboardDTPImmunisation
+        , decodeChildScoreboardDTPStandaloneImmunisation
+        , decodeChildScoreboardIPVImmunisation
+        , decodeChildScoreboardMRImmunisation
+        , decodeChildScoreboardMeasurements
+        , decodeChildScoreboardNCDA
+        , decodeChildScoreboardOPVImmunisation
+        , decodeChildScoreboardPCV13Immunisation
+        , decodeChildScoreboardRotarixImmunisation
+        , decodeContributingFactors
+        , decodeCorePhysicalExam
+        , decodeCounselingSession
+        , decodeCovidTesting
+        , decodeDangerSigns
+        , decodeFamilyPlanning
+        , decodeFbf
+        , decodeFollowUp
+        , decodeFollowUpMeasurements
+        , decodeGroupHealthEducation
+        , decodeGroupNCDA
+        , decodeGroupSendToHC
+        , decodeHIVDiagnostics
+        , decodeHIVFollowUp
+        , decodeHIVHealthEducation
+        , decodeHIVMeasurements
+        , decodeHIVMedication
+        , decodeHIVReferral
+        , decodeHIVSymptomReview
+        , decodeHIVTreatmentReview
+        , decodeHealthEducation
+        , decodeHeight
+        , decodeHomeVisitMeasurements
+        , decodeLactation
+        , decodeLastMenstrualPeriod
+        , decodeMalariaPrevention
+        , decodeMalariaTesting
+        , decodeMedicalHistory
+        , decodeMedication
+        , decodeMedicationDistribution
+        , decodeMotherMeasurementList
+        , decodeMuac
+        , decodeNCDCoMorbidities
+        , decodeNCDCoreExam
+        , decodeNCDCreatinineTest
+        , decodeNCDDangerSigns
+        , decodeNCDFamilyHistory
+        , decodeNCDFamilyPlanning
+        , decodeNCDHIVTest
+        , decodeNCDHbA1cTest
+        , decodeNCDHealthEducation
+        , decodeNCDLabsResults
+        , decodeNCDLipidPanelTest
+        , decodeNCDLiverFunctionTest
+        , decodeNCDMeasurements
+        , decodeNCDMedicationDistribution
+        , decodeNCDMedicationHistory
+        , decodeNCDOutsideCare
+        , decodeNCDPregnancyTest
+        , decodeNCDRandomBloodSugarTest
+        , decodeNCDReferral
+        , decodeNCDSocialHistory
+        , decodeNCDSymptomReview
+        , decodeNCDUrineDipstickTest
+        , decodeNCDVitals
+        , decodeNutrition
+        , decodeNutritionCaring
+        , decodeNutritionContributingFactors
+        , decodeNutritionFeeding
+        , decodeNutritionFollowUp
+        , decodeNutritionFoodSecurity
+        , decodeNutritionHealthEducation
+        , decodeNutritionHeight
+        , decodeNutritionHygiene
+        , decodeNutritionMeasurements
+        , decodeNutritionMuac
+        , decodeNutritionNCDA
+        , decodeNutritionNutrition
+        , decodeNutritionPhoto
+        , decodeNutritionSendToHC
+        , decodeNutritionWeight
+        , decodeObstetricHistory
+        , decodeObstetricHistoryStep2
+        , decodeObstetricalExam
+        , decodeParticipantConsent
+        , decodePhoto
+        , decodePregnancyByNewborn
+        , decodePregnancyTest
+        , decodePrenatalAspirin
+        , decodePrenatalBloodGpRsTest
+        , decodePrenatalBreastfeeding
+        , decodePrenatalCalcium
+        , decodePrenatalFamilyPlanning
+        , decodePrenatalFefol
+        , decodePrenatalFolate
+        , decodePrenatalFollowUp
+        , decodePrenatalGUExam
+        , decodePrenatalHIVPCRTest
+        , decodePrenatalHIVTest
+        , decodePrenatalHealthEducation
+        , decodePrenatalHemoglobinTest
+        , decodePrenatalHepatitisBTest
+        , decodePrenatalIron
+        , decodePrenatalLabsResults
+        , decodePrenatalMMS
+        , decodePrenatalMalariaTest
+        , decodePrenatalMeasurements
+        , decodePrenatalMebendazole
+        , decodePrenatalMedicationDistribution
+        , decodePrenatalMentalHealth
+        , decodePrenatalNutrition
+        , decodePrenatalOutsideCare
+        , decodePrenatalPartnerHIVTest
+        , decodePrenatalPhoto
+        , decodePrenatalRandomBloodSugarTest
+        , decodePrenatalSendToHc
+        , decodePrenatalSpecialityCare
+        , decodePrenatalSymptomReview
+        , decodePrenatalSyphilisTest
+        , decodePrenatalTetanusImmunisation
+        , decodePrenatalUrineDipstickTest
+        , decodeSendToHC
+        , decodeSocialHistory
+        , decodeStockManagementMeasurements
+        , decodeSymptomsGI
+        , decodeSymptomsGeneral
+        , decodeSymptomsRespiratory
+        , decodeTreatmentOngoing
+        , decodeTreatmentReview
+        , decodeTuberculosisDOT
+        , decodeTuberculosisDiagnostics
+        , decodeTuberculosisFollowUp
+        , decodeTuberculosisHealthEducation
+        , decodeTuberculosisMeasurements
+        , decodeTuberculosisMedication
+        , decodeTuberculosisReferral
+        , decodeTuberculosisSymptomReview
+        , decodeTuberculosisTreatmentReview
+        , decodeVitals
+        , decodeWeight
+        , decodeWellChildAlbendazole
+        , decodeWellChildBCGImmunisation
+        , decodeWellChildCaring
+        , decodeWellChildContributingFactors
+        , decodeWellChildDTPImmunisation
+        , decodeWellChildDTPStandaloneImmunisation
+        , decodeWellChildECD
+        , decodeWellChildFeeding
+        , decodeWellChildFollowUp
+        , decodeWellChildFoodSecurity
+        , decodeWellChildHPVImmunisation
+        , decodeWellChildHeadCircumference
+        , decodeWellChildHealthEducation
+        , decodeWellChildHeight
+        , decodeWellChildHygiene
+        , decodeWellChildIPVImmunisation
+        , decodeWellChildMRImmunisation
+        , decodeWellChildMeasurements
+        , decodeWellChildMebendezole
+        , decodeWellChildMuac
+        , decodeWellChildNCDA
+        , decodeWellChildNextVisit
+        , decodeWellChildNutrition
+        , decodeWellChildOPVImmunisation
+        , decodeWellChildPCV13Immunisation
+        , decodeWellChildPhoto
+        , decodeWellChildPregnancySummary
+        , decodeWellChildRotarixImmunisation
+        , decodeWellChildSendToHC
+        , decodeWellChildSymptomsReview
+        , decodeWellChildVitals
+        , decodeWellChildVitaminA
+        , decodeWellChildWeight
+        )
+import Backend.Measurement.Encoder exposing (encodeAcuteFindings, encodeAcuteIllnessContactsTracing, encodeAcuteIllnessCoreExam, encodeAcuteIllnessDangerSigns, encodeAcuteIllnessFollowUp, encodeAcuteIllnessMuac, encodeAcuteIllnessNutrition, encodeAcuteIllnessTraceContact, encodeAcuteIllnessVitals, encodeAppointmentConfirmation, encodeAttendance, encodeBirthPlan, encodeBreastExam, encodeChildFbf, encodeChildScoreboardBCGImmunisation, encodeChildScoreboardDTPImmunisation, encodeChildScoreboardDTPStandaloneImmunisation, encodeChildScoreboardIPVImmunisation, encodeChildScoreboardMRImmunisation, encodeChildScoreboardNCDA, encodeChildScoreboardOPVImmunisation, encodeChildScoreboardPCV13Immunisation, encodeChildScoreboardRotarixImmunisation, encodeContributingFactors, encodeCorePhysicalExam, encodeCounselingSession, encodeCovidTesting, encodeDangerSigns, encodeFamilyPlanning, encodeFollowUp, encodeGroupHealthEducation, encodeGroupNCDA, encodeGroupSendToHC, encodeHIVDiagnostics, encodeHIVFollowUp, encodeHIVHealthEducation, encodeHIVMedication, encodeHIVReferral, encodeHIVSymptomReview, encodeHIVTreatmentReview, encodeHealthEducation, encodeHeight, encodeLactation, encodeLastMenstrualPeriod, encodeMalariaPrevention, encodeMalariaTesting, encodeMedicalHistory, encodeMedication, encodeMedicationDistribution, encodeMotherFbf, encodeMuac, encodeNCDCoMorbidities, encodeNCDCoreExam, encodeNCDCreatinineTest, encodeNCDDangerSigns, encodeNCDFamilyHistory, encodeNCDFamilyPlanning, encodeNCDHIVTest, encodeNCDHbA1cTest, encodeNCDHealthEducation, encodeNCDLabsResults, encodeNCDLipidPanelTest, encodeNCDLiverFunctionTest, encodeNCDMedicationDistribution, encodeNCDMedicationHistory, encodeNCDOutsideCare, encodeNCDPregnancyTest, encodeNCDRandomBloodSugarTest, encodeNCDReferral, encodeNCDSocialHistory, encodeNCDSymptomReview, encodeNCDUrineDipstickTest, encodeNCDVitals, encodeNutrition, encodeNutritionCaring, encodeNutritionContributingFactors, encodeNutritionFeeding, encodeNutritionFollowUp, encodeNutritionFoodSecurity, encodeNutritionHealthEducation, encodeNutritionHeight, encodeNutritionHygiene, encodeNutritionMuac, encodeNutritionNCDA, encodeNutritionNutrition, encodeNutritionPhoto, encodeNutritionSendToHC, encodeNutritionWeight, encodeObstetricHistory, encodeObstetricHistoryStep2, encodeObstetricalExam, encodeParticipantConsent, encodePhoto, encodePregnancyTest, encodePrenatalAspirin, encodePrenatalBloodGpRsTest, encodePrenatalBreastfeeding, encodePrenatalCalcium, encodePrenatalFamilyPlanning, encodePrenatalFefol, encodePrenatalFolate, encodePrenatalFollowUp, encodePrenatalGUExam, encodePrenatalHIVPCRTest, encodePrenatalHIVTest, encodePrenatalHealthEducation, encodePrenatalHemoglobinTest, encodePrenatalHepatitisBTest, encodePrenatalIron, encodePrenatalLabsResults, encodePrenatalMMS, encodePrenatalMalariaTest, encodePrenatalMebendazole, encodePrenatalMedicationDistribution, encodePrenatalMentalHealth, encodePrenatalNutrition, encodePrenatalOutsideCare, encodePrenatalPartnerHIVTest, encodePrenatalPhoto, encodePrenatalRandomBloodSugarTest, encodePrenatalSendToHC, encodePrenatalSpecialityCare, encodePrenatalSymptomReview, encodePrenatalSyphilisTest, encodePrenatalTetanusImmunisation, encodePrenatalUrineDipstickTest, encodeSendToHC, encodeSocialHistory, encodeSymptomsGI, encodeSymptomsGeneral, encodeSymptomsRespiratory, encodeTreatmentOngoing, encodeTreatmentReview, encodeTuberculosisDOT, encodeTuberculosisDiagnostics, encodeTuberculosisFollowUp, encodeTuberculosisHealthEducation, encodeTuberculosisMedication, encodeTuberculosisReferral, encodeTuberculosisSymptomReview, encodeTuberculosisTreatmentReview, encodeVitals, encodeWeight, encodeWellChildAlbendazole, encodeWellChildBCGImmunisation, encodeWellChildCaring, encodeWellChildContributingFactors, encodeWellChildDTPImmunisation, encodeWellChildDTPStandaloneImmunisation, encodeWellChildECD, encodeWellChildFeeding, encodeWellChildFollowUp, encodeWellChildFoodSecurity, encodeWellChildHPVImmunisation, encodeWellChildHeadCircumference, encodeWellChildHealthEducation, encodeWellChildHeight, encodeWellChildHygiene, encodeWellChildIPVImmunisation, encodeWellChildMRImmunisation, encodeWellChildMebendezole, encodeWellChildMuac, encodeWellChildNCDA, encodeWellChildNextVisit, encodeWellChildNutrition, encodeWellChildOPVImmunisation, encodeWellChildPCV13Immunisation, encodeWellChildPhoto, encodeWellChildPregnancySummary, encodeWellChildRotarixImmunisation, encodeWellChildSendToHC, encodeWellChildSymptomsReview, encodeWellChildVitals, encodeWellChildVitaminA, encodeWellChildWeight)
 import Backend.Measurement.Model exposing (..)
 import Backend.NCDEncounter.Decoder exposing (decodeNCDEncounter)
 import Backend.NCDEncounter.Encoder exposing (encodeNCDEncounter)
@@ -624,40 +814,10 @@ medicationDistributionEndpoint =
         |> withValueEncoder (object << encodeMedicationDistribution)
 
 
-travelHistoryEndpoint : ReadWriteEndPoint Error TravelHistoryId TravelHistory TravelHistory ()
-travelHistoryEndpoint =
-    swEndpoint "nodes/travel_history" decodeTravelHistory
-        |> withValueEncoder (object << encodeTravelHistory)
-
-
 treatmentReviewEndpoint : ReadWriteEndPoint Error TreatmentReviewId TreatmentReview TreatmentReview ()
 treatmentReviewEndpoint =
     swEndpoint "nodes/treatment_history" decodeTreatmentReview
         |> withValueEncoder (object << encodeTreatmentReview)
-
-
-exposureEndpoint : ReadWriteEndPoint Error ExposureId Exposure Exposure ()
-exposureEndpoint =
-    swEndpoint "nodes/exposure" decodeExposure
-        |> withValueEncoder (object << encodeExposure)
-
-
-isolationEndpoint : ReadWriteEndPoint Error IsolationId Isolation Isolation ()
-isolationEndpoint =
-    swEndpoint "nodes/isolation" decodeIsolation
-        |> withValueEncoder (object << encodeIsolation)
-
-
-hcContactEndpoint : ReadWriteEndPoint Error HCContactId HCContact HCContact ()
-hcContactEndpoint =
-    swEndpoint "nodes/hc_contact" decodeHCContact
-        |> withValueEncoder (object << encodeHCContact)
-
-
-call114Endpoint : ReadWriteEndPoint Error Call114Id Call114 Call114 ()
-call114Endpoint =
-    swEndpoint "nodes/call_114" decodeCall114
-        |> withValueEncoder (object << encodeCall114)
 
 
 acuteIllnessMuacEndpoint : ReadWriteEndPoint Error AcuteIllnessMuacId AcuteIllnessMuac AcuteIllnessMuac ()

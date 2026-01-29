@@ -1,4 +1,4 @@
-module Pages.Report.View exposing (translateTestReport, viewAcuteIllnessDiagnosisEntry, viewEntries, viewItemHeading, viewKnownAsPositiveResult, viewLabResultsEntry, viewLabResultsHistoryPane, viewLabResultsPane, viewLabsPane, viewUncompetedResult)
+module Pages.Report.View exposing (viewAcuteIllnessDiagnosisEntry, viewEntries, viewItemHeading, viewLabResultsHistoryPane, viewLabResultsPane, viewLabsPane)
 
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessProgressReportInitiator)
 import Backend.Entities exposing (..)
@@ -20,8 +20,8 @@ import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.NominalDate exposing (sortTuplesByDateDesc)
 
 
-viewLabsPane : Language -> NominalDate -> (Maybe LabResultsMode -> msg) -> Html msg
-viewLabsPane language currentDate setLabResultsModeMsg =
+viewLabsPane : Language -> (Maybe LabResultsMode -> msg) -> Html msg
+viewLabsPane language setLabResultsModeMsg =
     div [ class "labs" ] <|
         [ viewItemHeading language Translate.LabResults "blue"
         , div [ class "pane-content" ]

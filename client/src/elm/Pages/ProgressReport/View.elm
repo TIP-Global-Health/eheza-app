@@ -62,7 +62,6 @@ view language currentDate zscores site features isChw childId ( sessionId, sessi
             zscores
             site
             features
-            isChw
             initiator
             mandatoryNutritionAssessmentMeasurementsTaken
             db

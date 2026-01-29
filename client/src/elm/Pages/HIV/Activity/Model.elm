@@ -1,4 +1,4 @@
-module Pages.HIV.Activity.Model exposing (DiagnosticsData, DiagnosticsForm, HealthEducationForm, MedicationData, MedicationTask(..), Model, Msg(..), NextStepsData, NextStepsTask(..), PrescribedMedicationForm, SymptomReviewData, SymptomReviewForm, emptyDiagnosticsData, emptyDiagnosticsForm, emptyHealthEducationForm, emptyMedicationData, emptyModel, emptyNextStepsData, emptyPrescribedMedicationForm, emptySymptomReviewData, emptySymptomReviewForm)
+module Pages.HIV.Activity.Model exposing (DiagnosticsData, DiagnosticsForm, HealthEducationForm, MedicationData, MedicationTask(..), Model, Msg(..), NextStepsData, NextStepsTask(..), PrescribedMedicationForm, SymptomReviewData, SymptomReviewForm, emptyModel)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)

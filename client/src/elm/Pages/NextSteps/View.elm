@@ -1,6 +1,5 @@
 module Pages.NextSteps.View exposing (view)
 
-import Activity.Model exposing (Activity)
 import Activity.Utils exposing (generateNutritionAssessment)
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -36,8 +35,8 @@ import Utils.Html exposing (viewModal)
 import ZScore.Model
 
 
-view : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> Activity -> ( SessionId, EditableSession ) -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate zscores childId originActivity ( sessionId, session ) db model =
+view : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> EditableSession -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate zscores childId session db model =
     let
         header =
             viewHeader language
@@ -53,7 +52,6 @@ view language currentDate zscores childId originActivity ( sessionId, session ) 
         , content
         , viewModal <|
             warningPopup language
-                currentDate
                 (SetWarningPopupState [])
                 model.warningPopupState
         ]
@@ -72,13 +70,13 @@ viewHeader language =
 viewContent : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> Person -> EditableSession -> ModelIndexedDb -> Model -> Html Msg
 viewContent language currentDate zscores childId child session db model =
     ((viewPersonDetails language currentDate child Nothing |> div [ class "item" ])
-        :: viewNextStepsContent language currentDate zscores childId child session db model
+        :: viewNextStepsContent language currentDate zscores childId session db model
     )
         |> div [ class "ui unstackable items" ]
 
 
-viewNextStepsContent : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> Person -> EditableSession -> ModelIndexedDb -> Model -> List (Html Msg)
-viewNextStepsContent language currentDate zscores childId child session db model =
+viewNextStepsContent : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> EditableSession -> ModelIndexedDb -> Model -> List (Html Msg)
+viewNextStepsContent language currentDate zscores childId session db model =
     getChildMeasurementData childId session
         |> LocalData.unwrap
             []
@@ -162,7 +160,7 @@ viewNextStepsContent language currentDate zscores childId child session db model
                             ]
 
                     tasksCompletedFromTotalDict =
-                        List.map (\task -> ( task, nextStepsTasksCompletedFromTotal currentDate measurements model task )) tasks
+                        List.map (\task -> ( task, nextStepsTasksCompletedFromTotal measurements model task )) tasks
                             |> Dict.fromList
 
                     ( tasksCompleted, totalTasks ) =
@@ -183,17 +181,16 @@ viewNextStepsContent language currentDate zscores childId child session db model
                             Just NextStepsHealthEducation ->
                                 healthEducationFormWithDefault model.healthEducationForm healthEducationValue
                                     |> viewHealthEducationForm language
-                                        currentDate
                                         SetProvidedEducationForDiagnosis
                                         SetReasonForNotProvidingHealthEducation
 
                             Just NextStepContributingFactors ->
                                 contributingFactorsFormWithDefault model.contributingFactorsForm contributingFactorsValue
-                                    |> viewContributingFactorsForm language currentDate SetContributingFactorsSign
+                                    |> viewContributingFactorsForm language SetContributingFactorsSign
 
                             Just NextStepFollowUp ->
                                 nutritionFollowUpFormWithDefault model.followUpForm followUpValue
-                                    |> viewNutritionFollowUpForm language currentDate SetFollowUpOption
+                                    |> viewNutritionFollowUpForm language SetFollowUpOption
 
                             Nothing ->
                                 emptyNode

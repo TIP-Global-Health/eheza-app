@@ -37,16 +37,14 @@ import Measurement.Utils
         ( healthEducationFormWithDefault
         , muacFormWithDefault
         , ongoingTreatmentReviewFormWithDefault
-        , renderDatePart
         , sendToHCFormWithDefault
         , treatmentReviewInputsAndTasks
-        , viewAdministeredMedicationCustomLabel
         , vitalsFormWithDefault
         )
 import Measurement.View exposing (viewSendToHealthCenterForm, viewSendToHospitalForm)
 import Pages.AcuteIllness.Activity.Model exposing (AcuteFindingsForm, AcuteIllnessCoreExamForm, AcuteIllnessNutritionForm, ContactsTracingForm, ContactsTracingFormState(..), CovidTestingForm, DangerSignsData, FollowUpForm, LaboratoryData, MalariaTestingForm, MedicationDistributionForm, Model, Msg(..), NextStepsData, OngoingTreatmentData, PhysicalExamData, PriorTreatmentData, RecordContactDetailsData, RegisterContactData, ReviewDangerSignsForm, SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, TreatmentReviewForm, emptyRecordContactDetailsData, emptyRegisterContactData)
 import Pages.AcuteIllness.Activity.Types exposing (AILaboratoryTask(..), DangerSignsTask(..), NextStepsTask(..), OngoingTreatmentTask(..), PhysicalExamTask(..), PriorTreatmentTask(..), SymptomsTask(..))
-import Pages.AcuteIllness.Activity.Utils exposing (acuteFindingsFormInutsAndTasks, acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, call114FormWithDefault, contactsTracingFormWithDefault, coreExamFormInutsAndTasks, coreExamFormWithDefault, coughLessThan2WeeksConstant, covidTestingFormInputsAndTasks, covidTestingFormWithDefault, dangerSignsTasksCompletedFromTotal, expectLaboratoryTask, expectPhysicalExamTask, feverRecorded, followUpFormInutsAndTasks, followUpFormWithDefault, generateVitalsFormConfig, healthEducationFormInutsAndTasks, laboratoryTasks, laboratoryTasksCompletedFromTotal, malariaTestingFormInputsAndTasks, malariaTestingFormWithDefault, medicationDistributionFormInutsAndTasks, medicationDistributionFormWithDefault, nextStepsTasksCompletedFromTotal, noImprovementOnSubsequentVisit, nutritionFormInutsAndTasks, ongoingTreatmentTasksCompletedFromTotal, physicalExamTasks, physicalExamTasksCompletedFromTotal, resolveNextStepsTasks, resolvePreviousValue, reviewDangerSignsFormInutsAndTasks, reviewDangerSignsFormWithDefault, symptomMaxDuration, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsReliefFormInutsAndTasks, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, treatmentReviewFormInutsAndTasks, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, vomitingAtSymptoms)
+import Pages.AcuteIllness.Activity.Utils exposing (acuteFindingsFormInutsAndTasks, acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, contactsTracingFormWithDefault, coreExamFormInutsAndTasks, coreExamFormWithDefault, coughLessThan2WeeksConstant, covidTestingFormInputsAndTasks, covidTestingFormWithDefault, dangerSignsTasksCompletedFromTotal, expectLaboratoryTask, expectPhysicalExamTask, feverRecorded, followUpFormInutsAndTasks, followUpFormWithDefault, generateVitalsFormConfig, healthEducationFormInutsAndTasks, laboratoryTasks, laboratoryTasksCompletedFromTotal, malariaTestingFormInputsAndTasks, malariaTestingFormWithDefault, medicationDistributionFormInutsAndTasks, medicationDistributionFormWithDefault, nextStepsTasksCompletedFromTotal, noImprovementOnSubsequentVisit, nutritionFormInutsAndTasks, ongoingTreatmentTasksCompletedFromTotal, physicalExamTasks, physicalExamTasksCompletedFromTotal, resolveNextStepsTasks, resolvePreviousValue, reviewDangerSignsFormInutsAndTasks, reviewDangerSignsFormWithDefault, symptomMaxDuration, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsReliefFormInutsAndTasks, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, treatmentReviewFormInutsAndTasks, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, vomitingAtSymptoms)
 import Pages.AcuteIllness.Encounter.Model exposing (AssembledData)
 import Pages.AcuteIllness.Encounter.Utils exposing (generateAssembledData)
 import Pages.AcuteIllness.Encounter.View exposing (viewPersonDetailsWithAlert, warningPopup)
@@ -99,11 +97,10 @@ viewHeaderAndContent : Language -> NominalDate -> Site -> GeoInfo -> AcuteIllnes
 viewHeaderAndContent language currentDate site geoInfo id isChw activity db model assembled =
     div [ class "page-activity acute-illness" ]
         [ viewHeader language id activity <| Maybe.map Tuple.second assembled.diagnosis
-        , viewContent language currentDate site geoInfo id isChw activity db model assembled
+        , viewContent language currentDate site geoInfo isChw activity db model assembled
         , viewModal <|
             warningPopup language
                 currentDate
-                isChw
                 model.warningPopupState
                 SetWarningPopupState
                 assembled
@@ -146,10 +143,10 @@ viewHeader language id activity diagnosis =
         ]
 
 
-viewContent : Language -> NominalDate -> Site -> GeoInfo -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate site geoInfo id isChw activity db model assembled =
+viewContent : Language -> NominalDate -> Site -> GeoInfo -> Bool -> AcuteIllnessActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate site geoInfo isChw activity db model assembled =
     (viewPersonDetailsWithAlert language currentDate isChw assembled model.showAlertsDialog SetAlertsDialogState
-        :: viewActivity language currentDate site geoInfo id isChw activity db assembled model
+        :: viewActivity language currentDate site geoInfo isChw activity db assembled model
     )
         |> div [ class "ui unstackable items" ]
 
@@ -391,8 +388,8 @@ pertinentSymptomsPopup language isOpen closeMsg measurements =
         Nothing
 
 
-viewActivity : Language -> NominalDate -> Site -> GeoInfo -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> ModelIndexedDb -> AssembledData -> Model -> List (Html Msg)
-viewActivity language currentDate site geoInfo id isChw activity db assembled model =
+viewActivity : Language -> NominalDate -> Site -> GeoInfo -> Bool -> AcuteIllnessActivity -> ModelIndexedDb -> AssembledData -> Model -> List (Html Msg)
+viewActivity language currentDate site geoInfo isChw activity db assembled model =
     let
         personId =
             assembled.participant.person
@@ -402,29 +399,29 @@ viewActivity language currentDate site geoInfo id isChw activity db assembled mo
     in
     case activity of
         AcuteIllnessSymptoms ->
-            viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements ) model.symptomsData
+            viewAcuteIllnessSymptomsContent language ( personId, measurements ) model.symptomsData
 
         AcuteIllnessPhysicalExam ->
-            viewAcuteIllnessPhysicalExam language currentDate site id isChw assembled model.physicalExamData
+            viewAcuteIllnessPhysicalExam language currentDate site isChw assembled model.physicalExamData
 
         AcuteIllnessPriorTreatment ->
-            viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements ) model.priorTreatmentData
+            viewAcuteIllnessPriorTreatment language ( personId, measurements ) model.priorTreatmentData
 
         AcuteIllnessLaboratory ->
-            viewAcuteIllnessLaboratory language currentDate id isChw assembled model.laboratoryData
+            viewAcuteIllnessLaboratory language currentDate isChw assembled model.laboratoryData
 
         AcuteIllnessNextSteps ->
-            viewAcuteIllnessNextSteps language currentDate site geoInfo id isChw assembled db model.nextStepsData
+            viewAcuteIllnessNextSteps language currentDate site geoInfo isChw assembled db model.nextStepsData
 
         AcuteIllnessOngoingTreatment ->
-            viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurements ) model.ongoingTreatmentData
+            viewAcuteIllnessOngoingTreatment language ( personId, measurements ) model.ongoingTreatmentData
 
         AcuteIllnessDangerSigns ->
-            viewAcuteIllnessDangerSigns language currentDate id ( personId, measurements ) model.dangerSignsData
+            viewAcuteIllnessDangerSigns language ( personId, measurements ) model.dangerSignsData
 
 
-viewAcuteIllnessSymptomsContent : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> SymptomsData -> List (Html Msg)
-viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements ) data =
+viewAcuteIllnessSymptomsContent : Language -> ( PersonId, AcuteIllnessMeasurements ) -> SymptomsData -> List (Html Msg)
+viewAcuteIllnessSymptomsContent language ( personId, measurements ) data =
     let
         tasks =
             [ SymptomsGeneral, SymptomsRespiratory, SymptomsGI ]
@@ -481,17 +478,17 @@ viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements
                 Just SymptomsGeneral ->
                     getMeasurementValueFunc measurements.symptomsGeneral
                         |> symptomsGeneralFormWithDefault data.symptomsGeneralForm
-                        |> viewSymptomsGeneralForm language currentDate measurements
+                        |> viewSymptomsGeneralForm language
 
                 Just SymptomsRespiratory ->
                     getMeasurementValueFunc measurements.symptomsRespiratory
                         |> symptomsRespiratoryFormWithDefault data.symptomsRespiratoryForm
-                        |> viewSymptomsRespiratoryForm language currentDate measurements
+                        |> viewSymptomsRespiratoryForm language
 
                 Just SymptomsGI ->
                     getMeasurementValueFunc measurements.symptomsGI
                         |> symptomsGIFormWithDefault data.symptomsGIForm
-                        |> viewSymptomsGIForm language currentDate measurements
+                        |> viewSymptomsGIForm language
 
                 Nothing ->
                     emptyNode
@@ -539,8 +536,8 @@ viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements
     ]
 
 
-viewSymptomsGeneralForm : Language -> NominalDate -> AcuteIllnessMeasurements -> SymptomsGeneralForm -> Html Msg
-viewSymptomsGeneralForm language currentDate measurements form =
+viewSymptomsGeneralForm : Language -> SymptomsGeneralForm -> Html Msg
+viewSymptomsGeneralForm language form =
     viewCheckBoxValueInput language
         allSymptomsGeneralSigns
         form.signs
@@ -554,8 +551,8 @@ viewSymptomsGeneralForm language currentDate measurements form =
         |> div [ class "symptoms-form general" ]
 
 
-viewSymptomsRespiratoryForm : Language -> NominalDate -> AcuteIllnessMeasurements -> SymptomsRespiratoryForm -> Html Msg
-viewSymptomsRespiratoryForm language currentDate measurements form =
+viewSymptomsRespiratoryForm : Language -> SymptomsRespiratoryForm -> Html Msg
+viewSymptomsRespiratoryForm language form =
     let
         respiratorySignsWithoutCough =
             ( Tuple.first allSymptomsRespiratorySigns
@@ -631,8 +628,8 @@ viewCoughInputItem language data =
     ]
 
 
-viewSymptomsGIForm : Language -> NominalDate -> AcuteIllnessMeasurements -> SymptomsGIForm -> Html Msg
-viewSymptomsGIForm language currentDate measurements form =
+viewSymptomsGIForm : Language -> SymptomsGIForm -> Html Msg
+viewSymptomsGIForm language form =
     let
         symptoms =
             viewCheckBoxValueInput language
@@ -669,12 +666,11 @@ viewAcuteIllnessPhysicalExam :
     Language
     -> NominalDate
     -> Site
-    -> AcuteIllnessEncounterId
     -> Bool
     -> AssembledData
     -> PhysicalExamData
     -> List (Html Msg)
-viewAcuteIllnessPhysicalExam language currentDate site id isChw assembled data =
+viewAcuteIllnessPhysicalExam language currentDate site isChw assembled data =
     let
         person =
             assembled.person
@@ -739,7 +735,7 @@ viewAcuteIllnessPhysicalExam language currentDate site id isChw assembled data =
         tasksCompletedFromTotalDict =
             List.map
                 (\task ->
-                    ( task, physicalExamTasksCompletedFromTotal currentDate isChw person assembled data task )
+                    ( task, physicalExamTasksCompletedFromTotal currentDate isChw assembled data task )
                 )
                 tasks
                 |> Dict.fromList
@@ -762,7 +758,7 @@ viewAcuteIllnessPhysicalExam language currentDate site id isChw assembled data =
                 Just PhysicalExamCoreExam ->
                     getMeasurementValueFunc measurements.coreExam
                         |> coreExamFormWithDefault data.coreExamForm
-                        |> viewCoreExamForm language currentDate
+                        |> viewCoreExamForm language
                         |> List.singleton
 
                 Just PhysicalExamMuac ->
@@ -772,18 +768,18 @@ viewAcuteIllnessPhysicalExam language currentDate site id isChw assembled data =
                     in
                     getMeasurementValueFunc measurements.muac
                         |> muacFormWithDefault data.muacForm
-                        |> Measurement.View.viewMuacForm language currentDate site assembled.person previousValue SetMuac
+                        |> Measurement.View.viewMuacForm language site previousValue SetMuac
 
                 Just PhysicalExamAcuteFindings ->
                     getMeasurementValueFunc measurements.acuteFindings
                         |> acuteFindingsFormWithDefault data.acuteFindingsForm
-                        |> viewAcuteFindingsForm language currentDate
+                        |> viewAcuteFindingsForm language
                         |> List.singleton
 
                 Just PhysicalExamNutrition ->
                     getMeasurementValueFunc measurements.nutrition
                         |> Pages.AcuteIllness.Activity.Utils.nutritionFormWithDefault data.nutritionForm
-                        |> viewNutritionForm language currentDate
+                        |> viewNutritionForm language
                         |> List.singleton
 
                 Nothing ->
@@ -848,31 +844,31 @@ viewVitalsForm language currentDate isChw assembled form =
     Measurement.View.viewVitalsForm language currentDate formConfig form
 
 
-viewCoreExamForm : Language -> NominalDate -> AcuteIllnessCoreExamForm -> Html Msg
-viewCoreExamForm language currentDate form =
+viewCoreExamForm : Language -> AcuteIllnessCoreExamForm -> Html Msg
+viewCoreExamForm language form =
     let
         ( inputs, _ ) =
-            coreExamFormInutsAndTasks language currentDate form
+            coreExamFormInutsAndTasks language form
     in
     div [ class "ui form physical-exam core-exam" ]
         inputs
 
 
-viewAcuteFindingsForm : Language -> NominalDate -> AcuteFindingsForm -> Html Msg
-viewAcuteFindingsForm language currentDate form =
+viewAcuteFindingsForm : Language -> AcuteFindingsForm -> Html Msg
+viewAcuteFindingsForm language form =
     let
         ( inputs, _ ) =
-            acuteFindingsFormInutsAndTasks language currentDate form
+            acuteFindingsFormInutsAndTasks language form
     in
     div [ class "ui form physical-exam acute-findings" ]
         inputs
 
 
-viewNutritionForm : Language -> NominalDate -> AcuteIllnessNutritionForm -> Html Msg
-viewNutritionForm language currentDate form =
+viewNutritionForm : Language -> AcuteIllnessNutritionForm -> Html Msg
+viewNutritionForm language form =
     let
         ( inputs, _ ) =
-            nutritionFormInutsAndTasks language currentDate form
+            nutritionFormInutsAndTasks language form
     in
     div [ class "ui form physical-exam nutrition" ]
         inputs
@@ -881,12 +877,11 @@ viewNutritionForm language currentDate form =
 viewAcuteIllnessLaboratory :
     Language
     -> NominalDate
-    -> AcuteIllnessEncounterId
     -> Bool
     -> AssembledData
     -> LaboratoryData
     -> List (Html Msg)
-viewAcuteIllnessLaboratory language currentDate id isChw assembled data =
+viewAcuteIllnessLaboratory language currentDate isChw assembled data =
     let
         tasks =
             List.filter (expectLaboratoryTask currentDate isChw assembled) laboratoryTasks
@@ -1036,8 +1031,8 @@ viewCovidTestingForm language currentDate person form =
         inputs
 
 
-viewAcuteIllnessPriorTreatment : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> PriorTreatmentData -> List (Html Msg)
-viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements ) data =
+viewAcuteIllnessPriorTreatment : Language -> ( PersonId, AcuteIllnessMeasurements ) -> PriorTreatmentData -> List (Html Msg)
+viewAcuteIllnessPriorTreatment language ( personId, measurements ) data =
     let
         tasks =
             [ TreatmentReview ]
@@ -1080,7 +1075,7 @@ viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements 
                         tasksCompletedFromTotalDict =
                             List.map
                                 (\task_ ->
-                                    ( task_, treatmentTasksCompletedFromTotal currentDate measurements data task_ )
+                                    ( task_, treatmentTasksCompletedFromTotal measurements data task_ )
                                 )
                                 tasks
                                 |> Dict.fromList
@@ -1096,7 +1091,7 @@ viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements 
                     measurements.treatmentReview
                         |> getMeasurementValueFunc
                         |> treatmentReviewFormWithDefault data.treatmentReviewForm
-                        |> viewTreatmentReviewForm language currentDate
+                        |> viewTreatmentReviewForm language
 
                 _ ->
                     emptyNode
@@ -1135,18 +1130,18 @@ viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements 
     ]
 
 
-viewTreatmentReviewForm : Language -> NominalDate -> TreatmentReviewForm -> Html Msg
-viewTreatmentReviewForm language currentDate form =
+viewTreatmentReviewForm : Language -> TreatmentReviewForm -> Html Msg
+viewTreatmentReviewForm language form =
     let
         ( inputs, _ ) =
-            treatmentReviewFormInutsAndTasks language currentDate form
+            treatmentReviewFormInutsAndTasks language form
     in
     div [ class "ui form treatment-review" ]
         inputs
 
 
-viewAcuteIllnessNextSteps : Language -> NominalDate -> Site -> GeoInfo -> AcuteIllnessEncounterId -> Bool -> AssembledData -> ModelIndexedDb -> NextStepsData -> List (Html Msg)
-viewAcuteIllnessNextSteps language currentDate site geoInfo id isChw assembled db data =
+viewAcuteIllnessNextSteps : Language -> NominalDate -> Site -> GeoInfo -> Bool -> AssembledData -> ModelIndexedDb -> NextStepsData -> List (Html Msg)
+viewAcuteIllnessNextSteps language currentDate site geoInfo isChw assembled db data =
     let
         person =
             assembled.person
@@ -1224,7 +1219,6 @@ viewAcuteIllnessNextSteps language currentDate site geoInfo id isChw assembled d
                     ( task
                     , nextStepsTasksCompletedFromTotal currentDate
                         isChw
-                        assembled.initialEncounter
                         person
                         diagnosis
                         measurements
@@ -1238,10 +1232,6 @@ viewAcuteIllnessNextSteps language currentDate site geoInfo id isChw assembled d
         ( tasksCompleted, totalTasks ) =
             Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
-
-        call114Form =
-            getMeasurementValueFunc measurements.call114
-                |> call114FormWithDefault data.call114Form
 
         viewForm =
             case activeTask of
@@ -1271,17 +1261,17 @@ viewAcuteIllnessNextSteps language currentDate site geoInfo id isChw assembled d
                 Just NextStepsHealthEducation ->
                     getMeasurementValueFunc measurements.healthEducation
                         |> healthEducationFormWithDefault data.healthEducationForm
-                        |> viewHealthEducationForm language currentDate diagnosis
+                        |> viewHealthEducationForm language diagnosis
 
                 Just NextStepsSymptomsReliefGuidance ->
                     getMeasurementValueFunc measurements.healthEducation
                         |> healthEducationFormWithDefault data.healthEducationForm
-                        |> viewSymptomsReliefForm language currentDate
+                        |> viewSymptomsReliefForm language
 
                 Just NextStepsFollowUp ->
                     getMeasurementValueFunc measurements.followUp
                         |> followUpFormWithDefault data.followUpForm
-                        |> viewFollowUpForm language currentDate isChw
+                        |> viewFollowUpForm language isChw
 
                 Just NextStepsContactTracing ->
                     getMeasurementValueFunc measurements.contactsTracing
@@ -1441,8 +1431,8 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
         inputs
 
 
-viewAcuteIllnessOngoingTreatment : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> OngoingTreatmentData -> List (Html Msg)
-viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurements ) data =
+viewAcuteIllnessOngoingTreatment : Language -> ( PersonId, AcuteIllnessMeasurements ) -> OngoingTreatmentData -> List (Html Msg)
+viewAcuteIllnessOngoingTreatment language ( personId, measurements ) data =
     let
         tasks =
             [ OngoingTreatmentReview ]
@@ -1485,7 +1475,7 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
                         tasksCompletedFromTotalDict =
                             List.map
                                 (\task_ ->
-                                    ( task_, ongoingTreatmentTasksCompletedFromTotal currentDate measurements data task )
+                                    ( task_, ongoingTreatmentTasksCompletedFromTotal measurements data task )
                                 )
                                 tasks
                                 |> Dict.fromList
@@ -1500,7 +1490,7 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
                 Just OngoingTreatmentReview ->
                     getMeasurementValueFunc measurements.treatmentOngoing
                         |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
-                        |> viewOngoingTreatmentReviewForm language currentDate
+                        |> viewOngoingTreatmentReviewForm language
 
                 _ ->
                     emptyNode
@@ -1539,12 +1529,11 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
     ]
 
 
-viewOngoingTreatmentReviewForm : Language -> NominalDate -> OngoingTreatmentReviewForm -> Html Msg
-viewOngoingTreatmentReviewForm language currentDate form =
+viewOngoingTreatmentReviewForm : Language -> OngoingTreatmentReviewForm -> Html Msg
+viewOngoingTreatmentReviewForm language form =
     let
         ( inputs, _ ) =
             treatmentReviewInputsAndTasks language
-                currentDate
                 SetOngoingTreatmentReviewBoolInput
                 SetReasonForNotTaking
                 SetTotalMissedDoses
@@ -1555,8 +1544,8 @@ viewOngoingTreatmentReviewForm language currentDate form =
         inputs
 
 
-viewAcuteIllnessDangerSigns : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> DangerSignsData -> List (Html Msg)
-viewAcuteIllnessDangerSigns language currentDate id ( personId, measurements ) data =
+viewAcuteIllnessDangerSigns : Language -> ( PersonId, AcuteIllnessMeasurements ) -> DangerSignsData -> List (Html Msg)
+viewAcuteIllnessDangerSigns language ( personId, measurements ) data =
     let
         tasks =
             [ ReviewDangerSigns ]
@@ -1599,7 +1588,7 @@ viewAcuteIllnessDangerSigns language currentDate id ( personId, measurements ) d
                         tasksCompletedFromTotalDict =
                             List.map
                                 (\task_ ->
-                                    ( task_, dangerSignsTasksCompletedFromTotal currentDate measurements data task_ )
+                                    ( task_, dangerSignsTasksCompletedFromTotal measurements data task_ )
                                 )
                                 tasks
                                 |> Dict.fromList
@@ -1614,7 +1603,7 @@ viewAcuteIllnessDangerSigns language currentDate id ( personId, measurements ) d
                 Just ReviewDangerSigns ->
                     getMeasurementValueFunc measurements.dangerSigns
                         |> reviewDangerSignsFormWithDefault data.reviewDangerSignsForm
-                        |> viewReviewDangerSignsForm language currentDate
+                        |> viewReviewDangerSignsForm language
 
                 _ ->
                     emptyNode
@@ -1653,41 +1642,41 @@ viewAcuteIllnessDangerSigns language currentDate id ( personId, measurements ) d
     ]
 
 
-viewReviewDangerSignsForm : Language -> NominalDate -> ReviewDangerSignsForm -> Html Msg
-viewReviewDangerSignsForm language currentDate form =
+viewReviewDangerSignsForm : Language -> ReviewDangerSignsForm -> Html Msg
+viewReviewDangerSignsForm language form =
     let
         ( inputs, _ ) =
-            reviewDangerSignsFormInutsAndTasks language currentDate form
+            reviewDangerSignsFormInutsAndTasks language form
     in
     div [ class "ui form danger-signs" ]
         inputs
 
 
-viewHealthEducationForm : Language -> NominalDate -> Maybe AcuteIllnessDiagnosis -> HealthEducationForm -> Html Msg
-viewHealthEducationForm language currentDate maybeDiagnosis form =
+viewHealthEducationForm : Language -> Maybe AcuteIllnessDiagnosis -> HealthEducationForm -> Html Msg
+viewHealthEducationForm language maybeDiagnosis form =
     let
         ( inputs, _ ) =
-            healthEducationFormInutsAndTasks language currentDate maybeDiagnosis form
+            healthEducationFormInutsAndTasks language maybeDiagnosis form
     in
     div [ class "ui form health-education" ]
         inputs
 
 
-viewSymptomsReliefForm : Language -> NominalDate -> HealthEducationForm -> Html Msg
-viewSymptomsReliefForm language currentDate form =
+viewSymptomsReliefForm : Language -> HealthEducationForm -> Html Msg
+viewSymptomsReliefForm language form =
     let
         ( inputs, _ ) =
-            symptomsReliefFormInutsAndTasks language currentDate form
+            symptomsReliefFormInutsAndTasks language form
     in
     div [ class "ui form symptoms-relief" ]
         inputs
 
 
-viewFollowUpForm : Language -> NominalDate -> Bool -> FollowUpForm -> Html Msg
-viewFollowUpForm language currentDate isChw form =
+viewFollowUpForm : Language -> Bool -> FollowUpForm -> Html Msg
+viewFollowUpForm language isChw form =
     let
         ( inputs, _ ) =
-            followUpFormInutsAndTasks language currentDate isChw form
+            followUpFormInutsAndTasks language isChw form
     in
     div [ class "ui form follow-up" ]
         inputs
@@ -1713,7 +1702,7 @@ viewContactsTracingForm language currentDate site geoInfo db contactsTracingFini
                     viewContactsTracingFormRecordContactDetails language currentDate personId db data
 
                 ContactsTracingFormRegisterContact data ->
-                    viewCreateContactForm language currentDate site geoInfo db data
+                    viewCreateContactForm language site geoInfo db data
     in
     div [ class "ui form contacts-tracing" ]
         content
@@ -1873,7 +1862,6 @@ viewContactsTracingFormSearchParticipants language currentDate site db existingC
         viewSearchedParticipant personId person =
             viewContactTracingParticipant language
                 currentDate
-                personId
                 person
                 False
                 (ContactsTracingFormRecordContactDetails personId emptyRecordContactDetailsData)
@@ -1986,7 +1974,6 @@ viewContactsTracingFormRecordContactDetails language currentDate personId db dat
                 , div [ class "ui items" ] <|
                     [ viewContactTracingParticipant language
                         currentDate
-                        personId
                         person
                         True
                         (ContactsTracingFormSearchParticipants Components.PatientsSearchForm.Model.emptyModel)
@@ -2014,8 +2001,8 @@ viewContactsTracingFormRecordContactDetails language currentDate personId db dat
         |> Maybe.withDefault []
 
 
-viewContactTracingParticipant : Language -> NominalDate -> PersonId -> Person -> Bool -> ContactsTracingFormState -> Html Msg
-viewContactTracingParticipant language currentDate personId person checked newFormState =
+viewContactTracingParticipant : Language -> NominalDate -> Person -> Bool -> ContactsTracingFormState -> Html Msg
+viewContactTracingParticipant language currentDate person checked newFormState =
     let
         viewAction =
             let
@@ -2070,8 +2057,8 @@ viewContactTracingParticipant language currentDate personId person checked newFo
         ]
 
 
-viewCreateContactForm : Language -> NominalDate -> Site -> GeoInfo -> ModelIndexedDb -> RegisterContactData -> List (Html Msg)
-viewCreateContactForm language currentDate site geoInfo db data =
+viewCreateContactForm : Language -> Site -> GeoInfo -> ModelIndexedDb -> RegisterContactData -> List (Html Msg)
+viewCreateContactForm language site geoInfo db data =
     let
         request =
             db.postPerson
@@ -2182,7 +2169,7 @@ viewCreateContactForm language currentDate site geoInfo db data =
                     isFormFieldSet district
             in
             Pages.Person.View.viewSelectInput language
-                (resolveGeoSructureLabelLevel1 site)
+                resolveGeoSructureLabelLevel1
                 options
                 Backend.Person.Form.province
                 "ten"

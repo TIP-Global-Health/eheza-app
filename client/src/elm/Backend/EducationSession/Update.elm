@@ -6,20 +6,18 @@ import Backend.EducationSession.Model exposing (EducationSession, Model, Msg(..)
 import Backend.Endpoints exposing (educationSessionEndpoint)
 import Backend.Entities exposing (..)
 import Backend.Utils exposing (sw)
-import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (unwrap)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (toCmd, withoutDecoder)
 
 
 update :
-    NominalDate
-    -> EducationSessionId
+    EducationSessionId
     -> Maybe EducationSession
     -> Msg
     -> Model
     -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate sessionId maybeSession msg model =
+update sessionId maybeSession msg model =
     case msg of
         Update updateFunc ->
             unwrap ( model, Cmd.none, [] )

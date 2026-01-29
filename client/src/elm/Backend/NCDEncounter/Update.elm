@@ -24,10 +24,10 @@ update :
 update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
     case msg of
         CloseNCDEncounter ->
-            updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | endDate = Just currentDate }) model
+            updateEncounter encounterId maybeEncounter (\encounter -> { encounter | endDate = Just currentDate }) model
 
         SetNCDDiagnoses diagnoses ->
-            updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | diagnoses = diagnoses }) model
+            updateEncounter encounterId maybeEncounter (\encounter -> { encounter | diagnoses = diagnoses }) model
 
         HandleUpdatedNCDEncounter data ->
             ( { model | updateNCDEncounter = data }
@@ -301,13 +301,12 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
 
 
 updateEncounter :
-    NominalDate
-    -> NCDEncounterId
+    NCDEncounterId
     -> Maybe NCDEncounter
     -> (NCDEncounter -> NCDEncounter)
     -> Model
     -> ( Model, Cmd Msg, List App.Model.Msg )
-updateEncounter currentDate encounterId maybeEncounter updateFunc model =
+updateEncounter encounterId maybeEncounter updateFunc model =
     maybeEncounter
         |> unwrap ( model, Cmd.none, [] )
             (\encounter ->

@@ -1,4 +1,4 @@
-module App.Utils exposing (focusOnCalendarMsg, getLoggedInData, handleErrors, sequenceSubModelReturn, triggerRollbarOnFailure, updateSubModel)
+module App.Utils exposing (focusOnCalendarMsg, getLoggedInData, sequenceSubModelReturn, triggerRollbarOnFailure, updateSubModel)
 
 import App.Model exposing (LoggedInModel, Model, Msg(..), RollbarErrorSource(..), SubModelReturn)
 import Backend.Entities exposing (HealthCenterId)

@@ -22,7 +22,7 @@ update :
 update currentDate participantId maybeParticipant msg model =
     case msg of
         ClosePrenatalSession concludedDate outcome deliveryLocation ->
-            updateIndividualEncounterParticipant currentDate
+            updateIndividualEncounterParticipant
                 participantId
                 maybeParticipant
                 (\participant ->
@@ -36,14 +36,14 @@ update currentDate participantId maybeParticipant msg model =
                 model
 
         CloseAcuteIllnessSession outcome ->
-            updateIndividualEncounterParticipant currentDate
+            updateIndividualEncounterParticipant
                 participantId
                 maybeParticipant
                 (\participant -> { participant | endDate = Just currentDate, outcome = Just (AcuteIllness outcome) })
                 model
 
         CloseTuberculosisSession outcome ->
-            updateIndividualEncounterParticipant currentDate
+            updateIndividualEncounterParticipant
                 participantId
                 maybeParticipant
                 (\participant ->
@@ -56,7 +56,7 @@ update currentDate participantId maybeParticipant msg model =
                 model
 
         CloseHIVSession outcome ->
-            updateIndividualEncounterParticipant currentDate
+            updateIndividualEncounterParticipant
                 participantId
                 maybeParticipant
                 (\participant ->
@@ -69,14 +69,14 @@ update currentDate participantId maybeParticipant msg model =
                 model
 
         SetEddDate eddDate ->
-            updateIndividualEncounterParticipant currentDate
+            updateIndividualEncounterParticipant
                 participantId
                 maybeParticipant
                 (\participant -> { participant | eddDate = Just eddDate })
                 model
 
         SetNewborn personId ->
-            updateIndividualEncounterParticipant currentDate
+            updateIndividualEncounterParticipant
                 participantId
                 maybeParticipant
                 (\participant -> { participant | newborn = Just personId })
@@ -90,13 +90,12 @@ update currentDate participantId maybeParticipant msg model =
 
 
 updateIndividualEncounterParticipant :
-    NominalDate
-    -> IndividualEncounterParticipantId
+    IndividualEncounterParticipantId
     -> Maybe IndividualEncounterParticipant
     -> (IndividualEncounterParticipant -> IndividualEncounterParticipant)
     -> Model
     -> ( Model, Cmd Msg, List App.Model.Msg )
-updateIndividualEncounterParticipant currentDate individualEncounterParticipantId maybeIndividualEncounterParticipant updateFunc model =
+updateIndividualEncounterParticipant individualEncounterParticipantId maybeIndividualEncounterParticipant updateFunc model =
     maybeIndividualEncounterParticipant
         |> unwrap ( model, Cmd.none, [] )
             (\individualEncounterParticipant ->

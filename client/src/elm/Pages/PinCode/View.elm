@@ -329,7 +329,7 @@ viewLoggedInContent language currentTime features nurseId nurse ( healthCenterId
             -- reminder is given a priority.
             Maybe.Extra.or
                 (resilienceReminderDialog language currentTime currentDate nurseId nurse)
-                (resilienceNotificationDialog language currentTime currentDate nurseId nurse db model)
+                (resilienceNotificationDialog language currentTime currentDate nurse model)
         ]
 
     else
@@ -428,12 +428,10 @@ resilienceNotificationDialog :
     Language
     -> Time.Posix
     -> NominalDate
-    -> NurseId
     -> Nurse
-    -> ModelIndexedDb
     -> Model
     -> Maybe (Html Msg)
-resilienceNotificationDialog language currentTime currentDate nurseId nurse db model =
+resilienceNotificationDialog language currentTime currentDate nurse model =
     let
         notificationTimeReached =
             Maybe.map

@@ -44,11 +44,11 @@ view language currentDate site id isChw db model =
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate site id isChw model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate site isChw model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> Site -> PrenatalEncounterId -> Bool -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate site id isChw model assembled =
+viewHeaderAndContent : Language -> NominalDate -> Site -> Bool -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate site isChw model assembled =
     let
         header =
             viewHeader language isChw assembled
@@ -204,7 +204,7 @@ viewMotherDetails language currentDate isChw assembled alertsDialogData =
 
                             recurringHighSeverityAlertsData =
                                 allRecurringHighSeverityAlerts
-                                    |> List.map (generateRecurringHighSeverityAlertData language currentDate isChw assembled)
+                                    |> List.map (generateRecurringHighSeverityAlertData language isChw assembled)
                                     |> List.filter (List.isEmpty >> not)
 
                             alertSign =

@@ -56,10 +56,10 @@ view language currentDate id db model =
         personDetails =
             Maybe.map (viewPersonDetailsExtended language currentDate)
                 tracePerson
-                |> Maybe.withDefault (viewContactDetails language currentDate traceContact)
+                |> Maybe.withDefault (viewContactDetails language traceContact)
 
         traceContentStepForm =
-            Maybe.map (viewTraceContactStep language currentDate model)
+            Maybe.map (viewTraceContactStep language model)
                 traceContact
                 |> Maybe.withDefault []
 
@@ -90,8 +90,8 @@ viewHeader language =
         ]
 
 
-viewContactDetails : Language -> NominalDate -> Maybe ContactTraceItem -> List (Html any)
-viewContactDetails language currentDate traceContact =
+viewContactDetails : Language -> Maybe ContactTraceItem -> List (Html any)
+viewContactDetails language traceContact =
     Maybe.map
         (\contact ->
             let
@@ -127,18 +127,18 @@ thumbnailDimensions =
     }
 
 
-viewTraceContactStep : Language -> NominalDate -> Model -> ContactTraceItem -> List (Html Msg)
-viewTraceContactStep language currentDate model contact =
+viewTraceContactStep : Language -> Model -> ContactTraceItem -> List (Html Msg)
+viewTraceContactStep language model contact =
     case model.step of
         StepInitiateContact data ->
-            viewStepInitiateContact language currentDate contact data
+            viewStepInitiateContact language contact data
 
         StepRecordSymptoms data ->
-            viewStepRecordSymptoms language currentDate contact data
+            viewStepRecordSymptoms language contact data
 
 
-viewStepInitiateContact : Language -> NominalDate -> ContactTraceItem -> StepInitiateContactData -> List (Html Msg)
-viewStepInitiateContact language currentDate contact data =
+viewStepInitiateContact : Language -> ContactTraceItem -> StepInitiateContactData -> List (Html Msg)
+viewStepInitiateContact language contact data =
     let
         instructions =
             p [ class "contact-details" ] <|
@@ -207,8 +207,8 @@ viewStepInitiateContact language currentDate contact data =
     ]
 
 
-viewStepRecordSymptoms : Language -> NominalDate -> ContactTraceItem -> StepRecordSymptomsData -> List (Html Msg)
-viewStepRecordSymptoms language currentDate contact data =
+viewStepRecordSymptoms : Language -> ContactTraceItem -> StepRecordSymptomsData -> List (Html Msg)
+viewStepRecordSymptoms language contact data =
     let
         tasks =
             [ SymptomsGeneral, SymptomsRespiratory, SymptomsGI ]
@@ -264,13 +264,13 @@ viewStepRecordSymptoms language currentDate contact data =
         viewForm =
             case activeTask of
                 Just SymptomsGeneral ->
-                    viewSymptomsGeneralForm language currentDate data.symptomsGeneralForm
+                    viewSymptomsGeneralForm language data.symptomsGeneralForm
 
                 Just SymptomsRespiratory ->
-                    viewSymptomsRespiratoryForm language currentDate data.symptomsRespiratoryForm
+                    viewSymptomsRespiratoryForm language data.symptomsRespiratoryForm
 
                 Just SymptomsGI ->
-                    viewSymptomsGIForm language currentDate data.symptomsGIForm
+                    viewSymptomsGIForm language data.symptomsGIForm
 
                 Nothing ->
                     emptyNode
@@ -341,8 +341,8 @@ symptomsTasksCompletedFromTotal data task =
             )
 
 
-viewSymptomsGeneralForm : Language -> NominalDate -> SymptomsGeneralForm -> Html Msg
-viewSymptomsGeneralForm language currentDate form =
+viewSymptomsGeneralForm : Language -> SymptomsGeneralForm -> Html Msg
+viewSymptomsGeneralForm language form =
     let
         signs =
             Tuple.first allSymptomsGeneralSigns ++ [ Tuple.second allSymptomsGeneralSigns ]
@@ -360,8 +360,8 @@ viewSymptomsGeneralForm language currentDate form =
         ]
 
 
-viewSymptomsRespiratoryForm : Language -> NominalDate -> SymptomsRespiratoryForm -> Html Msg
-viewSymptomsRespiratoryForm language currentDate form =
+viewSymptomsRespiratoryForm : Language -> SymptomsRespiratoryForm -> Html Msg
+viewSymptomsRespiratoryForm language form =
     let
         signs =
             Tuple.first allSymptomsRespiratorySigns ++ [ Tuple.second allSymptomsRespiratorySigns ]
@@ -379,8 +379,8 @@ viewSymptomsRespiratoryForm language currentDate form =
         ]
 
 
-viewSymptomsGIForm : Language -> NominalDate -> SymptomsGIForm -> Html Msg
-viewSymptomsGIForm language currentDate form =
+viewSymptomsGIForm : Language -> SymptomsGIForm -> Html Msg
+viewSymptomsGIForm language form =
     let
         signs =
             Tuple.first allSymptomsGISigns ++ [ Tuple.second allSymptomsGISigns ]

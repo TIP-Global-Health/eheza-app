@@ -1,4 +1,4 @@
-module Measurement.View exposing (FloatFormConfig, MotherMeasurementData, ancVisitsInpustAndTasks, birthWeightInputsAndTasks, contributingFactorsFormInutsAndTasks, fiveFoodGroupsHelperDialog, followUpFormInputsAndTasks, healthEducationFormInutsAndTasks, heightFormAndTasks, heightFormConfig, mealsAtRecommendedTimesHelperDialog, muacColor, muacFormConfig, muacFormInputsAndTasks, ncdaFormInputsAndTasks, nutritionCaringInputsAndTasks, nutritionFeedingInputsAndTasks, nutritionFoodSecurityInputsAndTasks, nutritionFormInputsAndTasks, nutritionHygieneInputsAndTasks, referToProgramFormInputsAndTasks, saveButton, sendToFacilityInputsAndTasks, showNCDAQuestionsByNewbornExam, viewActionTakenLabel, viewChild, viewChildFbf, viewColorAlertIndication, viewContributingFactors, viewContributingFactorsForm, viewCorePhysicalExamForm, viewCounselingTopics, viewFamilyPlanning, viewFamilyPlanningForm, viewFamilyPlanningInput, viewFamilyPlanningSelector, viewFamilyPlanningSelectorItem, viewFbfForm, viewFloatDiff, viewFloatForm, viewFollowUp, viewFollowUpForm, viewHealthEducation, viewHealthEducationForm, viewHealthEducationLabel, viewHeight, viewHeightForm, viewLactation, viewMeasurementFloatDiff, viewMedicationAdministrationForm, viewMother, viewMotherFbf, viewMuac, viewMuacForm, viewMultipleTreatmentWithDosage, viewNCDA, viewNCDAContent, viewNCDAHelperDialog, viewNutritionFollowUpForm, viewNutritionForm, viewNutritionSigns, viewNutritionSignsSelector, viewNutritionSignsSelectorItem, viewParticipantConsent, viewPhoto, viewPreviousMeasurement, viewReferToProgramForm, viewSendToFacilityForm, viewSendToHC, viewSendToHealthCenterForm, viewSendToHospitalForm, viewTreatmentOptionWithDosage, viewTreatmentWithDosage, viewVitalsForm, viewWeight, viewWeightForm, vitalsFormInputsAndTasks, weightFormAndTasks, weightFormConfig, zScoreForHeightOrLength)
+module Measurement.View exposing (FloatFormConfig, birthWeightInputsAndTasks, contributingFactorsFormInutsAndTasks, followUpFormInputsAndTasks, healthEducationFormInutsAndTasks, heightFormAndTasks, muacFormInputsAndTasks, nutritionCaringInputsAndTasks, nutritionFeedingInputsAndTasks, nutritionFoodSecurityInputsAndTasks, nutritionFormInputsAndTasks, nutritionHygieneInputsAndTasks, referToProgramFormInputsAndTasks, sendToFacilityInputsAndTasks, viewActionTakenLabel, viewChild, viewColorAlertIndication, viewContributingFactorsForm, viewCorePhysicalExamForm, viewFamilyPlanningForm, viewFamilyPlanningInput, viewFollowUpForm, viewHealthEducationForm, viewHeightForm, viewMeasurementFloatDiff, viewMedicationAdministrationForm, viewMother, viewMuacForm, viewMultipleTreatmentWithDosage, viewNCDAContent, viewNutritionFollowUpForm, viewNutritionForm, viewReferToProgramForm, viewSendToHealthCenterForm, viewSendToHospitalForm, viewTreatmentOptionWithDosage, viewVitalsForm, viewWeightForm, vitalsFormInputsAndTasks, weightFormAndTasks)
 
 {-| This module provides a form for entering measurements.
 -}
@@ -7,7 +7,6 @@ import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(
 import Activity.Utils exposing (generateNutritionAssessment)
 import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (ClinicType(..))
-import Backend.Counseling.Model exposing (CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString)
 import Backend.Measurement.Model exposing (..)
@@ -69,14 +68,13 @@ import Pages.Utils
         , viewRedAlertForSelect
         , viewTasksCount
         )
-import RemoteData exposing (RemoteData(..), WebData)
+import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Round
 import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language, TranslationId, translate)
 import Translate.Utils exposing (selectLanguage)
 import Utils.Html exposing (viewModal)
-import Utils.NominalDate exposing (renderDate)
 import ZScore.Model exposing (Centimetres(..), Days(..), Kilograms(..), ZScore)
 import ZScore.Utils exposing (diffDays, viewZScore, zScoreLengthHeightForAge, zScoreWeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
 
@@ -101,7 +99,7 @@ viewChild :
 viewChild language currentDate site isChw ( childId, child ) activity measurements zscores session db model previousValuesSet =
     case activity of
         ChildFbf ->
-            viewChildFbf language currentDate child session.offlineSession.session.clinicType (mapMeasurementData .fbf measurements) model.fbfForm
+            viewChildFbf language session.offlineSession.session.clinicType (mapMeasurementData .fbf measurements) model.fbfForm
 
         ChildPicture ->
             viewPhoto language (mapMeasurementData .photo measurements) model.photo
@@ -113,7 +111,7 @@ viewChild language currentDate site isChw ( childId, child ) activity measuremen
             viewMuac site language currentDate isChw child (mapMeasurementData .muac measurements) previousValuesSet.muac zscores model
 
         NutritionSigns ->
-            viewNutritionSigns language currentDate zscores childId (mapMeasurementData .nutrition measurements) session.offlineSession db model.nutrition
+            viewNutritionSigns language (mapMeasurementData .nutrition measurements) model.nutrition
 
         -- Counseling ->
         --    viewCounselingSession language (mapMeasurementData .counselingSession measurements) session model.counseling
@@ -121,19 +119,19 @@ viewChild language currentDate site isChw ( childId, child ) activity measuremen
             viewWeight language currentDate isChw child (mapMeasurementData .weight measurements) previousValuesSet.weight zscores model
 
         ContributingFactors ->
-            viewContributingFactors language currentDate (mapMeasurementData .contributingFactors measurements) model.contributingFactorsForm
+            viewContributingFactors language (mapMeasurementData .contributingFactors measurements) model.contributingFactorsForm
 
         FollowUp ->
             viewFollowUp language currentDate zscores childId (mapMeasurementData .followUp measurements) session.offlineSession db model.followUpForm
 
         Activity.Model.HealthEducation ->
-            viewHealthEducation language currentDate (mapMeasurementData .healthEducation measurements) model.healthEducationForm
+            viewHealthEducation language (mapMeasurementData .healthEducation measurements) model.healthEducationForm
 
         Activity.Model.SendToHC ->
             viewSendToHC language currentDate (mapMeasurementData .sendToHC measurements) model.sendToHCForm
 
         Activity.Model.NCDA ->
-            viewNCDA language currentDate zscores site childId child (mapMeasurementData .ncda measurements) model.ncdaData db
+            viewNCDA language currentDate site childId child (mapMeasurementData .ncda measurements) model.ncdaData db
 
 
 {-| Some configuration for the `viewFloatForm` function, which handles several
@@ -438,7 +436,7 @@ viewFloatForm config language currentDate isChw child measurements previousValue
             , showMaybe renderedZScoreForHeight
             ]
         , div [ class "actions" ] <|
-            saveButton language saveMsg measurements Nothing
+            saveButton language saveMsg measurements
         ]
 
 
@@ -580,7 +578,6 @@ viewPhoto language measurement photo =
                 saveButton language
                     (Maybe.map (SendOutMsgChild << SavePhoto photoId) photo)
                     measurement
-                    (Just "column")
         ]
 
 
@@ -590,8 +587,8 @@ Button will also take care of preventing double submission,
 and showing success and error indications.
 
 -}
-saveButton : Language -> Maybe msg -> MeasurementData (Maybe a) -> Maybe String -> List (Html msg)
-saveButton language msg measurement maybeDivClass =
+saveButton : Language -> Maybe msg -> MeasurementData (Maybe a) -> List (Html msg)
+saveButton language msg measurement =
     let
         isLoading =
             measurement.update == Loading
@@ -635,15 +632,10 @@ saveButton language msg measurement maybeDivClass =
 
 viewNutritionSigns :
     Language
-    -> NominalDate
-    -> ZScore.Model.Model
-    -> PersonId
     -> MeasurementData (Maybe ( ChildNutritionId, ChildNutrition ))
-    -> OfflineSession
-    -> ModelIndexedDb
     -> NutritionValue
     -> Html MsgChild
-viewNutritionSigns language currentDate zscores childId measurement offlineSession db value =
+viewNutritionSigns language measurement value =
     let
         activity =
             ChildActivity NutritionSigns
@@ -674,7 +666,6 @@ viewNutritionSigns language currentDate zscores childId measurement offlineSessi
                 language
                 saveMsg
                 measurement
-                Nothing
         ]
 
 
@@ -730,8 +721,8 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
         ]
 
 
-viewChildFbf : Language -> NominalDate -> Person -> ClinicType -> MeasurementData (Maybe ( ChildFbfId, Fbf )) -> FbfForm -> Html MsgChild
-viewChildFbf language currentDate child clinicType measurement form =
+viewChildFbf : Language -> ClinicType -> MeasurementData (Maybe ( ChildFbfId, Fbf )) -> FbfForm -> Html MsgChild
+viewChildFbf language clinicType measurement form =
     let
         activity =
             ChildActivity ChildFbf
@@ -835,40 +826,8 @@ viewChildFbf language currentDate child clinicType measurement form =
 -}
 
 
-viewCounselingTopics : Language -> Bool -> Dict CounselingTopicId CounselingTopic -> EverySet CounselingTopicId -> List (Html MsgChild)
-viewCounselingTopics language completed expectedTopics selectedTopics =
-    expectedTopics
-        |> Dict.map
-            (\topicId topic ->
-                let
-                    inputId =
-                        "counseling-checkbox-" ++ fromEntityUuid topicId
-
-                    isChecked =
-                        EverySet.member topicId selectedTopics
-                in
-                div
-                    [ class "ui checkbox activity" ]
-                    [ input
-                        [ type_ "checkbox"
-                        , id inputId
-                        , name inputId
-                        , onClick <| SelectCounselingTopic (not isChecked) topicId
-                        , checked isChecked
-                        , classList [ ( "checked", isChecked ) ]
-                        , disabled completed
-                        ]
-                        []
-                    , label
-                        [ for inputId ]
-                        [ text <| translate language (Translate.CounselingTopic topic) ]
-                    ]
-            )
-        |> Dict.values
-
-
-viewContributingFactors : Language -> NominalDate -> MeasurementData (Maybe ( ContributingFactorsId, ContributingFactors )) -> ContributingFactorsForm -> Html MsgChild
-viewContributingFactors language currentDate measurement form =
+viewContributingFactors : Language -> MeasurementData (Maybe ( ContributingFactorsId, ContributingFactors )) -> ContributingFactorsForm -> Html MsgChild
+viewContributingFactors language measurement form =
     let
         existingId =
             Maybe.map Tuple.first measurement.current
@@ -878,7 +837,7 @@ viewContributingFactors language currentDate measurement form =
 
         formContent =
             contributingFactorsFormWithDefault form saved
-                |> viewContributingFactorsForm language currentDate SetContributingFactorsSign
+                |> viewContributingFactorsForm language SetContributingFactorsSign
 
         saveMsg =
             toContributingFactorsValueWithDefault saved form
@@ -891,20 +850,18 @@ viewContributingFactors language currentDate measurement form =
                 language
                 saveMsg
                 measurement
-                Nothing
         ]
 
 
 viewContributingFactorsForm :
     Language
-    -> NominalDate
     -> (ContributingFactorsSign -> msg)
     -> ContributingFactorsForm
     -> Html msg
-viewContributingFactorsForm language currentDate setContributingFactorsSignMsg form =
+viewContributingFactorsForm language setContributingFactorsSignMsg form =
     let
         ( inputs, _ ) =
-            contributingFactorsFormInutsAndTasks language currentDate setContributingFactorsSignMsg form
+            contributingFactorsFormInutsAndTasks language setContributingFactorsSignMsg form
     in
     div [ class "ui form contributing-factors" ]
         inputs
@@ -912,11 +869,10 @@ viewContributingFactorsForm language currentDate setContributingFactorsSignMsg f
 
 contributingFactorsFormInutsAndTasks :
     Language
-    -> NominalDate
     -> (ContributingFactorsSign -> msg)
     -> ContributingFactorsForm
     -> ( List (Html msg), List (Maybe Bool) )
-contributingFactorsFormInutsAndTasks language currentDate setContributingFactorsSignMsg form =
+contributingFactorsFormInutsAndTasks language setContributingFactorsSignMsg form =
     ( [ viewQuestionLabel language Translate.ContributingFactorsQuestion
       , viewCheckBoxMultipleSelectInput language
             [ FactorLackOfBreastMilk, FactorMaternalMastitis, FactorPoorSuck, FactorDiarrheaOrVomiting ]
@@ -957,7 +913,7 @@ viewFollowUp language currentDate zscores childId measurement offlineSession db 
 
         formContent =
             nutritionFollowUpFormWithDefault form_ saved
-                |> viewNutritionFollowUpForm language currentDate SetFollowUpOption
+                |> viewNutritionFollowUpForm language SetFollowUpOption
 
         saveMsg =
             toNutritionFollowUpValueWithDefault saved form_
@@ -970,19 +926,16 @@ viewFollowUp language currentDate zscores childId measurement offlineSession db 
                 language
                 saveMsg
                 measurement
-                Nothing
         ]
 
 
 viewNutritionFollowUpForm :
     Language
-    -> NominalDate
     -> (FollowUpOption -> msg)
     -> { f | option : Maybe FollowUpOption }
     -> Html msg
-viewNutritionFollowUpForm language currentDate setFollowUpOptionMsg form =
+viewNutritionFollowUpForm language setFollowUpOptionMsg form =
     viewFollowUpForm language
-        currentDate
         [ OneDay, ThreeDays, OneWeek, TwoWeeks, FollowUpNotNeeded ]
         setFollowUpOptionMsg
         form
@@ -990,15 +943,14 @@ viewNutritionFollowUpForm language currentDate setFollowUpOptionMsg form =
 
 viewFollowUpForm :
     Language
-    -> NominalDate
     -> List FollowUpOption
     -> (FollowUpOption -> msg)
     -> { f | option : Maybe FollowUpOption }
     -> Html msg
-viewFollowUpForm language currentDate options setFollowUpOptionMsg form =
+viewFollowUpForm language options setFollowUpOptionMsg form =
     let
         ( inputs, _ ) =
-            followUpFormInputsAndTasks language currentDate options setFollowUpOptionMsg form
+            followUpFormInputsAndTasks language options setFollowUpOptionMsg form
     in
     div [ class "ui form follow-up" ]
         inputs
@@ -1006,12 +958,11 @@ viewFollowUpForm language currentDate options setFollowUpOptionMsg form =
 
 followUpFormInputsAndTasks :
     Language
-    -> NominalDate
     -> List FollowUpOption
     -> (FollowUpOption -> msg)
     -> { f | option : Maybe FollowUpOption }
     -> ( List (Html msg), List (Maybe Bool) )
-followUpFormInputsAndTasks language currentDate options setFollowUpOptionMsg form =
+followUpFormInputsAndTasks language options setFollowUpOptionMsg form =
     ( [ viewLabel language Translate.FollowUpLabel
       , viewCheckBoxSelectInput language
             options
@@ -1024,8 +975,8 @@ followUpFormInputsAndTasks language currentDate options setFollowUpOptionMsg for
     )
 
 
-viewHealthEducation : Language -> NominalDate -> MeasurementData (Maybe ( GroupHealthEducationId, GroupHealthEducation )) -> HealthEducationForm -> Html MsgChild
-viewHealthEducation language currentDate measurement form_ =
+viewHealthEducation : Language -> MeasurementData (Maybe ( GroupHealthEducationId, GroupHealthEducation )) -> HealthEducationForm -> Html MsgChild
+viewHealthEducation language measurement form_ =
     let
         saved =
             getMeasurementValueFunc measurement.current
@@ -1035,7 +986,6 @@ viewHealthEducation language currentDate measurement form_ =
 
         formContent =
             viewHealthEducationForm language
-                currentDate
                 SetProvidedEducationForDiagnosis
                 SetReasonForNotProvidingHealthEducation
                 form
@@ -1081,21 +1031,19 @@ viewHealthEducation language currentDate measurement form_ =
                 language
                 saveMsg
                 measurement
-                Nothing
         ]
 
 
 viewHealthEducationForm :
     Language
-    -> NominalDate
     -> (Bool -> msg)
     -> (ReasonForNotProvidingHealthEducation -> msg)
     -> HealthEducationForm
     -> Html msg
-viewHealthEducationForm language currentDate setProvidedEducationForDiagnosisMsg setReasonForNotProvidingHealthEducationMsg form =
+viewHealthEducationForm language setProvidedEducationForDiagnosisMsg setReasonForNotProvidingHealthEducationMsg form =
     let
         ( inputs, _ ) =
-            healthEducationFormInutsAndTasks language currentDate setProvidedEducationForDiagnosisMsg setReasonForNotProvidingHealthEducationMsg form
+            healthEducationFormInutsAndTasks language setProvidedEducationForDiagnosisMsg setReasonForNotProvidingHealthEducationMsg form
     in
     div [ class "ui form health-education" ]
         inputs
@@ -1103,12 +1051,11 @@ viewHealthEducationForm language currentDate setProvidedEducationForDiagnosisMsg
 
 healthEducationFormInutsAndTasks :
     Language
-    -> NominalDate
     -> (Bool -> msg)
     -> (ReasonForNotProvidingHealthEducation -> msg)
     -> HealthEducationForm
     -> ( List (Html msg), List (Maybe Bool) )
-healthEducationFormInutsAndTasks language currentDate setProvidedEducationForDiagnosisMsg setReasonForNotProvidingHealthEducationMsg form =
+healthEducationFormInutsAndTasks language setProvidedEducationForDiagnosisMsg setReasonForNotProvidingHealthEducationMsg form =
     let
         healthEducationSection =
             let
@@ -1239,7 +1186,6 @@ viewSendToHC language currentDate measurement form_ =
                 language
                 saveMsg
                 measurement
-                Nothing
         ]
 
 
@@ -1252,8 +1198,8 @@ viewSendToHealthCenterForm :
     -> Maybe (Bool -> msg)
     -> SendToHCForm
     -> Html msg
-viewSendToHealthCenterForm language currentDate =
-    viewSendToFacilityForm language currentDate FacilityHealthCenter
+viewSendToHealthCenterForm language _ =
+    viewSendToFacilityForm language FacilityHealthCenter
 
 
 viewSendToHospitalForm :
@@ -1265,13 +1211,12 @@ viewSendToHospitalForm :
     -> Maybe (Bool -> msg)
     -> SendToHCForm
     -> Html msg
-viewSendToHospitalForm language currentDate =
-    viewSendToFacilityForm language currentDate FacilityHospital
+viewSendToHospitalForm language _ =
+    viewSendToFacilityForm language FacilityHospital
 
 
 viewSendToFacilityForm :
     Language
-    -> NominalDate
     -> ReferralFacility
     -> (Bool -> msg)
     -> (ReasonForNonReferral -> msg)
@@ -1279,11 +1224,10 @@ viewSendToFacilityForm :
     -> Maybe (Bool -> msg)
     -> SendToHCForm
     -> Html msg
-viewSendToFacilityForm language currentDate facility setReferToHealthCenterMsg setReasonForNonReferralMsg setHandReferralFormMsg setAccompanyToHCMsg form =
+viewSendToFacilityForm language facility setReferToHealthCenterMsg setReasonForNonReferralMsg setHandReferralFormMsg setAccompanyToHCMsg form =
     let
         ( inputs, _ ) =
             sendToFacilityInputsAndTasks language
-                currentDate
                 facility
                 setReferToHealthCenterMsg
                 setReasonForNonReferralMsg
@@ -1297,7 +1241,6 @@ viewSendToFacilityForm language currentDate facility setReferToHealthCenterMsg s
 
 sendToFacilityInputsAndTasks :
     Language
-    -> NominalDate
     -> ReferralFacility
     -> (Bool -> msg)
     -> (ReasonForNonReferral -> msg)
@@ -1305,7 +1248,7 @@ sendToFacilityInputsAndTasks :
     -> Maybe (Bool -> msg)
     -> SendToHCForm
     -> ( List (Html msg), List (Maybe Bool) )
-sendToFacilityInputsAndTasks language currentDate facility setReferToHealthCenterMsg setReasonForNonReferralMsg setHandReferralFormMsg setAccompanyToHCMsg form =
+sendToFacilityInputsAndTasks language facility setReferToHealthCenterMsg setReasonForNonReferralMsg setHandReferralFormMsg setAccompanyToHCMsg form =
     let
         headerHelper =
             case facility of
@@ -1404,15 +1347,14 @@ sendToFacilityInputsAndTasks language currentDate facility setReferToHealthCente
 
 viewReferToProgramForm :
     Language
-    -> NominalDate
     -> (Bool -> msg)
     -> (Bool -> msg)
     -> SendToHCForm
     -> Html msg
-viewReferToProgramForm language currentDate setEnrollToNutritionProgramMsg setReferToNutritionProgramMsg form =
+viewReferToProgramForm language setEnrollToNutritionProgramMsg setReferToNutritionProgramMsg form =
     let
         ( inputs, _ ) =
-            referToProgramFormInputsAndTasks language currentDate setEnrollToNutritionProgramMsg setReferToNutritionProgramMsg form
+            referToProgramFormInputsAndTasks language setEnrollToNutritionProgramMsg setReferToNutritionProgramMsg form
     in
     div [ class "ui form send-to-hc" ]
         inputs
@@ -1420,12 +1362,11 @@ viewReferToProgramForm language currentDate setEnrollToNutritionProgramMsg setRe
 
 referToProgramFormInputsAndTasks :
     Language
-    -> NominalDate
     -> (Bool -> msg)
     -> (Bool -> msg)
     -> SendToHCForm
     -> ( List (Html msg), List (Maybe Bool) )
-referToProgramFormInputsAndTasks language currentDate setEnrollToNutritionProgramMsg setReferToNutritionProgramMsg form =
+referToProgramFormInputsAndTasks language setEnrollToNutritionProgramMsg setReferToNutritionProgramMsg form =
     ( [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
       , div [ class "instructions" ]
             [ viewActionTakenLabel language Translate.ReferToProgramAction "icon-forms" Nothing
@@ -1737,15 +1678,8 @@ viewActionTakenLabel language actionTranslationId iconClass maybeDate =
         ]
 
 
-type alias MotherMeasurementData =
-    { previous : MotherMeasurements
-    , current : MotherMeasurements
-    , status : WebData ()
-    }
-
-
-viewMother : Language -> NominalDate -> Person -> MotherActivity -> ClinicType -> MeasurementData MotherMeasurements -> ModelMother -> Html MsgMother
-viewMother language currentDate mother activity clinicType measurements model =
+viewMother : Language -> MotherActivity -> ClinicType -> MeasurementData MotherMeasurements -> ModelMother -> Html MsgMother
+viewMother language activity clinicType measurements model =
     case activity of
         FamilyPlanning ->
             viewFamilyPlanning language (mapMeasurementData .familyPlanning measurements) model.familyPlanningSigns
@@ -1754,7 +1688,7 @@ viewMother language currentDate mother activity clinicType measurements model =
             viewLactation language (mapMeasurementData .lactation measurements) model.lactationForm
 
         MotherFbf ->
-            viewMotherFbf language currentDate mother clinicType (mapMeasurementData .fbf measurements) model.fbfForm
+            viewMotherFbf language clinicType (mapMeasurementData .fbf measurements) model.fbfForm
 
         ParticipantConsent ->
             viewParticipantConsent language (mapMeasurementData .consent measurements) model.participantConsent
@@ -2029,7 +1963,6 @@ viewFamilyPlanning language measurement signs =
             saveButton language
                 saveMsg
                 measurement
-                Nothing
         ]
 
 
@@ -2127,12 +2060,11 @@ viewLactation language measurement form =
             saveButton language
                 saveMsg
                 measurement
-                Nothing
         ]
 
 
-viewMotherFbf : Language -> NominalDate -> Person -> ClinicType -> MeasurementData (Maybe ( MotherFbfId, Fbf )) -> FbfForm -> Html MsgMother
-viewMotherFbf language currentDate mother clinicType measurement form =
+viewMotherFbf : Language -> ClinicType -> MeasurementData (Maybe ( MotherFbfId, Fbf )) -> FbfForm -> Html MsgMother
+viewMotherFbf language clinicType measurement form =
     let
         activity =
             MotherActivity MotherFbf
@@ -2240,7 +2172,6 @@ viewFbfForm language measurement activity clinicType setDistributedAmountMsg set
                 language
                 saveMsg
                 measurement
-                Nothing
         ]
 
 
@@ -2263,8 +2194,8 @@ viewFamilyPlanningInput language setFamilyPlanningSignMsg currentValue =
         Translate.FamilyPlanningSignLabel
 
 
-viewCorePhysicalExamForm : Language -> NominalDate -> CorePhysicalExamFormConfig msg -> CorePhysicalExamForm -> Html msg
-viewCorePhysicalExamForm language currentDate config form =
+viewCorePhysicalExamForm : Language -> CorePhysicalExamFormConfig msg -> CorePhysicalExamForm -> Html msg
+viewCorePhysicalExamForm language config form =
     let
         brittleHairUpdateFunc value form_ =
             { form_ | brittleHair = Just value }
@@ -2457,7 +2388,6 @@ viewTreatmentWithDosage language sign =
 viewNCDAContent :
     Language
     -> NominalDate
-    -> ZScore.Model.Model
     -> Site
     -> PersonId
     -> Person
@@ -2466,7 +2396,7 @@ viewNCDAContent :
     -> NCDAForm
     -> ModelIndexedDb
     -> List (Html msg)
-viewNCDAContent language currentDate zscores site personId person config helperState form db =
+viewNCDAContent language currentDate site personId person config helperState form db =
     let
         steps =
             resolveNCDASteps currentDate person config.ncdaNeverFilled config.atHealthCenter
@@ -2530,7 +2460,6 @@ viewNCDAContent language currentDate zscores site personId person config helperS
                     ( step
                     , ncdaFormInputsAndTasks language
                         currentDate
-                        zscores
                         site
                         personId
                         person
@@ -2660,7 +2589,6 @@ viewNCDAContent language currentDate zscores site personId person config helperS
 ncdaFormInputsAndTasks :
     Language
     -> NominalDate
-    -> ZScore.Model.Model
     -> Site
     -> PersonId
     -> Person
@@ -2669,7 +2597,7 @@ ncdaFormInputsAndTasks :
     -> NCDAStep
     -> ModelIndexedDb
     -> ( List (Html msg), List (Maybe Bool) )
-ncdaFormInputsAndTasks language currentDate zscores site personId person config form currentStep db =
+ncdaFormInputsAndTasks language currentDate site personId person config form currentStep db =
     let
         inputsAndTasksForSign sign =
             case sign of
@@ -3191,7 +3119,7 @@ ncdaFormInputsAndTasks language currentDate zscores site personId person config 
         NCDAStepAntenatalCare ->
             let
                 ( ancVisitsSection, ancVisitsTasks ) =
-                    ancVisitsInpustAndTasks language currentDate personId person config form db
+                    ancVisitsInpustAndTasks language personId person config form db
 
                 ( signsInputs, signTasks ) =
                     inputsAndTasksForSign SupplementsDuringPregnancy
@@ -3511,14 +3439,13 @@ ncdaFormInputsAndTasks language currentDate zscores site personId person config 
 
 ancVisitsInpustAndTasks :
     Language
-    -> NominalDate
     -> PersonId
     -> Person
     -> NCDAContentConfig msg
     -> NCDAForm
     -> ModelIndexedDb
     -> ( List (Html msg), List (Maybe Bool) )
-ancVisitsInpustAndTasks language currentDate personId person config form db =
+ancVisitsInpustAndTasks language personId person config form db =
     Maybe.map
         (\birthDate ->
             let
@@ -3755,12 +3682,12 @@ viewNCDAHelperDialog language action helperState =
             in
             case sign of
                 FiveFoodGroups ->
-                    fiveFoodGroupsHelperDialog language action
+                    fiveFoodGroupsHelperDialog language
                         |> viewHelperDialog
                         |> Just
 
                 MealsAtRecommendedTimes ->
-                    mealsAtRecommendedTimesHelperDialog language action
+                    mealsAtRecommendedTimesHelperDialog language
                         |> viewHelperDialog
                         |> Just
 
@@ -3770,8 +3697,8 @@ viewNCDAHelperDialog language action helperState =
         helperState
 
 
-fiveFoodGroupsHelperDialog : Language -> msg -> Html msg
-fiveFoodGroupsHelperDialog language action =
+fiveFoodGroupsHelperDialog : Language -> Html msg
+fiveFoodGroupsHelperDialog language =
     ol [] <|
         List.map
             (\foodGroup ->
@@ -3788,8 +3715,8 @@ fiveFoodGroupsHelperDialog language action =
             ]
 
 
-mealsAtRecommendedTimesHelperDialog : Language -> msg -> Html msg
-mealsAtRecommendedTimesHelperDialog language action =
+mealsAtRecommendedTimesHelperDialog : Language -> Html msg
+mealsAtRecommendedTimesHelperDialog language =
     ul []
         [ li [] [ text <| translate language <| Translate.NCDAMealFrequency6to9 ]
         , li [] [ text <| translate language <| Translate.NCDAMealFrequency9to12 ]
@@ -3800,7 +3727,6 @@ mealsAtRecommendedTimesHelperDialog language action =
 viewNCDA :
     Language
     -> NominalDate
-    -> ZScore.Model.Model
     -> Site
     -> PersonId
     -> Person
@@ -3808,7 +3734,7 @@ viewNCDA :
     -> NCDAData
     -> ModelIndexedDb
     -> Html MsgChild
-viewNCDA language currentDate zscores site childId child measurement data db =
+viewNCDA language currentDate site childId child measurement data db =
     let
         existingId =
             Maybe.map Tuple.first measurement.current
@@ -3844,7 +3770,6 @@ viewNCDA language currentDate zscores site childId child measurement data db =
     in
     viewNCDAContent language
         currentDate
-        zscores
         site
         childId
         child
@@ -3857,7 +3782,6 @@ viewNCDA language currentDate zscores site childId child measurement data db =
 
 nutritionFeedingInputsAndTasks :
     Language
-    -> NominalDate
     -> PersonId
     -> ((Bool -> NutritionFeedingForm -> NutritionFeedingForm) -> Bool -> msg)
     -> (NutritionSupplementType -> msg)
@@ -3865,7 +3789,7 @@ nutritionFeedingInputsAndTasks :
     -> ModelIndexedDb
     -> NutritionFeedingForm
     -> ( List (Html msg), List (Maybe Bool) )
-nutritionFeedingInputsAndTasks language currentDate personId setBoolInputMsg setNutritionSupplementTypeMsg setSachetsPerDayMsg db form =
+nutritionFeedingInputsAndTasks language personId setBoolInputMsg setNutritionSupplementTypeMsg setSachetsPerDayMsg db form =
     let
         ( receiveSupplementInputs, receiveSupplementTasks ) =
             let
@@ -4082,13 +4006,12 @@ nutritionFeedingInputsAndTasks language currentDate personId setBoolInputMsg set
 
 nutritionCaringInputsAndTasks :
     Language
-    -> NominalDate
     -> (Bool -> msg)
     -> (CaringOption -> msg)
     -> (Bool -> msg)
     -> NutritionCaringForm
     -> ( List (Html msg), List (Maybe Bool) )
-nutritionCaringInputsAndTasks language currentDate setParentsAliveAndHealthyMsg setNutritionCaringOptionMsg setChildCleanMsg form =
+nutritionCaringInputsAndTasks language setParentsAliveAndHealthyMsg setNutritionCaringOptionMsg setChildCleanMsg form =
     ( [ viewQuestionLabel language Translate.ParentsAliveAndHealthyQuestion
       , viewBoolInput
             language
@@ -4123,13 +4046,12 @@ nutritionCaringInputsAndTasks language currentDate setParentsAliveAndHealthyMsg 
 
 nutritionHygieneInputsAndTasks :
     Language
-    -> NominalDate
     -> ((Bool -> NutritionHygieneForm -> NutritionHygieneForm) -> Bool -> msg)
     -> (MainWaterSource -> msg)
     -> (WaterPreparationOption -> msg)
     -> NutritionHygieneForm
     -> ( List (Html msg), List (Maybe Bool) )
-nutritionHygieneInputsAndTasks language currentDate setHygieneBoolInputMsg setMainWaterSourceMsg setWaterPreparationOptionMsg form =
+nutritionHygieneInputsAndTasks language setHygieneBoolInputMsg setMainWaterSourceMsg setWaterPreparationOptionMsg form =
     let
         soapInTheHouseUpdateFunc value form_ =
             { form_ | soapInTheHouse = Just value }
@@ -4195,12 +4117,11 @@ nutritionHygieneInputsAndTasks language currentDate setHygieneBoolInputMsg setMa
 
 nutritionFoodSecurityInputsAndTasks :
     Language
-    -> NominalDate
     -> ((Bool -> NutritionFoodSecurityForm -> NutritionFoodSecurityForm) -> Bool -> msg)
     -> (MainIncomeSource -> msg)
     -> NutritionFoodSecurityForm
     -> ( List (Html msg), List (Maybe Bool) )
-nutritionFoodSecurityInputsAndTasks language currentDate setFoodSecurityBoolInputMsg setMainIncomeSourceMsg form =
+nutritionFoodSecurityInputsAndTasks language setFoodSecurityBoolInputMsg setMainIncomeSourceMsg form =
     let
         householdGotFoodUpdateFunc value form_ =
             { form_ | householdGotFood = Just value }
@@ -4313,17 +4234,15 @@ heightFormAndTasks language currentDate zscores person previousValue setHeightMs
 
 viewMuacForm :
     Language
-    -> NominalDate
     -> Site
-    -> Person
     -> Maybe Float
     -> (String -> msg)
     -> MuacForm
     -> List (Html msg)
-viewMuacForm language currentDate site person previousValue setMuacMsg form =
+viewMuacForm language site previousValue setMuacMsg form =
     let
         ( inputs, _ ) =
-            muacFormInputsAndTasks language currentDate site person previousValue setMuacMsg form
+            muacFormInputsAndTasks language site previousValue setMuacMsg form
     in
     [ div [ class "ui form muac" ]
         inputs
@@ -4332,14 +4251,12 @@ viewMuacForm language currentDate site person previousValue setMuacMsg form =
 
 muacFormInputsAndTasks :
     Language
-    -> NominalDate
     -> Site
-    -> Person
     -> Maybe Float
     -> (String -> msg)
     -> MuacForm
     -> ( List (Html msg), List (Maybe Bool) )
-muacFormInputsAndTasks language currentDate site person previousValue setMuacMsg form =
+muacFormInputsAndTasks language site previousValue setMuacMsg form =
     let
         activity =
             Backend.NutritionActivity.Model.Muac
@@ -4383,11 +4300,11 @@ muacFormInputsAndTasks language currentDate site person previousValue setMuacMsg
     )
 
 
-viewNutritionForm : Language -> NominalDate -> (ChildNutritionSign -> msg) -> NutritionForm -> List (Html msg)
-viewNutritionForm language currentDate setSignMsg form =
+viewNutritionForm : Language -> (ChildNutritionSign -> msg) -> NutritionForm -> List (Html msg)
+viewNutritionForm language setSignMsg form =
     let
         ( inputs, _ ) =
-            nutritionFormInputsAndTasks language currentDate setSignMsg form
+            nutritionFormInputsAndTasks language setSignMsg form
     in
     [ div [ class "ui form nutrition" ]
         inputs
@@ -4396,11 +4313,10 @@ viewNutritionForm language currentDate setSignMsg form =
 
 nutritionFormInputsAndTasks :
     Language
-    -> NominalDate
     -> (ChildNutritionSign -> msg)
     -> NutritionForm
     -> ( List (Html msg), List (Maybe Bool) )
-nutritionFormInputsAndTasks language currentDate setSignMsg form =
+nutritionFormInputsAndTasks language setSignMsg form =
     let
         activity =
             Backend.NutritionActivity.Model.Nutrition

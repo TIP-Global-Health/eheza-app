@@ -1,4 +1,4 @@
-module Measurement.Utils exposing (OutsideCareConfig, allNextStepsTasks, allVaccineDoses, allVaccineTypes, allVaccineTypesByGender, behindOnVaccinationsByHistory, behindOnVaccinationsByProgress, behindOnVaccinationsByProgressFromChildScoreboard, behindOnVaccinationsByProgressFromWellChild, bloodGpRsResultFormAndTasks, bloodGpRsResultFormWithDefault, bloodGpRsResultInputsAndTasks, bloodGpRsTestFormWithDefault, bloodSmearResultInputsAndTasks, bloodSmearResultNotSet, bloodSmearResultSet, childDiagnosedWithMalnutrition, cholesterolMmolLToMgdLRatio, contentAndTasksForPerformedLaboratoryTest, contentAndTasksLaboratoryResultConfirmation, contentAndTasksLaboratoryTestInitial, contentAndTasksLaboratoryTestKnownAsPositive, contentAndTasksLaboratoryUniversalTestInitial, contentAndTasksLaboratoryUniversalTestKnownAsPositive, contributingFactorsFormWithDefault, corePhysicalExamFormWithDefault, creatinineResultFormAndTasks, creatinineResultFormWithDefault, emptyContentAndTasksForPerformedLaboratoryTestConfig, emptyContentAndTasksForPerformedLaboratoryUniversalTestConfig, emptyContentAndTasksLaboratoryResultConfig, emptyContentAndTasksLaboratoryTestInitialConfig, emptyContentAndTasksLaboratoryUniversalTestInitialConfig, expectCounselingActivity, expectNCDAStep, expectParticipantConsent, expectUniversalTestResultTask, expectVaccineDoseForPerson, expectVaccineForPerson, familyPlanningFormWithDefault, fbfFormToValue, fbfValueToForm, filterNutritionAssessmentsFromFollowUpValue, filterNutritionAssessmentsFromNutritionValue, followUpFormWithDefault, fromAdministrationNote, fromChildMeasurementData, fromContributingFactorsValue, fromHealthEducationValue, fromHeightValue, fromListWithDefaultValue, fromMotherMeasurementData, fromMuacValue, fromNCDAValue, fromNutritionFollowUpValue, fromNutritionValue, fromSendToHCValue, fromWeightValue, generateAssembledDataForChildScoreboard, generateAssembledDataForWellChild, generateFutureVaccinationsData, generateGroupNutritionAssessmentEntries, generateIndividualNutritionAssessmentEntries, generateSuggestedVaccinations, generateVaccinationProgressDictByChildScoreboard, generateVaccinationProgressDictByWellChild, generateVaccinationProgressDictsForChildScoreboard, generateVaccinationProgressDictsForWellChild, generateVaccinationProgressForChildScoreboard, generateVaccinationProgressForVaccine, generateVaccinationProgressForWellChild, getAllDosesForVaccine, getChildForm, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, getIntervalForVaccine, getLastDoseForVaccine, getMotherForm, getNextVaccineDose, getPreviousMeasurements, hba1cTestFormWithDefault, healthEducationFormWithDefault, heightFormWithDefault, hemoglobinResultFormAndTasks, hemoglobinResultFormWithDefault, hemoglobinResultInputsAndTasks, hemoglobinTestFormWithDefault, hepatitisBResultFormAndTasks, hepatitisBResultFormWithDefault, hepatitisBTestFormWithDefault, hivPCRResultFormAndTasks, hivPCRResultFormWithDefault, hivPCRResultInputsAndTasks, hivPCRTestFormWithDefault, hivResultFollowUpInputsAndTasks, hivResultFollowUpsFormAndTasks, hivResultFormAndTasks, hivResultFormWithDefault, hivResultInputsAndTasks, hivTestFormWithDefault, hivTestUniversalFormWithDefault, immunisationTaskToVaccineType, initialVaccinationDateByBirthDate, isBehindOnVaccinationsByProgress, isTestResultValid, laboratoryTaskIconClass, lactationFormToSigns, lactationSignsToForm, latestVaccinationDataForVaccine, lipidPanelResultFormAndTasks, lipidPanelResultFormWithDefault, liverFunctionResultFormAndTasks, liverFunctionResultFormWithDefault, malariaResultFormAndTasks, malariaResultFormWithDefault, malariaTestFormWithDefault, medicationAdministrationFormInputsAndTasks, medicationAdministrationFormWithDefault, mergeNutritionAssessmentEntries, mergeVaccinationProgressDicts, muacFormWithDefault, muacMeasurementIsOff, ncdaFormWithDefault, ncdaSteps, nextDoseForVaccine, nextVaccinationDataForVaccine, noOutsideCareMedicationOptions, nonRDTFormInputsAndTasks, nonRDTFormWithDefault, nutritionCaringFormWithDefault, nutritionFeedingFormWithDefault, nutritionFollowUpFormWithDefault, nutritionFoodSecurityFormWithDefault, nutritionFormWithDefault, nutritionHygieneFormWithDefault, ongoingTreatmentReviewFormWithDefault, outsideCareFormInputsAndTasks, outsideCareFormInputsAndTasksDiagnoses, outsideCareFormInputsAndTasksMedications, outsideCareFormWithDefault, outsideCareMedicationOptionsAnemia, outsideCareMedicationOptionsHIV, outsideCareMedicationOptionsHypertension, outsideCareMedicationOptionsMalaria, outsideCareMedicationOptionsSyphilis, partnerARVViralLoadInputsAndTasks, partnerHIVResultFollowUpInputsAndTasks, partnerHIVResultFollowUpsFormAndTasks, partnerHIVResultFormAndTasks, partnerHIVResultFormWithDefault, partnerHIVResultInputsAndTasks, partnerHIVTestFormWithDefault, pregnancyTestFormWithDefault, prenatalRDTFormInputsAndTasks, prerequisiteByImmediateResultInputsAndTasks, randomBloodSugarFormWithDefault, randomBloodSugarResultFormAndTasks, randomBloodSugarResultFormWithDefault, randomBloodSugarResultInputsAndTasks, randomBloodSugarTestPrerequisitesInputsAndTasks, randomBloodSugarUniversalFormWithDefault, renderDatePart, resoloveLastScheduledImmunizationVisitDate, resolveChildANCPregnancyData, resolveIndividualNutritionValue, resolveIndividualWellChildValue, resolveLabTestDate, resolveMedicationsNonAdministrationReasons, resolveNCDASteps, resolveRunConfirmedByLabTechFromValue, resultFormHeaderSection, sendToHCFormWithDefault, standardTestResultInputsAndTasks, syphilisResultFollowUpInputsAndTasks, syphilisResultFollowUpsFormAndTasks, syphilisResultFormAndTasks, syphilisResultFormWithDefault, syphilisResultInputsAndTasks, syphilisTestFormWithDefault, testNotPerformedByWhyNotAtExecutionNote, testPerformedByExecutionNote, testPerformedByValue, testPrerequisitesByImmediateResult, toAdministrationNote, toAdministrationNoteWithDefault, toBloodGpRsResultValue, toBloodGpRsResultValueWithDefault, toBloodGpRsTestValue, toBloodGpRsTestValueWithDefault, toContributingFactorsValue, toContributingFactorsValueWithDefault, toCorePhysicalExamValue, toCorePhysicalExamValueWithDefault, toCreatinineResultValue, toCreatinineResultValueWithDefault, toCreatinineTestValueWithEmptyResults, toEverySet, toFamilyPlanningValue, toFamilyPlanningValueWithDefault, toFollowUpValue, toFollowUpValueWithDefault, toHIVPCRResultValue, toHIVPCRResultValueWithDefault, toHIVPCRTestValue, toHIVPCRTestValueWithDefault, toHIVResultValue, toHIVResultValueWithDefault, toHIVTestValue, toHIVTestValueUniversal, toHIVTestValueUniversalWithDefault, toHIVTestValueWithDefault, toHbA1cTestValue, toHbA1cTestValueWithDefault, toHealthEducationValue, toHealthEducationValueWithDefault, toHeightValue, toHeightValueWithDefault, toHemoglobinResultValue, toHemoglobinResultValueWithDefault, toHemoglobinTestValue, toHemoglobinTestValueWithDefault, toHepatitisBResultValue, toHepatitisBResultValueWithDefault, toHepatitisBTestValue, toHepatitisBTestValueWithDefault, toLipidPanelResultValue, toLipidPanelResultValueWithDefault, toLipidPanelTestValueWithEmptyResults, toLiverFunctionResultValue, toLiverFunctionResultValueWithDefault, toLiverFunctionTestValueWithEmptyResults, toMalariaResultValue, toMalariaResultValueWithDefault, toMalariaTestValue, toMalariaTestValueWithDefault, toMuacValue, toMuacValueWithDefault, toNCDAValue, toNCDAValueWithDefault, toNonRDTValueWithDefault, toNutritionCaringValue, toNutritionCaringValueWithDefault, toNutritionFeedingValue, toNutritionFeedingValueWithDefault, toNutritionFollowUpValue, toNutritionFollowUpValueWithDefault, toNutritionFoodSecurityValue, toNutritionFoodSecurityValueWithDefault, toNutritionHygieneValue, toNutritionHygieneValueWithDefault, toNutritionValue, toNutritionValueWithDefault, toOngoingTreatmentReviewValue, toOngoingTreatmentReviewValueWithDefault, toOutsideCareValue, toOutsideCareValueWithDefault, toPartnerHIVResultValue, toPartnerHIVResultValueWithDefault, toPartnerHIVTestValue, toPartnerHIVTestValueWithDefault, toPregnancyTestValue, toPregnancyTestValueWithDefault, toRandomBloodSugarResultValue, toRandomBloodSugarResultValueWithDefault, toRandomBloodSugarTestValue, toRandomBloodSugarTestValueUniversal, toRandomBloodSugarTestValueUniversalWithDefault, toRandomBloodSugarTestValueWithDefault, toSendToHCValue, toSendToHCValueWithDefault, toSyphilisResultValue, toSyphilisResultValueWithDefault, toSyphilisTestValue, toSyphilisTestValueWithDefault, toUrineDipstickResultValue, toUrineDipstickResultValueWithDefault, toUrineDipstickTestValue, toUrineDipstickTestValueUniversal, toUrineDipstickTestValueUniversalWithDefault, toUrineDipstickTestValueWithDefault, toVaccinationValue, toVaccinationValueWithDefault, toVitalsValue, toVitalsValueWithDefault, toWeightValue, toWeightValueWithDefault, treatmentReviewCustomReasonsForNotTakingInputsAndTasks, treatmentReviewInputsAndTasks, triglyceridesMmolLToMgdLRatio, urineDipstickFormWithDefault, urineDipstickResultFormAndTasks, urineDipstickResultFormWithDefault, urineDipstickResultInputsAndTasks, urineDipstickUniversalFormWithDefault, vaccinationFormDynamicContentAndTasks, vaccinationFormWithDefault, vaccineDoseToComparable, viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion, viewBloodGpRsTestForm, viewHIVPCRTestForm, viewHIVTestForm, viewHIVTestUniversalForm, viewHbA1cTestForm, viewHemoglobinTestForm, viewHepatitisBTestForm, viewMalariaTestForm, viewNonRDTForm, viewNonRDTFormCheckKnownAsPositive, viewOutsideCareMedicationOption, viewOutsideCareMedicationOptionWithDosage, viewPartnerHIVTestForm, viewPregnancyTestForm, viewRandomBloodSugarTestForm, viewRandomBloodSugarTestUniversalForm, viewReinforceAdherenceQuestion, viewSelectInput, viewSyphilisTestForm, viewUrineDipstickTestForm, viewUrineDipstickTestUniversalForm, vitalsFormWithDefault, wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm, wasInitialOpvAdministeredByVaccinationProgress, weightFormWithDefault, withinConstraints)
+module Measurement.Utils exposing (OutsideCareConfig, allNextStepsTasks, allVaccineTypes, behindOnVaccinationsByHistory, bloodGpRsResultFormAndTasks, bloodGpRsResultFormWithDefault, bloodGpRsTestFormWithDefault, bloodSmearResultNotSet, bloodSmearResultSet, contributingFactorsFormWithDefault, corePhysicalExamFormWithDefault, creatinineResultFormAndTasks, creatinineResultFormWithDefault, emptyContentAndTasksForPerformedLaboratoryTestConfig, emptyContentAndTasksForPerformedLaboratoryUniversalTestConfig, emptyContentAndTasksLaboratoryResultConfig, emptyContentAndTasksLaboratoryTestInitialConfig, emptyContentAndTasksLaboratoryUniversalTestInitialConfig, expectParticipantConsent, expectUniversalTestResultTask, expectVaccineDoseForPerson, familyPlanningFormWithDefault, fbfFormToValue, followUpFormWithDefault, generateAssembledDataForChildScoreboard, generateAssembledDataForWellChild, generateFutureVaccinationsData, generateGroupNutritionAssessmentEntries, generateIndividualNutritionAssessmentEntries, generateVaccinationProgressDictByChildScoreboard, generateVaccinationProgressForVaccine, getAllDosesForVaccine, getChildForm, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, getIntervalForVaccine, getMotherForm, getNextVaccineDose, getPreviousMeasurements, hba1cTestFormWithDefault, healthEducationFormWithDefault, heightFormWithDefault, hemoglobinResultFormAndTasks, hemoglobinResultFormWithDefault, hemoglobinTestFormWithDefault, hepatitisBResultFormAndTasks, hepatitisBResultFormWithDefault, hepatitisBTestFormWithDefault, hivPCRResultFormAndTasks, hivPCRResultFormWithDefault, hivPCRTestFormWithDefault, hivResultFollowUpsFormAndTasks, hivResultFormAndTasks, hivResultFormWithDefault, hivTestFormWithDefault, hivTestUniversalFormWithDefault, immunisationTaskToVaccineType, initialVaccinationDateByBirthDate, isBehindOnVaccinationsByProgress, isTestResultValid, laboratoryTaskIconClass, lactationFormToSigns, lipidPanelResultFormAndTasks, lipidPanelResultFormWithDefault, liverFunctionResultFormAndTasks, liverFunctionResultFormWithDefault, malariaResultFormAndTasks, malariaResultFormWithDefault, malariaTestFormWithDefault, medicationAdministrationFormInputsAndTasks, medicationAdministrationFormWithDefault, muacFormWithDefault, muacMeasurementIsOff, ncdaFormWithDefault, nextVaccinationDataForVaccine, nonRDTFormWithDefault, nutritionCaringFormWithDefault, nutritionFeedingFormWithDefault, nutritionFollowUpFormWithDefault, nutritionFoodSecurityFormWithDefault, nutritionFormWithDefault, nutritionHygieneFormWithDefault, ongoingTreatmentReviewFormWithDefault, outsideCareFormInputsAndTasks, outsideCareFormWithDefault, outsideCareMedicationOptionsAnemia, outsideCareMedicationOptionsHIV, outsideCareMedicationOptionsHypertension, outsideCareMedicationOptionsMalaria, outsideCareMedicationOptionsSyphilis, partnerHIVResultFollowUpsFormAndTasks, partnerHIVResultFormAndTasks, partnerHIVResultFormWithDefault, partnerHIVTestFormWithDefault, pregnancyTestFormWithDefault, randomBloodSugarFormWithDefault, randomBloodSugarResultFormAndTasks, randomBloodSugarResultFormWithDefault, randomBloodSugarUniversalFormWithDefault, renderDatePart, resoloveLastScheduledImmunizationVisitDate, resolveChildANCPregnancyData, resolveLabTestDate, resolveMedicationsNonAdministrationReasons, resolveNCDASteps, sendToHCFormWithDefault, syphilisResultFollowUpsFormAndTasks, syphilisResultFormAndTasks, syphilisResultFormWithDefault, syphilisTestFormWithDefault, testNotPerformedByWhyNotAtExecutionNote, testPerformedByExecutionNote, testPerformedByValue, toAdministrationNoteWithDefault, toBloodGpRsResultValueWithDefault, toBloodGpRsTestValueWithDefault, toContributingFactorsValueWithDefault, toCorePhysicalExamValueWithDefault, toCreatinineResultValueWithDefault, toCreatinineTestValueWithEmptyResults, toEverySet, toFamilyPlanningValueWithDefault, toFollowUpValueWithDefault, toHIVPCRResultValueWithDefault, toHIVPCRTestValueWithDefault, toHIVResultValueWithDefault, toHIVTestValueUniversalWithDefault, toHIVTestValueWithDefault, toHbA1cTestValueWithDefault, toHealthEducationValueWithDefault, toHeightValueWithDefault, toHemoglobinResultValueWithDefault, toHemoglobinTestValueWithDefault, toHepatitisBResultValueWithDefault, toHepatitisBTestValueWithDefault, toLipidPanelResultValueWithDefault, toLipidPanelTestValueWithEmptyResults, toLiverFunctionResultValueWithDefault, toLiverFunctionTestValueWithEmptyResults, toMalariaResultValueWithDefault, toMalariaTestValueWithDefault, toMuacValueWithDefault, toNCDAValueWithDefault, toNonRDTValueWithDefault, toNutritionCaringValueWithDefault, toNutritionFeedingValueWithDefault, toNutritionFollowUpValueWithDefault, toNutritionFoodSecurityValueWithDefault, toNutritionHygieneValueWithDefault, toNutritionValueWithDefault, toOngoingTreatmentReviewValueWithDefault, toOutsideCareValueWithDefault, toPartnerHIVResultValueWithDefault, toPartnerHIVTestValueWithDefault, toPregnancyTestValueWithDefault, toRandomBloodSugarResultValueWithDefault, toRandomBloodSugarTestValueUniversalWithDefault, toRandomBloodSugarTestValueWithDefault, toSendToHCValueWithDefault, toSyphilisResultValueWithDefault, toSyphilisTestValueWithDefault, toUrineDipstickResultValueWithDefault, toUrineDipstickTestValueUniversalWithDefault, toUrineDipstickTestValueWithDefault, toVaccinationValueWithDefault, toVitalsValueWithDefault, toWeightValueWithDefault, treatmentReviewCustomReasonsForNotTakingInputsAndTasks, treatmentReviewInputsAndTasks, urineDipstickFormWithDefault, urineDipstickResultFormAndTasks, urineDipstickResultFormWithDefault, urineDipstickUniversalFormWithDefault, vaccinationFormDynamicContentAndTasks, vaccinationFormWithDefault, vaccineDoseToComparable, viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion, viewBloodGpRsTestForm, viewHIVPCRTestForm, viewHIVTestForm, viewHIVTestUniversalForm, viewHbA1cTestForm, viewHemoglobinTestForm, viewHepatitisBTestForm, viewMalariaTestForm, viewNonRDTForm, viewPartnerHIVTestForm, viewPregnancyTestForm, viewRandomBloodSugarTestForm, viewRandomBloodSugarTestUniversalForm, viewReinforceAdherenceQuestion, viewSelectInput, viewSyphilisTestForm, viewUrineDipstickTestForm, viewUrineDipstickTestUniversalForm, vitalsFormWithDefault, wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm, wasInitialOpvAdministeredByVaccinationProgress, weightFormWithDefault, withinConstraints)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Model exposing (CounselingTiming(..))
@@ -11,8 +11,6 @@ import Backend.NutritionEncounter.Utils
     exposing
         ( getChildScoreboardEncountersForParticipant
         , getWellChildEncountersForParticipant
-        , resolveIndividualNutritionValues
-        , resolveIndividualWellChildValues
         )
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Person)
@@ -310,33 +308,6 @@ fbfFormToValue form =
         |> Maybe.withDefault (FbfValue 0 DistributedFully)
 
 
-resolveIndividualNutritionValue :
-    List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
-    -> (NutritionMeasurements -> Maybe ( id, NutritionMeasurement a ))
-    -> (a -> b)
-    -> Maybe ( NominalDate, b )
-resolveIndividualNutritionValue measurementsWithDates measurementFunc valueFunc =
-    resolveIndividualNutritionValues measurementsWithDates measurementFunc valueFunc
-        |> List.head
-
-
-resolveIndividualWellChildValue :
-    List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
-    -> (WellChildMeasurements -> Maybe ( id, WellChildMeasurement a ))
-    -> (a -> b)
-    -> Maybe ( NominalDate, b )
-resolveIndividualWellChildValue measurementsWithDates measurementFunc valueFunc =
-    resolveIndividualWellChildValues measurementsWithDates measurementFunc valueFunc
-        |> List.head
-
-
-fromHeightValue : Maybe HeightInCm -> HeightForm
-fromHeightValue saved =
-    { height = Maybe.map getHeightValue saved
-    , heightDirty = False
-    }
-
-
 heightFormWithDefault : HeightForm -> Maybe HeightInCm -> HeightForm
 heightFormWithDefault form saved =
     saved
@@ -360,13 +331,6 @@ toHeightValue form =
     Maybe.map HeightInCm form.height
 
 
-fromMuacValue : Maybe MuacInCm -> MuacForm
-fromMuacValue saved =
-    { muac = Maybe.map muacValueFunc saved
-    , muacDirty = False
-    }
-
-
 muacFormWithDefault : MuacForm -> Maybe MuacInCm -> MuacForm
 muacFormWithDefault form saved =
     saved
@@ -388,13 +352,6 @@ toMuacValueWithDefault saved form =
 toMuacValue : MuacForm -> Maybe MuacInCm
 toMuacValue form =
     Maybe.map MuacInCm form.muac
-
-
-fromNutritionValue : Maybe NutritionValue -> NutritionForm
-fromNutritionValue saved =
-    { signs = Maybe.map (.signs >> EverySet.toList) saved
-    , assesment = Maybe.map .assesment saved
-    }
 
 
 nutritionFormWithDefault : NutritionForm -> Maybe NutritionValue -> NutritionForm
@@ -423,13 +380,6 @@ toNutritionValue form =
     in
     Maybe.map NutritionValue signs
         |> andMap form.assesment
-
-
-fromWeightValue : Maybe WeightInKg -> WeightForm
-fromWeightValue saved =
-    { weight = Maybe.map weightValueFunc saved
-    , weightDirty = False
-    }
 
 
 weightFormWithDefault : WeightForm -> Maybe WeightInKg -> WeightForm
@@ -1377,16 +1327,14 @@ outsideCareFormInputsAndTasks language config step form =
 
 treatmentReviewInputsAndTasks :
     Language
-    -> NominalDate
     -> ((Bool -> OngoingTreatmentReviewForm -> OngoingTreatmentReviewForm) -> Bool -> msg)
     -> (ReasonForNotTaking -> msg)
     -> (String -> msg)
     -> (AdverseEvent -> msg)
     -> OngoingTreatmentReviewForm
     -> ( List (Html msg), List (Maybe Bool) )
-treatmentReviewInputsAndTasks language currentDate setTreatmentReviewBoolInputMsg setReasonForNotTakingMsg setMissedDosesMsg setAdverseEventMsg form =
+treatmentReviewInputsAndTasks language setTreatmentReviewBoolInputMsg setReasonForNotTakingMsg setMissedDosesMsg setAdverseEventMsg form =
     treatmentReviewCustomReasonsForNotTakingInputsAndTasks language
-        currentDate
         ( [ NotTakingAdverseEvent, NotTakingNoMoney ], [ NotTakingMemoryProblems, NotTakingOther ] )
         setTreatmentReviewBoolInputMsg
         setReasonForNotTakingMsg
@@ -1397,7 +1345,6 @@ treatmentReviewInputsAndTasks language currentDate setTreatmentReviewBoolInputMs
 
 treatmentReviewCustomReasonsForNotTakingInputsAndTasks :
     Language
-    -> NominalDate
     -> ( List ReasonForNotTaking, List ReasonForNotTaking )
     -> ((Bool -> OngoingTreatmentReviewForm -> OngoingTreatmentReviewForm) -> Bool -> msg)
     -> (ReasonForNotTaking -> msg)
@@ -1405,7 +1352,7 @@ treatmentReviewCustomReasonsForNotTakingInputsAndTasks :
     -> (AdverseEvent -> msg)
     -> OngoingTreatmentReviewForm
     -> ( List (Html msg), List (Maybe Bool) )
-treatmentReviewCustomReasonsForNotTakingInputsAndTasks language currentDate ( reasonForNotTakingLeft, reasonForNotTakingRight ) setTreatmentReviewBoolInputMsg setReasonForNotTakingMsg setMissedDosesMsg setAdverseEventMsg form =
+treatmentReviewCustomReasonsForNotTakingInputsAndTasks language ( reasonForNotTakingLeft, reasonForNotTakingRight ) setTreatmentReviewBoolInputMsg setReasonForNotTakingMsg setMissedDosesMsg setAdverseEventMsg form =
     let
         ( takenAsPrescribedInputs, takenAsPrescribedTasks ) =
             let
@@ -1790,7 +1737,7 @@ outsideCareFormInputsAndTasksMedications language config form =
                             options =
                                 List.filter ((/=) noneOption) allOptions
                         in
-                        viewCheckBoxMultipleSelectCustomInput language
+                        viewCheckBoxMultipleSelectCustomInput
                             options
                             []
                             (Maybe.withDefault [] currentValue)
@@ -2955,7 +2902,7 @@ prenatalRDTFormInputsAndTasks :
 prenatalRDTFormInputsAndTasks language currentDate configInitial configPerformed task form =
     let
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
-            contentAndTasksLaboratoryTestInitial language currentDate configInitial task form
+            contentAndTasksLaboratoryTestInitial language configInitial task form
 
         ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
             if form.testPerformed == Just True then
@@ -3018,35 +2965,6 @@ prenatalRDTFormInputsAndTasks language currentDate configInitial configPerformed
     )
 
 
-viewNonRDTFormCheckKnownAsPositive :
-    Language
-    -> NominalDate
-    -> ContentAndTasksLaboratoryTestInitialConfig msg
-    -> ContentAndTasksForPerformedLaboratoryTestConfig msg
-    -> LaboratoryTask
-    -> NonRDTForm msg
-    -> ( Html msg, Int, Int )
-viewNonRDTFormCheckKnownAsPositive language currentDate configInitial configPerformed task form =
-    let
-        ( initialSection, initialTasksCompleted, initialTasksTotal ) =
-            contentAndTasksLaboratoryTestKnownAsPositive language currentDate configInitial task form
-
-        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
-            if form.knownAsPositive /= Just False then
-                ( [], 0, 0 )
-
-            else
-                nonRDTFormInputsAndTasks language currentDate configInitial configPerformed task form
-    in
-    ( div [ class "ui form laboratory non-rdt" ] <|
-        viewCustomLabel language (Translate.LaboratoryTaskLabel task) "" "label header"
-            :: initialSection
-            ++ derivedSection
-    , initialTasksCompleted + derivedTasksCompleted
-    , initialTasksTotal + derivedTasksTotal
-    )
-
-
 viewNonRDTForm :
     Language
     -> NominalDate
@@ -3079,7 +2997,7 @@ nonRDTFormInputsAndTasks :
 nonRDTFormInputsAndTasks language currentDate configInitial configPerformed task form =
     let
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
-            contentAndTasksLaboratoryTestInitial language currentDate configInitial task form
+            contentAndTasksLaboratoryTestInitial language configInitial task form
 
         ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
             if form.testPerformed == Just True then
@@ -3118,7 +3036,7 @@ viewHIVTestForm :
 viewHIVTestForm language currentDate configInitial configPerformed form =
     let
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
-            contentAndTasksLaboratoryTestKnownAsPositive language currentDate configInitial TaskHIVTest form
+            contentAndTasksLaboratoryTestKnownAsPositive language configInitial TaskHIVTest form
 
         emptySection =
             ( [], 0, 0 )
@@ -3261,7 +3179,7 @@ viewHIVTestUniversalForm :
 viewHIVTestUniversalForm language currentDate configInitial configPerformed partnerHIVTestResult form =
     let
         ( knownAsPositiveSection, knownAsPositiveTasksCompleted, knownAsPositiveTasksTotal ) =
-            contentAndTasksLaboratoryUniversalTestKnownAsPositive language currentDate configInitial TaskHIVTest form
+            contentAndTasksLaboratoryUniversalTestKnownAsPositive language configInitial TaskHIVTest form
 
         ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
             let
@@ -3351,7 +3269,6 @@ viewHIVTestUniversalForm language currentDate configInitial configPerformed part
 
 contentAndTasksLaboratoryResultConfirmation :
     Language
-    -> NominalDate
     -> ContentAndTasksLaboratoryResultConfig msg encounterId
     -> LaboratoryTask
     ->
@@ -3360,7 +3277,7 @@ contentAndTasksLaboratoryResultConfirmation :
             , executionNote : Maybe TestExecutionNote
         }
     -> ( List (Html msg), Int, Int )
-contentAndTasksLaboratoryResultConfirmation language currentDate config task form =
+contentAndTasksLaboratoryResultConfirmation language config task form =
     let
         msgs =
             let
@@ -3628,7 +3545,6 @@ contentAndTasksLaboratoryResultConfirmation language currentDate config task for
 
 hivResultFormAndTasks :
     Language
-    -> NominalDate
     -> Bool
     -> ContentAndTasksLaboratoryResultConfig msg encounterId
     -> (String -> msg)
@@ -3636,11 +3552,11 @@ hivResultFormAndTasks :
     -> TestResult
     -> HIVResultForm
     -> ( Html msg, Int, Int )
-hivResultFormAndTasks language currentDate isLabTech config setHIVTestResultMsg setHIVTestFormBoolInputMsg partnerHIVTestResult form =
+hivResultFormAndTasks language isLabTech config setHIVTestResultMsg setHIVTestFormBoolInputMsg partnerHIVTestResult form =
     let
         ( confirmationSection, confirmationTasksCompleted, confirmationTasksTotal ) =
             if isLabTech then
-                contentAndTasksLaboratoryResultConfirmation language currentDate config TaskHIVTest form
+                contentAndTasksLaboratoryResultConfirmation language config TaskHIVTest form
 
             else
                 ( [], 0, 0 )
@@ -3662,7 +3578,7 @@ hivResultFormAndTasks language currentDate isLabTech config setHIVTestResultMsg 
                 ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory prenatal-test-result" ] <|
-        resultFormHeaderSection language currentDate form.executionDate TaskHIVTest
+        resultFormHeaderSection language form.executionDate TaskHIVTest
             ++ confirmationSection
             ++ testResultSection
     , confirmationTasksCompleted + testResultTasksCompleted
@@ -3672,12 +3588,11 @@ hivResultFormAndTasks language currentDate isLabTech config setHIVTestResultMsg 
 
 hivResultFollowUpsFormAndTasks :
     Language
-    -> NominalDate
     -> ((Bool -> HIVResultForm -> HIVResultForm) -> Bool -> msg)
     -> TestResult
     -> HIVResultForm
     -> ( Html msg, Int, Int )
-hivResultFollowUpsFormAndTasks language currentDate setHIVTestFormBoolInputMsg partnerHIVTestResult form =
+hivResultFollowUpsFormAndTasks language setHIVTestFormBoolInputMsg partnerHIVTestResult form =
     let
         ( followUpsSection, followUpsTasksCompleted, followUpsTasksTotal ) =
             hivResultFollowUpInputsAndTasks language
@@ -3690,7 +3605,7 @@ hivResultFollowUpsFormAndTasks language currentDate setHIVTestFormBoolInputMsg p
                 form.partnerSurpressedViralLoad
     in
     ( div [ class "ui form laboratory prenatal-test-result" ] <|
-        resultFormHeaderSection language currentDate form.executionDate TaskHIVTest
+        resultFormHeaderSection language form.executionDate TaskHIVTest
             ++ followUpsSection
     , followUpsTasksCompleted
     , followUpsTasksTotal
@@ -4062,18 +3977,17 @@ viewMalariaTestForm language currentDate configInitial configPerformed form =
 
 malariaResultFormAndTasks :
     Language
-    -> NominalDate
     -> Bool
     -> ContentAndTasksLaboratoryResultConfig msg encounterId
     -> (String -> msg)
     -> (String -> msg)
     -> MalariaResultForm
     -> ( Html msg, Int, Int )
-malariaResultFormAndTasks language currentDate isLabTech config setMalariaTestResultMsg setBloodSmearResultMsg form =
+malariaResultFormAndTasks language isLabTech config setMalariaTestResultMsg setBloodSmearResultMsg form =
     let
         ( confirmationSection, confirmationTasksCompleted, confirmationTasksTotal ) =
             if isLabTech then
-                contentAndTasksLaboratoryResultConfirmation language currentDate config TaskMalariaTest form
+                contentAndTasksLaboratoryResultConfirmation language config TaskMalariaTest form
 
             else
                 ( [], 0, 0 )
@@ -4093,7 +4007,7 @@ malariaResultFormAndTasks language currentDate isLabTech config setMalariaTestRe
                 ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory prenatal-test-result" ] <|
-        resultFormHeaderSection language currentDate form.executionDate TaskMalariaTest
+        resultFormHeaderSection language form.executionDate TaskMalariaTest
             ++ confirmationSection
             ++ testResultSection
     , confirmationTasksCompleted + testResultTasksCompleted
@@ -4134,7 +4048,7 @@ viewPregnancyTestForm :
 viewPregnancyTestForm language currentDate configInitial configPerformed form =
     let
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
-            contentAndTasksLaboratoryTestKnownAsPositive language currentDate configInitial TaskPregnancyTest form
+            contentAndTasksLaboratoryTestKnownAsPositive language configInitial TaskPregnancyTest form
 
         ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
             if form.knownAsPositive /= Just False then
@@ -4162,7 +4076,7 @@ viewPartnerHIVTestForm :
 viewPartnerHIVTestForm language currentDate configInitial configPerformed form =
     let
         ( knownAsPositiveSection, knownAsPositiveTasksCompleted, knownAsPositiveTasksTotal ) =
-            contentAndTasksLaboratoryUniversalTestKnownAsPositive language currentDate configInitial TaskPartnerHIVTest form
+            contentAndTasksLaboratoryUniversalTestKnownAsPositive language configInitial TaskPartnerHIVTest form
 
         ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
             let
@@ -4321,18 +4235,17 @@ partnerARVViralLoadInputsAndTasks language setPartnerHIVTestFormBoolInputMsg par
 
 partnerHIVResultFormAndTasks :
     Language
-    -> NominalDate
     -> Bool
     -> ContentAndTasksLaboratoryResultConfig msg encounterId
     -> (String -> msg)
     -> ((Bool -> PartnerHIVResultForm -> PartnerHIVResultForm) -> Bool -> msg)
     -> PartnerHIVResultForm
     -> ( Html msg, Int, Int )
-partnerHIVResultFormAndTasks language currentDate isLabTech config setPartnerHIVTestResultMsg setFormBoolInputMsg form =
+partnerHIVResultFormAndTasks language isLabTech config setPartnerHIVTestResultMsg setFormBoolInputMsg form =
     let
         ( confirmationSection, confirmationTasksCompleted, confirmationTasksTotal ) =
             if isLabTech then
-                contentAndTasksLaboratoryResultConfirmation language currentDate config TaskPartnerHIVTest form
+                contentAndTasksLaboratoryResultConfirmation language config TaskPartnerHIVTest form
 
             else
                 ( [], 0, 0 )
@@ -4351,7 +4264,7 @@ partnerHIVResultFormAndTasks language currentDate isLabTech config setPartnerHIV
                 ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory prenatal-test-result" ] <|
-        resultFormHeaderSection language currentDate form.executionDate TaskPartnerHIVTest
+        resultFormHeaderSection language form.executionDate TaskPartnerHIVTest
             ++ confirmationSection
             ++ testResultSection
     , confirmationTasksCompleted + testResultTasksCompleted
@@ -4361,11 +4274,10 @@ partnerHIVResultFormAndTasks language currentDate isLabTech config setPartnerHIV
 
 partnerHIVResultFollowUpsFormAndTasks :
     Language
-    -> NominalDate
     -> ((Bool -> PartnerHIVResultForm -> PartnerHIVResultForm) -> Bool -> msg)
     -> PartnerHIVResultForm
     -> ( Html msg, Int, Int )
-partnerHIVResultFollowUpsFormAndTasks language currentDate setFormBoolInputMsg form =
+partnerHIVResultFollowUpsFormAndTasks language setFormBoolInputMsg form =
     let
         ( followUpsSection, followUpsTasksCompleted, followUpsTasksTotal ) =
             partnerHIVResultFollowUpInputsAndTasks language
@@ -4375,7 +4287,7 @@ partnerHIVResultFollowUpsFormAndTasks language currentDate setFormBoolInputMsg f
                 form.partnerSurpressedViralLoad
     in
     ( div [ class "ui form laboratory prenatal-test-result" ] <|
-        resultFormHeaderSection language currentDate form.executionDate TaskPartnerHIVTest
+        resultFormHeaderSection language form.executionDate TaskPartnerHIVTest
             ++ followUpsSection
     , followUpsTasksCompleted
     , followUpsTasksTotal
@@ -4490,7 +4402,7 @@ viewUrineDipstickTestForm :
 viewUrineDipstickTestForm language currentDate configInitial configPerformed form =
     let
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
-            contentAndTasksLaboratoryTestInitial language currentDate configInitial TaskUrineDipstickTest form
+            contentAndTasksLaboratoryTestInitial language configInitial TaskUrineDipstickTest form
 
         ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
             if form.testPerformed == Just True then
@@ -4651,7 +4563,6 @@ viewUrineDipstickTestUniversalForm language currentDate configInitial configPerf
 
 urineDipstickResultFormAndTasks :
     Language
-    -> NominalDate
     -> Bool
     -> ContentAndTasksLaboratoryResultConfig msg encounterId
     -> (String -> msg)
@@ -4665,11 +4576,11 @@ urineDipstickResultFormAndTasks :
     -> (String -> msg)
     -> UrineDipstickResultForm
     -> ( Html msg, Int, Int )
-urineDipstickResultFormAndTasks language currentDate isLabTech config setProteinMsg setPHMsg setGlucoseMsg setLeukocytesMsg setNitriteMsg setUrobilinogenMsg setHaemoglobinMsg setKetoneMsg setBilirubinMsg form =
+urineDipstickResultFormAndTasks language isLabTech config setProteinMsg setPHMsg setGlucoseMsg setLeukocytesMsg setNitriteMsg setUrobilinogenMsg setHaemoglobinMsg setKetoneMsg setBilirubinMsg form =
     let
         ( confirmationSection, confirmationTasksCompleted, confirmationTasksTotal ) =
             if isLabTech then
-                contentAndTasksLaboratoryResultConfirmation language currentDate config TaskUrineDipstickTest form
+                contentAndTasksLaboratoryResultConfirmation language config TaskUrineDipstickTest form
 
             else
                 ( [], 0, 0 )
@@ -4701,7 +4612,7 @@ urineDipstickResultFormAndTasks language currentDate isLabTech config setProtein
                 ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory urine-dipstick-result" ] <|
-        resultFormHeaderSection language currentDate form.executionDate TaskUrineDipstickTest
+        resultFormHeaderSection language form.executionDate TaskUrineDipstickTest
             ++ confirmationSection
             ++ testResultSection
     , confirmationTasksCompleted + testResultTasksCompleted
@@ -4881,7 +4792,7 @@ viewRandomBloodSugarTestForm :
 viewRandomBloodSugarTestForm language currentDate configInitial configPerformed form =
     let
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
-            contentAndTasksLaboratoryTestInitial language currentDate configInitial TaskRandomBloodSugarTest form
+            contentAndTasksLaboratoryTestInitial language configInitial TaskRandomBloodSugarTest form
 
         ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
             let
@@ -5034,17 +4945,16 @@ randomBloodSugarTestPrerequisitesInputsAndTasks language setRandomBloodSugarTest
 
 randomBloodSugarResultFormAndTasks :
     Language
-    -> NominalDate
     -> Bool
     -> ContentAndTasksLaboratoryResultConfig msg encounterId
     -> (String -> msg)
     -> RandomBloodSugarResultForm encounterId
     -> ( Html msg, Int, Int )
-randomBloodSugarResultFormAndTasks language currentDate isLabTech config setRandomBloodSugarMsg form =
+randomBloodSugarResultFormAndTasks language isLabTech config setRandomBloodSugarMsg form =
     let
         ( confirmationSection, confirmationTasksCompleted, confirmationTasksTotal ) =
             if isLabTech then
-                contentAndTasksLaboratoryResultConfirmation language currentDate config TaskRandomBloodSugarTest form
+                contentAndTasksLaboratoryResultConfirmation language config TaskRandomBloodSugarTest form
 
             else
                 ( [], 0, 0 )
@@ -5057,7 +4967,7 @@ randomBloodSugarResultFormAndTasks language currentDate isLabTech config setRand
                 ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory random-blood-sugar-result" ] <|
-        resultFormHeaderSection language currentDate form.executionDate TaskRandomBloodSugarTest
+        resultFormHeaderSection language form.executionDate TaskRandomBloodSugarTest
             ++ confirmationSection
             ++ testResultSection
     , confirmationTasksCompleted + testResultTasksCompleted
@@ -5159,18 +5069,17 @@ viewBloodGpRsTestForm language currentDate configInitial configPerformed form =
 
 bloodGpRsResultFormAndTasks :
     Language
-    -> NominalDate
     -> Bool
     -> ContentAndTasksLaboratoryResultConfig msg encounterId
     -> (String -> msg)
     -> (String -> msg)
     -> BloodGpRsResultForm encounterId
     -> ( Html msg, Int, Int )
-bloodGpRsResultFormAndTasks language currentDate isLabTech config setBloodGroupMsg setRhesusMsg form =
+bloodGpRsResultFormAndTasks language isLabTech config setBloodGroupMsg setRhesusMsg form =
     let
         ( confirmationSection, confirmationTasksCompleted, confirmationTasksTotal ) =
             if isLabTech then
-                contentAndTasksLaboratoryResultConfirmation language currentDate config TaskBloodGpRsTest form
+                contentAndTasksLaboratoryResultConfirmation language config TaskBloodGpRsTest form
 
             else
                 ( [], 0, 0 )
@@ -5187,7 +5096,7 @@ bloodGpRsResultFormAndTasks language currentDate isLabTech config setBloodGroupM
                 ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory blood-group-result" ] <|
-        resultFormHeaderSection language currentDate form.executionDate TaskBloodGpRsTest
+        resultFormHeaderSection language form.executionDate TaskBloodGpRsTest
             ++ confirmationSection
             ++ testResultSection
     , confirmationTasksCompleted + testResultTasksCompleted
@@ -5294,17 +5203,16 @@ viewHemoglobinTestForm language currentDate configInitial configPerformed form =
 
 hemoglobinResultFormAndTasks :
     Language
-    -> NominalDate
     -> Bool
     -> ContentAndTasksLaboratoryResultConfig msg encounterId
     -> (String -> msg)
     -> HemoglobinResultForm
     -> ( Html msg, Int, Int )
-hemoglobinResultFormAndTasks language currentDate isLabTech config setHemoglobinCountMsg form =
+hemoglobinResultFormAndTasks language isLabTech config setHemoglobinCountMsg form =
     let
         ( confirmationSection, confirmationTasksCompleted, confirmationTasksTotal ) =
             if isLabTech then
-                contentAndTasksLaboratoryResultConfirmation language currentDate config TaskHemoglobinTest form
+                contentAndTasksLaboratoryResultConfirmation language config TaskHemoglobinTest form
 
             else
                 ( [], 0, 0 )
@@ -5319,7 +5227,7 @@ hemoglobinResultFormAndTasks language currentDate isLabTech config setHemoglobin
                 ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory hemoglobin-result" ] <|
-        resultFormHeaderSection language currentDate form.executionDate TaskHemoglobinTest
+        resultFormHeaderSection language form.executionDate TaskHemoglobinTest
             ++ confirmationSection
             ++ testResultSection
     , confirmationTasksCompleted + testResultTasksCompleted
@@ -5355,7 +5263,7 @@ viewHepatitisBTestForm :
 viewHepatitisBTestForm language currentDate configInitial configPerformed form =
     let
         ( knownAsPositiveSection, knownAsPositiveTasksCompleted, knownAsPositiveTasksTotal ) =
-            contentAndTasksLaboratoryUniversalTestKnownAsPositive language currentDate configInitial TaskHepatitisBTest form
+            contentAndTasksLaboratoryUniversalTestKnownAsPositive language configInitial TaskHepatitisBTest form
 
         ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
             let
@@ -5426,17 +5334,16 @@ viewHepatitisBTestForm language currentDate configInitial configPerformed form =
 
 hepatitisBResultFormAndTasks :
     Language
-    -> NominalDate
     -> Bool
     -> ContentAndTasksLaboratoryResultConfig msg encounterId
     -> (String -> msg)
     -> HepatitisBResultForm encounterId
     -> ( Html msg, Int, Int )
-hepatitisBResultFormAndTasks language currentDate isLabTech config setHepatitisBTestResultMsg form =
+hepatitisBResultFormAndTasks language isLabTech config setHepatitisBTestResultMsg form =
     let
         ( confirmationSection, confirmationTasksCompleted, confirmationTasksTotal ) =
             if isLabTech then
-                contentAndTasksLaboratoryResultConfirmation language currentDate config TaskHepatitisBTest form
+                contentAndTasksLaboratoryResultConfirmation language config TaskHepatitisBTest form
 
             else
                 ( [], 0, 0 )
@@ -5452,7 +5359,7 @@ hepatitisBResultFormAndTasks language currentDate isLabTech config setHepatitisB
                 ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory prenatal-test-result" ] <|
-        resultFormHeaderSection language currentDate form.executionDate TaskHepatitisBTest
+        resultFormHeaderSection language form.executionDate TaskHepatitisBTest
             ++ confirmationSection
             ++ testResultSection
     , confirmationTasksCompleted + testResultTasksCompleted
@@ -5536,18 +5443,17 @@ viewHIVPCRTestForm language currentDate configInitial configPerformed form =
 
 hivPCRResultFormAndTasks :
     Language
-    -> NominalDate
     -> Bool
     -> ContentAndTasksLaboratoryResultConfig msg encounterId
     -> (String -> msg)
     -> (Bool -> msg)
     -> HIVPCRResultForm
     -> ( Html msg, Int, Int )
-hivPCRResultFormAndTasks language currentDate isLabTech config setHIVViralLoadMsg setHIVViralLoadUndetectableMsg form =
+hivPCRResultFormAndTasks language isLabTech config setHIVViralLoadMsg setHIVViralLoadUndetectableMsg form =
     let
         ( confirmationSection, confirmationTasksCompleted, confirmationTasksTotal ) =
             if isLabTech then
-                contentAndTasksLaboratoryResultConfirmation language currentDate config TaskHIVPCRTest form
+                contentAndTasksLaboratoryResultConfirmation language config TaskHIVPCRTest form
 
             else
                 ( [], 0, 0 )
@@ -5564,7 +5470,7 @@ hivPCRResultFormAndTasks language currentDate isLabTech config setHIVViralLoadMs
                 ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory hiv-prc-result" ] <|
-        resultFormHeaderSection language currentDate form.executionDate TaskHIVPCRTest
+        resultFormHeaderSection language form.executionDate TaskHIVPCRTest
             ++ confirmationSection
             ++ testResultSection
     , confirmationTasksCompleted + testResultTasksCompleted
@@ -5692,18 +5598,17 @@ viewSyphilisTestForm language currentDate configInitial configPerformed form =
 
 syphilisResultFormAndTasks :
     Language
-    -> NominalDate
     -> Bool
     -> ContentAndTasksLaboratoryResultConfig msg encounterId
     -> (String -> msg)
     -> (IllnessSymptom -> msg)
     -> SyphilisResultForm encounterId
     -> ( Html msg, Int, Int )
-syphilisResultFormAndTasks language currentDate isLabTech config setTestResultMsg setIllnessSymptomMsg form =
+syphilisResultFormAndTasks language isLabTech config setTestResultMsg setIllnessSymptomMsg form =
     let
         ( confirmationSection, confirmationTasksCompleted, confirmationTasksTotal ) =
             if isLabTech then
-                contentAndTasksLaboratoryResultConfirmation language currentDate config TaskSyphilisTest form
+                contentAndTasksLaboratoryResultConfirmation language config TaskSyphilisTest form
 
             else
                 ( [], 0, 0 )
@@ -5721,7 +5626,7 @@ syphilisResultFormAndTasks language currentDate isLabTech config setTestResultMs
                 ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory prenatal-test-result" ] <|
-        resultFormHeaderSection language currentDate form.executionDate TaskSyphilisTest
+        resultFormHeaderSection language form.executionDate TaskSyphilisTest
             ++ confirmationSection
             ++ testResultSection
     , confirmationTasksCompleted + testResultTasksCompleted
@@ -5731,11 +5636,10 @@ syphilisResultFormAndTasks language currentDate isLabTech config setTestResultMs
 
 syphilisResultFollowUpsFormAndTasks :
     Language
-    -> NominalDate
     -> (IllnessSymptom -> msg)
     -> SyphilisResultForm encounterId
     -> ( Html msg, Int, Int )
-syphilisResultFollowUpsFormAndTasks language currentDate setIllnessSymptomMsg form =
+syphilisResultFollowUpsFormAndTasks language setIllnessSymptomMsg form =
     let
         ( followUpsSection, followUpsTasksCompleted, followUpsTasksTotal ) =
             syphilisResultFollowUpInputsAndTasks language
@@ -5743,7 +5647,7 @@ syphilisResultFollowUpsFormAndTasks language currentDate setIllnessSymptomMsg fo
                 form.symptoms
     in
     ( div [ class "ui form laboratory prenatal-test-result" ] <|
-        resultFormHeaderSection language currentDate form.executionDate TaskSyphilisTest
+        resultFormHeaderSection language form.executionDate TaskSyphilisTest
             ++ followUpsSection
     , followUpsTasksCompleted
     , followUpsTasksTotal
@@ -5805,12 +5709,11 @@ syphilisResultFollowUpInputsAndTasks language setIllnessSymptomMsg symptoms =
 viewHbA1cTestForm :
     Language
     -> NominalDate
-    -> ContentAndTasksLaboratoryTestInitialConfig msg
     -> ContentAndTasksForPerformedLaboratoryTestConfig msg
     -> List NominalDate
     -> HbA1cTestForm msg
     -> ( Html msg, Int, Int )
-viewHbA1cTestForm language currentDate configInitial configPerformed previousTestsDates form =
+viewHbA1cTestForm language currentDate configPerformed previousTestsDates form =
     let
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
             if List.isEmpty previousTestsDates then
@@ -5947,12 +5850,11 @@ viewHbA1cTestForm language currentDate configInitial configPerformed previousTes
 
 contentAndTasksLaboratoryTestKnownAsPositive :
     Language
-    -> NominalDate
     -> ContentAndTasksLaboratoryTestInitialConfig msg
     -> LaboratoryTask
     -> { f | knownAsPositive : Maybe Bool }
     -> ( List (Html msg), Int, Int )
-contentAndTasksLaboratoryTestKnownAsPositive language currentDate config task form =
+contentAndTasksLaboratoryTestKnownAsPositive language config task form =
     let
         updateFunc =
             \knownAsPositive form_ ->
@@ -6006,12 +5908,11 @@ contentAndTasksLaboratoryTestKnownAsPositive language currentDate config task fo
 
 contentAndTasksLaboratoryUniversalTestKnownAsPositive :
     Language
-    -> NominalDate
     -> ContentAndTasksLaboratoryUniversalTestInitialConfig msg
     -> LaboratoryTask
     -> { f | knownAsPositive : Maybe Bool }
     -> ( List (Html msg), Int, Int )
-contentAndTasksLaboratoryUniversalTestKnownAsPositive language currentDate config task form =
+contentAndTasksLaboratoryUniversalTestKnownAsPositive language config task form =
     let
         updateFunc =
             \knownAsPositive form_ ->
@@ -6091,7 +5992,6 @@ contentAndTasksLaboratoryUniversalTestKnownAsPositive language currentDate confi
 
 contentAndTasksLaboratoryTestInitial :
     Language
-    -> NominalDate
     -> ContentAndTasksLaboratoryTestInitialConfig msg
     -> LaboratoryTask
     ->
@@ -6100,7 +6000,7 @@ contentAndTasksLaboratoryTestInitial :
             , executionNote : Maybe TestExecutionNote
         }
     -> ( List (Html msg), Int, Int )
-contentAndTasksLaboratoryTestInitial language currentDate config task form =
+contentAndTasksLaboratoryTestInitial language config task form =
     let
         boolInputUpdateFunc =
             \value form_ ->
@@ -7975,12 +7875,11 @@ toHbA1cTestValue form =
 
 creatinineResultFormAndTasks :
     Language
-    -> NominalDate
     -> (String -> msg)
     -> (String -> msg)
     -> CreatinineResultForm
     -> ( Html msg, Int, Int )
-creatinineResultFormAndTasks language currentDate setCreatinineResultMsg setBUNResultMsg form =
+creatinineResultFormAndTasks language setCreatinineResultMsg setBUNResultMsg form =
     let
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
             ( [ viewLabel language Translate.LaboratoryCreatinineCreatinineResult
@@ -8001,7 +7900,7 @@ creatinineResultFormAndTasks language currentDate setCreatinineResultMsg setBUNR
             )
     in
     ( div [ class "ui form laboratory creatinine-result" ] <|
-        resultFormHeaderSection language currentDate form.executionDate TaskCreatinineTest
+        resultFormHeaderSection language form.executionDate TaskCreatinineTest
             ++ testResultSection
     , testResultTasksCompleted
     , testResultTasksTotal
@@ -8010,12 +7909,11 @@ creatinineResultFormAndTasks language currentDate setCreatinineResultMsg setBUNR
 
 liverFunctionResultFormAndTasks :
     Language
-    -> NominalDate
     -> (String -> msg)
     -> (String -> msg)
     -> LiverFunctionResultForm
     -> ( Html msg, Int, Int )
-liverFunctionResultFormAndTasks language currentDate setAltResultMsg setAstResultMsg form =
+liverFunctionResultFormAndTasks language setAltResultMsg setAstResultMsg form =
     let
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
             ( [ viewLabel language Translate.LaboratoryLiverFunctionAltResult
@@ -8036,7 +7934,7 @@ liverFunctionResultFormAndTasks language currentDate setAltResultMsg setAstResul
             )
     in
     ( div [ class "ui form laboratory liver-function-result" ] <|
-        resultFormHeaderSection language currentDate form.executionDate TaskLiverFunctionTest
+        resultFormHeaderSection language form.executionDate TaskLiverFunctionTest
             ++ testResultSection
     , testResultTasksCompleted
     , testResultTasksTotal
@@ -8045,7 +7943,6 @@ liverFunctionResultFormAndTasks language currentDate setAltResultMsg setAstResul
 
 lipidPanelResultFormAndTasks :
     Language
-    -> NominalDate
     -> (String -> msg)
     -> (String -> msg)
     -> (String -> msg)
@@ -8053,7 +7950,7 @@ lipidPanelResultFormAndTasks :
     -> (String -> msg)
     -> LipidPanelResultForm
     -> ( Html msg, Int, Int )
-lipidPanelResultFormAndTasks language currentDate setUnitOfMeasurementMsg setTotalCholesterolResultMsg setLDLCholesterolResultMsg setHDLCholesterolResultMsg setTriglyceridesResultMsg form =
+lipidPanelResultFormAndTasks language setUnitOfMeasurementMsg setTotalCholesterolResultMsg setLDLCholesterolResultMsg setHDLCholesterolResultMsg setTriglyceridesResultMsg form =
     let
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
             let
@@ -8110,15 +8007,15 @@ lipidPanelResultFormAndTasks language currentDate setUnitOfMeasurementMsg setTot
             )
     in
     ( div [ class "ui form laboratory lipid-panel-result" ] <|
-        resultFormHeaderSection language currentDate form.executionDate TaskLipidPanelTest
+        resultFormHeaderSection language form.executionDate TaskLipidPanelTest
             ++ testResultSection
     , testResultTasksCompleted
     , testResultTasksTotal
     )
 
 
-resultFormHeaderSection : Language -> NominalDate -> Maybe NominalDate -> LaboratoryTask -> List (Html msg)
-resultFormHeaderSection language currentDate executionDate task =
+resultFormHeaderSection : Language -> Maybe NominalDate -> LaboratoryTask -> List (Html msg)
+resultFormHeaderSection language executionDate task =
     let
         executionDateSection =
             Maybe.map
@@ -8683,85 +8580,6 @@ resolveChildANCPregnancyData childId db =
                 ( participant.eddDate, encountersDates )
             )
         |> Maybe.withDefault ( Nothing, EverySet.empty )
-
-
-childDiagnosedWithMalnutrition : PersonId -> ModelIndexedDb -> Bool
-childDiagnosedWithMalnutrition childId db =
-    let
-        individualParticipants =
-            Dict.get childId db.individualParticipantsByPerson
-                |> Maybe.andThen RemoteData.toMaybe
-                |> Maybe.map Dict.toList
-                |> Maybe.withDefault []
-
-        individualWellChildParticipantId =
-            List.filter
-                (\( _, participant ) ->
-                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.WellChildEncounter
-                )
-                individualParticipants
-                |> List.head
-                |> Maybe.map Tuple.first
-
-        individualNutritionParticipantId =
-            List.filter
-                (\( _, participant ) ->
-                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.NutritionEncounter
-                )
-                individualParticipants
-                |> List.head
-                |> Maybe.map Tuple.first
-
-        groupNutritionMeasurements =
-            Dict.get childId db.childMeasurements
-                |> Maybe.andThen RemoteData.toMaybe
-                |> Maybe.withDefault emptyChildMeasurementList
-
-        individualNutritionMeasurements =
-            Maybe.map
-                (\participantId ->
-                    Backend.Measurement.Utils.generatePreviousMeasurements
-                        Backend.NutritionEncounter.Utils.getNutritionEncountersForParticipant
-                        .nutritionMeasurements
-                        Nothing
-                        participantId
-                        db
-                )
-                individualNutritionParticipantId
-                |> Maybe.withDefault []
-                |> List.map (Tuple.second >> Tuple.second)
-
-        individualWellChildMeasurements =
-            Maybe.map
-                (\participantId ->
-                    Backend.Measurement.Utils.generatePreviousMeasurements
-                        getWellChildEncountersForParticipant
-                        .wellChildMeasurements
-                        Nothing
-                        participantId
-                        db
-                )
-                individualWellChildParticipantId
-                |> Maybe.withDefault []
-                |> List.map (Tuple.second >> Tuple.second)
-
-        groupNutritionAssessment =
-            generateGroupNutritionAssessmentEntries groupNutritionMeasurements
-
-        individualNutritionAssessment =
-            generateIndividualNutritionAssessmentEntries individualNutritionMeasurements
-
-        individuaWellChildAssessment =
-            generateIndividualNutritionAssessmentEntries individualWellChildMeasurements
-    in
-    individualNutritionAssessment
-        ++ groupNutritionAssessment
-        ++ individuaWellChildAssessment
-        |> List.any
-            (\( _, assessments ) ->
-                List.member AssesmentAcuteMalnutritionModerate assessments
-                    || List.member AssesmentAcuteMalnutritionSevere assessments
-            )
 
 
 resoloveLastScheduledImmunizationVisitDate : PersonId -> ModelIndexedDb -> Maybe NominalDate

@@ -1,4 +1,4 @@
-module Pages.AcuteIllness.Encounter.Utils exposing (generateAssembledData, generatePreviousMeasurements, getAcuteIllnessDiagnosisByPreviousEncounters, getAcuteIllnessDiagnosisForParticipant)
+module Pages.AcuteIllness.Encounter.Utils exposing (generateAssembledData, getAcuteIllnessDiagnosisForParticipant)
 
 import AssocList as Dict
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
@@ -94,14 +94,6 @@ generateAssembledData currentDate features id isChw db =
 
                 ( firstInitialWithSubsequent, secondInitialWithSubsequent ) =
                     let
-                        currentEncounterData =
-                            AcuteIllnessEncounterData id
-                                data.encounter.encounterType
-                                data.encounter.startDate
-                                data.encounter.sequenceNumber
-                                data.encounter.diagnosis
-                                data.measurements
-
                         nurseEncounterIndex =
                             List.indexedMap (\index encounterData -> ( index, encounterData.encounterType ))
                                 data.previousEncountersData

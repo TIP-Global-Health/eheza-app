@@ -1,8 +1,7 @@
-module Pages.WellChild.Activity.Model exposing (DangerSignsData, HeadCircumferenceForm, HomeVisitData, ImmunisationData, MedicationData, Model, Msg(..), NextStepsData, NextVisitForm, NutritionAssessmentData, PregnancySummaryForm, SymptomsReviewForm, WarningPopupType(..), WellChildECDForm, WellChildVaccinationForm, emptyDangerSignsData, emptyHeadCircumferenceForm, emptyHomeVisitData, emptyImmunisationData, emptyMedicationData, emptyModel, emptyNextStepsData, emptyNextVisitForm, emptyNutritionAssessmentData, emptyPregnancySummaryForm, emptySymptomsReviewForm, emptyWellChildECDForm, medicationTasks)
+module Pages.WellChild.Activity.Model exposing (DangerSignsData, HeadCircumferenceForm, HomeVisitData, ImmunisationData, MedicationData, Model, Msg(..), NextStepsData, NextVisitForm, NutritionAssessmentData, PregnancySummaryForm, SymptomsReviewForm, WarningPopupType(..), WellChildECDForm, WellChildVaccinationForm, emptyModel, medicationTasks)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Person.Model exposing (Person)
 import Date exposing (Date)
 import DateSelector.Model exposing (DateSelectorConfig)
 import EverySet exposing (EverySet)
@@ -10,8 +9,6 @@ import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (ContributingFactorsForm, DropZoneFile, HealthEducationForm, HeightForm, ImmunisationTask, MedicationAdministrationForm, MuacForm, NCDAData, NCDAForm, NCDAStep, NutritionCaringForm, NutritionFeedingForm, NutritionFollowUpForm, NutritionFoodSecurityForm, NutritionForm, NutritionHygieneForm, PhotoForm, SendToHCForm, VaccinationForm, VaccinationFormViewMode, VitalsForm, WeightForm, emptyContributingFactorsForm, emptyHealthEducationForm, emptyHeightForm, emptyMedicationAdministrationForm, emptyMuacForm, emptyNCDAData, emptyNutritionCaringForm, emptyNutritionFeedingForm, emptyNutritionFollowUpForm, emptyNutritionFoodSecurityForm, emptyNutritionForm, emptyNutritionHygieneForm, emptyPhotoForm, emptySendToHCForm, emptyVaccinationForm, emptyVitalsForm, emptyWeightForm)
 import Pages.Page exposing (Page)
 import Pages.WellChild.Activity.Types exposing (DangerSignsTask, MedicationTask(..), NutritionAssessmentTask)
-import SyncManager.Model exposing (Site)
-import Translate exposing (TranslationId)
 
 
 type Msg

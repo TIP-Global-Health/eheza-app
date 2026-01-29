@@ -1,4 +1,4 @@
-module Backend.ResilienceMessage.Decoder exposing (decodeResilienceMessage, decodeResilienceMessages)
+module Backend.ResilienceMessage.Decoder exposing (decodeResilienceMessages)
 
 import AssocList as Dict exposing (Dict)
 import Backend.ResilienceMessage.Model exposing (ResilienceCategory, ResilienceMessage, ResilienceMessageOrder)

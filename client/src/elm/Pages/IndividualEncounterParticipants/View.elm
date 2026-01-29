@@ -165,7 +165,7 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
             results
                 |> Maybe.withDefault (Success Dict.empty)
                 |> RemoteData.withDefault Dict.empty
-                |> Dict.map (viewParticipant language currentDate encounterType db)
+                |> Dict.map (viewParticipant language currentDate encounterType)
                 |> Dict.values
 
         searchHelper =
@@ -205,8 +205,8 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
         ]
 
 
-viewParticipant : Language -> NominalDate -> IndividualEncounterType -> ModelIndexedDb -> PersonId -> Person -> Html Msg
-viewParticipant language currentDate encounterType db id person =
+viewParticipant : Language -> NominalDate -> IndividualEncounterType -> PersonId -> Person -> Html Msg
+viewParticipant language currentDate encounterType id person =
     let
         action =
             case encounterType of

@@ -38,11 +38,11 @@ view language currentDate nurse id db model =
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate nurse id model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate nurse model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> Nurse -> PrenatalEncounterId -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate nurse id model assembled =
+viewHeaderAndContent : Language -> NominalDate -> Nurse -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate nurse model assembled =
     let
         header =
             viewHeader language

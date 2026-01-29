@@ -30,7 +30,7 @@ update id1 id2 msg model =
             , [ App.Model.SetActivePage page ]
             )
 
-        Reset _ ->
+        Reset ->
             ( emptyModel
             , Cmd.none
             , []

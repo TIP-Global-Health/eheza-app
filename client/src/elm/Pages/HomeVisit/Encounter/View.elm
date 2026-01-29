@@ -24,17 +24,17 @@ view language currentDate id isChw db model =
         data =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate id isChw db model) identity data
+    viewWebData language (viewHeaderAndContent language currentDate id isChw model) identity data
 
 
-viewHeaderAndContent : Language -> NominalDate -> HomeVisitEncounterId -> Bool -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id isChw db model data =
+viewHeaderAndContent : Language -> NominalDate -> HomeVisitEncounterId -> Bool -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate id isChw model data =
     let
         header =
             viewHeader language isChw data
 
         content =
-            viewContent language currentDate id isChw db model data
+            viewContent language currentDate id model data
     in
     div [ class "page-encounter home-visit" ]
         [ header
@@ -63,21 +63,21 @@ viewHeader language isChw data =
         ]
 
 
-viewContent : Language -> NominalDate -> HomeVisitEncounterId -> Bool -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate id isChw db model data =
+viewContent : Language -> NominalDate -> HomeVisitEncounterId -> Model -> AssembledData -> Html Msg
+viewContent language currentDate id model data =
     ((viewPersonDetails language currentDate data.person Nothing |> div [ class "item" ])
-        :: viewMainPageContent language currentDate id isChw db data model
+        :: viewMainPageContent language id data model
     )
         |> div [ class "ui unstackable items" ]
 
 
-viewMainPageContent : Language -> NominalDate -> HomeVisitEncounterId -> Bool -> ModelIndexedDb -> AssembledData -> Model -> List (Html Msg)
-viewMainPageContent language currentDate id isChw db data model =
+viewMainPageContent : Language -> HomeVisitEncounterId -> AssembledData -> Model -> List (Html Msg)
+viewMainPageContent language id data model =
     let
         ( completedActivities, pendingActivities ) =
             allActivities
-                |> List.filter (expectActivity currentDate data.person data db)
-                |> List.partition (activityCompleted currentDate data.person data db)
+                |> List.filter expectActivity
+                |> List.partition (activityCompleted data)
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities

@@ -1,4 +1,4 @@
-module Backend.ResilienceMessage.Utils exposing (emptyMessagesDict, generateEmptyMessagesByProgramStartDate, generateResilienceMessageId, numberOfMessagesByCategory, resilienceCategoryFromString, resilienceCategoryToString, resilienceMessageOrderFromString, resilienceMessageOrderToString, resolveDisplayDay)
+module Backend.ResilienceMessage.Utils exposing (emptyMessagesDict, generateEmptyMessagesByProgramStartDate, generateResilienceMessageId, resilienceCategoryFromString, resilienceCategoryToString, resilienceMessageOrderFromString, resilienceMessageOrderToString)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (ResilienceMessageId)

@@ -21,7 +21,6 @@ import Pages.Clinics.Fetch
 import Pages.Dashboard.Fetch
 import Pages.Device.Fetch
 import Pages.EducationSession.Fetch
-import Pages.EducationSession.Model
 import Pages.GlobalCaseManagement.Fetch
 import Pages.GroupEncounterTypes.Fetch
 import Pages.HIV.Activity.Fetch
@@ -247,17 +246,17 @@ fetch model =
                         )
                     |> Maybe.withDefault []
 
-            UserPage (IndividualEncounterParticipantsPage encounterType) ->
+            UserPage (IndividualEncounterParticipantsPage _) ->
                 getLoggedInData model
                     |> Maybe.map
                         (\( _, loggedIn ) ->
-                            Pages.IndividualEncounterParticipants.Fetch.fetch encounterType loggedIn.individualEncounterParticipantsPage
+                            Pages.IndividualEncounterParticipants.Fetch.fetch loggedIn.individualEncounterParticipantsPage
                                 |> List.map MsgIndexedDb
                         )
                     |> Maybe.withDefault []
 
             UserPage (RelationshipPage id1 id2 _) ->
-                Pages.Relationship.Fetch.fetch id1 id2 model.indexedDb
+                Pages.Relationship.Fetch.fetch id1 id2
                     |> List.map MsgIndexedDb
 
             UserPage (SessionPage sessionId sessionPage) ->
@@ -382,13 +381,8 @@ fetch model =
             UserPage (EducationSessionPage id) ->
                 getLoggedInData model
                     |> Maybe.map
-                        (\( _, loggedIn ) ->
-                            let
-                                page_ =
-                                    Dict.get id loggedIn.educationSessionPages
-                                        |> Maybe.withDefault Pages.EducationSession.Model.emptyModel
-                            in
-                            Pages.EducationSession.Fetch.fetch id model.villageId model.indexedDb page_
+                        (\_ ->
+                            Pages.EducationSession.Fetch.fetch id model.villageId
                                 |> List.map MsgIndexedDb
                         )
                     |> Maybe.withDefault []
@@ -479,7 +473,7 @@ fetch model =
                 getLoggedInData model
                     |> Maybe.map
                         (\( healthCenterId, _ ) ->
-                            Pages.StockManagement.Fetch.fetch currentDate healthCenterId model.indexedDb
+                            Pages.StockManagement.Fetch.fetch healthCenterId
                                 |> List.map MsgIndexedDb
                         )
                     |> Maybe.withDefault []

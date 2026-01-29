@@ -1,4 +1,4 @@
-module Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, diagnosisRequiresEmergencyReferal, emergencyReferalRequired, examinationMeasurementTaken, examinationTasksCompletedFromTotal, expectActivity, expectExaminationTask, expectLaboratoryResultFollowUpsTask, expectLaboratoryResultTask, expectNextStepsTask, generateVitalsFormConfig, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, laboratoryResultFollowUpsTaskCompleted, laboratoryResultFollowUpsTasks, laboratoryResultTaskCompleted, laboratoryResultTasks, matchRequiredReferralFacility, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, referToARVProgram, referralFacilities, resolveExaminationTasks, resolveLaboratoryResultFollowUpsTasks, resolveLaboratoryResultTasks, resolveNextStepsTasks, resolveReferralInputsAndTasks, resolveRequiredReferralFacilities, toHealthEducationValue, toHealthEducationValueWithDefault)
+module Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, diagnosisRequiresEmergencyReferal, examinationMeasurementTaken, examinationTasksCompletedFromTotal, expectActivity, generateVitalsFormConfig, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, laboratoryResultFollowUpsTaskCompleted, laboratoryResultTaskCompleted, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultFollowUpsTasks, resolveLaboratoryResultTasks, resolveNextStepsTasks, resolveReferralInputsAndTasks, toHealthEducationValueWithDefault)
 
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
@@ -7,7 +7,6 @@ import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
-import Html.Attributes exposing (..)
 import Maybe.Extra exposing (isJust, or, unwrap)
 import Measurement.Model
     exposing
@@ -44,7 +43,7 @@ expectActivity : NominalDate -> Bool -> AssembledData -> PrenatalRecurrentActivi
 expectActivity currentDate isLabTech assembled activity =
     case activity of
         LabResults ->
-            resolveLaboratoryResultTasks currentDate isLabTech assembled
+            resolveLaboratoryResultTasks isLabTech assembled
                 |> List.isEmpty
                 |> not
 
@@ -54,7 +53,7 @@ expectActivity currentDate isLabTech assembled activity =
                 |> not
 
         RecurrentExamination ->
-            resolveExaminationTasks currentDate assembled
+            resolveExaminationTasks assembled
                 |> List.isEmpty
                 |> not
 
@@ -62,7 +61,7 @@ expectActivity currentDate isLabTech assembled activity =
             expectMalariaPreventionActivity PhaseRecurrent assembled
 
         LabsResultsFollowUps ->
-            resolveLaboratoryResultFollowUpsTasks currentDate assembled
+            resolveLaboratoryResultFollowUpsTasks assembled
                 |> List.isEmpty
                 |> not
 
@@ -72,8 +71,8 @@ activityCompleted currentDate isLabTech assembled activity =
     case activity of
         LabResults ->
             (not <| expectActivity currentDate isLabTech assembled LabResults)
-                || (resolveLaboratoryResultTasks currentDate isLabTech assembled
-                        |> List.all (laboratoryResultTaskCompleted currentDate isLabTech assembled)
+                || (resolveLaboratoryResultTasks isLabTech assembled
+                        |> List.all (laboratoryResultTaskCompleted isLabTech assembled)
                    )
 
         RecurrentNextSteps ->
@@ -84,7 +83,7 @@ activityCompleted currentDate isLabTech assembled activity =
 
         RecurrentExamination ->
             (not <| expectActivity currentDate isLabTech assembled RecurrentExamination)
-                || (resolveExaminationTasks currentDate assembled
+                || (resolveExaminationTasks assembled
                         |> List.all (examinationMeasurementTaken assembled)
                    )
 
@@ -94,8 +93,8 @@ activityCompleted currentDate isLabTech assembled activity =
 
         LabsResultsFollowUps ->
             (not <| expectActivity currentDate isLabTech assembled LabsResultsFollowUps)
-                || (resolveLaboratoryResultFollowUpsTasks currentDate assembled
-                        |> List.all (laboratoryResultFollowUpsTaskCompleted currentDate assembled)
+                || (resolveLaboratoryResultFollowUpsTasks assembled
+                        |> List.all (laboratoryResultFollowUpsTaskCompleted assembled)
                    )
 
 
@@ -114,16 +113,16 @@ laboratoryResultTasks =
     ]
 
 
-resolveLaboratoryResultTasks : NominalDate -> Bool -> AssembledData -> List LaboratoryTask
-resolveLaboratoryResultTasks currentDate isLabTech assembled =
-    List.filter (expectLaboratoryResultTask currentDate isLabTech assembled) laboratoryResultTasks
+resolveLaboratoryResultTasks : Bool -> AssembledData -> List LaboratoryTask
+resolveLaboratoryResultTasks isLabTech assembled =
+    List.filter (expectLaboratoryResultTask isLabTech assembled) laboratoryResultTasks
 
 
-laboratoryResultTaskCompleted : NominalDate -> Bool -> AssembledData -> LaboratoryTask -> Bool
-laboratoryResultTaskCompleted currentDate isLabTech assembled task =
+laboratoryResultTaskCompleted : Bool -> AssembledData -> LaboratoryTask -> Bool
+laboratoryResultTaskCompleted isLabTech assembled task =
     let
         taskExpected =
-            expectLaboratoryResultTask currentDate isLabTech assembled
+            expectLaboratoryResultTask isLabTech assembled
 
         testResultsCompleted getMeasurementFunc getResultFieldFunc =
             getMeasurementFunc assembled.measurements
@@ -186,8 +185,8 @@ laboratoryResultTaskCompleted currentDate isLabTech assembled task =
             False
 
 
-expectLaboratoryResultTask : NominalDate -> Bool -> AssembledData -> LaboratoryTask -> Bool
-expectLaboratoryResultTask currentDate isLabTech assembled task =
+expectLaboratoryResultTask : Bool -> AssembledData -> LaboratoryTask -> Bool
+expectLaboratoryResultTask isLabTech assembled task =
     let
         wasTestPerformed getMeasurementFunc =
             getMeasurementFunc assembled.measurements
@@ -254,16 +253,16 @@ laboratoryResultFollowUpsTasks =
     ]
 
 
-resolveLaboratoryResultFollowUpsTasks : NominalDate -> AssembledData -> List LaboratoryTask
-resolveLaboratoryResultFollowUpsTasks currentDate assembled =
-    List.filter (expectLaboratoryResultFollowUpsTask currentDate assembled) laboratoryResultFollowUpsTasks
+resolveLaboratoryResultFollowUpsTasks : AssembledData -> List LaboratoryTask
+resolveLaboratoryResultFollowUpsTasks assembled =
+    List.filter (expectLaboratoryResultFollowUpsTask assembled) laboratoryResultFollowUpsTasks
 
 
-laboratoryResultFollowUpsTaskCompleted : NominalDate -> AssembledData -> LaboratoryTask -> Bool
-laboratoryResultFollowUpsTaskCompleted currentDate assembled task =
+laboratoryResultFollowUpsTaskCompleted : AssembledData -> LaboratoryTask -> Bool
+laboratoryResultFollowUpsTaskCompleted assembled task =
     let
         taskExpected =
-            expectLaboratoryResultFollowUpsTask currentDate assembled
+            expectLaboratoryResultFollowUpsTask assembled
 
         testFollowUpCompleted getMeasurementFunc getResultFieldFunc pendingValue =
             getMeasurementFunc assembled.measurements
@@ -287,8 +286,8 @@ laboratoryResultFollowUpsTaskCompleted currentDate assembled task =
             False
 
 
-expectLaboratoryResultFollowUpsTask : NominalDate -> AssembledData -> LaboratoryTask -> Bool
-expectLaboratoryResultFollowUpsTask currentDate assembled task =
+expectLaboratoryResultFollowUpsTask : AssembledData -> LaboratoryTask -> Bool
+expectLaboratoryResultFollowUpsTask assembled task =
     let
         wasFollowUpScheduled test =
             getMeasurementValueFunc assembled.measurements.labsResults
@@ -304,7 +303,7 @@ expectLaboratoryResultFollowUpsTask currentDate assembled task =
                     -- So we either do not expect TaskPartnerHIVTest follow up, or,
                     -- only when test HIV result is positive.
                     not <|
-                        expectLaboratoryResultFollowUpsTask currentDate assembled TaskPartnerHIVTest
+                        expectLaboratoryResultFollowUpsTask assembled TaskPartnerHIVTest
                             || (getMeasurementValueFunc assembled.measurements.hivTest
                                     |> Maybe.map (.testResult >> (==) (Just TestPositive))
                                     |> Maybe.withDefault False
@@ -450,7 +449,6 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
 
                 ( _, tasks ) =
                     resolveReferralInputsAndTasks language
-                        currentDate
                         assembled
                         SetReferralBoolInput
                         SetFacilityNonReferralReason
@@ -505,14 +503,14 @@ diagnosisRequiresEmergencyReferal diagnosis =
     List.member diagnosis emergencyReferralDiagnosesRecurrent
 
 
-resolveExaminationTasks : NominalDate -> AssembledData -> List ExaminationTask
-resolveExaminationTasks currentDate assembled =
-    List.filter (expectExaminationTask currentDate assembled)
+resolveExaminationTasks : AssembledData -> List ExaminationTask
+resolveExaminationTasks assembled =
+    List.filter (expectExaminationTask assembled)
         [ ExaminationVitals ]
 
 
-expectExaminationTask : NominalDate -> AssembledData -> ExaminationTask -> Bool
-expectExaminationTask currentDate assembled task =
+expectExaminationTask : AssembledData -> ExaminationTask -> Bool
+expectExaminationTask assembled task =
     case task of
         ExaminationVitals ->
             -- Hypertension is a chronic diagnosis for whole duration
@@ -659,13 +657,12 @@ toHealthEducationValue saved form =
 
 resolveReferralInputsAndTasks :
     Language
-    -> NominalDate
     -> AssembledData
     -> ((Bool -> ReferralForm -> ReferralForm) -> Bool -> msg)
     -> (Maybe ReasonForNonReferral -> ReferralFacility -> ReasonForNonReferral -> msg)
     -> ReferralForm
     -> ( List (Html msg), List (Maybe Bool) )
-resolveReferralInputsAndTasks language currentDate assembled setReferralBoolInputMsg setNonReferralReasonMsg form =
+resolveReferralInputsAndTasks language assembled setReferralBoolInputMsg setNonReferralReasonMsg form =
     let
         foldResults =
             List.foldr
@@ -675,7 +672,7 @@ resolveReferralInputsAndTasks language currentDate assembled setReferralBoolInpu
                 ( [], [] )
     in
     resolveRequiredReferralFacilities assembled
-        |> List.map (resolveReferralToFacilityInputsAndTasks language currentDate PrenatalEncounterPhaseRecurrent assembled setReferralBoolInputMsg setNonReferralReasonMsg form)
+        |> List.map (resolveReferralToFacilityInputsAndTasks language PrenatalEncounterPhaseRecurrent assembled setReferralBoolInputMsg setNonReferralReasonMsg form)
         |> foldResults
 
 

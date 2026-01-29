@@ -79,14 +79,14 @@ view language currentDate site id activity db model =
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate site id activity db model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate site id activity model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> Site -> NCDEncounterId -> NCDActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate site id activity db model assembled =
+viewHeaderAndContent : Language -> NominalDate -> Site -> NCDEncounterId -> NCDActivity -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate site id activity model assembled =
     div [ class "page-activity ncd" ] <|
         [ viewHeader language id activity
-        , viewContent language currentDate site activity db model assembled
+        , viewContent language currentDate site activity model assembled
         ]
 
 
@@ -106,44 +106,44 @@ viewHeader language id activity =
         ]
 
 
-viewContent : Language -> NominalDate -> Site -> NCDActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate site activity db model assembled =
+viewContent : Language -> NominalDate -> Site -> NCDActivity -> Model -> AssembledData -> Html Msg
+viewContent language currentDate site activity model assembled =
     div [ class "ui unstackable items" ] <|
         ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
-            :: viewActivity language currentDate site activity assembled db model
+            :: viewActivity language currentDate site activity assembled model
         )
 
 
-viewActivity : Language -> NominalDate -> Site -> NCDActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewActivity language currentDate site activity assembled db model =
+viewActivity : Language -> NominalDate -> Site -> NCDActivity -> AssembledData -> Model -> List (Html Msg)
+viewActivity language currentDate site activity assembled model =
     case activity of
         DangerSigns ->
-            viewDangerSignsContent language currentDate assembled model.dangerSignsData
+            viewDangerSignsContent language assembled model.dangerSignsData
 
         Examination ->
             viewExaminationContent language currentDate assembled model.examinationData
 
         FamilyPlanning ->
-            viewFamilyPlanningContent language currentDate assembled model.familyPlanningData
+            viewFamilyPlanningContent language assembled model.familyPlanningData
 
         Laboratory ->
             viewLaboratoryContent language currentDate assembled model.laboratoryData
 
         MedicalHistory ->
-            viewMedicalHistoryContent language currentDate site assembled model.medicalHistoryData
+            viewMedicalHistoryContent language site assembled model.medicalHistoryData
 
         SymptomReview ->
-            viewSymptomReviewContent language currentDate assembled model.symptomReviewData
+            viewSymptomReviewContent language assembled model.symptomReviewData
 
         OutsideCare ->
-            viewOutsideCareContent language currentDate assembled model.medicalHistoryData.outsideCareForm
+            viewOutsideCareContent language assembled model.medicalHistoryData.outsideCareForm
 
         NextSteps ->
-            viewNextStepsContent language currentDate assembled model.nextStepsData
+            viewNextStepsContent language assembled model.nextStepsData
 
 
-viewDangerSignsContent : Language -> NominalDate -> AssembledData -> DangerSignsData -> List (Html Msg)
-viewDangerSignsContent language currentDate assembled data =
+viewDangerSignsContent : Language -> AssembledData -> DangerSignsData -> List (Html Msg)
+viewDangerSignsContent language assembled data =
     let
         form =
             assembled.measurements.dangerSigns
@@ -177,8 +177,8 @@ viewDangerSignsContent language currentDate assembled data =
     ]
 
 
-viewSymptomReviewContent : Language -> NominalDate -> AssembledData -> SymptomReviewData -> List (Html Msg)
-viewSymptomReviewContent language currentDate assembled data =
+viewSymptomReviewContent : Language -> AssembledData -> SymptomReviewData -> List (Html Msg)
+viewSymptomReviewContent language assembled data =
     let
         form =
             assembled.measurements.symptomReview
@@ -240,8 +240,8 @@ viewSymptomReviewContent language currentDate assembled data =
     ]
 
 
-viewFamilyPlanningContent : Language -> NominalDate -> AssembledData -> FamilyPlanningData -> List (Html Msg)
-viewFamilyPlanningContent language currentDate assembled data =
+viewFamilyPlanningContent : Language -> AssembledData -> FamilyPlanningData -> List (Html Msg)
+viewFamilyPlanningContent language assembled data =
     let
         form =
             assembled.measurements.familyPlanning
@@ -332,7 +332,7 @@ viewExaminationContent language currentDate assembled data =
                 Just TaskCoreExam ->
                     getMeasurementValueFunc assembled.measurements.coreExam
                         |> corePhysicalExamFormWithDefault data.coreExamForm
-                        |> viewCoreExamForm language currentDate
+                        |> viewCoreExamForm language
 
                 Nothing ->
                     emptyNode
@@ -386,8 +386,8 @@ viewVitalsForm language currentDate assembled form =
     Measurement.View.viewVitalsForm language currentDate config form
 
 
-viewCoreExamForm : Language -> NominalDate -> CorePhysicalExamForm -> Html Msg
-viewCoreExamForm language currentDate form =
+viewCoreExamForm : Language -> CorePhysicalExamForm -> Html Msg
+viewCoreExamForm language form =
     let
         config =
             { setBoolInputMsg = SetCoreExamBoolInput
@@ -399,11 +399,11 @@ viewCoreExamForm language currentDate form =
             , setLegsMsg = SetCoreExamLegs
             }
     in
-    Measurement.View.viewCorePhysicalExamForm language currentDate config form
+    Measurement.View.viewCorePhysicalExamForm language config form
 
 
-viewMedicalHistoryContent : Language -> NominalDate -> Site -> AssembledData -> MedicalHistoryData -> List (Html Msg)
-viewMedicalHistoryContent language currentDate site assembled data =
+viewMedicalHistoryContent : Language -> Site -> AssembledData -> MedicalHistoryData -> List (Html Msg)
+viewMedicalHistoryContent language site assembled data =
     let
         tasks =
             [ TaskCoMorbidities
@@ -473,7 +473,7 @@ viewMedicalHistoryContent language currentDate site assembled data =
                             )
 
                         _ ->
-                            ( task, medicalHistoryTasksCompletedFromTotal currentDate site assembled data task )
+                            ( task, medicalHistoryTasksCompletedFromTotal site assembled data task )
                 )
                 tasks
                 |> Dict.fromList
@@ -502,22 +502,22 @@ viewMedicalHistoryContent language currentDate site assembled data =
                 Just TaskCoMorbidities ->
                     getMeasurementValueFunc assembled.measurements.coMorbidities
                         |> coMorbiditiesFormWithDefault data.coMorbiditiesForm
-                        |> viewCoMorbiditiesForm language currentDate
+                        |> viewCoMorbiditiesForm language
 
                 Just TaskMedicationHistory ->
                     getMeasurementValueFunc assembled.measurements.medicationHistory
                         |> medicationHistoryFormWithDefault data.medicationHistoryForm
-                        |> viewMedicationHistoryForm language currentDate
+                        |> viewMedicationHistoryForm language
 
                 Just TaskSocialHistory ->
                     getMeasurementValueFunc assembled.measurements.socialHistory
                         |> socialHistoryFormWithDefault data.socialHistoryForm
-                        |> viewSocialHistoryForm language currentDate site
+                        |> viewSocialHistoryForm language site
 
                 Just TaskFamilyHistory ->
                     getMeasurementValueFunc assembled.measurements.familyHistory
                         |> familyHistoryFormWithDefault data.familyHistoryForm
-                        |> viewFamilyHistoryForm language currentDate
+                        |> viewFamilyHistoryForm language
 
                 Just TaskOutsideCare ->
                     div [ class "ui form history outside-care" ]
@@ -619,8 +619,8 @@ viewMedicalHistoryContent language currentDate site assembled data =
     ]
 
 
-viewOutsideCareContent : Language -> NominalDate -> AssembledData -> OutsideCareForm MedicalCondition -> List (Html Msg)
-viewOutsideCareContent language currentDate assembled form =
+viewOutsideCareContent : Language -> AssembledData -> OutsideCareForm MedicalCondition -> List (Html Msg)
+viewOutsideCareContent language assembled form =
     let
         outsideCareForm =
             assembled.measurements.outsideCare
@@ -712,41 +712,41 @@ outsideCareConfig =
     }
 
 
-viewCoMorbiditiesForm : Language -> NominalDate -> CoMorbiditiesForm -> Html Msg
-viewCoMorbiditiesForm language currentDate form =
+viewCoMorbiditiesForm : Language -> CoMorbiditiesForm -> Html Msg
+viewCoMorbiditiesForm language form =
     let
         ( inputs, _ ) =
-            coMorbiditiesFormInputsAndTasks language currentDate form
+            coMorbiditiesFormInputsAndTasks language form
     in
     div [ class "ui form co-morbidities" ]
         inputs
 
 
-viewMedicationHistoryForm : Language -> NominalDate -> MedicationHistoryForm -> Html Msg
-viewMedicationHistoryForm language currentDate form =
+viewMedicationHistoryForm : Language -> MedicationHistoryForm -> Html Msg
+viewMedicationHistoryForm language form =
     let
         ( inputs, _ ) =
-            medicationHistoryFormInputsAndTasks language currentDate form
+            medicationHistoryFormInputsAndTasks language form
     in
     div [ class "ui form medication-history" ]
         inputs
 
 
-viewSocialHistoryForm : Language -> NominalDate -> Site -> SocialHistoryForm -> Html Msg
-viewSocialHistoryForm language currentDate site form =
+viewSocialHistoryForm : Language -> Site -> SocialHistoryForm -> Html Msg
+viewSocialHistoryForm language site form =
     let
         ( inputs, _ ) =
-            socialHistoryFormInputsAndTasks language currentDate site form
+            socialHistoryFormInputsAndTasks language site form
     in
     div [ class "ui form social-history" ]
         inputs
 
 
-viewFamilyHistoryForm : Language -> NominalDate -> FamilyHistoryForm -> Html Msg
-viewFamilyHistoryForm language currentDate form =
+viewFamilyHistoryForm : Language -> FamilyHistoryForm -> Html Msg
+viewFamilyHistoryForm language form =
     let
         ( inputs, _ ) =
-            familyHistoryFormInputsAndTasks language currentDate form
+            familyHistoryFormInputsAndTasks language form
     in
     div [ class "ui form family-history" ]
         inputs
@@ -874,7 +874,6 @@ viewLaboratoryContent language currentDate assembled data =
                                 |> hba1cTestFormWithDefault data.hba1cTestForm
                                 |> viewHbA1cTestForm language
                                     currentDate
-                                    contentAndTasksLaboratoryTestInitialConfig
                                     contentAndTasksForPerformedLaboratoryTestConfig
                                     previousTestsDates
 
@@ -1014,14 +1013,14 @@ contentAndTasksForPerformedLaboratoryTestConfig =
            )
 
 
-viewNextStepsContent : Language -> NominalDate -> AssembledData -> NextStepsData -> List (Html Msg)
-viewNextStepsContent language currentDate assembled data =
+viewNextStepsContent : Language -> AssembledData -> NextStepsData -> List (Html Msg)
+viewNextStepsContent language assembled data =
     let
         measurements =
             assembled.measurements
 
         tasks =
-            resolveNextStepsTasks currentDate assembled
+            resolveNextStepsTasks assembled
 
         activeTask =
             resolveActiveTask tasks data.activeTask
@@ -1071,7 +1070,7 @@ viewNextStepsContent language currentDate assembled data =
             tasks
                 |> List.map
                     (\task ->
-                        ( task, nextStepsTasksCompletedFromTotal currentDate assembled data task )
+                        ( task, nextStepsTasksCompletedFromTotal assembled data task )
                     )
                 |> Dict.fromList
 
@@ -1084,13 +1083,12 @@ viewNextStepsContent language currentDate assembled data =
                 Just TaskHealthEducation ->
                     getMeasurementValueFunc measurements.healthEducation
                         |> healthEducationFormWithDefault data.healthEducationForm
-                        |> viewHealthEducationForm language currentDate assembled
+                        |> viewHealthEducationForm language
 
                 Just TaskMedicationDistribution ->
                     getMeasurementValueFunc measurements.medicationDistribution
                         |> medicationDistributionFormWithDefault data.medicationDistributionForm
                         |> viewMedicationDistributionForm language
-                            currentDate
                             NCDEncounterPhaseInitial
                             SetRecommendedTreatmentSignSingle
                             SetRecommendedTreatmentSignMultiple
@@ -1101,7 +1099,6 @@ viewNextStepsContent language currentDate assembled data =
                     getMeasurementValueFunc measurements.referral
                         |> referralFormWithDefault data.referralForm
                         |> viewReferralForm language
-                            currentDate
                             NCDEncounterPhaseInitial
                             SetReferralBoolInput
                             SetFacilityNonReferralReason
@@ -1148,11 +1145,11 @@ viewNextStepsContent language currentDate assembled data =
     ]
 
 
-viewHealthEducationForm : Language -> NominalDate -> AssembledData -> HealthEducationForm -> Html Msg
-viewHealthEducationForm language currentDate assembled form =
+viewHealthEducationForm : Language -> HealthEducationForm -> Html Msg
+viewHealthEducationForm language form =
     let
         ( inputs, _ ) =
-            healthEducationFormInputsAndTasks language currentDate form
+            healthEducationFormInputsAndTasks language form
     in
     div [ class "ui form health-education" ]
         inputs

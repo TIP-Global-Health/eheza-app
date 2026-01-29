@@ -5,7 +5,7 @@ import Backend.Model exposing (MsgIndexedDb(..))
 
 
 fetch : Maybe NurseId -> List MsgIndexedDb
-fetch nurseId =
+fetch _ =
     [ FetchHealthCenters
     , FetchClinics
     , FetchVillages

@@ -1,4 +1,4 @@
-module Pages.NCD.Utils exposing (allNCDDiagnoses, allRecommendedTreatmentSignsForHypertension, applyHypertensionDiagnosesLogic, bloodPressureSatisfiesCondition, diabetesDiagnoses, diagnosed, diagnosedAnyOf, diagnosedPreviously, diagnosedPreviouslyAnyOf, diagnosedPreviouslyWithDiabetes, filterDiagnosesOfDeterminedConditions, filterPreviousEncountersDataToDate, generateAssembledData, generateNCDDiagnoses, generatePreviousEncountersData, generateRecommendedTreatmentSignsForHypertension, getCurrentReasonForNonReferralByForm, hypertensionDiagnoses, lowerHypertensionStageCondition, matchNCDDiagnosis, medicateForDiabetes, medicateForHypertension, medicationDistributionFormWithDefault, ncdDiagnosisToNumber, nonReferralReasonSection, patientIsPregnant, recommendedTreatmentForDiabetesInputAndTask, recommendedTreatmentForHypertensionInputAndTask, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForDiabetes, referForDiabetes, referForHypertension, referForRenalComplications, referralFormWithDefault, referralToFacilityCompleted, renalComplicationsByCreatine, renalComplicationsByUrineProtein, reportedAnyOfCoMorbidities, resolveCurrentHypertensionCondition, resolveHypertensionCondition, resolveMedicationDistributionInputsAndTasks, resolvePreviousHypertensionCondition, resolveReferralInputsAndTasks, stage1BloodPressureCondition, stage2BloodPressureCondition, stage3BloodPressureCondition, toMedicationDistributionValue, toMedicationDistributionValueWithDefault, toReferralValue, toReferralValueWithDefault, updateChronicDiagnoses, viewTreatmentOptionForDiabetes)
+module Pages.NCD.Utils exposing (allRecommendedTreatmentSignsForHypertension, diabetesDiagnoses, diagnosed, diagnosedAnyOf, diagnosedPreviouslyAnyOf, generateAssembledData, generateNCDDiagnoses, generateRecommendedTreatmentSignsForHypertension, hypertensionDiagnoses, medicateForDiabetes, medicateForHypertension, medicationDistributionFormWithDefault, patientIsPregnant, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForDiabetes, referForDiabetes, referForHypertension, referForRenalComplications, referralFormWithDefault, referralToFacilityCompleted, resolveMedicationDistributionInputsAndTasks, resolveReferralInputsAndTasks, toMedicationDistributionValueWithDefault, toReferralValueWithDefault, updateChronicDiagnoses)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -101,9 +101,9 @@ generatePreviousEncountersData currentEncounterId participantId db =
         |> List.sortWith sortByStartDateDesc
 
 
-generateNCDDiagnoses : NominalDate -> AssembledData -> EverySet NCDDiagnosis
-generateNCDDiagnoses currentDate assembled =
-    List.filter (matchNCDDiagnosis currentDate assembled) allNCDDiagnoses
+generateNCDDiagnoses : AssembledData -> EverySet NCDDiagnosis
+generateNCDDiagnoses assembled =
+    List.filter (matchNCDDiagnosis assembled) allNCDDiagnoses
         |> applyHypertensionDiagnosesLogic assembled
         |> filterDiagnosesOfDeterminedConditions assembled
         |> EverySet.fromList
@@ -196,18 +196,18 @@ filterDiagnosesOfDeterminedConditions assembled =
     List.filter (\diagnosis -> not <| List.member diagnosis diagnosesToFilter)
 
 
-matchNCDDiagnosis : NominalDate -> AssembledData -> NCDDiagnosis -> Bool
-matchNCDDiagnosis currentDate assembled diagnosis =
+matchNCDDiagnosis : AssembledData -> NCDDiagnosis -> Bool
+matchNCDDiagnosis assembled diagnosis =
     case diagnosis of
         DiagnosisHypertensionStage1 ->
-            (not <| matchNCDDiagnosis currentDate assembled DiagnosisHypertensionStage2)
-                && (not <| matchNCDDiagnosis currentDate assembled DiagnosisHypertensionStage3)
+            (not <| matchNCDDiagnosis assembled DiagnosisHypertensionStage2)
+                && (not <| matchNCDDiagnosis assembled DiagnosisHypertensionStage3)
                 && (reportedAnyOfCoMorbidities assembled [ MedicalConditionHypertension, MedicalConditionPregnancyRelatedHypertension ]
                         || bloodPressureSatisfiesCondition stage1BloodPressureCondition assembled
                    )
 
         DiagnosisHypertensionStage2 ->
-            (not <| matchNCDDiagnosis currentDate assembled DiagnosisHypertensionStage3)
+            (not <| matchNCDDiagnosis assembled DiagnosisHypertensionStage3)
                 && bloodPressureSatisfiesCondition stage2BloodPressureCondition assembled
 
         DiagnosisHypertensionStage3 ->
@@ -275,7 +275,7 @@ stage3BloodPressureCondition sys dia =
 
 
 lowerHypertensionStageCondition : Float -> Float -> Bool
-lowerHypertensionStageCondition sys dia =
+lowerHypertensionStageCondition sys _ =
     sys < 100
 
 
@@ -315,11 +315,6 @@ hypertensionDiagnoses =
 diabetesDiagnoses : List NCDDiagnosis
 diabetesDiagnoses =
     [ DiagnosisDiabetesInitial, DiagnosisDiabetesRecurrent ]
-
-
-resolvePreviousHypertensionCondition : AssembledData -> Maybe NCDDiagnosis
-resolvePreviousHypertensionCondition =
-    .previousEncountersData >> resolveHypertensionCondition
 
 
 resolveCurrentHypertensionCondition : AssembledData -> Maybe NCDDiagnosis
@@ -524,7 +519,6 @@ toMedicationDistributionValue form =
 
 resolveMedicationDistributionInputsAndTasks :
     Language
-    -> NominalDate
     -> NCDEncounterPhase
     -> AssembledData
     -> (List RecommendedTreatmentSign -> RecommendedTreatmentSign -> msg)
@@ -532,7 +526,7 @@ resolveMedicationDistributionInputsAndTasks :
     -> ((Bool -> MedicationDistributionForm -> MedicationDistributionForm) -> Bool -> msg)
     -> MedicationDistributionForm
     -> ( List (Html msg), Int, Int )
-resolveMedicationDistributionInputsAndTasks language currentDate phase assembled setRecommendedTreatmentSignSingleMsg setRecommendedTreatmentSignMultipleMsg setMedicationDistributionBoolInputMsg form =
+resolveMedicationDistributionInputsAndTasks language phase assembled setRecommendedTreatmentSignSingleMsg setRecommendedTreatmentSignMultipleMsg setMedicationDistributionBoolInputMsg form =
     let
         ( hypertensionInputs, hypertensionCompleted, hypertensionActive ) =
             if medicateForHypertension phase assembled then
@@ -541,7 +535,6 @@ resolveMedicationDistributionInputsAndTasks language currentDate phase assembled
                         generateRecommendedTreatmentSignsForHypertension assembled
                 in
                 recommendedTreatmentForHypertensionInputAndTask language
-                    currentDate
                     (setRecommendedTreatmentSignMultipleMsg recommendedTreatmentSignsForHypertension NoTreatmentForHypertension)
                     assembled
                     form
@@ -552,7 +545,6 @@ resolveMedicationDistributionInputsAndTasks language currentDate phase assembled
         ( diabetesInputs, diabetesCompleted, diabetesActive ) =
             if medicateForDiabetes phase assembled then
                 recommendedTreatmentForDiabetesInputAndTask language
-                    currentDate
                     recommendedTreatmentSignsForDiabetes
                     (setRecommendedTreatmentSignSingleMsg recommendedTreatmentSignsForDiabetes)
                     assembled
@@ -638,12 +630,11 @@ medicateForHypertension phase assembled =
 
 recommendedTreatmentForHypertensionInputAndTask :
     Language
-    -> NominalDate
     -> (RecommendedTreatmentSign -> msg)
     -> AssembledData
     -> MedicationDistributionForm
     -> ( List (Html msg), Int, Int )
-recommendedTreatmentForHypertensionInputAndTask language currentDate setRecommendedTreatmentSignMsg assembled form =
+recommendedTreatmentForHypertensionInputAndTask language setRecommendedTreatmentSignMsg assembled form =
     let
         -- Since we may have values set for another diagnosis, or from
         -- the other phase of encounter, we need to filter them out,
@@ -694,7 +685,7 @@ recommendedTreatmentForHypertensionInputAndTask language currentDate setRecommen
                 "icon-pills"
                 (text <| translate language instructions ++ ":")
             ]
-      , viewCheckBoxMultipleSelectCustomInput language
+      , viewCheckBoxMultipleSelectCustomInput
             options
             []
             currentValue
@@ -714,13 +705,12 @@ recommendedTreatmentForHypertensionInputAndTask language currentDate setRecommen
 
 recommendedTreatmentForDiabetesInputAndTask :
     Language
-    -> NominalDate
     -> List RecommendedTreatmentSign
     -> (RecommendedTreatmentSign -> msg)
     -> AssembledData
     -> MedicationDistributionForm
     -> ( List (Html msg), Int, Int )
-recommendedTreatmentForDiabetesInputAndTask language currentDate options setRecommendedTreatmentSignMsg assembled form =
+recommendedTreatmentForDiabetesInputAndTask language options setRecommendedTreatmentSignMsg assembled form =
     let
         -- Since we may have values set for another diagnosis, or from
         -- the other phase of encounter, we need to filter them out,
@@ -780,7 +770,7 @@ recommendedTreatmentForDiabetesInputAndTask language currentDate options setReco
                 "icon-pills"
                 (text <| translate language Translate.InstructionsChooseOneMedication ++ ":")
             ]
-      , viewCheckBoxSelectCustomInput language
+      , viewCheckBoxSelectCustomInput
             options
             []
             currentValue
@@ -814,14 +804,13 @@ viewTreatmentOptionForDiabetes language sign =
 
 resolveReferralInputsAndTasks :
     Language
-    -> NominalDate
     -> NCDEncounterPhase
     -> AssembledData
     -> ((Bool -> ReferralForm -> ReferralForm) -> Bool -> msg)
     -> (Maybe ReasonForNonReferral -> ReferralFacility -> ReasonForNonReferral -> msg)
     -> ReferralForm
     -> ( List (Html msg), List (Maybe Bool) )
-resolveReferralInputsAndTasks language currentDate phase assembled setReferralBoolInputMsg setNonReferralReasonMsg form =
+resolveReferralInputsAndTasks language phase assembled setReferralBoolInputMsg setNonReferralReasonMsg form =
     let
         facility =
             if referForHypertension phase assembled && patientIsPregnant assembled.measurements then

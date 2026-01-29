@@ -51,13 +51,12 @@ viewMedicationDistributionForm language currentDate phase assembled setBoolInput
 
 viewMalariaPreventionContent :
     Language
-    -> NominalDate
     -> AssembledData
     -> ((Bool -> MalariaPreventionForm -> MalariaPreventionForm) -> Bool -> msg)
     -> (PersonId -> Maybe ( MalariaPreventionId, MalariaPrevention ) -> msg)
     -> MalariaPreventionData
     -> List (Html msg)
-viewMalariaPreventionContent language currentDate assembled setBoolInputMsg saveMsg data =
+viewMalariaPreventionContent language assembled setBoolInputMsg saveMsg data =
     let
         form =
             assembled.measurements.malariaPrevention

@@ -6,5 +6,5 @@ import Gizra.NominalDate exposing (NominalDate)
 
 
 fetch : NominalDate -> NurseId -> ModelIndexedDb -> List MsgIndexedDb
-fetch currentDate nurseId db =
+fetch _ nurseId _ =
     [ FetchResilienceSurveysForNurse nurseId ]

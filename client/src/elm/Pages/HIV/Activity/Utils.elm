@@ -41,7 +41,7 @@ expectActivity currentDate assembled activity =
             assembled.initialEncounter
 
         Medication ->
-            resolveMedicationTasks currentDate assembled
+            resolveMedicationTasks assembled
                 |> List.isEmpty
                 |> not
 
@@ -50,7 +50,7 @@ expectActivity currentDate assembled activity =
 
         NextSteps ->
             mandatoryActivitiesForNextStepsCompleted currentDate assembled
-                && (resolveNextStepsTasks currentDate assembled
+                && (resolveNextStepsTasks assembled
                         |> List.isEmpty
                         |> not
                    )
@@ -69,7 +69,7 @@ activityCompleted currentDate assembled activity =
 
         Medication ->
             notExpected Medication
-                || (resolveMedicationTasks currentDate assembled
+                || (resolveMedicationTasks assembled
                         |> List.all (medicationTaskCompleted assembled)
                    )
 
@@ -79,7 +79,7 @@ activityCompleted currentDate assembled activity =
 
         NextSteps ->
             notExpected NextSteps
-                || (resolveNextStepsTasks currentDate assembled
+                || (resolveNextStepsTasks assembled
                         |> List.all (nextStepsTaskCompleted assembled)
                    )
 
@@ -89,13 +89,13 @@ medicationTasks =
     [ TaskPrescribedMedication, TaskTreatmentReview ]
 
 
-resolveMedicationTasks : NominalDate -> AssembledData -> List MedicationTask
-resolveMedicationTasks currentDate assembled =
-    List.filter (expectMedicationTask currentDate assembled) medicationTasks
+resolveMedicationTasks : AssembledData -> List MedicationTask
+resolveMedicationTasks assembled =
+    List.filter (expectMedicationTask assembled) medicationTasks
 
 
-expectMedicationTask : NominalDate -> AssembledData -> MedicationTask -> Bool
-expectMedicationTask currentDate assembled task =
+expectMedicationTask : AssembledData -> MedicationTask -> Bool
+expectMedicationTask assembled task =
     case task of
         TaskPrescribedMedication ->
             True
@@ -115,8 +115,8 @@ medicationTaskCompleted assembled task =
             isJust assembled.measurements.treatmentReview
 
 
-medicationTasksCompletedFromTotal : Language -> NominalDate -> AssembledData -> MedicationData -> MedicationTask -> ( Int, Int )
-medicationTasksCompletedFromTotal language currentDate assembled data task =
+medicationTasksCompletedFromTotal : Language -> AssembledData -> MedicationData -> MedicationTask -> ( Int, Int )
+medicationTasksCompletedFromTotal language assembled data task =
     case task of
         TaskPrescribedMedication ->
             let
@@ -125,7 +125,7 @@ medicationTasksCompletedFromTotal language currentDate assembled data task =
                         |> prescribedMedicationFormWithDefault data.prescribedMedicationForm
 
                 ( _, ( tasksCompleted, tasksTotal ) ) =
-                    prescribedMedicationsInputsAndTasks language currentDate assembled form
+                    prescribedMedicationsInputsAndTasks language assembled form
             in
             ( tasksCompleted
             , tasksTotal
@@ -139,7 +139,6 @@ medicationTasksCompletedFromTotal language currentDate assembled data task =
 
                 ( _, tasks ) =
                     treatmentReviewInputsAndTasks language
-                        currentDate
                         SetTreatmentReviewBoolInput
                         SetReasonForNotTaking
                         SetTotalMissedDoses
@@ -154,13 +153,13 @@ nextStepsTasks =
     [ TaskReferral, TaskHealthEducation, TaskFollowUp ]
 
 
-resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask
-resolveNextStepsTasks currentDate assembled =
-    List.filter (expectNextStepsTask currentDate assembled) nextStepsTasks
+resolveNextStepsTasks : AssembledData -> List NextStepsTask
+resolveNextStepsTasks assembled =
+    List.filter (expectNextStepsTask assembled) nextStepsTasks
 
 
-expectNextStepsTask : NominalDate -> AssembledData -> NextStepsTask -> Bool
-expectNextStepsTask currentDate assembled task =
+expectNextStepsTask : AssembledData -> NextStepsTask -> Bool
+expectNextStepsTask assembled task =
     case task of
         TaskReferral ->
             adverseEventReported assembled.measurements
@@ -224,21 +223,20 @@ nextStepsTaskCompleted assembled task =
             isJust assembled.measurements.followUp
 
 
-nextStepsTasksCompletedFromTotal : NominalDate -> HIVMeasurements -> NextStepsData -> NextStepsTask -> ( Int, Int )
-nextStepsTasksCompletedFromTotal currentDate measurements data task =
+nextStepsTasksCompletedFromTotal : HIVMeasurements -> NextStepsData -> NextStepsTask -> ( Int, Int )
+nextStepsTasksCompletedFromTotal measurements data task =
     let
         ( _, tasks ) =
             case task of
                 TaskHealthEducation ->
                     getMeasurementValueFunc measurements.healthEducation
                         |> healthEducationFormWithDefault data.healthEducationForm
-                        |> healthEducationFormInputsAndTasks English currentDate
+                        |> healthEducationFormInputsAndTasks English
 
                 TaskFollowUp ->
                     getMeasurementValueFunc measurements.followUp
                         |> followUpFormWithDefault data.followUpForm
                         |> followUpFormInputsAndTasks English
-                            currentDate
                             []
                             SetFollowUpOption
 
@@ -246,7 +244,6 @@ nextStepsTasksCompletedFromTotal currentDate measurements data task =
                     getMeasurementValueFunc measurements.referral
                         |> sendToHCFormWithDefault data.sendToHCForm
                         |> sendToFacilityInputsAndTasks English
-                            currentDate
                             FacilityHealthCenter
                             SetReferToHealthCenter
                             SetReasonForNonReferral
@@ -256,8 +253,8 @@ nextStepsTasksCompletedFromTotal currentDate measurements data task =
     resolveTasksCompletedFromTotal tasks
 
 
-healthEducationFormInputsAndTasks : Language -> NominalDate -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
-healthEducationFormInputsAndTasks language currentDate form =
+healthEducationFormInputsAndTasks : Language -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
+healthEducationFormInputsAndTasks language form =
     ( [ viewQuestionLabel language <| Translate.HIVHealthEducationQuestion EducationPositiveResult
       , viewBoolInput
             language
@@ -532,11 +529,10 @@ prophylaxisMedications =
 
 prescribedMedicationsInputsAndTasks :
     Language
-    -> NominalDate
     -> AssembledData
     -> PrescribedMedicationForm
     -> ( List (Html Msg), ( Int, Int ) )
-prescribedMedicationsInputsAndTasks language currentDate assembled form =
+prescribedMedicationsInputsAndTasks language assembled form =
     let
         ( recordMedicationsForm, recordMedicationsTasks ) =
             recordMedicationsFormAndTasks language Translate.PrescribedMedicationsTakenQuestion form

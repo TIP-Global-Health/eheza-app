@@ -1,6 +1,5 @@
-module Pages.StockManagement.Model exposing (AssembledData, CorrectEntryForm, CorrectionEntryType(..), DataForMonth, DisplayMode(..), Model, MonthYear, Msg(..), ReceiveStockForm, StockManagementMenu(..), emptyCorrectEntryForm, emptyModel, emptyReceiveStockForm, maxMonthGap)
+module Pages.StockManagement.Model exposing (CorrectEntryForm, CorrectionEntryType(..), DisplayMode(..), Model, Msg(..), ReceiveStockForm, StockManagementMenu(..), emptyModel, maxMonthGap)
 
-import AssocList exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ImageUrl, StockCorrectionReason, StockSupplier)
 import Date exposing (Date)
@@ -30,26 +29,9 @@ emptyModel =
     }
 
 
-type alias AssembledData =
-    Dict MonthYear DataForMonth
-
-
-type alias DataForMonth =
-    { startingStock : Maybe Float
-    , received : Float
-    , issued : Float
-    , currentBalance : Maybe Float
-    , consumptionAverage : Float
-    }
-
-
 maxMonthGap : Int
 maxMonthGap =
     11
-
-
-type alias MonthYear =
-    ( Int, Int )
 
 
 type DisplayMode

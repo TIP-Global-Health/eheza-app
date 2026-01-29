@@ -41,7 +41,6 @@ import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Maybe exposing (Maybe)
 import Maybe.Extra exposing (isNothing)
 import Pages.GlobalCaseManagement.Model exposing (AcuteIllnessFollowUpEntry, AcuteIllnessFollowUpItem, CaseManagementFilter(..), ContactsTracingEntryData, FollowUpAcuteIllnessData, FollowUpDueOption(..), FollowUpEncounterDataType(..), FollowUpHIVData, FollowUpImmunizationData, FollowUpNutritionData, FollowUpPrenatalData, FollowUpTuberculosisData, HIVFollowUpEntry, HIVFollowUpItem, ImmunizationFollowUpEntry, ImmunizationFollowUpItem, LabsEntryState(..), Model, Msg(..), NCDLabsEntryData, NutritionFollowUpEntry, NutritionFollowUpItem, PrenatalFollowUpEntry, PrenatalFollowUpItem, PrenatalLabsEntryData, TuberculosisFollowUpEntry, TuberculosisFollowUpItem)
 import Pages.GlobalCaseManagement.Utils exposing (chwFilters, fillPersonName, filterFollowUpsOfResidents, followUpDueOptionByDate, generateAcuteIllnessFollowUps, generateHIVFollowUps, generateImmunizationFollowUps, generateNutritionFollowUps, generatePrenatalFollowUps, generateTuberculosisFollowUps, labTechFilters, labsResultsTestData, nurseFilters)
@@ -121,7 +120,7 @@ viewContentForChw language currentDate features villageId model db allFollowUps 
                 |> fillPersonName identity db
 
         nutritionFollowUpsPane =
-            viewNutritionPane language currentDate nutritionFollowUps db model
+            viewNutritionPane language currentDate nutritionFollowUps db
 
         acuteIllnessFollowUps =
             generateAcuteIllnessFollowUps currentDate db followUps
@@ -135,21 +134,21 @@ viewContentForChw language currentDate features villageId model db allFollowUps 
                 acuteIllnessFollowUps
 
         acuteIllnessFollowUpsPane =
-            viewAcuteIllnessPane language currentDate nonTBSuspectAcuteIllnessFollowUps db model
+            viewAcuteIllnessPane language currentDate nonTBSuspectAcuteIllnessFollowUps db
 
         prenatalFollowUps =
             generatePrenatalFollowUps currentDate db followUps
                 |> fillPersonName Tuple.second db
 
         prenatalFollowUpsPane =
-            viewPrenatalPane language currentDate prenatalFollowUps db model
+            viewPrenatalPane language currentDate prenatalFollowUps db
 
         immunizationFollowUps =
             generateImmunizationFollowUps currentDate followUps
                 |> fillPersonName identity db
 
         immunizationFollowUpsPane =
-            viewImmunizationPane language currentDate immunizationFollowUps db model
+            viewImmunizationPane language currentDate immunizationFollowUps db
 
         tuberculosisPane =
             if tuberculosisManagementEnabled features then
@@ -164,7 +163,7 @@ viewContentForChw language currentDate features villageId model db allFollowUps 
                         fillPersonName identity db tuberculosisFollowUpsForNewParticipants
                 in
                 [ ( FilterTuberculosis
-                  , viewTuberculosisPane language currentDate tuberculosisFollowUpsForExisting tuberculosisFollowUpsForNew db model
+                  , viewTuberculosisPane language currentDate tuberculosisFollowUpsForExisting tuberculosisFollowUpsForNew db
                   )
                 ]
 
@@ -179,7 +178,7 @@ viewContentForChw language currentDate features villageId model db allFollowUps 
                             |> fillPersonName Tuple.second db
                 in
                 [ ( FilterHIV
-                  , viewHIVPane language currentDate hivFollowUps db model
+                  , viewHIVPane language currentDate hivFollowUps db
                   )
                 ]
 
@@ -214,7 +213,7 @@ viewContentForNurse language currentDate isLabTech model db followUps =
         ( panes, filters ) =
             let
                 prenatalLabsPane =
-                    viewPrenatalLabsPane language currentDate isLabTech followUps.prenatalLabs db model
+                    viewPrenatalLabsPane language currentDate isLabTech followUps.prenatalLabs db
             in
             if isLabTech then
                 ( [ ( FilterPrenatalLabs, prenatalLabsPane ) ]
@@ -224,10 +223,10 @@ viewContentForNurse language currentDate isLabTech model db followUps =
             else
                 let
                     contactsTracingPane =
-                        viewContactsTracingPane language currentDate followUps.traceContacts db model
+                        viewContactsTracingPane language currentDate followUps.traceContacts db
 
                     ncdLabsPane =
-                        viewNCDLabsPane language currentDate followUps.ncdLabs db model
+                        viewNCDLabsPane language currentDate followUps.ncdLabs db
                 in
                 ( [ ( FilterContactsTrace, contactsTracingPane )
                   , ( FilterPrenatalLabs, prenatalLabsPane )
@@ -409,8 +408,8 @@ viewItemHeading language filter =
         [ text <| translate language <| Translate.CaseManagementPaneHeader filter ]
 
 
-viewNutritionPane : Language -> NominalDate -> Dict PersonId NutritionFollowUpItem -> ModelIndexedDb -> Model -> Html Msg
-viewNutritionPane language currentDate itemsDict db model =
+viewNutritionPane : Language -> NominalDate -> Dict PersonId NutritionFollowUpItem -> ModelIndexedDb -> Html Msg
+viewNutritionPane language currentDate itemsDict db =
     let
         limitDate =
             -- Set limit date for tomorrow, so that we
@@ -418,7 +417,7 @@ viewNutritionPane language currentDate itemsDict db model =
             Date.add Days 1 currentDate
 
         entries =
-            generateNutritionFollowUpEntries language limitDate itemsDict db
+            generateNutritionFollowUpEntries limitDate itemsDict db
 
         content =
             if List.isEmpty entries then
@@ -433,15 +432,15 @@ viewNutritionPane language currentDate itemsDict db model =
         ]
 
 
-generateNutritionFollowUpEntries : Language -> NominalDate -> Dict PersonId NutritionFollowUpItem -> ModelIndexedDb -> List NutritionFollowUpEntry
-generateNutritionFollowUpEntries language limitDate itemsDict db =
-    Dict.map (generateNutritionFollowUpEntryData language limitDate db) itemsDict
+generateNutritionFollowUpEntries : NominalDate -> Dict PersonId NutritionFollowUpItem -> ModelIndexedDb -> List NutritionFollowUpEntry
+generateNutritionFollowUpEntries limitDate itemsDict db =
+    Dict.map (generateNutritionFollowUpEntryData limitDate db) itemsDict
         |> Dict.values
         |> Maybe.Extra.values
 
 
-generateNutritionFollowUpEntryData : Language -> NominalDate -> ModelIndexedDb -> PersonId -> NutritionFollowUpItem -> Maybe NutritionFollowUpEntry
-generateNutritionFollowUpEntryData language limitDate db personId item =
+generateNutritionFollowUpEntryData : NominalDate -> ModelIndexedDb -> PersonId -> NutritionFollowUpItem -> Maybe NutritionFollowUpEntry
+generateNutritionFollowUpEntryData limitDate db personId item =
     let
         lastHomeVisitEncounter =
             resolveIndividualParticipantForPerson personId HomeVisitEncounter db
@@ -531,9 +530,8 @@ viewAcuteIllnessPane :
     -> NominalDate
     -> Dict ( IndividualEncounterParticipantId, PersonId ) AcuteIllnessFollowUpItem
     -> ModelIndexedDb
-    -> Model
     -> Html Msg
-viewAcuteIllnessPane language currentDate itemsDict db model =
+viewAcuteIllnessPane language currentDate itemsDict db =
     let
         limitDate =
             -- Set limit date for tomorrow, so that we
@@ -541,7 +539,7 @@ viewAcuteIllnessPane language currentDate itemsDict db model =
             Date.add Days 1 currentDate
 
         entries =
-            generateAcuteIllnessFollowUpEntries language currentDate limitDate itemsDict db
+            generateAcuteIllnessFollowUpEntries currentDate limitDate itemsDict db
 
         content =
             if List.isEmpty entries then
@@ -558,27 +556,25 @@ viewAcuteIllnessPane language currentDate itemsDict db model =
 
 
 generateAcuteIllnessFollowUpEntries :
-    Language
-    -> NominalDate
+    NominalDate
     -> NominalDate
     -> Dict ( IndividualEncounterParticipantId, PersonId ) AcuteIllnessFollowUpItem
     -> ModelIndexedDb
     -> List AcuteIllnessFollowUpEntry
-generateAcuteIllnessFollowUpEntries language currentDate limitDate itemsDict db =
-    Dict.map (generateAcuteIllnessFollowUpEntryData language currentDate limitDate db) itemsDict
+generateAcuteIllnessFollowUpEntries currentDate limitDate itemsDict db =
+    Dict.map (generateAcuteIllnessFollowUpEntryData currentDate limitDate db) itemsDict
         |> Dict.values
         |> Maybe.Extra.values
 
 
 generateAcuteIllnessFollowUpEntryData :
-    Language
-    -> NominalDate
+    NominalDate
     -> NominalDate
     -> ModelIndexedDb
     -> ( IndividualEncounterParticipantId, PersonId )
     -> AcuteIllnessFollowUpItem
     -> Maybe AcuteIllnessFollowUpEntry
-generateAcuteIllnessFollowUpEntryData language currentDate limitDate db ( participantId, personId ) item =
+generateAcuteIllnessFollowUpEntryData currentDate limitDate db ( participantId, personId ) item =
     let
         dateConcludedCriteria =
             Dict.get participantId db.individualParticipants
@@ -672,9 +668,8 @@ viewPrenatalPane :
     -> NominalDate
     -> Dict ( IndividualEncounterParticipantId, PersonId ) PrenatalFollowUpItem
     -> ModelIndexedDb
-    -> Model
     -> Html Msg
-viewPrenatalPane language currentDate itemsDict db model =
+viewPrenatalPane language currentDate itemsDict db =
     let
         limitDate =
             -- Set limit date for tomorrow, so that we
@@ -682,7 +677,7 @@ viewPrenatalPane language currentDate itemsDict db model =
             Date.add Days 1 currentDate
 
         entries =
-            generatePrenatalFollowUpEntries language currentDate limitDate itemsDict db
+            generatePrenatalFollowUpEntries limitDate itemsDict db
 
         content =
             if List.isEmpty entries then
@@ -699,27 +694,23 @@ viewPrenatalPane language currentDate itemsDict db model =
 
 
 generatePrenatalFollowUpEntries :
-    Language
-    -> NominalDate
-    -> NominalDate
+    NominalDate
     -> Dict ( IndividualEncounterParticipantId, PersonId ) PrenatalFollowUpItem
     -> ModelIndexedDb
     -> List PrenatalFollowUpEntry
-generatePrenatalFollowUpEntries language currentDate limitDate itemsDict db =
-    Dict.map (generatePrenatalFollowUpEntryData language currentDate limitDate db) itemsDict
+generatePrenatalFollowUpEntries limitDate itemsDict db =
+    Dict.map (generatePrenatalFollowUpEntryData limitDate db) itemsDict
         |> Dict.values
         |> Maybe.Extra.values
 
 
 generatePrenatalFollowUpEntryData :
-    Language
-    -> NominalDate
-    -> NominalDate
+    NominalDate
     -> ModelIndexedDb
     -> ( IndividualEncounterParticipantId, PersonId )
     -> PrenatalFollowUpItem
     -> Maybe PrenatalFollowUpEntry
-generatePrenatalFollowUpEntryData language currentDate limitDate db ( participantId, personId ) item =
+generatePrenatalFollowUpEntryData limitDate db ( participantId, personId ) item =
     let
         dateConcludedCriteria =
             Dict.get participantId db.individualParticipants
@@ -804,9 +795,8 @@ viewTuberculosisPane :
     -> Dict ( IndividualEncounterParticipantId, PersonId ) TuberculosisFollowUpItem
     -> Dict PersonId TuberculosisFollowUpItem
     -> ModelIndexedDb
-    -> Model
     -> Html Msg
-viewTuberculosisPane language currentDate itemsDictForExisting itemsDictForNew db model =
+viewTuberculosisPane language currentDate itemsDictForExisting itemsDictForNew db =
     let
         limitDate =
             -- Set limit date for tomorrow, so that we
@@ -814,7 +804,7 @@ viewTuberculosisPane language currentDate itemsDictForExisting itemsDictForNew d
             Date.add Days 1 currentDate
 
         entries =
-            generateTuberculosisFollowUpEntries language currentDate limitDate itemsDictForExisting itemsDictForNew db
+            generateTuberculosisFollowUpEntries currentDate limitDate itemsDictForExisting itemsDictForNew db
 
         content =
             if List.isEmpty entries then
@@ -831,17 +821,16 @@ viewTuberculosisPane language currentDate itemsDictForExisting itemsDictForNew d
 
 
 generateTuberculosisFollowUpEntries :
-    Language
-    -> NominalDate
+    NominalDate
     -> NominalDate
     -> Dict ( IndividualEncounterParticipantId, PersonId ) TuberculosisFollowUpItem
     -> Dict PersonId TuberculosisFollowUpItem
     -> ModelIndexedDb
     -> List TuberculosisFollowUpEntry
-generateTuberculosisFollowUpEntries language currentDate limitDate itemsDictForExisting itemsDictForNew db =
+generateTuberculosisFollowUpEntries currentDate limitDate itemsDictForExisting itemsDictForNew db =
     let
         entriesForExisting =
-            Dict.map (generateTuberculosisFollowUpEntryData language currentDate limitDate db) itemsDictForExisting
+            Dict.map (generateTuberculosisFollowUpEntryData currentDate limitDate db) itemsDictForExisting
                 |> Dict.values
                 |> Maybe.Extra.values
 
@@ -865,14 +854,13 @@ generateTuberculosisFollowUpEntries language currentDate limitDate itemsDictForE
 
 
 generateTuberculosisFollowUpEntryData :
-    Language
-    -> NominalDate
+    NominalDate
     -> NominalDate
     -> ModelIndexedDb
     -> ( IndividualEncounterParticipantId, PersonId )
     -> TuberculosisFollowUpItem
     -> Maybe TuberculosisFollowUpEntry
-generateTuberculosisFollowUpEntryData language currentDate limitDate db ( participantId, personId ) item =
+generateTuberculosisFollowUpEntryData currentDate limitDate db ( participantId, personId ) item =
     let
         dateConcludedCriteria =
             Dict.get participantId db.individualParticipants
@@ -944,9 +932,8 @@ viewHIVPane :
     -> NominalDate
     -> Dict ( Maybe IndividualEncounterParticipantId, PersonId ) HIVFollowUpItem
     -> ModelIndexedDb
-    -> Model
     -> Html Msg
-viewHIVPane language currentDate itemsDict db model =
+viewHIVPane language currentDate itemsDict db =
     let
         limitDate =
             -- Set limit date for tomorrow, so that we
@@ -954,7 +941,7 @@ viewHIVPane language currentDate itemsDict db model =
             Date.add Days 1 currentDate
 
         entries =
-            generateHIVFollowUpEntries language currentDate limitDate itemsDict db
+            generateHIVFollowUpEntries currentDate limitDate itemsDict db
 
         content =
             if List.isEmpty entries then
@@ -971,27 +958,25 @@ viewHIVPane language currentDate itemsDict db model =
 
 
 generateHIVFollowUpEntries :
-    Language
-    -> NominalDate
+    NominalDate
     -> NominalDate
     -> Dict ( Maybe IndividualEncounterParticipantId, PersonId ) HIVFollowUpItem
     -> ModelIndexedDb
     -> List HIVFollowUpEntry
-generateHIVFollowUpEntries language currentDate limitDate itemsDict db =
-    Dict.map (generateHIVFollowUpEntryData language currentDate limitDate db) itemsDict
+generateHIVFollowUpEntries currentDate limitDate itemsDict db =
+    Dict.map (generateHIVFollowUpEntryData currentDate limitDate db) itemsDict
         |> Dict.values
         |> Maybe.Extra.values
 
 
 generateHIVFollowUpEntryData :
-    Language
-    -> NominalDate
+    NominalDate
     -> NominalDate
     -> ModelIndexedDb
     -> ( Maybe IndividualEncounterParticipantId, PersonId )
     -> HIVFollowUpItem
     -> Maybe HIVFollowUpEntry
-generateHIVFollowUpEntryData language currentDate limitDate db ( mParticipantId, personId ) item =
+generateHIVFollowUpEntryData currentDate limitDate db ( mParticipantId, personId ) item =
     Maybe.map
         (\participantId ->
             let
@@ -1132,9 +1117,8 @@ viewContactsTracingPane :
     -> NominalDate
     -> Dict AcuteIllnessTraceContactId AcuteIllnessTraceContact
     -> ModelIndexedDb
-    -> Model
     -> Html Msg
-viewContactsTracingPane language currentDate itemsDict db model =
+viewContactsTracingPane language currentDate itemsDict db =
     let
         filteredItemsDict =
             Dict.filter
@@ -1167,7 +1151,7 @@ viewContactsTracingPane language currentDate itemsDict db model =
                 itemsDict
 
         entries =
-            generateContactsTracingEntries language currentDate filteredItemsDict db
+            generateContactsTracingEntries filteredItemsDict db
 
         content =
             if List.isEmpty entries then
@@ -1184,7 +1168,7 @@ viewContactsTracingPane language currentDate itemsDict db model =
                             ]
                 in
                 heading
-                    :: List.map (viewTraceContactEntry language currentDate db) entries
+                    :: List.map viewTraceContactEntry entries
     in
     div [ class "pane" ]
         [ viewItemHeading language FilterContactsTrace
@@ -1194,24 +1178,20 @@ viewContactsTracingPane language currentDate itemsDict db model =
 
 
 generateContactsTracingEntries :
-    Language
-    -> NominalDate
-    -> Dict AcuteIllnessTraceContactId AcuteIllnessTraceContact
+    Dict AcuteIllnessTraceContactId AcuteIllnessTraceContact
     -> ModelIndexedDb
     -> List ContactsTracingEntryData
-generateContactsTracingEntries language currentDate itemsDict db =
-    Dict.map (generateContactsTracingEntryData language currentDate db) itemsDict
+generateContactsTracingEntries itemsDict db =
+    Dict.map (generateContactsTracingEntryData db) itemsDict
         |> Dict.values
 
 
 generateContactsTracingEntryData :
-    Language
-    -> NominalDate
-    -> ModelIndexedDb
+    ModelIndexedDb
     -> AcuteIllnessTraceContactId
     -> AcuteIllnessTraceContact
     -> ContactsTracingEntryData
-generateContactsTracingEntryData language currentDate db itemId item =
+generateContactsTracingEntryData db itemId item =
     let
         name =
             generateFullName item.value.firstName item.value.secondName
@@ -1226,12 +1206,9 @@ generateContactsTracingEntryData language currentDate db itemId item =
 
 
 viewTraceContactEntry :
-    Language
-    -> NominalDate
-    -> ModelIndexedDb
-    -> ContactsTracingEntryData
+    ContactsTracingEntryData
     -> Html Msg
-viewTraceContactEntry language currentDate db entry =
+viewTraceContactEntry entry =
     let
         lastContactDate =
             Maybe.map formatDDMMYYYY entry.lastFollowUpDate
@@ -1256,9 +1233,8 @@ viewPrenatalLabsPane :
     -> Bool
     -> Dict PrenatalLabsResultsId PrenatalLabsResults
     -> ModelIndexedDb
-    -> Model
     -> Html Msg
-viewPrenatalLabsPane language currentDate isLabTech itemsDict db model =
+viewPrenatalLabsPane language currentDate isLabTech itemsDict db =
     let
         filteredItemsDict =
             Dict.filter
@@ -1472,9 +1448,8 @@ viewNCDLabsPane :
     -> NominalDate
     -> Dict NCDLabsResultsId NCDLabsResults
     -> ModelIndexedDb
-    -> Model
     -> Html Msg
-viewNCDLabsPane language currentDate itemsDict db model =
+viewNCDLabsPane language currentDate itemsDict db =
     let
         filteredItemsDict =
             Dict.filter
@@ -1556,11 +1531,11 @@ viewNCDLabsEntry language data =
         (SetActivePage <| UserPage (NCDRecurrentEncounterPage data.encounterId))
 
 
-viewImmunizationPane : Language -> NominalDate -> Dict PersonId ImmunizationFollowUpItem -> ModelIndexedDb -> Model -> Html Msg
-viewImmunizationPane language currentDate itemsDict db model =
+viewImmunizationPane : Language -> NominalDate -> Dict PersonId ImmunizationFollowUpItem -> ModelIndexedDb -> Html Msg
+viewImmunizationPane language currentDate itemsDict db =
     let
         entries =
-            generateImmunizationFollowUpEntries language currentDate itemsDict db
+            generateImmunizationFollowUpEntries currentDate itemsDict db
 
         content =
             if List.isEmpty entries then
@@ -1575,15 +1550,15 @@ viewImmunizationPane language currentDate itemsDict db model =
         ]
 
 
-generateImmunizationFollowUpEntries : Language -> NominalDate -> Dict PersonId ImmunizationFollowUpItem -> ModelIndexedDb -> List ImmunizationFollowUpEntry
-generateImmunizationFollowUpEntries language limitDate itemsDict db =
-    Dict.map (generateImmunizationFollowUpEntryData language limitDate db) itemsDict
+generateImmunizationFollowUpEntries : NominalDate -> Dict PersonId ImmunizationFollowUpItem -> ModelIndexedDb -> List ImmunizationFollowUpEntry
+generateImmunizationFollowUpEntries limitDate itemsDict db =
+    Dict.map (generateImmunizationFollowUpEntryData limitDate db) itemsDict
         |> Dict.values
         |> Maybe.Extra.values
 
 
-generateImmunizationFollowUpEntryData : Language -> NominalDate -> ModelIndexedDb -> PersonId -> ImmunizationFollowUpItem -> Maybe ImmunizationFollowUpEntry
-generateImmunizationFollowUpEntryData language limitDate db personId item =
+generateImmunizationFollowUpEntryData : NominalDate -> ModelIndexedDb -> PersonId -> ImmunizationFollowUpItem -> Maybe ImmunizationFollowUpEntry
+generateImmunizationFollowUpEntryData limitDate db personId item =
     let
         lastWellChildEncounter =
             resolveIndividualParticipantForPerson personId WellChildEncounter db

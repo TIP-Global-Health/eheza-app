@@ -37,11 +37,11 @@ view language currentDate features id isChw db model =
         assembled =
             generateAssembledData currentDate features id isChw db
     in
-    viewWebData language (viewHeaderAndContent language currentDate id isChw db model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate id isChw model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id isChw db model assembled =
+viewHeaderAndContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate id isChw model assembled =
     let
         header =
             viewHeader language assembled
@@ -68,28 +68,27 @@ viewHeaderAndContent language currentDate id isChw db model assembled =
         , viewModal <|
             warningPopup language
                 currentDate
-                isChw
                 model.warningPopupState
                 SetWarningPopupState
                 assembled
         ]
 
 
-warningPopup : Language -> NominalDate -> Bool -> Maybe AcuteIllnessDiagnosis -> (Maybe AcuteIllnessDiagnosis -> msg) -> AssembledData -> Maybe (Html msg)
-warningPopup language currentDate isChw state setStateMsg assembled =
+warningPopup : Language -> NominalDate -> Maybe AcuteIllnessDiagnosis -> (Maybe AcuteIllnessDiagnosis -> msg) -> AssembledData -> Maybe (Html msg)
+warningPopup language currentDate state setStateMsg assembled =
     state
         |> Maybe.map
             (\diagnosis ->
                 if assembled.initialEncounter then
-                    viewWarningPopupFirstEncounter language isChw setStateMsg diagnosis
+                    viewWarningPopupFirstEncounter language setStateMsg diagnosis
 
                 else
                     viewWarningPopupSubsequentEncounter language currentDate setStateMsg diagnosis assembled
             )
 
 
-viewWarningPopupFirstEncounter : Language -> Bool -> (Maybe AcuteIllnessDiagnosis -> msg) -> AcuteIllnessDiagnosis -> Html msg
-viewWarningPopupFirstEncounter language isChw setStateMsg diagnosis =
+viewWarningPopupFirstEncounter : Language -> (Maybe AcuteIllnessDiagnosis -> msg) -> AcuteIllnessDiagnosis -> Html msg
+viewWarningPopupFirstEncounter language setStateMsg diagnosis =
     let
         ( heading, content ) =
             case diagnosis of

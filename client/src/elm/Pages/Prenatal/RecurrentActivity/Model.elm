@@ -1,4 +1,4 @@
-module Pages.Prenatal.RecurrentActivity.Model exposing (ExaminationData, LabResultsData, Model, Msg(..), NextStepsData, emptyExaminationData, emptyLabResultsData, emptyModel, emptyNextStepsData)
+module Pages.Prenatal.RecurrentActivity.Model exposing (ExaminationData, LabResultsData, Model, Msg(..), NextStepsData, emptyLabResultsData, emptyModel)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)

@@ -49,8 +49,8 @@ view language isChw ( sessionId, session ) model =
 
         ( mothersWithPendingActivity, mothersWithoutPendingActivity ) =
             Dict.partition
-                (\motherId mother ->
-                    getActivityCountForMother session motherId mother summary
+                (\motherId _ ->
+                    getActivityCountForMother session motherId summary
                         |> (\count -> count.pending > 0)
                 )
                 mothersInAttendance

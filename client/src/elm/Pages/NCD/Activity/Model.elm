@@ -1,4 +1,4 @@
-module Pages.NCD.Activity.Model exposing (CoMorbiditiesForm, DangerSignsData, DangerSignsForm, ExaminationData, FamilyHistoryForm, FamilyPlanningData, HealthEducationForm, LaboratoryData, MedicalHistoryData, MedicationHistoryForm, Model, Msg(..), NextStepsData, OutsideCareData, SocialHistoryForm, SymptomReviewData, SymptomReviewForm, emptyCoMorbiditiesForm, emptyDangerSignsData, emptyDangerSignsForm, emptyExaminationData, emptyFamilyHistoryForm, emptyFamilyPlanningData, emptyHealthEducationForm, emptyLaboratoryData, emptyMedicalHistoryData, emptyMedicationHistoryForm, emptyModel, emptyNextStepsData, emptyOutsideCareData, emptySocialHistoryForm, emptySymptomReviewData, emptySymptomReviewForm)
+module Pages.NCD.Activity.Model exposing (CoMorbiditiesForm, DangerSignsData, DangerSignsForm, ExaminationData, FamilyHistoryForm, FamilyPlanningData, HealthEducationForm, LaboratoryData, MedicalHistoryData, MedicationHistoryForm, Model, Msg(..), NextStepsData, OutsideCareData, SocialHistoryForm, SymptomReviewData, SymptomReviewForm, emptyModel)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)

@@ -34,7 +34,6 @@ import Backend.Measurement.Model
         , LabsResultsReviewState(..)
         , Measurements
         , TestExecutionNote(..)
-        , TestPrerequisite
         , WellChildSymptom(..)
         )
 import Backend.Measurement.Utils
@@ -264,7 +263,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                 { model
                                     | computedDashboards =
                                         Dict.insert healthCenterId_
-                                            (generateInitialComputedDashboard currentDate healthCenterId_ villageId statsRaw model)
+                                            (generateInitialComputedDashboard currentDate villageId statsRaw)
                                             model.computedDashboards
                                 }
                             )
@@ -288,7 +287,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                     let
                                         assembledPermutationsUpdated =
                                             Dict.insert ( programTypeFilter, selectedVillage )
-                                                (Pages.Dashboard.Utils.generateAssembledData currentDate healthCenterId_ computedDashboard.statsRaw model programTypeFilter selectedVillage)
+                                                (Pages.Dashboard.Utils.generateAssembledData currentDate computedDashboard.statsRaw programTypeFilter selectedVillage)
                                                 computedDashboard.assembledPermutations
 
                                         computedDashboardUpdated =
@@ -1893,7 +1892,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     in
                     ( newModel, extraMsgs )
 
-                processRevisionAndAssessNutritionIndividual participantId encounterId =
+                processRevisionAndAssessNutritionIndividual encounterId =
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
@@ -1949,22 +1948,22 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         sessionId
                         |> Maybe.withDefault ( newModel, [] )
 
-                processRevisionAndAssessWellChild participantId encounterId =
+                processRevisionAndAssessWellChild encounterId =
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
-                            Maybe.map (generateNutritionAssessmentWellChildlMsgs currentDate zscores site isChw model newModel)
+                            Maybe.map (generateNutritionAssessmentWellChildlMsgs currentDate zscores site model newModel)
                                 encounterId
                                 |> Maybe.withDefault []
                     in
                     ( newModel, extraMsgs )
 
-                processRevisionAndAssessPrenatal participantId encounterId updateAssesment =
-                    processRevisionAndAssessPrenatalWithReportToOrigin participantId encounterId updateAssesment Nothing
+                processRevisionAndAssessPrenatal encounterId updateAssesment =
+                    processRevisionAndAssessPrenatalWithReportToOrigin encounterId updateAssesment Nothing
 
-                processRevisionAndAssessPrenatalWithReportToOrigin participantId encounterId updateAssesment originData =
+                processRevisionAndAssessPrenatalWithReportToOrigin encounterId updateAssesment originData =
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
@@ -1976,19 +1975,19 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     in
                     ( newModel, extraMsgs )
 
-                processRevisionAndAssessNCD participantId encounterId =
+                processRevisionAndAssessNCD encounterId =
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
-                            Maybe.map (generateNCDAssessmentMsgs currentDate language activePage newModel)
+                            Maybe.map (generateNCDAssessmentMsgs newModel)
                                 encounterId
                                 |> Maybe.withDefault []
                     in
                     ( newModel, extraMsgs )
 
-                processRevisionAndUpdatePrenatalLabsResults participantId encounterId test executionNote resultsAdded testPrerequisites =
+                processRevisionAndUpdatePrenatalLabsResults encounterId test executionNote resultsAdded =
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
@@ -2006,7 +2005,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                                        -- if lab tech indicates that test was not run).
                                                        isLabTech
                                             then
-                                                generatePrenatalLabsResultsAddedMsgs currentDate isLabTech newModel test testPrerequisites encounterId_
+                                                generatePrenatalLabsResultsAddedMsgs currentDate isLabTech newModel test encounterId_
 
                                             else
                                                 generatePrenatalLabsTestAddedMsgs currentDate newModel test executionNote encounterId_
@@ -2028,7 +2027,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     in
                     ( newModel, extraMsgs )
 
-                processVitalsRevisionAndUpdatePrenatalLabsResults participantId encounterId value =
+                processVitalsRevisionAndUpdatePrenatalLabsResults encounterId value =
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
@@ -2049,7 +2048,6 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                                             isLabTech
                                                             newModel
                                                             Backend.Measurement.Model.TestVitalsRecheck
-                                                            Nothing
                                                             encounterId_
 
                                                     else
@@ -2102,7 +2100,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     in
                     ( newModel, extraMsgs )
 
-                processPrenatalRevisionPossiblyCompletingRecurrentPhase participantId encounterId =
+                processPrenatalRevisionPossiblyCompletingRecurrentPhase encounterId =
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
@@ -2122,7 +2120,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         in
                         ( newModel, extraMsgs )
 
-                processRevisionAndUpdateNCDLabsResults participantId encounterId test executionNote resultsAdded =
+                processRevisionAndUpdateNCDLabsResults encounterId test executionNote resultsAdded =
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
@@ -2141,7 +2139,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     in
                     ( newModel, extraMsgs )
 
-                processWellChildSymptomsReviewRevision participantId encounterId value =
+                processWellChildSymptomsReviewRevision encounterId value =
                     let
                         noSymptoms =
                             EverySet.isEmpty value || value == EverySet.singleton NoWellChildSymptoms
@@ -2150,7 +2148,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         []
 
                     else
-                        generateWellChildDangerSignsAlertMsgs currentDate encounterId
+                        generateWellChildDangerSignsAlertMsgs encounterId
 
                 processWellChildVitalsRevision participantId encounterId value =
                     let
@@ -2165,12 +2163,12 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                 |> (\ageMonths -> respiratoryRateAbnormalForAge ageMonths value.respiratoryRate)
                     in
                     if bodyTemperatureAlert || respiratoryRateAlert then
-                        generateWellChildDangerSignsAlertMsgs currentDate encounterId
+                        generateWellChildDangerSignsAlertMsgs encounterId
 
                     else
                         []
 
-                processWellChildECDRevision participantId encounterId after =
+                processWellChildECDRevision encounterId after =
                     encounterId
                         |> Maybe.andThen
                             (\id ->
@@ -2266,7 +2264,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                             )
                         |> Maybe.withDefault []
 
-                processWellChildImmunisationRevision participantId encounterId after =
+                processWellChildImmunisationRevision encounterId after =
                     Maybe.andThen
                         (\id ->
                             Pages.WellChild.Encounter.Utils.generateAssembledData site id after
@@ -2659,7 +2657,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     [ NutritionHeightRevision _ data ] ->
                         let
                             ( newModel, extraMsgs ) =
-                                processRevisionAndAssessNutritionIndividual data.participantId data.encounterId
+                                processRevisionAndAssessNutritionIndividual data.encounterId
                         in
                         ( newModel
                         , Cmd.none
@@ -2669,7 +2667,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     [ NutritionMuacRevision _ data ] ->
                         let
                             ( newModel, extraMsgs ) =
-                                processRevisionAndAssessNutritionIndividual data.participantId data.encounterId
+                                processRevisionAndAssessNutritionIndividual data.encounterId
                         in
                         ( newModel
                         , Cmd.none
@@ -2679,7 +2677,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     [ NutritionNutritionRevision _ data ] ->
                         let
                             ( newModel, extraMsgs ) =
-                                processRevisionAndAssessNutritionIndividual data.participantId data.encounterId
+                                processRevisionAndAssessNutritionIndividual data.encounterId
                         in
                         ( newModel
                         , Cmd.none
@@ -2689,7 +2687,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     [ NutritionWeightRevision _ data ] ->
                         let
                             ( newModel, extraMsgs ) =
-                                processRevisionAndAssessNutritionIndividual data.participantId data.encounterId
+                                processRevisionAndAssessNutritionIndividual data.encounterId
                         in
                         ( newModel
                         , Cmd.none
@@ -2785,7 +2783,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                             ( newModel, extraMsgs ) =
                                 -- This is the only place where we ask to update assessment for CHW, since
                                 -- only thing that affects it is the Danger signs measurement.
-                                processRevisionAndAssessPrenatal data.participantId data.encounterId True
+                                processRevisionAndAssessPrenatal data.encounterId True
                         in
                         ( newModel
                         , Cmd.none
@@ -2795,7 +2793,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     [ PrenatalSymptomReviewRevision _ data ] ->
                         let
                             ( newModel, extraMsgs ) =
-                                processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                                processRevisionAndAssessPrenatal data.encounterId False
                         in
                         ( newModel
                         , Cmd.none
@@ -2805,7 +2803,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     [ CorePhysicalExamRevision _ data ] ->
                         let
                             ( newModel, extraMsgs ) =
-                                processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                                processRevisionAndAssessPrenatal data.encounterId False
                         in
                         ( newModel
                         , Cmd.none
@@ -2815,7 +2813,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     [ LastMenstrualPeriodRevision _ data ] ->
                         let
                             ( newModel, extraMsgs ) =
-                                processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                                processRevisionAndAssessPrenatal data.encounterId False
                         in
                         ( newModel
                         , Cmd.none
@@ -2825,7 +2823,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     [ PregnancyTestRevision _ data ] ->
                         let
                             ( newModel, extraMsgs ) =
-                                processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                                processRevisionAndAssessPrenatal data.encounterId False
                         in
                         ( newModel
                         , Cmd.none
@@ -2835,7 +2833,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     [ MedicationRevision _ data ] ->
                         let
                             ( newModel, extraMsgs ) =
-                                processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                                processRevisionAndAssessPrenatal data.encounterId False
                         in
                         ( newModel
                         , Cmd.none
@@ -2849,12 +2847,11 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                             -- activation that comes bellow.
                             ( _, extraMsgsForLabsResults ) =
                                 processVitalsRevisionAndUpdatePrenatalLabsResults
-                                    data.participantId
                                     data.encounterId
                                     data.value
 
                             ( newModel, extraMsgsForAssessment ) =
-                                processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                                processRevisionAndAssessPrenatal data.encounterId False
                         in
                         ( newModel
                         , Cmd.none
@@ -2864,7 +2861,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     [ MalariaPreventionRevision _ data ] ->
                         let
                             ( newModel, extraMsgs ) =
-                                processPrenatalRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
+                                processPrenatalRevisionPossiblyCompletingRecurrentPhase data.encounterId
                         in
                         ( newModel
                         , Cmd.none
@@ -2874,7 +2871,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     [ PrenatalHealthEducationRevision _ data ] ->
                         let
                             ( newModel, extraMsgs ) =
-                                processPrenatalRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
+                                processPrenatalRevisionPossiblyCompletingRecurrentPhase data.encounterId
                         in
                         ( newModel
                         , Cmd.none
@@ -2884,7 +2881,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     [ PrenatalSendToHCRevision _ data ] ->
                         let
                             ( newModel, extraMsgs ) =
-                                processPrenatalRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
+                                processPrenatalRevisionPossiblyCompletingRecurrentPhase data.encounterId
                         in
                         ( newModel
                         , Cmd.none
@@ -2894,7 +2891,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     [ PrenatalMedicationDistributionRevision _ data ] ->
                         let
                             ( newModel, extraMsgs ) =
-                                processPrenatalRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
+                                processPrenatalRevisionPossiblyCompletingRecurrentPhase data.encounterId
                         in
                         ( newModel
                         , Cmd.none
@@ -2908,15 +2905,13 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                             -- activation that comes bellow.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdatePrenatalLabsResults
-                                    data.participantId
                                     data.encounterId
                                     Backend.Measurement.Model.TestHIV
                                     data.value.executionNote
                                     (isJust data.value.testResult)
-                                    data.value.testPrerequisites
 
                             ( newModel, extraMsgsForAssessment ) =
-                                processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                                processRevisionAndAssessPrenatal data.encounterId False
                         in
                         ( newModel
                         , Cmd.none
@@ -2927,12 +2922,10 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         let
                             ( newModel, extraMsg ) =
                                 processRevisionAndUpdatePrenatalLabsResults
-                                    data.participantId
                                     data.encounterId
                                     Backend.Measurement.Model.TestPartnerHIV
                                     data.value.executionNote
                                     (isJust data.value.testResult)
-                                    data.value.testPrerequisites
                         in
                         ( newModel
                         , Cmd.none
@@ -2946,15 +2939,13 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                             -- activation that comes bellow.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdatePrenatalLabsResults
-                                    data.participantId
                                     data.encounterId
                                     Backend.Measurement.Model.TestHIVPCR
                                     data.value.executionNote
                                     (isJust data.value.hivViralLoadStatus)
-                                    data.value.testPrerequisites
 
                             ( newModel, extraMsgsForAssessment ) =
-                                processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                                processRevisionAndAssessPrenatal data.encounterId False
                         in
                         ( newModel
                         , Cmd.none
@@ -2968,12 +2959,10 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                             -- activation that comes bellow.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdatePrenatalLabsResults
-                                    data.participantId
                                     data.encounterId
                                     Backend.Measurement.Model.TestSyphilis
                                     data.value.executionNote
                                     (isJust data.value.testResult)
-                                    data.value.testPrerequisites
 
                             ( newModel, extraMsgsForAssessment ) =
                                 Maybe.map
@@ -2983,7 +2972,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                         )
                                     )
                                     data.value.originatingEncounter
-                                    |> processRevisionAndAssessPrenatalWithReportToOrigin data.participantId data.encounterId False
+                                    |> processRevisionAndAssessPrenatalWithReportToOrigin data.encounterId False
                         in
                         ( newModel
                         , Cmd.none
@@ -2997,18 +2986,16 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                             -- activation that comes bellow.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdatePrenatalLabsResults
-                                    data.participantId
                                     data.encounterId
                                     Backend.Measurement.Model.TestHepatitisB
                                     data.value.executionNote
                                     (isJust data.value.testResult)
-                                    data.value.testPrerequisites
 
                             ( newModel, extraMsgsForAssessment ) =
                                 Maybe.map
                                     (\originatingEncounterId -> ( originatingEncounterId, [ DiagnosisHepatitisBRecurrentPhase ] ))
                                     data.value.originatingEncounter
-                                    |> processRevisionAndAssessPrenatalWithReportToOrigin data.participantId data.encounterId False
+                                    |> processRevisionAndAssessPrenatalWithReportToOrigin data.encounterId False
                         in
                         ( newModel
                         , Cmd.none
@@ -3034,15 +3021,13 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                             || bloodSmearResultSet data.value.bloodSmearResult
                                 in
                                 processRevisionAndUpdatePrenatalLabsResults
-                                    data.participantId
                                     data.encounterId
                                     Backend.Measurement.Model.TestMalaria
                                     executionNote
                                     resultsAdded
-                                    data.value.testPrerequisites
 
                             ( newModel, extraMsgsForAssessment ) =
-                                processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                                processRevisionAndAssessPrenatal data.encounterId False
                         in
                         ( newModel
                         , Cmd.none
@@ -3056,15 +3041,13 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                             -- activation that comes bellow.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdatePrenatalLabsResults
-                                    data.participantId
                                     data.encounterId
                                     Backend.Measurement.Model.TestUrineDipstick
                                     data.value.executionNote
                                     (isJust data.value.protein)
-                                    data.value.testPrerequisites
 
                             ( newModel, extraMsgsForAssessment ) =
-                                processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                                processRevisionAndAssessPrenatal data.encounterId False
                         in
                         ( newModel
                         , Cmd.none
@@ -3078,18 +3061,16 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                             -- activation that comes bellow.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdatePrenatalLabsResults
-                                    data.participantId
                                     data.encounterId
                                     Backend.Measurement.Model.TestBloodGpRs
                                     data.value.executionNote
                                     (isJust data.value.bloodGroup)
-                                    data.value.testPrerequisites
 
                             ( newModel, extraMsgsForAssessment ) =
                                 Maybe.map
                                     (\originatingEncounterId -> ( originatingEncounterId, [ DiagnosisRhesusNegativeRecurrentPhase ] ))
                                     data.value.originatingEncounter
-                                    |> processRevisionAndAssessPrenatalWithReportToOrigin data.participantId data.encounterId False
+                                    |> processRevisionAndAssessPrenatalWithReportToOrigin data.encounterId False
                         in
                         ( newModel
                         , Cmd.none
@@ -3103,15 +3084,13 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                             -- activation that comes bellow.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdatePrenatalLabsResults
-                                    data.participantId
                                     data.encounterId
                                     Backend.Measurement.Model.TestHemoglobin
                                     data.value.executionNote
                                     (isJust data.value.hemoglobinCount)
-                                    data.value.testPrerequisites
 
                             ( newModel, extraMsgsForAssessment ) =
-                                processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                                processRevisionAndAssessPrenatal data.encounterId False
                         in
                         ( newModel
                         , Cmd.none
@@ -3125,18 +3104,16 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                             -- activation that comes bellow.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdatePrenatalLabsResults
-                                    data.participantId
                                     data.encounterId
                                     Backend.Measurement.Model.TestRandomBloodSugar
                                     data.value.executionNote
                                     (isJust data.value.sugarCount)
-                                    data.value.testPrerequisites
 
                             ( newModel, extraMsgsForAssessment ) =
                                 Maybe.map
                                     (\originatingEncounterId -> ( originatingEncounterId, Pages.Prenatal.Utils.diabetesDiagnosesRecurrentPhase ))
                                     data.value.originatingEncounter
-                                    |> processRevisionAndAssessPrenatalWithReportToOrigin data.participantId data.encounterId False
+                                    |> processRevisionAndAssessPrenatalWithReportToOrigin data.encounterId False
                         in
                         ( newModel
                         , Cmd.none
@@ -3146,7 +3123,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     [ PrenatalMentalHealthRevision _ data ] ->
                         let
                             ( newModel, extraMsgs ) =
-                                processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                                processRevisionAndAssessPrenatal data.encounterId False
                         in
                         ( newModel
                         , Cmd.none
@@ -3156,7 +3133,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     [ BreastExamRevision _ data ] ->
                         let
                             ( newModel, extraMsgs ) =
-                                processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                                processRevisionAndAssessPrenatal data.encounterId False
                         in
                         ( newModel
                         , Cmd.none
@@ -3166,7 +3143,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     [ PrenatalBreastfeedingRevision _ data ] ->
                         let
                             ( newModel, extraMsgs ) =
-                                processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                                processRevisionAndAssessPrenatal data.encounterId False
                         in
                         ( newModel
                         , Cmd.none
@@ -3176,7 +3153,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     [ PrenatalGUExamRevision _ data ] ->
                         let
                             ( newModel, extraMsgs ) =
-                                processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                                processRevisionAndAssessPrenatal data.encounterId False
                         in
                         ( newModel
                         , Cmd.none
@@ -3186,7 +3163,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     [ WellChildHeightRevision _ data ] ->
                         let
                             ( newModel, extraMsgs ) =
-                                processRevisionAndAssessWellChild data.participantId data.encounterId
+                                processRevisionAndAssessWellChild data.encounterId
                         in
                         ( newModel
                         , Cmd.none
@@ -3196,7 +3173,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     [ WellChildHeadCircumferenceRevision _ data ] ->
                         let
                             ( newModel, extraMsgs ) =
-                                processRevisionAndAssessWellChild data.participantId data.encounterId
+                                processRevisionAndAssessWellChild data.encounterId
                         in
                         ( newModel
                         , Cmd.none
@@ -3206,7 +3183,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     [ WellChildMuacRevision _ data ] ->
                         let
                             ( newModel, extraMsgs ) =
-                                processRevisionAndAssessWellChild data.participantId data.encounterId
+                                processRevisionAndAssessWellChild data.encounterId
                         in
                         ( newModel
                         , Cmd.none
@@ -3216,7 +3193,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     [ WellChildNutritionRevision _ data ] ->
                         let
                             ( newModel, extraMsgs ) =
-                                processRevisionAndAssessWellChild data.participantId data.encounterId
+                                processRevisionAndAssessWellChild data.encounterId
                         in
                         ( newModel
                         , Cmd.none
@@ -3226,7 +3203,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     [ WellChildWeightRevision _ data ] ->
                         let
                             ( newModel, extraMsgs ) =
-                                processRevisionAndAssessWellChild data.participantId data.encounterId
+                                processRevisionAndAssessWellChild data.encounterId
                         in
                         ( newModel
                         , Cmd.none
@@ -3239,7 +3216,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                processWellChildSymptomsReviewRevision data.participantId data.encounterId data.value
+                                processWellChildSymptomsReviewRevision data.encounterId data.value
                         in
                         ( newModel
                         , Cmd.none
@@ -3265,7 +3242,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                processWellChildECDRevision data.participantId data.encounterId newModel
+                                processWellChildECDRevision data.encounterId newModel
                         in
                         ( newModel
                         , Cmd.none
@@ -3278,7 +3255,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                processWellChildImmunisationRevision data.participantId data.encounterId newModel
+                                processWellChildImmunisationRevision data.encounterId newModel
                         in
                         ( newModel
                         , Cmd.none
@@ -3291,7 +3268,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                processWellChildImmunisationRevision data.participantId data.encounterId newModel
+                                processWellChildImmunisationRevision data.encounterId newModel
                         in
                         ( newModel
                         , Cmd.none
@@ -3304,7 +3281,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                processWellChildImmunisationRevision data.participantId data.encounterId newModel
+                                processWellChildImmunisationRevision data.encounterId newModel
                         in
                         ( newModel
                         , Cmd.none
@@ -3317,7 +3294,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                processWellChildImmunisationRevision data.participantId data.encounterId newModel
+                                processWellChildImmunisationRevision data.encounterId newModel
                         in
                         ( newModel
                         , Cmd.none
@@ -3330,7 +3307,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                processWellChildImmunisationRevision data.participantId data.encounterId newModel
+                                processWellChildImmunisationRevision data.encounterId newModel
                         in
                         ( newModel
                         , Cmd.none
@@ -3343,7 +3320,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                processWellChildImmunisationRevision data.participantId data.encounterId newModel
+                                processWellChildImmunisationRevision data.encounterId newModel
                         in
                         ( newModel
                         , Cmd.none
@@ -3356,7 +3333,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                processWellChildImmunisationRevision data.participantId data.encounterId newModel
+                                processWellChildImmunisationRevision data.encounterId newModel
                         in
                         ( newModel
                         , Cmd.none
@@ -3369,7 +3346,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                processWellChildImmunisationRevision data.participantId data.encounterId newModel
+                                processWellChildImmunisationRevision data.encounterId newModel
                         in
                         ( newModel
                         , Cmd.none
@@ -3382,7 +3359,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                processWellChildImmunisationRevision data.participantId data.encounterId newModel
+                                processWellChildImmunisationRevision data.encounterId newModel
                         in
                         ( newModel
                         , Cmd.none
@@ -3396,14 +3373,13 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                             -- activation that comes bellow.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdateNCDLabsResults
-                                    data.participantId
                                     data.encounterId
                                     Backend.Measurement.Model.TestRandomBloodSugar
                                     data.value.executionNote
                                     (isJust data.value.sugarCount)
 
                             ( newModel, extraMsgsForAssessment ) =
-                                processRevisionAndAssessNCD data.participantId data.encounterId
+                                processRevisionAndAssessNCD data.encounterId
                         in
                         ( newModel
                         , Cmd.none
@@ -3417,14 +3393,13 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                             -- activation that comes bellow.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdateNCDLabsResults
-                                    data.participantId
                                     data.encounterId
                                     Backend.Measurement.Model.TestUrineDipstick
                                     data.value.executionNote
                                     (isJust data.value.protein)
 
                             ( newModel, extraMsgsForAssessment ) =
-                                processRevisionAndAssessNCD data.participantId data.encounterId
+                                processRevisionAndAssessNCD data.encounterId
                         in
                         ( newModel
                         , Cmd.none
@@ -3438,14 +3413,13 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                             -- activation that comes bellow.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdateNCDLabsResults
-                                    data.participantId
                                     data.encounterId
                                     Backend.Measurement.Model.TestCreatinine
                                     data.value.executionNote
                                     (isJust data.value.creatinineResult)
 
                             ( newModel, extraMsgsForAssessment ) =
-                                processRevisionAndAssessNCD data.participantId data.encounterId
+                                processRevisionAndAssessNCD data.encounterId
                         in
                         ( newModel
                         , Cmd.none
@@ -3456,7 +3430,6 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         let
                             ( newModel, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdateNCDLabsResults
-                                    data.participantId
                                     data.encounterId
                                     Backend.Measurement.Model.TestLiverFunction
                                     data.value.executionNote
@@ -3470,7 +3443,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     [ NCDCoMorbiditiesRevision _ data ] ->
                         let
                             ( newModel, extraMsgs ) =
-                                processRevisionAndAssessNCD data.participantId data.encounterId
+                                processRevisionAndAssessNCD data.encounterId
                         in
                         ( newModel
                         , Cmd.none
@@ -3480,7 +3453,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     [ NCDVitalsRevision _ data ] ->
                         let
                             ( newModel, extraMsgs ) =
-                                processRevisionAndAssessNCD data.participantId data.encounterId
+                                processRevisionAndAssessNCD data.encounterId
                         in
                         ( newModel
                         , Cmd.none
@@ -3491,7 +3464,6 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         let
                             ( newModel, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdateNCDLabsResults
-                                    data.participantId
                                     data.encounterId
                                     Backend.Measurement.Model.TestLipidPanel
                                     data.value.executionNote
@@ -3895,7 +3867,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         |> Maybe.withDefault Backend.EducationSession.Model.emptyModel
 
                 ( subModel, subCmd, appMsgs ) =
-                    Backend.EducationSession.Update.update currentDate sessionId encounter subMsg requests
+                    Backend.EducationSession.Update.update sessionId encounter subMsg requests
             in
             ( { model | educationSessionRequests = Dict.insert sessionId subModel model.educationSessionRequests }
             , Cmd.map (MsgEducationSession sessionId) subCmd
@@ -3965,7 +3937,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         |> Maybe.withDefault Backend.Nurse.Model.emptyModel
 
                 ( subModel, subCmd, appMsgs ) =
-                    Backend.Nurse.Update.update currentDate subMsg requests
+                    Backend.Nurse.Update.update subMsg requests
             in
             ( { model | nurseRequests = Dict.insert updatedNurseId subModel model.nurseRequests }
             , Cmd.map (MsgNurse updatedNurseId) subCmd
@@ -3979,7 +3951,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         |> Maybe.withDefault Backend.ResilienceSurvey.Model.emptyModel
 
                 ( subModel, subCmd, appMsgs ) =
-                    Backend.ResilienceSurvey.Update.update currentDate subMsg requests
+                    Backend.ResilienceSurvey.Update.update subMsg requests
             in
             ( { model | resilienceSurveyRequests = Dict.insert surveyNurseId subModel model.resilienceSurveyRequests }
             , Cmd.map (MsgResilienceSurvey surveyNurseId) subCmd
@@ -3993,7 +3965,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         |> Maybe.withDefault Backend.StockUpdate.Model.emptyModel
 
                 ( subModel, subCmd, appMsgs ) =
-                    Backend.StockUpdate.Update.update currentDate subMsg requests
+                    Backend.StockUpdate.Update.update subMsg requests
             in
             ( { model | stockUpdateRequests = Dict.insert updateNurseId subModel model.stockUpdateRequests }
             , Cmd.map (MsgStockUpdate updateNurseId) subCmd
@@ -4192,7 +4164,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                             (\relationship ->
                                 let
                                     resetFormMsg =
-                                        Pages.Relationship.Model.Reset initiator
+                                        Pages.Relationship.Model.Reset
                                             |> App.Model.MsgPageRelationship personId relationship.relatedTo
                                             |> App.Model.MsgLoggedIn
                                 in
@@ -5460,12 +5432,12 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                                 , assembledPermutations =
                                     Dict.map
                                         (\( programTypeFilter, selectedVillage ) _ ->
-                                            Pages.Dashboard.Utils.generateAssembledData currentDate uuid statsRaw model programTypeFilter selectedVillage
+                                            Pages.Dashboard.Utils.generateAssembledData currentDate statsRaw programTypeFilter selectedVillage
                                         )
                                         computedDashboard.assembledPermutations
                                 }
                             )
-                        |> Maybe.withDefault (generateInitialComputedDashboard currentDate uuid villageId statsRaw model)
+                        |> Maybe.withDefault (generateInitialComputedDashboard currentDate villageId statsRaw)
             in
             ( { model | computedDashboards = Dict.insert uuid updatedComputedDashboard model.computedDashboards }, recalc )
 
@@ -8608,10 +8580,9 @@ generatePrenatalLabsResultsAddedMsgs :
     -> Bool
     -> ModelIndexedDb
     -> Backend.Measurement.Model.LaboratoryTest
-    -> Maybe (EverySet TestPrerequisite)
     -> PrenatalEncounterId
     -> List App.Model.Msg
-generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test testPrerequisites id =
+generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test id =
     Pages.Prenatal.Encounter.Utils.generateAssembledData id after
         |> RemoteData.toMaybe
         |> Maybe.andThen
@@ -8833,13 +8804,10 @@ savePrenatalLabsResultsMsg encounterId personId labsResultsId labsResultsValue =
 
 
 generateNCDAssessmentMsgs :
-    NominalDate
-    -> Language
-    -> Page
-    -> ModelIndexedDb
+    ModelIndexedDb
     -> NCDEncounterId
     -> List App.Model.Msg
-generateNCDAssessmentMsgs currentDate language activePage after id =
+generateNCDAssessmentMsgs after id =
     Maybe.map
         (\assembledAfter ->
             let
@@ -8849,7 +8817,7 @@ generateNCDAssessmentMsgs currentDate language activePage after id =
                     assembledAfter.encounter.diagnoses
 
                 diagnosesAfter =
-                    Pages.NCD.Utils.generateNCDDiagnoses currentDate assembledAfter
+                    Pages.NCD.Utils.generateNCDDiagnoses assembledAfter
             in
             if everySetsEqual diagnosesBefore diagnosesAfter then
                 []
@@ -8971,7 +8939,6 @@ generateNCDLabsResultsAddedMsgs currentDate after test id =
                                                 if
                                                     (EverySet.size updatedCompletedTests == EverySet.size updatedPerformedTests)
                                                         && Pages.NCD.RecurrentActivity.Utils.activityCompleted
-                                                            currentDate
                                                             assembled
                                                             Backend.NCDActivity.Model.RecurrentNextSteps
                                                 then
@@ -9025,7 +8992,6 @@ generateNutritionAssessmentIndividualMsgs currentDate zscores features isChw bef
                         currentDate
                         zscores
                         features
-                        assembledAfter.person
                         isChw
                         assembledAfter
                         after
@@ -9292,12 +9258,11 @@ generateNutritionAssessmentWellChildlMsgs :
     NominalDate
     -> ZScore.Model.Model
     -> Site
-    -> Bool
     -> ModelIndexedDb
     -> ModelIndexedDb
     -> WellChildEncounterId
     -> List App.Model.Msg
-generateNutritionAssessmentWellChildlMsgs currentDate zscores site isChw before after id =
+generateNutritionAssessmentWellChildlMsgs currentDate zscores site before after id =
     Maybe.map2
         (\assembledBefore assembledAfter ->
             let
@@ -9378,11 +9343,11 @@ generateSuspectedDiagnosisMsgs :
     -> AcuteIllnessEncounterId
     -> Person
     -> List App.Model.Msg
-generateSuspectedDiagnosisMsgs currentDate features isChw before after id person =
+generateSuspectedDiagnosisMsgs currentDate features isChw before after id _ =
     Maybe.map2
         (\assembledBefore assembledAfter ->
             if assembledAfter.initialEncounter then
-                generateSuspectedDiagnosisMsgsFirstEncounter currentDate isChw id person assembledBefore assembledAfter
+                generateSuspectedDiagnosisMsgsFirstEncounter currentDate isChw id assembledBefore assembledAfter
 
             else
                 generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate features isChw assembledAfter
@@ -9396,11 +9361,10 @@ generateSuspectedDiagnosisMsgsFirstEncounter :
     NominalDate
     -> Bool
     -> AcuteIllnessEncounterId
-    -> Person
     -> Pages.AcuteIllness.Encounter.Model.AssembledData
     -> Pages.AcuteIllness.Encounter.Model.AssembledData
     -> List App.Model.Msg
-generateSuspectedDiagnosisMsgsFirstEncounter currentDate isChw id person assembledBefore assembledAfter =
+generateSuspectedDiagnosisMsgsFirstEncounter currentDate isChw id assembledBefore assembledAfter =
     let
         diagnosisBeforeChange =
             Maybe.map Tuple.second assembledBefore.diagnosis
@@ -9413,7 +9377,7 @@ generateSuspectedDiagnosisMsgsFirstEncounter currentDate isChw id person assembl
             Just newDiagnosis ->
                 updateAcuteIllnessDiagnosisMsg id newDiagnosis
                     :: (resolveNextStepFirstEncounter currentDate isChw assembledAfter
-                            |> generateMsgsForNewDiagnosis currentDate isChw id newDiagnosis
+                            |> generateMsgsForNewDiagnosis isChw id newDiagnosis
                        )
 
             Nothing ->
@@ -9424,27 +9388,25 @@ generateSuspectedDiagnosisMsgsFirstEncounter currentDate isChw id person assembl
 
 
 generateMsgsForNewDiagnosis :
-    NominalDate
-    -> Bool
+    Bool
     -> AcuteIllnessEncounterId
     -> AcuteIllnessDiagnosis
     -> Maybe Pages.AcuteIllness.Activity.Types.NextStepsTask
     -> List App.Model.Msg
-generateMsgsForNewDiagnosis currentDate isChw id diagnosis nextStep =
+generateMsgsForNewDiagnosis isChw id diagnosis nextStep =
     if isChw then
-        generateCustomMsgsForNewDiagnosis currentDate id diagnosis nextStep
+        generateCustomMsgsForNewDiagnosis id diagnosis nextStep
 
     else
-        generateMsgsForNewDiagnosisForNurse currentDate id diagnosis nextStep
+        generateMsgsForNewDiagnosisForNurse id diagnosis nextStep
 
 
 generateMsgsForNewDiagnosisForNurse :
-    NominalDate
-    -> AcuteIllnessEncounterId
+    AcuteIllnessEncounterId
     -> AcuteIllnessDiagnosis
     -> Maybe Pages.AcuteIllness.Activity.Types.NextStepsTask
     -> List App.Model.Msg
-generateMsgsForNewDiagnosisForNurse currentDate id diagnosis nextStep =
+generateMsgsForNewDiagnosisForNurse id diagnosis nextStep =
     case diagnosis of
         DiagnosisCovid19Suspect ->
             [ -- Navigate to Acute Ilness Laboratory activty page.
@@ -9461,16 +9423,15 @@ generateMsgsForNewDiagnosisForNurse currentDate id diagnosis nextStep =
             ]
 
         _ ->
-            generateCustomMsgsForNewDiagnosis currentDate id diagnosis nextStep
+            generateCustomMsgsForNewDiagnosis id diagnosis nextStep
 
 
 generateCustomMsgsForNewDiagnosis :
-    NominalDate
-    -> AcuteIllnessEncounterId
+    AcuteIllnessEncounterId
     -> AcuteIllnessDiagnosis
     -> Maybe Pages.AcuteIllness.Activity.Types.NextStepsTask
     -> List App.Model.Msg
-generateCustomMsgsForNewDiagnosis currentDate id diagnosis nextStep =
+generateCustomMsgsForNewDiagnosis id diagnosis nextStep =
     case nextStep of
         Just step ->
             [ -- Navigate to Acute Ilness NextSteps activty page.
@@ -9585,8 +9546,8 @@ generateAcuteIllnessAssesmentCompletedMsgs currentDate features isChw after id =
         |> Maybe.withDefault []
 
 
-generateWellChildDangerSignsAlertMsgs : NominalDate -> Maybe WellChildEncounterId -> List App.Model.Msg
-generateWellChildDangerSignsAlertMsgs currentDate maybeId =
+generateWellChildDangerSignsAlertMsgs : Maybe WellChildEncounterId -> List App.Model.Msg
+generateWellChildDangerSignsAlertMsgs maybeId =
     Maybe.map
         (\id ->
             [ -- Navigate to Well Child encounter page, because that's where we show alert popup.
@@ -9611,7 +9572,7 @@ generateChildScoreboardAssesmentCompletedMsgs currentDate site after id =
         |> Maybe.map
             (\assembled ->
                 if
-                    List.all (Pages.ChildScoreboard.Activity.Utils.activityCompleted currentDate site assembled after)
+                    List.all (Pages.ChildScoreboard.Activity.Utils.activityCompleted currentDate site assembled)
                         Backend.ChildScoreboardActivity.Utils.allActivities
                 then
                     [ App.Model.SetActivePage (UserPage (ChildScoreboardProgressReportPage id)) ]
@@ -9948,8 +9909,8 @@ calculateOfflineSessionMeasurements sessionId offlineSession db =
 generate a variation of assembled data needed to display Dashboar Main page.
 @see: ComputedDashboard definition.
 -}
-generateInitialComputedDashboard : NominalDate -> HealthCenterId -> Maybe VillageId -> DashboardStatsRaw -> ModelIndexedDb -> ComputedDashboard
-generateInitialComputedDashboard currentDate healthCenterId villageId statsRaw db =
+generateInitialComputedDashboard : NominalDate -> Maybe VillageId -> DashboardStatsRaw -> ComputedDashboard
+generateInitialComputedDashboard currentDate villageId statsRaw =
     let
         ( programTypeFilter, selectedVillage ) =
             if isJust villageId then
@@ -9967,7 +9928,7 @@ generateInitialComputedDashboard currentDate healthCenterId villageId statsRaw d
     , assembledPermutations =
         Dict.singleton
             ( programTypeFilter, selectedVillage )
-            (Pages.Dashboard.Utils.generateAssembledData currentDate healthCenterId statsRaw db programTypeFilter selectedVillage)
+            (Pages.Dashboard.Utils.generateAssembledData currentDate statsRaw programTypeFilter selectedVillage)
     }
 
 

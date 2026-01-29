@@ -18,7 +18,6 @@ import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY, fromLocalDateTim
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Maybe
 import Pages.MessagingCenter.Model exposing (KickOffForm, MessageOptionsDialogState(..), MessagingTab(..), Model, Msg(..), SurveyForm, SurveyScoreDialogState(..))
 import Pages.MessagingCenter.Utils exposing (adoptionSurveyQuestions, generateInboxMessages, quarterlySurveyQuestions, resolveNumberOfUnreadMessages)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -120,7 +119,7 @@ view language currentTime nurseId nurse db model =
                             runSurvey ResilienceSurveyQuarterly
                     in
                     if runQuarterlySurvey then
-                        viewQuarterlySurvey language currentDate nurseId model.surveyForm
+                        viewQuarterlySurvey language nurseId model.surveyForm
 
                     else
                         let
@@ -128,10 +127,10 @@ view language currentTime nurseId nurse db model =
                                 runSurvey ResilienceSurveyAdoption
                         in
                         if runAdoptionSurvey then
-                            viewAdoptionSurvey language currentDate nurseId model.surveyForm
+                            viewAdoptionSurvey language nurseId model.surveyForm
 
                         else
-                            viewMessagingCenter language currentTime currentDate programStartDate nurseId nurse db model
+                            viewMessagingCenter language currentTime currentDate programStartDate nurseId nurse model
                 )
                 nurse.resilienceProgramStartDate
                 |> Maybe.withDefault (viewKickOffSurvey language currentDate nurseId nurse model.kickOffForm)
@@ -273,8 +272,8 @@ viewKickOffSurvey language currentDate nurseId nurse form =
         ]
 
 
-viewQuarterlySurvey : Language -> NominalDate -> NurseId -> SurveyForm -> Html Msg
-viewQuarterlySurvey language currentDate nurseId form =
+viewQuarterlySurvey : Language -> NurseId -> SurveyForm -> Html Msg
+viewQuarterlySurvey language nurseId form =
     let
         questionInput question =
             [ viewCustomLabel language (Translate.ResilienceQuarterlySurveyQuestion question) "." "label"
@@ -310,8 +309,8 @@ viewQuarterlySurvey language currentDate nurseId form =
         ]
 
 
-viewAdoptionSurvey : Language -> NominalDate -> NurseId -> SurveyForm -> Html Msg
-viewAdoptionSurvey language currentDate nurseId form =
+viewAdoptionSurvey : Language -> NurseId -> SurveyForm -> Html Msg
+viewAdoptionSurvey language nurseId form =
     let
         questionInput question =
             [ viewCustomLabel language (Translate.ResilienceSurveyAdoptionQuestion question) "." "label"
@@ -430,8 +429,8 @@ surveyScoreDialog language =
         )
 
 
-viewMessagingCenter : Language -> Time.Posix -> NominalDate -> NominalDate -> NurseId -> Nurse -> ModelIndexedDb -> Model -> Html Msg
-viewMessagingCenter language currentTime currentDate programStartDate nurseId nurse_ db model =
+viewMessagingCenter : Language -> Time.Posix -> NominalDate -> NominalDate -> NurseId -> Nurse -> Model -> Html Msg
+viewMessagingCenter language currentTime currentDate programStartDate nurseId nurse_ model =
     let
         nurse =
             -- Genrate full list of messages that are supposed to
@@ -505,7 +504,7 @@ viewMessagingCenter language currentTime currentDate programStartDate nurseId nu
         , div [ class "ui report unstackable items" ]
             content
         , viewModal <|
-            Maybe.map (messageOptionsDialog language currentTime currentDate nurseId nurse model.activeTab)
+            Maybe.map (messageOptionsDialog language nurseId nurse model.activeTab)
                 model.messageOptionsDialogState
         ]
 
@@ -1511,14 +1510,12 @@ viewEndOfPeriodMessage language order =
 
 messageOptionsDialog :
     Language
-    -> Time.Posix
-    -> NominalDate
     -> NurseId
     -> Nurse
     -> MessagingTab
     -> MessageOptionsDialogState
     -> Html Msg
-messageOptionsDialog language currentTime currentDate nurseId nurse tab state =
+messageOptionsDialog language nurseId nurse tab state =
     case state of
         MessageOptionsStateMain ( messageId, message ) ->
             let

@@ -56,12 +56,12 @@ view language currentDate zscores site features isChw nurse sessionId page model
     in
     viewWebData language
         (\session -> viewFoundSession language currentDate zscores site features isChw nurse ( sessionId, session ) page model db)
-        (wrapError language sessionId)
+        (wrapError language)
         sessionData
 
 
-wrapError : Language -> SessionId -> Html Msg -> Html Msg
-wrapError language sessionId errorHtml =
+wrapError : Language -> Html Msg -> Html Msg
+wrapError language errorHtml =
     div
         [ class "wrap wrap-alt-2" ]
         [ div
@@ -112,12 +112,12 @@ viewFoundSession language currentDate zscores site features isChw nurse ( sessio
                         |> Maybe.withDefault NotAsked
             in
             viewWebData language
-                (viewEditableSession language currentDate zscores site features isChw nurse sessionId page model db)
-                (wrapError language sessionId)
+                (viewEditableSession language currentDate zscores site features isChw sessionId page model db)
+                (wrapError language)
                 editableSession
 
         else
-            viewUnauthorizedSession language sessionId session db
+            viewUnauthorizedSession language session db
 
 
 viewEditableSession :
@@ -127,14 +127,13 @@ viewEditableSession :
     -> Site
     -> EverySet SiteFeature
     -> Bool
-    -> Nurse
     -> SessionId
     -> SessionPage
     -> Model
     -> ModelIndexedDb
     -> EditableSession
     -> Html Msg
-viewEditableSession language currentDate zscores site features isChw nurse sessionId page model db session =
+viewEditableSession language currentDate zscores site features isChw sessionId page model db session =
     case page of
         ActivitiesPage ->
             model.activitiesPage
@@ -205,7 +204,7 @@ viewEditableSession language currentDate zscores site features isChw nurse sessi
         NextStepsPage childId activity ->
             Dict.get childId model.nextStepsPages
                 |> Maybe.withDefault Pages.NextSteps.Model.emptyModel
-                |> Pages.NextSteps.View.view language currentDate zscores childId activity ( sessionId, session ) db
+                |> Pages.NextSteps.View.view language currentDate zscores childId session db
                 |> Html.map (MsgNextSteps childId activity)
 
 
@@ -238,8 +237,8 @@ viewClosedSession language sessionId session db =
         ]
 
 
-viewUnauthorizedSession : Language -> SessionId -> Session -> ModelIndexedDb -> Html Msg
-viewUnauthorizedSession language sessionId session db =
+viewUnauthorizedSession : Language -> Session -> ModelIndexedDb -> Html Msg
+viewUnauthorizedSession language session db =
     div
         [ class "wrap wrap-alt-2" ]
         [ div

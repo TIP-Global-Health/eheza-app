@@ -56,8 +56,8 @@ viewChildMeasurements language currentDate site zscores isChw db childId activit
             )
 
 
-viewMotherMeasurements : Language -> NominalDate -> Site -> PersonId -> MotherActivity -> Pages.Session.Model.Model -> EditableSession -> Html (Msg PersonId Measurement.Model.MsgMother)
-viewMotherMeasurements language currentDate site motherId activity pages session =
+viewMotherMeasurements : Language -> PersonId -> MotherActivity -> Pages.Session.Model.Model -> EditableSession -> Html (Msg PersonId Measurement.Model.MsgMother)
+viewMotherMeasurements language motherId activity pages session =
     let
         form =
             getMotherForm motherId pages session
@@ -68,8 +68,8 @@ viewMotherMeasurements language currentDate site motherId activity pages session
             (\measurements ->
                 getMother motherId session.offlineSession
                     |> Maybe.map
-                        (\mother ->
-                            Measurement.View.viewMother language currentDate mother activity session.offlineSession.session.clinicType measurements form
+                        (\_ ->
+                            Measurement.View.viewMother language activity session.offlineSession.session.clinicType measurements form
                                 |> Html.map MsgMeasurement
                         )
                     |> Maybe.withDefault emptyNode

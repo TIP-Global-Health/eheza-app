@@ -1,4 +1,4 @@
-module Pages.NCD.RecurrentActivity.Model exposing (LabResultsData, Model, Msg(..), NextStepsData, emptyLabResultsData, emptyModel, emptyNextStepsData)
+module Pages.NCD.RecurrentActivity.Model exposing (LabResultsData, Model, Msg(..), NextStepsData, emptyModel)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)

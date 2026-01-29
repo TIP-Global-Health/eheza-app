@@ -1,21 +1,19 @@
 module Pages.Wellbeing.View exposing (view)
 
-import Backend.Entities exposing (..)
-import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Pages.MessagingCenter.Model exposing (Model, Msg(..))
+import Pages.MessagingCenter.Model exposing (Msg(..))
 import Pages.MessagingCenter.Utils exposing (resolveNumberOfUnreadMessages)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Time
 import Translate exposing (Language, translate, translateText)
 
 
-view : Language -> Time.Posix -> NurseId -> Nurse -> ModelIndexedDb -> Model -> Html Msg
-view language currentTime nurseId nurse db model =
+view : Language -> Time.Posix -> Nurse -> Html Msg
+view language currentTime nurse =
     let
         currentDate =
             fromLocalDateTime currentTime

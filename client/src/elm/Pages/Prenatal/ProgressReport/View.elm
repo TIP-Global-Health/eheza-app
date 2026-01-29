@@ -198,13 +198,12 @@ viewContentAndHeader language currentDate zscores site features nurse isChw init
             Just { setReportComponentsMsg = SetReportComponents }
     in
     div [ class "page-report clinical" ] <|
-        [ viewHeader language assembled.id isLabTech isResultsReviewer initiator model
+        [ viewHeader language isLabTech isResultsReviewer initiator model
         , viewContent language currentDate zscores site features isChw isLabTech isResultsReviewer initiator model assembled
         , viewModal endEncounterDialog
         , Html.map MsgReportToWhatsAppDialog
             (Components.ReportToWhatsAppDialog.View.view
                 language
-                currentDate
                 site
                 ( assembled.participant.person, assembled.person )
                 Components.ReportToWhatsAppDialog.Model.ReportAntenatal
@@ -214,8 +213,8 @@ viewContentAndHeader language currentDate zscores site features nurse isChw init
         ]
 
 
-viewHeader : Language -> PrenatalEncounterId -> Bool -> Bool -> PrenatalProgressReportInitiator -> Model -> Html Msg
-viewHeader language id isLabTech isResultsReviewer initiator model =
+viewHeader : Language -> Bool -> Bool -> PrenatalProgressReportInitiator -> Model -> Html Msg
+viewHeader language isLabTech isResultsReviewer initiator model =
     let
         label =
             if isLabTech || isResultsReviewer then
@@ -383,7 +382,7 @@ viewContent language currentDate zscores site features isChw isLabTech isResults
                                 LabResultsCurrent currentMode ->
                                     -- Possibly view is for confirmation, therefore,
                                     -- passing 'viewForConfirmation.'
-                                    generateLabsResultsPaneData currentDate viewForConfirmation assembled
+                                    generateLabsResultsPaneData viewForConfirmation assembled
                                         |> viewLabResultsPane language
                                             currentDate
                                             viewForConfirmation
@@ -457,7 +456,7 @@ viewContent language currentDate zscores site features isChw isLabTech isResults
                                     -- This is for sure not view for confirmation, therefore
                                     -- 'False' is passed to make sure we generated data for current
                                     -- and previous encounters.
-                                    generateLabsResultsPaneData currentDate False assembled
+                                    generateLabsResultsPaneData False assembled
                                         |> viewLabResultsPane language
                                             currentDate
                                             viewForConfirmation
@@ -467,7 +466,7 @@ viewContent language currentDate zscores site features isChw isLabTech isResults
                                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalLabsResults)
                                 )
                                 model.components
-                                |> Maybe.withDefault (viewLabsPane language currentDate SetLabResultsMode)
+                                |> Maybe.withDefault (viewLabsPane language SetLabResultsMode)
 
                         actions =
                             case initiator of
@@ -548,15 +547,15 @@ viewContent language currentDate zscores site features isChw isLabTech isResults
                         showComponent =
                             Components.ReportToWhatsAppDialog.Utils.showComponent model.components
                     in
-                    [ viewObstetricHistoryPane language currentDate firstNurseEncounterMeasurements
+                    [ viewObstetricHistoryPane language firstNurseEncounterMeasurements
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalObstetricHistory)
-                    , viewMedicalHistoryPane language currentDate firstNurseEncounterMeasurements
+                    , viewMedicalHistoryPane language firstNurseEncounterMeasurements
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalMedicalHistory)
-                    , viewMedicalDiagnosisPane language currentDate isChw firstNurseEncounterMeasurements assembled
+                    , viewMedicalDiagnosisPane language isChw firstNurseEncounterMeasurements assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalMedicalDiagnosis)
                     , viewObstetricalDiagnosisPane language currentDate isChw globalLmpValue firstNurseEncounterMeasurements assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalObstetricalDiagnosis)
-                    , viewMedicationHistoryPane language currentDate isChw assembled
+                    , viewMedicationHistoryPane language isChw assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalMedicationHistory)
                     , viewVaccinationHistoryPane language currentDate assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalImmunizationHistory)
@@ -565,7 +564,7 @@ viewContent language currentDate zscores site features isChw isLabTech isResults
                     , viewPatientProgressPane language currentDate zscores isChw globalLmpValue assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalPatientProgress)
                     , labsPane
-                    , viewProgressPhotosPane language currentDate isChw assembled
+                    , viewProgressPhotosPane language isChw assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalProgressPhotos)
                     , -- Actions are hidden when viewing for sharing via WhatsApp.
                       showIf (isNothing model.components) actions
@@ -673,8 +672,8 @@ viewHeaderPane language currentDate globalLmpValue assembled =
         ]
 
 
-viewObstetricHistoryPane : Language -> NominalDate -> PrenatalMeasurements -> Html Msg
-viewObstetricHistoryPane language currentDate measurements =
+viewObstetricHistoryPane : Language -> PrenatalMeasurements -> Html Msg
+viewObstetricHistoryPane language measurements =
     let
         obsetricHistory =
             getMeasurementValueFunc measurements.obstetricHistory
@@ -812,8 +811,8 @@ viewObstetricHistoryPane language currentDate measurements =
         ]
 
 
-viewMedicalHistoryPane : Language -> NominalDate -> PrenatalMeasurements -> Html Msg
-viewMedicalHistoryPane language currentDate measurements =
+viewMedicalHistoryPane : Language -> PrenatalMeasurements -> Html Msg
+viewMedicalHistoryPane language measurements =
     let
         medicalHistory =
             getMeasurementValueFunc measurements.medicalHistory
@@ -877,8 +876,8 @@ viewMedicalHistoryPane language currentDate measurements =
         ]
 
 
-viewMedicalDiagnosisPane : Language -> NominalDate -> Bool -> PrenatalMeasurements -> AssembledData -> Html Msg
-viewMedicalDiagnosisPane language currentDate isChw firstNurseEncounterMeasurements assembled =
+viewMedicalDiagnosisPane : Language -> Bool -> PrenatalMeasurements -> AssembledData -> Html Msg
+viewMedicalDiagnosisPane language isChw firstNurseEncounterMeasurements assembled =
     let
         allNurseEncountersData =
             generateAllNurseEncountersData isChw assembled
@@ -1038,7 +1037,7 @@ viewMedicalDiagnosisPane language currentDate isChw firstNurseEncounterMeasureme
             -- Alerts are displayed only for CHW.
             if isChw then
                 List.filterMap
-                    (generateMedicalDiagnosisAlertData language currentDate firstNurseEncounterMeasurements)
+                    (generateMedicalDiagnosisAlertData language firstNurseEncounterMeasurements)
                     allMedicalDiagnoses
                     |> List.map (\alert -> li [] [ text alert ])
                     |> ul []
@@ -1244,8 +1243,8 @@ viewObstetricalDiagnosisPane language currentDate isChw globalLmpValue firstNurs
         ]
 
 
-viewMedicationHistoryPane : Language -> NominalDate -> Bool -> AssembledData -> Html any
-viewMedicationHistoryPane language currentDate isChw assembled =
+viewMedicationHistoryPane : Language -> Bool -> AssembledData -> Html any
+viewMedicationHistoryPane language isChw assembled =
     let
         allNurseEncountersData =
             generateAllNurseEncountersData isChw assembled
@@ -1890,7 +1889,7 @@ viewPatientProgressPane language currentDate zscores isChw globalLmpValue assemb
                         in
                         div [ class "weight-gain-info" ]
                             [ viewChartHeading Translate.WeightGain
-                            , weightGainTable language currentDate assembled.globalLmpDate baselineWeight allNurseEncountersData
+                            , weightGainTable language assembled.globalLmpDate baselineWeight allNurseEncountersData
                             , viewWeightGainForEGA language
                                 (weightGainStandardsPerPrePregnancyClassification prePregnancyClassification)
                                 egaWeightGainValues
@@ -1922,14 +1921,14 @@ viewPatientProgressPane language currentDate zscores isChw globalLmpValue assemb
                 [ viewMarkers
                 , div [ class "bmi-info" ]
                     [ viewChartHeading Translate.BMI
-                    , heightWeightBMITable language currentDate assembled.globalLmpDate allNurseEncountersData
+                    , heightWeightBMITable language assembled.globalLmpDate allNurseEncountersData
                     , viewBMIForEGA language egaBmiValues
                     , illustrativePurposes language
                     ]
                 , weightGainForEGAChart
                 , div [ class "fundal-height-info" ]
                     [ viewChartHeading Translate.FundalHeight
-                    , fundalHeightTable language currentDate assembled.globalLmpDate allNurseEncountersData
+                    , fundalHeightTable language assembled.globalLmpDate allNurseEncountersData
                     , viewFundalHeightForEGA language egaFundalHeightValues
                     , illustrativePurposes language
                     ]
@@ -1938,8 +1937,8 @@ viewPatientProgressPane language currentDate zscores isChw globalLmpValue assemb
         ]
 
 
-tableEgaHeading : Language -> NominalDate -> Maybe NominalDate -> List ( NominalDate, PrenatalMeasurements ) -> Html any
-tableEgaHeading language currentDate maybeLmpDate measurementsWithDates =
+tableEgaHeading : Language -> Maybe NominalDate -> List ( NominalDate, PrenatalMeasurements ) -> Html any
+tableEgaHeading language maybeLmpDate measurementsWithDates =
     measurementsWithDates
         |> List.map
             (\( date, _ ) ->
@@ -1970,8 +1969,8 @@ tableEgaHeading language currentDate maybeLmpDate measurementsWithDates =
         |> tr []
 
 
-heightWeightBMITable : Language -> NominalDate -> Maybe NominalDate -> List ( NominalDate, PrenatalMeasurements ) -> Html any
-heightWeightBMITable language currentDate maybeLmpDate allMeasurementsWithDates =
+heightWeightBMITable : Language -> Maybe NominalDate -> List ( NominalDate, PrenatalMeasurements ) -> Html any
+heightWeightBMITable language maybeLmpDate allMeasurementsWithDates =
     let
         cell language_ transId =
             td [ class "uppercase" ]
@@ -1983,7 +1982,7 @@ heightWeightBMITable language currentDate maybeLmpDate allMeasurementsWithDates 
             (\groupOfSix ->
                 let
                     egas =
-                        tableEgaHeading language currentDate maybeLmpDate groupOfSix
+                        tableEgaHeading language maybeLmpDate groupOfSix
 
                     heights =
                         groupOfSix
@@ -2073,8 +2072,8 @@ heightWeightBMITable language currentDate maybeLmpDate allMeasurementsWithDates 
         |> table [ class "ui collapsing celled table" ]
 
 
-fundalHeightTable : Language -> NominalDate -> Maybe NominalDate -> List ( NominalDate, PrenatalMeasurements ) -> Html any
-fundalHeightTable language currentDate maybeLmpDate allMeasurementsWithDates =
+fundalHeightTable : Language -> Maybe NominalDate -> List ( NominalDate, PrenatalMeasurements ) -> Html any
+fundalHeightTable language maybeLmpDate allMeasurementsWithDates =
     let
         cell language_ transId =
             td [ class "uppercase" ]
@@ -2086,7 +2085,7 @@ fundalHeightTable language currentDate maybeLmpDate allMeasurementsWithDates =
             (\groupOfSix ->
                 let
                     egas =
-                        tableEgaHeading language currentDate maybeLmpDate groupOfSix
+                        tableEgaHeading language maybeLmpDate groupOfSix
 
                     heights =
                         groupOfSix
@@ -2121,8 +2120,8 @@ fundalHeightTable language currentDate maybeLmpDate allMeasurementsWithDates =
         |> table [ class "ui collapsing celled table" ]
 
 
-weightGainTable : Language -> NominalDate -> Maybe NominalDate -> Float -> List ( NominalDate, PrenatalMeasurements ) -> Html any
-weightGainTable language currentDate maybeLmpDate baselineWeight allMeasurementsWithDates =
+weightGainTable : Language -> Maybe NominalDate -> Float -> List ( NominalDate, PrenatalMeasurements ) -> Html any
+weightGainTable language maybeLmpDate baselineWeight allMeasurementsWithDates =
     let
         cell language_ transId =
             td [ class "uppercase" ]
@@ -2133,7 +2132,7 @@ weightGainTable language currentDate maybeLmpDate baselineWeight allMeasurements
             (\groupOfSix ->
                 let
                     egas =
-                        tableEgaHeading language currentDate maybeLmpDate groupOfSix
+                        tableEgaHeading language maybeLmpDate groupOfSix
 
                     weights =
                         groupOfSix
@@ -2174,11 +2173,10 @@ illustrativePurposes language =
 
 
 generateLabsResultsPaneData :
-    NominalDate
-    -> Bool
+    Bool
     -> AssembledData
     -> LabsResultsValues PrenatalEncounterId
-generateLabsResultsPaneData currentDate viewForConfirmation assembled =
+generateLabsResultsPaneData viewForConfirmation assembled =
     let
         allMeasurements =
             assembled.measurements
@@ -2213,8 +2211,8 @@ generateLabsResultsPaneData currentDate viewForConfirmation assembled =
     }
 
 
-viewProgressPhotosPane : Language -> NominalDate -> Bool -> AssembledData -> Html Msg
-viewProgressPhotosPane language currentDate isChw assembled =
+viewProgressPhotosPane : Language -> Bool -> AssembledData -> Html Msg
+viewProgressPhotosPane language isChw assembled =
     let
         allNurseEncountersData =
             generateAllNurseEncountersData isChw assembled

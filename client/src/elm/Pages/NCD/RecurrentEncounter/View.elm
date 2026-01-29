@@ -27,11 +27,11 @@ view language currentDate id db model =
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate id model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> NCDEncounterId -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id model assembled =
+viewHeaderAndContent : Language -> NominalDate -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate model assembled =
     let
         header =
             viewHeader language
@@ -68,17 +68,17 @@ viewHeader language =
 viewContent : Language -> NominalDate -> AssembledData -> Model -> Html Msg
 viewContent language currentDate assembled model =
     ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
-        :: viewMainPageContent language currentDate assembled model
+        :: viewMainPageContent language assembled model
     )
         |> div [ class "ui unstackable items" ]
 
 
-viewMainPageContent : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
-viewMainPageContent language currentDate assembled model =
+viewMainPageContent : Language -> AssembledData -> Model -> List (Html Msg)
+viewMainPageContent language assembled model =
     let
         ( completedActivities, pendingActivities ) =
-            List.filter (expectActivity currentDate assembled) allActivities
-                |> List.partition (activityCompleted currentDate assembled)
+            List.filter (expectActivity assembled) allActivities
+                |> List.partition (activityCompleted assembled)
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities

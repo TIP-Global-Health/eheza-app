@@ -92,7 +92,7 @@ viewContent language currentDate selectedHealthCenter personId isChw db model se
                 |> List.filter
                     (\( _, session ) ->
                         (session.encounterType == Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter)
-                            && isAcuteIllnessActive currentDate session
+                            && isAcuteIllnessActive session
                     )
                 |> List.sortWith sortEncounterTuples
     in
@@ -358,7 +358,7 @@ viewActiveIllness language currentDate selectedHealthCenter isChw db viewMode se
                         viewActiveIllnessForManagement language currentDate selectedHealthCenter isChw sessionId sessionEncounters diagnosis
 
                     RecordOutcome ->
-                        viewActiveIllnessForOutcome language currentDate isChw sessionId sessionEncounters diagnosis
+                        viewActiveIllnessForOutcome language sessionId diagnosis
         )
         mDiagnosis
 
@@ -484,13 +484,10 @@ viewActiveIllnessForManagement language currentDate selectedHealthCenter isChw s
 
 viewActiveIllnessForOutcome :
     Language
-    -> NominalDate
-    -> Bool
     -> IndividualEncounterParticipantId
-    -> List ( AcuteIllnessEncounterId, AcuteIllnessEncounter )
     -> AcuteIllnessDiagnosis
     -> Maybe (Html Msg)
-viewActiveIllnessForOutcome language currentDate isChw sessionId encounters diagnosis =
+viewActiveIllnessForOutcome language sessionId diagnosis =
     Just <|
         viewButton language (navigateToRecordOutcomePage sessionId) (Translate.AcuteIllnessDiagnosis diagnosis) False
 

@@ -123,12 +123,12 @@ viewContent language currentDate site features id isChw initiator model assemble
             , Html.Attributes.id "report-content"
             ]
             [ viewPersonInfoPane language currentDate assembled.person
-            , viewAssessmentPane language currentDate assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent assembled
-            , viewSymptomsPane language currentDate assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent
+            , viewAssessmentPane language assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent assembled
+            , viewSymptomsPane language assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent
             , viewPhysicalExamPane language currentDate assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent assembled
-            , viewNutritionSignsPane language currentDate assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent assembled
-            , viewTreatmentPane language currentDate assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent assembled
-            , viewActionsTakenPane language currentDate assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent assembled
+            , viewNutritionSignsPane language assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent
+            , viewTreatmentPane language assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent assembled
+            , viewActionsTakenPane language assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent assembled
             , viewNextStepsPane language currentDate assembled
             , -- Actions are hidden when 'Share via WhatsApp' dialog is open,
               -- so they do not appear on generated screenshot.
@@ -138,7 +138,6 @@ viewContent language currentDate site features id isChw initiator model assemble
         , Html.map MsgReportToWhatsAppDialog
             (Components.ReportToWhatsAppDialog.View.view
                 language
-                currentDate
                 site
                 ( assembled.participant.person, assembled.person )
                 Components.ReportToWhatsAppDialog.Model.ReportAcuteIllness
@@ -195,12 +194,11 @@ viewHeader language id initiator =
 
 viewAssessmentPane :
     Language
-    -> NominalDate
     -> List AcuteIllnessEncounterData
     -> List AcuteIllnessEncounterData
     -> AssembledData
     -> Html Msg
-viewAssessmentPane language currentDate firstInitialWithSubsequent secondInitialWithSubsequent assembled =
+viewAssessmentPane language firstInitialWithSubsequent secondInitialWithSubsequent assembled =
     let
         encountersWithDiagnosis =
             firstInitialWithSubsequent
@@ -262,8 +260,8 @@ viewAssessmentPane language currentDate firstInitialWithSubsequent secondInitial
                     :: previousAssessments
 
 
-viewSymptomsPane : Language -> NominalDate -> List AcuteIllnessEncounterData -> List AcuteIllnessEncounterData -> Html Msg
-viewSymptomsPane language currentDate firstInitialWithSubsequent secondInitialWithSubsequent =
+viewSymptomsPane : Language -> List AcuteIllnessEncounterData -> List AcuteIllnessEncounterData -> Html Msg
+viewSymptomsPane language firstInitialWithSubsequent secondInitialWithSubsequent =
     let
         initialWithSubsequent =
             if List.isEmpty secondInitialWithSubsequent then
@@ -591,12 +589,10 @@ viewPhysicalExamPane language currentDate firstInitialWithSubsequent secondIniti
 
 viewNutritionSignsPane :
     Language
-    -> NominalDate
     -> List AcuteIllnessEncounterData
     -> List AcuteIllnessEncounterData
-    -> AssembledData
     -> Html Msg
-viewNutritionSignsPane language currentDate firstInitialWithSubsequent secondInitialWithSubsequent assembled =
+viewNutritionSignsPane language firstInitialWithSubsequent secondInitialWithSubsequent =
     let
         nutritions =
             firstInitialWithSubsequent
@@ -622,27 +618,25 @@ viewNutritionSignsPane language currentDate firstInitialWithSubsequent secondIni
 
 viewTreatmentPane :
     Language
-    -> NominalDate
     -> List AcuteIllnessEncounterData
     -> List AcuteIllnessEncounterData
     -> AssembledData
     -> Html Msg
-viewTreatmentPane language currentDate firstInitialWithSubsequent secondInitialWithSubsequent assembled =
+viewTreatmentPane language firstInitialWithSubsequent secondInitialWithSubsequent assembled =
     div [ class "pane treatment" ]
         [ viewPaneHeading language Translate.Treatment
         , div [ class "pane-content" ] <|
-            viewTreatmentSigns language currentDate assembled.initialEncounter firstInitialWithSubsequent secondInitialWithSubsequent
+            viewTreatmentSigns language assembled.initialEncounter firstInitialWithSubsequent secondInitialWithSubsequent
         ]
 
 
 viewTreatmentSigns :
     Language
-    -> NominalDate
     -> Bool
     -> List AcuteIllnessEncounterData
     -> List AcuteIllnessEncounterData
     -> List (Html Msg)
-viewTreatmentSigns language currentDate initialEncounter firstInitialWithSubsequent secondInitialWithSubsequent =
+viewTreatmentSigns language initialEncounter firstInitialWithSubsequent secondInitialWithSubsequent =
     let
         initialWithSubsequent =
             if List.isEmpty secondInitialWithSubsequent then
@@ -824,12 +818,11 @@ viewTreatmentSigns language currentDate initialEncounter firstInitialWithSubsequ
 
 viewActionsTakenPane :
     Language
-    -> NominalDate
     -> List AcuteIllnessEncounterData
     -> List AcuteIllnessEncounterData
     -> AssembledData
     -> Html Msg
-viewActionsTakenPane language currentDate firstInitialWithSubsequent secondInitialWithSubsequent assembled =
+viewActionsTakenPane language firstInitialWithSubsequent secondInitialWithSubsequent assembled =
     let
         content =
             firstInitialWithSubsequent

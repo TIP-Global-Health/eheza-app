@@ -251,7 +251,7 @@ viewSearchForm language currentDate maybeVillageId isChw initiator relation mode
         searchResultsParticipants =
             Maybe.withDefault (Success Dict.empty) results
                 |> RemoteData.withDefault Dict.empty
-                |> Dict.map (viewParticipant language currentDate initiator relation db)
+                |> Dict.map (viewParticipant language currentDate initiator relation)
                 |> Dict.values
 
         searchHelper =
@@ -296,8 +296,8 @@ viewSearchForm language currentDate maybeVillageId isChw initiator relation mode
         ]
 
 
-viewParticipant : Language -> NominalDate -> Initiator -> Maybe PersonId -> ModelIndexedDb -> PersonId -> Person -> Html Msg
-viewParticipant language currentDate initiator relation db id person =
+viewParticipant : Language -> NominalDate -> Initiator -> Maybe PersonId -> PersonId -> Person -> Html Msg
+viewParticipant language currentDate initiator relation id person =
     let
         typeForThumbnail =
             defaultIconForPerson currentDate person

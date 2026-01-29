@@ -1,9 +1,9 @@
-module Backend.Dashboard.Model exposing (AcuteIllnessDataItem, AcuteIllnessEncounterDataItem, AssembledData, CaseManagement, CaseManagementData, CaseManagementPast2Years, CaseNutrition, CaseNutritionTotal, ChildScoreboardDataItem, ChildScoreboardEncounterDataItem, ChildrenBeneficiariesData, ChildrenBeneficiariesStats, DashboardStats, DashboardStatsRaw, EducationSessionData, FamilyPlanningStats, NCDDataItem, NCDEncounterDataItem, Nutrition, NutritionDataItem, NutritionEncounterDataItem, NutritionGroupDataItem, NutritionGroupEncounterDataItem, NutritionIndividualDataItem, NutritionIndividualEncounterDataItem, NutritionPageData, NutritionStatus(..), NutritionValue, PMTCTDataItem, ParticipantStats, PatientDetails, Periods, PersonIdentifier, PrenatalDataItem, PrenatalEncounterDataItem, ProgramType(..), SPVDataItem, SPVEncounterDataItem, TotalBeneficiaries, TotalEncountersData, ZScore, emptyModel, emptyNutrition, emptyNutritionValue, emptyTotalBeneficiaries)
+module Backend.Dashboard.Model exposing (AcuteIllnessDataItem, AcuteIllnessEncounterDataItem, AssembledData, CaseManagement, CaseManagementData, CaseManagementPast2Years, CaseNutrition, CaseNutritionTotal, ChildScoreboardDataItem, ChildScoreboardEncounterDataItem, ChildrenBeneficiariesData, ChildrenBeneficiariesStats, DashboardStats, DashboardStatsRaw, EducationSessionData, FamilyPlanningStats, NCDDataItem, NCDEncounterDataItem, Nutrition, NutritionDataItem, NutritionEncounterDataItem, NutritionGroupDataItem, NutritionGroupEncounterDataItem, NutritionIndividualDataItem, NutritionIndividualEncounterDataItem, NutritionPageData, NutritionStatus(..), NutritionValue, PMTCTDataItem, ParticipantStats, PatientDetails, Periods, PersonIdentifier, PrenatalDataItem, PrenatalEncounterDataItem, ProgramType(..), SPVDataItem, SPVEncounterDataItem, TotalBeneficiaries, TotalEncountersData, emptyNutritionValue, emptyTotalBeneficiaries)
 
 {-| The stats for the dashboard.
 -}
 
-import AssocList as Dict exposing (Dict)
+import AssocList exposing (Dict)
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis, AcuteIllnessEncounterType)
 import Backend.EducationSession.Model exposing (EducationTopic)
 import Backend.Entities exposing (VillageId)
@@ -63,13 +63,6 @@ type alias NutritionPageData =
     }
 
 
-{-| To void a cycle in dependency, we just define the zScore here.
-Added a comment in the main definition to point to this one.
--}
-type alias ZScore =
-    Float
-
-
 type alias DashboardStatsRaw =
     { caseManagement : CaseManagementData
     , childrenBeneficiaries : ChildrenBeneficiariesData
@@ -94,30 +87,6 @@ type alias DashboardStatsRaw =
 
     -- An md5 hash, using which we know if we have the most up to date data.
     , cacheHash : String
-    }
-
-
-emptyModel : DashboardStatsRaw
-emptyModel =
-    { caseManagement = CaseManagementData Dict.empty Dict.empty
-    , childrenBeneficiaries = Dict.empty
-    , completedPrograms = []
-    , familyPlanning = []
-    , missedSessions = []
-    , totalEncounters = TotalEncountersData Dict.empty Dict.empty
-    , acuteIllnessData = []
-    , prenatalData = []
-    , ncdData = []
-    , pmtctData = []
-    , spvData = []
-    , childScoreboardData = []
-    , nutritionIndividualData = []
-    , nutritionGroupData = []
-    , groupEducationData = Dict.empty
-    , villagesWithResidents = Dict.empty
-    , patientsDetails = Dict.empty
-    , timestamp = ""
-    , cacheHash = ""
     }
 
 

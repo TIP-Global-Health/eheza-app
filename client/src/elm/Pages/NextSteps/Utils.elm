@@ -7,7 +7,6 @@ import Backend.Measurement.Model
         , ReferralFacility(..)
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, mapMeasurementData)
-import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (NextStepsTask(..))
 import Measurement.Utils
     exposing
@@ -28,8 +27,8 @@ import Pages.Utils exposing (resolveTasksCompletedFromTotal)
 import Translate.Model exposing (Language(..))
 
 
-nextStepsTasksCompletedFromTotal : NominalDate -> MeasurementData ChildMeasurements -> Model -> NextStepsTask -> ( Int, Int )
-nextStepsTasksCompletedFromTotal currentDate measurements data task =
+nextStepsTasksCompletedFromTotal : MeasurementData ChildMeasurements -> Model -> NextStepsTask -> ( Int, Int )
+nextStepsTasksCompletedFromTotal measurements data task =
     let
         ( _, tasks ) =
             case task of
@@ -39,7 +38,6 @@ nextStepsTasksCompletedFromTotal currentDate measurements data task =
                         |> getMeasurementValueFunc
                         |> sendToHCFormWithDefault data.sendToHCForm
                         |> sendToFacilityInputsAndTasks English
-                            currentDate
                             FacilityHealthCenter
                             Pages.NextSteps.Model.SetReferToHealthCenter
                             Pages.NextSteps.Model.SetReasonForNonReferral
@@ -52,7 +50,6 @@ nextStepsTasksCompletedFromTotal currentDate measurements data task =
                         |> getMeasurementValueFunc
                         |> healthEducationFormWithDefault data.healthEducationForm
                         |> healthEducationFormInutsAndTasks English
-                            currentDate
                             Pages.NextSteps.Model.SetProvidedEducationForDiagnosis
                             Pages.NextSteps.Model.SetReasonForNotProvidingHealthEducation
 
@@ -62,7 +59,6 @@ nextStepsTasksCompletedFromTotal currentDate measurements data task =
                         |> getMeasurementValueFunc
                         |> contributingFactorsFormWithDefault data.contributingFactorsForm
                         |> contributingFactorsFormInutsAndTasks English
-                            currentDate
                             Pages.NextSteps.Model.SetContributingFactorsSign
 
                 NextStepFollowUp ->
@@ -71,7 +67,6 @@ nextStepsTasksCompletedFromTotal currentDate measurements data task =
                         |> getMeasurementValueFunc
                         |> nutritionFollowUpFormWithDefault data.followUpForm
                         |> followUpFormInputsAndTasks English
-                            currentDate
                             []
                             Pages.NextSteps.Model.SetFollowUpOption
     in

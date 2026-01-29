@@ -1,4 +1,4 @@
-module GeoLocation.Model exposing (GeoInfo, GeoLocation, GeoLocationId, GeoLocationIdType(..), ParentId, ReverseGeoInfo, emptyGeoInfo)
+module GeoLocation.Model exposing (GeoInfo, GeoLocation, GeoLocationId, GeoLocationIdType, ParentId, ReverseGeoInfo, emptyGeoInfo)
 
 import AssocList as Dict exposing (Dict)
 import Restful.Endpoint exposing (EntityId)

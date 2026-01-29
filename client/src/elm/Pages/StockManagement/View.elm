@@ -23,7 +23,6 @@ import Html.Events exposing (on, onClick, onInput)
 import Json.Decode
 import List.Extra
 import List.Zipper
-import Maybe exposing (Maybe)
 import Maybe.Extra
 import Pages.Dashboard.View exposing (chwCard)
 import Pages.Page exposing (Page(..))
@@ -119,16 +118,16 @@ viewHeaderAndContent language currentDate maybeHealthCenterId nurseId nurse sync
                 ]
 
         content =
-            let
-                lastUpdated =
-                    viewLastUpdated language maybeHealthCenterId syncInfoAuthorities
-            in
             case model.displayMode of
                 ModeMain ->
-                    viewModeMain language currentDate nurseId nurse lastUpdated data model
+                    let
+                        lastUpdated =
+                            viewLastUpdated language maybeHealthCenterId syncInfoAuthorities
+                    in
+                    viewModeMain language currentDate lastUpdated data model
 
                 ModeMonthDetails monthGap ->
-                    viewModeMonthDetails language currentDate monthGap lastUpdated data
+                    viewModeMonthDetails language currentDate monthGap data
 
                 ModeReceiveStock ->
                     let
@@ -184,13 +183,11 @@ viewLastUpdated language maybeHealthCenterId syncInfoAuthorities =
 viewModeMain :
     Language
     -> NominalDate
-    -> NurseId
-    -> Nurse
     -> Html Msg
     -> StockManagementData
     -> Model
     -> List (Html Msg)
-viewModeMain language currentDate nurseId nurse lastUpdated data model =
+viewModeMain language currentDate lastUpdated data model =
     let
         viewButton label action =
             button
@@ -298,10 +295,9 @@ viewModeMonthDetails :
     Language
     -> NominalDate
     -> Int
-    -> Html Msg
     -> StockManagementData
     -> List (Html Msg)
-viewModeMonthDetails language currentDate monthGap lastUpdated data =
+viewModeMonthDetails language currentDate monthGap data =
     let
         dateLastDayOfSelectedMonth =
             resolveSelectedDateForMonthSelector currentDate monthGap
@@ -585,7 +581,7 @@ viewModeReceiveStock language currentDate nurseId nurse consumptionAverage form 
                                 [ text dateExpiresForView ]
                           , viewModal <| viewCalendarPopup language form.dateExpiresSelectorPopupState form.dateExpires
                           , viewQuestionLabel language Translate.StockManagementQuantityAddedQuestion
-                          , viewNumberInput language
+                          , viewNumberInput
                                 form.quantity
                                 SetQuantityAdded
                                 "quantity"
@@ -733,7 +729,7 @@ viewModeCorrectEntry language currentDate nurseId nurse form =
                           ]
                             ++ correctionReasonInputs
                             ++ [ viewLabel language Translate.StockManagementQuantityCorrectionLabel
-                               , viewNumberInput language
+                               , viewNumberInput
                                     form.quantity
                                     SetQuantityDeducted
                                     "quantity"

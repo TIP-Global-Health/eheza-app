@@ -50,12 +50,11 @@ view :
     -> Site
     -> EverySet SiteFeature
     -> PersonId
-    -> Bool
     -> PatientRecordInitiator
     -> ModelIndexedDb
     -> Model
     -> Html Msg
-view language currentDate zscores site features id isChw initiator db model =
+view language currentDate zscores site features id initiator db model =
     Dict.get id db.people
         |> Maybe.andThen RemoteData.toMaybe
         |> Maybe.map
@@ -75,14 +74,14 @@ view language currentDate zscores site features id isChw initiator db model =
                 in
                 case model.viewMode of
                     ViewStartEncounter ->
-                        viewStartEncounterPage language currentDate isChw id person patientType initiator db model
+                        viewStartEncounterPage language id person patientType initiator model
 
                     ViewPatientRecord ->
                         if patientType == PatientChild then
-                            viewContentForChild language currentDate zscores site features id person isChw initiator db model
+                            viewContentForChild language currentDate zscores site features id person initiator db model
 
                         else
-                            viewContentForOther language currentDate site features isChw id person patientType initiator db model
+                            viewContentForOther language currentDate site features id person patientType initiator db model
             )
         |> Maybe.withDefault spinner
 
@@ -111,8 +110,8 @@ viewHeader language model =
         ]
 
 
-viewStartEncounterPage : Language -> NominalDate -> Bool -> PersonId -> Person -> PatientType -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
-viewStartEncounterPage language currentDate isChw personId person patientType initiator db model =
+viewStartEncounterPage : Language -> PersonId -> Person -> PatientType -> PatientRecordInitiator -> Model -> Html Msg
+viewStartEncounterPage language personId person patientType initiator model =
     let
         participantPageInitiator =
             Backend.IndividualEncounterParticipant.Model.InitiatorPatientRecord initiator personId
@@ -159,12 +158,11 @@ viewContentForChild :
     -> EverySet SiteFeature
     -> PersonId
     -> Person
-    -> Bool
     -> PatientRecordInitiator
     -> ModelIndexedDb
     -> Model
     -> Html Msg
-viewContentForChild language currentDate zscores site features childId child isChw initiator db model =
+viewContentForChild language currentDate zscores site features childId child initiator db model =
     let
         wellChildReportInitiator =
             Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord initiator childId
@@ -183,7 +181,6 @@ viewContentForChild language currentDate zscores site features childId child isC
         zscores
         site
         features
-        isChw
         wellChildReportInitiator
         False
         db
@@ -205,7 +202,6 @@ viewContentForOther :
     -> NominalDate
     -> Site
     -> EverySet SiteFeature
-    -> Bool
     -> PersonId
     -> Person
     -> PatientType
@@ -213,7 +209,7 @@ viewContentForOther :
     -> ModelIndexedDb
     -> Model
     -> Html Msg
-viewContentForOther language currentDate site features isChw personId person patientType initiator db model =
+viewContentForOther language currentDate site features personId person patientType initiator db model =
     let
         individualParticipants =
             Dict.get personId db.individualParticipantsByPerson
@@ -239,20 +235,20 @@ viewContentForOther language currentDate site features isChw personId person pat
                                 )
                                 individualParticipants
                     in
-                    viewAcuteIllnessPane language currentDate personId initiator acuteIllnesses db
+                    viewAcuteIllnessPane language personId initiator acuteIllnesses db
 
                 FilterAntenatal ->
                     viewAntenatalPane language currentDate personId pregnancies db
 
                 FilterFamilyPlanning ->
-                    viewFamilyPlanningPane language currentDate personId (List.map Tuple.first pregnancies) db
+                    viewFamilyPlanningPane language personId (List.map Tuple.first pregnancies) db
 
                 FilterGroupEducation ->
                     Dict.get personId db.educationSessionsByPerson
                         |> Maybe.andThen RemoteData.toMaybe
                         |> Maybe.map Dict.values
                         |> Maybe.withDefault []
-                        |> viewGroupEducationPane language currentDate
+                        |> viewGroupEducationPane language
 
                 FilterDemographics ->
                     -- Demographics report got dedicated page.
@@ -455,16 +451,15 @@ viewFilters language features person patientType model =
 
 viewAcuteIllnessPane :
     Language
-    -> NominalDate
     -> PersonId
     -> PatientRecordInitiator
     -> List ( IndividualEncounterParticipantId, IndividualEncounterParticipant )
     -> ModelIndexedDb
     -> Html Msg
-viewAcuteIllnessPane language currentDate personId initiator acuteIllnesses db =
+viewAcuteIllnessPane language personId initiator acuteIllnesses db =
     let
         ( activeIllnesses, completedIllnesses ) =
-            List.partition (Tuple.second >> isAcuteIllnessActive currentDate) acuteIllnesses
+            List.partition (Tuple.second >> isAcuteIllnessActive) acuteIllnesses
 
         entriesHeading =
             div [ class "heading diagnosis" ]
@@ -590,12 +585,11 @@ viewAntenatalEntry language currentDate personId db ( ( participantId, status ),
 
 viewFamilyPlanningPane :
     Language
-    -> NominalDate
     -> PersonId
     -> List IndividualEncounterParticipantId
     -> ModelIndexedDb
     -> Html Msg
-viewFamilyPlanningPane language currentDate personId prenatalParticipantsIds db =
+viewFamilyPlanningPane language personId prenatalParticipantsIds db =
     let
         entriesHeading =
             div [ class "heading family-planning" ]
@@ -656,8 +650,8 @@ viewFamilyPlanningEntry language ( date, signs ) =
         ]
 
 
-viewGroupEducationPane : Language -> NominalDate -> List EducationSession -> Html Msg
-viewGroupEducationPane language currentDate sessions =
+viewGroupEducationPane : Language -> List EducationSession -> Html Msg
+viewGroupEducationPane language sessions =
     let
         entriesHeading =
             div [ class "heading group-education" ]

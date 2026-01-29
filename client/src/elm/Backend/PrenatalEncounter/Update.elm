@@ -26,13 +26,13 @@ update :
 update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
     case msg of
         CloseEncounter ->
-            updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | endDate = Just currentDate }) model
+            updateEncounter encounterId maybeEncounter (\encounter -> { encounter | endDate = Just currentDate }) model
 
         SetPrenatalDiagnoses diagnoses ->
-            updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | diagnoses = diagnoses }) model
+            updateEncounter encounterId maybeEncounter (\encounter -> { encounter | diagnoses = diagnoses }) model
 
         SetPastPrenatalDiagnoses pastDiagnoses ->
-            updateEncounter currentDate
+            updateEncounter
                 encounterId
                 maybeEncounter
                 (\encounter ->
@@ -47,10 +47,10 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
                 model
 
         SetLabsHistoryCompleted ->
-            updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | indicators = EverySet.insert IndicatorHistoryLabsCompleted encounter.indicators }) model
+            updateEncounter encounterId maybeEncounter (\encounter -> { encounter | indicators = EverySet.insert IndicatorHistoryLabsCompleted encounter.indicators }) model
 
         SetNextVisitDate date ->
-            updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | nextVisitDate = Just date }) model
+            updateEncounter encounterId maybeEncounter (\encounter -> { encounter | nextVisitDate = Just date }) model
 
         HandleUpdatedPrenatalEncounter data ->
             ( { model | updatePrenatalEncounter = data }
@@ -624,13 +624,12 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
 
 
 updateEncounter :
-    NominalDate
-    -> PrenatalEncounterId
+    PrenatalEncounterId
     -> Maybe PrenatalEncounter
     -> (PrenatalEncounter -> PrenatalEncounter)
     -> Model
     -> ( Model, Cmd Msg, List App.Model.Msg )
-updateEncounter currentDate encounterId maybeEncounter updateFunc model =
+updateEncounter encounterId maybeEncounter updateFunc model =
     maybeEncounter
         |> unwrap ( model, Cmd.none, [] )
             (\encounter ->

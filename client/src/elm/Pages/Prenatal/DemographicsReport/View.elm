@@ -95,9 +95,9 @@ viewContent : Language -> NominalDate -> Site -> ModelIndexedDb -> PersonId -> P
 viewContent language currentDate site db personId person =
     div [ class "ui unstackable items" ]
         [ viewPatientInformationPane language currentDate person
-        , viewFamilyInformationPane language currentDate site db personId person
-        , viewAddressInformationPane language currentDate site person
-        , viewContactInformationPane language currentDate db person
+        , viewFamilyInformationPane language site db personId person
+        , viewAddressInformationPane language site person
+        , viewContactInformationPane language db person
         ]
 
 
@@ -153,8 +153,8 @@ viewPatientInformationPane language currentDate person =
         ]
 
 
-viewFamilyInformationPane : Language -> NominalDate -> Site -> ModelIndexedDb -> PersonId -> Person -> Html Msg
-viewFamilyInformationPane language currentDate site db personId person =
+viewFamilyInformationPane : Language -> Site -> ModelIndexedDb -> PersonId -> Person -> Html Msg
+viewFamilyInformationPane language site db personId person =
     let
         ubudeheItem =
             if site == SiteRwanda then
@@ -214,13 +214,13 @@ viewFamilyInformationPane language currentDate site db personId person =
         ]
 
 
-viewAddressInformationPane : Language -> NominalDate -> Site -> Person -> Html Msg
-viewAddressInformationPane language currentDate site person =
+viewAddressInformationPane : Language -> Site -> Person -> Html Msg
+viewAddressInformationPane language site person =
     div [ class "address-information" ]
         [ viewItemHeading language Translate.AddressInformation "blue"
         , div [ class "pane-content" ]
             [ viewLineItem language
-                (resolveGeoSructureLabelLevel1 site)
+                resolveGeoSructureLabelLevel1
                 (person.province |> Maybe.withDefault "")
             , viewLineItem language
                 (resolveGeoSructureLabelLevel2 site)
@@ -238,8 +238,8 @@ viewAddressInformationPane language currentDate site person =
         ]
 
 
-viewContactInformationPane : Language -> NominalDate -> ModelIndexedDb -> Person -> Html Msg
-viewContactInformationPane language currentDate db person =
+viewContactInformationPane : Language -> ModelIndexedDb -> Person -> Html Msg
+viewContactInformationPane language db person =
     let
         healthCenterName =
             getHealthCenterName person.healthCenterId db

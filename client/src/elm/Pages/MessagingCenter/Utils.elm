@@ -1,4 +1,4 @@
-module Pages.MessagingCenter.Utils exposing (adoptionSurveyQuestions, generateInboxMessages, isMessageUnread, quarterlySurveyQuestions, resolveNumberOfUnreadMessages, resolveSurveyScoreDialogState, surveyAnswerToScore, surveyQuestionsAnswered)
+module Pages.MessagingCenter.Utils exposing (adoptionSurveyQuestions, generateInboxMessages, quarterlySurveyQuestions, resolveNumberOfUnreadMessages, resolveSurveyScoreDialogState, surveyAnswerToScore, surveyQuestionsAnswered)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)

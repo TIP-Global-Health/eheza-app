@@ -47,7 +47,7 @@ view language configuredModel db model =
                     [ summary [] [ text "Sync Manager" ]
                     , viewHealthCentersForSync language db model
                     , viewSyncSettings model
-                    , viewSyncStatus language db model
+                    , viewSyncStatus db model
                     ]
 
         Nothing ->
@@ -193,8 +193,8 @@ viewSyncSettings model =
         ]
 
 
-viewSyncDownloadGeneral : Language -> Model -> WebData (DownloadSyncResponse BackendGeneralEntity) -> Html Msg
-viewSyncDownloadGeneral language model webData =
+viewSyncDownloadGeneral : Model -> WebData (DownloadSyncResponse BackendGeneralEntity) -> Html Msg
+viewSyncDownloadGeneral model webData =
     div []
         [ div [] [ text <| "Fetch from General from revision ID " ++ String.fromInt model.syncInfoGeneral.lastFetchedRevisionId ]
         , button [ onClick <| SyncManager.Model.SetLastFetchedRevisionIdGeneral 0 ] [ text "Reset revision ID to 0" ]
@@ -207,7 +207,7 @@ viewSyncDownloadGeneral language model webData =
                         div [] [ text "No content fetched in last HTTP request" ]
 
                       else
-                        ol [] (List.map (viewGeneralEntity language) data.entities)
+                        ol [] (List.map viewGeneralEntity data.entities)
                     ]
 
             RemoteData.Failure error ->
@@ -221,8 +221,8 @@ viewSyncDownloadGeneral language model webData =
         ]
 
 
-viewGeneralEntity : Language -> BackendGeneralEntity -> Html msg
-viewGeneralEntity language backendGeneralEntity =
+viewGeneralEntity : BackendGeneralEntity -> Html msg
+viewGeneralEntity backendGeneralEntity =
     li []
         [ case backendGeneralEntity of
             BackendGeneralCatchmentArea identifier ->
@@ -977,8 +977,8 @@ viewHealthCenter ( healthCenterId, healthCenter ) isSynced =
         ]
 
 
-viewSyncStatus : Language -> ModelIndexedDb -> Model -> Html Msg
-viewSyncStatus language db model =
+viewSyncStatus : ModelIndexedDb -> Model -> Html Msg
+viewSyncStatus db model =
     details
         [ property "open" (Json.Encode.bool False)
         , class "segment ui"
@@ -987,7 +987,7 @@ viewSyncStatus language db model =
         , div [] [ text <| "Sync status: " ++ Debug.toString model.syncStatus ]
         , case model.syncStatus of
             SyncDownloadGeneral webData ->
-                viewSyncDownloadGeneral language model webData
+                viewSyncDownloadGeneral model webData
 
             SyncDownloadAuthority webData ->
                 viewSyncDownloadAuthority db model webData

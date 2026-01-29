@@ -1,4 +1,4 @@
-module Pages.Report.Svg exposing (dimensionsPx, drawPoints, drawPolygon, drawPolyline, drawPolyshape, heightPx, referenceHorizontalLines, referenceHorizontalNumbers, referenceVerticalLines, referenceVerticalNumbers, svgMarker, widthPx, withinRange)
+module Pages.Report.Svg exposing (dimensionsPx, drawPoints, drawPolygon, drawPolyline, heightPx, referenceHorizontalLines, referenceHorizontalNumbers, referenceVerticalLines, referenceVerticalNumbers, svgMarker, widthPx, withinRange)
 
 import Svg exposing (..)
 import Svg.Attributes exposing (..)

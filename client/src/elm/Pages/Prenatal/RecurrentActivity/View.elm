@@ -73,7 +73,7 @@ view language currentDate nurse id activity db model =
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate nurse id activity db model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate nurse id activity model) identity assembled
 
 
 viewHeaderAndContent :
@@ -82,11 +82,10 @@ viewHeaderAndContent :
     -> Nurse
     -> PrenatalEncounterId
     -> PrenatalRecurrentActivity
-    -> ModelIndexedDb
     -> Model
     -> AssembledData
     -> Html Msg
-viewHeaderAndContent language currentDate nurse id activity db model assembled =
+viewHeaderAndContent language currentDate nurse id activity model assembled =
     let
         isLabTech =
             isLabTechnician nurse
@@ -99,15 +98,15 @@ viewHeaderAndContent language currentDate nurse id activity db model assembled =
                 PrenatalRecurrentEncounterPage id
     in
     div [ class "page-activity prenatal" ] <|
-        [ viewHeader language goBackPage (Translate.PrenatalRecurrentActivitiesTitle activity) assembled
-        , viewContent language currentDate isLabTech activity db model assembled
+        [ viewHeader language goBackPage (Translate.PrenatalRecurrentActivitiesTitle activity)
+        , viewContent language currentDate isLabTech activity model assembled
         , viewModal <|
-            warningPopup language currentDate False assembled.encounter.diagnoses SetWarningPopupState model.warningPopupState
+            warningPopup language assembled.encounter.diagnoses SetWarningPopupState model.warningPopupState
         ]
 
 
-viewHeader : Language -> UserPage -> TranslationId -> AssembledData -> Html Msg
-viewHeader language goBackPage labelTransId assembled =
+viewHeader : Language -> UserPage -> TranslationId -> Html Msg
+viewHeader language goBackPage labelTransId =
     div
         [ class "ui basic segment head" ]
         [ h1 [ class "ui header" ]
@@ -120,18 +119,18 @@ viewHeader language goBackPage labelTransId assembled =
         ]
 
 
-viewContent : Language -> NominalDate -> Bool -> PrenatalRecurrentActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate isLabTech activity db model assembled =
+viewContent : Language -> NominalDate -> Bool -> PrenatalRecurrentActivity -> Model -> AssembledData -> Html Msg
+viewContent language currentDate isLabTech activity model assembled =
     div [ class "ui unstackable items" ] <|
         viewMotherAndMeasurements language currentDate False assembled (Just ( model.showAlertsDialog, SetAlertsDialogState ))
-            ++ viewActivity language currentDate isLabTech activity assembled db model
+            ++ viewActivity language currentDate isLabTech activity assembled model
 
 
-viewActivity : Language -> NominalDate -> Bool -> PrenatalRecurrentActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewActivity language currentDate isLabTech activity assembled db model =
+viewActivity : Language -> NominalDate -> Bool -> PrenatalRecurrentActivity -> AssembledData -> Model -> List (Html Msg)
+viewActivity language currentDate isLabTech activity assembled model =
     case activity of
         LabResults ->
-            viewLabResultsContent language currentDate isLabTech assembled model
+            viewLabResultsContent language isLabTech assembled model
 
         RecurrentNextSteps ->
             viewNextStepsContent language currentDate assembled model.nextStepsData
@@ -141,24 +140,23 @@ viewActivity language currentDate isLabTech activity assembled db model =
 
         RecurrentMalariaPrevention ->
             viewMalariaPreventionContent language
-                currentDate
                 assembled
                 SetMalariaPreventionBoolInput
                 SaveMalariaPrevention
                 model.malariaPreventionData
 
         LabsResultsFollowUps ->
-            viewLabResultFollowUpsContent language currentDate isLabTech assembled model
+            viewLabResultFollowUpsContent language assembled model
 
 
-viewLabResultsContent : Language -> NominalDate -> Bool -> AssembledData -> Model -> List (Html Msg)
-viewLabResultsContent language currentDate isLabTech assembled model =
+viewLabResultsContent : Language -> Bool -> AssembledData -> Model -> List (Html Msg)
+viewLabResultsContent language isLabTech assembled model =
     let
         measurements =
             assembled.measurements
 
         tasks =
-            resolveLaboratoryResultTasks currentDate isLabTech assembled
+            resolveLaboratoryResultTasks isLabTech assembled
 
         activeTask =
             resolveActiveTask tasks model.labResultsData.activeTask
@@ -172,7 +170,7 @@ viewLabResultsContent language currentDate isLabTech assembled model =
                     activeTask == Just task
 
                 isCompleted =
-                    laboratoryResultTaskCompleted currentDate isLabTech assembled task
+                    laboratoryResultTaskCompleted isLabTech assembled task
 
                 attributes =
                     classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
@@ -199,7 +197,6 @@ viewLabResultsContent language currentDate isLabTech assembled model =
                             getMeasurementValueFunc measurements.partnerHIVTest
                                 |> partnerHIVResultFormWithDefault model.labResultsData.partnerHIVTestForm
                                 |> partnerHIVResultFormAndTasks language
-                                    currentDate
                                     isLabTech
                                     contentAndTasksLaboratorResultsConfig
                                     SetPartnerHIVTestResult
@@ -213,7 +210,6 @@ viewLabResultsContent language currentDate isLabTech assembled model =
                             getMeasurementValueFunc measurements.hivTest
                                 |> hivResultFormWithDefault model.labResultsData.hivTestForm
                                 |> hivResultFormAndTasks language
-                                    currentDate
                                     isLabTech
                                     contentAndTasksLaboratorResultsConfig
                                     SetHIVTestResult
@@ -224,7 +220,6 @@ viewLabResultsContent language currentDate isLabTech assembled model =
                             getMeasurementValueFunc measurements.syphilisTest
                                 |> syphilisResultFormWithDefault model.labResultsData.syphilisTestForm
                                 |> syphilisResultFormAndTasks language
-                                    currentDate
                                     isLabTech
                                     contentAndTasksLaboratorResultsConfig
                                     SetSyphilisTestResult
@@ -234,7 +229,6 @@ viewLabResultsContent language currentDate isLabTech assembled model =
                             getMeasurementValueFunc measurements.hepatitisBTest
                                 |> hepatitisBResultFormWithDefault model.labResultsData.hepatitisBTestForm
                                 |> hepatitisBResultFormAndTasks language
-                                    currentDate
                                     isLabTech
                                     contentAndTasksLaboratorResultsConfig
                                     SetHepatitisBTestResult
@@ -243,7 +237,6 @@ viewLabResultsContent language currentDate isLabTech assembled model =
                             getMeasurementValueFunc measurements.malariaTest
                                 |> malariaResultFormWithDefault model.labResultsData.malariaTestForm
                                 |> malariaResultFormAndTasks language
-                                    currentDate
                                     isLabTech
                                     contentAndTasksLaboratorResultsConfig
                                     SetMalariaTestResult
@@ -253,7 +246,6 @@ viewLabResultsContent language currentDate isLabTech assembled model =
                             getMeasurementValueFunc measurements.bloodGpRsTest
                                 |> bloodGpRsResultFormWithDefault model.labResultsData.bloodGpRsTestForm
                                 |> bloodGpRsResultFormAndTasks language
-                                    currentDate
                                     isLabTech
                                     contentAndTasksLaboratorResultsConfig
                                     SetBloodGroup
@@ -263,7 +255,6 @@ viewLabResultsContent language currentDate isLabTech assembled model =
                             getMeasurementValueFunc measurements.urineDipstickTest
                                 |> urineDipstickResultFormWithDefault model.labResultsData.urineDipstickTestForm
                                 |> urineDipstickResultFormAndTasks language
-                                    currentDate
                                     isLabTech
                                     contentAndTasksLaboratorResultsConfig
                                     SetProtein
@@ -280,7 +271,6 @@ viewLabResultsContent language currentDate isLabTech assembled model =
                             getMeasurementValueFunc measurements.hemoglobinTest
                                 |> hemoglobinResultFormWithDefault model.labResultsData.hemoglobinTestForm
                                 |> hemoglobinResultFormAndTasks language
-                                    currentDate
                                     isLabTech
                                     contentAndTasksLaboratorResultsConfig
                                     SetHemoglobin
@@ -289,7 +279,6 @@ viewLabResultsContent language currentDate isLabTech assembled model =
                             getMeasurementValueFunc measurements.randomBloodSugarTest
                                 |> randomBloodSugarResultFormWithDefault model.labResultsData.randomBloodSugarTestForm
                                 |> randomBloodSugarResultFormAndTasks language
-                                    currentDate
                                     isLabTech
                                     contentAndTasksLaboratorResultsConfig
                                     SetRandomBloodSugar
@@ -298,7 +287,6 @@ viewLabResultsContent language currentDate isLabTech assembled model =
                             getMeasurementValueFunc measurements.hivPCRTest
                                 |> hivPCRResultFormWithDefault model.labResultsData.hivPCRTestForm
                                 |> hivPCRResultFormAndTasks language
-                                    currentDate
                                     isLabTech
                                     contentAndTasksLaboratorResultsConfig
                                     SetHIVViralLoad
@@ -469,7 +457,7 @@ viewNextStepsContent language currentDate assembled data =
                 Just NextStepsSendToHC ->
                     getMeasurementValueFunc measurements.sendToHC
                         |> referralFormWithDefault data.referralForm
-                        |> viewReferralForm language currentDate assembled
+                        |> viewReferralForm language assembled
 
                 Just NextStepsMedicationDistribution ->
                     getMeasurementValueFunc measurements.medicationDistribution
@@ -486,7 +474,7 @@ viewNextStepsContent language currentDate assembled data =
                 Just NextStepsHealthEducation ->
                     getMeasurementValueFunc measurements.healthEducation
                         |> healthEducationFormWithDefault data.healthEducationForm
-                        |> viewHealthEducationForm language currentDate assembled
+                        |> viewHealthEducationForm language assembled
 
                 Nothing ->
                     emptyNode
@@ -657,8 +645,8 @@ viewVitalsForm language currentDate assembled form =
     Measurement.View.viewVitalsForm language currentDate formConfig form
 
 
-viewHealthEducationForm : Language -> NominalDate -> AssembledData -> HealthEducationForm -> Html Msg
-viewHealthEducationForm language currentDate assembled form =
+viewHealthEducationForm : Language -> AssembledData -> HealthEducationForm -> Html Msg
+viewHealthEducationForm language assembled form =
     let
         ( inputs, _ ) =
             healthEducationFormInputsAndTasks language assembled form
@@ -667,12 +655,11 @@ viewHealthEducationForm language currentDate assembled form =
         inputs
 
 
-viewReferralForm : Language -> NominalDate -> AssembledData -> ReferralForm -> Html Msg
-viewReferralForm language currentDate assembled form =
+viewReferralForm : Language -> AssembledData -> ReferralForm -> Html Msg
+viewReferralForm language assembled form =
     let
         ( inputs, _ ) =
             resolveReferralInputsAndTasks language
-                currentDate
                 assembled
                 SetReferralBoolInput
                 SetFacilityNonReferralReason
@@ -682,14 +669,14 @@ viewReferralForm language currentDate assembled form =
         inputs
 
 
-viewLabResultFollowUpsContent : Language -> NominalDate -> Bool -> AssembledData -> Model -> List (Html Msg)
-viewLabResultFollowUpsContent language currentDate isLabTech assembled model =
+viewLabResultFollowUpsContent : Language -> AssembledData -> Model -> List (Html Msg)
+viewLabResultFollowUpsContent language assembled model =
     let
         measurements =
             assembled.measurements
 
         tasks =
-            resolveLaboratoryResultFollowUpsTasks currentDate assembled
+            resolveLaboratoryResultFollowUpsTasks assembled
 
         activeTask =
             resolveActiveTask tasks model.labResultsData.activeTask
@@ -703,7 +690,7 @@ viewLabResultFollowUpsContent language currentDate isLabTech assembled model =
                     activeTask == Just task
 
                 isCompleted =
-                    laboratoryResultFollowUpsTaskCompleted currentDate assembled task
+                    laboratoryResultFollowUpsTaskCompleted assembled task
 
                 attributes =
                     classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
@@ -734,19 +721,18 @@ viewLabResultFollowUpsContent language currentDate isLabTech assembled model =
                             getMeasurementValueFunc measurements.hivTest
                                 |> hivResultFormWithDefault model.labResultsData.hivTestForm
                                 |> hivResultFollowUpsFormAndTasks language
-                                    currentDate
                                     SetHIVTestFormBoolInput
                                     partnerHIVTestResult
 
                         TaskSyphilisTest ->
                             getMeasurementValueFunc measurements.syphilisTest
                                 |> syphilisResultFormWithDefault model.labResultsData.syphilisTestForm
-                                |> syphilisResultFollowUpsFormAndTasks language currentDate SetIllnessSymptom
+                                |> syphilisResultFollowUpsFormAndTasks language SetIllnessSymptom
 
                         TaskPartnerHIVTest ->
                             getMeasurementValueFunc measurements.partnerHIVTest
                                 |> partnerHIVResultFormWithDefault model.labResultsData.partnerHIVTestForm
-                                |> partnerHIVResultFollowUpsFormAndTasks language currentDate SetPartnerHIVTestFormBoolInput
+                                |> partnerHIVResultFollowUpsFormAndTasks language SetPartnerHIVTestFormBoolInput
 
                         -- Others do not have results follow ups section,
                         -- or, do not participate at Prenatal.
@@ -860,38 +846,35 @@ viewLabsHistory language currentDate originatingEncounterId labEncounterId lab d
         assembled =
             generateAssembledData labEncounterId db
     in
-    viewWebData language (viewLabsHistoryHeaderAndContent language currentDate originatingEncounterId labEncounterId lab db data) identity assembled
+    viewWebData language (viewLabsHistoryHeaderAndContent language currentDate originatingEncounterId lab data) identity assembled
 
 
 viewLabsHistoryHeaderAndContent :
     Language
     -> NominalDate
     -> PrenatalEncounterId
-    -> PrenatalEncounterId
     -> LaboratoryTest
-    -> ModelIndexedDb
     -> LabResultsData
     -> AssembledData
     -> Html Msg
-viewLabsHistoryHeaderAndContent language currentDate originatingEncounterId labEncounterId lab db data assembled =
+viewLabsHistoryHeaderAndContent language currentDate originatingEncounterId lab data assembled =
     div [ class "page-activity prenatal labs-history" ] <|
         [ viewHeader language
             (PrenatalActivityPage originatingEncounterId Backend.PrenatalActivity.Model.Laboratory)
             (Translate.LaboratoryTest lab)
-            assembled
-        , viewLabsHistoryContent language currentDate lab db data assembled
+        , viewLabsHistoryContent language currentDate lab data assembled
         ]
 
 
-viewLabsHistoryContent : Language -> NominalDate -> LaboratoryTest -> ModelIndexedDb -> LabResultsData -> AssembledData -> Html Msg
-viewLabsHistoryContent language currentDate lab db data assembled =
+viewLabsHistoryContent : Language -> NominalDate -> LaboratoryTest -> LabResultsData -> AssembledData -> Html Msg
+viewLabsHistoryContent language currentDate lab data assembled =
     div [ class "ui unstackable items" ] <|
         viewMotherAndMeasurements language currentDate False assembled Nothing
-            ++ viewLab language currentDate lab assembled data
+            ++ viewLab language lab assembled data
 
 
-viewLab : Language -> NominalDate -> LaboratoryTest -> AssembledData -> LabResultsData -> List (Html Msg)
-viewLab language currentDate lab assembled data =
+viewLab : Language -> LaboratoryTest -> AssembledData -> LabResultsData -> List (Html Msg)
+viewLab language lab assembled data =
     let
         isLabTech =
             -- Labs history can be filled only by nurses.
@@ -906,7 +889,6 @@ viewLab language currentDate lab assembled data =
                     getMeasurementValueFunc measurements.partnerHIVTest
                         |> partnerHIVResultFormWithDefault data.partnerHIVTestForm
                         |> partnerHIVResultFormAndTasks language
-                            currentDate
                             isLabTech
                             contentAndTasksLaboratorResultsConfig
                             SetPartnerHIVTestResult
@@ -920,7 +902,6 @@ viewLab language currentDate lab assembled data =
                     getMeasurementValueFunc measurements.hivTest
                         |> hivResultFormWithDefault data.hivTestForm
                         |> hivResultFormAndTasks language
-                            currentDate
                             isLabTech
                             contentAndTasksLaboratorResultsConfig
                             SetHIVTestResult
@@ -931,7 +912,6 @@ viewLab language currentDate lab assembled data =
                     getMeasurementValueFunc measurements.syphilisTest
                         |> syphilisResultFormWithDefault data.syphilisTestForm
                         |> syphilisResultFormAndTasks language
-                            currentDate
                             isLabTech
                             contentAndTasksLaboratorResultsConfig
                             SetSyphilisTestResult
@@ -941,7 +921,6 @@ viewLab language currentDate lab assembled data =
                     getMeasurementValueFunc measurements.hepatitisBTest
                         |> hepatitisBResultFormWithDefault data.hepatitisBTestForm
                         |> hepatitisBResultFormAndTasks language
-                            currentDate
                             isLabTech
                             contentAndTasksLaboratorResultsConfig
                             SetHepatitisBTestResult
@@ -950,7 +929,6 @@ viewLab language currentDate lab assembled data =
                     getMeasurementValueFunc measurements.malariaTest
                         |> malariaResultFormWithDefault data.malariaTestForm
                         |> malariaResultFormAndTasks language
-                            currentDate
                             isLabTech
                             contentAndTasksLaboratorResultsConfig
                             SetMalariaTestResult
@@ -960,7 +938,6 @@ viewLab language currentDate lab assembled data =
                     getMeasurementValueFunc measurements.bloodGpRsTest
                         |> bloodGpRsResultFormWithDefault data.bloodGpRsTestForm
                         |> bloodGpRsResultFormAndTasks language
-                            currentDate
                             isLabTech
                             contentAndTasksLaboratorResultsConfig
                             SetBloodGroup
@@ -970,7 +947,6 @@ viewLab language currentDate lab assembled data =
                     getMeasurementValueFunc measurements.urineDipstickTest
                         |> urineDipstickResultFormWithDefault data.urineDipstickTestForm
                         |> urineDipstickResultFormAndTasks language
-                            currentDate
                             isLabTech
                             contentAndTasksLaboratorResultsConfig
                             SetProtein
@@ -987,7 +963,6 @@ viewLab language currentDate lab assembled data =
                     getMeasurementValueFunc measurements.hemoglobinTest
                         |> hemoglobinResultFormWithDefault data.hemoglobinTestForm
                         |> hemoglobinResultFormAndTasks language
-                            currentDate
                             isLabTech
                             contentAndTasksLaboratorResultsConfig
                             SetHemoglobin
@@ -996,7 +971,6 @@ viewLab language currentDate lab assembled data =
                     getMeasurementValueFunc measurements.randomBloodSugarTest
                         |> randomBloodSugarResultFormWithDefault data.randomBloodSugarTestForm
                         |> randomBloodSugarResultFormAndTasks language
-                            currentDate
                             isLabTech
                             contentAndTasksLaboratorResultsConfig
                             SetRandomBloodSugar
@@ -1005,7 +979,6 @@ viewLab language currentDate lab assembled data =
                     getMeasurementValueFunc measurements.hivPCRTest
                         |> hivPCRResultFormWithDefault data.hivPCRTestForm
                         |> hivPCRResultFormAndTasks language
-                            currentDate
                             isLabTech
                             contentAndTasksLaboratorResultsConfig
                             SetHIVViralLoad

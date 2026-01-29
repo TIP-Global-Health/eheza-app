@@ -8,7 +8,7 @@ import Translate as Trans exposing (Language, translate)
 
 
 view : Language -> ( NurseId, Nurse ) -> Html a
-view language ( nurseId, nurse ) =
+view language ( _, nurse ) =
     div [ class "ui centered card" ]
         [ div [ class "content" ]
             [ div [ class "header" ] [ text <| translate language <| Trans.WelcomeUser nurse.name ]

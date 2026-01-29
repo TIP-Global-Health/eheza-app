@@ -16,7 +16,6 @@ import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Model
 import EverySet
-import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (unwrap)
 import Measurement.Utils exposing (contributingFactorsFormWithDefault, ncdaFormWithDefault, nutritionFormWithDefault, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toHeightValueWithDefault, toMuacValueWithDefault, toNCDAValueWithDefault, toNutritionFollowUpValueWithDefault, toNutritionValueWithDefault, toSendToHCValueWithDefault, toWeightValueWithDefault)
@@ -27,8 +26,8 @@ import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (Site)
 
 
-update : NominalDate -> Site -> NutritionEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate site id db msg model =
+update : Site -> NutritionEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update site id db msg model =
     let
         ncdaForm =
             Dict.get id db.nutritionMeasurements
@@ -557,7 +556,7 @@ update currentDate site id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate site id db) extraMsgs
+                |> sequenceExtra (update site id db) extraMsgs
 
         SetProvidedEducationForDiagnosis value ->
             let
@@ -618,7 +617,7 @@ update currentDate site id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate site id db) extraMsgs
+                |> sequenceExtra (update site id db) extraMsgs
 
         SetContributingFactorsSign sign ->
             let
@@ -674,7 +673,7 @@ update currentDate site id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate site id db) extraMsgs
+                |> sequenceExtra (update site id db) extraMsgs
 
         SetFollowUpOption option ->
             let
@@ -721,4 +720,4 @@ update currentDate site id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate site id db) extraMsgs
+                |> sequenceExtra (update site id db) extraMsgs

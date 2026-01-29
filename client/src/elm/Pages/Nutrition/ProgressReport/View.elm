@@ -59,7 +59,7 @@ view language currentDate zscores site features id isChw db model =
 
         ( bottomActionData, mandatoryNutritionAssessmentMeasurementsTaken ) =
             Maybe.map2
-                (\assembled ( _, child ) ->
+                (\assembled _ ->
                     let
                         ( _, pendingActivities ) =
                             partitionActivities currentDate zscores features isChw db assembled
@@ -71,7 +71,7 @@ view language currentDate zscores site features id isChw db model =
                         , setEndEncounterDialogStateMsg = SetEndEncounterDialogState
                         , startEncounterMsg = NoOp
                         }
-                    , mandatoryActivitiesCompleted currentDate zscores features child isChw assembled db
+                    , mandatoryActivitiesCompleted currentDate zscores features isChw assembled db
                     )
                 )
                 assembledData
@@ -90,7 +90,6 @@ view language currentDate zscores site features id isChw db model =
             zscores
             site
             features
-            isChw
             initiator
             mandatoryNutritionAssessmentMeasurementsTaken
             db

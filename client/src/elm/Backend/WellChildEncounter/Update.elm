@@ -25,10 +25,10 @@ update :
 update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
     case msg of
         CloseWellChildEncounter ->
-            updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | endDate = Just currentDate }) model
+            updateEncounter encounterId maybeEncounter (\encounter -> { encounter | endDate = Just currentDate }) model
 
         SetWellChildEncounterNote note ->
-            updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | encounterNote = note }) model
+            updateEncounter encounterId maybeEncounter (\encounter -> { encounter | encounterNote = note }) model
 
         SetWellChildEncounterWarning warning ->
             let
@@ -52,7 +52,7 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
                         in
                         { encounter | encounterWarnings = EverySet.fromList updatedWarnings }
             in
-            updateEncounter currentDate encounterId maybeEncounter updateFunc model
+            updateEncounter encounterId maybeEncounter updateFunc model
 
         HandleUpdatedWellChildEncounter data ->
             ( { model | editWellChildEncounter = data }
@@ -446,13 +446,12 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
 
 
 updateEncounter :
-    NominalDate
-    -> WellChildEncounterId
+    WellChildEncounterId
     -> Maybe WellChildEncounter
     -> (WellChildEncounter -> WellChildEncounter)
     -> Model
     -> ( Model, Cmd Msg, List App.Model.Msg )
-updateEncounter currentDate encounterId maybeEncounter updateFunc model =
+updateEncounter encounterId maybeEncounter updateFunc model =
     maybeEncounter
         |> unwrap ( model, Cmd.none, [] )
             (\encounter ->

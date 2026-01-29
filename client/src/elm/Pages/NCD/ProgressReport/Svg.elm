@@ -1,4 +1,4 @@
-module Pages.NCD.ProgressReport.Svg exposing (frame, horizontalLabel, measurementsByTime, measurementsWithInidactorsByTime, verticalLabel, viewBloodGlucoseByTime, viewBloodPressureByTime, viewHbA1cByTime, viewMarkers)
+module Pages.NCD.ProgressReport.Svg exposing (viewBloodGlucoseByTime, viewBloodPressureByTime, viewHbA1cByTime, viewMarkers)
 
 import Html exposing (Html)
 import Pages.Report.Model exposing (RandomBloodSugarResult(..))

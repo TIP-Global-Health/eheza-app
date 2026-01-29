@@ -1,4 +1,4 @@
-module Pages.Prenatal.ProgressReport.Utils exposing (allCHWActions, chwActionToColor, diagnosisForProgressReportToString, filterNursePreviousEncountersDataToDate, thumbnailDimensions, updateChronicHypertensionDiagnoses, wrapWithLI)
+module Pages.Prenatal.ProgressReport.Utils exposing (allCHWActions, chwActionToColor, diagnosisForProgressReportToString, thumbnailDimensions, updateChronicHypertensionDiagnoses, wrapWithLI)
 
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
 import Date

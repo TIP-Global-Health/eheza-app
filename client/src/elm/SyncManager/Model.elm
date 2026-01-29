@@ -1,4 +1,4 @@
-module SyncManager.Model exposing (BackendAuthorityEntity(..), BackendEntity, BackendEntityIdentifier, BackendGeneralEntity(..), BackendWhatsAppEntity, DownloadPhotosAllRec, DownloadPhotosBatchRec, DownloadPhotosMode(..), DownloadPhotosStatus(..), DownloadSyncResponse, Flags, IncidentContnentIdentifier, IndexDbDeferredPhotoRemoteData, IndexDbQueryDeferredPhotoResultRecord, IndexDbQueryType(..), IndexDbQueryTypeResult(..), IndexDbQueryUploadAuthorityResultRecord, IndexDbQueryUploadFileResultRecord, IndexDbQueryUploadGeneralResultRecord, IndexDbQueryUploadPhotoResultRecord, IndexDbQueryUploadWhatsAppResultRecord, IndexDbSaveResult, IndexDbSaveResultTable(..), IndexDbSaveStatus(..), IndexDbUploadRemoteData, Model, Msg(..), Site(..), SiteFeature(..), SyncCycle(..), SyncIncidentType(..), SyncInfoAuthority, SyncInfoAuthorityForPort, SyncInfoAuthorityZipper, SyncInfoGeneral, SyncInfoGeneralForPort, SyncInfoStatus(..), SyncSpeed, SyncStatus(..), UploadFileError(..), UploadMethod(..), UploadRec, downloadRequestTimeout, emptyDownloadPhotosAllRec, emptyDownloadPhotosBatchRec, emptyModel, emptySyncInfoAuthority, emptyUploadRec)
+module SyncManager.Model exposing (BackendAuthorityEntity(..), BackendEntity, BackendEntityIdentifier, BackendGeneralEntity(..), BackendWhatsAppEntity, DownloadPhotosAllRec, DownloadPhotosBatchRec, DownloadPhotosMode(..), DownloadPhotosStatus(..), DownloadSyncResponse, Flags, IncidentContnentIdentifier, IndexDbDeferredPhotoRemoteData, IndexDbQueryDeferredPhotoResultRecord, IndexDbQueryType(..), IndexDbQueryTypeResult(..), IndexDbQueryUploadAuthorityResultRecord, IndexDbQueryUploadFileResultRecord, IndexDbQueryUploadGeneralResultRecord, IndexDbQueryUploadPhotoResultRecord, IndexDbQueryUploadWhatsAppResultRecord, IndexDbSaveResult, IndexDbSaveResultTable(..), IndexDbSaveStatus(..), IndexDbUploadRemoteData, Model, Msg(..), Site(..), SiteFeature(..), SyncCycle(..), SyncIncidentType(..), SyncInfoAuthority, SyncInfoAuthorityForPort, SyncInfoAuthorityZipper, SyncInfoGeneral, SyncInfoGeneralForPort, SyncInfoStatus(..), SyncSpeed, SyncStatus(..), UploadFileError(..), UploadMethod(..), UploadRec, downloadRequestTimeout, emptyModel, emptySyncInfoAuthority, emptyUploadRec)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
@@ -483,15 +483,6 @@ type alias DownloadPhotosBatchRec =
     , batchCounter : Int
     , indexDbRemoteData : IndexDbDeferredPhotoRemoteData
     , backendRemoteData : WebData ()
-    }
-
-
-emptyDownloadPhotosBatchRec : Int -> DownloadPhotosBatchRec
-emptyDownloadPhotosBatchRec batchSize =
-    { batchSize = batchSize
-    , batchCounter = batchSize
-    , indexDbRemoteData = RemoteData.NotAsked
-    , backendRemoteData = RemoteData.NotAsked
     }
 
 

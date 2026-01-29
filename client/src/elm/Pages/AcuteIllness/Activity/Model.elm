@@ -27,21 +27,10 @@ module Pages.AcuteIllness.Activity.Model exposing
     , SymptomsGeneralForm
     , SymptomsRespiratoryForm
     , TreatmentReviewForm
-    , emptyCall114Form
-    , emptyContactsTracingForm
     , emptyCovidTestingForm
-    , emptyDangerSignsData
-    , emptyLaboratoryData
     , emptyModel
-    , emptyNextStepsData
-    , emptyOngoingTreatmentData
-    , emptyPhysicalExamData
-    , emptyPriorTreatmentData
     , emptyRecordContactDetailsData
     , emptyRegisterContactData
-    , emptyReviewDangerSignsForm
-    , emptySymptomsData
-    , emptyTreatmentReviewForm
     )
 
 import AssocList as Dict exposing (Dict)

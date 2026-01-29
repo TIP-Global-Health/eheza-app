@@ -9,11 +9,10 @@ import EverySet
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import List
 import LocalData
 import Pages.Activities.Model exposing (DialogType(..), Model, Msg(..), Tab(..))
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.Utils exposing (viewConfirmationDialog, viewCustomAction, viewSkipNCDADialog)
+import Pages.Utils exposing (viewCustomAction, viewSkipNCDADialog)
 import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, viewModal)
 

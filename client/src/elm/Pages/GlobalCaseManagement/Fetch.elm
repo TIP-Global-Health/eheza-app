@@ -28,7 +28,7 @@ fetch currentDate healthCenterId mVillageId db =
                                 fetchForCHWAtVillage currentDate villageId db followUps
                             )
                             mVillageId
-                            |> Maybe.withDefault (fetchForNurseAtHealthCenter currentDate db followUps)
+                            |> Maybe.withDefault (fetchForNurseAtHealthCenter followUps)
                     )
                 |> Maybe.withDefault []
     in
@@ -215,8 +215,8 @@ fetchForCHWAtVillage currentDate villageId db allFollowUps =
     ]
 
 
-fetchForNurseAtHealthCenter : NominalDate -> ModelIndexedDb -> FollowUpMeasurements -> List MsgIndexedDb
-fetchForNurseAtHealthCenter currentDate db followUps =
+fetchForNurseAtHealthCenter : FollowUpMeasurements -> List MsgIndexedDb
+fetchForNurseAtHealthCenter followUps =
     let
         --
         --  Trace Contacts calculations.

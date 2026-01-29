@@ -1,4 +1,4 @@
-module Pages.Dashboard.Utils exposing (accumCaseNutritionTotals, applyGenderFilter, applyProgramTypeAndResidentsFilters, applyTotalBeneficiariesDenomination, caseManagementMergeDuplicates, childrenBeneficiariesByProgramType, compareNutritionStatus, countAcuteIllnessAssessments, countAcuteIllnessCasesByPossibleDiagnosises, countAcuteIllnessCasesByTreatmentApproach, countAcuteIllnessDiagnosedCases, countComplicatedGISentToHC, countComplicatedMalariaSentToHC, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countDeliveriesAtLocationForSelectedMonth, countDiagnosedWithCovidCallsTo114, countDiagnosedWithCovidManagedAtHome, countDiagnosedWithCovidSentToHC, countDiagnosedWithGI, countDiagnosedWithMalaria, countHospitalReferralsForSelectedMonth, countNewbornForSelectedMonth, countNewlyIdentifieHypertensionCasesForSelectedMonth, countNewlyIdentifiedDiabetesCasesForSelectedMonth, countNewlyIdentifiedPregananciesForSelectedMonth, countPregnanciesDueWithin4MonthsForSelectedMonth, countPregnanciesWith4VisitsOrMoreForSelectedMonth, countResolvedGICasesForSelectedMonth, countResolvedMalariaCasesForSelectedMonth, countTotalNumberOfPatientsWithDiabetes, countTotalNumberOfPatientsWithGestationalDiabetes, countTotalNumberOfPatientsWithHypertension, countUncomplicatedGIManagedByChw, countUncomplicatedMalariaAndPregnantSentToHC, countUncomplicatedMalariaManagedByChw, countUncomplicatedMalariaSentToHC, filterByLimitDate, filterFollowUpMeasurementsByLimitDate, filterNewlyDiagnosesCasesForSelectedMonth, filterNewlyDiagnosesMalnutritionForSelectedMonth, filterProgramTypeFromString, filterProgramTypeToString, filterStatsByGender, filterStatsByPeriod, filterStatsOutsidePeriod, filterStatsWithinPeriod, generateAssembledData, generateCaseNutritionNewCases, generateCaseNutritionTotals, generateDiabetesDiagnosisEncountersDates, generateFilteredDashboardStats, generateFilteredData, generateFilteredPatientsDetails, generateGroupEducationData, generateHypertensionDiagnosisEncountersDates, generateNutritionPageData, generatePatientsWithHIV, generateTotalBeneficiariesMonthlyDuringPastYear, generateTotalEncounters, generateTotalEncountersFromPeriodsDict, generateVaccinationProgressDict, getAcuteIllnessFollowUpsBreakdownByDiagnosis, getCurrentlyPregnantForSelectedMonth, getEncountersForSelectedMonth, getFollowUpsTotals, isAcuteIllnessNurseEncounter, isNurseEncounter, mergeNutritionValueDicts, mergeNutritionValues, vaccineDoseFromOrder, vaccineDoseToComparable, wasManagedAtHomeByDiagnosis, wasSentToHCByDiagnosis, withinOrAfterSelectedMonth, withinOrBeforeSelectedMonth, withinSelectedMonth)
+module Pages.Dashboard.Utils exposing (applyGenderFilter, countAcuteIllnessAssessments, countAcuteIllnessCasesByPossibleDiagnosises, countAcuteIllnessCasesByTreatmentApproach, countAcuteIllnessDiagnosedCases, countComplicatedGISentToHC, countComplicatedMalariaSentToHC, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countDeliveriesAtLocationForSelectedMonth, countDiagnosedWithCovidCallsTo114, countDiagnosedWithCovidManagedAtHome, countDiagnosedWithCovidSentToHC, countDiagnosedWithGI, countDiagnosedWithMalaria, countHospitalReferralsForSelectedMonth, countNewbornForSelectedMonth, countNewlyIdentifieHypertensionCasesForSelectedMonth, countNewlyIdentifiedDiabetesCasesForSelectedMonth, countNewlyIdentifiedPregananciesForSelectedMonth, countPregnanciesDueWithin4MonthsForSelectedMonth, countPregnanciesWith4VisitsOrMoreForSelectedMonth, countResolvedGICasesForSelectedMonth, countResolvedMalariaCasesForSelectedMonth, countTotalNumberOfPatientsWithDiabetes, countTotalNumberOfPatientsWithGestationalDiabetes, countTotalNumberOfPatientsWithHypertension, countUncomplicatedGIManagedByChw, countUncomplicatedMalariaAndPregnantSentToHC, countUncomplicatedMalariaManagedByChw, countUncomplicatedMalariaSentToHC, filterNewlyDiagnosesCasesForSelectedMonth, filterNewlyDiagnosesMalnutritionForSelectedMonth, filterProgramTypeFromString, filterProgramTypeToString, filterStatsByGender, filterStatsWithinPeriod, generateAssembledData, generatePatientsWithHIV, generateVaccinationProgressDict, getAcuteIllnessFollowUpsBreakdownByDiagnosis, getEncountersForSelectedMonth, getFollowUpsTotals, isAcuteIllnessNurseEncounter, isNurseEncounter, withinOrAfterSelectedMonth, withinOrBeforeSelectedMonth, withinSelectedMonth)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
@@ -11,7 +11,6 @@ import Backend.Dashboard.Model
         , CaseNutrition
         , CaseNutritionTotal
         , ChildScoreboardEncounterDataItem
-        , ChildrenBeneficiariesStats
         , DashboardStats
         , DashboardStatsRaw
         , EducationSessionData
@@ -78,7 +77,6 @@ import Pages.GlobalCaseManagement.View
         , generatePrenatalFollowUpEntries
         )
 import SyncManager.Model exposing (Site)
-import Translate exposing (Language)
 import Utils.NominalDate exposing (sortByDate, sortByDateDesc)
 
 
@@ -129,8 +127,8 @@ filterProgramTypeFromString string =
             Nothing
 
 
-generateAssembledData : NominalDate -> HealthCenterId -> DashboardStatsRaw -> ModelIndexedDb -> FilterProgramType -> Maybe VillageId -> AssembledData
-generateAssembledData currentDate healthCenterId stats db programTypeFilter selectedVillageFilter =
+generateAssembledData : NominalDate -> DashboardStatsRaw -> FilterProgramType -> Maybe VillageId -> AssembledData
+generateAssembledData currentDate stats programTypeFilter selectedVillageFilter =
     let
         filteredStats =
             generateFilteredDashboardStats stats programTypeFilter selectedVillageFilter
@@ -144,7 +142,7 @@ generateAssembledData currentDate healthCenterId stats db programTypeFilter sele
     , childScoreboardData = generateFilteredData .childScoreboardData stats selectedVillageFilter
     , nutritionIndividualData = generateFilteredData .nutritionIndividualData stats selectedVillageFilter
     , nutritionGroupData = generateFilteredData .nutritionGroupData stats selectedVillageFilter
-    , nutritionPageData = generateNutritionPageData currentDate filteredStats db programTypeFilter selectedVillageFilter
+    , nutritionPageData = generateNutritionPageData currentDate filteredStats programTypeFilter selectedVillageFilter
     , groupEducationData = generateGroupEducationData stats selectedVillageFilter
     , healthCenterVillages = Dict.keys stats.villagesWithResidents
     , patientsDetails = generateFilteredPatientsDetails stats selectedVillageFilter
@@ -1100,8 +1098,8 @@ countDeliveriesAtLocationForSelectedMonth dateLastDayOfSelectedMonth location =
 --
 
 
-getFollowUpsTotals : Language -> NominalDate -> NominalDate -> ModelIndexedDb -> VillageId -> FollowUpMeasurements -> ( Int, Int, Int )
-getFollowUpsTotals language currentDate limitDate db villageId allFollowUps =
+getFollowUpsTotals : NominalDate -> NominalDate -> ModelIndexedDb -> VillageId -> FollowUpMeasurements -> ( Int, Int, Int )
+getFollowUpsTotals currentDate limitDate db villageId allFollowUps =
     let
         villageResidents =
             resolveVillageResidents villageId db
@@ -1114,21 +1112,21 @@ getFollowUpsTotals language currentDate limitDate db villageId allFollowUps =
                 |> fillPersonName identity db
 
         nutritionEntries =
-            generateNutritionFollowUpEntries language limitDate nutritionFollowUps db
+            generateNutritionFollowUpEntries limitDate nutritionFollowUps db
 
         acuteIllnessFollowUps =
             generateAcuteIllnessFollowUps limitDate db followUps
                 |> fillPersonName Tuple.second db
 
         acuteIllnessEntries =
-            generateAcuteIllnessFollowUpEntries language currentDate limitDate acuteIllnessFollowUps db
+            generateAcuteIllnessFollowUpEntries currentDate limitDate acuteIllnessFollowUps db
 
         prenatalFollowUps =
             generatePrenatalFollowUps limitDate db followUps
                 |> fillPersonName Tuple.second db
 
         prenatalEntries =
-            generatePrenatalFollowUpEntries language currentDate limitDate prenatalFollowUps db
+            generatePrenatalFollowUpEntries limitDate prenatalFollowUps db
     in
     ( List.length nutritionEntries
     , List.length acuteIllnessEntries
@@ -1137,14 +1135,13 @@ getFollowUpsTotals language currentDate limitDate db villageId allFollowUps =
 
 
 getAcuteIllnessFollowUpsBreakdownByDiagnosis :
-    Language
-    -> NominalDate
+    NominalDate
     -> NominalDate
     -> ModelIndexedDb
     -> VillageId
     -> FollowUpMeasurements
     -> ( Int, Int, Int )
-getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate limitDate db villageId allFollowUps =
+getAcuteIllnessFollowUpsBreakdownByDiagnosis currentDate limitDate db villageId allFollowUps =
     let
         villageResidents =
             resolveVillageResidents villageId db
@@ -1157,7 +1154,7 @@ getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate limitDate db v
                 |> fillPersonName Tuple.second db
 
         acuteIllnessEntries =
-            generateAcuteIllnessFollowUpEntries language currentDate limitDate acuteIllnessFollowUps db
+            generateAcuteIllnessFollowUpEntries currentDate limitDate acuteIllnessFollowUps db
 
         covidEntries =
             List.filter (.diagnosis >> (==) DiagnosisCovid19Suspect) acuteIllnessEntries
@@ -1189,18 +1186,8 @@ getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate limitDate db v
     )
 
 
-filterFollowUpMeasurementsByLimitDate : NominalDate -> FollowUpMeasurements -> FollowUpMeasurements
-filterFollowUpMeasurementsByLimitDate limitDate followUpMeasurements =
-    { followUpMeasurements
-        | nutritionGroup = filterByLimitDate limitDate followUpMeasurements.nutritionGroup
-        , nutritionIndividual = filterByLimitDate limitDate followUpMeasurements.nutritionIndividual
-        , acuteIllness = filterByLimitDate limitDate followUpMeasurements.acuteIllness
-        , prenatal = filterByLimitDate limitDate followUpMeasurements.prenatal
-    }
-
-
-generateNutritionPageData : NominalDate -> DashboardStats -> ModelIndexedDb -> FilterProgramType -> Maybe VillageId -> NutritionPageData
-generateNutritionPageData currentDate stats db programTypeFilter selectedVillageFilter =
+generateNutritionPageData : NominalDate -> DashboardStats -> FilterProgramType -> Maybe VillageId -> NutritionPageData
+generateNutritionPageData currentDate stats programTypeFilter selectedVillageFilter =
     let
         currentPeriodStats =
             filterStatsWithinPeriod currentDate OneYear stats
@@ -1460,15 +1447,6 @@ filterStatsWithinPeriod currentDate period stats =
     filterStatsByPeriod isBetween currentDate period stats
 
 
-filterStatsOutsidePeriod : NominalDate -> FilterPeriod -> DashboardStats -> DashboardStats
-filterStatsOutsidePeriod currentDate period stats =
-    let
-        outside start end date =
-            isBetween start end date |> not
-    in
-    filterStatsByPeriod outside currentDate period stats
-
-
 {-| Filter stats to match the selected period.
 -}
 filterStatsByPeriod : (NominalDate -> NominalDate -> NominalDate -> Bool) -> NominalDate -> FilterPeriod -> DashboardStats -> DashboardStats
@@ -1528,8 +1506,8 @@ filterStatsByPeriod fiterFunc currentDate period stats =
 
 {-| Filter stats to match the selected gender.
 -}
-filterStatsByGender : NominalDate -> Model -> DashboardStats -> DashboardStats
-filterStatsByGender currentDate model stats =
+filterStatsByGender : Model -> DashboardStats -> DashboardStats
+filterStatsByGender model stats =
     { stats
         | childrenBeneficiaries = applyGenderFilter model stats.childrenBeneficiaries
         , completedPrograms = applyGenderFilter model stats.completedPrograms
@@ -1859,25 +1837,6 @@ generateVaccinationProgressDict site gender spvEncounters childScoreboardEncount
         |> Dict.fromList
 
 
-vaccineDoseToComparable : VaccineDose -> Int
-vaccineDoseToComparable dose =
-    case dose of
-        VaccineDoseFirst ->
-            1
-
-        VaccineDoseSecond ->
-            2
-
-        VaccineDoseThird ->
-            3
-
-        VaccineDoseFourth ->
-            4
-
-        VaccineDoseFifth ->
-            5
-
-
 vaccineDoseFromOrder : Int -> Maybe VaccineDose
 vaccineDoseFromOrder order =
     case order of
@@ -1924,17 +1883,6 @@ withinOrAfterSelectedMonth dateLastDayOfSelectedMonth date =
             Date.floor Date.Month dateLastDayOfSelectedMonth
     in
     not <| Date.compare date dateFirstDayOfSelectedMonth == LT
-
-
-childrenBeneficiariesByProgramType : ProgramType -> Dict ProgramType (List ChildrenBeneficiariesStats) -> List ChildrenBeneficiariesStats
-childrenBeneficiariesByProgramType programType childrenBeneficiaries =
-    Dict.get programType childrenBeneficiaries
-        |> Maybe.withDefault []
-
-
-filterByLimitDate : NominalDate -> Dict id { a | dateMeasured : NominalDate } -> Dict id { a | dateMeasured : NominalDate }
-filterByLimitDate limitDate followUps =
-    Dict.filter (\_ followUp -> Date.compare followUp.dateMeasured limitDate == LT) followUps
 
 
 isAcuteIllnessNurseEncounter : AcuteIllnessEncounterDataItem -> Bool

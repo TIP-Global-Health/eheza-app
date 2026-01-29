@@ -53,7 +53,7 @@ update currentDate healthCenterId msg db model =
                                         startFollowUpEncounterHomeVisit currentDate selectedHealthCenter db data
 
                                     FollowUpAcuteIllness data ->
-                                        startFollowUpEncounterAcuteIllness currentDate selectedHealthCenter db data
+                                        startFollowUpEncounterAcuteIllness currentDate selectedHealthCenter data
 
                                     FollowUpImmunization data ->
                                         startFollowUpEncounterWellChild currentDate selectedHealthCenter db data
@@ -130,8 +130,8 @@ startFollowUpEncounterHomeVisit currentDate selectedHealthCenter db data =
             ]
 
 
-startFollowUpEncounterAcuteIllness : NominalDate -> HealthCenterId -> ModelIndexedDb -> FollowUpAcuteIllnessData -> List App.Model.Msg
-startFollowUpEncounterAcuteIllness currentDate selectedHealthCenter db data =
+startFollowUpEncounterAcuteIllness : NominalDate -> HealthCenterId -> FollowUpAcuteIllnessData -> List App.Model.Msg
+startFollowUpEncounterAcuteIllness currentDate selectedHealthCenter data =
     [ emptyAcuteIllnessEncounter data.participantId currentDate data.sequenceNumber AcuteIllnessEncounterCHW (Just selectedHealthCenter)
         |> Backend.Model.PostAcuteIllnessEncounter
         |> App.Model.MsgIndexedDb

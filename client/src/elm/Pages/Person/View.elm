@@ -85,7 +85,7 @@ view language currentDate isChw initiator id db =
     in
     div
         [ class "page-person" ]
-        [ viewHeader language initiator headerName
+        [ viewHeader initiator headerName
         , div
             [ class "ui full segment blue" ]
             [ viewWebData language (viewParticipantDetailsForm language currentDate isChw initiator db id) identity person
@@ -93,8 +93,8 @@ view language currentDate isChw initiator id db =
         ]
 
 
-viewHeader : Language -> Initiator -> String -> Html App.Model.Msg
-viewHeader language initiator name =
+viewHeader : Initiator -> String -> Html App.Model.Msg
+viewHeader initiator name =
     let
         goBackPage =
             UserPage (PersonsPage Nothing initiator)
@@ -248,7 +248,7 @@ viewParticipantDetailsForm language currentDate isChw initiator db id person =
             [ text <| translate language Translate.DemographicInformation ++ ": " ]
         , div
             [ class "ui unstackable items participants-list" ]
-            [ viewPerson language currentDate initiator db id person ]
+            [ viewPerson language currentDate initiator id person ]
         , h3
             [ class "ui header" ]
             [ text <| translate language Translate.FamilyMembers ++ ": " ]
@@ -258,8 +258,8 @@ viewParticipantDetailsForm language currentDate isChw initiator db id person =
         ]
 
 
-viewPerson : Language -> NominalDate -> Initiator -> ModelIndexedDb -> PersonId -> Person -> Html App.Model.Msg
-viewPerson language currentDate initiator db id person =
+viewPerson : Language -> NominalDate -> Initiator -> PersonId -> Person -> Html App.Model.Msg
+viewPerson language currentDate initiator id person =
     let
         typeForThumbnail =
             defaultIconForPerson currentDate person
@@ -957,16 +957,6 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
             viewSelectInput language Translate.HIVStatusLabel hivStatusOptions Backend.Person.Form.hivStatus "ten" "select-input" False personForm
 
         -- Not in use anymore - not displayed on form.
-        numberOfChildrenUnder5Input =
-            let
-                options =
-                    emptyOption
-                        :: (List.repeat 5 "."
-                                |> List.indexedMap (\index _ -> ( String.fromInt index, String.fromInt index ))
-                           )
-            in
-            viewSelectInput language Translate.NumberOfChildrenUnder5 options Backend.Person.Form.numberOfChildren "ten" "select-input" False personForm
-
         -- Used only on Rwanda site.
         hmisNumberInput =
             case site of
@@ -1142,7 +1132,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                                 isFormFieldSet district
                         in
                         viewSelectInput language
-                            (resolveGeoSructureLabelLevel1 site)
+                            resolveGeoSructureLabelLevel1
                             options
                             Backend.Person.Form.province
                             "ten"

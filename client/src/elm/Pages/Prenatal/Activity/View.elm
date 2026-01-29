@@ -20,7 +20,7 @@ import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, diffDays, diffYears, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -33,7 +33,6 @@ import Measurement.Model
         , ContentAndTasksLaboratoryUniversalTestInitialConfig
         , CorePhysicalExamForm
         , LaboratoryTask(..)
-        , MedicationAdministrationFormConfig
         , OutsideCareStep(..)
         , VaccinationFormViewMode(..)
         , VaccinationStatus(..)
@@ -131,7 +130,6 @@ import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 import ZScore.Model
-import ZScore.Utils exposing (viewZScore, zScoreBmiForAge)
 
 
 view : Language -> NominalDate -> ZScore.Model.Model -> Site -> PrenatalEncounterId -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> Html Msg
@@ -140,16 +138,16 @@ view language currentDate zscores site id isChw activity db model =
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate zscores site id isChw activity db model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate zscores site id isChw activity model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> ZScore.Model.Model -> Site -> PrenatalEncounterId -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate zscores site id isChw activity db model assembled =
+viewHeaderAndContent : Language -> NominalDate -> ZScore.Model.Model -> Site -> PrenatalEncounterId -> Bool -> PrenatalActivity -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate zscores site id isChw activity model assembled =
     div [ class "page-activity prenatal" ] <|
         [ viewHeader language id activity assembled
-        , viewContent language currentDate zscores site isChw activity db model assembled
+        , viewContent language currentDate zscores site isChw activity model assembled
         , viewModal <|
-            warningPopup language currentDate isChw assembled.encounter.diagnoses SetWarningPopupState model.warningPopupState
+            warningPopup language assembled.encounter.diagnoses SetWarningPopupState model.warningPopupState
         ]
 
 
@@ -180,22 +178,20 @@ viewHeader language id activity assembled =
         ]
 
 
-viewContent : Language -> NominalDate -> ZScore.Model.Model -> Site -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate zscores site isChw activity db model assembled =
+viewContent : Language -> NominalDate -> ZScore.Model.Model -> Site -> Bool -> PrenatalActivity -> Model -> AssembledData -> Html Msg
+viewContent language currentDate zscores site isChw activity model assembled =
     div [ class "ui unstackable items" ] <|
         viewMotherAndMeasurements language currentDate isChw assembled (Just ( model.showAlertsDialog, SetAlertsDialogState ))
-            ++ viewActivity language currentDate zscores site isChw activity assembled db model
+            ++ viewActivity language currentDate zscores site isChw activity assembled model
 
 
 warningPopup :
     Language
-    -> NominalDate
-    -> Bool
     -> EverySet PrenatalDiagnosis
     -> (Maybe (WarningPopupType msg) -> msg)
     -> Maybe (WarningPopupType msg)
     -> Maybe (Html msg)
-warningPopup language currentDate isChw encounterDiagnoses setStateMsg state =
+warningPopup language encounterDiagnoses setStateMsg state =
     Maybe.andThen
         (\popupType ->
             let
@@ -303,39 +299,38 @@ warningPopup language currentDate isChw encounterDiagnoses setStateMsg state =
         state
 
 
-viewActivity : Language -> NominalDate -> ZScore.Model.Model -> Site -> Bool -> PrenatalActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewActivity language currentDate zscores site isChw activity assembled db model =
+viewActivity : Language -> NominalDate -> ZScore.Model.Model -> Site -> Bool -> PrenatalActivity -> AssembledData -> Model -> List (Html Msg)
+viewActivity language currentDate zscores site isChw activity assembled model =
     case activity of
         PregnancyDating ->
             viewPregnancyDatingContent language currentDate assembled model.pregnancyDatingData
 
         History ->
-            viewHistoryContent language currentDate assembled model.historyData
+            viewHistoryContent language assembled model.historyData
 
         Examination ->
             viewExaminationContent language currentDate zscores assembled model.examinationData
 
         FamilyPlanning ->
-            viewFamilyPlanningContent language currentDate assembled model.familyPlanningData
+            viewFamilyPlanningContent language assembled model.familyPlanningData
 
         DangerSigns ->
-            viewDangerSignsContent language currentDate assembled model.dangerSignsData
+            viewDangerSignsContent language assembled model.dangerSignsData
 
         PrenatalPhoto ->
-            viewPrenatalPhotoContent language currentDate assembled model.prenatalPhotoData
+            viewPrenatalPhotoContent language assembled model.prenatalPhotoData
 
         Laboratory ->
             viewLaboratoryContent language currentDate assembled model.laboratoryData
 
         Backend.PrenatalActivity.Model.HealthEducation ->
-            viewHealthEducationContent language currentDate assembled model.healthEducationData
+            viewHealthEducationContent language assembled model.healthEducationData
 
         BirthPlan ->
-            viewBirthPlanContent language currentDate assembled model.birthPlanData
+            viewBirthPlanContent language assembled model.birthPlanData
 
         Backend.PrenatalActivity.Model.MalariaPrevention ->
             viewMalariaPreventionContent language
-                currentDate
                 assembled
                 SetMalariaPreventionBoolInput
                 SaveMalariaPrevention
@@ -345,25 +340,25 @@ viewActivity language currentDate zscores site isChw activity assembled db model
             viewMedicationContent language currentDate assembled model.medicationData
 
         SymptomReview ->
-            viewSymptomReviewContent language currentDate assembled model.symptomReviewData
+            viewSymptomReviewContent language assembled model.symptomReviewData
 
         PrenatalTreatmentReview ->
             viewTreatmentReviewContent language currentDate assembled model.treatmentReviewData
 
         MaternalMentalHealth ->
-            viewMentalHealthContent language currentDate assembled model.mentalHealthData
+            viewMentalHealthContent language assembled model.mentalHealthData
 
         PrenatalImmunisation ->
             viewImmunisationContent language currentDate site assembled model.immunisationData
 
         Backend.PrenatalActivity.Model.Breastfeeding ->
-            viewBreastfeedingContent language currentDate assembled model.breastfeedingData
+            viewBreastfeedingContent language assembled model.breastfeedingData
 
         PostpartumTreatmentReview ->
-            viewPostpartumTreatmentReviewContent language currentDate assembled model.postpartumTreatmentReviewData
+            viewPostpartumTreatmentReviewContent language assembled model.postpartumTreatmentReviewData
 
         SpecialityCare ->
-            viewSpecialityCareContent language currentDate assembled model.specialityCareData
+            viewSpecialityCareContent language assembled model.specialityCareData
 
         NextSteps ->
             viewNextStepsContent language currentDate isChw assembled model.nextStepsData
@@ -571,8 +566,8 @@ viewPregnancyDatingContent language currentDate assembled data =
     ]
 
 
-viewHistoryContent : Language -> NominalDate -> AssembledData -> HistoryData -> List (Html Msg)
-viewHistoryContent language currentDate assembled data =
+viewHistoryContent : Language -> AssembledData -> HistoryData -> List (Html Msg)
+viewHistoryContent language assembled data =
     let
         viewTask task =
             let
@@ -680,24 +675,24 @@ viewHistoryContent language currentDate assembled data =
                 |> obstetricHistoryFormWithDefault data.obstetricFormFirstStep
 
         ( obstetricFormFirstStepInputs, obstetricFormFirstStepTasks ) =
-            obstetricFormFirstStepInputsAndTasks language currentDate assembled obstetricFormFirstStep
+            obstetricFormFirstStepInputsAndTasks language obstetricFormFirstStep
 
         ( obstetricFormSecondStepInputs, obstetricFormSecondStepTasks ) =
             getMeasurementValueFunc assembled.measurements.obstetricHistoryStep2
                 |> obstetricHistoryStep2FormWithDefault data.obstetricFormSecondStep
-                |> obstetricFormSecondStepInputsAndTasks language currentDate assembled
+                |> obstetricFormSecondStepInputsAndTasks language
 
         ( medicalFormInputs, medicalFormTasks ) =
             assembled.measurements.medicalHistory
                 |> getMeasurementValueFunc
                 |> medicalHistoryFormWithDefault data.medicalForm
-                |> medicalFormInputsAndTasks language currentDate assembled
+                |> medicalFormInputsAndTasks language
 
         ( socialFormInputs, socialFormTasks ) =
             assembled.measurements.socialHistory
                 |> getMeasurementValueFunc
                 |> socialHistoryFormWithDefault data.socialForm
-                |> socialFormInputsAndTasks language currentDate assembled
+                |> socialFormInputsAndTasks language assembled
 
         outsideCareForm =
             assembled.measurements.outsideCare
@@ -1005,7 +1000,7 @@ viewExaminationContent language currentDate zscores assembled data =
         ( breastExamInputs, breastExamTasks ) =
             getMeasurementValueFunc assembled.measurements.breastExam
                 |> breastExamFormWithDefault data.breastExamForm
-                |> breastExamInputsAndTasks language currentDate assembled
+                |> breastExamInputsAndTasks language assembled
 
         viewForm =
             case activeTask of
@@ -1033,7 +1028,7 @@ viewExaminationContent language currentDate zscores assembled data =
                 Just CorePhysicalExam ->
                     getMeasurementValueFunc assembled.measurements.corePhysicalExam
                         |> corePhysicalExamFormWithDefault data.corePhysicalExamForm
-                        |> viewCorePhysicalExamForm language currentDate
+                        |> viewCorePhysicalExamForm language
 
                 Just ObstetricalExam ->
                     div [ class "ui form examination obstetrical-exam" ]
@@ -1046,7 +1041,7 @@ viewExaminationContent language currentDate zscores assembled data =
                 Just GUExam ->
                     getMeasurementValueFunc assembled.measurements.guExam
                         |> guExamFormWithDefault data.guExamForm
-                        |> viewGUExamForm language currentDate assembled
+                        |> viewGUExamForm language
 
                 Nothing ->
                     emptyNode
@@ -1110,8 +1105,8 @@ viewExaminationContent language currentDate zscores assembled data =
     ]
 
 
-viewFamilyPlanningContent : Language -> NominalDate -> AssembledData -> FamilyPlanningData -> List (Html Msg)
-viewFamilyPlanningContent language currentDate assembled data =
+viewFamilyPlanningContent : Language -> AssembledData -> FamilyPlanningData -> List (Html Msg)
+viewFamilyPlanningContent language assembled data =
     let
         form =
             assembled.measurements.familyPlanning
@@ -1303,8 +1298,8 @@ viewMedicationContent language currentDate assembled data =
     ]
 
 
-viewDangerSignsContent : Language -> NominalDate -> AssembledData -> DangerSignsData -> List (Html Msg)
-viewDangerSignsContent language currentDate assembled data =
+viewDangerSignsContent : Language -> AssembledData -> DangerSignsData -> List (Html Msg)
+viewDangerSignsContent language assembled data =
     let
         form =
             assembled.measurements.dangerSigns
@@ -1375,8 +1370,8 @@ viewDangerSignsContent language currentDate assembled data =
     ]
 
 
-viewPrenatalPhotoContent : Language -> NominalDate -> AssembledData -> PrenatalPhotoData -> List (Html Msg)
-viewPrenatalPhotoContent language currentDate assembled data =
+viewPrenatalPhotoContent : Language -> AssembledData -> PrenatalPhotoData -> List (Html Msg)
+viewPrenatalPhotoContent language assembled data =
     let
         -- If we have a photo that we've just taken, but not saved, that is in
         -- `data.url`. We show that if we have it. Otherwise, we'll show the saved
@@ -1455,8 +1450,8 @@ viewPrenatalPhotoContent language currentDate assembled data =
     ]
 
 
-viewBirthPlanContent : Language -> NominalDate -> AssembledData -> BirthPlanData -> List (Html Msg)
-viewBirthPlanContent language currentDate assembled data =
+viewBirthPlanContent : Language -> AssembledData -> BirthPlanData -> List (Html Msg)
+viewBirthPlanContent language assembled data =
     let
         totalTasks =
             6
@@ -1545,7 +1540,7 @@ viewLaboratoryContent language currentDate assembled data =
         viewLaboratoryContentForNurse language currentDate assembled data
 
     else
-        viewLaboratoryContentForChw language currentDate assembled data
+        viewLaboratoryContentForChw language assembled data
 
 
 viewLaboratoryContentForNurse : Language -> NominalDate -> AssembledData -> LaboratoryData -> List (Html Msg)
@@ -1688,7 +1683,7 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                                     contentAndTasksForPerformedLaboratoryTestConfig
 
                         TaskCompletePreviousTests ->
-                            viewLabsHistoryForm language currentDate assembled data.labsHistoryForm
+                            viewLabsHistoryForm language assembled data.labsHistoryForm
 
                         -- Others do not participate at Prenatal.
                         _ ->
@@ -1781,8 +1776,8 @@ viewLaboratoryContentForNurse language currentDate assembled data =
     ]
 
 
-viewLaboratoryContentForChw : Language -> NominalDate -> AssembledData -> LaboratoryData -> List (Html Msg)
-viewLaboratoryContentForChw language currentDate assembled data =
+viewLaboratoryContentForChw : Language -> AssembledData -> LaboratoryData -> List (Html Msg)
+viewLaboratoryContentForChw language assembled data =
     let
         form =
             assembled.measurements.pregnancyTest
@@ -1819,8 +1814,8 @@ viewLaboratoryContentForChw language currentDate assembled data =
     ]
 
 
-viewHealthEducationContent : Language -> NominalDate -> AssembledData -> HealthEducationData -> List (Html Msg)
-viewHealthEducationContent language currentDate assembled data =
+viewHealthEducationContent : Language -> AssembledData -> HealthEducationData -> List (Html Msg)
+viewHealthEducationContent language assembled data =
     let
         totalTasks =
             List.length tasks
@@ -1845,8 +1840,8 @@ viewHealthEducationContent language currentDate assembled data =
     ]
 
 
-viewMentalHealthContent : Language -> NominalDate -> AssembledData -> MentalHealthData -> List (Html Msg)
-viewMentalHealthContent language currentDate assembled data =
+viewMentalHealthContent : Language -> AssembledData -> MentalHealthData -> List (Html Msg)
+viewMentalHealthContent language assembled data =
     let
         form =
             assembled.measurements.mentalHealth
@@ -2120,7 +2115,7 @@ viewNextStepsContent language currentDate isChw assembled data =
             tasks
                 |> List.map
                     (\task ->
-                        ( task, nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task )
+                        ( task, nextStepsTasksCompletedFromTotal language currentDate assembled data task )
                     )
                 |> Dict.fromList
 
@@ -2141,20 +2136,20 @@ viewNextStepsContent language currentDate isChw assembled data =
                 Just NextStepsFollowUp ->
                     getMeasurementValueFunc measurements.followUp
                         |> followUpFormWithDefault data.followUpForm
-                        |> viewFollowUpForm language currentDate
+                        |> viewFollowUpForm language
 
                 Just NextStepsSendToHC ->
                     getMeasurementValueFunc measurements.sendToHC
                         |> referralFormWithDefault data.referralForm
-                        |> viewReferralForm language currentDate assembled
+                        |> viewReferralForm language assembled
 
                 Just NextStepsHealthEducation ->
                     getMeasurementValueFunc measurements.healthEducation
                         |> healthEducationFormWithDefault data.healthEducationForm
-                        |> viewHealthEducationForm language currentDate assembled
+                        |> viewHealthEducationForm language assembled
 
                 Just NextStepsNewbornEnrolment ->
-                    viewNewbornEnrolmentForm language currentDate assembled
+                    viewNewbornEnrolmentForm language assembled
 
                 Just NextStepsMedicationDistribution ->
                     viewMedicationDistributionForm language
@@ -2168,10 +2163,10 @@ viewNextStepsContent language currentDate isChw assembled data =
                         medicationDistributionForm
 
                 Just NextStepsWait ->
-                    viewWaitForm language currentDate assembled
+                    viewWaitForm language assembled
 
                 Just NextStepsNextVisit ->
-                    viewNextVisitForm language currentDate nextVisitDate assembled
+                    viewNextVisitForm language nextVisitDate
 
                 Nothing ->
                     emptyNode
@@ -2320,8 +2315,8 @@ viewNextStepsContent language currentDate isChw assembled data =
     ]
 
 
-viewSymptomReviewContent : Language -> NominalDate -> AssembledData -> SymptomReviewData -> List (Html Msg)
-viewSymptomReviewContent language currentDate assembled data =
+viewSymptomReviewContent : Language -> AssembledData -> SymptomReviewData -> List (Html Msg)
+viewSymptomReviewContent language assembled data =
     let
         form =
             assembled.measurements.symptomReview
@@ -2459,7 +2454,7 @@ viewTreatmentReviewContent language currentDate assembled data =
                     viewPrenatalMedicationForm language currentDate SetMedicationSubActivityBoolInput assembled form
 
                 Just task ->
-                    viewMedicationTreatmentForm language currentDate SetMedicationSubActivityBoolInput assembled form task
+                    viewMedicationTreatmentForm language SetMedicationSubActivityBoolInput assembled form task
 
                 Nothing ->
                     emptyNode
@@ -2725,8 +2720,8 @@ viewVaccinationOverview language currentDate assembled =
     entriesHeading :: entries
 
 
-viewSpecialityCareContent : Language -> NominalDate -> AssembledData -> SpecialityCareData -> List (Html Msg)
-viewSpecialityCareContent language currentDate assembled data =
+viewSpecialityCareContent : Language -> AssembledData -> SpecialityCareData -> List (Html Msg)
+viewSpecialityCareContent language assembled data =
     let
         form =
             getMeasurementValueFunc assembled.measurements.specialityCare
@@ -2845,11 +2840,9 @@ viewVaccinationForm language currentDate site assembled vaccineType form =
 
 obstetricFormFirstStepInputsAndTasks :
     Language
-    -> NominalDate
-    -> AssembledData
     -> ObstetricFormFirstStep
     -> ( List (Html Msg), List (Maybe Bool) )
-obstetricFormFirstStepInputsAndTasks language currentDate assembled form =
+obstetricFormFirstStepInputsAndTasks language form =
     let
         gravida =
             Maybe.map generateGravida (toObstetricHistoryValue form)
@@ -2945,11 +2938,9 @@ obstetricFormFirstStepInputsAndTasks language currentDate assembled form =
 
 obstetricFormSecondStepInputsAndTasks :
     Language
-    -> NominalDate
-    -> AssembledData
     -> ObstetricFormSecondStep
     -> ( List (Html Msg), List (Maybe Bool) )
-obstetricFormSecondStepInputsAndTasks language currentDate assembled form =
+obstetricFormSecondStepInputsAndTasks language form =
     let
         ( cSectionsHtml, cSectionsTasks ) =
             let
@@ -3078,11 +3069,9 @@ obstetricFormSecondStepInputsAndTasks language currentDate assembled form =
 
 medicalFormInputsAndTasks :
     Language
-    -> NominalDate
-    -> AssembledData
     -> MedicalHistoryForm
     -> ( List (Html Msg), List (Maybe Bool) )
-medicalFormInputsAndTasks language currentDate assembled form =
+medicalFormInputsAndTasks language form =
     ( [ viewQuestionLabel language Translate.MedicalHistorySignsReviewQuestion
       , viewCheckBoxMultipleSelectInput language
             [ Asthma
@@ -3147,11 +3136,10 @@ medicalFormInputsAndTasks language currentDate assembled form =
 
 socialFormInputsAndTasks :
     Language
-    -> NominalDate
     -> AssembledData
     -> SocialHistoryForm
     -> ( List (Html Msg), List (Maybe Bool) )
-socialFormInputsAndTasks language currentDate assembled form =
+socialFormInputsAndTasks language assembled form =
     let
         accompaniedByPartnerUpdateFunc value form_ =
             { form_ | accompaniedByPartner = Just value }
@@ -3233,7 +3221,7 @@ viewNutritionAssessmentForm language currentDate zscores assembled form previous
         weightUpdateFunc value form_ =
             { form_ | weight = value, weightDirty = True }
 
-        bmiUpdateFunc value form_ =
+        bmiUpdateFunc _ form_ =
             form_
 
         muacUpdateFunc value form_ =
@@ -3318,7 +3306,7 @@ viewNutritionAssessmentForm language currentDate zscores assembled form previous
                 [ div [ class "ui grid" ]
                     [ div [ class "eleven wide column" ]
                         [ viewLabel language Translate.Height ]
-                    , viewWarning language Nothing
+                    , viewWarning Nothing
                     ]
                 , viewMeasurementInput
                     language
@@ -3433,8 +3421,8 @@ viewNutritionAssessmentForm language currentDate zscores assembled form previous
                ]
 
 
-viewCorePhysicalExamForm : Language -> NominalDate -> CorePhysicalExamForm -> Html Msg
-viewCorePhysicalExamForm language currentDate form =
+viewCorePhysicalExamForm : Language -> CorePhysicalExamForm -> Html Msg
+viewCorePhysicalExamForm language form =
     let
         config =
             { setBoolInputMsg = SetCorePhysicalExamBoolInput
@@ -3446,7 +3434,7 @@ viewCorePhysicalExamForm language currentDate form =
             , setLegsMsg = SetCorePhysicalExamLegs
             }
     in
-    Measurement.View.viewCorePhysicalExamForm language currentDate config form
+    Measurement.View.viewCorePhysicalExamForm language config form
 
 
 obstetricalExamFormInputsAndTasks :
@@ -3674,11 +3662,10 @@ obstetricalExamFormInputsAndTasks language currentDate assembled form =
 
 breastExamInputsAndTasks :
     Language
-    -> NominalDate
     -> AssembledData
     -> BreastExamForm
     -> ( List (Html Msg), List (Maybe Bool) )
-breastExamInputsAndTasks language currentDate assembled form =
+breastExamInputsAndTasks language assembled form =
     let
         selfGuidanceUpdateFunc value form_ =
             { form_ | selfGuidance = Just value }
@@ -3748,18 +3735,18 @@ breastExamInputsAndTasks language currentDate assembled form =
     )
 
 
-viewGUExamForm : Language -> NominalDate -> AssembledData -> GUExamForm -> Html Msg
-viewGUExamForm language currentDate assembled form =
+viewGUExamForm : Language -> GUExamForm -> Html Msg
+viewGUExamForm language form =
     let
         ( inputs, _ ) =
-            guExamFormInputsAndTasks language assembled form
+            guExamFormInputsAndTasks language form
     in
     div [ class "ui form examination breast-exam" ]
         inputs
 
 
-viewHealthEducationForm : Language -> NominalDate -> AssembledData -> HealthEducationForm -> Html Msg
-viewHealthEducationForm language currentDate assembled form =
+viewHealthEducationForm : Language -> AssembledData -> HealthEducationForm -> Html Msg
+viewHealthEducationForm language assembled form =
     let
         ( inputs, _ ) =
             healthEducationFormInputsAndTasks language assembled form
@@ -3778,18 +3765,18 @@ viewAppointmentConfirmationForm language currentDate form =
         inputs
 
 
-viewFollowUpForm : Language -> NominalDate -> FollowUpForm -> Html Msg
-viewFollowUpForm language currentDate form =
+viewFollowUpForm : Language -> FollowUpForm -> Html Msg
+viewFollowUpForm language form =
     let
         ( inputs, _ ) =
-            followUpFormInutsAndTasks language currentDate form
+            followUpFormInutsAndTasks language form
     in
     div [ class "ui form follow-up" ]
         inputs
 
 
-viewNewbornEnrolmentForm : Language -> NominalDate -> AssembledData -> Html Msg
-viewNewbornEnrolmentForm language currentDate assembled =
+viewNewbornEnrolmentForm : Language -> AssembledData -> Html Msg
+viewNewbornEnrolmentForm language assembled =
     let
         attributes =
             Maybe.map
@@ -3873,8 +3860,8 @@ contentAndTasksForPerformedLaboratoryTestConfig =
            )
 
 
-viewLabsHistoryForm : Language -> NominalDate -> AssembledData -> LabsHistoryForm -> ( Html Msg, Int, Int )
-viewLabsHistoryForm language currentDate assembled form =
+viewLabsHistoryForm : Language -> AssembledData -> LabsHistoryForm -> ( Html Msg, Int, Int )
+viewLabsHistoryForm language assembled form =
     let
         entries =
             List.indexedMap (\index ( date, encounterId, lab ) -> viewEntry date encounterId lab index) pendingLabs
@@ -3919,8 +3906,8 @@ viewLabsHistoryForm language currentDate assembled form =
     )
 
 
-viewWaitForm : Language -> NominalDate -> AssembledData -> Html Msg
-viewWaitForm language currentDate assembled =
+viewWaitForm : Language -> AssembledData -> Html Msg
+viewWaitForm language assembled =
     let
         ( vitalsInstructions, labsResultsInstructions ) =
             getMeasurementValueFunc assembled.measurements.labsResults
@@ -3974,22 +3961,21 @@ viewPrenatalMedicationForm language currentDate setBoolInputMsg assembled form =
 
 viewMedicationTreatmentForm :
     Language
-    -> NominalDate
     -> ((Bool -> MedicationForm -> MedicationForm) -> Bool -> Msg)
     -> AssembledData
     -> MedicationForm
     -> TreatmentReviewTask
     -> Html Msg
-viewMedicationTreatmentForm language currentDate setBoolInputMsg assembled form task =
+viewMedicationTreatmentForm language setBoolInputMsg assembled form task =
     let
         ( inputs, _ ) =
-            resolveMedicationTreatmentFormInputsAndTasks language currentDate setBoolInputMsg assembled form task
+            resolveMedicationTreatmentFormInputsAndTasks language setBoolInputMsg assembled form task
     in
     div [ class "ui form medication" ] inputs
 
 
-viewBreastfeedingContent : Language -> NominalDate -> AssembledData -> BreastfeedingData -> List (Html Msg)
-viewBreastfeedingContent language currentDate assembled data =
+viewBreastfeedingContent : Language -> AssembledData -> BreastfeedingData -> List (Html Msg)
+viewBreastfeedingContent language assembled data =
     let
         form =
             assembled.measurements.breastfeeding
@@ -4100,8 +4086,8 @@ viewBreastfeedingContent language currentDate assembled data =
     ]
 
 
-viewPostpartumTreatmentReviewContent : Language -> NominalDate -> AssembledData -> PostpartumTreatmentReviewData -> List (Html Msg)
-viewPostpartumTreatmentReviewContent language currentDate assembled data =
+viewPostpartumTreatmentReviewContent : Language -> AssembledData -> PostpartumTreatmentReviewData -> List (Html Msg)
+viewPostpartumTreatmentReviewContent language assembled data =
     let
         form =
             assembled.measurements.medication
@@ -4162,8 +4148,8 @@ viewPostpartumTreatmentReviewContent language currentDate assembled data =
     ]
 
 
-viewReferralForm : Language -> NominalDate -> AssembledData -> ReferralForm -> Html Msg
-viewReferralForm language currentDate assembled form =
+viewReferralForm : Language -> AssembledData -> ReferralForm -> Html Msg
+viewReferralForm language assembled form =
     let
         ( inputs, _ ) =
             case assembled.encounter.encounterType of
@@ -4174,11 +4160,10 @@ viewReferralForm language currentDate assembled form =
                     viewForNurse
 
                 _ ->
-                    resolveReferralInputsAndTasksForCHW language currentDate assembled form
+                    resolveReferralInputsAndTasksForCHW language form
 
         viewForNurse =
             resolveReferralInputsAndTasksForNurse language
-                currentDate
                 assembled
                 SetReferralBoolInput
                 SetFacilityNonReferralReason
@@ -4188,8 +4173,8 @@ viewReferralForm language currentDate assembled form =
         inputs
 
 
-viewNextVisitForm : Language -> NominalDate -> Maybe NominalDate -> AssembledData -> Html Msg
-viewNextVisitForm language currentDate nextVisitDate assembled =
+viewNextVisitForm : Language -> Maybe NominalDate -> Html Msg
+viewNextVisitForm language nextVisitDate =
     Maybe.map
         (\date ->
             [ viewLabel language Translate.NextVisit
@@ -4327,8 +4312,8 @@ viewNumberInput language maybeCurrentValue setMsg inputClass labelTranslationId 
         ]
 
 
-viewWarning : Language -> Maybe String -> Html any
-viewWarning language maybeMessage =
+viewWarning : Maybe String -> Html any
+viewWarning maybeMessage =
     maybeMessage
         |> unwrap
             emptyNode

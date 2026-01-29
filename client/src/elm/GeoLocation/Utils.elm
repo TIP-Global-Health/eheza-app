@@ -1,4 +1,4 @@
-module GeoLocation.Utils exposing (filterGeoLocationDictByParent, geoLocationDictToOptions, getGeoCells, getGeoCellsForBurundi, getGeoCellsForRwanda, getGeoDistricts, getGeoInfo, getGeoLocation, getGeoProvinces, getGeoSectors, getGeoSectorsForBurundi, getGeoSectorsForRwanda, getGeoVillages, getGeoVillagesForBurundi, getGeoVillagesForRwanda, getReverseGeoInfo, resolveGeoSructureLabelLevel1, resolveGeoSructureLabelLevel2, resolveGeoSructureLabelLevel3, resolveGeoSructureLabelLevel4, resolveGeoSructureLabelLevel5)
+module GeoLocation.Utils exposing (filterGeoLocationDictByParent, geoLocationDictToOptions, getGeoInfo, getGeoLocation, getReverseGeoInfo, resolveGeoSructureLabelLevel1, resolveGeoSructureLabelLevel2, resolveGeoSructureLabelLevel3, resolveGeoSructureLabelLevel4, resolveGeoSructureLabelLevel5)
 
 import AssocList as Dict exposing (Dict)
 import GeoLocation.Model exposing (GeoInfo, GeoLocation, GeoLocationId, ParentId, ReverseGeoInfo)
@@ -3038,8 +3038,8 @@ getGeoVillagesForBurundi =
         ]
 
 
-resolveGeoSructureLabelLevel1 : Site -> TranslationId
-resolveGeoSructureLabelLevel1 site =
+resolveGeoSructureLabelLevel1 : TranslationId
+resolveGeoSructureLabelLevel1 =
     Translate.Province
 
 
