@@ -6,12 +6,15 @@
 #
 # ---------------------------------------------------------------------------- #
 
-cd client
+cd client || exit 1
 
 echo "Running elm-review..."
-npx elm-review
 
+# Temporarily disable exit on error to capture elm-review's exit code
+set +e
+npx elm-review
 EXIT_CODE=$?
+set -e
 
 if [ $EXIT_CODE -eq 0 ]; then
   echo "✓ Elm review passed"
