@@ -7,6 +7,8 @@ set -e
 #
 # ---------------------------------------------------------------------------- #
 
-# Install Node.js dependencies (elm-review)
-cd client
-npm install
+# No installation needed - npx will automatically fetch elm-review when needed
+# This avoids issues with installing all client dependencies which may have
+# native compilation requirements not needed for elm-review
+
+echo "elm-review will be fetched by npx on first use"
