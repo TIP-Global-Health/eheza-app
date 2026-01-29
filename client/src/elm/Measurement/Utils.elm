@@ -1026,30 +1026,6 @@ vaccinationFormDynamicContentAndTasks language currentDate site config vaccineTy
                         |> Maybe.map
                             (\nextDose ->
                                 let
-                                    ( vaccineDoseAdministeredPreviouslyQuestion, vaccineDoseAdministeredTodayQuestion, administrationNoteForImmunisationTransId ) =
-                                        case vaccineType of
-                                            PrenatalVaccine type_ ->
-                                                let
-                                                    label =
-                                                        Translate.PrenatalVaccineLabel type_
-                                                            |> translate language
-                                                in
-                                                ( Translate.VaccineDoseAdministeredPreviouslyPrenatalQuestion label
-                                                , Translate.VaccineDoseAdministeredTodayPrenatalQuestion label
-                                                , Translate.AdministrationNoteForPrenatalImmunisation
-                                                )
-
-                                            WellChildVaccine type_ ->
-                                                let
-                                                    label =
-                                                        Translate.WellChildVaccineLabel site type_
-                                                            |> translate language
-                                                in
-                                                ( Translate.VaccineDoseAdministeredPreviouslyWellChildQuestion label
-                                                , Translate.VaccineDoseAdministeredTodayWellChildQuestion label
-                                                , Translate.AdministrationNoteForWellChildImmunisation
-                                                )
-
                                     -- This is the date starting from which we allow
                                     -- vaccine administration for todays dose.
                                     expectedOnDate =
@@ -1069,6 +1045,30 @@ vaccinationFormDynamicContentAndTasks language currentDate site config vaccineTy
 
                                 else
                                     let
+                                        ( vaccineDoseAdministeredPreviouslyQuestion, vaccineDoseAdministeredTodayQuestion, administrationNoteForImmunisationTransId ) =
+                                            case vaccineType of
+                                                PrenatalVaccine type_ ->
+                                                    let
+                                                        label =
+                                                            Translate.PrenatalVaccineLabel type_
+                                                                |> translate language
+                                                    in
+                                                    ( Translate.VaccineDoseAdministeredPreviouslyPrenatalQuestion label
+                                                    , Translate.VaccineDoseAdministeredTodayPrenatalQuestion label
+                                                    , Translate.AdministrationNoteForPrenatalImmunisation
+                                                    )
+
+                                                WellChildVaccine type_ ->
+                                                    let
+                                                        label =
+                                                            Translate.WellChildVaccineLabel site type_
+                                                                |> translate language
+                                                    in
+                                                    ( Translate.VaccineDoseAdministeredPreviouslyWellChildQuestion label
+                                                    , Translate.VaccineDoseAdministeredTodayWellChildQuestion label
+                                                    , Translate.AdministrationNoteForWellChildImmunisation
+                                                    )
+
                                         ( previousDosesInput, previousDosesTaskCompleted, previousDosesTaskActive ) =
                                             if form.willReceiveVaccineToday == Just True then
                                                 ( [], 0, 0 )
@@ -3983,22 +3983,22 @@ viewMalariaTestForm language currentDate configInitial configPerformed form =
 
             else if form.testPerformed == Just False && isJust form.executionNote then
                 let
-                    ( testPrerequisitesSection_, testPrerequisitesTasksCompleted_, testPrerequisitesTasksTotal_ ) =
-                        prerequisiteByImmediateResultInputsAndTasks language
-                            (configInitial.setMalariaTestFormBoolInputMsg
-                                (\value form_ ->
-                                    { form_
-                                        | immediateResult = Just value
-                                        , bloodSmearResult = Nothing
-                                        , bloodSmearResultDirty = True
-                                    }
-                                )
-                            )
-                            form.immediateResult
-
                     ( bloodSmearSection, bloodSmearTasksCompleted, bloodSmearTasksTotal ) =
                         if form.bloodSmearTaken == Just True then
                             let
+                                ( testPrerequisitesSection_, testPrerequisitesTasksCompleted_, testPrerequisitesTasksTotal_ ) =
+                                    prerequisiteByImmediateResultInputsAndTasks language
+                                        (configInitial.setMalariaTestFormBoolInputMsg
+                                            (\value form_ ->
+                                                { form_
+                                                    | immediateResult = Just value
+                                                    , bloodSmearResult = Nothing
+                                                    , bloodSmearResultDirty = True
+                                                }
+                                            )
+                                        )
+                                        form.immediateResult
+
                                 ( bloodSmearResultSection, bloodSmearResultTasksCompleted, bloodSmearResultTasksTotal ) =
                                     Maybe.map
                                         (\immediateResult ->
@@ -4161,10 +4161,6 @@ viewPartnerHIVTestForm :
     -> ( Html msg, Int, Int )
 viewPartnerHIVTestForm language currentDate configInitial configPerformed form =
     let
-        isLabTech =
-            -- Only nurses perform initial phase of prenatal encounter.
-            False
-
         ( knownAsPositiveSection, knownAsPositiveTasksCompleted, knownAsPositiveTasksTotal ) =
             contentAndTasksLaboratoryUniversalTestKnownAsPositive language currentDate configInitial TaskPartnerHIVTest form
 
@@ -4209,6 +4205,11 @@ viewPartnerHIVTestForm language currentDate configInitial configPerformed form =
                                         Maybe.map
                                             (\immediateResult ->
                                                 if immediateResult == True then
+                                                    let
+                                                        isLabTech =
+                                                            -- Only nurses perform initial phase of prenatal encounter.
+                                                            False
+                                                    in
                                                     partnerHIVResultInputsAndTasks language
                                                         isLabTech
                                                         configPerformed.setPartnerHIVTestResultMsg

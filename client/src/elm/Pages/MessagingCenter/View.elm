@@ -441,33 +441,33 @@ viewMessagingCenter language currentTime currentDate programStartDate nurseId nu
                     generateInboxMessages currentDate programStartDate nurse_.resilienceMessages
             }
 
-        ( unread, read ) =
-            Dict.toList nurse.resilienceMessages
-                |> List.partition
-                    (\( _, message ) ->
-                        case message.timeRead of
-                            Nothing ->
-                                True
-
-                            Just timeRead ->
-                                Maybe.map
-                                    (\nextReminder ->
-                                        let
-                                            nextReminderMillis =
-                                                posixToMillis nextReminder
-                                        in
-                                        -- Reminder was set to latter time than the
-                                        -- time at which message was read.
-                                        (nextReminderMillis > posixToMillis timeRead)
-                                            && -- Scheduled reminder time was reached.
-                                               (posixToMillis currentTime > nextReminderMillis)
-                                    )
-                                    message.nextReminder
-                                    |> Maybe.withDefault False
-                    )
-
         content =
             let
+                ( unread, read ) =
+                    Dict.toList nurse.resilienceMessages
+                        |> List.partition
+                            (\( _, message ) ->
+                                case message.timeRead of
+                                    Nothing ->
+                                        True
+
+                                    Just timeRead ->
+                                        Maybe.map
+                                            (\nextReminder ->
+                                                let
+                                                    nextReminderMillis =
+                                                        posixToMillis nextReminder
+                                                in
+                                                -- Reminder was set to latter time than the
+                                                -- time at which message was read.
+                                                (nextReminderMillis > posixToMillis timeRead)
+                                                    && -- Scheduled reminder time was reached.
+                                                       (posixToMillis currentTime > nextReminderMillis)
+                                            )
+                                            message.nextReminder
+                                            |> Maybe.withDefault False
+                            )
+
                 viewMessage =
                     viewResilienceMessage language nurseId nurse model
 

@@ -509,45 +509,46 @@ viewPhysicalExamPane language currentDate firstInitialWithSubsequent secondIniti
                                     respiratoryRate
 
                             muacCell =
-                                let
-                                    muac =
-                                        encounterData.measurements
-                                            |> .muac
-                                            |> getMeasurementValueFunc
-                                            |> Maybe.map (\(MuacInCm muac_) -> muac_)
-                                in
                                 if not showMuac then
                                     emptyNode
 
-                                else if isNothing muac then
-                                    viewNotTaken
-
                                 else
                                     let
-                                        muacWarning =
-                                            Maybe.map
-                                                (\muac_ ->
-                                                    case muacIndication (MuacInCm muac_) of
-                                                        ColorAlertRed ->
-                                                            "red"
-
-                                                        ColorAlertYellow ->
-                                                            "orange"
-
-                                                        ColorAlertGreen ->
-                                                            "green"
-                                                )
-                                                muac
+                                        muac =
+                                            encounterData.measurements
+                                                |> .muac
+                                                |> getMeasurementValueFunc
+                                                |> Maybe.map (\(MuacInCm muac_) -> muac_)
                                     in
-                                    if muacWarning == Just "green" then
-                                        td [ class "muac" ] [ text <| "(" ++ (String.toLower <| translate language Translate.Normal) ++ ")" ]
+                                    if isNothing muac then
+                                        viewNotTaken
 
                                     else
                                         let
-                                            muacValue =
-                                                Maybe.map String.fromFloat muac
+                                            muacWarning =
+                                                Maybe.map
+                                                    (\muac_ ->
+                                                        case muacIndication (MuacInCm muac_) of
+                                                            ColorAlertRed ->
+                                                                "red"
+
+                                                            ColorAlertYellow ->
+                                                                "orange"
+
+                                                            ColorAlertGreen ->
+                                                                "green"
+                                                    )
+                                                    muac
                                         in
-                                        viewValueWithAlert muacValue muacWarning "muac"
+                                        if muacWarning == Just "green" then
+                                            td [ class "muac" ] [ text <| "(" ++ (String.toLower <| translate language Translate.Normal) ++ ")" ]
+
+                                        else
+                                            let
+                                                muacValue =
+                                                    Maybe.map String.fromFloat muac
+                                            in
+                                            viewValueWithAlert muacValue muacWarning "muac"
                         in
                         tr []
                             [ td [ class "date" ] [ text <| formatDDMMYYYY encounterData.startDate ]

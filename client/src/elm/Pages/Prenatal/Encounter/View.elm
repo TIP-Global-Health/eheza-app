@@ -402,17 +402,6 @@ viewMainPageContent language currentDate site assembled model =
             in
             activityCard language label icon (SetActivePage <| UserPage navigationPage)
 
-        ( selectedActivities, emptySectionMessage ) =
-            case model.selectedTab of
-                Pending ->
-                    ( pendingActivities, translate language Translate.NoActivitiesPending )
-
-                Completed ->
-                    ( completedActivities, translate language Translate.NoActivitiesCompleted )
-
-                Reports ->
-                    ( [], "" )
-
         innerContent =
             if model.selectedTab == Reports then
                 div [ class "reports-wrapper" ]
@@ -431,6 +420,18 @@ viewMainPageContent language currentDate site assembled model =
                     ]
 
             else
+                let
+                    ( selectedActivities, emptySectionMessage ) =
+                        case model.selectedTab of
+                            Pending ->
+                                ( pendingActivities, translate language Translate.NoActivitiesPending )
+
+                            Completed ->
+                                ( completedActivities, translate language Translate.NoActivitiesCompleted )
+
+                            Reports ->
+                                ( [], "" )
+                in
                 div [ class "full content" ]
                     [ div [ class "wrap-cards" ]
                         [ div [ class "ui four cards" ] <|

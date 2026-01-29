@@ -114,17 +114,6 @@ viewMainPageContent language currentDate nurse assembled model =
             in
             activityCard language label icon (SetActivePage <| UserPage <| PrenatalRecurrentActivityPage assembled.id activity)
 
-        ( selectedActivities, emptySectionMessage ) =
-            case model.selectedTab of
-                Pending ->
-                    ( pendingActivities, translate language Translate.NoActivitiesPending )
-
-                Completed ->
-                    ( completedActivities, translate language Translate.NoActivitiesCompleted )
-
-                Reports ->
-                    ( [], "" )
-
         content =
             let
                 innerContent =
@@ -145,6 +134,18 @@ viewMainPageContent language currentDate nurse assembled model =
                             ]
 
                     else
+                        let
+                            ( selectedActivities, emptySectionMessage ) =
+                                case model.selectedTab of
+                                    Pending ->
+                                        ( pendingActivities, translate language Translate.NoActivitiesPending )
+
+                                    Completed ->
+                                        ( completedActivities, translate language Translate.NoActivitiesCompleted )
+
+                                    Reports ->
+                                        ( [], "" )
+                        in
                         div [ class "full content" ]
                             [ div [ class "wrap-cards" ]
                                 [ div [ class "ui four cards" ] <|

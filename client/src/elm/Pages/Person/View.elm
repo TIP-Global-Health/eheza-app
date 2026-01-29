@@ -918,25 +918,6 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                     )
                 |> (::) emptyOption
 
-        hmisNumberOptions =
-            List.repeat 15 ""
-                |> List.indexedMap
-                    (\index _ ->
-                        let
-                            order =
-                                index + 1
-
-                            orderAsString =
-                                if order < 10 then
-                                    "0" ++ String.fromInt order
-
-                                else
-                                    String.fromInt order
-                        in
-                        ( orderAsString, orderAsString )
-                    )
-                |> (::) emptyOption
-
         photoUrl =
             Form.getFieldAsString Backend.Person.Form.photo personForm
                 |> .value
@@ -992,6 +973,26 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
         hmisNumberInput =
             case site of
                 SiteRwanda ->
+                    let
+                        hmisNumberOptions =
+                            List.repeat 15 ""
+                                |> List.indexedMap
+                                    (\index _ ->
+                                        let
+                                            order =
+                                                index + 1
+
+                                            orderAsString =
+                                                if order < 10 then
+                                                    "0" ++ String.fromInt order
+
+                                                else
+                                                    String.fromInt order
+                                        in
+                                        ( orderAsString, orderAsString )
+                                    )
+                                |> (::) emptyOption
+                    in
                     viewSelectInput language Translate.ChildHmisNumber hmisNumberOptions Backend.Person.Form.hmisNumber "ten" "select-input" False personForm
 
                 _ ->

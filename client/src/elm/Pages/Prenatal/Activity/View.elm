@@ -707,7 +707,7 @@ viewHistoryContent language currentDate assembled data =
         ( outsideCareInputs, outsideCareTasks ) =
             case outsideCareForm.step of
                 OutsideCareStepDiagnoses ->
-                    ( outsideCareInputsStep1, outsideCareTasksStep1 )
+                    outsideCareFormInputsAndTasks language outsideCareConfig OutsideCareStepDiagnoses outsideCareForm
 
                 OutsideCareStepMedications ->
                     ( outsideCareInputsStep2, outsideCareTasksStep2 )
@@ -745,9 +745,6 @@ viewHistoryContent language currentDate assembled data =
             , otherDiagnosis = DiagnosisOther
             , diagnosisTransId = Translate.PrenatalDiagnosis
             }
-
-        ( outsideCareInputsStep1, outsideCareTasksStep1 ) =
-            outsideCareFormInputsAndTasks language outsideCareConfig OutsideCareStepDiagnoses outsideCareForm
 
         ( outsideCareInputsStep2, outsideCareTasksStep2 ) =
             outsideCareFormInputsAndTasks language outsideCareConfig OutsideCareStepMedications outsideCareForm
@@ -2334,13 +2331,10 @@ viewSymptomReviewContent language currentDate assembled data =
         ( inputs, tasksCompleted, totalTasks ) =
             case data.step of
                 SymptomReviewStepSymptoms ->
-                    ( inputsStep1, tasksCompletedStep1, totalTasksStep1 )
+                    symptomReviewFormInputsAndTasks language assembled.encounter.encounterType SymptomReviewStepSymptoms form
 
                 SymptomReviewStepQuestions ->
                     ( inputsStep2, tasksCompletedStep2, totalTasksStep2 )
-
-        ( inputsStep1, tasksCompletedStep1, totalTasksStep1 ) =
-            symptomReviewFormInputsAndTasks language assembled.encounter.encounterType SymptomReviewStepSymptoms form
 
         ( inputsStep2, tasksCompletedStep2, totalTasksStep2 ) =
             symptomReviewFormInputsAndTasks language assembled.encounter.encounterType SymptomReviewStepQuestions form
@@ -4209,25 +4203,6 @@ viewNextVisitForm language currentDate nextVisitDate assembled =
 
 resolveNextVisitDate : AssembledData -> Maybe NominalDate
 resolveNextVisitDate assembled =
-    let
-        egaWeekOnFirstVisit =
-            Maybe.map2 calculateEGAWeeks
-                (assembled.encounter.startDate
-                    :: List.map (\( date, _, _ ) -> date) assembled.chwPreviousMeasurementsWithDates
-                    ++ List.map .startDate assembled.nursePreviousEncountersData
-                    |> List.sortWith Date.compare
-                    |> List.head
-                )
-                assembled.globalLmpDate
-
-        firstVisitAt28Plus =
-            Maybe.map (\date -> date >= 28) egaWeekOnFirstVisit
-                |> Maybe.withDefault False
-
-        firstVisitAt22To27 =
-            Maybe.map (\date -> (date >= 22) && (date < 28)) egaWeekOnFirstVisit
-                |> Maybe.withDefault False
-    in
     Maybe.map (calculateEGAWeeks assembled.encounter.startDate) assembled.globalLmpDate
         |> Maybe.map
             (\egaWeekCurrent ->
@@ -4255,25 +4230,47 @@ resolveNextVisitDate assembled =
                         else if egaWeekCurrent < 30 then
                             4
 
-                        else if egaWeekCurrent < 32 then
-                            if firstVisitAt22To27 then
-                                2
-
-                            else
-                                4
-
-                        else if egaWeekCurrent < 34 then
-                            if firstVisitAt28Plus then
-                                2
-
-                            else
-                                4
-
-                        else if egaWeekCurrent < 40 then
-                            2
-
                         else
-                            1
+                            let
+                                egaWeekOnFirstVisit =
+                                    Maybe.map2 calculateEGAWeeks
+                                        (assembled.encounter.startDate
+                                            :: List.map (\( date, _, _ ) -> date) assembled.chwPreviousMeasurementsWithDates
+                                            ++ List.map .startDate assembled.nursePreviousEncountersData
+                                            |> List.sortWith Date.compare
+                                            |> List.head
+                                        )
+                                        assembled.globalLmpDate
+                            in
+                            if egaWeekCurrent < 32 then
+                                let
+                                    firstVisitAt22To27 =
+                                        Maybe.map (\date -> (date >= 22) && (date < 28)) egaWeekOnFirstVisit
+                                            |> Maybe.withDefault False
+                                in
+                                if firstVisitAt22To27 then
+                                    2
+
+                                else
+                                    4
+
+                            else if egaWeekCurrent < 34 then
+                                let
+                                    firstVisitAt28Plus =
+                                        Maybe.map (\date -> date >= 28) egaWeekOnFirstVisit
+                                            |> Maybe.withDefault False
+                                in
+                                if firstVisitAt28Plus then
+                                    2
+
+                                else
+                                    4
+
+                            else if egaWeekCurrent < 40 then
+                                2
+
+                            else
+                                1
                 in
                 Date.add Weeks gap assembled.encounter.startDate
             )

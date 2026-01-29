@@ -489,13 +489,10 @@ viewMedicalHistoryContent language currentDate site assembled data =
         ( outsideCareInputs, outsideCareTasks ) =
             case outsideCareForm.step of
                 OutsideCareStepDiagnoses ->
-                    ( outsideCareInputsStep1, outsideCareTasksStep1 )
+                    outsideCareFormInputsAndTasks language outsideCareConfig OutsideCareStepDiagnoses outsideCareForm
 
                 OutsideCareStepMedications ->
                     ( outsideCareInputsStep2, outsideCareTasksStep2 )
-
-        ( outsideCareInputsStep1, outsideCareTasksStep1 ) =
-            outsideCareFormInputsAndTasks language outsideCareConfig OutsideCareStepDiagnoses outsideCareForm
 
         ( outsideCareInputsStep2, outsideCareTasksStep2 ) =
             outsideCareFormInputsAndTasks language outsideCareConfig OutsideCareStepMedications outsideCareForm
@@ -633,13 +630,10 @@ viewOutsideCareContent language currentDate assembled form =
         ( outsideCareInputs, outsideCareTasks ) =
             case outsideCareForm.step of
                 OutsideCareStepDiagnoses ->
-                    ( outsideCareInputsStep1, outsideCareTasksStep1 )
+                    outsideCareFormInputsAndTasks language outsideCareConfig OutsideCareStepDiagnoses outsideCareForm
 
                 OutsideCareStepMedications ->
                     ( outsideCareInputsStep2, outsideCareTasksStep2 )
-
-        ( outsideCareInputsStep1, outsideCareTasksStep1 ) =
-            outsideCareFormInputsAndTasks language outsideCareConfig OutsideCareStepDiagnoses outsideCareForm
 
         ( outsideCareInputsStep2, outsideCareTasksStep2 ) =
             outsideCareFormInputsAndTasks language outsideCareConfig OutsideCareStepMedications outsideCareForm

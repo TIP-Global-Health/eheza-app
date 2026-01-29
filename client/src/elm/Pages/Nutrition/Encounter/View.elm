@@ -155,17 +155,6 @@ viewMainPageContent language currentDate zscores features id isChw db data model
                 , tabItem reportsTabTitle (model.selectedTab == Reports) "reports" (SetSelectedTab Reports)
                 ]
 
-        ( selectedActivities, emptySectionMessage ) =
-            case model.selectedTab of
-                Pending ->
-                    ( pendingActivities, translate language Translate.NoActivitiesPending )
-
-                Completed ->
-                    ( completedActivities, translate language Translate.NoActivitiesCompleted )
-
-                Reports ->
-                    ( [], "" )
-
         innerContent =
             if model.selectedTab == Reports then
                 div [ class "reports-wrapper" ]
@@ -178,6 +167,18 @@ viewMainPageContent language currentDate zscores features id isChw db data model
                     ]
 
             else
+                let
+                    ( selectedActivities, emptySectionMessage ) =
+                        case model.selectedTab of
+                            Pending ->
+                                ( pendingActivities, translate language Translate.NoActivitiesPending )
+
+                            Completed ->
+                                ( completedActivities, translate language Translate.NoActivitiesCompleted )
+
+                            Reports ->
+                                ( [], "" )
+                in
                 div [ class "full content" ]
                     [ div [ class "wrap-cards" ]
                         [ div [ class "ui four cards" ] <|

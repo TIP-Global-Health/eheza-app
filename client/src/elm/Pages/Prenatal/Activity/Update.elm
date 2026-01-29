@@ -120,16 +120,6 @@ update language currentDate id isLabTech db msg model =
                     )
                 |> Maybe.withDefault model.historyData.outsideCareForm
 
-        obstetricalExamForm =
-            Dict.get id db.prenatalMeasurements
-                |> Maybe.andThen RemoteData.toMaybe
-                |> Maybe.map
-                    (.obstetricalExam
-                        >> getMeasurementValueFunc
-                        >> obstetricalExamFormWithDefault model.examinationData.obstetricalExamForm
-                    )
-                |> Maybe.withDefault model.examinationData.obstetricalExamForm
-
         resolveVaccinationForm vaccineType form =
             Dict.get id db.prenatalMeasurements
                 |> Maybe.andThen RemoteData.toMaybe
@@ -1305,6 +1295,16 @@ update language currentDate id isLabTech db msg model =
 
         ToggleFetalHeartRateNotAudible ->
             let
+                obstetricalExamForm =
+                    Dict.get id db.prenatalMeasurements
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map
+                            (.obstetricalExam
+                                >> getMeasurementValueFunc
+                                >> obstetricalExamFormWithDefault model.examinationData.obstetricalExamForm
+                            )
+                        |> Maybe.withDefault model.examinationData.obstetricalExamForm
+
                 notAudible =
                     Maybe.map not obstetricalExamForm.fetalHeartRateNotAudible
                         |> Maybe.withDefault True

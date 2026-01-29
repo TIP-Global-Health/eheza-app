@@ -1585,14 +1585,14 @@ resolveGWGClassification currentDate prePregnancyClassification prePregnancyWeig
     Maybe.map
         (\lmpDate ->
             let
-                egaInWeeks =
-                    calculateEGAWeeks currentDate lmpDate
-
                 actualWeightGain =
                     currentWeight - prePregnancyWeight
 
                 expectedWeightGain =
                     let
+                        egaInWeeks =
+                            calculateEGAWeeks currentDate lmpDate
+
                         weeksAfterFirstTrimester =
                             egaInWeeks - 12
 
@@ -2212,93 +2212,6 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                 |> Maybe.map ((==) RhesusNegative)
                 |> Maybe.withDefault False
 
-        moderateRiskPreeclampsiaDiagnosed =
-            let
-                byAgeAndFirstPregnancy =
-                    let
-                        ageInYears =
-                            Maybe.map2
-                                (Date.diff Years)
-                                assembled.person.birthDate
-                                assembled.globalLmpDate
-
-                        totalPregnancies =
-                            List.filterMap (.obstetricHistory >> getMeasurementValueFunc)
-                                allMeasurements
-                                |> List.head
-                                |> Maybe.map
-                                    (\value ->
-                                        value.termPregnancy + value.preTermPregnancy
-                                    )
-                    in
-                    Maybe.map2
-                        (\ageYears pregnanciesCount ->
-                            (pregnanciesCount == 0)
-                                && (ageYears < 18 || ageYears >= 35)
-                        )
-                        ageInYears
-                        totalPregnancies
-                        |> Maybe.withDefault False
-
-                byBMI =
-                    calculateBmi
-                        (resolveMeasuredHeight assembled
-                            |> Maybe.map getHeightValue
-                        )
-                        (getMeasurementValueFunc assembled.measurements.nutrition
-                            |> Maybe.map (.weight >> weightValueFunc)
-                        )
-                        |> Maybe.map (\bmi -> bmi >= 30)
-                        |> Maybe.withDefault False
-
-                byPreeclampsiaInFamily =
-                    List.filterMap (.medicalHistory >> getMeasurementValueFunc)
-                        allMeasurements
-                        |> List.head
-                        |> Maybe.map (.preeclampsiaInFamily >> (==) DoesOccur)
-                        |> Maybe.withDefault False
-
-                byStillbornChildren =
-                    List.filterMap (.obstetricHistory >> getMeasurementValueFunc)
-                        allMeasurements
-                        |> List.head
-                        |> Maybe.map
-                            (\value ->
-                                value.stillbirthsAtTerm + value.stillbirthsPreTerm > 0
-                            )
-                        |> Maybe.withDefault False
-
-                byObstetricHistorySigns =
-                    List.filterMap (.obstetricHistoryStep2 >> getMeasurementValueFunc)
-                        allMeasurements
-                        |> List.head
-                        |> Maybe.map
-                            (\value ->
-                                let
-                                    byPeriodFromPreviousPregnancy =
-                                        EverySet.member MoreThan10Years value.previousDeliveryPeriod
-
-                                    bySigns =
-                                        List.any
-                                            (\sign ->
-                                                EverySet.member sign value.signs
-                                            )
-                                            [ ObstetricHistoryPlacentaAbruptionPreviousDelivery
-                                            , ObstetricHistoryChildWithLowBirthweightPreviousDelivery
-                                            , ObstetricHistorySmallForGestationalAgePreviousDelivery
-                                            , ObstetricHistoryIntraUterineDeathPreviousDelivery
-                                            ]
-                                in
-                                byPeriodFromPreviousPregnancy || bySigns
-                            )
-                        |> Maybe.withDefault False
-            in
-            byAgeAndFirstPregnancy
-                || byBMI
-                || byPreeclampsiaInFamily
-                || byStillbornChildren
-                || byObstetricHistorySigns
-
         highRiskPreeclampsiaDiagnosedBySignsAndPreviousDiagnoses =
             let
                 byPreviousPreeclampsia =
@@ -2360,6 +2273,94 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
     in
     case diagnosis of
         DiagnosisModerateRiskOfPreeclampsia ->
+            let
+                moderateRiskPreeclampsiaDiagnosed =
+                    let
+                        byAgeAndFirstPregnancy =
+                            let
+                                ageInYears =
+                                    Maybe.map2
+                                        (Date.diff Years)
+                                        assembled.person.birthDate
+                                        assembled.globalLmpDate
+
+                                totalPregnancies =
+                                    List.filterMap (.obstetricHistory >> getMeasurementValueFunc)
+                                        allMeasurements
+                                        |> List.head
+                                        |> Maybe.map
+                                            (\value ->
+                                                value.termPregnancy + value.preTermPregnancy
+                                            )
+                            in
+                            Maybe.map2
+                                (\ageYears pregnanciesCount ->
+                                    (pregnanciesCount == 0)
+                                        && (ageYears < 18 || ageYears >= 35)
+                                )
+                                ageInYears
+                                totalPregnancies
+                                |> Maybe.withDefault False
+
+                        byBMI =
+                            calculateBmi
+                                (resolveMeasuredHeight assembled
+                                    |> Maybe.map getHeightValue
+                                )
+                                (getMeasurementValueFunc assembled.measurements.nutrition
+                                    |> Maybe.map (.weight >> weightValueFunc)
+                                )
+                                |> Maybe.map (\bmi -> bmi >= 30)
+                                |> Maybe.withDefault False
+
+                        byPreeclampsiaInFamily =
+                            List.filterMap (.medicalHistory >> getMeasurementValueFunc)
+                                allMeasurements
+                                |> List.head
+                                |> Maybe.map (.preeclampsiaInFamily >> (==) DoesOccur)
+                                |> Maybe.withDefault False
+
+                        byStillbornChildren =
+                            List.filterMap (.obstetricHistory >> getMeasurementValueFunc)
+                                allMeasurements
+                                |> List.head
+                                |> Maybe.map
+                                    (\value ->
+                                        value.stillbirthsAtTerm + value.stillbirthsPreTerm > 0
+                                    )
+                                |> Maybe.withDefault False
+
+                        byObstetricHistorySigns =
+                            List.filterMap (.obstetricHistoryStep2 >> getMeasurementValueFunc)
+                                allMeasurements
+                                |> List.head
+                                |> Maybe.map
+                                    (\value ->
+                                        let
+                                            byPeriodFromPreviousPregnancy =
+                                                EverySet.member MoreThan10Years value.previousDeliveryPeriod
+
+                                            bySigns =
+                                                List.any
+                                                    (\sign ->
+                                                        EverySet.member sign value.signs
+                                                    )
+                                                    [ ObstetricHistoryPlacentaAbruptionPreviousDelivery
+                                                    , ObstetricHistoryChildWithLowBirthweightPreviousDelivery
+                                                    , ObstetricHistorySmallForGestationalAgePreviousDelivery
+                                                    , ObstetricHistoryIntraUterineDeathPreviousDelivery
+                                                    ]
+                                        in
+                                        byPeriodFromPreviousPregnancy || bySigns
+                                    )
+                                |> Maybe.withDefault False
+                    in
+                    byAgeAndFirstPregnancy
+                        || byBMI
+                        || byPreeclampsiaInFamily
+                        || byStillbornChildren
+                        || byObstetricHistorySigns
+            in
             moderateRiskPreeclampsiaDiagnosed
                 && (not <| diagnosedRiskOfPreeclampsiaPrevoiusly assembled)
                 -- We don't diagnose Preeclampsia RISK, if any kind of
@@ -5708,14 +5709,15 @@ toPrenatalMentalHealthValue form =
 immunisationTaskCompleted : NominalDate -> AssembledData -> ImmunisationTask -> Bool
 immunisationTaskCompleted currentDate data task =
     let
-        measurements =
-            data.measurements
-
         taskExpected =
             expectImmunisationTask currentDate data
     in
     case task of
         TaskTetanus ->
+            let
+                measurements =
+                    data.measurements
+            in
             (not <| taskExpected TaskTetanus) || isJust measurements.tetanusImmunisation
 
         TaskOverview ->
@@ -6345,65 +6347,67 @@ guExamFormInputsAndTasks language assembled form =
             if isNothing form.episiotomyOrPerinealTear then
                 ( [], [] )
 
-            else if form.episiotomyOrPerinealTear == Just True then
-                let
-                    ( healingProblemsSection, healingProblemsTasks ) =
-                        if form.healingNormally == Just False then
-                            ( [ viewCustomLabel language Translate.PostpartumHealingProblemQuestion "?" "label question"
-                              , viewCheckBoxMultipleSelectInput language
-                                    [ HealingProblemSwelling, HealingProblemDischarge, HealingProblemReleaseOfSutures ]
-                                    [ HealingProblemHematoma, HealingProblemBruising ]
-                                    (form.postpartumHealingProblems |> Maybe.withDefault [])
-                                    Nothing
-                                    SetPostpartumHealingProblem
-                                    Translate.PostpartumHealingProblem
-                              , div [ class "separator double" ] []
-                              ]
-                            , [ maybeToBoolTask form.postpartumHealingProblems ]
-                            )
-
-                        else
-                            ( [], [] )
-
-                    healingNormallyUpdateFunc value form_ =
-                        { form_
-                            | healingNormally = Just value
-                            , healingNormallyDirty = True
-                            , postpartumHealingProblems = Nothing
-                            , postpartumHealingProblemsDirty = True
-                        }
-                in
-                ( [ viewCustomLabel language Translate.EpisiotomyOrPerinealTearHealingQuestion "?" "label question"
-                  , viewBoolInput
-                        language
-                        form.healingNormally
-                        (SetGUExamBoolInput healingNormallyUpdateFunc)
-                        "healing-normally"
-                        Nothing
-                  ]
-                    ++ healingProblemsSection
-                    ++ rectalHemorrhoidsSection
-                , form.healingNormally :: healingProblemsTasks ++ rectalHemorrhoidsTasks
-                )
-
             else
-                ( rectalHemorrhoidsSection, rectalHemorrhoidsTasks )
+                let
+                    ( rectalHemorrhoidsSection, rectalHemorrhoidsTasks ) =
+                        let
+                            rectalHemorrhoidsUpdateFunc value form_ =
+                                { form_ | rectalHemorrhoids = Just value }
+                        in
+                        ( [ viewCustomLabel language Translate.RectalHemorrhoids "?" "label question"
+                          , viewBoolInput
+                                language
+                                form.rectalHemorrhoids
+                                (SetGUExamBoolInput rectalHemorrhoidsUpdateFunc)
+                                "rectal-hemorrhoids"
+                                Nothing
+                          ]
+                        , [ form.rectalHemorrhoids ]
+                        )
+                in
+                if form.episiotomyOrPerinealTear == Just True then
+                    let
+                        ( healingProblemsSection, healingProblemsTasks ) =
+                            if form.healingNormally == Just False then
+                                ( [ viewCustomLabel language Translate.PostpartumHealingProblemQuestion "?" "label question"
+                                  , viewCheckBoxMultipleSelectInput language
+                                        [ HealingProblemSwelling, HealingProblemDischarge, HealingProblemReleaseOfSutures ]
+                                        [ HealingProblemHematoma, HealingProblemBruising ]
+                                        (form.postpartumHealingProblems |> Maybe.withDefault [])
+                                        Nothing
+                                        SetPostpartumHealingProblem
+                                        Translate.PostpartumHealingProblem
+                                  , div [ class "separator double" ] []
+                                  ]
+                                , [ maybeToBoolTask form.postpartumHealingProblems ]
+                                )
 
-        ( rectalHemorrhoidsSection, rectalHemorrhoidsTasks ) =
-            let
-                rectalHemorrhoidsUpdateFunc value form_ =
-                    { form_ | rectalHemorrhoids = Just value }
-            in
-            ( [ viewCustomLabel language Translate.RectalHemorrhoids "?" "label question"
-              , viewBoolInput
-                    language
-                    form.rectalHemorrhoids
-                    (SetGUExamBoolInput rectalHemorrhoidsUpdateFunc)
-                    "rectal-hemorrhoids"
-                    Nothing
-              ]
-            , [ form.rectalHemorrhoids ]
-            )
+                            else
+                                ( [], [] )
+
+                        healingNormallyUpdateFunc value form_ =
+                            { form_
+                                | healingNormally = Just value
+                                , healingNormallyDirty = True
+                                , postpartumHealingProblems = Nothing
+                                , postpartumHealingProblemsDirty = True
+                            }
+                    in
+                    ( [ viewCustomLabel language Translate.EpisiotomyOrPerinealTearHealingQuestion "?" "label question"
+                      , viewBoolInput
+                            language
+                            form.healingNormally
+                            (SetGUExamBoolInput healingNormallyUpdateFunc)
+                            "healing-normally"
+                            Nothing
+                      ]
+                        ++ healingProblemsSection
+                        ++ rectalHemorrhoidsSection
+                    , form.healingNormally :: healingProblemsTasks ++ rectalHemorrhoidsTasks
+                    )
+
+                else
+                    ( rectalHemorrhoidsSection, rectalHemorrhoidsTasks )
     in
     ( initialSection ++ derivedSection, initialTasks ++ derivedTasks )
 

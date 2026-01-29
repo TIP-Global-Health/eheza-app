@@ -119,17 +119,6 @@ viewMainPageContent language currentDate db assembled model =
                 (getActivityIcon activity)
                 (SetActivePage <| UserPage <| HIVActivityPage assembled.id activity)
 
-        ( selectedActivities, emptySectionMessage ) =
-            case model.selectedTab of
-                Pending ->
-                    ( pendingActivities, translate language Translate.NoActivitiesPending )
-
-                Completed ->
-                    ( completedActivities, translate language Translate.NoActivitiesCompleted )
-
-                Reports ->
-                    ( [], "" )
-
         innerContent =
             if model.selectedTab == Reports then
                 div [ class "reports-wrapper" ]
@@ -143,6 +132,18 @@ viewMainPageContent language currentDate db assembled model =
                     ]
 
             else
+                let
+                    ( selectedActivities, emptySectionMessage ) =
+                        case model.selectedTab of
+                            Pending ->
+                                ( pendingActivities, translate language Translate.NoActivitiesPending )
+
+                            Completed ->
+                                ( completedActivities, translate language Translate.NoActivitiesCompleted )
+
+                            Reports ->
+                                ( [], "" )
+                in
                 div [ class "full content" ]
                     [ div [ class "wrap-cards" ]
                         [ div [ class "ui four cards" ] <|
