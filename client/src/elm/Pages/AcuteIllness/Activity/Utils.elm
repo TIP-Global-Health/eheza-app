@@ -3591,7 +3591,7 @@ toFollowUpValue form =
 symptomAppearsAtSymptomsDict : a -> Dict a Int -> Bool
 symptomAppearsAtSymptomsDict symptom dict =
     Dict.get symptom dict
-        |> Maybe.map ((<) 0)
+        |> Maybe.map (\value -> value > 0)
         |> Maybe.withDefault False
 
 

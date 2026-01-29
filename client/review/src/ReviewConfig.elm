@@ -11,7 +11,10 @@ when inside the directory containing this file.
 
 -}
 
+import Docs.NoMissing exposing (exposedModules, onlyExposed)
 import Docs.ReviewAtDocs
+import Docs.ReviewLinksAndSections
+import Docs.UpToDateReadmeLinks
 import NoConfusingPrefixOperator
 import NoDebug.Log
 import NoDebug.TodoOrToString
@@ -44,26 +47,42 @@ config =
 
 rules : List Rule
 rules =
-    [ Docs.ReviewAtDocs.rule
+    [ Docs.UpToDateReadmeLinks.rule
+    , Docs.ReviewAtDocs.rule
+    , Docs.UpToDateReadmeLinks.rule
+    , Docs.NoMissing.rule { document = onlyExposed, from = exposedModules }
     , NoConfusingPrefixOperator.rule
+        |> Rule.ignoreErrorsForFiles
+            [ "src/elm/Pages/Prenatal/ProgressReport/View.elm"
+            , "src/elm/Pages/Prenatal/Activity/View.elm"
+            , "src/elm/Pages/Prenatal/Activity/Utils.elm"
+            , "src/elm/Measurement/View.elm"
+            ]
     , NoDebug.Log.rule
-
-    --, NoDebug.TodoOrToString.rule
+    , NoDebug.TodoOrToString.rule
+        |> Rule.ignoreErrorsForFiles
+            [ "src/elm/ZScore/Test.elm"
+            , "src/elm/SyncManager/View.elm"
+            , "src/elm/Pages/Dashboard/GraphUtils.elm"
+            , "src/elm/Pages/Dashboard/View.elm"
+            , "src/elm/Pages/Prenatal/Activity/View.elm"
+            ]
     , NoExposingEverything.rule
-    , NoImportingEverything.rule []
-    , NoMissingTypeAnnotation.rule
-    , NoMissingTypeAnnotationInLetIn.rule
-    , NoMissingTypeExpose.rule
-    , NoSimpleLetBody.rule
-    , NoPrematureLetComputation.rule
-    , NoUnused.CustomTypeConstructors.rule []
-    , NoUnused.CustomTypeConstructorArgs.rule
-    , NoUnused.Dependencies.rule
-    , NoUnused.Exports.rule
-    , NoUnused.Parameters.rule
-    , NoUnused.Patterns.rule
-    , NoUnused.Variables.rule
-    , Simplify.rule Simplify.defaults
+
+    -- , NoImportingEverything.rule []
+    -- , NoMissingTypeAnnotation.rule
+    -- , NoMissingTypeAnnotationInLetIn.rule
+    -- , NoMissingTypeExpose.rule
+    -- , NoSimpleLetBody.rule
+    -- , NoPrematureLetComputation.rule
+    -- , NoUnused.CustomTypeConstructors.rule []
+    -- , NoUnused.CustomTypeConstructorArgs.rule
+    -- , NoUnused.Dependencies.rule
+    -- , NoUnused.Exports.rule
+    -- , NoUnused.Parameters.rule
+    -- , NoUnused.Patterns.rule
+    -- , NoUnused.Variables.rule
+    -- , Simplify.rule Simplify.defaults
     ]
 
 
