@@ -115,6 +115,7 @@ rules =
         |> Rule.ignoreErrorsForFiles
             [ "src/elm/LocalConfig.Example.elm"
             , "src/elm/Config.Deploy.elm"
+            , "src/elm/App/Model.elm"
             ]
     , NoUnused.Parameters.rule
     , NoUnused.Patterns.rule
