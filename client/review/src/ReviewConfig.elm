@@ -21,7 +21,6 @@ import NoDebug.TodoOrToString
 import NoExposingEverything
 import NoImportingEverything
 import NoMissingTypeAnnotation
-import NoMissingTypeAnnotationInLetIn
 import NoMissingTypeExpose
 import NoPrematureLetComputation
 import NoSimpleLetBody
@@ -78,12 +77,20 @@ rules =
         , "Svg.Attributes"
         , "SyncManager.Model"
         ]
+    , NoMissingTypeAnnotation.rule
+        |> Rule.ignoreErrorsForFiles
+            [ "src/elm/SyncManager/Decoder.elm"
+            , "src/elm/Pages/WellChild/ProgressReport/View.elm"
+            , "src/elm/Pages/Report/Svg.elm"
+            , "src/elm/Measurement/Utils.elm"
+            , "src/elm/Main.elm"
+            , "src/elm/Pages/Prenatal/Utils.elm"
+            , "src/elm/Backend/Utils.elm"
+            ]
+    , NoMissingTypeExpose.rule
+    , NoSimpleLetBody.rule
+    , NoPrematureLetComputation.rule
 
-    -- , NoMissingTypeAnnotation.rule
-    -- , NoMissingTypeAnnotationInLetIn.rule
-    -- , NoMissingTypeExpose.rule
-    -- , NoSimpleLetBody.rule
-    -- , NoPrematureLetComputation.rule
     -- , NoUnused.CustomTypeConstructors.rule []
     -- , NoUnused.CustomTypeConstructorArgs.rule
     -- , NoUnused.Dependencies.rule
