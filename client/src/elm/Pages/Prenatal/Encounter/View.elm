@@ -140,7 +140,7 @@ viewUndeterminedDiagnosesWarningPopup language currentDate site assembled model 
                     |> List.filter (expectActivity currentDate site assembled)
                     |> List.partition (activityCompleted currentDate site assembled)
         in
-        if List.length pendingActivities > 0 || List.member NextSteps completedActivities then
+        if not (List.isEmpty pendingActivities) || List.member NextSteps completedActivities then
             Nothing
 
         else

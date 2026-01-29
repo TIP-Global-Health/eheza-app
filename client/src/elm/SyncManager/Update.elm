@@ -1699,7 +1699,7 @@ update currentTime activePage dbVersion device msg model =
                         -- result with something like this:
                         -- image-1234.jpg?itok=[image-token]?access_token=[access-token]
                         -- Instead, we manually add the access token with a `&`.
-                        HttpBuilder.get (result.photo ++ "&" ++ "access_token=" ++ device.accessToken)
+                        HttpBuilder.get (result.photo ++ "&access_token=" ++ device.accessToken)
                             -- We don't need to decode anything, as we just want to have
                             -- the browser download it.
                             |> HttpBuilder.send (RemoteData.fromResult >> BackendDeferredPhotoFetchHandle result)
@@ -1861,8 +1861,7 @@ update currentTime activePage dbVersion device msg model =
                                 uuidsAsString =
                                     uuids
                                         |> List.map String.fromInt
-                                        |> List.intersperse ","
-                                        |> String.concat
+                                        |> String.join ","
                             in
                             { queryType = "IndexDbQueryRemoveUploadPhotos"
                             , data = Just uuidsAsString

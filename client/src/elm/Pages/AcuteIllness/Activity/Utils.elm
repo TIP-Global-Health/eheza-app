@@ -2562,7 +2562,7 @@ covid19SuspectDiagnosed measurements =
         generalSymptomsCount =
             let
                 excludesGeneral =
-                    [ SymptomGeneralFever ] ++ symptomsGeneralDangerSigns
+                    SymptomGeneralFever :: symptomsGeneralDangerSigns
             in
             countGeneralSymptoms measurements excludesGeneral
 

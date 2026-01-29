@@ -4118,7 +4118,7 @@ viewPartnerHIVTestForm language currentDate configInitial configPerformed form =
                                     else
                                         Maybe.map
                                             (\immediateResult ->
-                                                if immediateResult == True then
+                                                if immediateResult then
                                                     let
                                                         isLabTech =
                                                             -- Only nurses perform initial phase of prenatal encounter.
@@ -8667,8 +8667,7 @@ behindOnVaccinationsByProgressFromWellChild currentDate site individualWellChild
         lastWellChildEncounterId =
             Maybe.andThen
                 (getWellChildEncountersForParticipant db
-                    >> List.map Tuple.first
-                    >> List.head
+                    >> (List.head >> Maybe.map Tuple.first)
                 )
                 individualWellChildParticipantId
 
@@ -8697,8 +8696,7 @@ behindOnVaccinationsByProgressFromChildScoreboard currentDate site individualChi
         lastChildScoreboardEncounterId =
             Maybe.andThen
                 (getChildScoreboardEncountersForParticipant db
-                    >> List.map Tuple.first
-                    >> List.head
+                    >> (List.head >> Maybe.map Tuple.first)
                 )
                 individualChildScoreboardParticipantId
 

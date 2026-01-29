@@ -127,7 +127,7 @@ viewActions language currentDate selectedHealthCenter id isChw db model prenatal
             navigateToPregnancyOutcomeAction InitiatorParticipantPage
 
         navigateToPregnancyOutcomeAction destinationPage =
-            if List.length completedEncounts > 0 then
+            if not (List.isEmpty completedEncounts) then
                 maybeSessionId
                     |> Maybe.map
                         (Pages.Page.PregnancyOutcomePage destinationPage

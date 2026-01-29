@@ -12,11 +12,10 @@ import Json.Decode.Pipeline exposing (optional, required)
 decodeResilienceMessages : Decoder (Dict String ResilienceMessage)
 decodeResilienceMessages =
     list decodeResilienceMessage
-        |> andThen
+        |> Json.Decode.map
             (\messages ->
                 List.map (\message -> ( generateResilienceMessageId message.category message.order, message )) messages
                     |> Dict.fromList
-                    |> succeed
             )
 
 

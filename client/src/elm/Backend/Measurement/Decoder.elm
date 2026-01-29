@@ -3292,7 +3292,7 @@ decodeNonReferralSign =
                                 let
                                     reasonForNonReferral =
                                         List.tail parts
-                                            |> Maybe.map (List.intersperse "-" >> String.concat)
+                                            |> Maybe.map (String.join "-")
                                             |> Maybe.andThen reasonForNonReferralFromString
                                 in
                                 case prefix of
@@ -3515,7 +3515,7 @@ decodeMedicationNonAdministrationSign =
                                 let
                                     administrationNote =
                                         List.tail parts
-                                            |> Maybe.map (List.intersperse "-" >> String.concat)
+                                            |> Maybe.map (String.join "-")
                                             |> Maybe.andThen administrationNoteFromString
                                 in
                                 case prefix of

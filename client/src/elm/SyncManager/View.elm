@@ -144,7 +144,7 @@ viewSyncSettings model =
                     [ type_ "number"
 
                     -- No less than every 50 ms.
-                    , Html.Attributes.min (String.fromInt <| 50)
+                    , Html.Attributes.min "50"
 
                     -- No more than every 5 minutes.
                     , Html.Attributes.max (String.fromInt <| 5 * 60 * 1000)
@@ -161,7 +161,7 @@ viewSyncSettings model =
                     [ type_ "number"
 
                     -- No less than every 1000 ms.
-                    , Html.Attributes.min (String.fromInt <| 1000)
+                    , Html.Attributes.min "1000"
 
                     -- No more than every 5 minutes.
                     , Html.Attributes.max (String.fromInt <| 5 * 60 * 1000)

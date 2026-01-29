@@ -127,32 +127,32 @@ decodeNutritionValueDict decoder =
 decodeZScoreNutritionValue : Decoder NutritionValue
 decodeZScoreNutritionValue =
     float
-        |> andThen
+        |> map
             (\value ->
                 if value <= -3 then
-                    succeed <| NutritionValue Severe (String.fromFloat value)
+                    NutritionValue Severe (String.fromFloat value)
 
                 else if value <= -2 then
-                    succeed <| NutritionValue Moderate (String.fromFloat value)
+                    NutritionValue Moderate (String.fromFloat value)
 
                 else
-                    succeed <| NutritionValue Good (String.fromFloat value)
+                    NutritionValue Good (String.fromFloat value)
             )
 
 
 decodeMuacNutritionValue : Decoder NutritionValue
 decodeMuacNutritionValue =
     decodeFloat
-        |> andThen
+        |> map
             (\value ->
                 if value <= 11.5 then
-                    succeed <| NutritionValue Severe (String.fromFloat value)
+                    NutritionValue Severe (String.fromFloat value)
 
                 else if value <= 12.5 then
-                    succeed <| NutritionValue Moderate (String.fromFloat value)
+                    NutritionValue Moderate (String.fromFloat value)
 
                 else
-                    succeed <| NutritionValue Good (String.fromFloat value)
+                    NutritionValue Good (String.fromFloat value)
             )
 
 
@@ -491,7 +491,7 @@ decodePatientsDetails : Decoder (Dict PersonIdentifier PatientDetails)
 decodePatientsDetails =
     oneOf
         [ dict decodePatientDetails
-            |> andThen
+            |> map
                 (LegacyDict.toList
                     >> List.filterMap
                         (\( k, v ) ->
@@ -499,7 +499,6 @@ decodePatientsDetails =
                                 |> Maybe.map (\key -> ( key, v ))
                         )
                     >> Dict.fromList
-                    >> succeed
                 )
         , succeed Dict.empty
         ]

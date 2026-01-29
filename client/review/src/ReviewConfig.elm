@@ -119,8 +119,11 @@ rules =
     , NoUnused.Parameters.rule
     , NoUnused.Patterns.rule
     , NoUnused.Variables.rule
-
-    -- , Simplify.rule Simplify.defaults
+    , Simplify.rule Simplify.defaults
+        |> Rule.ignoreErrorsForFiles
+            [ "src/elm/GeoLocation/Utils.elm"
+            , "src/elm/Measurement/Utils.elm"
+            ]
     ]
 
 

@@ -4660,7 +4660,7 @@ toObstetricHistoryStep2Value form =
     -- Number of C-sections field is oboslete. Since we still need to
     -- keep this info as part of the value, to support exisitng measurements,
     -- we default it to -1.
-    Maybe.map ObstetricHistoryStep2Value (Just -1)
+    Just (ObstetricHistoryStep2Value -1)
         |> andMap (Just <| Maybe.map EverySet.singleton form.cSectionReason)
         |> andMap previousDeliverySet
         |> andMap (Maybe.map EverySet.singleton form.previousDeliveryPeriod)
@@ -5073,12 +5073,11 @@ expectLaboratoryTask currentDate assembled task =
                             else
                                 let
                                     lastTestWeek =
-                                        Dict.get test testsDates
+                                        (Dict.get test testsDates
                                             |> Maybe.map (List.map (\testsDate -> diffWeeks lmpDate testsDate))
                                             |> Maybe.withDefault []
-                                            |> List.sort
-                                            |> List.reverse
-                                            |> List.head
+                                        )
+                                            |> List.maximum
                                 in
                                 Maybe.map (\testWeek -> testWeek < week) lastTestWeek
                                     |> Maybe.withDefault True

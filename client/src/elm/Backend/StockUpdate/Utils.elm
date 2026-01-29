@@ -212,8 +212,8 @@ generateStockManagementData currentDate measurements =
                             (\index ->
                                 List.Extra.splitAt (index - 6) fbfsByMonth
                                     |> Tuple.second
-                                    |> List.map Tuple.second
                                     |> List.take 6
+                                    |> List.map Tuple.second
                                     |> List.sum
                             )
                         |> Maybe.withDefault 0

@@ -788,8 +788,7 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstNurseEncou
                                         transSigns =
                                             EverySet.toList signs
                                                 |> List.map (\sign -> translate language (Translate.BreastExamSign sign))
-                                                |> List.intersperse ", "
-                                                |> String.concat
+                                                |> String.join ", "
                                     in
                                     Just (transAlert diagnosis ++ " " ++ transSigns)
                             )

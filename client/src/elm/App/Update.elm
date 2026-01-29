@@ -1174,7 +1174,7 @@ update msg model =
                             (\villageId ->
                                 RemoteData.toMaybe model.indexedDb.villages
                                     |> Maybe.andThen (Dict.get villageId)
-                                    |> Maybe.andThen (.healthCenterId >> Just)
+                                    |> Maybe.map .healthCenterId
                             )
 
                 extraMsgs =

@@ -1419,6 +1419,6 @@ resolveActiveTask options selected =
 
 concatInputsAndTasksSections : List ( List (Html msg), List (Maybe Bool) ) -> ( List (Html msg), List (Maybe Bool) )
 concatInputsAndTasksSections sections =
-    ( List.map Tuple.first sections |> List.concat
-    , List.map Tuple.second sections |> List.concat
+    ( List.concatMap Tuple.first sections
+    , List.concatMap Tuple.second sections
     )

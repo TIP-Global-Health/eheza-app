@@ -221,7 +221,7 @@ generateEmptyMessagesByProgramStartDate currentDate programStartDate =
 emptyMessagesDict : Dict ResilienceMessageId ResilienceMessage
 emptyMessagesDict =
     Dict.toList numberOfMessagesByCategory
-        |> List.map
+        |> List.concatMap
             (\( category, numberOfMessages ) ->
                 List.range 1 numberOfMessages
                     |> List.filterMap
@@ -245,7 +245,6 @@ emptyMessagesDict =
                                 )
                         )
             )
-        |> List.concat
         |> Dict.fromList
 
 

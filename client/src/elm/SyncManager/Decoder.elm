@@ -52,28 +52,28 @@ decodeIndexDbQueryTypeResult =
                 case queryType of
                     "IndexDbQueryUploadPhotoResult" ->
                         decodeIndexDbQueryUploadPhotoResultRecordRemoteData
-                            |> andThen (\val -> succeed (IndexDbQueryUploadPhotoResult val))
+                            |> Json.Decode.map (\val -> IndexDbQueryUploadPhotoResult val)
 
                     "IndexDbQueryUploadScreenshotResult" ->
                         decodeIndexDbQueryUploadScreenshotResultRecordRemoteData
-                            |> andThen (\val -> succeed (IndexDbQueryUploadScreenshotResult val))
+                            |> Json.Decode.map (\val -> IndexDbQueryUploadScreenshotResult val)
 
                     "IndexDbQueryUploadAuthorityResult" ->
                         field "data" decodeIndexDbQueryUploadAuthorityResultRecord
-                            |> andThen (\record -> succeed (IndexDbQueryUploadAuthorityResult (Just record)))
+                            |> Json.Decode.map (\record -> IndexDbQueryUploadAuthorityResult (Just record))
 
                     "IndexDbQueryUploadGeneralResult" ->
                         field "data" decodeIndexDbQueryUploadGeneralResultRecord
-                            |> andThen (\record -> succeed (IndexDbQueryUploadGeneralResult (Just record)))
+                            |> Json.Decode.map (\record -> IndexDbQueryUploadGeneralResult (Just record))
 
                     "IndexDbQueryUploadWhatsAppResult" ->
                         field "data" decodeIndexDbQueryUploadWhatsAppResultRecord
-                            |> andThen (\record -> succeed (IndexDbQueryUploadWhatsAppResult (Just record)))
+                            |> Json.Decode.map (\record -> IndexDbQueryUploadWhatsAppResult (Just record))
 
                     "IndexDbQueryDeferredPhotoResult" ->
                         oneOf
                             [ field "data" decodeIndexDbQueryDeferredPhotoResult
-                                |> andThen (\record -> succeed (IndexDbQueryDeferredPhotoResult (Just record)))
+                                |> Json.Decode.map (\record -> IndexDbQueryDeferredPhotoResult (Just record))
 
                             -- In case we have no deferred photo.
                             , succeed (IndexDbQueryDeferredPhotoResult Nothing)
@@ -81,11 +81,11 @@ decodeIndexDbQueryTypeResult =
 
                     "IndexDbQueryGetTotalEntriesToUploadResult" ->
                         field "data" decodeInt
-                            |> andThen (\val -> succeed (IndexDbQueryGetTotalEntriesToUploadResult val))
+                            |> Json.Decode.map (\val -> IndexDbQueryGetTotalEntriesToUploadResult val)
 
                     "IndexDbQueryGetShardsEntityByUuidResult" ->
                         field "data" string
-                            |> andThen (\val -> succeed (IndexDbQueryGetShardsEntityByUuidResult val))
+                            |> Json.Decode.map (\val -> IndexDbQueryGetShardsEntityByUuidResult val)
 
                     _ ->
                         fail <| queryType ++ " is not a recognized IndexDbQueryTypeResult"
@@ -101,7 +101,7 @@ decodeIndexDbQueryUploadPhotoResultRecordRemoteData =
                     "Success" ->
                         oneOf
                             [ at [ "data", "result" ] decodeIndexDbQueryUploadPhotoResultRecord
-                                |> andThen (\record -> succeed (RemoteData.Success (Just record)))
+                                |> Json.Decode.map (\record -> RemoteData.Success (Just record))
 
                             -- In case we have no photos to upload.
                             , succeed (RemoteData.Success Nothing)
@@ -142,7 +142,7 @@ decodeIndexDbQueryUploadScreenshotResultRecordRemoteData =
                     "Success" ->
                         oneOf
                             [ at [ "data", "result" ] decodeIndexDbQueryUploadFileResultRecord
-                                |> andThen (\record -> succeed (RemoteData.Success (Just record)))
+                                |> Json.Decode.map (\record -> RemoteData.Success (Just record))
 
                             -- In case we have no photos to upload.
                             , succeed (RemoteData.Success Nothing)
@@ -223,13 +223,12 @@ decodeIndexDbQueryUploadAuthorityResultRecord =
         |> required "remaining" decodeInt
         |> optional "uploadPhotos"
             (list decodeIndexDbQueryUploadPhotoResultRecord
-                |> andThen
+                |> Json.Decode.map
                     (\list_ ->
                         -- Convert list to a dict.
                         list_
                             |> List.map (\row -> ( row.localId, row ))
                             |> Dict.fromList
-                            |> succeed
                     )
             )
             Dict.empty
@@ -320,7 +319,7 @@ decodeBackendGeneralEntity uuidDecoder identifierDecoder =
                 let
                     doDecode decoder tag =
                         decoder
-                            |> andThen
+                            |> Json.Decode.map
                                 (\entity ->
                                     let
                                         backendEntity =
@@ -329,7 +328,7 @@ decodeBackendGeneralEntity uuidDecoder identifierDecoder =
                                             , entity = entity
                                             }
                                     in
-                                    succeed (tag backendEntity)
+                                    tag backendEntity
                                 )
                 in
                 case type_ of
@@ -365,13 +364,13 @@ decodeBackendGeneralEntity uuidDecoder identifierDecoder =
 decodeSite : Decoder Site
 decodeSite =
     string
-        |> andThen (siteFromString >> succeed)
+        |> Json.Decode.map siteFromString
 
 
 decodeSiteFeatures : Decoder (EverySet SiteFeature)
 decodeSiteFeatures =
     string
-        |> andThen (siteFeaturesFromString >> succeed)
+        |> Json.Decode.map siteFeaturesFromString
 
 
 decodeDownloadSyncResponseAuthority : Decoder (DownloadSyncResponse BackendAuthorityEntity)
@@ -415,7 +414,7 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                 let
                     doDecode decoder tag =
                         decoder
-                            |> andThen
+                            |> Json.Decode.map
                                 (\entity ->
                                     let
                                         backendEntity =
@@ -424,7 +423,7 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                                             , entity = entity
                                             }
                                     in
-                                    succeed (tag backendEntity)
+                                    tag backendEntity
                                 )
                 in
                 case type_ of

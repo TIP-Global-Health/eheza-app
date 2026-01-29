@@ -569,4 +569,4 @@ viewEncounterDetailsContent language encounterId allEncountersData =
                     ]
                 ]
             )
-        >> Maybe.withDefault []
+        |> Maybe.withDefault []

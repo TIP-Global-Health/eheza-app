@@ -157,4 +157,4 @@ decodeMaritalStatus =
 decodeGeoField : Decoder String
 decodeGeoField =
     string
-        |> andThen (String.toLower >> toTitleCase >> succeed)
+        |> Json.Decode.map (String.toLower >> toTitleCase)
