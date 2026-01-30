@@ -1,4 +1,4 @@
-module Pages.Reports.Utils exposing (..)
+module Pages.Reports.Utils exposing (countTotalEncounters, countTotalNutritionEncounters, eddToLmpDate, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, nutritionEncounterDataToNutritionMetrics, reportTypeFromString, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth, sumNutritionMetrics)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Reports.Model exposing (..)

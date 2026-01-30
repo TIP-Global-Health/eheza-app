@@ -1,4 +1,4 @@
-module Backend.Entities exposing (..)
+module Backend.Entities exposing (EntityId(..), EntityUuid(..), fromEntityId, toEntityId)
 
 {-| -}
 

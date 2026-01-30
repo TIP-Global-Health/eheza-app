@@ -1,4 +1,4 @@
-module Backend.Reports.Utils exposing (..)
+module Backend.Reports.Utils exposing (allAcuteIllnessDiagnoses, allPrenatalDiagnoses, genderFromString)
 
 import Backend.Reports.Model exposing (..)
 

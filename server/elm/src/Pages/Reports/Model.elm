@@ -1,4 +1,4 @@
-module Pages.Reports.Model exposing (..)
+module Pages.Reports.Model exposing (Model, Msg(..), NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), ReportType(..), emptyModel, emptyNutritionMetrics)
 
 import AssocList exposing (Dict)
 import Backend.Reports.Model exposing (PersonId)

@@ -1,4 +1,4 @@
-module Pages.Components.Types exposing (..)
+module Pages.Components.Types exposing (PopulationSelectionOption(..))
 
 
 type PopulationSelectionOption

@@ -1,4 +1,4 @@
-module Backend.Scoreboard.Utils exposing (..)
+module Backend.Scoreboard.Utils exposing (vaccineDoseFromOrder, vaccineDoseToComparable)
 
 import Backend.Scoreboard.Model exposing (..)
 

@@ -1,4 +1,4 @@
-module Pages.Components.View exposing (..)
+module Pages.Components.View exposing (viewCustomCells, viewDemographicsSelection, viewDemographicsSelectionActionButton, viewMetricsResultsTable, viewStandardCells, viewStandardRow)
 
 import App.Types exposing (Language, Site)
 import AssocList as Dict

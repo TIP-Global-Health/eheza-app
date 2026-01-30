@@ -1,4 +1,4 @@
-module Pages.Completion.Utils exposing (..)
+module Pages.Completion.Utils exposing (allAcuteIllnessActivities, allHIVActivities, allHomeVisitActivities, allNCDActivities, allNutritionChildGroupActivities, allNutritionIndividualActivities, allNutritionMotherGroupActivities, allPrenatalActivities, allTuberculosisActivities, newbornExamActivities, reportTypeFromString, reportTypeToString, resolveChildScoreboardActivities, resolveSPVActivities)
 
 import App.Types exposing (Site(..))
 import Backend.Completion.Model
