@@ -11,14 +11,16 @@ when inside the directory containing this file.
 
 -}
 
+import Docs.NoMissing exposing (exposedModules, onlyExposed)
 import Docs.ReviewAtDocs
+import Docs.ReviewLinksAndSections
+import Docs.UpToDateReadmeLinks
 import NoConfusingPrefixOperator
 import NoDebug.Log
 import NoDebug.TodoOrToString
 import NoExposingEverything
 import NoImportingEverything
 import NoMissingTypeAnnotation
-import NoMissingTypeAnnotationInLetIn
 import NoMissingTypeExpose
 import NoPrematureLetComputation
 import NoSimpleLetBody
@@ -44,23 +46,85 @@ config =
 
 rules : List Rule
 rules =
-    [ Docs.ReviewAtDocs.rule
+    [ Docs.UpToDateReadmeLinks.rule
+    , Docs.ReviewAtDocs.rule
+    , Docs.UpToDateReadmeLinks.rule
+    , Docs.NoMissing.rule { document = onlyExposed, from = exposedModules }
     , NoConfusingPrefixOperator.rule
-    , NoDebug.Log.rule
 
-    --, NoDebug.TodoOrToString.rule
-    , NoMissingTypeAnnotation.rule
-    , NoMissingTypeExpose.rule
-    , NoSimpleLetBody.rule
-    , NoPrematureLetComputation.rule
-    , NoUnused.CustomTypeConstructors.rule []
-    , NoUnused.CustomTypeConstructorArgs.rule
-    , NoUnused.Dependencies.rule
-    , NoUnused.Exports.rule
-    , NoUnused.Parameters.rule
-    , NoUnused.Patterns.rule
-    , NoUnused.Variables.rule
-    , Simplify.rule Simplify.defaults
+    -- |> Rule.ignoreErrorsForFiles
+    --     [ "src/elm/Pages/Prenatal/ProgressReport/View.elm"
+    --     , "src/elm/Pages/Prenatal/Activity/View.elm"
+    --     , "src/elm/Pages/Prenatal/Activity/Utils.elm"
+    --     , "src/elm/Measurement/View.elm"
+    --     ]
+    , NoDebug.Log.rule
+    , NoDebug.TodoOrToString.rule
+        |> Rule.ignoreErrorsForFiles
+            [ "src/Pages/Completion/View.elm"
+            , "src/Pages/CompletionMenu/View.elm"
+            , "src/Pages/Reports/View.elm"
+            , "src/Pages/ReportsMenu/View.elm"
+            , "src/Pages/Scoreboard/View.elm"
+            , "src/Pages/ScoreboardMenu/View.elm"
+            ]
+    , NoExposingEverything.rule
+
+    -- , NoImportingEverything.rule
+    --     [ "Backend.Entities"
+    --     , "Html"
+    --     , "Html.Attributes"
+    --     , "Html.Events"
+    --     , "Svg"
+    --     , "Svg.Attributes"
+    --     ]
+    -- , NoMissingTypeAnnotation.rule
+    --     |> Rule.ignoreErrorsForFiles
+    --         [ "src/elm/SyncManager/Decoder.elm"
+    --         , "src/elm/Pages/WellChild/ProgressReport/View.elm"
+    --         , "src/elm/Pages/Report/Svg.elm"
+    --         , "src/elm/Measurement/Utils.elm"
+    --         , "src/elm/Main.elm"
+    --         , "src/elm/Pages/Prenatal/Utils.elm"
+    --         , "src/elm/Backend/Utils.elm"
+    --         ]
+    -- , NoMissingTypeExpose.rule
+    -- , NoSimpleLetBody.rule
+    -- , NoPrematureLetComputation.rule
+    -- , NoUnused.CustomTypeConstructors.rule []
+    --     |> Rule.ignoreErrorsForFiles
+    --         [ "src/elm/ZScore/Model.elm"
+    --         , "src/elm/SyncManager/Model.elm"
+    --         , "src/elm/Pages/WellChild/ProgressReport/Model.elm"
+    --         , "src/elm/Pages/WellChild/ProgressReport/Model.elm"
+    --         , "src/elm/Pages/Prenatal/Activity/Model.elm"
+    --         , "src/elm/Pages/GlobalCaseManagement/Model.elm"
+    --         , "src/elm/Pages/ChildScoreboard/Encounter/Model.elm"
+    --         , "src/elm/Pages/AcuteIllness/Encounter/Model.elm"
+    --         , "src/elm/Measurement/Model.elm"
+    --         , "src/elm/App/Model.elm"
+    --         , "src/elm/Activity/Model.elm"
+    --         ]
+    -- , NoUnused.CustomTypeConstructorArgs.rule
+    --     |> Rule.ignoreErrorsForFiles
+    --         [ "src/elm/Backend/Model.elm"
+    --         , "src/elm/SyncManager/Model.elm"
+    --         ]
+    -- , NoUnused.Dependencies.rule
+    -- , NoUnused.Exports.rule
+    --     |> Rule.ignoreErrorsForFiles
+    --         [ "src/elm/LocalConfig.Example.elm"
+    --         , "src/elm/Config.Deploy.elm"
+    --         , "src/elm/App/Model.elm"
+    --         ]
+    -- , NoUnused.Parameters.rule
+    -- , NoUnused.Patterns.rule
+    -- , NoUnused.Variables.rule
+    -- , Simplify.rule Simplify.defaults
+    --     |> Rule.ignoreErrorsForFiles
+    --         [ "src/elm/GeoLocation/Utils.elm"
+    --         , "src/elm/Measurement/Utils.elm"
+    --         ]
     ]
 
 
