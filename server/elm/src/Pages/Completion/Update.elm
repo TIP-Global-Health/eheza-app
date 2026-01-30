@@ -11,13 +11,6 @@ import Pages.Completion.Utils exposing (reportTypeFromString)
 update : Msg -> Model -> PagesReturn Model Msg
 update msg model =
     case msg of
-        NoOp ->
-            PagesReturn
-                model
-                Cmd.none
-                noError
-                []
-
         SetReportType value ->
             PagesReturn
                 { model

@@ -81,26 +81,6 @@ rules =
     , NoMissingTypeExpose.rule
     , NoSimpleLetBody.rule
     , NoPrematureLetComputation.rule
-
-    -- , NoUnused.CustomTypeConstructors.rule []
-    --     |> Rule.ignoreErrorsForFiles
-    --         [ "src/elm/ZScore/Model.elm"
-    --         , "src/elm/SyncManager/Model.elm"
-    --         , "src/elm/Pages/WellChild/ProgressReport/Model.elm"
-    --         , "src/elm/Pages/WellChild/ProgressReport/Model.elm"
-    --         , "src/elm/Pages/Prenatal/Activity/Model.elm"
-    --         , "src/elm/Pages/GlobalCaseManagement/Model.elm"
-    --         , "src/elm/Pages/ChildScoreboard/Encounter/Model.elm"
-    --         , "src/elm/Pages/AcuteIllness/Encounter/Model.elm"
-    --         , "src/elm/Measurement/Model.elm"
-    --         , "src/elm/App/Model.elm"
-    --         , "src/elm/Activity/Model.elm"
-    --         ]
-    -- , NoUnused.CustomTypeConstructorArgs.rule
-    --     |> Rule.ignoreErrorsForFiles
-    --         [ "src/elm/Backend/Model.elm"
-    --         , "src/elm/SyncManager/Model.elm"
-    --         ]
     , NoUnused.Dependencies.rule
     , NoUnused.Exports.rule
     , NoUnused.Parameters.rule

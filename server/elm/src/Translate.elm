@@ -237,7 +237,6 @@ type TranslationId
     | Tuberculosis
     | TuberculosisActivity TuberculosisActivity
     | Vitals
-    | ViewMode
     | Village
     | UnderweightModerate
     | UnderweightSevere
@@ -2658,12 +2657,6 @@ translationSet transId =
 
                 TuberculosisTreatmentReview ->
                     translationSet TreatmentReview
-
-        ViewMode ->
-            { english = "View Mode"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
-            }
 
         Vitals ->
             { english = "Vitals"

@@ -5873,8 +5873,6 @@ var $author$project$Backend$Completion$Utils$takenByFromString = function (value
 var $author$project$Pages$Completion$Update$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
-			case 'NoOp':
-				return A4($author$project$App$Model$PagesReturn, model, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
 			case 'SetReportType':
 				var value = msg.a;
 				return A4(
@@ -12525,8 +12523,6 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 				}
-			case 'ViewMode':
-				return {english: 'View Mode', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Vitals':
 				return {english: 'Vitals', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Village':
