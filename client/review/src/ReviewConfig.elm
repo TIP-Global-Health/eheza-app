@@ -23,6 +23,7 @@ import NoImportingEverything
 import NoMissingTypeAnnotation
 import NoMissingTypeExpose
 import NoPrematureLetComputation
+import NoRedundantlyQualifiedType
 import NoSimpleLetBody
 import NoUnused.Dependencies
 import NoUnused.Exports
@@ -44,7 +45,9 @@ config =
 
 rules : List Rule
 rules =
-    [ Docs.UpToDateReadmeLinks.rule
+    [ NoRedundantlyQualifiedType.rule
+    , NoSimpleLetBody.rule
+    , Docs.UpToDateReadmeLinks.rule
     , Docs.ReviewAtDocs.rule
     , Docs.UpToDateReadmeLinks.rule
     , Docs.NoMissing.rule { document = onlyExposed, from = exposedModules }
@@ -98,6 +101,12 @@ rules =
     , NoUnused.Parameters.rule
     , NoUnused.Patterns.rule
     , NoUnused.Variables.rule
+        |> Rule.ignoreErrorsForFiles
+            [ "src/elm/Backend/Measurement/Model.elm"
+            , "src/elm/Backend/NutritionEncounter/Utils.elm"
+            , "src/elm/Backend/NutritionEncounter/Utils.elm"
+            , "src/elm/App/Model.elm"
+            ]
     , Simplify.rule Simplify.defaults
         |> Rule.ignoreErrorsForFiles
             [ "src/elm/GeoLocation/Utils.elm"

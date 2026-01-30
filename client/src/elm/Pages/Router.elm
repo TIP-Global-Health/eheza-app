@@ -36,11 +36,11 @@ import Backend.WellChildActivity.Model exposing (WellChildActivity)
 import Backend.WellChildActivity.Utils
 import Pages.Page exposing (AcuteIllnessSubPage(..), ChildWellnessSubPage(..), DashboardPage(..), NCDSubPage(..), NutritionSubPage(..), Page(..), SessionPage(..), UserPage(..))
 import Restful.Endpoint exposing (EntityUuid, fromEntityUuid, toEntityUuid)
-import Url
+import Url exposing (Url)
 import Url.Parser as Parser exposing ((</>), Parser, custom, map, oneOf, s, string, top)
 
 
-activePageByUrl : Url.Url -> Page
+activePageByUrl : Url -> Page
 activePageByUrl url =
     { url | path = Maybe.withDefault "" url.fragment, fragment = Nothing }
         |> Parser.parse parser

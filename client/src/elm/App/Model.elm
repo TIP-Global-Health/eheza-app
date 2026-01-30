@@ -421,7 +421,7 @@ type Msg
     | Tick Time.Posix
     | CheckDataWanted
     | UrlRequested Browser.UrlRequest
-    | UrlChanged Url.Url
+    | UrlChanged Url
     | TriggerRollbar RollbarErrorSource ErrorType
 
 

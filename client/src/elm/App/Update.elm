@@ -132,13 +132,13 @@ import Time
 import Translate.Model exposing (Language(..))
 import Translate.Utils exposing (languageFromCode, languageToCode)
 import Update.Extra exposing (sequence)
-import Url
+import Url exposing (Url)
 import Utils.WebData
 import ZScore.Model
 import ZScore.Update
 
 
-init : Flags -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
+init : Flags -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
     let
         activeLanguage =

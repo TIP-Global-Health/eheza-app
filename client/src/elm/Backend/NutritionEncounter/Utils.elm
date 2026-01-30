@@ -45,7 +45,7 @@ generateNutritionAssessment :
     -> ZScore.Model.Model
     -> PersonId
     -> Maybe MuacInCm
-    -> Maybe (EverySet.EverySet ChildNutritionSign)
+    -> Maybe (EverySet ChildNutritionSign)
     -> Maybe Float
     -> Bool
     -> ModelIndexedDb

@@ -23,7 +23,7 @@ import Backend.Completion.Model
         )
 import Backend.Completion.Utils exposing (takenByToString)
 import Backend.Model exposing (ModelBackend)
-import Date
+import Date exposing (Date)
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
@@ -394,8 +394,8 @@ applyFilters :
     NominalDate
     -> NominalDate
     -> Maybe TakenBy
-    -> List { a | startDate : Date.Date, takenBy : Maybe TakenBy }
-    -> List { a | startDate : Date.Date, takenBy : Maybe TakenBy }
+    -> List { a | startDate : Date, takenBy : Maybe TakenBy }
+    -> List { a | startDate : Date, takenBy : Maybe TakenBy }
 applyFilters startDate limitDate mTakenBy =
     List.filter
         (\encounter ->
@@ -417,10 +417,10 @@ applyFilters startDate limitDate mTakenBy =
 customApplyFilters :
     NominalDate
     -> NominalDate
-    -> ({ a | encounterType : WellChildEncounterType, startDate : Date.Date } -> TakenBy)
+    -> ({ a | encounterType : WellChildEncounterType, startDate : Date } -> TakenBy)
     -> Maybe TakenBy
-    -> List { a | encounterType : WellChildEncounterType, startDate : Date.Date }
-    -> List { a | encounterType : WellChildEncounterType, startDate : Date.Date }
+    -> List { a | encounterType : WellChildEncounterType, startDate : Date }
+    -> List { a | encounterType : WellChildEncounterType, startDate : Date }
 customApplyFilters startDate limitDate resolveTakenByFunc mTakenBy =
     List.filter
         (\encounter ->

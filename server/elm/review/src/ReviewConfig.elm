@@ -23,6 +23,7 @@ import NoImportingEverything
 import NoMissingTypeAnnotation
 import NoMissingTypeExpose
 import NoPrematureLetComputation
+import NoRedundantlyQualifiedType
 import NoSimpleLetBody
 import NoUnused.Dependencies
 import NoUnused.Exports
@@ -44,7 +45,9 @@ config =
 
 rules : List Rule
 rules =
-    [ Docs.UpToDateReadmeLinks.rule
+    [ NoRedundantlyQualifiedType.rule
+    , NoSimpleLetBody.rule
+    , Docs.UpToDateReadmeLinks.rule
     , Docs.ReviewAtDocs.rule
     , Docs.UpToDateReadmeLinks.rule
     , Docs.NoMissing.rule { document = onlyExposed, from = exposedModules }
