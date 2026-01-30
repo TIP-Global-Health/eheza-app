@@ -24,8 +24,6 @@ import NoMissingTypeAnnotation
 import NoMissingTypeExpose
 import NoPrematureLetComputation
 import NoSimpleLetBody
-import NoUnused.CustomTypeConstructorArgs
-import NoUnused.CustomTypeConstructors
 import NoUnused.Dependencies
 import NoUnused.Exports
 import NoUnused.Parameters

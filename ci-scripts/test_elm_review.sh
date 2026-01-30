@@ -8,6 +8,7 @@
 
 cd client || exit 1
 
+echo "----------------------------------------"
 echo "Running elm-review for client APP ..."
 
 # Temporarily disable exit on error to capture elm-review's exit code
@@ -25,7 +26,8 @@ fi
 
 cd ../server/elm || exit 1
 
-echo "Running elm-review for server Elm APP ..."
+echo "----------------------------------------"
+echo "Running elm-review for server APP ..."
 
 # Temporarily disable exit on error to capture elm-review's exit code
 set +e
@@ -34,9 +36,9 @@ EXIT_CODE=$?
 set -e
 
 if [ $EXIT_CODE -eq 0 ]; then
-  echo "✓ Elm review for server Elm APP passed"
+  echo "✓ Elm review for server APP passed"
 else
-  echo "✗ Elm review for server Elm APP found issues"
+  echo "✗ Elm review for server APP found issues"
 fi
 
 exit $EXIT_CODE
