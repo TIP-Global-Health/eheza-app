@@ -113,9 +113,10 @@ rules =
     --         [ "src/elm/Backend/Model.elm"
     --         , "src/elm/SyncManager/Model.elm"
     --         ]
-    -- , NoUnused.Dependencies.rule
-    -- , NoUnused.Exports.rule
-    -- , NoUnused.Parameters.rule
+    , NoUnused.Dependencies.rule
+    , NoUnused.Exports.rule
+    , NoUnused.Parameters.rule
+
     -- , NoUnused.Patterns.rule
     -- , NoUnused.Variables.rule
     --     |> Rule.ignoreErrorsForFiles

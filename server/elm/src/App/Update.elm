@@ -205,8 +205,6 @@ update msg model =
                 model.completionPage
                 (\subMsg_ subModel ->
                     Pages.Completion.Update.update
-                        (fromLocalDateTime model.currentTime)
-                        model.backend
                         subMsg_
                         subModel
                 )
@@ -221,5 +219,5 @@ update msg model =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions _ =
     Sub.none

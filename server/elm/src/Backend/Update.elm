@@ -18,7 +18,7 @@ updateBackend currentDate msg model =
         MsgScoreboardMenu subMsg ->
             updateSubModel
                 subMsg
-                (\subMsg_ model_ -> Backend.ScoreboardMenu.Update.update currentDate subMsg_ model_)
+                (\subMsg_ model_ -> Backend.ScoreboardMenu.Update.update subMsg_ model_)
                 (\subCmds -> MsgScoreboardMenu subCmds)
                 model
 
@@ -32,27 +32,27 @@ updateBackend currentDate msg model =
         MsgReportsMenu subMsg ->
             updateSubModel
                 subMsg
-                (\subMsg_ model_ -> Backend.ReportsMenu.Update.update currentDate subMsg_ model_)
+                (\subMsg_ model_ -> Backend.ReportsMenu.Update.update subMsg_ model_)
                 (\subCmds -> MsgReportsMenu subCmds)
                 model
 
         MsgReports subMsg ->
             updateSubModel
                 subMsg
-                (\subMsg_ model_ -> Backend.Reports.Update.update currentDate subMsg_ model_)
+                (\subMsg_ model_ -> Backend.Reports.Update.update subMsg_ model_)
                 (\subCmds -> MsgReports subCmds)
                 model
 
         MsgCompletionMenu subMsg ->
             updateSubModel
                 subMsg
-                (\subMsg_ model_ -> Backend.CompletionMenu.Update.update currentDate subMsg_ model_)
+                (\subMsg_ model_ -> Backend.CompletionMenu.Update.update subMsg_ model_)
                 (\subCmds -> MsgCompletionMenu subCmds)
                 model
 
         MsgCompletion subMsg ->
             updateSubModel
                 subMsg
-                (\subMsg_ model_ -> Backend.Completion.Update.update currentDate subMsg_ model_)
+                (\subMsg_ model_ -> Backend.Completion.Update.update subMsg_ model_)
                 (\subCmds -> MsgCompletion subCmds)
                 model

@@ -30,21 +30,21 @@ fetch model =
             []
 
         Scoreboard ->
-            Pages.Scoreboard.Fetch.fetch model.backend model.scoreboardPage
+            Pages.Scoreboard.Fetch.fetch
                 |> List.map (\subMsg -> MsgBackend subMsg)
 
         ReportsMenu ->
             []
 
         Reports ->
-            Pages.Reports.Fetch.fetch model.backend model.reportsPage
+            Pages.Reports.Fetch.fetch
                 |> List.map (\subMsg -> MsgBackend subMsg)
 
         CompletionMenu ->
             []
 
         Completion ->
-            Pages.Completion.Fetch.fetch model.backend model.completionPage
+            Pages.Completion.Fetch.fetch
                 |> List.map (\subMsg -> MsgBackend subMsg)
 
         NotFound ->

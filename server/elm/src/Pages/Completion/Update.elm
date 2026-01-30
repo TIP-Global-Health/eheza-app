@@ -15,8 +15,8 @@ import RemoteData exposing (RemoteData(..))
 import Task exposing (Task)
 
 
-update : NominalDate -> ModelBackend -> Msg -> Model -> PagesReturn Model Msg
-update currentDate modelBackend msg model =
+update : Msg -> Model -> PagesReturn Model Msg
+update msg model =
     case msg of
         NoOp ->
             PagesReturn

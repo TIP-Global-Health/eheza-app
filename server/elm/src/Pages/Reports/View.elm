@@ -1017,7 +1017,7 @@ viewNutritionReport : Language -> NominalDate -> String -> Maybe (List BackendGe
 viewNutritionReport language currentDate scopeLabel mBackendGeneratedData reportData =
     let
         generatedData =
-            Maybe.map (generareNutritionReportDataFromBackendGeneratedData language currentDate) mBackendGeneratedData
+            Maybe.map (generareNutritionReportDataFromBackendGeneratedData language) mBackendGeneratedData
                 |> Maybe.withDefault (generareNutritionReportDataFromRawData language currentDate reportData)
 
         csvFileName =
@@ -1101,10 +1101,9 @@ generareNutritionReportDataFromRawData language currentDate reportData =
 
 generareNutritionReportDataFromBackendGeneratedData :
     Language
-    -> NominalDate
     -> List BackendGeneratedNutritionReportTableDate
     -> List MetricsResultsTableData
-generareNutritionReportDataFromBackendGeneratedData language currentDate data =
+generareNutritionReportDataFromBackendGeneratedData language data =
     let
         nutritionTableTypeToNumber tableType =
             case tableType of
@@ -2067,7 +2066,7 @@ viewPrenatalDiagnosesReport : Language -> NominalDate -> String -> List PatientD
 viewPrenatalDiagnosesReport language limitDate scopeLabel records =
     let
         data =
-            generatePrenatalDiagnosesReportData language limitDate records
+            generatePrenatalDiagnosesReportData language records
 
         captionsRow =
             viewStandardCells data.captions
@@ -2093,10 +2092,9 @@ viewPrenatalDiagnosesReport language limitDate scopeLabel records =
 
 generatePrenatalDiagnosesReportData :
     Language
-    -> NominalDate
     -> List PatientData
     -> MetricsResultsTableData
-generatePrenatalDiagnosesReportData language limitDate records =
+generatePrenatalDiagnosesReportData language records =
     let
         allDiagnoses =
             List.map .prenatalData records

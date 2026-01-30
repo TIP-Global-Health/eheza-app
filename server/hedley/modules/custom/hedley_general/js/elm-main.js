@@ -5404,18 +5404,9 @@ var $elm$browser$Browser$element = _Browser_element;
 var $author$project$App$Model$MsgBackend = function (a) {
 	return {$: 'MsgBackend', a: a};
 };
-var $author$project$Pages$Completion$Fetch$fetch = F2(
-	function (modelBackend, model) {
-		return _List_Nil;
-	});
-var $author$project$Pages$Reports$Fetch$fetch = F2(
-	function (modelBackend, model) {
-		return _List_Nil;
-	});
-var $author$project$Pages$Scoreboard$Fetch$fetch = F2(
-	function (modelBackend, model) {
-		return _List_Nil;
-	});
+var $author$project$Pages$Completion$Fetch$fetch = _List_Nil;
+var $author$project$Pages$Reports$Fetch$fetch = _List_Nil;
+var $author$project$Pages$Scoreboard$Fetch$fetch = _List_Nil;
 var $author$project$App$Fetch$fetch = function (model) {
 	var _v0 = model.activePage;
 	switch (_v0.$) {
@@ -5427,7 +5418,7 @@ var $author$project$App$Fetch$fetch = function (model) {
 				function (subMsg) {
 					return $author$project$App$Model$MsgBackend(subMsg);
 				},
-				A2($author$project$Pages$Scoreboard$Fetch$fetch, model.backend, model.scoreboardPage));
+				$author$project$Pages$Scoreboard$Fetch$fetch);
 		case 'ReportsMenu':
 			return _List_Nil;
 		case 'Reports':
@@ -5436,7 +5427,7 @@ var $author$project$App$Fetch$fetch = function (model) {
 				function (subMsg) {
 					return $author$project$App$Model$MsgBackend(subMsg);
 				},
-				A2($author$project$Pages$Reports$Fetch$fetch, model.backend, model.reportsPage));
+				$author$project$Pages$Reports$Fetch$fetch);
 		case 'CompletionMenu':
 			return _List_Nil;
 		case 'Completion':
@@ -5445,7 +5436,7 @@ var $author$project$App$Fetch$fetch = function (model) {
 				function (subMsg) {
 					return $author$project$App$Model$MsgBackend(subMsg);
 				},
-				A2($author$project$Pages$Completion$Fetch$fetch, model.backend, model.completionPage));
+				$author$project$Pages$Completion$Fetch$fetch);
 		default:
 			return _List_Nil;
 	}
@@ -5879,8 +5870,8 @@ var $author$project$Backend$Completion$Utils$takenByFromString = function (value
 			return $elm$core$Maybe$Nothing;
 	}
 };
-var $author$project$Pages$Completion$Update$update = F4(
-	function (currentDate, modelBackend, msg, model) {
+var $author$project$Pages$Completion$Update$update = F2(
+	function (msg, model) {
 		switch (msg.$) {
 			case 'NoOp':
 				return A4($author$project$App$Model$PagesReturn, model, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
@@ -8628,8 +8619,8 @@ var $author$project$Backend$Completion$Decoder$decodeCompletionData = A3(
 													'site',
 													$author$project$Backend$Decoder$decodeSite,
 													$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$CompletionData))))))))))))));
-var $author$project$Backend$Completion$Update$update = F3(
-	function (currentDate, msg, model) {
+var $author$project$Backend$Completion$Update$update = F2(
+	function (msg, model) {
 		var value = msg.a;
 		var modelUpdated = _Utils_update(
 			model,
@@ -8711,8 +8702,8 @@ var $author$project$Backend$CompletionMenu$Decoder$decodeMenuData = A4(
 			'site',
 			$author$project$Backend$Decoder$decodeSite,
 			$elm$json$Json$Decode$succeed($author$project$Backend$CompletionMenu$Model$MenuData))));
-var $author$project$Backend$CompletionMenu$Update$update = F3(
-	function (currentDate, msg, model) {
+var $author$project$Backend$CompletionMenu$Update$update = F2(
+	function (msg, model) {
 		var value = msg.a;
 		var modelUpdated = _Utils_update(
 			model,
@@ -9578,8 +9569,8 @@ var $author$project$Backend$Reports$Decoder$decodeReportsData = A4(
 					'site',
 					$author$project$Backend$Decoder$decodeSite,
 					$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$ReportsData))))));
-var $author$project$Backend$Reports$Update$update = F3(
-	function (currentDate, msg, model) {
+var $author$project$Backend$Reports$Update$update = F2(
+	function (msg, model) {
 		var value = msg.a;
 		var modelUpdated = _Utils_update(
 			model,
@@ -9607,8 +9598,8 @@ var $author$project$Backend$ReportsMenu$Decoder$decodeMenuData = A4(
 			'site',
 			$author$project$Backend$Decoder$decodeSite,
 			$elm$json$Json$Decode$succeed($author$project$Backend$ReportsMenu$Model$MenuData))));
-var $author$project$Backend$ReportsMenu$Update$update = F3(
-	function (currentDate, msg, model) {
+var $author$project$Backend$ReportsMenu$Update$update = F2(
+	function (msg, model) {
 		var value = msg.a;
 		var modelUpdated = _Utils_update(
 			model,
@@ -10215,8 +10206,8 @@ var $author$project$Backend$ScoreboardMenu$Decoder$decodeMenuData = A3(
 	'site',
 	$author$project$Backend$Decoder$decodeSite,
 	$elm$json$Json$Decode$succeed($author$project$Backend$ScoreboardMenu$Model$MenuData));
-var $author$project$Backend$ScoreboardMenu$Update$update = F3(
-	function (currentDate, msg, model) {
+var $author$project$Backend$ScoreboardMenu$Update$update = F2(
+	function (msg, model) {
 		var value = msg.a;
 		var modelUpdated = _Utils_update(
 			model,
@@ -10247,7 +10238,7 @@ var $author$project$Backend$Update$updateBackend = F3(
 					subMsg,
 					F2(
 						function (subMsg_, model_) {
-							return A3($author$project$Backend$ScoreboardMenu$Update$update, currentDate, subMsg_, model_);
+							return A2($author$project$Backend$ScoreboardMenu$Update$update, subMsg_, model_);
 						}),
 					function (subCmds) {
 						return $author$project$Backend$Model$MsgScoreboardMenu(subCmds);
@@ -10273,7 +10264,7 @@ var $author$project$Backend$Update$updateBackend = F3(
 					subMsg,
 					F2(
 						function (subMsg_, model_) {
-							return A3($author$project$Backend$ReportsMenu$Update$update, currentDate, subMsg_, model_);
+							return A2($author$project$Backend$ReportsMenu$Update$update, subMsg_, model_);
 						}),
 					function (subCmds) {
 						return $author$project$Backend$Model$MsgReportsMenu(subCmds);
@@ -10286,7 +10277,7 @@ var $author$project$Backend$Update$updateBackend = F3(
 					subMsg,
 					F2(
 						function (subMsg_, model_) {
-							return A3($author$project$Backend$Reports$Update$update, currentDate, subMsg_, model_);
+							return A2($author$project$Backend$Reports$Update$update, subMsg_, model_);
 						}),
 					function (subCmds) {
 						return $author$project$Backend$Model$MsgReports(subCmds);
@@ -10299,7 +10290,7 @@ var $author$project$Backend$Update$updateBackend = F3(
 					subMsg,
 					F2(
 						function (subMsg_, model_) {
-							return A3($author$project$Backend$CompletionMenu$Update$update, currentDate, subMsg_, model_);
+							return A2($author$project$Backend$CompletionMenu$Update$update, subMsg_, model_);
 						}),
 					function (subCmds) {
 						return $author$project$Backend$Model$MsgCompletionMenu(subCmds);
@@ -10312,7 +10303,7 @@ var $author$project$Backend$Update$updateBackend = F3(
 					subMsg,
 					F2(
 						function (subMsg_, model_) {
-							return A3($author$project$Backend$Completion$Update$update, currentDate, subMsg_, model_);
+							return A2($author$project$Backend$Completion$Update$update, subMsg_, model_);
 						}),
 					function (subCmds) {
 						return $author$project$Backend$Model$MsgCompletion(subCmds);
@@ -10505,12 +10496,7 @@ var $author$project$App$Update$update = F2(
 					model.completionPage,
 					F2(
 						function (subMsg_, subModel) {
-							return A4(
-								$author$project$Pages$Completion$Update$update,
-								$author$project$Gizra$NominalDate$fromLocalDateTime(model.currentTime),
-								model.backend,
-								subMsg_,
-								subModel);
+							return A2($author$project$Pages$Completion$Update$update, subMsg_, subModel);
 						}),
 					F2(
 						function (subModel, model_) {
@@ -10603,7 +10589,7 @@ var $author$project$App$Update$init = function (flags) {
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $author$project$App$Update$subscriptions = function (model) {
+var $author$project$App$Update$subscriptions = function (_v0) {
 	return $elm$core$Platform$Sub$none;
 };
 var $elm$html$Html$div = _VirtualDom_node('div');
@@ -15844,12 +15830,12 @@ var $author$project$Pages$Utils$wrapSelectListInput = F4(
 					selectList
 				]));
 	});
-var $author$project$Pages$Completion$View$viewCompletionData = F5(
-	function (language, currentDate, themePath, data, model) {
+var $author$project$Pages$Completion$View$viewCompletionData = F4(
+	function (language, currentDate, data, model) {
 		var topBar = function () {
 			var scopeLabel = function () {
-				var _v2 = data.entityType;
-				if (_v2.$ === 'EntityGlobal') {
+				var _v3 = data.entityType;
+				if (_v3.$ === 'EntityGlobal') {
 					return A2($author$project$Translate$translate, language, $author$project$Translate$Global);
 				} else {
 					return data.entityName;
@@ -15949,7 +15935,7 @@ var $author$project$Pages$Completion$View$viewCompletionData = F5(
 			_List_Nil,
 			A2(
 				$elm$core$Maybe$map,
-				function (reportType) {
+				function (_v2) {
 					var startDateInput = function () {
 						var dateSelectorConfig = {
 							close: $author$project$Pages$Completion$Model$SetStartDateSelectorState($elm$core$Maybe$Nothing),
@@ -16112,13 +16098,13 @@ var $author$project$Pages$Completion$View$viewCompletionData = F5(
 					A3($author$project$DateSelector$SelectorPopup$viewCalendarPopup, language, model.limitDateSelectorPopupState, model.limitDate))
 				]));
 	});
-var $author$project$Pages$Completion$View$view = F5(
-	function (language, currentDate, themePath, modelBackend, model) {
+var $author$project$Pages$Completion$View$view = F4(
+	function (language, currentDate, modelBackend, model) {
 		var _v0 = modelBackend.completionData;
 		if (_v0.$ === 'Just') {
 			if (_v0.a.$ === 'Ok') {
 				var data = _v0.a.a;
-				return A5($author$project$Pages$Completion$View$viewCompletionData, language, currentDate, themePath, data, model);
+				return A4($author$project$Pages$Completion$View$viewCompletionData, language, currentDate, data, model);
 			} else {
 				var err = _v0.a.a;
 				return $elm$html$Html$text(
@@ -16179,8 +16165,8 @@ var $author$project$Pages$Utils$viewLoadDataButton = F3(
 	function (language, path, selectionMadeMsg) {
 		return A4($author$project$Pages$Utils$viewMenuActionButton, language, path, $author$project$Translate$LoadData, selectionMadeMsg);
 	});
-var $author$project$Pages$CompletionMenu$View$viewMenu = F4(
-	function (language, themePath, data, model) {
+var $author$project$Pages$CompletionMenu$View$viewMenu = F3(
+	function (language, data, model) {
 		var populationSelectionInput = function () {
 			var allOptions = _List_fromArray(
 				[$author$project$Pages$Components$Types$SelectionOptionGlobal, $author$project$Pages$Components$Types$SelectionOptionHealthCenter]);
@@ -16293,13 +16279,13 @@ var $author$project$Pages$CompletionMenu$View$viewMenu = F4(
 						[actionButton]))
 				]));
 	});
-var $author$project$Pages$CompletionMenu$View$view = F4(
-	function (language, themePath, modelBackend, model) {
+var $author$project$Pages$CompletionMenu$View$view = F3(
+	function (language, modelBackend, model) {
 		var _v0 = modelBackend.completionMenuData;
 		if (_v0.$ === 'Just') {
 			if (_v0.a.$ === 'Ok') {
 				var data = _v0.a.a;
-				return A4($author$project$Pages$CompletionMenu$View$viewMenu, language, themePath, data, model);
+				return A3($author$project$Pages$CompletionMenu$View$viewMenu, language, data, model);
 			} else {
 				var err = _v0.a.a;
 				return $elm$html$Html$text(
@@ -17428,8 +17414,8 @@ var $author$project$Pages$Reports$View$backendGeneratedNutritionReportTableDateT
 				])
 		};
 	});
-var $author$project$Pages$Reports$View$generareNutritionReportDataFromBackendGeneratedData = F3(
-	function (language, currentDate, data) {
+var $author$project$Pages$Reports$View$generareNutritionReportDataFromBackendGeneratedData = F2(
+	function (language, data) {
 		var nutritionTableTypeToNumber = function (tableType) {
 			switch (tableType.$) {
 				case 'NutritionTablePrevalanceOneOrMore':
@@ -18653,7 +18639,7 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F5(
 			A3($author$project$Pages$Reports$View$generareNutritionReportDataFromRawData, language, currentDate, reportData),
 			A2(
 				$elm$core$Maybe$map,
-				A2($author$project$Pages$Reports$View$generareNutritionReportDataFromBackendGeneratedData, language, currentDate),
+				$author$project$Pages$Reports$View$generareNutritionReportDataFromBackendGeneratedData(language),
 				mBackendGeneratedData));
 		var csvFileName = 'nutrition-report-' + ($elm$core$String$toLower(
 			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', currentDate) + '.csv')));
@@ -18677,8 +18663,8 @@ var $author$project$Translate$PrenatalDiagnosis = function (a) {
 };
 var $author$project$Backend$Reports$Utils$allPrenatalDiagnoses = _List_fromArray(
 	[$author$project$Backend$Reports$Model$DiagnosisChronicHypertension, $author$project$Backend$Reports$Model$DiagnosisGestationalHypertension, $author$project$Backend$Reports$Model$DiagnosisModeratePreeclampsia, $author$project$Backend$Reports$Model$DiagnosisSeverePreeclampsia, $author$project$Backend$Reports$Model$DiagnosisEclampsia, $author$project$Backend$Reports$Model$DiagnosisHIV, $author$project$Backend$Reports$Model$DiagnosisHIVDetectableViralLoad, $author$project$Backend$Reports$Model$DiagnosisDiscordantPartnership, $author$project$Backend$Reports$Model$DiagnosisSyphilis, $author$project$Backend$Reports$Model$DiagnosisSyphilisWithComplications, $author$project$Backend$Reports$Model$DiagnosisNeurosyphilis, $author$project$Backend$Reports$Model$DiagnosisHepatitisB, $author$project$Backend$Reports$Model$DiagnosisMalaria, $author$project$Backend$Reports$Model$DiagnosisMalariaWithAnemia, $author$project$Backend$Reports$Model$DiagnosisMalariaWithSevereAnemia, $author$project$Backend$Reports$Model$DiagnosisModerateAnemia, $author$project$Backend$Reports$Model$DiagnosisSevereAnemia, $author$project$Backend$Reports$Model$DiagnosisSevereAnemiaWithComplications, $author$project$Backend$Reports$Model$DiagnosisMiscarriage, $author$project$Backend$Reports$Model$DiagnosisMolarPregnancy, $author$project$Backend$Reports$Model$DiagnosisPlacentaPrevia, $author$project$Backend$Reports$Model$DiagnosisPlacentalAbruption, $author$project$Backend$Reports$Model$DiagnosisUterineRupture, $author$project$Backend$Reports$Model$DiagnosisObstructedLabor, $author$project$Backend$Reports$Model$DiagnosisPostAbortionSepsis, $author$project$Backend$Reports$Model$DiagnosisEctopicPregnancy, $author$project$Backend$Reports$Model$DiagnosisPROM, $author$project$Backend$Reports$Model$DiagnosisPPROM, $author$project$Backend$Reports$Model$DiagnosisHyperemesisGravidum, $author$project$Backend$Reports$Model$DiagnosisSevereVomiting, $author$project$Backend$Reports$Model$DiagnosisMaternalComplications, $author$project$Backend$Reports$Model$DiagnosisInfection, $author$project$Backend$Reports$Model$DiagnosisImminentDelivery, $author$project$Backend$Reports$Model$DiagnosisLaborAndDelivery, $author$project$Backend$Reports$Model$DiagnosisHeartburn, $author$project$Backend$Reports$Model$DiagnosisDeepVeinThrombosis, $author$project$Backend$Reports$Model$DiagnosisPelvicPainIntense, $author$project$Backend$Reports$Model$DiagnosisUrinaryTractInfection, $author$project$Backend$Reports$Model$DiagnosisPyelonephritis, $author$project$Backend$Reports$Model$DiagnosisCandidiasis, $author$project$Backend$Reports$Model$DiagnosisGonorrhea, $author$project$Backend$Reports$Model$DiagnosisTrichomonasOrBacterialVaginosis, $author$project$Backend$Reports$Model$DiagnosisTuberculosis, $author$project$Backend$Reports$Model$DiagnosisDiabetes, $author$project$Backend$Reports$Model$DiagnosisGestationalDiabetes, $author$project$Backend$Reports$Model$DiagnosisRhesusNegative, $author$project$Backend$Reports$Model$DiagnosisDepressionNotLikely, $author$project$Backend$Reports$Model$DiagnosisDepressionPossible, $author$project$Backend$Reports$Model$DiagnosisDepressionHighlyPossible, $author$project$Backend$Reports$Model$DiagnosisDepressionProbable, $author$project$Backend$Reports$Model$DiagnosisSuicideRisk, $author$project$Backend$Reports$Model$DiagnosisOther, $author$project$Backend$Reports$Model$DiagnosisPostpartumAbdominalPain, $author$project$Backend$Reports$Model$DiagnosisPostpartumUrinaryIncontinence, $author$project$Backend$Reports$Model$DiagnosisPostpartumHeadache, $author$project$Backend$Reports$Model$DiagnosisPostpartumFatigue, $author$project$Backend$Reports$Model$DiagnosisPostpartumFever, $author$project$Backend$Reports$Model$DiagnosisPostpartumPerinealPainOrDischarge, $author$project$Backend$Reports$Model$DiagnosisPostpartumInfection, $author$project$Backend$Reports$Model$DiagnosisPostpartumExcessiveBleeding, $author$project$Backend$Reports$Model$DiagnosisPostpartumEarlyMastitisOrEngorgment, $author$project$Backend$Reports$Model$DiagnosisPostpartumMastitis, $author$project$Backend$Reports$Model$NoPrenatalDiagnosis]);
-var $author$project$Pages$Reports$View$generatePrenatalDiagnosesReportData = F3(
-	function (language, limitDate, records) {
+var $author$project$Pages$Reports$View$generatePrenatalDiagnosesReportData = F2(
+	function (language, records) {
 		var generateRow = F2(
 			function (label, value) {
 				return _List_fromArray(
@@ -18754,7 +18740,7 @@ var $author$project$Pages$Reports$View$generatePrenatalDiagnosesReportData = F3(
 	});
 var $author$project$Pages$Reports$View$viewPrenatalDiagnosesReport = F4(
 	function (language, limitDate, scopeLabel, records) {
-		var data = A3($author$project$Pages$Reports$View$generatePrenatalDiagnosesReportData, language, limitDate, records);
+		var data = A2($author$project$Pages$Reports$View$generatePrenatalDiagnosesReportData, language, records);
 		var csvFileName = 'anc-diagnoses-report-' + ($elm$core$String$toLower(
 			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
 		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
@@ -42409,7 +42395,7 @@ var $author$project$App$View$view = function (model) {
 						A2(
 						$elm$html$Html$map,
 						$author$project$App$Model$MsgCompletionMenuPage,
-						A4($author$project$Pages$CompletionMenu$View$view, model.language, model.themePath, model.backend, model.completionMenuPage))
+						A3($author$project$Pages$CompletionMenu$View$view, model.language, model.backend, model.completionMenuPage))
 					]));
 		case 'Completion':
 			return A2(
@@ -42421,11 +42407,10 @@ var $author$project$App$View$view = function (model) {
 						A2(
 						$elm$html$Html$map,
 						$author$project$App$Model$MsgCompletionPage,
-						A5(
+						A4(
 							$author$project$Pages$Completion$View$view,
 							model.language,
 							$author$project$Gizra$NominalDate$fromLocalDateTime(model.currentTime),
-							model.themePath,
 							model.backend,
 							model.completionPage))
 					]));

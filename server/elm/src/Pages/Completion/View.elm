@@ -44,11 +44,11 @@ import Translate exposing (TranslationId, translate)
 import Utils.Html exposing (viewModal)
 
 
-view : Language -> NominalDate -> String -> ModelBackend -> Model -> Html Msg
-view language currentDate themePath modelBackend model =
+view : Language -> NominalDate -> ModelBackend -> Model -> Html Msg
+view language currentDate modelBackend model =
     case modelBackend.completionData of
         Just (Ok data) ->
-            viewCompletionData language currentDate themePath data model
+            viewCompletionData language currentDate data model
 
         Just (Err err) ->
             text <| Debug.toString err
@@ -57,8 +57,8 @@ view language currentDate themePath modelBackend model =
             emptyNode
 
 
-viewCompletionData : Language -> NominalDate -> String -> CompletionData -> Model -> Html Msg
-viewCompletionData language currentDate themePath data model =
+viewCompletionData : Language -> NominalDate -> CompletionData -> Model -> Html Msg
+viewCompletionData language currentDate data model =
     let
         topBar =
             let
@@ -126,7 +126,7 @@ viewCompletionData language currentDate themePath data model =
 
         dateInputs =
             Maybe.map
-                (\reportType ->
+                (\_ ->
                     let
                         startDateInput =
                             let
