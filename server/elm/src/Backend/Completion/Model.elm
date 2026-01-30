@@ -1,8 +1,6 @@
 module Backend.Completion.Model exposing (ActivitiesCompletionData, AcuteIllnessActivity(..), ChildScoreboardActivity(..), CompletionData, EncounterData, HIVActivity(..), HomeVisitActivity(..), Msg(..), NCDActivity(..), NutritionChildActivity(..), NutritionGroupEncounterData, NutritionMotherActivity(..), PrenatalActivity(..), SelectedEntity(..), TakenBy(..), TuberculosisActivity(..), WellChildActivity(..), WellChildEncounterData, WellChildEncounterType(..))
 
 import App.Types exposing (Site)
-import AssocList as Dict exposing (Dict)
-import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Json.Encode exposing (Value)
 

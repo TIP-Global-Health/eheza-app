@@ -5,7 +5,6 @@ import Backend.ScoreboardMenu.Decoder exposing (decodeMenuData)
 import Backend.ScoreboardMenu.Model exposing (Msg(..))
 import Backend.Types exposing (BackendReturn)
 import Error.Utils exposing (noError)
-import Gizra.NominalDate exposing (NominalDate)
 import Json.Decode exposing (decodeValue)
 
 

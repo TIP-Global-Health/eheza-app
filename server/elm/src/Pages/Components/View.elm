@@ -1,4 +1,4 @@
-module Pages.Components.View exposing (viewCustomCells, viewDemographicsSelection, viewDemographicsSelectionActionButton, viewMetricsResultsTable, viewStandardCells, viewStandardRow)
+module Pages.Components.View exposing (viewDemographicsSelection, viewDemographicsSelectionActionButton, viewMetricsResultsTable, viewStandardCells, viewStandardRow)
 
 import App.Types exposing (Language, Site)
 import AssocList as Dict
@@ -8,16 +8,24 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Maybe.Extra exposing (isJust)
 import Pages.Components.Model exposing (DemographicsSelection)
-import Pages.Components.Utils exposing (populationSelectionOptionToString)
 import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Utils
     exposing
-        ( viewCustomLabel
-        , viewGeoLocationSelectListInput
+        ( viewGeoLocationSelectListInput
         , viewMenuActionButton
         )
 import Translate exposing (TranslationId)
-import Utils.GeoLocation exposing (..)
+import Utils.GeoLocation
+    exposing
+        ( filterGeoLocationDictByParent
+        , geoLocationDictToOptions
+        , getGeoInfo
+        , resolveGeoSructureLabelLevel1
+        , resolveGeoSructureLabelLevel2
+        , resolveGeoSructureLabelLevel3
+        , resolveGeoSructureLabelLevel4
+        , resolveGeoSructureLabelLevel5
+        )
 
 
 viewDemographicsSelection :

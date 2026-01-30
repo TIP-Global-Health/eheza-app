@@ -13,7 +13,7 @@ import Round
 import Svg.Attributes
 import Time exposing (Month(..))
 import Translate exposing (TranslationId, translate)
-import Utils.GeoLocation exposing (..)
+import Utils.GeoLocation exposing (GeoLocationId)
 
 
 calculatePercentage : Int -> Int -> String
@@ -69,11 +69,6 @@ viewYearSelector currentDate gap changeGapMsg =
 viewLabel : Language -> TranslationId -> Html any
 viewLabel language translationId =
     viewCustomLabel language translationId ":" "label"
-
-
-viewQuestionLabel : Language -> TranslationId -> Html any
-viewQuestionLabel language translationId =
-    viewCustomLabel language translationId "?" "label"
 
 
 viewCustomLabel : Language -> TranslationId -> String -> String -> Html any
@@ -220,29 +215,6 @@ customEmptySelectOption label isSelected =
 
 
 -- Buttons
-
-
-viewActionButton : Language -> TranslationId -> Bool -> msg -> Html msg
-viewActionButton language label allowAction action =
-    let
-        attributes =
-            if allowAction then
-                [ class <| "ui fluid button"
-                , onClick action
-                ]
-
-            else
-                [ class <| "ui fluid button disabled" ]
-    in
-    div [ class "actions" ]
-        [ button attributes
-            [ text <| translate language label ]
-        ]
-
-
-viewGenerateReportButton : Language -> String -> msg -> Html msg
-viewGenerateReportButton language path selectionMadeMsg =
-    viewMenuActionButton language path Translate.GenerateReport selectionMadeMsg
 
 
 viewLoadDataButton : Language -> String -> msg -> Html msg

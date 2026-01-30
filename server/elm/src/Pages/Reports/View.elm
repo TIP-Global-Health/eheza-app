@@ -27,7 +27,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
-import Pages.Components.View exposing (viewCustomCells, viewMetricsResultsTable, viewStandardCells, viewStandardRow)
+import Pages.Components.View exposing (viewMetricsResultsTable, viewStandardCells, viewStandardRow)
 import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Reports.Model exposing (Model, Msg(..), NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), ReportType(..), emptyNutritionMetrics)
 import Pages.Reports.Utils exposing (countTotalEncounters, eddToLmpDate, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth)
@@ -42,7 +42,6 @@ import Pages.Utils
         )
 import RemoteData exposing (RemoteData(..))
 import Round
-import Time exposing (Month(..))
 import Translate exposing (TranslationId, translate)
 import Utils.Html exposing (viewModal)
 
@@ -152,15 +151,6 @@ viewReportsData language currentDate themePath data model =
                 model.reportType
                 |> Maybe.withDefault []
 
-        ( startDateByReportType, limitDateByReportType ) =
-            if model.reportType == Just ReportNutrition then
-                -- Nutrition report does not allow selecting limit date, so
-                -- we force it to be today.
-                ( Just launchDate, Just currentDate )
-
-            else
-                ( model.startDate, model.limitDate )
-
         content =
             if
                 isJust model.startDateSelectorPopupState
@@ -171,6 +161,16 @@ viewReportsData language currentDate themePath data model =
                 emptyNode
 
             else
+                let
+                    ( startDateByReportType, limitDateByReportType ) =
+                        if model.reportType == Just ReportNutrition then
+                            -- Nutrition report does not allow selecting limit date, so
+                            -- we force it to be today.
+                            ( Just launchDate, Just currentDate )
+
+                        else
+                            ( model.startDate, model.limitDate )
+                in
                 Maybe.map3
                     (\reportType startDate limitDate ->
                         let
@@ -1587,9 +1587,6 @@ generatePrenatalReportData language limitDate records =
         completedChwVisits4 =
             resolveValueFromDict 4 partitionedVisitsForCompleted.chw
 
-        completedChwVisits5 =
-            resolveValueFromDict 5 partitionedVisitsForCompleted.chw
-
         completedChwVisits5AndMore =
             resolveValueFromDict -1 partitionedVisitsForCompleted.chw
 
@@ -1604,9 +1601,6 @@ generatePrenatalReportData language limitDate records =
 
         completedAllVisits4 =
             resolveValueFromDict 4 partitionedVisitsForCompleted.all
-
-        completedAllVisits5 =
-            resolveValueFromDict 5 partitionedVisitsForCompleted.all
 
         completedAllVisits5AndMore =
             resolveValueFromDict -1 partitionedVisitsForCompleted.all
@@ -1792,28 +1786,28 @@ generatePrenatalReportData language limitDate records =
                     ]
             }
 
-        -- Pregnancy delivery locations stats.
-        deliveryLocationsDict =
-            List.foldl
-                (\participantData accumDict ->
-                    Maybe.map
-                        (\location ->
-                            let
-                                updated =
-                                    Dict.get location accumDict
-                                        |> Maybe.map ((+) 1)
-                                        |> Maybe.withDefault 1
-                            in
-                            Dict.insert location updated accumDict
-                        )
-                        participantData.deliveryLocation
-                        |> Maybe.withDefault accumDict
-                )
-                Dict.empty
-                completed
-
         deliveryLocationsTable =
             let
+                -- Pregnancy delivery locations stats.
+                deliveryLocationsDict =
+                    List.foldl
+                        (\participantData accumDict ->
+                            Maybe.map
+                                (\location ->
+                                    let
+                                        updated =
+                                            Dict.get location accumDict
+                                                |> Maybe.map ((+) 1)
+                                                |> Maybe.withDefault 1
+                                    in
+                                    Dict.insert location updated accumDict
+                                )
+                                participantData.deliveryLocation
+                                |> Maybe.withDefault accumDict
+                        )
+                        Dict.empty
+                        completed
+
                 facilityDeliveries =
                     Dict.get FacilityDelivery deliveryLocationsDict
                         |> Maybe.withDefault 0

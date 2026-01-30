@@ -1,33 +1,24 @@
 module Pages.CompletionMenu.View exposing (view)
 
 import App.Types exposing (Language)
-import AssocList as Dict
 import Backend.CompletionMenu.Model exposing (MenuData)
 import Backend.Components.Model exposing (MenuScope(..))
-import Backend.Entities exposing (fromEntityId, toEntityId)
 import Backend.Model exposing (ModelBackend)
 import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick, onInput)
-import List.Extra
-import Maybe.Extra exposing (isJust)
 import Pages.CompletionMenu.Model exposing (Model, Msg(..))
-import Pages.Components.Model exposing (DemographicsSelection)
 import Pages.Components.Types exposing (PopulationSelectionOption(..))
-import Pages.Components.Utils exposing (populationSelectionOptionFromString, populationSelectionOptionToString)
-import Pages.Components.View exposing (viewDemographicsSelection, viewDemographicsSelectionActionButton)
+import Pages.Components.Utils exposing (populationSelectionOptionToString)
 import Pages.Utils
     exposing
         ( viewCustomLabel
         , viewCustomSelectListInput
-        , viewGeoLocationSelectListInput
         , viewLoadDataButton
         , viewSelectListInput
         , wrapSelectListInput
         )
-import Translate exposing (TranslationId, translate)
-import Utils.GeoLocation exposing (..)
+import Translate exposing (translate)
 
 
 view : Language -> ModelBackend -> Model -> Html Msg

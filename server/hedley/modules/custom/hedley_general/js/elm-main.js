@@ -15901,32 +15901,36 @@ var $author$project$Pages$Completion$View$viewCompletionData = F4(
 							[$author$project$Pages$Completion$Model$ReportChildScoreboard, $author$project$Pages$Completion$Model$ReportHIV, $author$project$Pages$Completion$Model$ReportHomeVisit, $author$project$Pages$Completion$Model$ReportNewbornExam, $author$project$Pages$Completion$Model$ReportTuberculosis, $author$project$Pages$Completion$Model$ReportNCD]))) {
 						return $author$project$Gizra$Html$emptyNode;
 					} else {
-						var options = A2(
-							$elm$core$List$map,
-							function (option) {
-								return _Utils_Tuple2(
-									A2(
-										$author$project$Translate$translate,
-										language,
-										$author$project$Translate$TakenBy(option)),
-									option);
-							},
-							_List_fromArray(
-								[$author$project$Backend$Completion$Model$TakenByNurse, $author$project$Backend$Completion$Model$TakenByCHW]));
-						return $elm_community$maybe_extra$Maybe$Extra$isJust(model.reportType) ? A4(
-							$author$project$Pages$Utils$wrapSelectListInput,
-							language,
-							$author$project$Translate$TakenByLabel,
-							false,
-							A6(
-								$author$project$Pages$Utils$viewCustomSelectListInput,
-								model.takenBy,
-								options,
-								$author$project$Backend$Completion$Utils$takenByToString,
-								$author$project$Pages$Completion$Model$SetTakenBy,
-								'select-input',
-								$elm$core$Maybe$Just(
-									A2($author$project$Translate$translate, language, $author$project$Translate$Any)))) : $author$project$Gizra$Html$emptyNode;
+						if ($elm_community$maybe_extra$Maybe$Extra$isJust(model.reportType)) {
+							var options = A2(
+								$elm$core$List$map,
+								function (option) {
+									return _Utils_Tuple2(
+										A2(
+											$author$project$Translate$translate,
+											language,
+											$author$project$Translate$TakenBy(option)),
+										option);
+								},
+								_List_fromArray(
+									[$author$project$Backend$Completion$Model$TakenByNurse, $author$project$Backend$Completion$Model$TakenByCHW]));
+							return A4(
+								$author$project$Pages$Utils$wrapSelectListInput,
+								language,
+								$author$project$Translate$TakenByLabel,
+								false,
+								A6(
+									$author$project$Pages$Utils$viewCustomSelectListInput,
+									model.takenBy,
+									options,
+									$author$project$Backend$Completion$Utils$takenByToString,
+									$author$project$Pages$Completion$Model$SetTakenBy,
+									'select-input',
+									$elm$core$Maybe$Just(
+										A2($author$project$Translate$translate, language, $author$project$Translate$Any))));
+						} else {
+							return $author$project$Gizra$Html$emptyNode;
+						}
 					}
 				},
 				model.reportType));
@@ -19073,39 +19077,39 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 		var activeNurseVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForActive.nurse);
 		var activeNurseVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForActive.nurse);
 		var activeNurseVisitsTotal = (((activeNurseVisits1 + activeNurseVisits2) + activeNurseVisits3) + activeNurseVisits4) + activeNurseVisits5AndMore;
-		var deliveryLocationsDict = A3(
-			$elm$core$List$foldl,
-			F2(
-				function (participantData, accumDict) {
-					return A2(
-						$elm$core$Maybe$withDefault,
-						accumDict,
-						A2(
-							$elm$core$Maybe$map,
-							function (location) {
-								var updated = A2(
-									$elm$core$Maybe$withDefault,
-									1,
-									A2(
-										$elm$core$Maybe$map,
-										$elm$core$Basics$add(1),
-										A2($pzp1997$assoc_list$AssocList$get, location, accumDict)));
-								return A3($pzp1997$assoc_list$AssocList$insert, location, updated, accumDict);
-							},
-							participantData.deliveryLocation));
-				}),
-			$pzp1997$assoc_list$AssocList$empty,
-			completed);
 		var deliveryLocationsTable = function () {
 			var totalCompletedPregnancies = $elm$core$List$length(completed);
-			var homeDeliveries = A2(
-				$elm$core$Maybe$withDefault,
-				0,
-				A2($pzp1997$assoc_list$AssocList$get, $author$project$Backend$Reports$Model$HomeDelivery, deliveryLocationsDict));
+			var deliveryLocationsDict = A3(
+				$elm$core$List$foldl,
+				F2(
+					function (participantData, accumDict) {
+						return A2(
+							$elm$core$Maybe$withDefault,
+							accumDict,
+							A2(
+								$elm$core$Maybe$map,
+								function (location) {
+									var updated = A2(
+										$elm$core$Maybe$withDefault,
+										1,
+										A2(
+											$elm$core$Maybe$map,
+											$elm$core$Basics$add(1),
+											A2($pzp1997$assoc_list$AssocList$get, location, accumDict)));
+									return A3($pzp1997$assoc_list$AssocList$insert, location, updated, accumDict);
+								},
+								participantData.deliveryLocation));
+					}),
+				$pzp1997$assoc_list$AssocList$empty,
+				completed);
 			var facilityDeliveries = A2(
 				$elm$core$Maybe$withDefault,
 				0,
 				A2($pzp1997$assoc_list$AssocList$get, $author$project$Backend$Reports$Model$FacilityDelivery, deliveryLocationsDict));
+			var homeDeliveries = A2(
+				$elm$core$Maybe$withDefault,
+				0,
+				A2($pzp1997$assoc_list$AssocList$get, $author$project$Backend$Reports$Model$HomeDelivery, deliveryLocationsDict));
 			var totalDeliveries = facilityDeliveries + homeDeliveries;
 			return {
 				captions: A2(
@@ -19200,14 +19204,12 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 		var completedAllVisits2 = A2(resolveValueFromDict, 2, partitionedVisitsForCompleted.all);
 		var completedAllVisits3 = A2(resolveValueFromDict, 3, partitionedVisitsForCompleted.all);
 		var completedAllVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForCompleted.all);
-		var completedAllVisits5 = A2(resolveValueFromDict, 5, partitionedVisitsForCompleted.all);
 		var completedAllVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForCompleted.all);
 		var completedAllVisitsTotal = (((completedAllVisits1 + completedAllVisits2) + completedAllVisits3) + completedAllVisits4) + completedAllVisits5AndMore;
 		var completedChwVisits1 = A2(resolveValueFromDict, 1, partitionedVisitsForCompleted.chw);
 		var completedChwVisits2 = A2(resolveValueFromDict, 2, partitionedVisitsForCompleted.chw);
 		var completedChwVisits3 = A2(resolveValueFromDict, 3, partitionedVisitsForCompleted.chw);
 		var completedChwVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForCompleted.chw);
-		var completedChwVisits5 = A2(resolveValueFromDict, 5, partitionedVisitsForCompleted.chw);
 		var completedChwVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForCompleted.chw);
 		var completedChwVisitsTotal = (((completedChwVisits1 + completedChwVisits2) + completedChwVisits3) + completedChwVisits4) + completedChwVisits5AndMore;
 		var completedNurseVisits1 = A2(resolveValueFromDict, 1, partitionedVisitsForCompleted.nurse);
@@ -19453,171 +19455,177 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 					}
 				},
 				model.reportType));
-		var _v0 = _Utils_eq(
-			model.reportType,
-			$elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportNutrition)) ? _Utils_Tuple2(
-			$elm$core$Maybe$Just($author$project$Pages$Utils$launchDate),
-			$elm$core$Maybe$Just(currentDate)) : _Utils_Tuple2(model.startDate, model.limitDate);
-		var startDateByReportType = _v0.a;
-		var limitDateByReportType = _v0.b;
-		var content = ($elm_community$maybe_extra$Maybe$Extra$isJust(model.startDateSelectorPopupState) || $elm_community$maybe_extra$Maybe$Extra$isJust(model.limitDateSelectorPopupState)) ? $author$project$Gizra$Html$emptyNode : A2(
-			$elm$core$Maybe$withDefault,
-			$author$project$Pages$Reports$Utils$isWideScope(data.entityType) ? A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$WideScopeNote, '', 'label wide-scope') : $author$project$Gizra$Html$emptyNode,
-			A4(
-				$elm$core$Maybe$map3,
-				F3(
-					function (reportType, startDate, limitDate) {
-						var recordsTillLimitDate = (_Utils_eq(
-							A2($justinmimbs$date$Date$compare, startDate, $author$project$Pages$Utils$launchDate),
-							$elm$core$Basics$EQ) && _Utils_eq(
-							A2($justinmimbs$date$Date$compare, limitDate, currentDate),
-							$elm$core$Basics$EQ)) ? data.records : A2(
-							$elm$core$List$filterMap,
-							function (record) {
-								if (!_Utils_eq(
-									A2($justinmimbs$date$Date$compare, record.created, limitDate),
-									$elm$core$Basics$GT)) {
-									var filterPrenatalData = $elm$core$Maybe$map(
-										$elm$core$List$filterMap(
-											function (participantData) {
-												if (_Utils_eq(
-													A2($justinmimbs$date$Date$compare, participantData.created, limitDate),
-													$elm$core$Basics$GT)) {
-													return $elm$core$Maybe$Nothing;
-												} else {
-													var filteredEncounters = A2(
-														$elm$core$List$filter,
+		var content = function () {
+			if ($elm_community$maybe_extra$Maybe$Extra$isJust(model.startDateSelectorPopupState) || $elm_community$maybe_extra$Maybe$Extra$isJust(model.limitDateSelectorPopupState)) {
+				return $author$project$Gizra$Html$emptyNode;
+			} else {
+				var _v0 = _Utils_eq(
+					model.reportType,
+					$elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportNutrition)) ? _Utils_Tuple2(
+					$elm$core$Maybe$Just($author$project$Pages$Utils$launchDate),
+					$elm$core$Maybe$Just(currentDate)) : _Utils_Tuple2(model.startDate, model.limitDate);
+				var startDateByReportType = _v0.a;
+				var limitDateByReportType = _v0.b;
+				return A2(
+					$elm$core$Maybe$withDefault,
+					$author$project$Pages$Reports$Utils$isWideScope(data.entityType) ? A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$WideScopeNote, '', 'label wide-scope') : $author$project$Gizra$Html$emptyNode,
+					A4(
+						$elm$core$Maybe$map3,
+						F3(
+							function (reportType, startDate, limitDate) {
+								var recordsTillLimitDate = (_Utils_eq(
+									A2($justinmimbs$date$Date$compare, startDate, $author$project$Pages$Utils$launchDate),
+									$elm$core$Basics$EQ) && _Utils_eq(
+									A2($justinmimbs$date$Date$compare, limitDate, currentDate),
+									$elm$core$Basics$EQ)) ? data.records : A2(
+									$elm$core$List$filterMap,
+									function (record) {
+										if (!_Utils_eq(
+											A2($justinmimbs$date$Date$compare, record.created, limitDate),
+											$elm$core$Basics$GT)) {
+											var filterPrenatalData = $elm$core$Maybe$map(
+												$elm$core$List$filterMap(
+													function (participantData) {
+														if (_Utils_eq(
+															A2($justinmimbs$date$Date$compare, participantData.created, limitDate),
+															$elm$core$Basics$GT)) {
+															return $elm$core$Maybe$Nothing;
+														} else {
+															var filteredEncounters = A2(
+																$elm$core$List$filter,
+																function (encounterData) {
+																	return (!_Utils_eq(
+																		A2($justinmimbs$date$Date$compare, encounterData.startDate, startDate),
+																		$elm$core$Basics$LT)) && (!_Utils_eq(
+																		A2($justinmimbs$date$Date$compare, encounterData.startDate, limitDate),
+																		$elm$core$Basics$GT));
+																},
+																participantData.encounters);
+															if ($elm$core$List$isEmpty(filteredEncounters)) {
+																return $elm$core$Maybe$Nothing;
+															} else {
+																var dateConcluded = A2(
+																	$elm$core$Maybe$andThen,
+																	function (date) {
+																		return _Utils_eq(
+																			A2($justinmimbs$date$Date$compare, limitDate, date),
+																			$elm$core$Basics$LT) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(date);
+																	},
+																	participantData.dateConcluded);
+																return $elm$core$Maybe$Just(
+																	_Utils_update(
+																		participantData,
+																		{dateConcluded: dateConcluded, encounters: filteredEncounters}));
+															}
+														}
+													}));
+											var filterIndividualBy = function (resolveDateFunc) {
+												return $elm$core$Maybe$map(
+													$elm$core$List$map(
+														$elm$core$List$filter(
+															function (encounterData) {
+																var encounterDate = resolveDateFunc(encounterData);
+																return (!_Utils_eq(
+																	A2($justinmimbs$date$Date$compare, encounterDate, startDate),
+																	$elm$core$Basics$LT)) && (!_Utils_eq(
+																	A2($justinmimbs$date$Date$compare, encounterDate, limitDate),
+																	$elm$core$Basics$GT));
+															})));
+											};
+											var filterGroupBy = function (resolveDateFunc) {
+												return $elm$core$Maybe$map(
+													$elm$core$List$filter(
 														function (encounterData) {
+															var encounterDate = resolveDateFunc(encounterData);
 															return (!_Utils_eq(
-																A2($justinmimbs$date$Date$compare, encounterData.startDate, startDate),
+																A2($justinmimbs$date$Date$compare, encounterDate, startDate),
 																$elm$core$Basics$LT)) && (!_Utils_eq(
-																A2($justinmimbs$date$Date$compare, encounterData.startDate, limitDate),
+																A2($justinmimbs$date$Date$compare, encounterDate, limitDate),
 																$elm$core$Basics$GT));
-														},
-														participantData.encounters);
-													if ($elm$core$List$isEmpty(filteredEncounters)) {
-														return $elm$core$Maybe$Nothing;
-													} else {
-														var dateConcluded = A2(
-															$elm$core$Maybe$andThen,
-															function (date) {
-																return _Utils_eq(
-																	A2($justinmimbs$date$Date$compare, limitDate, date),
-																	$elm$core$Basics$LT) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(date);
+														}));
+											};
+											return $elm$core$Maybe$Just(
+												_Utils_update(
+													record,
+													{
+														acuteIllnessData: A2(
+															filterIndividualBy,
+															function ($) {
+																return $.startDate;
 															},
-															participantData.dateConcluded);
-														return $elm$core$Maybe$Just(
-															_Utils_update(
-																participantData,
-																{dateConcluded: dateConcluded, encounters: filteredEncounters}));
-													}
-												}
-											}));
-									var filterIndividualBy = function (resolveDateFunc) {
-										return $elm$core$Maybe$map(
-											$elm$core$List$map(
-												$elm$core$List$filter(
-													function (encounterData) {
-														var encounterDate = resolveDateFunc(encounterData);
-														return (!_Utils_eq(
-															A2($justinmimbs$date$Date$compare, encounterDate, startDate),
-															$elm$core$Basics$LT)) && (!_Utils_eq(
-															A2($justinmimbs$date$Date$compare, encounterDate, limitDate),
-															$elm$core$Basics$GT));
-													})));
-									};
-									var filterGroupBy = function (resolveDateFunc) {
-										return $elm$core$Maybe$map(
-											$elm$core$List$filter(
-												function (encounterData) {
-													var encounterDate = resolveDateFunc(encounterData);
-													return (!_Utils_eq(
-														A2($justinmimbs$date$Date$compare, encounterDate, startDate),
-														$elm$core$Basics$LT)) && (!_Utils_eq(
-														A2($justinmimbs$date$Date$compare, encounterDate, limitDate),
-														$elm$core$Basics$GT));
-												}));
-									};
-									return $elm$core$Maybe$Just(
-										_Utils_update(
-											record,
-											{
-												acuteIllnessData: A2(
-													filterIndividualBy,
-													function ($) {
-														return $.startDate;
-													},
-													record.acuteIllnessData),
-												childScorecardData: A2(filterIndividualBy, $elm$core$Basics$identity, record.childScorecardData),
-												groupNutritionAchiData: A2(
-													filterGroupBy,
-													function ($) {
-														return $.startDate;
-													},
-													record.groupNutritionAchiData),
-												groupNutritionChwData: A2(
-													filterGroupBy,
-													function ($) {
-														return $.startDate;
-													},
-													record.groupNutritionChwData),
-												groupNutritionFbfData: A2(
-													filterGroupBy,
-													function ($) {
-														return $.startDate;
-													},
-													record.groupNutritionFbfData),
-												groupNutritionPmtctData: A2(
-													filterGroupBy,
-													function ($) {
-														return $.startDate;
-													},
-													record.groupNutritionPmtctData),
-												groupNutritionSorwatheData: A2(
-													filterGroupBy,
-													function ($) {
-														return $.startDate;
-													},
-													record.groupNutritionSorwatheData),
-												hivData: A2(filterIndividualBy, $elm$core$Basics$identity, record.hivData),
-												homeVisitData: A2(filterIndividualBy, $elm$core$Basics$identity, record.homeVisitData),
-												individualNutritionData: A2(
-													filterIndividualBy,
-													function ($) {
-														return $.startDate;
-													},
-													record.individualNutritionData),
-												ncdData: A2(filterIndividualBy, $elm$core$Basics$identity, record.ncdData),
-												prenatalData: filterPrenatalData(record.prenatalData),
-												tuberculosisData: A2(filterIndividualBy, $elm$core$Basics$identity, record.tuberculosisData),
-												wellChildData: A2(
-													filterIndividualBy,
-													function ($) {
-														return $.startDate;
-													},
-													record.wellChildData)
-											}));
-								} else {
-									return $elm$core$Maybe$Nothing;
+															record.acuteIllnessData),
+														childScorecardData: A2(filterIndividualBy, $elm$core$Basics$identity, record.childScorecardData),
+														groupNutritionAchiData: A2(
+															filterGroupBy,
+															function ($) {
+																return $.startDate;
+															},
+															record.groupNutritionAchiData),
+														groupNutritionChwData: A2(
+															filterGroupBy,
+															function ($) {
+																return $.startDate;
+															},
+															record.groupNutritionChwData),
+														groupNutritionFbfData: A2(
+															filterGroupBy,
+															function ($) {
+																return $.startDate;
+															},
+															record.groupNutritionFbfData),
+														groupNutritionPmtctData: A2(
+															filterGroupBy,
+															function ($) {
+																return $.startDate;
+															},
+															record.groupNutritionPmtctData),
+														groupNutritionSorwatheData: A2(
+															filterGroupBy,
+															function ($) {
+																return $.startDate;
+															},
+															record.groupNutritionSorwatheData),
+														hivData: A2(filterIndividualBy, $elm$core$Basics$identity, record.hivData),
+														homeVisitData: A2(filterIndividualBy, $elm$core$Basics$identity, record.homeVisitData),
+														individualNutritionData: A2(
+															filterIndividualBy,
+															function ($) {
+																return $.startDate;
+															},
+															record.individualNutritionData),
+														ncdData: A2(filterIndividualBy, $elm$core$Basics$identity, record.ncdData),
+														prenatalData: filterPrenatalData(record.prenatalData),
+														tuberculosisData: A2(filterIndividualBy, $elm$core$Basics$identity, record.tuberculosisData),
+														wellChildData: A2(
+															filterIndividualBy,
+															function ($) {
+																return $.startDate;
+															},
+															record.wellChildData)
+													}));
+										} else {
+											return $elm$core$Maybe$Nothing;
+										}
+									},
+									data.records);
+								switch (reportType.$) {
+									case 'ReportAcuteIllness':
+										return A5($author$project$Pages$Reports$View$viewAcuteIllnessReport, language, limitDate, startDate, scopeLabel, recordsTillLimitDate);
+									case 'ReportDemographics':
+										return A5($author$project$Pages$Reports$View$viewDemographicsReport, language, startDate, limitDate, scopeLabel, recordsTillLimitDate);
+									case 'ReportNutrition':
+										return A5($author$project$Pages$Reports$View$viewNutritionReport, language, limitDate, scopeLabel, data.nutritionReportData, model.nutritionReportData);
+									case 'ReportPrenatal':
+										return A4($author$project$Pages$Reports$View$viewPrenatalReport, language, limitDate, scopeLabel, recordsTillLimitDate);
+									default:
+										return A4($author$project$Pages$Reports$View$viewPrenatalDiagnosesReport, language, limitDate, scopeLabel, recordsTillLimitDate);
 								}
-							},
-							data.records);
-						switch (reportType.$) {
-							case 'ReportAcuteIllness':
-								return A5($author$project$Pages$Reports$View$viewAcuteIllnessReport, language, limitDate, startDate, scopeLabel, recordsTillLimitDate);
-							case 'ReportDemographics':
-								return A5($author$project$Pages$Reports$View$viewDemographicsReport, language, startDate, limitDate, scopeLabel, recordsTillLimitDate);
-							case 'ReportNutrition':
-								return A5($author$project$Pages$Reports$View$viewNutritionReport, language, limitDate, scopeLabel, data.nutritionReportData, model.nutritionReportData);
-							case 'ReportPrenatal':
-								return A4($author$project$Pages$Reports$View$viewPrenatalReport, language, limitDate, scopeLabel, recordsTillLimitDate);
-							default:
-								return A4($author$project$Pages$Reports$View$viewPrenatalDiagnosesReport, language, limitDate, scopeLabel, recordsTillLimitDate);
-						}
-					}),
-				model.reportType,
-				startDateByReportType,
-				limitDateByReportType));
+							}),
+						model.reportType,
+						startDateByReportType,
+						limitDateByReportType));
+			}
+		}();
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(

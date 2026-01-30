@@ -1,45 +1,41 @@
 module Pages.Completion.View exposing (view)
 
 import App.Types exposing (Language, Site)
-import AssocList as Dict exposing (Dict)
 import Backend.Completion.Model
     exposing
-        ( AcuteIllnessActivity(..)
-        , ChildScoreboardActivity(..)
+        ( AcuteIllnessActivity
+        , ChildScoreboardActivity
         , CompletionData
         , EncounterData
-        , HIVActivity(..)
-        , HomeVisitActivity(..)
-        , NCDActivity(..)
-        , NutritionChildActivity(..)
+        , HIVActivity
+        , HomeVisitActivity
+        , NCDActivity
+        , NutritionChildActivity
         , NutritionGroupEncounterData
-        , NutritionMotherActivity(..)
-        , PrenatalActivity(..)
+        , NutritionMotherActivity
+        , PrenatalActivity
         , SelectedEntity(..)
         , TakenBy(..)
-        , TuberculosisActivity(..)
-        , WellChildActivity(..)
+        , TuberculosisActivity
+        , WellChildActivity
         , WellChildEncounterData
         , WellChildEncounterType(..)
         )
 import Backend.Completion.Utils exposing (takenByToString)
 import Backend.Model exposing (ModelBackend)
-import Date exposing (Interval(..), Unit(..))
+import Date
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, customFormatDDMMYYYY, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Completion.Model exposing (Model, Msg(..), ReportType(..))
 import Pages.Completion.Utils exposing (allAcuteIllnessActivities, allHIVActivities, allHomeVisitActivities, allNCDActivities, allNutritionChildGroupActivities, allNutritionIndividualActivities, allNutritionMotherGroupActivities, allPrenatalActivities, allTuberculosisActivities, newbornExamActivities, reportTypeToString, resolveChildScoreboardActivities, resolveSPVActivities)
 import Pages.Components.View exposing (viewMetricsResultsTable)
 import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Utils exposing (calculatePercentage, launchDate, viewCustomSelectListInput, viewSelectListInput, wrapSelectListInput)
-import RemoteData exposing (RemoteData(..))
-import Time exposing (Month(..))
 import Translate exposing (TranslationId, translate)
 import Utils.Html exposing (viewModal)
 
@@ -99,7 +95,7 @@ viewCompletionData language currentDate data model =
                     then
                         emptyNode
 
-                    else
+                    else if isJust model.reportType then
                         let
                             options =
                                 List.map
@@ -108,18 +104,17 @@ viewCompletionData language currentDate data model =
                                     )
                                     [ TakenByNurse, TakenByCHW ]
                         in
-                        if isJust model.reportType then
-                            viewCustomSelectListInput
-                                model.takenBy
-                                options
-                                takenByToString
-                                SetTakenBy
-                                "select-input"
-                                (Just <| translate language Translate.Any)
-                                |> wrapSelectListInput language Translate.TakenByLabel False
+                        viewCustomSelectListInput
+                            model.takenBy
+                            options
+                            takenByToString
+                            SetTakenBy
+                            "select-input"
+                            (Just <| translate language Translate.Any)
+                            |> wrapSelectListInput language Translate.TakenByLabel False
 
-                        else
-                            emptyNode
+                    else
+                        emptyNode
                 )
                 model.reportType
                 |> Maybe.withDefault emptyNode

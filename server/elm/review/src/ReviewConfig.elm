@@ -51,13 +51,6 @@ rules =
     , Docs.UpToDateReadmeLinks.rule
     , Docs.NoMissing.rule { document = onlyExposed, from = exposedModules }
     , NoConfusingPrefixOperator.rule
-
-    -- |> Rule.ignoreErrorsForFiles
-    --     [ "src/elm/Pages/Prenatal/ProgressReport/View.elm"
-    --     , "src/elm/Pages/Prenatal/Activity/View.elm"
-    --     , "src/elm/Pages/Prenatal/Activity/Utils.elm"
-    --     , "src/elm/Measurement/View.elm"
-    --     ]
     , NoDebug.Log.rule
     , NoDebug.TodoOrToString.rule
         |> Rule.ignoreErrorsForFiles
@@ -80,20 +73,12 @@ rules =
         , "Backend.ScoreboardMenu.Model"
         , "Utils.GeoLocation"
         ]
+    , NoMissingTypeAnnotation.rule
+        |> Rule.ignoreErrorsForFiles [ "src/Pages/Completion/View.elm", "src/Backend/Utils.elm" ]
+    , NoMissingTypeExpose.rule
+    , NoSimpleLetBody.rule
+    , NoPrematureLetComputation.rule
 
-    -- , NoMissingTypeAnnotation.rule
-    --     |> Rule.ignoreErrorsForFiles
-    --         [ "src/elm/SyncManager/Decoder.elm"
-    --         , "src/elm/Pages/WellChild/ProgressReport/View.elm"
-    --         , "src/elm/Pages/Report/Svg.elm"
-    --         , "src/elm/Measurement/Utils.elm"
-    --         , "src/elm/Main.elm"
-    --         , "src/elm/Pages/Prenatal/Utils.elm"
-    --         , "src/elm/Backend/Utils.elm"
-    --         ]
-    -- , NoMissingTypeExpose.rule
-    -- , NoSimpleLetBody.rule
-    -- , NoPrematureLetComputation.rule
     -- , NoUnused.CustomTypeConstructors.rule []
     --     |> Rule.ignoreErrorsForFiles
     --         [ "src/elm/ZScore/Model.elm"
@@ -116,13 +101,9 @@ rules =
     , NoUnused.Dependencies.rule
     , NoUnused.Exports.rule
     , NoUnused.Parameters.rule
+    , NoUnused.Patterns.rule
+    , NoUnused.Variables.rule
 
-    -- , NoUnused.Patterns.rule
-    -- , NoUnused.Variables.rule
-    --     |> Rule.ignoreErrorsForFiles
-    --         [ "src/Pages/Utils.elm"
-    --         , "src/Backend/Completion/Decoder.elm"
-    --         ]
     -- , Simplify.rule Simplify.defaults
     --     |> Rule.ignoreErrorsForFiles
     --         [ "src/elm/GeoLocation/Utils.elm"

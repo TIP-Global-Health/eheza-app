@@ -3,8 +3,6 @@ module Backend.Components.Model exposing (HealthCenterData, HealthCenterId, Menu
 {-| The return value of Backend update functions
 -}
 
-import Error.Model exposing (Error)
-
 
 type alias HealthCenterData =
     { id : HealthCenterId

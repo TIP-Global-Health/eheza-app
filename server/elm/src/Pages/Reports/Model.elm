@@ -79,17 +79,6 @@ type alias NutritionMetricsResults =
     }
 
 
-emptyNutritionMetricsResults : NutritionMetricsResults
-emptyNutritionMetricsResults =
-    { stuntingModerate = 0
-    , stuntingSevere = 0
-    , wastingModerate = 0
-    , wastingSevere = 0
-    , underweightModerate = 0
-    , underweightSevere = 0
-    }
-
-
 type PregnancyTrimester
     = FirstTrimester
     | SecondTrimester

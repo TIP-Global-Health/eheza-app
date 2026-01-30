@@ -5,7 +5,6 @@ import Backend.Completion.Model exposing (Msg(..))
 import Backend.Model exposing (ModelBackend)
 import Backend.Types exposing (BackendReturn)
 import Error.Utils exposing (noError)
-import Gizra.NominalDate exposing (NominalDate)
 import Json.Decode exposing (decodeValue)
 
 

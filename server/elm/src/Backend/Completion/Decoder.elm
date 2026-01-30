@@ -1,16 +1,11 @@
 module Backend.Completion.Decoder exposing (decodeCompletionData)
 
-import AssocList as Dict
 import Backend.Completion.Model exposing (..)
 import Backend.Completion.Utils exposing (acuteIllnessActivityFromMapping, childScoreboardActivityFromMapping, hivActivityFromMapping, homeVisitActivityFromMapping, ncdActivityFromMapping, nutritionChildActivityFromMapping, nutritionMotherActivityFromMapping, prenatalActivityFromMapping, takenByFromString, tuberculosisActivityFromMapping, wellChildActivityFromMapping)
 import Backend.Decoder exposing (decodeSite, decodeWithFallback)
-import Date
-import EverySet exposing (EverySet)
-import Gizra.Json exposing (decodeFloat, decodeInt)
-import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffMonths)
-import Json.Decode exposing (Decoder, andThen, bool, fail, list, map, maybe, nullable, oneOf, string, succeed)
-import Json.Decode.Pipeline exposing (optional, optionalAt, required, requiredAt)
-import Maybe.Extra exposing (isNothing)
+import Gizra.NominalDate exposing (decodeYYYYMMDD)
+import Json.Decode exposing (Decoder, andThen, fail, list, nullable, oneOf, string, succeed)
+import Json.Decode.Pipeline exposing (optional, required, requiredAt)
 
 
 decodeCompletionData : Decoder CompletionData
