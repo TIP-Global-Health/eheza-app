@@ -1,4 +1,24 @@
-module Backend.Completion.Model exposing (ActivitiesCompletionData, AcuteIllnessActivity(..), ChildScoreboardActivity(..), CompletionData, EncounterData, HIVActivity(..), HomeVisitActivity(..), Msg(..), NCDActivity(..), NutritionChildActivity(..), NutritionGroupEncounterData, NutritionMotherActivity(..), PrenatalActivity(..), SelectedEntity(..), TakenBy(..), TuberculosisActivity(..), WellChildActivity(..), WellChildEncounterData, WellChildEncounterType(..))
+module Backend.Completion.Model exposing
+    ( ActivitiesCompletionData
+    , AcuteIllnessActivity(..)
+    , ChildScoreboardActivity(..)
+    , CompletionData
+    , EncounterData
+    , HIVActivity(..)
+    , HomeVisitActivity(..)
+    , Msg(..)
+    , NCDActivity(..)
+    , NutritionChildActivity(..)
+    , NutritionGroupEncounterData
+    , NutritionMotherActivity(..)
+    , PrenatalActivity(..)
+    , SelectedEntity(..)
+    , TakenBy(..)
+    , TuberculosisActivity(..)
+    , WellChildActivity(..)
+    , WellChildEncounterData
+    , WellChildEncounterType(..)
+    )
 
 import App.Types exposing (Site)
 import Gizra.NominalDate exposing (NominalDate)

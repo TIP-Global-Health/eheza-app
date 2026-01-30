@@ -7930,13 +7930,12 @@ var $author$project$Backend$Completion$Decoder$decodeActivitiesCompletionDataLis
 		_List_fromArray(
 			[
 				A2(
-				$elm$json$Json$Decode$andThen,
+				$elm$json$Json$Decode$map,
 				function (s) {
-					return $elm$json$Json$Decode$succeed(
-						A2(
-							$elm$core$List$filterMap,
-							$author$project$Backend$Completion$Decoder$activitiesCompletionDataFromString(activityFromString),
-							A2($elm$core$String$split, '$', s)));
+					return A2(
+						$elm$core$List$filterMap,
+						$author$project$Backend$Completion$Decoder$activitiesCompletionDataFromString(activityFromString),
+						A2($elm$core$String$split, '$', s));
 				},
 				$elm$json$Json$Decode$string),
 				$elm$json$Json$Decode$succeed(_List_Nil)
@@ -7995,10 +7994,7 @@ var $author$project$Backend$Decoder$siteFromString = function (str) {
 			return $author$project$App$Types$SiteUnknown;
 	}
 };
-var $author$project$Backend$Decoder$decodeSite = A2(
-	$elm$json$Json$Decode$andThen,
-	A2($elm$core$Basics$composeR, $author$project$Backend$Decoder$siteFromString, $elm$json$Json$Decode$succeed),
-	$elm$json$Json$Decode$string);
+var $author$project$Backend$Decoder$decodeSite = A2($elm$json$Json$Decode$map, $author$project$Backend$Decoder$siteFromString, $elm$json$Json$Decode$string);
 var $author$project$Backend$Completion$Model$WellChildEncounterData = F3(
 	function (startDate, encounterType, completion) {
 		return {completion: completion, encounterType: encounterType, startDate: startDate};
@@ -15497,13 +15493,12 @@ var $author$project$Pages$Completion$View$generateNutritionGroupReportData = F2(
 					});
 			});
 		var motherActivityRows = A3(generateActivityRows, $author$project$Translate$NutritionMotherActivity, motherData, $author$project$Pages$Completion$Utils$allNutritionMotherGroupActivities);
-		var childrenData = $elm$core$List$concat(
-			A2(
-				$elm$core$List$map,
-				function ($) {
-					return $.childrenData;
-				},
-				records));
+		var childrenData = A2(
+			$elm$core$List$concatMap,
+			function ($) {
+				return $.childrenData;
+			},
+			records);
 		var childrenActivityRows = A3(generateActivityRows, $author$project$Translate$NutritionChildActivity, childrenData, $author$project$Pages$Completion$Utils$allNutritionChildGroupActivities);
 		return {
 			captions: $author$project$Pages$Completion$View$generateCaptionsList(language),

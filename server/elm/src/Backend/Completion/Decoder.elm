@@ -1,6 +1,16 @@
 module Backend.Completion.Decoder exposing (decodeCompletionData)
 
-import Backend.Completion.Model exposing (..)
+import Backend.Completion.Model
+    exposing
+        ( ActivitiesCompletionData
+        , CompletionData
+        , EncounterData
+        , NutritionGroupEncounterData
+        , SelectedEntity(..)
+        , TakenBy(..)
+        , WellChildEncounterData
+        , WellChildEncounterType(..)
+        )
 import Backend.Completion.Utils exposing (acuteIllnessActivityFromMapping, childScoreboardActivityFromMapping, hivActivityFromMapping, homeVisitActivityFromMapping, ncdActivityFromMapping, nutritionChildActivityFromMapping, nutritionMotherActivityFromMapping, prenatalActivityFromMapping, takenByFromString, tuberculosisActivityFromMapping, wellChildActivityFromMapping)
 import Backend.Decoder exposing (decodeSite, decodeWithFallback)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
@@ -114,11 +124,10 @@ decodeActivitiesCompletionDataList : (String -> Maybe activity) -> Decoder (List
 decodeActivitiesCompletionDataList activityFromString =
     oneOf
         [ string
-            |> andThen
+            |> Json.Decode.map
                 (\s ->
                     String.split "$" s
                         |> List.filterMap (activitiesCompletionDataFromString activityFromString)
-                        |> succeed
                 )
         , succeed []
         ]

@@ -74,7 +74,10 @@ rules =
         , "Utils.GeoLocation"
         ]
     , NoMissingTypeAnnotation.rule
-        |> Rule.ignoreErrorsForFiles [ "src/Pages/Completion/View.elm", "src/Backend/Utils.elm" ]
+        |> Rule.ignoreErrorsForFiles
+            [ "src/Pages/Completion/View.elm"
+            , "src/Backend/Utils.elm"
+            ]
     , NoMissingTypeExpose.rule
     , NoSimpleLetBody.rule
     , NoPrematureLetComputation.rule
@@ -103,12 +106,7 @@ rules =
     , NoUnused.Parameters.rule
     , NoUnused.Patterns.rule
     , NoUnused.Variables.rule
-
-    -- , Simplify.rule Simplify.defaults
-    --     |> Rule.ignoreErrorsForFiles
-    --         [ "src/elm/GeoLocation/Utils.elm"
-    --         , "src/elm/Measurement/Utils.elm"
-    --         ]
+    , Simplify.rule Simplify.defaults
     ]
 
 

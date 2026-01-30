@@ -1,13 +1,13 @@
 module Backend.Decoder exposing (decodeSite, decodeWithFallback)
 
 import App.Types exposing (Site(..))
-import Json.Decode exposing (Decoder, andThen, oneOf, string, succeed)
+import Json.Decode exposing (Decoder, oneOf, string, succeed)
 
 
 decodeSite : Decoder Site
 decodeSite =
     string
-        |> andThen (siteFromString >> succeed)
+        |> Json.Decode.map siteFromString
 
 
 siteFromString : String -> Site

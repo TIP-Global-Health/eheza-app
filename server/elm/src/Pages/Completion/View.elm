@@ -476,8 +476,7 @@ generateNutritionGroupReportData language records =
             List.filterMap .motherData records
 
         childrenData =
-            List.map .childrenData records
-                |> List.concat
+            List.concatMap .childrenData records
 
         generateActivityRows activityTransId data =
             List.map
