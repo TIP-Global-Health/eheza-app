@@ -69,15 +69,18 @@ rules =
             , "src/Pages/ScoreboardMenu/View.elm"
             ]
     , NoExposingEverything.rule
+    , NoImportingEverything.rule
+        [ "Backend.Entities"
+        , "Html"
+        , "Html.Attributes"
+        , "Html.Events"
+        , "Svg"
+        , "Svg.Attributes"
+        , "Backend.Completion.Model"
+        , "Backend.ScoreboardMenu.Model"
+        , "Utils.GeoLocation"
+        ]
 
-    -- , NoImportingEverything.rule
-    --     [ "Backend.Entities"
-    --     , "Html"
-    --     , "Html.Attributes"
-    --     , "Html.Events"
-    --     , "Svg"
-    --     , "Svg.Attributes"
-    --     ]
     -- , NoMissingTypeAnnotation.rule
     --     |> Rule.ignoreErrorsForFiles
     --         [ "src/elm/SyncManager/Decoder.elm"
@@ -112,14 +115,13 @@ rules =
     --         ]
     -- , NoUnused.Dependencies.rule
     -- , NoUnused.Exports.rule
-    --     |> Rule.ignoreErrorsForFiles
-    --         [ "src/elm/LocalConfig.Example.elm"
-    --         , "src/elm/Config.Deploy.elm"
-    --         , "src/elm/App/Model.elm"
-    --         ]
     -- , NoUnused.Parameters.rule
     -- , NoUnused.Patterns.rule
     -- , NoUnused.Variables.rule
+    --     |> Rule.ignoreErrorsForFiles
+    --         [ "src/Pages/Utils.elm"
+    --         , "src/Backend/Completion/Decoder.elm"
+    --         ]
     -- , Simplify.rule Simplify.defaults
     --     |> Rule.ignoreErrorsForFiles
     --         [ "src/elm/GeoLocation/Utils.elm"

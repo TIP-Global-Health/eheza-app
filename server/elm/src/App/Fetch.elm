@@ -1,6 +1,6 @@
 module App.Fetch exposing (fetch)
 
-import App.Model exposing (..)
+import App.Model exposing (Model, Msg(..))
 import App.Types exposing (Page(..))
 import Pages.Completion.Fetch
 import Pages.Reports.Fetch

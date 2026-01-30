@@ -12,7 +12,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import List.Extra
 import Maybe.Extra exposing (isJust)
-import Pages.CompletionMenu.Model exposing (..)
+import Pages.CompletionMenu.Model exposing (Model, Msg(..))
 import Pages.Components.Model exposing (DemographicsSelection)
 import Pages.Components.Types exposing (PopulationSelectionOption(..))
 import Pages.Components.Utils exposing (populationSelectionOptionFromString, populationSelectionOptionToString)

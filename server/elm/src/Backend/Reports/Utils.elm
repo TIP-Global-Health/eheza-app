@@ -1,6 +1,6 @@
 module Backend.Reports.Utils exposing (allAcuteIllnessDiagnoses, allPrenatalDiagnoses, genderFromString)
 
-import Backend.Reports.Model exposing (..)
+import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), Gender(..), PrenatalDiagnosis(..))
 
 
 genderFromString : String -> Maybe Gender

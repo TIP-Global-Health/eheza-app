@@ -5,7 +5,7 @@ module App.Update exposing
     )
 
 import App.Fetch exposing (fetch)
-import App.Model exposing (..)
+import App.Model exposing (Flags, Model, Msg(..), emptyModel)
 import App.Types exposing (Page(..))
 import App.Utils exposing (updateSubModel)
 import Backend.Completion.Model

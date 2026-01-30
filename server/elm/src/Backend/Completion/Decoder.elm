@@ -2,7 +2,7 @@ module Backend.Completion.Decoder exposing (decodeCompletionData)
 
 import AssocList as Dict
 import Backend.Completion.Model exposing (..)
-import Backend.Completion.Utils exposing (..)
+import Backend.Completion.Utils exposing (acuteIllnessActivityFromMapping, childScoreboardActivityFromMapping, hivActivityFromMapping, homeVisitActivityFromMapping, ncdActivityFromMapping, nutritionChildActivityFromMapping, nutritionMotherActivityFromMapping, prenatalActivityFromMapping, takenByFromString, tuberculosisActivityFromMapping, wellChildActivityFromMapping)
 import Backend.Decoder exposing (decodeSite, decodeWithFallback)
 import Date
 import EverySet exposing (EverySet)

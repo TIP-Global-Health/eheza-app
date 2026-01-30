@@ -1,6 +1,6 @@
 module Backend.CompletionMenu.Decoder exposing (decodeMenuData)
 
-import Backend.CompletionMenu.Model exposing (..)
+import Backend.CompletionMenu.Model exposing (MenuData)
 import Backend.Components.Decoder exposing (decodeHealthCenterData, decodeMenuScope)
 import Backend.Decoder exposing (decodeSite)
 import Gizra.Json exposing (decodeInt)

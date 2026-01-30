@@ -1,12 +1,12 @@
 module Pages.Reports.Utils exposing (countTotalEncounters, countTotalNutritionEncounters, eddToLmpDate, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, nutritionEncounterDataToNutritionMetrics, reportTypeFromString, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth, sumNutritionMetrics)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Reports.Model exposing (..)
+import Backend.Reports.Model exposing (NutritionEncounterData, PatientData, PersonId, SelectedEntity(..))
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate, diffDays)
 import List.Extra exposing (unique)
 import Maybe.Extra
-import Pages.Reports.Model exposing (..)
+import Pages.Reports.Model exposing (NutritionMetrics, NutritionMetricsResults, PregnancyTrimester(..), ReportType(..), emptyNutritionMetrics)
 import Set
 
 

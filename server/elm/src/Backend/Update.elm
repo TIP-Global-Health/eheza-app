@@ -2,7 +2,7 @@ module Backend.Update exposing (updateBackend)
 
 import Backend.Completion.Update
 import Backend.CompletionMenu.Update
-import Backend.Model exposing (..)
+import Backend.Model exposing (ModelBackend, Msg(..))
 import Backend.Reports.Update
 import Backend.ReportsMenu.Update
 import Backend.Scoreboard.Update

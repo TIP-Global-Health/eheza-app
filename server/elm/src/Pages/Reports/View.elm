@@ -29,8 +29,8 @@ import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Components.View exposing (viewCustomCells, viewMetricsResultsTable, viewStandardCells, viewStandardRow)
 import Pages.Model exposing (MetricsResultsTableData)
-import Pages.Reports.Model exposing (..)
-import Pages.Reports.Utils exposing (..)
+import Pages.Reports.Model exposing (Model, Msg(..), NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), ReportType(..), emptyNutritionMetrics)
+import Pages.Reports.Utils exposing (countTotalEncounters, eddToLmpDate, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth)
 import Pages.Utils
     exposing
         ( calculatePercentage

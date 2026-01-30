@@ -2,11 +2,11 @@ module Pages.Scoreboard.Utils exposing (generateFutureVaccinationsData, valuesBy
 
 import App.Types exposing (Site(..))
 import AssocList as Dict
-import Backend.Scoreboard.Model exposing (..)
+import Backend.Scoreboard.Model exposing (VaccinationProgressDict, VaccineDose(..), VaccineType(..))
 import Backend.Scoreboard.Utils exposing (vaccineDoseToComparable)
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
-import Pages.Scoreboard.Model exposing (..)
+import Pages.Scoreboard.Model exposing (ViewMode(..))
 import Round
 
 

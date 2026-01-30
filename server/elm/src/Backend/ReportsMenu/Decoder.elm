@@ -2,7 +2,7 @@ module Backend.ReportsMenu.Decoder exposing (decodeMenuData)
 
 import Backend.Components.Decoder exposing (decodeHealthCenterData, decodeMenuScope)
 import Backend.Decoder exposing (decodeSite)
-import Backend.ReportsMenu.Model exposing (..)
+import Backend.ReportsMenu.Model exposing (MenuData)
 import Gizra.Json exposing (decodeInt)
 import Json.Decode exposing (Decoder, list, maybe, string, succeed)
 import Json.Decode.Pipeline exposing (optional, required)

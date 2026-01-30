@@ -1,6 +1,6 @@
 module Backend.Scoreboard.Utils exposing (vaccineDoseFromOrder, vaccineDoseToComparable)
 
-import Backend.Scoreboard.Model exposing (..)
+import Backend.Scoreboard.Model exposing (VaccineDose(..))
 
 
 vaccineDoseToComparable : VaccineDose -> Int
