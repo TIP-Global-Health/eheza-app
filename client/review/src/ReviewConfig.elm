@@ -20,6 +20,7 @@ import NoDebug.Log
 import NoDebug.TodoOrToString
 import NoExposingEverything
 import NoImportingEverything
+import NoMissingSubscriptionsCall
 import NoMissingTypeAnnotation
 import NoMissingTypeExpose
 import NoPrematureLetComputation
@@ -30,6 +31,7 @@ import NoUnused.Exports
 import NoUnused.Parameters
 import NoUnused.Patterns
 import NoUnused.Variables
+import NoUselessSubscriptions
 import Review.Rule as Rule exposing (Rule)
 import Simplify
 
@@ -112,6 +114,8 @@ rules =
             [ "src/elm/GeoLocation/Utils.elm"
             , "src/elm/Measurement/Utils.elm"
             ]
+    , NoMissingSubscriptionsCall.rule
+    , NoUselessSubscriptions.rule
     ]
 
 
