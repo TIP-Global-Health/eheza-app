@@ -87,17 +87,17 @@ rules =
     , Validate.Regexes.rule
 
     -- Rules to comment out when working with --fix-all.
-    -- , NoImportingEverything.rule
-    --     [ "Backend.Entities"
-    --     , "Html"
-    --     , "Html.Attributes"
-    --     , "Html.Events"
-    --     , "Svg"
-    --     , "Svg.Attributes"
-    --     , "Backend.Completion.Model"
-    --     , "Backend.ScoreboardMenu.Model"
-    --     , "Utils.GeoLocation"
-    --     ]
+    , NoImportingEverything.rule
+        [ "Backend.Entities"
+        , "Html"
+        , "Html.Attributes"
+        , "Html.Events"
+        , "Svg"
+        , "Svg.Attributes"
+        , "Backend.Completion.Model"
+        , "Backend.ScoreboardMenu.Model"
+        , "Utils.GeoLocation"
+        ]
     ]
 
 
