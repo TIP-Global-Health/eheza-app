@@ -163,7 +163,7 @@ warningPopup language closePopupMsg state =
         in
         Just <|
             div [ class "ui active modal diagnosis-popup" ]
-                [ div [ class "content" ] <|
+                [ div [ class "content" ]
                     [ div [ class "popup-heading-wrapper" ] infoHeading
                     , div [ class "popup-title" ] assessments
                     ]

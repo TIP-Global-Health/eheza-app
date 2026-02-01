@@ -98,7 +98,7 @@ decodeModeOfDelivery =
                         succeed <| VaginalDelivery WithVacuumExtraction
 
                     "cesarean-delivery" ->
-                        succeed <| CesareanDelivery
+                        succeed CesareanDelivery
 
                     _ ->
                         fail (mode ++ " is not a recognized ModeOfDelivery")

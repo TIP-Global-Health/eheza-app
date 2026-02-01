@@ -197,13 +197,12 @@ viewContentAndHeader language currentDate zscores site features nurse isChw init
         componentsConfig =
             Just { setReportComponentsMsg = SetReportComponents }
     in
-    div [ class "page-report clinical" ] <|
+    div [ class "page-report clinical" ]
         [ viewHeader language isLabTech isResultsReviewer initiator model
         , viewContent language currentDate zscores site features isChw isLabTech isResultsReviewer initiator model assembled
         , viewModal endEncounterDialog
         , Html.map MsgReportToWhatsAppDialog
-            (Components.ReportToWhatsAppDialog.View.view
-                language
+            (Components.ReportToWhatsAppDialog.View.view language
                 site
                 ( assembled.participant.person, assembled.person )
                 Components.ReportToWhatsAppDialog.Model.ReportAntenatal
@@ -803,7 +802,7 @@ viewObstetricHistoryPane language measurements =
                 |> List.singleton
     in
     div [ class "risk-factors" ]
-        [ div [ class <| "pane-heading red" ]
+        [ div [ class "pane-heading red" ]
             [ img [ src "assets/images/exclamation-white-outline.png" ] []
             , span [] [ text <| translate language Translate.ObstetricHistory ]
             ]
@@ -868,7 +867,7 @@ viewMedicalHistoryPane language measurements =
                 |> List.singleton
     in
     div [ class "risk-factors" ]
-        [ div [ class <| "pane-heading red" ]
+        [ div [ class "pane-heading red" ]
             [ img [ src "assets/images/exclamation-white-outline.png" ] []
             , span [] [ text <| translate language Translate.MedicalHistory ]
             ]
@@ -1281,29 +1280,23 @@ viewMedicationHistoryPane language isChw assembled =
                 , div [ class "cell date" ] [ p [] [ text dateForView ] ]
                 ]
     in
-    div [ class "medication-history" ] <|
+    div [ class "medication-history" ]
         [ viewItemHeading language Translate.MedicationHistory "blue"
         , div [ class "pane-content" ]
             [ entriesHeading
-            , resolveMedicationAdministrationDate .calcium
-                |> viewEntry Calcium
-            , resolveMedicationAdministrationDate .fefol
-                |> viewEntry Fefol
-            , resolveMedicationAdministrationDate .folate
-                |> viewEntry FolicAcid
-            , resolveMedicationAdministrationDate .iron
-                |> viewEntry Iron
-            , resolveMedicationAdministrationDate .mms
-                |> viewEntry MMS
-            , resolveMedicationAdministrationDate .mebendazole
-                |> viewEntry Mebendezole
+            , resolveMedicationAdministrationDate .calcium |> viewEntry Calcium
+            , resolveMedicationAdministrationDate .fefol |> viewEntry Fefol
+            , resolveMedicationAdministrationDate .folate |> viewEntry FolicAcid
+            , resolveMedicationAdministrationDate .iron |> viewEntry Iron
+            , resolveMedicationAdministrationDate .mms |> viewEntry MMS
+            , resolveMedicationAdministrationDate .mebendazole |> viewEntry Mebendezole
             ]
         ]
 
 
 viewVaccinationHistoryPane : Language -> NominalDate -> AssembledData -> Html any
 viewVaccinationHistoryPane language currentDate assembled =
-    div [ class "vaccination-history" ] <|
+    div [ class "vaccination-history" ]
         [ viewItemHeading language Translate.ImmunizationHistory "blue"
         , div [ class "pane-content" ] <|
             viewVaccinationOverview language currentDate assembled
@@ -1781,7 +1774,7 @@ viewPatientProgressPane language currentDate zscores isChw globalLmpValue assemb
 
         viewChartHeading transId =
             div [ class "chart-heading" ]
-                [ img [ src <| "assets/images/icon-gray-circle-small.png" ] []
+                [ img [ src "assets/images/icon-gray-circle-small.png" ] []
                 , span [] [ text <| translate language transId ]
                 ]
 
@@ -3312,7 +3305,7 @@ viewTreatmentForOutsideCareDiagnosis language date medications diagnosis =
             in
             diagnosisForProgressReportToString language diagnosis
                 ++ " - "
-                ++ (String.toLower <| translate language <| Translate.DiagnosedByOutsideCare)
+                ++ (String.toLower <| translate language Translate.DiagnosedByOutsideCare)
                 ++ treatedWith
                 ++ ", "
                 ++ (String.toLower <| translate language Translate.AddedToPatientRecordOn)

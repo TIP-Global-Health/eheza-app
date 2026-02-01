@@ -57,7 +57,7 @@ view language currentDate id activity db model =
 
 viewHeaderAndContent : Language -> NominalDate -> NCDEncounterId -> NCDRecurrentActivity -> Model -> AssembledData -> Html Msg
 viewHeaderAndContent language currentDate id activity model assembled =
-    div [ class "page-activity ncd" ] <|
+    div [ class "page-activity ncd" ]
         [ viewHeader language (NCDRecurrentEncounterPage id) (Translate.NCDRecurrentActivitiesTitle activity)
         , viewContent language currentDate activity model assembled
         ]
@@ -260,7 +260,7 @@ viewLabResultsContent language assembled model =
         ]
     , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
-        [ div [ class "full content" ] <|
+        [ div [ class "full content" ]
             [ viewForm
             , actions
             ]

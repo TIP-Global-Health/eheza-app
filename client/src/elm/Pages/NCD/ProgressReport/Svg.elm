@@ -162,7 +162,7 @@ viewBloodGlucoseByTime language results =
                     in
                     text_
                         [ transform <| "matrix(1 0 0 1 " ++ left ++ " " ++ top ++ ")"
-                        , class <| "z-score-semibold chart-helper red"
+                        , class "z-score-semibold chart-helper red"
                         ]
                         [ text indicator ]
                 )

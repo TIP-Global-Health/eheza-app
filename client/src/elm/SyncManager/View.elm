@@ -281,7 +281,7 @@ viewSyncDownloadAuthority db model webData =
                             )
             in
             div []
-                [ div [] [ text <| "Fetch from Authority" ]
+                [ div [] [ text "Fetch from Authority" ]
                 , ol [] authoritiesListHtml
                 , button [ onClick <| SyncManager.Model.SetLastFetchedRevisionIdAuthority zipper 0 ] [ text "Reset revision ID to 0" ]
                 , case webData of
@@ -293,7 +293,7 @@ viewSyncDownloadAuthority db model webData =
 
                               else
                                 div []
-                                    [ div [] [ text <| "Here is the content we've fetched in the last HTTP request:" ]
+                                    [ div [] [ text "Here is the content we've fetched in the last HTTP request:" ]
                                     , ol [] (List.map viewAuthorityEntity data.entities)
                                     ]
                             ]
@@ -968,7 +968,7 @@ viewHealthCenter ( healthCenterId, healthCenter ) isSynced =
                 ( "Add to Sync list", RevisionIdAuthorityAdd healthCenterId )
     in
     li [ style "margin-bottom" "5px" ]
-        [ text <| healthCenter.name
+        [ text healthCenter.name
         , button
             [ onClick syncMsg
             , style "margin-left" "20px"

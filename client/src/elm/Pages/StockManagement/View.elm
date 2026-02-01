@@ -309,8 +309,7 @@ viewModeMonthDetails language currentDate monthGap data =
             div [ class "row header" ]
                 [ div [ class "cell date" ] [ text <| translate language Translate.Date ]
                 , div [ class "cell from-to" ]
-                    [ text <|
-                        (translate language Translate.ReceivedFrom ++ " / " ++ translate language Translate.IssuedTo)
+                    [ text (translate language Translate.ReceivedFrom ++ " / " ++ translate language Translate.IssuedTo)
                     ]
                 , div [ class "cell batch" ] [ text <| translate language Translate.BatchNumberAbbrev ]
                 , div [ class "cell expirity" ] [ text <| translate language Translate.ExpiryDate ]

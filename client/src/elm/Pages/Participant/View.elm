@@ -492,7 +492,7 @@ viewActivityCards config language offlineSession personId activities selectedTab
             if config.showProgressReportTab then
                 let
                     progressTabTitle =
-                        translate language <| Translate.ProgressReport
+                        translate language Translate.ProgressReport
                 in
                 [ tabItem progressTabTitle (selectedTab == ProgressReport) "progressreport" (SetSelectedTab ProgressReport) ]
 

@@ -183,7 +183,7 @@ warningPopup : Language -> List (Attribute Msg) -> Maybe (Html Msg)
 warningPopup language navigateToPregnancyOutcomeAction =
     Just <|
         div [ class "ui active modal open-pregnancy-popup" ]
-            [ div [ class "content" ] <|
+            [ div [ class "content" ]
                 [ div [ class "popup-heading-wrapper" ]
                     [ img [ src "assets/images/exclamation-red.png" ] []
                     , div [ class "popup-heading warning" ] [ text <| translate language Translate.Warning ++ "!" ]

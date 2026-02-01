@@ -44,7 +44,7 @@ view language currentDate site personId initiator db =
         content =
             viewWebData language (viewContent language currentDate site db personId) identity person
     in
-    div [ class "page-report demographics" ] <|
+    div [ class "page-report demographics" ]
         [ header
         , content
         ]
@@ -206,7 +206,7 @@ viewFamilyInformationPane language site db personId person =
     in
     div [ class "family-information" ]
         [ viewItemHeading language Translate.FamilyInformation "blue"
-        , div [ class "pane-content" ] <|
+        , div [ class "pane-content" ]
             [ ubudeheItem
             , viewLineItem language Translate.NumberOfChildrenUnder5 numberOfChildren
             , childrenView
@@ -250,10 +250,10 @@ viewContactInformationPane language db person =
         , div [ class "pane-content" ]
             [ viewLineItem language Translate.TelephoneNumber (Maybe.withDefault "" person.telephoneNumber)
             , viewLineItem language Translate.HealthCenter healthCenterName
-            , div [ class "heading" ] [ text <| (translate language <| Translate.SpousePartner) ++ ":" ]
+            , div [ class "heading" ] [ text <| translate language Translate.SpousePartner ++ ":" ]
             , viewLineItem language Translate.Name (Maybe.withDefault "" person.spouseName)
             , viewLineItem language Translate.TelephoneNumber (Maybe.withDefault "" person.spousePhoneNumber)
-            , div [ class "heading" ] [ text <| (translate language <| Translate.NextOfKin) ++ ":" ]
+            , div [ class "heading" ] [ text <| translate language Translate.NextOfKin ++ ":" ]
             , viewLineItem language Translate.Name (Maybe.withDefault "" person.nextOfKinName)
             , viewLineItem language Translate.TelephoneNumber (Maybe.withDefault "" person.nextOfKinPhoneNumber)
             ]

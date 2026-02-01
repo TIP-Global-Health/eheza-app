@@ -873,8 +873,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             in
                             maleOption ++ femaleOption
             in
-            div [ class "ui grid" ] <|
-                (label :: options)
+            div [ class "ui grid" ] (label :: options)
 
         educationLevelOptions =
             allEducationLevels

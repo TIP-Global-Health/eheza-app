@@ -288,7 +288,7 @@ viewQuestionLabel language translationId =
 
 viewCustomLabel : Language -> TranslationId -> String -> String -> Html any
 viewCustomLabel language translationId suffix class_ =
-    div [ class class_ ] [ text <| (translate language translationId ++ suffix) ]
+    div [ class class_ ] [ text (translate language translationId ++ suffix) ]
 
 
 getCurrentReasonForMedicationNonAdministration :
@@ -1124,7 +1124,7 @@ viewAlert color =
 
 viewInstructionsLabel : String -> Html any -> Html any
 viewInstructionsLabel iconClass message =
-    div [ class "header icon-label" ] <|
+    div [ class "header icon-label" ]
         [ i [ class iconClass ] []
         , message
         ]
@@ -1319,7 +1319,7 @@ insertIntoSet value set =
 customPopup : Language -> Bool -> TranslationId -> String -> ( Html msg, Html msg, msg ) -> Html msg
 customPopup language showWarning actionLabel extraClass ( topMessage, bottomMessage, action ) =
     div [ class <| "ui active modal " ++ extraClass ]
-        [ div [ class "content" ] <|
+        [ div [ class "content" ]
             [ div [ class "popup-heading-wrapper" ]
                 [ img [ src "assets/images/exclamation-red.png" ] []
                 , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]

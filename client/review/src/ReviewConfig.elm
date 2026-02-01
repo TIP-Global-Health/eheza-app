@@ -20,6 +20,7 @@ import NoDebug.Log
 import NoDebug.TodoOrToString
 import NoExposingEverything
 import NoImportingEverything
+import NoLeftPizza
 import NoMissingSubscriptionsCall
 import NoMissingTypeAnnotation
 import NoMissingTypeExpose
@@ -70,16 +71,6 @@ rules =
             , "src/elm/Pages/Prenatal/Activity/View.elm"
             ]
     , NoExposingEverything.rule
-    , NoImportingEverything.rule
-        [ "Backend.Entities"
-        , "Backend.Measurement.Model"
-        , "Html"
-        , "Html.Attributes"
-        , "Html.Events"
-        , "Svg"
-        , "Svg.Attributes"
-        , "SyncManager.Model"
-        ]
     , NoMissingTypeAnnotation.rule
         |> Rule.ignoreErrorsForFiles
             [ "src/elm/SyncManager/Decoder.elm"
@@ -116,6 +107,19 @@ rules =
             ]
     , NoMissingSubscriptionsCall.rule
     , NoUselessSubscriptions.rule
+    , NoLeftPizza.rule NoLeftPizza.Redundant
+
+    -- Rules to comment out when working with --fix-all.
+    , NoImportingEverything.rule
+        [ "Backend.Entities"
+        , "Backend.Measurement.Model"
+        , "Html"
+        , "Html.Attributes"
+        , "Html.Events"
+        , "Svg"
+        , "Svg.Attributes"
+        , "SyncManager.Model"
+        ]
     ]
 
 

@@ -66,7 +66,7 @@ view language currentDate id activity db model =
 
 viewHeaderAndContent : Language -> NominalDate -> TuberculosisEncounterId -> TuberculosisActivity -> Model -> AssembledData -> Html Msg
 viewHeaderAndContent language currentDate id activity model assembled =
-    div [ class "page-activity tuberculosis" ] <|
+    div [ class "page-activity tuberculosis" ]
         [ viewHeader language id activity
         , viewContent language currentDate activity model assembled
         ]
@@ -89,7 +89,7 @@ viewHeader language id activity =
 
 viewContent : Language -> NominalDate -> TuberculosisActivity -> Model -> AssembledData -> Html Msg
 viewContent language currentDate activity model assembled =
-    div [ class "ui unstackable items" ] <|
+    div [ class "ui unstackable items" ]
         ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
             :: viewActivity language currentDate activity assembled model
         )
@@ -330,8 +330,7 @@ viewMedicationContent language assembled data =
         ]
     , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
-        [ div [ class "full content" ] <|
-            (viewForm ++ [ actions ])
+        [ div [ class "full content" ] (viewForm ++ [ actions ])
         ]
     ]
 
@@ -561,8 +560,7 @@ viewNextStepsContent language currentDate assembled data =
         ]
     , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
-        [ div [ class "full content" ] <|
-            (viewForm ++ [ actions ])
+        [ div [ class "full content" ] (viewForm ++ [ actions ])
         ]
     ]
 

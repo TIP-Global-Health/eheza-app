@@ -829,8 +829,7 @@ viewAcuteIllnessPhysicalExam language currentDate site isChw assembled data =
         ]
     , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
-        [ div [ class "full content" ] <|
-            (viewForm ++ [ actions ])
+        [ div [ class "full content" ] (viewForm ++ [ actions ])
         ]
     ]
 
@@ -1971,7 +1970,7 @@ viewContactsTracingFormRecordContactDetails language currentDate personId db dat
                         isNothing data.contactDate
                 in
                 [ viewCustomLabel language Translate.ContactsTracingCompleteDetails ":" "instructions"
-                , div [ class "ui items" ] <|
+                , div [ class "ui items" ]
                     [ viewContactTracingParticipant language
                         currentDate
                         person
@@ -2028,7 +2027,7 @@ viewContactTracingParticipant language currentDate person checked newFormState =
                     [ class "details" ]
                     [ h2
                         [ class "ui header" ]
-                        [ text <| person.name ]
+                        [ text person.name ]
                     , p []
                         [ label [] [ text <| translate language Translate.DOB ++ ": " ]
                         , span []

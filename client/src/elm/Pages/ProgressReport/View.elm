@@ -47,7 +47,7 @@ view language currentDate zscores site features isChw childId ( sessionId, sessi
             Just { setReportComponentsMsg = SetReportComponents }
 
         bottomActionData =
-            Just <|
+            Just
                 { showEndEncounterDialog = False
                 , allowEndEncounter = False
                 , closeEncounterMsg = NoOp

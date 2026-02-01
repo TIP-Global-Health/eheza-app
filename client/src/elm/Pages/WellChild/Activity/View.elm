@@ -686,8 +686,7 @@ viewDangerSignsContent language currentDate assembled data =
         ]
     , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
-        [ div [ class "full content" ] <|
-            (viewForm ++ [ actions ])
+        [ div [ class "full content" ] (viewForm ++ [ actions ])
         ]
     ]
 
@@ -894,8 +893,7 @@ viewNutritionAssessmenContent language currentDate site zscores assembled db dat
         ]
     , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
-        [ div [ class "full content" ] <|
-            (viewForm ++ [ actions ])
+        [ div [ class "full content" ] (viewForm ++ [ actions ])
         ]
     ]
 
@@ -1164,10 +1162,10 @@ viewVaccinationForm language currentDate site assembled vaccineType form =
                 vaccineType
                 form
     in
-    div [ class "ui form vaccination" ] <|
+    div [ class "ui form vaccination" ]
         [ h2 [] [ text <| translate language <| Translate.WellChildImmunisationHeader vaccineType ]
         , div [ class "instructions" ] <|
-            [ div [ class "header icon-label" ] <|
+            [ div [ class "header icon-label" ]
                 [ i [ class "icon-open-book" ] []
                 , div []
                     [ div [ class "description" ] [ text <| translate language <| Translate.WellChildImmunisationDescription site vaccineType ]
@@ -1811,8 +1809,7 @@ viewMedicationContent language currentDate site assembled data =
         ]
     , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
-        [ div [ class "full content" ] <|
-            (viewForm ++ [ actions ])
+        [ div [ class "full content" ] (viewForm ++ [ actions ])
         ]
     ]
 
@@ -2018,8 +2015,7 @@ viewNextStepsContent language currentDate zscores site features assembled db dat
         ]
     , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
-        [ div [ class "full content" ] <|
-            (viewForm ++ [ actions ])
+        [ div [ class "full content" ] (viewForm ++ [ actions ])
         ]
     ]
 
@@ -2325,7 +2321,6 @@ viewHomeVisitContent language assembled data db =
         ]
     , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
-        [ div [ class "full content" ] <|
-            (viewForm ++ [ actions ])
+        [ div [ class "full content" ] (viewForm ++ [ actions ])
         ]
     ]

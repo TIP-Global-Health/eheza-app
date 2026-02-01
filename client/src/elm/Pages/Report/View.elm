@@ -22,7 +22,7 @@ import Utils.NominalDate exposing (sortTuplesByDateDesc)
 
 viewLabsPane : Language -> (Maybe LabResultsMode -> msg) -> Html msg
 viewLabsPane language setLabResultsModeMsg =
-    div [ class "labs" ] <|
+    div [ class "labs" ]
         [ viewItemHeading language Translate.LabResults "blue"
         , div [ class "pane-content" ]
             [ div

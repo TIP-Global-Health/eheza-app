@@ -17,7 +17,8 @@
             "jfmengels/elm-review-simplify": "2.1.13",
             "jfmengels/elm-review-the-elm-architecture": "1.0.3",
             "jfmengels/elm-review-unused": "1.2.6",
-            "stil4m/elm-syntax": "7.3.9"
+            "stil4m/elm-syntax": "7.3.9",
+            "truqu/elm-review-noleftpizza": "2.0.1"
         },
         "indirect": {
             "elm/bytes": "1.0.8",

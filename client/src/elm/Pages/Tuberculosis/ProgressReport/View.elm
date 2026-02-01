@@ -73,7 +73,7 @@ view language currentDate site features id db model =
             else
                 Nothing
     in
-    div [ class "page-report tuberculosis" ] <|
+    div [ class "page-report tuberculosis" ]
         [ header
         , content
         , viewModal endEncounterDialog
@@ -551,9 +551,9 @@ viewEncounterDetailsContent language encounterId allEncountersData =
                             ]
                 in
                 [ div [ class "pane encounter-details" ]
-                    [ div [ class <| "pane-heading" ]
+                    [ div [ class "pane-heading" ]
                         [ text <| translate language Translate.EncounterDate ++ ": " ++ formatDDMMYYYY data.startDate ]
-                    , div [ class <| "pane-content" ]
+                    , div [ class "pane-content" ]
                         [ viewEntry Translate.Medication medicationDistributed currentMedicationsForView
                         , Maybe.map .takenAsPrescribedData treatmentReviewEntriesData
                             |> viewTreatmentReviewEntry Translate.TakenAsPrescribed

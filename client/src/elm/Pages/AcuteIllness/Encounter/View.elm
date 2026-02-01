@@ -155,7 +155,7 @@ viewWarningPopupSubsequentEncounter language currentDate setStateMsg diagnosis a
                 emptyNode
     in
     div [ classList [ ( "ui active modal diagnosis-popup", True ), ( "blue", isImproving ) ] ]
-        [ div [ class "content" ] <|
+        [ div [ class "content" ]
             [ div [ class "popup-heading-wrapper" ]
                 [ div [ class "popup-heading" ] [ text <| translate language Translate.Assessment ++ ":" ] ]
             , div [ class "popup-title" ]

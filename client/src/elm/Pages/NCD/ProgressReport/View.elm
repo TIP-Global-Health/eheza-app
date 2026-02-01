@@ -98,7 +98,7 @@ view language currentDate site features id initiator db model =
             else
                 Nothing
     in
-    div [ class "page-report ncd" ] <|
+    div [ class "page-report ncd" ]
         [ header
         , content
         , viewModal endEncounterDialog
@@ -376,7 +376,7 @@ viewPersonInfoPane language currentDate person =
 
 viewPaneHeading : Language -> TranslationId -> Html any
 viewPaneHeading language label =
-    div [ class <| "pane-heading" ]
+    div [ class "pane-heading" ]
         [ text <| translate language label ]
 
 
@@ -413,7 +413,7 @@ viewRiskFactorsPane language assembled =
                 |> Pages.Utils.unique
     in
     div [ class "risk-factors" ]
-        [ div [ class <| "pane-heading red" ]
+        [ div [ class "pane-heading red" ]
             [ img [ src "assets/images/exclamation-white-outline.png" ] []
             , span [] [ text <| translate language Translate.RiskFactors ]
             ]

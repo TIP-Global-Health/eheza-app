@@ -470,7 +470,7 @@ encodeChildScoreboardDataItem item =
 
 encodeChildScoreboardEncounterDataItem : ChildScoreboardEncounterDataItem -> Value
 encodeChildScoreboardEncounterDataItem item =
-    object <|
+    object
         [ ( "start_date", encodeYYYYMMDD item.startDate )
         , ( "child_scoreboard_bcg_iz", encodeEverySet encodeYYYYMMDD item.bcgImminizationDates )
         , ( "child_scoreboard_opv_iz", encodeEverySet encodeYYYYMMDD item.opvImminizationDates )

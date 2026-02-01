@@ -374,13 +374,13 @@ surveyScoreDialog language =
                                     let
                                         messageContent =
                                             if first < second then
-                                                [ text (translate language <| Translate.AdoptionSurveyProgressImproving), span [ class "icon-up" ] [] ]
+                                                [ text (translate language Translate.AdoptionSurveyProgressImproving), span [ class "icon-up" ] [] ]
 
                                             else if first > second then
-                                                [ text (translate language <| Translate.AdoptionSurveyProgressNotImproving), span [ class "icon-down" ] [] ]
+                                                [ text (translate language Translate.AdoptionSurveyProgressNotImproving), span [ class "icon-down" ] [] ]
 
                                             else
-                                                [ text (translate language <| Translate.AdoptionSurveyProgressSame) ]
+                                                [ text (translate language Translate.AdoptionSurveyProgressSame) ]
                                     in
                                     ( String.fromInt second ++ "/60"
                                     , Translate.AdoptionSurveyScoreInterpretation second
@@ -407,7 +407,7 @@ surveyScoreDialog language =
                 bottomMessage =
                     let
                         interpretation =
-                            p [ class "interpretation" ] [ text <| translate language <| interpretationFunction ]
+                            p [ class "interpretation" ] [ text <| translate language interpretationFunction ]
                     in
                     Maybe.map
                         (\message ->
@@ -642,7 +642,7 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
                         |> Maybe.withDefault emptyNode
 
                 plainTitle =
-                    div [ class <| "header", onClick messageClickedAction ]
+                    div [ class "header", onClick messageClickedAction ]
                         [ i [ class <| "icon-" ++ extraClass ++ " " ++ titleWrapperClass ] []
                         , messageCategory
                         , dateSent

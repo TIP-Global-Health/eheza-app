@@ -168,7 +168,7 @@ viewContentForChild language currentDate zscores site features childId child ini
             Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord initiator childId
 
         bottomActionData =
-            Just <|
+            Just
                 { showEndEncounterDialog = False
                 , allowEndEncounter = False
                 , closeEncounterMsg = NoOp

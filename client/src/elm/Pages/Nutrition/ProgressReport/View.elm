@@ -64,7 +64,7 @@ view language currentDate zscores site features id isChw db model =
                         ( _, pendingActivities ) =
                             partitionActivities currentDate zscores features isChw db assembled
                     in
-                    ( Just <|
+                    ( Just
                         { showEndEncounterDialog = model.showEndEncounterDialog
                         , allowEndEncounter = allowEndingEncounter isChw pendingActivities
                         , closeEncounterMsg = CloseEncounter id

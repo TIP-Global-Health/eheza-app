@@ -502,7 +502,7 @@ viewMeasurementFloatDiff language unit currentValue previousValue =
                         "down"
             in
             p
-                [ class <| "label-with-icon label-form" ]
+                [ class "label-with-icon label-form" ]
                 [ span [ class <| "icon-" ++ classSuffix ] []
                 , text <| diff ++ " " ++ translate language unit
                 ]
@@ -1121,7 +1121,7 @@ viewHealthEducationLabel language actionTranslationId iconClass maybeDate =
                     :: renderDatePart language maybeDate
                     ++ [ text "." ]
     in
-    div [ class "header icon-label" ] <|
+    div [ class "header icon-label" ]
         [ i [ class iconClass ] []
         , message
         ]
@@ -1672,7 +1672,7 @@ viewActionTakenLabel language actionTranslationId iconClass maybeDate =
                     :: renderDatePart language maybeDate
                     ++ [ text "." ]
     in
-    div [ class "header icon-label" ] <|
+    div [ class "header icon-label" ]
         [ i [ class iconClass ] []
         , message
         ]
@@ -2047,7 +2047,7 @@ viewLactation language measurement form =
                 [ text <| translate language (Translate.ActivitiesTitle activity)
                 ]
             , p [] [ text <| translate language (Translate.ActivitiesHelp activity) ]
-            , div [ class "ui form" ] <|
+            , div [ class "ui form" ]
                 [ viewQuestionLabel language Translate.IsCurrentlyBreastfeeding
                 , viewBoolInput language
                     form.breastfeeding
@@ -2319,7 +2319,7 @@ viewCorePhysicalExamForm language config form =
             ]
         , div [ class "ui grid" ]
             [ div [ class "twelve wide column" ]
-                [ div [ class "title hands" ] [ text <| (translate language Translate.Hands ++ ":") ] ]
+                [ div [ class "title hands" ] [ text (translate language Translate.Hands ++ ":") ] ]
             , div [ class "four wide column" ]
                 [ viewRedAlertForSelect
                     (form.hands |> Maybe.withDefault [])
@@ -2335,7 +2335,7 @@ viewCorePhysicalExamForm language config form =
             Translate.HandsCPESign
         , div [ class "ui grid" ]
             [ div [ class "twelve wide column" ]
-                [ div [ class "title legs" ] [ text <| (translate language Translate.Legs ++ ":") ] ]
+                [ div [ class "title legs" ] [ text (translate language Translate.Legs ++ ":") ] ]
             , div [ class "four wide column" ]
                 [ viewRedAlertForSelect
                     (form.legs |> Maybe.withDefault [])
@@ -2539,7 +2539,7 @@ viewNCDAContent language currentDate site personId person config helperState for
                                                 [ class "ui fluid primary button"
                                                 , onClick <| config.setStepMsg backStep
                                                 ]
-                                                [ text <| ("< " ++ translate language Translate.Back) ]
+                                                [ text ("< " ++ translate language Translate.Back) ]
 
                                         previousStep =
                                             List.Extra.getAt (stepIndex - 1) steps
@@ -3718,9 +3718,9 @@ fiveFoodGroupsHelperDialog language =
 mealsAtRecommendedTimesHelperDialog : Language -> Html msg
 mealsAtRecommendedTimesHelperDialog language =
     ul []
-        [ li [] [ text <| translate language <| Translate.NCDAMealFrequency6to9 ]
-        , li [] [ text <| translate language <| Translate.NCDAMealFrequency9to12 ]
-        , li [] [ text <| translate language <| Translate.NCDAMealFrequency12to24 ]
+        [ li [] [ text <| translate language Translate.NCDAMealFrequency6to9 ]
+        , li [] [ text <| translate language Translate.NCDAMealFrequency9to12 ]
+        , li [] [ text <| translate language Translate.NCDAMealFrequency12to24 ]
         ]
 
 

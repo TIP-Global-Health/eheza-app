@@ -321,7 +321,7 @@ viewParticipant language currentDate initiator relation id person =
                 , div [ class "action-icon-wrapper blue" ]
                     [ span
                         [ class "action-icon forward"
-                        , onClick <| SetActivePage <| UserPage <| nextPage
+                        , onClick <| SetActivePage <| UserPage nextPage
                         ]
                         []
                     ]
@@ -333,7 +333,7 @@ viewParticipant language currentDate initiator relation id person =
                     [ class "details" ]
                     [ h2
                         [ class "ui header" ]
-                        [ text <| person.name ]
+                        [ text person.name ]
                     , p []
                         [ label [] [ text <| translate language Translate.DOB ++ ": " ]
                         , span []

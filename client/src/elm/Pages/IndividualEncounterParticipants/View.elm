@@ -257,7 +257,7 @@ viewParticipant language currentDate encounterType id person =
                     [ class "details" ]
                     [ h2
                         [ class "ui header" ]
-                        [ text <| person.name ]
+                        [ text person.name ]
                     , p []
                         [ label [] [ text <| translate language Translate.DOB ++ ": " ]
                         , span []

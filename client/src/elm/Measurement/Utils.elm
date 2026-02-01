@@ -949,7 +949,7 @@ vaccinationFormDynamicContentAndTasks language currentDate site config vaccineTy
                         , onClick <| config.setVaccinationFormViewModeMsg (ViewModeVaccinationUpdate dose)
                         ]
                         [ text <| translate language Translate.Update ]
-                , showIf deleteAllowed <| deleteButton
+                , showIf deleteAllowed deleteButton
                 ]
 
         ( inputs, tasksCompleted, tasksActive ) =

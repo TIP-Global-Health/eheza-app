@@ -290,7 +290,7 @@ viewPageMainForChw language currentDate features healthCenterId assembled db mod
             , chwCard language (Translate.Dashboard Translate.NewbornsInCare) (String.fromInt totalNewborn)
             ]
         ]
-    , div [ class "case-management-label" ] [ text <| translate language <| Translate.CaseManagement ]
+    , div [ class "case-management-label" ] [ text <| translate language Translate.CaseManagement ]
     , div [ class "ui grid" ]
         [ div [ class "three column row" ]
             [ chwCard language Translate.AcuteIllness (String.fromInt totalAcuteIllnessFollowUps)
@@ -573,7 +573,7 @@ viewCaseManagementTable language tableData =
     table [ class "ui very basic collapsing celled table" ]
         [ thead []
             [ tr []
-                (th [ class "name" ] [ translateText language <| Translate.Name ]
+                (th [ class "name" ] [ translateText language Translate.Name ]
                     :: List.map (\month -> th [] [ span [] [ translateText language month ] ]) monthLabels
                 )
             ]
@@ -2174,7 +2174,7 @@ viewFilter language filterType currentChartFilter filter =
             [ ( "dashboard-filter", True )
             , ( "active", filter == currentChartFilter )
             ]
-        , onClick <| filterAction
+        , onClick filterAction
         ]
         [ translateText language <| Translate.Dashboard <| Translate.Filter filter ]
 
@@ -2351,9 +2351,9 @@ viewStatsTableModal language title patientsDetails data =
             [ table [ class "ui very basic collapsing celled table" ]
                 [ thead []
                     [ tr []
-                        [ th [ class "name" ] [ translateText language <| Translate.Name ]
-                        , th [ class "mother-name" ] [ translateText language <| Translate.MotherNameLabel ]
-                        , th [ class "phone-number" ] [ translateText language <| Translate.TelephoneNumber ]
+                        [ th [ class "name" ] [ translateText language Translate.Name ]
+                        , th [ class "mother-name" ] [ translateText language Translate.MotherNameLabel ]
+                        , th [ class "phone-number" ] [ translateText language Translate.TelephoneNumber ]
                         ]
                     ]
                 , tbody []

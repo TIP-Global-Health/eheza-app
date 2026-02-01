@@ -77,7 +77,7 @@ update currentDate site reverseGeoInfo selectedHealthCenter maybeVillageId isChw
                                                                 (\suspectedDuplicate ->
                                                                     ( []
                                                                     , [ SetDialogState <|
-                                                                            Just <|
+                                                                            Just
                                                                                 ( suspectedDuplicate
                                                                                 , PostPerson relation initiator personWithShard
                                                                                 )

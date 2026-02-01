@@ -12,7 +12,7 @@ update msg model =
         CloseSession ->
             ( { model | showEndSessionDialog = False }
             , Cmd.none
-            , [ Pages.Session.Model.MsgSession <| Backend.Session.Model.CloseSession
+            , [ Pages.Session.Model.MsgSession Backend.Session.Model.CloseSession
               , Pages.Session.Model.SetActivePage <| UserPage ClinicsPage
               ]
             )

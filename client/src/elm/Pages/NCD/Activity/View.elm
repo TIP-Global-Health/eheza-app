@@ -84,7 +84,7 @@ view language currentDate site id activity db model =
 
 viewHeaderAndContent : Language -> NominalDate -> Site -> NCDEncounterId -> NCDActivity -> Model -> AssembledData -> Html Msg
 viewHeaderAndContent language currentDate site id activity model assembled =
-    div [ class "page-activity ncd" ] <|
+    div [ class "page-activity ncd" ]
         [ viewHeader language id activity
         , viewContent language currentDate site activity model assembled
         ]
@@ -108,7 +108,7 @@ viewHeader language id activity =
 
 viewContent : Language -> NominalDate -> Site -> NCDActivity -> Model -> AssembledData -> Html Msg
 viewContent language currentDate site activity model assembled =
-    div [ class "ui unstackable items" ] <|
+    div [ class "ui unstackable items" ]
         ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
             :: viewActivity language currentDate site activity assembled model
         )
@@ -590,7 +590,7 @@ viewMedicalHistoryContent language site assembled data =
                                                 [ class "ui fluid primary button"
                                                 , onClick <| SetOutsideCareStep OutsideCareStepDiagnoses
                                                 ]
-                                                [ text <| ("< " ++ translate language Translate.Back) ]
+                                                [ text ("< " ++ translate language Translate.Back) ]
                                             , saveButton language saveButtonActive saveAction
                                             ]
                     in
@@ -671,7 +671,7 @@ viewOutsideCareContent language assembled form =
                             [ class "ui fluid primary button"
                             , onClick <| SetOutsideCareStep OutsideCareStepDiagnoses
                             ]
-                            [ text <| ("< " ++ translate language Translate.Back) ]
+                            [ text ("< " ++ translate language Translate.Back) ]
                         , saveButton language saveButtonActive saveAction
                         ]
     in
@@ -946,8 +946,7 @@ viewLaboratoryContent language currentDate assembled data =
         ]
     , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
-        [ div [ class "full content" ] <|
-            [ viewForm, actions ]
+        [ div [ class "full content" ] [ viewForm, actions ]
         ]
     ]
 

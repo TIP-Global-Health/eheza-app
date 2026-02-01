@@ -97,7 +97,7 @@ viewHeaderAndContent language currentDate nurse id activity model assembled =
             else
                 PrenatalRecurrentEncounterPage id
     in
-    div [ class "page-activity prenatal" ] <|
+    div [ class "page-activity prenatal" ]
         [ viewHeader language goBackPage (Translate.PrenatalRecurrentActivitiesTitle activity)
         , viewContent language currentDate isLabTech activity model assembled
         , viewModal <|
@@ -378,7 +378,7 @@ viewLabResultsContent language isLabTech assembled model =
         ]
     , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
-        [ div [ class "full content" ] <|
+        [ div [ class "full content" ]
             [ viewForm
             , actions
             ]
@@ -623,8 +623,7 @@ viewExaminationContent language currentDate assembled data =
     in
     [ div [ class "ui task segment blue" ]
         [ div [ class "ui five column grid" ] <|
-            List.map viewTask <|
-                tasks
+            List.map viewTask tasks
         ]
     , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
@@ -791,7 +790,7 @@ viewLabResultFollowUpsContent language assembled model =
         ]
     , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
-        [ div [ class "full content" ] <|
+        [ div [ class "full content" ]
             [ viewForm
             , actions
             ]
@@ -858,7 +857,7 @@ viewLabsHistoryHeaderAndContent :
     -> AssembledData
     -> Html Msg
 viewLabsHistoryHeaderAndContent language currentDate originatingEncounterId lab data assembled =
-    div [ class "page-activity prenatal labs-history" ] <|
+    div [ class "page-activity prenatal labs-history" ]
         [ viewHeader language
             (PrenatalActivityPage originatingEncounterId Backend.PrenatalActivity.Model.Laboratory)
             (Translate.LaboratoryTest lab)
@@ -1039,7 +1038,7 @@ viewLab language lab assembled data =
     in
     [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
-        [ div [ class "full content" ] <|
+        [ div [ class "full content" ]
             [ viewForm
             , actions
             ]

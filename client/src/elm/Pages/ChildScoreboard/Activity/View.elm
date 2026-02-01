@@ -73,7 +73,7 @@ view language currentDate site id activity db model =
 
 viewHeaderAndContent : Language -> NominalDate -> Site -> ChildScoreboardEncounterId -> ChildScoreboardActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
 viewHeaderAndContent language currentDate site id activity db model assembled =
-    div [ class "page-activity child-scoreboard" ] <|
+    div [ class "page-activity child-scoreboard" ]
         [ viewHeader language id activity
         , viewContent language currentDate site activity db model assembled
         ]
@@ -95,7 +95,7 @@ viewHeader language id activity =
 
 viewContent : Language -> NominalDate -> Site -> ChildScoreboardActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
 viewContent language currentDate site activity db model assembled =
-    div [ class "ui unstackable items" ] <|
+    div [ class "ui unstackable items" ]
         ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
             :: viewActivity language currentDate site activity assembled db model
         )
@@ -475,10 +475,10 @@ viewVaccinationForm language currentDate site assembled vaccineType form =
         ( contentByViewMode, _, _ ) =
             vaccinationFormDynamicContentAndTasks language currentDate site assembled vaccineType form
     in
-    div [ class "ui form vaccination" ] <|
+    div [ class "ui form vaccination" ]
         [ h2 [] [ text <| translate language <| Translate.WellChildImmunisationHeader vaccineType ]
         , div [ class "instructions" ] <|
-            [ div [ class "header icon-label" ] <|
+            [ div [ class "header icon-label" ]
                 [ i [ class "icon-open-book" ] []
                 , div []
                     [ div [ class "description" ] [ text <| translate language <| Translate.WellChildImmunisationDescription site vaccineType ]

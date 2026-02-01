@@ -547,7 +547,7 @@ selectHeathCenterOptions language nurse db =
                 ]
                 [ text location.name ]
     in
-    p [ class "select-location" ] [ text <| (translate language Translate.SelectYourHealthCenter ++ ":") ]
+    p [ class "select-location" ] [ text (translate language Translate.SelectYourHealthCenter ++ ":") ]
         :: List.map selectButton filtered
 
 
@@ -570,5 +570,5 @@ selectVillageOptions language nurse db =
                 ]
                 [ text location.name ]
     in
-    p [ class "select-location" ] [ text <| (translate language Translate.SelectYourVillage ++ ":") ]
+    p [ class "select-location" ] [ text (translate language Translate.SelectYourVillage ++ ":") ]
         :: List.map selectButton filtered

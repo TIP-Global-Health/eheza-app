@@ -4014,7 +4014,7 @@ translationSet trans =
         ByMouthThreeTimesADayForXDays days ->
             { english = "by mouth three times per day x " ++ String.fromInt days ++ " days"
             , kinyarwanda = Just <| "inshuro ebyiri ku munsi/ mu minsi " ++ String.fromInt days
-            , kirundi = Just <| "Kumira incuro 3 k'umunsi mu kiringo (Igitigiri) iminsi"
+            , kirundi = Just "Kumira incuro 3 k'umunsi mu kiringo (Igitigiri) iminsi"
             }
 
         Cancel ->
@@ -9988,7 +9988,7 @@ translationSet trans =
 
         LevelOfEducationLabel ->
             { english = "Level of Education"
-            , kinyarwanda = Just <| "Amashuri wize"
+            , kinyarwanda = Just "Amashuri wize"
             , kirundi = Just "Urugero rw'amashule yize"
             }
 
@@ -26996,7 +26996,7 @@ translateValidationError id =
         DigitsOnly ->
             { english = "should contain only digit characters"
             , kinyarwanda = Nothing
-            , kirundi = Just <| "Itegerezwa kuba irimwo ibiharuro gusa"
+            , kirundi = Just "Itegerezwa kuba irimwo ibiharuro gusa"
             }
 
         InvalidBirthDate ->

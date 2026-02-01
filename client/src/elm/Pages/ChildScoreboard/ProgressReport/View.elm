@@ -64,7 +64,7 @@ view language currentDate zscores site features id db model =
                             List.filter (expectActivity currentDate site assembled) allActivities
                                 |> List.partition (activityCompleted currentDate site assembled)
                     in
-                    ( Just <|
+                    ( Just
                         { showEndEncounterDialog = model.showAIEncounterPopup
                         , allowEndEncounter = List.isEmpty pendingActivities
                         , closeEncounterMsg = CloseEncounter id

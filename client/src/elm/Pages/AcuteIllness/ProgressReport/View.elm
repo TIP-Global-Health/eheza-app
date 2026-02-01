@@ -772,7 +772,7 @@ viewTreatmentSigns language initialEncounter firstInitialWithSubsequent secondIn
                                                         [ text "- "
                                                         , text <| translate language <| Translate.AdverseEventSinglePlural <| List.length events
                                                         , text " "
-                                                        , text <| translate language <| Translate.To
+                                                        , text <| translate language Translate.To
                                                         , text " "
                                                         , text medications
                                                         , text ": "
@@ -803,7 +803,7 @@ viewTreatmentSigns language initialEncounter firstInitialWithSubsequent secondIn
                                             >> viewTreatmentOngoing dataSubsequent.startDate
                                             >> List.append
                                                 [ div [ class "visit-date" ]
-                                                    [ text <| translate language <| Translate.On
+                                                    [ text <| translate language Translate.On
                                                     , text " "
                                                     , text <| formatDDMMYYYY dataSubsequent.startDate
                                                     , text " :"
@@ -1121,13 +1121,13 @@ viewNonAdministrationReason language medicineTranslationId iconClass maybeDate r
             div [] <|
                 [ span [ class "medicine" ] [ text <| translate language medicineTranslationId ]
                 , text " "
-                , text <| translate language <| Translate.RecommendedButNotGivenDueTo
+                , text <| translate language Translate.RecommendedButNotGivenDueTo
                 , text ": "
                 , text <| translate language <| Translate.AdministrationNote reason
                 ]
                     ++ renderDatePart language maybeDate
     in
-    div [ class "header icon-label" ] <|
+    div [ class "header icon-label" ]
         [ i [ class iconClass ] []
         , message
         ]

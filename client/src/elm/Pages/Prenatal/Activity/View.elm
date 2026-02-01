@@ -143,7 +143,7 @@ view language currentDate zscores site id isChw activity db model =
 
 viewHeaderAndContent : Language -> NominalDate -> ZScore.Model.Model -> Site -> PrenatalEncounterId -> Bool -> PrenatalActivity -> Model -> AssembledData -> Html Msg
 viewHeaderAndContent language currentDate zscores site id isChw activity model assembled =
-    div [ class "page-activity prenatal" ] <|
+    div [ class "page-activity prenatal" ]
         [ viewHeader language id activity assembled
         , viewContent language currentDate zscores site isChw activity model assembled
         , viewModal <|
@@ -253,42 +253,42 @@ warningPopup language encounterDiagnoses setStateMsg state =
                                                 , p [] [ text <| translate language Translate.FollowPostpartumProtocols ]
                                                 ]
                                 in
-                                Just <|
+                                Just
                                     ( top
                                     , bottom
                                     , setStateMsg Nothing
                                     )
 
                         WarningPopupUrgent ( top, bottom ) ->
-                            Just <|
+                            Just
                                 ( p [] [ text top ]
                                 , p [] [ text bottom ]
                                 , setStateMsg Nothing
                                 )
 
                         WarningPopupTuberculosis ->
-                            Just <|
+                            Just
                                 ( p [] [ text <| translate language Translate.TuberculosisWarning ]
                                 , p [] [ text <| translate language Translate.TuberculosisInstructions ]
                                 , setStateMsg Nothing
                                 )
 
                         WarningPopupMentalHealth mentalHealthAction ->
-                            Just <|
+                            Just
                                 ( p [] [ text <| translate language Translate.PrenatalMentalHealthWarningPopupMessage ]
                                 , p [] [ text <| translate language Translate.PrenatalMentalHealthWarningPopupInstructions ]
                                 , mentalHealthAction
                                 )
 
                         WarningPopupTreatmentReview treatmentReviewAtion ->
-                            Just <|
+                            Just
                                 ( p [] [ text <| translate language Translate.TreatmentReviewWarningPopupMessage ]
                                 , p [] [ text <| translate language Translate.TreatmentReviewWarningPopupInstructions ]
                                 , treatmentReviewAtion
                                 )
 
                         WarningPopupVitaminA treatmentReviewAtion ->
-                            Just <|
+                            Just
                                 ( p [] [ text <| translate language Translate.VitaminAWarningPopupMessage ]
                                 , emptyNode
                                 , treatmentReviewAtion
@@ -814,7 +814,7 @@ viewHistoryContent language assembled data =
                                                 [ class "ui fluid primary button"
                                                 , onClick BackToOBHistoryStep1
                                                 ]
-                                                [ text <| ("< " ++ translate language Translate.Back) ]
+                                                [ text ("< " ++ translate language Translate.Back) ]
                                             , saveButton language
                                                 saveButtonActive
                                                 (SaveOBHistoryStep2
@@ -866,7 +866,7 @@ viewHistoryContent language assembled data =
                                                 [ class "ui fluid primary button"
                                                 , onClick <| SetOutsideCareStep OutsideCareStepDiagnoses
                                                 ]
-                                                [ text <| ("< " ++ translate language Translate.Back) ]
+                                                [ text ("< " ++ translate language Translate.Back) ]
                                             , saveButton language saveButtonActive saveAction
                                             ]
                     in
@@ -886,8 +886,7 @@ viewHistoryContent language assembled data =
     in
     [ div [ class "ui task segment blue", id tasksBarId ]
         [ div [ class "ui five column grid" ] <|
-            List.map viewTask <|
-                tasks
+            List.map viewTask tasks
         ]
     , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
@@ -1092,8 +1091,7 @@ viewExaminationContent language currentDate zscores assembled data =
     in
     [ div [ class "ui task segment blue" ]
         [ div [ class "ui five column grid" ] <|
-            List.map viewTask <|
-                tasks
+            List.map viewTask tasks
         ]
     , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
@@ -1292,8 +1290,7 @@ viewMedicationContent language currentDate assembled data =
         ]
     , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
-        [ div [ class "full content" ] <|
-            (viewForm ++ [ actions ])
+        [ div [ class "full content" ] (viewForm ++ [ actions ])
         ]
     ]
 
@@ -1770,8 +1767,7 @@ viewLaboratoryContentForNurse language currentDate assembled data =
         ]
     , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
-        [ div [ class "full content" ] <|
-            [ viewForm, actions ]
+        [ div [ class "full content" ] [ viewForm, actions ]
         ]
     ]
 
@@ -1802,7 +1798,7 @@ viewLaboratoryContentForChw language assembled data =
     [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
-            [ div [ class "ui form laboratory pregnancy-testing" ] <|
+            [ div [ class "ui form laboratory pregnancy-testing" ]
                 [ viewLabel language Translate.PregnancyUrineTest
                 , resultInput
                 ]
@@ -1910,7 +1906,7 @@ viewMentalHealthContent language assembled data =
                                 [ class "ui fluid primary button"
                                 , onClick <| SetMentalHealthStep prevStep
                                 ]
-                                [ text <| ("< " ++ translate language Translate.Back) ]
+                                [ text ("< " ++ translate language Translate.Back) ]
                             , saveButton language saveButtonActive saveAction
                             ]
                     )
@@ -2361,7 +2357,7 @@ viewSymptomReviewContent language assembled data =
                             [ class "ui fluid primary button"
                             , onClick <| SetSymptomReviewStep SymptomReviewStepSymptoms
                             ]
-                            [ text <| ("< " ++ translate language Translate.Back) ]
+                            [ text ("< " ++ translate language Translate.Back) ]
                         , saveButton language saveButtonActive saveAction
                         ]
 
@@ -2825,10 +2821,10 @@ viewVaccinationForm language currentDate site assembled vaccineType form =
         ( contentByViewMode, _, _ ) =
             vaccinationFormDynamicContentAndTasks language currentDate site assembled vaccineType form
     in
-    div [ class "ui form vaccination" ] <|
+    div [ class "ui form vaccination" ]
         [ h2 [] [ text <| translate language <| Translate.PrenatalImmunisationHeader vaccineType ]
         , div [ class "instructions" ] <|
-            [ div [ class "header icon-label" ] <|
+            [ div [ class "header icon-label" ]
                 [ i [ class "icon-open-book" ] []
                 , div [ class "description" ] [ text <| translate language <| Translate.PrenatalImmunisationDescription vaccineType ]
                 ]
@@ -2915,11 +2911,11 @@ obstetricFormFirstStepInputsAndTasks language form =
       , div [ class "separator" ] []
       , div [ class "results" ]
             [ div [ class "gravida-result" ]
-                [ span [ class "label" ] [ text <| (translate language Translate.Gravida ++ ":") ]
+                [ span [ class "label" ] [ text (translate language Translate.Gravida ++ ":") ]
                 , span [] [ text gravida ]
                 ]
             , div [ class "para-result" ]
-                [ span [ class "label" ] [ text <| (translate language Translate.Para ++ ":") ]
+                [ span [ class "label" ] [ text (translate language Translate.Para ++ ":") ]
                 , span [] [ text para ]
                 ]
             ]

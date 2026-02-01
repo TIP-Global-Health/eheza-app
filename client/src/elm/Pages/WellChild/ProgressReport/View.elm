@@ -160,7 +160,7 @@ view language currentDate zscores site features id isChw db model =
                         ( _, pendingActivities ) =
                             partitionActivities currentDate zscores site features isChw db assembled
                     in
-                    ( Just <|
+                    ( Just
                         { showEndEncounterDialog = model.showEndEncounterDialog
                         , allowEndEncounter = allowEndingEncounter currentDate pendingActivities assembled
                         , closeEncounterMsg = CloseEncounter id
@@ -989,7 +989,7 @@ viewWarningEntry language ( date, ( milestone, warning, status ) ) =
 
 viewVaccinationHistoryPane : Language -> NominalDate -> Site -> Person -> VaccinationProgressDict -> Html any
 viewVaccinationHistoryPane language currentDate site child vaccinationProgress =
-    div [ class "pane vaccination-history" ] <|
+    div [ class "pane vaccination-history" ]
         [ viewPaneHeading language Translate.ImmunizationHistory
         , div [ class "pane-content" ] <|
             viewVaccinationOverview language currentDate site child vaccinationProgress
@@ -1036,7 +1036,7 @@ viewECDPane language currentDate child wellChildEncounters individualWellChildMe
                 entries =
                     List.map viewMilestone milestonesToCurrentDateWithStatus
             in
-            div [ class "pane ecd" ] <|
+            div [ class "pane ecd" ]
                 [ viewPaneHeading language Translate.EarlyChildhoodDevelopment
                 , div [ class "pane-content overflow" ]
                     [ div [ class "ecd-milestones" ] <|
@@ -1590,7 +1590,7 @@ viewNextAppointmentPane language child individualWellChildMeasurements db =
                     )
                 |> Maybe.withDefault []
     in
-    div [ class "pane next-appointment" ] <|
+    div [ class "pane next-appointment" ]
         [ viewPaneHeading language Translate.NextAppointment
         , div [ class "pane-content" ] <|
             entriesHeading
@@ -1600,7 +1600,7 @@ viewNextAppointmentPane language child individualWellChildMeasurements db =
 
 viewPaneHeading : Language -> TranslationId -> Html any
 viewPaneHeading language label =
-    div [ class <| "pane-heading" ]
+    div [ class "pane-heading" ]
         [ text <| translate language label ]
 
 
