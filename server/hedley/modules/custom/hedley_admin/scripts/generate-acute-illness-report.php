@@ -30,15 +30,15 @@ drush_print("# Acute Illness report - $region_name - $start_date - $end_date");
 
 // Get all of the encounters and the related participations.
 $result = db_query("
-SELECT 
+SELECT
     ip.entity_id as encounter, ip.field_individual_participant_target_id as participant
-  FROM 
+  FROM
     field_data_field_individual_participant ip
   LEFT JOIN
     field_data_field_scheduled_date sd ON ip.entity_id = sd.entity_id
-  LEFT JOIN 
+  LEFT JOIN
     field_data_field_person person ON ip.field_individual_participant_target_id=person.entity_id
-  LEFT JOIN 
+  LEFT JOIN
     field_data_field_district district ON person.field_person_target_id=district.entity_id
   WHERE
     ip.bundle = 'acute_illness_encounter'
@@ -62,6 +62,8 @@ foreach ($result as $item) {
 $first_encounters = array_unique($first_encounters);
 
 $diagnoses = [];
+$malaria_test_count = 0;
+
 // Now get the diagnosis for each first encounter.
 foreach ($first_encounters as $first_encounter) {
 
@@ -69,6 +71,17 @@ foreach ($first_encounters as $first_encounter) {
   $result = db_query($query)->fetchField();
   if ($result) {
     $diagnoses[] = $result;
+    if ($result == 'fever-of-unknown-origin') {
+      $check_malaria = db_query('SELECT field_malaria_rapid_test_value
+        FROM field_data_field_malaria_rapid_test mrt
+        LEFT JOIN field_data_field_acute_illness_encounter aie ON aie.entity_id  = mrt.entity_id
+        LEFT JOIN field_data_field_acute_illness_diagnosis di ON aie.field_acute_illness_encounter_target_id  = di.entity_id
+        WHERE di.entity_id = ' . $first_encounter)->fetchField();
+
+      if ($check_malaria == 'unable-to-run') {
+        $malaria_test_count++;
+      }
+    }
   }
 }
 
@@ -95,21 +108,23 @@ $data[] = [
 $table = new HedleyAdminTextTable(['Initial Diagnosis', 'Count']);
 drush_print($table->render($data));
 
+drush_print ('Malaria tests: ' . $malaria_test_count);
+
 
 // ANC Diagnoses.
 drush_print("# ANC Diagnoses report - $region_name - $start_date - $end_date");
 
 // Get all of the encounters and the related participations.
 $result = db_query("
-SELECT 
+SELECT
     ip.entity_id as encounter, ip.field_individual_participant_target_id as participant
-  FROM 
+  FROM
     field_data_field_individual_participant ip
   LEFT JOIN
     field_data_field_scheduled_date sd ON ip.entity_id = sd.entity_id
-  LEFT JOIN 
+  LEFT JOIN
     field_data_field_person person ON ip.field_individual_participant_target_id=person.entity_id
-  LEFT JOIN 
+  LEFT JOIN
     field_data_field_district district ON person.field_person_target_id=district.entity_id
   WHERE
     ip.bundle = 'prenatal_encounter'
@@ -147,6 +162,3 @@ $data[] = [
   'Total',
   count($diagnoses),
 ];
-
-$table = new HedleyAdminTextTable(['ANC Diagnosis', 'Count']);
-drush_print($table->render($data));
