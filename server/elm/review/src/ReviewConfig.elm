@@ -50,8 +50,7 @@ config =
 rules : List Rule
 rules =
     [ NoRedundantlyQualifiedType.rule
-    , NoSimpleLetBody.rule
-    , Docs.UpToDateReadmeLinks.rule
+    , Docs.ReviewLinksAndSections.rule
     , Docs.ReviewAtDocs.rule
     , Docs.UpToDateReadmeLinks.rule
     , Docs.NoMissing.rule { document = onlyExposed, from = exposedModules }
