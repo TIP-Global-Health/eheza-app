@@ -35,6 +35,7 @@ import NoUnused.Variables
 import NoUselessSubscriptions
 import Review.Rule as Rule exposing (Rule)
 import Simplify
+import Validate.Regexes
 
 
 config : List Rule
@@ -108,6 +109,7 @@ rules =
     , NoMissingSubscriptionsCall.rule
     , NoUselessSubscriptions.rule
     , NoLeftPizza.rule NoLeftPizza.Redundant
+    , Validate.Regexes.rule
 
     -- Rules to comment out when working with --fix-all.
     , NoImportingEverything.rule

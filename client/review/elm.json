@@ -17,6 +17,7 @@
             "jfmengels/elm-review-simplify": "2.1.13",
             "jfmengels/elm-review-the-elm-architecture": "1.0.3",
             "jfmengels/elm-review-unused": "1.2.6",
+            "miniBill/elm-review-validate-regexes": "1.0.0",
             "stil4m/elm-syntax": "7.3.9",
             "truqu/elm-review-noleftpizza": "2.0.1"
         },
