@@ -20,6 +20,8 @@ import NoDebug.Log
 import NoDebug.TodoOrToString
 import NoExposingEverything
 import NoImportingEverything
+import NoLeftPizza
+import NoMissingSubscriptionsCall
 import NoMissingTypeAnnotation
 import NoMissingTypeExpose
 import NoPrematureLetComputation
@@ -30,8 +32,10 @@ import NoUnused.Exports
 import NoUnused.Parameters
 import NoUnused.Patterns
 import NoUnused.Variables
+import NoUselessSubscriptions
 import Review.Rule as Rule exposing (Rule)
 import Simplify
+import Validate.Regexes
 
 
 config : List Rule
@@ -63,17 +67,6 @@ rules =
             , "src/Pages/ScoreboardMenu/View.elm"
             ]
     , NoExposingEverything.rule
-    , NoImportingEverything.rule
-        [ "Backend.Entities"
-        , "Html"
-        , "Html.Attributes"
-        , "Html.Events"
-        , "Svg"
-        , "Svg.Attributes"
-        , "Backend.Completion.Model"
-        , "Backend.ScoreboardMenu.Model"
-        , "Utils.GeoLocation"
-        ]
     , NoMissingTypeAnnotation.rule
         |> Rule.ignoreErrorsForFiles
             [ "src/Pages/Completion/View.elm"
@@ -88,6 +81,23 @@ rules =
     , NoUnused.Patterns.rule
     , NoUnused.Variables.rule
     , Simplify.rule Simplify.defaults
+    , NoMissingSubscriptionsCall.rule
+    , NoUselessSubscriptions.rule
+    , NoLeftPizza.rule NoLeftPizza.Redundant
+    , Validate.Regexes.rule
+
+    -- Rules to comment out when working with --fix-all.
+    -- , NoImportingEverything.rule
+    --     [ "Backend.Entities"
+    --     , "Html"
+    --     , "Html.Attributes"
+    --     , "Html.Events"
+    --     , "Svg"
+    --     , "Svg.Attributes"
+    --     , "Backend.Completion.Model"
+    --     , "Backend.ScoreboardMenu.Model"
+    --     , "Utils.GeoLocation"
+    --     ]
     ]
 
 

@@ -1,6 +1,5 @@
 module App.Update exposing
     ( init
-    , subscriptions
     , update
     )
 
@@ -216,8 +215,3 @@ update msg model =
             ( { model | currentTime = date }
             , Cmd.none
             )
-
-
-subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Sub.none

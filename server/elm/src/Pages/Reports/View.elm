@@ -1831,10 +1831,10 @@ generatePrenatalReportData language limitDate records =
                 , [ translate language <| Translate.DeliveryLocation HomeDelivery
                   , String.fromInt homeDeliveries
                   ]
-                , [ translate language <| Translate.DeliveryLocationsTableTotals
+                , [ translate language Translate.DeliveryLocationsTableTotals
                   , String.fromInt totalDeliveries
                   ]
-                , [ translate language <| Translate.DeliveryLocationsTablePercentage
+                , [ translate language Translate.DeliveryLocationsTablePercentage
                   , calculatePercentage totalDeliveries totalCompletedPregnancies
                   ]
                 ]
@@ -1972,7 +1972,7 @@ viewAcuteIllnessReport language limitDate startDate scopeLabel records =
         csvContent =
             reportTableDataToCSV data
     in
-    div [ class "report acute-illness" ] <|
+    div [ class "report acute-illness" ]
         [ div [ class "table" ] <|
             captionsRow
                 :: List.map viewStandardRow data.rows
@@ -2076,7 +2076,7 @@ viewPrenatalDiagnosesReport language limitDate scopeLabel records =
         csvContent =
             reportTableDataToCSV data
     in
-    div [ class "report prenatal-diagnoses" ] <|
+    div [ class "report prenatal-diagnoses" ]
         [ div [ class "table" ] <|
             captionsRow
                 :: List.map viewStandardRow data.rows

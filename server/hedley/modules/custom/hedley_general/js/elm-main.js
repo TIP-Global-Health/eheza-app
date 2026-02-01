@@ -4568,6 +4568,10 @@ var _Bitwise_shiftRightZfBy = F2(function(offset, a)
 {
 	return a >>> offset;
 });
+var $elm$core$Basics$always = F2(
+	function (a, _v0) {
+		return a;
+	});
 var $elm$core$List$cons = _List_cons;
 var $elm$core$Elm$JsArray$foldr = _JsArray_foldr;
 var $elm$core$Array$foldr = F3(
@@ -6109,10 +6113,6 @@ var $author$project$Pages$Reports$Utils$isWideScope = function (selectedEntity) 
 var $author$project$Pages$Reports$Model$NutritionReportDataCalculationCompleted = function (a) {
 	return {$: 'NutritionReportDataCalculationCompleted', a: a};
 };
-var $elm$core$Basics$always = F2(
-	function (a, _v0) {
-		return a;
-	});
 var $justinmimbs$date$Date$Years = {$: 'Years'};
 var $elm$core$List$concat = function (lists) {
 	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
@@ -10583,9 +10583,6 @@ var $author$project$App$Update$init = function (flags) {
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $author$project$App$Update$subscriptions = function (_v0) {
-	return $elm$core$Platform$Sub$none;
-};
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
 var $elm$html$Html$map = $elm$virtual_dom$VirtualDom$map;
@@ -42426,7 +42423,7 @@ var $author$project$App$View$view = function (model) {
 var $author$project$Main$main = $elm$browser$Browser$element(
 	{
 		init: $author$project$App$Update$init,
-		subscriptions: $author$project$App$Update$subscriptions,
+		subscriptions: $elm$core$Basics$always($elm$core$Platform$Sub$none),
 		update: A2($Gizra$elm_fetch$Update$Fetch$andThenFetch, $author$project$App$Fetch$fetch, $author$project$App$Update$update),
 		view: $author$project$App$View$view
 	});

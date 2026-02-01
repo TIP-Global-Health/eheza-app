@@ -14,5 +14,5 @@ main =
         { init = App.Update.init
         , update = Update.Fetch.andThenFetch App.Fetch.fetch App.Update.update
         , view = App.View.view
-        , subscriptions = App.Update.subscriptions
+        , subscriptions = always Sub.none
         }

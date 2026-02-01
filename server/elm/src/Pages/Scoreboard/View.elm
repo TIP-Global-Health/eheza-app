@@ -1160,7 +1160,7 @@ viewInfrastructureEnvironmentWashPane language currentDate yearSelectorGap month
 
 viewPaneHeading : Language -> TranslationId -> Html any
 viewPaneHeading language label =
-    div [ class <| "pane-heading" ]
+    div [ class "pane-heading" ]
         [ text <| translate language label ]
 
 

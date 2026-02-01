@@ -73,7 +73,7 @@ viewLabel language translationId =
 
 viewCustomLabel : Language -> TranslationId -> String -> String -> Html any
 viewCustomLabel language translationId suffix class_ =
-    div [ class class_ ] [ text <| (translate language translationId ++ suffix) ]
+    div [ class class_ ] [ text (translate language translationId ++ suffix) ]
 
 
 
