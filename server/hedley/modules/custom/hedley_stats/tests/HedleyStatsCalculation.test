@@ -518,45 +518,8 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
 
     $this->createMuac('nutrition_muac', $encounter->nid, $child_id, $muac_value, $timestamp);
 
-    $weight = (object) [
-      'type' => 'nutrition_weight',
-      'field_person' => [
-        LANGUAGE_NONE => [
-          ['target_id' => $child_id],
-        ],
-      ],
-      'field_date_measured' => [
-        LANGUAGE_NONE => [
-          ['value' => date('Y-m-d', $timestamp)],
-        ],
-      ],
-      'field_nurse' => [
-        LANGUAGE_NONE => [
-          ['target_id' => $nurse_uid],
-        ],
-      ],
-      'field_nutrition_encounter' => [
-        LANGUAGE_NONE => [
-          ['target_id' => $encounter->nid],
-        ],
-      ],
-      'field_weight' => [
-        LANGUAGE_NONE => [
-          ['value' => $weight_value],
-        ],
-      ],
-      'field_zscore_length' => [
-        LANGUAGE_NONE => [
-          ['value' => $zscore_value],
-        ],
-      ],
-      'field_shards' => [
-        LANGUAGE_NONE => [
-          ['target_id' => $this->healthCenterId],
-        ],
-      ],
-    ];
-    node_save($weight);
+    $weight_id = $this->createWeight($encounter->nid, $child_id, $weight_value, $timestamp);
+    $weight = node_load($weight_id);
 
     $nutrition = (object) [
       'type' => 'nutrition_nutrition',

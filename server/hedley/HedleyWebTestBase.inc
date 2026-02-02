@@ -424,15 +424,31 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    *   The node ID of the weight.
    */
   public function createWeight($session_id, $child_id, $weight, $timestamp = REQUEST_TIME) {
-    $node = $this->drupalCreateNode(['type' => 'weight']);
+    $node = (object) [
+      'type' => 'weight',
+      'field_person' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $child_id],
+        ],
+      ],
+      'field_date_measured' => [
+        LANGUAGE_NONE => [
+          ['value' => date('Y-m-d', $timestamp)],
+        ],
+      ],
+      'field_session' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $session_id],
+        ],
+      ],
+      'field_weight' => [
+        LANGUAGE_NONE => [
+          ['value' => $weight],
+        ],
+      ],
+    ];
 
-    $wrapper = entity_metadata_wrapper('node', $node);
-    $wrapper->field_person->set($child_id);
-    $wrapper->field_date_measured->set($timestamp);
-    $wrapper->field_session->set($session_id);
-    $wrapper->field_weight->set($weight);
-    $wrapper->save();
-
+    node_save($node);
     return $node->nid;
   }
 
