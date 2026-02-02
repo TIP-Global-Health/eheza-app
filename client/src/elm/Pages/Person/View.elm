@@ -48,7 +48,7 @@ import Form exposing (Form)
 import Form.Field
 import Form.Input
 import GeoLocation.Model exposing (GeoInfo, ReverseGeoInfo)
-import GeoLocation.Utils exposing (..)
+import GeoLocation.Utils exposing (filterGeoLocationDictByParent, geoLocationDictToOptions, resolveGeoSructureLabelLevel1, resolveGeoSructureLabelLevel2, resolveGeoSructureLabelLevel3, resolveGeoSructureLabelLevel4, resolveGeoSructureLabelLevel5)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffMonths, formatDDMMYYYY)
 import Html exposing (..)
@@ -58,7 +58,7 @@ import Json.Decode
 import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Person.Model exposing (..)
+import Pages.Person.Model exposing (Model, Msg(..))
 import Pages.Utils exposing (viewConfirmationDialog)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -85,7 +85,7 @@ view language currentDate isChw initiator id db =
     in
     div
         [ class "page-person" ]
-        [ viewHeader language initiator headerName
+        [ viewHeader initiator headerName
         , div
             [ class "ui full segment blue" ]
             [ viewWebData language (viewParticipantDetailsForm language currentDate isChw initiator db id) identity person
@@ -93,8 +93,8 @@ view language currentDate isChw initiator id db =
         ]
 
 
-viewHeader : Language -> Initiator -> String -> Html App.Model.Msg
-viewHeader language initiator name =
+viewHeader : Initiator -> String -> Html App.Model.Msg
+viewHeader initiator name =
     let
         goBackPage =
             UserPage (PersonsPage Nothing initiator)
@@ -248,7 +248,7 @@ viewParticipantDetailsForm language currentDate isChw initiator db id person =
             [ text <| translate language Translate.DemographicInformation ++ ": " ]
         , div
             [ class "ui unstackable items participants-list" ]
-            [ viewPerson language currentDate initiator db id person ]
+            [ viewPerson language currentDate initiator id person ]
         , h3
             [ class "ui header" ]
             [ text <| translate language Translate.FamilyMembers ++ ": " ]
@@ -258,8 +258,8 @@ viewParticipantDetailsForm language currentDate isChw initiator db id person =
         ]
 
 
-viewPerson : Language -> NominalDate -> Initiator -> ModelIndexedDb -> PersonId -> Person -> Html App.Model.Msg
-viewPerson language currentDate initiator db id person =
+viewPerson : Language -> NominalDate -> Initiator -> PersonId -> Person -> Html App.Model.Msg
+viewPerson language currentDate initiator id person =
     let
         typeForThumbnail =
             defaultIconForPerson currentDate person
@@ -846,15 +846,6 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                     div [ class "six wide column required" ]
                         [ text <| translate language Translate.GenderLabel ++ ":" ]
 
-                maleOption =
-                    [ Form.Input.radioInput "male"
-                        genderField
-                        [ class "one wide column gender-input" ]
-                    , div
-                        [ class "three wide column" ]
-                        [ text <| translate language (Translate.Gender Male) ]
-                    ]
-
                 femaleOption =
                     [ Form.Input.radioInput "female"
                         genderField
@@ -866,17 +857,23 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
 
                 options =
                     case originBasedSettings.expectedGender of
-                        ExpectMale ->
-                            maleOption
-
                         ExpectFemale ->
                             femaleOption
 
                         ExpectMaleOrFemale ->
+                            let
+                                maleOption =
+                                    [ Form.Input.radioInput "male"
+                                        genderField
+                                        [ class "one wide column gender-input" ]
+                                    , div
+                                        [ class "three wide column" ]
+                                        [ text <| translate language (Translate.Gender Male) ]
+                                    ]
+                            in
                             maleOption ++ femaleOption
             in
-            div [ class "ui grid" ] <|
-                (label :: options)
+            div [ class "ui grid" ] (label :: options)
 
         educationLevelOptions =
             allEducationLevels
@@ -915,25 +912,6 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                         ( hivStatusToString status
                         , translate language <| Translate.HIVStatus status
                         )
-                    )
-                |> (::) emptyOption
-
-        hmisNumberOptions =
-            List.repeat 15 ""
-                |> List.indexedMap
-                    (\index _ ->
-                        let
-                            order =
-                                index + 1
-
-                            orderAsString =
-                                if order < 10 then
-                                    "0" ++ String.fromInt order
-
-                                else
-                                    String.fromInt order
-                        in
-                        ( orderAsString, orderAsString )
                     )
                 |> (::) emptyOption
 
@@ -978,20 +956,30 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
             viewSelectInput language Translate.HIVStatusLabel hivStatusOptions Backend.Person.Form.hivStatus "ten" "select-input" False personForm
 
         -- Not in use anymore - not displayed on form.
-        numberOfChildrenUnder5Input =
-            let
-                options =
-                    emptyOption
-                        :: (List.repeat 5 "."
-                                |> List.indexedMap (\index _ -> ( String.fromInt index, String.fromInt index ))
-                           )
-            in
-            viewSelectInput language Translate.NumberOfChildrenUnder5 options Backend.Person.Form.numberOfChildren "ten" "select-input" False personForm
-
         -- Used only on Rwanda site.
         hmisNumberInput =
             case site of
                 SiteRwanda ->
+                    let
+                        hmisNumberOptions =
+                            List.repeat 15 ""
+                                |> List.indexedMap
+                                    (\index _ ->
+                                        let
+                                            order =
+                                                index + 1
+
+                                            orderAsString =
+                                                if order < 10 then
+                                                    "0" ++ String.fromInt order
+
+                                                else
+                                                    String.fromInt order
+                                        in
+                                        ( orderAsString, orderAsString )
+                                    )
+                                |> (::) emptyOption
+                    in
                     viewSelectInput language Translate.ChildHmisNumber hmisNumberOptions Backend.Person.Form.hmisNumber "ten" "select-input" False personForm
 
                 _ ->
@@ -1143,7 +1131,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                                 isFormFieldSet district
                         in
                         viewSelectInput language
-                            (resolveGeoSructureLabelLevel1 site)
+                            resolveGeoSructureLabelLevel1
                             options
                             Backend.Person.Form.province
                             "ten"

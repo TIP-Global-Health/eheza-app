@@ -1,4 +1,4 @@
-module Backend.WellChildEncounter.Model exposing (..)
+module Backend.WellChildEncounter.Model exposing (EncounterNote(..), EncounterWarning(..), Model, Msg(..), PediatricCareMilestone(..), WellChildEncounter, WellChildEncounterType(..), ecdMilestoneWarnings, emptyModel, emptyWellChildEncounter, headCircumferenceWarnings, pediatricCareMilestones)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)

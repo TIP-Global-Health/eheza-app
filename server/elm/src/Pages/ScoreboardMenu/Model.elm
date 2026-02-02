@@ -1,4 +1,4 @@
-module Pages.ScoreboardMenu.Model exposing (..)
+module Pages.ScoreboardMenu.Model exposing (Model, Msg(..), emptyModel)
 
 import Pages.Components.Model exposing (DemographicsSelection, emptyDemographicsSelection)
 

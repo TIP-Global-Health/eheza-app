@@ -1,4 +1,4 @@
-module Activity.Utils exposing (..)
+module Activity.Utils exposing (decodeActivityFromString, encodeActivityAsString, generateNutritionAssessment, getActivityCountForMother, getActivityIcon, getAllChildActivities, getAllChildActivitiesExcludingNextSteps, getAllMotherActivities, getParticipantCountForActivity, isCaregiver, mandatoryActivitiesCompleted, motherIsCheckedIn, summarizeChildActivity, summarizeChildParticipant, summarizeMotherActivity, summarizeMotherParticipant)
 
 {-| Various utilities that deal with "activities". An activity represents the
 need for a nurse to do something with respect to a person who is checked in.
@@ -10,7 +10,7 @@ expected (and not completed).
 
 -}
 
-import Activity.Model exposing (..)
+import Activity.Model exposing (Activity(..), ChildActivity(..), CompletedAndPending, MotherActivity(..), SummaryByActivity, SummaryByParticipant)
 import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
@@ -20,8 +20,8 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
 import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
-import Backend.Session.Model exposing (..)
-import Backend.Session.Utils exposing (getChildMeasurementData2, getChildren, getMotherMeasurementData2, getMyMother)
+import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession)
+import Backend.Session.Utils exposing (getChildMeasurementData2, getChildren, getMotherMeasurementData2)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import LocalData
@@ -224,14 +224,6 @@ getActivityIcon activity =
                     "forms"
 
 
-getAllActivities : OfflineSession -> List Activity
-getAllActivities offlineSession =
-    List.concat
-        [ List.map ChildActivity (getAllChildActivities offlineSession)
-        , List.map MotherActivity (getAllMotherActivities offlineSession)
-        ]
-
-
 getAllChildActivitiesExcludingNextSteps : OfflineSession -> List Activity
 getAllChildActivitiesExcludingNextSteps offlineSession =
     List.concat
@@ -426,8 +418,8 @@ allMandatoryActivities =
 Note that we don't consider whether the mother is checked in here -- just
 whether we would expect to perform this action if checked in.
 -}
-expectMotherActivity : NominalDate -> OfflineSession -> PersonId -> MotherActivity -> Bool
-expectMotherActivity currentDate offlineSession motherId activity =
+expectMotherActivity : OfflineSession -> PersonId -> MotherActivity -> Bool
+expectMotherActivity offlineSession motherId activity =
     Dict.get motherId offlineSession.participants.byMotherId
         |> Maybe.withDefault []
         |> List.any
@@ -518,11 +510,11 @@ summarizeMotherActivity :
     -> ModelIndexedDb
     -> CheckedIn
     -> CompletedAndPending (Dict PersonId Person)
-summarizeMotherActivity currentDate zscores features activity session isChw db checkedIn =
+summarizeMotherActivity _ _ _ activity session _ _ checkedIn =
     -- For participant consent, we only consider the activity to be completed once
     -- all expected consents have been saved.
     checkedIn.mothers
-        |> Dict.filter (\motherId _ -> expectMotherActivity currentDate session motherId activity)
+        |> Dict.filter (\motherId _ -> expectMotherActivity session motherId activity)
         |> Dict.partition (\motherId _ -> motherHasCompletedActivity motherId activity session)
         |> (\( completed, pending ) -> { completed = completed, pending = pending })
 
@@ -595,9 +587,9 @@ summarizeMotherParticipant :
     -> Bool
     -> ModelIndexedDb
     -> CompletedAndPending (List MotherActivity)
-summarizeMotherParticipant currentDate zscores features id session isChw db =
+summarizeMotherParticipant _ _ _ id session _ _ =
     getAllMotherActivities session
-        |> List.filter (expectMotherActivity currentDate session id)
+        |> List.filter (expectMotherActivity session id)
         |> List.partition (\activity -> motherHasCompletedActivity id activity session)
         |> (\( completed, pending ) -> { completed = completed, pending = pending })
 
@@ -609,8 +601,8 @@ It includes ativities for children of the mother, since we navigate from mother
 to child.
 
 -}
-getActivityCountForMother : EditableSession -> PersonId -> Person -> SummaryByParticipant -> CompletedAndPending Int
-getActivityCountForMother session id mother summary =
+getActivityCountForMother : EditableSession -> PersonId -> SummaryByParticipant -> CompletedAndPending Int
+getActivityCountForMother session id summary =
     let
         motherCount =
             Dict.get id summary.mothers
@@ -782,14 +774,6 @@ motherIsCheckedIn motherId session =
             motherOrAnyChildHasAnyCompletedActivity motherId session
     in
     explicitlyCheckedIn || hasCompletedActivity
-
-
-childIsCheckedIn : PersonId -> OfflineSession -> Bool
-childIsCheckedIn childId session =
-    getMyMother childId session
-        |> Maybe.map Tuple.first
-        |> Maybe.map (\motherId -> motherIsCheckedIn motherId session)
-        |> Maybe.withDefault False
 
 
 {-| Does the mother herself have any completed activity?

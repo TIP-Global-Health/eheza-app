@@ -1,4 +1,4 @@
-module Pages.Prenatal.Encounter.Utils exposing (..)
+module Pages.Prenatal.Encounter.Utils exposing (calculateBmi, diagnosisRequiresEmergencyReferal, emergencyReferalRequired, generateAssembledData, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generateMedicalDiagnosisAlertData, generateObstetricalDiagnosisAlertData, generatePara, generatePostCreateDestination, generateRecurringHighSeverityAlertData, getAllActivities, getFirstNurseEncounterMeasurements, getLastEncounterMeasurementsWithDate, getLmpValue, getPrenatalEncountersForParticipant, getSubsequentEncounterType, resolveGlobalLmpValue, secondPhaseRequired)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -6,15 +6,15 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getHeightValue, getMeasurementValueFunc, muacValueFunc, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
-import Backend.PrenatalActivity.Model exposing (..)
-import Backend.PrenatalEncounter.Model exposing (..)
+import Backend.PrenatalActivity.Model exposing (MedicalDiagnosis(..), ObstetricalDiagnosis(..), PrenatalActivity(..), RecurringHighSeverityAlert(..))
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterPostCreateDestination(..), PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
 import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter, lmpToEDDDate)
 import EverySet
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Maybe.Extra exposing (isJust, orElse, unwrap)
 import Pages.Prenatal.Model exposing (AssembledData, PreviousEncounterData)
-import Pages.Prenatal.Utils exposing (..)
+import Pages.Prenatal.Utils exposing (calculateEGADays, calculateEGAWeeks, emergencyReferralDiagnosesInitial, generateVaccinationProgress, nurseEncounterNotPerformed)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
 import Utils.NominalDate exposing (sortEncounterTuples, sortEncounterTuplesDesc)
@@ -409,8 +409,8 @@ getLastEncounterMeasurements currentDate isChw assembled =
     getLastEncounterMeasurementsWithDate currentDate isChw assembled |> Tuple.second
 
 
-getAllNurseMeasurements : NominalDate -> Bool -> AssembledData -> List PreviousEncounterData
-getAllNurseMeasurements currentDate isChw assembled =
+getAllNurseMeasurements : Bool -> AssembledData -> List PreviousEncounterData
+getAllNurseMeasurements isChw assembled =
     let
         currentEncounterData =
             if isChw then
@@ -428,8 +428,8 @@ getAllNurseMeasurements currentDate isChw assembled =
         ++ assembled.nursePreviousEncountersData
 
 
-generateRecurringHighSeverityAlertData : Language -> NominalDate -> Bool -> AssembledData -> RecurringHighSeverityAlert -> List ( String, String, String )
-generateRecurringHighSeverityAlertData language currentDate isChw assembled alert =
+generateRecurringHighSeverityAlertData : Language -> Bool -> AssembledData -> RecurringHighSeverityAlert -> List ( String, String, String )
+generateRecurringHighSeverityAlertData language isChw assembled alert =
     let
         trans =
             translate language
@@ -466,7 +466,7 @@ generateRecurringHighSeverityAlertData language currentDate isChw assembled aler
                                     (viewAlert value.sys value.dia)
                             )
             in
-            getAllNurseMeasurements currentDate isChw assembled
+            getAllNurseMeasurements isChw assembled
                 |> List.filterMap resolveAlert
 
 
@@ -788,8 +788,7 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstNurseEncou
                                         transSigns =
                                             EverySet.toList signs
                                                 |> List.map (\sign -> translate language (Translate.BreastExamSign sign))
-                                                |> List.intersperse ", "
-                                                |> String.concat
+                                                |> String.join ", "
                                     in
                                     Just (transAlert diagnosis ++ " " ++ transSigns)
                             )
@@ -806,7 +805,7 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstNurseEncou
         DiagnosisHypotension ->
             let
                 lowBloodPressureOccasions =
-                    getAllNurseMeasurements currentDate isChw assembled
+                    getAllNurseMeasurements isChw assembled
                         |> List.filterMap
                             (.measurements
                                 >> .vitals
@@ -834,13 +833,13 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstNurseEncou
                 Nothing
 
         DiagnosisPregnancyInducedHypertension ->
-            if isJust (generateMedicalDiagnosisAlertData language currentDate firstNurseEncounterMeasurements DiagnosisHypertensionBeforePregnancy) then
+            if isJust (generateMedicalDiagnosisAlertData language firstNurseEncounterMeasurements DiagnosisHypertensionBeforePregnancy) then
                 Nothing
 
             else
                 let
                     highBloodPressureOccasions =
-                        getAllNurseMeasurements currentDate isChw assembled
+                        getAllNurseMeasurements isChw assembled
                             |> List.filterMap
                                 (.measurements
                                     >> .vitals
@@ -913,8 +912,8 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstNurseEncou
                 resolveAlert lastEncounterMeasurements
 
 
-generateMedicalDiagnosisAlertData : Language -> NominalDate -> PrenatalMeasurements -> MedicalDiagnosis -> Maybe String
-generateMedicalDiagnosisAlertData language currentDate measurements diagnosis =
+generateMedicalDiagnosisAlertData : Language -> PrenatalMeasurements -> MedicalDiagnosis -> Maybe String
+generateMedicalDiagnosisAlertData language measurements diagnosis =
     let
         generateAlertForDiagnosis getFieldFunc triggeringSigns =
             getMeasurementValueFunc measurements.medicalHistory

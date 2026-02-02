@@ -1,7 +1,7 @@
 module Components.PatientsSearchForm.Fetch exposing (fetch)
 
 import Backend.Model exposing (MsgIndexedDb(..))
-import Components.PatientsSearchForm.Model exposing (..)
+import Components.PatientsSearchForm.Model exposing (Model, PatientsSearchFormMode(..))
 
 
 fetch : Model -> List MsgIndexedDb

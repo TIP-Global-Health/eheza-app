@@ -14,7 +14,7 @@ import Gizra.NominalDate exposing (NominalDate, diffYears)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Pages.IndividualEncounterParticipants.Model exposing (..)
+import Pages.IndividualEncounterParticipants.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..), UserPage(..))
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
@@ -165,7 +165,7 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
             results
                 |> Maybe.withDefault (Success Dict.empty)
                 |> RemoteData.withDefault Dict.empty
-                |> Dict.map (viewParticipant language currentDate encounterType db)
+                |> Dict.map (viewParticipant language currentDate encounterType)
                 |> Dict.values
 
         searchHelper =
@@ -205,8 +205,8 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
         ]
 
 
-viewParticipant : Language -> NominalDate -> IndividualEncounterType -> ModelIndexedDb -> PersonId -> Person -> Html Msg
-viewParticipant language currentDate encounterType db id person =
+viewParticipant : Language -> NominalDate -> IndividualEncounterType -> PersonId -> Person -> Html Msg
+viewParticipant language currentDate encounterType id person =
     let
         action =
             case encounterType of
@@ -257,7 +257,7 @@ viewParticipant language currentDate encounterType db id person =
                     [ class "details" ]
                     [ h2
                         [ class "ui header" ]
-                        [ text <| person.name ]
+                        [ text person.name ]
                     , p []
                         [ label [] [ text <| translate language Translate.DOB ++ ": " ]
                         , span []

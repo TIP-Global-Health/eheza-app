@@ -1,13 +1,11 @@
 module Pages.Prenatal.Participant.Update exposing (update)
 
 import App.Model
-import Backend.Entities exposing (PersonId)
-import Gizra.NominalDate exposing (NominalDate)
-import Pages.Prenatal.Participant.Model exposing (..)
+import Pages.Prenatal.Participant.Model exposing (Model, Msg(..))
 
 
-update : NominalDate -> PersonId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate personId msg model =
+update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update msg model =
     case msg of
         MsgBackend msgBackend ->
             ( model

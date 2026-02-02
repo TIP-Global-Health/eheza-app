@@ -1,6 +1,6 @@
-module Backend.WellChildActivity.Utils exposing (..)
+module Backend.WellChildActivity.Utils exposing (decodeActivityFromString, encodeActivityAsString, getActivityIcon, getAllActivities)
 
-import Backend.WellChildActivity.Model exposing (..)
+import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 
 
 encodeActivityAsString : WellChildActivity -> String

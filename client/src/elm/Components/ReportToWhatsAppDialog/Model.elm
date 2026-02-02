@@ -1,4 +1,4 @@
-module Components.ReportToWhatsAppDialog.Model exposing (..)
+module Components.ReportToWhatsAppDialog.Model exposing (CountryCode(..), DialogState(..), Model, Msg(..), PhoneData, ReportComponentAntenatal(..), ReportComponentNCD(..), ReportComponentWellChild(..), ReportComponentsConfig, ReportComponentsList(..), ReportType(..), emptyModel, emptyPhoneData)
 
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)

@@ -1,6 +1,6 @@
-module Backend.HIVActivity.Utils exposing (..)
+module Backend.HIVActivity.Utils exposing (activityFromString, activityToString, allActivities, getActivityIcon)
 
-import Backend.HIVActivity.Model exposing (..)
+import Backend.HIVActivity.Model exposing (HIVActivity(..))
 
 
 activityToString : HIVActivity -> String

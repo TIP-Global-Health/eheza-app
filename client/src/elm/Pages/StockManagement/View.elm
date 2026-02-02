@@ -11,7 +11,7 @@ import Backend.Measurement.Model
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.StockUpdate.Model exposing (StockManagementData)
-import Backend.StockUpdate.Utils exposing (..)
+import Backend.StockUpdate.Utils exposing (dateToMonthYear, monthYearDiff, stockSupplierToString)
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import Gizra.Html exposing (emptyNode, showIf)
@@ -23,12 +23,11 @@ import Html.Events exposing (on, onClick, onInput)
 import Json.Decode
 import List.Extra
 import List.Zipper
-import Maybe exposing (Maybe)
 import Maybe.Extra
 import Pages.Dashboard.View exposing (chwCard)
 import Pages.Page exposing (Page(..))
-import Pages.StockManagement.Model exposing (..)
-import Pages.StockManagement.Utils exposing (..)
+import Pages.StockManagement.Model exposing (CorrectEntryForm, CorrectionEntryType(..), DisplayMode(..), Model, Msg(..), ReceiveStockForm, StockManagementMenu(..), maxMonthGap)
+import Pages.StockManagement.Utils exposing (correctionEntryTypeToString)
 import Pages.Utils
     exposing
         ( customPopup
@@ -119,16 +118,16 @@ viewHeaderAndContent language currentDate maybeHealthCenterId nurseId nurse sync
                 ]
 
         content =
-            let
-                lastUpdated =
-                    viewLastUpdated language maybeHealthCenterId syncInfoAuthorities
-            in
             case model.displayMode of
                 ModeMain ->
-                    viewModeMain language currentDate nurseId nurse lastUpdated data model
+                    let
+                        lastUpdated =
+                            viewLastUpdated language maybeHealthCenterId syncInfoAuthorities
+                    in
+                    viewModeMain language currentDate lastUpdated data model
 
                 ModeMonthDetails monthGap ->
-                    viewModeMonthDetails language currentDate monthGap lastUpdated data
+                    viewModeMonthDetails language currentDate monthGap data
 
                 ModeReceiveStock ->
                     let
@@ -184,13 +183,11 @@ viewLastUpdated language maybeHealthCenterId syncInfoAuthorities =
 viewModeMain :
     Language
     -> NominalDate
-    -> NurseId
-    -> Nurse
     -> Html Msg
     -> StockManagementData
     -> Model
     -> List (Html Msg)
-viewModeMain language currentDate nurseId nurse lastUpdated data model =
+viewModeMain language currentDate lastUpdated data model =
     let
         viewButton label action =
             button
@@ -298,10 +295,9 @@ viewModeMonthDetails :
     Language
     -> NominalDate
     -> Int
-    -> Html Msg
     -> StockManagementData
     -> List (Html Msg)
-viewModeMonthDetails language currentDate monthGap lastUpdated data =
+viewModeMonthDetails language currentDate monthGap data =
     let
         dateLastDayOfSelectedMonth =
             resolveSelectedDateForMonthSelector currentDate monthGap
@@ -313,8 +309,7 @@ viewModeMonthDetails language currentDate monthGap lastUpdated data =
             div [ class "row header" ]
                 [ div [ class "cell date" ] [ text <| translate language Translate.Date ]
                 , div [ class "cell from-to" ]
-                    [ text <|
-                        (translate language Translate.ReceivedFrom ++ " / " ++ translate language Translate.IssuedTo)
+                    [ text (translate language Translate.ReceivedFrom ++ " / " ++ translate language Translate.IssuedTo)
                     ]
                 , div [ class "cell batch" ] [ text <| translate language Translate.BatchNumberAbbrev ]
                 , div [ class "cell expirity" ] [ text <| translate language Translate.ExpiryDate ]
@@ -585,7 +580,7 @@ viewModeReceiveStock language currentDate nurseId nurse consumptionAverage form 
                                 [ text dateExpiresForView ]
                           , viewModal <| viewCalendarPopup language form.dateExpiresSelectorPopupState form.dateExpires
                           , viewQuestionLabel language Translate.StockManagementQuantityAddedQuestion
-                          , viewNumberInput language
+                          , viewNumberInput
                                 form.quantity
                                 SetQuantityAdded
                                 "quantity"
@@ -733,7 +728,7 @@ viewModeCorrectEntry language currentDate nurseId nurse form =
                           ]
                             ++ correctionReasonInputs
                             ++ [ viewLabel language Translate.StockManagementQuantityCorrectionLabel
-                               , viewNumberInput language
+                               , viewNumberInput
                                     form.quantity
                                     SetQuantityDeducted
                                     "quantity"

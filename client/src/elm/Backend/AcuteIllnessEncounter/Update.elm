@@ -3,8 +3,30 @@ module Backend.AcuteIllnessEncounter.Update exposing (update)
 import App.Model
 import App.Utils exposing (triggerRollbarOnFailure)
 import AssocList as Dict
-import Backend.AcuteIllnessEncounter.Model exposing (..)
-import Backend.Endpoints exposing (..)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter, Model, Msg(..))
+import Backend.Endpoints
+    exposing
+        ( acuteFindingsEndpoint
+        , acuteIllnessContactsTracingEndpoint
+        , acuteIllnessCoreExamEndpoint
+        , acuteIllnessDangerSignsEndpoint
+        , acuteIllnessEncounterEndpoint
+        , acuteIllnessFollowUpEndpoint
+        , acuteIllnessMuacEndpoint
+        , acuteIllnessNutritionEndpoint
+        , acuteIllnessTraceContactEndpoint
+        , acuteIllnessVitalsEndpoint
+        , covidTestingEndpoint
+        , healthEducationEndpoint
+        , malariaTestingEndpoint
+        , medicationDistributionEndpoint
+        , sendToHCEndpoint
+        , symptomsGIEndpoint
+        , symptomsGeneralEndpoint
+        , symptomsRespiratoryEndpoint
+        , treatmentOngoingEndpoint
+        , treatmentReviewEndpoint
+        )
 import Backend.Entities exposing (..)
 import Backend.Utils exposing (saveMeasurementCmd, sw)
 import Gizra.NominalDate exposing (NominalDate)
@@ -26,10 +48,10 @@ update :
 update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
     case msg of
         CloseAcuteIllnessEncounter ->
-            updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | endDate = Just currentDate }) model
+            updateEncounter encounterId maybeEncounter (\encounter -> { encounter | endDate = Just currentDate }) model
 
         SetAcuteIllnessDiagnosis diagnosis ->
-            updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | diagnosis = diagnosis }) model
+            updateEncounter encounterId maybeEncounter (\encounter -> { encounter | diagnosis = diagnosis }) model
 
         HandleUpdatedAcuteIllnessEncounter data ->
             ( { model | updateAcuteIllnessEncounter = data }
@@ -141,66 +163,6 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
 
         HandleSavedMedicationDistribution data ->
             ( { model | saveMedicationDistribution = data }
-            , Cmd.none
-            , triggerRollbarOnFailure data
-            )
-
-        SaveTravelHistory personId valueId value ->
-            ( { model | saveTravelHistory = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value travelHistoryEndpoint HandleSavedTravelHistory
-            , []
-            )
-
-        HandleSavedTravelHistory data ->
-            ( { model | saveTravelHistory = data }
-            , Cmd.none
-            , triggerRollbarOnFailure data
-            )
-
-        SaveExposure personId valueId value ->
-            ( { model | saveExposure = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value exposureEndpoint HandleSavedExposure
-            , []
-            )
-
-        HandleSavedExposure data ->
-            ( { model | saveExposure = data }
-            , Cmd.none
-            , triggerRollbarOnFailure data
-            )
-
-        SaveIsolation personId valueId value ->
-            ( { model | saveIsolation = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value isolationEndpoint HandleSavedIsolation
-            , []
-            )
-
-        HandleSavedIsolation data ->
-            ( { model | saveIsolation = data }
-            , Cmd.none
-            , triggerRollbarOnFailure data
-            )
-
-        SaveHCContact personId valueId value ->
-            ( { model | saveHCContact = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value hcContactEndpoint HandleSavedHCContact
-            , []
-            )
-
-        HandleSavedHCContact data ->
-            ( { model | saveHCContact = data }
-            , Cmd.none
-            , triggerRollbarOnFailure data
-            )
-
-        SaveCall114 personId valueId value ->
-            ( { model | saveCall114 = Loading }
-            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value call114Endpoint HandleSavedCall114
-            , []
-            )
-
-        HandleSavedCall114 data ->
-            ( { model | saveCall114 = data }
             , Cmd.none
             , triggerRollbarOnFailure data
             )
@@ -353,13 +315,12 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
 
 
 updateEncounter :
-    NominalDate
-    -> AcuteIllnessEncounterId
+    AcuteIllnessEncounterId
     -> Maybe AcuteIllnessEncounter
     -> (AcuteIllnessEncounter -> AcuteIllnessEncounter)
     -> Model
     -> ( Model, Cmd Msg, List App.Model.Msg )
-updateEncounter currentDate encounterId maybeEncounter updateFunc model =
+updateEncounter encounterId maybeEncounter updateFunc model =
     maybeEncounter
         |> unwrap ( model, Cmd.none, [] )
             (\encounter ->

@@ -1,6 +1,6 @@
 module Backend.ChildScoreboardEncounter.Decoder exposing (decodeChildScoreboardEncounter)
 
-import Backend.ChildScoreboardEncounter.Model exposing (..)
+import Backend.ChildScoreboardEncounter.Model exposing (ChildScoreboardEncounter)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, bool, nullable, succeed)
 import Json.Decode.Pipeline exposing (optional, optionalAt, required, requiredAt)

@@ -1,6 +1,6 @@
 module Pages.ChildScoreboard.Encounter.View exposing (view)
 
-import Backend.ChildScoreboardActivity.Utils exposing (..)
+import Backend.ChildScoreboardActivity.Utils exposing (allActivities, getActivityIcon)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (NCDASign(..))
@@ -12,7 +12,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.ChildScoreboard.Activity.Utils exposing (activityCompleted, expectActivity)
-import Pages.ChildScoreboard.Encounter.Model exposing (..)
+import Pages.ChildScoreboard.Encounter.Model exposing (AssembledData, Model, Msg(..), Tab(..))
 import Pages.ChildScoreboard.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewCustomAction, viewEncounterActionButton, viewPersonDetailsExtended)
@@ -28,17 +28,17 @@ view language currentDate site id db model =
         assembled =
             generateAssembledData site id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate site db model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate site model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> Site -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate site db model assembled =
+viewHeaderAndContent : Language -> NominalDate -> Site -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate site model assembled =
     let
         header =
             viewHeader language assembled
 
         content =
-            viewContent language currentDate site db model assembled
+            viewContent language currentDate site model assembled
     in
     div [ class "page-encounter child-scoreboard" ]
         [ header
@@ -67,20 +67,20 @@ viewHeader language assembled =
         ]
 
 
-viewContent : Language -> NominalDate -> Site -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate site db model assembled =
+viewContent : Language -> NominalDate -> Site -> Model -> AssembledData -> Html Msg
+viewContent language currentDate site model assembled =
     ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
-        :: viewMainPageContent language currentDate site db assembled model
+        :: viewMainPageContent language currentDate site assembled model
     )
         |> div [ class "ui unstackable items" ]
 
 
-viewMainPageContent : Language -> NominalDate -> Site -> ModelIndexedDb -> AssembledData -> Model -> List (Html Msg)
-viewMainPageContent language currentDate site db assembled model =
+viewMainPageContent : Language -> NominalDate -> Site -> AssembledData -> Model -> List (Html Msg)
+viewMainPageContent language currentDate site assembled model =
     let
         ( completedActivities, pendingActivities ) =
             List.filter (expectActivity currentDate site assembled) allActivities
-                |> List.partition (activityCompleted currentDate site assembled db)
+                |> List.partition (activityCompleted currentDate site assembled)
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities

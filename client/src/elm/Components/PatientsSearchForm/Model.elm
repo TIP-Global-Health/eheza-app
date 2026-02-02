@@ -1,4 +1,4 @@
-module Components.PatientsSearchForm.Model exposing (..)
+module Components.PatientsSearchForm.Model exposing (Model, Msg(..), PatientsSearchFormMode(..), emptyModel)
 
 import Debouncer.Basic as Debouncer exposing (Debouncer, debounce, toDebouncer)
 

@@ -2,7 +2,7 @@ module Pages.IndividualEncounterParticipants.Update exposing (update)
 
 import App.Model
 import Components.PatientsSearchForm.Update
-import Pages.IndividualEncounterParticipants.Model exposing (..)
+import Pages.IndividualEncounterParticipants.Model exposing (Model, Msg(..))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )

@@ -23,7 +23,7 @@ import Pages.Participant.Update
 import Pages.Participants.Update
 import Pages.ProgressReport.Model
 import Pages.ProgressReport.Update
-import Pages.Session.Model exposing (..)
+import Pages.Session.Model exposing (Model, Msg(..))
 import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (Site, SiteFeature)
 import ZScore.Model
@@ -75,7 +75,7 @@ updateFoundSession currentDate zscores site features sessionId session db msg mo
         MsgActivities subMsg ->
             let
                 ( subModel, subCmd, extraMsgs ) =
-                    Pages.Activities.Update.update session subMsg model.activitiesPage
+                    Pages.Activities.Update.update subMsg model.activitiesPage
             in
             ( { model | activitiesPage = subModel }
             , Cmd.map MsgActivities subCmd
@@ -278,7 +278,7 @@ updateFoundSession currentDate zscores site features sessionId session db msg mo
         MsgParticipants subMsg ->
             let
                 ( subModel, subCmd, extraMsgs ) =
-                    Pages.Participants.Update.update session subMsg model.participantsPage
+                    Pages.Participants.Update.update subMsg model.participantsPage
             in
             ( { model | participantsPage = subModel }
             , Cmd.map MsgParticipants subCmd

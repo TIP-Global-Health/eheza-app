@@ -1,6 +1,6 @@
-module App.Utils exposing (..)
+module App.Utils exposing (focusOnCalendarMsg, getLoggedInData, sequenceSubModelReturn, triggerRollbarOnFailure, updateSubModel)
 
-import App.Model exposing (..)
+import App.Model exposing (LoggedInModel, Model, Msg(..), RollbarErrorSource(..), SubModelReturn)
 import Backend.Entities exposing (HealthCenterId)
 import Error.Model exposing (Error, ErrorType(..))
 import Maybe.Extra

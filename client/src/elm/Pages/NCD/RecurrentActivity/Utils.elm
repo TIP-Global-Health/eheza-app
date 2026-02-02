@@ -1,57 +1,56 @@
-module Pages.NCD.RecurrentActivity.Utils exposing (..)
+module Pages.NCD.RecurrentActivity.Utils exposing (activityCompleted, expectActivity, laboratoryResultTaskCompleted, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultTasks, resolveNextStepsTasks)
 
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
-import Backend.NCDActivity.Model exposing (..)
-import Gizra.NominalDate exposing (NominalDate)
+import Backend.NCDActivity.Model exposing (NCDRecurrentActivity(..))
 import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (LaboratoryTask(..))
 import Measurement.Utils exposing (expectUniversalTestResultTask, testPerformedByExecutionNote, testPerformedByValue)
-import Pages.NCD.Model exposing (..)
-import Pages.NCD.RecurrentActivity.Model exposing (..)
-import Pages.NCD.RecurrentActivity.Types exposing (..)
-import Pages.NCD.Utils exposing (..)
+import Pages.NCD.Model exposing (AssembledData, NCDEncounterPhase(..))
+import Pages.NCD.RecurrentActivity.Model exposing (Msg(..), NextStepsData)
+import Pages.NCD.RecurrentActivity.Types exposing (NextStepsTask(..))
+import Pages.NCD.Utils exposing (generateRecommendedTreatmentSignsForHypertension, medicateForDiabetes, medicateForHypertension, medicationDistributionFormWithDefault, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForDiabetes, referForDiabetes, referForHypertension, referForRenalComplications, referralFormWithDefault, referralToFacilityCompleted, resolveMedicationDistributionInputsAndTasks, resolveReferralInputsAndTasks)
 import Pages.Utils exposing (resolveTasksCompletedFromTotal)
 import Translate.Model exposing (Language)
 
 
-expectActivity : NominalDate -> AssembledData -> NCDRecurrentActivity -> Bool
-expectActivity currentDate assembled activity =
+expectActivity : AssembledData -> NCDRecurrentActivity -> Bool
+expectActivity assembled activity =
     case activity of
         LabResults ->
-            resolveLaboratoryResultTasks currentDate assembled
+            resolveLaboratoryResultTasks assembled
                 |> List.isEmpty
                 |> not
 
         RecurrentNextSteps ->
-            resolveNextStepsTasks currentDate assembled
-                |> List.filter (expectNextStepsTask currentDate assembled)
+            resolveNextStepsTasks assembled
+                |> List.filter (expectNextStepsTask assembled)
                 |> List.isEmpty
                 |> not
 
 
-activityCompleted : NominalDate -> AssembledData -> NCDRecurrentActivity -> Bool
-activityCompleted currentDate assembled activity =
+activityCompleted : AssembledData -> NCDRecurrentActivity -> Bool
+activityCompleted assembled activity =
     case activity of
         LabResults ->
-            (not <| expectActivity currentDate assembled LabResults)
-                || (resolveLaboratoryResultTasks currentDate assembled
-                        |> List.all (laboratoryResultTaskCompleted currentDate assembled)
+            (not <| expectActivity assembled LabResults)
+                || (resolveLaboratoryResultTasks assembled
+                        |> List.all (laboratoryResultTaskCompleted assembled)
                    )
 
         RecurrentNextSteps ->
-            resolveNextStepsTasks currentDate assembled
+            resolveNextStepsTasks assembled
                 |> List.all (nextStepsTaskCompleted assembled)
 
 
-resolveNextStepsTasks : NominalDate -> AssembledData -> List Pages.NCD.RecurrentActivity.Types.NextStepsTask
-resolveNextStepsTasks currentDate assembled =
-    List.filter (expectNextStepsTask currentDate assembled)
+resolveNextStepsTasks : AssembledData -> List Pages.NCD.RecurrentActivity.Types.NextStepsTask
+resolveNextStepsTasks assembled =
+    List.filter (expectNextStepsTask assembled)
         [ TaskMedicationDistribution, TaskReferral ]
 
 
-expectNextStepsTask : NominalDate -> AssembledData -> Pages.NCD.RecurrentActivity.Types.NextStepsTask -> Bool
-expectNextStepsTask currentDate assembled task =
+expectNextStepsTask : AssembledData -> Pages.NCD.RecurrentActivity.Types.NextStepsTask -> Bool
+expectNextStepsTask assembled task =
     case task of
         TaskMedicationDistribution ->
             medicateForDiabetes NCDEncounterPhaseRecurrent assembled
@@ -97,12 +96,11 @@ nextStepsTaskCompleted assembled task =
 
 nextStepsTasksCompletedFromTotal :
     Language
-    -> NominalDate
     -> AssembledData
     -> NextStepsData
     -> Pages.NCD.RecurrentActivity.Types.NextStepsTask
     -> ( Int, Int )
-nextStepsTasksCompletedFromTotal language currentDate assembled data task =
+nextStepsTasksCompletedFromTotal language assembled data task =
     case task of
         TaskMedicationDistribution ->
             let
@@ -110,7 +108,6 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                     getMeasurementValueFunc assembled.measurements.medicationDistribution
                         |> medicationDistributionFormWithDefault data.medicationDistributionForm
                         |> resolveMedicationDistributionInputsAndTasks language
-                            currentDate
                             NCDEncounterPhaseRecurrent
                             assembled
                             SetRecommendedTreatmentSignSingle
@@ -125,7 +122,6 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                     getMeasurementValueFunc assembled.measurements.referral
                         |> referralFormWithDefault data.referralForm
                         |> resolveReferralInputsAndTasks language
-                            currentDate
                             NCDEncounterPhaseRecurrent
                             assembled
                             SetReferralBoolInput
@@ -134,16 +130,16 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
             resolveTasksCompletedFromTotal tasks
 
 
-resolveLaboratoryResultTasks : NominalDate -> AssembledData -> List LaboratoryTask
-resolveLaboratoryResultTasks currentDate assembled =
-    List.filter (expectLaboratoryResultTask currentDate assembled) laboratoryResultTasks
+resolveLaboratoryResultTasks : AssembledData -> List LaboratoryTask
+resolveLaboratoryResultTasks assembled =
+    List.filter (expectLaboratoryResultTask assembled) laboratoryResultTasks
 
 
-laboratoryResultTaskCompleted : NominalDate -> AssembledData -> LaboratoryTask -> Bool
-laboratoryResultTaskCompleted currentDate assembled task =
+laboratoryResultTaskCompleted : AssembledData -> LaboratoryTask -> Bool
+laboratoryResultTaskCompleted assembled task =
     let
         taskExpected =
-            expectLaboratoryResultTask currentDate assembled
+            expectLaboratoryResultTask assembled
 
         testResultsCompleted getMeasurementFunc getResultFieldFunc =
             getMeasurementFunc assembled.measurements
@@ -182,8 +178,8 @@ laboratoryResultTaskCompleted currentDate assembled task =
             False
 
 
-expectLaboratoryResultTask : NominalDate -> AssembledData -> LaboratoryTask -> Bool
-expectLaboratoryResultTask currentDate assembled task =
+expectLaboratoryResultTask : AssembledData -> LaboratoryTask -> Bool
+expectLaboratoryResultTask assembled task =
     let
         wasTestPerformed getMeasurementFunc =
             getMeasurementFunc assembled.measurements

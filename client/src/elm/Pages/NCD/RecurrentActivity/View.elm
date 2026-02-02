@@ -2,7 +2,7 @@ module Pages.NCD.RecurrentActivity.View exposing (view)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Measurement.Utils exposing (..)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDActivity.Model exposing (NCDRecurrentActivity(..))
 import Gizra.Html exposing (emptyNode)
@@ -26,12 +26,12 @@ import Measurement.Utils
         , urineDipstickResultFormAndTasks
         , urineDipstickResultFormWithDefault
         )
-import Pages.NCD.Model exposing (..)
-import Pages.NCD.RecurrentActivity.Model exposing (..)
-import Pages.NCD.RecurrentActivity.Types exposing (..)
-import Pages.NCD.RecurrentActivity.Utils exposing (..)
-import Pages.NCD.Utils exposing (..)
-import Pages.NCD.View exposing (..)
+import Pages.NCD.Model exposing (AssembledData, NCDEncounterPhase(..))
+import Pages.NCD.RecurrentActivity.Model exposing (Model, Msg(..), NextStepsData)
+import Pages.NCD.RecurrentActivity.Types exposing (NextStepsTask(..))
+import Pages.NCD.RecurrentActivity.Utils exposing (laboratoryResultTaskCompleted, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, resolveLaboratoryResultTasks, resolveNextStepsTasks)
+import Pages.NCD.Utils exposing (generateAssembledData, medicationDistributionFormWithDefault, referralFormWithDefault)
+import Pages.NCD.View exposing (viewMedicationDistributionForm, viewReferralForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
@@ -52,19 +52,19 @@ view language currentDate id activity db model =
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate id activity db model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate id activity model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> NCDEncounterId -> NCDRecurrentActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id activity db model assembled =
-    div [ class "page-activity ncd" ] <|
-        [ viewHeader language (NCDRecurrentEncounterPage id) (Translate.NCDRecurrentActivitiesTitle activity) assembled
-        , viewContent language currentDate activity db model assembled
+viewHeaderAndContent : Language -> NominalDate -> NCDEncounterId -> NCDRecurrentActivity -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate id activity model assembled =
+    div [ class "page-activity ncd" ]
+        [ viewHeader language (NCDRecurrentEncounterPage id) (Translate.NCDRecurrentActivitiesTitle activity)
+        , viewContent language currentDate activity model assembled
         ]
 
 
-viewHeader : Language -> UserPage -> TranslationId -> AssembledData -> Html Msg
-viewHeader language goBackPage labelTransId assembled =
+viewHeader : Language -> UserPage -> TranslationId -> Html Msg
+viewHeader language goBackPage labelTransId =
     div
         [ class "ui basic segment head" ]
         [ h1 [ class "ui header" ]
@@ -77,26 +77,26 @@ viewHeader language goBackPage labelTransId assembled =
         ]
 
 
-viewContent : Language -> NominalDate -> NCDRecurrentActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate activity db model assembled =
+viewContent : Language -> NominalDate -> NCDRecurrentActivity -> Model -> AssembledData -> Html Msg
+viewContent language currentDate activity model assembled =
     ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
-        :: viewActivity language currentDate activity assembled db model
+        :: viewActivity language activity assembled model
     )
         |> div [ class "ui unstackable items" ]
 
 
-viewActivity : Language -> NominalDate -> NCDRecurrentActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewActivity language currentDate activity assembled db model =
+viewActivity : Language -> NCDRecurrentActivity -> AssembledData -> Model -> List (Html Msg)
+viewActivity language activity assembled model =
     case activity of
         LabResults ->
-            viewLabResultsContent language currentDate assembled model
+            viewLabResultsContent language assembled model
 
         RecurrentNextSteps ->
-            viewNextStepsContent language currentDate assembled model.nextStepsData
+            viewNextStepsContent language assembled model.nextStepsData
 
 
-viewLabResultsContent : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
-viewLabResultsContent language currentDate assembled model =
+viewLabResultsContent : Language -> AssembledData -> Model -> List (Html Msg)
+viewLabResultsContent language assembled model =
     let
         isLabTech =
             -- For now, NCD doesn not support Lab tech feature.
@@ -106,7 +106,7 @@ viewLabResultsContent language currentDate assembled model =
             assembled.measurements
 
         tasks =
-            resolveLaboratoryResultTasks currentDate assembled
+            resolveLaboratoryResultTasks assembled
 
         activeTask =
             resolveActiveTask tasks model.labResultsData.activeTask
@@ -120,7 +120,7 @@ viewLabResultsContent language currentDate assembled model =
                     activeTask == Just task
 
                 isCompleted =
-                    laboratoryResultTaskCompleted currentDate assembled task
+                    laboratoryResultTaskCompleted assembled task
 
                 attributes =
                     classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
@@ -148,7 +148,6 @@ viewLabResultsContent language currentDate assembled model =
                                 |> getMeasurementValueFunc
                                 |> randomBloodSugarResultFormWithDefault model.labResultsData.randomBloodSugarTestForm
                                 |> randomBloodSugarResultFormAndTasks language
-                                    currentDate
                                     isLabTech
                                     contentAndTasksLaboratorResultsConfig
                                     SetRandomBloodSugar
@@ -158,7 +157,6 @@ viewLabResultsContent language currentDate assembled model =
                                 |> getMeasurementValueFunc
                                 |> urineDipstickResultFormWithDefault model.labResultsData.urineDipstickTestForm
                                 |> urineDipstickResultFormAndTasks language
-                                    currentDate
                                     isLabTech
                                     contentAndTasksLaboratorResultsConfig
                                     SetProtein
@@ -176,7 +174,6 @@ viewLabResultsContent language currentDate assembled model =
                                 |> getMeasurementValueFunc
                                 |> creatinineResultFormWithDefault model.labResultsData.creatinineTestForm
                                 |> creatinineResultFormAndTasks language
-                                    currentDate
                                     SetCreatinineResult
                                     SetBUNResult
 
@@ -185,7 +182,6 @@ viewLabResultsContent language currentDate assembled model =
                                 |> getMeasurementValueFunc
                                 |> liverFunctionResultFormWithDefault model.labResultsData.liverFunctionTestForm
                                 |> liverFunctionResultFormAndTasks language
-                                    currentDate
                                     SetAltResult
                                     SetAstResult
 
@@ -194,7 +190,6 @@ viewLabResultsContent language currentDate assembled model =
                                 |> getMeasurementValueFunc
                                 |> lipidPanelResultFormWithDefault model.labResultsData.lipidPanelTestForm
                                 |> lipidPanelResultFormAndTasks language
-                                    currentDate
                                     SetUnitOfMeasurement
                                     SetTotalCholesterolResult
                                     SetLDLCholesterolResult
@@ -265,7 +260,7 @@ viewLabResultsContent language currentDate assembled model =
         ]
     , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
-        [ div [ class "full content" ] <|
+        [ div [ class "full content" ]
             [ viewForm
             , actions
             ]
@@ -278,14 +273,14 @@ contentAndTasksLaboratorResultsConfig =
     emptyContentAndTasksLaboratoryResultConfig NoOp
 
 
-viewNextStepsContent : Language -> NominalDate -> AssembledData -> NextStepsData -> List (Html Msg)
-viewNextStepsContent language currentDate assembled data =
+viewNextStepsContent : Language -> AssembledData -> NextStepsData -> List (Html Msg)
+viewNextStepsContent language assembled data =
     let
         measurements =
             assembled.measurements
 
         tasks =
-            resolveNextStepsTasks currentDate assembled
+            resolveNextStepsTasks assembled
 
         activeTask =
             resolveActiveTask tasks data.activeTask
@@ -332,7 +327,7 @@ viewNextStepsContent language currentDate assembled data =
             tasks
                 |> List.map
                     (\task ->
-                        ( task, nextStepsTasksCompletedFromTotal language currentDate assembled data task )
+                        ( task, nextStepsTasksCompletedFromTotal language assembled data task )
                     )
                 |> Dict.fromList
 
@@ -346,7 +341,6 @@ viewNextStepsContent language currentDate assembled data =
                     getMeasurementValueFunc measurements.medicationDistribution
                         |> medicationDistributionFormWithDefault data.medicationDistributionForm
                         |> viewMedicationDistributionForm language
-                            currentDate
                             NCDEncounterPhaseRecurrent
                             SetRecommendedTreatmentSignSingle
                             SetRecommendedTreatmentSignMultiple
@@ -357,7 +351,6 @@ viewNextStepsContent language currentDate assembled data =
                     getMeasurementValueFunc measurements.referral
                         |> referralFormWithDefault data.referralForm
                         |> viewReferralForm language
-                            currentDate
                             NCDEncounterPhaseRecurrent
                             SetReferralBoolInput
                             SetFacilityNonReferralReason

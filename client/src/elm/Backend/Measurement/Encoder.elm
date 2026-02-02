@@ -1,4 +1,4 @@
-module Backend.Measurement.Encoder exposing (..)
+module Backend.Measurement.Encoder exposing (encodeAcuteFindings, encodeAcuteIllnessContactsTracing, encodeAcuteIllnessCoreExam, encodeAcuteIllnessDangerSigns, encodeAcuteIllnessFollowUp, encodeAcuteIllnessMuac, encodeAcuteIllnessNutrition, encodeAcuteIllnessTraceContact, encodeAcuteIllnessVitals, encodeAppointmentConfirmation, encodeAttendance, encodeBirthPlan, encodeBreastExam, encodeCall114, encodeCall114Sign, encodeChildFbf, encodeChildScoreboardBCGImmunisation, encodeChildScoreboardDTPImmunisation, encodeChildScoreboardDTPStandaloneImmunisation, encodeChildScoreboardIPVImmunisation, encodeChildScoreboardMRImmunisation, encodeChildScoreboardNCDA, encodeChildScoreboardOPVImmunisation, encodeChildScoreboardPCV13Immunisation, encodeChildScoreboardRotarixImmunisation, encodeContributingFactors, encodeCorePhysicalExam, encodeCounselingSession, encodeCovidTesting, encodeDangerSign, encodeDangerSigns, encodeExposure, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeFollowUp, encodeGroupHealthEducation, encodeGroupNCDA, encodeGroupSendToHC, encodeHCContact, encodeHCContactSign, encodeHCRecommendation, encodeHIVDiagnostics, encodeHIVFollowUp, encodeHIVHealthEducation, encodeHIVMedication, encodeHIVReferral, encodeHIVSymptomReview, encodeHIVTreatmentReview, encodeHealthEducation, encodeHeight, encodeIsolation, encodeIsolationSign, encodeLactation, encodeLastMenstrualPeriod, encodeMalariaPrevention, encodeMalariaTesting, encodeMedicalCondition, encodeMedicalHistory, encodeMedication, encodeMedicationDistribution, encodeMotherFbf, encodeMuac, encodeNCDCoMorbidities, encodeNCDCoreExam, encodeNCDCreatinineTest, encodeNCDDangerSigns, encodeNCDFamilyHistory, encodeNCDFamilyPlanning, encodeNCDHIVTest, encodeNCDHbA1cTest, encodeNCDHealthEducation, encodeNCDLabsResults, encodeNCDLipidPanelTest, encodeNCDLiverFunctionTest, encodeNCDMedicationDistribution, encodeNCDMedicationHistory, encodeNCDOutsideCare, encodeNCDPregnancyTest, encodeNCDRandomBloodSugarTest, encodeNCDReferral, encodeNCDSocialHistory, encodeNCDSymptomReview, encodeNCDUrineDipstickTest, encodeNCDVitals, encodeNutrition, encodeNutritionCaring, encodeNutritionContributingFactors, encodeNutritionFeeding, encodeNutritionFollowUp, encodeNutritionFoodSecurity, encodeNutritionHealthEducation, encodeNutritionHeight, encodeNutritionHygiene, encodeNutritionMuac, encodeNutritionNCDA, encodeNutritionNutrition, encodeNutritionPhoto, encodeNutritionSendToHC, encodeNutritionSign, encodeNutritionWeight, encodeObstetricHistory, encodeObstetricHistoryStep2, encodeObstetricalExam, encodeParticipantConsent, encodePhoto, encodePregnancyTest, encodePrenatalAspirin, encodePrenatalBloodGpRsTest, encodePrenatalBreastfeeding, encodePrenatalCalcium, encodePrenatalFamilyPlanning, encodePrenatalFefol, encodePrenatalFolate, encodePrenatalFollowUp, encodePrenatalGUExam, encodePrenatalHIVPCRTest, encodePrenatalHIVTest, encodePrenatalHealthEducation, encodePrenatalHemoglobinTest, encodePrenatalHepatitisBTest, encodePrenatalIron, encodePrenatalLabsResults, encodePrenatalMMS, encodePrenatalMalariaTest, encodePrenatalMebendazole, encodePrenatalMedicationDistribution, encodePrenatalMentalHealth, encodePrenatalNutrition, encodePrenatalOutsideCare, encodePrenatalPartnerHIVTest, encodePrenatalPhoto, encodePrenatalRandomBloodSugarTest, encodePrenatalSendToHC, encodePrenatalSpecialityCare, encodePrenatalSymptomReview, encodePrenatalSyphilisTest, encodePrenatalTetanusImmunisation, encodePrenatalUrineDipstickTest, encodeRecommendation114, encodeSendToHC, encodeSendToHCSign, encodeSocialHistory, encodeSymptomsGI, encodeSymptomsGeneral, encodeSymptomsRespiratory, encodeTestExecutionNote, encodeTestResult, encodeTravelHistory, encodeTreatmentOngoing, encodeTreatmentReview, encodeTuberculosisDOT, encodeTuberculosisDiagnostics, encodeTuberculosisFollowUp, encodeTuberculosisHealthEducation, encodeTuberculosisMedication, encodeTuberculosisReferral, encodeTuberculosisSymptomReview, encodeTuberculosisTreatmentReview, encodeVitals, encodeWeight, encodeWellChildAlbendazole, encodeWellChildBCGImmunisation, encodeWellChildCaring, encodeWellChildContributingFactors, encodeWellChildDTPImmunisation, encodeWellChildDTPStandaloneImmunisation, encodeWellChildECD, encodeWellChildFeeding, encodeWellChildFollowUp, encodeWellChildFoodSecurity, encodeWellChildHPVImmunisation, encodeWellChildHeadCircumference, encodeWellChildHealthEducation, encodeWellChildHeight, encodeWellChildHygiene, encodeWellChildIPVImmunisation, encodeWellChildMRImmunisation, encodeWellChildMebendezole, encodeWellChildMuac, encodeWellChildNCDA, encodeWellChildNextVisit, encodeWellChildNutrition, encodeWellChildOPVImmunisation, encodeWellChildPCV13Immunisation, encodeWellChildPhoto, encodeWellChildPregnancySummary, encodeWellChildRotarixImmunisation, encodeWellChildSendToHC, encodeWellChildSymptomsReview, encodeWellChildVitals, encodeWellChildVitaminA, encodeWellChildWeight, malariaRapidTestResultAsString)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Encoder exposing (encodeAcuteIllnessDiagnosis)
@@ -6,7 +6,7 @@ import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
 import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (..)
+import Backend.Measurement.Utils exposing (administrationNoteToString, avoidingGuidanceReasonToString, bilirubinValueToString, bloodGroupToString, bloodSmearResultToString, breastfeedingSignToString, foodGroupToString, glucoseValueToString, guExamSignToString, haemoglobinValueToString, hivDiagnosisSignToString, hivHealthEducationSignToString, hivPrescribedMedicationToString, hivSymptomToString, illnessSymptomToString, ketoneValueToString, laboratoryTestToString, lateFirstANCVisitReasonToString, leukocytesValueToString, lmpDateNotConfidentReasonToString, medicalConditionToString, medicalHistoryInfectiousDiseaseToString, medicalHistoryMentalHealthIssueToString, medicalHistoryPhysicalConditionToString, medicalHistorySignToString, medicationCausingHypertensionToString, medicationTreatingDiabetesToString, medicationTreatingHypertensionToString, ncdDangerSignToString, ncdFamilyHistorySignToString, ncdGroup1SymptomToString, ncdGroup2SymptomToString, ncdPainSymptomToString, ncdSocialHistorySignToString, ncdaSignToString, nitriteValueToString, nutritionAssessmentToString, nutritionSignToString, obstetricHistoryStep2SignToString, outsideCareMedicationToString, outsideCareSignToString, phValueToString, postpartumChildDangerSignToString, postpartumHealingProblemToString, postpartumMotherDangerSignToString, predecessorToString, pregnancyTestResultToString, prenatalFlankPainSignToString, prenatalHIVSignToString, prenatalMentalHealthQuestionOptionToString, prenatalMentalHealthQuestionToString, prenatalSymptomQuestionToString, prenatalSymptomToString, proteinValueToString, reasonForNonReferralToString, receiveOptionToString, recommendedTreatmentSignToString, reinforceTreatmentSignToString, reviewStateToString, rhesusToString, stuntingLevelToString, symptomsGISignToString, symptomsGeneralSignToString, symptomsRespiratorySignToString, testResultToString, tuberculosisDOTSignToString, tuberculosisDiagnosisToString, tuberculosisHealthEducationSignToString, tuberculosisPrescribedMedicationToString, tuberculosisSymptomToString, unitOfMeasurementToString, urobilinogenValueToString, vaccineDoseToString, vaginalExamSignToString)
 import Backend.Person.Encoder exposing (encodeGender)
 import Backend.Person.Utils exposing (genderToString)
 import Backend.PrenatalEncounter.Encoder exposing (encodePrenatalDiagnosis)
@@ -1415,11 +1415,6 @@ encodeMedicalHistoryMentalHealthIssue =
     medicalHistoryMentalHealthIssueToString >> string
 
 
-encodeOccursInFamilySign : OccursInFamilySign -> Value
-encodeOccursInFamilySign =
-    occursInFamilySignToString >> string
-
-
 encodeMedicationSign : MedicationSign -> Value
 encodeMedicationSign sign =
     string <|
@@ -2316,32 +2311,6 @@ encodeNonReferralSign sign =
 
             NoNonReferralSigns ->
                 "none"
-
-
-encodeReferralFacility : ReferralFacility -> Value
-encodeReferralFacility facility =
-    string <|
-        case facility of
-            FacilityHealthCenter ->
-                "hc"
-
-            FacilityHospital ->
-                "hospital"
-
-            FacilityMentalHealthSpecialist ->
-                "mhs"
-
-            FacilityARVProgram ->
-                "arv"
-
-            FacilityNCDProgram ->
-                "ncd"
-
-            FacilityANCServices ->
-                "anc"
-
-            FacilityUltrasound ->
-                "us"
 
 
 encodeContributingFactors : ContributingFactors -> List ( String, Value )

@@ -8,7 +8,7 @@ import Components.ReportToWhatsAppDialog.Model
 import Components.ReportToWhatsAppDialog.Update
 import Gizra.Update exposing (sequenceExtra)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Prenatal.ProgressReport.Model exposing (..)
+import Pages.Prenatal.ProgressReport.Model exposing (Model, Msg(..))
 import Pages.Report.Model exposing (LabResultsMode(..))
 
 

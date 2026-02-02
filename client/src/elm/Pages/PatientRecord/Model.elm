@@ -1,4 +1,4 @@
-module Pages.PatientRecord.Model exposing (..)
+module Pages.PatientRecord.Model exposing (Model, Msg(..), PatientRecordFilter(..), PatientType(..), ViewMode(..), emptyModel)
 
 import Components.ReportToWhatsAppDialog.Model
 import Pages.Page exposing (Page)

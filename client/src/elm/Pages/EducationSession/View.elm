@@ -11,7 +11,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Pages.EducationSession.Model exposing (..)
+import Pages.EducationSession.Model exposing (InitialResultsDisplay(..), Model, Msg(..), ViewMode(..))
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (matchFilter, normalizeFilter, viewCheckBoxMultipleSelectInput, viewEncounterActionButton, viewQuestionLabel)
 import RemoteData exposing (RemoteData(..))
@@ -32,11 +32,11 @@ view language currentDate mVillageId id db model =
                 |> Maybe.withDefault NotAsked
     in
     RemoteData.append villageId session
-        |> viewWebData language (viewHeaderAndContent language currentDate id db model) identity
+        |> viewWebData language (viewHeaderAndContent language currentDate db model) identity
 
 
-viewHeaderAndContent : Language -> NominalDate -> EducationSessionId -> ModelIndexedDb -> Model -> ( VillageId, EducationSession ) -> Html Msg
-viewHeaderAndContent language currentDate id db model ( villageId, session ) =
+viewHeaderAndContent : Language -> NominalDate -> ModelIndexedDb -> Model -> ( VillageId, EducationSession ) -> Html Msg
+viewHeaderAndContent language currentDate db model ( villageId, session ) =
     let
         header =
             viewHeader language viewMode session
@@ -44,10 +44,10 @@ viewHeaderAndContent language currentDate id db model ( villageId, session ) =
         content =
             case viewMode of
                 ModeTopics topics ->
-                    viewTopicsContent language currentDate id session topics
+                    viewTopicsContent language session topics
 
                 ModeAttendance participants ->
-                    viewParticipantsContent language currentDate villageId id session db model participants
+                    viewParticipantsContent language currentDate villageId db model participants
 
         viewMode =
             Maybe.withDefault
@@ -93,8 +93,8 @@ viewHeader language viewMode session =
         ]
 
 
-viewTopicsContent : Language -> NominalDate -> EducationSessionId -> EducationSession -> EverySet EducationTopic -> Html Msg
-viewTopicsContent language currentDate id session selectedTopics =
+viewTopicsContent : Language -> EducationSession -> EverySet EducationTopic -> Html Msg
+viewTopicsContent language session selectedTopics =
     let
         innerContent =
             div [ class "full content" ]
@@ -137,13 +137,11 @@ viewParticipantsContent :
     Language
     -> NominalDate
     -> VillageId
-    -> EducationSessionId
-    -> EducationSession
     -> ModelIndexedDb
     -> Model
     -> EverySet PersonId
     -> Html Msg
-viewParticipantsContent language currentDate villageId id session db model selectedParticipants =
+viewParticipantsContent language currentDate villageId db model selectedParticipants =
     div [ class "search-wrapper" ]
         [ div [ class "ui full segment" ]
             [ viewSearchForm language

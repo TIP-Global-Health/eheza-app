@@ -31,9 +31,6 @@ view :
     -> Html Msg
 view language currentDate zscores site features id db model =
     let
-        isChw =
-            True
-
         encounter =
             Dict.get id db.childScoreboardEncounters
                 |> Maybe.withDefault NotAsked
@@ -65,9 +62,9 @@ view language currentDate zscores site features id db model =
                     let
                         ( _, pendingActivities ) =
                             List.filter (expectActivity currentDate site assembled) allActivities
-                                |> List.partition (activityCompleted currentDate site assembled db)
+                                |> List.partition (activityCompleted currentDate site assembled)
                     in
-                    ( Just <|
+                    ( Just
                         { showEndEncounterDialog = model.showAIEncounterPopup
                         , allowEndEncounter = List.isEmpty pendingActivities
                         , closeEncounterMsg = CloseEncounter id
@@ -93,7 +90,6 @@ view language currentDate zscores site features id db model =
             zscores
             site
             features
-            isChw
             initiator
             mandatoryNutritionAssessmentMeasurementsTaken
             db

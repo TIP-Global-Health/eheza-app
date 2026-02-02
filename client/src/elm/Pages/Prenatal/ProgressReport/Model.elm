@@ -1,4 +1,4 @@
-module Pages.Prenatal.ProgressReport.Model exposing (..)
+module Pages.Prenatal.ProgressReport.Model exposing (CHWAction(..), Model, Msg(..), emptyModel, medicalDiagnoses, obstetricalDiagnoses)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (LabsResultsValue)

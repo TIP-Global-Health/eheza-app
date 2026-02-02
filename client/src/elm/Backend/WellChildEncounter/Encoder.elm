@@ -1,9 +1,9 @@
 module Backend.WellChildEncounter.Encoder exposing (encodeEncounterWarning, encodeWellChildEncounter, encodeWellChildEncounterType)
 
-import Backend.WellChildEncounter.Model exposing (..)
+import Backend.WellChildEncounter.Model exposing (EncounterNote(..), EncounterWarning(..), WellChildEncounter, WellChildEncounterType(..))
 import EverySet
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
-import Json.Encode exposing (..)
+import Json.Encode exposing (Value, bool, list, object, string)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid)
 import Utils.Json exposing (encodeIfSet)

@@ -13,7 +13,7 @@ import Html.Events exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewCustomAction, viewPersonDetailsExtended, viewSkipNCDADialog)
 import Pages.WellChild.Activity.Utils exposing (activityCompleted, expectActivity)
-import Pages.WellChild.Encounter.Model exposing (..)
+import Pages.WellChild.Encounter.Model exposing (AssembledData, DialogType(..), Model, Msg(..), Tab(..), WarningPopupType(..))
 import Pages.WellChild.Encounter.Utils exposing (allowEndingEncounter, generateAssembledData)
 import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (Language, translate)
@@ -196,7 +196,7 @@ viewMainPageContent language currentDate zscores site features id isChw db assem
             div [ class "ui tabular menu" ]
                 [ tabItem pendingTabTitle (model.selectedTab == Pending) "pending" (SetSelectedTab Pending)
                 , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
-                , tabItem reportsTabTitle (model.selectedTab == Reports) "reports" (SetActivePage (UserPage (WellChildProgressReportPage id)))
+                , tabItem reportsTabTitle False "reports" (SetActivePage (UserPage (WellChildProgressReportPage id)))
                 ]
 
         ( selectedActivities, emptySectionMessage ) =
@@ -206,9 +206,6 @@ viewMainPageContent language currentDate zscores site features id isChw db assem
 
                 Completed ->
                     ( completedActivities, translate language Translate.NoActivitiesCompleted )
-
-                Reports ->
-                    ( [], "" )
 
         innerContent =
             div [ class "full content" ]

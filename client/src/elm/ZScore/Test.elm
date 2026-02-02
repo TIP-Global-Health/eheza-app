@@ -1,13 +1,13 @@
 module ZScore.Test exposing (all)
 
-import AssocList as Dict
 import Backend.Measurement.Model exposing (Gender(..))
 import Expect exposing (Expectation, FloatingPointTolerance(..))
 import Http
 import Json.Decode exposing (Decoder, decodeString)
-import RemoteData exposing (WebData)
+import RemoteData exposing (RemoteData(..), WebData)
 import Test exposing (Test, describe, test)
-import ZScore.Decoder exposing (..)
+import Utils.AllDict exposing (AllDict)
+import ZScore.Decoder exposing (decodeForAge, decodeForCentimetres)
 import ZScore.Fixture.Bfawho2007
 import ZScore.Fixture.Bmianthro
 import ZScore.Fixture.Hfawho2007
@@ -16,13 +16,24 @@ import ZScore.Fixture.Weianthro
 import ZScore.Fixture.Wfawho2007
 import ZScore.Fixture.Wfhanthro
 import ZScore.Fixture.Wflanthro
-import ZScore.Model exposing (..)
-import ZScore.Utils exposing (..)
+import ZScore.Model exposing (BMI(..), ByDaysAndMonths, Centimetres(..), Days(..), Height(..), Kilograms(..), Length(..), MaleAndFemale, Model, Months(..), ZScore, ZScoreEntry)
+import ZScore.Utils exposing (zScoreBmiForAge, zScoreLengthHeightForAge, zScoreWeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
 
 
 type alias MonthsAndDays a =
     { days : a
     , months : a
+    }
+
+
+{-| Record type for test data, replacing the 5-element tuple.
+-}
+type alias ZScoreTestCase =
+    { func : String
+    , scale : Float
+    , gender : Gender
+    , measurement : Float
+    , expected : Maybe Float
     }
 
 
@@ -45,6 +56,7 @@ testModel =
             }
     , weightForHeight = fetchForHeight ZScore.Fixture.Wfhanthro.json
     , weightForLength = fetchForLength ZScore.Fixture.Wflanthro.json
+    , headCircumferenceForAge = NotAsked
     }
 
 
@@ -66,12 +78,12 @@ fetchForAge wrapper tables =
         (decodeFixture (decodeForAge Months (\(Months x) -> x) wrapper) tables.months)
 
 
-fetchForHeight : String -> WebData (MaleAndFemale (Dict.Height (ZScoreEntry Kilograms) Int))
+fetchForHeight : String -> WebData (MaleAndFemale (AllDict Height (ZScoreEntry Kilograms) Int))
 fetchForHeight table =
     decodeFixture (decodeForCentimetres "height" Height (\(Height x) -> x)) table
 
 
-fetchForLength : String -> WebData (MaleAndFemale (Dict.Length (ZScoreEntry Kilograms) Int))
+fetchForLength : String -> WebData (MaleAndFemale (AllDict Length (ZScoreEntry Kilograms) Int))
 fetchForLength table =
     decodeFixture (decodeForCentimetres "length" Length (\(Length x) -> x)) table
 
@@ -82,7 +94,7 @@ decodeFixture decoder input =
     -- make this work
     decodeString decoder input
         |> RemoteData.fromResult
-        |> RemoteData.mapError Http.BadUrl
+        |> RemoteData.mapError (Json.Decode.errorToString >> Http.BadUrl)
 
 
 {-| This is copied with formatting changes from the server tests, so we can
@@ -92,122 +104,122 @@ wouldn't do it this way if this was a purely Elm test.
 We subdivide because otherwise our list is too long for a literal Elm list.
 
 -}
-originalTestData : List ( String, Float, Gender, Float, Maybe Float )
+originalTestData : List ZScoreTestCase
 originalTestData =
-    [ ( "lfa", 0, Male, 40.1, Just -5.17 )
-    , ( "lfa", 0, Male, 44.1, Just -3.06 )
-    , ( "lfa", 0, Male, 46.0, Just -2.05 )
-    , ( "lfa", 0, Male, 47.9, Just -1.05 )
-    , ( "lfa", 0, Male, 49.5, Just -0.2 )
-    , ( "lfa", 0, Male, 51.6, Just 0.91 )
-    , ( "lfa", 0, Male, 53.6, Just 1.96 )
-    , ( "lfa", 0, Male, 54.0, Just 2.17 )
-    , ( "lfa", 0, Male, 56.0, Just 3.23 )
-    , ( "lfa", 440, Male, 44, Just -13.82 )
-    , ( "lfa", 440, Male, 69, Just -3.82 )
-    , ( "lfa", 440, Male, 72, Just -2.62 )
-    , ( "lfa", 440, Male, 74, Just -1.82 )
-    , ( "lfa", 440, Male, 77, Just -0.62 )
-    , ( "lfa", 440, Male, 80, Just 0.58 )
-    , ( "lfa", 440, Male, 82, Just 1.38 )
-    , ( "lfa", 440, Male, 84, Just 2.18 )
-    , ( "lfa", 440, Male, 87, Just 3.38 )
-    , ( "lfa", 30000, Male, 234, Nothing )
-    , ( "lfa", 0, Female, 40, Just -4.91 )
-    , ( "lfa", 0, Female, 42, Just -3.84 )
-    , ( "lfa", 0, Female, 44, Just -2.76 )
-    , ( "lfa", 0, Female, 46, Just -1.69 )
-    , ( "lfa", 0, Female, 48, Just -0.61 )
-    , ( "lfa", 0, Female, 50, Just 0.46 )
-    , ( "lfa", 0, Female, 52, Just 1.53 )
-    , ( "lfa", 0, Female, 54, Just 2.6 )
-    , ( "lfa", 0, Female, 56, Just 3.68 )
-    , ( "lfa", 440, Female, 65, Just -4.39 )
-    , ( "lfa", 440, Female, 67, Just -3.65 )
-    , ( "lfa", 440, Female, 69, Just -2.92 )
-    , ( "lfa", 440, Female, 72, Just -1.81 )
-    , ( "lfa", 440, Female, 75, Just -0.7 )
-    , ( "lfa", 440, Female, 78, Just 0.41 )
-    , ( "lfa", 440, Female, 80, Just 1.14 )
-    , ( "lfa", 440, Female, 83, Just 2.25 )
-    , ( "lfa", 440, Female, 86, Just 3.36 )
-    , ( "lfa", 30000, Female, 234, Nothing )
-    , ( "wfa", 0, Male, 1.5, Just -4.53 )
-    , ( "wfa", 0, Male, 2.0, Just -3.21 )
-    , ( "wfa", 0, Male, 2.4, Just -2.15 )
-    , ( "wfa", 0, Male, 2.8, Just -1.18 )
-    , ( "wfa", 0, Male, 3.3, Just -0.1 )
-    , ( "wfa", 0, Male, 3.8, Just 0.89 )
-    , ( "wfa", 0, Male, 4.4, Just 1.97 )
-    , ( "wfa", 0, Male, 5.0, Just 2.95 )
-    , ( "wfa", 0, Male, 5.6, Just 3.93 )
-    , ( "wfa", 440, Male, 6, Just -4.52 )
-    , ( "wfa", 440, Male, 7, Just -3.36 )
-    , ( "wfa", 440, Male, 8, Just -2.19 )
-    , ( "wfa", 440, Male, 9, Just -1.13 )
-    , ( "wfa", 440, Male, 10, Just -0.17 )
-    , ( "wfa", 440, Male, 11, Just 0.69 )
-    , ( "wfa", 440, Male, 12, Just 1.49 )
-    , ( "wfa", 440, Male, 14, Just 2.91 )
-    , ( "wfa", 440, Male, 15, Just 3.59 )
-    , ( "wfa", 30000, Male, 234, Nothing )
-    , ( "wfa", 0, Female, 1.6, Just -4.2 )
-    , ( "wfa", 0, Female, 2.0, Just -3.09 )
-    , ( "wfa", 0, Female, 2.3, Just -2.25 )
-    , ( "wfa", 0, Female, 2.7, Just -1.23 )
-    , ( "wfa", 0, Female, 3.2, Just -0.07 )
-    , ( "wfa", 0, Female, 3.7, Just 0.98 )
-    , ( "wfa", 0, Female, 4.2, Just 1.94 )
-    , ( "wfa", 0, Female, 4.7, Just 2.84 )
-    , ( "wfa", 0, Female, 5.3, Just 3.9 )
-    , ( "wfa", 440, Female, 5, Just -5.05 )
-    , ( "wfa", 440, Female, 6, Just -3.81 )
-    , ( "wfa", 440, Female, 7, Just -2.56 )
-    , ( "wfa", 440, Female, 8, Just -1.41 )
-    , ( "wfa", 440, Female, 9, Just -0.43 )
-    , ( "wfa", 440, Female, 10, Just 0.43 )
-    , ( "wfa", 440, Female, 12, Just 1.86 )
-    , ( "wfa", 440, Female, 13, Just 2.47 )
-    , ( "wfa", 440, Female, 14, Just 3.03 )
-    , ( "wfa", 30000, Female, 234, Nothing )
-    , ( "wfl", 45, Male, 1.7, Just -4.06 )
-    , ( "wfl", 45, Male, 1.8, Just -3.46 )
-    , ( "wfl", 45, Male, 2.0, Just -2.25 )
-    , ( "wfl", 45, Male, 2.2, Just -1.15 )
-    , ( "wfl", 45, Male, 2.4, Just -0.18 )
-    , ( "wfl", 45, Male, 2.6, Just 0.68 )
-    , ( "wfl", 45, Male, 2.9, Just 1.82 )
-    , ( "wfl", 45, Male, 3.2, Just 2.81 )
-    , ( "wfl", 45, Male, 3.5, Just 3.77 )
-    , ( "wfl", 98.6, Male, 10.77, Just -4.01 )
-    , ( "wfl", 98.6, Male, 11.69, Just -3.01 )
-    , ( "wfl", 98.6, Male, 12.62, Just -2.0 )
-    , ( "wfl", 98.6, Male, 13.64, Just -1.01 )
-    , ( "wfl", 98.6, Male, 14.78, Just -0.01 )
-    , ( "wfl", 98.6, Male, 16.06, Just 1.0 )
-    , ( "wfl", 98.6, Male, 17.48, Just 1.99 )
-    , ( "wfl", 98.6, Male, 19.09, Just 3.0 )
-    , ( "wfl", 98.6, Male, 20.6, Just 3.94 )
-    , ( "wfl", 30000, Male, 234, Nothing )
-    , ( "wfl", 45, Female, 1.7, Just -4.22 )
-    , ( "wfl", 45, Female, 1.9, Just -3.01 )
-    , ( "wfl", 45, Female, 2.0, Just -2.39 )
-    , ( "wfl", 45, Female, 2.2, Just -1.27 )
-    , ( "wfl", 45, Female, 2.4, Just -0.27 )
-    , ( "wfl", 45, Female, 2.6, Just 0.6 )
-    , ( "wfl", 45, Female, 2.9, Just 1.76 )
-    , ( "wfl", 45, Female, 3.2, Just 2.77 )
-    , ( "wfl", 45, Female, 3.5, Just 3.73 )
-    , ( "wfl", 98.6, Female, 10.33, Just -4.0 )
-    , ( "wfl", 98.6, Female, 11.31, Just -3.01 )
-    , ( "wfl", 98.6, Female, 12.29, Just -2.01 )
-    , ( "wfl", 98.6, Female, 13.4, Just -1.0 )
-    , ( "wfl", 98.6, Female, 14.64, Just 0.0 )
-    , ( "wfl", 98.6, Female, 16.04, Just 0.99 )
-    , ( "wfl", 98.6, Female, 17.66, Just 2.0 )
-    , ( "wfl", 98.6, Female, 19.49, Just 3.0 )
-    , ( "wfl", 98.6, Female, 21.33, Just 4.0 )
-    , ( "wfl", 30000, Female, 234, Nothing )
+    [ { func = "lfa", scale = 0, gender = Male, measurement = 40.1, expected = Just -5.17 }
+    , { func = "lfa", scale = 0, gender = Male, measurement = 44.1, expected = Just -3.06 }
+    , { func = "lfa", scale = 0, gender = Male, measurement = 46.0, expected = Just -2.05 }
+    , { func = "lfa", scale = 0, gender = Male, measurement = 47.9, expected = Just -1.05 }
+    , { func = "lfa", scale = 0, gender = Male, measurement = 49.5, expected = Just -0.2 }
+    , { func = "lfa", scale = 0, gender = Male, measurement = 51.6, expected = Just 0.91 }
+    , { func = "lfa", scale = 0, gender = Male, measurement = 53.6, expected = Just 1.96 }
+    , { func = "lfa", scale = 0, gender = Male, measurement = 54.0, expected = Just 2.17 }
+    , { func = "lfa", scale = 0, gender = Male, measurement = 56.0, expected = Just 3.23 }
+    , { func = "lfa", scale = 440, gender = Male, measurement = 44, expected = Just -13.82 }
+    , { func = "lfa", scale = 440, gender = Male, measurement = 69, expected = Just -3.82 }
+    , { func = "lfa", scale = 440, gender = Male, measurement = 72, expected = Just -2.62 }
+    , { func = "lfa", scale = 440, gender = Male, measurement = 74, expected = Just -1.82 }
+    , { func = "lfa", scale = 440, gender = Male, measurement = 77, expected = Just -0.62 }
+    , { func = "lfa", scale = 440, gender = Male, measurement = 80, expected = Just 0.58 }
+    , { func = "lfa", scale = 440, gender = Male, measurement = 82, expected = Just 1.38 }
+    , { func = "lfa", scale = 440, gender = Male, measurement = 84, expected = Just 2.18 }
+    , { func = "lfa", scale = 440, gender = Male, measurement = 87, expected = Just 3.38 }
+    , { func = "lfa", scale = 30000, gender = Male, measurement = 234, expected = Nothing }
+    , { func = "lfa", scale = 0, gender = Female, measurement = 40, expected = Just -4.91 }
+    , { func = "lfa", scale = 0, gender = Female, measurement = 42, expected = Just -3.84 }
+    , { func = "lfa", scale = 0, gender = Female, measurement = 44, expected = Just -2.76 }
+    , { func = "lfa", scale = 0, gender = Female, measurement = 46, expected = Just -1.69 }
+    , { func = "lfa", scale = 0, gender = Female, measurement = 48, expected = Just -0.61 }
+    , { func = "lfa", scale = 0, gender = Female, measurement = 50, expected = Just 0.46 }
+    , { func = "lfa", scale = 0, gender = Female, measurement = 52, expected = Just 1.53 }
+    , { func = "lfa", scale = 0, gender = Female, measurement = 54, expected = Just 2.6 }
+    , { func = "lfa", scale = 0, gender = Female, measurement = 56, expected = Just 3.68 }
+    , { func = "lfa", scale = 440, gender = Female, measurement = 65, expected = Just -4.39 }
+    , { func = "lfa", scale = 440, gender = Female, measurement = 67, expected = Just -3.65 }
+    , { func = "lfa", scale = 440, gender = Female, measurement = 69, expected = Just -2.92 }
+    , { func = "lfa", scale = 440, gender = Female, measurement = 72, expected = Just -1.81 }
+    , { func = "lfa", scale = 440, gender = Female, measurement = 75, expected = Just -0.7 }
+    , { func = "lfa", scale = 440, gender = Female, measurement = 78, expected = Just 0.41 }
+    , { func = "lfa", scale = 440, gender = Female, measurement = 80, expected = Just 1.14 }
+    , { func = "lfa", scale = 440, gender = Female, measurement = 83, expected = Just 2.25 }
+    , { func = "lfa", scale = 440, gender = Female, measurement = 86, expected = Just 3.36 }
+    , { func = "lfa", scale = 30000, gender = Female, measurement = 234, expected = Nothing }
+    , { func = "wfa", scale = 0, gender = Male, measurement = 1.5, expected = Just -4.53 }
+    , { func = "wfa", scale = 0, gender = Male, measurement = 2.0, expected = Just -3.21 }
+    , { func = "wfa", scale = 0, gender = Male, measurement = 2.4, expected = Just -2.15 }
+    , { func = "wfa", scale = 0, gender = Male, measurement = 2.8, expected = Just -1.18 }
+    , { func = "wfa", scale = 0, gender = Male, measurement = 3.3, expected = Just -0.1 }
+    , { func = "wfa", scale = 0, gender = Male, measurement = 3.8, expected = Just 0.89 }
+    , { func = "wfa", scale = 0, gender = Male, measurement = 4.4, expected = Just 1.97 }
+    , { func = "wfa", scale = 0, gender = Male, measurement = 5.0, expected = Just 2.95 }
+    , { func = "wfa", scale = 0, gender = Male, measurement = 5.6, expected = Just 3.93 }
+    , { func = "wfa", scale = 440, gender = Male, measurement = 6, expected = Just -4.52 }
+    , { func = "wfa", scale = 440, gender = Male, measurement = 7, expected = Just -3.36 }
+    , { func = "wfa", scale = 440, gender = Male, measurement = 8, expected = Just -2.19 }
+    , { func = "wfa", scale = 440, gender = Male, measurement = 9, expected = Just -1.13 }
+    , { func = "wfa", scale = 440, gender = Male, measurement = 10, expected = Just -0.17 }
+    , { func = "wfa", scale = 440, gender = Male, measurement = 11, expected = Just 0.69 }
+    , { func = "wfa", scale = 440, gender = Male, measurement = 12, expected = Just 1.49 }
+    , { func = "wfa", scale = 440, gender = Male, measurement = 14, expected = Just 2.91 }
+    , { func = "wfa", scale = 440, gender = Male, measurement = 15, expected = Just 3.59 }
+    , { func = "wfa", scale = 30000, gender = Male, measurement = 234, expected = Nothing }
+    , { func = "wfa", scale = 0, gender = Female, measurement = 1.6, expected = Just -4.2 }
+    , { func = "wfa", scale = 0, gender = Female, measurement = 2.0, expected = Just -3.09 }
+    , { func = "wfa", scale = 0, gender = Female, measurement = 2.3, expected = Just -2.25 }
+    , { func = "wfa", scale = 0, gender = Female, measurement = 2.7, expected = Just -1.23 }
+    , { func = "wfa", scale = 0, gender = Female, measurement = 3.2, expected = Just -0.07 }
+    , { func = "wfa", scale = 0, gender = Female, measurement = 3.7, expected = Just 0.98 }
+    , { func = "wfa", scale = 0, gender = Female, measurement = 4.2, expected = Just 1.94 }
+    , { func = "wfa", scale = 0, gender = Female, measurement = 4.7, expected = Just 2.84 }
+    , { func = "wfa", scale = 0, gender = Female, measurement = 5.3, expected = Just 3.9 }
+    , { func = "wfa", scale = 440, gender = Female, measurement = 5, expected = Just -5.05 }
+    , { func = "wfa", scale = 440, gender = Female, measurement = 6, expected = Just -3.81 }
+    , { func = "wfa", scale = 440, gender = Female, measurement = 7, expected = Just -2.56 }
+    , { func = "wfa", scale = 440, gender = Female, measurement = 8, expected = Just -1.41 }
+    , { func = "wfa", scale = 440, gender = Female, measurement = 9, expected = Just -0.43 }
+    , { func = "wfa", scale = 440, gender = Female, measurement = 10, expected = Just 0.43 }
+    , { func = "wfa", scale = 440, gender = Female, measurement = 12, expected = Just 1.86 }
+    , { func = "wfa", scale = 440, gender = Female, measurement = 13, expected = Just 2.47 }
+    , { func = "wfa", scale = 440, gender = Female, measurement = 14, expected = Just 3.03 }
+    , { func = "wfa", scale = 30000, gender = Female, measurement = 234, expected = Nothing }
+    , { func = "wfl", scale = 45, gender = Male, measurement = 1.7, expected = Just -4.06 }
+    , { func = "wfl", scale = 45, gender = Male, measurement = 1.8, expected = Just -3.46 }
+    , { func = "wfl", scale = 45, gender = Male, measurement = 2.0, expected = Just -2.25 }
+    , { func = "wfl", scale = 45, gender = Male, measurement = 2.2, expected = Just -1.15 }
+    , { func = "wfl", scale = 45, gender = Male, measurement = 2.4, expected = Just -0.18 }
+    , { func = "wfl", scale = 45, gender = Male, measurement = 2.6, expected = Just 0.68 }
+    , { func = "wfl", scale = 45, gender = Male, measurement = 2.9, expected = Just 1.82 }
+    , { func = "wfl", scale = 45, gender = Male, measurement = 3.2, expected = Just 2.81 }
+    , { func = "wfl", scale = 45, gender = Male, measurement = 3.5, expected = Just 3.77 }
+    , { func = "wfl", scale = 98.6, gender = Male, measurement = 10.77, expected = Just -4.01 }
+    , { func = "wfl", scale = 98.6, gender = Male, measurement = 11.69, expected = Just -3.01 }
+    , { func = "wfl", scale = 98.6, gender = Male, measurement = 12.62, expected = Just -2.0 }
+    , { func = "wfl", scale = 98.6, gender = Male, measurement = 13.64, expected = Just -1.01 }
+    , { func = "wfl", scale = 98.6, gender = Male, measurement = 14.78, expected = Just -0.01 }
+    , { func = "wfl", scale = 98.6, gender = Male, measurement = 16.06, expected = Just 1.0 }
+    , { func = "wfl", scale = 98.6, gender = Male, measurement = 17.48, expected = Just 1.99 }
+    , { func = "wfl", scale = 98.6, gender = Male, measurement = 19.09, expected = Just 3.0 }
+    , { func = "wfl", scale = 98.6, gender = Male, measurement = 20.6, expected = Just 3.94 }
+    , { func = "wfl", scale = 30000, gender = Male, measurement = 234, expected = Nothing }
+    , { func = "wfl", scale = 45, gender = Female, measurement = 1.7, expected = Just -4.22 }
+    , { func = "wfl", scale = 45, gender = Female, measurement = 1.9, expected = Just -3.01 }
+    , { func = "wfl", scale = 45, gender = Female, measurement = 2.0, expected = Just -2.39 }
+    , { func = "wfl", scale = 45, gender = Female, measurement = 2.2, expected = Just -1.27 }
+    , { func = "wfl", scale = 45, gender = Female, measurement = 2.4, expected = Just -0.27 }
+    , { func = "wfl", scale = 45, gender = Female, measurement = 2.6, expected = Just 0.6 }
+    , { func = "wfl", scale = 45, gender = Female, measurement = 2.9, expected = Just 1.76 }
+    , { func = "wfl", scale = 45, gender = Female, measurement = 3.2, expected = Just 2.77 }
+    , { func = "wfl", scale = 45, gender = Female, measurement = 3.5, expected = Just 3.73 }
+    , { func = "wfl", scale = 98.6, gender = Female, measurement = 10.33, expected = Just -4.0 }
+    , { func = "wfl", scale = 98.6, gender = Female, measurement = 11.31, expected = Just -3.01 }
+    , { func = "wfl", scale = 98.6, gender = Female, measurement = 12.29, expected = Just -2.01 }
+    , { func = "wfl", scale = 98.6, gender = Female, measurement = 13.4, expected = Just -1.0 }
+    , { func = "wfl", scale = 98.6, gender = Female, measurement = 14.64, expected = Just 0.0 }
+    , { func = "wfl", scale = 98.6, gender = Female, measurement = 16.04, expected = Just 0.99 }
+    , { func = "wfl", scale = 98.6, gender = Female, measurement = 17.66, expected = Just 2.0 }
+    , { func = "wfl", scale = 98.6, gender = Female, measurement = 19.49, expected = Just 3.0 }
+    , { func = "wfl", scale = 98.6, gender = Female, measurement = 21.33, expected = Just 4.0 }
+    , { func = "wfl", scale = 30000, gender = Female, measurement = 234, expected = Nothing }
     ]
 
 
@@ -217,2371 +229,2371 @@ originalTestData =
 -- with long static lists in Elm.
 
 
-wfaTestData : List ( String, Float, Gender, Float, Maybe Float )
+wfaTestData : List ZScoreTestCase
 wfaTestData =
-    [ ( "wfa", 471, Female, 10, Just 0.25 )
-    , ( "wfa", 25, Male, 8, Just 5.35 )
-    , ( "wfa", 603, Female, 12, Just 0.98 )
-    , ( "wfa", 606, Female, 12, Just 0.97 )
-    , ( "wfa", 28, Male, 9, Just 6.4 )
-    , ( "wfa", 606, Female, 10, Just -0.5 )
-    , ( "wfa", 474, Female, 11, Just 0.99 )
-    , ( "wfa", 28, Male, 8, Just 5.08 )
-    , ( "wfa", 475, Female, 12, Just 1.66 )
-    , ( "wfa", 675, Female, 9.6, Just -1.2 )
-    , ( "wfa", 555, Male, 10, Just -0.84 )
-    , ( "wfa", 775, Male, 6.9, Just -4.8 )
-    , ( "wfa", 138, Female, 7.5, Just 0.93 )
-    , ( "wfa", 348, Male, 7.8, Just -1.81 )
-    , ( "wfa", 462, Female, 9, Just -0.56 )
-    , ( "wfa", 409, Male, 11.5, Just 1.31 )
-    , ( "wfa", 412, Female, 8.2, Just -1.03 )
-    , ( "wfa", 442, Male, 7.9, Just -2.32 )
-    , ( "wfa", 383, Male, 7, Just -3.03 )
-    , ( "wfa", 638, Male, 10.7, Just -0.67 )
-    , ( "wfa", 351, Male, 8.1, Just -1.49 )
-    , ( "wfa", 654, Female, 8.8, Just -1.83 )
-    , ( "wfa", 515, Female, 9.1, Just -0.78 )
-    , ( "wfa", 644, Female, 10.5, Just -0.29 )
-    , ( "wfa", 485, Female, 8.4, Just -1.28 )
-    , ( "wfa", 422, Female, 8.1, Just -1.19 )
-    , ( "wfa", 334, Male, 8.7, Just -0.71 )
-    , ( "wfa", 657, Female, 11, Just 0.02 )
-    , ( "wfa", 525, Female, 12.5, Just 1.7 )
-    , ( "wfa", 79, Male, 8, Just 2.36 )
-    , ( "wfa", 80, Male, 9, Just 3.4 )
-    , ( "wfa", 619, Male, 10.1, Just -1.09 )
-    , ( "wfa", 656, Male, 11.4, Just -0.2 )
-    , ( "wfa", 790, Female, 9.5, Just -1.86 )
-    , ( "wfa", 790, Male, 6.8, Just -4.93 )
-    , ( "wfa", 153, Female, 7.3, Just 0.45 )
-    , ( "wfa", 363, Male, 7.5, Just -2.27 )
-    , ( "wfa", 398, Male, 7.1, Just -3 )
-    , ( "wfa", 653, Male, 10.8, Just -0.66 )
-    , ( "wfa", 366, Male, 8, Just -1.71 )
-    , ( "wfa", 659, Female, 11, Just 0.01 )
-    , ( "wfa", 500, Female, 8.5, Just -1.27 )
-    , ( "wfa", 424, Female, 8, Just -1.31 )
-    , ( "wfa", 349, Male, 6.3, Just -3.67 )
-    , ( "wfa", 339, Male, 11, Just 1.4 )
-    , ( "wfa", 382, Male, 9, Just -0.75 )
-    , ( "wfa", 667, Female, 12, Just 0.67 )
-    , ( "wfa", 1680, Male, 14, Just -1.73 )
-    , ( "wfa", 1666, Male, 15.8, Just -0.77 )
-    , ( "wfa", 1829, Female, 15.3, Just -1.22 )
-    , ( "wfa", 1669, Female, 16.5, Just -0.33 )
-    , ( "wfa", 1853, Male, 16.4, Just -0.89 )
-    , ( "wfa", 1651, Male, 15, Just -1.13 )
-    , ( "wfa", 1919, Female, 18.2, Just -0.16 )
-    , ( "wfa", 1597, Male, 16.5, Just -0.27 )
-    , ( "wfa", 1795, Female, 18.4, Just 0.13 )
-    , ( "wfa", 1818, Female, 19.3, Just 0.4 )
-    , ( "wfa", 1631, Female, 14.9, Just -0.98 )
-    , ( "wfa", 1323, Female, 13.1, Just -1.15 )
-    , ( "wfa", 1625, Female, 15.3, Just -0.77 )
-    , ( "wfa", 1673, Female, 14.4, Just -1.32 )
-    , ( "wfa", 1554, Male, 16.1, Just -0.36 )
-    , ( "wfa", 1827, Female, 15.4, Just -1.17 )
-    , ( "wfa", 1919, Female, 22, Just 1.11 )
-    , ( "wfa", 1561, Female, 17.6, Just 0.38 )
-    , ( "wfa", 1658, Female, 15.6, Just -0.71 )
-    , ( "wfa", 1806, Female, 22.1, Just 1.3 )
-    , ( "wfa", 1420, Female, 17.4, Just 0.68 )
-    , ( "wfa", 1525, Female, 17.8, Just 0.55 )
-    , ( "wfa", 1919, Female, 17.9, Just -0.27 )
-    , ( "wfa", 1848, Male, 18.8, Just 0.14 )
-    , ( "wfa", 1724, Female, 16.9, Just -0.29 )
-    , ( "wfa", 1919, Male, 16.2, Just -1.19 )
-    , ( "wfa", 1394, Male, 13.1, Just -1.59 )
-    , ( "wfa", 1427, Female, 11.7, Just -2.33 )
-    , ( "wfa", 1895, Male, 19.5, Just 0.31 )
-    , ( "wfa", 1734, Female, 16.6, Just -0.44 )
-    , ( "wfa", 1569, Male, 18, Just 0.47 )
-    , ( "wfa", 1816, Female, 17.6, Just -0.21 )
-    , ( "wfa", 1919, Female, 16.3, Just -0.95 )
-    , ( "wfa", 916, Male, 13.6, Just 0.18 )
-    , ( "wfa", 1456, Male, 16.7, Just 0.18 )
-    , ( "wfa", 1814, Male, 18.4, Just 0.05 )
-    , ( "wfa", 1554, Female, 15.8, Just -0.36 )
-    , ( "wfa", 1123, Male, 17.1, Just 1.35 )
-    , ( "wfa", 1230, Female, 13.2, Just -0.82 )
-    , ( "wfa", 1738, Male, 16.4, Just -0.64 )
-    , ( "wfa", 1607, Male, 18.6, Just 0.62 )
-    , ( "wfa", 1919, Female, 17.3, Just -0.52 )
-    , ( "wfa", 1919, Female, 19.1, Just 0.18 )
-    , ( "wfa", 1620, Male, 17.6, Just 0.17 )
-    , ( "wfa", 1711, Female, 16.8, Just -0.3 )
-    , ( "wfa", 1535, Male, 16.6, Just -0.07 )
-    , ( "wfa", 1801, Male, 18.4, Just 0.08 )
-    , ( "wfa", 1818, Male, 16, Just -1 )
-    , ( "wfa", 1905, Female, 17.3, Just -0.49 )
-    , ( "wfa", 1785, Male, 15.2, Just -1.32 )
-    , ( "wfa", 1919, Male, 15.1, Just -1.75 )
-    , ( "wfa", 1919, Female, 17, Just -0.64 )
-    , ( "wfa", 1633, Male, 15.4, Just -0.89 )
-    , ( "wfa", 579, Male, 10.2, Just -0.8 )
-    , ( "wfa", 297, Male, 7.4, Just -1.89 )
-    , ( "wfa", 474, Female, 8.6, Just -1.02 )
-    , ( "wfa", 387, Male, 8.3, Just -1.53 )
-    , ( "wfa", 625, Male, 9.4, Just -1.76 )
-    , ( "wfa", 325, Female, 9.5, Just 0.76 )
-    , ( "wfa", 584, Male, 10.1, Just -0.91 )
-    , ( "wfa", 396, Female, 9.6, Just 0.36 )
-    , ( "wfa", 327, Male, 7.8, Just -1.66 )
-    , ( "wfa", 753, Male, 11.3, Just -0.74 )
-    , ( "wfa", 1403, Female, 13.4, Just -1.2 )
-    , ( "wfa", 1403, Male, 13.1, Just -1.62 )
-    , ( "wfa", 1768, Female, 16.8, Just -0.43 )
-    , ( "wfa", 1462, Female, 17, Just 0.4 )
-    , ( "wfa", 1403, Female, 14.2, Just -0.76 )
-    , ( "wfa", 1768, Female, 15.9, Just -0.82 )
-    , ( "wfa", 1403, Male, 15.6, Just -0.22 )
-    , ( "wfa", 881, Female, 15.1, Just 1.46 )
-    , ( "wfa", 461, Female, 8.2, Just -1.34 )
-    , ( "wfa", 1768, Male, 14.7, Just -1.55 )
-    , ( "wfa", 1768, Female, 19.7, Just 0.65 )
-    , ( "wfa", 210, Male, 6.2, Just -2.6 )
-    , ( "wfa", 1768, Female, 13.2, Just -2.18 )
-    , ( "wfa", 173, Female, 8.3, Just 1.18 )
-    , ( "wfa", 1403, Female, 16.4, Just 0.3 )
-    , ( "wfa", 1768, Female, 19.5, Just 0.58 )
-    , ( "wfa", 1619, Male, 18.6, Just 0.59 )
-    , ( "wfa", 1554, Female, 14.3, Just -1.1 )
-    , ( "wfa", 1768, Female, 13.9, Just -1.8 )
-    , ( "wfa", 1768, Male, 16.4, Just -0.71 )
-    , ( "wfa", 1403, Female, 14.5, Just -0.6 )
-    , ( "wfa", 1768, Female, 14.5, Just -1.48 )
-    , ( "wfa", 1768, Female, 15.6, Just -0.96 )
-    , ( "wfa", 1768, Female, 18.8, Just 0.34 )
-    , ( "wfa", 1849, Male, 18.4, Just -0.03 )
-    , ( "wfa", 1919, Male, 17.5, Just -0.58 )
-    , ( "wfa", 1051, Male, 16, Just 1.05 )
-    , ( "wfa", 1860, Female, 12.9, Just -2.65 )
-    , ( "wfa", 2285, Male, 17.3, Just -1.53 )
-    , ( "wfa", 1295, Male, 14.2, Just -0.68 )
-    , ( "wfa", 1628, Male, 18.8, Just 0.65 )
-    , ( "wfa", 1662, Female, 15.4, Just -0.81 )
-    , ( "wfa", 2061, Female, 18.5, Just -0.34 )
-    , ( "wfa", 1842, Female, 18.2, Just -0.04 )
-    , ( "wfa", 2176, Female, 18.5, Just -0.56 )
-    , ( "wfa", 1653, Female, 15.1, Just -0.93 )
-    , ( "wfa", 1743, Male, 13.1, Just -2.39 )
-    , ( "wfa", 1847, Female, 20, Just 0.57 )
-    , ( "wfa", 1893, Female, 16.5, Just -0.81 )
-    , ( "wfa", 1916, Male, 16.7, Just -0.94 )
-    , ( "wfa", 1742, Female, 16.5, Just -0.5 )
-    , ( "wfa", 1874, Male, 20.2, Just 0.62 )
-    , ( "wfa", 1495, Male, 15.8, Just -0.36 )
-    , ( "wfa", 1829, Male, 15.4, Just -1.32 )
-    , ( "wfa", 1767, Female, 16.8, Just -0.43 )
-    , ( "wfa", 1572, Male, 18.7, Just 0.75 )
-    , ( "wfa", 1809, Male, 17.4, Just -0.35 )
-    , ( "wfa", 1178, Male, 14.8, Just 0 )
-    , ( "wfa", 1848, Female, 15.9, Just -0.99 )
-    , ( "wfa", 1909, Female, 15.8, Just -1.16 )
-    , ( "wfa", 1698, Female, 17.8, Just 0.12 )
-    , ( "wfa", 1648, Female, 15.3, Just -0.82 )
-    , ( "wfa", 1762, Male, 19, Just 0.4 )
-    , ( "wfa", 2185, Male, 18.2, Just -0.9 )
-    , ( "wfa", 1755, Male, 17.5, Just -0.19 )
-    , ( "wfa", 2022, Female, 14.6, Just -2.01 )
-    , ( "wfa", 1871, Male, 16.9, Just -0.74 )
-    , ( "wfa", 1852, Male, 16.1, Just -1.03 )
-    , ( "wfa", 1768, Male, 15.3, Just -1.24 )
-    , ( "wfa", 1866, Male, 14.5, Just -1.95 )
-    , ( "wfa", 1919, Male, 16.1, Just -1.24 )
-    , ( "wfa", 1963, Male, 17.9, Just -0.51 )
-    , ( "wfa", 1729, Male, 17.3, Just -0.22 )
-    , ( "wfa", 1652, Male, 15.3, Just -0.98 )
-    , ( "wfa", 1936, Female, 15.1, Just -1.57 )
-    , ( "wfa", 2197, Male, 19.9, Just -0.24 )
-    , ( "wfa", 2261, Female, 17.6, Just -1.08 )
-    , ( "wfa", 1592, Female, 17.3, Just 0.18 )
-    , ( "wfa", 1946, Female, 17, Just -0.7 )
-    , ( "wfa", 2181, Female, 20.4, Just 0.1 )
-    , ( "wfa", 1875, Male, 18.3, Just -0.13 )
-    , ( "wfa", 1513, Female, 15.8, Just -0.26 )
-    , ( "wfa", 1681, Female, 13.4, Just -1.88 )
-    , ( "wfa", 1893, Male, 18, Just -0.3 )
-    , ( "wfa", 1764, Female, 15.7, Just -0.9 )
-    , ( "wfa", 1599, Male, 15.2, Just -0.91 )
-    , ( "wfa", 1916, Female, 17.8, Just -0.31 )
-    , ( "wfa", 1484, Female, 16.1, Just -0.05 )
-    , ( "wfa", 1468, Male, 15.2, Just -0.59 )
-    , ( "wfa", 1863, Female, 19, Just 0.26 )
-    , ( "wfa", 1282, Female, 18.1, Just 1.36 )
-    , ( "wfa", 1582, Female, 13.2, Just -1.76 )
-    , ( "wfa", 1507, Female, 11.8, Just -2.46 )
-    , ( "wfa", 1304, Female, 13.6, Just -0.81 )
-    , ( "wfa", 1717, Male, 17.1, Just -0.28 )
-    , ( "wfa", 1849, Female, 15.6, Just -1.12 )
-    , ( "wfa", 1707, Female, 15.4, Just -0.91 )
-    , ( "wfa", 1887, Female, 18, Just -0.17 )
-    , ( "wfa", 1818, Male, 20.5, Just 0.84 )
-    , ( "wfa", 1562, Female, 18.8, Just 0.83 )
-    , ( "wfa", 1819, Male, 17.9, Just -0.16 )
-    , ( "wfa", 1558, Female, 17.5, Just 0.35 )
-    , ( "wfa", 1920, Male, 17.3, Just -0.67 )
-    , ( "wfa", 1594, Male, 18.6, Just 0.65 )
-    , ( "wfa", 1728, Female, 15, Just -1.15 )
-    , ( "wfa", 1872, Male, 18.4, Just -0.08 )
-    , ( "wfa", 1877, Female, 17, Just -0.55 )
-    , ( "wfa", 1911, Female, 12.9, Just -2.76 )
-    , ( "wfa", 1818, Female, 18.4, Just 0.08 )
-    , ( "wfa", 1833, Female, 13.7, Just -2.04 )
-    , ( "wfa", 1920, Female, 18.3, Just -0.12 )
-    , ( "wfa", 1168, Male, 14.2, Just -0.31 )
-    , ( "wfa", 1278, Female, 13.5, Just -0.79 )
-    , ( "wfa", 1394, Male, 19.9, Just 1.72 )
-    , ( "wfa", 1350, Female, 13.4, Just -1.05 )
-    , ( "wfa", 1274, Female, 12.5, Just -1.38 )
-    , ( "wfa", 1366, Female, 16.4, Just 0.41 )
-    , ( "wfa", 1325, Male, 11.1, Just -2.77 )
-    , ( "wfa", 702, Female, 10, Just -0.99 )
-    , ( "wfa", 124, Male, 10, Just 3.2 )
-    , ( "wfa", 373, Female, 12, Just 2.27 )
-    , ( "wfa", 725, Male, 12.5, Just 0.27 )
-    , ( "wfa", 222, Female, 8.9, Just 1.14 )
-    , ( "wfa", 432, Male, 8.3, Just -1.81 )
-    , ( "wfa", 518, Male, 8.5, Just -2.1 )
-    , ( "wfa", 546, Female, 9.7, Just -0.43 )
-    , ( "wfa", 431, Female, 7, Just -2.5 )
-    , ( "wfa", 467, Male, 7.5, Just -2.93 )
-    , ( "wfa", 728, Female, 10.5, Just -0.72 )
-    , ( "wfa", 569, Female, 8.9, Just -1.27 )
-    , ( "wfa", 418, Male, 9, Just -0.99 )
-    , ( "wfa", 80, Male, 7.7, Just 1.99 )
-    , ( "wfa", 166, Male, 12, Just 4.25 )
-    , ( "wfa", 749, Female, 9, Just -2.13 )
-    , ( "wfa", 171, Male, 8, Just 0.25 )
-    , ( "wfa", 32, Female, 3.9, Just -0.61 )
-    , ( "wfa", 76, Male, 5.7, Just -0.42 )
-    , ( "wfa", 92, Female, 5.5, Just -0.5 )
-    , ( "wfa", 397, Male, 9.4, Just -0.46 )
-    , ( "wfa", 366, Male, 7.1, Just -2.78 )
-    , ( "wfa", 466, Male, 9.4, Just -0.9 )
-    , ( "wfa", 615, Male, 11.3, Just -0.07 )
-    , ( "wfa", 594, Male, 10.5, Just -0.61 )
-    , ( "wfa", 586, Male, 9, Just -1.95 )
-    , ( "wfa", 648, Male, 10.1, Just -1.23 )
-    , ( "wfa", 47, Male, 5.4, Just 0.43 )
-    , ( "wfa", 106, Female, 6, Just -0.18 )
-    , ( "wfa", 186, Female, 7.4, Just 0.07 )
-    , ( "wfa", 167, Female, 4.7, Just -3.38 )
-    , ( "wfa", 158, Female, 6.7, Just -0.33 )
-    , ( "wfa", 338, Male, 10.9, Just 1.33 )
-    , ( "wfa", 399, Male, 10.3, Just 0.36 )
-    , ( "wfa", 401, Female, 9.4, Just 0.17 )
+    [ { func = "wfa", scale = 471, gender = Female, measurement = 10, expected = Just 0.25 }
+    , { func = "wfa", scale = 25, gender = Male, measurement = 8, expected = Just 5.35 }
+    , { func = "wfa", scale = 603, gender = Female, measurement = 12, expected = Just 0.98 }
+    , { func = "wfa", scale = 606, gender = Female, measurement = 12, expected = Just 0.97 }
+    , { func = "wfa", scale = 28, gender = Male, measurement = 9, expected = Just 6.4 }
+    , { func = "wfa", scale = 606, gender = Female, measurement = 10, expected = Just -0.5 }
+    , { func = "wfa", scale = 474, gender = Female, measurement = 11, expected = Just 0.99 }
+    , { func = "wfa", scale = 28, gender = Male, measurement = 8, expected = Just 5.08 }
+    , { func = "wfa", scale = 475, gender = Female, measurement = 12, expected = Just 1.66 }
+    , { func = "wfa", scale = 675, gender = Female, measurement = 9.6, expected = Just -1.2 }
+    , { func = "wfa", scale = 555, gender = Male, measurement = 10, expected = Just -0.84 }
+    , { func = "wfa", scale = 775, gender = Male, measurement = 6.9, expected = Just -4.8 }
+    , { func = "wfa", scale = 138, gender = Female, measurement = 7.5, expected = Just 0.93 }
+    , { func = "wfa", scale = 348, gender = Male, measurement = 7.8, expected = Just -1.81 }
+    , { func = "wfa", scale = 462, gender = Female, measurement = 9, expected = Just -0.56 }
+    , { func = "wfa", scale = 409, gender = Male, measurement = 11.5, expected = Just 1.31 }
+    , { func = "wfa", scale = 412, gender = Female, measurement = 8.2, expected = Just -1.03 }
+    , { func = "wfa", scale = 442, gender = Male, measurement = 7.9, expected = Just -2.32 }
+    , { func = "wfa", scale = 383, gender = Male, measurement = 7, expected = Just -3.03 }
+    , { func = "wfa", scale = 638, gender = Male, measurement = 10.7, expected = Just -0.67 }
+    , { func = "wfa", scale = 351, gender = Male, measurement = 8.1, expected = Just -1.49 }
+    , { func = "wfa", scale = 654, gender = Female, measurement = 8.8, expected = Just -1.83 }
+    , { func = "wfa", scale = 515, gender = Female, measurement = 9.1, expected = Just -0.78 }
+    , { func = "wfa", scale = 644, gender = Female, measurement = 10.5, expected = Just -0.29 }
+    , { func = "wfa", scale = 485, gender = Female, measurement = 8.4, expected = Just -1.28 }
+    , { func = "wfa", scale = 422, gender = Female, measurement = 8.1, expected = Just -1.19 }
+    , { func = "wfa", scale = 334, gender = Male, measurement = 8.7, expected = Just -0.71 }
+    , { func = "wfa", scale = 657, gender = Female, measurement = 11, expected = Just 0.02 }
+    , { func = "wfa", scale = 525, gender = Female, measurement = 12.5, expected = Just 1.7 }
+    , { func = "wfa", scale = 79, gender = Male, measurement = 8, expected = Just 2.36 }
+    , { func = "wfa", scale = 80, gender = Male, measurement = 9, expected = Just 3.4 }
+    , { func = "wfa", scale = 619, gender = Male, measurement = 10.1, expected = Just -1.09 }
+    , { func = "wfa", scale = 656, gender = Male, measurement = 11.4, expected = Just -0.2 }
+    , { func = "wfa", scale = 790, gender = Female, measurement = 9.5, expected = Just -1.86 }
+    , { func = "wfa", scale = 790, gender = Male, measurement = 6.8, expected = Just -4.93 }
+    , { func = "wfa", scale = 153, gender = Female, measurement = 7.3, expected = Just 0.45 }
+    , { func = "wfa", scale = 363, gender = Male, measurement = 7.5, expected = Just -2.27 }
+    , { func = "wfa", scale = 398, gender = Male, measurement = 7.1, expected = Just -3 }
+    , { func = "wfa", scale = 653, gender = Male, measurement = 10.8, expected = Just -0.66 }
+    , { func = "wfa", scale = 366, gender = Male, measurement = 8, expected = Just -1.71 }
+    , { func = "wfa", scale = 659, gender = Female, measurement = 11, expected = Just 0.01 }
+    , { func = "wfa", scale = 500, gender = Female, measurement = 8.5, expected = Just -1.27 }
+    , { func = "wfa", scale = 424, gender = Female, measurement = 8, expected = Just -1.31 }
+    , { func = "wfa", scale = 349, gender = Male, measurement = 6.3, expected = Just -3.67 }
+    , { func = "wfa", scale = 339, gender = Male, measurement = 11, expected = Just 1.4 }
+    , { func = "wfa", scale = 382, gender = Male, measurement = 9, expected = Just -0.75 }
+    , { func = "wfa", scale = 667, gender = Female, measurement = 12, expected = Just 0.67 }
+    , { func = "wfa", scale = 1680, gender = Male, measurement = 14, expected = Just -1.73 }
+    , { func = "wfa", scale = 1666, gender = Male, measurement = 15.8, expected = Just -0.77 }
+    , { func = "wfa", scale = 1829, gender = Female, measurement = 15.3, expected = Just -1.22 }
+    , { func = "wfa", scale = 1669, gender = Female, measurement = 16.5, expected = Just -0.33 }
+    , { func = "wfa", scale = 1853, gender = Male, measurement = 16.4, expected = Just -0.89 }
+    , { func = "wfa", scale = 1651, gender = Male, measurement = 15, expected = Just -1.13 }
+    , { func = "wfa", scale = 1919, gender = Female, measurement = 18.2, expected = Just -0.16 }
+    , { func = "wfa", scale = 1597, gender = Male, measurement = 16.5, expected = Just -0.27 }
+    , { func = "wfa", scale = 1795, gender = Female, measurement = 18.4, expected = Just 0.13 }
+    , { func = "wfa", scale = 1818, gender = Female, measurement = 19.3, expected = Just 0.4 }
+    , { func = "wfa", scale = 1631, gender = Female, measurement = 14.9, expected = Just -0.98 }
+    , { func = "wfa", scale = 1323, gender = Female, measurement = 13.1, expected = Just -1.15 }
+    , { func = "wfa", scale = 1625, gender = Female, measurement = 15.3, expected = Just -0.77 }
+    , { func = "wfa", scale = 1673, gender = Female, measurement = 14.4, expected = Just -1.32 }
+    , { func = "wfa", scale = 1554, gender = Male, measurement = 16.1, expected = Just -0.36 }
+    , { func = "wfa", scale = 1827, gender = Female, measurement = 15.4, expected = Just -1.17 }
+    , { func = "wfa", scale = 1919, gender = Female, measurement = 22, expected = Just 1.11 }
+    , { func = "wfa", scale = 1561, gender = Female, measurement = 17.6, expected = Just 0.38 }
+    , { func = "wfa", scale = 1658, gender = Female, measurement = 15.6, expected = Just -0.71 }
+    , { func = "wfa", scale = 1806, gender = Female, measurement = 22.1, expected = Just 1.3 }
+    , { func = "wfa", scale = 1420, gender = Female, measurement = 17.4, expected = Just 0.68 }
+    , { func = "wfa", scale = 1525, gender = Female, measurement = 17.8, expected = Just 0.55 }
+    , { func = "wfa", scale = 1919, gender = Female, measurement = 17.9, expected = Just -0.27 }
+    , { func = "wfa", scale = 1848, gender = Male, measurement = 18.8, expected = Just 0.14 }
+    , { func = "wfa", scale = 1724, gender = Female, measurement = 16.9, expected = Just -0.29 }
+    , { func = "wfa", scale = 1919, gender = Male, measurement = 16.2, expected = Just -1.19 }
+    , { func = "wfa", scale = 1394, gender = Male, measurement = 13.1, expected = Just -1.59 }
+    , { func = "wfa", scale = 1427, gender = Female, measurement = 11.7, expected = Just -2.33 }
+    , { func = "wfa", scale = 1895, gender = Male, measurement = 19.5, expected = Just 0.31 }
+    , { func = "wfa", scale = 1734, gender = Female, measurement = 16.6, expected = Just -0.44 }
+    , { func = "wfa", scale = 1569, gender = Male, measurement = 18, expected = Just 0.47 }
+    , { func = "wfa", scale = 1816, gender = Female, measurement = 17.6, expected = Just -0.21 }
+    , { func = "wfa", scale = 1919, gender = Female, measurement = 16.3, expected = Just -0.95 }
+    , { func = "wfa", scale = 916, gender = Male, measurement = 13.6, expected = Just 0.18 }
+    , { func = "wfa", scale = 1456, gender = Male, measurement = 16.7, expected = Just 0.18 }
+    , { func = "wfa", scale = 1814, gender = Male, measurement = 18.4, expected = Just 0.05 }
+    , { func = "wfa", scale = 1554, gender = Female, measurement = 15.8, expected = Just -0.36 }
+    , { func = "wfa", scale = 1123, gender = Male, measurement = 17.1, expected = Just 1.35 }
+    , { func = "wfa", scale = 1230, gender = Female, measurement = 13.2, expected = Just -0.82 }
+    , { func = "wfa", scale = 1738, gender = Male, measurement = 16.4, expected = Just -0.64 }
+    , { func = "wfa", scale = 1607, gender = Male, measurement = 18.6, expected = Just 0.62 }
+    , { func = "wfa", scale = 1919, gender = Female, measurement = 17.3, expected = Just -0.52 }
+    , { func = "wfa", scale = 1919, gender = Female, measurement = 19.1, expected = Just 0.18 }
+    , { func = "wfa", scale = 1620, gender = Male, measurement = 17.6, expected = Just 0.17 }
+    , { func = "wfa", scale = 1711, gender = Female, measurement = 16.8, expected = Just -0.3 }
+    , { func = "wfa", scale = 1535, gender = Male, measurement = 16.6, expected = Just -0.07 }
+    , { func = "wfa", scale = 1801, gender = Male, measurement = 18.4, expected = Just 0.08 }
+    , { func = "wfa", scale = 1818, gender = Male, measurement = 16, expected = Just -1 }
+    , { func = "wfa", scale = 1905, gender = Female, measurement = 17.3, expected = Just -0.49 }
+    , { func = "wfa", scale = 1785, gender = Male, measurement = 15.2, expected = Just -1.32 }
+    , { func = "wfa", scale = 1919, gender = Male, measurement = 15.1, expected = Just -1.75 }
+    , { func = "wfa", scale = 1919, gender = Female, measurement = 17, expected = Just -0.64 }
+    , { func = "wfa", scale = 1633, gender = Male, measurement = 15.4, expected = Just -0.89 }
+    , { func = "wfa", scale = 579, gender = Male, measurement = 10.2, expected = Just -0.8 }
+    , { func = "wfa", scale = 297, gender = Male, measurement = 7.4, expected = Just -1.89 }
+    , { func = "wfa", scale = 474, gender = Female, measurement = 8.6, expected = Just -1.02 }
+    , { func = "wfa", scale = 387, gender = Male, measurement = 8.3, expected = Just -1.53 }
+    , { func = "wfa", scale = 625, gender = Male, measurement = 9.4, expected = Just -1.76 }
+    , { func = "wfa", scale = 325, gender = Female, measurement = 9.5, expected = Just 0.76 }
+    , { func = "wfa", scale = 584, gender = Male, measurement = 10.1, expected = Just -0.91 }
+    , { func = "wfa", scale = 396, gender = Female, measurement = 9.6, expected = Just 0.36 }
+    , { func = "wfa", scale = 327, gender = Male, measurement = 7.8, expected = Just -1.66 }
+    , { func = "wfa", scale = 753, gender = Male, measurement = 11.3, expected = Just -0.74 }
+    , { func = "wfa", scale = 1403, gender = Female, measurement = 13.4, expected = Just -1.2 }
+    , { func = "wfa", scale = 1403, gender = Male, measurement = 13.1, expected = Just -1.62 }
+    , { func = "wfa", scale = 1768, gender = Female, measurement = 16.8, expected = Just -0.43 }
+    , { func = "wfa", scale = 1462, gender = Female, measurement = 17, expected = Just 0.4 }
+    , { func = "wfa", scale = 1403, gender = Female, measurement = 14.2, expected = Just -0.76 }
+    , { func = "wfa", scale = 1768, gender = Female, measurement = 15.9, expected = Just -0.82 }
+    , { func = "wfa", scale = 1403, gender = Male, measurement = 15.6, expected = Just -0.22 }
+    , { func = "wfa", scale = 881, gender = Female, measurement = 15.1, expected = Just 1.46 }
+    , { func = "wfa", scale = 461, gender = Female, measurement = 8.2, expected = Just -1.34 }
+    , { func = "wfa", scale = 1768, gender = Male, measurement = 14.7, expected = Just -1.55 }
+    , { func = "wfa", scale = 1768, gender = Female, measurement = 19.7, expected = Just 0.65 }
+    , { func = "wfa", scale = 210, gender = Male, measurement = 6.2, expected = Just -2.6 }
+    , { func = "wfa", scale = 1768, gender = Female, measurement = 13.2, expected = Just -2.18 }
+    , { func = "wfa", scale = 173, gender = Female, measurement = 8.3, expected = Just 1.18 }
+    , { func = "wfa", scale = 1403, gender = Female, measurement = 16.4, expected = Just 0.3 }
+    , { func = "wfa", scale = 1768, gender = Female, measurement = 19.5, expected = Just 0.58 }
+    , { func = "wfa", scale = 1619, gender = Male, measurement = 18.6, expected = Just 0.59 }
+    , { func = "wfa", scale = 1554, gender = Female, measurement = 14.3, expected = Just -1.1 }
+    , { func = "wfa", scale = 1768, gender = Female, measurement = 13.9, expected = Just -1.8 }
+    , { func = "wfa", scale = 1768, gender = Male, measurement = 16.4, expected = Just -0.71 }
+    , { func = "wfa", scale = 1403, gender = Female, measurement = 14.5, expected = Just -0.6 }
+    , { func = "wfa", scale = 1768, gender = Female, measurement = 14.5, expected = Just -1.48 }
+    , { func = "wfa", scale = 1768, gender = Female, measurement = 15.6, expected = Just -0.96 }
+    , { func = "wfa", scale = 1768, gender = Female, measurement = 18.8, expected = Just 0.34 }
+    , { func = "wfa", scale = 1849, gender = Male, measurement = 18.4, expected = Just -0.03 }
+    , { func = "wfa", scale = 1919, gender = Male, measurement = 17.5, expected = Just -0.58 }
+    , { func = "wfa", scale = 1051, gender = Male, measurement = 16, expected = Just 1.05 }
+    , { func = "wfa", scale = 1860, gender = Female, measurement = 12.9, expected = Just -2.65 }
+    , { func = "wfa", scale = 2285, gender = Male, measurement = 17.3, expected = Just -1.53 }
+    , { func = "wfa", scale = 1295, gender = Male, measurement = 14.2, expected = Just -0.68 }
+    , { func = "wfa", scale = 1628, gender = Male, measurement = 18.8, expected = Just 0.65 }
+    , { func = "wfa", scale = 1662, gender = Female, measurement = 15.4, expected = Just -0.81 }
+    , { func = "wfa", scale = 2061, gender = Female, measurement = 18.5, expected = Just -0.34 }
+    , { func = "wfa", scale = 1842, gender = Female, measurement = 18.2, expected = Just -0.04 }
+    , { func = "wfa", scale = 2176, gender = Female, measurement = 18.5, expected = Just -0.56 }
+    , { func = "wfa", scale = 1653, gender = Female, measurement = 15.1, expected = Just -0.93 }
+    , { func = "wfa", scale = 1743, gender = Male, measurement = 13.1, expected = Just -2.39 }
+    , { func = "wfa", scale = 1847, gender = Female, measurement = 20, expected = Just 0.57 }
+    , { func = "wfa", scale = 1893, gender = Female, measurement = 16.5, expected = Just -0.81 }
+    , { func = "wfa", scale = 1916, gender = Male, measurement = 16.7, expected = Just -0.94 }
+    , { func = "wfa", scale = 1742, gender = Female, measurement = 16.5, expected = Just -0.5 }
+    , { func = "wfa", scale = 1874, gender = Male, measurement = 20.2, expected = Just 0.62 }
+    , { func = "wfa", scale = 1495, gender = Male, measurement = 15.8, expected = Just -0.36 }
+    , { func = "wfa", scale = 1829, gender = Male, measurement = 15.4, expected = Just -1.32 }
+    , { func = "wfa", scale = 1767, gender = Female, measurement = 16.8, expected = Just -0.43 }
+    , { func = "wfa", scale = 1572, gender = Male, measurement = 18.7, expected = Just 0.75 }
+    , { func = "wfa", scale = 1809, gender = Male, measurement = 17.4, expected = Just -0.35 }
+    , { func = "wfa", scale = 1178, gender = Male, measurement = 14.8, expected = Just 0 }
+    , { func = "wfa", scale = 1848, gender = Female, measurement = 15.9, expected = Just -0.99 }
+    , { func = "wfa", scale = 1909, gender = Female, measurement = 15.8, expected = Just -1.16 }
+    , { func = "wfa", scale = 1698, gender = Female, measurement = 17.8, expected = Just 0.12 }
+    , { func = "wfa", scale = 1648, gender = Female, measurement = 15.3, expected = Just -0.82 }
+    , { func = "wfa", scale = 1762, gender = Male, measurement = 19, expected = Just 0.4 }
+    , { func = "wfa", scale = 2185, gender = Male, measurement = 18.2, expected = Just -0.9 }
+    , { func = "wfa", scale = 1755, gender = Male, measurement = 17.5, expected = Just -0.19 }
+    , { func = "wfa", scale = 2022, gender = Female, measurement = 14.6, expected = Just -2.01 }
+    , { func = "wfa", scale = 1871, gender = Male, measurement = 16.9, expected = Just -0.74 }
+    , { func = "wfa", scale = 1852, gender = Male, measurement = 16.1, expected = Just -1.03 }
+    , { func = "wfa", scale = 1768, gender = Male, measurement = 15.3, expected = Just -1.24 }
+    , { func = "wfa", scale = 1866, gender = Male, measurement = 14.5, expected = Just -1.95 }
+    , { func = "wfa", scale = 1919, gender = Male, measurement = 16.1, expected = Just -1.24 }
+    , { func = "wfa", scale = 1963, gender = Male, measurement = 17.9, expected = Just -0.51 }
+    , { func = "wfa", scale = 1729, gender = Male, measurement = 17.3, expected = Just -0.22 }
+    , { func = "wfa", scale = 1652, gender = Male, measurement = 15.3, expected = Just -0.98 }
+    , { func = "wfa", scale = 1936, gender = Female, measurement = 15.1, expected = Just -1.57 }
+    , { func = "wfa", scale = 2197, gender = Male, measurement = 19.9, expected = Just -0.24 }
+    , { func = "wfa", scale = 2261, gender = Female, measurement = 17.6, expected = Just -1.08 }
+    , { func = "wfa", scale = 1592, gender = Female, measurement = 17.3, expected = Just 0.18 }
+    , { func = "wfa", scale = 1946, gender = Female, measurement = 17, expected = Just -0.7 }
+    , { func = "wfa", scale = 2181, gender = Female, measurement = 20.4, expected = Just 0.1 }
+    , { func = "wfa", scale = 1875, gender = Male, measurement = 18.3, expected = Just -0.13 }
+    , { func = "wfa", scale = 1513, gender = Female, measurement = 15.8, expected = Just -0.26 }
+    , { func = "wfa", scale = 1681, gender = Female, measurement = 13.4, expected = Just -1.88 }
+    , { func = "wfa", scale = 1893, gender = Male, measurement = 18, expected = Just -0.3 }
+    , { func = "wfa", scale = 1764, gender = Female, measurement = 15.7, expected = Just -0.9 }
+    , { func = "wfa", scale = 1599, gender = Male, measurement = 15.2, expected = Just -0.91 }
+    , { func = "wfa", scale = 1916, gender = Female, measurement = 17.8, expected = Just -0.31 }
+    , { func = "wfa", scale = 1484, gender = Female, measurement = 16.1, expected = Just -0.05 }
+    , { func = "wfa", scale = 1468, gender = Male, measurement = 15.2, expected = Just -0.59 }
+    , { func = "wfa", scale = 1863, gender = Female, measurement = 19, expected = Just 0.26 }
+    , { func = "wfa", scale = 1282, gender = Female, measurement = 18.1, expected = Just 1.36 }
+    , { func = "wfa", scale = 1582, gender = Female, measurement = 13.2, expected = Just -1.76 }
+    , { func = "wfa", scale = 1507, gender = Female, measurement = 11.8, expected = Just -2.46 }
+    , { func = "wfa", scale = 1304, gender = Female, measurement = 13.6, expected = Just -0.81 }
+    , { func = "wfa", scale = 1717, gender = Male, measurement = 17.1, expected = Just -0.28 }
+    , { func = "wfa", scale = 1849, gender = Female, measurement = 15.6, expected = Just -1.12 }
+    , { func = "wfa", scale = 1707, gender = Female, measurement = 15.4, expected = Just -0.91 }
+    , { func = "wfa", scale = 1887, gender = Female, measurement = 18, expected = Just -0.17 }
+    , { func = "wfa", scale = 1818, gender = Male, measurement = 20.5, expected = Just 0.84 }
+    , { func = "wfa", scale = 1562, gender = Female, measurement = 18.8, expected = Just 0.83 }
+    , { func = "wfa", scale = 1819, gender = Male, measurement = 17.9, expected = Just -0.16 }
+    , { func = "wfa", scale = 1558, gender = Female, measurement = 17.5, expected = Just 0.35 }
+    , { func = "wfa", scale = 1920, gender = Male, measurement = 17.3, expected = Just -0.67 }
+    , { func = "wfa", scale = 1594, gender = Male, measurement = 18.6, expected = Just 0.65 }
+    , { func = "wfa", scale = 1728, gender = Female, measurement = 15, expected = Just -1.15 }
+    , { func = "wfa", scale = 1872, gender = Male, measurement = 18.4, expected = Just -0.08 }
+    , { func = "wfa", scale = 1877, gender = Female, measurement = 17, expected = Just -0.55 }
+    , { func = "wfa", scale = 1911, gender = Female, measurement = 12.9, expected = Just -2.76 }
+    , { func = "wfa", scale = 1818, gender = Female, measurement = 18.4, expected = Just 0.08 }
+    , { func = "wfa", scale = 1833, gender = Female, measurement = 13.7, expected = Just -2.04 }
+    , { func = "wfa", scale = 1920, gender = Female, measurement = 18.3, expected = Just -0.12 }
+    , { func = "wfa", scale = 1168, gender = Male, measurement = 14.2, expected = Just -0.31 }
+    , { func = "wfa", scale = 1278, gender = Female, measurement = 13.5, expected = Just -0.79 }
+    , { func = "wfa", scale = 1394, gender = Male, measurement = 19.9, expected = Just 1.72 }
+    , { func = "wfa", scale = 1350, gender = Female, measurement = 13.4, expected = Just -1.05 }
+    , { func = "wfa", scale = 1274, gender = Female, measurement = 12.5, expected = Just -1.38 }
+    , { func = "wfa", scale = 1366, gender = Female, measurement = 16.4, expected = Just 0.41 }
+    , { func = "wfa", scale = 1325, gender = Male, measurement = 11.1, expected = Just -2.77 }
+    , { func = "wfa", scale = 702, gender = Female, measurement = 10, expected = Just -0.99 }
+    , { func = "wfa", scale = 124, gender = Male, measurement = 10, expected = Just 3.2 }
+    , { func = "wfa", scale = 373, gender = Female, measurement = 12, expected = Just 2.27 }
+    , { func = "wfa", scale = 725, gender = Male, measurement = 12.5, expected = Just 0.27 }
+    , { func = "wfa", scale = 222, gender = Female, measurement = 8.9, expected = Just 1.14 }
+    , { func = "wfa", scale = 432, gender = Male, measurement = 8.3, expected = Just -1.81 }
+    , { func = "wfa", scale = 518, gender = Male, measurement = 8.5, expected = Just -2.1 }
+    , { func = "wfa", scale = 546, gender = Female, measurement = 9.7, expected = Just -0.43 }
+    , { func = "wfa", scale = 431, gender = Female, measurement = 7, expected = Just -2.5 }
+    , { func = "wfa", scale = 467, gender = Male, measurement = 7.5, expected = Just -2.93 }
+    , { func = "wfa", scale = 728, gender = Female, measurement = 10.5, expected = Just -0.72 }
+    , { func = "wfa", scale = 569, gender = Female, measurement = 8.9, expected = Just -1.27 }
+    , { func = "wfa", scale = 418, gender = Male, measurement = 9, expected = Just -0.99 }
+    , { func = "wfa", scale = 80, gender = Male, measurement = 7.7, expected = Just 1.99 }
+    , { func = "wfa", scale = 166, gender = Male, measurement = 12, expected = Just 4.25 }
+    , { func = "wfa", scale = 749, gender = Female, measurement = 9, expected = Just -2.13 }
+    , { func = "wfa", scale = 171, gender = Male, measurement = 8, expected = Just 0.25 }
+    , { func = "wfa", scale = 32, gender = Female, measurement = 3.9, expected = Just -0.61 }
+    , { func = "wfa", scale = 76, gender = Male, measurement = 5.7, expected = Just -0.42 }
+    , { func = "wfa", scale = 92, gender = Female, measurement = 5.5, expected = Just -0.5 }
+    , { func = "wfa", scale = 397, gender = Male, measurement = 9.4, expected = Just -0.46 }
+    , { func = "wfa", scale = 366, gender = Male, measurement = 7.1, expected = Just -2.78 }
+    , { func = "wfa", scale = 466, gender = Male, measurement = 9.4, expected = Just -0.9 }
+    , { func = "wfa", scale = 615, gender = Male, measurement = 11.3, expected = Just -0.07 }
+    , { func = "wfa", scale = 594, gender = Male, measurement = 10.5, expected = Just -0.61 }
+    , { func = "wfa", scale = 586, gender = Male, measurement = 9, expected = Just -1.95 }
+    , { func = "wfa", scale = 648, gender = Male, measurement = 10.1, expected = Just -1.23 }
+    , { func = "wfa", scale = 47, gender = Male, measurement = 5.4, expected = Just 0.43 }
+    , { func = "wfa", scale = 106, gender = Female, measurement = 6, expected = Just -0.18 }
+    , { func = "wfa", scale = 186, gender = Female, measurement = 7.4, expected = Just 0.07 }
+    , { func = "wfa", scale = 167, gender = Female, measurement = 4.7, expected = Just -3.38 }
+    , { func = "wfa", scale = 158, gender = Female, measurement = 6.7, expected = Just -0.33 }
+    , { func = "wfa", scale = 338, gender = Male, measurement = 10.9, expected = Just 1.33 }
+    , { func = "wfa", scale = 399, gender = Male, measurement = 10.3, expected = Just 0.36 }
+    , { func = "wfa", scale = 401, gender = Female, measurement = 9.4, expected = Just 0.17 }
     ]
 
 
-wfaTestData2 : List ( String, Float, Gender, Float, Maybe Float )
+wfaTestData2 : List ZScoreTestCase
 wfaTestData2 =
-    [ ( "wfa", 429, Female, 8.2, Just -1.13 )
-    , ( "wfa", 454, Female, 8.5, Just -0.99 )
-    , ( "wfa", 515, Female, 9.6, Just -0.34 )
-    , ( "wfa", 518, Female, 10.4, Just 0.3 )
-    , ( "wfa", 494, Female, 10.6, Just 0.58 )
-    , ( "wfa", 197, Male, 8.8, Just 0.75 )
-    , ( "wfa", 574, Male, 8, Just -2.94 )
-    , ( "wfa", 645, Male, 10, Just -1.31 )
-    , ( "wfa", 684, Female, 10.1, Just -0.82 )
-    , ( "wfa", 734, Male, 10.1, Just -1.64 )
-    , ( "wfa", 772, Female, 11, Just -0.54 )
-    , ( "wfa", 779, Female, 11.1, Just -0.5 )
-    , ( "wfa", 591, Female, 10.4, Just -0.1 )
-    , ( "wfa", 583, Male, 10, Just -0.99 )
-    , ( "wfa", 533, Male, 97.7, Just 55.4 )
-    , ( "wfa", 409, Female, 7.8, Just -1.43 )
-    , ( "wfa", 688, Male, 11.7, Just -0.13 )
-    , ( "wfa", 908, Male, 7.6, Just -4.52 )
-    , ( "wfa", 271, Female, 9.5, Just 1.19 )
-    , ( "wfa", 481, Male, 9.2, Just -1.18 )
-    , ( "wfa", 567, Male, 8.8, Just -2.05 )
-    , ( "wfa", 567, Male, 10, Just -0.91 )
-    , ( "wfa", 153, Female, 12.9, Just 5.46 )
-    , ( "wfa", 542, Male, 12.9, Just 1.52 )
-    , ( "wfa", 480, Female, 7.1, Just -2.69 )
-    , ( "wfa", 545, Female, 9, Just -1.04 )
-    , ( "wfa", 575, Male, 8.9, Just -1.99 )
-    , ( "wfa", 516, Male, 7.9, Just -2.75 )
-    , ( "wfa", 484, Male, 9.2, Just -1.2 )
-    , ( "wfa", 648, Female, 10.1, Just -0.63 )
-    , ( "wfa", 555, Female, 8.7, Just -1.39 )
-    , ( "wfa", 467, Male, 9.9, Just -0.43 )
-    , ( "wfa", 129, Male, 9, Just 2.1 )
-    , ( "wfa", 144, Male, 8, Just 0.72 )
-    , ( "wfa", 153, Male, 6.4, Just -1.44 )
-    , ( "wfa", 125, Female, 7, Just 0.62 )
-    , ( "wfa", 89, Male, 6, Just -0.44 )
-    , ( "wfa", 131, Female, 5.4, Just -1.6 )
-    , ( "wfa", 196, Female, 6.4, Just -1.26 )
-    , ( "wfa", 278, Female, 7.4, Just -0.91 )
-    , ( "wfa", 289, Male, 7.8, Just -1.34 )
-    , ( "wfa", 420, Female, 8.4, Just -0.88 )
-    , ( "wfa", 459, Female, 7.6, Just -1.97 )
-    , ( "wfa", 468, Female, 7.2, Just -2.49 )
-    , ( "wfa", 487, Female, 9.2, Just -0.53 )
-    , ( "wfa", 491, Male, 9.6, Just -0.85 )
-    , ( "wfa", 580, Female, 11.8, Just 0.97 )
-    , ( "wfa", 627, Male, 10.4, Just -0.87 )
-    , ( "wfa", 662, Female, 13.4, Just 1.55 )
-    , ( "wfa", 669, Female, 10.2, Just -0.66 )
-    , ( "wfa", 674, Female, 11, Just -0.07 )
-    , ( "wfa", 672, Male, 11.8, Just 0.03 )
-    , ( "wfa", 742, Female, 11.4, Just -0.11 )
-    , ( "wfa", 720, Male, 9.9, Just -1.75 )
-    , ( "wfa", 722, Female, 10.1, Just -1.01 )
-    , ( "wfa", 670, Female, 9.6, Just -1.17 )
-    , ( "wfa", 739, Male, 11.4, Just -0.6 )
-    , ( "wfa", 643, Female, 10.6, Just -0.21 )
-    , ( "wfa", 580, Male, 10.6, Just -0.46 )
-    , ( "wfa", 518, Female, 7.5, Just -2.45 )
-    , ( "wfa", 500, Male, 9.5, Just -1 )
-    , ( "wfa", 372, Male, 9.2, Just -0.48 )
-    , ( "wfa", 380, Male, 9.8, Just 0.04 )
-    , ( "wfa", 380, Male, 10, Just 0.22 )
-    , ( "wfa", 328, Female, 10.1, Just 1.23 )
-    , ( "wfa", 293, Female, 6.3, Just -2.4 )
-    , ( "wfa", 283, Female, 7.4, Just -0.95 )
-    , ( "wfa", 198, Female, 7.4, Just -0.08 )
-    , ( "wfa", 158, Female, 5, Just -2.74 )
-    , ( "wfa", 124, Male, 5.5, Just -2.15 )
-    , ( "wfa", 67, Female, 4.4, Just -1.41 )
-    , ( "wfa", 111, Male, 6.5, Just -0.39 )
-    , ( "wfa", 127, Female, 6, Just -0.66 )
-    , ( "wfa", 432, Male, 9.4, Just -0.69 )
-    , ( "wfa", 401, Male, 7, Just -3.14 )
-    , ( "wfa", 501, Male, 9.4, Just -1.1 )
-    , ( "wfa", 605, Female, 10.8, Just 0.14 )
-    , ( "wfa", 650, Male, 11.6, Just -0.02 )
-    , ( "wfa", 629, Male, 10.8, Just -0.54 )
-    , ( "wfa", 621, Male, 9.1, Just -2.03 )
-    , ( "wfa", 683, Male, 10.4, Just -1.14 )
-    , ( "wfa", 1953, Male, 18.4, Just -0.27 )
-    , ( "wfa", 2023, Male, 17.5, Just -0.83 )
-    , ( "wfa", 1155, Male, 15.7, Just 0.55 )
-    , ( "wfa", 1964, Female, 14.6, Just -1.89 )
-    , ( "wfa", 2389, Male, 17.2, Just -1.82 )
-    , ( "wfa", 1399, Male, 14.5, Just -0.79 )
-    , ( "wfa", 1732, Male, 17.1, Just -0.32 )
-    , ( "wfa", 1766, Female, 16.1, Just -0.73 )
-    , ( "wfa", 2165, Female, 19, Just -0.36 )
-    , ( "wfa", 1946, Female, 18.1, Just -0.26 )
-    , ( "wfa", 2280, Female, 19.7, Just -0.33 )
-    , ( "wfa", 1757, Female, 15.4, Just -1.02 )
-    , ( "wfa", 1847, Male, 14.3, Just -1.92 )
-    , ( "wfa", 1951, Female, 20.1, Just 0.45 )
-    , ( "wfa", 1997, Female, 17.1, Just -0.77 )
-    , ( "wfa", 2020, Male, 17.3, Just -0.91 )
-    , ( "wfa", 1846, Female, 16.4, Just -0.77 )
-    , ( "wfa", 1978, Male, 20.3, Just 0.41 )
-    , ( "wfa", 1599, Male, 16.2, Just -0.42 )
-    , ( "wfa", 1933, Male, 15.8, Just -1.42 )
-    , ( "wfa", 1871, Female, 17.6, Just -0.29 )
-    , ( "wfa", 1676, Male, 19.7, Just 0.88 )
-    , ( "wfa", 1913, Male, 17.7, Just -0.48 )
-    , ( "wfa", 1282, Male, 15.5, Just 0.07 )
-    , ( "wfa", 1952, Female, 16, Just -1.16 )
-    , ( "wfa", 2013, Female, 18.1, Just -0.39 )
-    , ( "wfa", 1802, Female, 19, Just 0.33 )
-    , ( "wfa", 1752, Female, 16.5, Just -0.52 )
-    , ( "wfa", 1866, Male, 20.1, Just 0.61 )
-    , ( "wfa", 2289, Male, 19.8, Just -0.49 )
-    , ( "wfa", 1859, Male, 20.2, Just 0.66 )
-    , ( "wfa", 2126, Female, 15.2, Just -1.91 )
-    , ( "wfa", 1975, Male, 17.1, Just -0.89 )
-    , ( "wfa", 1956, Male, 16.5, Just -1.13 )
-    , ( "wfa", 1872, Male, 14, Just -2.25 )
-    , ( "wfa", 1970, Male, 15.1, Just -1.87 )
-    , ( "wfa", 2067, Male, 19, Just -0.29 )
-    , ( "wfa", 1833, Male, 17.5, Just -0.36 )
-    , ( "wfa", 1756, Male, 15.8, Just -0.97 )
-    , ( "wfa", 2040, Female, 15.7, Just -1.49 )
-    , ( "wfa", 2301, Male, 20, Just -0.44 )
-    , ( "wfa", 1696, Female, 17.3, Just -0.07 )
-    , ( "wfa", 2050, Female, 17.4, Just -0.75 )
-    , ( "wfa", 2285, Female, 20.3, Just -0.13 )
-    , ( "wfa", 1979, Male, 19.4, Just 0.07 )
-    , ( "wfa", 1617, Female, 16.5, Just -0.21 )
-    , ( "wfa", 1697, Female, 14, Just -1.59 )
-    , ( "wfa", 1388, Female, 14.8, Just -0.4 )
-    , ( "wfa", 1328, Male, 16.1, Just 0.24 )
-    , ( "wfa", 1923, Female, 18.9, Just 0.1 )
-    , ( "wfa", 1673, Female, 18, Just 0.26 )
-    , ( "wfa", 1736, Female, 15, Just -1.17 )
-    , ( "wfa", 1428, Female, 13.4, Just -1.26 )
-    , ( "wfa", 1936, Male, 19.2, Just 0.09 )
-    , ( "wfa", 1778, Female, 15.6, Just -0.97 )
-    , ( "wfa", 1525, Female, 18.8, Just 0.93 )
-    , ( "wfa", 1630, Female, 18.4, Just 0.51 )
-    , ( "wfa", 1829, Female, 17.4, Just -0.32 )
-    , ( "wfa", 1974, Female, 16.9, Just -0.8 )
-    , ( "wfa", 1858, Female, 16, Just -0.96 )
-    , ( "wfa", 1499, Male, 14, Just -1.32 )
-    , ( "wfa", 1532, Female, 12, Just -2.39 )
-    , ( "wfa", 1872, Male, 13.5, Just -2.54 )
-    , ( "wfa", 1624, Male, 14.3, Just -1.45 )
-    , ( "wfa", 1339, Female, 15.2, Just -0.07 )
-    , ( "wfa", 1237, Male, 15.6, Just 0.25 )
-    , ( "wfa", 1839, Female, 17.6, Just -0.26 )
-    , ( "wfa", 1265, Male, 16.8, Just 0.76 )
-    , ( "wfa", 1021, Male, 14.5, Just 0.34 )
-    , ( "wfa", 1561, Male, 17.7, Just 0.36 )
-    , ( "wfa", 1228, Male, 18.1, Just 1.47 )
-    , ( "wfa", 1970, Female, 22.1, Just 1.04 )
-    , ( "wfa", 1843, Male, 17.2, Just -0.51 )
-    , ( "wfa", 1803, Male, 14.6, Just -1.67 )
-    , ( "wfa", 1580, Female, 14.9, Just -0.85 )
-    , ( "wfa", 1311, Male, 18.8, Just 1.52 )
-    , ( "wfa", 1805, Male, 19.7, Just 0.58 )
-    , ( "wfa", 1640, Male, 17.4, Just 0.03 )
-    , ( "wfa", 2024, Male, 22.3, Just 1.01 )
-    , ( "wfa", 1733, Male, 14.5, Just -1.58 )
-    , ( "wfa", 1821, Male, 16.4, Just -0.82 )
-    , ( "wfa", 1953, Female, 16.1, Just -1.12 )
-    , ( "wfa", 1991, Female, 19.5, Just 0.17 )
-    , ( "wfa", 1922, Male, 20.9, Just 0.77 )
-    , ( "wfa", 1666, Female, 19.3, Just 0.75 )
-    , ( "wfa", 1662, Female, 18.3, Just 0.4 )
-    , ( "wfa", 1976, Male, 15.9, Just -1.47 )
-    , ( "wfa", 1981, Female, 17.6, Just -0.53 )
-    , ( "wfa", 1976, Female, 14.8, Just -1.8 )
-    , ( "wfa", 1925, Male, 18.7, Just -0.08 )
-    , ( "wfa", 1937, Female, 19.1, Just 0.14 )
-    , ( "wfa", 1843, Female, 19.1, Just 0.28 )
-    , ( "wfa", 1475, Female, 13.5, Just -1.33 )
-    , ( "wfa", 1272, Male, 14.7, Just -0.33 )
-    , ( "wfa", 1785, Female, 14, Just -1.78 )
-    , ( "wfa", 1997, Male, 18.4, Just -0.37 )
-    , ( "wfa", 1868, Female, 16, Just -0.98 )
-    , ( "wfa", 1703, Male, 16.2, Just -0.66 )
-    , ( "wfa", 2020, Female, 17.7, Just -0.57 )
-    , ( "wfa", 1588, Female, 17.1, Just 0.11 )
-    , ( "wfa", 1116, Male, 14.7, Just 0.14 )
-    , ( "wfa", 1313, Female, 19.4, Just 1.75 )
-    , ( "wfa", 1436, Male, 14, Just -1.16 )
-    , ( "wfa", 1565, Male, 15.5, Just -0.68 )
-    , ( "wfa", 986, Female, 13.9, Just 0.42 )
-    , ( "wfa", 1880, Female, 14.8, Just -1.6 )
-    , ( "wfa", 1562, Male, 16.8, Just -0.05 )
-    , ( "wfa", 1300, Male, 15.5, Just 0.02 )
-    , ( "wfa", 1127, Male, 14.2, Just -0.18 )
-    , ( "wfa", 1572, Male, 15, Just -0.95 )
-    , ( "wfa", 1459, Female, 15.3, Just -0.35 )
-    , ( "wfa", 1546, Female, 15.2, Just -0.62 )
-    , ( "wfa", 1239, Female, 12.3, Just -1.4 )
-    , ( "wfa", 1967, Female, 16.2, Just -1.1 )
-    , ( "wfa", 1386, Female, 18.6, Just 1.24 )
-    , ( "wfa", 1686, Female, 17.9, Just 0.19 )
-    , ( "wfa", 2012, Male, 14.5, Just -2.3 )
-    , ( "wfa", 1611, Female, 12.6, Just -2.19 )
-    , ( "wfa", 1962, Male, 13.4, Just -2.83 )
-    , ( "wfa", 1634, Female, 14.1, Just -1.39 )
-    , ( "wfa", 1467, Male, 16.5, Just 0.06 )
-    , ( "wfa", 1690, Female, 14.1, Just -1.52 )
-    , ( "wfa", 1310, Male, 13.6, Just -1.07 )
-    , ( "wfa", 1408, Female, 14.2, Just -0.77 )
-    , ( "wfa", 956, Female, 15.4, Just 1.32 )
-    , ( "wfa", 1309, Female, 10.9, Just -2.59 )
-    , ( "wfa", 1085, Male, 13.6, Just -0.41 )
-    , ( "wfa", 1150, Male, 13.5, Just -0.67 )
-    , ( "wfa", 1236, Male, 15.7, Just 0.31 )
-    , ( "wfa", 961, Male, 13.8, Just 0.13 )
-    , ( "wfa", 244, Male, 7.8, Just -0.91 )
-    , ( "wfa", 363, Male, 7.8, Just -1.92 )
-    , ( "wfa", 360, Female, 12.1, Just 2.42 )
-    , ( "wfa", 424, Male, 8.6, Just -1.44 )
-    , ( "wfa", 402, Male, 8.4, Just -1.52 )
-    , ( "wfa", 579, Female, 9.8, Just -0.53 )
-    , ( "wfa", 492, Male, 9.4, Just -1.05 )
-    , ( "wfa", 730, Male, 10.3, Just -1.45 )
-    , ( "wfa", 430, Female, 9.2, Just -0.19 )
-    , ( "wfa", 689, Male, 11, Just -0.68 )
-    , ( "wfa", 501, Female, 10.6, Just 0.54 )
-    , ( "wfa", 432, Male, 8.8, Just -1.29 )
-    , ( "wfa", 858, Male, 12.2, Just -0.53 )
-    , ( "wfa", 1508, Female, 14.1, Just -1.09 )
-    , ( "wfa", 1508, Male, 13.8, Just -1.46 )
-    , ( "wfa", 1873, Female, 17.9, Just -0.18 )
-    , ( "wfa", 1567, Female, 17.8, Just 0.44 )
-    , ( "wfa", 1873, Female, 17, Just -0.55 )
-    , ( "wfa", 1508, Male, 14.1, Just -1.29 )
-    , ( "wfa", 986, Female, 16.2, Just 1.58 )
-    , ( "wfa", 1873, Female, 13.8, Just -2.13 )
-    , ( "wfa", 1508, Female, 18.5, Just 0.86 )
-    , ( "wfa", 1873, Female, 19.3, Just 0.35 )
-    , ( "wfa", 1724, Male, 19.3, Just 0.61 )
-    , ( "wfa", 1659, Female, 15.2, Just -0.9 )
-    , ( "wfa", 1873, Female, 15.1, Just -1.43 )
-    , ( "wfa", 1873, Male, 16.8, Just -0.79 )
-    , ( "wfa", 1508, Female, 15.3, Just -0.48 )
-    , ( "wfa", 1873, Female, 16.6, Just -0.72 )
-    , ( "wfa", 1873, Female, 17.2, Just -0.46 )
-    , ( "wfa", 1873, Female, 19.1, Just 0.27 )
-    , ( "wfa", 1764, Female, 17.6, Just -0.1 )
-    , ( "wfa", 1812, Male, 14.6, Just -1.69 )
-    , ( "wfa", 1839, Male, 20.6, Just 0.82 )
-    , ( "wfa", 1669, Female, 17.8, Just 0.19 )
-    , ( "wfa", 1786, Male, 16, Just -0.93 )
-    , ( "wfa", 1772, Male, 15.9, Just -0.95 )
-    , ( "wfa", 1891, Female, 19.4, Just 0.34 )
-    , ( "wfa", 1935, Female, 17, Just -0.68 )
-    , ( "wfa", 1518, Female, 16.3, Just -0.05 )
-    , ( "wfa", 1775, Female, 18.3, Just 0.14 )
-    , ( "wfa", 1757, Male, 15.4, Just -1.16 )
-    , ( "wfa", 1914, Male, 15.3, Just -1.63 )
-    , ( "wfa", 1914, Male, 15.5, Just -1.52 )
-    , ( "wfa", 2025, Male, 18, Just -0.61 )
-    , ( "wfa", 1914, Male, 16.2, Just -1.17 )
-    , ( "wfa", 1899, Male, 13, Just -2.92 )
-    , ( "wfa", 1764, Female, 18.5, Just 0.24 )
-    , ( "wfa", 1625, Male, 15.2, Just -0.97 )
-    , ( "wfa", 1670, Male, 16.6, Just -0.4 )
-    , ( "wfa", 1972, Male, 19.4, Just 0.09 )
-    , ( "wfa", 1739, Male, 19.8, Just 0.77 )
-    , ( "wfa", 1582, Male, 16.5, Just -0.23 )
-    , ( "wfa", 1933, Female, 12.9, Just -2.81 )
-    , ( "wfa", 1441, Female, 14.1, Just -0.91 )
-    , ( "wfa", 1901, Female, 17.6, Just -0.36 )
-    , ( "wfa", 1337, Female, 15.8, Just 0.22 )
-    , ( "wfa", 1582, Female, 15.7, Just -0.48 )
-    , ( "wfa", 1706, Female, 15.8, Just -0.73 )
-    , ( "wfa", 1750, Female, 18.2, Just 0.16 )
-    , ( "wfa", 1731, Male, 18.7, Just 0.36 )
-    , ( "wfa", 1654, Male, 15.6, Just -0.84 )
-    , ( "wfa", 1874, Female, 16.7, Just -0.68 )
-    , ( "wfa", 1509, Female, 16.7, Just 0.15 )
-    , ( "wfa", 1886, Male, 16, Just -1.21 )
-    , ( "wfa", 1710, Male, 16.6, Just -0.49 )
-    , ( "wfa", 1985, Male, 24.7, Just 1.84 )
-    , ( "wfa", 716, Male, 10.9, Just -0.88 )
-    , ( "wfa", 936, Male, 7.9, Just -4.33 )
-    , ( "wfa", 299, Female, 9.4, Just 0.88 )
-    , ( "wfa", 509, Male, 8.7, Just -1.84 )
-    , ( "wfa", 595, Male, 8.9, Just -2.09 )
-    , ( "wfa", 623, Female, 9.9, Just -0.67 )
-    , ( "wfa", 570, Male, 11.8, Just 0.56 )
-    , ( "wfa", 508, Female, 7.5, Just -2.39 )
-    , ( "wfa", 336, Male, 8.3, Just -1.16 )
-    , ( "wfa", 573, Female, 9, Just -1.2 )
-    , ( "wfa", 603, Male, 8.5, Just -2.54 )
-    , ( "wfa", 544, Male, 7.9, Just -2.9 )
-    , ( "wfa", 512, Male, 9.4, Just -1.16 )
-    , ( "wfa", 676, Female, 9.8, Just -1.03 )
-    , ( "wfa", 646, Female, 9.6, Just -1.05 )
-    , ( "wfa", 583, Female, 8.5, Just -1.74 )
-    , ( "wfa", 495, Male, 9.9, Just -0.6 )
-    , ( "wfa", 157, Male, 8.9, Just 1.47 )
-    , ( "wfa", 181, Male, 6.6, Just -1.64 )
-    , ( "wfa", 153, Female, 7.2, Just 0.33 )
-    , ( "wfa", 56, Male, 5.5, Just 0.12 )
-    , ( "wfa", 22, Female, 3.3, Just -1.12 )
-    , ( "wfa", 105, Male, 6.2, Just -0.64 )
-    , ( "wfa", 110, Male, 7.2, Just 0.53 )
-    , ( "wfa", 249, Female, 8.6, Just 0.59 )
-    , ( "wfa", 221, Female, 7.4, Just -0.35 )
-    , ( "wfa", 401, Male, 10.8, Just 0.78 )
-    , ( "wfa", 462, Male, 11, Just 0.55 )
-    , ( "wfa", 464, Female, 9.7, Just 0.04 )
-    , ( "wfa", 492, Female, 8.2, Just -1.52 )
-    , ( "wfa", 517, Female, 9, Just -0.88 )
-    , ( "wfa", 578, Female, 10.2, Just -0.19 )
-    , ( "wfa", 581, Female, 10.1, Just -0.28 )
-    , ( "wfa", 557, Female, 11.1, Just 0.61 )
-    , ( "wfa", 260, Male, 60.3, Just 42.6 )
-    , ( "wfa", 637, Male, 8.4, Just -2.81 )
-    , ( "wfa", 708, Male, 10.4, Just -1.26 )
-    , ( "wfa", 1735, Male, 8, Just -5.49 )
-    , ( "wfa", 1394, Male, 7, Just -5.81 )
-    , ( "wfa", 1913, Female, 9, Just -5.16 )
-    , ( "wfa", 158, Female, 5.9, Just -1.38 )
-    , ( "wfa", 218, Female, 7.6, Just -0.1 )
-    , ( "wfa", 523, Male, 10.1, Just -0.58 )
-    , ( "wfa", 492, Male, 8, Just -2.5 )
-    , ( "wfa", 592, Male, 9.8, Just -1.22 )
-    , ( "wfa", 696, Female, 11.6, Just 0.25 )
-    , ( "wfa", 712, Male, 9.8, Just -1.8 )
-    , ( "wfa", 717, Female, 11, Just -0.28 )
-    , ( "wfa", 709, Male, 10.5, Just -1.18 )
-    , ( "wfa", 659, Male, 9.9, Just -1.46 )
-    , ( "wfa", 659, Male, 10.5, Just -0.94 )
-    , ( "wfa", 535, Female, 8.3, Just -1.67 )
+    [ { func = "wfa", scale = 429, gender = Female, measurement = 8.2, expected = Just -1.13 }
+    , { func = "wfa", scale = 454, gender = Female, measurement = 8.5, expected = Just -0.99 }
+    , { func = "wfa", scale = 515, gender = Female, measurement = 9.6, expected = Just -0.34 }
+    , { func = "wfa", scale = 518, gender = Female, measurement = 10.4, expected = Just 0.3 }
+    , { func = "wfa", scale = 494, gender = Female, measurement = 10.6, expected = Just 0.58 }
+    , { func = "wfa", scale = 197, gender = Male, measurement = 8.8, expected = Just 0.75 }
+    , { func = "wfa", scale = 574, gender = Male, measurement = 8, expected = Just -2.94 }
+    , { func = "wfa", scale = 645, gender = Male, measurement = 10, expected = Just -1.31 }
+    , { func = "wfa", scale = 684, gender = Female, measurement = 10.1, expected = Just -0.82 }
+    , { func = "wfa", scale = 734, gender = Male, measurement = 10.1, expected = Just -1.64 }
+    , { func = "wfa", scale = 772, gender = Female, measurement = 11, expected = Just -0.54 }
+    , { func = "wfa", scale = 779, gender = Female, measurement = 11.1, expected = Just -0.5 }
+    , { func = "wfa", scale = 591, gender = Female, measurement = 10.4, expected = Just -0.1 }
+    , { func = "wfa", scale = 583, gender = Male, measurement = 10, expected = Just -0.99 }
+    , { func = "wfa", scale = 533, gender = Male, measurement = 97.7, expected = Just 55.4 }
+    , { func = "wfa", scale = 409, gender = Female, measurement = 7.8, expected = Just -1.43 }
+    , { func = "wfa", scale = 688, gender = Male, measurement = 11.7, expected = Just -0.13 }
+    , { func = "wfa", scale = 908, gender = Male, measurement = 7.6, expected = Just -4.52 }
+    , { func = "wfa", scale = 271, gender = Female, measurement = 9.5, expected = Just 1.19 }
+    , { func = "wfa", scale = 481, gender = Male, measurement = 9.2, expected = Just -1.18 }
+    , { func = "wfa", scale = 567, gender = Male, measurement = 8.8, expected = Just -2.05 }
+    , { func = "wfa", scale = 567, gender = Male, measurement = 10, expected = Just -0.91 }
+    , { func = "wfa", scale = 153, gender = Female, measurement = 12.9, expected = Just 5.46 }
+    , { func = "wfa", scale = 542, gender = Male, measurement = 12.9, expected = Just 1.52 }
+    , { func = "wfa", scale = 480, gender = Female, measurement = 7.1, expected = Just -2.69 }
+    , { func = "wfa", scale = 545, gender = Female, measurement = 9, expected = Just -1.04 }
+    , { func = "wfa", scale = 575, gender = Male, measurement = 8.9, expected = Just -1.99 }
+    , { func = "wfa", scale = 516, gender = Male, measurement = 7.9, expected = Just -2.75 }
+    , { func = "wfa", scale = 484, gender = Male, measurement = 9.2, expected = Just -1.2 }
+    , { func = "wfa", scale = 648, gender = Female, measurement = 10.1, expected = Just -0.63 }
+    , { func = "wfa", scale = 555, gender = Female, measurement = 8.7, expected = Just -1.39 }
+    , { func = "wfa", scale = 467, gender = Male, measurement = 9.9, expected = Just -0.43 }
+    , { func = "wfa", scale = 129, gender = Male, measurement = 9, expected = Just 2.1 }
+    , { func = "wfa", scale = 144, gender = Male, measurement = 8, expected = Just 0.72 }
+    , { func = "wfa", scale = 153, gender = Male, measurement = 6.4, expected = Just -1.44 }
+    , { func = "wfa", scale = 125, gender = Female, measurement = 7, expected = Just 0.62 }
+    , { func = "wfa", scale = 89, gender = Male, measurement = 6, expected = Just -0.44 }
+    , { func = "wfa", scale = 131, gender = Female, measurement = 5.4, expected = Just -1.6 }
+    , { func = "wfa", scale = 196, gender = Female, measurement = 6.4, expected = Just -1.26 }
+    , { func = "wfa", scale = 278, gender = Female, measurement = 7.4, expected = Just -0.91 }
+    , { func = "wfa", scale = 289, gender = Male, measurement = 7.8, expected = Just -1.34 }
+    , { func = "wfa", scale = 420, gender = Female, measurement = 8.4, expected = Just -0.88 }
+    , { func = "wfa", scale = 459, gender = Female, measurement = 7.6, expected = Just -1.97 }
+    , { func = "wfa", scale = 468, gender = Female, measurement = 7.2, expected = Just -2.49 }
+    , { func = "wfa", scale = 487, gender = Female, measurement = 9.2, expected = Just -0.53 }
+    , { func = "wfa", scale = 491, gender = Male, measurement = 9.6, expected = Just -0.85 }
+    , { func = "wfa", scale = 580, gender = Female, measurement = 11.8, expected = Just 0.97 }
+    , { func = "wfa", scale = 627, gender = Male, measurement = 10.4, expected = Just -0.87 }
+    , { func = "wfa", scale = 662, gender = Female, measurement = 13.4, expected = Just 1.55 }
+    , { func = "wfa", scale = 669, gender = Female, measurement = 10.2, expected = Just -0.66 }
+    , { func = "wfa", scale = 674, gender = Female, measurement = 11, expected = Just -0.07 }
+    , { func = "wfa", scale = 672, gender = Male, measurement = 11.8, expected = Just 0.03 }
+    , { func = "wfa", scale = 742, gender = Female, measurement = 11.4, expected = Just -0.11 }
+    , { func = "wfa", scale = 720, gender = Male, measurement = 9.9, expected = Just -1.75 }
+    , { func = "wfa", scale = 722, gender = Female, measurement = 10.1, expected = Just -1.01 }
+    , { func = "wfa", scale = 670, gender = Female, measurement = 9.6, expected = Just -1.17 }
+    , { func = "wfa", scale = 739, gender = Male, measurement = 11.4, expected = Just -0.6 }
+    , { func = "wfa", scale = 643, gender = Female, measurement = 10.6, expected = Just -0.21 }
+    , { func = "wfa", scale = 580, gender = Male, measurement = 10.6, expected = Just -0.46 }
+    , { func = "wfa", scale = 518, gender = Female, measurement = 7.5, expected = Just -2.45 }
+    , { func = "wfa", scale = 500, gender = Male, measurement = 9.5, expected = Just -1 }
+    , { func = "wfa", scale = 372, gender = Male, measurement = 9.2, expected = Just -0.48 }
+    , { func = "wfa", scale = 380, gender = Male, measurement = 9.8, expected = Just 0.04 }
+    , { func = "wfa", scale = 380, gender = Male, measurement = 10, expected = Just 0.22 }
+    , { func = "wfa", scale = 328, gender = Female, measurement = 10.1, expected = Just 1.23 }
+    , { func = "wfa", scale = 293, gender = Female, measurement = 6.3, expected = Just -2.4 }
+    , { func = "wfa", scale = 283, gender = Female, measurement = 7.4, expected = Just -0.95 }
+    , { func = "wfa", scale = 198, gender = Female, measurement = 7.4, expected = Just -0.08 }
+    , { func = "wfa", scale = 158, gender = Female, measurement = 5, expected = Just -2.74 }
+    , { func = "wfa", scale = 124, gender = Male, measurement = 5.5, expected = Just -2.15 }
+    , { func = "wfa", scale = 67, gender = Female, measurement = 4.4, expected = Just -1.41 }
+    , { func = "wfa", scale = 111, gender = Male, measurement = 6.5, expected = Just -0.39 }
+    , { func = "wfa", scale = 127, gender = Female, measurement = 6, expected = Just -0.66 }
+    , { func = "wfa", scale = 432, gender = Male, measurement = 9.4, expected = Just -0.69 }
+    , { func = "wfa", scale = 401, gender = Male, measurement = 7, expected = Just -3.14 }
+    , { func = "wfa", scale = 501, gender = Male, measurement = 9.4, expected = Just -1.1 }
+    , { func = "wfa", scale = 605, gender = Female, measurement = 10.8, expected = Just 0.14 }
+    , { func = "wfa", scale = 650, gender = Male, measurement = 11.6, expected = Just -0.02 }
+    , { func = "wfa", scale = 629, gender = Male, measurement = 10.8, expected = Just -0.54 }
+    , { func = "wfa", scale = 621, gender = Male, measurement = 9.1, expected = Just -2.03 }
+    , { func = "wfa", scale = 683, gender = Male, measurement = 10.4, expected = Just -1.14 }
+    , { func = "wfa", scale = 1953, gender = Male, measurement = 18.4, expected = Just -0.27 }
+    , { func = "wfa", scale = 2023, gender = Male, measurement = 17.5, expected = Just -0.83 }
+    , { func = "wfa", scale = 1155, gender = Male, measurement = 15.7, expected = Just 0.55 }
+    , { func = "wfa", scale = 1964, gender = Female, measurement = 14.6, expected = Just -1.89 }
+    , { func = "wfa", scale = 2389, gender = Male, measurement = 17.2, expected = Just -1.82 }
+    , { func = "wfa", scale = 1399, gender = Male, measurement = 14.5, expected = Just -0.79 }
+    , { func = "wfa", scale = 1732, gender = Male, measurement = 17.1, expected = Just -0.32 }
+    , { func = "wfa", scale = 1766, gender = Female, measurement = 16.1, expected = Just -0.73 }
+    , { func = "wfa", scale = 2165, gender = Female, measurement = 19, expected = Just -0.36 }
+    , { func = "wfa", scale = 1946, gender = Female, measurement = 18.1, expected = Just -0.26 }
+    , { func = "wfa", scale = 2280, gender = Female, measurement = 19.7, expected = Just -0.33 }
+    , { func = "wfa", scale = 1757, gender = Female, measurement = 15.4, expected = Just -1.02 }
+    , { func = "wfa", scale = 1847, gender = Male, measurement = 14.3, expected = Just -1.92 }
+    , { func = "wfa", scale = 1951, gender = Female, measurement = 20.1, expected = Just 0.45 }
+    , { func = "wfa", scale = 1997, gender = Female, measurement = 17.1, expected = Just -0.77 }
+    , { func = "wfa", scale = 2020, gender = Male, measurement = 17.3, expected = Just -0.91 }
+    , { func = "wfa", scale = 1846, gender = Female, measurement = 16.4, expected = Just -0.77 }
+    , { func = "wfa", scale = 1978, gender = Male, measurement = 20.3, expected = Just 0.41 }
+    , { func = "wfa", scale = 1599, gender = Male, measurement = 16.2, expected = Just -0.42 }
+    , { func = "wfa", scale = 1933, gender = Male, measurement = 15.8, expected = Just -1.42 }
+    , { func = "wfa", scale = 1871, gender = Female, measurement = 17.6, expected = Just -0.29 }
+    , { func = "wfa", scale = 1676, gender = Male, measurement = 19.7, expected = Just 0.88 }
+    , { func = "wfa", scale = 1913, gender = Male, measurement = 17.7, expected = Just -0.48 }
+    , { func = "wfa", scale = 1282, gender = Male, measurement = 15.5, expected = Just 0.07 }
+    , { func = "wfa", scale = 1952, gender = Female, measurement = 16, expected = Just -1.16 }
+    , { func = "wfa", scale = 2013, gender = Female, measurement = 18.1, expected = Just -0.39 }
+    , { func = "wfa", scale = 1802, gender = Female, measurement = 19, expected = Just 0.33 }
+    , { func = "wfa", scale = 1752, gender = Female, measurement = 16.5, expected = Just -0.52 }
+    , { func = "wfa", scale = 1866, gender = Male, measurement = 20.1, expected = Just 0.61 }
+    , { func = "wfa", scale = 2289, gender = Male, measurement = 19.8, expected = Just -0.49 }
+    , { func = "wfa", scale = 1859, gender = Male, measurement = 20.2, expected = Just 0.66 }
+    , { func = "wfa", scale = 2126, gender = Female, measurement = 15.2, expected = Just -1.91 }
+    , { func = "wfa", scale = 1975, gender = Male, measurement = 17.1, expected = Just -0.89 }
+    , { func = "wfa", scale = 1956, gender = Male, measurement = 16.5, expected = Just -1.13 }
+    , { func = "wfa", scale = 1872, gender = Male, measurement = 14, expected = Just -2.25 }
+    , { func = "wfa", scale = 1970, gender = Male, measurement = 15.1, expected = Just -1.87 }
+    , { func = "wfa", scale = 2067, gender = Male, measurement = 19, expected = Just -0.29 }
+    , { func = "wfa", scale = 1833, gender = Male, measurement = 17.5, expected = Just -0.36 }
+    , { func = "wfa", scale = 1756, gender = Male, measurement = 15.8, expected = Just -0.97 }
+    , { func = "wfa", scale = 2040, gender = Female, measurement = 15.7, expected = Just -1.49 }
+    , { func = "wfa", scale = 2301, gender = Male, measurement = 20, expected = Just -0.44 }
+    , { func = "wfa", scale = 1696, gender = Female, measurement = 17.3, expected = Just -0.07 }
+    , { func = "wfa", scale = 2050, gender = Female, measurement = 17.4, expected = Just -0.75 }
+    , { func = "wfa", scale = 2285, gender = Female, measurement = 20.3, expected = Just -0.13 }
+    , { func = "wfa", scale = 1979, gender = Male, measurement = 19.4, expected = Just 0.07 }
+    , { func = "wfa", scale = 1617, gender = Female, measurement = 16.5, expected = Just -0.21 }
+    , { func = "wfa", scale = 1697, gender = Female, measurement = 14, expected = Just -1.59 }
+    , { func = "wfa", scale = 1388, gender = Female, measurement = 14.8, expected = Just -0.4 }
+    , { func = "wfa", scale = 1328, gender = Male, measurement = 16.1, expected = Just 0.24 }
+    , { func = "wfa", scale = 1923, gender = Female, measurement = 18.9, expected = Just 0.1 }
+    , { func = "wfa", scale = 1673, gender = Female, measurement = 18, expected = Just 0.26 }
+    , { func = "wfa", scale = 1736, gender = Female, measurement = 15, expected = Just -1.17 }
+    , { func = "wfa", scale = 1428, gender = Female, measurement = 13.4, expected = Just -1.26 }
+    , { func = "wfa", scale = 1936, gender = Male, measurement = 19.2, expected = Just 0.09 }
+    , { func = "wfa", scale = 1778, gender = Female, measurement = 15.6, expected = Just -0.97 }
+    , { func = "wfa", scale = 1525, gender = Female, measurement = 18.8, expected = Just 0.93 }
+    , { func = "wfa", scale = 1630, gender = Female, measurement = 18.4, expected = Just 0.51 }
+    , { func = "wfa", scale = 1829, gender = Female, measurement = 17.4, expected = Just -0.32 }
+    , { func = "wfa", scale = 1974, gender = Female, measurement = 16.9, expected = Just -0.8 }
+    , { func = "wfa", scale = 1858, gender = Female, measurement = 16, expected = Just -0.96 }
+    , { func = "wfa", scale = 1499, gender = Male, measurement = 14, expected = Just -1.32 }
+    , { func = "wfa", scale = 1532, gender = Female, measurement = 12, expected = Just -2.39 }
+    , { func = "wfa", scale = 1872, gender = Male, measurement = 13.5, expected = Just -2.54 }
+    , { func = "wfa", scale = 1624, gender = Male, measurement = 14.3, expected = Just -1.45 }
+    , { func = "wfa", scale = 1339, gender = Female, measurement = 15.2, expected = Just -0.07 }
+    , { func = "wfa", scale = 1237, gender = Male, measurement = 15.6, expected = Just 0.25 }
+    , { func = "wfa", scale = 1839, gender = Female, measurement = 17.6, expected = Just -0.26 }
+    , { func = "wfa", scale = 1265, gender = Male, measurement = 16.8, expected = Just 0.76 }
+    , { func = "wfa", scale = 1021, gender = Male, measurement = 14.5, expected = Just 0.34 }
+    , { func = "wfa", scale = 1561, gender = Male, measurement = 17.7, expected = Just 0.36 }
+    , { func = "wfa", scale = 1228, gender = Male, measurement = 18.1, expected = Just 1.47 }
+    , { func = "wfa", scale = 1970, gender = Female, measurement = 22.1, expected = Just 1.04 }
+    , { func = "wfa", scale = 1843, gender = Male, measurement = 17.2, expected = Just -0.51 }
+    , { func = "wfa", scale = 1803, gender = Male, measurement = 14.6, expected = Just -1.67 }
+    , { func = "wfa", scale = 1580, gender = Female, measurement = 14.9, expected = Just -0.85 }
+    , { func = "wfa", scale = 1311, gender = Male, measurement = 18.8, expected = Just 1.52 }
+    , { func = "wfa", scale = 1805, gender = Male, measurement = 19.7, expected = Just 0.58 }
+    , { func = "wfa", scale = 1640, gender = Male, measurement = 17.4, expected = Just 0.03 }
+    , { func = "wfa", scale = 2024, gender = Male, measurement = 22.3, expected = Just 1.01 }
+    , { func = "wfa", scale = 1733, gender = Male, measurement = 14.5, expected = Just -1.58 }
+    , { func = "wfa", scale = 1821, gender = Male, measurement = 16.4, expected = Just -0.82 }
+    , { func = "wfa", scale = 1953, gender = Female, measurement = 16.1, expected = Just -1.12 }
+    , { func = "wfa", scale = 1991, gender = Female, measurement = 19.5, expected = Just 0.17 }
+    , { func = "wfa", scale = 1922, gender = Male, measurement = 20.9, expected = Just 0.77 }
+    , { func = "wfa", scale = 1666, gender = Female, measurement = 19.3, expected = Just 0.75 }
+    , { func = "wfa", scale = 1662, gender = Female, measurement = 18.3, expected = Just 0.4 }
+    , { func = "wfa", scale = 1976, gender = Male, measurement = 15.9, expected = Just -1.47 }
+    , { func = "wfa", scale = 1981, gender = Female, measurement = 17.6, expected = Just -0.53 }
+    , { func = "wfa", scale = 1976, gender = Female, measurement = 14.8, expected = Just -1.8 }
+    , { func = "wfa", scale = 1925, gender = Male, measurement = 18.7, expected = Just -0.08 }
+    , { func = "wfa", scale = 1937, gender = Female, measurement = 19.1, expected = Just 0.14 }
+    , { func = "wfa", scale = 1843, gender = Female, measurement = 19.1, expected = Just 0.28 }
+    , { func = "wfa", scale = 1475, gender = Female, measurement = 13.5, expected = Just -1.33 }
+    , { func = "wfa", scale = 1272, gender = Male, measurement = 14.7, expected = Just -0.33 }
+    , { func = "wfa", scale = 1785, gender = Female, measurement = 14, expected = Just -1.78 }
+    , { func = "wfa", scale = 1997, gender = Male, measurement = 18.4, expected = Just -0.37 }
+    , { func = "wfa", scale = 1868, gender = Female, measurement = 16, expected = Just -0.98 }
+    , { func = "wfa", scale = 1703, gender = Male, measurement = 16.2, expected = Just -0.66 }
+    , { func = "wfa", scale = 2020, gender = Female, measurement = 17.7, expected = Just -0.57 }
+    , { func = "wfa", scale = 1588, gender = Female, measurement = 17.1, expected = Just 0.11 }
+    , { func = "wfa", scale = 1116, gender = Male, measurement = 14.7, expected = Just 0.14 }
+    , { func = "wfa", scale = 1313, gender = Female, measurement = 19.4, expected = Just 1.75 }
+    , { func = "wfa", scale = 1436, gender = Male, measurement = 14, expected = Just -1.16 }
+    , { func = "wfa", scale = 1565, gender = Male, measurement = 15.5, expected = Just -0.68 }
+    , { func = "wfa", scale = 986, gender = Female, measurement = 13.9, expected = Just 0.42 }
+    , { func = "wfa", scale = 1880, gender = Female, measurement = 14.8, expected = Just -1.6 }
+    , { func = "wfa", scale = 1562, gender = Male, measurement = 16.8, expected = Just -0.05 }
+    , { func = "wfa", scale = 1300, gender = Male, measurement = 15.5, expected = Just 0.02 }
+    , { func = "wfa", scale = 1127, gender = Male, measurement = 14.2, expected = Just -0.18 }
+    , { func = "wfa", scale = 1572, gender = Male, measurement = 15, expected = Just -0.95 }
+    , { func = "wfa", scale = 1459, gender = Female, measurement = 15.3, expected = Just -0.35 }
+    , { func = "wfa", scale = 1546, gender = Female, measurement = 15.2, expected = Just -0.62 }
+    , { func = "wfa", scale = 1239, gender = Female, measurement = 12.3, expected = Just -1.4 }
+    , { func = "wfa", scale = 1967, gender = Female, measurement = 16.2, expected = Just -1.1 }
+    , { func = "wfa", scale = 1386, gender = Female, measurement = 18.6, expected = Just 1.24 }
+    , { func = "wfa", scale = 1686, gender = Female, measurement = 17.9, expected = Just 0.19 }
+    , { func = "wfa", scale = 2012, gender = Male, measurement = 14.5, expected = Just -2.3 }
+    , { func = "wfa", scale = 1611, gender = Female, measurement = 12.6, expected = Just -2.19 }
+    , { func = "wfa", scale = 1962, gender = Male, measurement = 13.4, expected = Just -2.83 }
+    , { func = "wfa", scale = 1634, gender = Female, measurement = 14.1, expected = Just -1.39 }
+    , { func = "wfa", scale = 1467, gender = Male, measurement = 16.5, expected = Just 0.06 }
+    , { func = "wfa", scale = 1690, gender = Female, measurement = 14.1, expected = Just -1.52 }
+    , { func = "wfa", scale = 1310, gender = Male, measurement = 13.6, expected = Just -1.07 }
+    , { func = "wfa", scale = 1408, gender = Female, measurement = 14.2, expected = Just -0.77 }
+    , { func = "wfa", scale = 956, gender = Female, measurement = 15.4, expected = Just 1.32 }
+    , { func = "wfa", scale = 1309, gender = Female, measurement = 10.9, expected = Just -2.59 }
+    , { func = "wfa", scale = 1085, gender = Male, measurement = 13.6, expected = Just -0.41 }
+    , { func = "wfa", scale = 1150, gender = Male, measurement = 13.5, expected = Just -0.67 }
+    , { func = "wfa", scale = 1236, gender = Male, measurement = 15.7, expected = Just 0.31 }
+    , { func = "wfa", scale = 961, gender = Male, measurement = 13.8, expected = Just 0.13 }
+    , { func = "wfa", scale = 244, gender = Male, measurement = 7.8, expected = Just -0.91 }
+    , { func = "wfa", scale = 363, gender = Male, measurement = 7.8, expected = Just -1.92 }
+    , { func = "wfa", scale = 360, gender = Female, measurement = 12.1, expected = Just 2.42 }
+    , { func = "wfa", scale = 424, gender = Male, measurement = 8.6, expected = Just -1.44 }
+    , { func = "wfa", scale = 402, gender = Male, measurement = 8.4, expected = Just -1.52 }
+    , { func = "wfa", scale = 579, gender = Female, measurement = 9.8, expected = Just -0.53 }
+    , { func = "wfa", scale = 492, gender = Male, measurement = 9.4, expected = Just -1.05 }
+    , { func = "wfa", scale = 730, gender = Male, measurement = 10.3, expected = Just -1.45 }
+    , { func = "wfa", scale = 430, gender = Female, measurement = 9.2, expected = Just -0.19 }
+    , { func = "wfa", scale = 689, gender = Male, measurement = 11, expected = Just -0.68 }
+    , { func = "wfa", scale = 501, gender = Female, measurement = 10.6, expected = Just 0.54 }
+    , { func = "wfa", scale = 432, gender = Male, measurement = 8.8, expected = Just -1.29 }
+    , { func = "wfa", scale = 858, gender = Male, measurement = 12.2, expected = Just -0.53 }
+    , { func = "wfa", scale = 1508, gender = Female, measurement = 14.1, expected = Just -1.09 }
+    , { func = "wfa", scale = 1508, gender = Male, measurement = 13.8, expected = Just -1.46 }
+    , { func = "wfa", scale = 1873, gender = Female, measurement = 17.9, expected = Just -0.18 }
+    , { func = "wfa", scale = 1567, gender = Female, measurement = 17.8, expected = Just 0.44 }
+    , { func = "wfa", scale = 1873, gender = Female, measurement = 17, expected = Just -0.55 }
+    , { func = "wfa", scale = 1508, gender = Male, measurement = 14.1, expected = Just -1.29 }
+    , { func = "wfa", scale = 986, gender = Female, measurement = 16.2, expected = Just 1.58 }
+    , { func = "wfa", scale = 1873, gender = Female, measurement = 13.8, expected = Just -2.13 }
+    , { func = "wfa", scale = 1508, gender = Female, measurement = 18.5, expected = Just 0.86 }
+    , { func = "wfa", scale = 1873, gender = Female, measurement = 19.3, expected = Just 0.35 }
+    , { func = "wfa", scale = 1724, gender = Male, measurement = 19.3, expected = Just 0.61 }
+    , { func = "wfa", scale = 1659, gender = Female, measurement = 15.2, expected = Just -0.9 }
+    , { func = "wfa", scale = 1873, gender = Female, measurement = 15.1, expected = Just -1.43 }
+    , { func = "wfa", scale = 1873, gender = Male, measurement = 16.8, expected = Just -0.79 }
+    , { func = "wfa", scale = 1508, gender = Female, measurement = 15.3, expected = Just -0.48 }
+    , { func = "wfa", scale = 1873, gender = Female, measurement = 16.6, expected = Just -0.72 }
+    , { func = "wfa", scale = 1873, gender = Female, measurement = 17.2, expected = Just -0.46 }
+    , { func = "wfa", scale = 1873, gender = Female, measurement = 19.1, expected = Just 0.27 }
+    , { func = "wfa", scale = 1764, gender = Female, measurement = 17.6, expected = Just -0.1 }
+    , { func = "wfa", scale = 1812, gender = Male, measurement = 14.6, expected = Just -1.69 }
+    , { func = "wfa", scale = 1839, gender = Male, measurement = 20.6, expected = Just 0.82 }
+    , { func = "wfa", scale = 1669, gender = Female, measurement = 17.8, expected = Just 0.19 }
+    , { func = "wfa", scale = 1786, gender = Male, measurement = 16, expected = Just -0.93 }
+    , { func = "wfa", scale = 1772, gender = Male, measurement = 15.9, expected = Just -0.95 }
+    , { func = "wfa", scale = 1891, gender = Female, measurement = 19.4, expected = Just 0.34 }
+    , { func = "wfa", scale = 1935, gender = Female, measurement = 17, expected = Just -0.68 }
+    , { func = "wfa", scale = 1518, gender = Female, measurement = 16.3, expected = Just -0.05 }
+    , { func = "wfa", scale = 1775, gender = Female, measurement = 18.3, expected = Just 0.14 }
+    , { func = "wfa", scale = 1757, gender = Male, measurement = 15.4, expected = Just -1.16 }
+    , { func = "wfa", scale = 1914, gender = Male, measurement = 15.3, expected = Just -1.63 }
+    , { func = "wfa", scale = 1914, gender = Male, measurement = 15.5, expected = Just -1.52 }
+    , { func = "wfa", scale = 2025, gender = Male, measurement = 18, expected = Just -0.61 }
+    , { func = "wfa", scale = 1914, gender = Male, measurement = 16.2, expected = Just -1.17 }
+    , { func = "wfa", scale = 1899, gender = Male, measurement = 13, expected = Just -2.92 }
+    , { func = "wfa", scale = 1764, gender = Female, measurement = 18.5, expected = Just 0.24 }
+    , { func = "wfa", scale = 1625, gender = Male, measurement = 15.2, expected = Just -0.97 }
+    , { func = "wfa", scale = 1670, gender = Male, measurement = 16.6, expected = Just -0.4 }
+    , { func = "wfa", scale = 1972, gender = Male, measurement = 19.4, expected = Just 0.09 }
+    , { func = "wfa", scale = 1739, gender = Male, measurement = 19.8, expected = Just 0.77 }
+    , { func = "wfa", scale = 1582, gender = Male, measurement = 16.5, expected = Just -0.23 }
+    , { func = "wfa", scale = 1933, gender = Female, measurement = 12.9, expected = Just -2.81 }
+    , { func = "wfa", scale = 1441, gender = Female, measurement = 14.1, expected = Just -0.91 }
+    , { func = "wfa", scale = 1901, gender = Female, measurement = 17.6, expected = Just -0.36 }
+    , { func = "wfa", scale = 1337, gender = Female, measurement = 15.8, expected = Just 0.22 }
+    , { func = "wfa", scale = 1582, gender = Female, measurement = 15.7, expected = Just -0.48 }
+    , { func = "wfa", scale = 1706, gender = Female, measurement = 15.8, expected = Just -0.73 }
+    , { func = "wfa", scale = 1750, gender = Female, measurement = 18.2, expected = Just 0.16 }
+    , { func = "wfa", scale = 1731, gender = Male, measurement = 18.7, expected = Just 0.36 }
+    , { func = "wfa", scale = 1654, gender = Male, measurement = 15.6, expected = Just -0.84 }
+    , { func = "wfa", scale = 1874, gender = Female, measurement = 16.7, expected = Just -0.68 }
+    , { func = "wfa", scale = 1509, gender = Female, measurement = 16.7, expected = Just 0.15 }
+    , { func = "wfa", scale = 1886, gender = Male, measurement = 16, expected = Just -1.21 }
+    , { func = "wfa", scale = 1710, gender = Male, measurement = 16.6, expected = Just -0.49 }
+    , { func = "wfa", scale = 1985, gender = Male, measurement = 24.7, expected = Just 1.84 }
+    , { func = "wfa", scale = 716, gender = Male, measurement = 10.9, expected = Just -0.88 }
+    , { func = "wfa", scale = 936, gender = Male, measurement = 7.9, expected = Just -4.33 }
+    , { func = "wfa", scale = 299, gender = Female, measurement = 9.4, expected = Just 0.88 }
+    , { func = "wfa", scale = 509, gender = Male, measurement = 8.7, expected = Just -1.84 }
+    , { func = "wfa", scale = 595, gender = Male, measurement = 8.9, expected = Just -2.09 }
+    , { func = "wfa", scale = 623, gender = Female, measurement = 9.9, expected = Just -0.67 }
+    , { func = "wfa", scale = 570, gender = Male, measurement = 11.8, expected = Just 0.56 }
+    , { func = "wfa", scale = 508, gender = Female, measurement = 7.5, expected = Just -2.39 }
+    , { func = "wfa", scale = 336, gender = Male, measurement = 8.3, expected = Just -1.16 }
+    , { func = "wfa", scale = 573, gender = Female, measurement = 9, expected = Just -1.2 }
+    , { func = "wfa", scale = 603, gender = Male, measurement = 8.5, expected = Just -2.54 }
+    , { func = "wfa", scale = 544, gender = Male, measurement = 7.9, expected = Just -2.9 }
+    , { func = "wfa", scale = 512, gender = Male, measurement = 9.4, expected = Just -1.16 }
+    , { func = "wfa", scale = 676, gender = Female, measurement = 9.8, expected = Just -1.03 }
+    , { func = "wfa", scale = 646, gender = Female, measurement = 9.6, expected = Just -1.05 }
+    , { func = "wfa", scale = 583, gender = Female, measurement = 8.5, expected = Just -1.74 }
+    , { func = "wfa", scale = 495, gender = Male, measurement = 9.9, expected = Just -0.6 }
+    , { func = "wfa", scale = 157, gender = Male, measurement = 8.9, expected = Just 1.47 }
+    , { func = "wfa", scale = 181, gender = Male, measurement = 6.6, expected = Just -1.64 }
+    , { func = "wfa", scale = 153, gender = Female, measurement = 7.2, expected = Just 0.33 }
+    , { func = "wfa", scale = 56, gender = Male, measurement = 5.5, expected = Just 0.12 }
+    , { func = "wfa", scale = 22, gender = Female, measurement = 3.3, expected = Just -1.12 }
+    , { func = "wfa", scale = 105, gender = Male, measurement = 6.2, expected = Just -0.64 }
+    , { func = "wfa", scale = 110, gender = Male, measurement = 7.2, expected = Just 0.53 }
+    , { func = "wfa", scale = 249, gender = Female, measurement = 8.6, expected = Just 0.59 }
+    , { func = "wfa", scale = 221, gender = Female, measurement = 7.4, expected = Just -0.35 }
+    , { func = "wfa", scale = 401, gender = Male, measurement = 10.8, expected = Just 0.78 }
+    , { func = "wfa", scale = 462, gender = Male, measurement = 11, expected = Just 0.55 }
+    , { func = "wfa", scale = 464, gender = Female, measurement = 9.7, expected = Just 0.04 }
+    , { func = "wfa", scale = 492, gender = Female, measurement = 8.2, expected = Just -1.52 }
+    , { func = "wfa", scale = 517, gender = Female, measurement = 9, expected = Just -0.88 }
+    , { func = "wfa", scale = 578, gender = Female, measurement = 10.2, expected = Just -0.19 }
+    , { func = "wfa", scale = 581, gender = Female, measurement = 10.1, expected = Just -0.28 }
+    , { func = "wfa", scale = 557, gender = Female, measurement = 11.1, expected = Just 0.61 }
+    , { func = "wfa", scale = 260, gender = Male, measurement = 60.3, expected = Just 42.6 }
+    , { func = "wfa", scale = 637, gender = Male, measurement = 8.4, expected = Just -2.81 }
+    , { func = "wfa", scale = 708, gender = Male, measurement = 10.4, expected = Just -1.26 }
+    , { func = "wfa", scale = 1735, gender = Male, measurement = 8, expected = Just -5.49 }
+    , { func = "wfa", scale = 1394, gender = Male, measurement = 7, expected = Just -5.81 }
+    , { func = "wfa", scale = 1913, gender = Female, measurement = 9, expected = Just -5.16 }
+    , { func = "wfa", scale = 158, gender = Female, measurement = 5.9, expected = Just -1.38 }
+    , { func = "wfa", scale = 218, gender = Female, measurement = 7.6, expected = Just -0.1 }
+    , { func = "wfa", scale = 523, gender = Male, measurement = 10.1, expected = Just -0.58 }
+    , { func = "wfa", scale = 492, gender = Male, measurement = 8, expected = Just -2.5 }
+    , { func = "wfa", scale = 592, gender = Male, measurement = 9.8, expected = Just -1.22 }
+    , { func = "wfa", scale = 696, gender = Female, measurement = 11.6, expected = Just 0.25 }
+    , { func = "wfa", scale = 712, gender = Male, measurement = 9.8, expected = Just -1.8 }
+    , { func = "wfa", scale = 717, gender = Female, measurement = 11, expected = Just -0.28 }
+    , { func = "wfa", scale = 709, gender = Male, measurement = 10.5, expected = Just -1.18 }
+    , { func = "wfa", scale = 659, gender = Male, measurement = 9.9, expected = Just -1.46 }
+    , { func = "wfa", scale = 659, gender = Male, measurement = 10.5, expected = Just -0.94 }
+    , { func = "wfa", scale = 535, gender = Female, measurement = 8.3, expected = Just -1.67 }
     ]
 
 
-lfaTestData : List ( String, Float, Gender, Float, Maybe Float )
+lfaTestData : List ZScoreTestCase
 lfaTestData =
-    [ ( "lfa", 471, Female, 75, Just -1.1 )
-    , ( "lfa", 25, Male, 55, Just 0.54 )
-    , ( "lfa", 606, Female, 88, Just 1.79 )
-    , ( "lfa", 28, Male, 59, Just 2.38 )
-    , ( "lfa", 606, Female, 87, Just 1.46 )
-    , ( "lfa", 474, Female, 77, Just -0.41 )
-    , ( "lfa", 28, Male, 58, Just 1.86 )
-    , ( "lfa", 475, Female, 77, Just -0.43 )
-    , ( "lfa", 675, Female, 79, Just -1.84 )
-    , ( "lfa", 555, Male, 79, Just -1.29 )
-    , ( "lfa", 775, Male, 64.5, Just -7.59 )
-    , ( "lfa", 138, Female, 63, Just -0.07 )
-    , ( "lfa", 348, Male, 68.5, Just -2.79 )
-    , ( "lfa", 462, Female, 73, Just -1.71 )
-    , ( "lfa", 409, Male, 78.5, Just 0.44 )
-    , ( "lfa", 412, Female, 69.5, Just -2.39 )
-    , ( "lfa", 442, Male, 71, Just -3.04 )
-    , ( "lfa", 383, Male, 67, Just -3.92 )
-    , ( "lfa", 638, Male, 77, Just -2.82 )
-    , ( "lfa", 351, Male, 72, Just -1.35 )
-    , ( "lfa", 654, Female, 75, Just -2.95 )
-    , ( "lfa", 515, Female, 76, Just -1.26 )
-    , ( "lfa", 644, Female, 79.5, Just -1.4 )
-    , ( "lfa", 485, Female, 75, Just -1.27 )
-    , ( "lfa", 422, Female, 71, Just -1.95 )
-    , ( "lfa", 334, Male, 74, Just -0.22 )
-    , ( "lfa", 657, Female, 92, Just 2.51 )
-    , ( "lfa", 525, Female, 77, Just -1.02 )
-    , ( "lfa", 79, Male, 56, Just -2.12 )
-    , ( "lfa", 80, Male, 60, Just -0.19 )
-    , ( "lfa", 619, Male, 76, Just -3.01 )
-    , ( "lfa", 656, Male, 82.5, Just -1.08 )
-    , ( "lfa", 790, Female, 63, Just -7.33 )
-    , ( "lfa", 790, Male, 63.7, Just -7.9 )
-    , ( "lfa", 153, Female, 64.5, Just 0.19 )
-    , ( "lfa", 363, Male, 69.3, Just -2.68 )
-    , ( "lfa", 398, Male, 67.5, Just -3.91 )
-    , ( "lfa", 653, Male, 78, Just -2.6 )
-    , ( "lfa", 366, Male, 72, Just -1.59 )
-    , ( "lfa", 659, Female, 80.5, Just -1.22 )
-    , ( "lfa", 500, Female, 74.5, Just -1.62 )
-    , ( "lfa", 424, Female, 59, Just -6.45 )
-    , ( "lfa", 349, Male, 63, Just -5.15 )
-    , ( "lfa", 339, Male, 14, Just -25.99 )
-    , ( "lfa", 382, Male, 13, Just -26.38 )
-    , ( "lfa", 667, Female, 12.5, Just -23.12 )
-    , ( "lfa", 1680, Male, 94, Just -2.99 )
-    , ( "lfa", 1666, Male, 94.5, Just -2.83 )
-    , ( "lfa", 1829, Female, 102, Just -1.57 )
-    , ( "lfa", 1669, Female, 107, Just 0.08 )
-    , ( "lfa", 1853, Male, 102.5, Just -1.7 )
-    , ( "lfa", 1651, Male, 98, Just -1.99 )
-    , ( "lfa", 1919, Female, 105.5, Just -1.07 )
-    , ( "lfa", 1597, Male, 110, Just 0.96 )
-    , ( "lfa", 1795, Female, 103, Just -1.25 )
-    , ( "lfa", 1818, Female, 105.5, Just -0.8 )
-    , ( "lfa", 1631, Female, 92.7, Just -2.93 )
-    , ( "lfa", 1323, Female, 96.3, Just -0.89 )
-    , ( "lfa", 1625, Female, 104.5, Just -0.3 )
-    , ( "lfa", 1673, Female, 94, Just -2.78 )
-    , ( "lfa", 1554, Male, 102, Just -0.71 )
-    , ( "lfa", 1827, Female, 106, Just -0.72 )
-    , ( "lfa", 1561, Female, 110, Just 1.21 )
-    , ( "lfa", 1658, Female, 101.1, Just -1.17 )
-    , ( "lfa", 1806, Female, 119.8, Just 2.27 )
-    , ( "lfa", 1420, Female, 100, Just -0.45 )
-    , ( "lfa", 1525, Female, 104.4, Just 0.1 )
-    , ( "lfa", 1919, Female, 105, Just -1.17 )
-    , ( "lfa", 1848, Male, 106.5, Just -0.83 )
-    , ( "lfa", 1724, Female, 99, Just -1.86 )
-    , ( "lfa", 1919, Male, 103, Just -1.8 )
-    , ( "lfa", 1394, Male, 94.5, Just -1.84 )
-    , ( "lfa", 1427, Female, 92, Just -2.36 )
-    , ( "lfa", 1895, Male, 108.5, Just -0.53 )
-    , ( "lfa", 1734, Female, 108.3, Just 0.11 )
-    , ( "lfa", 1569, Male, 111.5, Just 1.43 )
-    , ( "lfa", 1816, Female, 107.7, Just -0.33 )
-    , ( "lfa", 1919, Female, 105.3, Just -1.11 )
-    , ( "lfa", 916, Male, 85.5, Just -1.91 )
-    , ( "lfa", 1456, Male, 100.5, Just -0.65 )
-    , ( "lfa", 1814, Male, 99.5, Just -2.22 )
-    , ( "lfa", 1554, Female, 99.5, Just -1.13 )
-    , ( "lfa", 1123, Male, 99.3, Just 0.7 )
-    , ( "lfa", 1230, Female, 91.7, Just -1.58 )
-    , ( "lfa", 1738, Male, 100, Just -1.85 )
-    , ( "lfa", 1607, Male, 100, Just -1.37 )
-    , ( "lfa", 1919, Female, 103.5, Just -1.48 )
-    , ( "lfa", 1919, Female, 108.1, Just -0.53 )
-    , ( "lfa", 1620, Male, 100.5, Just -1.31 )
-    , ( "lfa", 1711, Female, 103.5, Just -0.84 )
-    , ( "lfa", 1535, Male, 98, Just -1.56 )
-    , ( "lfa", 1801, Male, 108.1, Just -0.31 )
-    , ( "lfa", 1818, Male, 98, Just -2.56 )
-    , ( "lfa", 1905, Female, 102.7, Just -1.6 )
-    , ( "lfa", 1785, Male, 101.7, Just -1.64 )
-    , ( "lfa", 1919, Male, 97.7, Just -2.93 )
-    , ( "lfa", 1919, Female, 102, Just -1.79 )
-    , ( "lfa", 1633, Male, 97.7, Just -1.99 )
-    , ( "lfa", 579, Male, 78, Just -1.91 )
-    , ( "lfa", 297, Male, 68.5, Just -1.97 )
-    , ( "lfa", 474, Female, 74, Just -1.49 )
-    , ( "lfa", 387, Male, 71, Just -2.32 )
-    , ( "lfa", 625, Male, 78.3, Just -2.25 )
-    , ( "lfa", 325, Female, 72, Just -0.15 )
-    , ( "lfa", 584, Male, 78, Just -1.96 )
-    , ( "lfa", 396, Female, 72, Just -1.23 )
-    , ( "lfa", 327, Male, 69, Just -2.25 )
-    , ( "lfa", 753, Male, 85.6, Just -0.69 )
-    , ( "lfa", 1403, Female, 90, Just -2.74 )
-    , ( "lfa", 1403, Male, 94, Just -2 )
-    , ( "lfa", 1768, Female, 104, Just -0.94 )
-    , ( "lfa", 1462, Female, 100, Just -0.64 )
-    , ( "lfa", 1403, Female, 97, Just -1.08 )
-    , ( "lfa", 1768, Female, 99, Just -2.01 )
-    , ( "lfa", 1403, Male, 96.5, Just -1.39 )
-    , ( "lfa", 881, Female, 101.5, Just 3.35 )
-    , ( "lfa", 461, Female, 71, Just -2.43 )
-    , ( "lfa", 1768, Male, 102, Just -1.52 )
-    , ( "lfa", 1768, Female, 104.5, Just -0.83 )
-    , ( "lfa", 210, Male, 65.9, Just -1.44 )
-    , ( "lfa", 1768, Female, 93.5, Just -3.18 )
-    , ( "lfa", 173, Female, 63, Just -0.98 )
-    , ( "lfa", 1403, Female, 101, Just -0.14 )
-    , ( "lfa", 1768, Female, 111.2, Just 0.6 )
-    , ( "lfa", 1619, Male, 107, Just 0.18 )
-    , ( "lfa", 1554, Female, 94.2, Just -2.33 )
-    , ( "lfa", 1768, Female, 102, Just -1.37 )
-    , ( "lfa", 1768, Male, 100.5, Just -1.84 )
-    , ( "lfa", 1403, Female, 95.5, Just -1.44 )
-    , ( "lfa", 1768, Female, 106, Just -0.51 )
-    , ( "lfa", 1768, Female, 104, Just -0.94 )
-    , ( "lfa", 1768, Female, 109, Just 0.13 )
-    , ( "lfa", 1849, Male, 108, Just -0.51 )
-    , ( "lfa", 1919, Male, 100, Just -2.44 )
-    , ( "lfa", 1051, Male, 98, Just 0.79 )
-    , ( "lfa", 1860, Female, 94, Just -3.28 )
-    , ( "lfa", 2285, Male, 101.2, Just -3.24 )
-    , ( "lfa", 1295, Male, 95.5, Just -1.17 )
-    , ( "lfa", 1628, Male, 103, Just -0.77 )
-    , ( "lfa", 1662, Female, 106.5, Just 0 )
-    , ( "lfa", 2061, Female, 106, Just -1.41 )
-    , ( "lfa", 1842, Female, 107.5, Just -0.46 )
-    , ( "lfa", 2176, Female, 110, Just -0.96 )
-    , ( "lfa", 1653, Female, 98, Just -1.84 )
-    , ( "lfa", 1743, Male, 95, Just -2.97 )
-    , ( "lfa", 1847, Female, 107, Just -0.58 )
-    , ( "lfa", 1893, Female, 102, Just -1.71 )
-    , ( "lfa", 1916, Male, 104, Just -1.57 )
-    , ( "lfa", 1742, Female, 105.5, Just -0.53 )
-    , ( "lfa", 1874, Male, 109, Just -0.34 )
-    , ( "lfa", 1495, Male, 99.5, Just -1.05 )
-    , ( "lfa", 1829, Male, 103.5, Just -1.4 )
-    , ( "lfa", 1767, Female, 108.2, Just -0.04 )
-    , ( "lfa", 1572, Male, 101, Just -1.01 )
-    , ( "lfa", 1809, Male, 107, Just -0.57 )
-    , ( "lfa", 1178, Male, 89.5, Just -2.17 )
-    , ( "lfa", 1848, Female, 99.2, Just -2.22 )
-    , ( "lfa", 1909, Female, 104, Just -1.35 )
-    , ( "lfa", 1698, Female, 106, Just -0.25 )
-    , ( "lfa", 1648, Female, 98, Just -1.82 )
-    , ( "lfa", 1762, Male, 111.5, Just 0.59 )
-    , ( "lfa", 2185, Male, 105.5, Just -2.1 )
-    , ( "lfa", 1755, Male, 105.5, Just -0.7 )
-    , ( "lfa", 2022, Female, 102, Just -2.1 )
-    , ( "lfa", 1871, Male, 96.7, Just -3 )
-    , ( "lfa", 1852, Male, 99, Just -2.44 )
-    , ( "lfa", 1768, Male, 101.2, Just -1.69 )
-    , ( "lfa", 1866, Male, 101, Just -2.05 )
-    , ( "lfa", 1919, Male, 100.5, Just -2.33 )
-    , ( "lfa", 1963, Male, 108, Just -0.88 )
-    , ( "lfa", 1729, Male, 103, Just -1.15 )
-    , ( "lfa", 1652, Male, 98, Just -1.99 )
-    , ( "lfa", 1936, Female, 103, Just -1.64 )
-    , ( "lfa", 2197, Male, 112.5, Just -0.72 )
-    , ( "lfa", 2261, Female, 103, Just -2.55 )
-    , ( "lfa", 1592, Female, 103.5, Just -0.38 )
-    , ( "lfa", 1946, Female, 109, Just -0.44 )
-    , ( "lfa", 2181, Female, 114, Just -0.19 )
-    , ( "lfa", 1875, Male, 102, Just -1.86 )
-    , ( "lfa", 1513, Female, 100, Just -0.85 )
-    , ( "lfa", 1681, Female, 94.3, Just -2.74 )
-    , ( "lfa", 1893, Male, 105.3, Just -1.21 )
-    , ( "lfa", 1764, Female, 97.3, Just -2.36 )
-    , ( "lfa", 1599, Male, 96, Just -2.26 )
-    , ( "lfa", 1916, Female, 106, Just -0.95 )
-    , ( "lfa", 1484, Female, 102.5, Just -0.16 )
-    , ( "lfa", 1468, Male, 95.5, Just -1.89 )
-    , ( "lfa", 1863, Female, 107, Just -0.57 )
-    , ( "lfa", 1282, Female, 103.5, Just 1.08 )
-    , ( "lfa", 1582, Female, 93, Just -2.7 )
-    , ( "lfa", 1507, Female, 95, Just -1.97 )
-    , ( "lfa", 1304, Female, 94.5, Just -1.24 )
-    , ( "lfa", 1717, Male, 104.5, Just -0.78 )
-    , ( "lfa", 1849, Female, 101.5, Just -1.74 )
-    , ( "lfa", 1707, Female, 100.5, Just -1.48 )
-    , ( "lfa", 1887, Female, 105, Just -1.07 )
-    , ( "lfa", 1818, Male, 116, Just 1.34 )
-    , ( "lfa", 1562, Female, 107, Just 0.53 )
-    , ( "lfa", 1819, Male, 104, Just -1.26 )
-    , ( "lfa", 1558, Female, 104.5, Just -0.02 )
-    , ( "lfa", 1920, Male, 107, Just -0.94 )
-    , ( "lfa", 1594, Male, 110.5, Just 1.09 )
-    , ( "lfa", 1728, Female, 100.5, Just -1.55 )
-    , ( "lfa", 1872, Male, 100.5, Just -2.18 )
-    , ( "lfa", 1877, Female, 104, Just -1.24 )
-    , ( "lfa", 1911, Female, 109, Just -0.32 )
-    , ( "lfa", 1818, Female, 108.5, Just -0.16 )
-    , ( "lfa", 1833, Female, 85, Just -5.15 )
-    , ( "lfa", 1920, Female, 105.2, Just -1.13 )
-    , ( "lfa", 1168, Male, 92, Just -1.47 )
-    , ( "lfa", 1278, Female, 83, Just -3.94 )
-    , ( "lfa", 1394, Male, 104, Just 0.47 )
-    , ( "lfa", 1350, Female, 94.4, Just -1.47 )
-    , ( "lfa", 1274, Female, 98.5, Just -0.11 )
-    , ( "lfa", 1366, Female, 96.1, Just -1.14 )
-    , ( "lfa", 1325, Male, 83.5, Just -4.29 )
-    , ( "lfa", 702, Female, 94, Just 2.65 )
-    , ( "lfa", 124, Male, 62, Just -0.98 )
-    , ( "lfa", 373, Female, 100, Just 9.92 )
-    , ( "lfa", 725, Male, 84, Just -1.2 )
-    , ( "lfa", 222, Female, 70.2, Just 1.06 )
-    , ( "lfa", 432, Male, 70.5, Just -3.12 )
-    , ( "lfa", 518, Male, 73.5, Just -2.94 )
-    , ( "lfa", 546, Female, 75.2, Just -1.88 )
-    , ( "lfa", 431, Female, 70, Just -2.44 )
-    , ( "lfa", 467, Male, 69.5, Just -3.93 )
-    , ( "lfa", 728, Female, 81, Just -1.66 )
-    , ( "lfa", 569, Female, 78, Just -1.16 )
-    , ( "lfa", 418, Male, 77, Just -0.3 )
-    , ( "lfa", 749, Female, 71, Just -4.68 )
-    , ( "lfa", 32, Female, 54, Just 0.06 )
-    , ( "lfa", 76, Male, 55, Just -2.47 )
-    , ( "lfa", 92, Female, 58, Just -0.88 )
-    , ( "lfa", 397, Male, 70, Just -2.87 )
-    , ( "lfa", 366, Male, 68, Just -3.27 )
-    , ( "lfa", 466, Male, 77, Just -0.97 )
-    , ( "lfa", 615, Male, 78, Just -2.26 )
-    , ( "lfa", 594, Male, 80, Just -1.34 )
-    , ( "lfa", 586, Male, 78, Just -1.98 )
-    , ( "lfa", 648, Male, 79, Just -2.21 )
-    , ( "lfa", 47, Male, 55.8, Just -0.52 )
-    , ( "lfa", 106, Female, 56.7, Just -1.99 )
-    , ( "lfa", 186, Female, 66.5, Just 0.26 )
-    , ( "lfa", 167, Female, 58.1, Just -3.03 )
-    , ( "lfa", 158, Female, 63.5, Just -0.39 )
-    , ( "lfa", 338, Male, 73.2, Just -0.63 )
-    , ( "lfa", 399, Male, 81.7, Just 1.91 )
-    , ( "lfa", 401, Female, 72.5, Just -1.11 )
-    , ( "lfa", 429, Female, 71.9, Just -1.7 )
-    , ( "lfa", 454, Female, 76, Just -0.52 )
-    , ( "lfa", 515, Female, 78.5, Just -0.38 )
-    , ( "lfa", 518, Female, 76.4, Just -1.15 )
-    , ( "lfa", 494, Female, 80, Just 0.41 )
-    , ( "lfa", 197, Male, 76.5, Just 3.78 )
-    , ( "lfa", 574, Male, 75.7, Just -2.7 )
-    , ( "lfa", 645, Male, 77.5, Just -2.71 )
-    , ( "lfa", 684, Female, 80.4, Just -1.47 )
-    , ( "lfa", 734, Male, 83.6, Just -1.18 )
-    , ( "lfa", 772, Female, 73, Just -4.22 )
-    , ( "lfa", 779, Female, 82.5, Just -1.39 )
-    , ( "lfa", 591, Female, 82, Just -0.05 )
-    , ( "lfa", 583, Male, 77, Just -2.31 )
-    , ( "lfa", 533, Male, 79, Just -1.04 )
-    , ( "lfa", 409, Female, 70.5, Just -1.97 )
-    , ( "lfa", 688, Male, 81.5, Just -1.71 )
-    , ( "lfa", 908, Male, 69, Just -6.72 )
-    , ( "lfa", 271, Female, 70.5, Just 0.2 )
-    , ( "lfa", 481, Male, 73, Just -2.72 )
-    , ( "lfa", 567, Male, 75, Just -2.88 )
-    , ( "lfa", 567, Male, 77, Just -2.15 )
-    , ( "lfa", 153, Female, 70, Just 2.67 )
-    , ( "lfa", 542, Male, 84, Just 0.72 )
-    , ( "lfa", 480, Female, 71, Just -2.64 )
-    , ( "lfa", 545, Female, 73, Just -2.63 )
-    , ( "lfa", 575, Male, 75, Just -2.96 )
-    , ( "lfa", 516, Male, 70, Just -4.25 )
-    , ( "lfa", 484, Male, 76, Just -1.59 )
-    , ( "lfa", 648, Female, 63, Just -6.79 )
-    , ( "lfa", 555, Female, 74.5, Just -2.21 )
-    , ( "lfa", 467, Male, 78, Just -0.59 )
-    , ( "lfa", 129, Male, 64.5, Just 0.05 )
-    , ( "lfa", 144, Male, 81, Just 7.42 )
-    , ( "lfa", 153, Male, 62.5, Just -1.64 )
-    , ( "lfa", 125, Female, 61, Just -0.61 )
-    , ( "lfa", 89, Male, 57, Just -2.06 )
-    , ( "lfa", 131, Female, 59, Just -1.7 )
-    , ( "lfa", 196, Female, 61, Just -2.37 )
-    , ( "lfa", 278, Female, 67, Just -1.37 )
-    , ( "lfa", 289, Male, 69, Just -1.6 )
-    , ( "lfa", 420, Female, 71, Just -1.93 )
-    , ( "lfa", 459, Female, 71.5, Just -2.22 )
-    , ( "lfa", 468, Female, 73, Just -1.79 )
-    , ( "lfa", 487, Female, 77, Just -0.57 )
-    , ( "lfa", 491, Male, 76, Just -1.68 )
-    , ( "lfa", 580, Female, 86, Just 1.43 )
-    , ( "lfa", 627, Male, 77, Just -2.72 )
-    , ( "lfa", 662, Female, 85, Just 0.2 )
+    [ { func = "lfa", scale = 471, gender = Female, measurement = 75, expected = Just -1.1 }
+    , { func = "lfa", scale = 25, gender = Male, measurement = 55, expected = Just 0.54 }
+    , { func = "lfa", scale = 606, gender = Female, measurement = 88, expected = Just 1.79 }
+    , { func = "lfa", scale = 28, gender = Male, measurement = 59, expected = Just 2.38 }
+    , { func = "lfa", scale = 606, gender = Female, measurement = 87, expected = Just 1.46 }
+    , { func = "lfa", scale = 474, gender = Female, measurement = 77, expected = Just -0.41 }
+    , { func = "lfa", scale = 28, gender = Male, measurement = 58, expected = Just 1.86 }
+    , { func = "lfa", scale = 475, gender = Female, measurement = 77, expected = Just -0.43 }
+    , { func = "lfa", scale = 675, gender = Female, measurement = 79, expected = Just -1.84 }
+    , { func = "lfa", scale = 555, gender = Male, measurement = 79, expected = Just -1.29 }
+    , { func = "lfa", scale = 775, gender = Male, measurement = 64.5, expected = Just -7.59 }
+    , { func = "lfa", scale = 138, gender = Female, measurement = 63, expected = Just -0.07 }
+    , { func = "lfa", scale = 348, gender = Male, measurement = 68.5, expected = Just -2.79 }
+    , { func = "lfa", scale = 462, gender = Female, measurement = 73, expected = Just -1.71 }
+    , { func = "lfa", scale = 409, gender = Male, measurement = 78.5, expected = Just 0.44 }
+    , { func = "lfa", scale = 412, gender = Female, measurement = 69.5, expected = Just -2.39 }
+    , { func = "lfa", scale = 442, gender = Male, measurement = 71, expected = Just -3.04 }
+    , { func = "lfa", scale = 383, gender = Male, measurement = 67, expected = Just -3.92 }
+    , { func = "lfa", scale = 638, gender = Male, measurement = 77, expected = Just -2.82 }
+    , { func = "lfa", scale = 351, gender = Male, measurement = 72, expected = Just -1.35 }
+    , { func = "lfa", scale = 654, gender = Female, measurement = 75, expected = Just -2.95 }
+    , { func = "lfa", scale = 515, gender = Female, measurement = 76, expected = Just -1.26 }
+    , { func = "lfa", scale = 644, gender = Female, measurement = 79.5, expected = Just -1.4 }
+    , { func = "lfa", scale = 485, gender = Female, measurement = 75, expected = Just -1.27 }
+    , { func = "lfa", scale = 422, gender = Female, measurement = 71, expected = Just -1.95 }
+    , { func = "lfa", scale = 334, gender = Male, measurement = 74, expected = Just -0.22 }
+    , { func = "lfa", scale = 657, gender = Female, measurement = 92, expected = Just 2.51 }
+    , { func = "lfa", scale = 525, gender = Female, measurement = 77, expected = Just -1.02 }
+    , { func = "lfa", scale = 79, gender = Male, measurement = 56, expected = Just -2.12 }
+    , { func = "lfa", scale = 80, gender = Male, measurement = 60, expected = Just -0.19 }
+    , { func = "lfa", scale = 619, gender = Male, measurement = 76, expected = Just -3.01 }
+    , { func = "lfa", scale = 656, gender = Male, measurement = 82.5, expected = Just -1.08 }
+    , { func = "lfa", scale = 790, gender = Female, measurement = 63, expected = Just -7.33 }
+    , { func = "lfa", scale = 790, gender = Male, measurement = 63.7, expected = Just -7.9 }
+    , { func = "lfa", scale = 153, gender = Female, measurement = 64.5, expected = Just 0.19 }
+    , { func = "lfa", scale = 363, gender = Male, measurement = 69.3, expected = Just -2.68 }
+    , { func = "lfa", scale = 398, gender = Male, measurement = 67.5, expected = Just -3.91 }
+    , { func = "lfa", scale = 653, gender = Male, measurement = 78, expected = Just -2.6 }
+    , { func = "lfa", scale = 366, gender = Male, measurement = 72, expected = Just -1.59 }
+    , { func = "lfa", scale = 659, gender = Female, measurement = 80.5, expected = Just -1.22 }
+    , { func = "lfa", scale = 500, gender = Female, measurement = 74.5, expected = Just -1.62 }
+    , { func = "lfa", scale = 424, gender = Female, measurement = 59, expected = Just -6.45 }
+    , { func = "lfa", scale = 349, gender = Male, measurement = 63, expected = Just -5.15 }
+    , { func = "lfa", scale = 339, gender = Male, measurement = 14, expected = Just -25.99 }
+    , { func = "lfa", scale = 382, gender = Male, measurement = 13, expected = Just -26.38 }
+    , { func = "lfa", scale = 667, gender = Female, measurement = 12.5, expected = Just -23.12 }
+    , { func = "lfa", scale = 1680, gender = Male, measurement = 94, expected = Just -2.99 }
+    , { func = "lfa", scale = 1666, gender = Male, measurement = 94.5, expected = Just -2.83 }
+    , { func = "lfa", scale = 1829, gender = Female, measurement = 102, expected = Just -1.57 }
+    , { func = "lfa", scale = 1669, gender = Female, measurement = 107, expected = Just 0.08 }
+    , { func = "lfa", scale = 1853, gender = Male, measurement = 102.5, expected = Just -1.7 }
+    , { func = "lfa", scale = 1651, gender = Male, measurement = 98, expected = Just -1.99 }
+    , { func = "lfa", scale = 1919, gender = Female, measurement = 105.5, expected = Just -1.07 }
+    , { func = "lfa", scale = 1597, gender = Male, measurement = 110, expected = Just 0.96 }
+    , { func = "lfa", scale = 1795, gender = Female, measurement = 103, expected = Just -1.25 }
+    , { func = "lfa", scale = 1818, gender = Female, measurement = 105.5, expected = Just -0.8 }
+    , { func = "lfa", scale = 1631, gender = Female, measurement = 92.7, expected = Just -2.93 }
+    , { func = "lfa", scale = 1323, gender = Female, measurement = 96.3, expected = Just -0.89 }
+    , { func = "lfa", scale = 1625, gender = Female, measurement = 104.5, expected = Just -0.3 }
+    , { func = "lfa", scale = 1673, gender = Female, measurement = 94, expected = Just -2.78 }
+    , { func = "lfa", scale = 1554, gender = Male, measurement = 102, expected = Just -0.71 }
+    , { func = "lfa", scale = 1827, gender = Female, measurement = 106, expected = Just -0.72 }
+    , { func = "lfa", scale = 1561, gender = Female, measurement = 110, expected = Just 1.21 }
+    , { func = "lfa", scale = 1658, gender = Female, measurement = 101.1, expected = Just -1.17 }
+    , { func = "lfa", scale = 1806, gender = Female, measurement = 119.8, expected = Just 2.27 }
+    , { func = "lfa", scale = 1420, gender = Female, measurement = 100, expected = Just -0.45 }
+    , { func = "lfa", scale = 1525, gender = Female, measurement = 104.4, expected = Just 0.1 }
+    , { func = "lfa", scale = 1919, gender = Female, measurement = 105, expected = Just -1.17 }
+    , { func = "lfa", scale = 1848, gender = Male, measurement = 106.5, expected = Just -0.83 }
+    , { func = "lfa", scale = 1724, gender = Female, measurement = 99, expected = Just -1.86 }
+    , { func = "lfa", scale = 1919, gender = Male, measurement = 103, expected = Just -1.8 }
+    , { func = "lfa", scale = 1394, gender = Male, measurement = 94.5, expected = Just -1.84 }
+    , { func = "lfa", scale = 1427, gender = Female, measurement = 92, expected = Just -2.36 }
+    , { func = "lfa", scale = 1895, gender = Male, measurement = 108.5, expected = Just -0.53 }
+    , { func = "lfa", scale = 1734, gender = Female, measurement = 108.3, expected = Just 0.11 }
+    , { func = "lfa", scale = 1569, gender = Male, measurement = 111.5, expected = Just 1.43 }
+    , { func = "lfa", scale = 1816, gender = Female, measurement = 107.7, expected = Just -0.33 }
+    , { func = "lfa", scale = 1919, gender = Female, measurement = 105.3, expected = Just -1.11 }
+    , { func = "lfa", scale = 916, gender = Male, measurement = 85.5, expected = Just -1.91 }
+    , { func = "lfa", scale = 1456, gender = Male, measurement = 100.5, expected = Just -0.65 }
+    , { func = "lfa", scale = 1814, gender = Male, measurement = 99.5, expected = Just -2.22 }
+    , { func = "lfa", scale = 1554, gender = Female, measurement = 99.5, expected = Just -1.13 }
+    , { func = "lfa", scale = 1123, gender = Male, measurement = 99.3, expected = Just 0.7 }
+    , { func = "lfa", scale = 1230, gender = Female, measurement = 91.7, expected = Just -1.58 }
+    , { func = "lfa", scale = 1738, gender = Male, measurement = 100, expected = Just -1.85 }
+    , { func = "lfa", scale = 1607, gender = Male, measurement = 100, expected = Just -1.37 }
+    , { func = "lfa", scale = 1919, gender = Female, measurement = 103.5, expected = Just -1.48 }
+    , { func = "lfa", scale = 1919, gender = Female, measurement = 108.1, expected = Just -0.53 }
+    , { func = "lfa", scale = 1620, gender = Male, measurement = 100.5, expected = Just -1.31 }
+    , { func = "lfa", scale = 1711, gender = Female, measurement = 103.5, expected = Just -0.84 }
+    , { func = "lfa", scale = 1535, gender = Male, measurement = 98, expected = Just -1.56 }
+    , { func = "lfa", scale = 1801, gender = Male, measurement = 108.1, expected = Just -0.31 }
+    , { func = "lfa", scale = 1818, gender = Male, measurement = 98, expected = Just -2.56 }
+    , { func = "lfa", scale = 1905, gender = Female, measurement = 102.7, expected = Just -1.6 }
+    , { func = "lfa", scale = 1785, gender = Male, measurement = 101.7, expected = Just -1.64 }
+    , { func = "lfa", scale = 1919, gender = Male, measurement = 97.7, expected = Just -2.93 }
+    , { func = "lfa", scale = 1919, gender = Female, measurement = 102, expected = Just -1.79 }
+    , { func = "lfa", scale = 1633, gender = Male, measurement = 97.7, expected = Just -1.99 }
+    , { func = "lfa", scale = 579, gender = Male, measurement = 78, expected = Just -1.91 }
+    , { func = "lfa", scale = 297, gender = Male, measurement = 68.5, expected = Just -1.97 }
+    , { func = "lfa", scale = 474, gender = Female, measurement = 74, expected = Just -1.49 }
+    , { func = "lfa", scale = 387, gender = Male, measurement = 71, expected = Just -2.32 }
+    , { func = "lfa", scale = 625, gender = Male, measurement = 78.3, expected = Just -2.25 }
+    , { func = "lfa", scale = 325, gender = Female, measurement = 72, expected = Just -0.15 }
+    , { func = "lfa", scale = 584, gender = Male, measurement = 78, expected = Just -1.96 }
+    , { func = "lfa", scale = 396, gender = Female, measurement = 72, expected = Just -1.23 }
+    , { func = "lfa", scale = 327, gender = Male, measurement = 69, expected = Just -2.25 }
+    , { func = "lfa", scale = 753, gender = Male, measurement = 85.6, expected = Just -0.69 }
+    , { func = "lfa", scale = 1403, gender = Female, measurement = 90, expected = Just -2.74 }
+    , { func = "lfa", scale = 1403, gender = Male, measurement = 94, expected = Just -2 }
+    , { func = "lfa", scale = 1768, gender = Female, measurement = 104, expected = Just -0.94 }
+    , { func = "lfa", scale = 1462, gender = Female, measurement = 100, expected = Just -0.64 }
+    , { func = "lfa", scale = 1403, gender = Female, measurement = 97, expected = Just -1.08 }
+    , { func = "lfa", scale = 1768, gender = Female, measurement = 99, expected = Just -2.01 }
+    , { func = "lfa", scale = 1403, gender = Male, measurement = 96.5, expected = Just -1.39 }
+    , { func = "lfa", scale = 881, gender = Female, measurement = 101.5, expected = Just 3.35 }
+    , { func = "lfa", scale = 461, gender = Female, measurement = 71, expected = Just -2.43 }
+    , { func = "lfa", scale = 1768, gender = Male, measurement = 102, expected = Just -1.52 }
+    , { func = "lfa", scale = 1768, gender = Female, measurement = 104.5, expected = Just -0.83 }
+    , { func = "lfa", scale = 210, gender = Male, measurement = 65.9, expected = Just -1.44 }
+    , { func = "lfa", scale = 1768, gender = Female, measurement = 93.5, expected = Just -3.18 }
+    , { func = "lfa", scale = 173, gender = Female, measurement = 63, expected = Just -0.98 }
+    , { func = "lfa", scale = 1403, gender = Female, measurement = 101, expected = Just -0.14 }
+    , { func = "lfa", scale = 1768, gender = Female, measurement = 111.2, expected = Just 0.6 }
+    , { func = "lfa", scale = 1619, gender = Male, measurement = 107, expected = Just 0.18 }
+    , { func = "lfa", scale = 1554, gender = Female, measurement = 94.2, expected = Just -2.33 }
+    , { func = "lfa", scale = 1768, gender = Female, measurement = 102, expected = Just -1.37 }
+    , { func = "lfa", scale = 1768, gender = Male, measurement = 100.5, expected = Just -1.84 }
+    , { func = "lfa", scale = 1403, gender = Female, measurement = 95.5, expected = Just -1.44 }
+    , { func = "lfa", scale = 1768, gender = Female, measurement = 106, expected = Just -0.51 }
+    , { func = "lfa", scale = 1768, gender = Female, measurement = 104, expected = Just -0.94 }
+    , { func = "lfa", scale = 1768, gender = Female, measurement = 109, expected = Just 0.13 }
+    , { func = "lfa", scale = 1849, gender = Male, measurement = 108, expected = Just -0.51 }
+    , { func = "lfa", scale = 1919, gender = Male, measurement = 100, expected = Just -2.44 }
+    , { func = "lfa", scale = 1051, gender = Male, measurement = 98, expected = Just 0.79 }
+    , { func = "lfa", scale = 1860, gender = Female, measurement = 94, expected = Just -3.28 }
+    , { func = "lfa", scale = 2285, gender = Male, measurement = 101.2, expected = Just -3.24 }
+    , { func = "lfa", scale = 1295, gender = Male, measurement = 95.5, expected = Just -1.17 }
+    , { func = "lfa", scale = 1628, gender = Male, measurement = 103, expected = Just -0.77 }
+    , { func = "lfa", scale = 1662, gender = Female, measurement = 106.5, expected = Just 0 }
+    , { func = "lfa", scale = 2061, gender = Female, measurement = 106, expected = Just -1.41 }
+    , { func = "lfa", scale = 1842, gender = Female, measurement = 107.5, expected = Just -0.46 }
+    , { func = "lfa", scale = 2176, gender = Female, measurement = 110, expected = Just -0.96 }
+    , { func = "lfa", scale = 1653, gender = Female, measurement = 98, expected = Just -1.84 }
+    , { func = "lfa", scale = 1743, gender = Male, measurement = 95, expected = Just -2.97 }
+    , { func = "lfa", scale = 1847, gender = Female, measurement = 107, expected = Just -0.58 }
+    , { func = "lfa", scale = 1893, gender = Female, measurement = 102, expected = Just -1.71 }
+    , { func = "lfa", scale = 1916, gender = Male, measurement = 104, expected = Just -1.57 }
+    , { func = "lfa", scale = 1742, gender = Female, measurement = 105.5, expected = Just -0.53 }
+    , { func = "lfa", scale = 1874, gender = Male, measurement = 109, expected = Just -0.34 }
+    , { func = "lfa", scale = 1495, gender = Male, measurement = 99.5, expected = Just -1.05 }
+    , { func = "lfa", scale = 1829, gender = Male, measurement = 103.5, expected = Just -1.4 }
+    , { func = "lfa", scale = 1767, gender = Female, measurement = 108.2, expected = Just -0.04 }
+    , { func = "lfa", scale = 1572, gender = Male, measurement = 101, expected = Just -1.01 }
+    , { func = "lfa", scale = 1809, gender = Male, measurement = 107, expected = Just -0.57 }
+    , { func = "lfa", scale = 1178, gender = Male, measurement = 89.5, expected = Just -2.17 }
+    , { func = "lfa", scale = 1848, gender = Female, measurement = 99.2, expected = Just -2.22 }
+    , { func = "lfa", scale = 1909, gender = Female, measurement = 104, expected = Just -1.35 }
+    , { func = "lfa", scale = 1698, gender = Female, measurement = 106, expected = Just -0.25 }
+    , { func = "lfa", scale = 1648, gender = Female, measurement = 98, expected = Just -1.82 }
+    , { func = "lfa", scale = 1762, gender = Male, measurement = 111.5, expected = Just 0.59 }
+    , { func = "lfa", scale = 2185, gender = Male, measurement = 105.5, expected = Just -2.1 }
+    , { func = "lfa", scale = 1755, gender = Male, measurement = 105.5, expected = Just -0.7 }
+    , { func = "lfa", scale = 2022, gender = Female, measurement = 102, expected = Just -2.1 }
+    , { func = "lfa", scale = 1871, gender = Male, measurement = 96.7, expected = Just -3 }
+    , { func = "lfa", scale = 1852, gender = Male, measurement = 99, expected = Just -2.44 }
+    , { func = "lfa", scale = 1768, gender = Male, measurement = 101.2, expected = Just -1.69 }
+    , { func = "lfa", scale = 1866, gender = Male, measurement = 101, expected = Just -2.05 }
+    , { func = "lfa", scale = 1919, gender = Male, measurement = 100.5, expected = Just -2.33 }
+    , { func = "lfa", scale = 1963, gender = Male, measurement = 108, expected = Just -0.88 }
+    , { func = "lfa", scale = 1729, gender = Male, measurement = 103, expected = Just -1.15 }
+    , { func = "lfa", scale = 1652, gender = Male, measurement = 98, expected = Just -1.99 }
+    , { func = "lfa", scale = 1936, gender = Female, measurement = 103, expected = Just -1.64 }
+    , { func = "lfa", scale = 2197, gender = Male, measurement = 112.5, expected = Just -0.72 }
+    , { func = "lfa", scale = 2261, gender = Female, measurement = 103, expected = Just -2.55 }
+    , { func = "lfa", scale = 1592, gender = Female, measurement = 103.5, expected = Just -0.38 }
+    , { func = "lfa", scale = 1946, gender = Female, measurement = 109, expected = Just -0.44 }
+    , { func = "lfa", scale = 2181, gender = Female, measurement = 114, expected = Just -0.19 }
+    , { func = "lfa", scale = 1875, gender = Male, measurement = 102, expected = Just -1.86 }
+    , { func = "lfa", scale = 1513, gender = Female, measurement = 100, expected = Just -0.85 }
+    , { func = "lfa", scale = 1681, gender = Female, measurement = 94.3, expected = Just -2.74 }
+    , { func = "lfa", scale = 1893, gender = Male, measurement = 105.3, expected = Just -1.21 }
+    , { func = "lfa", scale = 1764, gender = Female, measurement = 97.3, expected = Just -2.36 }
+    , { func = "lfa", scale = 1599, gender = Male, measurement = 96, expected = Just -2.26 }
+    , { func = "lfa", scale = 1916, gender = Female, measurement = 106, expected = Just -0.95 }
+    , { func = "lfa", scale = 1484, gender = Female, measurement = 102.5, expected = Just -0.16 }
+    , { func = "lfa", scale = 1468, gender = Male, measurement = 95.5, expected = Just -1.89 }
+    , { func = "lfa", scale = 1863, gender = Female, measurement = 107, expected = Just -0.57 }
+    , { func = "lfa", scale = 1282, gender = Female, measurement = 103.5, expected = Just 1.08 }
+    , { func = "lfa", scale = 1582, gender = Female, measurement = 93, expected = Just -2.7 }
+    , { func = "lfa", scale = 1507, gender = Female, measurement = 95, expected = Just -1.97 }
+    , { func = "lfa", scale = 1304, gender = Female, measurement = 94.5, expected = Just -1.24 }
+    , { func = "lfa", scale = 1717, gender = Male, measurement = 104.5, expected = Just -0.78 }
+    , { func = "lfa", scale = 1849, gender = Female, measurement = 101.5, expected = Just -1.74 }
+    , { func = "lfa", scale = 1707, gender = Female, measurement = 100.5, expected = Just -1.48 }
+    , { func = "lfa", scale = 1887, gender = Female, measurement = 105, expected = Just -1.07 }
+    , { func = "lfa", scale = 1818, gender = Male, measurement = 116, expected = Just 1.34 }
+    , { func = "lfa", scale = 1562, gender = Female, measurement = 107, expected = Just 0.53 }
+    , { func = "lfa", scale = 1819, gender = Male, measurement = 104, expected = Just -1.26 }
+    , { func = "lfa", scale = 1558, gender = Female, measurement = 104.5, expected = Just -0.02 }
+    , { func = "lfa", scale = 1920, gender = Male, measurement = 107, expected = Just -0.94 }
+    , { func = "lfa", scale = 1594, gender = Male, measurement = 110.5, expected = Just 1.09 }
+    , { func = "lfa", scale = 1728, gender = Female, measurement = 100.5, expected = Just -1.55 }
+    , { func = "lfa", scale = 1872, gender = Male, measurement = 100.5, expected = Just -2.18 }
+    , { func = "lfa", scale = 1877, gender = Female, measurement = 104, expected = Just -1.24 }
+    , { func = "lfa", scale = 1911, gender = Female, measurement = 109, expected = Just -0.32 }
+    , { func = "lfa", scale = 1818, gender = Female, measurement = 108.5, expected = Just -0.16 }
+    , { func = "lfa", scale = 1833, gender = Female, measurement = 85, expected = Just -5.15 }
+    , { func = "lfa", scale = 1920, gender = Female, measurement = 105.2, expected = Just -1.13 }
+    , { func = "lfa", scale = 1168, gender = Male, measurement = 92, expected = Just -1.47 }
+    , { func = "lfa", scale = 1278, gender = Female, measurement = 83, expected = Just -3.94 }
+    , { func = "lfa", scale = 1394, gender = Male, measurement = 104, expected = Just 0.47 }
+    , { func = "lfa", scale = 1350, gender = Female, measurement = 94.4, expected = Just -1.47 }
+    , { func = "lfa", scale = 1274, gender = Female, measurement = 98.5, expected = Just -0.11 }
+    , { func = "lfa", scale = 1366, gender = Female, measurement = 96.1, expected = Just -1.14 }
+    , { func = "lfa", scale = 1325, gender = Male, measurement = 83.5, expected = Just -4.29 }
+    , { func = "lfa", scale = 702, gender = Female, measurement = 94, expected = Just 2.65 }
+    , { func = "lfa", scale = 124, gender = Male, measurement = 62, expected = Just -0.98 }
+    , { func = "lfa", scale = 373, gender = Female, measurement = 100, expected = Just 9.92 }
+    , { func = "lfa", scale = 725, gender = Male, measurement = 84, expected = Just -1.2 }
+    , { func = "lfa", scale = 222, gender = Female, measurement = 70.2, expected = Just 1.06 }
+    , { func = "lfa", scale = 432, gender = Male, measurement = 70.5, expected = Just -3.12 }
+    , { func = "lfa", scale = 518, gender = Male, measurement = 73.5, expected = Just -2.94 }
+    , { func = "lfa", scale = 546, gender = Female, measurement = 75.2, expected = Just -1.88 }
+    , { func = "lfa", scale = 431, gender = Female, measurement = 70, expected = Just -2.44 }
+    , { func = "lfa", scale = 467, gender = Male, measurement = 69.5, expected = Just -3.93 }
+    , { func = "lfa", scale = 728, gender = Female, measurement = 81, expected = Just -1.66 }
+    , { func = "lfa", scale = 569, gender = Female, measurement = 78, expected = Just -1.16 }
+    , { func = "lfa", scale = 418, gender = Male, measurement = 77, expected = Just -0.3 }
+    , { func = "lfa", scale = 749, gender = Female, measurement = 71, expected = Just -4.68 }
+    , { func = "lfa", scale = 32, gender = Female, measurement = 54, expected = Just 0.06 }
+    , { func = "lfa", scale = 76, gender = Male, measurement = 55, expected = Just -2.47 }
+    , { func = "lfa", scale = 92, gender = Female, measurement = 58, expected = Just -0.88 }
+    , { func = "lfa", scale = 397, gender = Male, measurement = 70, expected = Just -2.87 }
+    , { func = "lfa", scale = 366, gender = Male, measurement = 68, expected = Just -3.27 }
+    , { func = "lfa", scale = 466, gender = Male, measurement = 77, expected = Just -0.97 }
+    , { func = "lfa", scale = 615, gender = Male, measurement = 78, expected = Just -2.26 }
+    , { func = "lfa", scale = 594, gender = Male, measurement = 80, expected = Just -1.34 }
+    , { func = "lfa", scale = 586, gender = Male, measurement = 78, expected = Just -1.98 }
+    , { func = "lfa", scale = 648, gender = Male, measurement = 79, expected = Just -2.21 }
+    , { func = "lfa", scale = 47, gender = Male, measurement = 55.8, expected = Just -0.52 }
+    , { func = "lfa", scale = 106, gender = Female, measurement = 56.7, expected = Just -1.99 }
+    , { func = "lfa", scale = 186, gender = Female, measurement = 66.5, expected = Just 0.26 }
+    , { func = "lfa", scale = 167, gender = Female, measurement = 58.1, expected = Just -3.03 }
+    , { func = "lfa", scale = 158, gender = Female, measurement = 63.5, expected = Just -0.39 }
+    , { func = "lfa", scale = 338, gender = Male, measurement = 73.2, expected = Just -0.63 }
+    , { func = "lfa", scale = 399, gender = Male, measurement = 81.7, expected = Just 1.91 }
+    , { func = "lfa", scale = 401, gender = Female, measurement = 72.5, expected = Just -1.11 }
+    , { func = "lfa", scale = 429, gender = Female, measurement = 71.9, expected = Just -1.7 }
+    , { func = "lfa", scale = 454, gender = Female, measurement = 76, expected = Just -0.52 }
+    , { func = "lfa", scale = 515, gender = Female, measurement = 78.5, expected = Just -0.38 }
+    , { func = "lfa", scale = 518, gender = Female, measurement = 76.4, expected = Just -1.15 }
+    , { func = "lfa", scale = 494, gender = Female, measurement = 80, expected = Just 0.41 }
+    , { func = "lfa", scale = 197, gender = Male, measurement = 76.5, expected = Just 3.78 }
+    , { func = "lfa", scale = 574, gender = Male, measurement = 75.7, expected = Just -2.7 }
+    , { func = "lfa", scale = 645, gender = Male, measurement = 77.5, expected = Just -2.71 }
+    , { func = "lfa", scale = 684, gender = Female, measurement = 80.4, expected = Just -1.47 }
+    , { func = "lfa", scale = 734, gender = Male, measurement = 83.6, expected = Just -1.18 }
+    , { func = "lfa", scale = 772, gender = Female, measurement = 73, expected = Just -4.22 }
+    , { func = "lfa", scale = 779, gender = Female, measurement = 82.5, expected = Just -1.39 }
+    , { func = "lfa", scale = 591, gender = Female, measurement = 82, expected = Just -0.05 }
+    , { func = "lfa", scale = 583, gender = Male, measurement = 77, expected = Just -2.31 }
+    , { func = "lfa", scale = 533, gender = Male, measurement = 79, expected = Just -1.04 }
+    , { func = "lfa", scale = 409, gender = Female, measurement = 70.5, expected = Just -1.97 }
+    , { func = "lfa", scale = 688, gender = Male, measurement = 81.5, expected = Just -1.71 }
+    , { func = "lfa", scale = 908, gender = Male, measurement = 69, expected = Just -6.72 }
+    , { func = "lfa", scale = 271, gender = Female, measurement = 70.5, expected = Just 0.2 }
+    , { func = "lfa", scale = 481, gender = Male, measurement = 73, expected = Just -2.72 }
+    , { func = "lfa", scale = 567, gender = Male, measurement = 75, expected = Just -2.88 }
+    , { func = "lfa", scale = 567, gender = Male, measurement = 77, expected = Just -2.15 }
+    , { func = "lfa", scale = 153, gender = Female, measurement = 70, expected = Just 2.67 }
+    , { func = "lfa", scale = 542, gender = Male, measurement = 84, expected = Just 0.72 }
+    , { func = "lfa", scale = 480, gender = Female, measurement = 71, expected = Just -2.64 }
+    , { func = "lfa", scale = 545, gender = Female, measurement = 73, expected = Just -2.63 }
+    , { func = "lfa", scale = 575, gender = Male, measurement = 75, expected = Just -2.96 }
+    , { func = "lfa", scale = 516, gender = Male, measurement = 70, expected = Just -4.25 }
+    , { func = "lfa", scale = 484, gender = Male, measurement = 76, expected = Just -1.59 }
+    , { func = "lfa", scale = 648, gender = Female, measurement = 63, expected = Just -6.79 }
+    , { func = "lfa", scale = 555, gender = Female, measurement = 74.5, expected = Just -2.21 }
+    , { func = "lfa", scale = 467, gender = Male, measurement = 78, expected = Just -0.59 }
+    , { func = "lfa", scale = 129, gender = Male, measurement = 64.5, expected = Just 0.05 }
+    , { func = "lfa", scale = 144, gender = Male, measurement = 81, expected = Just 7.42 }
+    , { func = "lfa", scale = 153, gender = Male, measurement = 62.5, expected = Just -1.64 }
+    , { func = "lfa", scale = 125, gender = Female, measurement = 61, expected = Just -0.61 }
+    , { func = "lfa", scale = 89, gender = Male, measurement = 57, expected = Just -2.06 }
+    , { func = "lfa", scale = 131, gender = Female, measurement = 59, expected = Just -1.7 }
+    , { func = "lfa", scale = 196, gender = Female, measurement = 61, expected = Just -2.37 }
+    , { func = "lfa", scale = 278, gender = Female, measurement = 67, expected = Just -1.37 }
+    , { func = "lfa", scale = 289, gender = Male, measurement = 69, expected = Just -1.6 }
+    , { func = "lfa", scale = 420, gender = Female, measurement = 71, expected = Just -1.93 }
+    , { func = "lfa", scale = 459, gender = Female, measurement = 71.5, expected = Just -2.22 }
+    , { func = "lfa", scale = 468, gender = Female, measurement = 73, expected = Just -1.79 }
+    , { func = "lfa", scale = 487, gender = Female, measurement = 77, expected = Just -0.57 }
+    , { func = "lfa", scale = 491, gender = Male, measurement = 76, expected = Just -1.68 }
+    , { func = "lfa", scale = 580, gender = Female, measurement = 86, expected = Just 1.43 }
+    , { func = "lfa", scale = 627, gender = Male, measurement = 77, expected = Just -2.72 }
+    , { func = "lfa", scale = 662, gender = Female, measurement = 85, expected = Just 0.2 }
     ]
 
 
-lfaTestData2 : List ( String, Float, Gender, Float, Maybe Float )
+lfaTestData2 : List ZScoreTestCase
 lfaTestData2 =
-    [ ( "lfa", 669, Female, 83, Just -0.51 )
-    , ( "lfa", 674, Female, 82, Just -0.87 )
-    , ( "lfa", 672, Male, 82, Just -1.4 )
-    , ( "lfa", 742, Female, 84, Just -0.63 )
-    , ( "lfa", 720, Male, 83.5, Just -1.32 )
-    , ( "lfa", 722, Female, 81.7, Just -1.39 )
-    , ( "lfa", 670, Female, 78.1, Just -2.09 )
-    , ( "lfa", 739, Male, 83.5, Just -1.26 )
-    , ( "lfa", 643, Female, 81.3, Just -0.81 )
-    , ( "lfa", 580, Male, 80, Just -1.2 )
-    , ( "lfa", 518, Female, 75.1, Just -1.61 )
-    , ( "lfa", 500, Male, 77.5, Just -1.21 )
-    , ( "lfa", 372, Male, 72.5, Just -1.47 )
-    , ( "lfa", 380, Male, 74, Just -0.96 )
-    , ( "lfa", 380, Male, 74, Just -0.96 )
-    , ( "lfa", 328, Female, 69, Just -1.39 )
-    , ( "lfa", 293, Female, 63, Just -3.26 )
-    , ( "lfa", 283, Female, 67, Just -1.46 )
-    , ( "lfa", 198, Female, 63.9, Just -1.15 )
-    , ( "lfa", 158, Female, 60.7, Just -1.65 )
-    , ( "lfa", 124, Male, 61, Just -1.46 )
-    , ( "lfa", 67, Female, 54.5, Just -1.54 )
-    , ( "lfa", 111, Male, 58, Just -2.46 )
-    , ( "lfa", 127, Female, 59.5, Just -1.35 )
-    , ( "lfa", 432, Male, 73, Just -2.12 )
-    , ( "lfa", 401, Male, 69.5, Just -3.13 )
-    , ( "lfa", 501, Male, 78, Just -1.03 )
-    , ( "lfa", 605, Female, 80, Just -0.86 )
-    , ( "lfa", 650, Male, 80.5, Just -1.71 )
-    , ( "lfa", 629, Male, 80, Just -1.69 )
-    , ( "lfa", 621, Male, 78, Just -2.32 )
-    , ( "lfa", 683, Male, 80, Just -2.18 )
-    , ( "lfa", 1953, Male, 108, Just -0.84 )
-    , ( "lfa", 2023, Male, 103.5, Just -2.03 )
-    , ( "lfa", 1155, Male, 99, Just 0.44 )
-    , ( "lfa", 1964, Female, 96, Just -3.16 )
-    , ( "lfa", 2389, Male, 103.1, Just -3.13 )
-    , ( "lfa", 1399, Male, 98, Just -1.01 )
-    , ( "lfa", 1732, Male, 104, Just -0.94 )
-    , ( "lfa", 1766, Female, 107.5, Just -0.19 )
-    , ( "lfa", 2165, Female, 106.5, Just -1.61 )
-    , ( "lfa", 1946, Female, 109, Just -0.44 )
-    , ( "lfa", 2280, Female, 110.5, Just -1.16 )
-    , ( "lfa", 1757, Female, 99.9, Just -1.78 )
-    , ( "lfa", 1847, Male, 96.5, Just -2.97 )
-    , ( "lfa", 1951, Female, 108.5, Just -0.56 )
-    , ( "lfa", 1997, Female, 108.6, Just -0.69 )
-    , ( "lfa", 2020, Male, 107, Just -1.28 )
-    , ( "lfa", 1846, Female, 106.5, Just -0.68 )
-    , ( "lfa", 1978, Male, 111, Just -0.29 )
-    , ( "lfa", 1599, Male, 101.3, Just -1.04 )
-    , ( "lfa", 1933, Male, 104.7, Just -1.48 )
-    , ( "lfa", 1871, Female, 110, Just 0.03 )
-    , ( "lfa", 1676, Male, 104, Just -0.73 )
-    , ( "lfa", 1913, Male, 108, Just -0.7 )
-    , ( "lfa", 1282, Male, 92, Just -2 )
-    , ( "lfa", 1952, Female, 100.5, Just -2.2 )
-    , ( "lfa", 2013, Female, 106.3, Just -1.2 )
-    , ( "lfa", 1802, Female, 107.2, Just -0.38 )
-    , ( "lfa", 1752, Female, 101.4, Just -1.44 )
-    , ( "lfa", 1866, Male, 113.2, Just 0.6 )
-    , ( "lfa", 2289, Male, 106.1, Just -2.27 )
-    , ( "lfa", 1859, Male, 106.5, Just -0.83 )
-    , ( "lfa", 2126, Female, 104, Just -2 )
-    , ( "lfa", 1975, Male, 99, Just -2.83 )
-    , ( "lfa", 1956, Male, 102, Just -2.13 )
-    , ( "lfa", 1872, Male, 102, Just -1.85 )
-    , ( "lfa", 1970, Male, 102.2, Just -2.13 )
-    , ( "lfa", 2067, Male, 111, Just -0.6 )
-    , ( "lfa", 1833, Male, 105, Just -1.09 )
-    , ( "lfa", 1756, Male, 105, Just -0.81 )
-    , ( "lfa", 2040, Female, 104.5, Just -1.65 )
-    , ( "lfa", 2301, Male, 114.3, Just -0.68 )
-    , ( "lfa", 1696, Female, 105, Just -0.46 )
-    , ( "lfa", 2050, Female, 110.5, Just -0.47 )
-    , ( "lfa", 2285, Female, 116, Just -0.11 )
-    , ( "lfa", 1979, Male, 106, Just -1.36 )
-    , ( "lfa", 1617, Female, 102.5, Just -0.71 )
-    , ( "lfa", 1697, Female, 101.4, Just -1.25 )
-    , ( "lfa", 1388, Female, 97, Just -1.02 )
-    , ( "lfa", 1328, Male, 101.8, Just 0.24 )
-    , ( "lfa", 1923, Female, 107, Just -0.77 )
-    , ( "lfa", 1673, Female, 105.7, Just -0.22 )
-    , ( "lfa", 1736, Female, 95.3, Just -2.7 )
-    , ( "lfa", 1428, Female, 99, Just -0.72 )
-    , ( "lfa", 1936, Male, 110.2, Just -0.31 )
-    , ( "lfa", 1778, Female, 96.4, Just -2.59 )
-    , ( "lfa", 1525, Female, 103.3, Just -0.15 )
-    , ( "lfa", 1630, Female, 106.3, Just 0.08 )
-    , ( "lfa", 1829, Female, 100.7, Just -1.84 )
-    , ( "lfa", 1974, Female, 107.4, Just -0.86 )
-    , ( "lfa", 1858, Female, 95.9, Just -2.87 )
-    , ( "lfa", 1499, Male, 97.2, Just -1.61 )
-    , ( "lfa", 1532, Female, 94.5, Just -2.18 )
-    , ( "lfa", 1872, Male, 98.9, Just -2.52 )
-    , ( "lfa", 1624, Male, 98.4, Just -1.8 )
-    , ( "lfa", 1339, Female, 92.6, Just -1.86 )
-    , ( "lfa", 1237, Male, 94.3, Just -1.21 )
-    , ( "lfa", 1839, Female, 117, Just 1.54 )
-    , ( "lfa", 1265, Male, 97.9, Just -0.43 )
-    , ( "lfa", 1021, Male, 87.8, Just -1.85 )
-    , ( "lfa", 1561, Male, 108, Just 0.66 )
-    , ( "lfa", 1228, Male, 101.4, Just 0.66 )
-    , ( "lfa", 1970, Female, 112, Just 0.1 )
-    , ( "lfa", 1843, Male, 101, Just -1.99 )
-    , ( "lfa", 1803, Male, 96, Just -2.94 )
-    , ( "lfa", 1580, Female, 99.4, Just -1.26 )
-    , ( "lfa", 1311, Male, 111.3, Just 2.7 )
-    , ( "lfa", 1805, Male, 109.2, Just -0.08 )
-    , ( "lfa", 1640, Male, 100.4, Just -1.41 )
-    , ( "lfa", 2024, Male, 104.8, Just -1.76 )
-    , ( "lfa", 1733, Male, 90.4, Just -3.96 )
-    , ( "lfa", 1821, Male, 103.1, Just -1.46 )
-    , ( "lfa", 1953, Female, 104, Just -1.49 )
-    , ( "lfa", 1991, Female, 108.3, Just -0.73 )
-    , ( "lfa", 1922, Male, 117.4, Just 1.29 )
-    , ( "lfa", 1666, Female, 109.1, Just 0.55 )
-    , ( "lfa", 1662, Female, 106.8, Just 0.06 )
-    , ( "lfa", 1976, Male, 102.3, Just -2.13 )
-    , ( "lfa", 1981, Female, 107, Just -0.96 )
-    , ( "lfa", 1976, Female, 102, Just -1.97 )
-    , ( "lfa", 1925, Male, 108, Just -0.74 )
-    , ( "lfa", 1937, Female, 106.8, Just -0.86 )
-    , ( "lfa", 1843, Female, 116.1, Just 1.34 )
-    , ( "lfa", 1475, Female, 92.7, Just -2.38 )
-    , ( "lfa", 1272, Male, 95.1, Just -1.17 )
-    , ( "lfa", 1785, Female, 97.3, Just -2.42 )
-    , ( "lfa", 1997, Male, 108, Just -0.99 )
-    , ( "lfa", 1868, Female, 100, Just -2.05 )
-    , ( "lfa", 1703, Male, 99.5, Just -1.84 )
-    , ( "lfa", 2020, Female, 109.8, Just -0.52 )
-    , ( "lfa", 1588, Female, 106, Just 0.19 )
-    , ( "lfa", 1116, Male, 65.6, Just -8.27 )
-    , ( "lfa", 1313, Female, 100.3, Just 0.13 )
-    , ( "lfa", 1436, Male, 98.3, Just -1.1 )
-    , ( "lfa", 1565, Male, 99.1, Just -1.42 )
-    , ( "lfa", 986, Female, 93, Just 0.14 )
-    , ( "lfa", 1880, Female, 103.6, Just -1.33 )
-    , ( "lfa", 1562, Male, 103, Just -0.51 )
-    , ( "lfa", 1300, Male, 97, Just -0.82 )
-    , ( "lfa", 1127, Male, 95.3, Just -0.39 )
-    , ( "lfa", 1572, Male, 99, Just -1.47 )
-    , ( "lfa", 1459, Female, 99, Just -0.86 )
-    , ( "lfa", 1546, Female, 98.7, Just -1.28 )
-    , ( "lfa", 1239, Female, 91.5, Just -1.67 )
-    , ( "lfa", 1967, Female, 104.5, Just -1.43 )
-    , ( "lfa", 1386, Female, 106.7, Just 1.29 )
-    , ( "lfa", 1686, Female, 108.2, Just 0.27 )
-    , ( "lfa", 2012, Male, 101.2, Just -2.48 )
-    , ( "lfa", 1611, Female, 93.6, Just -2.66 )
-    , ( "lfa", 1962, Male, 96.5, Just -3.32 )
-    , ( "lfa", 1634, Female, 102.1, Just -0.86 )
-    , ( "lfa", 1467, Male, 100.7, Just -0.65 )
-    , ( "lfa", 1690, Female, 96, Just -2.4 )
-    , ( "lfa", 1310, Male, 92, Just -2.11 )
-    , ( "lfa", 1408, Female, 97, Just -1.11 )
-    , ( "lfa", 956, Female, 96.6, Just 1.35 )
-    , ( "lfa", 1309, Female, 88.7, Just -2.67 )
-    , ( "lfa", 1085, Male, 89, Just -1.86 )
-    , ( "lfa", 1150, Male, 90, Just -1.91 )
-    , ( "lfa", 1236, Male, 91.7, Just -1.87 )
-    , ( "lfa", 961, Male, 91.3, Just -0.51 )
-    , ( "lfa", 244, Male, 67.1, Just -1.6 )
-    , ( "lfa", 363, Male, 67.8, Just -3.31 )
-    , ( "lfa", 360, Female, 80, Just 2.41 )
-    , ( "lfa", 424, Male, 71.5, Just -2.62 )
-    , ( "lfa", 402, Male, 72.4, Just -1.95 )
-    , ( "lfa", 579, Female, 79.2, Just -0.86 )
-    , ( "lfa", 492, Male, 73, Just -2.85 )
-    , ( "lfa", 730, Male, 83, Just -1.57 )
-    , ( "lfa", 430, Female, 75.6, Just -0.35 )
-    , ( "lfa", 689, Male, 82.3, Just -1.45 )
-    , ( "lfa", 501, Female, 75.7, Just -1.21 )
-    , ( "lfa", 432, Male, 72.5, Just -2.32 )
-    , ( "lfa", 858, Male, 90, Just -0.17 )
-    , ( "lfa", 1508, Female, 91.2, Just -2.85 )
-    , ( "lfa", 1508, Male, 95.1, Just -2.14 )
-    , ( "lfa", 1873, Female, 106.2, Just -0.77 )
-    , ( "lfa", 1567, Female, 102.7, Just -0.46 )
-    , ( "lfa", 1508, Female, 98.2, Just -1.24 )
-    , ( "lfa", 1873, Female, 100.2, Just -2.02 )
-    , ( "lfa", 1508, Male, 98.5, Just -1.34 )
-    , ( "lfa", 986, Female, 104.3, Just 3.24 )
-    , ( "lfa", 1873, Female, 97.2, Just -2.65 )
-    , ( "lfa", 1508, Female, 102, Just -0.37 )
-    , ( "lfa", 1873, Female, 112.3, Just 0.5 )
-    , ( "lfa", 1724, Male, 109.3, Just 0.26 )
-    , ( "lfa", 1659, Female, 96.7, Just -2.14 )
-    , ( "lfa", 1873, Female, 104.3, Just -1.17 )
-    , ( "lfa", 1873, Male, 102.3, Just -1.79 )
-    , ( "lfa", 1508, Female, 96.3, Just -1.68 )
-    , ( "lfa", 1873, Female, 107.1, Just -0.58 )
-    , ( "lfa", 1873, Female, 106, Just -0.81 )
-    , ( "lfa", 1873, Female, 111.2, Just 0.27 )
-    , ( "lfa", 1764, Female, 103.5, Just -1.03 )
-    , ( "lfa", 1812, Male, 95.7, Just -3.03 )
-    , ( "lfa", 1839, Male, 113, Just 0.6 )
-    , ( "lfa", 1669, Female, 99, Just -1.67 )
-    , ( "lfa", 1786, Male, 95.5, Just -3 )
-    , ( "lfa", 1772, Male, 99, Just -2.19 )
-    , ( "lfa", 1886, Male, 98.3, Just -2.7 )
-    , ( "lfa", 1891, Female, 104.9, Just -1.1 )
-    , ( "lfa", 1935, Female, 105, Just -1.22 )
-    , ( "lfa", 1518, Female, 97.8, Just -1.38 )
-    , ( "lfa", 1775, Female, 108.5, Just -0.01 )
-    , ( "lfa", 1757, Male, 99.3, Just -2.07 )
-    , ( "lfa", 1914, Male, 101.3, Just -2.14 )
-    , ( "lfa", 1914, Male, 101.5, Just -2.1 )
-    , ( "lfa", 2025, Male, 105, Just -1.72 )
-    , ( "lfa", 1914, Male, 101.3, Just -2.14 )
-    , ( "lfa", 1899, Male, 99, Just -2.59 )
-    , ( "lfa", 1764, Female, 108.7, Just 0.08 )
-    , ( "lfa", 1625, Male, 99, Just -1.67 )
-    , ( "lfa", 1670, Male, 100, Just -1.61 )
-    , ( "lfa", 1972, Male, 110.8, Just -0.31 )
-    , ( "lfa", 1739, Male, 113.4, Just 1.11 )
-    , ( "lfa", 1582, Male, 97.9, Just -1.76 )
-    , ( "lfa", 1933, Female, 96.8, Just -2.91 )
-    , ( "lfa", 1441, Female, 94.5, Just -1.83 )
-    , ( "lfa", 1901, Female, 101.4, Just -1.86 )
-    , ( "lfa", 1337, Female, 90.1, Just -2.45 )
-    , ( "lfa", 1582, Female, 99.1, Just -1.33 )
-    , ( "lfa", 1706, Female, 103.3, Just -0.87 )
-    , ( "lfa", 1750, Female, 108.7, Just 0.13 )
-    , ( "lfa", 1731, Male, 106.7, Just -0.34 )
-    , ( "lfa", 1654, Male, 103.5, Just -0.76 )
-    , ( "lfa", 1874, Female, 100, Just -2.07 )
-    , ( "lfa", 1509, Female, 102.3, Just -0.31 )
-    , ( "lfa", 1886, Male, 104.9, Just -1.27 )
-    , ( "lfa", 1710, Male, 103.5, Just -0.97 )
-    , ( "lfa", 1985, Male, 119.7, Just 1.52 )
-    , ( "lfa", 716, Male, 82.5, Just -1.62 )
-    , ( "lfa", 936, Male, 70, Just -6.52 )
-    , ( "lfa", 299, Female, 723, Just 265.07 )
-    , ( "lfa", 509, Male, 73, Just -3.03 )
-    , ( "lfa", 595, Male, 74, Just -3.51 )
-    , ( "lfa", 623, Female, 77, Just -2.03 )
-    , ( "lfa", 570, Male, 84, Just 0.37 )
-    , ( "lfa", 508, Female, 72, Just -2.59 )
-    , ( "lfa", 336, Male, 70.5, Just -1.75 )
-    , ( "lfa", 573, Female, 73, Just -2.9 )
-    , ( "lfa", 603, Male, 75, Just -3.22 )
-    , ( "lfa", 544, Male, 70.3, Just -4.4 )
-    , ( "lfa", 512, Male, 76.5, Just -1.74 )
-    , ( "lfa", 676, Female, 82, Just -0.89 )
-    , ( "lfa", 646, Female, 79, Just -1.58 )
-    , ( "lfa", 583, Female, 75.3, Just -2.21 )
-    , ( "lfa", 495, Male, 78.5, Just -0.76 )
-    , ( "lfa", 157, Male, 65, Just -0.56 )
-    , ( "lfa", 181, Male, 62.5, Just -2.36 )
-    , ( "lfa", 153, Female, 62.1, Just -0.89 )
-    , ( "lfa", 56, Male, 57.5, Just -0.2 )
-    , ( "lfa", 22, Female, 49, Just -1.86 )
-    , ( "lfa", 105, Male, 58, Just -2.23 )
-    , ( "lfa", 110, Male, 60.5, Just -1.2 )
-    , ( "lfa", 249, Female, 71, Just 0.84 )
-    , ( "lfa", 221, Female, 67.4, Just -0.12 )
-    , ( "lfa", 401, Male, 74.6, Just -1.03 )
-    , ( "lfa", 462, Male, 83.2, Just 1.52 )
-    , ( "lfa", 464, Female, 75.5, Just -0.83 )
-    , ( "lfa", 492, Female, 73.8, Just -1.78 )
-    , ( "lfa", 517, Female, 79.4, Just -0.09 )
-    , ( "lfa", 578, Female, 81, Just -0.24 )
-    , ( "lfa", 581, Female, 78.2, Just -1.22 )
-    , ( "lfa", 557, Female, 81.5, Just 0.17 )
-    , ( "lfa", 260, Male, 78.8, Just 3.35 )
-    , ( "lfa", 637, Male, 78.6, Just -2.25 )
-    , ( "lfa", 708, Male, 79.1, Just -2.68 )
-    , ( "lfa", 1735, Male, 67, Just -9.13 )
-    , ( "lfa", 1394, Male, 58, Just -10.72 )
-    , ( "lfa", 1913, Female, 75, Just -7.36 )
-    , ( "lfa", 158, Female, 61, Just -1.51 )
-    , ( "lfa", 218, Female, 65, Just -1.09 )
-    , ( "lfa", 523, Male, 77, Just -1.67 )
-    , ( "lfa", 492, Male, 72, Just -3.23 )
-    , ( "lfa", 592, Male, 81, Just -0.96 )
-    , ( "lfa", 696, Female, 83, Just -0.76 )
-    , ( "lfa", 712, Male, 80, Just -2.41 )
-    , ( "lfa", 717, Female, 84, Just -0.63 )
-    , ( "lfa", 709, Male, 79, Just -2.72 )
-    , ( "lfa", 659, Male, 81.5, Just -1.45 )
-    , ( "lfa", 659, Male, 81.5, Just -1.45 )
-    , ( "lfa", 535, Female, 72.5, Just -2.7 )
+    [ { func = "lfa", scale = 669, gender = Female, measurement = 83, expected = Just -0.51 }
+    , { func = "lfa", scale = 674, gender = Female, measurement = 82, expected = Just -0.87 }
+    , { func = "lfa", scale = 672, gender = Male, measurement = 82, expected = Just -1.4 }
+    , { func = "lfa", scale = 742, gender = Female, measurement = 84, expected = Just -0.63 }
+    , { func = "lfa", scale = 720, gender = Male, measurement = 83.5, expected = Just -1.32 }
+    , { func = "lfa", scale = 722, gender = Female, measurement = 81.7, expected = Just -1.39 }
+    , { func = "lfa", scale = 670, gender = Female, measurement = 78.1, expected = Just -2.09 }
+    , { func = "lfa", scale = 739, gender = Male, measurement = 83.5, expected = Just -1.26 }
+    , { func = "lfa", scale = 643, gender = Female, measurement = 81.3, expected = Just -0.81 }
+    , { func = "lfa", scale = 580, gender = Male, measurement = 80, expected = Just -1.2 }
+    , { func = "lfa", scale = 518, gender = Female, measurement = 75.1, expected = Just -1.61 }
+    , { func = "lfa", scale = 500, gender = Male, measurement = 77.5, expected = Just -1.21 }
+    , { func = "lfa", scale = 372, gender = Male, measurement = 72.5, expected = Just -1.47 }
+    , { func = "lfa", scale = 380, gender = Male, measurement = 74, expected = Just -0.96 }
+    , { func = "lfa", scale = 380, gender = Male, measurement = 74, expected = Just -0.96 }
+    , { func = "lfa", scale = 328, gender = Female, measurement = 69, expected = Just -1.39 }
+    , { func = "lfa", scale = 293, gender = Female, measurement = 63, expected = Just -3.26 }
+    , { func = "lfa", scale = 283, gender = Female, measurement = 67, expected = Just -1.46 }
+    , { func = "lfa", scale = 198, gender = Female, measurement = 63.9, expected = Just -1.15 }
+    , { func = "lfa", scale = 158, gender = Female, measurement = 60.7, expected = Just -1.65 }
+    , { func = "lfa", scale = 124, gender = Male, measurement = 61, expected = Just -1.46 }
+    , { func = "lfa", scale = 67, gender = Female, measurement = 54.5, expected = Just -1.54 }
+    , { func = "lfa", scale = 111, gender = Male, measurement = 58, expected = Just -2.46 }
+    , { func = "lfa", scale = 127, gender = Female, measurement = 59.5, expected = Just -1.35 }
+    , { func = "lfa", scale = 432, gender = Male, measurement = 73, expected = Just -2.12 }
+    , { func = "lfa", scale = 401, gender = Male, measurement = 69.5, expected = Just -3.13 }
+    , { func = "lfa", scale = 501, gender = Male, measurement = 78, expected = Just -1.03 }
+    , { func = "lfa", scale = 605, gender = Female, measurement = 80, expected = Just -0.86 }
+    , { func = "lfa", scale = 650, gender = Male, measurement = 80.5, expected = Just -1.71 }
+    , { func = "lfa", scale = 629, gender = Male, measurement = 80, expected = Just -1.69 }
+    , { func = "lfa", scale = 621, gender = Male, measurement = 78, expected = Just -2.32 }
+    , { func = "lfa", scale = 683, gender = Male, measurement = 80, expected = Just -2.18 }
+    , { func = "lfa", scale = 1953, gender = Male, measurement = 108, expected = Just -0.84 }
+    , { func = "lfa", scale = 2023, gender = Male, measurement = 103.5, expected = Just -2.03 }
+    , { func = "lfa", scale = 1155, gender = Male, measurement = 99, expected = Just 0.44 }
+    , { func = "lfa", scale = 1964, gender = Female, measurement = 96, expected = Just -3.16 }
+    , { func = "lfa", scale = 2389, gender = Male, measurement = 103.1, expected = Just -3.13 }
+    , { func = "lfa", scale = 1399, gender = Male, measurement = 98, expected = Just -1.01 }
+    , { func = "lfa", scale = 1732, gender = Male, measurement = 104, expected = Just -0.94 }
+    , { func = "lfa", scale = 1766, gender = Female, measurement = 107.5, expected = Just -0.19 }
+    , { func = "lfa", scale = 2165, gender = Female, measurement = 106.5, expected = Just -1.61 }
+    , { func = "lfa", scale = 1946, gender = Female, measurement = 109, expected = Just -0.44 }
+    , { func = "lfa", scale = 2280, gender = Female, measurement = 110.5, expected = Just -1.16 }
+    , { func = "lfa", scale = 1757, gender = Female, measurement = 99.9, expected = Just -1.78 }
+    , { func = "lfa", scale = 1847, gender = Male, measurement = 96.5, expected = Just -2.97 }
+    , { func = "lfa", scale = 1951, gender = Female, measurement = 108.5, expected = Just -0.56 }
+    , { func = "lfa", scale = 1997, gender = Female, measurement = 108.6, expected = Just -0.69 }
+    , { func = "lfa", scale = 2020, gender = Male, measurement = 107, expected = Just -1.28 }
+    , { func = "lfa", scale = 1846, gender = Female, measurement = 106.5, expected = Just -0.68 }
+    , { func = "lfa", scale = 1978, gender = Male, measurement = 111, expected = Just -0.29 }
+    , { func = "lfa", scale = 1599, gender = Male, measurement = 101.3, expected = Just -1.04 }
+    , { func = "lfa", scale = 1933, gender = Male, measurement = 104.7, expected = Just -1.48 }
+    , { func = "lfa", scale = 1871, gender = Female, measurement = 110, expected = Just 0.03 }
+    , { func = "lfa", scale = 1676, gender = Male, measurement = 104, expected = Just -0.73 }
+    , { func = "lfa", scale = 1913, gender = Male, measurement = 108, expected = Just -0.7 }
+    , { func = "lfa", scale = 1282, gender = Male, measurement = 92, expected = Just -2 }
+    , { func = "lfa", scale = 1952, gender = Female, measurement = 100.5, expected = Just -2.2 }
+    , { func = "lfa", scale = 2013, gender = Female, measurement = 106.3, expected = Just -1.2 }
+    , { func = "lfa", scale = 1802, gender = Female, measurement = 107.2, expected = Just -0.38 }
+    , { func = "lfa", scale = 1752, gender = Female, measurement = 101.4, expected = Just -1.44 }
+    , { func = "lfa", scale = 1866, gender = Male, measurement = 113.2, expected = Just 0.6 }
+    , { func = "lfa", scale = 2289, gender = Male, measurement = 106.1, expected = Just -2.27 }
+    , { func = "lfa", scale = 1859, gender = Male, measurement = 106.5, expected = Just -0.83 }
+    , { func = "lfa", scale = 2126, gender = Female, measurement = 104, expected = Just -2 }
+    , { func = "lfa", scale = 1975, gender = Male, measurement = 99, expected = Just -2.83 }
+    , { func = "lfa", scale = 1956, gender = Male, measurement = 102, expected = Just -2.13 }
+    , { func = "lfa", scale = 1872, gender = Male, measurement = 102, expected = Just -1.85 }
+    , { func = "lfa", scale = 1970, gender = Male, measurement = 102.2, expected = Just -2.13 }
+    , { func = "lfa", scale = 2067, gender = Male, measurement = 111, expected = Just -0.6 }
+    , { func = "lfa", scale = 1833, gender = Male, measurement = 105, expected = Just -1.09 }
+    , { func = "lfa", scale = 1756, gender = Male, measurement = 105, expected = Just -0.81 }
+    , { func = "lfa", scale = 2040, gender = Female, measurement = 104.5, expected = Just -1.65 }
+    , { func = "lfa", scale = 2301, gender = Male, measurement = 114.3, expected = Just -0.68 }
+    , { func = "lfa", scale = 1696, gender = Female, measurement = 105, expected = Just -0.46 }
+    , { func = "lfa", scale = 2050, gender = Female, measurement = 110.5, expected = Just -0.47 }
+    , { func = "lfa", scale = 2285, gender = Female, measurement = 116, expected = Just -0.11 }
+    , { func = "lfa", scale = 1979, gender = Male, measurement = 106, expected = Just -1.36 }
+    , { func = "lfa", scale = 1617, gender = Female, measurement = 102.5, expected = Just -0.71 }
+    , { func = "lfa", scale = 1697, gender = Female, measurement = 101.4, expected = Just -1.25 }
+    , { func = "lfa", scale = 1388, gender = Female, measurement = 97, expected = Just -1.02 }
+    , { func = "lfa", scale = 1328, gender = Male, measurement = 101.8, expected = Just 0.24 }
+    , { func = "lfa", scale = 1923, gender = Female, measurement = 107, expected = Just -0.77 }
+    , { func = "lfa", scale = 1673, gender = Female, measurement = 105.7, expected = Just -0.22 }
+    , { func = "lfa", scale = 1736, gender = Female, measurement = 95.3, expected = Just -2.7 }
+    , { func = "lfa", scale = 1428, gender = Female, measurement = 99, expected = Just -0.72 }
+    , { func = "lfa", scale = 1936, gender = Male, measurement = 110.2, expected = Just -0.31 }
+    , { func = "lfa", scale = 1778, gender = Female, measurement = 96.4, expected = Just -2.59 }
+    , { func = "lfa", scale = 1525, gender = Female, measurement = 103.3, expected = Just -0.15 }
+    , { func = "lfa", scale = 1630, gender = Female, measurement = 106.3, expected = Just 0.08 }
+    , { func = "lfa", scale = 1829, gender = Female, measurement = 100.7, expected = Just -1.84 }
+    , { func = "lfa", scale = 1974, gender = Female, measurement = 107.4, expected = Just -0.86 }
+    , { func = "lfa", scale = 1858, gender = Female, measurement = 95.9, expected = Just -2.87 }
+    , { func = "lfa", scale = 1499, gender = Male, measurement = 97.2, expected = Just -1.61 }
+    , { func = "lfa", scale = 1532, gender = Female, measurement = 94.5, expected = Just -2.18 }
+    , { func = "lfa", scale = 1872, gender = Male, measurement = 98.9, expected = Just -2.52 }
+    , { func = "lfa", scale = 1624, gender = Male, measurement = 98.4, expected = Just -1.8 }
+    , { func = "lfa", scale = 1339, gender = Female, measurement = 92.6, expected = Just -1.86 }
+    , { func = "lfa", scale = 1237, gender = Male, measurement = 94.3, expected = Just -1.21 }
+    , { func = "lfa", scale = 1839, gender = Female, measurement = 117, expected = Just 1.54 }
+    , { func = "lfa", scale = 1265, gender = Male, measurement = 97.9, expected = Just -0.43 }
+    , { func = "lfa", scale = 1021, gender = Male, measurement = 87.8, expected = Just -1.85 }
+    , { func = "lfa", scale = 1561, gender = Male, measurement = 108, expected = Just 0.66 }
+    , { func = "lfa", scale = 1228, gender = Male, measurement = 101.4, expected = Just 0.66 }
+    , { func = "lfa", scale = 1970, gender = Female, measurement = 112, expected = Just 0.1 }
+    , { func = "lfa", scale = 1843, gender = Male, measurement = 101, expected = Just -1.99 }
+    , { func = "lfa", scale = 1803, gender = Male, measurement = 96, expected = Just -2.94 }
+    , { func = "lfa", scale = 1580, gender = Female, measurement = 99.4, expected = Just -1.26 }
+    , { func = "lfa", scale = 1311, gender = Male, measurement = 111.3, expected = Just 2.7 }
+    , { func = "lfa", scale = 1805, gender = Male, measurement = 109.2, expected = Just -0.08 }
+    , { func = "lfa", scale = 1640, gender = Male, measurement = 100.4, expected = Just -1.41 }
+    , { func = "lfa", scale = 2024, gender = Male, measurement = 104.8, expected = Just -1.76 }
+    , { func = "lfa", scale = 1733, gender = Male, measurement = 90.4, expected = Just -3.96 }
+    , { func = "lfa", scale = 1821, gender = Male, measurement = 103.1, expected = Just -1.46 }
+    , { func = "lfa", scale = 1953, gender = Female, measurement = 104, expected = Just -1.49 }
+    , { func = "lfa", scale = 1991, gender = Female, measurement = 108.3, expected = Just -0.73 }
+    , { func = "lfa", scale = 1922, gender = Male, measurement = 117.4, expected = Just 1.29 }
+    , { func = "lfa", scale = 1666, gender = Female, measurement = 109.1, expected = Just 0.55 }
+    , { func = "lfa", scale = 1662, gender = Female, measurement = 106.8, expected = Just 0.06 }
+    , { func = "lfa", scale = 1976, gender = Male, measurement = 102.3, expected = Just -2.13 }
+    , { func = "lfa", scale = 1981, gender = Female, measurement = 107, expected = Just -0.96 }
+    , { func = "lfa", scale = 1976, gender = Female, measurement = 102, expected = Just -1.97 }
+    , { func = "lfa", scale = 1925, gender = Male, measurement = 108, expected = Just -0.74 }
+    , { func = "lfa", scale = 1937, gender = Female, measurement = 106.8, expected = Just -0.86 }
+    , { func = "lfa", scale = 1843, gender = Female, measurement = 116.1, expected = Just 1.34 }
+    , { func = "lfa", scale = 1475, gender = Female, measurement = 92.7, expected = Just -2.38 }
+    , { func = "lfa", scale = 1272, gender = Male, measurement = 95.1, expected = Just -1.17 }
+    , { func = "lfa", scale = 1785, gender = Female, measurement = 97.3, expected = Just -2.42 }
+    , { func = "lfa", scale = 1997, gender = Male, measurement = 108, expected = Just -0.99 }
+    , { func = "lfa", scale = 1868, gender = Female, measurement = 100, expected = Just -2.05 }
+    , { func = "lfa", scale = 1703, gender = Male, measurement = 99.5, expected = Just -1.84 }
+    , { func = "lfa", scale = 2020, gender = Female, measurement = 109.8, expected = Just -0.52 }
+    , { func = "lfa", scale = 1588, gender = Female, measurement = 106, expected = Just 0.19 }
+    , { func = "lfa", scale = 1116, gender = Male, measurement = 65.6, expected = Just -8.27 }
+    , { func = "lfa", scale = 1313, gender = Female, measurement = 100.3, expected = Just 0.13 }
+    , { func = "lfa", scale = 1436, gender = Male, measurement = 98.3, expected = Just -1.1 }
+    , { func = "lfa", scale = 1565, gender = Male, measurement = 99.1, expected = Just -1.42 }
+    , { func = "lfa", scale = 986, gender = Female, measurement = 93, expected = Just 0.14 }
+    , { func = "lfa", scale = 1880, gender = Female, measurement = 103.6, expected = Just -1.33 }
+    , { func = "lfa", scale = 1562, gender = Male, measurement = 103, expected = Just -0.51 }
+    , { func = "lfa", scale = 1300, gender = Male, measurement = 97, expected = Just -0.82 }
+    , { func = "lfa", scale = 1127, gender = Male, measurement = 95.3, expected = Just -0.39 }
+    , { func = "lfa", scale = 1572, gender = Male, measurement = 99, expected = Just -1.47 }
+    , { func = "lfa", scale = 1459, gender = Female, measurement = 99, expected = Just -0.86 }
+    , { func = "lfa", scale = 1546, gender = Female, measurement = 98.7, expected = Just -1.28 }
+    , { func = "lfa", scale = 1239, gender = Female, measurement = 91.5, expected = Just -1.67 }
+    , { func = "lfa", scale = 1967, gender = Female, measurement = 104.5, expected = Just -1.43 }
+    , { func = "lfa", scale = 1386, gender = Female, measurement = 106.7, expected = Just 1.29 }
+    , { func = "lfa", scale = 1686, gender = Female, measurement = 108.2, expected = Just 0.27 }
+    , { func = "lfa", scale = 2012, gender = Male, measurement = 101.2, expected = Just -2.48 }
+    , { func = "lfa", scale = 1611, gender = Female, measurement = 93.6, expected = Just -2.66 }
+    , { func = "lfa", scale = 1962, gender = Male, measurement = 96.5, expected = Just -3.32 }
+    , { func = "lfa", scale = 1634, gender = Female, measurement = 102.1, expected = Just -0.86 }
+    , { func = "lfa", scale = 1467, gender = Male, measurement = 100.7, expected = Just -0.65 }
+    , { func = "lfa", scale = 1690, gender = Female, measurement = 96, expected = Just -2.4 }
+    , { func = "lfa", scale = 1310, gender = Male, measurement = 92, expected = Just -2.11 }
+    , { func = "lfa", scale = 1408, gender = Female, measurement = 97, expected = Just -1.11 }
+    , { func = "lfa", scale = 956, gender = Female, measurement = 96.6, expected = Just 1.35 }
+    , { func = "lfa", scale = 1309, gender = Female, measurement = 88.7, expected = Just -2.67 }
+    , { func = "lfa", scale = 1085, gender = Male, measurement = 89, expected = Just -1.86 }
+    , { func = "lfa", scale = 1150, gender = Male, measurement = 90, expected = Just -1.91 }
+    , { func = "lfa", scale = 1236, gender = Male, measurement = 91.7, expected = Just -1.87 }
+    , { func = "lfa", scale = 961, gender = Male, measurement = 91.3, expected = Just -0.51 }
+    , { func = "lfa", scale = 244, gender = Male, measurement = 67.1, expected = Just -1.6 }
+    , { func = "lfa", scale = 363, gender = Male, measurement = 67.8, expected = Just -3.31 }
+    , { func = "lfa", scale = 360, gender = Female, measurement = 80, expected = Just 2.41 }
+    , { func = "lfa", scale = 424, gender = Male, measurement = 71.5, expected = Just -2.62 }
+    , { func = "lfa", scale = 402, gender = Male, measurement = 72.4, expected = Just -1.95 }
+    , { func = "lfa", scale = 579, gender = Female, measurement = 79.2, expected = Just -0.86 }
+    , { func = "lfa", scale = 492, gender = Male, measurement = 73, expected = Just -2.85 }
+    , { func = "lfa", scale = 730, gender = Male, measurement = 83, expected = Just -1.57 }
+    , { func = "lfa", scale = 430, gender = Female, measurement = 75.6, expected = Just -0.35 }
+    , { func = "lfa", scale = 689, gender = Male, measurement = 82.3, expected = Just -1.45 }
+    , { func = "lfa", scale = 501, gender = Female, measurement = 75.7, expected = Just -1.21 }
+    , { func = "lfa", scale = 432, gender = Male, measurement = 72.5, expected = Just -2.32 }
+    , { func = "lfa", scale = 858, gender = Male, measurement = 90, expected = Just -0.17 }
+    , { func = "lfa", scale = 1508, gender = Female, measurement = 91.2, expected = Just -2.85 }
+    , { func = "lfa", scale = 1508, gender = Male, measurement = 95.1, expected = Just -2.14 }
+    , { func = "lfa", scale = 1873, gender = Female, measurement = 106.2, expected = Just -0.77 }
+    , { func = "lfa", scale = 1567, gender = Female, measurement = 102.7, expected = Just -0.46 }
+    , { func = "lfa", scale = 1508, gender = Female, measurement = 98.2, expected = Just -1.24 }
+    , { func = "lfa", scale = 1873, gender = Female, measurement = 100.2, expected = Just -2.02 }
+    , { func = "lfa", scale = 1508, gender = Male, measurement = 98.5, expected = Just -1.34 }
+    , { func = "lfa", scale = 986, gender = Female, measurement = 104.3, expected = Just 3.24 }
+    , { func = "lfa", scale = 1873, gender = Female, measurement = 97.2, expected = Just -2.65 }
+    , { func = "lfa", scale = 1508, gender = Female, measurement = 102, expected = Just -0.37 }
+    , { func = "lfa", scale = 1873, gender = Female, measurement = 112.3, expected = Just 0.5 }
+    , { func = "lfa", scale = 1724, gender = Male, measurement = 109.3, expected = Just 0.26 }
+    , { func = "lfa", scale = 1659, gender = Female, measurement = 96.7, expected = Just -2.14 }
+    , { func = "lfa", scale = 1873, gender = Female, measurement = 104.3, expected = Just -1.17 }
+    , { func = "lfa", scale = 1873, gender = Male, measurement = 102.3, expected = Just -1.79 }
+    , { func = "lfa", scale = 1508, gender = Female, measurement = 96.3, expected = Just -1.68 }
+    , { func = "lfa", scale = 1873, gender = Female, measurement = 107.1, expected = Just -0.58 }
+    , { func = "lfa", scale = 1873, gender = Female, measurement = 106, expected = Just -0.81 }
+    , { func = "lfa", scale = 1873, gender = Female, measurement = 111.2, expected = Just 0.27 }
+    , { func = "lfa", scale = 1764, gender = Female, measurement = 103.5, expected = Just -1.03 }
+    , { func = "lfa", scale = 1812, gender = Male, measurement = 95.7, expected = Just -3.03 }
+    , { func = "lfa", scale = 1839, gender = Male, measurement = 113, expected = Just 0.6 }
+    , { func = "lfa", scale = 1669, gender = Female, measurement = 99, expected = Just -1.67 }
+    , { func = "lfa", scale = 1786, gender = Male, measurement = 95.5, expected = Just -3 }
+    , { func = "lfa", scale = 1772, gender = Male, measurement = 99, expected = Just -2.19 }
+    , { func = "lfa", scale = 1886, gender = Male, measurement = 98.3, expected = Just -2.7 }
+    , { func = "lfa", scale = 1891, gender = Female, measurement = 104.9, expected = Just -1.1 }
+    , { func = "lfa", scale = 1935, gender = Female, measurement = 105, expected = Just -1.22 }
+    , { func = "lfa", scale = 1518, gender = Female, measurement = 97.8, expected = Just -1.38 }
+    , { func = "lfa", scale = 1775, gender = Female, measurement = 108.5, expected = Just -0.01 }
+    , { func = "lfa", scale = 1757, gender = Male, measurement = 99.3, expected = Just -2.07 }
+    , { func = "lfa", scale = 1914, gender = Male, measurement = 101.3, expected = Just -2.14 }
+    , { func = "lfa", scale = 1914, gender = Male, measurement = 101.5, expected = Just -2.1 }
+    , { func = "lfa", scale = 2025, gender = Male, measurement = 105, expected = Just -1.72 }
+    , { func = "lfa", scale = 1914, gender = Male, measurement = 101.3, expected = Just -2.14 }
+    , { func = "lfa", scale = 1899, gender = Male, measurement = 99, expected = Just -2.59 }
+    , { func = "lfa", scale = 1764, gender = Female, measurement = 108.7, expected = Just 0.08 }
+    , { func = "lfa", scale = 1625, gender = Male, measurement = 99, expected = Just -1.67 }
+    , { func = "lfa", scale = 1670, gender = Male, measurement = 100, expected = Just -1.61 }
+    , { func = "lfa", scale = 1972, gender = Male, measurement = 110.8, expected = Just -0.31 }
+    , { func = "lfa", scale = 1739, gender = Male, measurement = 113.4, expected = Just 1.11 }
+    , { func = "lfa", scale = 1582, gender = Male, measurement = 97.9, expected = Just -1.76 }
+    , { func = "lfa", scale = 1933, gender = Female, measurement = 96.8, expected = Just -2.91 }
+    , { func = "lfa", scale = 1441, gender = Female, measurement = 94.5, expected = Just -1.83 }
+    , { func = "lfa", scale = 1901, gender = Female, measurement = 101.4, expected = Just -1.86 }
+    , { func = "lfa", scale = 1337, gender = Female, measurement = 90.1, expected = Just -2.45 }
+    , { func = "lfa", scale = 1582, gender = Female, measurement = 99.1, expected = Just -1.33 }
+    , { func = "lfa", scale = 1706, gender = Female, measurement = 103.3, expected = Just -0.87 }
+    , { func = "lfa", scale = 1750, gender = Female, measurement = 108.7, expected = Just 0.13 }
+    , { func = "lfa", scale = 1731, gender = Male, measurement = 106.7, expected = Just -0.34 }
+    , { func = "lfa", scale = 1654, gender = Male, measurement = 103.5, expected = Just -0.76 }
+    , { func = "lfa", scale = 1874, gender = Female, measurement = 100, expected = Just -2.07 }
+    , { func = "lfa", scale = 1509, gender = Female, measurement = 102.3, expected = Just -0.31 }
+    , { func = "lfa", scale = 1886, gender = Male, measurement = 104.9, expected = Just -1.27 }
+    , { func = "lfa", scale = 1710, gender = Male, measurement = 103.5, expected = Just -0.97 }
+    , { func = "lfa", scale = 1985, gender = Male, measurement = 119.7, expected = Just 1.52 }
+    , { func = "lfa", scale = 716, gender = Male, measurement = 82.5, expected = Just -1.62 }
+    , { func = "lfa", scale = 936, gender = Male, measurement = 70, expected = Just -6.52 }
+    , { func = "lfa", scale = 299, gender = Female, measurement = 723, expected = Just 265.07 }
+    , { func = "lfa", scale = 509, gender = Male, measurement = 73, expected = Just -3.03 }
+    , { func = "lfa", scale = 595, gender = Male, measurement = 74, expected = Just -3.51 }
+    , { func = "lfa", scale = 623, gender = Female, measurement = 77, expected = Just -2.03 }
+    , { func = "lfa", scale = 570, gender = Male, measurement = 84, expected = Just 0.37 }
+    , { func = "lfa", scale = 508, gender = Female, measurement = 72, expected = Just -2.59 }
+    , { func = "lfa", scale = 336, gender = Male, measurement = 70.5, expected = Just -1.75 }
+    , { func = "lfa", scale = 573, gender = Female, measurement = 73, expected = Just -2.9 }
+    , { func = "lfa", scale = 603, gender = Male, measurement = 75, expected = Just -3.22 }
+    , { func = "lfa", scale = 544, gender = Male, measurement = 70.3, expected = Just -4.4 }
+    , { func = "lfa", scale = 512, gender = Male, measurement = 76.5, expected = Just -1.74 }
+    , { func = "lfa", scale = 676, gender = Female, measurement = 82, expected = Just -0.89 }
+    , { func = "lfa", scale = 646, gender = Female, measurement = 79, expected = Just -1.58 }
+    , { func = "lfa", scale = 583, gender = Female, measurement = 75.3, expected = Just -2.21 }
+    , { func = "lfa", scale = 495, gender = Male, measurement = 78.5, expected = Just -0.76 }
+    , { func = "lfa", scale = 157, gender = Male, measurement = 65, expected = Just -0.56 }
+    , { func = "lfa", scale = 181, gender = Male, measurement = 62.5, expected = Just -2.36 }
+    , { func = "lfa", scale = 153, gender = Female, measurement = 62.1, expected = Just -0.89 }
+    , { func = "lfa", scale = 56, gender = Male, measurement = 57.5, expected = Just -0.2 }
+    , { func = "lfa", scale = 22, gender = Female, measurement = 49, expected = Just -1.86 }
+    , { func = "lfa", scale = 105, gender = Male, measurement = 58, expected = Just -2.23 }
+    , { func = "lfa", scale = 110, gender = Male, measurement = 60.5, expected = Just -1.2 }
+    , { func = "lfa", scale = 249, gender = Female, measurement = 71, expected = Just 0.84 }
+    , { func = "lfa", scale = 221, gender = Female, measurement = 67.4, expected = Just -0.12 }
+    , { func = "lfa", scale = 401, gender = Male, measurement = 74.6, expected = Just -1.03 }
+    , { func = "lfa", scale = 462, gender = Male, measurement = 83.2, expected = Just 1.52 }
+    , { func = "lfa", scale = 464, gender = Female, measurement = 75.5, expected = Just -0.83 }
+    , { func = "lfa", scale = 492, gender = Female, measurement = 73.8, expected = Just -1.78 }
+    , { func = "lfa", scale = 517, gender = Female, measurement = 79.4, expected = Just -0.09 }
+    , { func = "lfa", scale = 578, gender = Female, measurement = 81, expected = Just -0.24 }
+    , { func = "lfa", scale = 581, gender = Female, measurement = 78.2, expected = Just -1.22 }
+    , { func = "lfa", scale = 557, gender = Female, measurement = 81.5, expected = Just 0.17 }
+    , { func = "lfa", scale = 260, gender = Male, measurement = 78.8, expected = Just 3.35 }
+    , { func = "lfa", scale = 637, gender = Male, measurement = 78.6, expected = Just -2.25 }
+    , { func = "lfa", scale = 708, gender = Male, measurement = 79.1, expected = Just -2.68 }
+    , { func = "lfa", scale = 1735, gender = Male, measurement = 67, expected = Just -9.13 }
+    , { func = "lfa", scale = 1394, gender = Male, measurement = 58, expected = Just -10.72 }
+    , { func = "lfa", scale = 1913, gender = Female, measurement = 75, expected = Just -7.36 }
+    , { func = "lfa", scale = 158, gender = Female, measurement = 61, expected = Just -1.51 }
+    , { func = "lfa", scale = 218, gender = Female, measurement = 65, expected = Just -1.09 }
+    , { func = "lfa", scale = 523, gender = Male, measurement = 77, expected = Just -1.67 }
+    , { func = "lfa", scale = 492, gender = Male, measurement = 72, expected = Just -3.23 }
+    , { func = "lfa", scale = 592, gender = Male, measurement = 81, expected = Just -0.96 }
+    , { func = "lfa", scale = 696, gender = Female, measurement = 83, expected = Just -0.76 }
+    , { func = "lfa", scale = 712, gender = Male, measurement = 80, expected = Just -2.41 }
+    , { func = "lfa", scale = 717, gender = Female, measurement = 84, expected = Just -0.63 }
+    , { func = "lfa", scale = 709, gender = Male, measurement = 79, expected = Just -2.72 }
+    , { func = "lfa", scale = 659, gender = Male, measurement = 81.5, expected = Just -1.45 }
+    , { func = "lfa", scale = 659, gender = Male, measurement = 81.5, expected = Just -1.45 }
+    , { func = "lfa", scale = 535, gender = Female, measurement = 72.5, expected = Just -2.7 }
     ]
 
 
-wfhTestData : List ( String, Float, Gender, Float, Maybe Float )
+wfhTestData : List ZScoreTestCase
 wfhTestData =
-    [ ( "wfh", 100, Female, 15.8, Just 0.41 )
-    , ( "wfh", 100, Female, 16, Just 0.54 )
-    , ( "wfh", 100, Female, 16.7, Just 1.0 )
-    , ( "wfh", 100, Female, 17, Just 1.19 )
-    , ( "wfh", 100, Female, 17.4, Just 1.43 )
-    , ( "wfh", 100, Male, 16.4, Just 0.79 )
-    , ( "wfh", 100, Male, 16.6, Just 0.93 )
-    , ( "wfh", 100, Male, 17.5, Just 1.55 )
-    , ( "wfh", 100, Male, 18.6, Just 2.25 )
-    , ( "wfh", 100.2, Female, 17, Just 1.15 )
-    , ( "wfh", 100.3, Female, 19.4, Just 2.49 )
-    , ( "wfh", 100.4, Male, 17.4, Just 1.4 )
-    , ( "wfh", 100.5, Female, 15, Just -0.27 )
-    , ( "wfh", 100.5, Female, 15.4, Just 0.02 )
-    , ( "wfh", 100.5, Female, 16, Just 0.44 )
-    , ( "wfh", 100.5, Male, 16.1, Just 0.46 )
-    , ( "wfh", 100.5, Male, 16.4, Just 0.68 )
-    , ( "wfh", 100.5, Male, 16.7, Just 0.89 )
-    , ( "wfh", 100.5, Male, 17.6, Just 1.51 )
-    , ( "wfh", 100.5, Male, 18.4, Just 2.02 )
-    , ( "wfh", 100.7, Female, 17.4, Just 1.29 )
-    , ( "wfh", 100.7, Male, 16.5, Just 0.71 )
-    , ( "wfh", 101, Female, 16.4, Just 0.6 )
-    , ( "wfh", 101, Male, 14.5, Just -0.93 )
-    , ( "wfh", 101, Male, 17.2, Just 1.13 )
-    , ( "wfh", 101, Male, 18.7, Just 2.09 )
-    , ( "wfh", 101.1, Female, 15.6, Just 0.04 )
-    , ( "wfh", 101.2, Male, 14.5, Just -0.97 )
-    , ( "wfh", 101.2, Male, 15.3, Just -0.31 )
-    , ( "wfh", 101.2, Male, 17.3, Just 1.15 )
-    , ( "wfh", 101.3, Male, 15.3, Just -0.33 )
-    , ( "wfh", 101.3, Male, 16.2, Just 0.36 )
-    , ( "wfh", 101.3, Male, 16.2, Just 0.36 )
-    , ( "wfh", 101.4, Female, 14, Just -1.24 )
-    , ( "wfh", 101.4, Female, 16.5, Just 0.58 )
-    , ( "wfh", 101.4, Female, 17.6, Just 1.27 )
-    , ( "wfh", 101.4, Male, 18.1, Just 1.63 )
-    , ( "wfh", 101.5, Female, 15.1, Just -0.4 )
-    , ( "wfh", 101.5, Female, 15.6, Just -0.05 )
-    , ( "wfh", 101.5, Male, 15.5, Just -0.22 )
-    , ( "wfh", 101.7, Male, 15.2, Just -0.5 )
-    , ( "wfh", 101.8, Male, 16.1, Just 0.17 )
-    , ( "wfh", 102, Female, 13.9, Just -1.45 )
-    , ( "wfh", 102, Female, 14.6, Just -0.89 )
-    , ( "wfh", 102, Female, 14.8, Just -0.74 )
-    , ( "wfh", 102, Female, 15.3, Just -0.37 )
-    , ( "wfh", 102, Female, 16.5, Just 0.46 )
-    , ( "wfh", 102, Female, 17, Just 0.78 )
-    , ( "wfh", 102, Female, 18.5, Just 1.66 )
-    , ( "wfh", 102, Male, 14, Just -1.59 )
-    , ( "wfh", 102, Male, 14.7, Just -0.98 )
-    , ( "wfh", 102, Male, 16.1, Just 0.13 )
-    , ( "wfh", 102, Male, 16.5, Just 0.42 )
-    , ( "wfh", 102, Male, 18.3, Just 1.62 )
-    , ( "wfh", 102.1, Female, 14.1, Just -1.31 )
-    , ( "wfh", 102.2, Male, 15.1, Just -0.69 )
-    , ( "wfh", 102.3, Female, 16.7, Just 0.53 )
-    , ( "wfh", 102.3, Male, 15.9, Just -0.09 )
-    , ( "wfh", 102.3, Male, 16.8, Just 0.56 )
-    , ( "wfh", 102.5, Female, 16.1, Just 0.09 )
-    , ( "wfh", 102.5, Female, 16.5, Just 0.35 )
-    , ( "wfh", 102.5, Male, 16.4, Just 0.23 )
-    , ( "wfh", 102.7, Female, 17.3, Just 0.82 )
-    , ( "wfh", 102.7, Female, 17.8, Just 1.12 )
-    , ( "wfh", 103, Female, 15.1, Just -0.73 )
-    , ( "wfh", 103, Female, 17.6, Just 0.94 )
-    , ( "wfh", 103, Female, 18.4, Just 1.4 )
-    , ( "wfh", 103, Male, 16.2, Just -0.02 )
-    , ( "wfh", 103, Male, 16.8, Just 0.41 )
-    , ( "wfh", 103, Male, 17.3, Just 0.75 )
-    , ( "wfh", 103, Male, 18.8, Just 1.71 )
-    , ( "wfh", 103.1, Male, 16.4, Just 0.1 )
-    , ( "wfh", 103.1, Male, 17.2, Just 0.66 )
-    , ( "wfh", 103.3, Female, 15.8, Just -0.29 )
-    , ( "wfh", 103.3, Female, 18.8, Just 1.56 )
-    , ( "wfh", 103.5, Female, 16.8, Just 0.34 )
-    , ( "wfh", 103.5, Female, 17.3, Just 0.65 )
-    , ( "wfh", 103.5, Female, 17.3, Just 0.65 )
-    , ( "wfh", 103.5, Female, 17.6, Just 0.83 )
-    , ( "wfh", 103.5, Female, 18.1, Just 1.13 )
-    , ( "wfh", 103.5, Female, 22, Just 3.1 )
-    , ( "wfh", 103.5, Male, 15.4, Just -0.74 )
-    , ( "wfh", 103.5, Male, 15.6, Just -0.59 )
-    , ( "wfh", 103.5, Male, 16.6, Just 0.16 )
-    , ( "wfh", 103.5, Male, 17.5, Just 0.78 )
-    , ( "wfh", 103.6, Female, 14.8, Just -1.08 )
-    , ( "wfh", 104, Female, 15.2, Just -0.87 )
-    , ( "wfh", 104, Female, 15.6, Just -0.58 )
-    , ( "wfh", 104, Female, 15.8, Just -0.44 )
-    , ( "wfh", 104, Female, 16.1, Just -0.23 )
-    , ( "wfh", 104, Female, 16.8, Just 0.23 )
-    , ( "wfh", 104, Female, 17, Just 0.36 )
-    , ( "wfh", 104, Male, 16.7, Just 0.12 )
-    , ( "wfh", 104, Male, 17.1, Just 0.4 )
-    , ( "wfh", 104, Male, 17.9, Just 0.93 )
-    , ( "wfh", 104, Male, 19.7, Just 2.01 )
-    , ( "wfh", 104, Male, 19.9, Just 2.13 )
-    , ( "wfh", 104.3, Female, 15.1, Just -1.01 )
-    , ( "wfh", 104.3, Female, 16.2, Just -0.23 )
-    , ( "wfh", 104.4, Female, 17.8, Just 0.76 )
-    , ( "wfh", 104.5, Female, 15.3, Just -0.91 )
-    , ( "wfh", 104.5, Female, 15.7, Just -0.62 )
-    , ( "wfh", 104.5, Female, 16.2, Just -0.27 )
-    , ( "wfh", 104.5, Female, 17.5, Just 0.56 )
-    , ( "wfh", 104.5, Female, 19.7, Just 1.79 )
-    , ( "wfh", 104.5, Male, 17.1, Just 0.29 )
-    , ( "wfh", 104.7, Male, 15.8, Just -0.7 )
-    , ( "wfh", 104.8, Male, 22.3, Just 3.2 )
-    , ( "wfh", 104.9, Female, 19.4, Just 1.55 )
-    , ( "wfh", 104.9, Male, 16, Just -0.59 )
-    , ( "wfh", 105, Female, 17, Just 0.14 )
-    , ( "wfh", 105, Female, 17.3, Just 0.33 )
-    , ( "wfh", 105, Female, 17.9, Just 0.69 )
-    , ( "wfh", 105, Female, 17.9, Just 0.69 )
-    , ( "wfh", 105, Female, 18, Just 0.75 )
-    , ( "wfh", 105, Male, 15.8, Just -0.76 )
-    , ( "wfh", 105, Male, 17.5, Just 0.45 )
-    , ( "wfh", 105, Male, 18, Just 0.77 )
-    , ( "wfh", 105.2, Female, 18.3, Just 0.88 )
-    , ( "wfh", 105.3, Female, 16.3, Just -0.38 )
-    , ( "wfh", 105.3, Male, 18, Just 0.71 )
-    , ( "wfh", 105.5, Female, 16.5, Just -0.29 )
-    , ( "wfh", 105.5, Female, 18.2, Just 0.76 )
-    , ( "wfh", 105.5, Female, 19.3, Just 1.37 )
-    , ( "wfh", 105.5, Male, 17.5, Just 0.34 )
-    , ( "wfh", 105.5, Male, 18.2, Just 0.79 )
-    , ( "wfh", 105.7, Female, 18, Just 0.6 )
-    , ( "wfh", 106, Female, 14.5, Just -1.85 )
-    , ( "wfh", 106, Female, 15.4, Just -1.17 )
-    , ( "wfh", 106, Female, 17.1, Just -0.01 )
-    , ( "wfh", 106, Female, 17.2, Just 0.05 )
-    , ( "wfh", 106, Female, 17.8, Just 0.42 )
-    , ( "wfh", 106, Female, 17.8, Just 0.42 )
-    , ( "wfh", 106, Female, 18.5, Just 0.82 )
-    , ( "wfh", 106, Male, 19.4, Just 1.4 )
-    , ( "wfh", 106.1, Male, 19.8, Just 1.61 )
-    , ( "wfh", 106.2, Female, 17.9, Just 0.43 )
-    , ( "wfh", 106.3, Female, 18.1, Just 0.53 )
-    , ( "wfh", 106.3, Female, 18.4, Just 0.7 )
-    , ( "wfh", 106.5, Female, 15.4, Just -1.28 )
-    , ( "wfh", 106.5, Female, 16.4, Just -0.58 )
-    , ( "wfh", 106.5, Female, 19, Just 0.99 )
-    , ( "wfh", 106.5, Male, 18.8, Just 0.94 )
-    , ( "wfh", 106.5, Male, 20.2, Just 1.74 )
-    , ( "wfh", 106.7, Female, 18.6, Just 0.73 )
-    , ( "wfh", 106.7, Male, 18.7, Just 0.83 )
-    , ( "wfh", 106.8, Female, 18.3, Just 0.53 )
-    , ( "wfh", 106.8, Female, 19.1, Just 0.98 )
-    , ( "wfh", 107, Female, 16.5, Just -0.62 )
-    , ( "wfh", 107, Female, 17.6, Just 0.08 )
-    , ( "wfh", 107, Female, 18.8, Just 0.77 )
-    , ( "wfh", 107, Female, 18.9, Just 0.83 )
-    , ( "wfh", 107, Female, 19, Just 0.88 )
-    , ( "wfh", 107, Female, 20, Just 1.41 )
-    , ( "wfh", 107, Male, 17.3, Just -0.13 )
-    , ( "wfh", 107, Male, 17.3, Just -0.13 )
-    , ( "wfh", 107, Male, 17.4, Just -0.06 )
-    , ( "wfh", 107, Male, 18.6, Just 0.71 )
-    , ( "wfh", 107.1, Female, 16.6, Just -0.58 )
-    , ( "wfh", 107.2, Female, 19, Just 0.84 )
-    , ( "wfh", 107.4, Female, 16.9, Just -0.45 )
-    , ( "wfh", 107.5, Female, 16.1, Just -1.01 )
-    , ( "wfh", 107.5, Female, 18.2, Just 0.32 )
-    , ( "wfh", 107.7, Female, 17.6, Just -0.08 )
-    , ( "wfh", 108, Male, 17.7, Just -0.08 )
-    , ( "wfh", 108, Male, 17.7, Just -0.08 )
-    , ( "wfh", 108, Male, 17.9, Just 0.05 )
-    , ( "wfh", 108, Male, 18.4, Just 0.37 )
-    , ( "wfh", 108, Male, 18.4, Just 0.37 )
-    , ( "wfh", 108, Male, 18.4, Just 0.37 )
-    , ( "wfh", 108, Male, 18.7, Just 0.55 )
-    , ( "wfh", 108.1, Female, 19.1, Just 0.7 )
-    , ( "wfh", 108.1, Male, 18.4, Just 0.34 )
-    , ( "wfh", 108.2, Female, 16.8, Just -0.7 )
-    , ( "wfh", 108.2, Female, 17.9, Just -0.01 )
-    , ( "wfh", 108.3, Female, 16.6, Just -0.85 )
-    , ( "wfh", 108.3, Female, 19.5, Just 0.87 )
-    , ( "wfh", 108.5, Female, 18.3, Just 0.16 )
-    , ( "wfh", 108.5, Female, 18.4, Just 0.22 )
-    , ( "wfh", 108.5, Female, 20.1, Just 1.14 )
-    , ( "wfh", 108.5, Male, 19.5, Just 0.91 )
-    , ( "wfh", 108.6, Female, 17.1, Just -0.59 )
-    , ( "wfh", 108.7, Female, 18.2, Just 0.06 )
-    , ( "wfh", 108.7, Female, 18.5, Just 0.23 )
-    , ( "wfh", 109, Female, 12.9, Just -3.83 )
-    , ( "wfh", 109, Female, 17, Just -0.75 )
-    , ( "wfh", 109, Female, 18.1, Just -0.07 )
-    , ( "wfh", 109, Female, 18.8, Just 0.33 )
-    , ( "wfh", 109, Male, 20.2, Just 1.19 )
-    , ( "wfh", 109.1, Female, 19.3, Just 0.59 )
-    , ( "wfh", 109.2, Male, 19.7, Just 0.87 )
-    , ( "wfh", 109.3, Male, 19.3, Just 0.62 )
-    , ( "wfh", 109.8, Female, 17.7, Just -0.49 )
-    , ( "wfh", 110, Female, 17.6, Just -0.59 )
-    , ( "wfh", 110, Female, 17.6, Just -0.59 )
-    , ( "wfh", 110, Female, 18.5, Just -0.06 )
-    , ( "wfh", 110, Male, 16.5, Just -1.34 )
-    , ( "wfh", 110.2, Male, 19.2, Just 0.37 )
-    , ( "wfh", 110.5, Female, 17.4, Just -0.83 )
-    , ( "wfh", 110.5, Female, 19.7, Just 0.49 )
-    , ( "wfh", 110.5, Male, 18.6, Just -0.06 )
-    , ( "wfh", 110.8, Male, 19.4, Just 0.35 )
-    , ( "wfh", 111, Male, 19, Just 0.07 )
-    , ( "wfh", 111, Male, 20.3, Just 0.81 )
-    , ( "wfh", 111.2, Female, 19.1, Just 0.01 )
-    , ( "wfh", 111.2, Female, 19.5, Just 0.23 )
-    , ( "wfh", 111.3, Male, 18.8, Just -0.11 )
-    , ( "wfh", 111.5, Male, 18, Just -0.65 )
-    , ( "wfh", 111.5, Male, 19, Just -0.03 )
-    , ( "wfh", 112, Female, 22.1, Just 1.33 )
-    , ( "wfh", 112.3, Female, 19.3, Just -0.12 )
-    , ( "wfh", 112.5, Male, 19.9, Just 0.27 )
-    , ( "wfh", 113, Male, 20.6, Just 0.54 )
-    , ( "wfh", 113.2, Male, 20.1, Just 0.23 )
-    , ( "wfh", 113.4, Male, 19.8, Just 0.02 )
-    , ( "wfh", 114, Female, 20.4, Just 0.08 )
-    , ( "wfh", 114.3, Male, 20, Just -0.06 )
-    , ( "wfh", 116, Female, 20.3, Just -0.4 )
-    , ( "wfh", 116, Male, 20.5, Just -0.15 )
-    , ( "wfh", 116.1, Female, 19.1, Just -1.07 )
-    , ( "wfh", 117, Female, 17.6, Just -2.15 )
-    , ( "wfh", 117.4, Male, 20.9, Just -0.22 )
-    , ( "wfh", 119.7, Male, 24.7, Just 1.1 )
-    , ( "wfh", 119.8, Female, 22.1, Just -0.29 )
-    , ( "wfh", 58, Male, 7, Nothing )
-    , ( "wfh", 63, Female, 9.5, Nothing )
-    , ( "wfh", 63.7, Male, 6.8, Nothing )
-    , ( "wfh", 64.5, Male, 6.9, Nothing )
-    , ( "wfh", 65.6, Male, 14.7, Just 8.9 )
-    , ( "wfh", 67, Male, 8, Just 0.15 )
-    , ( "wfh", 69, Male, 7.6, Just -1.17 )
-    , ( "wfh", 70, Male, 7.9, Just -1.02 )
-    , ( "wfh", 71, Female, 9, Just 0.62 )
-    , ( "wfh", 73, Female, 11, Just 2.25 )
-    , ( "wfh", 75, Female, 9, Just -0.34 )
-    , ( "wfh", 82.5, Female, 11.1, Just 0.32 )
-    , ( "wfh", 83, Female, 13.5, Just 2.3 )
-    , ( "wfh", 83.5, Male, 11.1, Just -0.23 )
-    , ( "wfh", 83.5, Male, 11.4, Just 0.09 )
-    , ( "wfh", 83.6, Male, 10.1, Just -1.43 )
-    , ( "wfh", 84, Female, 11.4, Just 0.25 )
-    , ( "wfh", 85, Female, 13.7, Just 2 )
-    , ( "wfh", 85.5, Male, 13.6, Just 1.71 )
-    , ( "wfh", 85.6, Male, 11.3, Just -0.56 )
-    , ( "wfh", 87.8, Male, 14.5, Just 1.92 )
-    , ( "wfh", 88.7, Female, 10.9, Just -1.41 )
-    , ( "wfh", 89, Male, 13.6, Just 0.89 )
-    , ( "wfh", 89.5, Male, 14.8, Just 1.79 )
-    , ( "wfh", 90, Female, 13.4, Just 0.64 )
-    , ( "wfh", 90, Male, 12.2, Just -0.69 )
-    , ( "wfh", 90, Male, 13.5, Just 0.57 )
-    , ( "wfh", 90.1, Female, 15.8, Just 2.37 )
-    , ( "wfh", 90.4, Male, 14.5, Just 1.35 )
-    , ( "wfh", 91.2, Female, 14.1, Just 0.94 )
-    , ( "wfh", 91.3, Male, 13.8, Just 0.56 )
-    , ( "wfh", 91.5, Female, 12.3, Just -0.64 )
-    , ( "wfh", 91.7, Female, 13.2, Just 0.11 )
-    , ( "wfh", 91.7, Male, 15.7, Just 2.02 )
-    , ( "wfh", 92, Female, 11.7, Just -1.33 )
-    , ( "wfh", 92, Male, 13.6, Just 0.23 )
-    , ( "wfh", 92, Male, 14.2, Just 0.76 )
-    , ( "wfh", 92, Male, 15.5, Just 1.81 )
-    , ( "wfh", 92.6, Female, 15.2, Just 1.46 )
-    , ( "wfh", 92.7, Female, 13.5, Just 0.15 )
-    , ( "wfh", 92.7, Female, 14.9, Just 1.23 )
-    , ( "wfh", 93, Female, 13.2, Just -0.16 )
-    , ( "wfh", 93, Female, 13.9, Just 0.42 )
-    , ( "wfh", 93.5, Female, 13.2, Just -0.26 )
-    , ( "wfh", 93.6, Female, 12.6, Just -0.81 )
-    , ( "wfh", 94, Female, 12.9, Just -0.63 )
-    , ( "wfh", 94, Female, 14.4, Just 0.6 )
-    , ( "wfh", 94, Male, 13.1, Just -0.67 )
-    , ( "wfh", 94, Male, 14, Just 0.16 )
-    , ( "wfh", 94.2, Female, 14.3, Just 0.48 )
-    , ( "wfh", 94.3, Female, 13.4, Just -0.26 )
-    , ( "wfh", 94.3, Male, 15.6, Just 1.41 )
-    , ( "wfh", 94.4, Female, 13.4, Just -0.28 )
-    , ( "wfh", 94.5, Female, 12, Just -1.57 )
-    , ( "wfh", 94.5, Female, 13.6, Just -0.13 )
-    , ( "wfh", 94.5, Female, 14.1, Just 0.27 )
-    , ( "wfh", 94.5, Male, 13.1, Just -0.78 )
-    , ( "wfh", 94.5, Male, 15.8, Just 1.52 )
-    , ( "wfh", 95, Female, 11.8, Just -1.88 )
-    , ( "wfh", 95, Male, 13.1, Just -0.89 )
-    , ( "wfh", 95.1, Male, 13.8, Just -0.25 )
-    , ( "wfh", 95.1, Male, 14.7, Just 0.53 )
-    , ( "wfh", 95.3, Female, 15, Just 0.78 )
-    , ( "wfh", 95.3, Male, 14.2, Just 0.06 )
-    , ( "wfh", 95.5, Female, 14.5, Just 0.37 )
-    , ( "wfh", 95.5, Male, 14.2, Just 0.02 )
-    , ( "wfh", 95.5, Male, 15.2, Just 0.85 )
-    , ( "wfh", 95.5, Male, 16, Just 1.46 )
-    , ( "wfh", 95.7, Male, 14.6, Just 0.32 )
-    , ( "wfh", 95.9, Female, 16, Just 1.36 )
-    , ( "wfh", 96, Female, 14.1, Just -0.04 )
-    , ( "wfh", 96, Female, 14.6, Just 0.35 )
-    , ( "wfh", 96, Male, 14.6, Just 0.25 )
-    , ( "wfh", 96, Male, 15.2, Just 0.74 )
-    , ( "wfh", 96.1, Female, 16.4, Just 1.58 )
-    , ( "wfh", 96.3, Female, 13.1, Just -0.93 )
-    , ( "wfh", 96.3, Female, 15.3, Just 0.8 )
-    , ( "wfh", 96.4, Female, 15.6, Just 0.99 )
-    , ( "wfh", 96.5, Male, 13.4, Just -0.93 )
-    , ( "wfh", 96.5, Male, 14.3, Just -0.11 )
-    , ( "wfh", 96.5, Male, 15.6, Just 0.95 )
-    , ( "wfh", 96.6, Female, 15.4, Just 0.81 )
-    , ( "wfh", 96.7, Female, 15.2, Just 0.65 )
-    , ( "wfh", 96.7, Male, 16.9, Just 1.86 )
-    , ( "wfh", 96.8, Female, 12.9, Just -1.21 )
-    , ( "wfh", 97, Female, 14.2, Just -0.16 )
-    , ( "wfh", 97, Female, 14.2, Just -0.16 )
-    , ( "wfh", 97, Female, 14.8, Just 0.3 )
-    , ( "wfh", 97, Male, 15.5, Just 0.77 )
-    , ( "wfh", 97.2, Female, 13.8, Just -0.52 )
-    , ( "wfh", 97.2, Male, 14, Just -0.53 )
-    , ( "wfh", 97.3, Female, 14, Just -0.38 )
-    , ( "wfh", 97.3, Female, 15.7, Just 0.88 )
-    , ( "wfh", 97.7, Male, 15.1, Just 0.3 )
-    , ( "wfh", 97.7, Male, 15.4, Just 0.54 )
-    , ( "wfh", 97.8, Female, 16.3, Just 1.18 )
-    , ( "wfh", 97.9, Male, 16.5, Just 1.32 )
-    , ( "wfh", 97.9, Male, 16.8, Just 1.53 )
-    , ( "wfh", 98, Female, 15.1, Just 0.32 )
-    , ( "wfh", 98, Female, 15.3, Just 0.46 )
-    , ( "wfh", 98, Male, 14.5, Just -0.26 )
-    , ( "wfh", 98, Male, 15, Just 0.15 )
-    , ( "wfh", 98, Male, 15.3, Just 0.39 )
-    , ( "wfh", 98, Male, 16, Just 0.93 )
-    , ( "wfh", 98, Male, 16, Just 0.93 )
-    , ( "wfh", 98, Male, 16.6, Just 1.37 )
-    , ( "wfh", 98.2, Female, 15.3, Just 0.42 )
-    , ( "wfh", 98.3, Male, 14, Just -0.77 )
-    , ( "wfh", 98.3, Male, 16, Just 0.87 )
-    , ( "wfh", 98.4, Male, 14.3, Just -0.52 )
-    , ( "wfh", 98.5, Female, 12.5, Just -1.93 )
-    , ( "wfh", 98.5, Male, 14.1, Just -0.72 )
-    , ( "wfh", 98.7, Female, 15.2, Just 0.25 )
-    , ( "wfh", 98.9, Male, 13.5, Just -1.36 )
-    , ( "wfh", 99, Female, 13.4, Just -1.23 )
-    , ( "wfh", 99, Female, 15.3, Just 0.26 )
-    , ( "wfh", 99, Female, 15.9, Just 0.68 )
-    , ( "wfh", 99, Female, 16.9, Just 1.33 )
-    , ( "wfh", 99, Female, 17.8, Just 1.87 )
-    , ( "wfh", 99, Male, 13, Just -1.86 )
-    , ( "wfh", 99, Male, 15, Just -0.07 )
-    , ( "wfh", 99, Male, 15.2, Just 0.1 )
-    , ( "wfh", 99, Male, 15.7, Just 0.49 )
-    , ( "wfh", 99, Male, 15.9, Just 0.64 )
-    , ( "wfh", 99, Male, 16.1, Just 0.79 )
-    , ( "wfh", 99, Male, 17.1, Just 1.5 )
-    , ( "wfh", 99.1, Female, 15.7, Just 0.52 )
-    , ( "wfh", 99.1, Male, 15.5, Just 0.31 )
-    , ( "wfh", 99.2, Female, 15.9, Just 0.64 )
-    , ( "wfh", 99.3, Male, 15.4, Just 0.19 )
-    , ( "wfh", 99.3, Male, 17.1, Just 1.44 )
-    , ( "wfh", 99.4, Female, 14.9, Just -0.11 )
-    , ( "wfh", 99.5, Female, 15.8, Just 0.51 )
-    , ( "wfh", 99.5, Male, 15.8, Just 0.45 )
-    , ( "wfh", 99.5, Male, 16.2, Just 0.75 )
-    , ( "wfh", 99.5, Male, 18.4, Just 2.24 )
-    , ( "wfh", 99.9, Female, 15.4, Just 0.15 )
+    [ { func = "wfh", scale = 100, gender = Female, measurement = 15.8, expected = Just 0.41 }
+    , { func = "wfh", scale = 100, gender = Female, measurement = 16, expected = Just 0.54 }
+    , { func = "wfh", scale = 100, gender = Female, measurement = 16.7, expected = Just 1.0 }
+    , { func = "wfh", scale = 100, gender = Female, measurement = 17, expected = Just 1.19 }
+    , { func = "wfh", scale = 100, gender = Female, measurement = 17.4, expected = Just 1.43 }
+    , { func = "wfh", scale = 100, gender = Male, measurement = 16.4, expected = Just 0.79 }
+    , { func = "wfh", scale = 100, gender = Male, measurement = 16.6, expected = Just 0.93 }
+    , { func = "wfh", scale = 100, gender = Male, measurement = 17.5, expected = Just 1.55 }
+    , { func = "wfh", scale = 100, gender = Male, measurement = 18.6, expected = Just 2.25 }
+    , { func = "wfh", scale = 100.2, gender = Female, measurement = 17, expected = Just 1.15 }
+    , { func = "wfh", scale = 100.3, gender = Female, measurement = 19.4, expected = Just 2.49 }
+    , { func = "wfh", scale = 100.4, gender = Male, measurement = 17.4, expected = Just 1.4 }
+    , { func = "wfh", scale = 100.5, gender = Female, measurement = 15, expected = Just -0.27 }
+    , { func = "wfh", scale = 100.5, gender = Female, measurement = 15.4, expected = Just 0.02 }
+    , { func = "wfh", scale = 100.5, gender = Female, measurement = 16, expected = Just 0.44 }
+    , { func = "wfh", scale = 100.5, gender = Male, measurement = 16.1, expected = Just 0.46 }
+    , { func = "wfh", scale = 100.5, gender = Male, measurement = 16.4, expected = Just 0.68 }
+    , { func = "wfh", scale = 100.5, gender = Male, measurement = 16.7, expected = Just 0.89 }
+    , { func = "wfh", scale = 100.5, gender = Male, measurement = 17.6, expected = Just 1.51 }
+    , { func = "wfh", scale = 100.5, gender = Male, measurement = 18.4, expected = Just 2.02 }
+    , { func = "wfh", scale = 100.7, gender = Female, measurement = 17.4, expected = Just 1.29 }
+    , { func = "wfh", scale = 100.7, gender = Male, measurement = 16.5, expected = Just 0.71 }
+    , { func = "wfh", scale = 101, gender = Female, measurement = 16.4, expected = Just 0.6 }
+    , { func = "wfh", scale = 101, gender = Male, measurement = 14.5, expected = Just -0.93 }
+    , { func = "wfh", scale = 101, gender = Male, measurement = 17.2, expected = Just 1.13 }
+    , { func = "wfh", scale = 101, gender = Male, measurement = 18.7, expected = Just 2.09 }
+    , { func = "wfh", scale = 101.1, gender = Female, measurement = 15.6, expected = Just 0.04 }
+    , { func = "wfh", scale = 101.2, gender = Male, measurement = 14.5, expected = Just -0.97 }
+    , { func = "wfh", scale = 101.2, gender = Male, measurement = 15.3, expected = Just -0.31 }
+    , { func = "wfh", scale = 101.2, gender = Male, measurement = 17.3, expected = Just 1.15 }
+    , { func = "wfh", scale = 101.3, gender = Male, measurement = 15.3, expected = Just -0.33 }
+    , { func = "wfh", scale = 101.3, gender = Male, measurement = 16.2, expected = Just 0.36 }
+    , { func = "wfh", scale = 101.3, gender = Male, measurement = 16.2, expected = Just 0.36 }
+    , { func = "wfh", scale = 101.4, gender = Female, measurement = 14, expected = Just -1.24 }
+    , { func = "wfh", scale = 101.4, gender = Female, measurement = 16.5, expected = Just 0.58 }
+    , { func = "wfh", scale = 101.4, gender = Female, measurement = 17.6, expected = Just 1.27 }
+    , { func = "wfh", scale = 101.4, gender = Male, measurement = 18.1, expected = Just 1.63 }
+    , { func = "wfh", scale = 101.5, gender = Female, measurement = 15.1, expected = Just -0.4 }
+    , { func = "wfh", scale = 101.5, gender = Female, measurement = 15.6, expected = Just -0.05 }
+    , { func = "wfh", scale = 101.5, gender = Male, measurement = 15.5, expected = Just -0.22 }
+    , { func = "wfh", scale = 101.7, gender = Male, measurement = 15.2, expected = Just -0.5 }
+    , { func = "wfh", scale = 101.8, gender = Male, measurement = 16.1, expected = Just 0.17 }
+    , { func = "wfh", scale = 102, gender = Female, measurement = 13.9, expected = Just -1.45 }
+    , { func = "wfh", scale = 102, gender = Female, measurement = 14.6, expected = Just -0.89 }
+    , { func = "wfh", scale = 102, gender = Female, measurement = 14.8, expected = Just -0.74 }
+    , { func = "wfh", scale = 102, gender = Female, measurement = 15.3, expected = Just -0.37 }
+    , { func = "wfh", scale = 102, gender = Female, measurement = 16.5, expected = Just 0.46 }
+    , { func = "wfh", scale = 102, gender = Female, measurement = 17, expected = Just 0.78 }
+    , { func = "wfh", scale = 102, gender = Female, measurement = 18.5, expected = Just 1.66 }
+    , { func = "wfh", scale = 102, gender = Male, measurement = 14, expected = Just -1.59 }
+    , { func = "wfh", scale = 102, gender = Male, measurement = 14.7, expected = Just -0.98 }
+    , { func = "wfh", scale = 102, gender = Male, measurement = 16.1, expected = Just 0.13 }
+    , { func = "wfh", scale = 102, gender = Male, measurement = 16.5, expected = Just 0.42 }
+    , { func = "wfh", scale = 102, gender = Male, measurement = 18.3, expected = Just 1.62 }
+    , { func = "wfh", scale = 102.1, gender = Female, measurement = 14.1, expected = Just -1.31 }
+    , { func = "wfh", scale = 102.2, gender = Male, measurement = 15.1, expected = Just -0.69 }
+    , { func = "wfh", scale = 102.3, gender = Female, measurement = 16.7, expected = Just 0.53 }
+    , { func = "wfh", scale = 102.3, gender = Male, measurement = 15.9, expected = Just -0.09 }
+    , { func = "wfh", scale = 102.3, gender = Male, measurement = 16.8, expected = Just 0.56 }
+    , { func = "wfh", scale = 102.5, gender = Female, measurement = 16.1, expected = Just 0.09 }
+    , { func = "wfh", scale = 102.5, gender = Female, measurement = 16.5, expected = Just 0.35 }
+    , { func = "wfh", scale = 102.5, gender = Male, measurement = 16.4, expected = Just 0.23 }
+    , { func = "wfh", scale = 102.7, gender = Female, measurement = 17.3, expected = Just 0.82 }
+    , { func = "wfh", scale = 102.7, gender = Female, measurement = 17.8, expected = Just 1.12 }
+    , { func = "wfh", scale = 103, gender = Female, measurement = 15.1, expected = Just -0.73 }
+    , { func = "wfh", scale = 103, gender = Female, measurement = 17.6, expected = Just 0.94 }
+    , { func = "wfh", scale = 103, gender = Female, measurement = 18.4, expected = Just 1.4 }
+    , { func = "wfh", scale = 103, gender = Male, measurement = 16.2, expected = Just -0.02 }
+    , { func = "wfh", scale = 103, gender = Male, measurement = 16.8, expected = Just 0.41 }
+    , { func = "wfh", scale = 103, gender = Male, measurement = 17.3, expected = Just 0.75 }
+    , { func = "wfh", scale = 103, gender = Male, measurement = 18.8, expected = Just 1.71 }
+    , { func = "wfh", scale = 103.1, gender = Male, measurement = 16.4, expected = Just 0.1 }
+    , { func = "wfh", scale = 103.1, gender = Male, measurement = 17.2, expected = Just 0.66 }
+    , { func = "wfh", scale = 103.3, gender = Female, measurement = 15.8, expected = Just -0.29 }
+    , { func = "wfh", scale = 103.3, gender = Female, measurement = 18.8, expected = Just 1.56 }
+    , { func = "wfh", scale = 103.5, gender = Female, measurement = 16.8, expected = Just 0.34 }
+    , { func = "wfh", scale = 103.5, gender = Female, measurement = 17.3, expected = Just 0.65 }
+    , { func = "wfh", scale = 103.5, gender = Female, measurement = 17.3, expected = Just 0.65 }
+    , { func = "wfh", scale = 103.5, gender = Female, measurement = 17.6, expected = Just 0.83 }
+    , { func = "wfh", scale = 103.5, gender = Female, measurement = 18.1, expected = Just 1.13 }
+    , { func = "wfh", scale = 103.5, gender = Female, measurement = 22, expected = Just 3.1 }
+    , { func = "wfh", scale = 103.5, gender = Male, measurement = 15.4, expected = Just -0.74 }
+    , { func = "wfh", scale = 103.5, gender = Male, measurement = 15.6, expected = Just -0.59 }
+    , { func = "wfh", scale = 103.5, gender = Male, measurement = 16.6, expected = Just 0.16 }
+    , { func = "wfh", scale = 103.5, gender = Male, measurement = 17.5, expected = Just 0.78 }
+    , { func = "wfh", scale = 103.6, gender = Female, measurement = 14.8, expected = Just -1.08 }
+    , { func = "wfh", scale = 104, gender = Female, measurement = 15.2, expected = Just -0.87 }
+    , { func = "wfh", scale = 104, gender = Female, measurement = 15.6, expected = Just -0.58 }
+    , { func = "wfh", scale = 104, gender = Female, measurement = 15.8, expected = Just -0.44 }
+    , { func = "wfh", scale = 104, gender = Female, measurement = 16.1, expected = Just -0.23 }
+    , { func = "wfh", scale = 104, gender = Female, measurement = 16.8, expected = Just 0.23 }
+    , { func = "wfh", scale = 104, gender = Female, measurement = 17, expected = Just 0.36 }
+    , { func = "wfh", scale = 104, gender = Male, measurement = 16.7, expected = Just 0.12 }
+    , { func = "wfh", scale = 104, gender = Male, measurement = 17.1, expected = Just 0.4 }
+    , { func = "wfh", scale = 104, gender = Male, measurement = 17.9, expected = Just 0.93 }
+    , { func = "wfh", scale = 104, gender = Male, measurement = 19.7, expected = Just 2.01 }
+    , { func = "wfh", scale = 104, gender = Male, measurement = 19.9, expected = Just 2.13 }
+    , { func = "wfh", scale = 104.3, gender = Female, measurement = 15.1, expected = Just -1.01 }
+    , { func = "wfh", scale = 104.3, gender = Female, measurement = 16.2, expected = Just -0.23 }
+    , { func = "wfh", scale = 104.4, gender = Female, measurement = 17.8, expected = Just 0.76 }
+    , { func = "wfh", scale = 104.5, gender = Female, measurement = 15.3, expected = Just -0.91 }
+    , { func = "wfh", scale = 104.5, gender = Female, measurement = 15.7, expected = Just -0.62 }
+    , { func = "wfh", scale = 104.5, gender = Female, measurement = 16.2, expected = Just -0.27 }
+    , { func = "wfh", scale = 104.5, gender = Female, measurement = 17.5, expected = Just 0.56 }
+    , { func = "wfh", scale = 104.5, gender = Female, measurement = 19.7, expected = Just 1.79 }
+    , { func = "wfh", scale = 104.5, gender = Male, measurement = 17.1, expected = Just 0.29 }
+    , { func = "wfh", scale = 104.7, gender = Male, measurement = 15.8, expected = Just -0.7 }
+    , { func = "wfh", scale = 104.8, gender = Male, measurement = 22.3, expected = Just 3.2 }
+    , { func = "wfh", scale = 104.9, gender = Female, measurement = 19.4, expected = Just 1.55 }
+    , { func = "wfh", scale = 104.9, gender = Male, measurement = 16, expected = Just -0.59 }
+    , { func = "wfh", scale = 105, gender = Female, measurement = 17, expected = Just 0.14 }
+    , { func = "wfh", scale = 105, gender = Female, measurement = 17.3, expected = Just 0.33 }
+    , { func = "wfh", scale = 105, gender = Female, measurement = 17.9, expected = Just 0.69 }
+    , { func = "wfh", scale = 105, gender = Female, measurement = 17.9, expected = Just 0.69 }
+    , { func = "wfh", scale = 105, gender = Female, measurement = 18, expected = Just 0.75 }
+    , { func = "wfh", scale = 105, gender = Male, measurement = 15.8, expected = Just -0.76 }
+    , { func = "wfh", scale = 105, gender = Male, measurement = 17.5, expected = Just 0.45 }
+    , { func = "wfh", scale = 105, gender = Male, measurement = 18, expected = Just 0.77 }
+    , { func = "wfh", scale = 105.2, gender = Female, measurement = 18.3, expected = Just 0.88 }
+    , { func = "wfh", scale = 105.3, gender = Female, measurement = 16.3, expected = Just -0.38 }
+    , { func = "wfh", scale = 105.3, gender = Male, measurement = 18, expected = Just 0.71 }
+    , { func = "wfh", scale = 105.5, gender = Female, measurement = 16.5, expected = Just -0.29 }
+    , { func = "wfh", scale = 105.5, gender = Female, measurement = 18.2, expected = Just 0.76 }
+    , { func = "wfh", scale = 105.5, gender = Female, measurement = 19.3, expected = Just 1.37 }
+    , { func = "wfh", scale = 105.5, gender = Male, measurement = 17.5, expected = Just 0.34 }
+    , { func = "wfh", scale = 105.5, gender = Male, measurement = 18.2, expected = Just 0.79 }
+    , { func = "wfh", scale = 105.7, gender = Female, measurement = 18, expected = Just 0.6 }
+    , { func = "wfh", scale = 106, gender = Female, measurement = 14.5, expected = Just -1.85 }
+    , { func = "wfh", scale = 106, gender = Female, measurement = 15.4, expected = Just -1.17 }
+    , { func = "wfh", scale = 106, gender = Female, measurement = 17.1, expected = Just -0.01 }
+    , { func = "wfh", scale = 106, gender = Female, measurement = 17.2, expected = Just 0.05 }
+    , { func = "wfh", scale = 106, gender = Female, measurement = 17.8, expected = Just 0.42 }
+    , { func = "wfh", scale = 106, gender = Female, measurement = 17.8, expected = Just 0.42 }
+    , { func = "wfh", scale = 106, gender = Female, measurement = 18.5, expected = Just 0.82 }
+    , { func = "wfh", scale = 106, gender = Male, measurement = 19.4, expected = Just 1.4 }
+    , { func = "wfh", scale = 106.1, gender = Male, measurement = 19.8, expected = Just 1.61 }
+    , { func = "wfh", scale = 106.2, gender = Female, measurement = 17.9, expected = Just 0.43 }
+    , { func = "wfh", scale = 106.3, gender = Female, measurement = 18.1, expected = Just 0.53 }
+    , { func = "wfh", scale = 106.3, gender = Female, measurement = 18.4, expected = Just 0.7 }
+    , { func = "wfh", scale = 106.5, gender = Female, measurement = 15.4, expected = Just -1.28 }
+    , { func = "wfh", scale = 106.5, gender = Female, measurement = 16.4, expected = Just -0.58 }
+    , { func = "wfh", scale = 106.5, gender = Female, measurement = 19, expected = Just 0.99 }
+    , { func = "wfh", scale = 106.5, gender = Male, measurement = 18.8, expected = Just 0.94 }
+    , { func = "wfh", scale = 106.5, gender = Male, measurement = 20.2, expected = Just 1.74 }
+    , { func = "wfh", scale = 106.7, gender = Female, measurement = 18.6, expected = Just 0.73 }
+    , { func = "wfh", scale = 106.7, gender = Male, measurement = 18.7, expected = Just 0.83 }
+    , { func = "wfh", scale = 106.8, gender = Female, measurement = 18.3, expected = Just 0.53 }
+    , { func = "wfh", scale = 106.8, gender = Female, measurement = 19.1, expected = Just 0.98 }
+    , { func = "wfh", scale = 107, gender = Female, measurement = 16.5, expected = Just -0.62 }
+    , { func = "wfh", scale = 107, gender = Female, measurement = 17.6, expected = Just 0.08 }
+    , { func = "wfh", scale = 107, gender = Female, measurement = 18.8, expected = Just 0.77 }
+    , { func = "wfh", scale = 107, gender = Female, measurement = 18.9, expected = Just 0.83 }
+    , { func = "wfh", scale = 107, gender = Female, measurement = 19, expected = Just 0.88 }
+    , { func = "wfh", scale = 107, gender = Female, measurement = 20, expected = Just 1.41 }
+    , { func = "wfh", scale = 107, gender = Male, measurement = 17.3, expected = Just -0.13 }
+    , { func = "wfh", scale = 107, gender = Male, measurement = 17.3, expected = Just -0.13 }
+    , { func = "wfh", scale = 107, gender = Male, measurement = 17.4, expected = Just -0.06 }
+    , { func = "wfh", scale = 107, gender = Male, measurement = 18.6, expected = Just 0.71 }
+    , { func = "wfh", scale = 107.1, gender = Female, measurement = 16.6, expected = Just -0.58 }
+    , { func = "wfh", scale = 107.2, gender = Female, measurement = 19, expected = Just 0.84 }
+    , { func = "wfh", scale = 107.4, gender = Female, measurement = 16.9, expected = Just -0.45 }
+    , { func = "wfh", scale = 107.5, gender = Female, measurement = 16.1, expected = Just -1.01 }
+    , { func = "wfh", scale = 107.5, gender = Female, measurement = 18.2, expected = Just 0.32 }
+    , { func = "wfh", scale = 107.7, gender = Female, measurement = 17.6, expected = Just -0.08 }
+    , { func = "wfh", scale = 108, gender = Male, measurement = 17.7, expected = Just -0.08 }
+    , { func = "wfh", scale = 108, gender = Male, measurement = 17.7, expected = Just -0.08 }
+    , { func = "wfh", scale = 108, gender = Male, measurement = 17.9, expected = Just 0.05 }
+    , { func = "wfh", scale = 108, gender = Male, measurement = 18.4, expected = Just 0.37 }
+    , { func = "wfh", scale = 108, gender = Male, measurement = 18.4, expected = Just 0.37 }
+    , { func = "wfh", scale = 108, gender = Male, measurement = 18.4, expected = Just 0.37 }
+    , { func = "wfh", scale = 108, gender = Male, measurement = 18.7, expected = Just 0.55 }
+    , { func = "wfh", scale = 108.1, gender = Female, measurement = 19.1, expected = Just 0.7 }
+    , { func = "wfh", scale = 108.1, gender = Male, measurement = 18.4, expected = Just 0.34 }
+    , { func = "wfh", scale = 108.2, gender = Female, measurement = 16.8, expected = Just -0.7 }
+    , { func = "wfh", scale = 108.2, gender = Female, measurement = 17.9, expected = Just -0.01 }
+    , { func = "wfh", scale = 108.3, gender = Female, measurement = 16.6, expected = Just -0.85 }
+    , { func = "wfh", scale = 108.3, gender = Female, measurement = 19.5, expected = Just 0.87 }
+    , { func = "wfh", scale = 108.5, gender = Female, measurement = 18.3, expected = Just 0.16 }
+    , { func = "wfh", scale = 108.5, gender = Female, measurement = 18.4, expected = Just 0.22 }
+    , { func = "wfh", scale = 108.5, gender = Female, measurement = 20.1, expected = Just 1.14 }
+    , { func = "wfh", scale = 108.5, gender = Male, measurement = 19.5, expected = Just 0.91 }
+    , { func = "wfh", scale = 108.6, gender = Female, measurement = 17.1, expected = Just -0.59 }
+    , { func = "wfh", scale = 108.7, gender = Female, measurement = 18.2, expected = Just 0.06 }
+    , { func = "wfh", scale = 108.7, gender = Female, measurement = 18.5, expected = Just 0.23 }
+    , { func = "wfh", scale = 109, gender = Female, measurement = 12.9, expected = Just -3.83 }
+    , { func = "wfh", scale = 109, gender = Female, measurement = 17, expected = Just -0.75 }
+    , { func = "wfh", scale = 109, gender = Female, measurement = 18.1, expected = Just -0.07 }
+    , { func = "wfh", scale = 109, gender = Female, measurement = 18.8, expected = Just 0.33 }
+    , { func = "wfh", scale = 109, gender = Male, measurement = 20.2, expected = Just 1.19 }
+    , { func = "wfh", scale = 109.1, gender = Female, measurement = 19.3, expected = Just 0.59 }
+    , { func = "wfh", scale = 109.2, gender = Male, measurement = 19.7, expected = Just 0.87 }
+    , { func = "wfh", scale = 109.3, gender = Male, measurement = 19.3, expected = Just 0.62 }
+    , { func = "wfh", scale = 109.8, gender = Female, measurement = 17.7, expected = Just -0.49 }
+    , { func = "wfh", scale = 110, gender = Female, measurement = 17.6, expected = Just -0.59 }
+    , { func = "wfh", scale = 110, gender = Female, measurement = 17.6, expected = Just -0.59 }
+    , { func = "wfh", scale = 110, gender = Female, measurement = 18.5, expected = Just -0.06 }
+    , { func = "wfh", scale = 110, gender = Male, measurement = 16.5, expected = Just -1.34 }
+    , { func = "wfh", scale = 110.2, gender = Male, measurement = 19.2, expected = Just 0.37 }
+    , { func = "wfh", scale = 110.5, gender = Female, measurement = 17.4, expected = Just -0.83 }
+    , { func = "wfh", scale = 110.5, gender = Female, measurement = 19.7, expected = Just 0.49 }
+    , { func = "wfh", scale = 110.5, gender = Male, measurement = 18.6, expected = Just -0.06 }
+    , { func = "wfh", scale = 110.8, gender = Male, measurement = 19.4, expected = Just 0.35 }
+    , { func = "wfh", scale = 111, gender = Male, measurement = 19, expected = Just 0.07 }
+    , { func = "wfh", scale = 111, gender = Male, measurement = 20.3, expected = Just 0.81 }
+    , { func = "wfh", scale = 111.2, gender = Female, measurement = 19.1, expected = Just 0.01 }
+    , { func = "wfh", scale = 111.2, gender = Female, measurement = 19.5, expected = Just 0.23 }
+    , { func = "wfh", scale = 111.3, gender = Male, measurement = 18.8, expected = Just -0.11 }
+    , { func = "wfh", scale = 111.5, gender = Male, measurement = 18, expected = Just -0.65 }
+    , { func = "wfh", scale = 111.5, gender = Male, measurement = 19, expected = Just -0.03 }
+    , { func = "wfh", scale = 112, gender = Female, measurement = 22.1, expected = Just 1.33 }
+    , { func = "wfh", scale = 112.3, gender = Female, measurement = 19.3, expected = Just -0.12 }
+    , { func = "wfh", scale = 112.5, gender = Male, measurement = 19.9, expected = Just 0.27 }
+    , { func = "wfh", scale = 113, gender = Male, measurement = 20.6, expected = Just 0.54 }
+    , { func = "wfh", scale = 113.2, gender = Male, measurement = 20.1, expected = Just 0.23 }
+    , { func = "wfh", scale = 113.4, gender = Male, measurement = 19.8, expected = Just 0.02 }
+    , { func = "wfh", scale = 114, gender = Female, measurement = 20.4, expected = Just 0.08 }
+    , { func = "wfh", scale = 114.3, gender = Male, measurement = 20, expected = Just -0.06 }
+    , { func = "wfh", scale = 116, gender = Female, measurement = 20.3, expected = Just -0.4 }
+    , { func = "wfh", scale = 116, gender = Male, measurement = 20.5, expected = Just -0.15 }
+    , { func = "wfh", scale = 116.1, gender = Female, measurement = 19.1, expected = Just -1.07 }
+    , { func = "wfh", scale = 117, gender = Female, measurement = 17.6, expected = Just -2.15 }
+    , { func = "wfh", scale = 117.4, gender = Male, measurement = 20.9, expected = Just -0.22 }
+    , { func = "wfh", scale = 119.7, gender = Male, measurement = 24.7, expected = Just 1.1 }
+    , { func = "wfh", scale = 119.8, gender = Female, measurement = 22.1, expected = Just -0.29 }
+    , { func = "wfh", scale = 58, gender = Male, measurement = 7, expected = Nothing }
+    , { func = "wfh", scale = 63, gender = Female, measurement = 9.5, expected = Nothing }
+    , { func = "wfh", scale = 63.7, gender = Male, measurement = 6.8, expected = Nothing }
+    , { func = "wfh", scale = 64.5, gender = Male, measurement = 6.9, expected = Nothing }
+    , { func = "wfh", scale = 65.6, gender = Male, measurement = 14.7, expected = Just 8.9 }
+    , { func = "wfh", scale = 67, gender = Male, measurement = 8, expected = Just 0.15 }
+    , { func = "wfh", scale = 69, gender = Male, measurement = 7.6, expected = Just -1.17 }
+    , { func = "wfh", scale = 70, gender = Male, measurement = 7.9, expected = Just -1.02 }
+    , { func = "wfh", scale = 71, gender = Female, measurement = 9, expected = Just 0.62 }
+    , { func = "wfh", scale = 73, gender = Female, measurement = 11, expected = Just 2.25 }
+    , { func = "wfh", scale = 75, gender = Female, measurement = 9, expected = Just -0.34 }
+    , { func = "wfh", scale = 82.5, gender = Female, measurement = 11.1, expected = Just 0.32 }
+    , { func = "wfh", scale = 83, gender = Female, measurement = 13.5, expected = Just 2.3 }
+    , { func = "wfh", scale = 83.5, gender = Male, measurement = 11.1, expected = Just -0.23 }
+    , { func = "wfh", scale = 83.5, gender = Male, measurement = 11.4, expected = Just 0.09 }
+    , { func = "wfh", scale = 83.6, gender = Male, measurement = 10.1, expected = Just -1.43 }
+    , { func = "wfh", scale = 84, gender = Female, measurement = 11.4, expected = Just 0.25 }
+    , { func = "wfh", scale = 85, gender = Female, measurement = 13.7, expected = Just 2 }
+    , { func = "wfh", scale = 85.5, gender = Male, measurement = 13.6, expected = Just 1.71 }
+    , { func = "wfh", scale = 85.6, gender = Male, measurement = 11.3, expected = Just -0.56 }
+    , { func = "wfh", scale = 87.8, gender = Male, measurement = 14.5, expected = Just 1.92 }
+    , { func = "wfh", scale = 88.7, gender = Female, measurement = 10.9, expected = Just -1.41 }
+    , { func = "wfh", scale = 89, gender = Male, measurement = 13.6, expected = Just 0.89 }
+    , { func = "wfh", scale = 89.5, gender = Male, measurement = 14.8, expected = Just 1.79 }
+    , { func = "wfh", scale = 90, gender = Female, measurement = 13.4, expected = Just 0.64 }
+    , { func = "wfh", scale = 90, gender = Male, measurement = 12.2, expected = Just -0.69 }
+    , { func = "wfh", scale = 90, gender = Male, measurement = 13.5, expected = Just 0.57 }
+    , { func = "wfh", scale = 90.1, gender = Female, measurement = 15.8, expected = Just 2.37 }
+    , { func = "wfh", scale = 90.4, gender = Male, measurement = 14.5, expected = Just 1.35 }
+    , { func = "wfh", scale = 91.2, gender = Female, measurement = 14.1, expected = Just 0.94 }
+    , { func = "wfh", scale = 91.3, gender = Male, measurement = 13.8, expected = Just 0.56 }
+    , { func = "wfh", scale = 91.5, gender = Female, measurement = 12.3, expected = Just -0.64 }
+    , { func = "wfh", scale = 91.7, gender = Female, measurement = 13.2, expected = Just 0.11 }
+    , { func = "wfh", scale = 91.7, gender = Male, measurement = 15.7, expected = Just 2.02 }
+    , { func = "wfh", scale = 92, gender = Female, measurement = 11.7, expected = Just -1.33 }
+    , { func = "wfh", scale = 92, gender = Male, measurement = 13.6, expected = Just 0.23 }
+    , { func = "wfh", scale = 92, gender = Male, measurement = 14.2, expected = Just 0.76 }
+    , { func = "wfh", scale = 92, gender = Male, measurement = 15.5, expected = Just 1.81 }
+    , { func = "wfh", scale = 92.6, gender = Female, measurement = 15.2, expected = Just 1.46 }
+    , { func = "wfh", scale = 92.7, gender = Female, measurement = 13.5, expected = Just 0.15 }
+    , { func = "wfh", scale = 92.7, gender = Female, measurement = 14.9, expected = Just 1.23 }
+    , { func = "wfh", scale = 93, gender = Female, measurement = 13.2, expected = Just -0.16 }
+    , { func = "wfh", scale = 93, gender = Female, measurement = 13.9, expected = Just 0.42 }
+    , { func = "wfh", scale = 93.5, gender = Female, measurement = 13.2, expected = Just -0.26 }
+    , { func = "wfh", scale = 93.6, gender = Female, measurement = 12.6, expected = Just -0.81 }
+    , { func = "wfh", scale = 94, gender = Female, measurement = 12.9, expected = Just -0.63 }
+    , { func = "wfh", scale = 94, gender = Female, measurement = 14.4, expected = Just 0.6 }
+    , { func = "wfh", scale = 94, gender = Male, measurement = 13.1, expected = Just -0.67 }
+    , { func = "wfh", scale = 94, gender = Male, measurement = 14, expected = Just 0.16 }
+    , { func = "wfh", scale = 94.2, gender = Female, measurement = 14.3, expected = Just 0.48 }
+    , { func = "wfh", scale = 94.3, gender = Female, measurement = 13.4, expected = Just -0.26 }
+    , { func = "wfh", scale = 94.3, gender = Male, measurement = 15.6, expected = Just 1.41 }
+    , { func = "wfh", scale = 94.4, gender = Female, measurement = 13.4, expected = Just -0.28 }
+    , { func = "wfh", scale = 94.5, gender = Female, measurement = 12, expected = Just -1.57 }
+    , { func = "wfh", scale = 94.5, gender = Female, measurement = 13.6, expected = Just -0.13 }
+    , { func = "wfh", scale = 94.5, gender = Female, measurement = 14.1, expected = Just 0.27 }
+    , { func = "wfh", scale = 94.5, gender = Male, measurement = 13.1, expected = Just -0.78 }
+    , { func = "wfh", scale = 94.5, gender = Male, measurement = 15.8, expected = Just 1.52 }
+    , { func = "wfh", scale = 95, gender = Female, measurement = 11.8, expected = Just -1.88 }
+    , { func = "wfh", scale = 95, gender = Male, measurement = 13.1, expected = Just -0.89 }
+    , { func = "wfh", scale = 95.1, gender = Male, measurement = 13.8, expected = Just -0.25 }
+    , { func = "wfh", scale = 95.1, gender = Male, measurement = 14.7, expected = Just 0.53 }
+    , { func = "wfh", scale = 95.3, gender = Female, measurement = 15, expected = Just 0.78 }
+    , { func = "wfh", scale = 95.3, gender = Male, measurement = 14.2, expected = Just 0.06 }
+    , { func = "wfh", scale = 95.5, gender = Female, measurement = 14.5, expected = Just 0.37 }
+    , { func = "wfh", scale = 95.5, gender = Male, measurement = 14.2, expected = Just 0.02 }
+    , { func = "wfh", scale = 95.5, gender = Male, measurement = 15.2, expected = Just 0.85 }
+    , { func = "wfh", scale = 95.5, gender = Male, measurement = 16, expected = Just 1.46 }
+    , { func = "wfh", scale = 95.7, gender = Male, measurement = 14.6, expected = Just 0.32 }
+    , { func = "wfh", scale = 95.9, gender = Female, measurement = 16, expected = Just 1.36 }
+    , { func = "wfh", scale = 96, gender = Female, measurement = 14.1, expected = Just -0.04 }
+    , { func = "wfh", scale = 96, gender = Female, measurement = 14.6, expected = Just 0.35 }
+    , { func = "wfh", scale = 96, gender = Male, measurement = 14.6, expected = Just 0.25 }
+    , { func = "wfh", scale = 96, gender = Male, measurement = 15.2, expected = Just 0.74 }
+    , { func = "wfh", scale = 96.1, gender = Female, measurement = 16.4, expected = Just 1.58 }
+    , { func = "wfh", scale = 96.3, gender = Female, measurement = 13.1, expected = Just -0.93 }
+    , { func = "wfh", scale = 96.3, gender = Female, measurement = 15.3, expected = Just 0.8 }
+    , { func = "wfh", scale = 96.4, gender = Female, measurement = 15.6, expected = Just 0.99 }
+    , { func = "wfh", scale = 96.5, gender = Male, measurement = 13.4, expected = Just -0.93 }
+    , { func = "wfh", scale = 96.5, gender = Male, measurement = 14.3, expected = Just -0.11 }
+    , { func = "wfh", scale = 96.5, gender = Male, measurement = 15.6, expected = Just 0.95 }
+    , { func = "wfh", scale = 96.6, gender = Female, measurement = 15.4, expected = Just 0.81 }
+    , { func = "wfh", scale = 96.7, gender = Female, measurement = 15.2, expected = Just 0.65 }
+    , { func = "wfh", scale = 96.7, gender = Male, measurement = 16.9, expected = Just 1.86 }
+    , { func = "wfh", scale = 96.8, gender = Female, measurement = 12.9, expected = Just -1.21 }
+    , { func = "wfh", scale = 97, gender = Female, measurement = 14.2, expected = Just -0.16 }
+    , { func = "wfh", scale = 97, gender = Female, measurement = 14.2, expected = Just -0.16 }
+    , { func = "wfh", scale = 97, gender = Female, measurement = 14.8, expected = Just 0.3 }
+    , { func = "wfh", scale = 97, gender = Male, measurement = 15.5, expected = Just 0.77 }
+    , { func = "wfh", scale = 97.2, gender = Female, measurement = 13.8, expected = Just -0.52 }
+    , { func = "wfh", scale = 97.2, gender = Male, measurement = 14, expected = Just -0.53 }
+    , { func = "wfh", scale = 97.3, gender = Female, measurement = 14, expected = Just -0.38 }
+    , { func = "wfh", scale = 97.3, gender = Female, measurement = 15.7, expected = Just 0.88 }
+    , { func = "wfh", scale = 97.7, gender = Male, measurement = 15.1, expected = Just 0.3 }
+    , { func = "wfh", scale = 97.7, gender = Male, measurement = 15.4, expected = Just 0.54 }
+    , { func = "wfh", scale = 97.8, gender = Female, measurement = 16.3, expected = Just 1.18 }
+    , { func = "wfh", scale = 97.9, gender = Male, measurement = 16.5, expected = Just 1.32 }
+    , { func = "wfh", scale = 97.9, gender = Male, measurement = 16.8, expected = Just 1.53 }
+    , { func = "wfh", scale = 98, gender = Female, measurement = 15.1, expected = Just 0.32 }
+    , { func = "wfh", scale = 98, gender = Female, measurement = 15.3, expected = Just 0.46 }
+    , { func = "wfh", scale = 98, gender = Male, measurement = 14.5, expected = Just -0.26 }
+    , { func = "wfh", scale = 98, gender = Male, measurement = 15, expected = Just 0.15 }
+    , { func = "wfh", scale = 98, gender = Male, measurement = 15.3, expected = Just 0.39 }
+    , { func = "wfh", scale = 98, gender = Male, measurement = 16, expected = Just 0.93 }
+    , { func = "wfh", scale = 98, gender = Male, measurement = 16, expected = Just 0.93 }
+    , { func = "wfh", scale = 98, gender = Male, measurement = 16.6, expected = Just 1.37 }
+    , { func = "wfh", scale = 98.2, gender = Female, measurement = 15.3, expected = Just 0.42 }
+    , { func = "wfh", scale = 98.3, gender = Male, measurement = 14, expected = Just -0.77 }
+    , { func = "wfh", scale = 98.3, gender = Male, measurement = 16, expected = Just 0.87 }
+    , { func = "wfh", scale = 98.4, gender = Male, measurement = 14.3, expected = Just -0.52 }
+    , { func = "wfh", scale = 98.5, gender = Female, measurement = 12.5, expected = Just -1.93 }
+    , { func = "wfh", scale = 98.5, gender = Male, measurement = 14.1, expected = Just -0.72 }
+    , { func = "wfh", scale = 98.7, gender = Female, measurement = 15.2, expected = Just 0.25 }
+    , { func = "wfh", scale = 98.9, gender = Male, measurement = 13.5, expected = Just -1.36 }
+    , { func = "wfh", scale = 99, gender = Female, measurement = 13.4, expected = Just -1.23 }
+    , { func = "wfh", scale = 99, gender = Female, measurement = 15.3, expected = Just 0.26 }
+    , { func = "wfh", scale = 99, gender = Female, measurement = 15.9, expected = Just 0.68 }
+    , { func = "wfh", scale = 99, gender = Female, measurement = 16.9, expected = Just 1.33 }
+    , { func = "wfh", scale = 99, gender = Female, measurement = 17.8, expected = Just 1.87 }
+    , { func = "wfh", scale = 99, gender = Male, measurement = 13, expected = Just -1.86 }
+    , { func = "wfh", scale = 99, gender = Male, measurement = 15, expected = Just -0.07 }
+    , { func = "wfh", scale = 99, gender = Male, measurement = 15.2, expected = Just 0.1 }
+    , { func = "wfh", scale = 99, gender = Male, measurement = 15.7, expected = Just 0.49 }
+    , { func = "wfh", scale = 99, gender = Male, measurement = 15.9, expected = Just 0.64 }
+    , { func = "wfh", scale = 99, gender = Male, measurement = 16.1, expected = Just 0.79 }
+    , { func = "wfh", scale = 99, gender = Male, measurement = 17.1, expected = Just 1.5 }
+    , { func = "wfh", scale = 99.1, gender = Female, measurement = 15.7, expected = Just 0.52 }
+    , { func = "wfh", scale = 99.1, gender = Male, measurement = 15.5, expected = Just 0.31 }
+    , { func = "wfh", scale = 99.2, gender = Female, measurement = 15.9, expected = Just 0.64 }
+    , { func = "wfh", scale = 99.3, gender = Male, measurement = 15.4, expected = Just 0.19 }
+    , { func = "wfh", scale = 99.3, gender = Male, measurement = 17.1, expected = Just 1.44 }
+    , { func = "wfh", scale = 99.4, gender = Female, measurement = 14.9, expected = Just -0.11 }
+    , { func = "wfh", scale = 99.5, gender = Female, measurement = 15.8, expected = Just 0.51 }
+    , { func = "wfh", scale = 99.5, gender = Male, measurement = 15.8, expected = Just 0.45 }
+    , { func = "wfh", scale = 99.5, gender = Male, measurement = 16.2, expected = Just 0.75 }
+    , { func = "wfh", scale = 99.5, gender = Male, measurement = 18.4, expected = Just 2.24 }
+    , { func = "wfh", scale = 99.9, gender = Female, measurement = 15.4, expected = Just 0.15 }
     ]
 
 
-wflTestData : List ( String, Float, Gender, Float, Maybe Float )
+wflTestData : List ZScoreTestCase
 wflTestData =
-    [ ( "wfl", 100, Female, 12, Just -2.59 )
-    , ( "wfl", 12.5, Female, 12, Nothing )
-    , ( "wfl", 13, Male, 9, Nothing )
-    , ( "wfl", 14, Male, 11, Nothing )
-    , ( "wfl", 49, Female, 3.3, Just 0.49 )
-    , ( "wfl", 54, Female, 3.9, Just -1.06 )
-    , ( "wfl", 54.5, Female, 4.4, Just -0.04 )
-    , ( "wfl", 55, Male, 5.7, Just 2.53 )
-    , ( "wfl", 55, Male, 8, Just 6.86 )
-    , ( "wfl", 55.8, Male, 5.4, Just 1.41 )
-    , ( "wfl", 56, Male, 8, Just 6.01 )
-    , ( "wfl", 56.7, Female, 6, Just 1.92 )
-    , ( "wfl", 57, Male, 6, Just 1.81 )
-    , ( "wfl", 57.5, Male, 5.5, Just 0.5 )
-    , ( "wfl", 58, Female, 5.5, Just 0.3 )
-    , ( "wfl", 58, Male, 6.2, Just 1.56 )
-    , ( "wfl", 58, Male, 6.5, Just 2.09 )
-    , ( "wfl", 58, Male, 8, Just 4.53 )
-    , ( "wfl", 58.1, Female, 4.7, Just -1.51 )
-    , ( "wfl", 59, Female, 5.4, Just -0.43 )
-    , ( "wfl", 59, Female, 8, Just 3.7 )
-    , ( "wfl", 59, Male, 9, Just 5.45 )
-    , ( "wfl", 59.5, Female, 6, Just 0.47 )
-    , ( "wfl", 60, Male, 9, Just 4.81 )
-    , ( "wfl", 60.5, Male, 7.2, Just 1.88 )
-    , ( "wfl", 60.7, Female, 5, Just -2.17 )
-    , ( "wfl", 61, Female, 5.9, Just -0.42 )
-    , ( "wfl", 61, Female, 6.4, Just 0.47 )
-    , ( "wfl", 61, Female, 7, Just 1.42 )
-    , ( "wfl", 61, Male, 5.5, Just -1.6 )
-    , ( "wfl", 62, Male, 10, Just 5.13 )
-    , ( "wfl", 62.1, Female, 7.2, Just 1.26 )
-    , ( "wfl", 62.5, Male, 6.4, Just -0.47 )
-    , ( "wfl", 62.5, Male, 6.6, Just -0.1 )
-    , ( "wfl", 63, Female, 10.1, Just 4.5 )
-    , ( "wfl", 63, Female, 6.3, Just -0.54 )
-    , ( "wfl", 63, Female, 7.5, Just 1.34 )
-    , ( "wfl", 63, Female, 8.3, Just 2.38 )
-    , ( "wfl", 63, Male, 6.3, Just -0.9 )
-    , ( "wfl", 63.5, Female, 6.7, Just -0.05 )
-    , ( "wfl", 63.9, Female, 7.4, Just 0.87 )
-    , ( "wfl", 64.5, Female, 7.3, Just 0.51 )
-    , ( "wfl", 64.5, Male, 9, Just 2.69 )
-    , ( "wfl", 65, Female, 7.6, Just 0.76 )
-    , ( "wfl", 65, Male, 8.9, Just 2.38 )
-    , ( "wfl", 65.9, Male, 6.2, Just -2.36 )
-    , ( "wfl", 66.5, Female, 7.4, Just -0.03 )
-    , ( "wfl", 67, Female, 7.4, Just -0.19 )
-    , ( "wfl", 67, Female, 7.4, Just -0.19 )
-    , ( "wfl", 67, Male, 7, Just -1.24 )
-    , ( "wfl", 67.1, Male, 7.8, Just 0.06 )
-    , ( "wfl", 67.4, Female, 7.4, Just -0.32 )
-    , ( "wfl", 67.5, Male, 7.1, Just -1.25 )
-    , ( "wfl", 67.8, Male, 7.8, Just -0.19 )
-    , ( "wfl", 68, Male, 7.1, Just -1.43 )
-    , ( "wfl", 68.5, Male, 7.4, Just -1.09 )
-    , ( "wfl", 68.5, Male, 7.8, Just -0.43 )
-    , ( "wfl", 69, Female, 10.1, Just 2.51 )
-    , ( "wfl", 69, Male, 7.8, Just -0.61 )
-    , ( "wfl", 69, Male, 7.8, Just -0.61 )
-    , ( "wfl", 69.3, Male, 7.5, Just -1.2 )
-    , ( "wfl", 69.5, Female, 8.2, Just 0.19 )
-    , ( "wfl", 69.5, Male, 7, Just -2.15 )
-    , ( "wfl", 69.5, Male, 7.5, Just -1.27 )
-    , ( "wfl", 70, Female, 12.9, Just 4.96 )
-    , ( "wfl", 70, Female, 7, Just -1.75 )
-    , ( "wfl", 70, Male, 7.9, Just -0.79 )
-    , ( "wfl", 70, Male, 9.4, Just 1.31 )
-    , ( "wfl", 70.2, Female, 8.9, Just 0.88 )
-    , ( "wfl", 70.3, Male, 7.9, Just -0.89 )
-    , ( "wfl", 70.5, Female, 7.8, Just -0.65 )
-    , ( "wfl", 70.5, Female, 9.5, Just 1.5 )
-    , ( "wfl", 70.5, Male, 8.3, Just -0.34 )
-    , ( "wfl", 70.5, Male, 8.3, Just -0.34 )
-    , ( "wfl", 71, Female, 7.1, Just -1.87 )
-    , ( "wfl", 71, Female, 8.1, Just -0.36 )
-    , ( "wfl", 71, Female, 8.2, Just -0.22 )
-    , ( "wfl", 71, Female, 8.4, Just 0.04 )
-    , ( "wfl", 71, Female, 8.6, Just 0.3 )
-    , ( "wfl", 71, Male, 7.9, Just -1.12 )
-    , ( "wfl", 71, Male, 8.3, Just -0.5 )
-    , ( "wfl", 71.5, Female, 7.6, Just -1.22 )
-    , ( "wfl", 71.5, Male, 8.6, Just -0.22 )
-    , ( "wfl", 71.9, Female, 8.2, Just -0.46 )
-    , ( "wfl", 72, Female, 7.5, Just -1.51 )
-    , ( "wfl", 72, Female, 9.5, Just 1.12 )
-    , ( "wfl", 72, Female, 9.6, Just 1.23 )
-    , ( "wfl", 72, Male, 8, Just -1.27 )
-    , ( "wfl", 72, Male, 8, Just -1.27 )
-    , ( "wfl", 72, Male, 8.1, Just -1.12 )
-    , ( "wfl", 72.4, Male, 8.4, Just -0.79 )
-    , ( "wfl", 72.5, Female, 8.3, Just -0.48 )
-    , ( "wfl", 72.5, Female, 9.4, Just 0.88 )
-    , ( "wfl", 72.5, Male, 8.8, Just -0.24 )
-    , ( "wfl", 72.5, Male, 9.2, Just 0.29 )
-    , ( "wfl", 723, Female, 9.4, Nothing )
-    , ( "wfl", 73, Female, 7.2, Just -2.26 )
-    , ( "wfl", 73, Female, 9, Just 0.29 )
-    , ( "wfl", 73, Female, 9, Just 0.29 )
-    , ( "wfl", 73, Female, 9, Just 0.29 )
-    , ( "wfl", 73, Male, 8.7, Just -0.53 )
-    , ( "wfl", 73, Male, 9.2, Just 0.15 )
-    , ( "wfl", 73, Male, 9.4, Just 0.41 )
-    , ( "wfl", 73, Male, 9.4, Just 0.41 )
-    , ( "wfl", 73.2, Male, 10.9, Just 2.08 )
-    , ( "wfl", 73.5, Male, 8.5, Just -0.96 )
-    , ( "wfl", 73.8, Female, 8.2, Just -0.95 )
-    , ( "wfl", 74, Female, 8.6, Just -0.46 )
-    , ( "wfl", 74, Male, 10, Just 0.87 )
-    , ( "wfl", 74, Male, 8.7, Just -0.81 )
-    , ( "wfl", 74, Male, 8.9, Just -0.53 )
-    , ( "wfl", 74, Male, 9.8, Just 0.63 )
-    , ( "wfl", 74.5, Female, 8.5, Just -0.71 )
-    , ( "wfl", 74.5, Female, 8.7, Just -0.45 )
-    , ( "wfl", 74.6, Male, 10.8, Just 1.61 )
-    , ( "wfl", 75, Female, 10, Just 0.97 )
-    , ( "wfl", 75, Female, 8.4, Just -0.96 )
-    , ( "wfl", 75, Female, 8.8, Just -0.44 )
-    , ( "wfl", 75, Male, 8.5, Just -1.37 )
-    , ( "wfl", 75, Male, 8.8, Just -0.94 )
-    , ( "wfl", 75, Male, 8.9, Just -0.8 )
-    , ( "wfl", 75.1, Female, 7.5, Just -2.32 )
-    , ( "wfl", 75.2, Female, 9.7, Just 0.6 )
-    , ( "wfl", 75.3, Female, 8.5, Just -0.9 )
-    , ( "wfl", 75.5, Female, 9.7, Just 0.53 )
-    , ( "wfl", 75.6, Female, 9.2, Just -0.07 )
-    , ( "wfl", 75.7, Female, 10.6, Just 1.44 )
-    , ( "wfl", 75.7, Male, 8, Just -2.33 )
-    , ( "wfl", 76, Female, 8.5, Just -1.06 )
-    , ( "wfl", 76, Female, 9.1, Just -0.28 )
-    , ( "wfl", 76, Male, 10.1, Just 0.48 )
-    , ( "wfl", 76, Male, 9.2, Just -0.65 )
-    , ( "wfl", 76, Male, 9.6, Just -0.13 )
-    , ( "wfl", 76.4, Female, 10.4, Just 1.1 )
-    , ( "wfl", 76.5, Male, 8.8, Just -1.32 )
-    , ( "wfl", 76.5, Male, 9.4, Just -0.51 )
-    , ( "wfl", 77, Female, 11, Just 1.57 )
-    , ( "wfl", 77, Female, 11, Just 1.57 )
-    , ( "wfl", 77, Female, 12, Just 2.47 )
-    , ( "wfl", 77, Female, 12.5, Just 2.88 )
-    , ( "wfl", 77, Female, 9.2, Just -0.38 )
-    , ( "wfl", 77, Female, 9.9, Just 0.44 )
-    , ( "wfl", 77, Male, 10, Just 0.13 )
-    , ( "wfl", 77, Male, 10, Just 0.13 )
-    , ( "wfl", 77, Male, 10.1, Just 0.24 )
-    , ( "wfl", 77, Male, 10.4, Just 0.59 )
-    , ( "wfl", 77, Male, 10.7, Just 0.93 )
-    , ( "wfl", 77, Male, 9, Just -1.16 )
-    , ( "wfl", 77, Male, 9.4, Just -0.62 )
-    , ( "wfl", 77.5, Male, 10, Just 0.01 )
-    , ( "wfl", 77.5, Male, 9.5, Just -0.61 )
-    , ( "wfl", 78, Female, 8.9, Just -0.98 )
-    , ( "wfl", 78, Male, 10.1, Just 0.02 )
-    , ( "wfl", 78, Male, 10.2, Just 0.14 )
-    , ( "wfl", 78, Male, 10.8, Just 0.82 )
-    , ( "wfl", 78, Male, 11.3, Just 1.34 )
-    , ( "wfl", 78, Male, 9, Just -1.39 )
-    , ( "wfl", 78, Male, 9.1, Just -1.26 )
-    , ( "wfl", 78, Male, 9.4, Just -0.85 )
-    , ( "wfl", 78, Male, 9.9, Just -0.22 )
-    , ( "wfl", 78.1, Female, 9.6, Just -0.14 )
-    , ( "wfl", 78.2, Female, 10.1, Just 0.4 )
-    , ( "wfl", 78.3, Male, 9.4, Just -0.92 )
-    , ( "wfl", 78.5, Female, 9.6, Just -0.23 )
-    , ( "wfl", 78.5, Male, 11.5, Just 1.44 )
-    , ( "wfl", 78.5, Male, 9.9, Just -0.33 )
-    , ( "wfl", 78.6, Male, 8.4, Just -2.41 )
-    , ( "wfl", 78.8, Male, 60.3, Just 44.24 )
-    , ( "wfl", 79, Female, 9.6, Just -0.34 )
-    , ( "wfl", 79, Female, 9.6, Just -0.34 )
-    , ( "wfl", 79, Male, 10, Just -0.32 )
-    , ( "wfl", 79, Male, 10.1, Just -0.2 )
-    , ( "wfl", 79, Male, 10.5, Just 0.27 )
-    , ( "wfl", 79, Male, 97.7, Just 76.76 )
-    , ( "wfl", 79.1, Male, 10.4, Just 0.14 )
-    , ( "wfl", 79.2, Female, 9.8, Just -0.15 )
-    , ( "wfl", 79.4, Female, 9, Just -1.17 )
-    , ( "wfl", 79.5, Female, 10.5, Just 0.55 )
-    , ( "wfl", 80, Female, 10.6, Just 0.55 )
-    , ( "wfl", 80, Female, 10.8, Just 0.75 )
-    , ( "wfl", 80, Female, 12.1, Just 1.96 )
-    , ( "wfl", 80, Male, 10.4, Just -0.05 )
-    , ( "wfl", 80, Male, 10.5, Just 0.06 )
-    , ( "wfl", 80, Male, 10.6, Just 0.17 )
-    , ( "wfl", 80, Male, 10.8, Just 0.4 )
-    , ( "wfl", 80, Male, 9.8, Just -0.78 )
-    , ( "wfl", 80.4, Female, 10.1, Just -0.08 )
-    , ( "wfl", 80.5, Female, 11, Just 0.84 )
-    , ( "wfl", 80.5, Male, 11.6, Just 1.13 )
-    , ( "wfl", 81, Female, 10.2, Just -0.11 )
-    , ( "wfl", 81, Female, 10.5, Just 0.22 )
-    , ( "wfl", 81, Male, 8, Just -3.56 )
-    , ( "wfl", 81, Male, 9.8, Just -1 )
-    , ( "wfl", 81.3, Female, 10.6, Just 0.25 )
-    , ( "wfl", 81.5, Female, 11.1, Just 0.72 )
-    , ( "wfl", 81.5, Male, 10.5, Just -0.27 )
-    , ( "wfl", 81.5, Male, 11.7, Just 1.03 )
-    , ( "wfl", 81.5, Male, 9.9, Just -0.99 )
-    , ( "wfl", 81.7, Female, 10.1, Just -0.38 )
-    , ( "wfl", 81.7, Male, 10.3, Just -0.55 )
-    , ( "wfl", 82, Female, 10.4, Just -0.12 )
-    , ( "wfl", 82, Female, 11, Just 0.5 )
-    , ( "wfl", 82, Female, 9.8, Just -0.8 )
-    , ( "wfl", 82, Male, 11.8, Just 1.02 )
-    , ( "wfl", 82.3, Male, 11, Just 0.12 )
-    , ( "wfl", 82.5, Male, 10.9, Just -0.04 )
-    , ( "wfl", 82.5, Male, 11.4, Just 0.5 )
-    , ( "wfl", 83, Female, 10.2, Just -0.59 )
-    , ( "wfl", 83, Female, 11.6, Just 0.85 )
-    , ( "wfl", 83, Male, 10.3, Just -0.85 )
-    , ( "wfl", 83.2, Male, 11, Just -0.09 )
-    , ( "wfl", 83.5, Male, 9.9, Just -1.48 )
-    , ( "wfl", 84, Female, 11, Just 0.02 )
-    , ( "wfl", 84, Male, 11.8, Just 0.56 )
-    , ( "wfl", 84, Male, 12.5, Just 1.24 )
-    , ( "wfl", 84, Male, 12.9, Just 1.61 )
-    , ( "wfl", 85, Female, 13.4, Just 1.93 )
-    , ( "wfl", 86, Female, 11.8, Just 0.32 )
-    , ( "wfl", 87, Female, 10, Just -1.84 )
-    , ( "wfl", 88, Female, 12, Just 0.03 )
-    , ( "wfl", 92, Female, 11, Just -1.9 )
-    , ( "wfl", 94, Female, 10, Just -3.48 )
+    [ { func = "wfl", scale = 100, gender = Female, measurement = 12, expected = Just -2.59 }
+    , { func = "wfl", scale = 12.5, gender = Female, measurement = 12, expected = Nothing }
+    , { func = "wfl", scale = 13, gender = Male, measurement = 9, expected = Nothing }
+    , { func = "wfl", scale = 14, gender = Male, measurement = 11, expected = Nothing }
+    , { func = "wfl", scale = 49, gender = Female, measurement = 3.3, expected = Just 0.49 }
+    , { func = "wfl", scale = 54, gender = Female, measurement = 3.9, expected = Just -1.06 }
+    , { func = "wfl", scale = 54.5, gender = Female, measurement = 4.4, expected = Just -0.04 }
+    , { func = "wfl", scale = 55, gender = Male, measurement = 5.7, expected = Just 2.53 }
+    , { func = "wfl", scale = 55, gender = Male, measurement = 8, expected = Just 6.86 }
+    , { func = "wfl", scale = 55.8, gender = Male, measurement = 5.4, expected = Just 1.41 }
+    , { func = "wfl", scale = 56, gender = Male, measurement = 8, expected = Just 6.01 }
+    , { func = "wfl", scale = 56.7, gender = Female, measurement = 6, expected = Just 1.92 }
+    , { func = "wfl", scale = 57, gender = Male, measurement = 6, expected = Just 1.81 }
+    , { func = "wfl", scale = 57.5, gender = Male, measurement = 5.5, expected = Just 0.5 }
+    , { func = "wfl", scale = 58, gender = Female, measurement = 5.5, expected = Just 0.3 }
+    , { func = "wfl", scale = 58, gender = Male, measurement = 6.2, expected = Just 1.56 }
+    , { func = "wfl", scale = 58, gender = Male, measurement = 6.5, expected = Just 2.09 }
+    , { func = "wfl", scale = 58, gender = Male, measurement = 8, expected = Just 4.53 }
+    , { func = "wfl", scale = 58.1, gender = Female, measurement = 4.7, expected = Just -1.51 }
+    , { func = "wfl", scale = 59, gender = Female, measurement = 5.4, expected = Just -0.43 }
+    , { func = "wfl", scale = 59, gender = Female, measurement = 8, expected = Just 3.7 }
+    , { func = "wfl", scale = 59, gender = Male, measurement = 9, expected = Just 5.45 }
+    , { func = "wfl", scale = 59.5, gender = Female, measurement = 6, expected = Just 0.47 }
+    , { func = "wfl", scale = 60, gender = Male, measurement = 9, expected = Just 4.81 }
+    , { func = "wfl", scale = 60.5, gender = Male, measurement = 7.2, expected = Just 1.88 }
+    , { func = "wfl", scale = 60.7, gender = Female, measurement = 5, expected = Just -2.17 }
+    , { func = "wfl", scale = 61, gender = Female, measurement = 5.9, expected = Just -0.42 }
+    , { func = "wfl", scale = 61, gender = Female, measurement = 6.4, expected = Just 0.47 }
+    , { func = "wfl", scale = 61, gender = Female, measurement = 7, expected = Just 1.42 }
+    , { func = "wfl", scale = 61, gender = Male, measurement = 5.5, expected = Just -1.6 }
+    , { func = "wfl", scale = 62, gender = Male, measurement = 10, expected = Just 5.13 }
+    , { func = "wfl", scale = 62.1, gender = Female, measurement = 7.2, expected = Just 1.26 }
+    , { func = "wfl", scale = 62.5, gender = Male, measurement = 6.4, expected = Just -0.47 }
+    , { func = "wfl", scale = 62.5, gender = Male, measurement = 6.6, expected = Just -0.1 }
+    , { func = "wfl", scale = 63, gender = Female, measurement = 10.1, expected = Just 4.5 }
+    , { func = "wfl", scale = 63, gender = Female, measurement = 6.3, expected = Just -0.54 }
+    , { func = "wfl", scale = 63, gender = Female, measurement = 7.5, expected = Just 1.34 }
+    , { func = "wfl", scale = 63, gender = Female, measurement = 8.3, expected = Just 2.38 }
+    , { func = "wfl", scale = 63, gender = Male, measurement = 6.3, expected = Just -0.9 }
+    , { func = "wfl", scale = 63.5, gender = Female, measurement = 6.7, expected = Just -0.05 }
+    , { func = "wfl", scale = 63.9, gender = Female, measurement = 7.4, expected = Just 0.87 }
+    , { func = "wfl", scale = 64.5, gender = Female, measurement = 7.3, expected = Just 0.51 }
+    , { func = "wfl", scale = 64.5, gender = Male, measurement = 9, expected = Just 2.69 }
+    , { func = "wfl", scale = 65, gender = Female, measurement = 7.6, expected = Just 0.76 }
+    , { func = "wfl", scale = 65, gender = Male, measurement = 8.9, expected = Just 2.38 }
+    , { func = "wfl", scale = 65.9, gender = Male, measurement = 6.2, expected = Just -2.36 }
+    , { func = "wfl", scale = 66.5, gender = Female, measurement = 7.4, expected = Just -0.03 }
+    , { func = "wfl", scale = 67, gender = Female, measurement = 7.4, expected = Just -0.19 }
+    , { func = "wfl", scale = 67, gender = Female, measurement = 7.4, expected = Just -0.19 }
+    , { func = "wfl", scale = 67, gender = Male, measurement = 7, expected = Just -1.24 }
+    , { func = "wfl", scale = 67.1, gender = Male, measurement = 7.8, expected = Just 0.06 }
+    , { func = "wfl", scale = 67.4, gender = Female, measurement = 7.4, expected = Just -0.32 }
+    , { func = "wfl", scale = 67.5, gender = Male, measurement = 7.1, expected = Just -1.25 }
+    , { func = "wfl", scale = 67.8, gender = Male, measurement = 7.8, expected = Just -0.19 }
+    , { func = "wfl", scale = 68, gender = Male, measurement = 7.1, expected = Just -1.43 }
+    , { func = "wfl", scale = 68.5, gender = Male, measurement = 7.4, expected = Just -1.09 }
+    , { func = "wfl", scale = 68.5, gender = Male, measurement = 7.8, expected = Just -0.43 }
+    , { func = "wfl", scale = 69, gender = Female, measurement = 10.1, expected = Just 2.51 }
+    , { func = "wfl", scale = 69, gender = Male, measurement = 7.8, expected = Just -0.61 }
+    , { func = "wfl", scale = 69, gender = Male, measurement = 7.8, expected = Just -0.61 }
+    , { func = "wfl", scale = 69.3, gender = Male, measurement = 7.5, expected = Just -1.2 }
+    , { func = "wfl", scale = 69.5, gender = Female, measurement = 8.2, expected = Just 0.19 }
+    , { func = "wfl", scale = 69.5, gender = Male, measurement = 7, expected = Just -2.15 }
+    , { func = "wfl", scale = 69.5, gender = Male, measurement = 7.5, expected = Just -1.27 }
+    , { func = "wfl", scale = 70, gender = Female, measurement = 12.9, expected = Just 4.96 }
+    , { func = "wfl", scale = 70, gender = Female, measurement = 7, expected = Just -1.75 }
+    , { func = "wfl", scale = 70, gender = Male, measurement = 7.9, expected = Just -0.79 }
+    , { func = "wfl", scale = 70, gender = Male, measurement = 9.4, expected = Just 1.31 }
+    , { func = "wfl", scale = 70.2, gender = Female, measurement = 8.9, expected = Just 0.88 }
+    , { func = "wfl", scale = 70.3, gender = Male, measurement = 7.9, expected = Just -0.89 }
+    , { func = "wfl", scale = 70.5, gender = Female, measurement = 7.8, expected = Just -0.65 }
+    , { func = "wfl", scale = 70.5, gender = Female, measurement = 9.5, expected = Just 1.5 }
+    , { func = "wfl", scale = 70.5, gender = Male, measurement = 8.3, expected = Just -0.34 }
+    , { func = "wfl", scale = 70.5, gender = Male, measurement = 8.3, expected = Just -0.34 }
+    , { func = "wfl", scale = 71, gender = Female, measurement = 7.1, expected = Just -1.87 }
+    , { func = "wfl", scale = 71, gender = Female, measurement = 8.1, expected = Just -0.36 }
+    , { func = "wfl", scale = 71, gender = Female, measurement = 8.2, expected = Just -0.22 }
+    , { func = "wfl", scale = 71, gender = Female, measurement = 8.4, expected = Just 0.04 }
+    , { func = "wfl", scale = 71, gender = Female, measurement = 8.6, expected = Just 0.3 }
+    , { func = "wfl", scale = 71, gender = Male, measurement = 7.9, expected = Just -1.12 }
+    , { func = "wfl", scale = 71, gender = Male, measurement = 8.3, expected = Just -0.5 }
+    , { func = "wfl", scale = 71.5, gender = Female, measurement = 7.6, expected = Just -1.22 }
+    , { func = "wfl", scale = 71.5, gender = Male, measurement = 8.6, expected = Just -0.22 }
+    , { func = "wfl", scale = 71.9, gender = Female, measurement = 8.2, expected = Just -0.46 }
+    , { func = "wfl", scale = 72, gender = Female, measurement = 7.5, expected = Just -1.51 }
+    , { func = "wfl", scale = 72, gender = Female, measurement = 9.5, expected = Just 1.12 }
+    , { func = "wfl", scale = 72, gender = Female, measurement = 9.6, expected = Just 1.23 }
+    , { func = "wfl", scale = 72, gender = Male, measurement = 8, expected = Just -1.27 }
+    , { func = "wfl", scale = 72, gender = Male, measurement = 8, expected = Just -1.27 }
+    , { func = "wfl", scale = 72, gender = Male, measurement = 8.1, expected = Just -1.12 }
+    , { func = "wfl", scale = 72.4, gender = Male, measurement = 8.4, expected = Just -0.79 }
+    , { func = "wfl", scale = 72.5, gender = Female, measurement = 8.3, expected = Just -0.48 }
+    , { func = "wfl", scale = 72.5, gender = Female, measurement = 9.4, expected = Just 0.88 }
+    , { func = "wfl", scale = 72.5, gender = Male, measurement = 8.8, expected = Just -0.24 }
+    , { func = "wfl", scale = 72.5, gender = Male, measurement = 9.2, expected = Just 0.29 }
+    , { func = "wfl", scale = 723, gender = Female, measurement = 9.4, expected = Nothing }
+    , { func = "wfl", scale = 73, gender = Female, measurement = 7.2, expected = Just -2.26 }
+    , { func = "wfl", scale = 73, gender = Female, measurement = 9, expected = Just 0.29 }
+    , { func = "wfl", scale = 73, gender = Female, measurement = 9, expected = Just 0.29 }
+    , { func = "wfl", scale = 73, gender = Female, measurement = 9, expected = Just 0.29 }
+    , { func = "wfl", scale = 73, gender = Male, measurement = 8.7, expected = Just -0.53 }
+    , { func = "wfl", scale = 73, gender = Male, measurement = 9.2, expected = Just 0.15 }
+    , { func = "wfl", scale = 73, gender = Male, measurement = 9.4, expected = Just 0.41 }
+    , { func = "wfl", scale = 73, gender = Male, measurement = 9.4, expected = Just 0.41 }
+    , { func = "wfl", scale = 73.2, gender = Male, measurement = 10.9, expected = Just 2.08 }
+    , { func = "wfl", scale = 73.5, gender = Male, measurement = 8.5, expected = Just -0.96 }
+    , { func = "wfl", scale = 73.8, gender = Female, measurement = 8.2, expected = Just -0.95 }
+    , { func = "wfl", scale = 74, gender = Female, measurement = 8.6, expected = Just -0.46 }
+    , { func = "wfl", scale = 74, gender = Male, measurement = 10, expected = Just 0.87 }
+    , { func = "wfl", scale = 74, gender = Male, measurement = 8.7, expected = Just -0.81 }
+    , { func = "wfl", scale = 74, gender = Male, measurement = 8.9, expected = Just -0.53 }
+    , { func = "wfl", scale = 74, gender = Male, measurement = 9.8, expected = Just 0.63 }
+    , { func = "wfl", scale = 74.5, gender = Female, measurement = 8.5, expected = Just -0.71 }
+    , { func = "wfl", scale = 74.5, gender = Female, measurement = 8.7, expected = Just -0.45 }
+    , { func = "wfl", scale = 74.6, gender = Male, measurement = 10.8, expected = Just 1.61 }
+    , { func = "wfl", scale = 75, gender = Female, measurement = 10, expected = Just 0.97 }
+    , { func = "wfl", scale = 75, gender = Female, measurement = 8.4, expected = Just -0.96 }
+    , { func = "wfl", scale = 75, gender = Female, measurement = 8.8, expected = Just -0.44 }
+    , { func = "wfl", scale = 75, gender = Male, measurement = 8.5, expected = Just -1.37 }
+    , { func = "wfl", scale = 75, gender = Male, measurement = 8.8, expected = Just -0.94 }
+    , { func = "wfl", scale = 75, gender = Male, measurement = 8.9, expected = Just -0.8 }
+    , { func = "wfl", scale = 75.1, gender = Female, measurement = 7.5, expected = Just -2.32 }
+    , { func = "wfl", scale = 75.2, gender = Female, measurement = 9.7, expected = Just 0.6 }
+    , { func = "wfl", scale = 75.3, gender = Female, measurement = 8.5, expected = Just -0.9 }
+    , { func = "wfl", scale = 75.5, gender = Female, measurement = 9.7, expected = Just 0.53 }
+    , { func = "wfl", scale = 75.6, gender = Female, measurement = 9.2, expected = Just -0.07 }
+    , { func = "wfl", scale = 75.7, gender = Female, measurement = 10.6, expected = Just 1.44 }
+    , { func = "wfl", scale = 75.7, gender = Male, measurement = 8, expected = Just -2.33 }
+    , { func = "wfl", scale = 76, gender = Female, measurement = 8.5, expected = Just -1.06 }
+    , { func = "wfl", scale = 76, gender = Female, measurement = 9.1, expected = Just -0.28 }
+    , { func = "wfl", scale = 76, gender = Male, measurement = 10.1, expected = Just 0.48 }
+    , { func = "wfl", scale = 76, gender = Male, measurement = 9.2, expected = Just -0.65 }
+    , { func = "wfl", scale = 76, gender = Male, measurement = 9.6, expected = Just -0.13 }
+    , { func = "wfl", scale = 76.4, gender = Female, measurement = 10.4, expected = Just 1.1 }
+    , { func = "wfl", scale = 76.5, gender = Male, measurement = 8.8, expected = Just -1.32 }
+    , { func = "wfl", scale = 76.5, gender = Male, measurement = 9.4, expected = Just -0.51 }
+    , { func = "wfl", scale = 77, gender = Female, measurement = 11, expected = Just 1.57 }
+    , { func = "wfl", scale = 77, gender = Female, measurement = 11, expected = Just 1.57 }
+    , { func = "wfl", scale = 77, gender = Female, measurement = 12, expected = Just 2.47 }
+    , { func = "wfl", scale = 77, gender = Female, measurement = 12.5, expected = Just 2.88 }
+    , { func = "wfl", scale = 77, gender = Female, measurement = 9.2, expected = Just -0.38 }
+    , { func = "wfl", scale = 77, gender = Female, measurement = 9.9, expected = Just 0.44 }
+    , { func = "wfl", scale = 77, gender = Male, measurement = 10, expected = Just 0.13 }
+    , { func = "wfl", scale = 77, gender = Male, measurement = 10, expected = Just 0.13 }
+    , { func = "wfl", scale = 77, gender = Male, measurement = 10.1, expected = Just 0.24 }
+    , { func = "wfl", scale = 77, gender = Male, measurement = 10.4, expected = Just 0.59 }
+    , { func = "wfl", scale = 77, gender = Male, measurement = 10.7, expected = Just 0.93 }
+    , { func = "wfl", scale = 77, gender = Male, measurement = 9, expected = Just -1.16 }
+    , { func = "wfl", scale = 77, gender = Male, measurement = 9.4, expected = Just -0.62 }
+    , { func = "wfl", scale = 77.5, gender = Male, measurement = 10, expected = Just 0.01 }
+    , { func = "wfl", scale = 77.5, gender = Male, measurement = 9.5, expected = Just -0.61 }
+    , { func = "wfl", scale = 78, gender = Female, measurement = 8.9, expected = Just -0.98 }
+    , { func = "wfl", scale = 78, gender = Male, measurement = 10.1, expected = Just 0.02 }
+    , { func = "wfl", scale = 78, gender = Male, measurement = 10.2, expected = Just 0.14 }
+    , { func = "wfl", scale = 78, gender = Male, measurement = 10.8, expected = Just 0.82 }
+    , { func = "wfl", scale = 78, gender = Male, measurement = 11.3, expected = Just 1.34 }
+    , { func = "wfl", scale = 78, gender = Male, measurement = 9, expected = Just -1.39 }
+    , { func = "wfl", scale = 78, gender = Male, measurement = 9.1, expected = Just -1.26 }
+    , { func = "wfl", scale = 78, gender = Male, measurement = 9.4, expected = Just -0.85 }
+    , { func = "wfl", scale = 78, gender = Male, measurement = 9.9, expected = Just -0.22 }
+    , { func = "wfl", scale = 78.1, gender = Female, measurement = 9.6, expected = Just -0.14 }
+    , { func = "wfl", scale = 78.2, gender = Female, measurement = 10.1, expected = Just 0.4 }
+    , { func = "wfl", scale = 78.3, gender = Male, measurement = 9.4, expected = Just -0.92 }
+    , { func = "wfl", scale = 78.5, gender = Female, measurement = 9.6, expected = Just -0.23 }
+    , { func = "wfl", scale = 78.5, gender = Male, measurement = 11.5, expected = Just 1.44 }
+    , { func = "wfl", scale = 78.5, gender = Male, measurement = 9.9, expected = Just -0.33 }
+    , { func = "wfl", scale = 78.6, gender = Male, measurement = 8.4, expected = Just -2.41 }
+    , { func = "wfl", scale = 78.8, gender = Male, measurement = 60.3, expected = Just 44.24 }
+    , { func = "wfl", scale = 79, gender = Female, measurement = 9.6, expected = Just -0.34 }
+    , { func = "wfl", scale = 79, gender = Female, measurement = 9.6, expected = Just -0.34 }
+    , { func = "wfl", scale = 79, gender = Male, measurement = 10, expected = Just -0.32 }
+    , { func = "wfl", scale = 79, gender = Male, measurement = 10.1, expected = Just -0.2 }
+    , { func = "wfl", scale = 79, gender = Male, measurement = 10.5, expected = Just 0.27 }
+    , { func = "wfl", scale = 79, gender = Male, measurement = 97.7, expected = Just 76.76 }
+    , { func = "wfl", scale = 79.1, gender = Male, measurement = 10.4, expected = Just 0.14 }
+    , { func = "wfl", scale = 79.2, gender = Female, measurement = 9.8, expected = Just -0.15 }
+    , { func = "wfl", scale = 79.4, gender = Female, measurement = 9, expected = Just -1.17 }
+    , { func = "wfl", scale = 79.5, gender = Female, measurement = 10.5, expected = Just 0.55 }
+    , { func = "wfl", scale = 80, gender = Female, measurement = 10.6, expected = Just 0.55 }
+    , { func = "wfl", scale = 80, gender = Female, measurement = 10.8, expected = Just 0.75 }
+    , { func = "wfl", scale = 80, gender = Female, measurement = 12.1, expected = Just 1.96 }
+    , { func = "wfl", scale = 80, gender = Male, measurement = 10.4, expected = Just -0.05 }
+    , { func = "wfl", scale = 80, gender = Male, measurement = 10.5, expected = Just 0.06 }
+    , { func = "wfl", scale = 80, gender = Male, measurement = 10.6, expected = Just 0.17 }
+    , { func = "wfl", scale = 80, gender = Male, measurement = 10.8, expected = Just 0.4 }
+    , { func = "wfl", scale = 80, gender = Male, measurement = 9.8, expected = Just -0.78 }
+    , { func = "wfl", scale = 80.4, gender = Female, measurement = 10.1, expected = Just -0.08 }
+    , { func = "wfl", scale = 80.5, gender = Female, measurement = 11, expected = Just 0.84 }
+    , { func = "wfl", scale = 80.5, gender = Male, measurement = 11.6, expected = Just 1.13 }
+    , { func = "wfl", scale = 81, gender = Female, measurement = 10.2, expected = Just -0.11 }
+    , { func = "wfl", scale = 81, gender = Female, measurement = 10.5, expected = Just 0.22 }
+    , { func = "wfl", scale = 81, gender = Male, measurement = 8, expected = Just -3.56 }
+    , { func = "wfl", scale = 81, gender = Male, measurement = 9.8, expected = Just -1 }
+    , { func = "wfl", scale = 81.3, gender = Female, measurement = 10.6, expected = Just 0.25 }
+    , { func = "wfl", scale = 81.5, gender = Female, measurement = 11.1, expected = Just 0.72 }
+    , { func = "wfl", scale = 81.5, gender = Male, measurement = 10.5, expected = Just -0.27 }
+    , { func = "wfl", scale = 81.5, gender = Male, measurement = 11.7, expected = Just 1.03 }
+    , { func = "wfl", scale = 81.5, gender = Male, measurement = 9.9, expected = Just -0.99 }
+    , { func = "wfl", scale = 81.7, gender = Female, measurement = 10.1, expected = Just -0.38 }
+    , { func = "wfl", scale = 81.7, gender = Male, measurement = 10.3, expected = Just -0.55 }
+    , { func = "wfl", scale = 82, gender = Female, measurement = 10.4, expected = Just -0.12 }
+    , { func = "wfl", scale = 82, gender = Female, measurement = 11, expected = Just 0.5 }
+    , { func = "wfl", scale = 82, gender = Female, measurement = 9.8, expected = Just -0.8 }
+    , { func = "wfl", scale = 82, gender = Male, measurement = 11.8, expected = Just 1.02 }
+    , { func = "wfl", scale = 82.3, gender = Male, measurement = 11, expected = Just 0.12 }
+    , { func = "wfl", scale = 82.5, gender = Male, measurement = 10.9, expected = Just -0.04 }
+    , { func = "wfl", scale = 82.5, gender = Male, measurement = 11.4, expected = Just 0.5 }
+    , { func = "wfl", scale = 83, gender = Female, measurement = 10.2, expected = Just -0.59 }
+    , { func = "wfl", scale = 83, gender = Female, measurement = 11.6, expected = Just 0.85 }
+    , { func = "wfl", scale = 83, gender = Male, measurement = 10.3, expected = Just -0.85 }
+    , { func = "wfl", scale = 83.2, gender = Male, measurement = 11, expected = Just -0.09 }
+    , { func = "wfl", scale = 83.5, gender = Male, measurement = 9.9, expected = Just -1.48 }
+    , { func = "wfl", scale = 84, gender = Female, measurement = 11, expected = Just 0.02 }
+    , { func = "wfl", scale = 84, gender = Male, measurement = 11.8, expected = Just 0.56 }
+    , { func = "wfl", scale = 84, gender = Male, measurement = 12.5, expected = Just 1.24 }
+    , { func = "wfl", scale = 84, gender = Male, measurement = 12.9, expected = Just 1.61 }
+    , { func = "wfl", scale = 85, gender = Female, measurement = 13.4, expected = Just 1.93 }
+    , { func = "wfl", scale = 86, gender = Female, measurement = 11.8, expected = Just 0.32 }
+    , { func = "wfl", scale = 87, gender = Female, measurement = 10, expected = Just -1.84 }
+    , { func = "wfl", scale = 88, gender = Female, measurement = 12, expected = Just 0.03 }
+    , { func = "wfl", scale = 92, gender = Female, measurement = 11, expected = Just -1.9 }
+    , { func = "wfl", scale = 94, gender = Female, measurement = 10, expected = Just -3.48 }
     ]
 
 
-bmiTestData : List ( String, Float, Gender, Float, Maybe Float )
+bmiTestData : List ZScoreTestCase
 bmiTestData =
-    [ ( "bmi", 471, Female, 17.78, Just 1.21 )
-    , ( "bmi", 25, Male, 26.45, Just 7.87 )
-    , ( "bmi", 606, Female, 15.5, Just -0.07 )
-    , ( "bmi", 474, Female, 18.55, Just 1.68 )
-    , ( "bmi", 28, Male, 25.85, Just 7.25 )
-    , ( "bmi", 606, Female, 13.21, Just -2.01 )
-    , ( "bmi", 474, Female, 18.55, Just 1.68 )
-    , ( "bmi", 28, Male, 23.78, Just 5.93 )
-    , ( "bmi", 475, Female, 20.24, Just 2.6 )
-    , ( "bmi", 675, Female, 15.38, Just -0.07 )
-    , ( "bmi", 555, Male, 16.02, Just -0.08 )
-    , ( "bmi", 775, Male, 16.59, Just 0.49 )
-    , ( "bmi", 138, Female, 18.9, Just 1.3 )
-    , ( "bmi", 348, Male, 16.62, Just -0.18 )
-    , ( "bmi", 462, Female, 16.89, Just 0.62 )
-    , ( "bmi", 409, Male, 18.66, Just 1.42 )
-    , ( "bmi", 412, Female, 16.98, Just 0.55 )
-    , ( "bmi", 442, Male, 15.67, Just -0.65 )
-    , ( "bmi", 383, Male, 15.59, Just -0.89 )
-    , ( "bmi", 638, Male, 18.05, Just 1.55 )
-    , ( "bmi", 351, Male, 15.63, Just -0.96 )
-    , ( "bmi", 654, Female, 15.64, Just 0.11 )
-    , ( "bmi", 515, Female, 15.75, Just -0.05 )
-    , ( "bmi", 644, Female, 16.61, Just 0.78 )
-    , ( "bmi", 485, Female, 14.93, Just -0.74 )
-    , ( "bmi", 422, Female, 16.07, Just -0.04 )
-    , ( "bmi", 334, Male, 15.89, Just -0.8 )
-    , ( "bmi", 657, Female, 13.0, Just -2.16 )
-    , ( "bmi", 525, Female, 21.08, Just 3.12 )
-    , ( "bmi", 79, Male, 25.51, Just 5.24 )
-    , ( "bmi", 80, Male, 25.0, Just 4.93 )
-    , ( "bmi", 619, Male, 17.49, Just 1.14 )
-    , ( "bmi", 656, Male, 16.75, Just 0.68 )
-    , ( "bmi", 790, Female, 23.94, Just 4.8 )
-    , ( "bmi", 790, Male, 16.76, Just 0.63 )
-    , ( "bmi", 153, Female, 17.55, Just 0.45 )
-    , ( "bmi", 363, Male, 15.62, Just -0.93 )
-    , ( "bmi", 398, Male, 15.58, Just -0.85 )
-    , ( "bmi", 653, Male, 17.75, Just 1.38 )
-    , ( "bmi", 366, Male, 15.43, Just -1.08 )
-    , ( "bmi", 659, Female, 16.97, Just 1.04 )
-    , ( "bmi", 500, Female, 15.31, Just -0.41 )
-    , ( "bmi", 424, Female, 22.98, Just 3.87 )
-    , ( "bmi", 349, Male, 15.87, Just -0.76 )
-    , ( "bmi", 339, Male, 561.22, Just 300 )
-    , ( "bmi", 382, Male, 532.54, Just 286.41 )
-    , ( "bmi", 667, Female, 768.0, Just 395.72 )
-    , ( "bmi", 1680, Male, 15.84, Just 0.45 )
-    , ( "bmi", 1666, Male, 17.69, Just 1.69 )
-    , ( "bmi", 1829, Female, 14.71, Just -0.39 )
-    , ( "bmi", 1669, Female, 14.41, Just -0.6 )
-    , ( "bmi", 1853, Male, 15.61, Just 0.31 )
-    , ( "bmi", 1651, Male, 15.62, Just 0.28 )
-    , ( "bmi", 1919, Female, 16.35, Just 0.69 )
-    , ( "bmi", 1597, Male, 13.64, Just -1.38 )
-    , ( "bmi", 1795, Female, 17.34, Just 1.26 )
-    , ( "bmi", 1818, Female, 17.34, Just 1.25 )
-    , ( "bmi", 1631, Female, 17.34, Just 1.3 )
-    , ( "bmi", 1323, Female, 14.13, Just -0.91 )
-    , ( "bmi", 1625, Female, 14.01, Just -0.92 )
-    , ( "bmi", 1673, Female, 16.3, Just 0.68 )
-    , ( "bmi", 1919, Female, 16.24, Just 0.63 )
-    , ( "bmi", 1554, Male, 15.47, Just 0.14 )
-    , ( "bmi", 1827, Female, 13.71, Just -1.14 )
-    , ( "bmi", 1919, Female, 20.54, Just 2.66 )
-    , ( "bmi", 1561, Female, 14.55, Just -0.51 )
-    , ( "bmi", 1658, Female, 15.26, Just 0.01 )
-    , ( "bmi", 1806, Female, 15.4, Just 0.08 )
-    , ( "bmi", 1420, Female, 17.4, Just 1.39 )
-    , ( "bmi", 1525, Female, 16.33, Just 0.72 )
-    , ( "bmi", 1919, Female, 16.24, Just 0.63 )
-    , ( "bmi", 1848, Male, 16.58, Just 0.97 )
-    , ( "bmi", 1724, Female, 17.24, Just 1.22 )
-    , ( "bmi", 1919, Male, 15.27, Just 0.01 )
-    , ( "bmi", 1394, Male, 14.67, Just -0.57 )
-    , ( "bmi", 1427, Female, 13.82, Just -1.12 )
-    , ( "bmi", 1895, Male, 16.56, Just 0.94 )
-    , ( "bmi", 1734, Female, 14.15, Just -0.8 )
-    , ( "bmi", 1569, Male, 14.48, Just -0.65 )
-    , ( "bmi", 1816, Female, 15.17, Just -0.07 )
-    , ( "bmi", 1919, Female, 14.7, Just -0.38 )
-    , ( "bmi", 916, Male, 18.6, Just 2.02 )
-    , ( "bmi", 1456, Male, 16.53, Just 0.9 )
-    , ( "bmi", 1814, Male, 18.59, Just 2.17 )
-    , ( "bmi", 1554, Female, 15.96, Just 0.48 )
-    , ( "bmi", 1123, Male, 17.34, Just 1.33 )
-    , ( "bmi", 1230, Female, 15.7, Just 0.27 )
-    , ( "bmi", 1738, Male, 16.4, Just 0.85 )
-    , ( "bmi", 1607, Male, 18.6, Just 2.24 )
-    , ( "bmi", 1919, Female, 16.15, Just 0.57 )
-    , ( "bmi", 1919, Female, 16.34, Just 0.69 )
-    , ( "bmi", 1620, Male, 17.43, Just 1.52 )
-    , ( "bmi", 1711, Female, 15.68, Just 0.28 )
-    , ( "bmi", 1535, Male, 17.28, Just 1.43 )
-    , ( "bmi", 1801, Male, 15.75, Just 0.4 )
-    , ( "bmi", 1818, Male, 16.66, Just 1.03 )
-    , ( "bmi", 1905, Female, 16.4, Just 0.73 )
-    , ( "bmi", 1785, Male, 14.7, Just -0.4 )
-    , ( "bmi", 1919, Male, 15.82, Just 0.42 )
-    , ( "bmi", 1919, Female, 16.34, Just 0.69 )
-    , ( "bmi", 1633, Male, 16.13, Just 0.65 )
-    , ( "bmi", 579, Male, 16.77, Just 0.55 )
-    , ( "bmi", 297, Male, 15.77, Just -1 )
-    , ( "bmi", 474, Female, 15.7, Just -0.17 )
-    , ( "bmi", 387, Male, 16.46, Just -0.18 )
-    , ( "bmi", 625, Male, 15.33, Just -0.5 )
-    , ( "bmi", 325, Female, 18.33, Just 1.15 )
-    , ( "bmi", 584, Male, 16.6, Just 0.44 )
-    , ( "bmi", 396, Female, 18.52, Just 1.47 )
-    , ( "bmi", 327, Male, 16.38, Just -0.43 )
-    , ( "bmi", 753, Male, 15.42, Just -0.47 )
-    , ( "bmi", 1403, Female, 16.54, Just 0.86 )
-    , ( "bmi", 1403, Male, 14.83, Just -0.44 )
-    , ( "bmi", 1768, Female, 15.53, Just 0.18 )
-    , ( "bmi", 1462, Female, 17.0, Just 1.14 )
-    , ( "bmi", 1403, Female, 15.09, Just -0.13 )
-    , ( "bmi", 1768, Female, 16.22, Just 0.62 )
-    , ( "bmi", 1403, Male, 16.75, Just 1.04 )
-    , ( "bmi", 881, Female, 14.66, Just -0.71 )
-    , ( "bmi", 461, Female, 16.27, Just 0.2 )
-    , ( "bmi", 1768, Male, 14.13, Just -0.87 )
-    , ( "bmi", 1768, Female, 18.04, Just 1.64 )
-    , ( "bmi", 210, Male, 14.28, Just -2.42 )
-    , ( "bmi", 1768, Female, 15.1, Just -0.11 )
-    , ( "bmi", 173, Female, 20.91, Just 2.32 )
-    , ( "bmi", 1403, Female, 16.08, Just 0.56 )
-    , ( "bmi", 1768, Female, 15.77, Just 0.33 )
-    , ( "bmi", 1619, Male, 16.25, Just 0.73 )
-    , ( "bmi", 1554, Female, 16.12, Just 0.58 )
-    , ( "bmi", 1768, Female, 13.36, Just -1.43 )
-    , ( "bmi", 1768, Male, 16.24, Just 0.74 )
-    , ( "bmi", 1403, Female, 15.9, Just 0.44 )
-    , ( "bmi", 1768, Female, 12.9, Just -1.81 )
-    , ( "bmi", 1768, Female, 14.42, Just -0.59 )
-    , ( "bmi", 1768, Female, 15.82, Just 0.37 )
-    , ( "bmi", 1849, Male, 15.78, Just 0.43 )
-    , ( "bmi", 1919, Male, 17.5, Just 1.54 )
-    , ( "bmi", 1051, Male, 16.66, Just 0.79 )
-    , ( "bmi", 1860, Female, 14.6, Just -0.45 )
-    , ( "bmi", 2285, Male, 16.89, Just 1.04 )
-    , ( "bmi", 1295, Male, 15.57, Just 0.11 )
-    , ( "bmi", 1628, Male, 17.72, Just 1.71 )
-    , ( "bmi", 1662, Female, 13.58, Just -1.26 )
-    , ( "bmi", 2061, Female, 16.46, Just 0.74 )
-    , ( "bmi", 1842, Female, 15.75, Just 0.31 )
-    , ( "bmi", 2176, Female, 15.29, Just 0.01 )
-    , ( "bmi", 1653, Female, 15.72, Just 0.32 )
-    , ( "bmi", 1743, Male, 14.52, Just -0.56 )
-    , ( "bmi", 1847, Female, 17.47, Just 1.31 )
-    , ( "bmi", 1893, Female, 15.86, Just 0.4 )
-    , ( "bmi", 1916, Male, 15.44, Just 0.14 )
-    , ( "bmi", 1742, Female, 14.82, Just -0.3 )
-    , ( "bmi", 1874, Male, 17.0, Just 1.23 )
-    , ( "bmi", 1495, Male, 15.96, Just 0.49 )
-    , ( "bmi", 1829, Male, 14.38, Just -0.65 )
-    , ( "bmi", 1767, Female, 14.35, Just -0.65 )
-    , ( "bmi", 1572, Male, 18.33, Just 2.09 )
-    , ( "bmi", 1809, Male, 15.2, Just 0 )
-    , ( "bmi", 1178, Male, 18.48, Just 2.13 )
-    , ( "bmi", 1848, Female, 16.16, Just 0.56 )
-    , ( "bmi", 1909, Female, 14.61, Just -0.44 )
-    , ( "bmi", 1698, Female, 15.84, Just 0.39 )
-    , ( "bmi", 1648, Female, 15.93, Just 0.45 )
-    , ( "bmi", 1762, Male, 15.28, Just 0.06 )
-    , ( "bmi", 2185, Male, 16.35, Just 0.74 )
-    , ( "bmi", 1755, Male, 15.72, Just 0.38 )
-    , ( "bmi", 2022, Female, 14.03, Just -0.87 )
-    , ( "bmi", 1871, Male, 18.07, Just 1.89 )
-    , ( "bmi", 1852, Male, 16.43, Just 0.88 )
-    , ( "bmi", 1768, Male, 14.94, Just -0.21 )
-    , ( "bmi", 1866, Male, 14.21, Just -0.87 )
-    , ( "bmi", 1919, Male, 15.94, Just 0.51 )
-    , ( "bmi", 1963, Male, 15.35, Just 0.07 )
-    , ( "bmi", 1729, Male, 16.31, Just 0.79 )
-    , ( "bmi", 1652, Male, 15.93, Just 0.51 )
-    , ( "bmi", 1936, Female, 14.23, Just -0.72 )
-    , ( "bmi", 2197, Male, 15.72, Just 0.3 )
-    , ( "bmi", 2261, Female, 16.59, Just 0.76 )
-    , ( "bmi", 1592, Female, 16.15, Just 0.6 )
-    , ( "bmi", 1946, Female, 14.31, Just -0.66 )
-    , ( "bmi", 2181, Female, 15.7, Just 0.27 )
-    , ( "bmi", 1875, Male, 17.59, Just 1.6 )
-    , ( "bmi", 1513, Female, 15.8, Just 0.38 )
-    , ( "bmi", 1681, Female, 15.07, Just -0.13 )
-    , ( "bmi", 1893, Male, 16.23, Just 0.72 )
-    , ( "bmi", 1764, Female, 16.58, Just 0.83 )
-    , ( "bmi", 1599, Male, 16.49, Just 0.9 )
-    , ( "bmi", 1916, Female, 15.84, Just 0.39 )
-    , ( "bmi", 1484, Female, 15.32, Just 0.05 )
-    , ( "bmi", 1468, Male, 16.67, Just 1 )
-    , ( "bmi", 1863, Female, 16.6, Just 0.84 )
-    , ( "bmi", 1282, Female, 16.9, Just 1.09 )
-    , ( "bmi", 1582, Female, 15.26, Just 0.01 )
-    , ( "bmi", 1507, Female, 13.07, Just -1.74 )
-    , ( "bmi", 1304, Female, 15.23, Just -0.05 )
-    , ( "bmi", 1717, Male, 15.66, Just 0.33 )
-    , ( "bmi", 1849, Female, 15.14, Just -0.09 )
-    , ( "bmi", 1707, Female, 15.25, Just -0.01 )
-    , ( "bmi", 1887, Female, 16.33, Just 0.68 )
-    , ( "bmi", 1818, Male, 15.23, Just 0.03 )
-    , ( "bmi", 1562, Female, 16.42, Just 0.77 )
-    , ( "bmi", 1819, Male, 16.55, Just 0.96 )
-    , ( "bmi", 1558, Female, 16.03, Just 0.52 )
-    , ( "bmi", 1920, Male, 15.11, Just -0.12 )
-    , ( "bmi", 1594, Male, 15.23, Just -0.03 )
-    , ( "bmi", 1728, Female, 14.85, Just -0.28 )
-    , ( "bmi", 1872, Male, 18.22, Just 1.97 )
-    , ( "bmi", 1877, Female, 15.72, Just 0.31 )
-    , ( "bmi", 1911, Female, 10.86, Just -3.92 )
-    , ( "bmi", 1818, Female, 15.63, Just 0.23 )
-    , ( "bmi", 1833, Female, 18.96, Just 2.08 )
-    , ( "bmi", 1920, Female, 16.54, Just 0.8 )
-    , ( "bmi", 1168, Male, 16.78, Just 0.96 )
-    , ( "bmi", 1278, Female, 19.6, Just 2.61 )
-    , ( "bmi", 1394, Male, 18.4, Just 2.14 )
-    , ( "bmi", 1350, Female, 15.04, Just -0.19 )
-    , ( "bmi", 1274, Female, 12.88, Just -2.06 )
-    , ( "bmi", 1366, Female, 17.76, Just 1.6 )
-    , ( "bmi", 1325, Male, 15.92, Just 0.4 )
-    , ( "bmi", 702, Female, 11.32, Just -3.87 )
-    , ( "bmi", 124, Male, 26.01, Just 5.15 )
-    , ( "bmi", 373, Female, 12.0, Just -3.65 )
-    , ( "bmi", 725, Male, 17.72, Just 1.46 )
-    , ( "bmi", 222, Female, 18.06, Just 0.74 )
-    , ( "bmi", 432, Male, 16.7, Just 0.13 )
-    , ( "bmi", 518, Male, 15.73, Just -0.4 )
-    , ( "bmi", 546, Female, 17.15, Just 0.98 )
-    , ( "bmi", 431, Female, 14.29, Just -1.4 )
-    , ( "bmi", 467, Male, 15.53, Just -0.7 )
-    , ( "bmi", 728, Female, 16.0, Just 0.44 )
-    , ( "bmi", 569, Female, 14.63, Just -0.81 )
-    , ( "bmi", 418, Male, 15.18, Just -1.14 )
-    , ( "bmi", 749, Female, 17.85, Just 1.49 )
-    , ( "bmi", 32, Female, 13.37, Just -0.94 )
-    , ( "bmi", 76, Male, 18.84, Just 1.43 )
-    , ( "bmi", 92, Female, 16.35, Just -0.01 )
-    , ( "bmi", 397, Male, 19.18, Just 1.71 )
-    , ( "bmi", 366, Male, 15.35, Just -1.14 )
-    , ( "bmi", 466, Male, 15.85, Just -0.44 )
-    , ( "bmi", 615, Male, 18.57, Just 1.85 )
-    , ( "bmi", 594, Male, 16.41, Just 0.31 )
-    , ( "bmi", 586, Male, 14.79, Just -1.05 )
-    , ( "bmi", 648, Male, 16.18, Just 0.24 )
-    , ( "bmi", 47, Male, 17.34, Just 1.04 )
-    , ( "bmi", 106, Female, 18.66, Just 1.32 )
-    , ( "bmi", 186, Female, 16.73, Just -0.12 )
-    , ( "bmi", 167, Female, 13.92, Just -2.15 )
-    , ( "bmi", 158, Female, 16.62, Just -0.16 )
-    , ( "bmi", 338, Male, 20.34, Just 2.22 )
-    , ( "bmi", 399, Male, 15.43, Just -0.98 )
-    , ( "bmi", 401, Female, 17.88, Just 1.1 )
-    , ( "bmi", 429, Female, 15.86, Just -0.17 )
-    , ( "bmi", 454, Female, 14.72, Just -0.99 )
-    , ( "bmi", 515, Female, 15.58, Just -0.18 )
-    , ( "bmi", 518, Female, 17.82, Just 1.34 )
-    , ( "bmi", 494, Female, 16.56, Just 0.48 )
-    , ( "bmi", 197, Male, 15.04, Just -1.77 )
-    , ( "bmi", 574, Male, 13.96, Just -1.86 )
-    , ( "bmi", 645, Male, 16.65, Just 0.59 )
-    , ( "bmi", 684, Female, 15.62, Just 0.12 )
-    , ( "bmi", 734, Male, 14.45, Just -1.36 )
-    , ( "bmi", 772, Female, 20.64, Just 3.03 )
-    , ( "bmi", 779, Female, 16.31, Just 0.49 )
-    , ( "bmi", 591, Female, 15.47, Just -0.12 )
-    , ( "bmi", 583, Male, 16.87, Just 0.63 )
-    , ( "bmi", 533, Male, 156.55, Just 80.12 )
-    , ( "bmi", 409, Female, 15.69, Just -0.35 )
-    , ( "bmi", 688, Male, 17.61, Just 1.34 )
-    , ( "bmi", 908, Male, 15.96, Just 0.13 )
-    , ( "bmi", 271, Female, 19.11, Just 1.46 )
-    , ( "bmi", 481, Male, 17.26, Just 0.67 )
-    , ( "bmi", 567, Male, 15.64, Just -0.36 )
-    , ( "bmi", 567, Male, 16.87, Just 0.6 )
-    , ( "bmi", 153, Female, 26.33, Just 5.1 )
-    , ( "bmi", 542, Male, 18.28, Just 1.52 )
-    , ( "bmi", 480, Female, 14.08, Just -1.45 )
-    , ( "bmi", 545, Female, 16.89, Just 0.8 )
-    , ( "bmi", 575, Male, 15.82, Just -0.19 )
-    , ( "bmi", 516, Male, 16.12, Just -0.09 )
-    , ( "bmi", 484, Male, 15.93, Just -0.33 )
-    , ( "bmi", 648, Female, 25.45, Just 5.6 )
-    , ( "bmi", 555, Female, 15.67, Just -0.02 )
-    , ( "bmi", 467, Male, 16.27, Just -0.1 )
-    , ( "bmi", 129, Male, 21.63, Just 2.72 )
-    , ( "bmi", 144, Male, 12.19, Just -4.15 )
-    , ( "bmi", 153, Male, 16.38, Just -0.65 )
-    , ( "bmi", 125, Female, 18.81, Just 1.3 )
-    , ( "bmi", 89, Male, 18.47, Just 1.06 )
-    , ( "bmi", 131, Female, 15.51, Just -0.83 )
-    , ( "bmi", 196, Female, 17.2, Just 0.19 )
-    , ( "bmi", 278, Female, 16.48, Just -0.16 )
-    , ( "bmi", 289, Male, 16.38, Just -0.54 )
-    , ( "bmi", 420, Female, 16.66, Just 0.37 )
-    , ( "bmi", 459, Female, 14.87, Just -0.85 )
-    , ( "bmi", 468, Female, 13.51, Just -1.99 )
-    , ( "bmi", 487, Female, 15.52, Just -0.28 )
-    , ( "bmi", 491, Male, 16.62, Just 0.23 )
-    , ( "bmi", 580, Female, 15.95, Just 0.22 )
-    , ( "bmi", 627, Male, 17.54, Just 1.2 )
-    , ( "bmi", 662, Female, 18.55, Just 2 )
+    [ { func = "bmi", scale = 471, gender = Female, measurement = 17.78, expected = Just 1.21 }
+    , { func = "bmi", scale = 25, gender = Male, measurement = 26.45, expected = Just 7.87 }
+    , { func = "bmi", scale = 606, gender = Female, measurement = 15.5, expected = Just -0.07 }
+    , { func = "bmi", scale = 474, gender = Female, measurement = 18.55, expected = Just 1.68 }
+    , { func = "bmi", scale = 28, gender = Male, measurement = 25.85, expected = Just 7.25 }
+    , { func = "bmi", scale = 606, gender = Female, measurement = 13.21, expected = Just -2.01 }
+    , { func = "bmi", scale = 474, gender = Female, measurement = 18.55, expected = Just 1.68 }
+    , { func = "bmi", scale = 28, gender = Male, measurement = 23.78, expected = Just 5.93 }
+    , { func = "bmi", scale = 475, gender = Female, measurement = 20.24, expected = Just 2.6 }
+    , { func = "bmi", scale = 675, gender = Female, measurement = 15.38, expected = Just -0.07 }
+    , { func = "bmi", scale = 555, gender = Male, measurement = 16.02, expected = Just -0.08 }
+    , { func = "bmi", scale = 775, gender = Male, measurement = 16.59, expected = Just 0.49 }
+    , { func = "bmi", scale = 138, gender = Female, measurement = 18.9, expected = Just 1.3 }
+    , { func = "bmi", scale = 348, gender = Male, measurement = 16.62, expected = Just -0.18 }
+    , { func = "bmi", scale = 462, gender = Female, measurement = 16.89, expected = Just 0.62 }
+    , { func = "bmi", scale = 409, gender = Male, measurement = 18.66, expected = Just 1.42 }
+    , { func = "bmi", scale = 412, gender = Female, measurement = 16.98, expected = Just 0.55 }
+    , { func = "bmi", scale = 442, gender = Male, measurement = 15.67, expected = Just -0.65 }
+    , { func = "bmi", scale = 383, gender = Male, measurement = 15.59, expected = Just -0.89 }
+    , { func = "bmi", scale = 638, gender = Male, measurement = 18.05, expected = Just 1.55 }
+    , { func = "bmi", scale = 351, gender = Male, measurement = 15.63, expected = Just -0.96 }
+    , { func = "bmi", scale = 654, gender = Female, measurement = 15.64, expected = Just 0.11 }
+    , { func = "bmi", scale = 515, gender = Female, measurement = 15.75, expected = Just -0.05 }
+    , { func = "bmi", scale = 644, gender = Female, measurement = 16.61, expected = Just 0.78 }
+    , { func = "bmi", scale = 485, gender = Female, measurement = 14.93, expected = Just -0.74 }
+    , { func = "bmi", scale = 422, gender = Female, measurement = 16.07, expected = Just -0.04 }
+    , { func = "bmi", scale = 334, gender = Male, measurement = 15.89, expected = Just -0.8 }
+    , { func = "bmi", scale = 657, gender = Female, measurement = 13.0, expected = Just -2.16 }
+    , { func = "bmi", scale = 525, gender = Female, measurement = 21.08, expected = Just 3.12 }
+    , { func = "bmi", scale = 79, gender = Male, measurement = 25.51, expected = Just 5.24 }
+    , { func = "bmi", scale = 80, gender = Male, measurement = 25.0, expected = Just 4.93 }
+    , { func = "bmi", scale = 619, gender = Male, measurement = 17.49, expected = Just 1.14 }
+    , { func = "bmi", scale = 656, gender = Male, measurement = 16.75, expected = Just 0.68 }
+    , { func = "bmi", scale = 790, gender = Female, measurement = 23.94, expected = Just 4.8 }
+    , { func = "bmi", scale = 790, gender = Male, measurement = 16.76, expected = Just 0.63 }
+    , { func = "bmi", scale = 153, gender = Female, measurement = 17.55, expected = Just 0.45 }
+    , { func = "bmi", scale = 363, gender = Male, measurement = 15.62, expected = Just -0.93 }
+    , { func = "bmi", scale = 398, gender = Male, measurement = 15.58, expected = Just -0.85 }
+    , { func = "bmi", scale = 653, gender = Male, measurement = 17.75, expected = Just 1.38 }
+    , { func = "bmi", scale = 366, gender = Male, measurement = 15.43, expected = Just -1.08 }
+    , { func = "bmi", scale = 659, gender = Female, measurement = 16.97, expected = Just 1.04 }
+    , { func = "bmi", scale = 500, gender = Female, measurement = 15.31, expected = Just -0.41 }
+    , { func = "bmi", scale = 424, gender = Female, measurement = 22.98, expected = Just 3.87 }
+    , { func = "bmi", scale = 349, gender = Male, measurement = 15.87, expected = Just -0.76 }
+    , { func = "bmi", scale = 339, gender = Male, measurement = 561.22, expected = Just 300 }
+    , { func = "bmi", scale = 382, gender = Male, measurement = 532.54, expected = Just 286.41 }
+    , { func = "bmi", scale = 667, gender = Female, measurement = 768.0, expected = Just 395.72 }
+    , { func = "bmi", scale = 1680, gender = Male, measurement = 15.84, expected = Just 0.45 }
+    , { func = "bmi", scale = 1666, gender = Male, measurement = 17.69, expected = Just 1.69 }
+    , { func = "bmi", scale = 1829, gender = Female, measurement = 14.71, expected = Just -0.39 }
+    , { func = "bmi", scale = 1669, gender = Female, measurement = 14.41, expected = Just -0.6 }
+    , { func = "bmi", scale = 1853, gender = Male, measurement = 15.61, expected = Just 0.31 }
+    , { func = "bmi", scale = 1651, gender = Male, measurement = 15.62, expected = Just 0.28 }
+    , { func = "bmi", scale = 1919, gender = Female, measurement = 16.35, expected = Just 0.69 }
+    , { func = "bmi", scale = 1597, gender = Male, measurement = 13.64, expected = Just -1.38 }
+    , { func = "bmi", scale = 1795, gender = Female, measurement = 17.34, expected = Just 1.26 }
+    , { func = "bmi", scale = 1818, gender = Female, measurement = 17.34, expected = Just 1.25 }
+    , { func = "bmi", scale = 1631, gender = Female, measurement = 17.34, expected = Just 1.3 }
+    , { func = "bmi", scale = 1323, gender = Female, measurement = 14.13, expected = Just -0.91 }
+    , { func = "bmi", scale = 1625, gender = Female, measurement = 14.01, expected = Just -0.92 }
+    , { func = "bmi", scale = 1673, gender = Female, measurement = 16.3, expected = Just 0.68 }
+    , { func = "bmi", scale = 1919, gender = Female, measurement = 16.24, expected = Just 0.63 }
+    , { func = "bmi", scale = 1554, gender = Male, measurement = 15.47, expected = Just 0.14 }
+    , { func = "bmi", scale = 1827, gender = Female, measurement = 13.71, expected = Just -1.14 }
+    , { func = "bmi", scale = 1919, gender = Female, measurement = 20.54, expected = Just 2.66 }
+    , { func = "bmi", scale = 1561, gender = Female, measurement = 14.55, expected = Just -0.51 }
+    , { func = "bmi", scale = 1658, gender = Female, measurement = 15.26, expected = Just 0.01 }
+    , { func = "bmi", scale = 1806, gender = Female, measurement = 15.4, expected = Just 0.08 }
+    , { func = "bmi", scale = 1420, gender = Female, measurement = 17.4, expected = Just 1.39 }
+    , { func = "bmi", scale = 1525, gender = Female, measurement = 16.33, expected = Just 0.72 }
+    , { func = "bmi", scale = 1919, gender = Female, measurement = 16.24, expected = Just 0.63 }
+    , { func = "bmi", scale = 1848, gender = Male, measurement = 16.58, expected = Just 0.97 }
+    , { func = "bmi", scale = 1724, gender = Female, measurement = 17.24, expected = Just 1.22 }
+    , { func = "bmi", scale = 1919, gender = Male, measurement = 15.27, expected = Just 0.01 }
+    , { func = "bmi", scale = 1394, gender = Male, measurement = 14.67, expected = Just -0.57 }
+    , { func = "bmi", scale = 1427, gender = Female, measurement = 13.82, expected = Just -1.12 }
+    , { func = "bmi", scale = 1895, gender = Male, measurement = 16.56, expected = Just 0.94 }
+    , { func = "bmi", scale = 1734, gender = Female, measurement = 14.15, expected = Just -0.8 }
+    , { func = "bmi", scale = 1569, gender = Male, measurement = 14.48, expected = Just -0.65 }
+    , { func = "bmi", scale = 1816, gender = Female, measurement = 15.17, expected = Just -0.07 }
+    , { func = "bmi", scale = 1919, gender = Female, measurement = 14.7, expected = Just -0.38 }
+    , { func = "bmi", scale = 916, gender = Male, measurement = 18.6, expected = Just 2.02 }
+    , { func = "bmi", scale = 1456, gender = Male, measurement = 16.53, expected = Just 0.9 }
+    , { func = "bmi", scale = 1814, gender = Male, measurement = 18.59, expected = Just 2.17 }
+    , { func = "bmi", scale = 1554, gender = Female, measurement = 15.96, expected = Just 0.48 }
+    , { func = "bmi", scale = 1123, gender = Male, measurement = 17.34, expected = Just 1.33 }
+    , { func = "bmi", scale = 1230, gender = Female, measurement = 15.7, expected = Just 0.27 }
+    , { func = "bmi", scale = 1738, gender = Male, measurement = 16.4, expected = Just 0.85 }
+    , { func = "bmi", scale = 1607, gender = Male, measurement = 18.6, expected = Just 2.24 }
+    , { func = "bmi", scale = 1919, gender = Female, measurement = 16.15, expected = Just 0.57 }
+    , { func = "bmi", scale = 1919, gender = Female, measurement = 16.34, expected = Just 0.69 }
+    , { func = "bmi", scale = 1620, gender = Male, measurement = 17.43, expected = Just 1.52 }
+    , { func = "bmi", scale = 1711, gender = Female, measurement = 15.68, expected = Just 0.28 }
+    , { func = "bmi", scale = 1535, gender = Male, measurement = 17.28, expected = Just 1.43 }
+    , { func = "bmi", scale = 1801, gender = Male, measurement = 15.75, expected = Just 0.4 }
+    , { func = "bmi", scale = 1818, gender = Male, measurement = 16.66, expected = Just 1.03 }
+    , { func = "bmi", scale = 1905, gender = Female, measurement = 16.4, expected = Just 0.73 }
+    , { func = "bmi", scale = 1785, gender = Male, measurement = 14.7, expected = Just -0.4 }
+    , { func = "bmi", scale = 1919, gender = Male, measurement = 15.82, expected = Just 0.42 }
+    , { func = "bmi", scale = 1919, gender = Female, measurement = 16.34, expected = Just 0.69 }
+    , { func = "bmi", scale = 1633, gender = Male, measurement = 16.13, expected = Just 0.65 }
+    , { func = "bmi", scale = 579, gender = Male, measurement = 16.77, expected = Just 0.55 }
+    , { func = "bmi", scale = 297, gender = Male, measurement = 15.77, expected = Just -1 }
+    , { func = "bmi", scale = 474, gender = Female, measurement = 15.7, expected = Just -0.17 }
+    , { func = "bmi", scale = 387, gender = Male, measurement = 16.46, expected = Just -0.18 }
+    , { func = "bmi", scale = 625, gender = Male, measurement = 15.33, expected = Just -0.5 }
+    , { func = "bmi", scale = 325, gender = Female, measurement = 18.33, expected = Just 1.15 }
+    , { func = "bmi", scale = 584, gender = Male, measurement = 16.6, expected = Just 0.44 }
+    , { func = "bmi", scale = 396, gender = Female, measurement = 18.52, expected = Just 1.47 }
+    , { func = "bmi", scale = 327, gender = Male, measurement = 16.38, expected = Just -0.43 }
+    , { func = "bmi", scale = 753, gender = Male, measurement = 15.42, expected = Just -0.47 }
+    , { func = "bmi", scale = 1403, gender = Female, measurement = 16.54, expected = Just 0.86 }
+    , { func = "bmi", scale = 1403, gender = Male, measurement = 14.83, expected = Just -0.44 }
+    , { func = "bmi", scale = 1768, gender = Female, measurement = 15.53, expected = Just 0.18 }
+    , { func = "bmi", scale = 1462, gender = Female, measurement = 17.0, expected = Just 1.14 }
+    , { func = "bmi", scale = 1403, gender = Female, measurement = 15.09, expected = Just -0.13 }
+    , { func = "bmi", scale = 1768, gender = Female, measurement = 16.22, expected = Just 0.62 }
+    , { func = "bmi", scale = 1403, gender = Male, measurement = 16.75, expected = Just 1.04 }
+    , { func = "bmi", scale = 881, gender = Female, measurement = 14.66, expected = Just -0.71 }
+    , { func = "bmi", scale = 461, gender = Female, measurement = 16.27, expected = Just 0.2 }
+    , { func = "bmi", scale = 1768, gender = Male, measurement = 14.13, expected = Just -0.87 }
+    , { func = "bmi", scale = 1768, gender = Female, measurement = 18.04, expected = Just 1.64 }
+    , { func = "bmi", scale = 210, gender = Male, measurement = 14.28, expected = Just -2.42 }
+    , { func = "bmi", scale = 1768, gender = Female, measurement = 15.1, expected = Just -0.11 }
+    , { func = "bmi", scale = 173, gender = Female, measurement = 20.91, expected = Just 2.32 }
+    , { func = "bmi", scale = 1403, gender = Female, measurement = 16.08, expected = Just 0.56 }
+    , { func = "bmi", scale = 1768, gender = Female, measurement = 15.77, expected = Just 0.33 }
+    , { func = "bmi", scale = 1619, gender = Male, measurement = 16.25, expected = Just 0.73 }
+    , { func = "bmi", scale = 1554, gender = Female, measurement = 16.12, expected = Just 0.58 }
+    , { func = "bmi", scale = 1768, gender = Female, measurement = 13.36, expected = Just -1.43 }
+    , { func = "bmi", scale = 1768, gender = Male, measurement = 16.24, expected = Just 0.74 }
+    , { func = "bmi", scale = 1403, gender = Female, measurement = 15.9, expected = Just 0.44 }
+    , { func = "bmi", scale = 1768, gender = Female, measurement = 12.9, expected = Just -1.81 }
+    , { func = "bmi", scale = 1768, gender = Female, measurement = 14.42, expected = Just -0.59 }
+    , { func = "bmi", scale = 1768, gender = Female, measurement = 15.82, expected = Just 0.37 }
+    , { func = "bmi", scale = 1849, gender = Male, measurement = 15.78, expected = Just 0.43 }
+    , { func = "bmi", scale = 1919, gender = Male, measurement = 17.5, expected = Just 1.54 }
+    , { func = "bmi", scale = 1051, gender = Male, measurement = 16.66, expected = Just 0.79 }
+    , { func = "bmi", scale = 1860, gender = Female, measurement = 14.6, expected = Just -0.45 }
+    , { func = "bmi", scale = 2285, gender = Male, measurement = 16.89, expected = Just 1.04 }
+    , { func = "bmi", scale = 1295, gender = Male, measurement = 15.57, expected = Just 0.11 }
+    , { func = "bmi", scale = 1628, gender = Male, measurement = 17.72, expected = Just 1.71 }
+    , { func = "bmi", scale = 1662, gender = Female, measurement = 13.58, expected = Just -1.26 }
+    , { func = "bmi", scale = 2061, gender = Female, measurement = 16.46, expected = Just 0.74 }
+    , { func = "bmi", scale = 1842, gender = Female, measurement = 15.75, expected = Just 0.31 }
+    , { func = "bmi", scale = 2176, gender = Female, measurement = 15.29, expected = Just 0.01 }
+    , { func = "bmi", scale = 1653, gender = Female, measurement = 15.72, expected = Just 0.32 }
+    , { func = "bmi", scale = 1743, gender = Male, measurement = 14.52, expected = Just -0.56 }
+    , { func = "bmi", scale = 1847, gender = Female, measurement = 17.47, expected = Just 1.31 }
+    , { func = "bmi", scale = 1893, gender = Female, measurement = 15.86, expected = Just 0.4 }
+    , { func = "bmi", scale = 1916, gender = Male, measurement = 15.44, expected = Just 0.14 }
+    , { func = "bmi", scale = 1742, gender = Female, measurement = 14.82, expected = Just -0.3 }
+    , { func = "bmi", scale = 1874, gender = Male, measurement = 17.0, expected = Just 1.23 }
+    , { func = "bmi", scale = 1495, gender = Male, measurement = 15.96, expected = Just 0.49 }
+    , { func = "bmi", scale = 1829, gender = Male, measurement = 14.38, expected = Just -0.65 }
+    , { func = "bmi", scale = 1767, gender = Female, measurement = 14.35, expected = Just -0.65 }
+    , { func = "bmi", scale = 1572, gender = Male, measurement = 18.33, expected = Just 2.09 }
+    , { func = "bmi", scale = 1809, gender = Male, measurement = 15.2, expected = Just 0 }
+    , { func = "bmi", scale = 1178, gender = Male, measurement = 18.48, expected = Just 2.13 }
+    , { func = "bmi", scale = 1848, gender = Female, measurement = 16.16, expected = Just 0.56 }
+    , { func = "bmi", scale = 1909, gender = Female, measurement = 14.61, expected = Just -0.44 }
+    , { func = "bmi", scale = 1698, gender = Female, measurement = 15.84, expected = Just 0.39 }
+    , { func = "bmi", scale = 1648, gender = Female, measurement = 15.93, expected = Just 0.45 }
+    , { func = "bmi", scale = 1762, gender = Male, measurement = 15.28, expected = Just 0.06 }
+    , { func = "bmi", scale = 2185, gender = Male, measurement = 16.35, expected = Just 0.74 }
+    , { func = "bmi", scale = 1755, gender = Male, measurement = 15.72, expected = Just 0.38 }
+    , { func = "bmi", scale = 2022, gender = Female, measurement = 14.03, expected = Just -0.87 }
+    , { func = "bmi", scale = 1871, gender = Male, measurement = 18.07, expected = Just 1.89 }
+    , { func = "bmi", scale = 1852, gender = Male, measurement = 16.43, expected = Just 0.88 }
+    , { func = "bmi", scale = 1768, gender = Male, measurement = 14.94, expected = Just -0.21 }
+    , { func = "bmi", scale = 1866, gender = Male, measurement = 14.21, expected = Just -0.87 }
+    , { func = "bmi", scale = 1919, gender = Male, measurement = 15.94, expected = Just 0.51 }
+    , { func = "bmi", scale = 1963, gender = Male, measurement = 15.35, expected = Just 0.07 }
+    , { func = "bmi", scale = 1729, gender = Male, measurement = 16.31, expected = Just 0.79 }
+    , { func = "bmi", scale = 1652, gender = Male, measurement = 15.93, expected = Just 0.51 }
+    , { func = "bmi", scale = 1936, gender = Female, measurement = 14.23, expected = Just -0.72 }
+    , { func = "bmi", scale = 2197, gender = Male, measurement = 15.72, expected = Just 0.3 }
+    , { func = "bmi", scale = 2261, gender = Female, measurement = 16.59, expected = Just 0.76 }
+    , { func = "bmi", scale = 1592, gender = Female, measurement = 16.15, expected = Just 0.6 }
+    , { func = "bmi", scale = 1946, gender = Female, measurement = 14.31, expected = Just -0.66 }
+    , { func = "bmi", scale = 2181, gender = Female, measurement = 15.7, expected = Just 0.27 }
+    , { func = "bmi", scale = 1875, gender = Male, measurement = 17.59, expected = Just 1.6 }
+    , { func = "bmi", scale = 1513, gender = Female, measurement = 15.8, expected = Just 0.38 }
+    , { func = "bmi", scale = 1681, gender = Female, measurement = 15.07, expected = Just -0.13 }
+    , { func = "bmi", scale = 1893, gender = Male, measurement = 16.23, expected = Just 0.72 }
+    , { func = "bmi", scale = 1764, gender = Female, measurement = 16.58, expected = Just 0.83 }
+    , { func = "bmi", scale = 1599, gender = Male, measurement = 16.49, expected = Just 0.9 }
+    , { func = "bmi", scale = 1916, gender = Female, measurement = 15.84, expected = Just 0.39 }
+    , { func = "bmi", scale = 1484, gender = Female, measurement = 15.32, expected = Just 0.05 }
+    , { func = "bmi", scale = 1468, gender = Male, measurement = 16.67, expected = Just 1 }
+    , { func = "bmi", scale = 1863, gender = Female, measurement = 16.6, expected = Just 0.84 }
+    , { func = "bmi", scale = 1282, gender = Female, measurement = 16.9, expected = Just 1.09 }
+    , { func = "bmi", scale = 1582, gender = Female, measurement = 15.26, expected = Just 0.01 }
+    , { func = "bmi", scale = 1507, gender = Female, measurement = 13.07, expected = Just -1.74 }
+    , { func = "bmi", scale = 1304, gender = Female, measurement = 15.23, expected = Just -0.05 }
+    , { func = "bmi", scale = 1717, gender = Male, measurement = 15.66, expected = Just 0.33 }
+    , { func = "bmi", scale = 1849, gender = Female, measurement = 15.14, expected = Just -0.09 }
+    , { func = "bmi", scale = 1707, gender = Female, measurement = 15.25, expected = Just -0.01 }
+    , { func = "bmi", scale = 1887, gender = Female, measurement = 16.33, expected = Just 0.68 }
+    , { func = "bmi", scale = 1818, gender = Male, measurement = 15.23, expected = Just 0.03 }
+    , { func = "bmi", scale = 1562, gender = Female, measurement = 16.42, expected = Just 0.77 }
+    , { func = "bmi", scale = 1819, gender = Male, measurement = 16.55, expected = Just 0.96 }
+    , { func = "bmi", scale = 1558, gender = Female, measurement = 16.03, expected = Just 0.52 }
+    , { func = "bmi", scale = 1920, gender = Male, measurement = 15.11, expected = Just -0.12 }
+    , { func = "bmi", scale = 1594, gender = Male, measurement = 15.23, expected = Just -0.03 }
+    , { func = "bmi", scale = 1728, gender = Female, measurement = 14.85, expected = Just -0.28 }
+    , { func = "bmi", scale = 1872, gender = Male, measurement = 18.22, expected = Just 1.97 }
+    , { func = "bmi", scale = 1877, gender = Female, measurement = 15.72, expected = Just 0.31 }
+    , { func = "bmi", scale = 1911, gender = Female, measurement = 10.86, expected = Just -3.92 }
+    , { func = "bmi", scale = 1818, gender = Female, measurement = 15.63, expected = Just 0.23 }
+    , { func = "bmi", scale = 1833, gender = Female, measurement = 18.96, expected = Just 2.08 }
+    , { func = "bmi", scale = 1920, gender = Female, measurement = 16.54, expected = Just 0.8 }
+    , { func = "bmi", scale = 1168, gender = Male, measurement = 16.78, expected = Just 0.96 }
+    , { func = "bmi", scale = 1278, gender = Female, measurement = 19.6, expected = Just 2.61 }
+    , { func = "bmi", scale = 1394, gender = Male, measurement = 18.4, expected = Just 2.14 }
+    , { func = "bmi", scale = 1350, gender = Female, measurement = 15.04, expected = Just -0.19 }
+    , { func = "bmi", scale = 1274, gender = Female, measurement = 12.88, expected = Just -2.06 }
+    , { func = "bmi", scale = 1366, gender = Female, measurement = 17.76, expected = Just 1.6 }
+    , { func = "bmi", scale = 1325, gender = Male, measurement = 15.92, expected = Just 0.4 }
+    , { func = "bmi", scale = 702, gender = Female, measurement = 11.32, expected = Just -3.87 }
+    , { func = "bmi", scale = 124, gender = Male, measurement = 26.01, expected = Just 5.15 }
+    , { func = "bmi", scale = 373, gender = Female, measurement = 12.0, expected = Just -3.65 }
+    , { func = "bmi", scale = 725, gender = Male, measurement = 17.72, expected = Just 1.46 }
+    , { func = "bmi", scale = 222, gender = Female, measurement = 18.06, expected = Just 0.74 }
+    , { func = "bmi", scale = 432, gender = Male, measurement = 16.7, expected = Just 0.13 }
+    , { func = "bmi", scale = 518, gender = Male, measurement = 15.73, expected = Just -0.4 }
+    , { func = "bmi", scale = 546, gender = Female, measurement = 17.15, expected = Just 0.98 }
+    , { func = "bmi", scale = 431, gender = Female, measurement = 14.29, expected = Just -1.4 }
+    , { func = "bmi", scale = 467, gender = Male, measurement = 15.53, expected = Just -0.7 }
+    , { func = "bmi", scale = 728, gender = Female, measurement = 16.0, expected = Just 0.44 }
+    , { func = "bmi", scale = 569, gender = Female, measurement = 14.63, expected = Just -0.81 }
+    , { func = "bmi", scale = 418, gender = Male, measurement = 15.18, expected = Just -1.14 }
+    , { func = "bmi", scale = 749, gender = Female, measurement = 17.85, expected = Just 1.49 }
+    , { func = "bmi", scale = 32, gender = Female, measurement = 13.37, expected = Just -0.94 }
+    , { func = "bmi", scale = 76, gender = Male, measurement = 18.84, expected = Just 1.43 }
+    , { func = "bmi", scale = 92, gender = Female, measurement = 16.35, expected = Just -0.01 }
+    , { func = "bmi", scale = 397, gender = Male, measurement = 19.18, expected = Just 1.71 }
+    , { func = "bmi", scale = 366, gender = Male, measurement = 15.35, expected = Just -1.14 }
+    , { func = "bmi", scale = 466, gender = Male, measurement = 15.85, expected = Just -0.44 }
+    , { func = "bmi", scale = 615, gender = Male, measurement = 18.57, expected = Just 1.85 }
+    , { func = "bmi", scale = 594, gender = Male, measurement = 16.41, expected = Just 0.31 }
+    , { func = "bmi", scale = 586, gender = Male, measurement = 14.79, expected = Just -1.05 }
+    , { func = "bmi", scale = 648, gender = Male, measurement = 16.18, expected = Just 0.24 }
+    , { func = "bmi", scale = 47, gender = Male, measurement = 17.34, expected = Just 1.04 }
+    , { func = "bmi", scale = 106, gender = Female, measurement = 18.66, expected = Just 1.32 }
+    , { func = "bmi", scale = 186, gender = Female, measurement = 16.73, expected = Just -0.12 }
+    , { func = "bmi", scale = 167, gender = Female, measurement = 13.92, expected = Just -2.15 }
+    , { func = "bmi", scale = 158, gender = Female, measurement = 16.62, expected = Just -0.16 }
+    , { func = "bmi", scale = 338, gender = Male, measurement = 20.34, expected = Just 2.22 }
+    , { func = "bmi", scale = 399, gender = Male, measurement = 15.43, expected = Just -0.98 }
+    , { func = "bmi", scale = 401, gender = Female, measurement = 17.88, expected = Just 1.1 }
+    , { func = "bmi", scale = 429, gender = Female, measurement = 15.86, expected = Just -0.17 }
+    , { func = "bmi", scale = 454, gender = Female, measurement = 14.72, expected = Just -0.99 }
+    , { func = "bmi", scale = 515, gender = Female, measurement = 15.58, expected = Just -0.18 }
+    , { func = "bmi", scale = 518, gender = Female, measurement = 17.82, expected = Just 1.34 }
+    , { func = "bmi", scale = 494, gender = Female, measurement = 16.56, expected = Just 0.48 }
+    , { func = "bmi", scale = 197, gender = Male, measurement = 15.04, expected = Just -1.77 }
+    , { func = "bmi", scale = 574, gender = Male, measurement = 13.96, expected = Just -1.86 }
+    , { func = "bmi", scale = 645, gender = Male, measurement = 16.65, expected = Just 0.59 }
+    , { func = "bmi", scale = 684, gender = Female, measurement = 15.62, expected = Just 0.12 }
+    , { func = "bmi", scale = 734, gender = Male, measurement = 14.45, expected = Just -1.36 }
+    , { func = "bmi", scale = 772, gender = Female, measurement = 20.64, expected = Just 3.03 }
+    , { func = "bmi", scale = 779, gender = Female, measurement = 16.31, expected = Just 0.49 }
+    , { func = "bmi", scale = 591, gender = Female, measurement = 15.47, expected = Just -0.12 }
+    , { func = "bmi", scale = 583, gender = Male, measurement = 16.87, expected = Just 0.63 }
+    , { func = "bmi", scale = 533, gender = Male, measurement = 156.55, expected = Just 80.12 }
+    , { func = "bmi", scale = 409, gender = Female, measurement = 15.69, expected = Just -0.35 }
+    , { func = "bmi", scale = 688, gender = Male, measurement = 17.61, expected = Just 1.34 }
+    , { func = "bmi", scale = 908, gender = Male, measurement = 15.96, expected = Just 0.13 }
+    , { func = "bmi", scale = 271, gender = Female, measurement = 19.11, expected = Just 1.46 }
+    , { func = "bmi", scale = 481, gender = Male, measurement = 17.26, expected = Just 0.67 }
+    , { func = "bmi", scale = 567, gender = Male, measurement = 15.64, expected = Just -0.36 }
+    , { func = "bmi", scale = 567, gender = Male, measurement = 16.87, expected = Just 0.6 }
+    , { func = "bmi", scale = 153, gender = Female, measurement = 26.33, expected = Just 5.1 }
+    , { func = "bmi", scale = 542, gender = Male, measurement = 18.28, expected = Just 1.52 }
+    , { func = "bmi", scale = 480, gender = Female, measurement = 14.08, expected = Just -1.45 }
+    , { func = "bmi", scale = 545, gender = Female, measurement = 16.89, expected = Just 0.8 }
+    , { func = "bmi", scale = 575, gender = Male, measurement = 15.82, expected = Just -0.19 }
+    , { func = "bmi", scale = 516, gender = Male, measurement = 16.12, expected = Just -0.09 }
+    , { func = "bmi", scale = 484, gender = Male, measurement = 15.93, expected = Just -0.33 }
+    , { func = "bmi", scale = 648, gender = Female, measurement = 25.45, expected = Just 5.6 }
+    , { func = "bmi", scale = 555, gender = Female, measurement = 15.67, expected = Just -0.02 }
+    , { func = "bmi", scale = 467, gender = Male, measurement = 16.27, expected = Just -0.1 }
+    , { func = "bmi", scale = 129, gender = Male, measurement = 21.63, expected = Just 2.72 }
+    , { func = "bmi", scale = 144, gender = Male, measurement = 12.19, expected = Just -4.15 }
+    , { func = "bmi", scale = 153, gender = Male, measurement = 16.38, expected = Just -0.65 }
+    , { func = "bmi", scale = 125, gender = Female, measurement = 18.81, expected = Just 1.3 }
+    , { func = "bmi", scale = 89, gender = Male, measurement = 18.47, expected = Just 1.06 }
+    , { func = "bmi", scale = 131, gender = Female, measurement = 15.51, expected = Just -0.83 }
+    , { func = "bmi", scale = 196, gender = Female, measurement = 17.2, expected = Just 0.19 }
+    , { func = "bmi", scale = 278, gender = Female, measurement = 16.48, expected = Just -0.16 }
+    , { func = "bmi", scale = 289, gender = Male, measurement = 16.38, expected = Just -0.54 }
+    , { func = "bmi", scale = 420, gender = Female, measurement = 16.66, expected = Just 0.37 }
+    , { func = "bmi", scale = 459, gender = Female, measurement = 14.87, expected = Just -0.85 }
+    , { func = "bmi", scale = 468, gender = Female, measurement = 13.51, expected = Just -1.99 }
+    , { func = "bmi", scale = 487, gender = Female, measurement = 15.52, expected = Just -0.28 }
+    , { func = "bmi", scale = 491, gender = Male, measurement = 16.62, expected = Just 0.23 }
+    , { func = "bmi", scale = 580, gender = Female, measurement = 15.95, expected = Just 0.22 }
+    , { func = "bmi", scale = 627, gender = Male, measurement = 17.54, expected = Just 1.2 }
+    , { func = "bmi", scale = 662, gender = Female, measurement = 18.55, expected = Just 2 }
     ]
 
 
-bmiTestData2 : List ( String, Float, Gender, Float, Maybe Float )
+bmiTestData2 : List ZScoreTestCase
 bmiTestData2 =
-    [ ( "bmi", 669, Female, 14.81, Just -0.53 )
-    , ( "bmi", 674, Female, 16.36, Just 0.64 )
-    , ( "bmi", 672, Male, 17.55, Just 1.28 )
-    , ( "bmi", 742, Female, 16.16, Just 0.35 )
-    , ( "bmi", 720, Male, 14.2, Just -1.38 )
-    , ( "bmi", 722, Female, 15.13, Just -0.22 )
-    , ( "bmi", 670, Female, 15.74, Just 0.19 )
-    , ( "bmi", 739, Male, 16.35, Just 0.27 )
-    , ( "bmi", 643, Female, 16.04, Just 0.38 )
-    , ( "bmi", 580, Male, 16.56, Just 0.4 )
-    , ( "bmi", 518, Female, 13.3, Just -2.08 )
-    , ( "bmi", 500, Male, 15.82, Just -0.38 )
-    , ( "bmi", 372, Male, 17.5, Just 0.53 )
-    , ( "bmi", 380, Male, 17.9, Just 0.83 )
-    , ( "bmi", 380, Male, 18.26, Just 1.07 )
-    , ( "bmi", 328, Female, 21.21, Just 2.72 )
-    , ( "bmi", 293, Female, 15.87, Just -0.55 )
-    , ( "bmi", 283, Female, 16.48, Just -0.15 )
-    , ( "bmi", 198, Female, 18.12, Just 0.76 )
-    , ( "bmi", 158, Female, 13.57, Just -2.41 )
-    , ( "bmi", 124, Male, 14.78, Just -1.8 )
-    , ( "bmi", 67, Female, 14.81, Just -0.77 )
-    , ( "bmi", 111, Male, 19.32, Just 1.46 )
-    , ( "bmi", 127, Female, 16.95, Just 0.16 )
-    , ( "bmi", 432, Male, 17.64, Just 0.8 )
-    , ( "bmi", 401, Male, 14.49, Just -1.8 )
-    , ( "bmi", 501, Male, 15.45, Just -0.68 )
-    , ( "bmi", 605, Female, 16.88, Just 0.9 )
-    , ( "bmi", 650, Male, 17.9, Just 1.48 )
-    , ( "bmi", 629, Male, 16.88, Just 0.73 )
-    , ( "bmi", 621, Male, 14.96, Just -0.83 )
-    , ( "bmi", 683, Male, 16.25, Just 0.34 )
-    , ( "bmi", 1953, Male, 15.78, Just 0.39 )
-    , ( "bmi", 2023, Male, 16.34, Just 0.77 )
-    , ( "bmi", 1155, Male, 16.02, Just 0.38 )
-    , ( "bmi", 1964, Female, 15.84, Just 0.38 )
-    , ( "bmi", 2389, Male, 16.18, Just 0.55 )
-    , ( "bmi", 1399, Male, 15.1, Just -0.22 )
-    , ( "bmi", 1732, Male, 15.81, Just 0.44 )
-    , ( "bmi", 1766, Female, 13.93, Just -0.97 )
-    , ( "bmi", 2165, Female, 16.75, Just 0.87 )
-    , ( "bmi", 1946, Female, 15.23, Just -0.01 )
-    , ( "bmi", 2280, Female, 16.13, Just 0.5 )
-    , ( "bmi", 1757, Female, 15.43, Just 0.11 )
-    , ( "bmi", 1847, Male, 15.36, Just 0.13 )
-    , ( "bmi", 1951, Female, 17.07, Just 1.09 )
-    , ( "bmi", 1997, Female, 14.5, Just -0.52 )
-    , ( "bmi", 2020, Male, 15.11, Just -0.12 )
-    , ( "bmi", 1846, Female, 14.46, Just -0.57 )
-    , ( "bmi", 1978, Male, 16.48, Just 0.87 )
-    , ( "bmi", 1599, Male, 15.79, Just 0.39 )
-    , ( "bmi", 1933, Male, 14.41, Just -0.69 )
-    , ( "bmi", 1871, Female, 14.55, Just -0.49 )
-    , ( "bmi", 1676, Male, 18.21, Just 2 )
-    , ( "bmi", 1913, Male, 15.17, Just -0.07 )
-    , ( "bmi", 1282, Male, 18.31, Just 2.06 )
-    , ( "bmi", 1952, Female, 15.84, Just 0.38 )
-    , ( "bmi", 2013, Female, 16.02, Just 0.49 )
-    , ( "bmi", 1802, Female, 16.53, Just 0.8 )
-    , ( "bmi", 1752, Female, 16.05, Just 0.51 )
-    , ( "bmi", 1866, Male, 15.69, Just 0.32 )
-    , ( "bmi", 2289, Male, 17.59, Just 1.45 )
-    , ( "bmi", 1859, Male, 17.81, Just 1.74 )
-    , ( "bmi", 2126, Female, 14.05, Just -0.85 )
-    , ( "bmi", 1975, Male, 17.45, Just 1.49 )
-    , ( "bmi", 1956, Male, 15.86, Just 0.45 )
-    , ( "bmi", 1872, Male, 13.46, Just -1.57 )
-    , ( "bmi", 1970, Male, 14.46, Just -0.65 )
-    , ( "bmi", 2067, Male, 15.42, Just 0.11 )
-    , ( "bmi", 1833, Male, 15.87, Just 0.5 )
-    , ( "bmi", 1756, Male, 14.33, Just -0.71 )
-    , ( "bmi", 2040, Female, 14.38, Just -0.61 )
-    , ( "bmi", 2301, Male, 15.31, Just -0.03 )
-    , ( "bmi", 1696, Female, 15.69, Just 0.29 )
-    , ( "bmi", 2050, Female, 14.25, Just -0.7 )
-    , ( "bmi", 2285, Female, 15.09, Just -0.13 )
-    , ( "bmi", 1979, Male, 17.27, Just 1.38 )
-    , ( "bmi", 1617, Female, 15.7, Just 0.31 )
-    , ( "bmi", 1697, Female, 13.62, Just -1.22 )
-    , ( "bmi", 1388, Female, 15.73, Just 0.32 )
-    , ( "bmi", 1328, Male, 15.54, Just 0.1 )
-    , ( "bmi", 1923, Female, 16.51, Just 0.78 )
-    , ( "bmi", 1673, Female, 16.11, Just 0.56 )
-    , ( "bmi", 1736, Female, 16.52, Just 0.8 )
-    , ( "bmi", 1428, Female, 13.67, Just -1.25 )
-    , ( "bmi", 1936, Male, 15.81, Just 0.41 )
-    , ( "bmi", 1778, Female, 16.79, Just 0.95 )
-    , ( "bmi", 1525, Female, 17.62, Just 1.49 )
-    , ( "bmi", 1630, Female, 16.28, Just 0.68 )
-    , ( "bmi", 1829, Female, 17.16, Just 1.15 )
-    , ( "bmi", 1974, Female, 14.65, Just -0.41 )
-    , ( "bmi", 1858, Female, 17.4, Just 1.29 )
-    , ( "bmi", 1499, Male, 14.82, Just -0.4 )
-    , ( "bmi", 1532, Female, 13.44, Just -1.41 )
-    , ( "bmi", 1872, Male, 13.8, Just -1.24 )
-    , ( "bmi", 1624, Male, 14.77, Just -0.39 )
-    , ( "bmi", 1339, Female, 17.73, Just 1.59 )
-    , ( "bmi", 1237, Male, 17.54, Just 1.54 )
-    , ( "bmi", 1839, Female, 12.86, Just -1.85 )
-    , ( "bmi", 1265, Male, 17.53, Just 1.54 )
-    , ( "bmi", 1021, Male, 18.81, Just 2.24 )
-    , ( "bmi", 1561, Male, 15.17, Just -0.09 )
-    , ( "bmi", 1228, Male, 17.6, Just 1.57 )
-    , ( "bmi", 1970, Female, 17.62, Just 1.37 )
-    , ( "bmi", 1843, Male, 16.86, Just 1.16 )
-    , ( "bmi", 1803, Male, 15.84, Just 0.47 )
-    , ( "bmi", 1580, Female, 15.08, Just -0.12 )
-    , ( "bmi", 1311, Male, 15.18, Just -0.2 )
-    , ( "bmi", 1805, Male, 16.52, Just 0.94 )
-    , ( "bmi", 1640, Male, 17.26, Just 1.42 )
-    , ( "bmi", 2024, Male, 20.3, Just 2.96 )
-    , ( "bmi", 1733, Male, 17.74, Just 1.71 )
-    , ( "bmi", 1821, Male, 15.43, Just 0.18 )
-    , ( "bmi", 1953, Female, 14.89, Just -0.24 )
-    , ( "bmi", 1991, Female, 16.63, Just 0.84 )
-    , ( "bmi", 1922, Male, 15.16, Just -0.08 )
-    , ( "bmi", 1666, Female, 16.21, Just 0.63 )
-    , ( "bmi", 1662, Female, 16.04, Just 0.52 )
-    , ( "bmi", 1976, Male, 15.19, Just -0.05 )
-    , ( "bmi", 1981, Female, 15.37, Just 0.08 )
-    , ( "bmi", 1976, Female, 14.23, Just -0.72 )
-    , ( "bmi", 1925, Male, 16.03, Just 0.57 )
-    , ( "bmi", 1937, Female, 16.75, Just 0.92 )
-    , ( "bmi", 1843, Female, 14.17, Just -0.78 )
-    , ( "bmi", 1475, Female, 15.71, Just 0.31 )
-    , ( "bmi", 1272, Male, 16.25, Just 0.63 )
-    , ( "bmi", 1785, Female, 14.79, Just -0.33 )
-    , ( "bmi", 1997, Male, 15.78, Just 0.38 )
-    , ( "bmi", 1868, Female, 16.0, Just 0.49 )
-    , ( "bmi", 1703, Male, 16.36, Just 0.82 )
-    , ( "bmi", 2020, Female, 14.68, Just -0.39 )
-    , ( "bmi", 1588, Female, 15.22, Just -0.02 )
-    , ( "bmi", 1116, Male, 34.16, Just 11.79 )
-    , ( "bmi", 1313, Female, 19.28, Just 2.44 )
-    , ( "bmi", 1436, Male, 14.49, Just -0.71 )
-    , ( "bmi", 1565, Male, 15.78, Just 0.38 )
-    , ( "bmi", 986, Female, 16.07, Just 0.45 )
-    , ( "bmi", 1880, Female, 13.79, Just -1.08 )
-    , ( "bmi", 1562, Male, 15.84, Just 0.42 )
-    , ( "bmi", 1300, Male, 16.47, Just 0.8 )
-    , ( "bmi", 1127, Male, 15.64, Just 0.05 )
-    , ( "bmi", 1572, Male, 15.3, Just 0.02 )
-    , ( "bmi", 1459, Female, 15.61, Just 0.25 )
-    , ( "bmi", 1546, Female, 15.6, Just 0.24 )
-    , ( "bmi", 1239, Female, 14.69, Just -0.49 )
-    , ( "bmi", 1967, Female, 14.83, Just -0.28 )
-    , ( "bmi", 1386, Female, 16.34, Just 0.73 )
-    , ( "bmi", 1686, Female, 15.29, Just 0.02 )
-    , ( "bmi", 2012, Male, 14.16, Just -0.91 )
-    , ( "bmi", 1611, Female, 14.38, Just -0.63 )
-    , ( "bmi", 1962, Male, 14.39, Just -0.71 )
-    , ( "bmi", 1634, Female, 13.53, Just -1.31 )
-    , ( "bmi", 1467, Male, 16.27, Just 0.72 )
-    , ( "bmi", 1690, Female, 15.3, Just 0.03 )
-    , ( "bmi", 1310, Male, 16.07, Just 0.51 )
-    , ( "bmi", 1408, Female, 15.09, Just -0.13 )
-    , ( "bmi", 956, Female, 16.5, Just 0.73 )
-    , ( "bmi", 1309, Female, 13.85, Just -1.15 )
-    , ( "bmi", 1085, Male, 17.17, Just 1.18 )
-    , ( "bmi", 1150, Male, 16.67, Just 0.86 )
-    , ( "bmi", 1236, Male, 18.67, Just 2.28 )
-    , ( "bmi", 961, Male, 16.56, Just 0.64 )
-    , ( "bmi", 244, Male, 17.32, Just 0.04 )
-    , ( "bmi", 363, Male, 16.97, Just 0.12 )
-    , ( "bmi", 360, Female, 18.91, Just 1.59 )
-    , ( "bmi", 424, Male, 16.82, Just 0.19 )
-    , ( "bmi", 402, Male, 16.03, Just -0.48 )
-    , ( "bmi", 579, Female, 15.62, Just -0.02 )
-    , ( "bmi", 492, Male, 17.64, Just 0.97 )
-    , ( "bmi", 430, Female, 16.1, Just 0 )
-    , ( "bmi", 689, Male, 16.24, Just 0.35 )
-    , ( "bmi", 501, Female, 18.5, Just 1.71 )
-    , ( "bmi", 432, Male, 16.74, Just 0.16 )
-    , ( "bmi", 858, Male, 15.06, Just -0.67 )
-    , ( "bmi", 1508, Female, 16.95, Just 1.11 )
-    , ( "bmi", 1508, Male, 15.26, Just -0.04 )
-    , ( "bmi", 1873, Female, 15.87, Just 0.41 )
-    , ( "bmi", 1567, Female, 16.88, Just 1.05 )
-    , ( "bmi", 1508, Female, 15.87, Just 0.42 )
-    , ( "bmi", 1873, Female, 16.93, Just 1.03 )
-    , ( "bmi", 1508, Male, 14.53, Just -0.63 )
-    , ( "bmi", 986, Female, 14.89, Just -0.46 )
-    , ( "bmi", 1873, Female, 14.61, Just -0.45 )
-    , ( "bmi", 1508, Female, 17.78, Just 1.59 )
-    , ( "bmi", 1873, Female, 15.3, Just 0.04 )
-    , ( "bmi", 1724, Male, 16.16, Just 0.68 )
-    , ( "bmi", 1659, Female, 16.26, Just 0.65 )
-    , ( "bmi", 1873, Female, 13.88, Just -1.01 )
-    , ( "bmi", 1873, Male, 16.05, Just 0.59 )
-    , ( "bmi", 1508, Female, 16.5, Just 0.83 )
-    , ( "bmi", 1873, Female, 14.47, Just -0.55 )
-    , ( "bmi", 1873, Female, 15.31, Just 0.04 )
-    , ( "bmi", 1873, Female, 15.45, Just 0.14 )
-    , ( "bmi", 1764, Female, 16.43, Just 0.74 )
-    , ( "bmi", 1812, Male, 15.94, Just 0.54 )
-    , ( "bmi", 1839, Male, 16.13, Just 0.68 )
-    , ( "bmi", 1669, Female, 18.16, Just 1.74 )
-    , ( "bmi", 1786, Male, 17.54, Just 1.58 )
-    , ( "bmi", 1772, Male, 16.22, Just 0.73 )
-    , ( "bmi", 1886, Male, 16.56, Just 0.94 )
-    , ( "bmi", 1891, Female, 17.63, Just 1.4 )
-    , ( "bmi", 1935, Female, 15.42, Just 0.12 )
-    , ( "bmi", 1518, Female, 17.04, Just 1.16 )
-    , ( "bmi", 1775, Female, 15.55, Just 0.18 )
-    , ( "bmi", 1757, Male, 15.62, Just 0.3 )
-    , ( "bmi", 1914, Male, 14.91, Just -0.28 )
-    , ( "bmi", 1914, Male, 15.05, Just -0.17 )
-    , ( "bmi", 2025, Male, 16.33, Just 0.76 )
-    , ( "bmi", 1914, Male, 15.79, Just 0.4 )
-    , ( "bmi", 1899, Male, 13.26, Just -1.76 )
-    , ( "bmi", 1764, Female, 15.66, Just 0.26 )
-    , ( "bmi", 1625, Male, 15.51, Just 0.19 )
-    , ( "bmi", 1670, Male, 16.6, Just 0.98 )
-    , ( "bmi", 1972, Male, 15.8, Just 0.4 )
-    , ( "bmi", 1739, Male, 15.4, Just 0.14 )
-    , ( "bmi", 1582, Male, 17.22, Just 1.39 )
-    , ( "bmi", 1933, Female, 13.77, Just -1.09 )
-    , ( "bmi", 1441, Female, 15.79, Just 0.37 )
-    , ( "bmi", 1901, Female, 17.12, Just 1.13 )
-    , ( "bmi", 1337, Female, 19.46, Just 2.53 )
-    , ( "bmi", 1582, Female, 15.99, Just 0.5 )
-    , ( "bmi", 1706, Female, 14.81, Just -0.31 )
-    , ( "bmi", 1750, Female, 15.4, Just 0.09 )
-    , ( "bmi", 1731, Male, 16.43, Just 0.87 )
-    , ( "bmi", 1654, Male, 14.56, Just -0.55 )
-    , ( "bmi", 1874, Female, 16.7, Just 0.9 )
-    , ( "bmi", 1509, Female, 15.96, Just 0.48 )
-    , ( "bmi", 1886, Male, 14.54, Just -0.59 )
-    , ( "bmi", 1710, Male, 15.5, Just 0.2 )
-    , ( "bmi", 1985, Male, 17.24, Just 1.36 )
-    , ( "bmi", 716, Male, 16.01, Just 0.21 )
-    , ( "bmi", 936, Male, 16.12, Just 0.28 )
-    , ( "bmi", 299, Female, 0.18, Just -14.38 )
-    , ( "bmi", 509, Male, 16.33, Just 0.05 )
-    , ( "bmi", 595, Male, 16.25, Just 0.19 )
-    , ( "bmi", 623, Female, 16.7, Just 0.81 )
-    , ( "bmi", 570, Male, 16.72, Just 0.5 )
-    , ( "bmi", 508, Female, 14.47, Just -1.07 )
-    , ( "bmi", 336, Male, 16.7, Just -0.16 )
-    , ( "bmi", 573, Female, 16.89, Just 0.86 )
-    , ( "bmi", 603, Male, 15.11, Just -0.73 )
-    , ( "bmi", 544, Male, 15.99, Just -0.13 )
-    , ( "bmi", 512, Male, 16.06, Just -0.15 )
-    , ( "bmi", 676, Female, 14.57, Just -0.71 )
-    , ( "bmi", 646, Female, 15.38, Just -0.1 )
-    , ( "bmi", 583, Female, 14.99, Just -0.5 )
-    , ( "bmi", 495, Male, 16.07, Just -0.19 )
-    , ( "bmi", 157, Male, 21.07, Just 2.34 )
-    , ( "bmi", 181, Male, 16.9, Just -0.32 )
-    , ( "bmi", 153, Female, 18.67, Just 1.13 )
-    , ( "bmi", 56, Male, 16.64, Just 0.33 )
-    , ( "bmi", 22, Female, 13.74, Just -0.21 )
-    , ( "bmi", 105, Male, 18.43, Just 0.93 )
-    , ( "bmi", 110, Male, 19.67, Just 1.67 )
-    , ( "bmi", 249, Female, 17.06, Just 0.16 )
-    , ( "bmi", 221, Female, 16.29, Just -0.41 )
-    , ( "bmi", 401, Male, 19.41, Just 1.85 )
-    , ( "bmi", 462, Male, 15.89, Just -0.42 )
-    , ( "bmi", 464, Female, 17.02, Just 0.71 )
-    , ( "bmi", 492, Female, 15.06, Just -0.63 )
-    , ( "bmi", 517, Female, 14.28, Just -1.21 )
-    , ( "bmi", 578, Female, 15.55, Just -0.08 )
-    , ( "bmi", 581, Female, 16.52, Just 0.62 )
-    , ( "bmi", 557, Female, 16.71, Just 0.71 )
-    , ( "bmi", 260, Male, 97.11, Just 43.81 )
-    , ( "bmi", 637, Male, 13.6, Just -2.11 )
-    , ( "bmi", 708, Male, 16.62, Just 0.66 )
-    , ( "bmi", 1735, Male, 17.82, Just 1.76 )
-    , ( "bmi", 1394, Male, 20.81, Just 3.58 )
-    , ( "bmi", 1913, Female, 16.0, Just 0.48 )
-    , ( "bmi", 158, Female, 15.86, Just -0.68 )
-    , ( "bmi", 218, Female, 17.99, Just 0.69 )
-    , ( "bmi", 523, Male, 17.03, Just 0.62 )
-    , ( "bmi", 492, Male, 15.43, Just -0.71 )
-    , ( "bmi", 592, Male, 14.94, Just -0.91 )
-    , ( "bmi", 696, Female, 16.84, Just 0.99 )
-    , ( "bmi", 712, Male, 15.31, Just -0.38 )
-    , ( "bmi", 717, Female, 15.59, Just 0.13 )
-    , ( "bmi", 709, Male, 16.82, Just 0.81 )
-    , ( "bmi", 659, Male, 14.9, Just -0.81 )
-    , ( "bmi", 659, Male, 15.81, Just -0.04 )
-    , ( "bmi", 535, Female, 15.79, Just 0.02 )
+    [ { func = "bmi", scale = 669, gender = Female, measurement = 14.81, expected = Just -0.53 }
+    , { func = "bmi", scale = 674, gender = Female, measurement = 16.36, expected = Just 0.64 }
+    , { func = "bmi", scale = 672, gender = Male, measurement = 17.55, expected = Just 1.28 }
+    , { func = "bmi", scale = 742, gender = Female, measurement = 16.16, expected = Just 0.35 }
+    , { func = "bmi", scale = 720, gender = Male, measurement = 14.2, expected = Just -1.38 }
+    , { func = "bmi", scale = 722, gender = Female, measurement = 15.13, expected = Just -0.22 }
+    , { func = "bmi", scale = 670, gender = Female, measurement = 15.74, expected = Just 0.19 }
+    , { func = "bmi", scale = 739, gender = Male, measurement = 16.35, expected = Just 0.27 }
+    , { func = "bmi", scale = 643, gender = Female, measurement = 16.04, expected = Just 0.38 }
+    , { func = "bmi", scale = 580, gender = Male, measurement = 16.56, expected = Just 0.4 }
+    , { func = "bmi", scale = 518, gender = Female, measurement = 13.3, expected = Just -2.08 }
+    , { func = "bmi", scale = 500, gender = Male, measurement = 15.82, expected = Just -0.38 }
+    , { func = "bmi", scale = 372, gender = Male, measurement = 17.5, expected = Just 0.53 }
+    , { func = "bmi", scale = 380, gender = Male, measurement = 17.9, expected = Just 0.83 }
+    , { func = "bmi", scale = 380, gender = Male, measurement = 18.26, expected = Just 1.07 }
+    , { func = "bmi", scale = 328, gender = Female, measurement = 21.21, expected = Just 2.72 }
+    , { func = "bmi", scale = 293, gender = Female, measurement = 15.87, expected = Just -0.55 }
+    , { func = "bmi", scale = 283, gender = Female, measurement = 16.48, expected = Just -0.15 }
+    , { func = "bmi", scale = 198, gender = Female, measurement = 18.12, expected = Just 0.76 }
+    , { func = "bmi", scale = 158, gender = Female, measurement = 13.57, expected = Just -2.41 }
+    , { func = "bmi", scale = 124, gender = Male, measurement = 14.78, expected = Just -1.8 }
+    , { func = "bmi", scale = 67, gender = Female, measurement = 14.81, expected = Just -0.77 }
+    , { func = "bmi", scale = 111, gender = Male, measurement = 19.32, expected = Just 1.46 }
+    , { func = "bmi", scale = 127, gender = Female, measurement = 16.95, expected = Just 0.16 }
+    , { func = "bmi", scale = 432, gender = Male, measurement = 17.64, expected = Just 0.8 }
+    , { func = "bmi", scale = 401, gender = Male, measurement = 14.49, expected = Just -1.8 }
+    , { func = "bmi", scale = 501, gender = Male, measurement = 15.45, expected = Just -0.68 }
+    , { func = "bmi", scale = 605, gender = Female, measurement = 16.88, expected = Just 0.9 }
+    , { func = "bmi", scale = 650, gender = Male, measurement = 17.9, expected = Just 1.48 }
+    , { func = "bmi", scale = 629, gender = Male, measurement = 16.88, expected = Just 0.73 }
+    , { func = "bmi", scale = 621, gender = Male, measurement = 14.96, expected = Just -0.83 }
+    , { func = "bmi", scale = 683, gender = Male, measurement = 16.25, expected = Just 0.34 }
+    , { func = "bmi", scale = 1953, gender = Male, measurement = 15.78, expected = Just 0.39 }
+    , { func = "bmi", scale = 2023, gender = Male, measurement = 16.34, expected = Just 0.77 }
+    , { func = "bmi", scale = 1155, gender = Male, measurement = 16.02, expected = Just 0.38 }
+    , { func = "bmi", scale = 1964, gender = Female, measurement = 15.84, expected = Just 0.38 }
+    , { func = "bmi", scale = 2389, gender = Male, measurement = 16.18, expected = Just 0.55 }
+    , { func = "bmi", scale = 1399, gender = Male, measurement = 15.1, expected = Just -0.22 }
+    , { func = "bmi", scale = 1732, gender = Male, measurement = 15.81, expected = Just 0.44 }
+    , { func = "bmi", scale = 1766, gender = Female, measurement = 13.93, expected = Just -0.97 }
+    , { func = "bmi", scale = 2165, gender = Female, measurement = 16.75, expected = Just 0.87 }
+    , { func = "bmi", scale = 1946, gender = Female, measurement = 15.23, expected = Just -0.01 }
+    , { func = "bmi", scale = 2280, gender = Female, measurement = 16.13, expected = Just 0.5 }
+    , { func = "bmi", scale = 1757, gender = Female, measurement = 15.43, expected = Just 0.11 }
+    , { func = "bmi", scale = 1847, gender = Male, measurement = 15.36, expected = Just 0.13 }
+    , { func = "bmi", scale = 1951, gender = Female, measurement = 17.07, expected = Just 1.09 }
+    , { func = "bmi", scale = 1997, gender = Female, measurement = 14.5, expected = Just -0.52 }
+    , { func = "bmi", scale = 2020, gender = Male, measurement = 15.11, expected = Just -0.12 }
+    , { func = "bmi", scale = 1846, gender = Female, measurement = 14.46, expected = Just -0.57 }
+    , { func = "bmi", scale = 1978, gender = Male, measurement = 16.48, expected = Just 0.87 }
+    , { func = "bmi", scale = 1599, gender = Male, measurement = 15.79, expected = Just 0.39 }
+    , { func = "bmi", scale = 1933, gender = Male, measurement = 14.41, expected = Just -0.69 }
+    , { func = "bmi", scale = 1871, gender = Female, measurement = 14.55, expected = Just -0.49 }
+    , { func = "bmi", scale = 1676, gender = Male, measurement = 18.21, expected = Just 2 }
+    , { func = "bmi", scale = 1913, gender = Male, measurement = 15.17, expected = Just -0.07 }
+    , { func = "bmi", scale = 1282, gender = Male, measurement = 18.31, expected = Just 2.06 }
+    , { func = "bmi", scale = 1952, gender = Female, measurement = 15.84, expected = Just 0.38 }
+    , { func = "bmi", scale = 2013, gender = Female, measurement = 16.02, expected = Just 0.49 }
+    , { func = "bmi", scale = 1802, gender = Female, measurement = 16.53, expected = Just 0.8 }
+    , { func = "bmi", scale = 1752, gender = Female, measurement = 16.05, expected = Just 0.51 }
+    , { func = "bmi", scale = 1866, gender = Male, measurement = 15.69, expected = Just 0.32 }
+    , { func = "bmi", scale = 2289, gender = Male, measurement = 17.59, expected = Just 1.45 }
+    , { func = "bmi", scale = 1859, gender = Male, measurement = 17.81, expected = Just 1.74 }
+    , { func = "bmi", scale = 2126, gender = Female, measurement = 14.05, expected = Just -0.85 }
+    , { func = "bmi", scale = 1975, gender = Male, measurement = 17.45, expected = Just 1.49 }
+    , { func = "bmi", scale = 1956, gender = Male, measurement = 15.86, expected = Just 0.45 }
+    , { func = "bmi", scale = 1872, gender = Male, measurement = 13.46, expected = Just -1.57 }
+    , { func = "bmi", scale = 1970, gender = Male, measurement = 14.46, expected = Just -0.65 }
+    , { func = "bmi", scale = 2067, gender = Male, measurement = 15.42, expected = Just 0.11 }
+    , { func = "bmi", scale = 1833, gender = Male, measurement = 15.87, expected = Just 0.5 }
+    , { func = "bmi", scale = 1756, gender = Male, measurement = 14.33, expected = Just -0.71 }
+    , { func = "bmi", scale = 2040, gender = Female, measurement = 14.38, expected = Just -0.61 }
+    , { func = "bmi", scale = 2301, gender = Male, measurement = 15.31, expected = Just -0.03 }
+    , { func = "bmi", scale = 1696, gender = Female, measurement = 15.69, expected = Just 0.29 }
+    , { func = "bmi", scale = 2050, gender = Female, measurement = 14.25, expected = Just -0.7 }
+    , { func = "bmi", scale = 2285, gender = Female, measurement = 15.09, expected = Just -0.13 }
+    , { func = "bmi", scale = 1979, gender = Male, measurement = 17.27, expected = Just 1.38 }
+    , { func = "bmi", scale = 1617, gender = Female, measurement = 15.7, expected = Just 0.31 }
+    , { func = "bmi", scale = 1697, gender = Female, measurement = 13.62, expected = Just -1.22 }
+    , { func = "bmi", scale = 1388, gender = Female, measurement = 15.73, expected = Just 0.32 }
+    , { func = "bmi", scale = 1328, gender = Male, measurement = 15.54, expected = Just 0.1 }
+    , { func = "bmi", scale = 1923, gender = Female, measurement = 16.51, expected = Just 0.78 }
+    , { func = "bmi", scale = 1673, gender = Female, measurement = 16.11, expected = Just 0.56 }
+    , { func = "bmi", scale = 1736, gender = Female, measurement = 16.52, expected = Just 0.8 }
+    , { func = "bmi", scale = 1428, gender = Female, measurement = 13.67, expected = Just -1.25 }
+    , { func = "bmi", scale = 1936, gender = Male, measurement = 15.81, expected = Just 0.41 }
+    , { func = "bmi", scale = 1778, gender = Female, measurement = 16.79, expected = Just 0.95 }
+    , { func = "bmi", scale = 1525, gender = Female, measurement = 17.62, expected = Just 1.49 }
+    , { func = "bmi", scale = 1630, gender = Female, measurement = 16.28, expected = Just 0.68 }
+    , { func = "bmi", scale = 1829, gender = Female, measurement = 17.16, expected = Just 1.15 }
+    , { func = "bmi", scale = 1974, gender = Female, measurement = 14.65, expected = Just -0.41 }
+    , { func = "bmi", scale = 1858, gender = Female, measurement = 17.4, expected = Just 1.29 }
+    , { func = "bmi", scale = 1499, gender = Male, measurement = 14.82, expected = Just -0.4 }
+    , { func = "bmi", scale = 1532, gender = Female, measurement = 13.44, expected = Just -1.41 }
+    , { func = "bmi", scale = 1872, gender = Male, measurement = 13.8, expected = Just -1.24 }
+    , { func = "bmi", scale = 1624, gender = Male, measurement = 14.77, expected = Just -0.39 }
+    , { func = "bmi", scale = 1339, gender = Female, measurement = 17.73, expected = Just 1.59 }
+    , { func = "bmi", scale = 1237, gender = Male, measurement = 17.54, expected = Just 1.54 }
+    , { func = "bmi", scale = 1839, gender = Female, measurement = 12.86, expected = Just -1.85 }
+    , { func = "bmi", scale = 1265, gender = Male, measurement = 17.53, expected = Just 1.54 }
+    , { func = "bmi", scale = 1021, gender = Male, measurement = 18.81, expected = Just 2.24 }
+    , { func = "bmi", scale = 1561, gender = Male, measurement = 15.17, expected = Just -0.09 }
+    , { func = "bmi", scale = 1228, gender = Male, measurement = 17.6, expected = Just 1.57 }
+    , { func = "bmi", scale = 1970, gender = Female, measurement = 17.62, expected = Just 1.37 }
+    , { func = "bmi", scale = 1843, gender = Male, measurement = 16.86, expected = Just 1.16 }
+    , { func = "bmi", scale = 1803, gender = Male, measurement = 15.84, expected = Just 0.47 }
+    , { func = "bmi", scale = 1580, gender = Female, measurement = 15.08, expected = Just -0.12 }
+    , { func = "bmi", scale = 1311, gender = Male, measurement = 15.18, expected = Just -0.2 }
+    , { func = "bmi", scale = 1805, gender = Male, measurement = 16.52, expected = Just 0.94 }
+    , { func = "bmi", scale = 1640, gender = Male, measurement = 17.26, expected = Just 1.42 }
+    , { func = "bmi", scale = 2024, gender = Male, measurement = 20.3, expected = Just 2.96 }
+    , { func = "bmi", scale = 1733, gender = Male, measurement = 17.74, expected = Just 1.71 }
+    , { func = "bmi", scale = 1821, gender = Male, measurement = 15.43, expected = Just 0.18 }
+    , { func = "bmi", scale = 1953, gender = Female, measurement = 14.89, expected = Just -0.24 }
+    , { func = "bmi", scale = 1991, gender = Female, measurement = 16.63, expected = Just 0.84 }
+    , { func = "bmi", scale = 1922, gender = Male, measurement = 15.16, expected = Just -0.08 }
+    , { func = "bmi", scale = 1666, gender = Female, measurement = 16.21, expected = Just 0.63 }
+    , { func = "bmi", scale = 1662, gender = Female, measurement = 16.04, expected = Just 0.52 }
+    , { func = "bmi", scale = 1976, gender = Male, measurement = 15.19, expected = Just -0.05 }
+    , { func = "bmi", scale = 1981, gender = Female, measurement = 15.37, expected = Just 0.08 }
+    , { func = "bmi", scale = 1976, gender = Female, measurement = 14.23, expected = Just -0.72 }
+    , { func = "bmi", scale = 1925, gender = Male, measurement = 16.03, expected = Just 0.57 }
+    , { func = "bmi", scale = 1937, gender = Female, measurement = 16.75, expected = Just 0.92 }
+    , { func = "bmi", scale = 1843, gender = Female, measurement = 14.17, expected = Just -0.78 }
+    , { func = "bmi", scale = 1475, gender = Female, measurement = 15.71, expected = Just 0.31 }
+    , { func = "bmi", scale = 1272, gender = Male, measurement = 16.25, expected = Just 0.63 }
+    , { func = "bmi", scale = 1785, gender = Female, measurement = 14.79, expected = Just -0.33 }
+    , { func = "bmi", scale = 1997, gender = Male, measurement = 15.78, expected = Just 0.38 }
+    , { func = "bmi", scale = 1868, gender = Female, measurement = 16.0, expected = Just 0.49 }
+    , { func = "bmi", scale = 1703, gender = Male, measurement = 16.36, expected = Just 0.82 }
+    , { func = "bmi", scale = 2020, gender = Female, measurement = 14.68, expected = Just -0.39 }
+    , { func = "bmi", scale = 1588, gender = Female, measurement = 15.22, expected = Just -0.02 }
+    , { func = "bmi", scale = 1116, gender = Male, measurement = 34.16, expected = Just 11.79 }
+    , { func = "bmi", scale = 1313, gender = Female, measurement = 19.28, expected = Just 2.44 }
+    , { func = "bmi", scale = 1436, gender = Male, measurement = 14.49, expected = Just -0.71 }
+    , { func = "bmi", scale = 1565, gender = Male, measurement = 15.78, expected = Just 0.38 }
+    , { func = "bmi", scale = 986, gender = Female, measurement = 16.07, expected = Just 0.45 }
+    , { func = "bmi", scale = 1880, gender = Female, measurement = 13.79, expected = Just -1.08 }
+    , { func = "bmi", scale = 1562, gender = Male, measurement = 15.84, expected = Just 0.42 }
+    , { func = "bmi", scale = 1300, gender = Male, measurement = 16.47, expected = Just 0.8 }
+    , { func = "bmi", scale = 1127, gender = Male, measurement = 15.64, expected = Just 0.05 }
+    , { func = "bmi", scale = 1572, gender = Male, measurement = 15.3, expected = Just 0.02 }
+    , { func = "bmi", scale = 1459, gender = Female, measurement = 15.61, expected = Just 0.25 }
+    , { func = "bmi", scale = 1546, gender = Female, measurement = 15.6, expected = Just 0.24 }
+    , { func = "bmi", scale = 1239, gender = Female, measurement = 14.69, expected = Just -0.49 }
+    , { func = "bmi", scale = 1967, gender = Female, measurement = 14.83, expected = Just -0.28 }
+    , { func = "bmi", scale = 1386, gender = Female, measurement = 16.34, expected = Just 0.73 }
+    , { func = "bmi", scale = 1686, gender = Female, measurement = 15.29, expected = Just 0.02 }
+    , { func = "bmi", scale = 2012, gender = Male, measurement = 14.16, expected = Just -0.91 }
+    , { func = "bmi", scale = 1611, gender = Female, measurement = 14.38, expected = Just -0.63 }
+    , { func = "bmi", scale = 1962, gender = Male, measurement = 14.39, expected = Just -0.71 }
+    , { func = "bmi", scale = 1634, gender = Female, measurement = 13.53, expected = Just -1.31 }
+    , { func = "bmi", scale = 1467, gender = Male, measurement = 16.27, expected = Just 0.72 }
+    , { func = "bmi", scale = 1690, gender = Female, measurement = 15.3, expected = Just 0.03 }
+    , { func = "bmi", scale = 1310, gender = Male, measurement = 16.07, expected = Just 0.51 }
+    , { func = "bmi", scale = 1408, gender = Female, measurement = 15.09, expected = Just -0.13 }
+    , { func = "bmi", scale = 956, gender = Female, measurement = 16.5, expected = Just 0.73 }
+    , { func = "bmi", scale = 1309, gender = Female, measurement = 13.85, expected = Just -1.15 }
+    , { func = "bmi", scale = 1085, gender = Male, measurement = 17.17, expected = Just 1.18 }
+    , { func = "bmi", scale = 1150, gender = Male, measurement = 16.67, expected = Just 0.86 }
+    , { func = "bmi", scale = 1236, gender = Male, measurement = 18.67, expected = Just 2.28 }
+    , { func = "bmi", scale = 961, gender = Male, measurement = 16.56, expected = Just 0.64 }
+    , { func = "bmi", scale = 244, gender = Male, measurement = 17.32, expected = Just 0.04 }
+    , { func = "bmi", scale = 363, gender = Male, measurement = 16.97, expected = Just 0.12 }
+    , { func = "bmi", scale = 360, gender = Female, measurement = 18.91, expected = Just 1.59 }
+    , { func = "bmi", scale = 424, gender = Male, measurement = 16.82, expected = Just 0.19 }
+    , { func = "bmi", scale = 402, gender = Male, measurement = 16.03, expected = Just -0.48 }
+    , { func = "bmi", scale = 579, gender = Female, measurement = 15.62, expected = Just -0.02 }
+    , { func = "bmi", scale = 492, gender = Male, measurement = 17.64, expected = Just 0.97 }
+    , { func = "bmi", scale = 430, gender = Female, measurement = 16.1, expected = Just 0 }
+    , { func = "bmi", scale = 689, gender = Male, measurement = 16.24, expected = Just 0.35 }
+    , { func = "bmi", scale = 501, gender = Female, measurement = 18.5, expected = Just 1.71 }
+    , { func = "bmi", scale = 432, gender = Male, measurement = 16.74, expected = Just 0.16 }
+    , { func = "bmi", scale = 858, gender = Male, measurement = 15.06, expected = Just -0.67 }
+    , { func = "bmi", scale = 1508, gender = Female, measurement = 16.95, expected = Just 1.11 }
+    , { func = "bmi", scale = 1508, gender = Male, measurement = 15.26, expected = Just -0.04 }
+    , { func = "bmi", scale = 1873, gender = Female, measurement = 15.87, expected = Just 0.41 }
+    , { func = "bmi", scale = 1567, gender = Female, measurement = 16.88, expected = Just 1.05 }
+    , { func = "bmi", scale = 1508, gender = Female, measurement = 15.87, expected = Just 0.42 }
+    , { func = "bmi", scale = 1873, gender = Female, measurement = 16.93, expected = Just 1.03 }
+    , { func = "bmi", scale = 1508, gender = Male, measurement = 14.53, expected = Just -0.63 }
+    , { func = "bmi", scale = 986, gender = Female, measurement = 14.89, expected = Just -0.46 }
+    , { func = "bmi", scale = 1873, gender = Female, measurement = 14.61, expected = Just -0.45 }
+    , { func = "bmi", scale = 1508, gender = Female, measurement = 17.78, expected = Just 1.59 }
+    , { func = "bmi", scale = 1873, gender = Female, measurement = 15.3, expected = Just 0.04 }
+    , { func = "bmi", scale = 1724, gender = Male, measurement = 16.16, expected = Just 0.68 }
+    , { func = "bmi", scale = 1659, gender = Female, measurement = 16.26, expected = Just 0.65 }
+    , { func = "bmi", scale = 1873, gender = Female, measurement = 13.88, expected = Just -1.01 }
+    , { func = "bmi", scale = 1873, gender = Male, measurement = 16.05, expected = Just 0.59 }
+    , { func = "bmi", scale = 1508, gender = Female, measurement = 16.5, expected = Just 0.83 }
+    , { func = "bmi", scale = 1873, gender = Female, measurement = 14.47, expected = Just -0.55 }
+    , { func = "bmi", scale = 1873, gender = Female, measurement = 15.31, expected = Just 0.04 }
+    , { func = "bmi", scale = 1873, gender = Female, measurement = 15.45, expected = Just 0.14 }
+    , { func = "bmi", scale = 1764, gender = Female, measurement = 16.43, expected = Just 0.74 }
+    , { func = "bmi", scale = 1812, gender = Male, measurement = 15.94, expected = Just 0.54 }
+    , { func = "bmi", scale = 1839, gender = Male, measurement = 16.13, expected = Just 0.68 }
+    , { func = "bmi", scale = 1669, gender = Female, measurement = 18.16, expected = Just 1.74 }
+    , { func = "bmi", scale = 1786, gender = Male, measurement = 17.54, expected = Just 1.58 }
+    , { func = "bmi", scale = 1772, gender = Male, measurement = 16.22, expected = Just 0.73 }
+    , { func = "bmi", scale = 1886, gender = Male, measurement = 16.56, expected = Just 0.94 }
+    , { func = "bmi", scale = 1891, gender = Female, measurement = 17.63, expected = Just 1.4 }
+    , { func = "bmi", scale = 1935, gender = Female, measurement = 15.42, expected = Just 0.12 }
+    , { func = "bmi", scale = 1518, gender = Female, measurement = 17.04, expected = Just 1.16 }
+    , { func = "bmi", scale = 1775, gender = Female, measurement = 15.55, expected = Just 0.18 }
+    , { func = "bmi", scale = 1757, gender = Male, measurement = 15.62, expected = Just 0.3 }
+    , { func = "bmi", scale = 1914, gender = Male, measurement = 14.91, expected = Just -0.28 }
+    , { func = "bmi", scale = 1914, gender = Male, measurement = 15.05, expected = Just -0.17 }
+    , { func = "bmi", scale = 2025, gender = Male, measurement = 16.33, expected = Just 0.76 }
+    , { func = "bmi", scale = 1914, gender = Male, measurement = 15.79, expected = Just 0.4 }
+    , { func = "bmi", scale = 1899, gender = Male, measurement = 13.26, expected = Just -1.76 }
+    , { func = "bmi", scale = 1764, gender = Female, measurement = 15.66, expected = Just 0.26 }
+    , { func = "bmi", scale = 1625, gender = Male, measurement = 15.51, expected = Just 0.19 }
+    , { func = "bmi", scale = 1670, gender = Male, measurement = 16.6, expected = Just 0.98 }
+    , { func = "bmi", scale = 1972, gender = Male, measurement = 15.8, expected = Just 0.4 }
+    , { func = "bmi", scale = 1739, gender = Male, measurement = 15.4, expected = Just 0.14 }
+    , { func = "bmi", scale = 1582, gender = Male, measurement = 17.22, expected = Just 1.39 }
+    , { func = "bmi", scale = 1933, gender = Female, measurement = 13.77, expected = Just -1.09 }
+    , { func = "bmi", scale = 1441, gender = Female, measurement = 15.79, expected = Just 0.37 }
+    , { func = "bmi", scale = 1901, gender = Female, measurement = 17.12, expected = Just 1.13 }
+    , { func = "bmi", scale = 1337, gender = Female, measurement = 19.46, expected = Just 2.53 }
+    , { func = "bmi", scale = 1582, gender = Female, measurement = 15.99, expected = Just 0.5 }
+    , { func = "bmi", scale = 1706, gender = Female, measurement = 14.81, expected = Just -0.31 }
+    , { func = "bmi", scale = 1750, gender = Female, measurement = 15.4, expected = Just 0.09 }
+    , { func = "bmi", scale = 1731, gender = Male, measurement = 16.43, expected = Just 0.87 }
+    , { func = "bmi", scale = 1654, gender = Male, measurement = 14.56, expected = Just -0.55 }
+    , { func = "bmi", scale = 1874, gender = Female, measurement = 16.7, expected = Just 0.9 }
+    , { func = "bmi", scale = 1509, gender = Female, measurement = 15.96, expected = Just 0.48 }
+    , { func = "bmi", scale = 1886, gender = Male, measurement = 14.54, expected = Just -0.59 }
+    , { func = "bmi", scale = 1710, gender = Male, measurement = 15.5, expected = Just 0.2 }
+    , { func = "bmi", scale = 1985, gender = Male, measurement = 17.24, expected = Just 1.36 }
+    , { func = "bmi", scale = 716, gender = Male, measurement = 16.01, expected = Just 0.21 }
+    , { func = "bmi", scale = 936, gender = Male, measurement = 16.12, expected = Just 0.28 }
+    , { func = "bmi", scale = 299, gender = Female, measurement = 0.18, expected = Just -14.38 }
+    , { func = "bmi", scale = 509, gender = Male, measurement = 16.33, expected = Just 0.05 }
+    , { func = "bmi", scale = 595, gender = Male, measurement = 16.25, expected = Just 0.19 }
+    , { func = "bmi", scale = 623, gender = Female, measurement = 16.7, expected = Just 0.81 }
+    , { func = "bmi", scale = 570, gender = Male, measurement = 16.72, expected = Just 0.5 }
+    , { func = "bmi", scale = 508, gender = Female, measurement = 14.47, expected = Just -1.07 }
+    , { func = "bmi", scale = 336, gender = Male, measurement = 16.7, expected = Just -0.16 }
+    , { func = "bmi", scale = 573, gender = Female, measurement = 16.89, expected = Just 0.86 }
+    , { func = "bmi", scale = 603, gender = Male, measurement = 15.11, expected = Just -0.73 }
+    , { func = "bmi", scale = 544, gender = Male, measurement = 15.99, expected = Just -0.13 }
+    , { func = "bmi", scale = 512, gender = Male, measurement = 16.06, expected = Just -0.15 }
+    , { func = "bmi", scale = 676, gender = Female, measurement = 14.57, expected = Just -0.71 }
+    , { func = "bmi", scale = 646, gender = Female, measurement = 15.38, expected = Just -0.1 }
+    , { func = "bmi", scale = 583, gender = Female, measurement = 14.99, expected = Just -0.5 }
+    , { func = "bmi", scale = 495, gender = Male, measurement = 16.07, expected = Just -0.19 }
+    , { func = "bmi", scale = 157, gender = Male, measurement = 21.07, expected = Just 2.34 }
+    , { func = "bmi", scale = 181, gender = Male, measurement = 16.9, expected = Just -0.32 }
+    , { func = "bmi", scale = 153, gender = Female, measurement = 18.67, expected = Just 1.13 }
+    , { func = "bmi", scale = 56, gender = Male, measurement = 16.64, expected = Just 0.33 }
+    , { func = "bmi", scale = 22, gender = Female, measurement = 13.74, expected = Just -0.21 }
+    , { func = "bmi", scale = 105, gender = Male, measurement = 18.43, expected = Just 0.93 }
+    , { func = "bmi", scale = 110, gender = Male, measurement = 19.67, expected = Just 1.67 }
+    , { func = "bmi", scale = 249, gender = Female, measurement = 17.06, expected = Just 0.16 }
+    , { func = "bmi", scale = 221, gender = Female, measurement = 16.29, expected = Just -0.41 }
+    , { func = "bmi", scale = 401, gender = Male, measurement = 19.41, expected = Just 1.85 }
+    , { func = "bmi", scale = 462, gender = Male, measurement = 15.89, expected = Just -0.42 }
+    , { func = "bmi", scale = 464, gender = Female, measurement = 17.02, expected = Just 0.71 }
+    , { func = "bmi", scale = 492, gender = Female, measurement = 15.06, expected = Just -0.63 }
+    , { func = "bmi", scale = 517, gender = Female, measurement = 14.28, expected = Just -1.21 }
+    , { func = "bmi", scale = 578, gender = Female, measurement = 15.55, expected = Just -0.08 }
+    , { func = "bmi", scale = 581, gender = Female, measurement = 16.52, expected = Just 0.62 }
+    , { func = "bmi", scale = 557, gender = Female, measurement = 16.71, expected = Just 0.71 }
+    , { func = "bmi", scale = 260, gender = Male, measurement = 97.11, expected = Just 43.81 }
+    , { func = "bmi", scale = 637, gender = Male, measurement = 13.6, expected = Just -2.11 }
+    , { func = "bmi", scale = 708, gender = Male, measurement = 16.62, expected = Just 0.66 }
+    , { func = "bmi", scale = 1735, gender = Male, measurement = 17.82, expected = Just 1.76 }
+    , { func = "bmi", scale = 1394, gender = Male, measurement = 20.81, expected = Just 3.58 }
+    , { func = "bmi", scale = 1913, gender = Female, measurement = 16.0, expected = Just 0.48 }
+    , { func = "bmi", scale = 158, gender = Female, measurement = 15.86, expected = Just -0.68 }
+    , { func = "bmi", scale = 218, gender = Female, measurement = 17.99, expected = Just 0.69 }
+    , { func = "bmi", scale = 523, gender = Male, measurement = 17.03, expected = Just 0.62 }
+    , { func = "bmi", scale = 492, gender = Male, measurement = 15.43, expected = Just -0.71 }
+    , { func = "bmi", scale = 592, gender = Male, measurement = 14.94, expected = Just -0.91 }
+    , { func = "bmi", scale = 696, gender = Female, measurement = 16.84, expected = Just 0.99 }
+    , { func = "bmi", scale = 712, gender = Male, measurement = 15.31, expected = Just -0.38 }
+    , { func = "bmi", scale = 717, gender = Female, measurement = 15.59, expected = Just 0.13 }
+    , { func = "bmi", scale = 709, gender = Male, measurement = 16.82, expected = Just 0.81 }
+    , { func = "bmi", scale = 659, gender = Male, measurement = 14.9, expected = Just -0.81 }
+    , { func = "bmi", scale = 659, gender = Male, measurement = 15.81, expected = Just -0.04 }
+    , { func = "bmi", scale = 535, gender = Female, measurement = 15.79, expected = Just 0.02 }
     ]
 
 
@@ -2619,7 +2631,7 @@ calculateZScoreTest =
     ]
         |> List.concat
         |> List.indexedMap
-            (\index ( func, scale, gender, measurement, expected ) ->
+            (\index { func, scale, gender, measurement, expected } ->
                 let
                     testName =
                         String.join " " [ Debug.toString index, func, Debug.toString scale, Debug.toString gender, Debug.toString measurement, Debug.toString expected ]

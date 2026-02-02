@@ -1,6 +1,6 @@
-module Backend.IndividualEncounterParticipant.Utils exposing (..)
+module Backend.IndividualEncounterParticipant.Utils exposing (acuteIllnessOutcomeFromString, acuteIllnessOutcomeToString, deliveryLocationFromString, deliveryLocationToString, hivOutcomeFromString, hivOutcomeToString, individualEncounterTypeFromString, individualEncounterTypeToString, initiatorFromUrlFragment, initiatorToUrlFragment, isDailyEncounterActive, pregnancyOutcomeFromString, pregnancyOutcomeToString, tuberculosisOutcomeFromString, tuberculosisOutcomeToString)
 
-import Backend.IndividualEncounterParticipant.Model exposing (..)
+import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), DeliveryLocation(..), HIVOutcome(..), IndividualEncounterType(..), IndividualParticipantInitiator(..), PregnancyOutcome(..), TuberculosisOutcome(..))
 import Backend.PatientRecord.Utils
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isNothing)

@@ -32,7 +32,7 @@ import Date
 import Pages.Completion.Model
 import Pages.Components.Types exposing (PopulationSelectionOption(..))
 import Pages.Reports.Model exposing (PregnancyTrimester(..), ReportType(..))
-import Pages.Scoreboard.Model exposing (..)
+import Pages.Scoreboard.Model exposing (NCDAANCNewbornItem(..), NCDAAcuteMalnutritionItem(..), NCDADemographicsItem(..), NCDAInfrastructureEnvironmentWashItem(..), NCDANutritionBehaviorItem(..), NCDAStuntingItem(..), NCDATargetedInterventionsItem(..), NCDAUniversalInterventionItem(..))
 import Time exposing (Month(..))
 
 
@@ -237,7 +237,6 @@ type TranslationId
     | Tuberculosis
     | TuberculosisActivity TuberculosisActivity
     | Vitals
-    | ViewMode
     | Village
     | UnderweightModerate
     | UnderweightSevere
@@ -2658,12 +2657,6 @@ translationSet transId =
 
                 TuberculosisTreatmentReview ->
                     translationSet TreatmentReview
-
-        ViewMode ->
-            { english = "View Mode"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
-            }
 
         Vitals ->
             { english = "Vitals"

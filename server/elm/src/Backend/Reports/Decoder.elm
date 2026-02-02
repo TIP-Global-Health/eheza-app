@@ -1,13 +1,12 @@
 module Backend.Reports.Decoder exposing (decodeReportsData)
 
 import Backend.Decoder exposing (decodeSite, decodeWithFallback)
-import Backend.Reports.Model exposing (..)
-import Backend.Reports.Utils exposing (..)
+import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, DeliveryLocation(..), Gender(..), NutritionData, NutritionEncounterData, NutritionReportTableType(..), PatientData, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalParticipantData, ReportsData, SelectedEntity(..))
+import Backend.Reports.Utils exposing (genderFromString)
 import Date
-import EverySet exposing (EverySet)
-import Gizra.Json exposing (decodeFloat, decodeInt)
-import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffMonths)
-import Json.Decode exposing (Decoder, andThen, bool, fail, list, map, nullable, oneOf, string, succeed)
+import Gizra.Json exposing (decodeInt)
+import Gizra.NominalDate exposing (decodeYYYYMMDD)
+import Json.Decode exposing (Decoder, andThen, fail, list, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (optional, optionalAt, required)
 import Maybe.Extra
 

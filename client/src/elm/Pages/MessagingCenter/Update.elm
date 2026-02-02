@@ -18,7 +18,7 @@ import Backend.ResilienceSurvey.Model
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
-import Pages.MessagingCenter.Model exposing (..)
+import Pages.MessagingCenter.Model exposing (Model, Msg(..), emptySurveyForm)
 import Pages.MessagingCenter.Utils exposing (resolveSurveyScoreDialogState, surveyAnswerToScore, surveyQuestionsAnswered)
 import Time
 import Time.Extra

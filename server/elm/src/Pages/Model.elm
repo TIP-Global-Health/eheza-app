@@ -1,4 +1,4 @@
-module Pages.Model exposing (..)
+module Pages.Model exposing (MetricsResultsTableData)
 
 
 type alias MetricsResultsTableData =

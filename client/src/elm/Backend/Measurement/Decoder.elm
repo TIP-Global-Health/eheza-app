@@ -1,4 +1,4 @@
-module Backend.Measurement.Decoder exposing (..)
+module Backend.Measurement.Decoder exposing (decodeAcuteFindings, decodeAcuteIllnessContactsTracing, decodeAcuteIllnessCoreExam, decodeAcuteIllnessDangerSigns, decodeAcuteIllnessFollowUp, decodeAcuteIllnessMeasurements, decodeAcuteIllnessMuac, decodeAcuteIllnessNutrition, decodeAcuteIllnessTraceContact, decodeAcuteIllnessVitals, decodeAppointmentConfirmation, decodeAttendance, decodeBirthPlan, decodeBreastExam, decodeCall114, decodeCall114Sign, decodeChildMeasurementList, decodeChildNutritionSign, decodeChildScoreboardBCGImmunisation, decodeChildScoreboardDTPImmunisation, decodeChildScoreboardDTPStandaloneImmunisation, decodeChildScoreboardIPVImmunisation, decodeChildScoreboardMRImmunisation, decodeChildScoreboardMeasurements, decodeChildScoreboardNCDA, decodeChildScoreboardOPVImmunisation, decodeChildScoreboardPCV13Immunisation, decodeChildScoreboardRotarixImmunisation, decodeContributingFactors, decodeCorePhysicalExam, decodeCounselingSession, decodeCovidTesting, decodeDangerSign, decodeDangerSigns, decodeExposure, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeFbf, decodeFollowUp, decodeFollowUpMeasurements, decodeGroupHealthEducation, decodeGroupNCDA, decodeGroupSendToHC, decodeHCContact, decodeHCContactSign, decodeHCRecommendation, decodeHIVDiagnostics, decodeHIVFollowUp, decodeHIVHealthEducation, decodeHIVMeasurements, decodeHIVMedication, decodeHIVReferral, decodeHIVSymptomReview, decodeHIVTreatmentReview, decodeHealthEducation, decodeHeight, decodeHomeVisitMeasurements, decodeIsolation, decodeIsolationSign, decodeLactation, decodeLastMenstrualPeriod, decodeMalariaPrevention, decodeMalariaTesting, decodeMedicalCondition, decodeMedicalHistory, decodeMedication, decodeMedicationDistribution, decodeMotherMeasurementList, decodeMuac, decodeNCDCoMorbidities, decodeNCDCoreExam, decodeNCDCreatinineTest, decodeNCDDangerSigns, decodeNCDFamilyHistory, decodeNCDFamilyPlanning, decodeNCDHIVTest, decodeNCDHbA1cTest, decodeNCDHealthEducation, decodeNCDLabsResults, decodeNCDLipidPanelTest, decodeNCDLiverFunctionTest, decodeNCDMeasurements, decodeNCDMedicationDistribution, decodeNCDMedicationHistory, decodeNCDOutsideCare, decodeNCDPregnancyTest, decodeNCDRandomBloodSugarTest, decodeNCDReferral, decodeNCDSocialHistory, decodeNCDSymptomReview, decodeNCDUrineDipstickTest, decodeNCDVitals, decodeNutrition, decodeNutritionCaring, decodeNutritionContributingFactors, decodeNutritionFeeding, decodeNutritionFollowUp, decodeNutritionFoodSecurity, decodeNutritionHealthEducation, decodeNutritionHeight, decodeNutritionHygiene, decodeNutritionMeasurements, decodeNutritionMuac, decodeNutritionNCDA, decodeNutritionNutrition, decodeNutritionPhoto, decodeNutritionSendToHC, decodeNutritionWeight, decodeObstetricHistory, decodeObstetricHistoryStep2, decodeObstetricalExam, decodeParticipantConsent, decodePhoto, decodePregnancyByNewborn, decodePregnancyTest, decodePrenatalAspirin, decodePrenatalBloodGpRsTest, decodePrenatalBreastfeeding, decodePrenatalCalcium, decodePrenatalFamilyPlanning, decodePrenatalFefol, decodePrenatalFolate, decodePrenatalFollowUp, decodePrenatalGUExam, decodePrenatalHIVPCRTest, decodePrenatalHIVTest, decodePrenatalHealthEducation, decodePrenatalHemoglobinTest, decodePrenatalHepatitisBTest, decodePrenatalIron, decodePrenatalLabsResults, decodePrenatalMMS, decodePrenatalMalariaTest, decodePrenatalMeasurements, decodePrenatalMebendazole, decodePrenatalMedicationDistribution, decodePrenatalMentalHealth, decodePrenatalNutrition, decodePrenatalOutsideCare, decodePrenatalPartnerHIVTest, decodePrenatalPhoto, decodePrenatalRandomBloodSugarTest, decodePrenatalSendToHc, decodePrenatalSpecialityCare, decodePrenatalSymptomReview, decodePrenatalSyphilisTest, decodePrenatalTetanusImmunisation, decodePrenatalUrineDipstickTest, decodeRecommendation114, decodeSendToHC, decodeSendToHCSign, decodeSocialHistory, decodeStockManagementMeasurements, decodeSymptomsGI, decodeSymptomsGeneral, decodeSymptomsRespiratory, decodeTestExecutionNote, decodeTestResult, decodeTravelHistory, decodeTreatmentOngoing, decodeTreatmentReview, decodeTuberculosisDOT, decodeTuberculosisDiagnostics, decodeTuberculosisFollowUp, decodeTuberculosisHealthEducation, decodeTuberculosisMeasurements, decodeTuberculosisMedication, decodeTuberculosisReferral, decodeTuberculosisSymptomReview, decodeTuberculosisTreatmentReview, decodeVitals, decodeWeight, decodeWellChildAlbendazole, decodeWellChildBCGImmunisation, decodeWellChildCaring, decodeWellChildContributingFactors, decodeWellChildDTPImmunisation, decodeWellChildDTPStandaloneImmunisation, decodeWellChildECD, decodeWellChildFeeding, decodeWellChildFollowUp, decodeWellChildFoodSecurity, decodeWellChildHPVImmunisation, decodeWellChildHeadCircumference, decodeWellChildHealthEducation, decodeWellChildHeight, decodeWellChildHygiene, decodeWellChildIPVImmunisation, decodeWellChildMRImmunisation, decodeWellChildMeasurements, decodeWellChildMebendezole, decodeWellChildMuac, decodeWellChildNCDA, decodeWellChildNextVisit, decodeWellChildNutrition, decodeWellChildOPVImmunisation, decodeWellChildPCV13Immunisation, decodeWellChildPhoto, decodeWellChildPregnancySummary, decodeWellChildRotarixImmunisation, decodeWellChildSendToHC, decodeWellChildSymptomsReview, decodeWellChildVitals, decodeWellChildVitaminA, decodeWellChildWeight, malariaRapidTestResultFromString)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Decoder exposing (decodeAcuteIllnessDiagnosis)
@@ -7,7 +7,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Decoder exposing (decodeIndividualEncounterParticipant)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (..)
+import Backend.Measurement.Utils exposing (administrationNoteFromString, avoidingGuidanceReasonFromString, bilirubinValueFromString, bloodGroupFromString, bloodSmearResultFromString, breastfeedingSignFromString, covidIsolationPeriod, foodGroupFromString, glucoseValueFromString, guExamSignFromString, haemoglobinValueFromString, hivDiagnosisSignFromString, hivHealthEducationSignFromString, hivPrescribedMedicationFromString, hivSymptomFromString, illnessSymptomFromString, ketoneValueFromString, laboratoryTestFromString, lateFirstANCVisitReasonFromString, leukocytesValueFromString, lmpDateNotConfidentReasonFromString, medicalConditionFromString, medicalHistoryInfectiousDiseaseFromString, medicalHistoryMentalHealthIssueFromString, medicalHistoryPhysicalConditionFromString, medicalHistorySignFromString, medicationCausingHypertensionFromString, medicationTreatingDiabetesFromString, medicationTreatingHypertensionFromString, ncdDangerSignFromString, ncdFamilyHistorySignFromString, ncdGroup1SymptomFromString, ncdGroup2SymptomFromString, ncdPainSymptomFromString, ncdSocialHistorySignFromString, ncdaSignFromString, nitriteValueFromString, nutritionAssessmentFromString, obstetricHistoryStep2SignFromString, occursInFamilySignFromString, outsideCareMedicationFromString, outsideCareSignFromString, phValueFromString, postpartumChildDangerSignFromString, postpartumHealingProblemFromString, postpartumMotherDangerSignFromString, predecessorFromString, pregnancyTestResultFromString, prenatalFlankPainSignFromString, prenatalHIVSignFromString, prenatalMentalHealthQuestionFromString, prenatalMentalHealthQuestionOptionFromString, prenatalSymptomFromString, prenatalSymptomQuestionFromString, proteinValueFromString, reasonForNonReferralFromString, receiveOptionFromString, recommendedTreatmentSignFromString, reinforceTreatmentSignFromString, reviewStateFromString, rhesusFromString, stuntingLevelFromString, symptomsGISignFromString, symptomsGeneralSignFromString, symptomsRespiratorySignFromString, testResultFromString, tuberculosisDOTSignFromString, tuberculosisDiagnosisFromString, tuberculosisHealthEducationSignFromString, tuberculosisPrescribedMedicationFromString, tuberculosisSymptomFromString, unitOfMeasurementFromString, urobilinogenValueFromString, vaccineDoseFromString, vaginalExamSignFromString)
 import Backend.Person.Decoder exposing (decodeGender)
 import Backend.Person.Utils exposing (genderFromString)
 import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalDiagnosis)
@@ -16,7 +16,7 @@ import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeFloat, decodeInt, decodeStringWithDefault)
 import Gizra.NominalDate
-import Json.Decode exposing (..)
+import Json.Decode exposing (Decoder, andThen, at, bool, fail, field, list, map, map2, map5, map7, maybe, nullable, oneOf, string, succeed)
 import Json.Decode.Pipeline exposing (custom, optional, required)
 import Restful.Endpoint exposing (EntityUuid, decodeEntityUuid, toEntityUuid)
 import Translate.Utils exposing (decodeLanguage)
@@ -1120,36 +1120,6 @@ decodePrenatalMentalHealthQuestionTuple =
 
                     _ ->
                         failure
-            )
-
-
-decodePrenatalMentalHealthQuestion : Decoder PrenatalMentalHealthQuestion
-decodePrenatalMentalHealthQuestion =
-    string
-        |> andThen
-            (\s ->
-                prenatalMentalHealthQuestionFromString s
-                    |> Maybe.map succeed
-                    |> Maybe.withDefault
-                        (fail <|
-                            s
-                                ++ " is not a recognized PrenatalMentalHealthQuestion"
-                        )
-            )
-
-
-decodePrenatalMentalHealthQuestionOption : Decoder PrenatalMentalHealthQuestionOption
-decodePrenatalMentalHealthQuestionOption =
-    string
-        |> andThen
-            (\s ->
-                prenatalMentalHealthQuestionOptionFromString s
-                    |> Maybe.map succeed
-                    |> Maybe.withDefault
-                        (fail <|
-                            s
-                                ++ " is not a recognized PrenatalMentalHealthQuestionOption"
-                        )
             )
 
 
@@ -3322,7 +3292,7 @@ decodeNonReferralSign =
                                 let
                                     reasonForNonReferral =
                                         List.tail parts
-                                            |> Maybe.map (List.intersperse "-" >> String.concat)
+                                            |> Maybe.map (String.join "-")
                                             |> Maybe.andThen reasonForNonReferralFromString
                                 in
                                 case prefix of
@@ -3357,40 +3327,6 @@ decodeNonReferralSign =
                                         failure
                             )
                         |> Maybe.withDefault failure
-            )
-
-
-decodeReferralFacility : Decoder ReferralFacility
-decodeReferralFacility =
-    string
-        |> andThen
-            (\facility ->
-                case facility of
-                    "hc" ->
-                        succeed FacilityHealthCenter
-
-                    "hospital" ->
-                        succeed FacilityHospital
-
-                    "mhs" ->
-                        succeed FacilityMentalHealthSpecialist
-
-                    "arv" ->
-                        succeed FacilityARVProgram
-
-                    "ncd" ->
-                        succeed FacilityNCDProgram
-
-                    "anc" ->
-                        succeed FacilityANCServices
-
-                    "us" ->
-                        succeed FacilityUltrasound
-
-                    _ ->
-                        fail <|
-                            facility
-                                ++ " is not a recognized ReferralFacility"
             )
 
 
@@ -3579,7 +3515,7 @@ decodeMedicationNonAdministrationSign =
                                 let
                                     administrationNote =
                                         List.tail parts
-                                            |> Maybe.map (List.intersperse "-" >> String.concat)
+                                            |> Maybe.map (String.join "-")
                                             |> Maybe.andThen administrationNoteFromString
                                 in
                                 case prefix of

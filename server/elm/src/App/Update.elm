@@ -1,11 +1,10 @@
 module App.Update exposing
     ( init
-    , subscriptions
     , update
     )
 
 import App.Fetch exposing (fetch)
-import App.Model exposing (..)
+import App.Model exposing (Flags, Model, Msg(..), emptyModel)
 import App.Types exposing (Page(..))
 import App.Utils exposing (updateSubModel)
 import Backend.Completion.Model
@@ -205,8 +204,6 @@ update msg model =
                 model.completionPage
                 (\subMsg_ subModel ->
                     Pages.Completion.Update.update
-                        (fromLocalDateTime model.currentTime)
-                        model.backend
                         subMsg_
                         subModel
                 )
@@ -218,8 +215,3 @@ update msg model =
             ( { model | currentTime = date }
             , Cmd.none
             )
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.none

@@ -1,15 +1,13 @@
 module Backend.Decoder exposing (decodeSite, decodeWithFallback)
 
 import App.Types exposing (Site(..))
-import Backend.ScoreboardMenu.Model exposing (..)
-import Json.Decode exposing (Decoder, andThen, oneOf, string, succeed)
-import Json.Decode.Pipeline exposing (required)
+import Json.Decode exposing (Decoder, oneOf, string, succeed)
 
 
 decodeSite : Decoder Site
 decodeSite =
     string
-        |> andThen (siteFromString >> succeed)
+        |> Json.Decode.map siteFromString
 
 
 siteFromString : String -> Site

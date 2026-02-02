@@ -1,8 +1,8 @@
-module Backend.StockUpdate.Utils exposing (..)
+module Backend.StockUpdate.Utils exposing (dateToMonthYear, generateStockManagementData, monthYearDiff, stockCorrectionReasonFromString, stockCorrectionReasonToString, stockSupplierFromString, stockSupplierToString, stockUpdateTypeFromString, stockUpdateTypeToString)
 
 import AssocList as Dict
 import Backend.Measurement.Model exposing (StockCorrectionReason(..), StockManagementMeasurements, StockSupplier(..), StockUpdateType(..))
-import Backend.StockUpdate.Model exposing (..)
+import Backend.StockUpdate.Model exposing (MonthYear, StockManagementData)
 import Date
 import Gizra.NominalDate exposing (NominalDate)
 import List.Extra
@@ -212,8 +212,8 @@ generateStockManagementData currentDate measurements =
                             (\index ->
                                 List.Extra.splitAt (index - 6) fbfsByMonth
                                     |> Tuple.second
-                                    |> List.map Tuple.second
                                     |> List.take 6
+                                    |> List.map Tuple.second
                                     |> List.sum
                             )
                         |> Maybe.withDefault 0

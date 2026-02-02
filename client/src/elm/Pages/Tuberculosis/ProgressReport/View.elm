@@ -28,7 +28,7 @@ import Pages.Tuberculosis.Activity.Utils exposing (generateAllEncountersData, re
 import Pages.Tuberculosis.Encounter.Model exposing (AssembledData, EncounterData)
 import Pages.Tuberculosis.Encounter.Utils exposing (generateAssembledData, partitionActivities)
 import Pages.Tuberculosis.Encounter.View exposing (allowEndingEncounter)
-import Pages.Tuberculosis.ProgressReport.Model exposing (..)
+import Pages.Tuberculosis.ProgressReport.Model exposing (Model, Msg(..), ViewMode(..))
 import Pages.Utils
     exposing
         ( viewConfirmationDialog
@@ -73,7 +73,7 @@ view language currentDate site features id db model =
             else
                 Nothing
     in
-    div [ class "page-report tuberculosis" ] <|
+    div [ class "page-report tuberculosis" ]
         [ header
         , content
         , viewModal endEncounterDialog
@@ -120,15 +120,12 @@ viewContent language currentDate site features model assembled =
                 ViewModeGlobal ->
                     viewGlobalContent language
                         currentDate
-                        model
                         allEncountersData
                         assembled
 
                 ViewModeEncounter encounterId ->
                     viewEncounterDetailsContent language
-                        currentDate
                         encounterId
-                        model
                         allEncountersData
 
         endEncounterMenu =
@@ -160,7 +157,6 @@ viewContent language currentDate site features model assembled =
                , Html.map MsgReportToWhatsAppDialog
                     (Components.ReportToWhatsAppDialog.View.view
                         language
-                        currentDate
                         site
                         ( assembled.participant.person, assembled.person )
                         Components.ReportToWhatsAppDialog.Model.ReportTuberculosis
@@ -173,11 +169,10 @@ viewContent language currentDate site features model assembled =
 viewGlobalContent :
     Language
     -> NominalDate
-    -> Model
     -> List EncounterData
     -> AssembledData
     -> List (Html Msg)
-viewGlobalContent language currentDate model allEncountersData assembled =
+viewGlobalContent language currentDate allEncountersData assembled =
     let
         firstEncounterData =
             List.filter (.measurements >> .diagnostics >> isJust)
@@ -189,21 +184,20 @@ viewGlobalContent language currentDate model allEncountersData assembled =
             Maybe.map .startDate firstEncounterData
     in
     [ viewPersonInfoPane language currentDate assembled.person
-    , viewSummaryPane language currentDate allEncountersData firstEncounterData initiationDate
+    , viewSummaryPane language allEncountersData firstEncounterData initiationDate
     , viewTreatmentTimelinePane language currentDate initiationDate
-    , viewAdverseEventsPane language currentDate allEncountersData
-    , viewEncountersPane language currentDate allEncountersData
+    , viewAdverseEventsPane language allEncountersData
+    , viewEncountersPane language allEncountersData
     ]
 
 
 viewSummaryPane :
     Language
-    -> NominalDate
     -> List EncounterData
     -> Maybe EncounterData
     -> Maybe NominalDate
     -> Html any
-viewSummaryPane language currentDate allEncountersData firstEncounterData initiationDate =
+viewSummaryPane language allEncountersData firstEncounterData initiationDate =
     let
         completionDate =
             Maybe.map (Date.add Months 6)
@@ -288,8 +282,8 @@ viewTreatmentTimelinePane language currentDate initiationDate =
         ]
 
 
-viewAdverseEventsPane : Language -> NominalDate -> List EncounterData -> Html any
-viewAdverseEventsPane language currentDate allEncountersData =
+viewAdverseEventsPane : Language -> List EncounterData -> Html any
+viewAdverseEventsPane language allEncountersData =
     let
         adverseEventsWithDates =
             List.filterMap
@@ -327,8 +321,8 @@ viewAdverseEventsPane language currentDate allEncountersData =
         ]
 
 
-viewEncountersPane : Language -> NominalDate -> List EncounterData -> Html Msg
-viewEncountersPane language currentDate allEncountersData =
+viewEncountersPane : Language -> List EncounterData -> Html Msg
+viewEncountersPane language allEncountersData =
     let
         heading =
             div [ class "heading" ]
@@ -365,12 +359,10 @@ viewEncountersPane language currentDate allEncountersData =
 
 viewEncounterDetailsContent :
     Language
-    -> NominalDate
     -> TuberculosisEncounterId
-    -> Model
     -> List EncounterData
     -> List (Html Msg)
-viewEncounterDetailsContent language currentDate encounterId model allEncountersData =
+viewEncounterDetailsContent language encounterId allEncountersData =
     List.filter (.id >> (==) encounterId) allEncountersData
         |> List.head
         |> Maybe.map
@@ -559,9 +551,9 @@ viewEncounterDetailsContent language currentDate encounterId model allEncounters
                             ]
                 in
                 [ div [ class "pane encounter-details" ]
-                    [ div [ class <| "pane-heading" ]
+                    [ div [ class "pane-heading" ]
                         [ text <| translate language Translate.EncounterDate ++ ": " ++ formatDDMMYYYY data.startDate ]
-                    , div [ class <| "pane-content" ]
+                    , div [ class "pane-content" ]
                         [ viewEntry Translate.Medication medicationDistributed currentMedicationsForView
                         , Maybe.map .takenAsPrescribedData treatmentReviewEntriesData
                             |> viewTreatmentReviewEntry Translate.TakenAsPrescribed
@@ -577,4 +569,4 @@ viewEncounterDetailsContent language currentDate encounterId model allEncounters
                     ]
                 ]
             )
-        >> Maybe.withDefault []
+        |> Maybe.withDefault []

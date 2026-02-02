@@ -10,7 +10,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Tuberculosis.Encounter.Model exposing (..)
+import Pages.Tuberculosis.Encounter.Model exposing (AssembledData, Model, Msg(..), Tab(..))
 import Pages.Tuberculosis.Encounter.Utils exposing (generateAssembledData, partitionActivities)
 import Pages.Utils
     exposing
@@ -19,29 +19,28 @@ import Pages.Utils
         , viewPersonDetailsExtended
         , viewReportLink
         )
-import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (activityCard, tabItem, viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> Site -> TuberculosisEncounterId -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate site id db model =
+view : Language -> NominalDate -> TuberculosisEncounterId -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate id db model =
     let
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate db model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate db model assembled =
+viewHeaderAndContent : Language -> NominalDate -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate model assembled =
     let
         header =
             viewHeader language assembled
 
         content =
-            viewContent language currentDate db model assembled
+            viewContent language currentDate model assembled
 
         endEncounterDialog =
             if model.showEndEncounterDialog then
@@ -82,16 +81,16 @@ viewHeader language assembled =
         ]
 
 
-viewContent : Language -> NominalDate -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate db model assembled =
+viewContent : Language -> NominalDate -> Model -> AssembledData -> Html Msg
+viewContent language currentDate model assembled =
     ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
-        :: viewMainPageContent language currentDate db assembled model
+        :: viewMainPageContent language currentDate assembled model
     )
         |> div [ class "ui unstackable items" ]
 
 
-viewMainPageContent : Language -> NominalDate -> ModelIndexedDb -> AssembledData -> Model -> List (Html Msg)
-viewMainPageContent language currentDate db assembled model =
+viewMainPageContent : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
+viewMainPageContent language currentDate assembled model =
     let
         ( completedActivities, pendingActivities ) =
             partitionActivities currentDate assembled
@@ -118,17 +117,6 @@ viewMainPageContent language currentDate db assembled model =
                 (getActivityIcon activity)
                 (SetActivePage <| UserPage <| TuberculosisActivityPage assembled.id activity)
 
-        ( selectedActivities, emptySectionMessage ) =
-            case model.selectedTab of
-                Pending ->
-                    ( pendingActivities, translate language Translate.NoActivitiesPending )
-
-                Completed ->
-                    ( completedActivities, translate language Translate.NoActivitiesCompleted )
-
-                Reports ->
-                    ( [], "" )
-
         innerContent =
             if model.selectedTab == Reports then
                 div [ class "reports-wrapper" ]
@@ -141,6 +129,18 @@ viewMainPageContent language currentDate db assembled model =
                     ]
 
             else
+                let
+                    ( selectedActivities, emptySectionMessage ) =
+                        case model.selectedTab of
+                            Pending ->
+                                ( pendingActivities, translate language Translate.NoActivitiesPending )
+
+                            Completed ->
+                                ( completedActivities, translate language Translate.NoActivitiesCompleted )
+
+                            Reports ->
+                                ( [], "" )
+                in
                 div [ class "full content" ]
                     [ div [ class "wrap-cards" ]
                         [ div [ class "ui four cards" ] <|

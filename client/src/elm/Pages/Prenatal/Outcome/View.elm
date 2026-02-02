@@ -42,11 +42,11 @@ view language currentDate id isChw initiator db model =
                     )
                 |> Maybe.withDefault NotAsked
     in
-    viewWebData language (viewHeaderAndContent language currentDate id isChw initiator model) identity data
+    viewWebData language (viewHeaderAndContent language currentDate isChw initiator model) identity data
 
 
-viewHeaderAndContent : Language -> NominalDate -> IndividualEncounterParticipantId -> Bool -> RecordPreganancyInitiator -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id isChw initiator model data =
+viewHeaderAndContent : Language -> NominalDate -> Bool -> RecordPreganancyInitiator -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate isChw initiator model data =
     let
         header =
             viewHeader language initiator data

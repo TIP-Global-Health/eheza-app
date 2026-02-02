@@ -36,7 +36,7 @@ import Measurement.Model exposing (LaboratoryTask(..))
 import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
 import Pages.NCD.Activity.Utils exposing (expectLaboratoryTask)
 import Pages.NCD.Model exposing (AssembledData)
-import Pages.NCD.ProgressReport.Model exposing (..)
+import Pages.NCD.ProgressReport.Model exposing (Model, Msg(..), NCDRiskFactor(..))
 import Pages.NCD.ProgressReport.Svg exposing (viewBloodGlucoseByTime, viewBloodPressureByTime, viewHbA1cByTime, viewMarkers)
 import Pages.NCD.Utils
     exposing
@@ -48,9 +48,9 @@ import Pages.NCD.Utils
         , updateChronicDiagnoses
         )
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Report.Model exposing (..)
-import Pages.Report.Utils exposing (..)
-import Pages.Report.View exposing (..)
+import Pages.Report.Model exposing (DiagnosisMode(..), LabResultsCurrentMode(..), LabResultsMode(..), LabsResultsValues, PaneEntryStatus(..))
+import Pages.Report.Utils exposing (randomBloodSugarResultFromValue)
+import Pages.Report.View exposing (viewAcuteIllnessDiagnosisEntry, viewEntries, viewItemHeading, viewLabResultsHistoryPane, viewLabResultsPane, viewLabsPane)
 import Pages.Utils
     exposing
         ( viewConfirmationDialog
@@ -98,7 +98,7 @@ view language currentDate site features id initiator db model =
             else
                 Nothing
     in
-    div [ class "page-report ncd" ] <|
+    div [ class "page-report ncd" ]
         [ header
         , content
         , viewModal endEncounterDialog
@@ -224,7 +224,7 @@ viewContent language currentDate site features initiator db model assembled =
                 Just mode ->
                     case mode of
                         LabResultsCurrent currentMode ->
-                            [ generateLabsResultsPaneData currentDate assembled
+                            [ generateLabsResultsPaneData assembled
                                 |> viewLabResultsPane language
                                     currentDate
                                     (isLabTech || isResultsReviewer)
@@ -273,7 +273,7 @@ viewContent language currentDate site features initiator db model assembled =
 
                                 patientProgressPane =
                                     if showPatientProgressPaneByWhatsAppDialog then
-                                        viewPatientProgressPane language currentDate assembled
+                                        viewPatientProgressPane language assembled
                                             |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentNCDPatientProgress)
 
                                     else
@@ -282,7 +282,7 @@ viewContent language currentDate site features initiator db model assembled =
                                 labsPane =
                                     Maybe.map
                                         (\_ ->
-                                            generateLabsResultsPaneData currentDate assembled
+                                            generateLabsResultsPaneData assembled
                                                 |> viewLabResultsPane language
                                                     currentDate
                                                     (isLabTech || isResultsReviewer)
@@ -292,7 +292,7 @@ viewContent language currentDate site features initiator db model assembled =
                                                 |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentNCDLabsResults)
                                         )
                                         model.components
-                                        |> Maybe.withDefault (viewLabsPane language currentDate SetLabResultsMode)
+                                        |> Maybe.withDefault (viewLabsPane language SetLabResultsMode)
 
                                 actions =
                                     case initiator of
@@ -327,11 +327,11 @@ viewContent language currentDate site features initiator db model assembled =
                                 showComponent =
                                     Components.ReportToWhatsAppDialog.Utils.showComponent model.components
                             in
-                            [ viewRiskFactorsPane language currentDate assembled
+                            [ viewRiskFactorsPane language assembled
                                 |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentNCDRiskFactors)
-                            , viewAcuteIllnessPane language currentDate initiator acuteIllnesses model.diagnosisMode db
+                            , viewAcuteIllnessPane language initiator acuteIllnesses model.diagnosisMode db
                                 |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentNCDActiveDiagnosis)
-                            , viewMedicalDiagnosisPane language currentDate assembled
+                            , viewMedicalDiagnosisPane language assembled
                                 |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentNCDMedicalDiagnosis)
                             , patientProgressPane
                             , labsPane
@@ -340,7 +340,7 @@ viewContent language currentDate site features initiator db model assembled =
                             ]
 
                         ModeCompletedDiagnosis ->
-                            [ viewAcuteIllnessPane language currentDate initiator acuteIllnesses model.diagnosisMode db ]
+                            [ viewAcuteIllnessPane language initiator acuteIllnesses model.diagnosisMode db ]
 
         componentsConfig =
             Just { setReportComponentsMsg = SetReportComponents }
@@ -355,7 +355,6 @@ viewContent language currentDate site features initiator db model assembled =
                     ++ [ Html.map MsgReportToWhatsAppDialog
                             (Components.ReportToWhatsAppDialog.View.view
                                 language
-                                currentDate
                                 site
                                 ( assembled.participant.person, assembled.person )
                                 Components.ReportToWhatsAppDialog.Model.ReportNCD
@@ -377,12 +376,12 @@ viewPersonInfoPane language currentDate person =
 
 viewPaneHeading : Language -> TranslationId -> Html any
 viewPaneHeading language label =
-    div [ class <| "pane-heading" ]
+    div [ class "pane-heading" ]
         [ text <| translate language label ]
 
 
-viewRiskFactorsPane : Language -> NominalDate -> AssembledData -> Html Msg
-viewRiskFactorsPane language currentDate assembled =
+viewRiskFactorsPane : Language -> AssembledData -> Html Msg
+viewRiskFactorsPane language assembled =
     let
         allMeasurements =
             assembled.measurements
@@ -414,7 +413,7 @@ viewRiskFactorsPane language currentDate assembled =
                 |> Pages.Utils.unique
     in
     div [ class "risk-factors" ]
-        [ div [ class <| "pane-heading red" ]
+        [ div [ class "pane-heading red" ]
             [ img [ src "assets/images/exclamation-white-outline.png" ] []
             , span [] [ text <| translate language Translate.RiskFactors ]
             ]
@@ -474,8 +473,8 @@ socialHistoryRiskFactors =
     ]
 
 
-viewMedicalDiagnosisPane : Language -> NominalDate -> AssembledData -> Html Msg
-viewMedicalDiagnosisPane language currentDate assembled =
+viewMedicalDiagnosisPane : Language -> AssembledData -> Html Msg
+viewMedicalDiagnosisPane language assembled =
     let
         allEncountersData =
             { id = assembled.id
@@ -709,8 +708,8 @@ viewTreatmentForDiagnosis language date measurements withRenalComplications with
             emptyNode
 
 
-viewPatientProgressPane : Language -> NominalDate -> AssembledData -> Html Msg
-viewPatientProgressPane language currentDate assembled =
+viewPatientProgressPane : Language -> AssembledData -> Html Msg
+viewPatientProgressPane language assembled =
     let
         allMeasurements =
             assembled.measurements
@@ -789,16 +788,15 @@ viewPatientProgressPane language currentDate assembled =
 
 viewAcuteIllnessPane :
     Language
-    -> NominalDate
     -> NCDProgressReportInitiator
     -> List ( IndividualEncounterParticipantId, IndividualEncounterParticipant )
     -> DiagnosisMode
     -> ModelIndexedDb
     -> Html Msg
-viewAcuteIllnessPane language currentDate initiator acuteIllnesses diagnosisMode db =
+viewAcuteIllnessPane language initiator acuteIllnesses diagnosisMode db =
     let
         ( activeIllnesses, completedIllnesses ) =
-            List.partition (Tuple.second >> isAcuteIllnessActive currentDate) acuteIllnesses
+            List.partition (Tuple.second >> isAcuteIllnessActive) acuteIllnesses
 
         entriesHeading =
             div [ class "heading diagnosis" ]
@@ -860,10 +858,9 @@ viewAcuteIllnessPane language currentDate initiator acuteIllnesses diagnosisMode
 
 
 generateLabsResultsPaneData :
-    NominalDate
-    -> AssembledData
+    AssembledData
     -> LabsResultsValues NCDEncounterId
-generateLabsResultsPaneData currentDate assembled =
+generateLabsResultsPaneData assembled =
     let
         allMeasurements =
             assembled.measurements

@@ -1,4 +1,4 @@
-module Pages.Tuberculosis.ProgressReport.Model exposing (..)
+module Pages.Tuberculosis.ProgressReport.Model exposing (Model, Msg(..), ViewMode(..), emptyModel)
 
 import Backend.Entities exposing (..)
 import Components.ReportToWhatsAppDialog.Model
@@ -26,8 +26,7 @@ type ViewMode
 
 
 type Msg
-    = NoOp
-    | CloseEncounter TuberculosisEncounterId
+    = CloseEncounter TuberculosisEncounterId
     | SetActivePage Page
     | SetViewMode ViewMode
     | SetEndEncounterDialogState Bool

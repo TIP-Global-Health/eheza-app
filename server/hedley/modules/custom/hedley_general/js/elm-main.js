@@ -4568,6 +4568,10 @@ var _Bitwise_shiftRightZfBy = F2(function(offset, a)
 {
 	return a >>> offset;
 });
+var $elm$core$Basics$always = F2(
+	function (a, _v0) {
+		return a;
+	});
 var $elm$core$List$cons = _List_cons;
 var $elm$core$Elm$JsArray$foldr = _JsArray_foldr;
 var $elm$core$Array$foldr = F3(
@@ -5404,18 +5408,9 @@ var $elm$browser$Browser$element = _Browser_element;
 var $author$project$App$Model$MsgBackend = function (a) {
 	return {$: 'MsgBackend', a: a};
 };
-var $author$project$Pages$Completion$Fetch$fetch = F2(
-	function (modelBackend, model) {
-		return _List_Nil;
-	});
-var $author$project$Pages$Reports$Fetch$fetch = F2(
-	function (modelBackend, model) {
-		return _List_Nil;
-	});
-var $author$project$Pages$Scoreboard$Fetch$fetch = F2(
-	function (modelBackend, model) {
-		return _List_Nil;
-	});
+var $author$project$Pages$Completion$Fetch$fetch = _List_Nil;
+var $author$project$Pages$Reports$Fetch$fetch = _List_Nil;
+var $author$project$Pages$Scoreboard$Fetch$fetch = _List_Nil;
 var $author$project$App$Fetch$fetch = function (model) {
 	var _v0 = model.activePage;
 	switch (_v0.$) {
@@ -5427,7 +5422,7 @@ var $author$project$App$Fetch$fetch = function (model) {
 				function (subMsg) {
 					return $author$project$App$Model$MsgBackend(subMsg);
 				},
-				A2($author$project$Pages$Scoreboard$Fetch$fetch, model.backend, model.scoreboardPage));
+				$author$project$Pages$Scoreboard$Fetch$fetch);
 		case 'ReportsMenu':
 			return _List_Nil;
 		case 'Reports':
@@ -5436,7 +5431,7 @@ var $author$project$App$Fetch$fetch = function (model) {
 				function (subMsg) {
 					return $author$project$App$Model$MsgBackend(subMsg);
 				},
-				A2($author$project$Pages$Reports$Fetch$fetch, model.backend, model.reportsPage));
+				$author$project$Pages$Reports$Fetch$fetch);
 		case 'CompletionMenu':
 			return _List_Nil;
 		case 'Completion':
@@ -5445,7 +5440,7 @@ var $author$project$App$Fetch$fetch = function (model) {
 				function (subMsg) {
 					return $author$project$App$Model$MsgBackend(subMsg);
 				},
-				A2($author$project$Pages$Completion$Fetch$fetch, model.backend, model.completionPage));
+				$author$project$Pages$Completion$Fetch$fetch);
 		default:
 			return _List_Nil;
 	}
@@ -5879,11 +5874,9 @@ var $author$project$Backend$Completion$Utils$takenByFromString = function (value
 			return $elm$core$Maybe$Nothing;
 	}
 };
-var $author$project$Pages$Completion$Update$update = F4(
-	function (currentDate, modelBackend, msg, model) {
+var $author$project$Pages$Completion$Update$update = F2(
+	function (msg, model) {
 		switch (msg.$) {
-			case 'NoOp':
-				return A4($author$project$App$Model$PagesReturn, model, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
 			case 'SetReportType':
 				var value = msg.a;
 				return A4(
@@ -6120,10 +6113,6 @@ var $author$project$Pages$Reports$Utils$isWideScope = function (selectedEntity) 
 var $author$project$Pages$Reports$Model$NutritionReportDataCalculationCompleted = function (a) {
 	return {$: 'NutritionReportDataCalculationCompleted', a: a};
 };
-var $elm$core$Basics$always = F2(
-	function (a, _v0) {
-		return a;
-	});
 var $justinmimbs$date$Date$Years = {$: 'Years'};
 var $elm$core$List$concat = function (lists) {
 	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
@@ -7939,13 +7928,12 @@ var $author$project$Backend$Completion$Decoder$decodeActivitiesCompletionDataLis
 		_List_fromArray(
 			[
 				A2(
-				$elm$json$Json$Decode$andThen,
+				$elm$json$Json$Decode$map,
 				function (s) {
-					return $elm$json$Json$Decode$succeed(
-						A2(
-							$elm$core$List$filterMap,
-							$author$project$Backend$Completion$Decoder$activitiesCompletionDataFromString(activityFromString),
-							A2($elm$core$String$split, '$', s)));
+					return A2(
+						$elm$core$List$filterMap,
+						$author$project$Backend$Completion$Decoder$activitiesCompletionDataFromString(activityFromString),
+						A2($elm$core$String$split, '$', s));
 				},
 				$elm$json$Json$Decode$string),
 				$elm$json$Json$Decode$succeed(_List_Nil)
@@ -8004,10 +7992,7 @@ var $author$project$Backend$Decoder$siteFromString = function (str) {
 			return $author$project$App$Types$SiteUnknown;
 	}
 };
-var $author$project$Backend$Decoder$decodeSite = A2(
-	$elm$json$Json$Decode$andThen,
-	A2($elm$core$Basics$composeR, $author$project$Backend$Decoder$siteFromString, $elm$json$Json$Decode$succeed),
-	$elm$json$Json$Decode$string);
+var $author$project$Backend$Decoder$decodeSite = A2($elm$json$Json$Decode$map, $author$project$Backend$Decoder$siteFromString, $elm$json$Json$Decode$string);
 var $author$project$Backend$Completion$Model$WellChildEncounterData = F3(
 	function (startDate, encounterType, completion) {
 		return {completion: completion, encounterType: encounterType, startDate: startDate};
@@ -8628,8 +8613,8 @@ var $author$project$Backend$Completion$Decoder$decodeCompletionData = A3(
 													'site',
 													$author$project$Backend$Decoder$decodeSite,
 													$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$CompletionData))))))))))))));
-var $author$project$Backend$Completion$Update$update = F3(
-	function (currentDate, msg, model) {
+var $author$project$Backend$Completion$Update$update = F2(
+	function (msg, model) {
 		var value = msg.a;
 		var modelUpdated = _Utils_update(
 			model,
@@ -8711,8 +8696,8 @@ var $author$project$Backend$CompletionMenu$Decoder$decodeMenuData = A4(
 			'site',
 			$author$project$Backend$Decoder$decodeSite,
 			$elm$json$Json$Decode$succeed($author$project$Backend$CompletionMenu$Model$MenuData))));
-var $author$project$Backend$CompletionMenu$Update$update = F3(
-	function (currentDate, msg, model) {
+var $author$project$Backend$CompletionMenu$Update$update = F2(
+	function (msg, model) {
 		var value = msg.a;
 		var modelUpdated = _Utils_update(
 			model,
@@ -9578,8 +9563,8 @@ var $author$project$Backend$Reports$Decoder$decodeReportsData = A4(
 					'site',
 					$author$project$Backend$Decoder$decodeSite,
 					$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$ReportsData))))));
-var $author$project$Backend$Reports$Update$update = F3(
-	function (currentDate, msg, model) {
+var $author$project$Backend$Reports$Update$update = F2(
+	function (msg, model) {
 		var value = msg.a;
 		var modelUpdated = _Utils_update(
 			model,
@@ -9607,8 +9592,8 @@ var $author$project$Backend$ReportsMenu$Decoder$decodeMenuData = A4(
 			'site',
 			$author$project$Backend$Decoder$decodeSite,
 			$elm$json$Json$Decode$succeed($author$project$Backend$ReportsMenu$Model$MenuData))));
-var $author$project$Backend$ReportsMenu$Update$update = F3(
-	function (currentDate, msg, model) {
+var $author$project$Backend$ReportsMenu$Update$update = F2(
+	function (msg, model) {
 		var value = msg.a;
 		var modelUpdated = _Utils_update(
 			model,
@@ -10215,8 +10200,8 @@ var $author$project$Backend$ScoreboardMenu$Decoder$decodeMenuData = A3(
 	'site',
 	$author$project$Backend$Decoder$decodeSite,
 	$elm$json$Json$Decode$succeed($author$project$Backend$ScoreboardMenu$Model$MenuData));
-var $author$project$Backend$ScoreboardMenu$Update$update = F3(
-	function (currentDate, msg, model) {
+var $author$project$Backend$ScoreboardMenu$Update$update = F2(
+	function (msg, model) {
 		var value = msg.a;
 		var modelUpdated = _Utils_update(
 			model,
@@ -10247,7 +10232,7 @@ var $author$project$Backend$Update$updateBackend = F3(
 					subMsg,
 					F2(
 						function (subMsg_, model_) {
-							return A3($author$project$Backend$ScoreboardMenu$Update$update, currentDate, subMsg_, model_);
+							return A2($author$project$Backend$ScoreboardMenu$Update$update, subMsg_, model_);
 						}),
 					function (subCmds) {
 						return $author$project$Backend$Model$MsgScoreboardMenu(subCmds);
@@ -10273,7 +10258,7 @@ var $author$project$Backend$Update$updateBackend = F3(
 					subMsg,
 					F2(
 						function (subMsg_, model_) {
-							return A3($author$project$Backend$ReportsMenu$Update$update, currentDate, subMsg_, model_);
+							return A2($author$project$Backend$ReportsMenu$Update$update, subMsg_, model_);
 						}),
 					function (subCmds) {
 						return $author$project$Backend$Model$MsgReportsMenu(subCmds);
@@ -10286,7 +10271,7 @@ var $author$project$Backend$Update$updateBackend = F3(
 					subMsg,
 					F2(
 						function (subMsg_, model_) {
-							return A3($author$project$Backend$Reports$Update$update, currentDate, subMsg_, model_);
+							return A2($author$project$Backend$Reports$Update$update, subMsg_, model_);
 						}),
 					function (subCmds) {
 						return $author$project$Backend$Model$MsgReports(subCmds);
@@ -10299,7 +10284,7 @@ var $author$project$Backend$Update$updateBackend = F3(
 					subMsg,
 					F2(
 						function (subMsg_, model_) {
-							return A3($author$project$Backend$CompletionMenu$Update$update, currentDate, subMsg_, model_);
+							return A2($author$project$Backend$CompletionMenu$Update$update, subMsg_, model_);
 						}),
 					function (subCmds) {
 						return $author$project$Backend$Model$MsgCompletionMenu(subCmds);
@@ -10312,7 +10297,7 @@ var $author$project$Backend$Update$updateBackend = F3(
 					subMsg,
 					F2(
 						function (subMsg_, model_) {
-							return A3($author$project$Backend$Completion$Update$update, currentDate, subMsg_, model_);
+							return A2($author$project$Backend$Completion$Update$update, subMsg_, model_);
 						}),
 					function (subCmds) {
 						return $author$project$Backend$Model$MsgCompletion(subCmds);
@@ -10505,12 +10490,7 @@ var $author$project$App$Update$update = F2(
 					model.completionPage,
 					F2(
 						function (subMsg_, subModel) {
-							return A4(
-								$author$project$Pages$Completion$Update$update,
-								$author$project$Gizra$NominalDate$fromLocalDateTime(model.currentTime),
-								model.backend,
-								subMsg_,
-								subModel);
+							return A2($author$project$Pages$Completion$Update$update, subMsg_, subModel);
 						}),
 					F2(
 						function (subModel, model_) {
@@ -10603,9 +10583,6 @@ var $author$project$App$Update$init = function (flags) {
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $author$project$App$Update$subscriptions = function (model) {
-	return $elm$core$Platform$Sub$none;
-};
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
 var $elm$html$Html$map = $elm$virtual_dom$VirtualDom$map;
@@ -12543,8 +12520,6 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 				}
-			case 'ViewMode':
-				return {english: 'View Mode', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Vitals':
 				return {english: 'Vitals', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Village':
@@ -15511,13 +15486,12 @@ var $author$project$Pages$Completion$View$generateNutritionGroupReportData = F2(
 					});
 			});
 		var motherActivityRows = A3(generateActivityRows, $author$project$Translate$NutritionMotherActivity, motherData, $author$project$Pages$Completion$Utils$allNutritionMotherGroupActivities);
-		var childrenData = $elm$core$List$concat(
-			A2(
-				$elm$core$List$map,
-				function ($) {
-					return $.childrenData;
-				},
-				records));
+		var childrenData = A2(
+			$elm$core$List$concatMap,
+			function ($) {
+				return $.childrenData;
+			},
+			records);
 		var childrenActivityRows = A3(generateActivityRows, $author$project$Translate$NutritionChildActivity, childrenData, $author$project$Pages$Completion$Utils$allNutritionChildGroupActivities);
 		return {
 			captions: $author$project$Pages$Completion$View$generateCaptionsList(language),
@@ -15844,12 +15818,12 @@ var $author$project$Pages$Utils$wrapSelectListInput = F4(
 					selectList
 				]));
 	});
-var $author$project$Pages$Completion$View$viewCompletionData = F5(
-	function (language, currentDate, themePath, data, model) {
+var $author$project$Pages$Completion$View$viewCompletionData = F4(
+	function (language, currentDate, data, model) {
 		var topBar = function () {
 			var scopeLabel = function () {
-				var _v2 = data.entityType;
-				if (_v2.$ === 'EntityGlobal') {
+				var _v3 = data.entityType;
+				if (_v3.$ === 'EntityGlobal') {
 					return A2($author$project$Translate$translate, language, $author$project$Translate$Global);
 				} else {
 					return data.entityName;
@@ -15915,32 +15889,36 @@ var $author$project$Pages$Completion$View$viewCompletionData = F5(
 							[$author$project$Pages$Completion$Model$ReportChildScoreboard, $author$project$Pages$Completion$Model$ReportHIV, $author$project$Pages$Completion$Model$ReportHomeVisit, $author$project$Pages$Completion$Model$ReportNewbornExam, $author$project$Pages$Completion$Model$ReportTuberculosis, $author$project$Pages$Completion$Model$ReportNCD]))) {
 						return $author$project$Gizra$Html$emptyNode;
 					} else {
-						var options = A2(
-							$elm$core$List$map,
-							function (option) {
-								return _Utils_Tuple2(
-									A2(
-										$author$project$Translate$translate,
-										language,
-										$author$project$Translate$TakenBy(option)),
-									option);
-							},
-							_List_fromArray(
-								[$author$project$Backend$Completion$Model$TakenByNurse, $author$project$Backend$Completion$Model$TakenByCHW]));
-						return $elm_community$maybe_extra$Maybe$Extra$isJust(model.reportType) ? A4(
-							$author$project$Pages$Utils$wrapSelectListInput,
-							language,
-							$author$project$Translate$TakenByLabel,
-							false,
-							A6(
-								$author$project$Pages$Utils$viewCustomSelectListInput,
-								model.takenBy,
-								options,
-								$author$project$Backend$Completion$Utils$takenByToString,
-								$author$project$Pages$Completion$Model$SetTakenBy,
-								'select-input',
-								$elm$core$Maybe$Just(
-									A2($author$project$Translate$translate, language, $author$project$Translate$Any)))) : $author$project$Gizra$Html$emptyNode;
+						if ($elm_community$maybe_extra$Maybe$Extra$isJust(model.reportType)) {
+							var options = A2(
+								$elm$core$List$map,
+								function (option) {
+									return _Utils_Tuple2(
+										A2(
+											$author$project$Translate$translate,
+											language,
+											$author$project$Translate$TakenBy(option)),
+										option);
+								},
+								_List_fromArray(
+									[$author$project$Backend$Completion$Model$TakenByNurse, $author$project$Backend$Completion$Model$TakenByCHW]));
+							return A4(
+								$author$project$Pages$Utils$wrapSelectListInput,
+								language,
+								$author$project$Translate$TakenByLabel,
+								false,
+								A6(
+									$author$project$Pages$Utils$viewCustomSelectListInput,
+									model.takenBy,
+									options,
+									$author$project$Backend$Completion$Utils$takenByToString,
+									$author$project$Pages$Completion$Model$SetTakenBy,
+									'select-input',
+									$elm$core$Maybe$Just(
+										A2($author$project$Translate$translate, language, $author$project$Translate$Any))));
+						} else {
+							return $author$project$Gizra$Html$emptyNode;
+						}
 					}
 				},
 				model.reportType));
@@ -15949,7 +15927,7 @@ var $author$project$Pages$Completion$View$viewCompletionData = F5(
 			_List_Nil,
 			A2(
 				$elm$core$Maybe$map,
-				function (reportType) {
+				function (_v2) {
 					var startDateInput = function () {
 						var dateSelectorConfig = {
 							close: $author$project$Pages$Completion$Model$SetStartDateSelectorState($elm$core$Maybe$Nothing),
@@ -16112,13 +16090,13 @@ var $author$project$Pages$Completion$View$viewCompletionData = F5(
 					A3($author$project$DateSelector$SelectorPopup$viewCalendarPopup, language, model.limitDateSelectorPopupState, model.limitDate))
 				]));
 	});
-var $author$project$Pages$Completion$View$view = F5(
-	function (language, currentDate, themePath, modelBackend, model) {
+var $author$project$Pages$Completion$View$view = F4(
+	function (language, currentDate, modelBackend, model) {
 		var _v0 = modelBackend.completionData;
 		if (_v0.$ === 'Just') {
 			if (_v0.a.$ === 'Ok') {
 				var data = _v0.a.a;
-				return A5($author$project$Pages$Completion$View$viewCompletionData, language, currentDate, themePath, data, model);
+				return A4($author$project$Pages$Completion$View$viewCompletionData, language, currentDate, data, model);
 			} else {
 				var err = _v0.a.a;
 				return $elm$html$Html$text(
@@ -16179,8 +16157,8 @@ var $author$project$Pages$Utils$viewLoadDataButton = F3(
 	function (language, path, selectionMadeMsg) {
 		return A4($author$project$Pages$Utils$viewMenuActionButton, language, path, $author$project$Translate$LoadData, selectionMadeMsg);
 	});
-var $author$project$Pages$CompletionMenu$View$viewMenu = F4(
-	function (language, themePath, data, model) {
+var $author$project$Pages$CompletionMenu$View$viewMenu = F3(
+	function (language, data, model) {
 		var populationSelectionInput = function () {
 			var allOptions = _List_fromArray(
 				[$author$project$Pages$Components$Types$SelectionOptionGlobal, $author$project$Pages$Components$Types$SelectionOptionHealthCenter]);
@@ -16293,13 +16271,13 @@ var $author$project$Pages$CompletionMenu$View$viewMenu = F4(
 						[actionButton]))
 				]));
 	});
-var $author$project$Pages$CompletionMenu$View$view = F4(
-	function (language, themePath, modelBackend, model) {
+var $author$project$Pages$CompletionMenu$View$view = F3(
+	function (language, modelBackend, model) {
 		var _v0 = modelBackend.completionMenuData;
 		if (_v0.$ === 'Just') {
 			if (_v0.a.$ === 'Ok') {
 				var data = _v0.a.a;
-				return A4($author$project$Pages$CompletionMenu$View$viewMenu, language, themePath, data, model);
+				return A3($author$project$Pages$CompletionMenu$View$viewMenu, language, data, model);
 			} else {
 				var err = _v0.a.a;
 				return $elm$html$Html$text(
@@ -17428,8 +17406,8 @@ var $author$project$Pages$Reports$View$backendGeneratedNutritionReportTableDateT
 				])
 		};
 	});
-var $author$project$Pages$Reports$View$generareNutritionReportDataFromBackendGeneratedData = F3(
-	function (language, currentDate, data) {
+var $author$project$Pages$Reports$View$generareNutritionReportDataFromBackendGeneratedData = F2(
+	function (language, data) {
 		var nutritionTableTypeToNumber = function (tableType) {
 			switch (tableType.$) {
 				case 'NutritionTablePrevalanceOneOrMore':
@@ -18653,7 +18631,7 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F5(
 			A3($author$project$Pages$Reports$View$generareNutritionReportDataFromRawData, language, currentDate, reportData),
 			A2(
 				$elm$core$Maybe$map,
-				A2($author$project$Pages$Reports$View$generareNutritionReportDataFromBackendGeneratedData, language, currentDate),
+				$author$project$Pages$Reports$View$generareNutritionReportDataFromBackendGeneratedData(language),
 				mBackendGeneratedData));
 		var csvFileName = 'nutrition-report-' + ($elm$core$String$toLower(
 			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', currentDate) + '.csv')));
@@ -18677,8 +18655,8 @@ var $author$project$Translate$PrenatalDiagnosis = function (a) {
 };
 var $author$project$Backend$Reports$Utils$allPrenatalDiagnoses = _List_fromArray(
 	[$author$project$Backend$Reports$Model$DiagnosisChronicHypertension, $author$project$Backend$Reports$Model$DiagnosisGestationalHypertension, $author$project$Backend$Reports$Model$DiagnosisModeratePreeclampsia, $author$project$Backend$Reports$Model$DiagnosisSeverePreeclampsia, $author$project$Backend$Reports$Model$DiagnosisEclampsia, $author$project$Backend$Reports$Model$DiagnosisHIV, $author$project$Backend$Reports$Model$DiagnosisHIVDetectableViralLoad, $author$project$Backend$Reports$Model$DiagnosisDiscordantPartnership, $author$project$Backend$Reports$Model$DiagnosisSyphilis, $author$project$Backend$Reports$Model$DiagnosisSyphilisWithComplications, $author$project$Backend$Reports$Model$DiagnosisNeurosyphilis, $author$project$Backend$Reports$Model$DiagnosisHepatitisB, $author$project$Backend$Reports$Model$DiagnosisMalaria, $author$project$Backend$Reports$Model$DiagnosisMalariaWithAnemia, $author$project$Backend$Reports$Model$DiagnosisMalariaWithSevereAnemia, $author$project$Backend$Reports$Model$DiagnosisModerateAnemia, $author$project$Backend$Reports$Model$DiagnosisSevereAnemia, $author$project$Backend$Reports$Model$DiagnosisSevereAnemiaWithComplications, $author$project$Backend$Reports$Model$DiagnosisMiscarriage, $author$project$Backend$Reports$Model$DiagnosisMolarPregnancy, $author$project$Backend$Reports$Model$DiagnosisPlacentaPrevia, $author$project$Backend$Reports$Model$DiagnosisPlacentalAbruption, $author$project$Backend$Reports$Model$DiagnosisUterineRupture, $author$project$Backend$Reports$Model$DiagnosisObstructedLabor, $author$project$Backend$Reports$Model$DiagnosisPostAbortionSepsis, $author$project$Backend$Reports$Model$DiagnosisEctopicPregnancy, $author$project$Backend$Reports$Model$DiagnosisPROM, $author$project$Backend$Reports$Model$DiagnosisPPROM, $author$project$Backend$Reports$Model$DiagnosisHyperemesisGravidum, $author$project$Backend$Reports$Model$DiagnosisSevereVomiting, $author$project$Backend$Reports$Model$DiagnosisMaternalComplications, $author$project$Backend$Reports$Model$DiagnosisInfection, $author$project$Backend$Reports$Model$DiagnosisImminentDelivery, $author$project$Backend$Reports$Model$DiagnosisLaborAndDelivery, $author$project$Backend$Reports$Model$DiagnosisHeartburn, $author$project$Backend$Reports$Model$DiagnosisDeepVeinThrombosis, $author$project$Backend$Reports$Model$DiagnosisPelvicPainIntense, $author$project$Backend$Reports$Model$DiagnosisUrinaryTractInfection, $author$project$Backend$Reports$Model$DiagnosisPyelonephritis, $author$project$Backend$Reports$Model$DiagnosisCandidiasis, $author$project$Backend$Reports$Model$DiagnosisGonorrhea, $author$project$Backend$Reports$Model$DiagnosisTrichomonasOrBacterialVaginosis, $author$project$Backend$Reports$Model$DiagnosisTuberculosis, $author$project$Backend$Reports$Model$DiagnosisDiabetes, $author$project$Backend$Reports$Model$DiagnosisGestationalDiabetes, $author$project$Backend$Reports$Model$DiagnosisRhesusNegative, $author$project$Backend$Reports$Model$DiagnosisDepressionNotLikely, $author$project$Backend$Reports$Model$DiagnosisDepressionPossible, $author$project$Backend$Reports$Model$DiagnosisDepressionHighlyPossible, $author$project$Backend$Reports$Model$DiagnosisDepressionProbable, $author$project$Backend$Reports$Model$DiagnosisSuicideRisk, $author$project$Backend$Reports$Model$DiagnosisOther, $author$project$Backend$Reports$Model$DiagnosisPostpartumAbdominalPain, $author$project$Backend$Reports$Model$DiagnosisPostpartumUrinaryIncontinence, $author$project$Backend$Reports$Model$DiagnosisPostpartumHeadache, $author$project$Backend$Reports$Model$DiagnosisPostpartumFatigue, $author$project$Backend$Reports$Model$DiagnosisPostpartumFever, $author$project$Backend$Reports$Model$DiagnosisPostpartumPerinealPainOrDischarge, $author$project$Backend$Reports$Model$DiagnosisPostpartumInfection, $author$project$Backend$Reports$Model$DiagnosisPostpartumExcessiveBleeding, $author$project$Backend$Reports$Model$DiagnosisPostpartumEarlyMastitisOrEngorgment, $author$project$Backend$Reports$Model$DiagnosisPostpartumMastitis, $author$project$Backend$Reports$Model$NoPrenatalDiagnosis]);
-var $author$project$Pages$Reports$View$generatePrenatalDiagnosesReportData = F3(
-	function (language, limitDate, records) {
+var $author$project$Pages$Reports$View$generatePrenatalDiagnosesReportData = F2(
+	function (language, records) {
 		var generateRow = F2(
 			function (label, value) {
 				return _List_fromArray(
@@ -18754,7 +18732,7 @@ var $author$project$Pages$Reports$View$generatePrenatalDiagnosesReportData = F3(
 	});
 var $author$project$Pages$Reports$View$viewPrenatalDiagnosesReport = F4(
 	function (language, limitDate, scopeLabel, records) {
-		var data = A3($author$project$Pages$Reports$View$generatePrenatalDiagnosesReportData, language, limitDate, records);
+		var data = A2($author$project$Pages$Reports$View$generatePrenatalDiagnosesReportData, language, records);
 		var csvFileName = 'anc-diagnoses-report-' + ($elm$core$String$toLower(
 			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
 		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
@@ -19087,39 +19065,39 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 		var activeNurseVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForActive.nurse);
 		var activeNurseVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForActive.nurse);
 		var activeNurseVisitsTotal = (((activeNurseVisits1 + activeNurseVisits2) + activeNurseVisits3) + activeNurseVisits4) + activeNurseVisits5AndMore;
-		var deliveryLocationsDict = A3(
-			$elm$core$List$foldl,
-			F2(
-				function (participantData, accumDict) {
-					return A2(
-						$elm$core$Maybe$withDefault,
-						accumDict,
-						A2(
-							$elm$core$Maybe$map,
-							function (location) {
-								var updated = A2(
-									$elm$core$Maybe$withDefault,
-									1,
-									A2(
-										$elm$core$Maybe$map,
-										$elm$core$Basics$add(1),
-										A2($pzp1997$assoc_list$AssocList$get, location, accumDict)));
-								return A3($pzp1997$assoc_list$AssocList$insert, location, updated, accumDict);
-							},
-							participantData.deliveryLocation));
-				}),
-			$pzp1997$assoc_list$AssocList$empty,
-			completed);
 		var deliveryLocationsTable = function () {
 			var totalCompletedPregnancies = $elm$core$List$length(completed);
-			var homeDeliveries = A2(
-				$elm$core$Maybe$withDefault,
-				0,
-				A2($pzp1997$assoc_list$AssocList$get, $author$project$Backend$Reports$Model$HomeDelivery, deliveryLocationsDict));
+			var deliveryLocationsDict = A3(
+				$elm$core$List$foldl,
+				F2(
+					function (participantData, accumDict) {
+						return A2(
+							$elm$core$Maybe$withDefault,
+							accumDict,
+							A2(
+								$elm$core$Maybe$map,
+								function (location) {
+									var updated = A2(
+										$elm$core$Maybe$withDefault,
+										1,
+										A2(
+											$elm$core$Maybe$map,
+											$elm$core$Basics$add(1),
+											A2($pzp1997$assoc_list$AssocList$get, location, accumDict)));
+									return A3($pzp1997$assoc_list$AssocList$insert, location, updated, accumDict);
+								},
+								participantData.deliveryLocation));
+					}),
+				$pzp1997$assoc_list$AssocList$empty,
+				completed);
 			var facilityDeliveries = A2(
 				$elm$core$Maybe$withDefault,
 				0,
 				A2($pzp1997$assoc_list$AssocList$get, $author$project$Backend$Reports$Model$FacilityDelivery, deliveryLocationsDict));
+			var homeDeliveries = A2(
+				$elm$core$Maybe$withDefault,
+				0,
+				A2($pzp1997$assoc_list$AssocList$get, $author$project$Backend$Reports$Model$HomeDelivery, deliveryLocationsDict));
 			var totalDeliveries = facilityDeliveries + homeDeliveries;
 			return {
 				captions: A2(
@@ -19214,14 +19192,12 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 		var completedAllVisits2 = A2(resolveValueFromDict, 2, partitionedVisitsForCompleted.all);
 		var completedAllVisits3 = A2(resolveValueFromDict, 3, partitionedVisitsForCompleted.all);
 		var completedAllVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForCompleted.all);
-		var completedAllVisits5 = A2(resolveValueFromDict, 5, partitionedVisitsForCompleted.all);
 		var completedAllVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForCompleted.all);
 		var completedAllVisitsTotal = (((completedAllVisits1 + completedAllVisits2) + completedAllVisits3) + completedAllVisits4) + completedAllVisits5AndMore;
 		var completedChwVisits1 = A2(resolveValueFromDict, 1, partitionedVisitsForCompleted.chw);
 		var completedChwVisits2 = A2(resolveValueFromDict, 2, partitionedVisitsForCompleted.chw);
 		var completedChwVisits3 = A2(resolveValueFromDict, 3, partitionedVisitsForCompleted.chw);
 		var completedChwVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForCompleted.chw);
-		var completedChwVisits5 = A2(resolveValueFromDict, 5, partitionedVisitsForCompleted.chw);
 		var completedChwVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForCompleted.chw);
 		var completedChwVisitsTotal = (((completedChwVisits1 + completedChwVisits2) + completedChwVisits3) + completedChwVisits4) + completedChwVisits5AndMore;
 		var completedNurseVisits1 = A2(resolveValueFromDict, 1, partitionedVisitsForCompleted.nurse);
@@ -19467,171 +19443,177 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 					}
 				},
 				model.reportType));
-		var _v0 = _Utils_eq(
-			model.reportType,
-			$elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportNutrition)) ? _Utils_Tuple2(
-			$elm$core$Maybe$Just($author$project$Pages$Utils$launchDate),
-			$elm$core$Maybe$Just(currentDate)) : _Utils_Tuple2(model.startDate, model.limitDate);
-		var startDateByReportType = _v0.a;
-		var limitDateByReportType = _v0.b;
-		var content = ($elm_community$maybe_extra$Maybe$Extra$isJust(model.startDateSelectorPopupState) || $elm_community$maybe_extra$Maybe$Extra$isJust(model.limitDateSelectorPopupState)) ? $author$project$Gizra$Html$emptyNode : A2(
-			$elm$core$Maybe$withDefault,
-			$author$project$Pages$Reports$Utils$isWideScope(data.entityType) ? A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$WideScopeNote, '', 'label wide-scope') : $author$project$Gizra$Html$emptyNode,
-			A4(
-				$elm$core$Maybe$map3,
-				F3(
-					function (reportType, startDate, limitDate) {
-						var recordsTillLimitDate = (_Utils_eq(
-							A2($justinmimbs$date$Date$compare, startDate, $author$project$Pages$Utils$launchDate),
-							$elm$core$Basics$EQ) && _Utils_eq(
-							A2($justinmimbs$date$Date$compare, limitDate, currentDate),
-							$elm$core$Basics$EQ)) ? data.records : A2(
-							$elm$core$List$filterMap,
-							function (record) {
-								if (!_Utils_eq(
-									A2($justinmimbs$date$Date$compare, record.created, limitDate),
-									$elm$core$Basics$GT)) {
-									var filterPrenatalData = $elm$core$Maybe$map(
-										$elm$core$List$filterMap(
-											function (participantData) {
-												if (_Utils_eq(
-													A2($justinmimbs$date$Date$compare, participantData.created, limitDate),
-													$elm$core$Basics$GT)) {
-													return $elm$core$Maybe$Nothing;
-												} else {
-													var filteredEncounters = A2(
-														$elm$core$List$filter,
+		var content = function () {
+			if ($elm_community$maybe_extra$Maybe$Extra$isJust(model.startDateSelectorPopupState) || $elm_community$maybe_extra$Maybe$Extra$isJust(model.limitDateSelectorPopupState)) {
+				return $author$project$Gizra$Html$emptyNode;
+			} else {
+				var _v0 = _Utils_eq(
+					model.reportType,
+					$elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportNutrition)) ? _Utils_Tuple2(
+					$elm$core$Maybe$Just($author$project$Pages$Utils$launchDate),
+					$elm$core$Maybe$Just(currentDate)) : _Utils_Tuple2(model.startDate, model.limitDate);
+				var startDateByReportType = _v0.a;
+				var limitDateByReportType = _v0.b;
+				return A2(
+					$elm$core$Maybe$withDefault,
+					$author$project$Pages$Reports$Utils$isWideScope(data.entityType) ? A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$WideScopeNote, '', 'label wide-scope') : $author$project$Gizra$Html$emptyNode,
+					A4(
+						$elm$core$Maybe$map3,
+						F3(
+							function (reportType, startDate, limitDate) {
+								var recordsTillLimitDate = (_Utils_eq(
+									A2($justinmimbs$date$Date$compare, startDate, $author$project$Pages$Utils$launchDate),
+									$elm$core$Basics$EQ) && _Utils_eq(
+									A2($justinmimbs$date$Date$compare, limitDate, currentDate),
+									$elm$core$Basics$EQ)) ? data.records : A2(
+									$elm$core$List$filterMap,
+									function (record) {
+										if (!_Utils_eq(
+											A2($justinmimbs$date$Date$compare, record.created, limitDate),
+											$elm$core$Basics$GT)) {
+											var filterPrenatalData = $elm$core$Maybe$map(
+												$elm$core$List$filterMap(
+													function (participantData) {
+														if (_Utils_eq(
+															A2($justinmimbs$date$Date$compare, participantData.created, limitDate),
+															$elm$core$Basics$GT)) {
+															return $elm$core$Maybe$Nothing;
+														} else {
+															var filteredEncounters = A2(
+																$elm$core$List$filter,
+																function (encounterData) {
+																	return (!_Utils_eq(
+																		A2($justinmimbs$date$Date$compare, encounterData.startDate, startDate),
+																		$elm$core$Basics$LT)) && (!_Utils_eq(
+																		A2($justinmimbs$date$Date$compare, encounterData.startDate, limitDate),
+																		$elm$core$Basics$GT));
+																},
+																participantData.encounters);
+															if ($elm$core$List$isEmpty(filteredEncounters)) {
+																return $elm$core$Maybe$Nothing;
+															} else {
+																var dateConcluded = A2(
+																	$elm$core$Maybe$andThen,
+																	function (date) {
+																		return _Utils_eq(
+																			A2($justinmimbs$date$Date$compare, limitDate, date),
+																			$elm$core$Basics$LT) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(date);
+																	},
+																	participantData.dateConcluded);
+																return $elm$core$Maybe$Just(
+																	_Utils_update(
+																		participantData,
+																		{dateConcluded: dateConcluded, encounters: filteredEncounters}));
+															}
+														}
+													}));
+											var filterIndividualBy = function (resolveDateFunc) {
+												return $elm$core$Maybe$map(
+													$elm$core$List$map(
+														$elm$core$List$filter(
+															function (encounterData) {
+																var encounterDate = resolveDateFunc(encounterData);
+																return (!_Utils_eq(
+																	A2($justinmimbs$date$Date$compare, encounterDate, startDate),
+																	$elm$core$Basics$LT)) && (!_Utils_eq(
+																	A2($justinmimbs$date$Date$compare, encounterDate, limitDate),
+																	$elm$core$Basics$GT));
+															})));
+											};
+											var filterGroupBy = function (resolveDateFunc) {
+												return $elm$core$Maybe$map(
+													$elm$core$List$filter(
 														function (encounterData) {
+															var encounterDate = resolveDateFunc(encounterData);
 															return (!_Utils_eq(
-																A2($justinmimbs$date$Date$compare, encounterData.startDate, startDate),
+																A2($justinmimbs$date$Date$compare, encounterDate, startDate),
 																$elm$core$Basics$LT)) && (!_Utils_eq(
-																A2($justinmimbs$date$Date$compare, encounterData.startDate, limitDate),
+																A2($justinmimbs$date$Date$compare, encounterDate, limitDate),
 																$elm$core$Basics$GT));
-														},
-														participantData.encounters);
-													if ($elm$core$List$isEmpty(filteredEncounters)) {
-														return $elm$core$Maybe$Nothing;
-													} else {
-														var dateConcluded = A2(
-															$elm$core$Maybe$andThen,
-															function (date) {
-																return _Utils_eq(
-																	A2($justinmimbs$date$Date$compare, limitDate, date),
-																	$elm$core$Basics$LT) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(date);
+														}));
+											};
+											return $elm$core$Maybe$Just(
+												_Utils_update(
+													record,
+													{
+														acuteIllnessData: A2(
+															filterIndividualBy,
+															function ($) {
+																return $.startDate;
 															},
-															participantData.dateConcluded);
-														return $elm$core$Maybe$Just(
-															_Utils_update(
-																participantData,
-																{dateConcluded: dateConcluded, encounters: filteredEncounters}));
-													}
-												}
-											}));
-									var filterIndividualBy = function (resolveDateFunc) {
-										return $elm$core$Maybe$map(
-											$elm$core$List$map(
-												$elm$core$List$filter(
-													function (encounterData) {
-														var encounterDate = resolveDateFunc(encounterData);
-														return (!_Utils_eq(
-															A2($justinmimbs$date$Date$compare, encounterDate, startDate),
-															$elm$core$Basics$LT)) && (!_Utils_eq(
-															A2($justinmimbs$date$Date$compare, encounterDate, limitDate),
-															$elm$core$Basics$GT));
-													})));
-									};
-									var filterGroupBy = function (resolveDateFunc) {
-										return $elm$core$Maybe$map(
-											$elm$core$List$filter(
-												function (encounterData) {
-													var encounterDate = resolveDateFunc(encounterData);
-													return (!_Utils_eq(
-														A2($justinmimbs$date$Date$compare, encounterDate, startDate),
-														$elm$core$Basics$LT)) && (!_Utils_eq(
-														A2($justinmimbs$date$Date$compare, encounterDate, limitDate),
-														$elm$core$Basics$GT));
-												}));
-									};
-									return $elm$core$Maybe$Just(
-										_Utils_update(
-											record,
-											{
-												acuteIllnessData: A2(
-													filterIndividualBy,
-													function ($) {
-														return $.startDate;
-													},
-													record.acuteIllnessData),
-												childScorecardData: A2(filterIndividualBy, $elm$core$Basics$identity, record.childScorecardData),
-												groupNutritionAchiData: A2(
-													filterGroupBy,
-													function ($) {
-														return $.startDate;
-													},
-													record.groupNutritionAchiData),
-												groupNutritionChwData: A2(
-													filterGroupBy,
-													function ($) {
-														return $.startDate;
-													},
-													record.groupNutritionChwData),
-												groupNutritionFbfData: A2(
-													filterGroupBy,
-													function ($) {
-														return $.startDate;
-													},
-													record.groupNutritionFbfData),
-												groupNutritionPmtctData: A2(
-													filterGroupBy,
-													function ($) {
-														return $.startDate;
-													},
-													record.groupNutritionPmtctData),
-												groupNutritionSorwatheData: A2(
-													filterGroupBy,
-													function ($) {
-														return $.startDate;
-													},
-													record.groupNutritionSorwatheData),
-												hivData: A2(filterIndividualBy, $elm$core$Basics$identity, record.hivData),
-												homeVisitData: A2(filterIndividualBy, $elm$core$Basics$identity, record.homeVisitData),
-												individualNutritionData: A2(
-													filterIndividualBy,
-													function ($) {
-														return $.startDate;
-													},
-													record.individualNutritionData),
-												ncdData: A2(filterIndividualBy, $elm$core$Basics$identity, record.ncdData),
-												prenatalData: filterPrenatalData(record.prenatalData),
-												tuberculosisData: A2(filterIndividualBy, $elm$core$Basics$identity, record.tuberculosisData),
-												wellChildData: A2(
-													filterIndividualBy,
-													function ($) {
-														return $.startDate;
-													},
-													record.wellChildData)
-											}));
-								} else {
-									return $elm$core$Maybe$Nothing;
+															record.acuteIllnessData),
+														childScorecardData: A2(filterIndividualBy, $elm$core$Basics$identity, record.childScorecardData),
+														groupNutritionAchiData: A2(
+															filterGroupBy,
+															function ($) {
+																return $.startDate;
+															},
+															record.groupNutritionAchiData),
+														groupNutritionChwData: A2(
+															filterGroupBy,
+															function ($) {
+																return $.startDate;
+															},
+															record.groupNutritionChwData),
+														groupNutritionFbfData: A2(
+															filterGroupBy,
+															function ($) {
+																return $.startDate;
+															},
+															record.groupNutritionFbfData),
+														groupNutritionPmtctData: A2(
+															filterGroupBy,
+															function ($) {
+																return $.startDate;
+															},
+															record.groupNutritionPmtctData),
+														groupNutritionSorwatheData: A2(
+															filterGroupBy,
+															function ($) {
+																return $.startDate;
+															},
+															record.groupNutritionSorwatheData),
+														hivData: A2(filterIndividualBy, $elm$core$Basics$identity, record.hivData),
+														homeVisitData: A2(filterIndividualBy, $elm$core$Basics$identity, record.homeVisitData),
+														individualNutritionData: A2(
+															filterIndividualBy,
+															function ($) {
+																return $.startDate;
+															},
+															record.individualNutritionData),
+														ncdData: A2(filterIndividualBy, $elm$core$Basics$identity, record.ncdData),
+														prenatalData: filterPrenatalData(record.prenatalData),
+														tuberculosisData: A2(filterIndividualBy, $elm$core$Basics$identity, record.tuberculosisData),
+														wellChildData: A2(
+															filterIndividualBy,
+															function ($) {
+																return $.startDate;
+															},
+															record.wellChildData)
+													}));
+										} else {
+											return $elm$core$Maybe$Nothing;
+										}
+									},
+									data.records);
+								switch (reportType.$) {
+									case 'ReportAcuteIllness':
+										return A5($author$project$Pages$Reports$View$viewAcuteIllnessReport, language, limitDate, startDate, scopeLabel, recordsTillLimitDate);
+									case 'ReportDemographics':
+										return A5($author$project$Pages$Reports$View$viewDemographicsReport, language, startDate, limitDate, scopeLabel, recordsTillLimitDate);
+									case 'ReportNutrition':
+										return A5($author$project$Pages$Reports$View$viewNutritionReport, language, limitDate, scopeLabel, data.nutritionReportData, model.nutritionReportData);
+									case 'ReportPrenatal':
+										return A4($author$project$Pages$Reports$View$viewPrenatalReport, language, limitDate, scopeLabel, recordsTillLimitDate);
+									default:
+										return A4($author$project$Pages$Reports$View$viewPrenatalDiagnosesReport, language, limitDate, scopeLabel, recordsTillLimitDate);
 								}
-							},
-							data.records);
-						switch (reportType.$) {
-							case 'ReportAcuteIllness':
-								return A5($author$project$Pages$Reports$View$viewAcuteIllnessReport, language, limitDate, startDate, scopeLabel, recordsTillLimitDate);
-							case 'ReportDemographics':
-								return A5($author$project$Pages$Reports$View$viewDemographicsReport, language, startDate, limitDate, scopeLabel, recordsTillLimitDate);
-							case 'ReportNutrition':
-								return A5($author$project$Pages$Reports$View$viewNutritionReport, language, limitDate, scopeLabel, data.nutritionReportData, model.nutritionReportData);
-							case 'ReportPrenatal':
-								return A4($author$project$Pages$Reports$View$viewPrenatalReport, language, limitDate, scopeLabel, recordsTillLimitDate);
-							default:
-								return A4($author$project$Pages$Reports$View$viewPrenatalDiagnosesReport, language, limitDate, scopeLabel, recordsTillLimitDate);
-						}
-					}),
-				model.reportType,
-				startDateByReportType,
-				limitDateByReportType));
+							}),
+						model.reportType,
+						startDateByReportType,
+						limitDateByReportType));
+			}
+		}();
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -42409,7 +42391,7 @@ var $author$project$App$View$view = function (model) {
 						A2(
 						$elm$html$Html$map,
 						$author$project$App$Model$MsgCompletionMenuPage,
-						A4($author$project$Pages$CompletionMenu$View$view, model.language, model.themePath, model.backend, model.completionMenuPage))
+						A3($author$project$Pages$CompletionMenu$View$view, model.language, model.backend, model.completionMenuPage))
 					]));
 		case 'Completion':
 			return A2(
@@ -42421,11 +42403,10 @@ var $author$project$App$View$view = function (model) {
 						A2(
 						$elm$html$Html$map,
 						$author$project$App$Model$MsgCompletionPage,
-						A5(
+						A4(
 							$author$project$Pages$Completion$View$view,
 							model.language,
 							$author$project$Gizra$NominalDate$fromLocalDateTime(model.currentTime),
-							model.themePath,
 							model.backend,
 							model.completionPage))
 					]));
@@ -42442,7 +42423,7 @@ var $author$project$App$View$view = function (model) {
 var $author$project$Main$main = $elm$browser$Browser$element(
 	{
 		init: $author$project$App$Update$init,
-		subscriptions: $author$project$App$Update$subscriptions,
+		subscriptions: $elm$core$Basics$always($elm$core$Platform$Sub$none),
 		update: A2($Gizra$elm_fetch$Update$Fetch$andThenFetch, $author$project$App$Fetch$fetch, $author$project$App$Update$update),
 		view: $author$project$App$View$view
 	});

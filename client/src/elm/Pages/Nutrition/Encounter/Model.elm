@@ -1,10 +1,10 @@
-module Pages.Nutrition.Encounter.Model exposing (..)
+module Pages.Nutrition.Encounter.Model exposing (AssembledData, DialogType(..), Model, Msg(..), Tab(..), emptyModel)
 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (NutritionMeasurements)
 import Backend.NutritionActivity.Model exposing (NutritionActivity)
-import Backend.NutritionEncounter.Model exposing (..)
+import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
 import Backend.Person.Model exposing (Person)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)

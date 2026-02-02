@@ -70,11 +70,11 @@ viewContent : Language -> NominalDate -> Bool -> Model -> AssembledData -> Html 
 viewContent language currentDate isChw model data =
     div [ class "ui unstackable items" ] <|
         viewPersonDetailsWithAlert language currentDate isChw data model.showAlertsDialog SetAlertsDialogState
-            :: viewAcuteIllnessOutcome language currentDate data model
+            :: viewAcuteIllnessOutcome language model
 
 
-viewAcuteIllnessOutcome : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
-viewAcuteIllnessOutcome language currentDate data model =
+viewAcuteIllnessOutcome : Language -> Model -> List (Html Msg)
+viewAcuteIllnessOutcome language model =
     let
         acuteIllnessOutcomeInput =
             viewSelectListInput language

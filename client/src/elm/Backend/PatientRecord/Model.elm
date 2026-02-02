@@ -1,4 +1,4 @@
-module Backend.PatientRecord.Model exposing (..)
+module Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 
 import Backend.Entities exposing (..)
 

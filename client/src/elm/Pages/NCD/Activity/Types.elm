@@ -1,4 +1,4 @@
-module Pages.NCD.Activity.Types exposing (..)
+module Pages.NCD.Activity.Types exposing (ExaminationTask(..), MedicalHistoryTask(..), NextStepsTask(..))
 
 
 type ExaminationTask

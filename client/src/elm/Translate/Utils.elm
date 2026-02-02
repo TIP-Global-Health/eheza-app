@@ -15,7 +15,7 @@ Actual translations can be found in `Translate.elm`
 
 import Json.Decode exposing (Decoder, fail, succeed)
 import Json.Encode exposing (Value)
-import Translate.Model exposing (..)
+import Translate.Model exposing (Language(..), TranslationSet)
 
 
 selectLanguage : Language -> TranslationSet a -> a

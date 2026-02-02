@@ -1,6 +1,6 @@
 module App.Test exposing (all)
 
-import App.Model exposing (..)
+import App.Model exposing (ConfiguredModel, Flags, Model, emptyModel)
 import App.View exposing (view)
 import Pages.Device.Model
 import Pages.PinCode.Model

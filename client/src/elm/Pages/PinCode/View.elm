@@ -18,7 +18,7 @@ import Html.Events exposing (onClick, onInput, onSubmit)
 import Maybe.Extra exposing (isJust)
 import Pages.MessagingCenter.Utils exposing (resolveNumberOfUnreadMessages)
 import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
-import Pages.PinCode.Model exposing (..)
+import Pages.PinCode.Model exposing (MainMenuActivity(..), Model, Msg(..), OutMsg(..), ResilienceReminderType(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import SyncManager.Model exposing (SiteFeature)
 import Time exposing (posixToMillis)
@@ -329,7 +329,7 @@ viewLoggedInContent language currentTime features nurseId nurse ( healthCenterId
             -- reminder is given a priority.
             Maybe.Extra.or
                 (resilienceReminderDialog language currentTime currentDate nurseId nurse)
-                (resilienceNotificationDialog language currentTime currentDate nurseId nurse db model)
+                (resilienceNotificationDialog language currentTime currentDate nurse model)
         ]
 
     else
@@ -428,12 +428,10 @@ resilienceNotificationDialog :
     Language
     -> Time.Posix
     -> NominalDate
-    -> NurseId
     -> Nurse
-    -> ModelIndexedDb
     -> Model
     -> Maybe (Html Msg)
-resilienceNotificationDialog language currentTime currentDate nurseId nurse db model =
+resilienceNotificationDialog language currentTime currentDate nurse model =
     let
         notificationTimeReached =
             Maybe.map
@@ -549,7 +547,7 @@ selectHeathCenterOptions language nurse db =
                 ]
                 [ text location.name ]
     in
-    p [ class "select-location" ] [ text <| (translate language Translate.SelectYourHealthCenter ++ ":") ]
+    p [ class "select-location" ] [ text (translate language Translate.SelectYourHealthCenter ++ ":") ]
         :: List.map selectButton filtered
 
 
@@ -572,5 +570,5 @@ selectVillageOptions language nurse db =
                 ]
                 [ text location.name ]
     in
-    p [ class "select-location" ] [ text <| (translate language Translate.SelectYourVillage ++ ":") ]
+    p [ class "select-location" ] [ text (translate language Translate.SelectYourVillage ++ ":") ]
         :: List.map selectButton filtered

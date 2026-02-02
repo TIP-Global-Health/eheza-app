@@ -1,4 +1,4 @@
-module Pages.NCD.RecurrentActivity.Model exposing (..)
+module Pages.NCD.RecurrentActivity.Model exposing (LabResultsData, Model, Msg(..), NextStepsData, emptyModel)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -16,8 +16,8 @@ import Measurement.Model
         , emptyRandomBloodSugarResultForm
         , emptyUrineDipstickResultForm
         )
-import Pages.NCD.Model exposing (..)
-import Pages.NCD.RecurrentActivity.Types exposing (..)
+import Pages.NCD.Model exposing (MedicationDistributionForm, ReferralForm, emptyMedicationDistributionForm, emptyReferralForm)
+import Pages.NCD.RecurrentActivity.Types exposing (NextStepsTask)
 import Pages.Page exposing (Page)
 
 

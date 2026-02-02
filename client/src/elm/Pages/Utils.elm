@@ -1,7 +1,6 @@
-module Pages.Utils exposing (..)
+module Pages.Utils exposing (calculatePercentage, concatInputsAndTasksSections, customButton, customPopup, emptySelectOption, filterDependentNoResultsMessage, getCurrentReasonForMedicationNonAdministration, ifEverySetEmpty, ifNullableTrue, ifTrue, insertIntoSet, isAboveAgeOf2Years, isTaskCompleted, matchFilter, matchMotherAndHerChildren, maybeToBoolTask, maybeValueConsideringIsDirtyField, nonAdministrationReasonToSign, normalizeFilter, resolveActiveTask, resolveNextTask, resolveSelectedDateForMonthSelector, resolveTasksCompletedFromTotal, saveButton, setMuacValueForSite, setMultiSelectInputValue, taskAllCompleted, taskAnyCompleted, taskCompleted, taskCompletedWithException, tasksBarId, unique, valueConsideringIsDirtyField, viewBoolInput, viewBoolInputReverted, viewBySyncStatus, viewCheckBoxMultipleSelectCustomInput, viewCheckBoxMultipleSelectInput, viewCheckBoxMultipleSelectSectionsInput, viewCheckBoxSelectCustomInput, viewCheckBoxSelectInput, viewCheckBoxValueInput, viewConditionalAlert, viewConfirmationDialog, viewCustomAction, viewCustomBoolInput, viewCustomLabel, viewCustomNameFilter, viewCustomSelectListInput, viewEncounterActionButton, viewEndEncounterButton, viewEndEncounterButtonCustomColor, viewEndEncounterMenuForProgressReport, viewInstructionsLabel, viewLabel, viewMeasurementInput, viewMonthSelector, viewNameFilter, viewNumberInput, viewPersonDetails, viewPersonDetailsExtended, viewPhotoThumbFromImageUrl, viewPreviousMeasurement, viewPreviousMeasurementCustom, viewQuestionLabel, viewRedAlertForBool, viewRedAlertForSelect, viewReportLink, viewSaveAction, viewSelectListInput, viewSkipNCDADialog, viewStartEncounterButton, viewTasksCount, viewTextInput, viewYellowAlertForSelect)
 
 import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (HealthCenterId, PersonId)
 import Backend.Measurement.Model
     exposing
@@ -236,14 +235,14 @@ matchMotherAndHerChildren filter offlineSession motherId mother =
 
         -- A function, rather than value, to preserve the
         -- short-circuiting benefits of the `||` below.
-        childrenContainsFilter _ =
+        childrenContainsFilter =
             getChildren motherId offlineSession
                 |> List.any
                     (\( _, child ) ->
                         matchFilter filter child.name
                     )
     in
-    motherContainsFilter || childrenContainsFilter ()
+    motherContainsFilter || childrenContainsFilter
 
 
 viewNameFilter : Language -> String -> (String -> msg) -> Html msg
@@ -289,7 +288,7 @@ viewQuestionLabel language translationId =
 
 viewCustomLabel : Language -> TranslationId -> String -> String -> Html any
 viewCustomLabel language translationId suffix class_ =
-    div [ class class_ ] [ text <| (translate language translationId ++ suffix) ]
+    div [ class class_ ] [ text (translate language translationId ++ suffix) ]
 
 
 getCurrentReasonForMedicationNonAdministration :
@@ -567,34 +566,17 @@ viewCheckBoxSelectInput language leftOptions rightOptions currentValue setMsg tr
             label []
                 [ translateFunc option |> translate language |> text ]
     in
-    viewCheckBoxSelectCustomInput language leftOptions rightOptions currentValue setMsg viewOptionFunc
+    viewCheckBoxSelectCustomInput leftOptions rightOptions currentValue setMsg viewOptionFunc
 
 
-viewCheckBoxSelectInputWithRecommendation : Language -> List a -> List a -> a -> Maybe a -> (a -> msg) -> (a -> TranslationId) -> Html msg
-viewCheckBoxSelectInputWithRecommendation language leftOptions rightOptions recommendedOption currentValue setMsg translateFunc =
-    let
-        viewOptionFunc option =
-            if option == recommendedOption then
-                label [ class "recommendation" ]
-                    [ div [] [ translateFunc option |> translate language |> text ]
-                    , div [ class "marker" ] [ text <| "(" ++ translate language Translate.Recommended ++ ")" ]
-                    ]
-
-            else
-                label []
-                    [ translateFunc option |> translate language |> text ]
-    in
-    viewCheckBoxSelectCustomInput language leftOptions rightOptions currentValue setMsg viewOptionFunc
-
-
-viewCheckBoxSelectCustomInput : Language -> List a -> List a -> Maybe a -> (a -> msg) -> (a -> Html msg) -> Html msg
-viewCheckBoxSelectCustomInput language leftOptions rightOptions currentValue setMsg viewOptionFunc =
+viewCheckBoxSelectCustomInput : List a -> List a -> Maybe a -> (a -> msg) -> (a -> Html msg) -> Html msg
+viewCheckBoxSelectCustomInput leftOptions rightOptions currentValue setMsg viewOptionFunc =
     let
         checkedOptions =
             Maybe.map List.singleton currentValue
                 |> Maybe.withDefault []
     in
-    viewCheckBoxMultipleSelectCustomInput language leftOptions rightOptions checkedOptions Nothing setMsg viewOptionFunc
+    viewCheckBoxMultipleSelectCustomInput leftOptions rightOptions checkedOptions Nothing setMsg viewOptionFunc
 
 
 viewCheckBoxMultipleSelectInput : Language -> List a -> List a -> List a -> Maybe a -> (a -> msg) -> (a -> TranslationId) -> Html msg
@@ -603,11 +585,11 @@ viewCheckBoxMultipleSelectInput language leftOptions rightOptions checkedOptions
         viewOptionFunc option =
             label [] [ translateFunc option |> translate language |> text ]
     in
-    viewCheckBoxMultipleSelectCustomInput language leftOptions rightOptions checkedOptions noneOption setMsg viewOptionFunc
+    viewCheckBoxMultipleSelectCustomInput leftOptions rightOptions checkedOptions noneOption setMsg viewOptionFunc
 
 
-viewCheckBoxMultipleSelectCustomInput : Language -> List a -> List a -> List a -> Maybe a -> (a -> msg) -> (a -> Html msg) -> Html msg
-viewCheckBoxMultipleSelectCustomInput language leftOptions rightOptions checkedOptions noneOption setMsg viewOptionFunc =
+viewCheckBoxMultipleSelectCustomInput : List a -> List a -> List a -> Maybe a -> (a -> msg) -> (a -> Html msg) -> Html msg
+viewCheckBoxMultipleSelectCustomInput leftOptions rightOptions checkedOptions noneOption setMsg viewOptionFunc =
     let
         noneSection =
             noneOption
@@ -615,7 +597,7 @@ viewCheckBoxMultipleSelectCustomInput language leftOptions rightOptions checkedO
                     []
                     (\option ->
                         [ div [ class "ui divider" ] []
-                        , viewCheckBoxSelectInputItem language checkedOptions setMsg viewOptionFunc option
+                        , viewCheckBoxSelectInputItem checkedOptions setMsg viewOptionFunc option
                         ]
                     )
 
@@ -626,14 +608,14 @@ viewCheckBoxMultipleSelectCustomInput language leftOptions rightOptions checkedO
             else
                 ( "eight"
                 , rightOptions
-                    |> List.map (viewCheckBoxSelectInputItem language checkedOptions setMsg viewOptionFunc)
+                    |> List.map (viewCheckBoxSelectInputItem checkedOptions setMsg viewOptionFunc)
                     |> div [ class "eight wide column" ]
                 )
     in
     div [ class "checkbox-select-input" ] <|
         div [ class "ui grid" ]
             [ leftOptions
-                |> List.map (viewCheckBoxSelectInputItem language checkedOptions setMsg viewOptionFunc)
+                |> List.map (viewCheckBoxSelectInputItem checkedOptions setMsg viewOptionFunc)
                 |> div [ class <| leftOptionsClass ++ " wide column" ]
             , rightOptionsSection
             ]
@@ -650,7 +632,7 @@ viewCheckBoxMultipleSelectSectionsInput language sections checkedOptions setMsg 
             in
             div [ class "section" ] <|
                 viewLabel language labelTransId
-                    :: List.map (viewCheckBoxSelectInputItem language checkedOptions setMsg viewOptionFunc) options
+                    :: List.map (viewCheckBoxSelectInputItem checkedOptions setMsg viewOptionFunc) options
     in
     div [ class "checkbox-select-input" ]
         [ div [ class "ui grid" ]
@@ -660,8 +642,8 @@ viewCheckBoxMultipleSelectSectionsInput language sections checkedOptions setMsg 
         ]
 
 
-viewCheckBoxSelectInputItem : Language -> List a -> (a -> msg) -> (a -> Html msg) -> a -> Html msg
-viewCheckBoxSelectInputItem language checkedOptions setMsg viewOptionFunc option =
+viewCheckBoxSelectInputItem : List a -> (a -> msg) -> (a -> Html msg) -> a -> Html msg
+viewCheckBoxSelectInputItem checkedOptions setMsg viewOptionFunc option =
     let
         isChecked =
             List.member option checkedOptions
@@ -680,8 +662,8 @@ viewCheckBoxSelectInputItem language checkedOptions setMsg viewOptionFunc option
         ]
 
 
-viewNumberInput : Language -> Maybe Int -> (String -> msg) -> String -> Html msg
-viewNumberInput language maybeCurrentValue setMsg inputClass =
+viewNumberInput : Maybe Int -> (String -> msg) -> String -> Html msg
+viewNumberInput maybeCurrentValue setMsg inputClass =
     let
         currentValue =
             Maybe.map String.fromInt maybeCurrentValue
@@ -1142,7 +1124,7 @@ viewAlert color =
 
 viewInstructionsLabel : String -> Html any -> Html any
 viewInstructionsLabel iconClass message =
-    div [ class "header icon-label" ] <|
+    div [ class "header icon-label" ]
         [ i [ class iconClass ] []
         , message
         ]
@@ -1205,11 +1187,6 @@ ifTrue value condition =
 
     else
         EverySet.empty
-
-
-ifFalse : a -> Bool -> EverySet a
-ifFalse value condition =
-    ifTrue value (not condition)
 
 
 ifNullableTrue : a -> Maybe Bool -> Maybe (EverySet a)
@@ -1342,7 +1319,7 @@ insertIntoSet value set =
 customPopup : Language -> Bool -> TranslationId -> String -> ( Html msg, Html msg, msg ) -> Html msg
 customPopup language showWarning actionLabel extraClass ( topMessage, bottomMessage, action ) =
     div [ class <| "ui active modal " ++ extraClass ]
-        [ div [ class "content" ] <|
+        [ div [ class "content" ]
             [ div [ class "popup-heading-wrapper" ]
                 [ img [ src "assets/images/exclamation-red.png" ] []
                 , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]
@@ -1442,6 +1419,6 @@ resolveActiveTask options selected =
 
 concatInputsAndTasksSections : List ( List (Html msg), List (Maybe Bool) ) -> ( List (Html msg), List (Maybe Bool) )
 concatInputsAndTasksSections sections =
-    ( List.map Tuple.first sections |> List.concat
-    , List.map Tuple.second sections |> List.concat
+    ( List.concatMap Tuple.first sections
+    , List.concatMap Tuple.second sections
     )

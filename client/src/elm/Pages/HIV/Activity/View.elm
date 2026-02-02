@@ -31,8 +31,8 @@ import Measurement.View
         ( viewFollowUpForm
         , viewSendToHealthCenterForm
         )
-import Pages.HIV.Activity.Model exposing (..)
-import Pages.HIV.Activity.Utils exposing (..)
+import Pages.HIV.Activity.Model exposing (DiagnosticsData, DiagnosticsForm, HealthEducationForm, MedicationData, MedicationTask(..), Model, Msg(..), NextStepsData, NextStepsTask(..), PrescribedMedicationForm, SymptomReviewData)
+import Pages.HIV.Activity.Utils exposing (diagnosticsFormWithDefault, expectMedicationTask, expectNextStepsTask, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, medicationTaskCompleted, medicationTasks, medicationTasksCompletedFromTotal, nextStepsTaskCompleted, nextStepsTasks, nextStepsTasksCompletedFromTotal, prescribedMedicationFormWithDefault, prescribedMedicationsInputsAndTasks, symptomReviewFormWithDefault)
 import Pages.HIV.Encounter.Model exposing (AssembledData)
 import Pages.HIV.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -75,7 +75,7 @@ view language currentDate id activity db model =
 
 viewHeaderAndContent : Language -> NominalDate -> HIVEncounterId -> HIVActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
 viewHeaderAndContent language currentDate id activity db model assembled =
-    div [ class "page-activity hiv" ] <|
+    div [ class "page-activity hiv" ]
         [ viewHeader language id activity
         , viewContent language currentDate activity db model assembled
         ]
@@ -98,7 +98,7 @@ viewHeader language id activity =
 
 viewContent : Language -> NominalDate -> HIVActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
 viewContent language currentDate activity db model assembled =
-    div [ class "ui unstackable items" ] <|
+    div [ class "ui unstackable items" ]
         ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
             :: viewActivity language currentDate activity assembled db model
         )
@@ -111,10 +111,10 @@ viewActivity language currentDate activity assembled db model =
             viewDiagnosticsContent language currentDate assembled db model.diagnosticsData
 
         Medication ->
-            viewMedicationContent language currentDate assembled model.medicationData
+            viewMedicationContent language assembled model.medicationData
 
         SymptomReview ->
-            viewSymptomReviewContent language currentDate assembled model.symptomReviewData
+            viewSymptomReviewContent language assembled model.symptomReviewData
 
         NextSteps ->
             viewNextStepsContent language currentDate assembled model.nextStepsData
@@ -277,7 +277,7 @@ resolveInputsAndTasksForNonExistingPositiveHIVResult language currentDate form =
                         resolveInputsAndTasksForPositiveHIVDate language currentDate form
 
                     else
-                        resolveInputsAndTasksForSuggestedHIVTest language currentDate form
+                        resolveInputsAndTasksForSuggestedHIVTest language form
                 )
                 form.resultPositive
                 |> Maybe.withDefault ( [], 0, 0 )
@@ -368,8 +368,8 @@ resolveInputsAndTasksForPositiveHIVDate language currentDate form =
     )
 
 
-resolveInputsAndTasksForSuggestedHIVTest : Language -> NominalDate -> DiagnosticsForm -> ( List (Html Msg), Int, Int )
-resolveInputsAndTasksForSuggestedHIVTest language currentDate form =
+resolveInputsAndTasksForSuggestedHIVTest : Language -> DiagnosticsForm -> ( List (Html Msg), Int, Int )
+resolveInputsAndTasksForSuggestedHIVTest language form =
     let
         ( derivedInputs, derivedTasksCompleted, derivedTotalTasks ) =
             Maybe.map
@@ -419,14 +419,14 @@ resolveInputsAndTasksForSuggestedHIVTest language currentDate form =
     )
 
 
-viewMedicationContent : Language -> NominalDate -> AssembledData -> MedicationData -> List (Html Msg)
-viewMedicationContent language currentDate assembled data =
+viewMedicationContent : Language -> AssembledData -> MedicationData -> List (Html Msg)
+viewMedicationContent language assembled data =
     let
         measurements =
             assembled.measurements
 
         tasks =
-            List.filter (expectMedicationTask currentDate assembled) medicationTasks
+            List.filter (expectMedicationTask assembled) medicationTasks
 
         activeTask =
             resolveActiveTask tasks data.activeTask
@@ -464,7 +464,7 @@ viewMedicationContent language currentDate assembled data =
                 ]
 
         tasksCompletedFromTotalDict =
-            List.map (\task -> ( task, medicationTasksCompletedFromTotal language currentDate assembled data task )) tasks
+            List.map (\task -> ( task, medicationTasksCompletedFromTotal language assembled data task )) tasks
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
@@ -476,13 +476,13 @@ viewMedicationContent language currentDate assembled data =
                 Just TaskPrescribedMedication ->
                     getMeasurementValueFunc measurements.medication
                         |> prescribedMedicationFormWithDefault data.prescribedMedicationForm
-                        |> viewPrescribedMedicationForm language currentDate assembled
+                        |> viewPrescribedMedicationForm language assembled
                         |> List.singleton
 
                 Just TaskTreatmentReview ->
                     getMeasurementValueFunc measurements.treatmentReview
                         |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
-                        |> viewTreatmentReviewForm language currentDate
+                        |> viewTreatmentReviewForm language
                         |> List.singleton
 
                 Nothing ->
@@ -530,25 +530,23 @@ viewMedicationContent language currentDate assembled data =
         ]
     , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
-        [ div [ class "full content" ] <|
-            (viewForm ++ [ actions ])
+        [ div [ class "full content" ] (viewForm ++ [ actions ])
         ]
     ]
 
 
-viewPrescribedMedicationForm : Language -> NominalDate -> AssembledData -> PrescribedMedicationForm -> Html Msg
-viewPrescribedMedicationForm language currentDate assembled form =
-    prescribedMedicationsInputsAndTasks language currentDate assembled form
+viewPrescribedMedicationForm : Language -> AssembledData -> PrescribedMedicationForm -> Html Msg
+viewPrescribedMedicationForm language assembled form =
+    prescribedMedicationsInputsAndTasks language assembled form
         |> Tuple.first
         |> div [ class "ui form prescribed-medication" ]
 
 
-viewTreatmentReviewForm : Language -> NominalDate -> OngoingTreatmentReviewForm -> Html Msg
-viewTreatmentReviewForm language currentDate form =
+viewTreatmentReviewForm : Language -> OngoingTreatmentReviewForm -> Html Msg
+viewTreatmentReviewForm language form =
     let
         ( inputs, _ ) =
             treatmentReviewCustomReasonsForNotTakingInputsAndTasks language
-                currentDate
                 ( [ NotTakingAdverseEvent, NotTakingNoMoney, NotTakingTreatmentNotStarted ]
                 , [ NotTakingMemoryProblems, NotTakingOther ]
                 )
@@ -562,8 +560,8 @@ viewTreatmentReviewForm language currentDate form =
         inputs
 
 
-viewSymptomReviewContent : Language -> NominalDate -> AssembledData -> SymptomReviewData -> List (Html Msg)
-viewSymptomReviewContent language currentDate assembled data =
+viewSymptomReviewContent : Language -> AssembledData -> SymptomReviewData -> List (Html Msg)
+viewSymptomReviewContent language assembled data =
     let
         form =
             assembled.measurements.symptomReview
@@ -619,7 +617,7 @@ viewNextStepsContent language currentDate assembled data =
             assembled.measurements
 
         tasks =
-            List.filter (expectNextStepsTask currentDate assembled) nextStepsTasks
+            List.filter (expectNextStepsTask assembled) nextStepsTasks
 
         activeTask =
             resolveActiveTask tasks data.activeTask
@@ -660,7 +658,7 @@ viewNextStepsContent language currentDate assembled data =
                 ]
 
         tasksCompletedFromTotalDict =
-            List.map (\task -> ( task, nextStepsTasksCompletedFromTotal currentDate measurements data task )) tasks
+            List.map (\task -> ( task, nextStepsTasksCompletedFromTotal measurements data task )) tasks
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
@@ -673,14 +671,12 @@ viewNextStepsContent language currentDate assembled data =
                     getMeasurementValueFunc measurements.healthEducation
                         |> healthEducationFormWithDefault data.healthEducationForm
                         |> viewHealthEducationForm language
-                            currentDate
                         |> List.singleton
 
                 Just TaskFollowUp ->
                     getMeasurementValueFunc measurements.followUp
                         |> followUpFormWithDefault data.followUpForm
                         |> viewFollowUpForm language
-                            currentDate
                             [ OneDay, OneWeek, OneMonth, FollowUpNotNeeded ]
                             SetFollowUpOption
                         |> List.singleton
@@ -734,17 +730,16 @@ viewNextStepsContent language currentDate assembled data =
         ]
     , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
-        [ div [ class "full content" ] <|
-            (viewForm ++ [ actions ])
+        [ div [ class "full content" ] (viewForm ++ [ actions ])
         ]
     ]
 
 
-viewHealthEducationForm : Language -> NominalDate -> HealthEducationForm -> Html Msg
-viewHealthEducationForm language currentDate form =
+viewHealthEducationForm : Language -> HealthEducationForm -> Html Msg
+viewHealthEducationForm language form =
     let
         ( inputs, _ ) =
-            healthEducationFormInputsAndTasks language currentDate form
+            healthEducationFormInputsAndTasks language form
     in
     div [ class "ui form health-education" ]
         inputs

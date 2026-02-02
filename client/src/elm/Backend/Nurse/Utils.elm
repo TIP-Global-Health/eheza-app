@@ -1,8 +1,8 @@
-module Backend.Nurse.Utils exposing (..)
+module Backend.Nurse.Utils exposing (assignedToHealthCenter, assignedToVillage, isAuthorithedNurse, isCommunityHealthWorker, isLabTechnician, resilienceRoleFromString, resilienceRoleToString)
 
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
-import Backend.Nurse.Model exposing (..)
+import Backend.Nurse.Model exposing (Nurse, ResilienceRole(..), Role(..))
 import EverySet
 
 

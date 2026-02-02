@@ -1,7 +1,7 @@
 module Backend.NCDEncounter.Decoder exposing (decodeNCDDiagnosis, decodeNCDEncounter)
 
-import Backend.NCDEncounter.Model exposing (..)
-import Backend.NCDEncounter.Types exposing (..)
+import Backend.NCDEncounter.Model exposing (NCDEncounter)
+import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import EverySet
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, andThen, bool, fail, list, map, nullable, string, succeed)

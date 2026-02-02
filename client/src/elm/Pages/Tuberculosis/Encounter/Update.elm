@@ -4,7 +4,7 @@ import App.Model
 import Backend.Model
 import Backend.TuberculosisEncounter.Model
 import Pages.Page exposing (Page(..))
-import Pages.Tuberculosis.Encounter.Model exposing (..)
+import Pages.Tuberculosis.Encounter.Model exposing (Model, Msg(..))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )

@@ -4,14 +4,13 @@ import App.Model
 import Backend.Entities exposing (..)
 import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator(..))
 import Components.ReportToWhatsAppDialog.Update
-import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.PatientRecord.Model exposing (..)
+import Pages.PatientRecord.Model exposing (Model, Msg(..), PatientRecordFilter(..), ViewMode(..))
 
 
-update : NominalDate -> PersonId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate id msg model =
+update : PersonId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update id msg model =
     case msg of
         NoOp ->
             ( model
@@ -49,7 +48,7 @@ update currentDate id msg model =
                 , Cmd.none
                 , []
                 )
-                    |> sequenceExtra (update currentDate id)
+                    |> sequenceExtra (update id)
                         [ SetActivePage <| UserPage <| DemographicsReportPage (InitiatorPatientRecord id) id ]
 
             else
@@ -64,4 +63,4 @@ update currentDate id msg model =
                     Components.ReportToWhatsAppDialog.Update.update subMsg model.reportToWhatsAppDialog
             in
             ( { model | reportToWhatsAppDialog = dialogUpdated }, cmd, appMsgs )
-                |> sequenceExtra (update currentDate id) extraMsgs
+                |> sequenceExtra (update id) extraMsgs

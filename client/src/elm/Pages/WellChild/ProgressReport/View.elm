@@ -94,7 +94,7 @@ import Pages.WellChild.Encounter.Utils
         , resolvePediatricCareMilestoneOnDate
         )
 import Pages.WellChild.Encounter.View exposing (partitionActivities)
-import Pages.WellChild.ProgressReport.Model exposing (..)
+import Pages.WellChild.ProgressReport.Model exposing (BottomActionData, ECDStatus(..), Model, Msg(..), NCDAANCNewbornItem(..), NCDACellValue(..), NCDAFillTheBlanksItem(..), NCDANutritionBehaviorItem(..), NCDATargetedInterventionsItem(..), NCDAUniversalInterventionsItem(..), WellChildProgressReportInitiator(..))
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import SyncManager.Model exposing (Site(..), SiteFeature)
@@ -160,7 +160,7 @@ view language currentDate zscores site features id isChw db model =
                         ( _, pendingActivities ) =
                             partitionActivities currentDate zscores site features isChw db assembled
                     in
-                    ( Just <|
+                    ( Just
                         { showEndEncounterDialog = model.showEndEncounterDialog
                         , allowEndEncounter = allowEndingEncounter currentDate pendingActivities assembled
                         , closeEncounterMsg = CloseEncounter id
@@ -185,7 +185,6 @@ view language currentDate zscores site features id isChw db model =
             zscores
             site
             features
-            isChw
             initiator
             mandatoryNutritionAssessmentMeasurementsTaken
             db
@@ -210,7 +209,6 @@ viewProgressReport :
     -> ZScore.Model.Model
     -> Site
     -> EverySet SiteFeature
-    -> Bool
     -> WellChildProgressReportInitiator
     -> Bool
     -> ModelIndexedDb
@@ -226,7 +224,7 @@ viewProgressReport :
     -> Maybe (BottomActionData msg)
     -> ( PersonId, Person )
     -> Html msg
-viewProgressReport language currentDate zscores site features isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode reportToWhatsAppDialog activeTab setActivePageMsg setActiveTabMsg setDiagnosisModeMsg msgReportToWhatsAppDialogMsg componentsConfig selectedComponents bottomActionData ( childId, child ) =
+viewProgressReport language currentDate zscores site features initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode reportToWhatsAppDialog activeTab setActivePageMsg setActiveTabMsg setDiagnosisModeMsg msgReportToWhatsAppDialogMsg componentsConfig selectedComponents bottomActionData ( childId, child ) =
     let
         content =
             case activeTab of
@@ -235,7 +233,6 @@ viewProgressReport language currentDate zscores site features isChw initiator ma
                         currentDate
                         zscores
                         site
-                        isChw
                         initiator
                         mandatoryNutritionAssessmentMeasurementsTaken
                         db
@@ -368,8 +365,7 @@ assembleProgresReportData site childId db =
         lastWellChildEncounterId =
             Maybe.andThen
                 (getWellChildEncountersForParticipant db
-                    >> List.map Tuple.first
-                    >> List.head
+                    >> (List.head >> Maybe.map Tuple.first)
                 )
                 individualWellChildParticipantId
 
@@ -450,7 +446,6 @@ viewContent :
     -> NominalDate
     -> ZScore.Model.Model
     -> Site
-    -> Bool
     -> WellChildProgressReportInitiator
     -> Bool
     -> ModelIndexedDb
@@ -463,7 +458,7 @@ viewContent :
     -> Maybe (EverySet Components.ReportToWhatsAppDialog.Model.ReportComponentWellChild)
     -> ( PersonId, Person )
     -> List (Html msg)
-viewContent language currentDate zscores site isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode reportToWhatsAppDialog setActivePageMsg setDiagnosisModeMsg msgReportToWhatsAppDialogMsg componentsConfig selectedComponents ( childId, child ) =
+viewContent language currentDate zscores site initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode reportToWhatsAppDialog setActivePageMsg setDiagnosisModeMsg msgReportToWhatsAppDialogMsg componentsConfig selectedComponents ( childId, child ) =
     let
         reportData =
             assembleProgresReportData site childId db
@@ -521,18 +516,15 @@ viewContent language currentDate zscores site isChw initiator mandatoryNutrition
                         site
                         child
                         vaccinationProgress
-                        db
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentWellChildImmunizationHistory)
                     , viewECDPane language
                         currentDate
                         child
                         reportData.wellChildEncounters
                         reportData.individualWellChildMeasurementsWithDates
-                        db
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentWellChildECD)
                     , growthPane
                     , viewNextAppointmentPane language
-                        currentDate
                         child
                         individualWellChildMeasurements
                         db
@@ -552,7 +544,6 @@ viewContent language currentDate zscores site isChw initiator mandatoryNutrition
     [ viewPersonInfoPane language currentDate child
     , viewDiagnosisPane language
         currentDate
-        isChw
         initiator
         mandatoryNutritionAssessmentMeasurementsTaken
         reportData.acuteIllnesses
@@ -573,7 +564,6 @@ viewContent language currentDate zscores site isChw initiator mandatoryNutrition
         ++ [ Html.map msgReportToWhatsAppDialogMsg
                 (Components.ReportToWhatsAppDialog.View.view
                     language
-                    currentDate
                     site
                     ( childId, child )
                     Components.ReportToWhatsAppDialog.Model.ReportWellChild
@@ -662,7 +652,6 @@ viewPersonInfoPane language currentDate person =
 viewDiagnosisPane :
     Language
     -> NominalDate
-    -> Bool
     -> WellChildProgressReportInitiator
     -> Bool
     -> List ( IndividualEncounterParticipantId, IndividualEncounterParticipant )
@@ -678,10 +667,10 @@ viewDiagnosisPane :
     -> Bool
     -> Maybe AssembledData
     -> Html msg
-viewDiagnosisPane language currentDate isChw initiator mandatoryNutritionAssessmentMeasurementsTaken acuteIllnesses individualNutritionParticipantId wellChildEncounters groupNutritionMeasurements individualNutritionMeasurements individualWellChildMeasurements db diagnosisMode setActivePageMsg setDiagnosisModeMsg viewForReportToWhatsApp maybeAssembled =
+viewDiagnosisPane language currentDate initiator mandatoryNutritionAssessmentMeasurementsTaken acuteIllnesses individualNutritionParticipantId wellChildEncounters groupNutritionMeasurements individualNutritionMeasurements individualWellChildMeasurements db diagnosisMode setActivePageMsg setDiagnosisModeMsg viewForReportToWhatsApp maybeAssembled =
     let
         ( activeIllnesses, completedIllnesses ) =
-            List.partition (Tuple.second >> isAcuteIllnessActive currentDate) acuteIllnesses
+            List.partition (Tuple.second >> isAcuteIllnessActive) acuteIllnesses
 
         groupNutritionEntries =
             generateGroupNutritionAssessmentEntries groupNutritionMeasurements
@@ -998,12 +987,12 @@ viewWarningEntry language ( date, ( milestone, warning, status ) ) =
     )
 
 
-viewVaccinationHistoryPane : Language -> NominalDate -> Site -> Person -> VaccinationProgressDict -> ModelIndexedDb -> Html any
-viewVaccinationHistoryPane language currentDate site child vaccinationProgress db =
-    div [ class "pane vaccination-history" ] <|
+viewVaccinationHistoryPane : Language -> NominalDate -> Site -> Person -> VaccinationProgressDict -> Html any
+viewVaccinationHistoryPane language currentDate site child vaccinationProgress =
+    div [ class "pane vaccination-history" ]
         [ viewPaneHeading language Translate.ImmunizationHistory
         , div [ class "pane-content" ] <|
-            viewVaccinationOverview language currentDate site child vaccinationProgress db
+            viewVaccinationOverview language currentDate site child vaccinationProgress
         ]
 
 
@@ -1013,9 +1002,8 @@ viewECDPane :
     -> Person
     -> List ( WellChildEncounterId, WellChildEncounter )
     -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
-    -> ModelIndexedDb
     -> Html any
-viewECDPane language currentDate child wellChildEncounters individualWellChildMeasurementsWithDates db =
+viewECDPane language currentDate child wellChildEncounters individualWellChildMeasurementsWithDates =
     Maybe.map
         (\_ ->
             let
@@ -1048,7 +1036,7 @@ viewECDPane language currentDate child wellChildEncounters individualWellChildMe
                 entries =
                     List.map viewMilestone milestonesToCurrentDateWithStatus
             in
-            div [ class "pane ecd" ] <|
+            div [ class "pane ecd" ]
                 [ viewPaneHeading language Translate.EarlyChildhoodDevelopment
                 , div [ class "pane-content overflow" ]
                     [ div [ class "ecd-milestones" ] <|
@@ -1562,8 +1550,8 @@ viewPhotos measurements =
         |> List.singleton
 
 
-viewNextAppointmentPane : Language -> NominalDate -> Person -> List WellChildMeasurements -> ModelIndexedDb -> Html any
-viewNextAppointmentPane language currentDate child individualWellChildMeasurements db =
+viewNextAppointmentPane : Language -> Person -> List WellChildMeasurements -> ModelIndexedDb -> Html any
+viewNextAppointmentPane language child individualWellChildMeasurements db =
     let
         entriesHeading =
             div [ class "heading next-appointment" ]
@@ -1602,7 +1590,7 @@ viewNextAppointmentPane language currentDate child individualWellChildMeasuremen
                     )
                 |> Maybe.withDefault []
     in
-    div [ class "pane next-appointment" ] <|
+    div [ class "pane next-appointment" ]
         [ viewPaneHeading language Translate.NextAppointment
         , div [ class "pane-content" ] <|
             entriesHeading
@@ -1612,7 +1600,7 @@ viewNextAppointmentPane language currentDate child individualWellChildMeasuremen
 
 viewPaneHeading : Language -> TranslationId -> Html any
 viewPaneHeading language label =
-    div [ class <| "pane-heading" ]
+    div [ class "pane-heading" ]
         [ text <| translate language label ]
 
 
@@ -1675,13 +1663,12 @@ viewNCDAScorecard language currentDate zscores site ( childId, child ) db =
                 )
                 |> Maybe.withDefault Dict.empty
     in
-    [ viewChildIdentificationPane language currentDate site allNCDAQuestionnaires db ( childId, child )
-    , viewANCNewbornPane language currentDate db childId child allNCDAQuestionnaires
+    [ viewChildIdentificationPane language site allNCDAQuestionnaires db ( childId, child )
+    , viewANCNewbornPane language db childId child allNCDAQuestionnaires
     , viewUniversalInterventionsPane language
         currentDate
         site
         child
-        db
         nurseQuestionnairesByAgeInMonths
         chwQuestionnairesByAgeInMonthsWithDate
         vaccinationProgressDict
@@ -1701,7 +1688,6 @@ viewNCDAScorecard language currentDate zscores site ( childId, child ) db =
         currentDate
         zscores
         child
-        db
         allNCDAQuestionnaires
         reportData.groupNutritionMeasurements
         reportData.individualNutritionMeasurementsWithDates
@@ -1711,13 +1697,12 @@ viewNCDAScorecard language currentDate zscores site ( childId, child ) db =
 
 viewChildIdentificationPane :
     Language
-    -> NominalDate
     -> Site
     -> List ( NominalDate, NCDAValue )
     -> ModelIndexedDb
     -> ( PersonId, Person )
     -> Html any
-viewChildIdentificationPane language currentDate site allNCDAQuestionnaires db ( childId, child ) =
+viewChildIdentificationPane language site allNCDAQuestionnaires db ( childId, child ) =
     let
         ( mother, father ) =
             let
@@ -1887,13 +1872,12 @@ viewChildIdentificationPane language currentDate site allNCDAQuestionnaires db (
 
 viewANCNewbornPane :
     Language
-    -> NominalDate
     -> ModelIndexedDb
     -> PersonId
     -> Person
     -> List ( NominalDate, NCDAValue )
     -> Html any
-viewANCNewbornPane language currentDate db childId child allNCDAQuestionnaires =
+viewANCNewbornPane language db childId child allNCDAQuestionnaires =
     let
         pregnancyValuesForRegularPrenatalVisits =
             Maybe.map
@@ -2422,12 +2406,11 @@ viewUniversalInterventionsPane :
     -> NominalDate
     -> Site
     -> Person
-    -> ModelIndexedDb
     -> Maybe (Dict Int NCDAValue)
     -> Maybe (Dict Int ( NominalDate, NCDAValue ))
     -> VaccinationProgressDict
     -> Html any
-viewUniversalInterventionsPane language currentDate site child db nurseQuestionnairesByAgeInMonths chwQuestionnairesByAgeInMonthsWithDate vaccinationProgress =
+viewUniversalInterventionsPane language currentDate site child nurseQuestionnairesByAgeInMonths chwQuestionnairesByAgeInMonthsWithDate vaccinationProgress =
     let
         pregnancyValues =
             List.repeat 9 NCDACellValueDash
@@ -2615,13 +2598,12 @@ viewFillTheBlanksPane :
     -> NominalDate
     -> ZScore.Model.Model
     -> Person
-    -> ModelIndexedDb
     -> List ( NominalDate, NCDAValue )
     -> ChildMeasurementList
     -> List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
     -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
     -> Html any
-viewFillTheBlanksPane language currentDate zscores child db allNCDAQuestionnaires groupNutritionMeasurements individualNutritionMeasurementsWithDates individualWellChildMeasurementsWithDates =
+viewFillTheBlanksPane language currentDate zscores child allNCDAQuestionnaires groupNutritionMeasurements individualNutritionMeasurementsWithDates individualWellChildMeasurementsWithDates =
     let
         pregnancyValues =
             List.repeat 9 NCDACellValueDash

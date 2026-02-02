@@ -1,8 +1,8 @@
 module Backend.Relationship.Decoder exposing (decodeRelationship)
 
-import Backend.Relationship.Model exposing (..)
-import Json.Decode exposing (..)
-import Json.Decode.Pipeline exposing (..)
+import Backend.Relationship.Model exposing (RelatedBy(..), Relationship)
+import Json.Decode exposing (Decoder, andThen, bool, fail, nullable, string, succeed)
+import Json.Decode.Pipeline exposing (optional, required)
 import Restful.Endpoint exposing (decodeEntityUuid)
 
 

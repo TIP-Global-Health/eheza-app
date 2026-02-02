@@ -3,7 +3,7 @@ module Pages.Relationship.Update exposing (update)
 import App.Model
 import Backend.Entities exposing (..)
 import Backend.Model
-import Pages.Relationship.Model exposing (..)
+import Pages.Relationship.Model exposing (Model, Msg(..), emptyModel)
 import Restful.Endpoint exposing (toEntityUuid)
 
 
@@ -30,7 +30,7 @@ update id1 id2 msg model =
             , [ App.Model.SetActivePage page ]
             )
 
-        Reset _ ->
+        Reset ->
             ( emptyModel
             , Cmd.none
             , []

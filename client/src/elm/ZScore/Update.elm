@@ -6,8 +6,8 @@ import RemoteData exposing (RemoteData(..), WebData, isNotAsked)
 import Task
 import Update.Extra exposing (sequence)
 import Utils.AllDict exposing (AllDict)
-import ZScore.Decoder exposing (..)
-import ZScore.Model exposing (..)
+import ZScore.Decoder exposing (decodeForAge, decodeForCentimetres)
+import ZScore.Model exposing (BMI(..), ByDaysAndMonths, Centimetres(..), Days(..), Height(..), Kilograms(..), Length(..), MaleAndFemale, Model, Months(..), Msg(..), ZScoreEntry)
 
 
 type alias MonthsAndDays a =

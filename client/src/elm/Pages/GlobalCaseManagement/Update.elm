@@ -14,7 +14,7 @@ import Backend.TuberculosisEncounter.Model exposing (emptyTuberculosisEncounter)
 import Backend.Utils exposing (resolveIndividualParticipantForPerson)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..), emptyWellChildEncounter)
 import Gizra.NominalDate exposing (NominalDate)
-import Pages.GlobalCaseManagement.Model exposing (..)
+import Pages.GlobalCaseManagement.Model exposing (FollowUpAcuteIllnessData, FollowUpEncounterDataType(..), FollowUpHIVData, FollowUpNutritionData, FollowUpTuberculosisData, Model, Msg(..))
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Types exposing (WarningPopupType(..))
 import Pages.Prenatal.Encounter.Utils exposing (generatePostCreateDestination)
@@ -53,7 +53,7 @@ update currentDate healthCenterId msg db model =
                                         startFollowUpEncounterHomeVisit currentDate selectedHealthCenter db data
 
                                     FollowUpAcuteIllness data ->
-                                        startFollowUpEncounterAcuteIllness currentDate selectedHealthCenter db data
+                                        startFollowUpEncounterAcuteIllness currentDate selectedHealthCenter data
 
                                     FollowUpImmunization data ->
                                         startFollowUpEncounterWellChild currentDate selectedHealthCenter db data
@@ -130,8 +130,8 @@ startFollowUpEncounterHomeVisit currentDate selectedHealthCenter db data =
             ]
 
 
-startFollowUpEncounterAcuteIllness : NominalDate -> HealthCenterId -> ModelIndexedDb -> FollowUpAcuteIllnessData -> List App.Model.Msg
-startFollowUpEncounterAcuteIllness currentDate selectedHealthCenter db data =
+startFollowUpEncounterAcuteIllness : NominalDate -> HealthCenterId -> FollowUpAcuteIllnessData -> List App.Model.Msg
+startFollowUpEncounterAcuteIllness currentDate selectedHealthCenter data =
     [ emptyAcuteIllnessEncounter data.participantId currentDate data.sequenceNumber AcuteIllnessEncounterCHW (Just selectedHealthCenter)
         |> Backend.Model.PostAcuteIllnessEncounter
         |> App.Model.MsgIndexedDb

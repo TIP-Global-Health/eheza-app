@@ -1,4 +1,4 @@
-module Backend.Reports.Model exposing (..)
+module Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, ChildScorecardEncounterData, DeliveryLocation(..), Gender(..), HIVEncounterData, HomeVisitEncounterData, Msg(..), NCDEncounterData, NutritionData, NutritionEncounterData, NutritionReportTableType(..), PatientData, PersonId, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalParticipantData, ReportsData, SelectedEntity(..), TuberculosisEncounterData)
 
 import App.Types exposing (Site)
 import Gizra.NominalDate exposing (NominalDate)

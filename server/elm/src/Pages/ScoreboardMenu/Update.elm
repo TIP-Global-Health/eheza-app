@@ -2,7 +2,7 @@ module Pages.ScoreboardMenu.Update exposing (update)
 
 import App.Model exposing (PagesReturn)
 import Error.Utils exposing (noError)
-import Pages.ScoreboardMenu.Model exposing (..)
+import Pages.ScoreboardMenu.Model exposing (Model, Msg(..))
 
 
 update : Msg -> Model -> PagesReturn Model Msg

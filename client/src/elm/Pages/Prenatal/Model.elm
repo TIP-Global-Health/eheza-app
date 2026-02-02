@@ -1,4 +1,4 @@
-module Pages.Prenatal.Model exposing (..)
+module Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, HypertensionTreatementUpdateOption(..), MalariaPreventionData, MalariaPreventionForm, MedicationDistributionForm, PrenatalEncounterPhase(..), PreviousEncounterData, ReferralForm, VaccinationProgressDict, emptyHealthEducationForm, emptyMalariaPreventionData, emptyMedicationDistributionForm, emptyReferralForm)
 
 import AssocList exposing (Dict)
 import Backend.Entities exposing (..)
@@ -16,7 +16,7 @@ import Backend.Measurement.Model
         , VaccineDose
         )
 import Backend.Person.Model exposing (Person)
-import Backend.PrenatalEncounter.Model exposing (..)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)

@@ -19,7 +19,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isNothing, unwrap)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.People.Model exposing (..)
+import Pages.People.Model exposing (Model, Msg(..))
 import Pages.Utils exposing (viewBySyncStatus)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -251,7 +251,7 @@ viewSearchForm language currentDate maybeVillageId isChw initiator relation mode
         searchResultsParticipants =
             Maybe.withDefault (Success Dict.empty) results
                 |> RemoteData.withDefault Dict.empty
-                |> Dict.map (viewParticipant language currentDate initiator relation db)
+                |> Dict.map (viewParticipant language currentDate initiator relation)
                 |> Dict.values
 
         searchHelper =
@@ -296,8 +296,8 @@ viewSearchForm language currentDate maybeVillageId isChw initiator relation mode
         ]
 
 
-viewParticipant : Language -> NominalDate -> Initiator -> Maybe PersonId -> ModelIndexedDb -> PersonId -> Person -> Html Msg
-viewParticipant language currentDate initiator relation db id person =
+viewParticipant : Language -> NominalDate -> Initiator -> Maybe PersonId -> PersonId -> Person -> Html Msg
+viewParticipant language currentDate initiator relation id person =
     let
         typeForThumbnail =
             defaultIconForPerson currentDate person
@@ -321,7 +321,7 @@ viewParticipant language currentDate initiator relation db id person =
                 , div [ class "action-icon-wrapper blue" ]
                     [ span
                         [ class "action-icon forward"
-                        , onClick <| SetActivePage <| UserPage <| nextPage
+                        , onClick <| SetActivePage <| UserPage nextPage
                         ]
                         []
                     ]
@@ -333,7 +333,7 @@ viewParticipant language currentDate initiator relation db id person =
                     [ class "details" ]
                     [ h2
                         [ class "ui header" ]
-                        [ text <| person.name ]
+                        [ text person.name ]
                     , p []
                         [ label [] [ text <| translate language Translate.DOB ++ ": " ]
                         , span []

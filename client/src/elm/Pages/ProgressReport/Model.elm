@@ -1,4 +1,4 @@
-module Pages.ProgressReport.Model exposing (..)
+module Pages.ProgressReport.Model exposing (Model, Msg(..), emptyModel)
 
 import Components.ReportToWhatsAppDialog.Model
 import EverySet exposing (EverySet)

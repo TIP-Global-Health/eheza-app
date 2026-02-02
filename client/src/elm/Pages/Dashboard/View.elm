@@ -47,12 +47,11 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import List.Extra
-import Maybe exposing (Maybe)
 import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.Utils exposing (generateFutureVaccinationsData)
-import Pages.Dashboard.GraphUtils exposing (..)
-import Pages.Dashboard.Model exposing (..)
-import Pages.Dashboard.Utils exposing (..)
+import Pages.Dashboard.GraphUtils exposing (barChartHeight, barChartWidth, column, familyPlanningSignToColor, familyPlanningSignsColors, feverCauseToColor, feverCausesColors, gridXScale, gridYScale, padding, pieChartHeight, pieChartWidth, radius, xAxis, xGridLine, xScale, yAxis, yGridLine)
+import Pages.Dashboard.Model exposing (BeneficiariesTableLabels(..), CardValueSeverity(..), DashboardFilter(..), DashboardSubFilter(..), FamilyPlanningSignsCounter, FeverCause(..), FilterGender(..), FilterPeriod(..), FilterProgramType(..), FilterType(..), MalnorishedNutritionData, ModalState(..), Model, MonthlyChartType(..), Msg(..), StatsCard, caseManagementFilters, caseManagementSubFilters, filterGenders, filterPeriodsForStatsPage, maxMonthGap, monthlyChartFilters)
+import Pages.Dashboard.Utils exposing (applyGenderFilter, countAcuteIllnessAssessments, countAcuteIllnessCasesByPossibleDiagnosises, countAcuteIllnessCasesByTreatmentApproach, countAcuteIllnessDiagnosedCases, countComplicatedGISentToHC, countComplicatedMalariaSentToHC, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countDeliveriesAtLocationForSelectedMonth, countDiagnosedWithCovidCallsTo114, countDiagnosedWithCovidManagedAtHome, countDiagnosedWithCovidSentToHC, countDiagnosedWithGI, countDiagnosedWithMalaria, countHospitalReferralsForSelectedMonth, countNewbornForSelectedMonth, countNewlyIdentifieHypertensionCasesForSelectedMonth, countNewlyIdentifiedDiabetesCasesForSelectedMonth, countNewlyIdentifiedPregananciesForSelectedMonth, countPregnanciesDueWithin4MonthsForSelectedMonth, countPregnanciesWith4VisitsOrMoreForSelectedMonth, countResolvedGICasesForSelectedMonth, countResolvedMalariaCasesForSelectedMonth, countTotalNumberOfPatientsWithDiabetes, countTotalNumberOfPatientsWithGestationalDiabetes, countTotalNumberOfPatientsWithHypertension, countUncomplicatedGIManagedByChw, countUncomplicatedMalariaAndPregnantSentToHC, countUncomplicatedMalariaManagedByChw, countUncomplicatedMalariaSentToHC, filterNewlyDiagnosesCasesForSelectedMonth, filterNewlyDiagnosesMalnutritionForSelectedMonth, filterProgramTypeToString, filterStatsByGender, filterStatsWithinPeriod, generatePatientsWithHIV, generateVaccinationProgressDict, getAcuteIllnessFollowUpsBreakdownByDiagnosis, getEncountersForSelectedMonth, getFollowUpsTotals, isAcuteIllnessNurseEncounter, isNurseEncounter, withinOrAfterSelectedMonth, withinOrBeforeSelectedMonth, withinSelectedMonth)
 import Pages.Page
     exposing
         ( AcuteIllnessSubPage(..)
@@ -182,29 +181,25 @@ view language page currentDate site features healthCenterId isChw nurse model db
                                     PageNutrition subPage ->
                                         ( viewNutritionPage language
                                             currentDate
-                                            healthCenterId
-                                            isChw
-                                            nurse
                                             subPage
                                             assembled.stats
                                             assembled.patientsDetails
                                             assembled.nutritionPageData
-                                            db
                                             model
                                         , "nutrition"
                                         )
 
                                     PagePrenatal ->
-                                        ( viewPrenatalPage language currentDate isChw assembled db model, "prenatal" )
+                                        ( viewPrenatalPage language currentDate isChw assembled model, "prenatal" )
 
                                     PageNCD subPage ->
-                                        ( viewNCDPage language currentDate healthCenterId subPage assembled db model, "ncd" )
+                                        ( viewNCDPage language currentDate subPage assembled model, "ncd" )
 
                                     PageChildWellness subPage ->
-                                        ( viewChildWellnessPage language currentDate site healthCenterId subPage assembled db model, "child-wellness" )
+                                        ( viewChildWellnessPage language currentDate site subPage assembled model, "child-wellness" )
 
                                     PageGroupEducation ->
-                                        ( viewGroupEducationPage language currentDate isChw assembled db model, "group-education" )
+                                        ( viewGroupEducationPage language currentDate assembled model, "group-education" )
                         in
                         div [ class <| "dashboard " ++ pageClass ] <|
                             (viewFiltersPane language page db model
@@ -244,11 +239,11 @@ viewPageMain language currentDate features healthCenterId isChw assembled db mod
         viewPageMainForChw language currentDate features healthCenterId assembled db model
 
     else
-        viewPageMainForNurse language currentDate features healthCenterId assembled db model
+        viewPageMainForNurse language features
 
 
-viewPageMainForNurse : Language -> NominalDate -> EverySet SiteFeature -> HealthCenterId -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewPageMainForNurse language currentDate features healthCenterId assembled db model =
+viewPageMainForNurse : Language -> EverySet SiteFeature -> List (Html Msg)
+viewPageMainForNurse language features =
     [ viewMenuForNurse language features ]
 
 
@@ -281,7 +276,7 @@ viewPageMainForChw language currentDate features healthCenterId assembled db mod
 
         -- Case Management
         ( totalNutritionFollowUps, totalAcuteIllnessFollowUps, totalPrenatalFollowUps ) =
-            Maybe.map2 (getFollowUpsTotals language currentDate limitDate db)
+            Maybe.map2 (getFollowUpsTotals currentDate limitDate db)
                 model.selectedVillageFilter
                 followUps
                 |> Maybe.withDefault ( 0, 0, 0 )
@@ -295,7 +290,7 @@ viewPageMainForChw language currentDate features healthCenterId assembled db mod
             , chwCard language (Translate.Dashboard Translate.NewbornsInCare) (String.fromInt totalNewborn)
             ]
         ]
-    , div [ class "case-management-label" ] [ text <| translate language <| Translate.CaseManagement ]
+    , div [ class "case-management-label" ] [ text <| translate language Translate.CaseManagement ]
     , div [ class "ui grid" ]
         [ div [ class "three column row" ]
             [ chwCard language Translate.AcuteIllness (String.fromInt totalAcuteIllnessFollowUps)
@@ -309,30 +304,26 @@ viewPageMainForChw language currentDate features healthCenterId assembled db mod
 viewNutritionPage :
     Language
     -> NominalDate
-    -> HealthCenterId
-    -> Bool
-    -> Nurse
     -> NutritionSubPage
     -> DashboardStats
     -> Dict PersonIdentifier PatientDetails
     -> NutritionPageData
-    -> ModelIndexedDb
     -> Model
     -> List (Html Msg)
-viewNutritionPage language currentDate healthCenterId isChw nurse activePage stats patientsDetails data db model =
+viewNutritionPage language currentDate activePage stats patientsDetails data model =
     case activePage of
         PageCharts ->
-            viewNutritionChartsPage language currentDate isChw nurse activePage data db model
+            viewNutritionChartsPage language currentDate data model
 
         PageStats ->
-            viewStatsPage language currentDate isChw nurse stats healthCenterId db model
+            viewStatsPage language currentDate stats model
 
         PageCaseManagement ->
-            viewCaseManagementPage language currentDate stats patientsDetails db model
+            viewCaseManagementPage language currentDate stats patientsDetails model
 
 
-viewStatsPage : Language -> NominalDate -> Bool -> Nurse -> DashboardStats -> HealthCenterId -> ModelIndexedDb -> Model -> List (Html Msg)
-viewStatsPage language currentDate isChw nurse stats healthCenterId db model =
+viewStatsPage : Language -> NominalDate -> DashboardStats -> Model -> List (Html Msg)
+viewStatsPage language currentDate stats model =
     if model.programTypeFilter /= FilterProgramFbf then
         []
 
@@ -426,10 +417,9 @@ viewCaseManagementPage :
     -> NominalDate
     -> DashboardStats
     -> Dict PersonIdentifier PatientDetails
-    -> ModelIndexedDb
     -> Model
     -> List (Html Msg)
-viewCaseManagementPage language currentDate stats patientsDetails db model =
+viewCaseManagementPage language currentDate stats patientsDetails model =
     if model.programTypeFilter /= FilterProgramFbf then
         []
 
@@ -558,14 +548,14 @@ viewCaseManagementPage language currentDate stats patientsDetails db model =
                         |> div [ class "filters secondary" ]
                     ]
                 , div [ class "content" ]
-                    [ viewCaseManagementTable language currentDate model tableData ]
+                    [ viewCaseManagementTable language tableData ]
                 ]
             ]
         ]
 
 
-viewCaseManagementTable : Language -> NominalDate -> Model -> List { name : String, nutrition : List ( Int, NutritionValue ) } -> Html Msg
-viewCaseManagementTable language currentDate model tableData =
+viewCaseManagementTable : Language -> List { name : String, nutrition : List ( Int, NutritionValue ) } -> Html Msg
+viewCaseManagementTable language tableData =
     let
         monthLabels =
             tableData
@@ -583,7 +573,7 @@ viewCaseManagementTable language currentDate model tableData =
     table [ class "ui very basic collapsing celled table" ]
         [ thead []
             [ tr []
-                (th [ class "name" ] [ translateText language <| Translate.Name ]
+                (th [ class "name" ] [ translateText language Translate.Name ]
                     :: List.map (\month -> th [] [ span [] [ translateText language month ] ]) monthLabels
                 )
             ]
@@ -844,7 +834,7 @@ viewAcuteIllnessPage language currentDate healthCenterId isChw activePage assemb
                 |> Maybe.andThen RemoteData.toMaybe
 
         ( managedCovid, managedMalaria, managedGI ) =
-            Maybe.map2 (getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate limitDate db)
+            Maybe.map2 (getAcuteIllnessFollowUpsBreakdownByDiagnosis currentDate limitDate db)
                 model.selectedVillageFilter
                 followUps
                 |> Maybe.withDefault ( 0, 0, 0 )
@@ -852,16 +842,16 @@ viewAcuteIllnessPage language currentDate healthCenterId isChw activePage assemb
         pageContent =
             case activePage of
                 PageAcuteIllnessOverview ->
-                    viewAcuteIllnessOverviewPage language isChw encountersForSelectedMonth model
+                    viewAcuteIllnessOverviewPage language isChw encountersForSelectedMonth
 
                 PageCovid19 ->
-                    viewCovid19Page language isChw encountersForSelectedMonth managedCovid model
+                    viewCovid19Page language isChw encountersForSelectedMonth managedCovid
 
                 PageMalaria ->
-                    viewMalariaPage language isChw dateLastDayOfSelectedMonth assembled.acuteIllnessData encountersForSelectedMonth managedMalaria model
+                    viewMalariaPage language isChw dateLastDayOfSelectedMonth assembled.acuteIllnessData encountersForSelectedMonth managedMalaria
 
                 PageGastro ->
-                    viewGastroPage language isChw dateLastDayOfSelectedMonth assembled.acuteIllnessData encountersForSelectedMonth managedGI model
+                    viewGastroPage language isChw dateLastDayOfSelectedMonth assembled.acuteIllnessData encountersForSelectedMonth managedGI
     in
     [ viewAcuteIllnessMenu language activePage
     , monthSelector language dateLastDayOfSelectedMonth model
@@ -869,8 +859,8 @@ viewAcuteIllnessPage language currentDate healthCenterId isChw activePage assemb
         ++ pageContent
 
 
-viewAcuteIllnessOverviewPage : Language -> Bool -> List AcuteIllnessEncounterDataItem -> Model -> List (Html Msg)
-viewAcuteIllnessOverviewPage language isChw encounters model =
+viewAcuteIllnessOverviewPage : Language -> Bool -> List AcuteIllnessEncounterDataItem -> List (Html Msg)
+viewAcuteIllnessOverviewPage language isChw encounters =
     let
         totalAssesments =
             countAcuteIllnessAssessments encounters
@@ -968,8 +958,8 @@ viewDonutChart language label translationFunc toColorFunc colors data =
             ]
 
 
-viewCovid19Page : Language -> Bool -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
-viewCovid19Page language isChw encounters managedCovid model =
+viewCovid19Page : Language -> Bool -> List AcuteIllnessEncounterDataItem -> Int -> List (Html Msg)
+viewCovid19Page language isChw encounters managedCovid =
     let
         managedAtHome =
             countDiagnosedWithCovidManagedAtHome encounters
@@ -1004,8 +994,8 @@ viewCovid19Page language isChw encounters managedCovid model =
         ]
 
 
-viewMalariaPage : Language -> Bool -> NominalDate -> List AcuteIllnessDataItem -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
-viewMalariaPage language isChw dateLastDayOfSelectedMonth acuteIllnessData encountersForSelectedMonth managedMalaria model =
+viewMalariaPage : Language -> Bool -> NominalDate -> List AcuteIllnessDataItem -> List AcuteIllnessEncounterDataItem -> Int -> List (Html Msg)
+viewMalariaPage language isChw dateLastDayOfSelectedMonth acuteIllnessData encountersForSelectedMonth managedMalaria =
     let
         totalDaignosed =
             countDiagnosedWithMalaria encountersForSelectedMonth
@@ -1055,8 +1045,8 @@ viewMalariaPage language isChw dateLastDayOfSelectedMonth acuteIllnessData encou
         ]
 
 
-viewGastroPage : Language -> Bool -> NominalDate -> List AcuteIllnessDataItem -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
-viewGastroPage language isChw dateLastDayOfSelectedMonth acuteIllnessData encountersForSelectedMonth managedGI model =
+viewGastroPage : Language -> Bool -> NominalDate -> List AcuteIllnessDataItem -> List AcuteIllnessEncounterDataItem -> Int -> List (Html Msg)
+viewGastroPage language isChw dateLastDayOfSelectedMonth acuteIllnessData encountersForSelectedMonth managedGI =
     let
         totalDaignosed =
             countDiagnosedWithGI encountersForSelectedMonth
@@ -1096,8 +1086,8 @@ viewGastroPage language isChw dateLastDayOfSelectedMonth acuteIllnessData encoun
         ]
 
 
-viewNutritionChartsPage : Language -> NominalDate -> Bool -> Nurse -> NutritionSubPage -> NutritionPageData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewNutritionChartsPage language currentDate isChw nurse activePage data db model =
+viewNutritionChartsPage : Language -> NominalDate -> NutritionPageData -> Model -> List (Html Msg)
+viewNutritionChartsPage language currentDate data model =
     let
         links =
             case model.programTypeFilter of
@@ -1127,15 +1117,15 @@ viewNutritionChartsPage language currentDate isChw nurse activePage data db mode
     ]
 
 
-viewGroupEducationPage : Language -> NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewGroupEducationPage language currentDate isChw assembled db model =
-    Maybe.map (viewGroupEducationDrillIn language currentDate assembled.patientsDetails)
+viewGroupEducationPage : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
+viewGroupEducationPage language currentDate assembled model =
+    Maybe.map (viewGroupEducationDrillIn language assembled.patientsDetails)
         model.educationSessionDrillIn
-        |> Maybe.withDefault (viewGroupEducationStandard language currentDate isChw assembled db model)
+        |> Maybe.withDefault (viewGroupEducationStandard language currentDate assembled model)
 
 
-viewGroupEducationDrillIn : Language -> NominalDate -> Dict PersonIdentifier PatientDetails -> EducationSessionData -> List (Html Msg)
-viewGroupEducationDrillIn language currentDate patientsDetails session =
+viewGroupEducationDrillIn : Language -> Dict PersonIdentifier PatientDetails -> EducationSessionData -> List (Html Msg)
+viewGroupEducationDrillIn language patientsDetails session =
     let
         topics =
             EverySet.toList session.topics
@@ -1173,8 +1163,8 @@ viewGroupEducationDrillIn language currentDate patientsDetails session =
     ]
 
 
-viewGroupEducationStandard : Language -> NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewGroupEducationStandard language currentDate isChw assembled db model =
+viewGroupEducationStandard : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
+viewGroupEducationStandard language currentDate assembled model =
     let
         dateLastDayOfSelectedMonth =
             resolveSelectedDateForMonthSelector currentDate model.monthGap
@@ -1236,8 +1226,8 @@ viewGroupEducationStandard language currentDate isChw assembled db model =
     ]
 
 
-viewPrenatalPage : Language -> NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewPrenatalPage language currentDate isChw assembled db model =
+viewPrenatalPage : Language -> NominalDate -> Bool -> AssembledData -> Model -> List (Html Msg)
+viewPrenatalPage language currentDate isChw assembled model =
     let
         dateLastDayOfSelectedMonth =
             resolveSelectedDateForMonthSelector currentDate model.monthGap
@@ -1853,7 +1843,7 @@ viewBeneficiariesTable language currentDate stats currentPeriodStats malnourishe
             applyAgeFilter currentDate filter12_25Func currentPeriodTotalBeneficiariesByGender
 
         currentPeriodStatsFilteredByGender =
-            filterStatsByGender currentDate model currentPeriodStats
+            filterStatsByGender model currentPeriodStats
 
         filterByAge filterFunc statsToFilter =
             filterStatsByAge
@@ -2184,7 +2174,7 @@ viewFilter language filterType currentChartFilter filter =
             [ ( "dashboard-filter", True )
             , ( "active", filter == currentChartFilter )
             ]
-        , onClick <| filterAction
+        , onClick filterAction
         ]
         [ translateText language <| Translate.Dashboard <| Translate.Filter filter ]
 
@@ -2361,9 +2351,9 @@ viewStatsTableModal language title patientsDetails data =
             [ table [ class "ui very basic collapsing celled table" ]
                 [ thead []
                     [ tr []
-                        [ th [ class "name" ] [ translateText language <| Translate.Name ]
-                        , th [ class "mother-name" ] [ translateText language <| Translate.MotherNameLabel ]
-                        , th [ class "phone-number" ] [ translateText language <| Translate.TelephoneNumber ]
+                        [ th [ class "name" ] [ translateText language Translate.Name ]
+                        , th [ class "mother-name" ] [ translateText language Translate.MotherNameLabel ]
+                        , th [ class "phone-number" ] [ translateText language Translate.TelephoneNumber ]
                         ]
                     ]
                 , tbody []
@@ -2604,13 +2594,11 @@ monthSelector language dateLastDayOfSelectedMonth model =
 viewNCDPage :
     Language
     -> NominalDate
-    -> HealthCenterId
     -> NCDSubPage
     -> AssembledData
-    -> ModelIndexedDb
     -> Model
     -> List (Html Msg)
-viewNCDPage language currentDate healthCenterId activePage assembled db model =
+viewNCDPage language currentDate activePage assembled model =
     let
         dateLastDayOfSelectedMonth =
             resolveSelectedDateForMonthSelector currentDate model.monthGap
@@ -2618,13 +2606,13 @@ viewNCDPage language currentDate healthCenterId activePage assembled db model =
         pageContent =
             case activePage of
                 PageHypertension ->
-                    viewHypertensionPage language dateLastDayOfSelectedMonth assembled.ncdData model
+                    viewHypertensionPage language dateLastDayOfSelectedMonth assembled.ncdData
 
                 PageHIV ->
                     viewHIVPage language dateLastDayOfSelectedMonth assembled.ncdData assembled.pmtctData
 
                 PageDiabetes ->
-                    viewDiabetesPage language dateLastDayOfSelectedMonth assembled.ncdData assembled.prenatalData model
+                    viewDiabetesPage language dateLastDayOfSelectedMonth assembled.ncdData assembled.prenatalData
     in
     [ viewNCDMenu language activePage
     , monthSelector language dateLastDayOfSelectedMonth model
@@ -2632,8 +2620,8 @@ viewNCDPage language currentDate healthCenterId activePage assembled db model =
         ++ pageContent
 
 
-viewHypertensionPage : Language -> NominalDate -> List NCDDataItem -> Model -> List (Html Msg)
-viewHypertensionPage language dateLastDayOfSelectedMonth dataItems model =
+viewHypertensionPage : Language -> NominalDate -> List NCDDataItem -> List (Html Msg)
+viewHypertensionPage language dateLastDayOfSelectedMonth dataItems =
     let
         totalCases =
             countTotalNumberOfPatientsWithHypertension dateLastDayOfSelectedMonth dataItems
@@ -2685,8 +2673,8 @@ viewHIVPage language dateLastDayOfSelectedMonth dataItems pmtctData =
     ]
 
 
-viewDiabetesPage : Language -> NominalDate -> List NCDDataItem -> List PrenatalDataItem -> Model -> List (Html Msg)
-viewDiabetesPage language dateLastDayOfSelectedMonth dataItems prenatalDataItems model =
+viewDiabetesPage : Language -> NominalDate -> List NCDDataItem -> List PrenatalDataItem -> List (Html Msg)
+viewDiabetesPage language dateLastDayOfSelectedMonth dataItems prenatalDataItems =
     let
         totalCases =
             countTotalNumberOfPatientsWithDiabetes dateLastDayOfSelectedMonth dataItems
@@ -2727,13 +2715,11 @@ viewChildWellnessPage :
     Language
     -> NominalDate
     -> Site
-    -> HealthCenterId
     -> ChildWellnessSubPage
     -> AssembledData
-    -> ModelIndexedDb
     -> Model
     -> List (Html Msg)
-viewChildWellnessPage language currentDate site healthCenterId activePage assembled db model =
+viewChildWellnessPage language currentDate site activePage assembled model =
     let
         dateLastDayOfSelectedMonth =
             resolveSelectedDateForMonthSelector currentDate model.monthGap

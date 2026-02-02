@@ -1,4 +1,4 @@
-module Pages.Reports.Model exposing (..)
+module Pages.Reports.Model exposing (Model, Msg(..), NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), ReportType(..), emptyModel, emptyNutritionMetrics)
 
 import AssocList exposing (Dict)
 import Backend.Reports.Model exposing (PersonId)
@@ -76,17 +76,6 @@ type alias NutritionMetricsResults =
     , wastingSevere : Float
     , underweightModerate : Float
     , underweightSevere : Float
-    }
-
-
-emptyNutritionMetricsResults : NutritionMetricsResults
-emptyNutritionMetricsResults =
-    { stuntingModerate = 0
-    , stuntingSevere = 0
-    , wastingModerate = 0
-    , wastingSevere = 0
-    , underweightModerate = 0
-    , underweightSevere = 0
     }
 
 

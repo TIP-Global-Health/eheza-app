@@ -5,7 +5,7 @@ import Backend.AcuteIllnessEncounter.Model
 import Backend.Model
 import Components.ReportToWhatsAppDialog.Update
 import Gizra.Update exposing (sequenceExtra)
-import Pages.AcuteIllness.ProgressReport.Model exposing (..)
+import Pages.AcuteIllness.ProgressReport.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..))
 
 

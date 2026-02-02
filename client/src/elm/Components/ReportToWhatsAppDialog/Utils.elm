@@ -1,6 +1,6 @@
-module Components.ReportToWhatsAppDialog.Utils exposing (..)
+module Components.ReportToWhatsAppDialog.Utils exposing (allCountryCodes, countryCodeFromString, countryCodeToString, minimalNumberLength, reportTypeFromString, reportTypeToString, showComponent, siteToCountryCode, trimLeadingZeros)
 
-import Components.ReportToWhatsAppDialog.Model exposing (..)
+import Components.ReportToWhatsAppDialog.Model exposing (CountryCode(..), ReportType(..))
 import EverySet exposing (EverySet)
 import SyncManager.Model exposing (Site(..))
 

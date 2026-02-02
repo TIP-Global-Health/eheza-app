@@ -1,4 +1,4 @@
-module Pages.ChildScoreboard.Activity.Utils exposing (..)
+module Pages.ChildScoreboard.Activity.Utils exposing (activityCompleted, expectActivity, expectImmunisationTask, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, immunisationTasks, updateVaccinationFormByVaccineType)
 
 import AssocList as Dict
 import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity(..))
@@ -10,20 +10,19 @@ import Backend.Measurement.Model
         , WellChildVaccineType(..)
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
-import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Date
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
-import Measurement.Model exposing (..)
+import Measurement.Model exposing (ImmunisationTask(..), VaccinationProgressDict, emptyVaccinationForm)
 import Measurement.Utils
     exposing
         ( behindOnVaccinationsByHistory
         , generateFutureVaccinationsData
         , immunisationTaskToVaccineType
         )
-import Pages.ChildScoreboard.Activity.Model exposing (..)
+import Pages.ChildScoreboard.Activity.Model exposing (ChildScoreboardVaccinationForm, ImmunisationData)
 import Pages.ChildScoreboard.Encounter.Model exposing (AssembledData)
 import SyncManager.Model exposing (Site)
 
@@ -51,8 +50,8 @@ expectActivity currentDate site assembled activity =
             childBehindOnVaccinationByVaccinaitonHistory && childUpToDateByNCDAResponse
 
 
-activityCompleted : NominalDate -> Site -> AssembledData -> ModelIndexedDb -> ChildScoreboardActivity -> Bool
-activityCompleted currentDate site assembled db activity =
+activityCompleted : NominalDate -> Site -> AssembledData -> ChildScoreboardActivity -> Bool
+activityCompleted currentDate site assembled activity =
     let
         notExpected activityToCheck =
             not <| expectActivity currentDate site assembled activityToCheck
@@ -64,11 +63,11 @@ activityCompleted currentDate site assembled db activity =
 
         ChildScoreboardVaccinationHistory ->
             notExpected ChildScoreboardVaccinationHistory
-                || List.all (immunisationTaskCompleted currentDate site assembled db) immunisationTasks
+                || List.all (immunisationTaskCompleted currentDate site assembled) immunisationTasks
 
 
-immunisationTaskCompleted : NominalDate -> Site -> AssembledData -> ModelIndexedDb -> Measurement.Model.ImmunisationTask -> Bool
-immunisationTaskCompleted currentDate site assembled db task =
+immunisationTaskCompleted : NominalDate -> Site -> AssembledData -> Measurement.Model.ImmunisationTask -> Bool
+immunisationTaskCompleted currentDate site assembled task =
     let
         measurements =
             assembled.measurements
@@ -128,11 +127,6 @@ expectImmunisationTask currentDate site person vaccinationHistory task =
         -- Only task that is not converted to vaccine type
         -- is 'Overview', which we always show.
         |> Maybe.withDefault True
-
-
-generateVaccinationProgress : Site -> List ChildScoreboardMeasurements -> VaccinationProgressDict
-generateVaccinationProgress =
-    Measurement.Utils.generateVaccinationProgressForChildScoreboard
 
 
 immunisationTasks : List ImmunisationTask

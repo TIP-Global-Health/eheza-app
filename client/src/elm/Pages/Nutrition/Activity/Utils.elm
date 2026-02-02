@@ -1,4 +1,4 @@
-module Pages.Nutrition.Activity.Utils exposing (..)
+module Pages.Nutrition.Activity.Utils exposing (activityCompleted, allMandatoryActivities, expectActivity, generateNutritionAssessment, mandatoryActivitiesCompleted, nextStepsTasksCompletedFromTotal)
 
 import Backend.Measurement.Model
     exposing
@@ -10,12 +10,11 @@ import Backend.Measurement.Utils exposing (expectNCDAActivity, getMeasurementVal
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.NutritionEncounter.Utils
-import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
-import Measurement.Model exposing (..)
+import Measurement.Model exposing (NextStepsTask(..))
 import Measurement.Utils
     exposing
         ( contributingFactorsFormWithDefault
@@ -30,10 +29,10 @@ import Measurement.View
         , healthEducationFormInutsAndTasks
         , sendToFacilityInputsAndTasks
         )
-import Pages.Nutrition.Activity.Model exposing (..)
+import Pages.Nutrition.Activity.Model exposing (NextStepsData)
 import Pages.Nutrition.Encounter.Model exposing (AssembledData)
 import Pages.Utils exposing (resolveTasksCompletedFromTotal)
-import SyncManager.Model exposing (Site(..), SiteFeature)
+import SyncManager.Model exposing (SiteFeature)
 import Translate.Model exposing (Language(..))
 import ZScore.Model
 
@@ -76,7 +75,7 @@ expectActivity currentDate zscores features isChw assembled db activity =
             expectNCDAActivity currentDate features isChw assembled.person
 
         NextSteps ->
-            if mandatoryActivitiesCompleted currentDate zscores features assembled.person isChw assembled db then
+            if mandatoryActivitiesCompleted currentDate zscores features isChw assembled db then
                 -- Any assesment require sending to HC.
                 generateNutritionAssessment currentDate zscores db assembled
                     |> List.isEmpty
@@ -126,8 +125,8 @@ activityCompleted currentDate zscores features isChw assembled db activity =
                    )
 
 
-mandatoryActivitiesCompleted : NominalDate -> ZScore.Model.Model -> EverySet SiteFeature -> Person -> Bool -> AssembledData -> ModelIndexedDb -> Bool
-mandatoryActivitiesCompleted currentDate zscores features child isChw assembled db =
+mandatoryActivitiesCompleted : NominalDate -> ZScore.Model.Model -> EverySet SiteFeature -> Bool -> AssembledData -> ModelIndexedDb -> Bool
+mandatoryActivitiesCompleted currentDate zscores features isChw assembled db =
     allMandatoryActivities isChw
         |> List.all (activityCompleted currentDate zscores features isChw assembled db)
 
@@ -144,8 +143,8 @@ allMandatoryActivities isChw =
         [ Height, Muac, Nutrition, Weight ]
 
 
-nextStepsTasksCompletedFromTotal : NominalDate -> NutritionMeasurements -> NextStepsData -> NextStepsTask -> ( Int, Int )
-nextStepsTasksCompletedFromTotal currentDate measurements data task =
+nextStepsTasksCompletedFromTotal : NutritionMeasurements -> NextStepsData -> NextStepsTask -> ( Int, Int )
+nextStepsTasksCompletedFromTotal measurements data task =
     let
         ( _, tasks ) =
             case task of
@@ -153,7 +152,6 @@ nextStepsTasksCompletedFromTotal currentDate measurements data task =
                     getMeasurementValueFunc measurements.sendToHC
                         |> sendToHCFormWithDefault data.sendToHCForm
                         |> sendToFacilityInputsAndTasks English
-                            currentDate
                             FacilityHealthCenter
                             Pages.Nutrition.Activity.Model.SetReferToHealthCenter
                             Pages.Nutrition.Activity.Model.SetReasonForNonReferral
@@ -164,7 +162,6 @@ nextStepsTasksCompletedFromTotal currentDate measurements data task =
                     getMeasurementValueFunc measurements.healthEducation
                         |> healthEducationFormWithDefault data.healthEducationForm
                         |> healthEducationFormInutsAndTasks English
-                            currentDate
                             Pages.Nutrition.Activity.Model.SetProvidedEducationForDiagnosis
                             Pages.Nutrition.Activity.Model.SetReasonForNotProvidingHealthEducation
 
@@ -172,14 +169,12 @@ nextStepsTasksCompletedFromTotal currentDate measurements data task =
                     getMeasurementValueFunc measurements.contributingFactors
                         |> contributingFactorsFormWithDefault data.contributingFactorsForm
                         |> contributingFactorsFormInutsAndTasks English
-                            currentDate
                             Pages.Nutrition.Activity.Model.SetContributingFactorsSign
 
                 NextStepFollowUp ->
                     getMeasurementValueFunc measurements.followUp
                         |> nutritionFollowUpFormWithDefault data.followUpForm
                         |> followUpFormInputsAndTasks English
-                            currentDate
                             []
                             Pages.Nutrition.Activity.Model.SetFollowUpOption
     in

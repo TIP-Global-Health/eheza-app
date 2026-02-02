@@ -1,7 +1,7 @@
-module Pages.HomeVisit.Encounter.Model exposing (..)
+module Pages.HomeVisit.Encounter.Model exposing (AssembledData, Model, Msg(..), Tab(..), emptyModel)
 
 import Backend.Entities exposing (..)
-import Backend.HomeVisitEncounter.Model exposing (..)
+import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (HomeVisitMeasurements)
 import Backend.Person.Model exposing (Person)

@@ -10,7 +10,7 @@ import Gizra.Update exposing (sequenceExtra)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Types exposing (WarningPopupType(..))
 import Pages.Prenatal.RecurrentActivity.Model
-import Pages.Prenatal.RecurrentEncounter.Model exposing (..)
+import Pages.Prenatal.RecurrentEncounter.Model exposing (Model, Msg(..))
 
 
 update : NominalDate -> PrenatalEncounterId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )

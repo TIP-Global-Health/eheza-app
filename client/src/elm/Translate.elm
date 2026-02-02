@@ -84,7 +84,6 @@ import Pages.AcuteIllness.Activity.Types
     exposing
         ( AILaboratoryTask(..)
         , DangerSignsTask(..)
-        , ExposureTask(..)
         , NextStepsTask(..)
         , OngoingTreatmentTask(..)
         , PhysicalExamTask(..)
@@ -110,7 +109,7 @@ import Pages.MessagingCenter.Model exposing (MessagingTab(..))
 import Pages.NCD.Activity.Types exposing (ExaminationTask(..), MedicalHistoryTask(..))
 import Pages.NCD.ProgressReport.Model exposing (NCDRiskFactor(..))
 import Pages.NCD.RecurrentActivity.Types
-import Pages.Page exposing (..)
+import Pages.Page exposing (AcuteIllnessSubPage(..), ChildWellnessSubPage(..), DashboardPage(..), NCDSubPage(..), Page(..), SessionPage(..), UserPage(..))
 import Pages.PatientRecord.Model exposing (PatientRecordFilter(..))
 import Pages.PinCode.Model exposing (MainMenuActivity(..), ResilienceReminderType(..))
 import Pages.Prenatal.Activity.Types
@@ -164,7 +163,7 @@ import Round
 import SyncManager.Model exposing (Site(..))
 import Time exposing (Month(..))
 import Translate.Model exposing (TranslationSet)
-import Translate.Utils exposing (..)
+import Translate.Utils exposing (selectLanguage)
 import ZScore.Model exposing (ChartAgeRange(..))
 
 
@@ -387,7 +386,6 @@ type TranslationId
     | AdministerParacetamolHelper
     | AdministerPrenatalMebendezoleHelper
     | AdministerVitaminAHelperPrenatal
-    | AdministerVitaminAHelperWellChild
     | Administered
     | AdministeredMedicationQuestion
     | AdministeredOneOfAboveMedicinesQuestion
@@ -421,7 +419,6 @@ type TranslationId
     | All
     | AllowedValuesRangeHelper FloatInputConstraints
     | AlmostEveryday
-    | AmbulanceArrivalPeriodQuestion
     | ANCEncountersNotRecordedQuestion
     | ANCIndicateVisitsMonthsPhrase
     | ANCNewborn
@@ -483,8 +480,6 @@ type TranslationId
     | ByMouthDailyForXDays Int
     | ByMouthTwiceADayForXDays Int
     | ByMouthThreeTimesADayForXDays Int
-    | Call114
-    | Called114Question
     | Cancel
     | CandidiasisRecommendedTreatmentHeader
     | CandidiasisRecommendedTreatmentHelper
@@ -540,19 +535,13 @@ type TranslationId
     | ConditionsDuringPreviousPregnancy
     | Contacted114
     | ContactedHC
-    | ContactedHCQuestion
-    | ContactedRecommendedSiteQuestion
     | ContactInitiatedQuestion
     | ContactName
     | ContactsTracingCompleteDetails
     | ContactsTracingHelper
-    | ContactWithCOVID19SymptomsHelper
-    | ContactWithCOVID19SymptomsQuestion
     | Continued
     | ContributingFactor ContributingFactorsSign
     | ContributingFactorsQuestion
-    | ConvulsionsAndUnconsciousPreviousDelivery
-    | ConvulsionsPreviousDelivery
     | CSection
     | CSectionFor
     | CSectionScar CSectionScar
@@ -678,7 +667,6 @@ type TranslationId
     | ExaminationTask ExaminationTask
     | ExaminationTaskRecurrent Pages.Prenatal.RecurrentActivity.Types.ExaminationTask
     | ExpiryDate
-    | ExposureTask ExposureTask
     | Extremities
     | Eyes
     | Facility
@@ -754,8 +742,6 @@ type TranslationId
     | HbA1cPercentage
     | HbA1cMostRecentTestResultInstruction
     | HCRecommendation HCRecommendation
-    | HCResponseQuestion
-    | HCResponsePeriodQuestion
     | HeadacheLabel
     | HeadCircumferenceHelper
     | HeadCircumferenceNotTakenLabel
@@ -765,7 +751,6 @@ type TranslationId
     | HealthEducation
     | HealthEducationNotProvided
     | HealthEducationProvided
-    | HealthEducationProvidedQuestion
     | HealthInsuranceQuestion
     | HealthTopics
     | HealthTopicsQuestion
@@ -998,7 +983,6 @@ type TranslationId
     | MedicalHistorySign MedicalHistorySign
     | Medication
     | MedicationCausesSideEffectsQuestion
-    | MedicationDistributionHelperAnemia
     | MedicationDistributionHelperDiscordantPartnership
     | MedicationDistributionHelperDiscordantPartnershipNoARVs
     | MedicationDistributionHelperEarlyMastitisOrEngorgment
@@ -1032,7 +1016,6 @@ type TranslationId
     | MedicationHelpedQuestion
     | MedicationTaken
     | MedicationTakenAsPrescribedQuestion
-    | MentalHealthHistory
     | MentalHealthIssues
     | MemoryQuota { totalJSHeapSize : Int, usedJSHeapSize : Int, jsHeapSizeLimit : Int }
     | MessagingTab MessagingTab
@@ -1151,7 +1134,6 @@ type TranslationId
     | NumberOfAbortionsLabel
     | NumberOfAbortions Int
     | NumberOfChildrenUnder5
-    | NumberOfCSections
     | NumberOfLiveChildren
     | NumberOfPretermStillbirths Int
     | NumberOfPretermDeliviries Int
@@ -1226,7 +1208,6 @@ type TranslationId
     | PatientRecord
     | PatientRefused
     | PatientInformation
-    | PatientIsolatedQuestion Bool
     | PatientNotYetSeenAtHCLabel
     | PatientRecordFilter PatientRecordFilter
     | PauseEncounter
@@ -1252,7 +1233,6 @@ type TranslationId
     | PlaceholderEnterParticipantName
     | PlaceholderEnterParticipantNationalId
     | PlaceholderEnterWeight
-    | PlaceholderSearchContactName
     | PlacentaPrevia
     | PleaseCall
     | PleaseContact
@@ -1371,7 +1351,6 @@ type TranslationId
     | ReadToggle Bool
     | ReadyForReview
     | ReasonForNotBreastfeeding BreastfeedingSign
-    | ReasonForNotIsolating ReasonForNotIsolating
     | ReasonForNotTaking ReasonForNotTaking
     | ReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
     | Received
@@ -1382,8 +1361,6 @@ type TranslationId
     | ReceivedMosquitoNet
     | ReceivedVitaminA
     | ReceiveOption ReceiveOption
-    | Recommendation114 Recommendation114
-    | RecommendationSite RecommendationSite
     | Recommended
     | RecommendedButNotGivenDueTo
     | RecommendedSymptomRelief
@@ -1603,7 +1580,6 @@ type TranslationId
     | ResilienceMessageStressManagement11Paragraph2
     | ResilienceMessageStressManagement12Title
     | ResilienceMessageStressManagement12Paragraph1
-    | ResilienceMessageStressManagement12Paragraph2
     | ResilienceMessageStressManagement12Bullet1
     | ResilienceMessageStressManagement12Bullet2
     | ResilienceMessageStressManagement12Bullet3
@@ -1807,7 +1783,6 @@ type TranslationId
     | ResilienceMessageEndOfFourthMonthBullet2
     | ResilienceMessageEndOfFourthMonthBullet3
     | ResilienceMessageEndOfFourthMonthBullet4
-    | ResilienceMessageEndOfFourthMonthBullet5
     | ResilienceMessageEndOfFifthMonthTitle
     | ResilienceMessageEndOfFifthMonthParagraph1
     | ResilienceMessageEndOfFifthMonthParagraph2
@@ -1818,7 +1793,6 @@ type TranslationId
     | ResilienceMessageEndOfSixthMonthTitle
     | ResilienceMessageEndOfSixthMonthParagraph1
     | ResilienceMessageEndOfSixthMonthParagraph2
-    | ResilienceMessageEndOfSixthMonthParagraph3
     | ResilienceMessageEndOfSixthMonthBullet1
     | ResilienceMessageEndOfSixthMonthBullet2
     | ResilienceMessageEndOfSixthMonthBullet3
@@ -1846,14 +1820,12 @@ type TranslationId
     | ResolveMonthYY Month Int Bool
     | RespiratoryDistress
     | RespiratoryRate
-    | ResponsePeriod ResponsePeriod
     | Result
     | ResultOfContacting114 Recommendation114
     | ResultOfContactingRecommendedSite RecommendationSite
     | ResultsMissing
     | ResultsPending
     | ReviewAndAccept
-    | ReviewCaseWith144Respondent
     | Reviewed
     | ReviewPriorDiagnosis
     | RHFactorNegative
@@ -1939,7 +1911,6 @@ type TranslationId
     | SevereAnemia
     | Shared
     | Signature
-    | SignOnDoorPostedQuestion
     | SkipNCDADialogConfirm
     | SkipNCDADialogQuestion
     | SkipNCDADialogReject
@@ -1971,8 +1942,6 @@ type TranslationId
     | Summary
     | SuspectedCovid19CaseAlert
     | SuspectedCovid19CaseAlertHelper
-    | SuspectedCovid19CaseIsolate
-    | SuspectedCovid19CaseContactHC
     | SuspectedCovid19CasePerformRapidTest
     | SuspectedCovid19CaseReferToHCForTesting
     | SymptomRelief SymptomReliefType
@@ -2031,7 +2000,6 @@ type TranslationId
     | TotalHighRiskPregnancies
     | ToThePatient
     | TransportationPlanQuestion
-    | TraveledToCOVID19CountryQuestion
     | TravelHistory
     | TreatedWith
     | TreatedWithNot
@@ -2154,7 +2122,6 @@ type TranslationId
     | WellChildVaccineLabel Site WellChildVaccineType
     | WhatDoYouWantToDo
     | WhatType
-    | WhatWasTheirResponse
     | WhoCaresForTheChildDuringTheDay
     | WhoInFamilyHasCondition
     | WithMostRecentDeliveryBy
@@ -2876,12 +2843,6 @@ translationSet trans =
             , kirundi = Just "Vitamine A yatanzwe rimwe"
             }
 
-        AdministerVitaminAHelperWellChild ->
-            { english = "Put the correct number of drops directly into the mouth of the child"
-            , kinyarwanda = Just "Shyira mu kanwa k'umwana ibitonyanga bigenwe"
-            , kirundi = Just "Shira igitigiri gikwiye aho nyene mu kanwa k'umwana"
-            }
-
         Administered ->
             { english = "Administered"
             , kinyarwanda = Just "Umuti watanzwe"
@@ -3469,12 +3430,6 @@ translationSet trans =
             , kirundi = Nothing
             }
 
-        AmbulanceArrivalPeriodQuestion ->
-            { english = "How long did it take the ambulance to arrive"
-            , kinyarwanda = Just "Bitwara igihe kingana gute ngo imbangukiragutabara ihagere"
-            , kirundi = Just "Mbega Rusehabaniha (ambiranse) yafashe umwanya ungana gute kuhashisha"
-            }
-
         ANCEncountersNotRecordedQuestion ->
             { english = "Were there any ANC encounters that are not recorded above"
             , kinyarwanda = Just "Haba hari ipimwa ry'inda ryakozwe bakaba batarabyanditse"
@@ -4059,19 +4014,7 @@ translationSet trans =
         ByMouthThreeTimesADayForXDays days ->
             { english = "by mouth three times per day x " ++ String.fromInt days ++ " days"
             , kinyarwanda = Just <| "inshuro ebyiri ku munsi/ mu minsi " ++ String.fromInt days
-            , kirundi = Just <| "Kumira incuro 3 k'umunsi mu kiringo (Igitigiri) iminsi"
-            }
-
-        Call114 ->
-            { english = "Call 114"
-            , kinyarwanda = Just "Hamagara 114"
-            , kirundi = Nothing
-            }
-
-        Called114Question ->
-            { english = "Were you able to talk with 114"
-            , kinyarwanda = Just "Wabashije kuvugana n’abantu bo kuri 114"
-            , kirundi = Just "Woba warashoboye kuvugana kuri 114"
+            , kirundi = Just "Kumira incuro 3 k'umunsi mu kiringo (Igitigiri) iminsi"
             }
 
         Cancel ->
@@ -4615,18 +4558,6 @@ translationSet trans =
             , kirundi = Just "Ivuriro ryarondewe"
             }
 
-        ContactedHCQuestion ->
-            { english = "Have you contacted the health center"
-            , kinyarwanda = Just "Wamenyesheje ikigo nderabuzima"
-            , kirundi = Just "Mbega waravuganye n'ivuriro"
-            }
-
-        ContactedRecommendedSiteQuestion ->
-            { english = "Did you contact the recommended site"
-            , kinyarwanda = Just "Wamenyesheje urwego rushinzwe gukurikirana umurwayi"
-            , kirundi = Just "Mbega waravuganye n'ikigigo ca bigenewe"
-            }
-
         ContactInitiatedQuestion ->
             { english = "Where you able to speak with the contact"
             , kinyarwanda = Nothing
@@ -4649,18 +4580,6 @@ translationSet trans =
             { english = "Please record everyone that the patient has come into contact within 2 days of their symptoms beginning"
             , kinyarwanda = Just "Andika umuntu wese wahuye n'umurwayi mu minshi 2 ishize ibimenyetso bigaragaye"
             , kirundi = Just "Andika abantu bose bahuye n'umugwayi mu minsi 2 ikurikira kuva ibimenyetso bitanguye"
-            }
-
-        ContactWithCOVID19SymptomsHelper ->
-            { english = "Symptoms include:!!!! fever, dry cough, and shortness of breath"
-            , kinyarwanda = Just "Ibimenyetso birimo: umuriro, inkorora y'akayi no guhumeka nabi"
-            , kirundi = Just "Ibimenyetso harimwo: ubushuhe, inkorora yumye, hamwe n'ingabanuka ry'impwemu canke ukubura impwemu"
-            }
-
-        ContactWithCOVID19SymptomsQuestion ->
-            { english = "Have you had contacts with others who exhibit symptoms or have been exposed to COVID-19"
-            , kinyarwanda = Just "Waba warigeze uhura n'abantu bagaragaje ibimenyetso bya covid-19 cyangwa n'abari bafite ibyago byo kuyandura"
-            , kirundi = Just "Waba warigeze guhura n'abandi bafise ibimenyetso canke bahuye n'abafise COVID-19"
             }
 
         Continued ->
@@ -4702,18 +4621,6 @@ translationSet trans =
             { english = "Has patient or patient’s mother experienced any of the following"
             , kinyarwanda = Just "Umurwayi cyangwa umubyeyi we bagaragaje ibimenyetso bikurikira"
             , kirundi = Just "Mbega umurwayi canke nyina w'umurwayi arigera yumva canke abona ibi bikurikira"
-            }
-
-        ConvulsionsAndUnconsciousPreviousDelivery ->
-            { english = "Experienced convulsions and resulted in becoming unconscious after delivery"
-            , kinyarwanda = Just "Ubushize yaragagaye bimuviramo kutumva akimara kubyara"
-            , kirundi = Just "Umurwayi/umuvyeyi yagize ibizunguzungu hama haziramwo uguta ubwenge mu gihe yarahejeje kuvyara"
-            }
-
-        ConvulsionsPreviousDelivery ->
-            { english = "Experienced convulsions in previous delivery"
-            , kinyarwanda = Just "Ubushize yaragagaye abyara"
-            , kirundi = Just "Yarumvise ibizunguzungu igihe aheruka kwibaruka"
             }
 
         CSection ->
@@ -6189,20 +6096,6 @@ translationSet trans =
             , kirundi = Nothing
             }
 
-        ExposureTask task ->
-            case task of
-                ExposureTravel ->
-                    { english = "Travel History"
-                    , kinyarwanda = Just "Amakuru y'ingendo wakoze"
-                    , kirundi = Just "Akahise k'ingendo"
-                    }
-
-                ExposureExposure ->
-                    { english = "Contact Exposure"
-                    , kinyarwanda = Just "Abantu mwahuye"
-                    , kirundi = Just "Ukwerekana kumenyana"
-                    }
-
         Extremities ->
             { english = "Extremities"
             , kinyarwanda = Just "Ku mpera z'ibice by'umubiri (ibiganza,ibirenge)"
@@ -6963,18 +6856,6 @@ translationSet trans =
                 HCRecommendationNotApplicable ->
                     translationSet NotApplicable
 
-        HCResponseQuestion ->
-            { english = "What was the Health Center's response"
-            , kinyarwanda = Just "Ni ikihe gisubizo cyavuye ku kigo nderabuzima"
-            , kirundi = Just "Ni iyihe nyishu ivuriro ryatanze"
-            }
-
-        HCResponsePeriodQuestion ->
-            { english = "How long did it take the Health Center to respond"
-            , kinyarwanda = Just "Byatwaye igihe kingana gute ngo ikigo nderabuzima gisubize"
-            , kirundi = Just "Mbega Ivuriro ryafashe umanye ungana gute ngo bishure"
-            }
-
         HeadacheLabel ->
             { english = "Headache"
             , kinyarwanda = Just "Kubabara umutwe"
@@ -7027,12 +6908,6 @@ translationSet trans =
             { english = "Health education provided"
             , kinyarwanda = Just "Hatanzwe inyigisho ku buzima"
             , kirundi = Just "Inyigisho z'amagara zitanzwe"
-            }
-
-        HealthEducationProvidedQuestion ->
-            { english = "Have you provided health education (or anticipatory guidance)"
-            , kinyarwanda = Just "Watanze ikiganiro ku buzima (Cyangwa ubujyanama bw'ibanze)"
-            , kirundi = Just "Mbega waratanze inyigisho kuvyerekeye amagara (canke gutanga intumbero hakiri kare)"
             }
 
         HealthInsuranceQuestion ->
@@ -10113,7 +9988,7 @@ translationSet trans =
 
         LevelOfEducationLabel ->
             { english = "Level of Education"
-            , kinyarwanda = Just <| "Amashuri wize"
+            , kinyarwanda = Just "Amashuri wize"
             , kirundi = Just "Urugero rw'amashule yize"
             }
 
@@ -10879,10 +10754,7 @@ translationSet trans =
         MedicalDiagnosisAlert diagnosis ->
             case diagnosis of
                 DiagnosisUterineMyoma ->
-                    { english = "Uterine Myoma"
-                    , kinyarwanda = Just "Ibibyimba byo mu mura/Nyababyeyi"
-                    , kirundi = Just "Ibivyimba vyo mu gitereko"
-                    }
+                    translationSet UterineMyoma
 
                 Backend.PrenatalActivity.Model.DiagnosisDiabetes ->
                     translationSet Diabetes
@@ -11036,12 +10908,6 @@ translationSet trans =
             { english = "Did you experience adverse events of the medication"
             , kinyarwanda = Just "Waba hari ibintu wabonye bidasanzwe(bitewe n'imiti wafashe)"
             , kirundi = Just "Mbega warumvise inkurikizi zitari nziza zivuye ku miti wafashe"
-            }
-
-        MedicationDistributionHelperAnemia ->
-            { english = "Patient shows signs of Mild - Moderate Anemia"
-            , kinyarwanda = Just "Umurwayi afite amaraso make byoroheje"
-            , kirundi = Just "Umurwayi yerekana ibimenyetso vy'ibura ry'amaraso ryorohejeè - hagati"
             }
 
         MedicationDistributionHelperDiscordantPartnership ->
@@ -11410,12 +11276,6 @@ translationSet trans =
             { english = "Did you take the medication as prescribed"
             , kinyarwanda = Just "Wafashe imiti neza uko wayandikiwe na muganga"
             , kirundi = Just "Mbega wafashe imiti uko bitegekanijwe m'urwandiko"
-            }
-
-        MentalHealthHistory ->
-            { english = "History of Mental Health Problems"
-            , kinyarwanda = Just "Niba yaragize uburwayi bwo mumutwe"
-            , kirundi = Just "Akahise k'ingorane y'ingwara yo mu mutwe"
             }
 
         MentalHealthIssues ->
@@ -13307,12 +13167,6 @@ translationSet trans =
             , kirundi = Just "Igitigiri c'abana bari munsi y'imyaka 5"
             }
 
-        NumberOfCSections ->
-            { english = "Number of C-Sections"
-            , kinyarwanda = Just "Umubare w'inshuro yabazwe"
-            , kirundi = Just "Igitigiri c'abakozwe mu kwibaruka"
-            }
-
         NumberOfLiveChildren ->
             { english = "Number of Live Children"
             , kinyarwanda = Just "Umubare w'abana bariho"
@@ -14164,19 +14018,6 @@ translationSet trans =
             , kirundi = Just "Amakuru y'umugwayi/umuvyeyi"
             }
 
-        PatientIsolatedQuestion isChw ->
-            if isChw then
-                { english = "Have you isolated the patient"
-                , kinyarwanda = Just "Washyize umurwayi mu kato"
-                , kirundi = Just "Wigeze ushira m'ubwiherero umurwayi"
-                }
-
-            else
-                { english = "Is the patient able to self-isolate at home"
-                , kinyarwanda = Just "Umurwayi ashobora kwishyira mu kato ka wenyine mu rugo"
-                , kirundi = Just "Mbega umugwayi arashoboye kwiyugaranira ahantu hawenyene muhira"
-                }
-
         PatientNotYetSeenAtHCLabel ->
             { english = " has not yet been seen at the health center for this pregnancy"
             , kinyarwanda = Just " ntiyigeze asuzumwa ku kigo nderabuzima kuri iyi nda atwite"
@@ -14425,12 +14266,6 @@ translationSet trans =
             { english = "Enter weight here…"
             , kinyarwanda = Just "Andika ibiro hano…"
             , kirundi = Just "Andika ibiro ngaha..."
-            }
-
-        PlaceholderSearchContactName ->
-            { english = "Search contact name here"
-            , kinyarwanda = Just "Shakisha izina ry'uwo bahuye"
-            , kirundi = Just "Rondera izina ry'umuntu aha"
             }
 
         PlacentaPrevia ->
@@ -18229,35 +18064,6 @@ translationSet trans =
                 _ ->
                     translationSet EmptyString
 
-        ReasonForNotIsolating reason ->
-            case reason of
-                NoSpace ->
-                    { english = "No space available at home or clinic"
-                    , kinyarwanda = Just "Nta mwanya uboneka mu rugo cyangwa mu ivuriro"
-                    , kirundi = Just "Nta kibanza na kimwe kihari haba muhira canke kw'ivuriro/ku bitaro"
-                    }
-
-                TooIll ->
-                    { english = "Too ill to leave alone"
-                    , kinyarwanda = Just "Umurwayi ararembye ntagomba gusigara wenyine"
-                    , kirundi = Just "Ararwaye cane kuburyo atogenda wenyene"
-                    }
-
-                CanNotSeparateFromFamily ->
-                    { english = "Unable to separate from family"
-                    , kinyarwanda = Just "Ntibishoboka kumutandukanya n'umuryango"
-                    , kirundi = Just "Ntibishoboka kwitandukanya n'umuryango"
-                    }
-
-                OtherReason ->
-                    { english = "Other"
-                    , kinyarwanda = Just "Ikindi"
-                    , kirundi = Just "Ibindi"
-                    }
-
-                IsolationReasonNotApplicable ->
-                    translationSet NotApplicable
-
         ReasonForNotProvidingHealthEducation reason ->
             case reason of
                 PatientNeedsEmergencyReferral ->
@@ -18379,88 +18185,6 @@ translationSet trans =
                     translationSet No
 
                 OptionNotApplicable ->
-                    translationSet NotApplicable
-
-        Recommendation114 recommendation ->
-            case recommendation of
-                SendToHealthCenter ->
-                    { english = "Send Patient to the nearest health center"
-                    , kinyarwanda = Just "Ohereza umurwayi ku kigo nderabuzima kikwegereye"
-                    , kirundi = Just "Rungika umugwayi kw'ivuriro riri hagufi cane"
-                    }
-
-                SendToRRTCenter ->
-                    { english = "Send patient to the Rapid Response Team center"
-                    , kinyarwanda = Just "Ohereza umurwayi ku itsinda rishinzwe gutanga ubuvuzi bwihuse"
-                    , kirundi = Just "Rungika umugwayi mu kigo c'inyishu yihuta"
-                    }
-
-                SendToHospital ->
-                    { english = "Send patient to the nearest hospital"
-                    , kinyarwanda = Just "Ohereza umurwayi ku bitaro bikwegereye"
-                    , kirundi = Just "Rungika umugwayi ku bitaro biri hagufu cane"
-                    }
-
-                OtherRecommendation114 ->
-                    { english = "Other"
-                    , kinyarwanda = Just "Ibindi"
-                    , kirundi = Just "Ibindi"
-                    }
-
-                NoneNoAnswer ->
-                    { english = "No answer"
-                    , kinyarwanda = Just "Nta Gisubizo cyabonetse"
-                    , kirundi = Just "Nta nyishu"
-                    }
-
-                NoneBusySignal ->
-                    { english = "Busy Signal"
-                    , kinyarwanda = Just "Umurongo bawuvugiragaho"
-                    , kirundi = Just "Ikimenyetso cafatiriwe"
-                    }
-
-                NoneOtherRecommendation114 ->
-                    { english = "Other"
-                    , kinyarwanda = Just "Ibindi"
-                    , kirundi = Just "Ibindi"
-                    }
-
-        RecommendationSite recommendation ->
-            case recommendation of
-                TeamComeToVillage ->
-                    { english = "Team will come to village"
-                    , kinyarwanda = Just "Itsinda rizaza mu mudugudu"
-                    , kirundi = Just "Umurwi uzoza ku musozi"
-                    }
-
-                SendToSiteWithForm ->
-                    { english = "Advised to send patient to site with referral form"
-                    , kinyarwanda = Just "Nagiriwe inama yo kohereza umurwayi ku rwego rubishinzwe yitwaje impapuro zimwohereza"
-                    , kirundi = Just "Guhanura kungika umurwayi ku kigo afise urupapuro gw'irungikwa"
-                    }
-
-                OtherRecommendationSite ->
-                    { english = "Other"
-                    , kinyarwanda = Just "Ibindi"
-                    , kirundi = Just "Ibindi"
-                    }
-
-                NoneSentWithForm ->
-                    { english = "No response. Sent patient with referral form."
-                    , kinyarwanda = Just "Nta gisubizo. Nohereje umurwayi yitwaje impapuro zimwohereza."
-                    , kirundi = Just " Nta nyishu. Rungika umugwayi wamuhaye n'urupapuro/Ifishi rumurungika ahandi"
-                    }
-
-                NonePatientRefused ->
-                    translationSet PatientRefused
-
-                NoneOtherRecommendationSite ->
-                    { english = "Other"
-                    , kinyarwanda = Just "Ibindi"
-                    , kirundi = Just "Ibindi"
-                    }
-
-                RecommendationSiteNotApplicable ->
                     translationSet NotApplicable
 
         Recommended ->
@@ -20507,12 +20231,6 @@ translationSet trans =
             , kirundi = Nothing
             }
 
-        ResilienceMessageStressManagement12Paragraph2 ->
-            { english = "Remember: Be kind to angry people. They need it most!"
-            , kinyarwanda = Just ""
-            , kirundi = Nothing
-            }
-
         ResilienceMessageStressManagement12Bullet1 ->
             { english = "Listen. Sometimes they just need to be listened to."
             , kinyarwanda = Just "Tega amatwi. Rimwe na rimwe baba bakeneye kumvwa."
@@ -21731,12 +21449,6 @@ translationSet trans =
             , kirundi = Nothing
             }
 
-        ResilienceMessageEndOfFourthMonthBullet5 ->
-            { english = "Connect with your friends and family regularly."
-            , kinyarwanda = Just "Sabana n'inshuti n'umuryango ku buryo buhoraho."
-            , kirundi = Nothing
-            }
-
         ResilienceMessageEndOfFifthMonthTitle ->
             { english = "Congratulations on completing month 5 of your resilience journey."
             , kinyarwanda = Just "Iherezo ry'ukwezi kwa Gatanu"
@@ -21794,12 +21506,6 @@ translationSet trans =
         ResilienceMessageEndOfSixthMonthParagraph2 ->
             { english = "This has been a month of deep thinking:"
             , kinyarwanda = Just "Uku kwabaye ukwezi ko gutekereza cyane:"
-            , kirundi = Nothing
-            }
-
-        ResilienceMessageEndOfSixthMonthParagraph3 ->
-            { english = "Write tips for yourself in your notebook on what worked well and what you will continue to do after the course finishes."
-            , kinyarwanda = Just "Andika ibyemezo/ingamba mu ikaye yawe ku byaba byaragenze neza nibyo uzakomeza gukora nyuma iri somo rirangiye."
             , kirundi = Nothing
             }
 
@@ -22344,35 +22050,6 @@ translationSet trans =
             , kirundi = Just "Igipimo co guhema"
             }
 
-        ResponsePeriod period ->
-            case period of
-                LessThan30Min ->
-                    { english = "Less than 30 min"
-                    , kinyarwanda = Just "Munsi y'iminota mirongo itatu"
-                    , kirundi = Just "Munsi y'iminota 30"
-                    }
-
-                Between30min1Hour ->
-                    { english = "30 min - 1 hour"
-                    , kinyarwanda = Just "Hagati y’iminota mirongo itatu n’isaha"
-                    , kirundi = Just "Iminota mirongo itatu (30) - Isaha imwe"
-                    }
-
-                Between1Hour2Hour ->
-                    { english = "1 hour - 2 hours"
-                    , kinyarwanda = Just "Hagati y'isaha n'amasaha abiri"
-                    , kirundi = Just "Isaha imwe (1) - amasaha abiri (2)"
-                    }
-
-                Between2Hour1Day ->
-                    { english = "2 hours - 1 day"
-                    , kinyarwanda = Just "Hagati y'amasaha abiri n'umunsi"
-                    , kirundi = Just "Amasaha abiri (2) - Umunsi umwe (1)"
-                    }
-
-                ResponsePeriodNotApplicable ->
-                    translationSet NotApplicable
-
         Result ->
             { english = "Result"
             , kinyarwanda = Just "Igisubizo"
@@ -22480,12 +22157,6 @@ translationSet trans =
             { english = "Review & Accept"
             , kinyarwanda = Nothing
             , kirundi = Nothing
-            }
-
-        ReviewCaseWith144Respondent ->
-            { english = "Review case with 114 Respondent"
-            , kinyarwanda = Just "Ongera ukore isuzuma ufatanije n’ukwitabye kuri 114"
-            , kirundi = Just "Subiramwo ikibazo hamwe n'uwishuye kuri 114"
             }
 
         Reviewed ->
@@ -23022,12 +22693,6 @@ translationSet trans =
             , kirundi = Just "Umukono"
             }
 
-        SignOnDoorPostedQuestion ->
-            { english = "Have you posted signs on the door indicating that the space is an isolation area"
-            , kinyarwanda = Just "Waba washyize ibimenyetso ku rugi byerekana ko iki cyumba ari ikijyamo abantu bari mu kato"
-            , kirundi = Just "Mbega warashize ku myango ibimenyetso vyerekana ko ikibaza ari ic'ubwiherero/ukuba wenyene"
-            }
-
         SkipNCDADialogConfirm ->
             { english = "Yes, proceed"
             , kinyarwanda = Nothing
@@ -23341,18 +23006,6 @@ translationSet trans =
             { english = "Please isolate immediately from family and contact health center"
             , kinyarwanda = Just "Mutandukanye n'umuryango we byihuse uhite umenyesha Ikigo nderabuzima"
             , kirundi = Nothing
-            }
-
-        SuspectedCovid19CaseIsolate ->
-            { english = "Isolate immediately from family"
-            , kinyarwanda = Just "Mutandukanye ako kanya n'umuryango we umushyire mu kato"
-            , kirundi = Just "Itandukanye ubwo nyene n'umuryango wawe uje mu kibanza cawe wenyene"
-            }
-
-        SuspectedCovid19CaseContactHC ->
-            { english = "Contact health center immediately"
-            , kinyarwanda = Just "Menyesha ikigo nderabuzima ako kanya"
-            , kirundi = Just "Ukuvugana n'ivuriro vuba bwango"
             }
 
         SuspectedCovid19CasePerformRapidTest ->
@@ -23871,12 +23524,6 @@ translationSet trans =
             { english = "Have you planned for transportation to and from the health center to give birth"
             , kinyarwanda = Just "Waba warateganije uburyo uzagera ku kigo nderabuzima ugiye kubyara ndetse n'uburyo uzavayo nyuma yo kubyara"
             , kirundi = Just "Wigeze utegura ingene wogenda no kuva kw'ivuriro uhejeje kuvyara/kwibaruka"
-            }
-
-        TraveledToCOVID19CountryQuestion ->
-            { english = "Have you traveled to any country or district known to have COVID-19 in the past 14 days"
-            , kinyarwanda = Just "Waba waragiye mu gihugu cyangwa mu karere mu bizwi ko hagaragayemo ubwandu bwa Covid 19 mu minsi 14 ishize"
-            , kirundi = Just "Mbega waratemberereye mu gihugu canke mu ntara y'Uburundi harimwo COVID-19 mu kiringo c'iminsi 14 iheze"
             }
 
         TravelHistory ->
@@ -25661,12 +25308,6 @@ translationSet trans =
             , kirundi = Just "Ubuhe bwoko"
             }
 
-        WhatWasTheirResponse ->
-            { english = "What was their response"
-            , kinyarwanda = Just "Ni iki bagusubije"
-            , kirundi = Just "Batanze inyishu iyihe"
-            }
-
         WhoCaresForTheChildDuringTheDay ->
             { english = "Who cares for the child during the day"
             , kinyarwanda = Just "Ni inde wita ku mwana ku manywa"
@@ -27355,7 +26996,7 @@ translateValidationError id =
         DigitsOnly ->
             { english = "should contain only digit characters"
             , kinyarwanda = Nothing
-            , kirundi = Just <| "Itegerezwa kuba irimwo ibiharuro gusa"
+            , kirundi = Just "Itegerezwa kuba irimwo ibiharuro gusa"
             }
 
         InvalidBirthDate ->

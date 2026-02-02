@@ -1,11 +1,11 @@
-module Pages.WellChild.Encounter.Model exposing (..)
+module Pages.WellChild.Encounter.Model exposing (AssembledData, DialogType(..), ECDPopupType(..), Model, Msg(..), Tab(..), WarningPopupType(..), emptyModel)
 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (WellChildMeasurements)
 import Backend.Person.Model exposing (Person)
 import Backend.WellChildActivity.Model exposing (WellChildActivity)
-import Backend.WellChildEncounter.Model exposing (..)
+import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (VaccinationProgressDict)
@@ -55,7 +55,6 @@ type ECDPopupType
 type Tab
     = Completed
     | Pending
-    | Reports
 
 
 type alias AssembledData =

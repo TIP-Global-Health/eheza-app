@@ -1,4 +1,4 @@
-module Backend.ChildScoreboardActivity.Model exposing (..)
+module Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity(..))
 
 
 type ChildScoreboardActivity

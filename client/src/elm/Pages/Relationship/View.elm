@@ -17,7 +17,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isNothing)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Relationship.Model exposing (..)
+import Pages.Relationship.Model exposing (Model, Msg(..))
 import Pages.Utils exposing (emptySelectOption)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -307,7 +307,7 @@ viewFetchedContent language currentDate selectedHealthCenter maybeVillageGroupId
                     [ class "six wide column" ]
                     [ button
                         [ class "ui button secondary fluid"
-                        , onClick <| Reset initiator
+                        , onClick Reset
                         ]
                         [ text <| translate language Translate.Cancel ]
                     ]
@@ -349,19 +349,19 @@ viewFetchedContent language currentDate selectedHealthCenter maybeVillageGroupId
     div [ class "registration-page view" ]
         [ div
             [ class "ui unstackable items participants-list" ]
-            [ viewParticipant language currentDate id1 data.person1 ]
+            [ viewParticipant language currentDate data.person1 ]
         , relationshipSelector
         , div
             [ class "ui unstackable items participants-list" ]
-            [ viewParticipant language currentDate id2 data.person2 ]
+            [ viewParticipant language currentDate data.person2 ]
         , viewGroupSection
         , requestStatus
         , buttons
         ]
 
 
-viewParticipant : Language -> NominalDate -> PersonId -> Person -> Html Msg
-viewParticipant language currentDate id person =
+viewParticipant : Language -> NominalDate -> Person -> Html Msg
+viewParticipant language currentDate person =
     let
         typeForThumbnail =
             defaultIconForPerson currentDate person

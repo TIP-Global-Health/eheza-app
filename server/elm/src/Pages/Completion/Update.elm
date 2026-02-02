@@ -1,30 +1,16 @@
 module Pages.Completion.Update exposing (update)
 
 import App.Model exposing (PagesReturn)
-import App.Ports
-import AssocList as Dict exposing (Dict)
 import Backend.Completion.Utils exposing (takenByFromString)
-import Backend.Model exposing (ModelBackend)
-import Date exposing (Interval(..), Unit(..))
 import Error.Utils exposing (noError)
-import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra
-import Pages.Completion.Model exposing (..)
-import Pages.Completion.Utils exposing (..)
-import RemoteData exposing (RemoteData(..))
-import Task exposing (Task)
+import Pages.Completion.Model exposing (Model, Msg(..))
+import Pages.Completion.Utils exposing (reportTypeFromString)
 
 
-update : NominalDate -> ModelBackend -> Msg -> Model -> PagesReturn Model Msg
-update currentDate modelBackend msg model =
+update : Msg -> Model -> PagesReturn Model Msg
+update msg model =
     case msg of
-        NoOp ->
-            PagesReturn
-                model
-                Cmd.none
-                noError
-                []
-
         SetReportType value ->
             PagesReturn
                 { model

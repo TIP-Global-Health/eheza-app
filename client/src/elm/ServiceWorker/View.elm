@@ -8,7 +8,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import RemoteData exposing (RemoteData(..))
-import ServiceWorker.Model exposing (..)
+import ServiceWorker.Model exposing (Model, Msg(..), NewWorker(..), OutgoingMsg(..))
 import Time
 import Translate exposing (Language, translate)
 

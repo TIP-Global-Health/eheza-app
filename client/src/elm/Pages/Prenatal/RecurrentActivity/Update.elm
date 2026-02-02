@@ -4,12 +4,11 @@ import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (IllnessSymptom(..), PhaseRecorded(..), ViralLoadStatus(..))
-import Backend.Measurement.Utils exposing (..)
+import Backend.Measurement.Utils exposing (bilirubinValueFromString, bloodGroupFromString, bloodSmearResultFromString, getMeasurementValueFunc, glucoseValueFromString, haemoglobinValueFromString, ketoneValueFromString, leukocytesValueFromString, nitriteValueFromString, nonReferralReasonToSign, phValueFromString, proteinValueFromString, rhesusFromString, testResultFromString, urobilinogenValueFromString)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalActivity.Model
 import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator(..))
 import EverySet
-import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Measurement.Utils
     exposing
@@ -27,16 +26,15 @@ import Measurement.Utils
         , toVitalsValueWithDefault
         )
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Prenatal.RecurrentActivity.Model exposing (..)
-import Pages.Prenatal.RecurrentActivity.Utils exposing (..)
-import Pages.Prenatal.Utils exposing (..)
+import Pages.Prenatal.RecurrentActivity.Model exposing (LabResultsData, Model, Msg(..))
+import Pages.Prenatal.RecurrentActivity.Utils exposing (toHealthEducationValueWithDefault)
+import Pages.Prenatal.Utils exposing (medicationDistributionFormWithDefaultRecurrentPhase, referralFormWithDefault, toMalariaPreventionValueWithDefault, toMedicationDistributionValueWithDefaultRecurrentPhase, toPrenatalReferralValueWithDefault)
 import Pages.Utils exposing (nonAdministrationReasonToSign, setMultiSelectInputValue)
 import RemoteData
-import Translate exposing (Language)
 
 
-update : Language -> NominalDate -> PrenatalEncounterId -> Bool -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update language currentDate id isLabTech db msg model =
+update : PrenatalEncounterId -> Bool -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update id isLabTech db msg model =
     let
         medicationDistributionForm =
             Dict.get id db.prenatalMeasurements
@@ -62,7 +60,7 @@ update language currentDate id isLabTech db msg model =
             Maybe.map (\task -> [ SetActiveLabResultsTask task ]) nextTask
                 |> Maybe.withDefault [ defaultAction ]
 
-        generateNextStepsMsgs personId nextTask =
+        generateNextStepsMsgs nextTask =
             Maybe.map (\task -> [ SetActiveNextStepsTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage id ]
     in
@@ -238,7 +236,7 @@ update language currentDate id isLabTech db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
+                |> sequenceExtra (update id isLabTech db) extraMsgs
 
         SetHepatitisBTestFormBoolInput formUpdateFunc value ->
             let
@@ -316,7 +314,7 @@ update language currentDate id isLabTech db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
+                |> sequenceExtra (update id isLabTech db) extraMsgs
 
         SetBloodGpRsTestFormBoolInput formUpdateFunc value ->
             let
@@ -411,7 +409,7 @@ update language currentDate id isLabTech db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
+                |> sequenceExtra (update id isLabTech db) extraMsgs
 
         SetUrineDipstickTestFormBoolInput formUpdateFunc value ->
             let
@@ -625,7 +623,7 @@ update language currentDate id isLabTech db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
+                |> sequenceExtra (update id isLabTech db) extraMsgs
 
         SetHemoglobinTestFormBoolInput formUpdateFunc value ->
             let
@@ -703,7 +701,7 @@ update language currentDate id isLabTech db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
+                |> sequenceExtra (update id isLabTech db) extraMsgs
 
         SetRandomBloodSugarTestFormBoolInput formUpdateFunc value ->
             let
@@ -781,7 +779,7 @@ update language currentDate id isLabTech db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
+                |> sequenceExtra (update id isLabTech db) extraMsgs
 
         SetHIVPCRTestFormBoolInput formUpdateFunc value ->
             let
@@ -883,7 +881,7 @@ update language currentDate id isLabTech db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
+                |> sequenceExtra (update id isLabTech db) extraMsgs
 
         SetHIVTestFormBoolInput formUpdateFunc value ->
             let
@@ -972,7 +970,7 @@ update language currentDate id isLabTech db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
+                |> sequenceExtra (update id isLabTech db) extraMsgs
 
         SetPartnerHIVTestFormBoolInput formUpdateFunc value ->
             let
@@ -1051,7 +1049,7 @@ update language currentDate id isLabTech db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
+                |> sequenceExtra (update id isLabTech db) extraMsgs
 
         SetMalariaTestFormBoolInput formUpdateFunc value ->
             let
@@ -1147,7 +1145,7 @@ update language currentDate id isLabTech db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
+                |> sequenceExtra (update id isLabTech db) extraMsgs
 
         SetActiveNextStepsTask task ->
             let
@@ -1224,7 +1222,7 @@ update language currentDate id isLabTech db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNextStepsMsgs personId nextTask
+                    generateNextStepsMsgs nextTask
 
                 appMsgs =
                     model.nextStepsData.referralForm
@@ -1241,7 +1239,7 @@ update language currentDate id isLabTech db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
+                |> sequenceExtra (update id isLabTech db) extraMsgs
 
         SetMedicationDistributionBoolInput formUpdateFunc value ->
             let
@@ -1322,7 +1320,7 @@ update language currentDate id isLabTech db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNextStepsMsgs personId nextTask
+                    generateNextStepsMsgs nextTask
 
                 appMsgs =
                     model.nextStepsData.medicationDistributionForm
@@ -1339,7 +1337,7 @@ update language currentDate id isLabTech db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
+                |> sequenceExtra (update id isLabTech db) extraMsgs
 
         SetHealthEducationBoolInput formUpdateFunc value ->
             let
@@ -1364,7 +1362,7 @@ update language currentDate id isLabTech db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNextStepsMsgs personId nextTask
+                    generateNextStepsMsgs nextTask
 
                 appMsgs =
                     model.nextStepsData.healthEducationForm
@@ -1381,7 +1379,7 @@ update language currentDate id isLabTech db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
+                |> sequenceExtra (update id isLabTech db) extraMsgs
 
         SetMalariaPreventionBoolInput formUpdateFunc value ->
             let
@@ -1428,16 +1426,14 @@ update language currentDate id isLabTech db msg model =
 
 
 updateLabsHistory :
-    Language
-    -> NominalDate
-    -> PrenatalEncounterId
+    PrenatalEncounterId
     -> PrenatalEncounterId
     -> Bool
     -> ModelIndexedDb
     -> Msg
     -> LabResultsData
     -> ( LabResultsData, Cmd Msg, List App.Model.Msg )
-updateLabsHistory language currentDate originEncounterId labEncounterId isLabTech db msg data =
+updateLabsHistory originEncounterId labEncounterId isLabTech db msg data =
     let
         extraMsgs =
             [ SetActivePage <| UserPage <| PrenatalActivityPage originEncounterId Backend.PrenatalActivity.Model.Laboratory ]
@@ -1511,7 +1507,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId isLabTec
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (updateLabsHistory language currentDate originEncounterId labEncounterId isLabTech db) extraMsgs
+                |> sequenceExtra (updateLabsHistory originEncounterId labEncounterId isLabTech db) extraMsgs
 
         SetHepatitisBTestResult value ->
             let
@@ -1551,7 +1547,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId isLabTec
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (updateLabsHistory language currentDate originEncounterId labEncounterId isLabTech db) extraMsgs
+                |> sequenceExtra (updateLabsHistory originEncounterId labEncounterId isLabTech db) extraMsgs
 
         SetBloodGroup value ->
             let
@@ -1604,7 +1600,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId isLabTec
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (updateLabsHistory language currentDate originEncounterId labEncounterId isLabTech db) extraMsgs
+                |> sequenceExtra (updateLabsHistory originEncounterId labEncounterId isLabTech db) extraMsgs
 
         SetProtein value ->
             let
@@ -1745,7 +1741,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId isLabTec
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (updateLabsHistory language currentDate originEncounterId labEncounterId isLabTech db) extraMsgs
+                |> sequenceExtra (updateLabsHistory originEncounterId labEncounterId isLabTech db) extraMsgs
 
         SetHemoglobin value ->
             let
@@ -1782,7 +1778,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId isLabTec
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (updateLabsHistory language currentDate originEncounterId labEncounterId isLabTech db) extraMsgs
+                |> sequenceExtra (updateLabsHistory originEncounterId labEncounterId isLabTech db) extraMsgs
 
         SetRandomBloodSugar value ->
             let
@@ -1822,7 +1818,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId isLabTec
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (updateLabsHistory language currentDate originEncounterId labEncounterId isLabTech db) extraMsgs
+                |> sequenceExtra (updateLabsHistory originEncounterId labEncounterId isLabTech db) extraMsgs
 
         SetHIVViralLoadUndetectable undetectable ->
             let
@@ -1879,7 +1875,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId isLabTec
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (updateLabsHistory language currentDate originEncounterId labEncounterId isLabTech db) extraMsgs
+                |> sequenceExtra (updateLabsHistory originEncounterId labEncounterId isLabTech db) extraMsgs
 
         -- Other messages are not related to Labs History, and will not be sent.
         _ ->

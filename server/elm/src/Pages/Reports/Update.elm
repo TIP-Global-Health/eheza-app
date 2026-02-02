@@ -9,8 +9,8 @@ import Date exposing (Unit(..))
 import Error.Utils exposing (noError)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra
-import Pages.Reports.Model exposing (..)
-import Pages.Reports.Utils exposing (..)
+import Pages.Reports.Model exposing (Model, Msg(..), NutritionReportData, ReportType(..))
+import Pages.Reports.Utils exposing (countTotalNutritionEncounters, isWideScope, nutritionEncounterDataToNutritionMetrics, reportTypeFromString, sumNutritionMetrics)
 import RemoteData exposing (RemoteData(..))
 import Task exposing (Task)
 

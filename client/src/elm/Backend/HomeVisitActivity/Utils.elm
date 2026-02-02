@@ -1,10 +1,10 @@
-module Backend.HomeVisitActivity.Utils exposing (..)
+module Backend.HomeVisitActivity.Utils exposing (allActivities, decodeActivityFromString, encodeActivityAsString, getActivityIcon)
 
 {-| Various utilities that deal with "activities". An activity represents the
 need for a nurse to do something with respect to a person who is checked in.
 -}
 
-import Backend.HomeVisitActivity.Model exposing (..)
+import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 
 
 {-| Used for URL etc., not for display in the normal UI (since we'd use translate

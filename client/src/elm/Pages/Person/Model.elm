@@ -1,4 +1,4 @@
-module Pages.Person.Model exposing (..)
+module Pages.Person.Model exposing (Model, Msg(..), emptyCreateModel, emptyEditModel)
 
 import Backend.Entities exposing (PersonId)
 import Backend.Person.Form exposing (PersonForm)

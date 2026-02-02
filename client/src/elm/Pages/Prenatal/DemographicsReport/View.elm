@@ -9,7 +9,7 @@ import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears, getHealthCenterName)
 import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
-import GeoLocation.Utils exposing (..)
+import GeoLocation.Utils exposing (resolveGeoSructureLabelLevel1, resolveGeoSructureLabelLevel2, resolveGeoSructureLabelLevel3, resolveGeoSructureLabelLevel4, resolveGeoSructureLabelLevel5)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
@@ -44,7 +44,7 @@ view language currentDate site personId initiator db =
         content =
             viewWebData language (viewContent language currentDate site db personId) identity person
     in
-    div [ class "page-report demographics" ] <|
+    div [ class "page-report demographics" ]
         [ header
         , content
         ]
@@ -95,9 +95,9 @@ viewContent : Language -> NominalDate -> Site -> ModelIndexedDb -> PersonId -> P
 viewContent language currentDate site db personId person =
     div [ class "ui unstackable items" ]
         [ viewPatientInformationPane language currentDate person
-        , viewFamilyInformationPane language currentDate site db personId person
-        , viewAddressInformationPane language currentDate site person
-        , viewContactInformationPane language currentDate db person
+        , viewFamilyInformationPane language site db personId person
+        , viewAddressInformationPane language site person
+        , viewContactInformationPane language db person
         ]
 
 
@@ -153,8 +153,8 @@ viewPatientInformationPane language currentDate person =
         ]
 
 
-viewFamilyInformationPane : Language -> NominalDate -> Site -> ModelIndexedDb -> PersonId -> Person -> Html Msg
-viewFamilyInformationPane language currentDate site db personId person =
+viewFamilyInformationPane : Language -> Site -> ModelIndexedDb -> PersonId -> Person -> Html Msg
+viewFamilyInformationPane language site db personId person =
     let
         ubudeheItem =
             if site == SiteRwanda then
@@ -206,7 +206,7 @@ viewFamilyInformationPane language currentDate site db personId person =
     in
     div [ class "family-information" ]
         [ viewItemHeading language Translate.FamilyInformation "blue"
-        , div [ class "pane-content" ] <|
+        , div [ class "pane-content" ]
             [ ubudeheItem
             , viewLineItem language Translate.NumberOfChildrenUnder5 numberOfChildren
             , childrenView
@@ -214,13 +214,13 @@ viewFamilyInformationPane language currentDate site db personId person =
         ]
 
 
-viewAddressInformationPane : Language -> NominalDate -> Site -> Person -> Html Msg
-viewAddressInformationPane language currentDate site person =
+viewAddressInformationPane : Language -> Site -> Person -> Html Msg
+viewAddressInformationPane language site person =
     div [ class "address-information" ]
         [ viewItemHeading language Translate.AddressInformation "blue"
         , div [ class "pane-content" ]
             [ viewLineItem language
-                (resolveGeoSructureLabelLevel1 site)
+                resolveGeoSructureLabelLevel1
                 (person.province |> Maybe.withDefault "")
             , viewLineItem language
                 (resolveGeoSructureLabelLevel2 site)
@@ -238,8 +238,8 @@ viewAddressInformationPane language currentDate site person =
         ]
 
 
-viewContactInformationPane : Language -> NominalDate -> ModelIndexedDb -> Person -> Html Msg
-viewContactInformationPane language currentDate db person =
+viewContactInformationPane : Language -> ModelIndexedDb -> Person -> Html Msg
+viewContactInformationPane language db person =
     let
         healthCenterName =
             getHealthCenterName person.healthCenterId db
@@ -250,10 +250,10 @@ viewContactInformationPane language currentDate db person =
         , div [ class "pane-content" ]
             [ viewLineItem language Translate.TelephoneNumber (Maybe.withDefault "" person.telephoneNumber)
             , viewLineItem language Translate.HealthCenter healthCenterName
-            , div [ class "heading" ] [ text <| (translate language <| Translate.SpousePartner) ++ ":" ]
+            , div [ class "heading" ] [ text <| translate language Translate.SpousePartner ++ ":" ]
             , viewLineItem language Translate.Name (Maybe.withDefault "" person.spouseName)
             , viewLineItem language Translate.TelephoneNumber (Maybe.withDefault "" person.spousePhoneNumber)
-            , div [ class "heading" ] [ text <| (translate language <| Translate.NextOfKin) ++ ":" ]
+            , div [ class "heading" ] [ text <| translate language Translate.NextOfKin ++ ":" ]
             , viewLineItem language Translate.Name (Maybe.withDefault "" person.nextOfKinName)
             , viewLineItem language Translate.TelephoneNumber (Maybe.withDefault "" person.nextOfKinPhoneNumber)
             ]

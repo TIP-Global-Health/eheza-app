@@ -1,22 +1,21 @@
-module Backend.ResilienceMessage.Decoder exposing (decodeResilienceMessage, decodeResilienceMessages)
+module Backend.ResilienceMessage.Decoder exposing (decodeResilienceMessages)
 
 import AssocList as Dict exposing (Dict)
-import Backend.ResilienceMessage.Model exposing (..)
-import Backend.ResilienceMessage.Utils exposing (..)
+import Backend.ResilienceMessage.Model exposing (ResilienceCategory, ResilienceMessage, ResilienceMessageOrder)
+import Backend.ResilienceMessage.Utils exposing (generateResilienceMessageId, resilienceCategoryFromString, resilienceMessageOrderFromString)
 import Gizra.Json exposing (decodeInt)
 import Gizra.TimePosix exposing (decodeSecondsAsPosix)
-import Json.Decode exposing (..)
-import Json.Decode.Pipeline exposing (..)
+import Json.Decode exposing (Decoder, andThen, bool, fail, list, nullable, string, succeed)
+import Json.Decode.Pipeline exposing (optional, required)
 
 
 decodeResilienceMessages : Decoder (Dict String ResilienceMessage)
 decodeResilienceMessages =
     list decodeResilienceMessage
-        |> andThen
+        |> Json.Decode.map
             (\messages ->
                 List.map (\message -> ( generateResilienceMessageId message.category message.order, message )) messages
                     |> Dict.fromList
-                    |> succeed
             )
 
 

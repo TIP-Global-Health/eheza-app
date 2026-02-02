@@ -3,7 +3,7 @@ module Backend.Dashboard.Decoder exposing (decodeDashboardStatsRaw)
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Decoder exposing (decodeAcuteIllnessDiagnosis, decodeAcuteIllnessEncounterType)
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
-import Backend.Dashboard.Model exposing (..)
+import Backend.Dashboard.Model exposing (AcuteIllnessDataItem, AcuteIllnessEncounterDataItem, CaseManagement, CaseManagementData, CaseNutrition, ChildScoreboardDataItem, ChildScoreboardEncounterDataItem, ChildrenBeneficiariesStats, DashboardStatsRaw, EducationSessionData, FamilyPlanningStats, NCDDataItem, NCDEncounterDataItem, NutritionGroupDataItem, NutritionGroupEncounterDataItem, NutritionIndividualDataItem, NutritionIndividualEncounterDataItem, NutritionStatus(..), NutritionValue, PMTCTDataItem, ParticipantStats, PatientDetails, Periods, PersonIdentifier, PrenatalDataItem, PrenatalEncounterDataItem, ProgramType(..), SPVDataItem, SPVEncounterDataItem, TotalEncountersData)
 import Backend.EducationSession.Decoder exposing (decodeEducationTopic)
 import Backend.Entities exposing (VillageId)
 import Backend.IndividualEncounterParticipant.Decoder exposing (decodeDeliveryLocation, decodeIndividualEncounterParticipantOutcome)
@@ -47,8 +47,8 @@ import Dict as LegacyDict
 import EverySet
 import Gizra.Json exposing (decodeFloat, decodeInt)
 import Gizra.NominalDate exposing (decodeYYYYMMDD, diffMonths)
-import Json.Decode exposing (..)
-import Json.Decode.Pipeline exposing (..)
+import Json.Decode exposing (Decoder, andThen, bool, dict, float, list, map, nullable, oneOf, string, succeed)
+import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Pages.Report.Utils exposing (compareAcuteIllnessEncountersDesc)
 import Restful.Endpoint exposing (toEntityUuid)
 import Utils.Json exposing (decodeEverySet, decodeWithFallback)
@@ -127,32 +127,32 @@ decodeNutritionValueDict decoder =
 decodeZScoreNutritionValue : Decoder NutritionValue
 decodeZScoreNutritionValue =
     float
-        |> andThen
+        |> map
             (\value ->
                 if value <= -3 then
-                    succeed <| NutritionValue Severe (String.fromFloat value)
+                    NutritionValue Severe (String.fromFloat value)
 
                 else if value <= -2 then
-                    succeed <| NutritionValue Moderate (String.fromFloat value)
+                    NutritionValue Moderate (String.fromFloat value)
 
                 else
-                    succeed <| NutritionValue Good (String.fromFloat value)
+                    NutritionValue Good (String.fromFloat value)
             )
 
 
 decodeMuacNutritionValue : Decoder NutritionValue
 decodeMuacNutritionValue =
     decodeFloat
-        |> andThen
+        |> map
             (\value ->
                 if value <= 11.5 then
-                    succeed <| NutritionValue Severe (String.fromFloat value)
+                    NutritionValue Severe (String.fromFloat value)
 
                 else if value <= 12.5 then
-                    succeed <| NutritionValue Moderate (String.fromFloat value)
+                    NutritionValue Moderate (String.fromFloat value)
 
                 else
-                    succeed <| NutritionValue Good (String.fromFloat value)
+                    NutritionValue Good (String.fromFloat value)
             )
 
 
@@ -491,7 +491,7 @@ decodePatientsDetails : Decoder (Dict PersonIdentifier PatientDetails)
 decodePatientsDetails =
     oneOf
         [ dict decodePatientDetails
-            |> andThen
+            |> map
                 (LegacyDict.toList
                     >> List.filterMap
                         (\( k, v ) ->
@@ -499,7 +499,6 @@ decodePatientsDetails =
                                 |> Maybe.map (\key -> ( key, v ))
                         )
                     >> Dict.fromList
-                    >> succeed
                 )
         , succeed Dict.empty
         ]

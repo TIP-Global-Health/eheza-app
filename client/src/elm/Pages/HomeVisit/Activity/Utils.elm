@@ -1,38 +1,35 @@
-module Pages.HomeVisit.Activity.Utils exposing (..)
+module Pages.HomeVisit.Activity.Utils exposing (activityCompleted, expectActivity)
 
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
-import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model exposing (Person)
-import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
 import Pages.HomeVisit.Encounter.Model exposing (AssembledData)
 
 
-expectActivity : NominalDate -> Person -> AssembledData -> ModelIndexedDb -> HomeVisitActivity -> Bool
-expectActivity currentDate child data db activity =
+expectActivity : HomeVisitActivity -> Bool
+expectActivity _ =
     -- For now, we show all activities without any conditions.
     True
 
 
-activityCompleted : NominalDate -> Person -> AssembledData -> ModelIndexedDb -> HomeVisitActivity -> Bool
-activityCompleted currentDate child data db activity =
+activityCompleted : AssembledData -> HomeVisitActivity -> Bool
+activityCompleted data activity =
     let
         measurements =
             data.measurements
     in
     case activity of
         Feeding ->
-            (not <| expectActivity currentDate child data db Feeding)
+            (not <| expectActivity Feeding)
                 || isJust measurements.feeding
 
         Caring ->
-            (not <| expectActivity currentDate child data db Caring)
+            (not <| expectActivity Caring)
                 || isJust measurements.caring
 
         Hygiene ->
-            (not <| expectActivity currentDate child data db Hygiene)
+            (not <| expectActivity Hygiene)
                 || isJust measurements.hygiene
 
         FoodSecurity ->
-            (not <| expectActivity currentDate child data db FoodSecurity)
+            (not <| expectActivity FoodSecurity)
                 || isJust measurements.foodSecurity

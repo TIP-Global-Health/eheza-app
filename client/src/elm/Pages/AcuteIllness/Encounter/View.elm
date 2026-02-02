@@ -21,8 +21,8 @@ import Pages.AcuteIllness.Activity.Utils
         , respiratoryRateElevated
         , sendToHCOnSubsequentVisitByNutrition
         )
-import Pages.AcuteIllness.Encounter.Model exposing (..)
-import Pages.AcuteIllness.Encounter.Utils exposing (..)
+import Pages.AcuteIllness.Encounter.Model exposing (AssembledData, Model, Msg(..), Tab(..))
+import Pages.AcuteIllness.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewConfirmationDialog, viewEndEncounterButton, viewPersonDetails, viewReportLink)
 import SyncManager.Model exposing (SiteFeature)
@@ -37,11 +37,11 @@ view language currentDate features id isChw db model =
         assembled =
             generateAssembledData currentDate features id isChw db
     in
-    viewWebData language (viewHeaderAndContent language currentDate id isChw db model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate id isChw model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id isChw db model assembled =
+viewHeaderAndContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate id isChw model assembled =
     let
         header =
             viewHeader language assembled
@@ -68,28 +68,27 @@ viewHeaderAndContent language currentDate id isChw db model assembled =
         , viewModal <|
             warningPopup language
                 currentDate
-                isChw
                 model.warningPopupState
                 SetWarningPopupState
                 assembled
         ]
 
 
-warningPopup : Language -> NominalDate -> Bool -> Maybe AcuteIllnessDiagnosis -> (Maybe AcuteIllnessDiagnosis -> msg) -> AssembledData -> Maybe (Html msg)
-warningPopup language currentDate isChw state setStateMsg assembled =
+warningPopup : Language -> NominalDate -> Maybe AcuteIllnessDiagnosis -> (Maybe AcuteIllnessDiagnosis -> msg) -> AssembledData -> Maybe (Html msg)
+warningPopup language currentDate state setStateMsg assembled =
     state
         |> Maybe.map
             (\diagnosis ->
                 if assembled.initialEncounter then
-                    viewWarningPopupFirstEncounter language isChw setStateMsg diagnosis
+                    viewWarningPopupFirstEncounter language setStateMsg diagnosis
 
                 else
                     viewWarningPopupSubsequentEncounter language currentDate setStateMsg diagnosis assembled
             )
 
 
-viewWarningPopupFirstEncounter : Language -> Bool -> (Maybe AcuteIllnessDiagnosis -> msg) -> AcuteIllnessDiagnosis -> Html msg
-viewWarningPopupFirstEncounter language isChw setStateMsg diagnosis =
+viewWarningPopupFirstEncounter : Language -> (Maybe AcuteIllnessDiagnosis -> msg) -> AcuteIllnessDiagnosis -> Html msg
+viewWarningPopupFirstEncounter language setStateMsg diagnosis =
     let
         ( heading, content ) =
             case diagnosis of
@@ -156,7 +155,7 @@ viewWarningPopupSubsequentEncounter language currentDate setStateMsg diagnosis a
                 emptyNode
     in
     div [ classList [ ( "ui active modal diagnosis-popup", True ), ( "blue", isImproving ) ] ]
-        [ div [ class "content" ] <|
+        [ div [ class "content" ]
             [ div [ class "popup-heading-wrapper" ]
                 [ div [ class "popup-heading" ] [ text <| translate language Translate.Assessment ++ ":" ] ]
             , div [ class "popup-title" ]
@@ -320,17 +319,6 @@ viewMainPageContent language currentDate id isChw assembled model =
                 (getActivityIcon activity)
                 (SetActivePage <| UserPage <| AcuteIllnessActivityPage id activity)
 
-        ( selectedActivities, emptySectionMessage ) =
-            case model.selectedTab of
-                Pending ->
-                    ( pendingActivities, translate language Translate.NoActivitiesPending )
-
-                Completed ->
-                    ( completedActivities, translate language Translate.NoActivitiesCompleted )
-
-                Reports ->
-                    ( [], "" )
-
         innerContent =
             if model.selectedTab == Reports then
                 div [ class "reports-wrapper" ]
@@ -343,6 +331,18 @@ viewMainPageContent language currentDate id isChw assembled model =
                     ]
 
             else
+                let
+                    ( selectedActivities, emptySectionMessage ) =
+                        case model.selectedTab of
+                            Pending ->
+                                ( pendingActivities, translate language Translate.NoActivitiesPending )
+
+                            Completed ->
+                                ( completedActivities, translate language Translate.NoActivitiesCompleted )
+
+                            Reports ->
+                                ( [], "" )
+                in
                 div [ class "full content" ]
                     [ div [ class "wrap-cards" ]
                         [ div [ class "ui four cards" ] <|

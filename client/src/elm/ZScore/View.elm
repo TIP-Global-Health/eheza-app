@@ -59,7 +59,7 @@ import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Translate exposing (ChartPhrase, Language, TranslationId(..), translate)
 import Utils.AllDict as AllDict
-import ZScore.Model exposing (..)
+import ZScore.Model exposing (Centimetres(..), ChartAgeRange(..), Days, Height, Kilograms(..), Length(..), Model, Months, ZScoreEntry)
 import ZScore.Utils exposing (valueForZScore)
 
 
@@ -1632,7 +1632,7 @@ yAxisLinesAndText config =
                         innerLines =
                             if lineText /= config.input.maxY then
                                 List.range 1 config.yAxis.innerLinesNumber
-                                    |> List.concatMap
+                                    |> List.map
                                         (\innerLine ->
                                             let
                                                 innerIndex =
@@ -1643,7 +1643,7 @@ yAxisLinesAndText config =
                                                         - (spaceBetweenInnerLines * innerIndex)
                                                         |> Round.round 4
                                             in
-                                            [ line [ class "st19", x1 "110.8", y1 innerLinePosition, x2 "715.4", y2 innerLinePosition ] [] ]
+                                            line [ class "st19", x1 "110.8", y1 innerLinePosition, x2 "715.4", y2 innerLinePosition ] []
                                         )
 
                             else

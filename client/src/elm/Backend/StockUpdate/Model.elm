@@ -1,4 +1,4 @@
-module Backend.StockUpdate.Model exposing (..)
+module Backend.StockUpdate.Model exposing (DataForMonth, Model, MonthYear, Msg(..), StockManagementData, emptyModel)
 
 import AssocList exposing (Dict)
 import Backend.Entities exposing (..)

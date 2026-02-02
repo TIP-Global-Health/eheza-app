@@ -1,6 +1,6 @@
 module App.View exposing (view)
 
-import App.Model exposing (..)
+import App.Model exposing (Model, Msg(..))
 import App.Types exposing (Page(..))
 import Error.View
 import Gizra.NominalDate exposing (fromLocalDateTime)
@@ -66,7 +66,6 @@ view model =
                 , Html.map MsgCompletionMenuPage <|
                     Pages.CompletionMenu.View.view
                         model.language
-                        model.themePath
                         model.backend
                         model.completionMenuPage
                 ]
@@ -78,7 +77,6 @@ view model =
                     Pages.Completion.View.view
                         model.language
                         (fromLocalDateTime model.currentTime)
-                        model.themePath
                         model.backend
                         model.completionPage
                 ]

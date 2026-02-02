@@ -21,7 +21,7 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Encounter.Utils exposing (generatePostCreateDestination)
-import Pages.Prenatal.Participant.Model exposing (..)
+import Pages.Prenatal.Participant.Model exposing (Model, Msg(..))
 import Pages.Prenatal.Participant.Utils exposing (isPregnancyActive)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate)
@@ -127,7 +127,7 @@ viewActions language currentDate selectedHealthCenter id isChw db model prenatal
             navigateToPregnancyOutcomeAction InitiatorParticipantPage
 
         navigateToPregnancyOutcomeAction destinationPage =
-            if List.length completedEncounts > 0 then
+            if not (List.isEmpty completedEncounts) then
                 maybeSessionId
                     |> Maybe.map
                         (Pages.Page.PregnancyOutcomePage destinationPage
@@ -150,10 +150,10 @@ viewActions language currentDate selectedHealthCenter id isChw db model prenatal
                     hasNurseEncounter =
                         not <| List.isEmpty nurseEncounters
                 in
-                viewActionsForChw language currentDate selectedHealthCenter id db activePregnancyData chwEncounters hasNurseEncounter
+                viewActionsForChw language currentDate selectedHealthCenter id activePregnancyData chwEncounters hasNurseEncounter
 
             else
-                viewActionsForNurse language currentDate selectedHealthCenter id db maybeSessionId nurseEncounters
+                viewActionsForNurse language currentDate selectedHealthCenter id maybeSessionId nurseEncounters
 
         recordPregnancyOutcomeSection =
             [ div [ class "separator" ] []
@@ -168,7 +168,6 @@ viewActions language currentDate selectedHealthCenter id isChw db model prenatal
             if showWarningPopup then
                 viewModal <|
                     warningPopup language
-                        currentDate
                         (navigateToPregnancyOutcomeAction InitiatorWarningPopup)
 
             else
@@ -180,11 +179,11 @@ viewActions language currentDate selectedHealthCenter id isChw db model prenatal
         |> div []
 
 
-warningPopup : Language -> NominalDate -> List (Attribute Msg) -> Maybe (Html Msg)
-warningPopup language currentDate navigateToPregnancyOutcomeAction =
+warningPopup : Language -> List (Attribute Msg) -> Maybe (Html Msg)
+warningPopup language navigateToPregnancyOutcomeAction =
     Just <|
         div [ class "ui active modal open-pregnancy-popup" ]
-            [ div [ class "content" ] <|
+            [ div [ class "content" ]
                 [ div [ class "popup-heading-wrapper" ]
                     [ img [ src "assets/images/exclamation-red.png" ] []
                     , div [ class "popup-heading warning" ] [ text <| translate language Translate.Warning ++ "!" ]
@@ -213,11 +212,10 @@ viewActionsForNurse :
     -> NominalDate
     -> HealthCenterId
     -> PersonId
-    -> ModelIndexedDb
     -> Maybe IndividualEncounterParticipantId
     -> List ( PrenatalEncounterId, PrenatalEncounter )
     -> List (Html Msg)
-viewActionsForNurse language currentDate selectedHealthCenter id db maybeSessionId encounters =
+viewActionsForNurse language currentDate selectedHealthCenter id maybeSessionId encounters =
     let
         ( maybeActiveEncounterId, lastEncounterType, encounterWasCompletedToday ) =
             List.head encounters
@@ -343,12 +341,11 @@ viewActionsForChw :
     -> NominalDate
     -> HealthCenterId
     -> PersonId
-    -> ModelIndexedDb
     -> Maybe ( IndividualEncounterParticipantId, IndividualEncounterParticipant )
     -> List ( PrenatalEncounterId, PrenatalEncounter )
     -> Bool
     -> List (Html Msg)
-viewActionsForChw language currentDate selectedHealthCenter id db activePregnancyData encounters hasNurseEncounter =
+viewActionsForChw language currentDate selectedHealthCenter id activePregnancyData encounters hasNurseEncounter =
     let
         maybeSessionId =
             Maybe.map Tuple.first activePregnancyData

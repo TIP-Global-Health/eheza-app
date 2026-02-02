@@ -1,4 +1,4 @@
-module SyncManager.Utils exposing (..)
+module SyncManager.Utils exposing (backendAuthorityEntityToRevision, backendGeneralEntityToRevision, determineDownloadPhotosStatus, determineSyncStatus, encodeBackendAuthorityEntity, encodeBackendGeneralEntity, getBackendAuthorityEntityIdentifier, getBackendGeneralEntityIdentifier, getDataToSendAuthority, getDataToSendGeneral, getDownloadPhotosSpeedForSubscriptions, getImageFromBackendAuthorityEntity, getSyncSpeedForSubscriptions, getSyncedHealthCenters, resolveIncidentDetailsMsg, siteFeaturesFromString, siteFromString, syncInfoAuthorityForPort, syncInfoAuthorityFromPort, syncInfoGeneralForPort, syncInfoGeneralFromPort, syncInfoStatusToString)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import Backend.AcuteIllnessEncounter.Encoder
@@ -387,20 +387,6 @@ determineDownloadPhotosStatus model =
     else
         -- No change.
         model
-
-
-resetDownloadPhotosBatchCounter : Model -> DownloadPhotosStatus
-resetDownloadPhotosBatchCounter model =
-    case model.downloadPhotosMode of
-        DownloadPhotosBatch deferredPhoto ->
-            let
-                deferredPhotoUpdated =
-                    { deferredPhoto | batchCounter = deferredPhoto.batchSize }
-            in
-            DownloadPhotosInProcess (DownloadPhotosBatch deferredPhotoUpdated)
-
-        _ ->
-            DownloadPhotosInProcess model.downloadPhotosMode
 
 
 {-| Get info about an entity. `revision` would be the Drupal revision

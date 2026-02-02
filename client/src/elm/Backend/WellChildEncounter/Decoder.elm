@@ -1,6 +1,6 @@
 module Backend.WellChildEncounter.Decoder exposing (decodeEncounterWarning, decodeWellChildEncounter, decodeWellChildEncounterType)
 
-import Backend.WellChildEncounter.Model exposing (..)
+import Backend.WellChildEncounter.Model exposing (EncounterNote(..), EncounterWarning(..), WellChildEncounter, WellChildEncounterType(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, andThen, bool, fail, list, map, nullable, oneOf, string, succeed)

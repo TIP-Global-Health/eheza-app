@@ -1,4 +1,4 @@
-module Backend.Nurse.Model exposing (..)
+module Backend.Nurse.Model exposing (Model, Msg(..), Nurse, ResilienceRole(..), Role(..), emptyModel)
 
 import AssocList exposing (Dict)
 import Backend.Entities exposing (..)

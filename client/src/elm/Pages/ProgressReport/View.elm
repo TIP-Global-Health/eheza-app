@@ -8,7 +8,7 @@ import Backend.Session.Utils exposing (getChild)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
-import Pages.ProgressReport.Model exposing (..)
+import Pages.ProgressReport.Model exposing (Model, Msg(..))
 import Pages.WellChild.ProgressReport.Model exposing (WellChildProgressReportInitiator(..))
 import Pages.WellChild.ProgressReport.View exposing (viewProgressReport)
 import RemoteData exposing (RemoteData(..))
@@ -47,7 +47,7 @@ view language currentDate zscores site features isChw childId ( sessionId, sessi
             Just { setReportComponentsMsg = SetReportComponents }
 
         bottomActionData =
-            Just <|
+            Just
                 { showEndEncounterDialog = False
                 , allowEndEncounter = False
                 , closeEncounterMsg = NoOp
@@ -62,7 +62,6 @@ view language currentDate zscores site features isChw childId ( sessionId, sessi
             zscores
             site
             features
-            isChw
             initiator
             mandatoryNutritionAssessmentMeasurementsTaken
             db

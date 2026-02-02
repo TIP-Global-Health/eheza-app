@@ -1,11 +1,11 @@
 module Pages.Relationship.Fetch exposing (fetch)
 
 import Backend.Entities exposing (..)
-import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
+import Backend.Model exposing (MsgIndexedDb(..))
 
 
-fetch : PersonId -> PersonId -> ModelIndexedDb -> List MsgIndexedDb
-fetch id1 id2 db =
+fetch : PersonId -> PersonId -> List MsgIndexedDb
+fetch id1 id2 =
     -- FetchRelationshipsForPerson gets both sides, so we don't
     -- need to do it twice.
     [ FetchRelationshipsForPerson id1

@@ -1,7 +1,7 @@
 module Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
 
 import Backend.Entities exposing (..)
-import Backend.Relationship.Model exposing (..)
+import Backend.Relationship.Model exposing (MyRelatedBy(..), MyRelationship, RelatedBy(..), Relationship)
 
 
 {-| Consider a `Relationship` from the point of view of the specified person.

@@ -6,7 +6,6 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Utils exposing (hivManagementEnabled, ncdaEnabled, tuberculosisManagementEnabled)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
@@ -16,12 +15,12 @@ import SyncManager.Model exposing (SiteFeature)
 import Translate exposing (Language, translate)
 
 
-view : Language -> NominalDate -> EverySet SiteFeature -> HealthCenterId -> Bool -> App.Model.Model -> Html App.Model.Msg
-view language currentDate features healthCenterId isChw model =
+view : Language -> EverySet SiteFeature -> HealthCenterId -> Bool -> App.Model.Model -> Html App.Model.Msg
+view language features healthCenterId isChw model =
     div
         [ class "wrap wrap-alt-2 page-encounter-types" ]
         [ viewHeader language
-        , viewContent language currentDate features healthCenterId isChw model
+        , viewContent language features isChw
             |> viewBySyncStatus language healthCenterId model.syncManager.syncInfoAuthorities
         ]
 
@@ -40,8 +39,8 @@ viewHeader language =
         ]
 
 
-viewContent : Language -> NominalDate -> EverySet SiteFeature -> HealthCenterId -> Bool -> App.Model.Model -> Html App.Model.Msg
-viewContent language currentDate features healthCenterId isChw model =
+viewContent : Language -> EverySet SiteFeature -> Bool -> Html App.Model.Msg
+viewContent language features isChw =
     let
         encounterButton encounterType =
             button

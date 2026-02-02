@@ -5,7 +5,7 @@ import Backend.ChildScoreboardEncounter.Model
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualParticipantInitiator(..))
 import Backend.Model
 import Gizra.Update exposing (sequenceExtra)
-import Pages.ChildScoreboard.Encounter.Model exposing (..)
+import Pages.ChildScoreboard.Encounter.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..), UserPage(..))
 
 

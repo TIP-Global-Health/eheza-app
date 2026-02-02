@@ -9,7 +9,7 @@ import Html exposing (..)
 import Pages.Nutrition.Activity.Utils exposing (mandatoryActivitiesCompleted)
 import Pages.Nutrition.Encounter.Utils exposing (generateAssembledData)
 import Pages.Nutrition.Encounter.View exposing (allowEndingEncounter, partitionActivities)
-import Pages.Nutrition.ProgressReport.Model exposing (..)
+import Pages.Nutrition.ProgressReport.Model exposing (Model, Msg(..))
 import Pages.WellChild.ProgressReport.Model exposing (WellChildProgressReportInitiator(..))
 import Pages.WellChild.ProgressReport.View exposing (viewProgressReport)
 import RemoteData exposing (RemoteData(..))
@@ -59,19 +59,19 @@ view language currentDate zscores site features id isChw db model =
 
         ( bottomActionData, mandatoryNutritionAssessmentMeasurementsTaken ) =
             Maybe.map2
-                (\assembled ( _, child ) ->
+                (\assembled _ ->
                     let
                         ( _, pendingActivities ) =
                             partitionActivities currentDate zscores features isChw db assembled
                     in
-                    ( Just <|
+                    ( Just
                         { showEndEncounterDialog = model.showEndEncounterDialog
                         , allowEndEncounter = allowEndingEncounter isChw pendingActivities
                         , closeEncounterMsg = CloseEncounter id
                         , setEndEncounterDialogStateMsg = SetEndEncounterDialogState
                         , startEncounterMsg = NoOp
                         }
-                    , mandatoryActivitiesCompleted currentDate zscores features child isChw assembled db
+                    , mandatoryActivitiesCompleted currentDate zscores features isChw assembled db
                     )
                 )
                 assembledData
@@ -90,7 +90,6 @@ view language currentDate zscores site features id isChw db model =
             zscores
             site
             features
-            isChw
             initiator
             mandatoryNutritionAssessmentMeasurementsTaken
             db

@@ -9,10 +9,10 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Pages.NCD.Model exposing (..)
+import Pages.NCD.Model exposing (AssembledData)
 import Pages.NCD.RecurrentActivity.Utils exposing (activityCompleted, expectActivity)
-import Pages.NCD.RecurrentEncounter.Model exposing (..)
-import Pages.NCD.RecurrentEncounter.Utils exposing (..)
+import Pages.NCD.RecurrentEncounter.Model exposing (Model, Msg(..), Tab(..))
+import Pages.NCD.RecurrentEncounter.Utils exposing (allActivities)
 import Pages.NCD.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewEncounterActionButton, viewPersonDetailsExtended, viewReportLink)
@@ -27,11 +27,11 @@ view language currentDate id db model =
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate id model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> NCDEncounterId -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id model assembled =
+viewHeaderAndContent : Language -> NominalDate -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate model assembled =
     let
         header =
             viewHeader language
@@ -68,17 +68,17 @@ viewHeader language =
 viewContent : Language -> NominalDate -> AssembledData -> Model -> Html Msg
 viewContent language currentDate assembled model =
     ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
-        :: viewMainPageContent language currentDate assembled model
+        :: viewMainPageContent language assembled model
     )
         |> div [ class "ui unstackable items" ]
 
 
-viewMainPageContent : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
-viewMainPageContent language currentDate assembled model =
+viewMainPageContent : Language -> AssembledData -> Model -> List (Html Msg)
+viewMainPageContent language assembled model =
     let
         ( completedActivities, pendingActivities ) =
-            List.filter (expectActivity currentDate assembled) allActivities
-                |> List.partition (activityCompleted currentDate assembled)
+            List.filter (expectActivity assembled) allActivities
+                |> List.partition (activityCompleted assembled)
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
@@ -102,17 +102,6 @@ viewMainPageContent language currentDate assembled model =
                 (getRecurrentActivityIcon activity)
                 (SetActivePage <| UserPage <| NCDRecurrentActivityPage assembled.id activity)
 
-        ( selectedActivities, emptySectionMessage ) =
-            case model.selectedTab of
-                Pending ->
-                    ( pendingActivities, translate language Translate.NoActivitiesPending )
-
-                Completed ->
-                    ( completedActivities, translate language Translate.NoActivitiesCompleted )
-
-                Reports ->
-                    ( [], "" )
-
         innerContent =
             if model.selectedTab == Reports then
                 div [ class "reports-wrapper" ]
@@ -125,6 +114,18 @@ viewMainPageContent language currentDate assembled model =
                     ]
 
             else
+                let
+                    ( selectedActivities, emptySectionMessage ) =
+                        case model.selectedTab of
+                            Pending ->
+                                ( pendingActivities, translate language Translate.NoActivitiesPending )
+
+                            Completed ->
+                                ( completedActivities, translate language Translate.NoActivitiesCompleted )
+
+                            Reports ->
+                                ( [], "" )
+                in
                 div [ class "full content" ]
                     [ div [ class "wrap-cards" ]
                         [ div [ class "ui four cards" ] <|

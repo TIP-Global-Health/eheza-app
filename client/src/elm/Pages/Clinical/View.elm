@@ -2,7 +2,6 @@ module Pages.Clinical.View exposing (view)
 
 import App.Model exposing (Msg(..))
 import Backend.Entities exposing (..)
-import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
@@ -11,11 +10,11 @@ import Pages.Utils exposing (viewBySyncStatus)
 import Translate exposing (Language, translate)
 
 
-view : Language -> NominalDate -> HealthCenterId -> Bool -> App.Model.Model -> Html App.Model.Msg
-view language currentDate healthCenterId isChw model =
+view : Language -> HealthCenterId -> Bool -> App.Model.Model -> Html App.Model.Msg
+view language healthCenterId isChw model =
     div [ class "ui basic segment page-clinical" ]
         [ viewHeader language
-        , viewContent language currentDate isChw model
+        , viewContent language isChw
             |> viewBySyncStatus language healthCenterId model.syncManager.syncInfoAuthorities
         ]
 
@@ -33,8 +32,8 @@ viewHeader language =
         ]
 
 
-viewContent : Language -> NominalDate -> Bool -> App.Model.Model -> Html App.Model.Msg
-viewContent language currentDate isChw model =
+viewContent : Language -> Bool -> Html App.Model.Msg
+viewContent language isChw =
     let
         groupAssessmentButtonAction =
             if isChw then

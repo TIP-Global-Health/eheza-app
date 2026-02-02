@@ -8,9 +8,8 @@ import Backend.TraceContact.Model
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
-import Pages.AcuteIllness.Activity.Types exposing (SymptomsTask(..))
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.TraceContact.Model exposing (..)
+import Pages.TraceContact.Model exposing (Model, Msg(..), NoContactReason(..), RecordSymptomsPopupState(..), TraceContactStep(..), emptyStepRecordSymptomsData)
 
 
 update : NominalDate -> AcuteIllnessTraceContactId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
@@ -131,7 +130,7 @@ update currentDate id msg model =
                 StepRecordSymptoms data ->
                     let
                         updatedSigns =
-                            toggleSymptomsSign SymptomsGeneral sign NoSymptomsGeneral data.symptomsGeneralForm.signs
+                            toggleSymptomsSign sign NoSymptomsGeneral data.symptomsGeneralForm.signs
 
                         form =
                             data.symptomsGeneralForm
@@ -155,7 +154,7 @@ update currentDate id msg model =
                 StepRecordSymptoms data ->
                     let
                         updatedSigns =
-                            toggleSymptomsSign SymptomsRespiratory sign NoSymptomsRespiratory data.symptomsRespiratoryForm.signs
+                            toggleSymptomsSign sign NoSymptomsRespiratory data.symptomsRespiratoryForm.signs
 
                         form =
                             data.symptomsRespiratoryForm
@@ -179,7 +178,7 @@ update currentDate id msg model =
                 StepRecordSymptoms data ->
                     let
                         updatedSigns =
-                            toggleSymptomsSign SymptomsGI sign NoSymptomsGI data.symptomsGIForm.signs
+                            toggleSymptomsSign sign NoSymptomsGI data.symptomsGIForm.signs
 
                         form =
                             data.symptomsGIForm
@@ -341,8 +340,8 @@ update currentDate id msg model =
                     noChange
 
 
-toggleSymptomsSign : SymptomsTask -> a -> a -> EverySet a -> EverySet a
-toggleSymptomsSign task sign noneSign signs =
+toggleSymptomsSign : a -> a -> EverySet a -> EverySet a
+toggleSymptomsSign sign noneSign signs =
     if sign == noneSign then
         EverySet.singleton sign
 

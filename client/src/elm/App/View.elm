@@ -1,6 +1,6 @@
 module App.View exposing (view)
 
-import App.Model exposing (..)
+import App.Model exposing (ConfiguredModel, Model, Msg(..), MsgLoggedIn(..))
 import App.Utils exposing (getLoggedInData)
 import AssocList as Dict
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
@@ -373,7 +373,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             |> oldPageWrapper configured.config model
 
                     ClinicalPage ->
-                        Pages.Clinical.View.view model.language currentDate healthCenterId isChw model
+                        Pages.Clinical.View.view model.language healthCenterId isChw model
                             |> flexPageWrapper configured.config model
 
                     ClinicsPage ->
@@ -665,7 +665,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             |> flexPageWrapper configured.config model
 
                     IndividualEncounterTypesPage ->
-                        Pages.IndividualEncounterTypes.View.view model.language currentDate features healthCenterId isChw model
+                        Pages.IndividualEncounterTypes.View.view model.language features healthCenterId isChw model
                             |> flexPageWrapper configured.config model
 
                     GroupEncounterTypesPage ->
@@ -716,7 +716,6 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             site
                             id
                             activity
-                            isChw
                             model.indexedDb
                             page_
                             |> Html.map (MsgLoggedIn << MsgPageNutritionActivity id activity)
@@ -847,7 +846,6 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             site
                             features
                             id
-                            isChw
                             activity
                             model.indexedDb
                             page_
@@ -948,7 +946,6 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                         in
                         Pages.ChildScoreboard.Activity.View.view model.language
                             currentDate
-                            model.zscores
                             site
                             id
                             activity
@@ -980,7 +977,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get id loggedInModel.tuberculosisEncounterPages
                                     |> Maybe.withDefault Pages.Tuberculosis.Encounter.Model.emptyModel
                         in
-                        Pages.Tuberculosis.Encounter.View.view model.language currentDate site id model.indexedDb page_
+                        Pages.Tuberculosis.Encounter.View.view model.language currentDate id model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageTuberculosisEncounter id)
                             |> flexPageWrapper configured.config model
 
@@ -1026,7 +1023,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get id loggedInModel.hivEncounterPages
                                     |> Maybe.withDefault Pages.HIV.Encounter.Model.emptyModel
                         in
-                        Pages.HIV.Encounter.View.view model.language currentDate site id model.indexedDb page_
+                        Pages.HIV.Encounter.View.view model.language currentDate id model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageHIVEncounter id)
                             |> flexPageWrapper configured.config model
 
@@ -1066,7 +1063,6 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             site
                             features
                             personId
-                            isChw
                             initiator
                             model.indexedDb
                             page_
@@ -1095,17 +1091,10 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                         let
                             ( nurseId, nurse ) =
                                 loggedInModel.nurse
-
-                            page_ =
-                                Dict.get nurseId loggedInModel.messagingCenterPages
-                                    |> Maybe.withDefault Pages.MessagingCenter.Model.emptyModel
                         in
                         Pages.Wellbeing.View.view model.language
                             model.currentTime
-                            nurseId
                             nurse
-                            model.indexedDb
-                            page_
                             |> Html.map (MsgLoggedIn << MsgPageMessagingCenter nurseId)
                             |> flexPageWrapper configured.config model
 
