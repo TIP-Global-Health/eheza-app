@@ -410,8 +410,10 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   /**
    * Create a weight entity.
    *
+   * @param string $type
+   *   The type of Weight entity. Options: 'weight', 'nutrition_weight'.
    * @param int $session_id
-   *   The node ID of the session.
+   *   The node ID of the session / individual nutrition encounter.
    * @param int $child_id
    *   The node ID of the child.
    * @param float $weight
@@ -423,32 +425,29 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    * @return int
    *   The node ID of the weight.
    */
-  public function createWeight($session_id, $child_id, $weight, $timestamp = REQUEST_TIME) {
-    $node = (object) [
-      'type' => 'weight',
-      'field_person' => [
-        LANGUAGE_NONE => [
-          ['target_id' => $child_id],
-        ],
-      ],
-      'field_date_measured' => [
-        LANGUAGE_NONE => [
-          ['value' => date('Y-m-d', $timestamp)],
-        ],
-      ],
-      'field_session' => [
-        LANGUAGE_NONE => [
-          ['target_id' => $session_id],
-        ],
-      ],
-      'field_weight' => [
-        LANGUAGE_NONE => [
-          ['value' => $weight],
-        ],
-      ],
-    ];
+  public function createWeight($type, $session_id, $child_id, $weight, $timestamp = REQUEST_TIME) {
+    $node = $this->drupalCreateNode(['type' => $type]);
 
-    node_save($node);
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_person->set($child_id);
+    $wrapper->field_date_measured->set($timestamp);
+
+    switch ($type) {
+      case 'weight':
+        $wrapper->field_session->set($session_id);
+        break;
+
+      case 'nutrition_weight':
+        $wrapper->field_nutrition_encounter->set($session_id);
+        break;
+
+      default:
+        throw new NotFoundException("$type not supported for weight creation.");
+    }
+
+    $wrapper->field_weight->set($weight);
+    $wrapper->save();
+
     return $node->nid;
   }
 

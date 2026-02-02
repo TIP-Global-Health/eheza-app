@@ -518,7 +518,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
 
     $this->createMuac('nutrition_muac', $encounter->nid, $child_id, $muac_value, $timestamp);
 
-    $weight_id = $this->createWeight($encounter->nid, $child_id, $weight_value, $timestamp);
+    $weight_id = $this->createWeight('nutrition_weight', $encounter->nid, $child_id, $weight_value, $timestamp);
     $weight = node_load($weight_id);
 
     $nutrition = (object) [
