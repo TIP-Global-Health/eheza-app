@@ -490,14 +490,10 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     ];
     node_save($encounter);
 
-    $nurse_uid = !empty($this->nurse) ? $this->nurse->uid : $this->createNurse($this->clinicId)->uid;
-
     $this->createMuac('nutrition_muac', $encounter->nid, $child_id, $muac_value, $timestamp);
     $this->createHeight('nutrition_height', $encounter->nid, $child_id, 68, $timestamp);
     $this->createWeight('nutrition_weight', $encounter->nid, $child_id, $weight_value, $timestamp);
     $this->createNutrition('nutrition_nutrition', $encounter->nid, $child_id, $nutrition_sign, $timestamp);
-
-    $nutrition = (object) ['nid' => 0];
   }
 
 }
