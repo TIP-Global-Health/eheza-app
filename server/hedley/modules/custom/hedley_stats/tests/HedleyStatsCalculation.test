@@ -247,6 +247,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     // Check that the stats are not empty.
     $this->assertEqual($stats['uuid'], $health_center_wrapper->field_uuid->value());
     $this->assertFalse(empty($stats['case_management']));
+    $this->assertFalse(empty($stats['children_beneficiaries']));
     $this->assertFalse(empty($stats['good_nutrition']));
     $this->assertFalse(empty($stats['total_encounters']));
     $this->assertFalse(empty($stats['nutrition_group_data']));
