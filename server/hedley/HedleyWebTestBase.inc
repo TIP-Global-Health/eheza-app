@@ -439,8 +439,10 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   /**
    * Create an MUAC entity.
    *
+   * @param string $type
+   *   The type of MUAC entity. Options: 'muac', 'nutrition_mu
    * @param int $session_id
-   *   The node ID of the session.
+   *   The node ID of the session / individual nutrition encounter.
    * @param int $child_id
    *   The node ID of the child.
    * @param float $muac
