@@ -428,7 +428,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    * @param float $weight_value
    *   Weight value to record.
    */
-  protected function createIndividualNutritionEncounterData($timestamp= '-7 days', $muac_value = 11, $nutrition_sign = 'edema', $weight_value = 9) {
+  protected function createIndividualNutritionEncounterData($timestamp = '-7 days', $muac_value = 11, $nutrition_sign = 'edema', $weight_value = 9) {
     $mother_id = $this->createMother($this->clinicId);
     $child_id = $this->createChild($mother_id, $this->healthCenterId, $timestamp, $timestamp);
 
