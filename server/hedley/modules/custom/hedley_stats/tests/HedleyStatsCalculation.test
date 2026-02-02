@@ -118,7 +118,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
 
         // Create measurements.
         $this->createWeight('weight', $session_nid, $child_nid, $measurements[$measurements_state]['weight'], $session['date']);
-        $this->createHeight($session_nid, $child_nid, $measurements[$measurements_state]['height'], $session['date']);
+        $this->createHeight('height', $session_nid, $child_nid, $measurements[$measurements_state]['height'], $session['date']);
         $this->createMuac('muac', $session_nid, $child_nid, $measurements[$measurements_state]['muac'], $session['date']);;
       }
 
@@ -209,7 +209,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
 
         // Create measurements.
         $this->createWeight('weight', $session_nid, $child_nid, $measurements[$measurements_state]['weight'], $session['date']);
-        $this->createHeight($session_nid, $child_nid, $measurements[$measurements_state]['height'], $session['date']);
+        $this->createHeight('height', $session_nid, $child_nid, $measurements[$measurements_state]['height'], $session['date']);
         $this->createMuac('muac', $session_nid, $child_nid, $measurements[$measurements_state]['muac'], $session['date']);
         $this->createNutrition($session_nid, $child_nid, $measurements[$measurements_state]['nutrition'], $session['date']);
       }

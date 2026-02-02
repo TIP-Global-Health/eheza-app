@@ -42,7 +42,7 @@ class HedleyActivityZscoreUpdate extends HedleyWebTestBase {
     $this->assertEqual(round($weight->field_zscore_age->value(), 2), 2.75);
 
     // Then, add a height ...
-    $height_id = $this->createHeight($session_id, $child_id, 82, $one_year_old);
+    $height_id = $this->createHeight('height', $session_id, $child_id, 82, $one_year_old);
     $height = entity_metadata_wrapper('node', $height_id);
 
     // Check that we have a ZScore age.
