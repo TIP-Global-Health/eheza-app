@@ -67,9 +67,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    */
   protected function createNcdEncounterData() {
     $timestamp = strtotime('-1 month');
-    $mother_id = $this->createMother($this->clinicId);
-    $child_id = $this->createChild($mother_id, $this->healthCenterId, $timestamp, $timestamp);
-    $participant = $this->createIndividualParticipant($child_id, $this->healthCenterId, $this->nurse->uid, $timestamp);
+    $participant = $this->createIndividualParticipantForTests($timestamp, 'ncd');
 
     $encounter = (object) [
       'type' => 'ncd_encounter',
@@ -526,36 +524,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    *   Weight value to record.
    */
   protected function createIndividualNutritionEncounterData($timestamp = '-7 days', $muac_value = 11, $nutrition_sign = 'edema', $weight_value = 9) {
-    $mother_id = $this->createMother($this->clinicId);
-    $child_id = $this->createChild($mother_id, $this->healthCenterId, $timestamp, $timestamp);
-
-    $participant = (object) [
-      'type' => 'individual_participant',
-      'field_person' => [
-        LANGUAGE_NONE => [
-          ['target_id' => $child_id],
-        ],
-      ],
-      'field_encounter_type' => [
-        LANGUAGE_NONE => [
-          ['value' => 'nutrition'],
-        ],
-      ],
-      'field_expected' => [
-        LANGUAGE_NONE => [
-          [
-            'value' => date('Y-m-d', $timestamp),
-            'value2' => date('Y-m-d', $timestamp),
-          ],
-        ],
-      ],
-      'field_shards' => [
-        LANGUAGE_NONE => [
-          ['target_id' => $this->healthCenterId],
-        ],
-      ],
-    ];
-    node_save($participant);
+    $participant = $this->createIndividualParticipantForTests($timestamp, 'nutrition');
 
     $encounter = (object) [
       'type' => 'nutrition_encounter',
@@ -589,6 +558,28 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $this->createHeight('nutrition_height', $encounter->nid, $child_id, 68, $timestamp);
     $this->createWeight('nutrition_weight', $encounter->nid, $child_id, $weight_value, $timestamp);
     $this->createNutrition('nutrition_nutrition', $encounter->nid, $child_id, $nutrition_sign, $timestamp);
+  }
+
+  /**
+   * Helper to create an individual participant for tests.
+   *
+   * @param int|string $timestamp
+   *   Enrollment date as unix timestamp or strtotime()-parsable string.
+   * @param string $encounter_type
+   *   Encounter type value, e.g. 'nutrition' or 'ncd'.
+   *
+   * @return object
+   *   The saved participant node.
+   */
+  protected function createIndividualParticipantForTests($timestamp, $encounter_type = 'nutrition') {
+    if (!is_int($timestamp)) {
+      $timestamp = strtotime($timestamp);
+    }
+
+    $mother_id = $this->createMother($this->clinicId);
+    $child_id = $this->createChild($mother_id, $this->healthCenterId, $timestamp, $timestamp);
+
+    return $this->createIndividualParticipantWithType($child_id, $this->healthCenterId, $timestamp, $encounter_type, $this->nurse->uid);
   }
 
 }

@@ -46,6 +46,53 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   }
 
   /**
+   * Create an individual participant node.
+   *
+   * @param int $child_id
+   *   The node ID of the child.
+   * @param int $health_center_id
+   *   The health center shard.
+   * @param int $uid
+   *   The UID of the user creating the participant.
+   * @param int $timestamp
+   *   Optional; The date the participant was created, as a unix timestamp,
+   *   defaults to the time of the request.
+   *
+   * @return object
+   *   The saved participant node.
+   */
+  public function createIndividualParticipant($child_id, $health_center_id, $uid, $timestamp = REQUEST_TIME) {
+    $participant = (object) [
+      'type' => 'individual_participant',
+      'uid' => $uid,
+      'status' => 1,
+      'language' => LANGUAGE_NONE,
+      'title' => $this->randomName(8),
+      'field_individual' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $child_id],
+        ],
+      ],
+      'field_shards' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $health_center_id],
+        ],
+      ],
+      'field_date_of_enrollment' => [
+        LANGUAGE_NONE => [
+          [
+            'value' => date('Y-m-d', $timestamp),
+            'value2' => date('Y-m-d', $timestamp),
+          ],
+        ],
+      ],
+    ];
+
+    node_save($participant);
+    return $participant;
+  }
+
+  /**
    * Create an admin user.
    *
    * @return \StdClass
@@ -376,6 +423,42 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $wrapper->save();
 
     return $node->nid;
+  }
+
+  /**
+   * Create an individual participant entity.
+   *
+   * @param int $child_id
+   *   The node ID of the child.
+   * @param int $health_center_id
+   *   The shard / health center ID.
+   * @param int $timestamp
+   *   Optional; enrollment date as unix timestamp, defaults to request time.
+   * @param string $encounter_type
+   *   Encounter type value, e.g. 'nutrition' or 'ncd'.
+   * @param int|null $uid
+   *   Optional; user ID creating the participant. Defaults to current user.
+   *
+   * @return object
+   *   The saved participant node.
+   */
+  public function createIndividualParticipantWithType($child_id, $health_center_id, $timestamp = REQUEST_TIME, $encounter_type = 'nutrition', $uid = NULL) {
+    $node = $this->drupalCreateNode([
+      'type' => 'individual_participant',
+      'uid' => $uid,
+    ]);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_individual->set($child_id);
+    $wrapper->field_encounter_type->set($encounter_type);
+    $wrapper->field_expected->set([
+      'value' => date('Y-m-d', $timestamp),
+      'value2' => date('Y-m-d', $timestamp),
+    ]);
+    $wrapper->field_shards->set($health_center_id);
+    $wrapper->save();
+
+    return $node;
   }
 
   /**
