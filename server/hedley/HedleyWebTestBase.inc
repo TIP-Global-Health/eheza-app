@@ -5,6 +5,8 @@
  * A WebTestBase for Hedley profile.
  */
 
+use League\Container\Exception\NotFoundException;
+
 /**
  * Class HedleyWebTestBase.
  */
@@ -450,13 +452,26 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    * @return int
    *   The node ID of the MUAC.
    */
-  public function createMuac($session_id, $child_id, $muac, $timestamp = REQUEST_TIME) {
-    $node = $this->drupalCreateNode(['type' => 'muac']);
+  public function createMuac($type, $session_id, $child_id, $muac, $timestamp = REQUEST_TIME) {
+    $node = $this->drupalCreateNode(['type' => $type]);
 
     $wrapper = entity_metadata_wrapper('node', $node);
     $wrapper->field_person->set($child_id);
     $wrapper->field_date_measured->set($timestamp);
-    $wrapper->field_session->set($session_id);
+
+    switch ($type) {
+      case 'muac':
+        $wrapper->field_session->set($session_id);
+        break;
+
+      case 'nutrition_muac':
+        $wrapper->field_nutrition_encounter->set($session_id);
+        break;
+
+      default:
+        throw new NotFoundException("$type not supported for MUAC creation.");
+    }
+
     $wrapper->field_muac->set($muac);
     $wrapper->save();
 

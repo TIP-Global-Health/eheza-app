@@ -119,7 +119,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
         // Create measurements.
         $this->createWeight($session_nid, $child_nid, $measurements[$measurements_state]['weight'], $session['date']);
         $this->createHeight($session_nid, $child_nid, $measurements[$measurements_state]['height'], $session['date']);
-        $this->createMuac($session_nid, $child_nid, $measurements[$measurements_state]['muac'], $session['date']);;
+        $this->createMuac('muac', $session_nid, $child_nid, $measurements[$measurements_state]['muac'], $session['date']);;
       }
 
       $patients_details = [];
@@ -211,7 +211,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
         // Create measurements.
         $this->createWeight($session_nid, $child_nid, $measurements[$measurements_state]['weight'], $session['date']);
         $this->createHeight($session_nid, $child_nid, $measurements[$measurements_state]['height'], $session['date']);
-        $this->createMuac($session_nid, $child_nid, $measurements[$measurements_state]['muac'], $session['date']);
+        $this->createMuac('muac', $session_nid, $child_nid, $measurements[$measurements_state]['muac'], $session['date']);
         $this->createNutrition($session_nid, $child_nid, $measurements[$measurements_state]['nutrition'], $session['date']);
       }
     }
@@ -516,40 +516,42 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
 
     $nurse_uid = !empty($this->nurse) ? $this->nurse->uid : $this->createNurse($this->clinicId)->uid;
 
-    $muac = (object) [
-      'type' => 'nutrition_muac',
-      'field_person' => [
-        LANGUAGE_NONE => [
-          ['target_id' => $child_id],
-        ],
-      ],
-      'field_date_measured' => [
-        LANGUAGE_NONE => [
-          ['value' => date('Y-m-d', $timestamp)],
-        ],
-      ],
-      'field_nurse' => [
-        LANGUAGE_NONE => [
-          ['target_id' => $nurse_uid],
-        ],
-      ],
-      'field_nutrition_encounter' => [
-        LANGUAGE_NONE => [
-          ['target_id' => $encounter->nid],
-        ],
-      ],
-      'field_muac' => [
-        LANGUAGE_NONE => [
-          ['value' => $muac_value],
-        ],
-      ],
-      'field_shards' => [
-        LANGUAGE_NONE => [
-          ['target_id' => $this->healthCenterId],
-        ],
-      ],
-    ];
-    node_save($muac);
+    $this->createMuac('nutrition_muac', $encounter->nid, $child_id, $muac_value, $timestamp);
+
+//    $muac = (object) [
+//      'type' => 'nutrition_muac',
+//      'field_person' => [
+//        LANGUAGE_NONE => [
+//          ['target_id' => $child_id],
+//        ],
+//      ],
+//      'field_date_measured' => [
+//        LANGUAGE_NONE => [
+//          ['value' => date('Y-m-d', $timestamp)],
+//        ],
+//      ],
+//      'field_nurse' => [
+//        LANGUAGE_NONE => [
+//          ['target_id' => $nurse_uid],
+//        ],
+//      ],
+//      'field_nutrition_encounter' => [
+//        LANGUAGE_NONE => [
+//          ['target_id' => $encounter->nid],
+//        ],
+//      ],
+//      'field_muac' => [
+//        LANGUAGE_NONE => [
+//          ['value' => $muac_value],
+//        ],
+//      ],
+//      'field_shards' => [
+//        LANGUAGE_NONE => [
+//          ['target_id' => $this->healthCenterId],
+//        ],
+//      ],
+//    ];
+//    node_save($muac);
 
     $weight = (object) [
       'type' => 'nutrition_weight',
