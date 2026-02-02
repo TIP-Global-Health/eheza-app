@@ -381,8 +381,10 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   /**
    * Create a height entity.
    *
+   * @param string $type
+   *   The type of Height entity. Options: 'height', 'nutrition_height'.
    * @param int $session_id
-   *   The node ID of the session.
+   *   The node ID of the session / individual nutrition encounter.
    * @param int $child_id
    *   The node ID of the child.
    * @param float $height
@@ -394,13 +396,26 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    * @return int
    *   The node ID of the height.
    */
-  public function createHeight($session_id, $child_id, $height, $timestamp = REQUEST_TIME) {
-    $node = $this->drupalCreateNode(['type' => 'height']);
+  public function createHeight($type, $session_id, $child_id, $height, $timestamp = REQUEST_TIME) {
+    $node = $this->drupalCreateNode(['type' => $type]);
 
     $wrapper = entity_metadata_wrapper('node', $node);
     $wrapper->field_person->set($child_id);
     $wrapper->field_date_measured->set($timestamp);
-    $wrapper->field_session->set($session_id);
+
+    switch ($type) {
+      case 'height':
+        $wrapper->field_session->set($session_id);
+        break;
+
+      case 'nutrition_height':
+        $wrapper->field_nutrition_encounter->set($session_id);
+        break;
+
+      default:
+        throw new NotFoundException("$type not supported for height creation.");
+    }
+
     $wrapper->field_height->set($height);
     $wrapper->save();
 
@@ -511,9 +526,27 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    * @return int
    *   The node ID of the nutrition.
    */
-  public function createNutrition($session_id, $child_id, $nutrition_sign, $timestamp = REQUEST_TIME) {
+  /**
+   * Create a nutrition entity.
+   *
+   * @param string $type
+   *   The type of Nutrition entity. Options: 'nutrition', 'nutrition_nutrition'.
+   * @param int $session_id
+   *   The node ID of the session / individual nutrition encounter.
+   * @param int $child_id
+   *   The node ID of the child.
+   * @param string $nutrition_sign
+   *   The nutrition sign value.
+   * @param int $timestamp
+   *   Optional; The date the measurement was taken, as a unix timestamp,
+   *   defaults to the time of the request.
+   *
+   * @return int
+   *   The node ID of the nutrition.
+   */
+  public function createNutrition($type, $session_id, $child_id, $nutrition_sign, $timestamp = REQUEST_TIME) {
     $node = $this->drupalCreateNode([
-      'type' => 'nutrition',
+      'type' => $type,
       // We have to add the nutrition signs here because we can't add it with
       // the wrapper.
       'field_nutrition_signs' => [
@@ -526,7 +559,20 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $wrapper = entity_metadata_wrapper('node', $node);
     $wrapper->field_person->set($child_id);
     $wrapper->field_date_measured->set($timestamp);
-    $wrapper->field_session->set($session_id);
+
+    switch ($type) {
+      case 'nutrition':
+        $wrapper->field_session->set($session_id);
+        break;
+
+      case 'nutrition_nutrition':
+        $wrapper->field_nutrition_encounter->set($session_id);
+        break;
+
+      default:
+        throw new NotFoundException("$type not supported for nutrition creation.");
+    }
+
     $wrapper->save();
 
     return $node->nid;

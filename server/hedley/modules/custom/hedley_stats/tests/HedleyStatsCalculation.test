@@ -493,42 +493,11 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $nurse_uid = !empty($this->nurse) ? $this->nurse->uid : $this->createNurse($this->clinicId)->uid;
 
     $this->createMuac('nutrition_muac', $encounter->nid, $child_id, $muac_value, $timestamp);
+    $this->createHeight('nutrition_height', $encounter->nid, $child_id, 68, $timestamp);
     $this->createWeight('nutrition_weight', $encounter->nid, $child_id, $weight_value, $timestamp);
+    $this->createNutrition('nutrition_nutrition', $encounter->nid, $child_id, $nutrition_sign, $timestamp);
 
-    $nutrition = (object) [
-      'type' => 'nutrition_nutrition',
-      'field_nutrition_signs' => [
-        LANGUAGE_NONE => [
-          ['value' => $nutrition_sign],
-        ],
-      ],
-      'field_person' => [
-        LANGUAGE_NONE => [
-          ['target_id' => $child_id],
-        ],
-      ],
-      'field_date_measured' => [
-        LANGUAGE_NONE => [
-          ['value' => date('Y-m-d', $timestamp)],
-        ],
-      ],
-      'field_nurse' => [
-        LANGUAGE_NONE => [
-          ['target_id' => $nurse_uid],
-        ],
-      ],
-      'field_nutrition_encounter' => [
-        LANGUAGE_NONE => [
-          ['target_id' => $encounter->nid],
-        ],
-      ],
-      'field_shards' => [
-        LANGUAGE_NONE => [
-          ['target_id' => $this->healthCenterId],
-        ],
-      ],
-    ];
-    node_save($nutrition);
+    $nutrition = (object) ['nid' => 0];
   }
 
 }
