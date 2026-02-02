@@ -35,7 +35,7 @@ class HedleyActivityZscoreUpdate extends HedleyWebTestBase {
     $one_year_old = strtotime('2016-06-27');
     $session_id = $this->createSession($clinic_id, $one_year_old);
 
-    $weight_id = $this->createWeight($session_id, $child_id, 13, $one_year_old);
+    $weight_id = $this->createWeight('weight', $session_id, $child_id, 13, $one_year_old);
     $weight = entity_metadata_wrapper('node', $weight_id);
 
     // Check that we have calculated a zscore-age.

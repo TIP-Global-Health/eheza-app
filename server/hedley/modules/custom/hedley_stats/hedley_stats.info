@@ -3,4 +3,4 @@ description = Statistics for dashboards
 core = 7.x
 package = Hedley
 dependencies[] = advancedqueue
-# files[] = tests/HedleyStatsCalculation.test
+files[] = tests/HedleyStatsCalculation.test

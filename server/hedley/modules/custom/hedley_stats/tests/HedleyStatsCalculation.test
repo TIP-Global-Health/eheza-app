@@ -117,7 +117,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
         $measurements_state = $measurements_state == HEDLEY_STATS_MODERATE ? HEDLEY_STATS_SEVERE : HEDLEY_STATS_MODERATE;
 
         // Create measurements.
-        $this->createWeight($session_nid, $child_nid, $measurements[$measurements_state]['weight'], $session['date']);
+        $this->createWeight('weight', $session_nid, $child_nid, $measurements[$measurements_state]['weight'], $session['date']);
         $this->createHeight($session_nid, $child_nid, $measurements[$measurements_state]['height'], $session['date']);
         $this->createMuac('muac', $session_nid, $child_nid, $measurements[$measurements_state]['muac'], $session['date']);;
       }
@@ -191,9 +191,8 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     // individual coverage.
     $timestamp = strtotime('-7 days');
     $muac_value = 11;
-    $zscore_value = -1.5;
     $weight_value = 9;
-    [, , $child_id] = $this->createIndividualNutritionEncounterData($timestamp, $muac_value, $zscore_value, 'edema', $weight_value);
+    [, , $child_id] = $this->createIndividualNutritionEncounterData($timestamp, $muac_value, 'edema', $weight_value);
 
     foreach ($sessions as $session) {
       if (!isset($session['session_data'])) {
@@ -209,7 +208,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
         $measurements_state = HEDLEY_STATS_MODERATE ? HEDLEY_STATS_SEVERE : HEDLEY_STATS_MODERATE;
 
         // Create measurements.
-        $this->createWeight($session_nid, $child_nid, $measurements[$measurements_state]['weight'], $session['date']);
+        $this->createWeight('weight', $session_nid, $child_nid, $measurements[$measurements_state]['weight'], $session['date']);
         $this->createHeight($session_nid, $child_nid, $measurements[$measurements_state]['height'], $session['date']);
         $this->createMuac('muac', $session_nid, $child_nid, $measurements[$measurements_state]['muac'], $session['date']);
         $this->createNutrition($session_nid, $child_nid, $measurements[$measurements_state]['nutrition'], $session['date']);
@@ -266,7 +265,6 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     foreach ($participant_entry['encounters'] as $encounter) {
       if (!empty($encounter['encounter_type']) && $encounter['encounter_type'] == 'nurse' &&
         !empty($encounter['muac']) && $encounter['muac'] == $muac_value &&
-        !empty($encounter['zscore_wasting']) && $encounter['zscore_wasting'] == $zscore_value &&
         !empty($encounter['nutrition_signs']) && in_array('edema', $encounter['nutrition_signs'])) {
         $encounter_entry = $encounter;
         break;
@@ -444,8 +442,6 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    *   The date of the encounter.
    * @param float $muac_value
    *   MUAC value to record.
-   * @param float $zscore_value
-   *   Length/height Z-score (wasting) value to record.
    * @param string $nutrition_sign
    *   Nutrition sign value to record.
    * @param float $weight_value
@@ -454,7 +450,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    * @return array
    *   Participant ID, encounter ID and child ID.
    */
-  protected function createIndividualNutritionEncounterData($timestamp, $muac_value = 11, $zscore_value = -1.5, $nutrition_sign = 'edema', $weight_value = 9) {
+  protected function createIndividualNutritionEncounterData($timestamp, $muac_value = 11, $nutrition_sign = 'edema', $weight_value = 9) {
     $mother_id = $this->createMother($this->clinicId);
     $child_id = $this->createChild($mother_id, $this->healthCenterId, $timestamp, $timestamp);
 
@@ -517,9 +513,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $nurse_uid = !empty($this->nurse) ? $this->nurse->uid : $this->createNurse($this->clinicId)->uid;
 
     $this->createMuac('nutrition_muac', $encounter->nid, $child_id, $muac_value, $timestamp);
-
-    $weight_id = $this->createWeight('nutrition_weight', $encounter->nid, $child_id, $weight_value, $timestamp);
-    $weight = node_load($weight_id);
+    $this->createWeight('nutrition_weight', $encounter->nid, $child_id, $weight_value, $timestamp);
 
     $nutrition = (object) [
       'type' => 'nutrition_nutrition',
