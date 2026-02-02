@@ -210,7 +210,6 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    */
   public function testSyncAndCache() {
     $this->createGroupNutritionData();
-    $this->createGroupNutritionData();
     $this->createIndividualNutritionEncounterData();
 
     $health_center_wrapper = entity_metadata_wrapper('node', $this->healthCenterId);
