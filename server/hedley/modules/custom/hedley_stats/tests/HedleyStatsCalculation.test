@@ -189,10 +189,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
 
     // Add an individual Nutrition encounter with measurements to assert
     // individual coverage.
-    $timestamp = strtotime('-7 days');
-    $muac_value = 11;
-    $weight_value = 9;
-    $this->createIndividualNutritionEncounterData($timestamp, $muac_value, 'edema', $weight_value);
+    $this->createIndividualNutritionEncounterData();
 
     foreach ($sessions as $session) {
       if (!isset($session['session_data'])) {
@@ -430,7 +427,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    * @param float $weight_value
    *   Weight value to record.
    */
-  protected function createIndividualNutritionEncounterData($timestamp, $muac_value = 11, $nutrition_sign = 'edema', $weight_value = 9) {
+  protected function createIndividualNutritionEncounterData($timestamp= '-7 days', $muac_value = 11, $nutrition_sign = 'edema', $weight_value = 9) {
     $mother_id = $this->createMother($this->clinicId);
     $child_id = $this->createChild($mother_id, $this->healthCenterId, $timestamp, $timestamp);
 
