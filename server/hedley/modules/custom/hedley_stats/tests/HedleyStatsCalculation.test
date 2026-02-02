@@ -63,6 +63,101 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
   }
 
   /**
+   * Create NCD encounter data to assert ncd_data stats.
+   */
+  protected function createNcdEncounterData() {
+    $timestamp = strtotime('-1 month');
+    $mother_id = $this->createMother($this->clinicId);
+    $child_id = $this->createChild($mother_id, $this->healthCenterId, $timestamp, $timestamp);
+    $participant = $this->createIndividualParticipant($child_id, $this->healthCenterId, $this->nurse->uid, $timestamp);
+
+    $encounter = (object) [
+      'type' => 'ncd_encounter',
+      'title' => 'NCD encounter',
+      'field_individual_participant' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $participant->nid],
+        ],
+      ],
+      'field_scheduled_date' => [
+        LANGUAGE_NONE => [
+          [
+            'value' => date('Y-m-d', $timestamp),
+            'value2' => date('Y-m-d', $timestamp),
+          ],
+        ],
+      ],
+      'field_shards' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $this->healthCenterId],
+        ],
+      ],
+    ];
+    node_save($encounter);
+
+    // Add NCD-related measurements/fields to ensure data presence.
+    $ncd_diagnoses = [
+      'type' => 'ncd_diagnoses',
+      'field_ncd_diagnoses' => [
+        LANGUAGE_NONE => [
+          ['value' => 'hypertension'],
+        ],
+      ],
+      'field_ncd_encounter' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $encounter->nid],
+        ],
+      ],
+      'field_shards' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $this->healthCenterId],
+        ],
+      ],
+    ];
+    node_save((object) $ncd_diagnoses);
+
+    $ncd_medical_conditions = [
+      'type' => 'ncd_core_exam',
+      'field_medical_conditions' => [
+        LANGUAGE_NONE => [
+          ['value' => 'diabetes'],
+        ],
+      ],
+      'field_ncd_encounter' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $encounter->nid],
+        ],
+      ],
+      'field_shards' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $this->healthCenterId],
+        ],
+      ],
+    ];
+    node_save((object) $ncd_medical_conditions);
+
+    $ncd_comorbidities = [
+      'type' => 'ncd_co_morbidities',
+      'field_comorbidities' => [
+        LANGUAGE_NONE => [
+          ['value' => 'asthma'],
+        ],
+      ],
+      'field_ncd_encounter' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $encounter->nid],
+        ],
+      ],
+      'field_shards' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $this->healthCenterId],
+        ],
+      ],
+    ];
+    node_save((object) $ncd_comorbidities);
+  }
+
+  /**
    * The health center ID.
    *
    * @var int
@@ -211,6 +306,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
   public function testSyncAndCache() {
     $this->createGroupNutritionData();
     $this->createIndividualNutritionEncounterData();
+    $this->createNcdEncounterData();
 
     $health_center_wrapper = entity_metadata_wrapper('node', $this->healthCenterId);
 
@@ -252,6 +348,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $this->assertFalse(empty($stats['total_encounters']));
     $this->assertFalse(empty($stats['nutrition_group_data']));
     $this->assertFalse(empty($stats['nutrition_individual_data']));
+    $this->assertFalse(empty($stats['ncd_data']));
 
     // Call again with cache hash to make sure we don't get the results this
     // time.
