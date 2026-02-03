@@ -420,6 +420,15 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $wrapper->field_person->set($person_id);
     $wrapper->field_date_measured->set($timestamp);
     $wrapper->field_ncd_encounter->set($encounter_id);
+    $wrapper->field_head_hair->set(['normal']);
+    $wrapper->field_eyes->set(['normal']);
+    $wrapper->field_neck->set(['normal']);
+    $wrapper->field_heart->set(['normal-rate-and-rhythm']);
+    $wrapper->field_heart_murmur->set(0);
+    $wrapper->field_lungs->set(['normal']);
+    $wrapper->field_abdomen->set(['normal']);
+    $wrapper->field_hands->set(['normal']);
+    $wrapper->field_legs->set(['normal']);
     $wrapper->save();
 
     return $node->nid;
