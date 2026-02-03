@@ -469,15 +469,15 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    *   The node ID of the child.
    * @param int $health_center_id
    *   The shard / health center ID.
-   * @param int $timestamp
-   *   Optional; enrollment date as unix timestamp, defaults to request time.
+   * @param int $date
+   *   Enrollment date as unix timestamp, defaults to request time.
    * @param string $encounter_type
    *   Encounter type value, e.g. 'nutrition' or 'ncd'.
    *
    * @return object
    *   The saved participant node.
    */
-  public function createIndividualParticipant($person_id, $health_center_id, $timestamp, $encounter_type) {
+  public function createIndividualParticipant($person_id, $health_center_id, $date, $encounter_type) {
     $node = $this->drupalCreateNode([
       'type' => 'individual_participant',
     ]);
@@ -486,8 +486,8 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $wrapper->field_person->set($person_id);
     $wrapper->field_encounter_type->set($encounter_type);
     $wrapper->field_expected->set([
-      'value' => date('Y-m-d', $timestamp),
-      'value2' => date('Y-m-d', $timestamp),
+      'value' => date('Y-m-d', $date),
+      'value2' => date('Y-m-d', $date),
     ]);
     $wrapper->save();
 

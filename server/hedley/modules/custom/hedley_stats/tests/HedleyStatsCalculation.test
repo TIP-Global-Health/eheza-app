@@ -55,6 +55,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
       'hedley_schedule',
       'hedley_activity',
       'hedley_nutrition',
+      'hedley_ncd',
     ]);
 
     // Create the base data for the test.
@@ -390,9 +391,10 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    *   Weight value to record.
    */
   protected function createIndividualNutritionEncounterData($timestamp = '-7 days', $muac_value = 11, $nutrition_sign = 'edema', $weight_value = 9) {
+    $date = strtotime($timestamp);
     $mother_id = $this->createMother($this->clinicId);
     $child_id = $this->createChild($mother_id, $this->healthCenterId);
-    $participant = $this->createIndividualParticipant($child_id, $this->healthCenterId, $timestamp, 'nutrition');
+    $participant = $this->createIndividualParticipant($child_id, $this->healthCenterId, $date, 'nutrition');
 
     $encounter = (object) [
       'type' => 'nutrition_encounter',
@@ -409,8 +411,8 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
       'field_scheduled_date' => [
         LANGUAGE_NONE => [
           [
-            'value' => date('Y-m-d', $timestamp),
-            'value2' => date('Y-m-d', $timestamp),
+            'value' => date('Y-m-d', $date),
+            'value2' => date('Y-m-d', $date),
           ],
         ],
       ],
@@ -422,10 +424,10 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     ];
     node_save($encounter);
 
-    $this->createMuac('nutrition_muac', $encounter->nid, $child_id, $muac_value, $timestamp);
-    $this->createHeight('nutrition_height', $encounter->nid, $child_id, 68, $timestamp);
-    $this->createWeight('nutrition_weight', $encounter->nid, $child_id, $weight_value, $timestamp);
-    $this->createNutrition('nutrition_nutrition', $encounter->nid, $child_id, $nutrition_sign, $timestamp);
+    $this->createMuac('nutrition_muac', $encounter->nid, $child_id, $muac_value, $date);
+    $this->createHeight('nutrition_height', $encounter->nid, $child_id, 68, $date);
+    $this->createWeight('nutrition_weight', $encounter->nid, $child_id, $weight_value, $date);
+    $this->createNutrition('nutrition_nutrition', $encounter->nid, $child_id, $nutrition_sign, $date);
   }
 
   /**
@@ -473,10 +475,9 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    * Create NCD encounter data to assert ncd_data stats.
    */
   protected function createNcdEncounterData() {
-    $timestamp = strtotime('-1 month');
-
+    $date = strtotime('-1 month');
     $mother_id = $this->createMother($this->clinicId);
-    $participant = $this->createIndividualParticipant($mother_id, $this->healthCenterId, $timestamp, 'ncd');
+    $participant = $this->createIndividualParticipant($mother_id, $this->healthCenterId, $date, 'ncd');
 
     $encounter = (object) [
       'type' => 'ncd_encounter',
@@ -489,8 +490,8 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
       'field_scheduled_date' => [
         LANGUAGE_NONE => [
           [
-            'value' => date('Y-m-d', $timestamp),
-            'value2' => date('Y-m-d', $timestamp),
+            'value' => date('Y-m-d', $date),
+            'value2' => date('Y-m-d', $date),
           ],
         ],
       ],
@@ -503,11 +504,11 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     node_save($encounter);
 
     // Add NCD-related measurements/fields to ensure data presence.
-    $this->createNcdDangerSigns($encounter->nid, $mother_id, $timestamp);
-    $this->createNcdSymptomReview($encounter->nid, $mother_id, $timestamp);
-    $this->createNcdCoreExam($encounter->nid, $mother_id, $timestamp);
-    $this->createNcdVitals($encounter->nid, $mother_id, $timestamp);
-    $this->createNcdFamilyPlanning($encounter->nid, $mother_id, $timestamp);
+    $this->createNcdDangerSigns($encounter->nid, $mother_id, $date);
+    $this->createNcdSymptomReview($encounter->nid, $mother_id, $date);
+    $this->createNcdCoreExam($encounter->nid, $mother_id, $date);
+    $this->createNcdVitals($encounter->nid, $mother_id, $date);
+    $this->createNcdFamilyPlanning($encounter->nid, $mother_id, $date);
   }
 
 }
