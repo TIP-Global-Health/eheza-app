@@ -172,6 +172,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $this->createGroupNutritionData();
     $this->createIndividualNutritionEncounterData();
     $this->createNcdEncounterData();
+    $this->createAcuteIllnessEncounterData();
 
     $health_center_wrapper = entity_metadata_wrapper('node', $this->healthCenterId);
 
@@ -214,6 +215,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $this->assertFalse(empty($stats['nutrition_group_data']));
     $this->assertFalse(empty($stats['nutrition_individual_data']));
     $this->assertFalse(empty($stats['ncd_data']));
+    $this->assertFalse(empty($stats['acute_illness_data']));
 
     // Call again with cache hash to make sure we don't get the results this
     // time.
@@ -509,6 +511,41 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $this->createNcdCoreExam($encounter->nid, $mother_id, $date);
     $this->createNcdVitals($encounter->nid, $mother_id, $date);
     $this->createNcdFamilyPlanning($encounter->nid, $mother_id, $date);
+  }
+
+  /**
+   * Create acute illness encounter data to assert acute_illness_data stats.
+   */
+  protected function createAcuteIllnessEncounterData() {
+    $date = strtotime('-2 weeks');
+    $child_id = $this->createChild($this->clinicId);
+    $participant = $this->createIndividualParticipant($child_id, $date, 'acute_illness');
+
+    $encounter = (object) [
+      'type' => 'acute_illness_encounter',
+      'title' => 'Acute illness encounter',
+      'field_individual_participant' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $participant->nid],
+        ],
+      ],
+      'field_scheduled_date' => [
+        LANGUAGE_NONE => [
+          [
+            'value' => date('Y-m-d', $date),
+            'value2' => date('Y-m-d', $date),
+          ],
+        ],
+      ],
+    ];
+    node_save($encounter);
+
+    $this->createAcuteIllnessSymptoms('symptoms_gi', $encounter->nid, $child_id, $date);
+    $this->createAcuteIllnessSymptoms('symptoms_general', $encounter->nid, $child_id, $date);
+    $this->createAcuteIllnessSymptoms('symptoms_respiratory', $encounter->nid, $child_id, $date);
+    $this->createAcuteIllnessVitals($encounter->nid, $child_id, $date);
+    $this->createAcuteIllnessCoreExam($encounter->nid, $child_id, $date);
+    $this->createAcuteFindings($encounter->nid, $child_id, $date);
   }
 
 }

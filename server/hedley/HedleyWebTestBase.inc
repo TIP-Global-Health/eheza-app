@@ -471,6 +471,97 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   }
 
   /**
+   * Create an acute illness symptom measurement entity of given type.
+   */
+  public function createAcuteIllnessSymptoms($type, $encounter_id, $person_id, $timestamp = REQUEST_TIME) {
+    $node = $this->drupalCreateNode(['type' => $type]);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_person->set($person_id);
+    $wrapper->field_date_measured->set($timestamp);
+    $wrapper->field_acute_illness_encounter->set($encounter_id);
+    switch ($type) {
+      case 'symptoms_gi':
+        $wrapper->field_symptoms_gi->set(['abdominal-pain']);
+        break;
+
+      case 'symptoms_general':
+        $wrapper->field_symptoms_general->set(['fever']);
+        break;
+
+      case 'symptoms_respiratory':
+        $wrapper->field_symptoms_respiratory->set(['cough']);
+        break;
+
+      default:
+        throw new NotFoundException("$type not supported for acute illness symptoms creation.");
+    }
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create an acute illness vitals entity.
+   */
+  public function createAcuteIllnessVitals($encounter_id, $person_id, $timestamp = REQUEST_TIME) {
+    $node = $this->drupalCreateNode(['type' => 'acute_illness_vitals']);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_person->set($person_id);
+    $wrapper->field_date_measured->set($timestamp);
+    $wrapper->field_acute_illness_encounter->set($encounter_id);
+    $wrapper->field_sys->set(110);
+    $wrapper->field_dia->set(70);
+    $wrapper->field_heart_rate->set(80);
+    $wrapper->field_respiratory_rate->set(20);
+    $wrapper->field_body_temperature->set(37.2);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create an acute illness core exam entity.
+   */
+  public function createAcuteIllnessCoreExam($encounter_id, $person_id, $timestamp = REQUEST_TIME) {
+    $node = $this->drupalCreateNode(['type' => 'acute_illness_core_exam']);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_person->set($person_id);
+    $wrapper->field_date_measured->set($timestamp);
+    $wrapper->field_acute_illness_encounter->set($encounter_id);
+    $wrapper->field_head_hair->set(['normal']);
+    $wrapper->field_eyes->set(['normal']);
+    $wrapper->field_neck->set(['normal']);
+    $wrapper->field_heart->set(['normal-rate-and-rhythm']);
+    $wrapper->field_heart_murmur->set(0);
+    $wrapper->field_lungs->set(['normal']);
+    $wrapper->field_abdomen->set(['normal']);
+    $wrapper->field_hands->set(['normal']);
+    $wrapper->field_legs->set(['normal']);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create an acute illness findings entity.
+   */
+  public function createAcuteFindings($encounter_id, $person_id, $timestamp = REQUEST_TIME) {
+    $node = $this->drupalCreateNode(['type' => 'acute_findings']);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_person->set($person_id);
+    $wrapper->field_date_measured->set($timestamp);
+    $wrapper->field_acute_illness_encounter->set($encounter_id);
+    $wrapper->field_acute_findings->set(['none']);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
    * Create an individual participant node.
    *
    * @param int $person_id
