@@ -381,7 +381,7 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   /**
    * Create an NCD danger signs entity.
    */
-  public function createNcdDangerSigns($encounter_id, $person_id, $health_center_id, $timestamp = REQUEST_TIME) {
+  public function createNcdDangerSigns($encounter_id, $person_id, $timestamp = REQUEST_TIME) {
     $node = $this->drupalCreateNode(['type' => 'ncd_danger_signs']);
 
     $wrapper = entity_metadata_wrapper('node', $node);
@@ -397,7 +397,7 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   /**
    * Create an NCD symptom review entity.
    */
-  public function createNcdSymptomReview($encounter_id, $person_id, $health_center_id, $timestamp = REQUEST_TIME) {
+  public function createNcdSymptomReview($encounter_id, $person_id, $timestamp = REQUEST_TIME) {
     $node = $this->drupalCreateNode(['type' => 'ncd_symptom_review']);
 
     $wrapper = entity_metadata_wrapper('node', $node);
@@ -413,7 +413,7 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   /**
    * Create an NCD core exam entity.
    */
-  public function createNcdCoreExam($encounter_id, $person_id, $health_center_id, $timestamp = REQUEST_TIME) {
+  public function createNcdCoreExam($encounter_id, $person_id, $timestamp = REQUEST_TIME) {
     $node = $this->drupalCreateNode(['type' => 'ncd_core_exam']);
 
     $wrapper = entity_metadata_wrapper('node', $node);
@@ -429,7 +429,7 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   /**
    * Create an NCD vitals entity.
    */
-  public function createNcdVitals($encounter_id, $person_id, $health_center_id, $timestamp = REQUEST_TIME) {
+  public function createNcdVitals($encounter_id, $person_id, $timestamp = REQUEST_TIME) {
     $node = $this->drupalCreateNode(['type' => 'ncd_vitals']);
 
     $wrapper = entity_metadata_wrapper('node', $node);
@@ -449,7 +449,7 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   /**
    * Create an NCD family planning entity.
    */
-  public function createNcdFamilyPlanning($encounter_id, $person_id, $health_center_id, $timestamp = REQUEST_TIME) {
+  public function createNcdFamilyPlanning($encounter_id, $person_id, $timestamp = REQUEST_TIME) {
     $node = $this->drupalCreateNode(['type' => 'ncd_family_planning']);
 
     $wrapper = entity_metadata_wrapper('node', $node);

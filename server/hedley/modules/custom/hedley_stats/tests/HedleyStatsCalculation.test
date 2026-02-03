@@ -503,11 +503,11 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     node_save($encounter);
 
     // Add NCD-related measurements/fields to ensure data presence.
-    $this->createNcdDangerSigns($encounter->nid, $mother_id, $this->healthCenterId, $timestamp);
-    $this->createNcdSymptomReview($encounter->nid, $mother_id, $this->healthCenterId, $timestamp);
-    $this->createNcdCoreExam($encounter->nid, $mother_id, $this->healthCenterId, $timestamp);
-    $this->createNcdVitals($encounter->nid, $mother_id, $this->healthCenterId, $timestamp);
-    $this->createNcdFamilyPlanning($encounter->nid, $mother_id, $this->healthCenterId, $timestamp);
+    $this->createNcdDangerSigns($encounter->nid, $mother_id, $timestamp);
+    $this->createNcdSymptomReview($encounter->nid, $mother_id, $timestamp);
+    $this->createNcdCoreExam($encounter->nid, $mother_id, $timestamp);
+    $this->createNcdVitals($encounter->nid, $mother_id, $timestamp);
+    $this->createNcdFamilyPlanning($encounter->nid, $mother_id, $timestamp);
   }
 
 }
