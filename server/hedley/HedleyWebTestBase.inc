@@ -482,15 +482,25 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $wrapper->field_acute_illness_encounter->set($encounter_id);
     switch ($type) {
       case 'symptoms_gi':
-        $wrapper->field_symptoms_gi->set(['abdominal-pain']);
+        $wrapper->field_nausea_period->set(2);
+        $wrapper->field_bloody_diarrhea_period->set(2);
+        $wrapper->field_vomiting_period->set(3);
+        $wrapper->field_abdominal_pain_period->set(1);
         break;
 
       case 'symptoms_general':
-        $wrapper->field_symptoms_general->set(['fever']);
+        $wrapper->field_night_sweats_period->set(2);
+        $wrapper->field_headache_period->set(2);
+        $wrapper->field_poor_suck_period->set(2);
+        $wrapper->field_unable_to_drink_period->set(2);
+        $wrapper->field_unable_to_eat_period->set(2);
         break;
 
       case 'symptoms_respiratory':
-        $wrapper->field_symptoms_respiratory->set(['cough']);
+        $wrapper->field_shortness_of_breath_period->set(3);
+        $wrapper->field_nasal_congestion_period->set(3);
+        $wrapper->field_blood_in_sputum_period->set(3);
+        $wrapper->field_sore_throat_period->set(2);
         break;
 
       default:
@@ -531,15 +541,8 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $wrapper->field_person->set($person_id);
     $wrapper->field_date_measured->set($timestamp);
     $wrapper->field_acute_illness_encounter->set($encounter_id);
-    $wrapper->field_head_hair->set(['normal']);
-    $wrapper->field_eyes->set(['normal']);
-    $wrapper->field_neck->set(['normal']);
     $wrapper->field_heart->set(['normal-rate-and-rhythm']);
-    $wrapper->field_heart_murmur->set(0);
     $wrapper->field_lungs->set(['normal']);
-    $wrapper->field_abdomen->set(['normal']);
-    $wrapper->field_hands->set(['normal']);
-    $wrapper->field_legs->set(['normal']);
     $wrapper->save();
 
     return $node->nid;
@@ -555,7 +558,8 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $wrapper->field_person->set($person_id);
     $wrapper->field_date_measured->set($timestamp);
     $wrapper->field_acute_illness_encounter->set($encounter_id);
-    $wrapper->field_acute_findings->set(['none']);
+    $wrapper->field_findings_signs_general->set(['jaundice']);
+    $wrapper->field_findings_signs_respiratory->set(['stridor']);
     $wrapper->save();
 
     return $node->nid;
@@ -566,8 +570,6 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    *
    * @param int $person_id
    *   The node ID of the child.
-   * @param int $health_center_id
-   *   The shard / health center ID.
    * @param int $date
    *   Enrollment date as unix timestamp, defaults to request time.
    * @param string $encounter_type
@@ -576,7 +578,7 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    * @return object
    *   The saved participant node.
    */
-  public function createIndividualParticipant($person_id, $health_center_id, $date, $encounter_type) {
+  public function createIndividualParticipant($person_id, $date, $encounter_type) {
     $node = $this->drupalCreateNode([
       'type' => 'individual_participant',
     ]);

@@ -49,13 +49,14 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    */
   public function setUp() {
     parent::setUp([
-      'hedley_device',
-      'hedley_person',
-      'hedley_patient',
-      'hedley_schedule',
       'hedley_activity',
-      'hedley_nutrition',
+      'hedley_acute_illness',
+      'hedley_device',
       'hedley_ncd',
+      'hedley_nutrition',
+      'hedley_patient',
+      'hedley_person',
+      'hedley_schedule',
     ]);
 
     // Create the base data for the test.
@@ -396,7 +397,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $date = strtotime($timestamp);
     $mother_id = $this->createMother($this->clinicId);
     $child_id = $this->createChild($mother_id, $this->healthCenterId);
-    $participant = $this->createIndividualParticipant($child_id, $this->healthCenterId, $date, 'nutrition');
+    $participant = $this->createIndividualParticipant($child_id, $date, 'nutrition');
 
     $encounter = (object) [
       'type' => 'nutrition_encounter',
@@ -479,7 +480,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
   protected function createNcdEncounterData() {
     $date = strtotime('-1 month');
     $mother_id = $this->createMother($this->clinicId);
-    $participant = $this->createIndividualParticipant($mother_id, $this->healthCenterId, $date, 'ncd');
+    $participant = $this->createIndividualParticipant($mother_id, $date, 'ncd');
 
     $encounter = (object) [
       'type' => 'ncd_encounter',
@@ -519,7 +520,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
   protected function createAcuteIllnessEncounterData() {
     $date = strtotime('-2 weeks');
     $child_id = $this->createChild($this->clinicId);
-    $participant = $this->createIndividualParticipant($child_id, $date, 'acute_illness');
+    $participant = $this->createIndividualParticipant($child_id, $date, 'acute-illness');
 
     $encounter = (object) [
       'type' => 'acute_illness_encounter',
