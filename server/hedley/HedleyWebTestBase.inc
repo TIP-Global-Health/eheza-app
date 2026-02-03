@@ -388,7 +388,6 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $wrapper->field_person->set($person_id);
     $wrapper->field_date_measured->set($timestamp);
     $wrapper->field_ncd_encounter->set($encounter_id);
-    $wrapper->field_shards->set($health_center_id);
     $wrapper->field_ncd_danger_signs->set(['headache']);
     $wrapper->save();
 
@@ -405,7 +404,6 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $wrapper->field_person->set($person_id);
     $wrapper->field_date_measured->set($timestamp);
     $wrapper->field_ncd_encounter->set($encounter_id);
-    $wrapper->field_shards->set($health_center_id);
     $wrapper->field_ncd_group1_symptoms->set(['cough']);
     $wrapper->save();
 
@@ -422,7 +420,6 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $wrapper->field_person->set($person_id);
     $wrapper->field_date_measured->set($timestamp);
     $wrapper->field_ncd_encounter->set($encounter_id);
-    $wrapper->field_shards->set($health_center_id);
     $wrapper->field_medical_conditions->set(['diabetes']);
     $wrapper->save();
 
@@ -439,7 +436,6 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $wrapper->field_person->set($person_id);
     $wrapper->field_date_measured->set($timestamp);
     $wrapper->field_ncd_encounter->set($encounter_id);
-    $wrapper->field_shards->set($health_center_id);
     $wrapper->field_sys->set(120);
     $wrapper->field_dia->set(80);
     $wrapper->field_heart_rate->set(70);
@@ -460,7 +456,6 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $wrapper->field_person->set($person_id);
     $wrapper->field_date_measured->set($timestamp);
     $wrapper->field_ncd_encounter->set($encounter_id);
-    $wrapper->field_shards->set($health_center_id);
     $wrapper->field_family_planning_signs->set(['pill']);
     $wrapper->save();
 
@@ -494,7 +489,6 @@ class HedleyWebTestBase extends DrupalWebTestCase {
       'value' => date('Y-m-d', $timestamp),
       'value2' => date('Y-m-d', $timestamp),
     ]);
-    $wrapper->field_shards->set($health_center_id);
     $wrapper->save();
 
     return $node;
