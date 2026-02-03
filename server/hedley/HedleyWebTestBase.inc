@@ -379,6 +379,95 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   }
 
   /**
+   * Create an NCD danger signs entity.
+   */
+  public function createNcdDangerSigns($encounter_id, $person_id, $health_center_id, $timestamp = REQUEST_TIME) {
+    $node = $this->drupalCreateNode(['type' => 'ncd_danger_signs']);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_person->set($person_id);
+    $wrapper->field_date_measured->set($timestamp);
+    $wrapper->field_ncd_encounter->set($encounter_id);
+    $wrapper->field_shards->set($health_center_id);
+    $wrapper->field_ncd_danger_signs->set(['headache']);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create an NCD symptom review entity.
+   */
+  public function createNcdSymptomReview($encounter_id, $person_id, $health_center_id, $timestamp = REQUEST_TIME) {
+    $node = $this->drupalCreateNode(['type' => 'ncd_symptom_review']);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_person->set($person_id);
+    $wrapper->field_date_measured->set($timestamp);
+    $wrapper->field_ncd_encounter->set($encounter_id);
+    $wrapper->field_shards->set($health_center_id);
+    $wrapper->field_ncd_group1_symptoms->set(['cough']);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create an NCD core exam entity.
+   */
+  public function createNcdCoreExam($encounter_id, $person_id, $health_center_id, $timestamp = REQUEST_TIME) {
+    $node = $this->drupalCreateNode(['type' => 'ncd_core_exam']);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_person->set($person_id);
+    $wrapper->field_date_measured->set($timestamp);
+    $wrapper->field_ncd_encounter->set($encounter_id);
+    $wrapper->field_shards->set($health_center_id);
+    $wrapper->field_medical_conditions->set(['diabetes']);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create an NCD vitals entity.
+   */
+  public function createNcdVitals($encounter_id, $person_id, $health_center_id, $timestamp = REQUEST_TIME) {
+    $node = $this->drupalCreateNode(['type' => 'ncd_vitals']);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_person->set($person_id);
+    $wrapper->field_date_measured->set($timestamp);
+    $wrapper->field_ncd_encounter->set($encounter_id);
+    $wrapper->field_shards->set($health_center_id);
+    $wrapper->field_sys->set(120);
+    $wrapper->field_dia->set(80);
+    $wrapper->field_heart_rate->set(70);
+    $wrapper->field_respiratory_rate->set(18);
+    $wrapper->field_body_temperature->set(36.6);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create an NCD family planning entity.
+   */
+  public function createNcdFamilyPlanning($encounter_id, $person_id, $health_center_id, $timestamp = REQUEST_TIME) {
+    $node = $this->drupalCreateNode(['type' => 'ncd_family_planning']);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_person->set($person_id);
+    $wrapper->field_date_measured->set($timestamp);
+    $wrapper->field_ncd_encounter->set($encounter_id);
+    $wrapper->field_shards->set($health_center_id);
+    $wrapper->field_family_planning_signs->set(['pill']);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
    * Create an individual participant node.
    *
    * @param int $person_id

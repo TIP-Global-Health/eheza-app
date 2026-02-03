@@ -503,65 +503,11 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     node_save($encounter);
 
     // Add NCD-related measurements/fields to ensure data presence.
-    $ncd_diagnoses = [
-      'type' => 'ncd_diagnoses',
-      'field_ncd_diagnoses' => [
-        LANGUAGE_NONE => [
-          ['value' => 'hypertension'],
-        ],
-      ],
-      'field_ncd_encounter' => [
-        LANGUAGE_NONE => [
-          ['target_id' => $encounter->nid],
-        ],
-      ],
-      'field_shards' => [
-        LANGUAGE_NONE => [
-          ['target_id' => $this->healthCenterId],
-        ],
-      ],
-    ];
-    node_save((object) $ncd_diagnoses);
-
-    $ncd_medical_conditions = [
-      'type' => 'ncd_core_exam',
-      'field_medical_conditions' => [
-        LANGUAGE_NONE => [
-          ['value' => 'diabetes'],
-        ],
-      ],
-      'field_ncd_encounter' => [
-        LANGUAGE_NONE => [
-          ['target_id' => $encounter->nid],
-        ],
-      ],
-      'field_shards' => [
-        LANGUAGE_NONE => [
-          ['target_id' => $this->healthCenterId],
-        ],
-      ],
-    ];
-    node_save((object) $ncd_medical_conditions);
-
-    $ncd_comorbidities = [
-      'type' => 'ncd_co_morbidities',
-      'field_comorbidities' => [
-        LANGUAGE_NONE => [
-          ['value' => 'asthma'],
-        ],
-      ],
-      'field_ncd_encounter' => [
-        LANGUAGE_NONE => [
-          ['target_id' => $encounter->nid],
-        ],
-      ],
-      'field_shards' => [
-        LANGUAGE_NONE => [
-          ['target_id' => $this->healthCenterId],
-        ],
-      ],
-    ];
-    node_save((object) $ncd_comorbidities);
+    $this->createNcdDangerSigns($encounter->nid, $mother_id, $this->healthCenterId, $timestamp);
+    $this->createNcdSymptomReview($encounter->nid, $mother_id, $this->healthCenterId, $timestamp);
+    $this->createNcdCoreExam($encounter->nid, $mother_id, $this->healthCenterId, $timestamp);
+    $this->createNcdVitals($encounter->nid, $mother_id, $this->healthCenterId, $timestamp);
+    $this->createNcdFamilyPlanning($encounter->nid, $mother_id, $this->healthCenterId, $timestamp);
   }
 
 }
