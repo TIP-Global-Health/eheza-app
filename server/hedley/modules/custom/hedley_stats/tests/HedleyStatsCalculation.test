@@ -22,140 +22,6 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
   }
 
   /**
-   * Create group nutrition data (sessions, attendance, and measurements).
-   */
-  protected function createGroupNutritionData() {
-    $measurements = [
-      HEDLEY_STATS_MODERATE => [
-        'weight' => 8,
-        'height' => 75,
-        'muac' => 12,
-        'nutrition' => 'none',
-      ],
-      HEDLEY_STATS_SEVERE => [
-        'weight' => 5,
-        'height' => 72,
-        'muac' => 11,
-        'nutrition' => 'edema',
-      ],
-    ];
-
-    $attendance = 40;
-    $sessions = $this->createSessionsWithAttendance($attendance, $attendance);
-
-    foreach ($sessions as $session) {
-      if (empty($session['session_data'])) {
-        continue;
-      }
-
-      $session_data = $session['session_data'];
-      $session_nid = $session_data['session_nid'];
-      $measurements_state = HEDLEY_STATS_MODERATE;
-
-      foreach ($session_data['children'] as $child_nid) {
-        $measurements_state = $measurements_state == HEDLEY_STATS_MODERATE ? HEDLEY_STATS_SEVERE : HEDLEY_STATS_MODERATE;
-        $this->createWeight('weight', $session_nid, $child_nid, $measurements[$measurements_state]['weight'], $session['date']);
-        $this->createHeight('height', $session_nid, $child_nid, $measurements[$measurements_state]['height'], $session['date']);
-        $this->createMuac('muac', $session_nid, $child_nid, $measurements[$measurements_state]['muac'], $session['date']);
-        $this->createNutrition('nutrition', $session_nid, $child_nid, $measurements[$measurements_state]['nutrition'], $session['date']);
-      }
-    }
-  }
-
-  /**
-   * Create NCD encounter data to assert ncd_data stats.
-   */
-  protected function createNcdEncounterData() {
-    $timestamp = strtotime('-1 month');
-    $participant = $this->createIndividualParticipantForTests($timestamp, 'ncd');
-
-    $encounter = (object) [
-      'type' => 'ncd_encounter',
-      'title' => 'NCD encounter',
-      'field_individual_participant' => [
-        LANGUAGE_NONE => [
-          ['target_id' => $participant->nid],
-        ],
-      ],
-      'field_scheduled_date' => [
-        LANGUAGE_NONE => [
-          [
-            'value' => date('Y-m-d', $timestamp),
-            'value2' => date('Y-m-d', $timestamp),
-          ],
-        ],
-      ],
-      'field_shards' => [
-        LANGUAGE_NONE => [
-          ['target_id' => $this->healthCenterId],
-        ],
-      ],
-    ];
-    node_save($encounter);
-
-    // Add NCD-related measurements/fields to ensure data presence.
-    $ncd_diagnoses = [
-      'type' => 'ncd_diagnoses',
-      'field_ncd_diagnoses' => [
-        LANGUAGE_NONE => [
-          ['value' => 'hypertension'],
-        ],
-      ],
-      'field_ncd_encounter' => [
-        LANGUAGE_NONE => [
-          ['target_id' => $encounter->nid],
-        ],
-      ],
-      'field_shards' => [
-        LANGUAGE_NONE => [
-          ['target_id' => $this->healthCenterId],
-        ],
-      ],
-    ];
-    node_save((object) $ncd_diagnoses);
-
-    $ncd_medical_conditions = [
-      'type' => 'ncd_core_exam',
-      'field_medical_conditions' => [
-        LANGUAGE_NONE => [
-          ['value' => 'diabetes'],
-        ],
-      ],
-      'field_ncd_encounter' => [
-        LANGUAGE_NONE => [
-          ['target_id' => $encounter->nid],
-        ],
-      ],
-      'field_shards' => [
-        LANGUAGE_NONE => [
-          ['target_id' => $this->healthCenterId],
-        ],
-      ],
-    ];
-    node_save((object) $ncd_medical_conditions);
-
-    $ncd_comorbidities = [
-      'type' => 'ncd_co_morbidities',
-      'field_comorbidities' => [
-        LANGUAGE_NONE => [
-          ['value' => 'asthma'],
-        ],
-      ],
-      'field_ncd_encounter' => [
-        LANGUAGE_NONE => [
-          ['target_id' => $encounter->nid],
-        ],
-      ],
-      'field_shards' => [
-        LANGUAGE_NONE => [
-          ['target_id' => $this->healthCenterId],
-        ],
-      ],
-    ];
-    node_save((object) $ncd_comorbidities);
-  }
-
-  /**
    * The health center ID.
    *
    * @var int
@@ -277,7 +143,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     ];
     $fbf_clinics = hedley_health_center_get_clinics_of_health_center($this->healthCenterId, 'fbf');
     $patients_details = [];
-    list($completed_programs, $missed_sessions) = hedley_stats_get_session_attendance_stats_by_health_center($this->healthCenterId, $fbf_clinics, $patients_details);
+    [$completed_programs, $missed_sessions] = hedley_stats_get_session_attendance_stats_by_health_center($this->healthCenterId, $fbf_clinics, $patients_details);
 
     // Filter missed sessions.
     $count_missed_sessions = 0;
@@ -524,7 +390,9 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    *   Weight value to record.
    */
   protected function createIndividualNutritionEncounterData($timestamp = '-7 days', $muac_value = 11, $nutrition_sign = 'edema', $weight_value = 9) {
-    $participant = $this->createIndividualParticipantForTests($timestamp, 'nutrition');
+    $mother_id = $this->createMother($this->clinicId);
+    $child_id = $this->createChild($mother_id, $this->healthCenterId);
+    $participant = $this->createIndividualParticipant($child_id, $this->healthCenterId, $timestamp, 'nutrition');
 
     $encounter = (object) [
       'type' => 'nutrition_encounter',
@@ -561,25 +429,139 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
   }
 
   /**
-   * Helper to create an individual participant for tests.
-   *
-   * @param int|string $timestamp
-   *   Enrollment date as unix timestamp or strtotime()-parsable string.
-   * @param string $encounter_type
-   *   Encounter type value, e.g. 'nutrition' or 'ncd'.
-   *
-   * @return object
-   *   The saved participant node.
+   * Create group nutrition data (sessions, attendance, and measurements).
    */
-  protected function createIndividualParticipantForTests($timestamp, $encounter_type = 'nutrition') {
-    if (!is_int($timestamp)) {
-      $timestamp = strtotime($timestamp);
+  protected function createGroupNutritionData() {
+    $measurements = [
+      HEDLEY_STATS_MODERATE => [
+        'weight' => 8,
+        'height' => 75,
+        'muac' => 12,
+        'nutrition' => 'none',
+      ],
+      HEDLEY_STATS_SEVERE => [
+        'weight' => 5,
+        'height' => 72,
+        'muac' => 11,
+        'nutrition' => 'edema',
+      ],
+    ];
+
+    $attendance = 40;
+    $sessions = $this->createSessionsWithAttendance($attendance, $attendance);
+
+    foreach ($sessions as $session) {
+      if (empty($session['session_data'])) {
+        continue;
+      }
+
+      $session_data = $session['session_data'];
+      $session_nid = $session_data['session_nid'];
+      $measurements_state = HEDLEY_STATS_MODERATE;
+
+      foreach ($session_data['children'] as $child_nid) {
+        $measurements_state = $measurements_state == HEDLEY_STATS_MODERATE ? HEDLEY_STATS_SEVERE : HEDLEY_STATS_MODERATE;
+        $this->createWeight('weight', $session_nid, $child_nid, $measurements[$measurements_state]['weight'], $session['date']);
+        $this->createHeight('height', $session_nid, $child_nid, $measurements[$measurements_state]['height'], $session['date']);
+        $this->createMuac('muac', $session_nid, $child_nid, $measurements[$measurements_state]['muac'], $session['date']);
+        $this->createNutrition('nutrition', $session_nid, $child_nid, $measurements[$measurements_state]['nutrition'], $session['date']);
+      }
     }
+  }
+
+  /**
+   * Create NCD encounter data to assert ncd_data stats.
+   */
+  protected function createNcdEncounterData() {
+    $timestamp = strtotime('-1 month');
 
     $mother_id = $this->createMother($this->clinicId);
-    $child_id = $this->createChild($mother_id, $this->healthCenterId, $timestamp, $timestamp);
+    $participant = $this->createIndividualParticipant($mother_id, $this->healthCenterId, $timestamp, 'ncd');
 
-    return $this->createIndividualParticipantWithType($child_id, $this->healthCenterId, $timestamp, $encounter_type, $this->nurse->uid);
+    $encounter = (object) [
+      'type' => 'ncd_encounter',
+      'title' => 'NCD encounter',
+      'field_individual_participant' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $participant->nid],
+        ],
+      ],
+      'field_scheduled_date' => [
+        LANGUAGE_NONE => [
+          [
+            'value' => date('Y-m-d', $timestamp),
+            'value2' => date('Y-m-d', $timestamp),
+          ],
+        ],
+      ],
+      'field_shards' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $this->healthCenterId],
+        ],
+      ],
+    ];
+    node_save($encounter);
+
+    // Add NCD-related measurements/fields to ensure data presence.
+    $ncd_diagnoses = [
+      'type' => 'ncd_diagnoses',
+      'field_ncd_diagnoses' => [
+        LANGUAGE_NONE => [
+          ['value' => 'hypertension'],
+        ],
+      ],
+      'field_ncd_encounter' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $encounter->nid],
+        ],
+      ],
+      'field_shards' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $this->healthCenterId],
+        ],
+      ],
+    ];
+    node_save((object) $ncd_diagnoses);
+
+    $ncd_medical_conditions = [
+      'type' => 'ncd_core_exam',
+      'field_medical_conditions' => [
+        LANGUAGE_NONE => [
+          ['value' => 'diabetes'],
+        ],
+      ],
+      'field_ncd_encounter' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $encounter->nid],
+        ],
+      ],
+      'field_shards' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $this->healthCenterId],
+        ],
+      ],
+    ];
+    node_save((object) $ncd_medical_conditions);
+
+    $ncd_comorbidities = [
+      'type' => 'ncd_co_morbidities',
+      'field_comorbidities' => [
+        LANGUAGE_NONE => [
+          ['value' => 'asthma'],
+        ],
+      ],
+      'field_ncd_encounter' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $encounter->nid],
+        ],
+      ],
+      'field_shards' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $this->healthCenterId],
+        ],
+      ],
+    ];
+    node_save((object) $ncd_comorbidities);
   }
 
 }
