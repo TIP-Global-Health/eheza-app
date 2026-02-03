@@ -420,7 +420,6 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $wrapper->field_person->set($person_id);
     $wrapper->field_date_measured->set($timestamp);
     $wrapper->field_ncd_encounter->set($encounter_id);
-    $wrapper->field_medical_conditions->set(['diabetes']);
     $wrapper->save();
 
     return $node->nid;
