@@ -22605,7 +22605,7 @@ translationSet trans =
         SecondName ->
             { english = "Second Name"
             , kinyarwanda = Just "Izina ry'umuryango"
-            , kirundi = Just "Izina ry'Ikirundi"
+            , kirundi = Just "Izina ry'ikirundi"
             }
 
         Sector ->
