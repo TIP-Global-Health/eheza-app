@@ -381,14 +381,26 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   /**
    * Create an NCD danger signs entity.
    */
-  public function createNcdDangerSigns($encounter_id, $person_id, $timestamp = REQUEST_TIME) {
-    $node = $this->drupalCreateNode(['type' => 'ncd_danger_signs']);
+  public function createDangerSigns($type, $encounter_id, $person_id, $timestamp = REQUEST_TIME) {
+    $node = $this->drupalCreateNode(['type' => $type]);
 
     $wrapper = entity_metadata_wrapper('node', $node);
     $wrapper->field_person->set($person_id);
     $wrapper->field_date_measured->set($timestamp);
-    $wrapper->field_ncd_encounter->set($encounter_id);
-    $wrapper->field_ncd_danger_signs->set(['headache']);
+    switch ($type) {
+      case 'ncd_danger_signs':
+        $wrapper->field_ncd_encounter->set($encounter_id);
+        $wrapper->field_ncd_danger_signs->set(['headache']);
+        break;
+
+      case 'danger_signs':
+        $wrapper->field_prenatal_encounter->set($encounter_id);
+        $wrapper->field_danger_signs->set(['bleeding']);
+        break;
+
+      default:
+        throw new NotFoundException("$type not supported for danger signs creation.");
+    }
     $wrapper->save();
 
     return $node->nid;
@@ -413,13 +425,25 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   /**
    * Create an NCD core exam entity.
    */
-  public function createNcdCoreExam($encounter_id, $person_id, $timestamp = REQUEST_TIME) {
-    $node = $this->drupalCreateNode(['type' => 'ncd_core_exam']);
+  public function createCoreExam($type, $encounter_id, $person_id, $timestamp = REQUEST_TIME) {
+    $node = $this->drupalCreateNode(['type' => $type]);
 
     $wrapper = entity_metadata_wrapper('node', $node);
     $wrapper->field_person->set($person_id);
     $wrapper->field_date_measured->set($timestamp);
-    $wrapper->field_ncd_encounter->set($encounter_id);
+    switch ($type) {
+      case 'ncd_core_exam':
+        $wrapper->field_ncd_encounter->set($encounter_id);
+        break;
+
+      case 'core_physical_exam':
+        $wrapper->field_prenatal_encounter->set($encounter_id);
+        break;
+
+      default:
+        throw new NotFoundException("$type not supported for core exam creation.");
+    }
+
     $wrapper->field_head_hair->set(['normal']);
     $wrapper->field_eyes->set(['normal']);
     $wrapper->field_neck->set(['normal']);
@@ -604,6 +628,62 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $wrapper->field_birth_weight->set(3.1);
     $wrapper->field_weight->set(10.2);
     $wrapper->field_muac->set(14.5);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create a prenatal breastfeeding entity.
+   */
+  public function createPrenatalBreastfeeding($encounter_id, $person_id, $timestamp = REQUEST_TIME) {
+    $node = $this->drupalCreateNode(['type' => 'prenatal_breastfeeding']);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_person->set($person_id);
+    $wrapper->field_date_measured->set($timestamp);
+    $wrapper->field_prenatal_encounter->set($encounter_id);
+    $wrapper->field_breastfeeding_signs->set(['normal']);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create a breast exam entity.
+   */
+  public function createBreastExam($type, $encounter_id, $person_id, $timestamp = REQUEST_TIME) {
+    $node = $this->drupalCreateNode(['type' => $type]);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_person->set($person_id);
+    $wrapper->field_date_measured->set($timestamp);
+    switch ($type) {
+      case 'breast_exam':
+        $wrapper->field_prenatal_encounter->set($encounter_id);
+        break;
+
+      default:
+        throw new NotFoundException("$type not supported for breast exam creation.");
+    }
+    $wrapper->field_breast_exam_signs->set(['normal']);
+    $wrapper->field_discharge_type->set(['none']);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create a prenatal GU exam entity.
+   */
+  public function createPrenatalGuExam($encounter_id, $person_id, $timestamp = REQUEST_TIME) {
+    $node = $this->drupalCreateNode(['type' => 'prenatal_gu_exam']);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_person->set($person_id);
+    $wrapper->field_date_measured->set($timestamp);
+    $wrapper->field_prenatal_encounter->set($encounter_id);
+    $wrapper->field_gu_exam_signs->set(['normal']);
     $wrapper->save();
 
     return $node->nid;
