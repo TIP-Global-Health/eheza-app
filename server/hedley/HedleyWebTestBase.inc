@@ -576,15 +576,7 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $wrapper->field_date_measured->set($timestamp);
     $wrapper->field_child_scoreboard_encounter->set($encounter_id);
     $wrapper->field_administered_doses->set(['dose-1']);
-    $wrapper->field_administration_dates->set([
-      LANGUAGE_NONE => [
-        [
-          'value' => date('Y-m-d', $timestamp),
-          'value2' => date('Y-m-d', $timestamp),
-        ],
-      ],
-    ]);
-    $wrapper->field_administration_note->set(['given']);
+    $wrapper->field_administration_note->set('administered-today');
     $wrapper->save();
 
     return $node->nid;

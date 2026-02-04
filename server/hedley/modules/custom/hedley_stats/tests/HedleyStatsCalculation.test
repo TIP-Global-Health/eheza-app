@@ -552,7 +552,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
   }
 
   /**
-   * Create child scoreboard encounter data to assert child_scoreboard_data stats.
+   * Create child scoreboard encounter data to assert it's data stats.
    */
   protected function createChildScorecardEncounterData() {
     $date = strtotime('-3 weeks');
