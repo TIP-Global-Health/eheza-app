@@ -16777,7 +16777,7 @@ translationSet trans =
                 Pages.Prenatal.Activity.Types.NextStepsNextVisit ->
                     { english = "Next ANC Visit"
                     , kinyarwanda = Just "Izuzuma ku mugore utwite rikurikira"
-                    , kirundi = Nothing
+                    , kirundi = Just "Isango rikurikira"
                     }
 
         PrescribedMedication ->
