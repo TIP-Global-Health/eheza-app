@@ -635,7 +635,7 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $wrapper->field_person->set($person_id);
     $wrapper->field_date_measured->set($timestamp);
     $wrapper->field_prenatal_encounter->set($encounter_id);
-    $wrapper->field_breastfeeding_signs->set(['normal']);
+    $wrapper->field_breastfeeding_signs->set(['breast-pain']);
     $wrapper->save();
 
     return $node->nid;
@@ -644,22 +644,15 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   /**
    * Create a breast exam entity.
    */
-  public function createBreastExam($type, $encounter_id, $person_id, $timestamp = REQUEST_TIME) {
-    $node = $this->drupalCreateNode(['type' => $type]);
+  public function createBreastExam($encounter_id, $person_id, $timestamp = REQUEST_TIME) {
+    $node = $this->drupalCreateNode(['type' => 'breast_exam']);
 
     $wrapper = entity_metadata_wrapper('node', $node);
     $wrapper->field_person->set($person_id);
     $wrapper->field_date_measured->set($timestamp);
-    switch ($type) {
-      case 'breast_exam':
-        $wrapper->field_prenatal_encounter->set($encounter_id);
-        break;
-
-      default:
-        throw new NotFoundException("$type not supported for breast exam creation.");
-    }
-    $wrapper->field_breast_exam_signs->set(['normal']);
-    $wrapper->field_discharge_type->set(['none']);
+    $wrapper->field_prenatal_encounter->set($encounter_id);
+    $wrapper->field_breast->set(['normal']);
+    $wrapper->field_discharge_type->set(['green']);
     $wrapper->save();
 
     return $node->nid;

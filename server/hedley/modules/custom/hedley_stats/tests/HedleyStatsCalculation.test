@@ -559,7 +559,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
   protected function createPrenatalEncounterData() {
     $date = strtotime('-1 week');
     $mother_id = $this->createMother($this->clinicId);
-    $participant = $this->createIndividualParticipant($mother_id, $date, 'prenatal');
+    $participant = $this->createIndividualParticipant($mother_id, $date, 'antenatal');
 
     $encounter = (object) [
       'type' => 'prenatal_encounter',
@@ -581,7 +581,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     node_save($encounter);
 
     $this->createPrenatalBreastfeeding($encounter->nid, $mother_id, $date);
-    $this->createBreastExam('breast_exam', $encounter->nid, $mother_id, $date);
+    $this->createBreastExam($encounter->nid, $mother_id, $date);
     $this->createCoreExam('core_physical_exam', $encounter->nid, $mother_id, $date);
     $this->createDangerSigns('danger_signs', $encounter->nid, $mother_id, $date);
     $this->createPrenatalGuExam($encounter->nid, $mother_id, $date);
@@ -592,7 +592,8 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    */
   protected function createChildScorecardEncounterData() {
     $date = strtotime('-3 weeks');
-    $child_id = $this->createChild($this->clinicId);
+    $mother_id = $this->createMother($this->clinicId);
+    $child_id = $this->createChild($mother_id, $this->healthCenterId);
     $participant = $this->createIndividualParticipant($child_id, $date, 'child-scoreboard');
 
     $encounter = (object) [
