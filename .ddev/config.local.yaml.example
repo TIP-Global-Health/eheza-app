@@ -61,4 +61,7 @@ hooks:
     - exec: drush vset hedley_admin_feature_report_to_whatsapp_enabled 1
     - exec: drush vset hedley_admin_feature_hiv_management_enabled 1
     - exec: drush vset hedley_admin_feature_gps_coordinates_enabled 1
+    # Partner and Next of Kin feature is only enabled for Rwanda/Healthy Start deployments.
+    # For other deployments (VHW/UVL), comment out or remove the following line:
+    - exec: drush vset hedley_admin_feature_partner_and_next_of_kin_enabled 1
     - exec: drush uli
