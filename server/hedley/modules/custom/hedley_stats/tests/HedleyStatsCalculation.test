@@ -173,6 +173,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $this->createGroupNutritionData();
     $this->createIndividualNutritionEncounterData();
     $this->createNcdEncounterData();
+    $this->createPrenatalEncounterData();
     $this->createAcuteIllnessEncounterData();
     $this->createChildScorecardEncounterData();
 
@@ -217,6 +218,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $this->assertFalse(empty($stats['nutrition_group_data']));
     $this->assertFalse(empty($stats['nutrition_individual_data']));
     $this->assertFalse(empty($stats['ncd_data']));
+    $this->assertFalse(empty($stats['prenatal_data']));
     $this->assertFalse(empty($stats['acute_illness_data']));
     $this->assertFalse(empty($stats['child_scoreboard_data']));
 
@@ -509,9 +511,9 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     node_save($encounter);
 
     // Add NCD-related measurements/fields to ensure data presence.
-    $this->createNcdDangerSigns($encounter->nid, $mother_id, $date);
+    $this->createDangerSigns('ncd_danger_signs', $encounter->nid, $mother_id, $date);
     $this->createNcdSymptomReview($encounter->nid, $mother_id, $date);
-    $this->createNcdCoreExam($encounter->nid, $mother_id, $date);
+    $this->createCoreExam('ncd_core_exam', $encounter->nid, $mother_id, $date);
     $this->createNcdVitals($encounter->nid, $mother_id, $date);
     $this->createNcdFamilyPlanning($encounter->nid, $mother_id, $date);
   }
@@ -549,6 +551,40 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $this->createAcuteIllnessVitals($encounter->nid, $child_id, $date);
     $this->createAcuteIllnessCoreExam($encounter->nid, $child_id, $date);
     $this->createAcuteFindings($encounter->nid, $child_id, $date);
+  }
+
+  /**
+   * Create prenatal encounter data to assert it's stats.
+   */
+  protected function createPrenatalEncounterData() {
+    $date = strtotime('-1 week');
+    $mother_id = $this->createMother($this->clinicId);
+    $participant = $this->createIndividualParticipant($mother_id, $date, 'prenatal');
+
+    $encounter = (object) [
+      'type' => 'prenatal_encounter',
+      'title' => 'Prenatal encounter',
+      'field_individual_participant' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $participant->nid],
+        ],
+      ],
+      'field_scheduled_date' => [
+        LANGUAGE_NONE => [
+          [
+            'value' => date('Y-m-d', $date),
+            'value2' => date('Y-m-d', $date),
+          ],
+        ],
+      ],
+    ];
+    node_save($encounter);
+
+    $this->createPrenatalBreastfeeding($encounter->nid, $mother_id, $date);
+    $this->createBreastExam('breast_exam', $encounter->nid, $mother_id, $date);
+    $this->createCoreExam('core_physical_exam', $encounter->nid, $mother_id, $date);
+    $this->createDangerSigns('danger_signs', $encounter->nid, $mother_id, $date);
+    $this->createPrenatalGuExam($encounter->nid, $mother_id, $date);
   }
 
   /**
