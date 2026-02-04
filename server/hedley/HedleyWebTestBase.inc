@@ -566,6 +566,50 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   }
 
   /**
+   * Create a child scoreboard immunization entity (BCG/DTP).
+   */
+  public function createChildScoreboardImmunization($type, $encounter_id, $person_id, $timestamp = REQUEST_TIME) {
+    $node = $this->drupalCreateNode(['type' => $type]);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_person->set($person_id);
+    $wrapper->field_date_measured->set($timestamp);
+    $wrapper->field_child_scoreboard_encounter->set($encounter_id);
+    $wrapper->field_administered_doses->set(['dose-1']);
+    $wrapper->field_administration_dates->set([
+      LANGUAGE_NONE => [
+        [
+          'value' => date('Y-m-d', $timestamp),
+          'value2' => date('Y-m-d', $timestamp),
+        ],
+      ],
+    ]);
+    $wrapper->field_administration_note->set(['given']);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create a child scoreboard NCDA measurement.
+   */
+  public function createChildScoreboardNcda($encounter_id, $person_id, $timestamp = REQUEST_TIME) {
+    $node = $this->drupalCreateNode(['type' => 'child_scoreboard_ncda']);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_person->set($person_id);
+    $wrapper->field_date_measured->set($timestamp);
+    $wrapper->field_child_scoreboard_encounter->set($encounter_id);
+    $wrapper->field_ncda_signs->set(['normal']);
+    $wrapper->field_birth_weight->set(3.1);
+    $wrapper->field_weight->set(10.2);
+    $wrapper->field_muac->set(14.5);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
    * Create an individual participant node.
    *
    * @param int $person_id

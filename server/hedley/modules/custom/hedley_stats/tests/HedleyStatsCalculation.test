@@ -174,6 +174,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $this->createIndividualNutritionEncounterData();
     $this->createNcdEncounterData();
     $this->createAcuteIllnessEncounterData();
+    $this->createChildScorecardEncounterData();
 
     $health_center_wrapper = entity_metadata_wrapper('node', $this->healthCenterId);
 
@@ -217,6 +218,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $this->assertFalse(empty($stats['nutrition_individual_data']));
     $this->assertFalse(empty($stats['ncd_data']));
     $this->assertFalse(empty($stats['acute_illness_data']));
+    $this->assertFalse(empty($stats['child_scoreboard_data']));
 
     // Call again with cache hash to make sure we don't get the results this
     // time.
@@ -547,6 +549,38 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $this->createAcuteIllnessVitals($encounter->nid, $child_id, $date);
     $this->createAcuteIllnessCoreExam($encounter->nid, $child_id, $date);
     $this->createAcuteFindings($encounter->nid, $child_id, $date);
+  }
+
+  /**
+   * Create child scoreboard encounter data to assert child_scoreboard_data stats.
+   */
+  protected function createChildScorecardEncounterData() {
+    $date = strtotime('-3 weeks');
+    $child_id = $this->createChild($this->clinicId);
+    $participant = $this->createIndividualParticipant($child_id, $date, 'child-scoreboard');
+
+    $encounter = (object) [
+      'type' => 'child_scoreboard_encounter',
+      'title' => 'Child scoreboard encounter',
+      'field_individual_participant' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $participant->nid],
+        ],
+      ],
+      'field_scheduled_date' => [
+        LANGUAGE_NONE => [
+          [
+            'value' => date('Y-m-d', $date),
+            'value2' => date('Y-m-d', $date),
+          ],
+        ],
+      ],
+    ];
+    node_save($encounter);
+
+    $this->createChildScoreboardImmunization('child_scoreboard_bcg_iz', $encounter->nid, $child_id, $date);
+    $this->createChildScoreboardImmunization('child_scoreboard_dtp_iz', $encounter->nid, $child_id, $date);
+    $this->createChildScoreboardNcda($encounter->nid, $child_id, $date);
   }
 
 }
