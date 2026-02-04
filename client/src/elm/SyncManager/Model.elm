@@ -728,6 +728,7 @@ type SiteFeature
     | FeatureGroupEducation
     | FeatureHIVManagement
     | FeatureNCDA
+    | FeaturePartnerAndNextOfKin
     | FeatureReportToWhatsApp
     | FeatureStockManagement
     | FeatureTuberculosisManagement

@@ -1965,6 +1965,9 @@ siteFeatureFromString str =
         "gps_coordinates" ->
             Just FeatureGPSCoordinates
 
+        "partner_and_next_of_kin" ->
+            Just FeaturePartnerAndNextOfKin
+
         _ ->
             Nothing
 
@@ -1992,6 +1995,9 @@ siteFeatureToString feature =
 
         FeatureGPSCoordinates ->
             "gps_coordinates"
+
+        FeaturePartnerAndNextOfKin ->
+            "partner_and_next_of_kin"
 
 
 siteFeaturesFromString : String -> EverySet SiteFeature
