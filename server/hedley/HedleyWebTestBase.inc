@@ -652,7 +652,7 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $wrapper->field_date_measured->set($timestamp);
     $wrapper->field_prenatal_encounter->set($encounter_id);
     $wrapper->field_breast->set(['normal']);
-    $wrapper->field_discharge_type->set(['green']);
+    $wrapper->field_discharge_type->set('green');
     $wrapper->save();
 
     return $node->nid;
