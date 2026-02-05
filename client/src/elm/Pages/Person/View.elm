@@ -39,7 +39,7 @@ import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.PrenatalActivity.Model
 import Backend.Relationship.Model exposing (MyRelationship)
 import Backend.Session.Utils exposing (getSession)
-import Backend.Utils exposing (gpsCoordinatesEnabled, partnerAndNextOfKinEnabled)
+import Backend.Utils exposing (gpsCoordinatesEnabled)
 import Backend.Village.Utils exposing (getVillageById)
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
@@ -1321,7 +1321,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
         contactInformationSection =
             let
                 partnerAndNextOfKinFields =
-                    if partnerAndNextOfKinEnabled features then
+                    if site == SiteRwanda then
                         if originBasedSettings.expectedAge == ExpectChild then
                             [ div [ class "ui header secondary" ]
                                 [ text <| translate language Translate.NextOfKin ++ ":" ]

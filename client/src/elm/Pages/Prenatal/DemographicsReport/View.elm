@@ -9,8 +9,6 @@ import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears, getHealthCenterName)
 import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
-import Backend.Utils exposing (partnerAndNextOfKinEnabled)
-import EverySet exposing (EverySet)
 import GeoLocation.Utils exposing (..)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
@@ -20,7 +18,7 @@ import Html.Events exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Report.View exposing (viewItemHeading)
 import RemoteData exposing (RemoteData(..))
-import SyncManager.Model exposing (Site(..), SiteFeature)
+import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (thumbnailImage)
 import Utils.WebData exposing (viewWebData)
@@ -33,8 +31,8 @@ thumbnailDimensions =
     }
 
 
-view : Language -> NominalDate -> Site -> EverySet SiteFeature -> PersonId -> PrenatalProgressReportInitiator -> ModelIndexedDb -> Html Msg
-view language currentDate site features personId initiator db =
+view : Language -> NominalDate -> Site -> PersonId -> PrenatalProgressReportInitiator -> ModelIndexedDb -> Html Msg
+view language currentDate site personId initiator db =
     let
         person =
             Dict.get personId db.people
@@ -44,7 +42,7 @@ view language currentDate site features personId initiator db =
             viewHeader language initiator
 
         content =
-            viewWebData language (viewContent language currentDate site features db personId) identity person
+            viewWebData language (viewContent language currentDate site db personId) identity person
     in
     div [ class "page-report demographics" ] <|
         [ header
@@ -94,12 +92,12 @@ viewHeader language initiator =
 
 
 viewContent : Language -> NominalDate -> Site -> ModelIndexedDb -> PersonId -> Person -> Html Msg
-viewContent language currentDate site features db personId person =
+viewContent language currentDate site db personId person =
     div [ class "ui unstackable items" ]
         [ viewPatientInformationPane language currentDate person
         , viewFamilyInformationPane language currentDate site db personId person
         , viewAddressInformationPane language currentDate site person
-        , viewContactInformationPane language currentDate features db person
+        , viewContactInformationPane language currentDate site db person
         ]
 
 
@@ -240,15 +238,15 @@ viewAddressInformationPane language currentDate site person =
         ]
 
 
-viewContactInformationPane : Language -> NominalDate -> EverySet SiteFeature -> ModelIndexedDb -> Person -> Html Msg
-viewContactInformationPane language currentDate features db person =
+viewContactInformationPane : Language -> NominalDate -> Site -> ModelIndexedDb -> Person -> Html Msg
+viewContactInformationPane language currentDate site db person =
     let
         healthCenterName =
             getHealthCenterName person.healthCenterId db
                 |> Maybe.withDefault ""
 
         partnerAndNextOfKinInfo =
-            if partnerAndNextOfKinEnabled features then
+            if site == SiteRwanda then
                 [ div [ class "heading" ] [ text <| (translate language <| Translate.SpousePartner) ++ ":" ]
                 , viewLineItem language Translate.Name (Maybe.withDefault "" person.spouseName)
                 , viewLineItem language Translate.TelephoneNumber (Maybe.withDefault "" person.spousePhoneNumber)
