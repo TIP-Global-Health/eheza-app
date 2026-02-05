@@ -455,6 +455,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                         Pages.Prenatal.DemographicsReport.View.view model.language
                             currentDate
                             site
+                            features
                             prenatalEncounterId
                             initiator
                             model.indexedDb

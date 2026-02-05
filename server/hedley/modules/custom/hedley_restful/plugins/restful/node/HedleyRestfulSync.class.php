@@ -181,6 +181,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       'group_education',
       'hiv_management',
       'ncda',
+      'partner_and_next_of_kin',
       'report_to_whatsapp',
       'stock_management',
       'tuberculosis_management',

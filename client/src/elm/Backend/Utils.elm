@@ -277,6 +277,11 @@ ncdaEnabled =
     EverySet.member FeatureNCDA
 
 
+partnerAndNextOfKinEnabled : EverySet SiteFeature -> Bool
+partnerAndNextOfKinEnabled =
+    EverySet.member FeaturePartnerAndNextOfKin
+
+
 reportToWhatsAppEnabled : EverySet SiteFeature -> Bool
 reportToWhatsAppEnabled =
     EverySet.member FeatureReportToWhatsApp
