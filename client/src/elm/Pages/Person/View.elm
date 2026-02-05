@@ -1320,25 +1320,37 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
 
         contactInformationSection =
             let
-                content =
-                    if originBasedSettings.expectedAge == ExpectChild then
-                        [ div [ class "ui header secondary" ]
-                            [ text <| translate language Translate.NextOfKin ++ ":" ]
-                        , viewTextInput language Translate.Name Backend.Person.Form.nextOfKinName False personForm
-                        , viewTextInput language Translate.TelephoneNumber Backend.Person.Form.nextOfKinPhoneNumber False personForm
-                        ]
+                partnerAndNextOfKinSection =
+                    if site == SiteRwanda then
+                        let
+                            nextOfKinSection =
+                                [ div [ class "ui header secondary" ]
+                                    [ text <| translate language Translate.NextOfKin ++ ":" ]
+                                , viewTextInput language Translate.Name Backend.Person.Form.nextOfKinName False personForm
+                                , viewTextInput language Translate.TelephoneNumber Backend.Person.Form.nextOfKinPhoneNumber False personForm
+                                ]
+                        in
+                        if originBasedSettings.expectedAge == ExpectChild then
+                            nextOfKinSection
+
+                        else
+                            [ div [ class "ui header secondary" ]
+                                [ text <| translate language Translate.SpousePartner ++ ":" ]
+                            , viewTextInput language Translate.Name Backend.Person.Form.spouseName False personForm
+                            , viewTextInput language Translate.TelephoneNumber Backend.Person.Form.spousePhoneNumber False personForm
+                            ]
+                                ++ nextOfKinSection
 
                     else
-                        [ viewTextInput language Translate.TelephoneNumber Backend.Person.Form.phoneNumber False personForm
-                        , div [ class "ui header secondary" ]
-                            [ text <| translate language Translate.SpousePartner ++ ":" ]
-                        , viewTextInput language Translate.Name Backend.Person.Form.spouseName False personForm
-                        , viewTextInput language Translate.TelephoneNumber Backend.Person.Form.spousePhoneNumber False personForm
-                        , div [ class "ui header secondary" ]
-                            [ text <| translate language Translate.NextOfKin ++ ":" ]
-                        , viewTextInput language Translate.Name Backend.Person.Form.nextOfKinName False personForm
-                        , viewTextInput language Translate.TelephoneNumber Backend.Person.Form.nextOfKinPhoneNumber False personForm
-                        ]
+                        []
+
+                content =
+                    if originBasedSettings.expectedAge == ExpectChild then
+                        partnerAndNextOfKinSection
+
+                    else
+                        viewTextInput language Translate.TelephoneNumber Backend.Person.Form.phoneNumber False personForm
+                            :: partnerAndNextOfKinSection
             in
             [ h3 [ class "ui header" ]
                 [ text <| translate language Translate.ContactInformation ++ ":" ]
