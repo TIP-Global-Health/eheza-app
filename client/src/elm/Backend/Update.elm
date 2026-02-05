@@ -1899,7 +1899,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
-                                Maybe.map (generateNutritionAssessmentIndividualMsgs currentDate site zscores features isChw model newModel)
+                            Maybe.map (generateNutritionAssessmentIndividualMsgs currentDate site zscores features isChw model newModel)
                                 encounterId
                                 |> Maybe.withDefault []
                     in
