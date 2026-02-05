@@ -780,7 +780,7 @@ resolvedMandatoryDangerSignsTasksCompleted site assembled =
 
         _ ->
             if site == SiteBurundi then
-                --Vitals are optional for CHW in Burundi
+                -- Vitals are optional for CHW in Burundi
                 [ TaskSymptomsReview ]
 
             else
