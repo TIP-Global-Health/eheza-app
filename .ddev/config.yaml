@@ -16,7 +16,7 @@ use_dns_when_possible: true
 # support Composer 2.
 composer_version: "1"
 web_environment: []
-nodejs_version: "16"
+nodejs_version: "10.16.0"
 corepack_enable: false
 ddev_version_constraint: '>= 1.23'
 
