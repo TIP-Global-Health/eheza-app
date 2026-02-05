@@ -1947,9 +1947,6 @@ siteFeatureFromString str =
         "ncda" ->
             Just FeatureNCDA
 
-        "partner_and_next_of_kin" ->
-            Just FeaturePartnerAndNextOfKin
-
         "report_to_whatsapp" ->
             Just FeatureReportToWhatsApp
 
@@ -1977,9 +1974,6 @@ siteFeatureToString feature =
     case feature of
         FeatureNCDA ->
             "ncda"
-
-        FeaturePartnerAndNextOfKin ->
-            "partner_and_next_of_kin"
 
         FeatureReportToWhatsApp ->
             "report_to_whatsapp"
