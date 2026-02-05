@@ -7527,7 +7527,7 @@ translationSet trans =
         HIVSuggestTakingTestQuestion ->
             { english = "Would you like to perform an HIV test today"
             , kinyarwanda = Nothing
-            , kirundi = Just "Urapima umugera wa SIDA uyu munsi?"
+            , kirundi = Just "Urapima umugera wa SIDA uyu munsi"
             }
 
         HIVSymptom symptom ->
@@ -25590,7 +25590,7 @@ translationSet trans =
                 VaccineBCG ->
                     { english = "BCG"
                     , kinyarwanda = Just "Urukingo rw'igituntu"
-                    , kirundi = Just "uracanco rw'igituntu?"
+                    , kirundi = Just "Uracanco rw'igituntu"
                     }
 
                 VaccineDTP ->
@@ -25598,7 +25598,7 @@ translationSet trans =
                         SiteBurundi ->
                             { english = "Pentavalent"
                             , kinyarwanda = Nothing
-                            , kirundi = Just "urucanco rw'ibigoga, rudadaza,inkorora y'akanira,igitigu na mugiga rutanditswe aho hejuru?"
+                            , kirundi = Just "Urucanco rw'ibigoga, rudadaza,inkorora y'akanira,igitigu na mugiga rutanditswe aho hejuru"
                             }
 
                         _ ->
@@ -25622,31 +25622,31 @@ translationSet trans =
                 VaccineIPV ->
                     { english = "IPV"
                     , kinyarwanda = Just "Urukingo rw'imbasa rutangwa mu rushinge"
-                    , kirundi = Just "urucanco rw'ubukangwe (Urushinge) rutanditswe aho hejuru?"
+                    , kirundi = Just "Urucanco rw'ubukangwe (Urushinge) rutanditswe aho hejuru"
                     }
 
                 VaccineMR ->
                     { english = "Measles-Rubella"
                     , kinyarwanda = Just "Urukingo rw'Iseru na Rubeyole"
-                    , kirundi = Just " Urucanco rw'agasama na Rubeole rutanditswe aho hejuru?"
+                    , kirundi = Just "Urucanco rw'agasama na Rubeole rutanditswe aho hejuru"
                     }
 
                 VaccineOPV ->
                     { english = "OPV"
                     , kinyarwanda = Just "Urukingo rw'imbasa"
-                    , kirundi = Just "urucanco rw'ubukangwe (amama) rutanditswe aho hejuru?"
+                    , kirundi = Just "Urucanco rw'ubukangwe (amama) rutanditswe aho hejuru"
                     }
 
                 VaccinePCV13 ->
                     { english = "PCV 13"
                     , kinyarwanda = Just "Urukingo rw'umusonga"
-                    , kirundi = Just "urucanco rw'umusonga rutanditswe aho hejuru"
+                    , kirundi = Just "Urucanco rw'umusonga rutanditswe aho hejuru"
                     }
 
                 VaccineRotarix ->
                     { english = "Rotarix"
                     , kinyarwanda = Just "Urukingo rw'impiswi"
-                    , kirundi = Just "urucanco rwo gucibwamo rutanditswe aho hejuru?"
+                    , kirundi = Just "Urucanco rwo gucibwamo rutanditswe aho hejuru"
                     }
 
         WhatDoYouWantToDo ->
