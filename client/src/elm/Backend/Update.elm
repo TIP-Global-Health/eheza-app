@@ -1899,7 +1899,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
-                            Maybe.map (generateNutritionAssessmentIndividualMsgs currentDate zscores features isChw model newModel)
+                            Maybe.map (generateNutritionAssessmentIndividualMsgs currentDate site zscores features isChw model newModel)
                                 encounterId
                                 |> Maybe.withDefault []
                     in
@@ -9009,6 +9009,7 @@ saveNCDLabsResultsMsg encounterId personId labsResultsId labsResultsValue =
 
 generateNutritionAssessmentIndividualMsgs :
     NominalDate
+    -> Site
     -> ZScore.Model.Model
     -> EverySet SiteFeature
     -> Bool
@@ -9016,13 +9017,14 @@ generateNutritionAssessmentIndividualMsgs :
     -> ModelIndexedDb
     -> NutritionEncounterId
     -> List App.Model.Msg
-generateNutritionAssessmentIndividualMsgs currentDate zscores features isChw before after id =
+generateNutritionAssessmentIndividualMsgs currentDate site zscores features isChw before after id =
     Maybe.map2
         (\assembledBefore assembledAfter ->
             let
                 mandatoryActivitiesCompleted =
                     Pages.Nutrition.Activity.Utils.mandatoryActivitiesCompleted
                         currentDate
+                        site
                         zscores
                         features
                         assembledAfter.person
@@ -9304,6 +9306,7 @@ generateNutritionAssessmentWellChildlMsgs currentDate zscores site isChw before 
                 mandatoryActivitiesCompleted =
                     Pages.WellChild.Activity.Utils.mandatoryNutritionAssessmentTasksCompleted
                         currentDate
+                        site
                         assembledAfter
             in
             if not mandatoryActivitiesCompleted then
