@@ -4,6 +4,7 @@ import App.Model
 import App.Utils exposing (triggerRollbarOnFailure)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
+import Backend.Model
 import Backend.PrenatalEncounter.Model exposing (..)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.Utils exposing (saveMeasurementCmd, sw)
@@ -389,9 +390,20 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             )
 
         HandleSavedAppointmentConfirmation data ->
+            let
+                extraMsgs =
+                    case data of
+                        Success _ ->
+                            [ Backend.Model.FetchPrenatalMeasurements encounterId
+                                |> App.Model.MsgIndexedDb
+                            ]
+
+                        _ ->
+                            []
+            in
             ( { model | saveAppointmentConfirmation = data }
             , Cmd.none
-            , triggerRollbarOnFailure data
+            , triggerRollbarOnFailure data ++ extraMsgs
             )
 
         SaveHIVTest personId valueId value ->
