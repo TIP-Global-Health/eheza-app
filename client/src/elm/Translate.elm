@@ -12923,7 +12923,7 @@ translationSet trans =
         NextVisit ->
             { english = "Next Visit"
             , kinyarwanda = Just "Isura rikurikira"
-            , kirundi = Nothing
+            , kirundi = Just "Isango rikurikira"
             }
 
         NightSweatsLabel ->
@@ -16777,7 +16777,7 @@ translationSet trans =
                 Pages.Prenatal.Activity.Types.NextStepsNextVisit ->
                     { english = "Next ANC Visit"
                     , kinyarwanda = Just "Izuzuma ku mugore utwite rikurikira"
-                    , kirundi = Nothing
+                    , kirundi = Just "Isango rikurikira"
                     }
 
         PrescribedMedication ->
@@ -25499,7 +25499,7 @@ translationSet trans =
                 TaskNextVisit ->
                     { english = "Next Visit"
                     , kinyarwanda = Just "Isura rikurikira"
-                    , kirundi = Nothing
+                    , kirundi = Just "Isango rikurikira"
                     }
 
         WellChildSymptom symptom ->
