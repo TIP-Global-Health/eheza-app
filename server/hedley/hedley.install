@@ -51,6 +51,7 @@ function hedley_install() {
   hedley_update_7015();
   hedley_update_7016();
   hedley_update_7032();
+  hedley_update_7047();
 
   hedley_initial_sync_permissions();
 }
@@ -744,4 +745,16 @@ function hedley_update_7045() {
 function hedley_update_7046() {
   $now = hedley_stats_convert_timestamp_to_nominal(time());
   variable_set('hedley_prenatal_change_medications', $now);
+}
+
+/**
+ * Enable HIV and TB management features for Burundi sites.
+ */
+function hedley_update_7047() {
+  $site = variable_get('hedley_general_site_name', '');
+  
+  if ($site === 'burundi') {
+    variable_set('hedley_admin_feature_hiv_management_enabled', TRUE);
+    variable_set('hedley_admin_feature_tuberculosis_management_enabled', TRUE);
+  }
 }
