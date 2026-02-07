@@ -753,7 +753,7 @@ function hedley_update_7046() {
 function hedley_update_7047() {
   $site = variable_get('hedley_general_site_name', '');
   
-  if ($site === 'burundi') {
+  if (strcasecmp($site, 'burundi') === 0) {
     variable_set('hedley_admin_feature_hiv_management_enabled', TRUE);
     variable_set('hedley_admin_feature_tuberculosis_management_enabled', TRUE);
   }
