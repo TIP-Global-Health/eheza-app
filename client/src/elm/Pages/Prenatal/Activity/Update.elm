@@ -321,6 +321,27 @@ update language currentDate id isLabTech db msg model =
             , []
             )
 
+        SetPrePregnancyWeightKnown value ->
+            let
+                updatedForm =
+                    model.pregnancyDatingData.form
+                        |> (\form ->
+                                { form
+                                    | prePregnancyWeightKnown = Just value
+                                    , prePregnancyWeight = Nothing
+                                    , prePregnancyWeightDirty = True
+                                }
+                           )
+
+                updatedData =
+                    model.pregnancyDatingData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | pregnancyDatingData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetPrePregnancyWeight value ->
             let
                 updatedForm =
