@@ -738,6 +738,10 @@ class HedleyWebTestBase extends DrupalWebTestCase {
         $wrapper->field_nutrition_encounter->set($session_id);
         break;
 
+      case 'well_child_height':
+        $wrapper->field_well_child_encounter->set($session_id);
+        break;
+
       default:
         throw new NotFoundException("$type not supported for height creation.");
     }
@@ -782,6 +786,10 @@ class HedleyWebTestBase extends DrupalWebTestCase {
         $wrapper->field_nutrition_encounter->set($session_id);
         break;
 
+      case 'well_child_weight':
+        $wrapper->field_well_child_encounter->set($session_id);
+        break;
+
       default:
         throw new NotFoundException("$type not supported for weight creation.");
     }
@@ -824,6 +832,10 @@ class HedleyWebTestBase extends DrupalWebTestCase {
 
       case 'nutrition_muac':
         $wrapper->field_nutrition_encounter->set($session_id);
+        break;
+
+      case 'well_child_muac':
+        $wrapper->field_well_child_encounter->set($session_id);
         break;
 
       default:
@@ -895,10 +907,33 @@ class HedleyWebTestBase extends DrupalWebTestCase {
         $wrapper->field_nutrition_encounter->set($session_id);
         break;
 
+      case 'well_child_nutrition':
+        $wrapper->field_well_child_encounter->set($session_id);
+        break;
+
       default:
         throw new NotFoundException("$type not supported for nutrition creation.");
     }
 
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create a Well Child NCDA measurement.
+   */
+  public function createWellChildNcda($encounter_id, $child_id, $timestamp = REQUEST_TIME) {
+    $node = $this->drupalCreateNode(['type' => 'well_child_ncda']);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_person->set($child_id);
+    $wrapper->field_date_measured->set($timestamp);
+    $wrapper->field_well_child_encounter->set($encounter_id);
+    $wrapper->field_ncda_signs->set(['normal']);
+    $wrapper->field_birth_weight->set(3.2);
+    $wrapper->field_weight->set(11.4);
+    $wrapper->field_muac->set(15.2);
     $wrapper->save();
 
     return $node->nid;
