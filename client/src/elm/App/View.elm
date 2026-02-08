@@ -695,6 +695,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                         in
                         Pages.Nutrition.Encounter.View.view model.language
                             currentDate
+                            site
                             model.zscores
                             features
                             id
