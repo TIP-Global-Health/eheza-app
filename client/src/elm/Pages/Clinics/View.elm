@@ -184,6 +184,7 @@ viewClinicButton currentDate nurse db ( clinicId, clinic ) =
                                   , endDate = Nothing
                                   , clinicId = clinicId
                                   , clinicType = clinic.clinicType
+                                  , deleted = False
                                   }
                                     |> PostSession
                                     |> MsgIndexedDb

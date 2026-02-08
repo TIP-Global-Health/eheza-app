@@ -15,6 +15,7 @@ type alias WellChildEncounter =
     , encounterNote : EncounterNote
     , encounterWarnings : EverySet EncounterWarning
     , skippedForms : EverySet SkippedForm
+    , deleted : Bool
     , shard : Maybe HealthCenterId
     }
 

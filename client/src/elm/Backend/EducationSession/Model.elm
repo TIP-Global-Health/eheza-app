@@ -13,6 +13,7 @@ type alias EducationSession =
     , topics : EverySet EducationTopic
     , participants : EverySet PersonId
     , endDate : Maybe NominalDate
+    , deleted : Bool
     , shard : Maybe HealthCenterId
     }
 
@@ -25,6 +26,7 @@ emptyEducationSession startDate nurse village shard =
     , topics = EverySet.empty
     , participants = EverySet.empty
     , endDate = Nothing
+    , deleted = False
     , shard = shard
     }
 

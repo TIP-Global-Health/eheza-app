@@ -13,6 +13,7 @@ type alias NutritionEncounter =
     , endDate : Maybe NominalDate
     , encounterType : NutritionEncounterType
     , skippedForms : EverySet SkippedForm
+    , deleted : Bool
     , shard : Maybe HealthCenterId
     }
 
@@ -24,6 +25,7 @@ emptyNutritionEncounter participant startDate encounterType shard =
     , endDate = Nothing
     , encounterType = encounterType
     , skippedForms = EverySet.empty
+    , deleted = False
     , shard = shard
     }
 

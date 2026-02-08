@@ -33,7 +33,7 @@ encodeWellChildEncounter encounter =
             )
       )
     , ( "skipped_forms", encodeEverySet encodeSkippedForm encounter.skippedForms )
-    , ( "deleted", bool False )
+    , ( "deleted", bool encounter.deleted )
     , ( "type", string "well_child_encounter" )
     ]
         ++ encodeIfSet "shard" encounter.shard encodeEntityUuid

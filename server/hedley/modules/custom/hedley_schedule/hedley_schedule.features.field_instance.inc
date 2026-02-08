@@ -87,6 +87,49 @@ function hedley_schedule_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-acute_illness_encounter-field_deleted'.
+  $field_instances['node-acute_illness_encounter-field_deleted'] = array(
+    'bundle' => 'acute_illness_encounter',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance:
   // 'node-acute_illness_encounter-field_individual_participant'.
   $field_instances['node-acute_illness_encounter-field_individual_participant'] = array(
@@ -628,6 +671,49 @@ function hedley_schedule_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-counseling_session-field_deleted'.
+  $field_instances['node-counseling_session-field_deleted'] = array(
+    'bundle' => 'counseling_session',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance: 'node-counseling_session-field_nurse'.
   $field_instances['node-counseling_session-field_nurse'] = array(
     'bundle' => 'counseling_session',
@@ -1050,6 +1136,49 @@ function hedley_schedule_field_default_field_instances() {
       ),
       'type' => 'text_textfield',
       'weight' => -5,
+    ),
+  );
+
+  // Exported field_instance: 'node-home_visit_encounter-field_deleted'.
+  $field_instances['node-home_visit_encounter-field_deleted'] = array(
+    'bundle' => 'home_visit_encounter',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -1783,6 +1912,49 @@ Used to track location where pregnancies were completed.',
     ),
   );
 
+  // Exported field_instance: 'node-ncd_encounter-field_deleted'.
+  $field_instances['node-ncd_encounter-field_deleted'] = array(
+    'bundle' => 'ncd_encounter',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance: 'node-ncd_encounter-field_individual_participant'.
   $field_instances['node-ncd_encounter-field_individual_participant'] = array(
     'bundle' => 'ncd_encounter',
@@ -1964,6 +2136,49 @@ Used to track location where pregnancies were completed.',
       ),
       'type' => 'text_textfield',
       'weight' => 5,
+    ),
+  );
+
+  // Exported field_instance: 'node-nutrition_encounter-field_deleted'.
+  $field_instances['node-nutrition_encounter-field_deleted'] = array(
+    'bundle' => 'nutrition_encounter',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -2589,6 +2804,49 @@ Used to track location where pregnancies were completed.',
     ),
   );
 
+  // Exported field_instance: 'node-prenatal_encounter-field_deleted'.
+  $field_instances['node-prenatal_encounter-field_deleted'] = array(
+    'bundle' => 'prenatal_encounter',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance:
   // 'node-prenatal_encounter-field_individual_participant'.
   $field_instances['node-prenatal_encounter-field_individual_participant'] = array(
@@ -2995,6 +3253,49 @@ Used to track location where pregnancies were completed.',
       ),
       'type' => 'options_onoff',
       'weight' => -1,
+    ),
+  );
+
+  // Exported field_instance: 'node-session-field_deleted'.
+  $field_instances['node-session-field_deleted'] = array(
+    'bundle' => 'session',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 

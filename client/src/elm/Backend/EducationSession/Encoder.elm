@@ -23,7 +23,7 @@ encodeEducationSession session =
     , ( "village_ref", encodeEntityUuid session.village )
     , ( "education_topics", encodeEverySet encodeEducationTopic session.topics )
     , ( "participating_patients", encodeEverySet encodeEntityUuid session.participants )
-    , ( "deleted", bool False )
+    , ( "deleted", bool session.deleted )
     , ( "type", string "education_session" )
     ]
         ++ encodeIfSet "shard" session.shard encodeEntityUuid

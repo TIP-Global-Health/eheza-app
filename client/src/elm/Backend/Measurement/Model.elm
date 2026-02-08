@@ -32,6 +32,7 @@ type alias Measurement encounter value =
     , nurse : Maybe NurseId
     , healthCenter : Maybe HealthCenterId
     , participantId : PersonId
+    , deleted : Bool
     , encounterId : Maybe encounter
     , value : value
     }
@@ -653,7 +654,8 @@ type PostpartumChildDangerSign
 
 type alias LastMenstrualPeriodValue =
     { date : NominalDate
-    , prePregnancyWeight : Maybe WeightInKg
+    , -- Deprecated, but kept for backward compatibility.
+      prePregnancyWeight : Maybe WeightInKg
     , confident : Bool
     , notConfidentReason : Maybe LmpDateNotConfidentReason
     , lateFirstVisitReason : Maybe LateFirstANCVisitReason
@@ -3237,6 +3239,7 @@ type alias StockUpdate =
     , notes : Maybe String
     , correctionReason : Maybe StockCorrectionReason
     , healthCenter : HealthCenterId
+    , deleted : Bool
     , shard : Maybe HealthCenterId
     , signature : ImageUrl
     }
