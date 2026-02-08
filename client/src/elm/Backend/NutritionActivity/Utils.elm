@@ -16,8 +16,8 @@ import Backend.NutritionActivity.Model exposing (..)
 {-| Used for URL etc., not for display in the normal UI (since we'd translate
 for that).
 -}
-encodeActivityAsString : NutritionActivity -> String
-encodeActivityAsString activity =
+activityToString : NutritionActivity -> String
+activityToString activity =
     case activity of
         Muac ->
             "nutrition-muac"
@@ -43,8 +43,8 @@ encodeActivityAsString activity =
 
 {-| The inverse of encodeActivityTypeAsString
 -}
-decodeActivityFromString : String -> Maybe NutritionActivity
-decodeActivityFromString s =
+activityFromString : String -> Maybe NutritionActivity
+activityFromString s =
     case s of
         "nutrition-muac" ->
             Just Muac

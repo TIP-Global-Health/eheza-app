@@ -162,7 +162,7 @@ view language currentDate zscores site features id isChw db model =
                     in
                     ( Just <|
                         { showEndEncounterDialog = model.showEndEncounterDialog
-                        , allowEndEncounter = allowEndingEncounter currentDate pendingActivities assembled
+                        , allowEndEncounter = allowEndingEncounter currentDate site pendingActivities assembled
                         , closeEncounterMsg = CloseEncounter id
                         , setEndEncounterDialogStateMsg = SetEndEncounterDialogState
                         , startEncounterMsg = NoOp

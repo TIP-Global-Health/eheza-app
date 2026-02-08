@@ -12,6 +12,7 @@ type alias NutritionEncounter =
     , startDate : NominalDate
     , endDate : Maybe NominalDate
     , encounterType : NutritionEncounterType
+    , skippedForms : EverySet SkippedForm
     , deleted : Bool
     , shard : Maybe HealthCenterId
     }
@@ -23,6 +24,7 @@ emptyNutritionEncounter participant startDate encounterType shard =
     , startDate = startDate
     , endDate = Nothing
     , encounterType = encounterType
+    , skippedForms = EverySet.empty
     , deleted = False
     , shard = shard
     }
@@ -38,7 +40,7 @@ type NutritionEncounterType
 to peform the updates indicated by the `Msg` type below.
 -}
 type alias Model =
-    { closeNutritionEncounter : WebData ()
+    { editNutritionEncounter : WebData ()
     , saveHeight : WebData ()
     , saveMuac : WebData ()
     , saveNutrition : WebData ()
@@ -54,7 +56,7 @@ type alias Model =
 
 emptyModel : Model
 emptyModel =
-    { closeNutritionEncounter = NotAsked
+    { editNutritionEncounter = NotAsked
     , saveHeight = NotAsked
     , saveMuac = NotAsked
     , saveNutrition = NotAsked
@@ -70,7 +72,9 @@ emptyModel =
 
 type Msg
     = CloseNutritionEncounter
-    | HandleClosedNutritionEncounter (WebData ())
+    | AddSkippedForm SkippedForm
+    | RemoveSkippedForm SkippedForm
+    | HandleUpdatedNutritionEncounter (WebData ())
     | SaveHeight PersonId (Maybe NutritionHeightId) HeightInCm
     | HandleSavedHeight (WebData ())
     | SaveMuac PersonId (Maybe NutritionMuacId) MuacInCm

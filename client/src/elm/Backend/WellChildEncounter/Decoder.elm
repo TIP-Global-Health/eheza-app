@@ -1,12 +1,13 @@
 module Backend.WellChildEncounter.Decoder exposing (decodeEncounterWarning, decodeWellChildEncounter, decodeWellChildEncounterType)
 
+import Backend.Measurement.Decoder exposing (decodeSkippedForm)
 import Backend.WellChildEncounter.Model exposing (..)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, andThen, bool, fail, list, map, nullable, oneOf, string, succeed)
 import Json.Decode.Pipeline exposing (optional, optionalAt, required, requiredAt)
 import Restful.Endpoint exposing (decodeEntityUuid)
-import Utils.Json exposing (decodeWithFallback)
+import Utils.Json exposing (decodeEverySet, decodeWithFallback)
 
 
 decodeWellChildEncounter : Decoder WellChildEncounter
@@ -24,6 +25,7 @@ decodeWellChildEncounter =
             )
             NoEncounterNotes
         |> optional "encounter_warnings" decodeEncounterWarnings (EverySet.singleton NoEncounterWarnings)
+        |> optional "skipped_forms" (decodeEverySet decodeSkippedForm) EverySet.empty
         |> required "deleted" (decodeWithFallback False bool)
         |> optional "shard" (nullable decodeEntityUuid) Nothing
 
