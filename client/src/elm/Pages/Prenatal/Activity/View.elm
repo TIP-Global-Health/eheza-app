@@ -424,23 +424,17 @@ viewPregnancyDatingContent language currentDate assembled data =
             in
             ( [ viewLabel language Translate.LmpDateHeader
               , lmpDateInput
-              , viewQuestionLabel language Translate.PrePregnancyWeightQuestion
-              , viewMeasurementInput
-                    language
-                    form.prePregnancyWeight
-                    SetPrePregnancyWeight
-                    "weight"
-                    Translate.KilogramShorthand
-              , viewQuestionLabel language Translate.LmpDateConfidentHeader
-              , viewBoolInput language form.lmpDateConfident SetLmpDateConfident "is-confident" Nothing
-              , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.lmpDate
               ]
+                ++ [ viewQuestionLabel language Translate.LmpDateConfidentHeader
+                   , viewBoolInput language form.lmpDateConfident SetLmpDateConfident "is-confident" Nothing
+                   , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.lmpDate
+                   ]
                 ++ derivedSection
             , taskCompleted form.lmpDate
                 + taskCompleted form.lmpDateConfident
-                + taskCompleted form.prePregnancyWeight
                 + derivedTasksCompleted
-            , 3 + derivedTasksTotal
+            , 2
+                + derivedTasksTotal
             )
 
         ( lateFirstVisitInput, lateFirstVisitTasksCompleted, lateFirstVisitTasksTotal ) =
@@ -1028,7 +1022,7 @@ viewExaminationContent language currentDate zscores assembled data =
                                 |> Maybe.withDefault form
 
                         prePregnancyWeight =
-                            resolvePrePregnancyWeight assembled
+                            resolvePrePregnancyWeight currentDate assembled
                                 |> Maybe.map weightValueFunc
                     in
                     viewNutritionAssessmentForm language currentDate zscores assembled formWithMeasuredHeight previouslyMeasuredHeight prePregnancyWeight
