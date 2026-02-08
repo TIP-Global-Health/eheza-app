@@ -222,7 +222,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $this->assertFalse(empty($stats['prenatal_data']));
     $this->assertFalse(empty($stats['acute_illness_data']));
     $this->assertFalse(empty($stats['child_scoreboard_data']));
-    $this->assertFalse(empty($stats['well_child_data']));
+    $this->assertFalse(empty($stats['spv_data']));
 
     // Call again with cache hash to make sure we don't get the results this
     // time.
