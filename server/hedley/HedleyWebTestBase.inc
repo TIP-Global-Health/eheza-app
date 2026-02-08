@@ -628,30 +628,27 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $wrapper = entity_metadata_wrapper('node', $node);
     $wrapper->field_person->set($person_id);
     $wrapper->field_date_measured->set($timestamp);
-    $birth_weight = 3.1;
-    $weight = 10.2;
-    $muac = 14.5;
 
     switch ($type) {
       case 'child_scoreboard_ncda':
         $wrapper->field_child_scoreboard_encounter->set($encounter_id);
+        $wrapper->field_ncda_signs->set(['normal']);
+        $wrapper->field_birth_weight->set(3.1);
+        $wrapper->field_weight->set(10.2);
+        $wrapper->field_muac->set(14.5);
         break;
 
       case 'well_child_ncda':
         $wrapper->field_well_child_encounter->set($encounter_id);
-        $birth_weight = 3.2;
-        $weight = 11.4;
-        $muac = 15.2;
+        $wrapper->field_ncda_signs->set(['normal']);
+        $wrapper->field_birth_weight->set(3.2);
+        $wrapper->field_weight->set(11.4);
+        $wrapper->field_muac->set(15.2);
         break;
 
       default:
         throw new NotFoundException("$type not supported for NCDA creation.");
     }
-
-    $wrapper->field_ncda_signs->set(['normal']);
-    $wrapper->field_birth_weight->set($birth_weight);
-    $wrapper->field_weight->set($weight);
-    $wrapper->field_muac->set($muac);
     $wrapper->save();
 
     return $node->nid;
