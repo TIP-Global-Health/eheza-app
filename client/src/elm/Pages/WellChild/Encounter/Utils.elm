@@ -6,8 +6,9 @@ import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (PediatricCareMilestone(..), WellChildEncounterType(..))
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
+import Maybe.Extra exposing (isJust)
 import Measurement.Utils
-import Pages.WellChild.Activity.Utils exposing (mandatoryNutritionAssessmentTasksCompleted)
+import Pages.WellChild.Activity.Utils exposing (mandatoryDangerSignsTasksCompleted, mandatoryNutritionAssessmentTasksCompleted)
 import Pages.WellChild.Encounter.Model exposing (..)
 import RemoteData exposing (WebData)
 import SyncManager.Model exposing (Site)
@@ -131,20 +132,43 @@ pediatricCareMilestoneToComparable milestone =
             10
 
 
-allowEndingEncounter : NominalDate -> List WellChildActivity -> AssembledData -> Bool
-allowEndingEncounter currentDate pendingActivities assembled =
+allowEndingEncounter : NominalDate -> Site -> List WellChildActivity -> AssembledData -> Bool
+allowEndingEncounter currentDate site pendingActivities assembled =
     List.filter (\activity -> not <| List.member activity [ WellChildNCDA, WellChildPhoto ]) pendingActivities
         |> (\pending ->
                 case pending of
                     [] ->
                         True
 
+                    [ WellChildDangerSigns ] ->
+                        if assembled.encounter.encounterType == PediatricCare then
+                            False
+
+                        else
+                            mandatoryDangerSignsTasksCompleted currentDate site assembled
+
                     [ WellChildNutritionAssessment ] ->
                         if assembled.encounter.encounterType == PediatricCare then
                             False
 
                         else
-                            mandatoryNutritionAssessmentTasksCompleted currentDate assembled
+                            mandatoryNutritionAssessmentTasksCompleted currentDate site assembled
+
+                    [ WellChildDangerSigns, WellChildNutritionAssessment ] ->
+                        if assembled.encounter.encounterType == PediatricCare then
+                            False
+
+                        else
+                            mandatoryDangerSignsTasksCompleted currentDate site assembled
+                                && mandatoryNutritionAssessmentTasksCompleted currentDate site assembled
+
+                    [ WellChildNutritionAssessment, WellChildDangerSigns ] ->
+                        if assembled.encounter.encounterType == PediatricCare then
+                            False
+
+                        else
+                            mandatoryDangerSignsTasksCompleted currentDate site assembled
+                                && mandatoryNutritionAssessmentTasksCompleted currentDate site assembled
 
                     _ ->
                         False
