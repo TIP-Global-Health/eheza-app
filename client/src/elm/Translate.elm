@@ -1332,7 +1332,6 @@ type TranslationId
     | PrenatalUltrasoundInstructions
     | PrenatalVaccineLabel PrenatalVaccineType
     | PrePregnancyWeight
-    | PrePregnancyWeightQuestion
     | PreTerm
     | PregnancyConcludedLabel
     | PregnancyOutcomeLabel
@@ -12923,7 +12922,7 @@ translationSet trans =
         NextVisit ->
             { english = "Next Visit"
             , kinyarwanda = Just "Isura rikurikira"
-            , kirundi = Nothing
+            , kirundi = Just "Isango rikurikira"
             }
 
         NightSweatsLabel ->
@@ -16777,7 +16776,7 @@ translationSet trans =
                 Pages.Prenatal.Activity.Types.NextStepsNextVisit ->
                     { english = "Next ANC Visit"
                     , kinyarwanda = Just "Izuzuma ku mugore utwite rikurikira"
-                    , kirundi = Nothing
+                    , kirundi = Just "Isango rikurikira"
                     }
 
         PrescribedMedication ->
@@ -17788,12 +17787,6 @@ translationSet trans =
         PrePregnancyWeight ->
             { english = "Pre-pregnancy Weight"
             , kinyarwanda = Just "Ibiro bya mbere yo gutwita"
-            , kirundi = Nothing
-            }
-
-        PrePregnancyWeightQuestion ->
-            { english = "What is the patient's baseline (pre-pregnancy) weight"
-            , kinyarwanda = Just "Umubyeyi yari afite ibiro bingahe mbere yo gutwita"
             , kirundi = Nothing
             }
 
@@ -22605,7 +22598,7 @@ translationSet trans =
         SecondName ->
             { english = "Second Name"
             , kinyarwanda = Just "Izina ry'umuryango"
-            , kirundi = Just "Izina ry'Ikirundi"
+            , kirundi = Just "Izina ry'ikirundi"
             }
 
         Sector ->
@@ -25497,10 +25490,7 @@ translationSet trans =
                     translationSet FollowUp
 
                 TaskNextVisit ->
-                    { english = "Next Visit"
-                    , kinyarwanda = Just "Isura rikurikira"
-                    , kirundi = Nothing
-                    }
+                    translationSet NextVisit
 
         WellChildSymptom symptom ->
             case symptom of
@@ -25590,7 +25580,7 @@ translationSet trans =
                 VaccineBCG ->
                     { english = "BCG"
                     , kinyarwanda = Just "Urukingo rw'igituntu"
-                    , kirundi = Just "Uracanco rw'igituntu"
+                    , kirundi = Just "uracanco rw'igituntu"
                     }
 
                 VaccineDTP ->
