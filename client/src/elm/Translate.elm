@@ -12923,7 +12923,7 @@ translationSet trans =
         NextVisit ->
             { english = "Next Visit"
             , kinyarwanda = Just "Isura rikurikira"
-            , kirundi = Nothing
+            , kirundi = Just "Isango rikurikira"
             }
 
         NightSweatsLabel ->
@@ -25497,10 +25497,7 @@ translationSet trans =
                     translationSet FollowUp
 
                 TaskNextVisit ->
-                    { english = "Next Visit"
-                    , kinyarwanda = Just "Isura rikurikira"
-                    , kirundi = Nothing
-                    }
+                    translationSet NextVisit
 
         WellChildSymptom symptom ->
             case symptom of
