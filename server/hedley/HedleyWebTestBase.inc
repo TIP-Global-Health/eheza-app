@@ -607,19 +607,49 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   }
 
   /**
-   * Create a child scoreboard NCDA measurement.
+   * Create an NCDA measurement.
+   *
+   * @param string $type
+   *   The type of NCDA entity. Options: 'child_scoreboard_ncda', 'well_child_ncda'.
+   * @param int $encounter_id
+   *   The node ID of the encounter.
+   * @param int $person_id
+   *   The node ID of the child.
+   * @param int $timestamp
+   *   Optional; The date the measurement was taken, as a unix timestamp,
+   *   defaults to the time of the request.
+   *
+   * @return int
+   *   The node ID of the NCDA.
    */
-  public function createChildScoreboardNcda($encounter_id, $person_id, $timestamp = REQUEST_TIME) {
-    $node = $this->drupalCreateNode(['type' => 'child_scoreboard_ncda']);
+  public function createNcda($type, $encounter_id, $person_id, $timestamp = REQUEST_TIME) {
+    $node = $this->drupalCreateNode(['type' => $type]);
 
     $wrapper = entity_metadata_wrapper('node', $node);
     $wrapper->field_person->set($person_id);
     $wrapper->field_date_measured->set($timestamp);
-    $wrapper->field_child_scoreboard_encounter->set($encounter_id);
-    $wrapper->field_ncda_signs->set(['normal']);
-    $wrapper->field_birth_weight->set(3.1);
-    $wrapper->field_weight->set(10.2);
-    $wrapper->field_muac->set(14.5);
+
+    switch ($type) {
+      case 'child_scoreboard_ncda':
+        $wrapper->field_child_scoreboard_encounter->set($encounter_id);
+        $wrapper->field_ncda_signs->set(['normal']);
+        $wrapper->field_birth_weight->set(3.1);
+        $wrapper->field_weight->set(10.2);
+        $wrapper->field_muac->set(14.5);
+        break;
+
+      case 'well_child_ncda':
+        $wrapper->field_well_child_encounter->set($encounter_id);
+        $wrapper->field_ncda_signs->set(['normal']);
+        $wrapper->field_birth_weight->set(3.2);
+        $wrapper->field_weight->set(11.4);
+        $wrapper->field_muac->set(15.2);
+        break;
+
+      default:
+        throw new NotFoundException("$type not supported for NCDA creation.");
+    }
+
     $wrapper->save();
 
     return $node->nid;
@@ -920,23 +950,5 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     return $node->nid;
   }
 
-  /**
-   * Create a Well Child NCDA measurement.
-   */
-  public function createWellChildNcda($encounter_id, $child_id, $timestamp = REQUEST_TIME) {
-    $node = $this->drupalCreateNode(['type' => 'well_child_ncda']);
-
-    $wrapper = entity_metadata_wrapper('node', $node);
-    $wrapper->field_person->set($child_id);
-    $wrapper->field_date_measured->set($timestamp);
-    $wrapper->field_well_child_encounter->set($encounter_id);
-    $wrapper->field_ncda_signs->set(['normal']);
-    $wrapper->field_birth_weight->set(3.2);
-    $wrapper->field_weight->set(11.4);
-    $wrapper->field_muac->set(15.2);
-    $wrapper->save();
-
-    return $node->nid;
-  }
 
 }

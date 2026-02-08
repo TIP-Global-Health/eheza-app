@@ -619,7 +619,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
 
     $this->createChildScoreboardImmunization('child_scoreboard_bcg_iz', $encounter->nid, $child_id, $date);
     $this->createChildScoreboardImmunization('child_scoreboard_dtp_iz', $encounter->nid, $child_id, $date);
-    $this->createChildScoreboardNcda($encounter->nid, $child_id, $date);
+    $this->createNcda('child_scoreboard_ncda', $encounter->nid, $child_id, $date);
   }
 
   /**
@@ -654,7 +654,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $this->createMuac('well_child_muac', $encounter->nid, $child_id, 13.5, $date);
     $this->createNutrition('well_child_nutrition', $encounter->nid, $child_id, 'none', $date);
     $this->createWeight('well_child_weight', $encounter->nid, $child_id, 12.1, $date);
-    $this->createWellChildNcda($encounter->nid, $child_id, $date);
+    $this->createNcda('well_child_ncda', $encounter->nid, $child_id, $date);
   }
 
 }
