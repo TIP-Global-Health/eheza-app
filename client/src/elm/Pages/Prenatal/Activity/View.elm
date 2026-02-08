@@ -402,33 +402,6 @@ viewPregnancyDatingContent language currentDate assembled data =
                     else
                         ( [], 0, 0 )
 
-                ( prePregnancyWeightSection, prePregnancyWeightTasksCompleted, prePregnancyWeightTasksTotal ) =
-                    let
-                        ( prePregnancyWeightInput, prePregnancyWeightTaskCompleted, prePregnancyWeightTaskTotal ) =
-                            if form.prePregnancyWeightKnown == Just True then
-                                ( [ viewQuestionLabel language Translate.PrePregnancyWeightQuestion
-                                  , viewMeasurementInput
-                                        language
-                                        form.prePregnancyWeight
-                                        SetPrePregnancyWeight
-                                        "weight"
-                                        Translate.KilogramShorthand
-                                  ]
-                                , taskCompleted form.prePregnancyWeight
-                                , 1
-                                )
-
-                            else
-                                ( [], 0, 0 )
-                    in
-                    ( [ viewQuestionLabel language Translate.PrePregnancyWeightKnownQuestion
-                      , viewBoolInput language form.prePregnancyWeightKnown SetPrePregnancyWeightKnown "is-known" Nothing
-                      ]
-                        ++ prePregnancyWeightInput
-                    , taskCompleted form.prePregnancyWeightKnown + prePregnancyWeightTaskCompleted
-                    , 1 + prePregnancyWeightTaskTotal
-                    )
-
                 lmpDateInput =
                     let
                         dateSelectorConfig =
@@ -452,7 +425,6 @@ viewPregnancyDatingContent language currentDate assembled data =
             ( [ viewLabel language Translate.LmpDateHeader
               , lmpDateInput
               ]
-                ++ prePregnancyWeightSection
                 ++ [ viewQuestionLabel language Translate.LmpDateConfidentHeader
                    , viewBoolInput language form.lmpDateConfident SetLmpDateConfident "is-confident" Nothing
                    , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.lmpDate
@@ -461,10 +433,8 @@ viewPregnancyDatingContent language currentDate assembled data =
             , taskCompleted form.lmpDate
                 + taskCompleted form.lmpDateConfident
                 + derivedTasksCompleted
-                + prePregnancyWeightTasksCompleted
             , 2
                 + derivedTasksTotal
-                + prePregnancyWeightTasksTotal
             )
 
         ( lateFirstVisitInput, lateFirstVisitTasksCompleted, lateFirstVisitTasksTotal ) =
