@@ -25497,10 +25497,7 @@ translationSet trans =
                     translationSet FollowUp
 
                 TaskNextVisit ->
-                    { english = "Next Visit"
-                    , kinyarwanda = Just "Isura rikurikira"
-                    , kirundi = Just "Isango rikurikira"
-                    }
+                    translationSet NextVisit
 
         WellChildSymptom symptom ->
             case symptom of
