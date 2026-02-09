@@ -34,6 +34,7 @@ emptyWellChildEncounter participant startDate encounterType shard =
     , encounterNote = NoEncounterNotes
     , encounterWarnings = EverySet.singleton NoEncounterWarnings
     , skippedForms = EverySet.empty
+    , deleted = False
     , shard = shard
     }
 
