@@ -83,9 +83,14 @@ function hedley_user_user_presave(&$edit, $account, $category) {
     }
 
     $bundle = $data->type;
-    $function = "hedley_user_create_{$bundle}_by_sync_incident";
-    if (function_exists($function)) {
-      $function($edit, $data);
+    $allowed_entities = array_merge(
+      ['person', 'individual_participant', 'pmtct_participant', 'session'],
+      hedley_general_get_encounter_types(),
+      hedley_general_get_measurement_types()
+    );
+
+    if (in_array($bundle, $allowed_entities)) {
+      hedley_user_create_entity_by_sync_incident_data($edit, $data);
     }
   }
 }
@@ -173,574 +178,99 @@ function hedley_user_node_form_access_callback($op, $node) {
 }
 
 /**
- * Creates a person node based on a sync incident.
- *
- * This function takes data from a sync incident and creates a person
- * node in the system.
+ * Creates a node entity based on sync incident data.
  *
  * @param array $edit
- *   An array that can be modified to include details about the incident.
+ *   An array that can be modified to erase details about the incident,
+ *   after handling it.
  * @param object $data
  *   The data object from the sync incident, containing the necessary
- *   information to create the encounter.
+ *   information to create the entity.
  */
-function hedley_user_create_person_by_sync_incident(array &$edit, $data) {
-  $health_center_id = hedley_restful_resolve_nid_for_uuid($data->health_center);
-  if (!$health_center_id) {
-    return;
-  }
-
-  $entity = [
-    'type' => 'person',
-    'field_uuid' => [LANGUAGE_NONE => [['value' => $data->uuid]]],
-    'field_health_center' => [LANGUAGE_NONE => [['target_id' => $health_center_id]]],
-    'field_second_name' => [LANGUAGE_NONE => [['value' => $data->second_name]]],
-    'field_gender' => [LANGUAGE_NONE => [['value' => $data->gender]]],
-    'field_birth_date' => [LANGUAGE_NONE => [['value' => "$data->birth_date 00:00:00"]]],
-  ];
-
-  $optional_fields = [
-    'birth_date_estimated',
-    'cell',
-    'district',
-    'first_name',
-    'hiv_status',
-    'hmis_number',
-    'marital_status',
-    'mode_of_delivery',
-    'national_id_number',
-    'number_of_children',
-    'phone_number',
-    'spouse_name',
-    'spouse_phone_number',
-    'next_of_kin_name',
-    'next_of_kin_phone_number',
-    'province',
-    'sector',
-    'ubudehe',
-    'village',
-  ];
-
-  foreach ($optional_fields as $field_name) {
-    if (empty($data->{$field_name})) {
+function hedley_user_create_entity_by_sync_incident_data(array &$edit, $data) {
+  $bundle = $data->type;
+  $fields = field_info_instances('node', $bundle);
+  $entity = ['type' => $bundle];
+  foreach ($fields as $field) {
+    $name = $field['field_name'];
+    if ($name == 'field_shards') {
+      // Shards are assigned automatically.
       continue;
     }
-    $entity["field_{$field_name}"] = [LANGUAGE_NONE => [['value' => $data->{$field_name}]]];
-  }
 
-  try {
-    $node = entity_create('node', $entity);
-    node_save($node);
-  }
-  catch (Exception $e) {
-    return;
-  }
+    $info = field_info_field($name);
+    $type = $info['type'];
 
-  $edit['field_incident_details'][LANGUAGE_NONE] = [];
-}
-
-/**
- * Creates an individual participant node based on a sync incident.
- *
- * This function takes data from a sync incident and creates an
- * individual participant node in the system.
- *
- * @param array $edit
- *   An array that can be modified to include details about the incident.
- * @param object $data
- *   The data object from the sync incident, containing the necessary
- *   information to create the encounter.
- */
-function hedley_user_create_individual_participant_by_sync_incident(array &$edit, $data) {
-  $person_id = hedley_restful_resolve_nid_for_uuid($data->person);
-  if (!$person_id) {
-    return;
-  }
-
-  $expected_value = $data->expected->value;
-  $entity = [
-    'type' => 'individual_participant',
-    'field_uuid' => [LANGUAGE_NONE => [['value' => $data->uuid]]],
-    'field_person' => [LANGUAGE_NONE => [['target_id' => $person_id]]],
-    'field_encounter_type' => [LANGUAGE_NONE => [['value' => $data->encounter_type]]],
-    'field_expected' => [LANGUAGE_NONE => [['value' => "$expected_value 00:00:00"]]],
-  ];
-
-  if (!empty($data->expected->value2)) {
-    $entity['field_expected'][LANGUAGE_NONE][0]['value2'] = $data->expected->value2;
-  }
-
-  try {
-    $node = entity_create('node', $entity);
-    node_save($node);
-  }
-  catch (Exception $e) {
-    return;
-  }
-
-  $edit['field_incident_details'][LANGUAGE_NONE] = [];
-}
-
-/**
- * Creates an acute illness encounter node based on a sync incident.
- *
- * This function takes data from a sync incident and creates an acute
- * illness encounter node in the system. It checks if the participant
- * exists and fills the necessary fields with the provided data.
- *
- * @param array $edit
- *   An array that can be modified to include details about the incident.
- * @param object $data
- *   The data object from the sync incident, containing the necessary
- *   information to create the encounter.
- */
-function hedley_user_create_acute_illness_encounter_by_sync_incident(array &$edit, $data) {
-  $individual_participant_id = hedley_restful_resolve_nid_for_uuid($data->individual_participant);
-  if (!$individual_participant_id) {
-    return;
-  }
-
-  $scheduled_date_value = $data->scheduled_date->value;
-  $entity = [
-    'type' => 'acute_illness_encounter',
-    'field_uuid' => [LANGUAGE_NONE => [['value' => $data->uuid]]],
-    'field_individual_participant' => [LANGUAGE_NONE => [['target_id' => $individual_participant_id]]],
-    'field_ai_encounter_type' => [LANGUAGE_NONE => [['value' => $data->ai_encounter_type]]],
-    'field_scheduled_date' => [LANGUAGE_NONE => [['value' => "$scheduled_date_value 00:00:00"]]],
-  ];
-
-  if (!empty($data->scheduled_date->value2)) {
-    $entity['field_scheduled_date'][LANGUAGE_NONE][0]['value2'] = $data->scheduled_date->value2;
-  }
-
-  if (!empty($data->sequence_number)) {
-    $entity['field_sequence_number'][LANGUAGE_NONE][0]['value'] = $data->sequence_number;
-  }
-
-  if (!empty($data->acute_illness_diagnosis)) {
-    $entity['field_acute_illness_diagnosis'][LANGUAGE_NONE][0]['value'] = $data->acute_illness_diagnosis;
-  }
-
-  try {
-    $node = entity_create('node', $entity);
-    node_save($node);
-  }
-  catch (Exception $e) {
-    return;
-  }
-
-  $edit['field_incident_details'][LANGUAGE_NONE] = [];
-}
-
-/**
- * Creates a child scoreboard encounter node based on a sync incident.
- *
- * This function takes data from a sync incident and creates a child
- * scoreboard encounter node in the system. It checks if the participant
- * exists and fills the necessary fields with the provided data.
- *
- * @param array $edit
- *   An array that can be modified to include details about the incident.
- * @param object $data
- *   The data object from the sync incident, containing the necessary
- *   information to create the encounter.
- */
-function hedley_user_create_child_scoreboard_encounter_by_sync_incident(array &$edit, $data) {
-  $individual_participant_id = hedley_restful_resolve_nid_for_uuid($data->individual_participant);
-  if (!$individual_participant_id) {
-    return;
-  }
-
-  $scheduled_date_value = $data->scheduled_date->value;
-  $entity = [
-    'type' => 'child_scoreboard_encounter',
-    'field_uuid' => [LANGUAGE_NONE => [['value' => $data->uuid]]],
-    'field_individual_participant' => [LANGUAGE_NONE => [['target_id' => $individual_participant_id]]],
-    'field_scheduled_date' => [LANGUAGE_NONE => [['value' => "$scheduled_date_value 00:00:00"]]],
-  ];
-
-  if (!empty($data->scheduled_date->value2)) {
-    $entity['field_scheduled_date'][LANGUAGE_NONE][0]['value2'] = $data->scheduled_date->value2;
-  }
-
-  try {
-    $node = entity_create('node', $entity);
-    node_save($node);
-  }
-  catch (Exception $e) {
-    return;
-  }
-
-  $edit['field_incident_details'][LANGUAGE_NONE] = [];
-}
-
-/**
- * Creates HIV encounter node based on a sync incident.
- *
- * This function takes data from a sync incident and creates HIV
- * encounter node in the system. It checks if the participant exists and
- * fills the necessary fields with the provided data.
- *
- * @param array $edit
- *   An array that can be modified to include details about the incident.
- * @param object $data
- *   The data object from the sync incident, containing the necessary
- *   information to create the encounter.
- */
-function hedley_user_create_hiv_encounter_by_sync_incident(array &$edit, $data) {
-  $individual_participant_id = hedley_restful_resolve_nid_for_uuid($data->individual_participant);
-  if (!$individual_participant_id) {
-    return;
-  }
-
-  $scheduled_date_value = $data->scheduled_date->value;
-  $entity = [
-    'type' => 'hiv_encounter',
-    'field_uuid' => [LANGUAGE_NONE => [['value' => $data->uuid]]],
-    'field_individual_participant' => [LANGUAGE_NONE => [['target_id' => $individual_participant_id]]],
-    'field_scheduled_date' => [LANGUAGE_NONE => [['value' => "$scheduled_date_value 00:00:00"]]],
-  ];
-
-  if (!empty($data->scheduled_date->value2)) {
-    $entity['field_scheduled_date'][LANGUAGE_NONE][0]['value2'] = $data->scheduled_date->value2;
-  }
-
-  try {
-    $node = entity_create('node', $entity);
-    node_save($node);
-  }
-  catch (Exception $e) {
-    return;
-  }
-
-  $edit['field_incident_details'][LANGUAGE_NONE] = [];
-}
-
-/**
- * Creates a home visit encounter node based on a sync incident.
- *
- * This function takes data from a sync incident and creates a home visit
- * encounter node in the system. It checks if the participant exists and
- * fills the necessary fields with the provided data.
- *
- * @param array $edit
- *   An array that can be modified to include details about the incident.
- * @param object $data
- *   The data object from the sync incident, containing the necessary
- *   information to create the encounter.
- */
-function hedley_user_create_home_visit_encounter_by_sync_incident(array &$edit, $data) {
-  $individual_participant_id = hedley_restful_resolve_nid_for_uuid($data->individual_participant);
-  if (!$individual_participant_id) {
-    return;
-  }
-
-  $scheduled_date_value = $data->scheduled_date->value;
-  $entity = [
-    'type' => 'home_visit_encounter',
-    'field_uuid' => [LANGUAGE_NONE => [['value' => $data->uuid]]],
-    'field_individual_participant' => [LANGUAGE_NONE => [['target_id' => $individual_participant_id]]],
-    'field_scheduled_date' => [LANGUAGE_NONE => [['value' => "$scheduled_date_value 00:00:00"]]],
-  ];
-
-  if (!empty($data->scheduled_date->value2)) {
-    $entity['field_scheduled_date'][LANGUAGE_NONE][0]['value2'] = $data->scheduled_date->value2;
-  }
-
-  try {
-    $node = entity_create('node', $entity);
-    node_save($node);
-  }
-  catch (Exception $e) {
-    return;
-  }
-
-  $edit['field_incident_details'][LANGUAGE_NONE] = [];
-}
-
-/**
- * Creates NCD encounter node based on a sync incident.
- *
- * This function takes data from a sync incident and creates NCD
- * encounter node in the system. It checks if the participant exists and
- * fills the necessary fields with the provided data.
- *
- * @param array $edit
- *   An array that can be modified to include details about the incident.
- * @param object $data
- *   The data object from the sync incident, containing the necessary
- *   information to create the encounter.
- */
-function hedley_user_create_ncd_encounter_by_sync_incident(array &$edit, $data) {
-  $individual_participant_id = hedley_restful_resolve_nid_for_uuid($data->individual_participant);
-  if (!$individual_participant_id) {
-    return;
-  }
-
-  $scheduled_date_value = $data->scheduled_date->value;
-  $entity = [
-    'type' => 'ncd_encounter',
-    'field_uuid' => [LANGUAGE_NONE => [['value' => $data->uuid]]],
-    'field_individual_participant' => [LANGUAGE_NONE => [['target_id' => $individual_participant_id]]],
-    'field_scheduled_date' => [LANGUAGE_NONE => [['value' => "$scheduled_date_value 00:00:00"]]],
-  ];
-
-  if (!empty($data->scheduled_date->value2)) {
-    $entity['field_scheduled_date'][LANGUAGE_NONE][0]['value2'] = $data->scheduled_date->value2;
-  }
-
-  if (!empty($data->ncd_diagnoses)) {
-    $entity['field_ncd_diagnoses'][LANGUAGE_NONE] = [];
-    foreach ($data->ncd_diagnoses as $value) {
-      $entity['field_ncd_diagnoses'][LANGUAGE_NONE][] = ['value' => $value];
+    if (in_array(
+      $type,
+      ['image', 'text_long', 'datestamp', 'text_with_summary', 'file'])
+    ) {
+      continue;
     }
-  }
 
-  try {
-    $node = entity_create('node', $entity);
-    node_save($node);
-  }
-  catch (Exception $e) {
-    return;
-  }
-
-  $edit['field_incident_details'][LANGUAGE_NONE] = [];
-}
-
-/**
- * Creates a nutrition encounter node based on a sync incident.
- *
- * This function takes data from a sync incident and creates a nutrition
- * encounter node in the system. It checks if the participant exists and
- * fills the necessary fields with the provided data.
- *
- * @param array $edit
- *   An array that can be modified to include details about the incident.
- * @param object $data
- *   The data object from the sync incident, containing the necessary
- *   information to create the encounter.
- */
-function hedley_user_create_nutrition_encounter_by_sync_incident(array &$edit, $data) {
-  $individual_participant_id = hedley_restful_resolve_nid_for_uuid($data->individual_participant);
-  if (!$individual_participant_id) {
-    return;
-  }
-
-  $scheduled_date_value = $data->scheduled_date->value;
-  $entity = [
-    'type' => 'nutrition_encounter',
-    'field_uuid' => [LANGUAGE_NONE => [['value' => $data->uuid]]],
-    'field_individual_participant' => [LANGUAGE_NONE => [['target_id' => $individual_participant_id]]],
-    'field_nutrition_encounter_type' => [LANGUAGE_NONE => [['value' => $data->nutrition_encounter_type]]],
-    'field_scheduled_date' => [LANGUAGE_NONE => [['value' => "$scheduled_date_value 00:00:00"]]],
-  ];
-
-  if (!empty($data->scheduled_date->value2)) {
-    $entity['field_scheduled_date'][LANGUAGE_NONE][0]['value2'] = $data->scheduled_date->value2;
-  }
-
-  try {
-    $node = entity_create('node', $entity);
-    node_save($node);
-  }
-  catch (Exception $e) {
-    return;
-  }
-
-  $edit['field_incident_details'][LANGUAGE_NONE] = [];
-}
-
-/**
- * Creates prenatal encounter node based on a sync incident.
- *
- * This function takes data from a sync incident and creates prenatal
- * encounter node in the system. It checks if the participant exists and
- * fills the necessary fields with the provided data.
- *
- * @param array $edit
- *   An array that can be modified to include details about the incident.
- * @param object $data
- *   The data object from the sync incident, containing the necessary
- *   information to create the encounter.
- */
-function hedley_user_create_prenatal_encounter_by_sync_incident(array &$edit, $data) {
-  $individual_participant_id = hedley_restful_resolve_nid_for_uuid($data->individual_participant);
-  if (!$individual_participant_id) {
-    return;
-  }
-
-  $scheduled_date_value = $data->scheduled_date->value;
-  $entity = [
-    'type' => 'prenatal_encounter',
-    'field_uuid' => [LANGUAGE_NONE => [['value' => $data->uuid]]],
-    'field_individual_participant' => [LANGUAGE_NONE => [['target_id' => $individual_participant_id]]],
-    'field_prenatal_encounter_type' => [LANGUAGE_NONE => [['value' => $data->prenatal_encounter_type]]],
-    'field_scheduled_date' => [LANGUAGE_NONE => [['value' => "$scheduled_date_value 00:00:00"]]],
-  ];
-
-  if (!empty($data->scheduled_date->value2)) {
-    $entity['field_scheduled_date'][LANGUAGE_NONE][0]['value2'] = $data->scheduled_date->value2;
-  }
-
-  if (!empty($data->prenatal_diagnoses)) {
-    $entity['field_prenatal_diagnoses'][LANGUAGE_NONE] = [];
-    foreach ($data->prenatal_diagnoses as $value) {
-      $entity['field_prenatal_diagnoses'][LANGUAGE_NONE][] = ['value' => $value];
+    $name_at_data = preg_replace('/^field_/', '', $name);
+    $value = $data->{$name_at_data};
+    $is_required = $field['required'];
+    if (!isset($value)) {
+      if ($is_required) {
+        // We're missing a value for a required field.
+        return;
+      }
+      else {
+        // Skip, since the field is optional.
+        continue;
+      }
     }
-  }
 
-  if (!empty($data->past_prenatal_diagnoses)) {
-    $entity['field_past_prenatal_diagnoses'][LANGUAGE_NONE] = [];
-    foreach ($data->past_prenatal_diagnoses as $value) {
-      $entity['field_past_prenatal_diagnoses'][LANGUAGE_NONE][] = ['value' => $value];
+    switch ($type) {
+      case 'entityreference':
+        $nid = hedley_restful_resolve_nid_for_uuid($value);
+        if (!$nid) {
+          if ($is_required) {
+            // We're missing a value for a required field.
+            return;
+          }
+          else {
+            // Skip, since the field is optional.
+            break;
+          }
+        }
+        $entity[$name][LANGUAGE_NONE][0]['target_id'] = $nid;
+        break;
+
+      case 'datetime':
+        if (in_array($name, ['field_expected', 'field_scheduled_date'])) {
+          $entity[$name][LANGUAGE_NONE][0]['value'] = "$value->value 00:00:00";
+          if (!empty($value->value2)) {
+            $entity[$name][LANGUAGE_NONE][0]['value2'] = "$value->value2 00:00:00";
+          }
+        }
+        elseif (is_array($value)) {
+          foreach ($value as $item) {
+            $entity[$name][LANGUAGE_NONE][] = ['value' => "$item 00:00:00"];
+          }
+        }
+        else {
+          $entity[$name][LANGUAGE_NONE][0]['value'] = "$value 00:00:00";
+        }
+        break;
+
+      case 'list_integer':
+      case 'list_float':
+      case 'list_text':
+        if (is_array($value)) {
+          foreach ($value as $item) {
+            $entity[$name][LANGUAGE_NONE][] = ['value' => $item];
+          }
+        }
+        else {
+          $entity[$name][LANGUAGE_NONE][0]['value'] = $value;
+        }
+        break;
+
+      default:
+        $entity[$name][LANGUAGE_NONE][0]['value'] = $value;
     }
-  }
-
-  if (!empty($data->prenatal_indicators)) {
-    $entity['field_prenatal_indicators'][LANGUAGE_NONE] = [];
-    foreach ($data->prenatal_indicators as $value) {
-      $entity['field_prenatal_indicators'][LANGUAGE_NONE][] = ['value' => $value];
-    }
-  }
-
-  try {
-    $node = entity_create('node', $entity);
-    node_save($node);
-  }
-  catch (Exception $e) {
-    return;
-  }
-
-  $edit['field_incident_details'][LANGUAGE_NONE] = [];
-}
-
-/**
- * Creates Tuberculosis encounter node based on a sync incident.
- *
- * This function takes data from a sync incident and creates Tuberculosis
- * encounter node in the system. It checks if the participant exists and
- * fills the necessary fields with the provided data.
- *
- * @param array $edit
- *   An array that can be modified to include details about the incident.
- * @param object $data
- *   The data object from the sync incident, containing the necessary
- *   information to create the encounter.
- */
-function hedley_user_create_tuberculosis_encounter_by_sync_incident(array &$edit, $data) {
-  $individual_participant_id = hedley_restful_resolve_nid_for_uuid($data->individual_participant);
-  if (!$individual_participant_id) {
-    return;
-  }
-
-  $scheduled_date_value = $data->scheduled_date->value;
-  $entity = [
-    'type' => 'tuberculosis_encounter',
-    'field_uuid' => [LANGUAGE_NONE => [['value' => $data->uuid]]],
-    'field_individual_participant' => [LANGUAGE_NONE => [['target_id' => $individual_participant_id]]],
-    'field_scheduled_date' => [LANGUAGE_NONE => [['value' => "$scheduled_date_value 00:00:00"]]],
-  ];
-
-  if (!empty($data->scheduled_date->value2)) {
-    $entity['field_scheduled_date'][LANGUAGE_NONE][0]['value2'] = $data->scheduled_date->value2;
-  }
-
-  try {
-    $node = entity_create('node', $entity);
-    node_save($node);
-  }
-  catch (Exception $e) {
-    return;
-  }
-
-  $edit['field_incident_details'][LANGUAGE_NONE] = [];
-}
-
-/**
- * Creates Well Child encounter node based on a sync incident.
- *
- * This function takes data from a sync incident and creates Well Child
- * encounter node in the system. It checks if the participant exists and
- * fills the necessary fields with the provided data.
- *
- * @param array $edit
- *   An array that can be modified to include details about the incident.
- * @param object $data
- *   The data object from the sync incident, containing the necessary
- *   information to create the encounter.
- */
-function hedley_user_create_well_child_encounter_by_sync_incident(array &$edit, $data) {
-  $individual_participant_id = hedley_restful_resolve_nid_for_uuid($data->individual_participant);
-  if (!$individual_participant_id) {
-    return;
-  }
-
-  $scheduled_date_value = $data->scheduled_date->value;
-  $entity = [
-    'type' => 'well_child_encounter',
-    'field_uuid' => [LANGUAGE_NONE => [['value' => $data->uuid]]],
-    'field_individual_participant' => [LANGUAGE_NONE => [['target_id' => $individual_participant_id]]],
-    'field_well_child_encounter_type' => [LANGUAGE_NONE => [['value' => $data->well_child_encounter_type]]],
-    'field_scheduled_date' => [LANGUAGE_NONE => [['value' => "$scheduled_date_value 00:00:00"]]],
-  ];
-
-  if (!empty($data->scheduled_date->value2)) {
-    $entity['field_scheduled_date'][LANGUAGE_NONE][0]['value2'] = $data->scheduled_date->value2;
-  }
-
-  if (!empty($data->encounter_notes)) {
-    $entity['field_encounter_notes'][LANGUAGE_NONE] = [];
-    foreach ($data->encounter_notes as $value) {
-      $entity['field_encounter_notes'][LANGUAGE_NONE][] = ['value' => $value];
-    }
-  }
-
-  if (!empty($data->encounter_warnings)) {
-    $entity['field_encounter_warnings'][LANGUAGE_NONE] = [];
-    foreach ($data->encounter_warnings as $value) {
-      $entity['field_encounter_warnings'][LANGUAGE_NONE][] = ['value' => $value];
-    }
-  }
-
-  try {
-    $node = entity_create('node', $entity);
-    node_save($node);
-  }
-  catch (Exception $e) {
-    return;
-  }
-
-  $edit['field_incident_details'][LANGUAGE_NONE] = [];
-}
-
-/**
- * Creates a session node based on a sync incident.
- *
- * This function takes data from a sync incident and creates a
- * session node in the system.
- *
- * @param array $edit
- *   An array that can be modified to include details about the incident.
- * @param object $data
- *   The data object from the sync incident, containing the necessary
- *   information to create the session.
- */
-function hedley_user_create_session_by_sync_incident(array &$edit, $data) {
-  $clinic_id = hedley_restful_resolve_nid_for_uuid($data->clinic);
-  if (!$clinic_id) {
-    return;
-  }
-
-  $scheduled_date_value = $data->scheduled_date->value;
-  $entity = [
-    'type' => 'session',
-    'field_uuid' => [LANGUAGE_NONE => [['value' => $data->uuid]]],
-    'field_clinic' => [LANGUAGE_NONE => [['target_id' => $clinic_id]]],
-    'field_scheduled_date' => [LANGUAGE_NONE => [['value' => "$scheduled_date_value 00:00:00"]]],
-  ];
-
-  if (!empty($data->scheduled_date->value2)) {
-    $entity['field_scheduled_date'][LANGUAGE_NONE][0]['value2'] = $data->scheduled_date->value2;
   }
 
   try {

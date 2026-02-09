@@ -1086,8 +1086,8 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         break;
 
     // Purpose of this query is to retrieve data that will help resolving
-    // sync incident in case referrenced entity is not recorded. For example,
-    // when nutrition height is being recored, but it's encounter is
+    // sync incident in case referenced entity is not recorded. For example,
+    // when nutrition height is being recorded, but it's encounter is
     // not found and shardChanges table.
     // To solve this, we try to pull the encounter from shards table.
     case 'IndexDbQueryGetShardsEntityByUuid':
@@ -1101,10 +1101,59 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         let entities = [result[0]];
 
-        // If resolved entity is an encounter, we fetch the
-        // participant it refers to.
-        if (entities[0].type.endsWith('_encounter')) {
-          // Encounter was resolved. Now resolving participant.
+        // In case we got entity of type "session", it's only reference is
+        // "clinic". Since clinics are created on backend, we can assume
+        // they will always exist, and there's no need to pull additional entities.
+        // Looking into case where entity is "pmtct_participant".
+        // It references 2 persons - "adult" and "person" (for child).
+        if (entities[0].type == 'pmtct_participant') {
+          // Participant was resolved. Now resolving person.
+          let uuidPerson = entities[0].person;
+          let uuidAdult = entities[0].adult;
+          result = await dbSync
+              .shards
+              .where('uuid')
+              .equals(uuidPerson)
+              .limit(1)
+              .toArray();
+
+          let person = result[0];
+          if (person) {
+            entities.push(person);
+            result = await dbSync
+                .shards
+                .where('uuid')
+                .equals(uuidAdult)
+                .limit(1)
+                .toArray();
+
+            let adult = result[0];
+            if (adult) {
+              entities.push(adult);
+            }
+          }
+        }
+        // Looking into case where entity is "individual_participant".
+        // It references only the person.
+        else if (entities[0].type == 'individual_participant') {
+          // Resolving person.
+          let uuid = entities[0].person;
+          result = await dbSync
+              .shards
+              .where('uuid')
+              .equals(uuid)
+              .limit(1)
+              .toArray();
+
+          let person = result[0];
+          if (person) {
+            entities.push(person);
+          }
+        }
+        // Looking into case where entity is a type of individual encounter.
+        // It references the participant, and the participant references the person.
+        else if (entities[0].type.endsWith('_encounter')) {
+          // Resolving participant.
           let uuid = entities[0].individual_participant;
           result = await dbSync
               .shards
@@ -1117,7 +1166,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
           if (participant) {
             entities.push(participant);
 
-            // Participant was resolved. Now resolving person.
+            // Resolving person.
             uuid = participant.person;
             result = await dbSync
                 .shards
@@ -1132,19 +1181,89 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             }
           }
         }
-        else if (entities[0].type == 'individual_participant') {
-          // Participant was resolved. Now resolving person.
-          let uuid = entities[0].person;
-          result = await dbSync
-              .shards
-              .where('uuid')
-              .equals(uuid)
-              .limit(1)
-              .toArray();
+        else {
+          // Looking into case where entity is a type of measurement.
+          // it can belong to group encounter or individual encounter.
+          const entityKeys = Object.keys(result[0]);
+          // Identify measurement - only measurements got "nurse" field).
+          if (entityKeys.includes("nurse")) {
+            // Looking into case of individual encounter measurement.
+            const key = entityKeys.find(k => k.endsWith("_encounter"));
+            if (key) {
+              // Resolve encounter ID.
+              const uuid = result[0][key];
+              // Pull encounter data.
+              result = await dbSync
+                  .shards
+                  .where('uuid')
+                  .equals(uuid)
+                  .limit(1)
+                  .toArray();
 
-          let person = result[0];
-          if (person) {
-            entities.push(person);
+              let encounter = result[0];
+              if (encounter) {
+                entities.push(encounter);
+                // Resolving participant.
+                let uuid = encounter.individual_participant;
+                result = await dbSync
+                    .shards
+                    .where('uuid')
+                    .equals(uuid)
+                    .limit(1)
+                    .toArray();
+
+                let participant = result[0];
+                if (participant) {
+                  entities.push(participant);
+
+                  // Resolving person.
+                  uuid = participant.person;
+                  result = await dbSync
+                      .shards
+                      .where('uuid')
+                      .equals(uuid)
+                      .limit(1)
+                      .toArray();
+
+                  let person = result[0];
+                  if (person) {
+                    entities.push(person);
+                  }
+                }
+              }
+            }
+            else {
+              // Looking into case of group encounter measurement.
+              // It references session and person.
+              if (entityKeys.includes("session")) {
+                // Resolving session.
+                const uuidSession = result[0].session;
+                const uuidPerson = result[0].person;
+                result = await dbSync
+                    .shards
+                    .where('uuid')
+                    .equals(uuidSession)
+                    .limit(1)
+                    .toArray();
+
+                let session = result[0];
+                if (session) {
+                  entities.push(session);
+                  // Resolving person.
+                  result = await dbSync
+                      .shards
+                      .where('uuid')
+                      .equals(uuidPerson)
+                      .limit(1)
+                      .toArray();
+
+                  let person = result[0];
+                  if (person) {
+                    entities.push(person);
+                  }
+                }
+              }
+            }
           }
         }
 
