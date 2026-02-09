@@ -1,0 +1,162 @@
+<?php
+
+/**
+ * @file
+ * Class HedleyUserNodePermissions.
+ */
+
+/**
+ * Class HedleyUserNodePermissions.
+ *
+ * Tests that administrator and sync users have the correct permissions
+ * for all node types.
+ */
+class HedleyUserNodePermissions extends HedleyWebTestBase {
+
+  /**
+   * The profile name.
+   *
+   * @var string
+   */
+  protected $profile = 'hedley';
+
+  /**
+   * Overrides DrupalWebTestCase::setUp().
+   */
+  public function setUp() {
+    // Enable all hedley modules that define node types and permissions.
+    $modules = array(
+      'hedley_activity',
+      'hedley_acute_illness',
+      'hedley_admin',
+      'hedley_case_management',
+      'hedley_chw',
+      'hedley_device',
+      'hedley_forms',
+      'hedley_general',
+      'hedley_group_education',
+      'hedley_health_center',
+      'hedley_hiv',
+      'hedley_ncd',
+      'hedley_ncda',
+      'hedley_nutrition',
+      'hedley_patient',
+      'hedley_person',
+      'hedley_prenatal',
+      'hedley_resilience',
+      'hedley_schedule',
+      'hedley_stats',
+      'hedley_stock_management',
+      'hedley_tuberculosis',
+      'hedley_well_child',
+      'hedley_whatsapp',
+      'hedley_zscore',
+    );
+
+    parent::setUp($modules);
+  }
+
+  /**
+   * Get info.
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'Testing node permissions for administrator and sync users',
+      'description' => 'Verify that administrator and sync users have the correct permissions for each node type.',
+      'group' => 'Hedley',
+    );
+  }
+
+  /**
+   * Get all node types dynamically from the system.
+   *
+   * @return array
+   *   Array of node type machine names.
+   */
+  protected function getNodeTypes() {
+    $node_types = array();
+    foreach (node_type_get_types() as $type) {
+      $node_types[] = $type->type;
+    }
+    return $node_types;
+  }
+
+  /**
+   * Test that administrator users have all 5 permissions for each node type.
+   */
+  public function testAdministratorPermissions() {
+    $administrator_role = user_role_load_by_name('administrator');
+    $this->assertTrue($administrator_role, 'Administrator role exists');
+
+    $permissions = user_role_permissions(array($administrator_role->rid => $administrator_role));
+    $admin_permissions = isset($permissions[$administrator_role->rid]) ? $permissions[$administrator_role->rid] : array();
+
+    $node_types = $this->getNodeTypes();
+
+    foreach ($node_types as $node_type) {
+      // Administrator should have all 5 permissions.
+      $expected_permissions = array(
+        "create $node_type content",
+        "edit own $node_type content",
+        "edit any $node_type content",
+        "delete own $node_type content",
+        "delete any $node_type content",
+      );
+
+      foreach ($expected_permissions as $permission) {
+        $this->assertTrue(
+          isset($admin_permissions[$permission]),
+          "Administrator has permission: $permission"
+        );
+      }
+    }
+  }
+
+  /**
+   * Test that sync users have 3 permissions for each node type.
+   */
+  public function testSyncPermissions() {
+    $sync_role = user_role_load_by_name('sync');
+    $this->assertTrue($sync_role, 'Sync role exists');
+
+    $permissions = user_role_permissions(array($sync_role->rid => $sync_role));
+    $sync_permissions = isset($permissions[$sync_role->rid]) ? $permissions[$sync_role->rid] : array();
+
+    $node_types = $this->getNodeTypes();
+
+    foreach ($node_types as $node_type) {
+      if (in_array($node_type, array('device', 'report_data'))) {
+        // Sync does not have permissions for these node types.
+        continue;
+      }
+
+      // Sync should have 3 permissions.
+      $expected_permissions = array(
+        "create $node_type content",
+        "edit own $node_type content",
+        "edit any $node_type content",
+      );
+
+      foreach ($expected_permissions as $permission) {
+        $this->assertTrue(
+          isset($sync_permissions[$permission]),
+          "Sync has permission: $permission"
+        );
+      }
+
+      // Sync should NOT have delete permissions.
+      $forbidden_permissions = array(
+        "delete own $node_type content",
+        "delete any $node_type content",
+      );
+
+      foreach ($forbidden_permissions as $permission) {
+        $this->assertFalse(
+          isset($sync_permissions[$permission]),
+          "Sync does NOT have permission: $permission"
+        );
+      }
+    }
+  }
+
+}
