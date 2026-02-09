@@ -649,7 +649,6 @@ class HedleyWebTestBase extends DrupalWebTestCase {
       default:
         throw new NotFoundException("$type not supported for NCDA creation.");
     }
-
     $wrapper->save();
 
     return $node->nid;
