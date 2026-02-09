@@ -92,7 +92,7 @@ class HedleyUserNodePermissions extends HedleyWebTestBase {
     $admin_permissions = isset($permissions[$administrator_role->rid]) ? $permissions[$administrator_role->rid] : array();
 
     $node_types = $this->getNodeTypes();
-    
+
     foreach ($node_types as $node_type) {
       // Administrator should have all 5 permissions.
       $expected_permissions = array(
@@ -123,7 +123,7 @@ class HedleyUserNodePermissions extends HedleyWebTestBase {
     $sync_permissions = isset($permissions[$sync_role->rid]) ? $permissions[$sync_role->rid] : array();
 
     $node_types = $this->getNodeTypes();
-    
+
     foreach ($node_types as $node_type) {
       // Sync should have 3 permissions.
       $expected_permissions = array(
