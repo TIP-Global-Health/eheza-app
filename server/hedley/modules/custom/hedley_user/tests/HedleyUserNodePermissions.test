@@ -1,0 +1,329 @@
+<?php
+
+/**
+ * @file
+ * Class HedleyUserNodePermissions.
+ */
+
+/**
+ * Class HedleyUserNodePermissions.
+ *
+ * Tests that administrator and sync users have the correct permissions
+ * for all node types.
+ */
+class HedleyUserNodePermissions extends HedleyWebTestBase {
+
+  /**
+   * The profile name.
+   *
+   * @var string
+   */
+  protected $profile = 'hedley';
+
+  /**
+   * Get info.
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'Testing node permissions for administrator and sync users',
+      'description' => 'Verify that administrator and sync users have the correct permissions for each node type.',
+      'group' => 'Hedley',
+    );
+  }
+
+  /**
+   * List of all node types that should have permissions.
+   *
+   * @return array
+   *   Array of node type machine names.
+   */
+  protected function getNodeTypes() {
+    return array(
+      'acute_findings',
+      'acute_illness_contacts_tracing',
+      'acute_illness_core_exam',
+      'acute_illness_danger_signs',
+      'acute_illness_encounter',
+      'acute_illness_follow_up',
+      'acute_illness_muac',
+      'acute_illness_nutrition',
+      'acute_illness_trace_contact',
+      'acute_illness_vitals',
+      'appointment_confirmation',
+      'attendance',
+      'birth_plan',
+      'breast_exam',
+      'call_114',
+      'catchment_area',
+      'child',
+      'child_fbf',
+      'child_scoreboard_bcg_iz',
+      'child_scoreboard_dtp_iz',
+      'child_scoreboard_dtp_sa_iz',
+      'child_scoreboard_encounter',
+      'child_scoreboard_ipv_iz',
+      'child_scoreboard_mr_iz',
+      'child_scoreboard_ncda',
+      'child_scoreboard_opv_iz',
+      'child_scoreboard_pcv13_iz',
+      'child_scoreboard_rotarix_iz',
+      'clinic',
+      'contributing_factors',
+      'core_physical_exam',
+      'counseling_schedule',
+      'counseling_session',
+      'counseling_topic',
+      'covid_testing',
+      'danger_signs',
+      'device',
+      'education_session',
+      'exposure',
+      'family_planning',
+      'follow_up',
+      'group_health_education',
+      'group_ncda',
+      'group_send_to_hc',
+      'hc_contact',
+      'health_center',
+      'health_education',
+      'height',
+      'hiv_diagnostics',
+      'hiv_encounter',
+      'hiv_follow_up',
+      'hiv_health_education',
+      'hiv_medication',
+      'hiv_referral',
+      'hiv_symptom_review',
+      'hiv_treatment_review',
+      'home_visit_encounter',
+      'individual_participant',
+      'isolation',
+      'lactation',
+      'last_menstrual_period',
+      'malaria_testing',
+      'medical_history',
+      'medication',
+      'medication_distribution',
+      'mother',
+      'mother_fbf',
+      'muac',
+      'ncd_co_morbidities',
+      'ncd_core_exam',
+      'ncd_creatinine_test',
+      'ncd_danger_signs',
+      'ncd_encounter',
+      'ncd_family_history',
+      'ncd_family_planning',
+      'ncd_hba1c_test',
+      'ncd_health_education',
+      'ncd_hiv_test',
+      'ncd_labs_results',
+      'ncd_lipid_panel_test',
+      'ncd_liver_function_test',
+      'ncd_medication_distribution',
+      'ncd_medication_history',
+      'ncd_outside_care',
+      'ncd_pregnancy_test',
+      'ncd_random_blood_sugar_test',
+      'ncd_referral',
+      'ncd_social_history',
+      'ncd_symptom_review',
+      'ncd_urine_dipstick_test',
+      'ncd_vitals',
+      'nurse',
+      'nutrition',
+      'nutrition_caring',
+      'nutrition_contributing_factors',
+      'nutrition_encounter',
+      'nutrition_feeding',
+      'nutrition_follow_up',
+      'nutrition_food_security',
+      'nutrition_health_education',
+      'nutrition_height',
+      'nutrition_hygiene',
+      'nutrition_muac',
+      'nutrition_ncda',
+      'nutrition_nutrition',
+      'nutrition_photo',
+      'nutrition_send_to_hc',
+      'nutrition_weight',
+      'obstetric_history',
+      'obstetric_history_step2',
+      'obstetrical_exam',
+      'participant_consent',
+      'participant_form',
+      'person',
+      'photo',
+      'pmtct_participant',
+      'pregnancy_testing',
+      'prenatal_aspirin',
+      'prenatal_blood_gprs_test',
+      'prenatal_breastfeeding',
+      'prenatal_calcium',
+      'prenatal_encounter',
+      'prenatal_family_planning',
+      'prenatal_fefol',
+      'prenatal_folate',
+      'prenatal_follow_up',
+      'prenatal_gu_exam',
+      'prenatal_health_education',
+      'prenatal_hemoglobin_test',
+      'prenatal_hepatitis_b_test',
+      'prenatal_hiv_pcr_test',
+      'prenatal_hiv_test',
+      'prenatal_iron',
+      'prenatal_labs_results',
+      'prenatal_malaria_test',
+      'prenatal_mebendazole',
+      'prenatal_medication_distribution',
+      'prenatal_mental_health',
+      'prenatal_mms',
+      'prenatal_nutrition',
+      'prenatal_outside_care',
+      'prenatal_partner_hiv_test',
+      'prenatal_photo',
+      'prenatal_random_blood_sugar_test',
+      'prenatal_send_to_hc',
+      'prenatal_speciality_care',
+      'prenatal_symptom_review',
+      'prenatal_syphilis_test',
+      'prenatal_tetanus_immunisation',
+      'prenatal_urine_dipstick_test',
+      'relationship',
+      'report_data',
+      'resilience_survey',
+      'resource',
+      'send_to_hc',
+      'session',
+      'social_history',
+      'stock_update',
+      'symptoms_general',
+      'symptoms_gi',
+      'symptoms_respiratory',
+      'sync_incident',
+      'travel_history',
+      'treatment_history',
+      'treatment_ongoing',
+      'tuberculosis_diagnostics',
+      'tuberculosis_dot',
+      'tuberculosis_encounter',
+      'tuberculosis_follow_up',
+      'tuberculosis_health_education',
+      'tuberculosis_medication',
+      'tuberculosis_referral',
+      'tuberculosis_symptom_review',
+      'tuberculosis_treatment_review',
+      'village',
+      'vitals',
+      'weight',
+      'well_child_albendazole',
+      'well_child_bcg_immunisation',
+      'well_child_caring',
+      'well_child_contributing_factors',
+      'well_child_dtp_immunisation',
+      'well_child_dtp_sa_immunisation',
+      'well_child_ecd',
+      'well_child_encounter',
+      'well_child_feeding',
+      'well_child_follow_up',
+      'well_child_food_security',
+      'well_child_head_circumference',
+      'well_child_health_education',
+      'well_child_height',
+      'well_child_hpv_immunisation',
+      'well_child_hygiene',
+      'well_child_ipv_immunisation',
+      'well_child_mebendezole',
+      'well_child_mr_immunisation',
+      'well_child_muac',
+      'well_child_ncda',
+      'well_child_next_visit',
+      'well_child_nutrition',
+      'well_child_opv_immunisation',
+      'well_child_pcv13_immunisation',
+      'well_child_photo',
+      'well_child_pregnancy_summary',
+      'well_child_rotarix_immunisation',
+      'well_child_send_to_hc',
+      'well_child_symptoms_review',
+      'well_child_vitals',
+      'well_child_vitamin_a',
+      'well_child_weight',
+      'whatsapp_record',
+    );
+  }
+
+  /**
+   * Test that administrator users have all 5 permissions for each node type.
+   */
+  public function testAdministratorPermissions() {
+    $administrator_role = user_role_load_by_name('administrator');
+    $this->assertTrue($administrator_role, 'Administrator role exists');
+
+    $permissions = user_role_permissions(array($administrator_role->rid => $administrator_role));
+    $admin_permissions = isset($permissions[$administrator_role->rid]) ? $permissions[$administrator_role->rid] : array();
+
+    $node_types = $this->getNodeTypes();
+    
+    foreach ($node_types as $node_type) {
+      // Administrator should have all 5 permissions.
+      $expected_permissions = array(
+        "create $node_type content",
+        "edit own $node_type content",
+        "edit any $node_type content",
+        "delete own $node_type content",
+        "delete any $node_type content",
+      );
+
+      foreach ($expected_permissions as $permission) {
+        $this->assertTrue(
+          isset($admin_permissions[$permission]),
+          "Administrator has permission: $permission"
+        );
+      }
+    }
+  }
+
+  /**
+   * Test that sync users have 3 permissions for each node type.
+   */
+  public function testSyncPermissions() {
+    $sync_role = user_role_load_by_name('sync');
+    $this->assertTrue($sync_role, 'Sync role exists');
+
+    $permissions = user_role_permissions(array($sync_role->rid => $sync_role));
+    $sync_permissions = isset($permissions[$sync_role->rid]) ? $permissions[$sync_role->rid] : array();
+
+    $node_types = $this->getNodeTypes();
+    
+    foreach ($node_types as $node_type) {
+      // Sync should have 3 permissions.
+      $expected_permissions = array(
+        "create $node_type content",
+        "edit own $node_type content",
+        "edit any $node_type content",
+      );
+
+      foreach ($expected_permissions as $permission) {
+        $this->assertTrue(
+          isset($sync_permissions[$permission]),
+          "Sync has permission: $permission"
+        );
+      }
+
+      // Sync should NOT have delete permissions.
+      $forbidden_permissions = array(
+        "delete own $node_type content",
+        "delete any $node_type content",
+      );
+
+      foreach ($forbidden_permissions as $permission) {
+        $this->assertFalse(
+          isset($sync_permissions[$permission]),
+          "Sync does NOT have permission: $permission"
+        );
+      }
+    }
+  }
+
+}
