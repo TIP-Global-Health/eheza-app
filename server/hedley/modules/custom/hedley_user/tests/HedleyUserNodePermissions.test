@@ -125,6 +125,11 @@ class HedleyUserNodePermissions extends HedleyWebTestBase {
     $node_types = $this->getNodeTypes();
 
     foreach ($node_types as $node_type) {
+      if (in_array($node_type, array('device', 'report_data'))) {
+        // Sync does not have permissions for these node types.
+        continue;
+      }
+
       // Sync should have 3 permissions.
       $expected_permissions = array(
         "create $node_type content",
