@@ -13,7 +13,8 @@ type Msg
     | SetActivePage Page
     | SetWarningPopupState (List NutritionAssessment)
     | SetHeight String
-    | SaveHeight PersonId (Maybe ( NutritionHeightId, NutritionHeight ))
+    | SetHeightNotTaken Bool
+    | SaveHeight (EverySet SkippedForm) PersonId (Maybe ( NutritionHeightId, NutritionHeight ))
     | SetMuac String
     | SaveMuac PersonId (Maybe ( NutritionMuacId, NutritionMuac ))
     | SetNutritionSign ChildNutritionSign
@@ -21,7 +22,8 @@ type Msg
     | DropZoneComplete DropZoneFile
     | SavePhoto PersonId (Maybe NutritionPhotoId) ImageUrl
     | SetWeight String
-    | SaveWeight PersonId (Maybe ( NutritionWeightId, NutritionWeight ))
+    | SetWeightNotTaken Bool
+    | SaveWeight (EverySet SkippedForm) PersonId (Maybe ( NutritionWeightId, NutritionWeight ))
     | SetUpdateANCVisits Bool
     | ToggleANCVisitDate NominalDate
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool

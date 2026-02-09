@@ -352,7 +352,9 @@ nutritionAssessmentTaskCompleted currentDate assembled task =
     in
     case task of
         TaskHeight ->
-            (not <| taskExpected TaskHeight) || isJust measurements.height
+            (not <| taskExpected TaskHeight)
+                || isJust measurements.height
+                || EverySet.member SkippedHeight assembled.encounter.skippedForms
 
         TaskHeadCircumference ->
             (not <| taskExpected TaskHeadCircumference) || isJust measurements.headCircumference
@@ -364,7 +366,9 @@ nutritionAssessmentTaskCompleted currentDate assembled task =
             (not <| taskExpected TaskNutrition) || isJust measurements.nutrition
 
         TaskWeight ->
-            (not <| taskExpected TaskWeight) || isJust measurements.weight
+            (not <| taskExpected TaskWeight)
+                || isJust measurements.weight
+                || EverySet.member SkippedWeight assembled.encounter.skippedForms
 
 
 expectNutritionAssessmentTask : NominalDate -> AssembledData -> NutritionAssessmentTask -> Bool
@@ -387,48 +391,51 @@ expectNutritionAssessmentTask currentDate assembled task =
             True
 
 
-mandatoryNutritionAssessmentTasksCompleted : NominalDate -> Site -> AssembledData -> Bool
-mandatoryNutritionAssessmentTasksCompleted currentDate site assembled =
-    resolveMandatoryNutritionAssessmentTasks currentDate site assembled
-        |> List.all (nutritionAssessmentTaskCompleted currentDate assembled)
+mandatoryNutritionAssessmentTasksCompleted : NominalDate -> AssembledData -> Bool
+mandatoryNutritionAssessmentTasksCompleted currentDate assembled =
+    resolveMandatoryNutritionAssessmentTasks currentDate assembled
+        |> List.filter (not << nutritionAssessmentTaskCompleted currentDate assembled)
+        |> List.isEmpty
 
 
-resolveMandatoryNutritionAssessmentTasks : NominalDate -> Site -> AssembledData -> List NutritionAssessmentTask
-resolveMandatoryNutritionAssessmentTasks currentDate site assembled =
-    case assembled.encounter.encounterType of
-        PediatricCare ->
-            [ TaskHeight, TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
+resolveMandatoryNutritionAssessmentTasks : NominalDate -> AssembledData -> List NutritionAssessmentTask
+resolveMandatoryNutritionAssessmentTasks currentDate assembled =
+    List.filter (expectNutritionAssessmentTask currentDate assembled) <|
+        case assembled.encounter.encounterType of
+            NewbornExam ->
+                [ TaskHeadCircumference, TaskNutrition, TaskWeight ]
 
-        _ ->
-            if site == SiteBurundi then
-                -- Weight is optional for CHW in Burundi
-                [ TaskHeadCircumference, TaskMuac, TaskNutrition ]
-
-            else
-                -- Height is optional for CHW
-                [ TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
+            _ ->
+                allNutritionAssessmentTasks
 
 
 resolveNutritionAssessmentTasks : AssembledData -> List NutritionAssessmentTask
 resolveNutritionAssessmentTasks assembled =
     case assembled.encounter.encounterType of
         NewbornExam ->
-            -- Height and Muac are not here, because Newbor Exam
+            -- Height and Muac are not here, because Newborn Exam
             -- is done for children that are less than 2 months old.
             [ TaskHeadCircumference, TaskNutrition, TaskWeight ]
 
         _ ->
-            [ TaskHeight, TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
+            allNutritionAssessmentTasks
+
+
+allNutritionAssessmentTasks : List NutritionAssessmentTask
+allNutritionAssessmentTasks =
+    [ TaskHeight, TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
 
 
 nutritionAssessmentTasksCompletedFromTotal :
     NominalDate
     -> ZScore.Model.Model
+    -> Site
+    -> Bool
     -> AssembledData
     -> NutritionAssessmentData
     -> NutritionAssessmentTask
     -> ( Int, Int )
-nutritionAssessmentTasksCompletedFromTotal currentDate zscores assembled data task =
+nutritionAssessmentTasksCompletedFromTotal currentDate zscores site isChw assembled data task =
     let
         measurements =
             assembled.measurements
@@ -437,13 +444,15 @@ nutritionAssessmentTasksCompletedFromTotal currentDate zscores assembled data ta
             case task of
                 TaskHeight ->
                     getMeasurementValueFunc measurements.height
-                        |> heightFormWithDefault data.heightForm
+                        |> heightFormWithDefault assembled.encounter.skippedForms data.heightForm
                         |> heightFormAndTasks English
                             currentDate
                             zscores
+                            isChw
                             assembled.person
                             Nothing
                             SetHeight
+                            SetHeightNotTaken
 
                 TaskHeadCircumference ->
                     getMeasurementValueFunc measurements.headCircumference
@@ -473,15 +482,18 @@ nutritionAssessmentTasksCompletedFromTotal currentDate zscores assembled data ta
 
                 TaskWeight ->
                     getMeasurementValueFunc measurements.weight
-                        |> weightFormWithDefault data.weightForm
+                        |> weightFormWithDefault assembled.encounter.skippedForms data.weightForm
                         |> weightFormAndTasks English
                             currentDate
                             zscores
+                            site
+                            isChw
                             assembled.person
                             Nothing
                             Nothing
                             False
                             Pages.WellChild.Activity.Model.SetWeight
+                            Pages.WellChild.Activity.Model.SetWeightNotTaken
     in
     resolveTasksCompletedFromTotal tasks
 
@@ -727,20 +739,6 @@ toHeadCircumferenceValue form =
         |> andMap notes
 
 
-dangerSignsTaskCompleted : NominalDate -> AssembledData -> DangerSignsTask -> Bool
-dangerSignsTaskCompleted currentDate assembled task =
-    let
-        measurements =
-            assembled.measurements
-    in
-    case task of
-        TaskSymptomsReview ->
-            isJust measurements.symptomsReview
-
-        TaskVitals ->
-            isJust measurements.vitals
-
-
 dangerSignsTasksCompletedFromTotal : NominalDate -> AssembledData -> DangerSignsData -> DangerSignsTask -> ( Int, Int )
 dangerSignsTasksCompletedFromTotal currentDate assembled data task =
     let
@@ -766,6 +764,20 @@ dangerSignsTasksCompletedFromTotal currentDate assembled data task =
     resolveTasksCompletedFromTotal tasks
 
 
+dangerSignsTaskCompleted : NominalDate -> AssembledData -> DangerSignsTask -> Bool
+dangerSignsTaskCompleted currentDate assembled task =
+    let
+        measurements =
+            assembled.measurements
+    in
+    case task of
+        TaskSymptomsReview ->
+            isJust measurements.symptomsReview
+
+        TaskVitals ->
+            isJust measurements.vitals
+
+
 mandatoryDangerSignsTasksCompleted : NominalDate -> Site -> AssembledData -> Bool
 mandatoryDangerSignsTasksCompleted currentDate site assembled =
     resolvedMandatoryDangerSignsTasksCompleted site assembled
@@ -778,9 +790,10 @@ resolvedMandatoryDangerSignsTasksCompleted site assembled =
         PediatricCare ->
             [ TaskSymptomsReview, TaskVitals ]
 
+        -- CHW encounter types.
         _ ->
             if site == SiteBurundi then
-                -- Vitals are optional for CHW in Burundi
+                -- Vitals are optional for CHW in Burundi.
                 [ TaskSymptomsReview ]
 
             else
@@ -1594,7 +1607,7 @@ expectNextStepsTask :
 expectNextStepsTask currentDate zscores site features isChw assembled db task =
     case task of
         TaskContributingFactors ->
-            if mandatoryNutritionAssessmentTasksCompleted currentDate site assembled then
+            if mandatoryNutritionAssessmentTasksCompleted currentDate assembled then
                 -- Any assesment requires Next Steps tasks.
                 generateNutritionAssessment currentDate zscores db assembled
                     |> List.isEmpty
