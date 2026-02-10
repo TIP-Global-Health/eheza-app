@@ -43,6 +43,7 @@ import Measurement.Utils
     exposing
         ( bloodGpRsTestFormWithDefault
         , corePhysicalExamFormWithDefault
+        , corePhysicalExamInputsAndTasks
         , emptyContentAndTasksForPerformedLaboratoryUniversalTestConfig
         , emptyContentAndTasksLaboratoryUniversalTestInitialConfig
         , familyPlanningFormWithDefault
@@ -637,26 +638,17 @@ viewHistoryContent language currentDate assembled data =
 
                         Medical ->
                             ( Medical
-                            , ( Maybe.Extra.values medicalFormTasks
-                                    |> List.length
-                              , List.length medicalFormTasks
-                              )
+                            , resolveTasksCompletedFromTotal medicalFormTasks
                             )
 
                         Social ->
                             ( Social
-                            , ( Maybe.Extra.values socialFormTasks
-                                    |> List.length
-                              , List.length socialFormTasks
-                              )
+                            , resolveTasksCompletedFromTotal socialFormTasks
                             )
 
                         OutsideCare ->
                             ( OutsideCare
-                            , ( Maybe.Extra.values outsideCareTasks
-                                    |> List.length
-                              , List.length outsideCareTasks
-                              )
+                            , resolveTasksCompletedFromTotal outsideCareTasks
                             )
                 )
                 tasks
@@ -966,18 +958,17 @@ viewExaminationContent language currentDate zscores assembled data =
                     case task of
                         BreastExam ->
                             ( BreastExam
-                            , ( Maybe.Extra.values breastExamTasks
-                                    |> List.length
-                              , List.length breastExamTasks
-                              )
+                            , resolveTasksCompletedFromTotal breastExamTasks
                             )
 
                         ObstetricalExam ->
                             ( ObstetricalExam
-                            , ( Maybe.Extra.values obstetricalExamTasks
-                                    |> List.length
-                              , List.length obstetricalExamTasks
-                              )
+                            , resolveTasksCompletedFromTotal obstetricalExamTasks
+                            )
+
+                        CorePhysicalExam ->
+                            ( CorePhysicalExam
+                            , resolveTasksCompletedFromTotal corePhysicalExamTasks
                             )
 
                         _ ->
@@ -1004,6 +995,23 @@ viewExaminationContent language currentDate zscores assembled data =
                 |> breastExamFormWithDefault data.breastExamForm
                 |> breastExamInputsAndTasks language currentDate assembled
 
+        ( corePhysicalExamInputs, corePhysicalExamTasks ) =
+            let
+                config =
+                    { setBoolInputMsg = SetCorePhysicalExamBoolInput
+                    , setNeckMsg = SetCorePhysicalExamNeck
+                    , setHeartMsg = SetCorePhysicalExamHeart
+                    , setLungsMsg = SetCorePhysicalExamLungs
+                    , setAbdomenMsg = SetCorePhysicalExamAbdomen
+                    , setHandsMsg = SetCorePhysicalExamHands
+                    , setLegsMsg = SetCorePhysicalExamLegs
+                    , showHeadHairInput = False
+                    }
+            in
+            getMeasurementValueFunc assembled.measurements.corePhysicalExam
+                |> corePhysicalExamFormWithDefault data.corePhysicalExamForm
+                |> corePhysicalExamInputsAndTasks language currentDate config
+
         viewForm =
             case activeTask of
                 Just Vitals ->
@@ -1028,9 +1036,8 @@ viewExaminationContent language currentDate zscores assembled data =
                     viewNutritionAssessmentForm language currentDate zscores assembled formWithMeasuredHeight previouslyMeasuredHeight prePregnancyWeight
 
                 Just CorePhysicalExam ->
-                    getMeasurementValueFunc assembled.measurements.corePhysicalExam
-                        |> corePhysicalExamFormWithDefault data.corePhysicalExamForm
-                        |> viewCorePhysicalExamForm language currentDate
+                    div [ class "ui form examination core-physical-exam" ]
+                        corePhysicalExamInputs
 
                 Just ObstetricalExam ->
                     div [ class "ui form examination obstetrical-exam" ]
@@ -3431,22 +3438,6 @@ viewNutritionAssessmentForm language currentDate zscores assembled form previous
                     ]
                , viewPreviousMeasurement language muacPreviousValue Translate.UnitCentimeter
                ]
-
-
-viewCorePhysicalExamForm : Language -> NominalDate -> CorePhysicalExamForm -> Html Msg
-viewCorePhysicalExamForm language currentDate form =
-    let
-        config =
-            { setBoolInputMsg = SetCorePhysicalExamBoolInput
-            , setNeckMsg = SetCorePhysicalExamNeck
-            , setHeartMsg = SetCorePhysicalExamHeart
-            , setLungsMsg = SetCorePhysicalExamLungs
-            , setAbdomenMsg = SetCorePhysicalExamAbdomen
-            , setHandsMsg = SetCorePhysicalExamHands
-            , setLegsMsg = SetCorePhysicalExamLegs
-            }
-    in
-    Measurement.View.viewCorePhysicalExamForm language currentDate config form
 
 
 obstetricalExamFormInputsAndTasks :
