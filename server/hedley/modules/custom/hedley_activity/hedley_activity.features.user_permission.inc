@@ -16,7 +16,6 @@ function hedley_activity_user_default_permissions() {
     'name' => 'create attendance content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -87,7 +86,6 @@ function hedley_activity_user_default_permissions() {
     'name' => 'create family_planning content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -138,7 +136,6 @@ function hedley_activity_user_default_permissions() {
     'name' => 'create height content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -199,7 +196,6 @@ function hedley_activity_user_default_permissions() {
     'name' => 'create muac content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -210,7 +206,6 @@ function hedley_activity_user_default_permissions() {
     'name' => 'create nutrition content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -311,7 +306,6 @@ function hedley_activity_user_default_permissions() {
     'name' => 'create photo content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -402,7 +396,6 @@ function hedley_activity_user_default_permissions() {
     'name' => 'create weight content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -1115,7 +1108,6 @@ function hedley_activity_user_default_permissions() {
     'name' => 'edit any attendance content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -1186,7 +1178,6 @@ function hedley_activity_user_default_permissions() {
     'name' => 'edit any family_planning content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -1237,7 +1228,6 @@ function hedley_activity_user_default_permissions() {
     'name' => 'edit any height content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -1298,7 +1288,6 @@ function hedley_activity_user_default_permissions() {
     'name' => 'edit any muac content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -1309,7 +1298,6 @@ function hedley_activity_user_default_permissions() {
     'name' => 'edit any nutrition content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -1410,7 +1398,6 @@ function hedley_activity_user_default_permissions() {
     'name' => 'edit any photo content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -1501,7 +1488,6 @@ function hedley_activity_user_default_permissions() {
     'name' => 'edit any weight content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -1512,7 +1498,6 @@ function hedley_activity_user_default_permissions() {
     'name' => 'edit own attendance content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -1583,7 +1568,6 @@ function hedley_activity_user_default_permissions() {
     'name' => 'edit own family_planning content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -1634,7 +1618,6 @@ function hedley_activity_user_default_permissions() {
     'name' => 'edit own height content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -1695,7 +1678,6 @@ function hedley_activity_user_default_permissions() {
     'name' => 'edit own muac content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -1706,7 +1688,6 @@ function hedley_activity_user_default_permissions() {
     'name' => 'edit own nutrition content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -1807,7 +1788,6 @@ function hedley_activity_user_default_permissions() {
     'name' => 'edit own photo content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -1898,7 +1878,6 @@ function hedley_activity_user_default_permissions() {
     'name' => 'edit own weight content',
     'roles' => array(
       'administrator' => 'administrator',
-      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',

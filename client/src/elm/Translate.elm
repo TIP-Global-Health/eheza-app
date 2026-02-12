@@ -1332,7 +1332,6 @@ type TranslationId
     | PrenatalUltrasoundInstructions
     | PrenatalVaccineLabel PrenatalVaccineType
     | PrePregnancyWeight
-    | PrePregnancyWeightQuestion
     | PreTerm
     | PregnancyConcludedLabel
     | PregnancyOutcomeLabel
@@ -8332,7 +8331,7 @@ translationSet trans =
         HIVSuggestTakingTestQuestion ->
             { english = "Would you like to perform an HIV test today"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Urapima umugera wa SIDA uyu munsi"
             , somali = Nothing
             }
 
@@ -14508,7 +14507,7 @@ translationSet trans =
         NextVisit ->
             { english = "Next Visit"
             , kinyarwanda = Just "Isura rikurikira"
-            , kirundi = Nothing
+            , kirundi = Just "Isango rikurikira"
             , somali = Nothing
             }
 
@@ -18911,7 +18910,7 @@ translationSet trans =
                 Pages.Prenatal.Activity.Types.NextStepsNextVisit ->
                     { english = "Next ANC Visit"
                     , kinyarwanda = Just "Izuzuma ku mugore utwite rikurikira"
-                    , kirundi = Nothing
+                    , kirundi = Just "Isango rikurikira"
                     , somali = Just "Booqashada DHU ee xigta"
                     }
 
@@ -20071,13 +20070,6 @@ translationSet trans =
             , kinyarwanda = Just "Ibiro bya mbere yo gutwita"
             , kirundi = Nothing
             , somali = Nothing
-            }
-
-        PrePregnancyWeightQuestion ->
-            { english = "What is the patient's baseline (pre-pregnancy) weight"
-            , kinyarwanda = Just "Umubyeyi yari afite ibiro bingahe mbere yo gutwita"
-            , kirundi = Nothing
-            , somali = Just "Waa meeqo miisaanka la aqbali karo ee ku haboon baaritaanka uurka"
             }
 
         PreTerm ->
@@ -25622,7 +25614,7 @@ translationSet trans =
         SecondName ->
             { english = "Second Name"
             , kinyarwanda = Just "Izina ry'umuryango"
-            , kirundi = Just "Izina ry'Ikirundi"
+            , kirundi = Just "Izina ry'ikirundi"
             , somali = Just "Magaca Labaad"
             }
 
@@ -28031,7 +28023,7 @@ translationSet trans =
         VaccineDoseAdministeredPreviouslyWellChildQuestion vaccineType ->
             { english = "Did the child receive any " ++ vaccineType ++ " immunizations prior to today that are not recorded above"
             , kinyarwanda = Just <| "Umwana yaba yarabonye " ++ vaccineType ++ " bakaba batarabyanditse"
-            , kirundi = Just <| "Mbega umwana yararonse urucanco " ++ vaccineType ++ " rutanditswe aho hejuru"
+            , kirundi = Just <| "Mbega umwana yararonse " ++ vaccineType
             , somali = Just <| "Canuga ma qaatay wax tallaalo ah " ++ vaccineType ++ " wixi maanta ka horreeyay oo kor aan ku qorneyn"
             }
 
@@ -28108,7 +28100,7 @@ translationSet trans =
                             { english = "Inactivated Polio Vaccine"
                             , kinyarwanda = Just "Urukingo rw'imbasa rutangwa mu rushinge"
                             , kirundi = Just "Urucanco rw'ubukangwe (Urushinge)"
-                            , somali = Just "Tallaalka Dabeysha oo la daciifiyay "
+                            , somali = Just "Tallaalka Dabeysha oo la daciifiyay"
                             }
 
                         VaccineMR ->
@@ -28935,11 +28927,7 @@ translationSet trans =
                     translationSet FollowUp
 
                 TaskNextVisit ->
-                    { english = "Next Visit"
-                    , kinyarwanda = Just "Isura rikurikira"
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
+                    translationSet NextVisit
 
         WellChildSymptom symptom ->
             case symptom of
@@ -29041,7 +29029,7 @@ translationSet trans =
                 VaccineBCG ->
                     { english = "BCG"
                     , kinyarwanda = Just "Urukingo rw'igituntu"
-                    , kirundi = Just "Urucanco rw'igituntu"
+                    , kirundi = Just "Uracanco rw'igituntu"
                     , somali = Nothing
                     }
 
@@ -29050,7 +29038,7 @@ translationSet trans =
                         SiteBurundi ->
                             { english = "Pentavalent"
                             , kinyarwanda = Nothing
-                            , kirundi = Nothing
+                            , kirundi = Just "Urucanco rw'ibigoga, rudadaza,inkorora y'akanira,igitigu na mugiga rutanditswe aho hejuru"
                             , somali = Nothing
                             }
 
@@ -29078,35 +29066,35 @@ translationSet trans =
                 VaccineIPV ->
                     { english = "IPV"
                     , kinyarwanda = Just "Urukingo rw'imbasa rutangwa mu rushinge"
-                    , kirundi = Just "Urucanco rw'ubukangwe (Urushinge)"
+                    , kirundi = Just "Urucanco rw'ubukangwe (Urushinge) rutanditswe aho hejuru"
                     , somali = Nothing
                     }
 
                 VaccineMR ->
                     { english = "Measles-Rubella"
                     , kinyarwanda = Just "Urukingo rw'Iseru na Rubeyole"
-                    , kirundi = Just "Urucanco rw'agasama na Rubeole"
+                    , kirundi = Just "Urucanco rw'agasama na Rubeole rutanditswe aho hejuru"
                     , somali = Nothing
                     }
 
                 VaccineOPV ->
                     { english = "OPV"
                     , kinyarwanda = Just "Urukingo rw'imbasa"
-                    , kirundi = Just "Urucanco gw'Ubukangwe"
+                    , kirundi = Just "Urucanco rw'ubukangwe (amama) rutanditswe aho hejuru"
                     , somali = Nothing
                     }
 
                 VaccinePCV13 ->
                     { english = "PCV 13"
                     , kinyarwanda = Just "Urukingo rw'umusonga"
-                    , kirundi = Just "Urucanco rw'umusonga"
+                    , kirundi = Just "Urucanco rw'umusonga rutanditswe aho hejuru"
                     , somali = Nothing
                     }
 
                 VaccineRotarix ->
                     { english = "Rotarix"
                     , kinyarwanda = Just "Urukingo rw'impiswi"
-                    , kirundi = Just "Urucanco rwo gucibwamo"
+                    , kirundi = Just "Urucanco rwo gucibwamo rutanditswe aho hejuru"
                     , somali = Nothing
                     }
 
