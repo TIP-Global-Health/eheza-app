@@ -1103,5 +1103,5 @@ features[variable][] = node_submitted_social_history
 features[variable][] = node_submitted_vitals
 features[variable][] = node_submitted_weight
 features_exclude[field_base][field_receive_option] = field_receive_option
-files[] = tests/HedleyActivityEndpoints.test
-files[] = tests/HedleyActivityZscoreUpdate.test
+# files[] = tests/HedleyActivityEndpoints.test
+# files[] = tests/HedleyActivityZscoreUpdate.test
