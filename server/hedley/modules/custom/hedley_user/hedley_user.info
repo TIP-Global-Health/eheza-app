@@ -69,3 +69,4 @@ features[variable][] = user_pictures
 # files[] = tests/HedleyUserTestPermission.test
 # files[] = tests/HedleyUserAccess.test
 # files[] = tests/HedleyUserPinCode.test
+# files[] = tests/HedleyUserNodePermissions.test
