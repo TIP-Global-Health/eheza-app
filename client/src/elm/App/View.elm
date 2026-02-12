@@ -230,6 +230,9 @@ viewLanguageSwitcherAndVersion config model =
                         SiteBurundi ->
                             [ English, Kirundi ]
 
+                        SiteSomalia ->
+                            [ English, Somali ]
+
                         SiteUnknown ->
                             [ English ]
             in

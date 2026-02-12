@@ -1924,6 +1924,9 @@ siteToString site =
         SiteBurundi ->
             "burundi"
 
+        SiteSomalia ->
+            "somalia"
+
         SiteUnknown ->
             ""
 
@@ -1936,6 +1939,9 @@ siteFromString str =
 
         "burundi" ->
             SiteBurundi
+
+        "somalia" ->
+            SiteSomalia
 
         _ ->
             SiteUnknown

@@ -720,6 +720,7 @@ type alias IncidentContnentIdentifier =
 type Site
     = SiteRwanda
     | SiteBurundi
+    | SiteSomalia
     | SiteUnknown
 
 
