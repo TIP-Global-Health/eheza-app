@@ -32,7 +32,7 @@ $base_query = hedley_general_create_entity_field_query_excluding_deleted();
 $base_query
   ->entityCondition('entity_type', 'node')
   ->propertyCondition('type', $type)
-  ->propertyOrderBy('nid', 'ASC');
+  ->propertyOrderBy('nid');
 
 $count_query = clone $base_query;
 $count_query->propertyCondition('nid', $nid, '>');
