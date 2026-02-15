@@ -43,7 +43,9 @@ foreach ($chunks as $uuids) {
     // Pull all nodes that share UUID.
     $result = $query
       ->entityCondition('entity_type', 'node')
+      ->propertyCondition('status', NODE_PUBLISHED)
       ->fieldCondition('field_uuid', 'value', $uuid)
+      ->propertyOrderBy('nid')
       ->range(0, 500)
       ->execute();
 
