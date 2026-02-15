@@ -43,6 +43,7 @@ foreach ($chunks as $uuids) {
     // Pull all nodes that share UUID.
     $result = $query
       ->entityCondition('entity_type', 'node')
+      ->propertyCondition('status', NODE_PUBLISHED)
       ->fieldCondition('field_uuid', 'value', $uuid)
       ->range(0, 500)
       ->execute();
@@ -68,6 +69,7 @@ foreach ($chunks as $uuids) {
         $query1 = hedley_general_create_entity_field_query_excluding_deleted();
         $result1 = $query1
           ->entityCondition('entity_type', 'node')
+          ->propertyCondition('status', NODE_PUBLISHED)
           ->fieldCondition('field_person', 'target_id', $id)
           ->range(0, 500)
           ->execute();
@@ -76,6 +78,7 @@ foreach ($chunks as $uuids) {
         $query2 = hedley_general_create_entity_field_query_excluding_deleted();
         $result2 = $query2
           ->entityCondition('entity_type', 'node')
+          ->propertyCondition('status', NODE_PUBLISHED)
           ->fieldCondition('field_adult', 'target_id', $id)
           ->range(0, 500)
           ->execute();
@@ -84,6 +87,7 @@ foreach ($chunks as $uuids) {
         $query3 = hedley_general_create_entity_field_query_excluding_deleted();
         $result3 = $query3
           ->entityCondition('entity_type', 'node')
+          ->propertyCondition('status', NODE_PUBLISHED)
           ->fieldCondition('field_related_to', 'target_id', $id)
           ->range(0, 500)
           ->execute();

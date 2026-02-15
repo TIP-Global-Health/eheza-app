@@ -111,6 +111,7 @@ function hedley_migrate_nurses_to_content_type() {
       ->entityCondition('entity_type', 'node')
       ->entityCondition('bundle', 'nurse')
       ->propertyCondition('title', $account->name)
+      ->propertyCondition('status', NODE_PUBLISHED)
       ->execute();
 
     if (empty($result['node'])) {
