@@ -30,13 +30,7 @@ abstract class HedleyRestfulFamilyActivityBase extends HedleyRestfulActivityBase
   protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
     $query = parent::alterQueryForViewWithDbSelect($query);
 
-    $field_names = [
-      'field_family_encounter',
-    ];
-
-    foreach ($field_names as $field_name) {
-      hedley_general_join_field_to_query($query, 'node', $field_name, FALSE);
-    }
+    hedley_general_join_field_to_query($query, 'node', 'field_family_encounter', FALSE);
 
     // Get the UUID of the Family Encounter.
     hedley_general_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_family_encounter.field_family_encounter_target_id", 'uuid_family_encounter');
