@@ -65,7 +65,10 @@ function hedley_schedule_user_default_permissions() {
   // Exported permission: 'create family_participant content'.
   $permissions['create family_participant content'] = array(
     'name' => 'create family_participant content',
-    'roles' => array(),
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
     'module' => 'node',
   );
 
@@ -187,7 +190,9 @@ function hedley_schedule_user_default_permissions() {
   // Exported permission: 'delete any family_participant content'.
   $permissions['delete any family_participant content'] = array(
     'name' => 'delete any family_participant content',
-    'roles' => array(),
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
     'module' => 'node',
   );
 
@@ -302,7 +307,9 @@ function hedley_schedule_user_default_permissions() {
   // Exported permission: 'delete own family_participant content'.
   $permissions['delete own family_participant content'] = array(
     'name' => 'delete own family_participant content',
-    'roles' => array(),
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
     'module' => 'node',
   );
 
@@ -423,7 +430,10 @@ function hedley_schedule_user_default_permissions() {
   // Exported permission: 'edit any family_participant content'.
   $permissions['edit any family_participant content'] = array(
     'name' => 'edit any family_participant content',
-    'roles' => array(),
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
     'module' => 'node',
   );
 
@@ -551,7 +561,10 @@ function hedley_schedule_user_default_permissions() {
   // Exported permission: 'edit own family_participant content'.
   $permissions['edit own family_participant content'] = array(
     'name' => 'edit own family_participant content',
-    'roles' => array(),
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
     'module' => 'node',
   );
 
