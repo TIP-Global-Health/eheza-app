@@ -40,6 +40,11 @@ import Pages.Dashboard.View
 import Pages.Device.View
 import Pages.EducationSession.Model
 import Pages.EducationSession.View
+import Pages.FamilyEncounter.Activity.Model
+import Pages.FamilyEncounter.Activity.View
+import Pages.FamilyEncounter.Encounter.Model
+import Pages.FamilyEncounter.Encounter.View
+import Pages.FamilyEncounter.Participant.View
 import Pages.GlobalCaseManagement.View
 import Pages.GroupEncounterTypes.View
 import Pages.HIV.Activity.Model
@@ -724,6 +729,46 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             model.indexedDb
                             page_
                             |> Html.map (MsgLoggedIn << MsgPageNutritionActivity id activity)
+                            |> flexPageWrapper configured.config model
+
+                    FamilyParticipantPage initiator id ->
+                        Pages.FamilyEncounter.Participant.View.view model.language
+                            currentDate
+                            selectedHealthCenter
+                            id
+                            isChw
+                            initiator
+                            model.indexedDb
+                            |> Html.map MsgLoggedIn
+                            |> flexPageWrapper configured.config model
+
+                    FamilyEncounterPage id ->
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.familyEncounterPages
+                                    |> Maybe.withDefault Pages.FamilyEncounter.Encounter.Model.emptyModel
+                        in
+                        Pages.FamilyEncounter.Encounter.View.view model.language
+                            currentDate
+                            id
+                            isChw
+                            page_
+                            |> Html.map (MsgLoggedIn << MsgPageFamilyEncounter id)
+                            |> flexPageWrapper configured.config model
+
+                    FamilyActivityPage id activity ->
+                        let
+                            page_ =
+                                Dict.get ( id, activity ) loggedInModel.familyActivityPages
+                                    |> Maybe.withDefault Pages.FamilyEncounter.Activity.Model.emptyModel
+                        in
+                        Pages.FamilyEncounter.Activity.View.view model.language
+                            currentDate
+                            id
+                            activity
+                            isChw
+                            page_
+                            |> Html.map (MsgLoggedIn << MsgPageFamilyActivity id activity)
                             |> flexPageWrapper configured.config model
 
                     NutritionProgressReportPage encounterId ->

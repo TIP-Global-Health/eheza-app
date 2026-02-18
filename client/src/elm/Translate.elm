@@ -9098,6 +9098,13 @@ translationSet trans =
                 ChildScoreboardEncounter ->
                     translationSet ChildScorecard
 
+                FamilyEncounter ->
+                    { english = "Family Encounter"
+                    , kinyarwanda = Just "Kuganira n'Umuryango"
+                    , kirundi = Just "Guhuza urugo"
+                    , somali = Just "Kulan Qoys"
+                    }
+
                 HIVEncounter ->
                     { english = "HIV Management"
                     , kinyarwanda = Nothing

@@ -3,7 +3,7 @@ module Pages.IndividualEncounterTypes.View exposing (view)
 import App.Model exposing (Msg(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
-import Backend.Utils exposing (hivManagementEnabled, ncdaEnabled, tuberculosisManagementEnabled)
+import Backend.Utils exposing (familyEncounterEnabled, hivManagementEnabled, ncdaEnabled, tuberculosisManagementEnabled)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
@@ -75,6 +75,13 @@ viewContent language currentDate features healthCenterId isChw model =
 
                         else
                             emptyNode
+
+                    familyEncounterButton =
+                        if familyEncounterEnabled features then
+                            encounterButton FamilyEncounter
+
+                        else
+                            emptyNode
                 in
                 [ encounterButton AcuteIllnessEncounter
                 , encounterButton AntenatalEncounter
@@ -83,14 +90,24 @@ viewContent language currentDate features healthCenterId isChw model =
                 , childScoreboardButton
                 , tuberculosisManagementButton
                 , hivManagementButton
+                , familyEncounterButton
                 ]
 
             else
+                let
+                    familyEncounterButton =
+                        if familyEncounterEnabled features then
+                            encounterButton FamilyEncounter
+
+                        else
+                            emptyNode
+                in
                 [ encounterButton AcuteIllnessEncounter
                 , encounterButton AntenatalEncounter
                 , encounterButton NutritionEncounter
                 , encounterButton NCDEncounter
                 , encounterButton WellChildEncounter
+                , familyEncounterButton
                 ]
     in
     p [] [ text <| translate language Translate.SelectEncounterType ++ ":" ]

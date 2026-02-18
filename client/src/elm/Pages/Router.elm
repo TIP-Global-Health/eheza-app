@@ -8,6 +8,9 @@ import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessProgressReportI
 import Backend.AcuteIllnessEncounter.Utils
 import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity)
 import Backend.ChildScoreboardActivity.Utils
+import Backend.Entities exposing (..)
+import Backend.FamilyActivity.Model exposing (FamilyActivity)
+import Backend.FamilyActivity.Utils
 import Backend.HIVActivity.Model exposing (HIVActivity)
 import Backend.HIVActivity.Utils
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)
@@ -284,6 +287,15 @@ pageToFragment current =
                 PregnancyOutcomePage initiator id ->
                     Just <| "pregnancy-outcome/" ++ fromEntityUuid id ++ "/" ++ recordPreganancyInitiatorToUrlFragment initiator
 
+                FamilyParticipantPage initiator id ->
+                    Just <| "family-participant/" ++ fromEntityUuid id ++ "/" ++ Backend.IndividualEncounterParticipant.Utils.initiatorToUrlFragment initiator
+
+                FamilyEncounterPage id ->
+                    Just <| "family-encounter/" ++ fromEntityUuid id
+
+                FamilyActivityPage id activity ->
+                    Just <| "family-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.FamilyActivity.Utils.encodeActivityAsString activity
+
                 NutritionEncounterPage id ->
                     Just <| "nutrition-encounter/" ++ fromEntityUuid id
 
@@ -427,6 +439,10 @@ parser =
         , map (UserPage <| GroupEncounterTypesPage) (s "group-encounter-types")
         , map (\encounterType -> UserPage <| IndividualEncounterParticipantsPage encounterType) (s "individual-participants" </> parseIndividualEncounterType)
         , map (\id initiator -> UserPage <| PregnancyOutcomePage initiator id) (s "pregnancy-outcome" </> parseUuid </> parseRecordPreganancyInitiator)
+        , map (\id initiator -> UserPage <| FamilyParticipantPage initiator id) (s "family-participant" </> parseUuid </> parseIndividualParticipantInitiator)
+        , map (\id -> UserPage <| FamilyEncounterPage id) (s "family-encounter" </> parseUuid)
+        , map (\id activity -> UserPage <| FamilyActivityPage id activity) (s "family-activity" </> parseUuid </> parseFamilyActivity)
+        , map (\id initiator -> UserPage <| NutritionParticipantPage initiator id) (s "nutrition-participant" </> parseUuid </> parseIndividualParticipantInitiator)
         , map (\id -> UserPage <| NutritionEncounterPage id) (s "nutrition-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| NutritionActivityPage id activity) (s "nutrition-activity" </> parseUuid </> parseNutritionActivity)
         , map (\id -> UserPage <| NutritionProgressReportPage id) (s "nutrition-progress-report" </> parseUuid)
@@ -568,6 +584,11 @@ parseTuberculosisActivity =
 parseHIVActivity : Parser (HIVActivity -> c) c
 parseHIVActivity =
     custom "HIVActivity" Backend.HIVActivity.Utils.activityFromString
+
+
+parseFamilyActivity : Parser (FamilyActivity -> c) c
+parseFamilyActivity =
+    custom "FamilyActivity" Backend.FamilyActivity.Utils.decodeActivityFromString
 
 
 parseIndividualEncounterType : Parser (IndividualEncounterType -> c) c

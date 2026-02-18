@@ -45,6 +45,7 @@ import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity)
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessProgressReportInitiator)
 import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity)
 import Backend.Entities exposing (..)
+import Backend.FamilyActivity.Model exposing (FamilyActivity)
 import Backend.HIVActivity.Model exposing (HIVActivity)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType, IndividualParticipantInitiator)
@@ -168,6 +169,9 @@ type UserPage
     | IndividualEncounterTypesPage -- this is where we select the type of individual encounter we're interested in.
     | GroupEncounterTypesPage -- this is where we select the type of group encounter we're interested in.
     | PregnancyOutcomePage RecordPreganancyInitiator IndividualEncounterParticipantId -- this is where pregnancy outcome is recorded.
+    | FamilyParticipantPage IndividualParticipantInitiator PersonId
+    | FamilyEncounterPage FamilyEncounterId -- family encounter activities index.
+    | FamilyActivityPage FamilyEncounterId FamilyActivity -- record family encounter activity.
     | NutritionParticipantPage IndividualParticipantInitiator PersonId
     | NutritionEncounterPage NutritionEncounterId -- nutrition activities index.
     | NutritionActivityPage NutritionEncounterId NutritionActivity -- record nutrition activity.

@@ -19,6 +19,9 @@ individualEncounterTypeToString encounterType =
         ChildScoreboardEncounter ->
             "child-scoreboard"
 
+        FamilyEncounter ->
+            "family"
+
         HIVEncounter ->
             "hiv"
 
@@ -52,6 +55,9 @@ individualEncounterTypeFromString string =
 
         "child-scoreboard" ->
             Just ChildScoreboardEncounter
+
+        "family" ->
+            Just FamilyEncounter
 
         "hiv" ->
             Just HIVEncounter

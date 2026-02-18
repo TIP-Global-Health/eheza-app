@@ -19,6 +19,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity)
 import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity)
 import Backend.Entities exposing (..)
+import Backend.FamilyActivity.Model exposing (FamilyActivity)
 import Backend.HIVActivity.Model exposing (HIVActivity)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)
 import Backend.Measurement.Model exposing (LaboratoryTest)
@@ -48,6 +49,8 @@ import Pages.Clinics.Model
 import Pages.Dashboard.Model
 import Pages.Device.Model
 import Pages.EducationSession.Model
+import Pages.FamilyEncounter.Activity.Model
+import Pages.FamilyEncounter.Encounter.Model
 import Pages.GlobalCaseManagement.Model
 import Pages.HIV.Activity.Model
 import Pages.HIV.Encounter.Model
@@ -304,6 +307,8 @@ type alias LoggedInModel =
     , nutritionEncounterPages : Dict NutritionEncounterId Pages.Nutrition.Encounter.Model.Model
     , nutritionActivityPages : Dict ( NutritionEncounterId, NutritionActivity ) Pages.Nutrition.Activity.Model.Model
     , nutritionProgressReportPages : Dict NutritionEncounterId Pages.Nutrition.ProgressReport.Model.Model
+    , familyEncounterPages : Dict FamilyEncounterId Pages.FamilyEncounter.Encounter.Model.Model
+    , familyActivityPages : Dict ( FamilyEncounterId, FamilyActivity ) Pages.FamilyEncounter.Activity.Model.Model
     , acuteIllnessParticipantPages : Dict PersonId Pages.AcuteIllness.Participant.Model.Model
     , acuteIllnessEncounterPages : Dict AcuteIllnessEncounterId Pages.AcuteIllness.Encounter.Model.Model
     , acuteIllnessActivityPages : Dict ( AcuteIllnessEncounterId, AcuteIllnessActivity ) Pages.AcuteIllness.Activity.Model.Model
@@ -358,6 +363,8 @@ emptyLoggedInModel site villageId nurse =
     , nutritionEncounterPages = Dict.empty
     , nutritionActivityPages = Dict.empty
     , nutritionProgressReportPages = Dict.empty
+    , familyEncounterPages = Dict.empty
+    , familyActivityPages = Dict.empty
     , acuteIllnessParticipantPages = Dict.empty
     , acuteIllnessEncounterPages = Dict.empty
     , acuteIllnessActivityPages = Dict.empty
@@ -442,6 +449,7 @@ type MsgLoggedIn
     | MsgPagePrenatalEncounter PrenatalEncounterId Pages.Prenatal.Encounter.Model.Msg
     | MsgPagePrenatalRecurrentEncounter PrenatalEncounterId Pages.Prenatal.RecurrentEncounter.Model.Msg
     | MsgPageNutritionEncounter NutritionEncounterId Pages.Nutrition.Encounter.Model.Msg
+    | MsgPageFamilyEncounter FamilyEncounterId Pages.FamilyEncounter.Encounter.Model.Msg
     | MsgPageAcuteIllnessEncounter AcuteIllnessEncounterId Pages.AcuteIllness.Encounter.Model.Msg
     | MsgPageHomeVisitEncounter HomeVisitEncounterId Pages.HomeVisit.Encounter.Model.Msg
     | MsgPageWellChildEncounter WellChildEncounterId Pages.WellChild.Encounter.Model.Msg
@@ -455,6 +463,7 @@ type MsgLoggedIn
     | MsgPagePrenatalRecurrentActivity PrenatalEncounterId PrenatalRecurrentActivity Pages.Prenatal.RecurrentActivity.Model.Msg
     | MsgPagePrenatalLabsHistory PrenatalEncounterId PrenatalEncounterId LaboratoryTest Pages.Prenatal.RecurrentActivity.Model.Msg
     | MsgPageNutritionActivity NutritionEncounterId NutritionActivity Pages.Nutrition.Activity.Model.Msg
+    | MsgPageFamilyActivity FamilyEncounterId FamilyActivity Pages.FamilyEncounter.Activity.Model.Msg
     | MsgPageAcuteIllnessActivity AcuteIllnessEncounterId AcuteIllnessActivity Pages.AcuteIllness.Activity.Model.Msg
     | MsgPageHomeVisitActivity HomeVisitEncounterId HomeVisitActivity Pages.HomeVisit.Activity.Model.Msg
     | MsgPageWellChildActivity WellChildEncounterId WellChildActivity Pages.WellChild.Activity.Model.Msg
