@@ -364,6 +364,8 @@ type TranslationId
     | ActivePage Page
     | AcuteIllnessActivityTitle AcuteIllnessActivity
     | AddChild
+    | AddChildren
+    | AddChildrenHelper
     | AddContact
     | AddedToPatientRecordOn
     | AddFamilyMember
@@ -1406,6 +1408,10 @@ type TranslationId
     | RegisterParticipantHelper
     | RegisterNewContact
     | RegisterNewParticipant
+    | RegisterNewMother
+    | RegisterNewChild
+    | RegisterMotherHelper
+    | RegisteringNewMother
     | RegistratingHealthCenter
     | ReinforceAdherenceQuestion
     | ReinforceAdherenceTo
@@ -1870,6 +1876,7 @@ type TranslationId
     | SearchBy
     | SearchEhezaForExistingParticipants
     | SearchExistingParticipants
+    | SearchForMother
     | SearchHelper
     | SearchHelperFamilyMember
     | SecondName
@@ -1882,6 +1889,8 @@ type TranslationId
     | SelectDangerSigns
     | SelectDate
     | SelectedFamilyPlanningMethod
+    | SelectedMother
+    | SelectedChildren
     | SelectIllnessSymptoms
     | SelectPostpartumChildDangerSigns
     | SelectPostpartumMotherDangerSigns
@@ -2826,6 +2835,20 @@ translationSet trans =
             , kinyarwanda = Just "Ongeraho umwana"
             , kirundi = Just "Kongerako umwana"
             , somali = Just "Ku dar Canug"
+            }
+
+        AddChildren ->
+            { english = "Add Children (Optional)"
+            , kinyarwanda = Just "Ongeraho abana (Bitari ngombwa)"
+            , kirundi = Just "Kongerako abana (Bitari ngombwa)"
+            , somali = Just "Ku dar Caruur (Ikhtiyaar ah)"
+            }
+
+        AddChildrenHelper ->
+            { english = "You can add up to 5 children to this encounter. This is optional."
+            , kinyarwanda = Just "Ushobora kongeraho abana bagera kuri 5 kuri iyi ntaho. Bitari ngombwa."
+            , kirundi = Just "Urashobora kongerako abana bagera kuri 5 kuri iyi nama. Bitari ngombwa."
+            , somali = Just "Waxaad ku dari kartaa ilaa 5 caruur kulan. Tani waa ikhtiyaar."
             }
 
         AddContact ->
@@ -21678,6 +21701,34 @@ translationSet trans =
             , somali = Just "Diiwaan geli ka qeyb gale cusub"
             }
 
+        RegisterNewMother ->
+            { english = "Register a new mother"
+            , kinyarwanda = Just "Andika umubyeyi mushya"
+            , kirundi = Just "Andika umama mushasha"
+            , somali = Just "Diiwaan geli hooyada cusub"
+            }
+
+        RegisterNewChild ->
+            { english = "Register a new child"
+            , kinyarwanda = Just "Andika umwana mushya"
+            , kirundi = Just "Andika umwana mushasha"
+            , somali = Just "Diiwaan geli ilmo cusub"
+            }
+
+        RegisterMotherHelper ->
+            { english = "Can't find the mother? Register a new one"
+            , kinyarwanda = Just "Ntushobora kubona umubyeyi? Andika mushya"
+            , kirundi = Just "Ntiboneka umama? Andika mushasha"
+            , somali = Just "Ma heli kartid hooyadda? Diiwaan geli mid cusub"
+            }
+
+        RegisteringNewMother ->
+            { english = "Registering new mother..."
+            , kinyarwanda = Just "Wanditse umubyeyi mushya..."
+            , kirundi = Just "Urandika umama mushasha..."
+            , somali = Just "Diiwaan gelinaya hooyada cusub..."
+            }
+
         RegistratingHealthCenter ->
             { english = "Registrating Health Center"
             , kinyarwanda = Just "Izina ry'ikigo nderabuzima umugenerwabikorwa abarizwamo"
@@ -25604,6 +25655,13 @@ translationSet trans =
             , somali = Just "Raadi ka qeyb galayaasha horay u jiray"
             }
 
+        SearchForMother ->
+            { english = "Search for Mother"
+            , kinyarwanda = Just "Shakisha umubyeyi"
+            , kirundi = Just "Shakisha umama"
+            , somali = Just "Raadi hooyo"
+            }
+
         SearchHelper ->
             { english = "Search to see if the participant already exists in E-Heza. If the person you are looking for does not appear in the search, please create a new record for them."
             , kinyarwanda = Just "Shakisha kugirango urebe niba umugenerwabikorwa asanzwe ari muri E-Heza. Niba atagaragara, mwandike nku mushya."
@@ -25686,6 +25744,20 @@ translationSet trans =
             , kinyarwanda = Just "Uburyo bwo kuboneza urubyaro bwatoranijwe"
             , kirundi = Just "Hitamwo uburyo bwo kuvyara kurugero"
             , somali = Just "Habka Qorsheynta Qoyska Dooran"
+            }
+
+        SelectedMother ->
+            { english = "Selected Mother"
+            , kinyarwanda = Just "Umubyeyi Watoranijwe"
+            , kirundi = Just "Umama watoranijwe"
+            , somali = Just "Hooyada Dooran"
+            }
+
+        SelectedChildren ->
+            { english = "Selected Children"
+            , kinyarwanda = Just "Abana Batoranijwe"
+            , kirundi = Just "Abana batoranijwe"
+            , somali = Just "Caruurta Dooran"
             }
 
         SelectIllnessSymptoms ->

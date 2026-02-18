@@ -18,6 +18,9 @@ import Backend.EducationSession.Decoder exposing (decodeEducationSession)
 import Backend.EducationSession.Encoder exposing (encodeEducationSession)
 import Backend.EducationSession.Model exposing (EducationSession)
 import Backend.Entities exposing (..)
+import Backend.FamilyEncounter.Decoder exposing (decodeFamilyEncounter)
+import Backend.FamilyEncounter.Encoder exposing (encodeFamilyEncounter)
+import Backend.FamilyEncounter.Model exposing (FamilyEncounter)
 import Backend.HIVEncounter.Decoder exposing (decodeHIVEncounter)
 import Backend.HIVEncounter.Encoder exposing (encodeHIVEncounter)
 import Backend.HIVEncounter.Model exposing (HIVEncounter)
@@ -397,6 +400,13 @@ nutritionEncounterEndpoint : ReadWriteEndPoint Error NutritionEncounterId Nutrit
 nutritionEncounterEndpoint =
     swEndpoint "nodes/nutrition_encounter" decodeNutritionEncounter
         |> withValueEncoder (object << encodeNutritionEncounter)
+        |> withParamsEncoder encodeIndividualEncounterParams
+
+
+familyEncounterEndpoint : ReadWriteEndPoint Error FamilyEncounterId FamilyEncounter FamilyEncounter (List IndividualEncounterParticipantId)
+familyEncounterEndpoint =
+    swEndpoint "nodes/family_encounter" decodeFamilyEncounter
+        |> withValueEncoder (object << encodeFamilyEncounter)
         |> withParamsEncoder encodeIndividualEncounterParams
 
 

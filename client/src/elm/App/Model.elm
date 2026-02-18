@@ -51,6 +51,7 @@ import Pages.Device.Model
 import Pages.EducationSession.Model
 import Pages.FamilyEncounter.Activity.Model
 import Pages.FamilyEncounter.Encounter.Model
+import Pages.FamilyEncounter.Participant.Model
 import Pages.GlobalCaseManagement.Model
 import Pages.HIV.Activity.Model
 import Pages.HIV.Encounter.Model
@@ -307,6 +308,7 @@ type alias LoggedInModel =
     , nutritionEncounterPages : Dict NutritionEncounterId Pages.Nutrition.Encounter.Model.Model
     , nutritionActivityPages : Dict ( NutritionEncounterId, NutritionActivity ) Pages.Nutrition.Activity.Model.Model
     , nutritionProgressReportPages : Dict NutritionEncounterId Pages.Nutrition.ProgressReport.Model.Model
+    , familyParticipantPages : Dict PersonId Pages.FamilyEncounter.Participant.Model.Model
     , familyEncounterPages : Dict FamilyEncounterId Pages.FamilyEncounter.Encounter.Model.Model
     , familyActivityPages : Dict ( FamilyEncounterId, FamilyActivity ) Pages.FamilyEncounter.Activity.Model.Model
     , acuteIllnessParticipantPages : Dict PersonId Pages.AcuteIllness.Participant.Model.Model
@@ -363,6 +365,7 @@ emptyLoggedInModel site villageId nurse =
     , nutritionEncounterPages = Dict.empty
     , nutritionActivityPages = Dict.empty
     , nutritionProgressReportPages = Dict.empty
+    , familyParticipantPages = Dict.empty
     , familyEncounterPages = Dict.empty
     , familyActivityPages = Dict.empty
     , acuteIllnessParticipantPages = Dict.empty
@@ -449,6 +452,7 @@ type MsgLoggedIn
     | MsgPagePrenatalEncounter PrenatalEncounterId Pages.Prenatal.Encounter.Model.Msg
     | MsgPagePrenatalRecurrentEncounter PrenatalEncounterId Pages.Prenatal.RecurrentEncounter.Model.Msg
     | MsgPageNutritionEncounter NutritionEncounterId Pages.Nutrition.Encounter.Model.Msg
+    | MsgPageFamilyParticipant PersonId Pages.FamilyEncounter.Participant.Model.Msg
     | MsgPageFamilyEncounter FamilyEncounterId Pages.FamilyEncounter.Encounter.Model.Msg
     | MsgPageAcuteIllnessEncounter AcuteIllnessEncounterId Pages.AcuteIllness.Encounter.Model.Msg
     | MsgPageHomeVisitEncounter HomeVisitEncounterId Pages.HomeVisit.Encounter.Model.Msg

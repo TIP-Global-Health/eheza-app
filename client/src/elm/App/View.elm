@@ -732,14 +732,23 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             |> flexPageWrapper configured.config model
 
                     FamilyParticipantPage initiator id ->
-                        Pages.FamilyEncounter.Participant.View.view model.language
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.familyParticipantPages
+                                    |> Maybe.withDefault (Pages.FamilyEncounter.Participant.Model.emptyModel configured.config.site)
+                        in
+                        Pages.FamilyEncounter.Participant.View.view
+                            model.language
                             currentDate
+                            configured.config.site
+                            reverseGeoInfo
                             selectedHealthCenter
-                            id
+                            maybeVillageId
                             isChw
                             initiator
+                            page_
                             model.indexedDb
-                            |> Html.map MsgLoggedIn
+                            |> Html.map (MsgLoggedIn << MsgPageFamilyParticipant id)
                             |> flexPageWrapper configured.config model
 
                     FamilyEncounterPage id ->

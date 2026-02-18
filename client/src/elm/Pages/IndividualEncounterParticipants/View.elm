@@ -92,6 +92,10 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
                 ChildScoreboardEncounter ->
                     isChw && isChildUnderAgeOf2 currentDate person
 
+                FamilyEncounter ->
+                    isPersonAnAdult currentDate person
+                        |> Maybe.withDefault True
+
                 HIVEncounter ->
                     isChw
 
@@ -218,6 +222,9 @@ viewParticipant language currentDate encounterType db id person =
 
                 ChildScoreboardEncounter ->
                     [ onClick <| SetActivePage <| UserPage <| ChildScoreboardParticipantPage id ]
+
+                FamilyEncounter ->
+                    [ onClick <| SetActivePage <| UserPage <| FamilyParticipantPage InitiatorParticipantsPage id ]
 
                 HIVEncounter ->
                     [ onClick <| SetActivePage <| UserPage <| HIVParticipantPage id ]

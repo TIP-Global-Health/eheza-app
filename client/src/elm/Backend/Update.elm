@@ -19,6 +19,8 @@ import Backend.EducationSession.Model
 import Backend.EducationSession.Update
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
+import Backend.FamilyEncounter.Model
+import Backend.FamilyEncounter.Update
 import Backend.HIVEncounter.Model
 import Backend.HIVEncounter.Update
 import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
@@ -4543,6 +4545,12 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                         |> App.Model.MsgIndexedDb
                                     ]
 
+                                FamilyEncounter ->
+                                    [ Backend.FamilyEncounter.Model.emptyFamilyEncounter sessionId currentDate healthCenterId
+                                        |> Backend.Model.PostFamilyEncounter
+                                        |> App.Model.MsgIndexedDb
+                                    ]
+
                                 NutritionEncounter ->
                                     case extraData of
                                         NutritionData nutritionEncounterType ->
@@ -4653,6 +4661,34 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         |> RemoteData.withDefault []
             in
             ( { model | postNutritionEncounter = Dict.insert participantId data model.postNutritionEncounter }
+            , Cmd.none
+            , rollbarOnFailure ++ appMsgs
+            )
+
+        PostFamilyEncounter familyEncounter ->
+            ( { model | postFamilyEncounter = Dict.insert familyEncounter.participant Loading model.postFamilyEncounter }
+            , sw.post familyEncounterEndpoint familyEncounter
+                |> toCmd (RemoteData.fromResult >> HandlePostedFamilyEncounter familyEncounter.participant)
+            , []
+            )
+
+        HandlePostedFamilyEncounter participantId data ->
+            let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
+                appMsgs =
+                    RemoteData.map
+                        (\( familyEncounterId, _ ) ->
+                            [ App.Model.SetActivePage <|
+                                UserPage <|
+                                    Pages.Page.FamilyEncounterPage familyEncounterId
+                            ]
+                        )
+                        data
+                        |> RemoteData.withDefault []
+            in
+            ( { model | postFamilyEncounter = Dict.insert participantId data model.postFamilyEncounter }
             , Cmd.none
             , rollbarOnFailure ++ appMsgs
             )

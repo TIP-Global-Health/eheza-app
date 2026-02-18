@@ -55,6 +55,8 @@ import Pages.FamilyEncounter.Activity.Model
 import Pages.FamilyEncounter.Activity.Update
 import Pages.FamilyEncounter.Encounter.Model
 import Pages.FamilyEncounter.Encounter.Update
+import Pages.FamilyEncounter.Participant.Model
+import Pages.FamilyEncounter.Participant.Update
 import Pages.GlobalCaseManagement.Update
 import Pages.HIV.Activity.Model
 import Pages.HIV.Activity.Update
@@ -494,6 +496,27 @@ update msg model =
                             in
                             ( { data | nutritionEncounterPages = Dict.insert id subModel data.nutritionEncounterPages }
                             , Cmd.map (MsgLoggedIn << MsgPageNutritionEncounter id) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageFamilyParticipant id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.familyParticipantPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault (Pages.FamilyEncounter.Participant.Model.emptyModel configured.config.site)
+                                        |> Pages.FamilyEncounter.Participant.Update.update
+                                            currentDate
+                                            configured.config.site
+                                            reverseGeoInfo
+                                            selectedHealthCenter
+                                            maybeVillageId
+                                            isChw
+                                            model.indexedDb
+                                            subMsg
+                            in
+                            ( { data | familyParticipantPages = Dict.insert id subModel data.familyParticipantPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageFamilyParticipant id) subCmd
                             , extraMsgs
                             )
 
