@@ -1950,6 +1950,9 @@ siteFromString str =
 siteFeatureFromString : String -> Maybe SiteFeature
 siteFeatureFromString str =
     case String.toLower str of
+        "family_encounter" ->
+            Just FeatureFamilyEncounter
+
         "ncda" ->
             Just FeatureNCDA
 
@@ -1978,6 +1981,9 @@ siteFeatureFromString str =
 siteFeatureToString : SiteFeature -> String
 siteFeatureToString feature =
     case feature of
+        FeatureFamilyEncounter ->
+            "family_encounter"
+
         FeatureNCDA ->
             "ncda"
 
