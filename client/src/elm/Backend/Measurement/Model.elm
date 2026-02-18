@@ -78,6 +78,10 @@ type alias HIVMeasurement value =
     Measurement HIVEncounterId value
 
 
+type alias FamilyMeasurement value =
+    Measurement FamilyEncounterId value
+
+
 
 -- GROUP MEASUREMENT TYPES
 
@@ -3224,6 +3228,25 @@ type alias HIVTreatmentReview =
 
 
 
+-- FAMILY MEASUREMENTS
+
+
+type alias FamilyFBFMother =
+    FamilyMeasurement FamilyFBFValue
+
+
+type alias FamilyFBFChild =
+    FamilyMeasurement FamilyFBFValue
+
+
+type alias FamilyFBFValue =
+    { muac : MuacInCm
+    , distributedAmount : Float
+    , distributionNotice : DistributionNotice
+    }
+
+
+
 -- Stock Management:
 
 
@@ -3626,6 +3649,12 @@ type alias HIVMeasurements =
     , referral : Maybe ( HIVReferralId, HIVReferral )
     , symptomReview : Maybe ( HIVSymptomReviewId, HIVSymptomReview )
     , treatmentReview : Maybe ( HIVTreatmentReviewId, HIVTreatmentReview )
+    }
+
+
+type alias FamilyMeasurements =
+    { fbfMother : Maybe ( FamilyFBFMotherId, FamilyFBFMother )
+    , fbfChild : Maybe ( FamilyFBFChildId, FamilyFBFChild )
     }
 
 

@@ -5833,3 +5833,30 @@ decodeHIVSymptom =
 decodeHIVTreatmentReview : Decoder HIVTreatmentReview
 decodeHIVTreatmentReview =
     decodeHIVMeasurement decodeTreatmentOngoingValue
+
+
+
+-- FAMILY MEASUREMENTS
+
+
+decodeFamilyMeasurement : Decoder value -> Decoder (FamilyMeasurement value)
+decodeFamilyMeasurement =
+    decodeMeasurement decodeEntityUuid
+
+
+decodeFamilyFBFMother : Decoder FamilyFBFMother
+decodeFamilyFBFMother =
+    decodeFamilyMeasurement decodeFamilyFBFValue
+
+
+decodeFamilyFBFChild : Decoder FamilyFBFChild
+decodeFamilyFBFChild =
+    decodeFamilyMeasurement decodeFamilyFBFValue
+
+
+decodeFamilyFBFValue : Decoder FamilyFBFValue
+decodeFamilyFBFValue =
+    succeed FamilyFBFValue
+        |> required "muac" decodeMuacInCm
+        |> required "distributed_amount" float
+        |> required "distribution_notice" decodeDistributionNotice

@@ -4623,3 +4623,40 @@ encodeHIVSymptom =
 encodeHIVTreatmentReview : HIVTreatmentReview -> List ( String, Value )
 encodeHIVTreatmentReview =
     encodeHIVMeasurement (encodeTreatmentOngoingValueWithType "hiv_treatment_review")
+
+
+
+-- FAMILY MEASUREMENTS
+
+
+encodeFamilyMeasurement : (value -> List ( String, Value )) -> FamilyMeasurement value -> List ( String, Value )
+encodeFamilyMeasurement =
+    encodeMeasurement encodeEntityUuid
+
+
+encodeFamilyFBFMother : FamilyFBFMother -> List ( String, Value )
+encodeFamilyFBFMother =
+    encodeFamilyMeasurement encodeFamilyFBFMotherValue
+
+
+encodeFamilyFBFMotherValue : FamilyFBFValue -> List ( String, Value )
+encodeFamilyFBFMotherValue value =
+    [ ( "muac", encodeMuacInCm value.muac )
+    , ( "distributed_amount", float value.distributedAmount )
+    , ( "distribution_notice", encodeDistributionNotice value.distributionNotice )
+    , ( "type", string "family_fbf_mother" )
+    ]
+
+
+encodeFamilyFBFChild : FamilyFBFChild -> List ( String, Value )
+encodeFamilyFBFChild =
+    encodeFamilyMeasurement encodeFamilyFBFChildValue
+
+
+encodeFamilyFBFChildValue : FamilyFBFValue -> List ( String, Value )
+encodeFamilyFBFChildValue value =
+    [ ( "muac", encodeMuacInCm value.muac )
+    , ( "distributed_amount", float value.distributedAmount )
+    , ( "distribution_notice", encodeDistributionNotice value.distributionNotice )
+    , ( "type", string "family_fbf_child" )
+    ]
