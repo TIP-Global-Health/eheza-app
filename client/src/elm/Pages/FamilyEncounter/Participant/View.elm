@@ -7,6 +7,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (onClick)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Translate exposing (Language)
 
