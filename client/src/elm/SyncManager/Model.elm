@@ -725,7 +725,8 @@ type Site
 
 
 type SiteFeature
-    = FeatureGPSCoordinates
+    = FeatureFamilyNutrition
+    | FeatureGPSCoordinates
     | FeatureGroupEducation
     | FeatureHIVManagement
     | FeatureNCDA
