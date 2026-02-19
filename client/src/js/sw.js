@@ -75,6 +75,8 @@ var tableForType = {
     danger_signs: 'shards',
     education_session: 'shards',
     exposure: 'shards',
+    family_nutrition_encounter: 'shards',
+    family_participant: 'shards',
     family_planning: 'shards',
     follow_up: 'shards',
     group_health_education: 'shards',
