@@ -145,6 +145,9 @@
                 else if (type === 'pregnancy-by-newborn') {
                     return viewMeasurements('newborn', uuid);
                 }
+                else if (type === 'family-nutrition-measurements') {
+                    return viewMeasurements('family_nutrition_encounter', uuid);
+                }
                 else {
                     return view(type, uuid);
                 }
@@ -535,11 +538,14 @@
                     else if (key === 'newborn') {
                         target = node.newborn;
                     }
+                    else if (key === 'family_nutrition_encounter') {
+                        target = node.family_nutrition_encounter;
+                    }
 
                     data[target] = data[target] || {};
                     if (data[target][node.type]) {
                         data[target][node.type].push(node);
-                        if (key !== 'person') {
+                        if (key !== 'person' && key !== 'family_nutrition_encounter') {
                           // Sorting DESC, so that node with highest vid
                           // is selected first, as it was edited last, and
                           // got most recent data.
