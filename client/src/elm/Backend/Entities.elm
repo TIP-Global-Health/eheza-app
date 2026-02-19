@@ -1731,12 +1731,12 @@ type HIVTreatmentReviewUuidType
     = HIVTreatmentReviewUuidType
 
 
-type alias FamilyParticipantId =
-    EntityUuid FamilyParticipantUuidType
+type alias FamilyEncounterParticipantId =
+    EntityUuid FamilyEncounterParticipantUuidType
 
 
-type FamilyParticipantUuidType
-    = FamilyParticipantUuidType
+type FamilyEncounterParticipantUuidType
+    = FamilyEncounterParticipantUuidType
 
 
 type alias FamilyNutritionEncounterId =
