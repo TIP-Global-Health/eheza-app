@@ -13,6 +13,8 @@ import Backend.Clinic.Decoder
 import Backend.Counseling.Decoder
 import Backend.Dashboard.Decoder
 import Backend.EducationSession.Decoder
+import Backend.FamilyEncounterParticipant.Decoder
+import Backend.FamilyNutritionEncounter.Decoder
 import Backend.HIVEncounter.Decoder
 import Backend.HealthCenter.Decoder
 import Backend.HomeVisitEncounter.Decoder
@@ -597,6 +599,16 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeExposure
                             BackendAuthorityExposure
+
+                    "family_participant" ->
+                        doDecode
+                            Backend.FamilyEncounterParticipant.Decoder.decodeFamilyEncounterParticipant
+                            BackendAuthorityFamilyParticipant
+
+                    "family_nutrition_encounter" ->
+                        doDecode
+                            Backend.FamilyNutritionEncounter.Decoder.decodeFamilyNutritionEncounter
+                            BackendAuthorityFamilyNutritionEncounter
 
                     "family_planning" ->
                         doDecode

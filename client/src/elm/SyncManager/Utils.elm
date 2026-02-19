@@ -7,6 +7,8 @@ import Backend.Clinic.Encoder
 import Backend.Counseling.Encoder
 import Backend.Dashboard.Encoder
 import Backend.EducationSession.Encoder
+import Backend.FamilyEncounterParticipant.Encoder
+import Backend.FamilyNutritionEncounter.Encoder
 import Backend.HIVEncounter.Encoder
 import Backend.HealthCenter.Encoder
 import Backend.HomeVisitEncounter.Encoder
@@ -555,6 +557,12 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
         BackendAuthorityEducationSession identifier ->
             getIdentifier identifier "education_session"
+
+        BackendAuthorityFamilyParticipant identifier ->
+            getIdentifier identifier "family_participant"
+
+        BackendAuthorityFamilyNutritionEncounter identifier ->
+            getIdentifier identifier "family_nutrition_encounter"
 
         BackendAuthorityExposure identifier ->
             getIdentifier identifier "exposure"
@@ -1344,6 +1352,12 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityExposure identifier ->
             encode Backend.Measurement.Encoder.encodeExposure identifier
+
+        BackendAuthorityFamilyParticipant identifier ->
+            encode Backend.FamilyEncounterParticipant.Encoder.encodeFamilyEncounterParticipant identifier
+
+        BackendAuthorityFamilyNutritionEncounter identifier ->
+            encode Backend.FamilyNutritionEncounter.Encoder.encodeFamilyNutritionEncounter identifier
 
         BackendAuthorityFamilyPlanning identifier ->
             encode Backend.Measurement.Encoder.encodeFamilyPlanning identifier
@@ -2208,6 +2222,12 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityExposure identifier ->
             ExposureRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityFamilyParticipant identifier ->
+            FamilyEncounterParticipantRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityFamilyNutritionEncounter identifier ->
+            FamilyNutritionEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityFamilyPlanning identifier ->
             FamilyPlanningRevision (toEntityUuid identifier.uuid) identifier.entity

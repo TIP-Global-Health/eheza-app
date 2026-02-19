@@ -422,6 +422,12 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityExposure identifier ->
                 viewMeasurement identifier "Exposure"
 
+            BackendAuthorityFamilyParticipant identifier ->
+                text <| "Family Participant for person ID " ++ fromEntityUuid identifier.entity.person
+
+            BackendAuthorityFamilyNutritionEncounter identifier ->
+                text ("Family Nutrition Encounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
+
             BackendAuthorityFamilyPlanning identifier ->
                 viewMeasurement identifier "Family Planning"
 
