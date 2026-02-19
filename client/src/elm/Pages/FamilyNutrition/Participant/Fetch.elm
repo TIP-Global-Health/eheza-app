@@ -9,9 +9,6 @@ import Backend.Utils exposing (resolveFamilyParticipantsForPerson)
 fetch : PersonId -> ModelIndexedDb -> List MsgIndexedDb
 fetch id db =
     let
-        _ =
-            Debug.log "" "hi"
-
         fetchFamilyNutritionEncountersMsgs =
             resolveFamilyParticipantsForPerson id Backend.FamilyEncounterParticipant.Model.NutritionEncounter db
                 |> List.map FetchFamilyNutritionEncountersForParticipant

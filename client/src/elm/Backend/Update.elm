@@ -666,10 +666,6 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     )
 
         FetchFamilyEncounterParticipantsForPerson id ->
-            let
-                _ =
-                    Debug.log "" id
-            in
             ( { model | familyParticipantsByPerson = Dict.insert id Loading model.familyParticipantsByPerson }
             , sw.select familyEncounterParticipantEndpoint [ id ]
                 |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedFamilyEncounterParticipantsForPerson id)
@@ -677,10 +673,6 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             )
 
         HandleFetchedFamilyEncounterParticipantsForPerson id data ->
-            let
-                _ =
-                    Debug.log "" data
-            in
             ( { model | familyParticipantsByPerson = Dict.insert id data model.familyParticipantsByPerson }
             , Cmd.none
             , []
