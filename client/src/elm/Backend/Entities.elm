@@ -1729,3 +1729,19 @@ type alias HIVTreatmentReviewId =
 
 type HIVTreatmentReviewUuidType
     = HIVTreatmentReviewUuidType
+
+
+type alias FamilyParticipantId =
+    EntityUuid FamilyParticipantUuidType
+
+
+type FamilyParticipantUuidType
+    = FamilyParticipantUuidType
+
+
+type alias FamilyNutritionEncounterId =
+    EntityUuid FamilyNutritionEncounterUuidType
+
+
+type FamilyNutritionEncounterUuidType
+    = FamilyNutritionEncounterUuidType
