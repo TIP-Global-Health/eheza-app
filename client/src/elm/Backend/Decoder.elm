@@ -6,6 +6,8 @@ import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Counseling.Decoder exposing (decodeCounselingSchedule, decodeCounselingTopic)
 import Backend.Dashboard.Decoder exposing (decodeDashboardStatsRaw)
 import Backend.EducationSession.Decoder exposing (decodeEducationSession)
+import Backend.FamilyEncounterParticipant.Decoder exposing (decodeFamilyEncounterParticipant)
+import Backend.FamilyNutritionEncounter.Decoder exposing (decodeFamilyNutritionEncounter)
 import Backend.HIVEncounter.Decoder exposing (decodeHIVEncounter)
 import Backend.HealthCenter.Decoder exposing (decodeCatchmentArea, decodeHealthCenter)
 import Backend.HomeVisitEncounter.Decoder exposing (decodeHomeVisitEncounter)
@@ -148,6 +150,12 @@ decodeRevision =
 
                     "exposure" ->
                         decodeWithUuid ExposureRevision decodeExposure
+
+                    "family_participant" ->
+                        decodeWithUuid FamilyEncounterParticipantRevision decodeFamilyEncounterParticipant
+
+                    "family_nutrition_encounter" ->
+                        decodeWithUuid FamilyNutritionEncounterRevision decodeFamilyNutritionEncounter
 
                     "family_planning" ->
                         decodeWithUuid FamilyPlanningRevision decodeFamilyPlanning

@@ -619,6 +619,109 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     , []
                     )
 
+        FetchFamilyEncounterParticipant id ->
+            ( { model | familyParticipants = Dict.insert id Loading model.familyParticipants }
+            , sw.get familyEncounterParticipantEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedFamilyEncounterParticipant id)
+            , []
+            )
+
+        HandleFetchedFamilyEncounterParticipant id data ->
+            ( { model | familyParticipants = Dict.insert id data model.familyParticipants }
+            , Cmd.none
+            , []
+            )
+
+        FetchFamilyEncounterParticipants ids ->
+            if List.isEmpty ids then
+                noChange
+
+            else
+                let
+                    familyParticipantsUpdated =
+                        List.foldl (\id accum -> Dict.insert id Loading accum) model.familyParticipants ids
+                in
+                ( { model | familyParticipants = familyParticipantsUpdated }
+                , sw.getMany familyEncounterParticipantEndpoint ids
+                    |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchedFamilyEncounterParticipants)
+                , []
+                )
+
+        HandleFetchedFamilyEncounterParticipants webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | familyParticipants = Dict.union dictUpdated model.familyParticipants }
+                    , Cmd.none
+                    , []
+                    )
+
+        FetchFamilyEncounterParticipantsForPerson id ->
+            ( { model | familyParticipantsByPerson = Dict.insert id Loading model.familyParticipantsByPerson }
+            , sw.select familyEncounterParticipantEndpoint [ id ]
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedFamilyEncounterParticipantsForPerson id)
+            , []
+            )
+
+        HandleFetchedFamilyEncounterParticipantsForPerson id data ->
+            ( { model | familyParticipantsByPerson = Dict.insert id data model.familyParticipantsByPerson }
+            , Cmd.none
+            , []
+            )
+
+        FetchFamilyEncounterParticipantsForPeople ids ->
+            if List.isEmpty ids then
+                noChange
+
+            else
+                let
+                    familyParticipantsByPersonUpdated =
+                        List.foldl (\id accum -> Dict.insert id Loading accum) model.familyParticipantsByPerson ids
+                in
+                ( { model | familyParticipantsByPerson = familyParticipantsByPersonUpdated }
+                , sw.select familyEncounterParticipantEndpoint ids
+                    |> toCmd
+                        (RemoteData.fromResult
+                            >> RemoteData.map
+                                (.items
+                                    >> List.foldl
+                                        (\( participantId, participant ) accum ->
+                                            let
+                                                dictPeopleUpdated =
+                                                    Dict.get participant.person accum
+                                                        |> Maybe.map (Dict.insert participantId participant)
+                                                        |> Maybe.withDefault (Dict.singleton participantId participant)
+                                            in
+                                            Dict.insert participant.person dictPeopleUpdated accum
+                                        )
+                                        Dict.empty
+                                )
+                            >> HandleFetchedFamilyEncounterParticipantsForPeople
+                        )
+                , []
+                )
+
+        HandleFetchedFamilyEncounterParticipantsForPeople webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | familyParticipantsByPerson = Dict.union dictUpdated model.familyParticipantsByPerson }
+                    , Cmd.none
+                    , []
+                    )
+
         FetchPrenatalEncountersForParticipant id ->
             ( { model | prenatalEncountersByParticipant = Dict.insert id Loading model.prenatalEncountersByParticipant }
             , sw.select prenatalEncounterEndpoint [ id ]
@@ -1037,6 +1140,19 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     , []
                     )
 
+        FetchFamilyNutritionEncountersForParticipant id ->
+            ( { model | familyNutritionEncountersByParticipant = Dict.insert id Loading model.familyNutritionEncountersByParticipant }
+            , sw.select familyNutritionEncounterEndpoint [ id ]
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedFamilyNutritionEncountersForParticipant id)
+            , []
+            )
+
+        HandleFetchedFamilyNutritionEncountersForParticipant id data ->
+            ( { model | familyNutritionEncountersByParticipant = Dict.insert id data model.familyNutritionEncountersByParticipant }
+            , Cmd.none
+            , []
+            )
+
         FetchPrenatalMeasurements id ->
             ( { model | prenatalMeasurements = Dict.insert id Loading model.prenatalMeasurements }
             , sw.get prenatalMeasurementsEndpoint id
@@ -1205,6 +1321,19 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
 
         HandleFetchedHIVMeasurements id data ->
             ( { model | hivMeasurements = Dict.insert id data model.hivMeasurements }
+            , Cmd.none
+            , []
+            )
+
+        FetchFamilyNutritionMeasurements id ->
+            ( { model | familyNutritionMeasurements = Dict.insert id Loading model.familyNutritionMeasurements }
+            , sw.get familyNutritionMeasurementsEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedFamilyNutritionMeasurements id)
+            , []
+            )
+
+        HandleFetchedFamilyNutritionMeasurements id data ->
+            ( { model | familyNutritionMeasurements = Dict.insert id data model.familyNutritionMeasurements }
             , Cmd.none
             , []
             )
@@ -1757,6 +1886,19 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     , Cmd.none
                     , []
                     )
+
+        FetchFamilyNutritionEncounter id ->
+            ( { model | familyNutritionEncounters = Dict.insert id Loading model.familyNutritionEncounters }
+            , sw.get familyNutritionEncounterEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedFamilyNutritionEncounter id)
+            , []
+            )
+
+        HandleFetchedFamilyNutritionEncounter id data ->
+            ( { model | familyNutritionEncounters = Dict.insert id data model.familyNutritionEncounters }
+            , Cmd.none
+            , []
+            )
 
         FetchEducationSession id ->
             ( { model | educationSessions = Dict.insert id Loading model.educationSessions }
@@ -5513,6 +5655,36 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                     }
                 )
                 model
+            , recalc
+            )
+
+        FamilyEncounterParticipantRevision uuid data ->
+            let
+                familyParticipants =
+                    encounterActionConsideringDeletedField uuid data model.familyParticipants
+
+                familyParticipantsByPerson =
+                    Dict.remove data.person model.familyParticipantsByPerson
+            in
+            ( { model
+                | familyParticipants = familyParticipants
+                , familyParticipantsByPerson = familyParticipantsByPerson
+              }
+            , recalc
+            )
+
+        FamilyNutritionEncounterRevision uuid data ->
+            let
+                familyNutritionEncounters =
+                    encounterActionConsideringDeletedField uuid data model.familyNutritionEncounters
+
+                familyNutritionEncountersByParticipant =
+                    Dict.remove data.participant model.familyNutritionEncountersByParticipant
+            in
+            ( { model
+                | familyNutritionEncounters = familyNutritionEncounters
+                , familyNutritionEncountersByParticipant = familyNutritionEncountersByParticipant
+              }
             , recalc
             )
 

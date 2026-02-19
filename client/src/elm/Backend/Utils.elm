@@ -2,6 +2,7 @@ module Backend.Utils exposing (..)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
+import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterType)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
 import Backend.Measurement.Model
     exposing
@@ -249,6 +250,30 @@ resolveIndividualParticipantsForPerson personId encounterType db =
 resolveIndividualParticipantForPerson : PersonId -> IndividualEncounterType -> ModelIndexedDb -> Maybe IndividualEncounterParticipantId
 resolveIndividualParticipantForPerson personId encounterType db =
     resolveIndividualParticipantsForPerson personId encounterType db
+        |> List.head
+
+
+resolveFamilyParticipantsForPerson : PersonId -> FamilyEncounterType -> ModelIndexedDb -> List FamilyEncounterParticipantId
+resolveFamilyParticipantsForPerson personId encounterType db =
+    Dict.get personId db.familyParticipantsByPerson
+        |> Maybe.andThen RemoteData.toMaybe
+        |> Maybe.map
+            (Dict.toList
+                >> List.filterMap
+                    (\( participantId, participant ) ->
+                        if participant.encounterType == encounterType then
+                            Just participantId
+
+                        else
+                            Nothing
+                    )
+            )
+        |> Maybe.withDefault []
+
+
+resolveFamilyParticipantForPerson : PersonId -> FamilyEncounterType -> ModelIndexedDb -> Maybe FamilyEncounterParticipantId
+resolveFamilyParticipantForPerson personId encounterType db =
+    resolveFamilyParticipantsForPerson personId encounterType db
         |> List.head
 
 

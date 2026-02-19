@@ -18,6 +18,12 @@ import Backend.EducationSession.Decoder exposing (decodeEducationSession)
 import Backend.EducationSession.Encoder exposing (encodeEducationSession)
 import Backend.EducationSession.Model exposing (EducationSession)
 import Backend.Entities exposing (..)
+import Backend.FamilyEncounterParticipant.Decoder exposing (decodeFamilyEncounterParticipant)
+import Backend.FamilyEncounterParticipant.Encoder exposing (encodeFamilyEncounterParticipant)
+import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterParticipant)
+import Backend.FamilyNutritionEncounter.Decoder exposing (decodeFamilyNutritionEncounter)
+import Backend.FamilyNutritionEncounter.Encoder exposing (encodeFamilyNutritionEncounter)
+import Backend.FamilyNutritionEncounter.Model exposing (FamilyNutritionEncounter)
 import Backend.HIVEncounter.Decoder exposing (decodeHIVEncounter)
 import Backend.HIVEncounter.Encoder exposing (encodeHIVEncounter)
 import Backend.HIVEncounter.Model exposing (HIVEncounter)
@@ -1566,8 +1572,8 @@ encodeFamilyEncounterParticipantParams ids =
         [ ( "people", value ) ]
 
 
-familyFamilyNutritionEncounterEndpoint : ReadWriteEndPoint Error FamilyNutritionEncounterId FamilyNutritionEncounter FamilyNutritionEncounter (List IndividualEncounterParticipantId)
-familyFamilyNutritionEncounterEndpoint =
+familyNutritionEncounterEndpoint : ReadWriteEndPoint Error FamilyNutritionEncounterId FamilyNutritionEncounter FamilyNutritionEncounter (List FamilyEncounterParticipantId)
+familyNutritionEncounterEndpoint =
     swEndpoint "nodes/family_nutrition_encounter" decodeFamilyNutritionEncounter
         |> withValueEncoder (object << encodeFamilyNutritionEncounter)
         |> withParamsEncoder encodeFamilyEncounterParams
@@ -1585,3 +1591,8 @@ encodeFamilyEncounterParams ids =
                     |> String.join ","
         in
         [ ( "family_participants", value ) ]
+
+
+familyNutritionMeasurementsEndpoint : ReadOnlyEndPoint Error FamilyNutritionEncounterId FamilyNutritionMeasurements ()
+familyNutritionMeasurementsEndpoint =
+    swEndpoint "nodes/family-nutrition-measurements" decodeFamilyNutritionMeasurements

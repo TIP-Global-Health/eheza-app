@@ -342,6 +342,11 @@ decodeHIVMeasurements =
         |> optional "hiv_treatment_review" (decodeHead decodeHIVTreatmentReview) Nothing
 
 
+decodeFamilyNutritionMeasurements : Decoder FamilyNutritionMeasurements
+decodeFamilyNutritionMeasurements =
+    succeed FamilyNutritionMeasurements
+
+
 decodeStockManagementMeasurements : Decoder StockManagementMeasurements
 decodeStockManagementMeasurements =
     succeed StockManagementMeasurements

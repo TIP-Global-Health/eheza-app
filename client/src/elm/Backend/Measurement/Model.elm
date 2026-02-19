@@ -3629,6 +3629,10 @@ type alias HIVMeasurements =
     }
 
 
+type alias FamilyNutritionMeasurements =
+    {}
+
+
 {-| A set of measurements that includes all required data for
 Stock management data presentation.
 -}
