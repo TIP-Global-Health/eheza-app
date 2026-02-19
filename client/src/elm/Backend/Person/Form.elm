@@ -562,29 +562,39 @@ withDefault related =
             identity
 
 
-validateProvince : GeoInfo -> Maybe Person -> Bool -> Validation ValidationError (Maybe String)
-validateProvince geoInfo related isChw =
+{-| Helper function to validate geographic location fields.
+For CHW registration, fields are nullable and will be auto-populated on submit.
+For regular registration, fields are required unless there's a related person.
+-}
+validateGeoLocation :
+    AssocList.Dict Int { a | name : String }
+    -> ValidationError
+    -> Maybe String
+    -> Bool
+    -> Validation ValidationError (Maybe String)
+validateGeoLocation locationDict unknownError relatedValue isChw =
+    let
+        validateLocationId id =
+            Dict.get (toEntityId id) locationDict
+                |> Maybe.map (.name >> Just >> succeed)
+                |> Maybe.withDefault (fail <| customError unknownError)
+    in
     if isChw then
         -- For CHW registration, geographic fields will be auto-populated, so make them nullable
         int
-            |> andThen
-                (\id ->
-                    Dict.get (toEntityId id) geoInfo.provinces
-                        |> Maybe.map (.name >> Just >> succeed)
-                        |> Maybe.withDefault (fail <| customError UnknownProvince)
-                )
+            |> andThen validateLocationId
             |> nullable
 
     else
         int
             |> mapError (\_ -> customError RequiredField)
-            |> andThen
-                (\id ->
-                    Dict.get (toEntityId id) geoInfo.provinces
-                        |> Maybe.map (.name >> Just >> succeed)
-                        |> Maybe.withDefault (fail <| customError UnknownProvince)
-                )
-            |> withDefault (Maybe.andThen .province related)
+            |> andThen validateLocationId
+            |> withDefault relatedValue
+
+
+validateProvince : GeoInfo -> Maybe Person -> Bool -> Validation ValidationError (Maybe String)
+validateProvince geoInfo related isChw =
+    validateGeoLocation geoInfo.provinces UnknownProvince (Maybe.andThen .province related) isChw
 
 
 validateProvinceForContact : GeoInfo -> Validation ValidationError (Maybe String)
@@ -601,27 +611,7 @@ validateProvinceForContact geoInfo =
 
 validateDistrict : GeoInfo -> Maybe Person -> Bool -> Validation ValidationError (Maybe String)
 validateDistrict geoInfo related isChw =
-    if isChw then
-        -- For CHW registration, geographic fields will be auto-populated, so make them nullable
-        int
-            |> andThen
-                (\id ->
-                    Dict.get (toEntityId id) geoInfo.districts
-                        |> Maybe.map (.name >> Just >> succeed)
-                        |> Maybe.withDefault (fail <| customError UnknownDistrict)
-                )
-            |> nullable
-
-    else
-        int
-            |> mapError (\_ -> customError RequiredField)
-            |> andThen
-                (\id ->
-                    Dict.get (toEntityId id) geoInfo.districts
-                        |> Maybe.map (.name >> Just >> succeed)
-                        |> Maybe.withDefault (fail <| customError UnknownDistrict)
-                )
-            |> withDefault (Maybe.andThen .district related)
+    validateGeoLocation geoInfo.districts UnknownDistrict (Maybe.andThen .district related) isChw
 
 
 validateDistrictForContact : GeoInfo -> Validation ValidationError (Maybe String)
@@ -638,27 +628,7 @@ validateDistrictForContact geoInfo =
 
 validateSector : GeoInfo -> Maybe Person -> Bool -> Validation ValidationError (Maybe String)
 validateSector geoInfo related isChw =
-    if isChw then
-        -- For CHW registration, geographic fields will be auto-populated, so make them nullable
-        int
-            |> andThen
-                (\id ->
-                    Dict.get (toEntityId id) geoInfo.sectors
-                        |> Maybe.map (.name >> Just >> succeed)
-                        |> Maybe.withDefault (fail <| customError UnknownSector)
-                )
-            |> nullable
-
-    else
-        int
-            |> mapError (\_ -> customError RequiredField)
-            |> andThen
-                (\id ->
-                    Dict.get (toEntityId id) geoInfo.sectors
-                        |> Maybe.map (.name >> Just >> succeed)
-                        |> Maybe.withDefault (fail <| customError UnknownSector)
-                )
-            |> withDefault (Maybe.andThen .sector related)
+    validateGeoLocation geoInfo.sectors UnknownSector (Maybe.andThen .sector related) isChw
 
 
 validateSectorForContact : GeoInfo -> Validation ValidationError (Maybe String)
@@ -675,27 +645,7 @@ validateSectorForContact geoInfo =
 
 validateCell : GeoInfo -> Maybe Person -> Bool -> Validation ValidationError (Maybe String)
 validateCell geoInfo related isChw =
-    if isChw then
-        -- For CHW registration, geographic fields will be auto-populated, so make them nullable
-        int
-            |> andThen
-                (\id ->
-                    Dict.get (toEntityId id) geoInfo.cells
-                        |> Maybe.map (.name >> Just >> succeed)
-                        |> Maybe.withDefault (fail <| customError UnknownCell)
-                )
-            |> nullable
-
-    else
-        int
-            |> mapError (\_ -> customError RequiredField)
-            |> andThen
-                (\id ->
-                    Dict.get (toEntityId id) geoInfo.cells
-                        |> Maybe.map (.name >> Just >> succeed)
-                        |> Maybe.withDefault (fail <| customError UnknownCell)
-                )
-            |> withDefault (Maybe.andThen .cell related)
+    validateGeoLocation geoInfo.cells UnknownCell (Maybe.andThen .cell related) isChw
 
 
 validateCellForContact : GeoInfo -> Validation ValidationError (Maybe String)
@@ -712,27 +662,7 @@ validateCellForContact geoInfo =
 
 validateVillage : GeoInfo -> Maybe Person -> Bool -> Validation ValidationError (Maybe String)
 validateVillage geoInfo related isChw =
-    if isChw then
-        -- For CHW registration, geographic fields will be auto-populated, so make them nullable
-        int
-            |> andThen
-                (\id ->
-                    Dict.get (toEntityId id) geoInfo.villages
-                        |> Maybe.map (.name >> Just >> succeed)
-                        |> Maybe.withDefault (fail <| customError UnknownVillage)
-                )
-            |> nullable
-
-    else
-        int
-            |> mapError (\_ -> customError RequiredField)
-            |> andThen
-                (\id ->
-                    Dict.get (toEntityId id) geoInfo.villages
-                        |> Maybe.map (.name >> Just >> succeed)
-                        |> Maybe.withDefault (fail <| customError UnknownVillage)
-                )
-            |> withDefault (Maybe.andThen .village related)
+    validateGeoLocation geoInfo.villages UnknownVillage (Maybe.andThen .village related) isChw
 
 
 validateVillageForContact : GeoInfo -> Validation ValidationError (Maybe String)
