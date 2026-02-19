@@ -212,6 +212,9 @@ pageToFragment current =
                 FamilyEncounterParticipantsPage encounterType ->
                     Just <| "family-participants/" ++ familyEncounterTypeToString encounterType
 
+                FamilyNutritionParticipantPage initiator id ->
+                    Just <| "family-nutrition-participant/" ++ fromEntityUuid id ++ "/" ++ Backend.FamilyEncounterParticipant.Utils.initiatorToUrlFragment initiator
+
                 RelationshipPage id1 id2 initiator ->
                     let
                         fragment =
@@ -374,6 +377,9 @@ pageToFragment current =
                 HIVActivityPage id activity ->
                     Just <| "hiv-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.HIVActivity.Utils.activityToString activity
 
+                FamilyNutritionEncounterPage id ->
+                    Just <| "family-nutrition-encounter/" ++ fromEntityUuid id
+
                 TraceContactPage id ->
                     Just <| "trace-contact/" ++ fromEntityUuid id
 
@@ -423,6 +429,7 @@ parser =
         , map (\id -> UserPage <| ChildScoreboardParticipantPage id) (s "child-scoreboard-participant" </> parseUuid)
         , map (\id -> UserPage <| HIVParticipantPage id) (s "hiv-participant" </> parseUuid)
         , map (\id -> UserPage <| TuberculosisParticipantPage id) (s "tuberculosis-participant" </> parseUuid)
+        , map (\id initiator -> UserPage <| FamilyNutritionParticipantPage initiator id) (s "family-nutrition-participant" </> parseUuid </> parseFamilyParticipantInitiator)
         , map (\id1 id2 origin -> UserPage <| RelationshipPage id1 id2 origin) (s "relationship" </> parseUuid </> parseUuid </> parseOrigin)
         , map (\id -> UserPage <| PrenatalEncounterPage id) (s "prenatal-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| PrenatalActivityPage id activity) (s "prenatal-activity" </> parseUuid </> parsePrenatalActivity)
@@ -463,6 +470,7 @@ parser =
         , map (\id -> UserPage <| EducationSessionPage id) (s "education-session" </> parseUuid)
         , map (\id -> UserPage <| HIVEncounterPage id) (s "hiv-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| HIVActivityPage id activity) (s "hiv-activity" </> parseUuid </> parseHIVActivity)
+        , map (\id -> UserPage <| FamilyNutritionEncounterPage id) (s "family-nutrition-encounter" </> parseUuid)
         , map (\id -> UserPage <| TraceContactPage id) (s "trace-contact" </> parseUuid)
         , map (\id initiator -> UserPage <| PatientRecordPage initiator id) (s "patient-record" </> parseUuid </> parsePatientRecordInitiator)
         , map (UserPage MessagingCenterPage) (s "messaging-center")
@@ -618,6 +626,11 @@ parsePatientRecordInitiator =
 parseIndividualParticipantInitiator : Parser (IndividualParticipantInitiator -> c) c
 parseIndividualParticipantInitiator =
     custom "IndividualParticipantInitiator" Backend.IndividualEncounterParticipant.Utils.initiatorFromUrlFragment
+
+
+parseFamilyParticipantInitiator : Parser (FamilyParticipantInitiator -> c) c
+parseFamilyParticipantInitiator =
+    custom "FamilyParticipantInitiator" Backend.FamilyEncounterParticipant.Utils.initiatorFromUrlFragment
 
 
 parseNCDProgressReportInitiator : Parser (NCDProgressReportInitiator -> c) c

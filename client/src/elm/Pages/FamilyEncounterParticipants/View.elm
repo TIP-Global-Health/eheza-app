@@ -85,7 +85,6 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
             case encounterType of
                 NutritionEncounter ->
                     isPersonAnAdult currentDate person
-                        |> Maybe.map not
                         |> Maybe.withDefault False
 
         -- For CHW nurse, we present people only from the village that was selected.
@@ -162,9 +161,7 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
                 [ class "register-actions" ]
                 [ button
                     [ class "ui primary button fluid"
-
-                    -- @todo:
-                    -- , onClick <| SetActivePage <| UserPage <| CreatePersonPage Nothing (FamilyEncounterOrigin encounterType)
+                    , onClick <| SetActivePage <| UserPage <| CreatePersonPage Nothing (FamilyEncounterOrigin encounterType)
                     ]
                     [ text <| translate language Translate.RegisterNewParticipant ]
                 ]
@@ -178,8 +175,7 @@ viewParticipant language currentDate encounterType db id person =
         action =
             case encounterType of
                 NutritionEncounter ->
-                    [-- onClick <| SetActivePage <| UserPage <| NutritionParticipantPage InitiatorParticipantsPage id
-                    ]
+                    [ onClick <| SetActivePage <| UserPage <| FamilyNutritionParticipantPage InitiatorParticipantsPage id ]
 
         viewAction =
             div [ class "action" ]

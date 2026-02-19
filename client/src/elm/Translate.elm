@@ -684,6 +684,8 @@ type TranslationId
     | Eyes
     | Facility
     | FamilyEncounter
+    | FamilyEncounterLabel FamilyEncounterType
+    | FamilyEncounterSelectVisit FamilyEncounterType
     | FamilyEncounterType FamilyEncounterType
     | FamilyHistoryOfPreeclampsia
     | FamilyInformation
@@ -6838,6 +6840,20 @@ translationSet trans =
             , kirundi = Nothing
             , somali = Nothing
             }
+
+        FamilyEncounterLabel encounterType ->
+            case encounterType of
+                Backend.FamilyEncounterParticipant.Model.NutritionEncounter ->
+                    translationSet NutritionEncounterLabel
+
+        FamilyEncounterSelectVisit encounterType ->
+            case encounterType of
+                Backend.FamilyEncounterParticipant.Model.NutritionEncounter ->
+                    { english = "Select Nutrition Visit"
+                    , kinyarwanda = Just "Hitamo isuzuma ry’imirire"
+                    , kirundi = Just "Hitamo isuzumwa ry'ingaburo"
+                    , somali = Just "Dooro Booqasho Nafaqo"
+                    }
 
         FamilyEncounterType encounterType ->
             case encounterType of
@@ -29863,6 +29879,12 @@ translateActivePage page =
                     , kirundi = Just "Igikorwa ku barwayi ba SIDA"
                     , somali = Just "Howlaha HIV"
                     }
+
+                FamilyNutritionParticipantPage _ _ ->
+                    translationSet NutritionEncounterLabel
+
+                FamilyNutritionEncounterPage _ ->
+                    translationSet NutritionEncounterLabel
 
 
 translateChartPhrase : ChartPhrase -> TranslationSet String

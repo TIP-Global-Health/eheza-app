@@ -42,6 +42,9 @@ import Pages.EducationSession.Model
 import Pages.EducationSession.View
 import Pages.FamilyEncounterParticipants.View
 import Pages.FamilyEncounterTypes.View
+import Pages.FamilyNutrition.Encounter.Model
+import Pages.FamilyNutrition.Encounter.View
+import Pages.FamilyNutrition.Participant.View
 import Pages.GlobalCaseManagement.View
 import Pages.GroupEncounterTypes.View
 import Pages.HIV.Activity.Model
@@ -547,6 +550,10 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
 
                     HIVParticipantPage id ->
                         Pages.HIV.Participant.View.view model.language currentDate healthCenterId id model.indexedDb
+                            |> flexPageWrapper configured.config model
+
+                    FamilyNutritionParticipantPage initiator id ->
+                        Pages.FamilyNutrition.Participant.View.view model.language currentDate healthCenterId id isChw initiator model.indexedDb
                             |> flexPageWrapper configured.config model
 
                     IndividualEncounterParticipantsPage encounterType ->
@@ -1059,6 +1066,24 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                         in
                         Pages.HIV.Activity.View.view model.language currentDate id activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageHIVActivity id activity)
+                            |> flexPageWrapper configured.config model
+
+                    FamilyNutritionEncounterPage id ->
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.familyNutritionEncounterPages
+                                    |> Maybe.withDefault Pages.FamilyNutrition.Encounter.Model.emptyModel
+                        in
+                        Pages.FamilyNutrition.Encounter.View.view model.language
+                            currentDate
+                            site
+                            model.zscores
+                            features
+                            id
+                            isChw
+                            model.indexedDb
+                            page_
+                            |> Html.map (MsgLoggedIn << MsgPageFamilyNutritionEncounter id)
                             |> flexPageWrapper configured.config model
 
                     TraceContactPage traceContactId ->

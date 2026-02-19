@@ -20,26 +20,6 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Utils.NominalDate exposing (sortTuplesByDateDesc)
 
 
-generateFamilyFamilyNutritionMeasurementsForChild : PersonId -> ModelIndexedDb -> List ( NominalDate, ( FamilyNutritionEncounterId, FamilyNutritionMeasurements ) )
-generateFamilyFamilyNutritionMeasurementsForChild childId db =
-    resolveFamilyParticipantForPerson childId Backend.FamilyEncounterParticipant.Model.FamilyNutritionEncounter db
-        |> Maybe.map
-            (getFamilyNutritionEncountersForParticipant db
-                >> List.filterMap
-                    (\( encounterId, encounter ) ->
-                        case Dict.get encounterId db.nutritionMeasurements of
-                            Just (Success data) ->
-                                Just ( encounter.startDate, ( encounterId, data ) )
-
-                            _ ->
-                                Nothing
-                    )
-                -- Most recent date to least recent date.
-                >> List.sortWith sortTuplesByDateDesc
-            )
-        |> Maybe.withDefault []
-
-
 getFamilyNutritionEncountersForParticipant : ModelIndexedDb -> FamilyEncounterParticipantId -> List ( FamilyNutritionEncounterId, FamilyNutritionEncounter )
 getFamilyNutritionEncountersForParticipant =
     getParticipantEncountersByEncounterType .familyNutritionEncountersByParticipant

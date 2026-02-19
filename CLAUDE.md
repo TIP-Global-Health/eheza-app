@@ -42,7 +42,7 @@ drush mi --group=forms --user=1          # Run forms migrations
 ### Linting & Testing
 
 ```bash
-# Elm - elm-format v0.8.1 is required (CI enforces this exact version)
+# Elm
 elm-format --validate client/src/        # Check formatting
 elm-format client/src/                   # Auto-format
 elm-test                                 # Run Elm unit tests (from client/)
@@ -109,7 +109,7 @@ Programs are toggled via `drush vset hedley_admin_feature_<name>_enabled 1|0`. F
 
 Four parallel jobs defined in `.circleci/config.yml`:
 1. **lint_phpcs** — PHPCodeSniffer (Drupal + DrupalPractice standards)
-2. **lint_elm** — `elm-format` validation (v0.8.1 enforced)
+2. **lint_elm** — `elm-format` validation
 3. **lint_shellcheck** — ShellCheck on all shell scripts
 4. **test_simpletest_linux** — full Drupal install + SimpleTest (runs after all lint jobs pass)
 

@@ -110,6 +110,9 @@ viewHeader initiator relation title =
                     PinCodePage
 
                 FamilyEncounterOrigin _ ->
+                    -- For now, we do not use this page for family encounters.
+                    -- Those got their own dedicated page.
+                    -- Therefore, we default to Pincode page.
                     PinCodePage
     in
     div

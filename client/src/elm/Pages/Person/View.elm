@@ -4,6 +4,7 @@ import App.Model exposing (GPSCoordinates)
 import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (Clinic, ClinicType(..))
 import Backend.Entities exposing (..)
+import Backend.FamilyEncounterParticipant.Model
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Model exposing (ModelIndexedDb)
@@ -747,14 +748,16 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                     , title = Translate.People
                     }
 
-                FamilyEncounterOrigin _ ->
-                    { goBackPage = PinCodePage
-                    , expectedAge = ExpectAdultOrChild
-                    , expectedGender = ExpectMaleOrFemale
-                    , birthDateSelectorFrom = Date.add Years -120 currentDate
-                    , birthDateSelectorTo = currentDate
-                    , title = Translate.People
-                    }
+                FamilyEncounterOrigin encounterType ->
+                    case encounterType of
+                        Backend.FamilyEncounterParticipant.Model.NutritionEncounter ->
+                            { goBackPage = UserPage (FamilyEncounterParticipantsPage Backend.FamilyEncounterParticipant.Model.NutritionEncounter)
+                            , expectedAge = ExpectAdult
+                            , expectedGender = ExpectFemale
+                            , birthDateSelectorFrom = Date.add Years -120 today
+                            , birthDateSelectorTo = Date.add Years -13 today
+                            , title = Translate.People
+                            }
 
         header =
             div [ class "ui basic segment head" ]

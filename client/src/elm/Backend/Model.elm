@@ -31,7 +31,7 @@ import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic, E
 import Backend.Dashboard.Model exposing (DashboardStatsRaw)
 import Backend.EducationSession.Model exposing (EducationSession)
 import Backend.Entities exposing (..)
-import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterParticipant)
+import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterParticipant, FamilyEncounterType(..))
 import Backend.FamilyNutritionEncounter.Model exposing (FamilyNutritionEncounter)
 import Backend.HIVEncounter.Model exposing (HIVEncounter)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
@@ -108,6 +108,7 @@ type alias ModelIndexedDb =
     , resilienceSurveyRequests : Dict NurseId Backend.ResilienceSurvey.Model.Model
     , stockUpdateRequests : Dict NurseId Backend.StockUpdate.Model.Model
     , educationSessionRequests : Dict EducationSessionId Backend.EducationSession.Model.Model
+    , familyNutritionEncounterRequests : Dict FamilyNutritionEncounterId Backend.FamilyNutritionEncounter.Model.Model
 
     -- We provide a mechanism for loading the children and mothers expected
     -- at a particular session.
@@ -209,6 +210,8 @@ type alias ModelIndexedDb =
     , postTuberculosisEncounter : Dict IndividualEncounterParticipantId (WebData ( TuberculosisEncounterId, TuberculosisEncounter ))
     , postHIVEncounter : Dict IndividualEncounterParticipantId (WebData ( HIVEncounterId, HIVEncounter ))
     , postEducationSession : WebData ( EducationSessionId, EducationSession )
+    , postFamilyEncounterParticipant : Dict PersonId (WebData ( FamilyEncounterParticipantId, FamilyEncounterParticipant ))
+    , postFamilyNutritionEncounter : Dict FamilyEncounterParticipantId (WebData ( FamilyNutritionEncounterId, FamilyNutritionEncounter ))
     }
 
 
@@ -274,6 +277,7 @@ emptyModelIndexedDb =
     , tuberculosisEncounterRequests = Dict.empty
     , hivEncounterRequests = Dict.empty
     , educationSessionRequests = Dict.empty
+    , familyNutritionEncounterRequests = Dict.empty
     , traceContactRequests = Dict.empty
     , individualEncounterParticipantRequests = Dict.empty
     , nurseRequests = Dict.empty
@@ -308,6 +312,8 @@ emptyModelIndexedDb =
     , postTuberculosisEncounter = Dict.empty
     , postHIVEncounter = Dict.empty
     , postEducationSession = NotAsked
+    , postFamilyEncounterParticipant = Dict.empty
+    , postFamilyNutritionEncounter = Dict.empty
     }
 
 
@@ -521,6 +527,8 @@ type MsgIndexedDb
     | PostTuberculosisEncounter TuberculosisEncounter
     | PostHIVEncounter HIVEncounter
     | PostEducationSession EducationSession
+    | PostFamilyEncounterParticipant FamilyEncounterParticipant
+    | PostFamilyNutritionEncounter FamilyNutritionEncounter
       -- Messages which handle responses to mutating data
     | HandlePostedPerson (Maybe PersonId) Initiator (WebData PersonId)
     | HandlePatchedPerson PatchPersonInitator PersonId (WebData Person)
@@ -538,6 +546,8 @@ type MsgIndexedDb
     | HandlePostedTuberculosisEncounter IndividualEncounterParticipantId (WebData ( TuberculosisEncounterId, TuberculosisEncounter ))
     | HandlePostedHIVEncounter IndividualEncounterParticipantId (WebData ( HIVEncounterId, HIVEncounter ))
     | HandlePostedEducationSession (WebData ( EducationSessionId, EducationSession ))
+    | HandlePostedFamilyEncounterParticipant PersonId FamilyEncounterType (WebData ( FamilyEncounterParticipantId, FamilyEncounterParticipant ))
+    | HandlePostedFamilyNutritionEncounter FamilyEncounterParticipantId (WebData ( FamilyNutritionEncounterId, FamilyNutritionEncounter ))
       -- Operations we may want to perform when logout is clicked.
     | HandleLogout
       -- Process some revisions we've received from the backend. In some cases,
@@ -556,6 +566,7 @@ type MsgIndexedDb
     | MsgTuberculosisEncounter TuberculosisEncounterId Backend.TuberculosisEncounter.Model.Msg
     | MsgHIVEncounter HIVEncounterId Backend.HIVEncounter.Model.Msg
     | MsgEducationSession EducationSessionId Backend.EducationSession.Model.Msg
+    | MsgFamilyNutritionEncounter FamilyNutritionEncounterId Backend.FamilyNutritionEncounter.Model.Msg
     | MsgTraceContact AcuteIllnessTraceContactId Backend.TraceContact.Model.Msg
     | MsgIndividualEncounterParticipant IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Msg
     | MsgNurse NurseId Backend.Nurse.Model.Msg

@@ -3,17 +3,11 @@ module Backend.FamilyNutritionEncounter.Fetch exposing (fetch)
 import AssocList as Dict
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
-import Backend.FamilyNutritionEncounter.Utils
-    exposing
-        ( getAcuteIllnessEncountersForParticipant
-        , getChildScoreboardEncountersForParticipant
-        , getFamilyNutritionEncountersForParticipant
-        , getWellChildEncountersForParticipant
-        )
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
+import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterType(..))
+import Backend.FamilyNutritionEncounter.Utils exposing (getFamilyNutritionEncountersForParticipant)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
-import Backend.Utils exposing (resolveIndividualParticipantForPerson, resolveIndividualParticipantsForPerson)
+import Backend.Utils exposing (resolveFamilyParticipantForPerson, resolveFamilyParticipantsForPerson)
 import EverySet
 import Maybe.Extra
 import RemoteData
@@ -38,7 +32,7 @@ fetch id db =
     , FetchRelationshipsForPerson id
 
     -- We need this, so we can resolve the family participants of child.
-    , FetchIndividualEncounterParticipantsForPerson id
+    , FetchFamilyEncounterParticipantsForPerson id
     ]
         ++ fetchChildrenMsgs
         ++ fetchForFamilyNutrition id db
@@ -48,7 +42,7 @@ fetchForFamilyNutrition : PersonId -> ModelIndexedDb -> List MsgIndexedDb
 fetchForFamilyNutrition id db =
     let
         participantId =
-            resolveIndividualParticipantForPerson id FamilyNutritionEncounter db
+            resolveFamilyParticipantForPerson id NutritionEncounter db
 
         encountersIds =
             Maybe.map (getFamilyNutritionEncountersForParticipant db) participantId

@@ -19,6 +19,9 @@ import Backend.EducationSession.Model
 import Backend.EducationSession.Update
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
+import Backend.FamilyEncounterParticipant.Model
+import Backend.FamilyNutritionEncounter.Model exposing (emptyFamilyNutritionEncounter)
+import Backend.FamilyNutritionEncounter.Update
 import Backend.HIVEncounter.Model
 import Backend.HIVEncounter.Update
 import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
@@ -663,6 +666,10 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     )
 
         FetchFamilyEncounterParticipantsForPerson id ->
+            let
+                _ =
+                    Debug.log "" id
+            in
             ( { model | familyParticipantsByPerson = Dict.insert id Loading model.familyParticipantsByPerson }
             , sw.select familyEncounterParticipantEndpoint [ id ]
                 |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedFamilyEncounterParticipantsForPerson id)
@@ -670,6 +677,10 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             )
 
         HandleFetchedFamilyEncounterParticipantsForPerson id data ->
+            let
+                _ =
+                    Debug.log "" data
+            in
             ( { model | familyParticipantsByPerson = Dict.insert id data model.familyParticipantsByPerson }
             , Cmd.none
             , []
@@ -4044,6 +4055,30 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             , appMsgs
             )
 
+        MsgFamilyNutritionEncounter encounterId subMsg ->
+            let
+                encounter =
+                    Dict.get encounterId model.familyNutritionEncounters
+                        |> Maybe.andThen RemoteData.toMaybe
+
+                requests =
+                    Dict.get encounterId model.familyNutritionEncounterRequests
+                        |> Maybe.withDefault Backend.FamilyNutritionEncounter.Model.emptyModel
+
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.FamilyNutritionEncounter.Update.update currentDate
+                        nurseId
+                        healthCenterId
+                        encounterId
+                        encounter
+                        subMsg
+                        requests
+            in
+            ( { model | familyNutritionEncounterRequests = Dict.insert encounterId subModel model.familyNutritionEncounterRequests }
+            , Cmd.map (MsgFamilyNutritionEncounter encounterId) subCmd
+            , appMsgs
+            )
+
         MsgTraceContact traceContactId subMsg ->
             let
                 traceContact =
@@ -5033,6 +5068,66 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         |> RemoteData.withDefault []
             in
             ( { model | postEducationSession = data }
+            , Cmd.none
+            , rollbarOnFailure ++ appMsgs
+            )
+
+        PostFamilyEncounterParticipant session ->
+            ( { model | postFamilyEncounterParticipant = Dict.insert session.person Loading model.postFamilyEncounterParticipant }
+            , sw.post familyEncounterParticipantEndpoint session
+                |> toCmd (RemoteData.fromResult >> HandlePostedFamilyEncounterParticipant session.person session.encounterType)
+            , []
+            )
+
+        HandlePostedFamilyEncounterParticipant personId encounterType data ->
+            let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
+                -- We automatically create new encounter for newly created  session.
+                appMsgs =
+                    RemoteData.map
+                        (\( sessionId, _ ) ->
+                            case encounterType of
+                                Backend.FamilyEncounterParticipant.Model.NutritionEncounter ->
+                                    [ emptyFamilyNutritionEncounter sessionId currentDate healthCenterId
+                                        |> Backend.Model.PostFamilyNutritionEncounter
+                                        |> App.Model.MsgIndexedDb
+                                    ]
+                        )
+                        data
+                        |> RemoteData.withDefault []
+            in
+            ( { model | postFamilyEncounterParticipant = Dict.insert personId data model.postFamilyEncounterParticipant }
+            , Cmd.none
+            , rollbarOnFailure ++ appMsgs
+            )
+
+        PostFamilyNutritionEncounter familyNutritionEncounter ->
+            ( { model | postFamilyNutritionEncounter = Dict.insert familyNutritionEncounter.participant Loading model.postFamilyNutritionEncounter }
+            , sw.post familyNutritionEncounterEndpoint familyNutritionEncounter
+                |> toCmd (RemoteData.fromResult >> HandlePostedFamilyNutritionEncounter familyNutritionEncounter.participant)
+            , []
+            )
+
+        HandlePostedFamilyNutritionEncounter participantId data ->
+            let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
+                appMsgs =
+                    RemoteData.map
+                        (\( familyNutritionEncounterId, _ ) ->
+                            [-- @todo:
+                             -- App.Model.SetActivePage <|
+                             --     UserPage <|
+                             --         Pages.Page.FamilyNutritionEncounterPage familyNutritionEncounterId
+                            ]
+                        )
+                        data
+                        |> RemoteData.withDefault []
+            in
+            ( { model | postFamilyNutritionEncounter = Dict.insert participantId data model.postFamilyNutritionEncounter }
             , Cmd.none
             , rollbarOnFailure ++ appMsgs
             )

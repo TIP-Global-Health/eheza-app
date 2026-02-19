@@ -49,6 +49,7 @@ import Pages.Dashboard.Model
 import Pages.Device.Model
 import Pages.EducationSession.Model
 import Pages.FamilyEncounterParticipants.Model
+import Pages.FamilyNutrition.Encounter.Model
 import Pages.GlobalCaseManagement.Model
 import Pages.HIV.Activity.Model
 import Pages.HIV.Encounter.Model
@@ -330,6 +331,7 @@ type alias LoggedInModel =
     , educationSessionPages : Dict EducationSessionId Pages.EducationSession.Model.Model
     , hivEncounterPages : Dict HIVEncounterId Pages.HIV.Encounter.Model.Model
     , hivActivityPages : Dict ( HIVEncounterId, HIVActivity ) Pages.HIV.Activity.Model.Model
+    , familyNutritionEncounterPages : Dict FamilyNutritionEncounterId Pages.FamilyNutrition.Encounter.Model.Model
     , traceContactPages : Dict AcuteIllnessTraceContactId Pages.TraceContact.Model.Model
     , clinicalProgressReportPages : Dict PrenatalEncounterId Pages.Prenatal.ProgressReport.Model.Model
     , patientRecordPages : Dict PersonId Pages.PatientRecord.Model.Model
@@ -385,6 +387,7 @@ emptyLoggedInModel site villageId nurse =
     , educationSessionPages = Dict.empty
     , hivEncounterPages = Dict.empty
     , hivActivityPages = Dict.empty
+    , familyNutritionEncounterPages = Dict.empty
     , traceContactPages = Dict.empty
     , clinicalProgressReportPages = Dict.empty
     , patientRecordPages = Dict.empty
@@ -455,6 +458,7 @@ type MsgLoggedIn
     | MsgPageTuberculosisEncounter TuberculosisEncounterId Pages.Tuberculosis.Encounter.Model.Msg
     | MsgPageHIVEncounter HIVEncounterId Pages.HIV.Encounter.Model.Msg
     | MsgPageEducationSession EducationSessionId Pages.EducationSession.Model.Msg
+    | MsgPageFamilyNutritionEncounter FamilyNutritionEncounterId Pages.FamilyNutrition.Encounter.Model.Msg
     | MsgPagePrenatalActivity PrenatalEncounterId PrenatalActivity Pages.Prenatal.Activity.Model.Msg
     | MsgPagePrenatalRecurrentActivity PrenatalEncounterId PrenatalRecurrentActivity Pages.Prenatal.RecurrentActivity.Model.Msg
     | MsgPagePrenatalLabsHistory PrenatalEncounterId PrenatalEncounterId LaboratoryTest Pages.Prenatal.RecurrentActivity.Model.Msg

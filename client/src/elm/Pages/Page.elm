@@ -45,7 +45,7 @@ import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity)
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessProgressReportInitiator)
 import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity)
 import Backend.Entities exposing (..)
-import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterType)
+import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterType, FamilyParticipantInitiator)
 import Backend.HIVActivity.Model exposing (HIVActivity)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType, IndividualParticipantInitiator)
@@ -210,6 +210,8 @@ type UserPage
     | WellbeingPage
     | MessagingGuide
     | StockManagementPage
+    | FamilyNutritionParticipantPage FamilyParticipantInitiator PersonId
+    | FamilyNutritionEncounterPage FamilyNutritionEncounterId
 
 
 type DashboardPage
