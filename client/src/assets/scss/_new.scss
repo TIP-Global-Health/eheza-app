@@ -612,7 +612,8 @@ div.page-clinical {
 
 button.ui.primary.button.group-assessment,
 button.ui.primary.button.dashboard,
-button.ui.primary.button.individual-assessment {
+button.ui.primary.button.individual-assessment,
+  button.ui.primary.button.family-assessment {
   padding: 0;
   height: 60px;
   margin-left: auto;
@@ -645,7 +646,8 @@ button.ui.primary.button.individual-assessment {
 }
 
 button.ui.primary.button.group-assessment,
-button.ui.primary.button.individual-assessment {
+button.ui.primary.button.individual-assessment,
+  button.ui.primary.button.family-assessment {
 
   img {
     float: left;
@@ -661,7 +663,8 @@ button.ui.primary.button.individual-assessment {
   }
 }
 
-button.ui.primary.button.group-assessment img {
+button.ui.primary.button.group-assessment img,
+button.ui.primary.button.family-assessment img {
   height: 40px;
   width: 50px;
   margin-top: 8px;

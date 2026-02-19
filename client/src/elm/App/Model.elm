@@ -48,6 +48,7 @@ import Pages.Clinics.Model
 import Pages.Dashboard.Model
 import Pages.Device.Model
 import Pages.EducationSession.Model
+import Pages.FamilyEncounterParticipants.Model
 import Pages.GlobalCaseManagement.Model
 import Pages.HIV.Activity.Model
 import Pages.HIV.Encounter.Model
@@ -288,6 +289,7 @@ type alias LoggedInModel =
     , relationshipPages : Dict ( PersonId, PersonId ) Pages.Relationship.Model.Model
     , personsPage : Pages.People.Model.Model
     , individualEncounterParticipantsPage : Pages.IndividualEncounterParticipants.Model.Model
+    , familyEncounterParticipantsPage : Pages.FamilyEncounterParticipants.Model.Model
     , clinicsPage : Pages.Clinics.Model.Model
     , stockManagementPage : Pages.StockManagement.Model.Model
 
@@ -343,6 +345,7 @@ emptyLoggedInModel site villageId nurse =
     , editPersonPages = Dict.empty
     , personsPage = Pages.People.Model.emptyModel
     , individualEncounterParticipantsPage = Components.PatientsSearchForm.Model.emptyModel
+    , familyEncounterParticipantsPage = Components.PatientsSearchForm.Model.emptyModel
     , clinicsPage = Pages.Clinics.Model.emptyModel
     , stockManagementPage = Pages.StockManagement.Model.emptyModel
     , relationshipPages = Dict.empty
@@ -436,6 +439,7 @@ type MsgLoggedIn
     | MsgPagePersons Pages.People.Model.Msg
     | MsgPagePrenatalParticipant PersonId Pages.Prenatal.Participant.Model.Msg
     | MsgPageIndividualEncounterParticipants Pages.IndividualEncounterParticipants.Model.Msg
+    | MsgPageFamilyEncounterParticipants Pages.FamilyEncounterParticipants.Model.Msg
     | MsgPageRelationship PersonId PersonId Pages.Relationship.Model.Msg
     | MsgPageAcuteIllnessParticipant PersonId Pages.AcuteIllness.Participant.Model.Msg
     | MsgPageSession SessionId Pages.Session.Model.Msg

@@ -22,6 +22,8 @@ import Pages.Dashboard.Fetch
 import Pages.Device.Fetch
 import Pages.EducationSession.Fetch
 import Pages.EducationSession.Model
+import Pages.FamilyEncounterParticipants.Fetch
+import Pages.FamilyEncounterTypes.Fetch
 import Pages.GlobalCaseManagement.Fetch
 import Pages.GroupEncounterTypes.Fetch
 import Pages.HIV.Activity.Fetch
@@ -260,6 +262,15 @@ fetch model =
                 Pages.Relationship.Fetch.fetch id1 id2 model.indexedDb
                     |> List.map MsgIndexedDb
 
+            UserPage (FamilyEncounterParticipantsPage encounterType) ->
+                getLoggedInData model
+                    |> Maybe.map
+                        (\( _, loggedIn ) ->
+                            Pages.FamilyEncounterParticipants.Fetch.fetch encounterType loggedIn.familyEncounterParticipantsPage
+                                |> List.map MsgIndexedDb
+                        )
+                    |> Maybe.withDefault []
+
             UserPage (SessionPage sessionId sessionPage) ->
                 let
                     features =
@@ -299,6 +310,10 @@ fetch model =
 
             UserPage GroupEncounterTypesPage ->
                 Pages.GroupEncounterTypes.Fetch.fetch
+                    |> List.map MsgIndexedDb
+
+            UserPage FamilyEncounterTypesPage ->
+                Pages.FamilyEncounterTypes.Fetch.fetch
                     |> List.map MsgIndexedDb
 
             UserPage (PregnancyOutcomePage _ id) ->

@@ -51,6 +51,7 @@ import Pages.Device.Model
 import Pages.Device.Update
 import Pages.EducationSession.Model
 import Pages.EducationSession.Update
+import Pages.FamilyEncounterParticipants.Update
 import Pages.GlobalCaseManagement.Update
 import Pages.HIV.Activity.Model
 import Pages.HIV.Activity.Update
@@ -406,6 +407,16 @@ update msg model =
                             in
                             ( { data | individualEncounterParticipantsPage = subModel }
                             , Cmd.map (MsgLoggedIn << MsgPageIndividualEncounterParticipants) subCmd
+                            , appMsgs
+                            )
+
+                        MsgPageFamilyEncounterParticipants subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    Pages.FamilyEncounterParticipants.Update.update subMsg data.familyEncounterParticipantsPage
+                            in
+                            ( { data | familyEncounterParticipantsPage = subModel }
+                            , Cmd.map (MsgLoggedIn << MsgPageFamilyEncounterParticipants) subCmd
                             , appMsgs
                             )
 

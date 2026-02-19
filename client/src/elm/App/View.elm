@@ -40,6 +40,8 @@ import Pages.Dashboard.View
 import Pages.Device.View
 import Pages.EducationSession.Model
 import Pages.EducationSession.View
+import Pages.FamilyEncounterParticipants.View
+import Pages.FamilyEncounterTypes.View
 import Pages.GlobalCaseManagement.View
 import Pages.GroupEncounterTypes.View
 import Pages.HIV.Activity.Model
@@ -376,7 +378,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             |> oldPageWrapper configured.config model
 
                     ClinicalPage ->
-                        Pages.Clinical.View.view model.language currentDate healthCenterId isChw model
+                        Pages.Clinical.View.view model.language currentDate features healthCenterId isChw model
                             |> flexPageWrapper configured.config model
 
                     ClinicsPage ->
@@ -558,6 +560,17 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             |> Html.map (MsgLoggedIn << MsgPageIndividualEncounterParticipants)
                             |> flexPageWrapper configured.config model
 
+                    FamilyEncounterParticipantsPage encounterType ->
+                        Pages.FamilyEncounterParticipants.View.view model.language
+                            currentDate
+                            ( healthCenterId, model.villageId )
+                            isChw
+                            encounterType
+                            loggedInModel.familyEncounterParticipantsPage
+                            model.indexedDb
+                            |> Html.map (MsgLoggedIn << MsgPageFamilyEncounterParticipants)
+                            |> flexPageWrapper configured.config model
+
                     RelationshipPage id1 id2 initiator ->
                         let
                             page_ =
@@ -678,6 +691,10 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             healthCenterId
                             (Tuple.first loggedInModel.nurse)
                             model
+                            |> flexPageWrapper configured.config model
+
+                    FamilyEncounterTypesPage ->
+                        Pages.FamilyEncounterTypes.View.view model.language currentDate features healthCenterId isChw model
                             |> flexPageWrapper configured.config model
 
                     PregnancyOutcomePage initiator id ->

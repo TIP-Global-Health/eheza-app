@@ -8,6 +8,8 @@ import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessProgressReportI
 import Backend.AcuteIllnessEncounter.Utils
 import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity)
 import Backend.ChildScoreboardActivity.Utils
+import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterType, FamilyParticipantInitiator)
+import Backend.FamilyEncounterParticipant.Utils exposing (familyEncounterTypeFromString, familyEncounterTypeToString)
 import Backend.HIVActivity.Model exposing (HIVActivity)
 import Backend.HIVActivity.Utils
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)
@@ -207,6 +209,9 @@ pageToFragment current =
                 IndividualEncounterParticipantsPage encounterType ->
                     Just <| "individual-participants/" ++ individualEncounterTypeToString encounterType
 
+                FamilyEncounterParticipantsPage encounterType ->
+                    Just <| "family-participants/" ++ familyEncounterTypeToString encounterType
+
                 RelationshipPage id1 id2 initiator ->
                     let
                         fragment =
@@ -280,6 +285,9 @@ pageToFragment current =
 
                 GroupEncounterTypesPage ->
                     Just "group-encounter-types/"
+
+                FamilyEncounterTypesPage ->
+                    Just "family-encounter-types/"
 
                 PregnancyOutcomePage initiator id ->
                     Just <| "pregnancy-outcome/" ++ fromEntityUuid id ++ "/" ++ recordPreganancyInitiatorToUrlFragment initiator
@@ -425,7 +433,9 @@ parser =
         , map (\id initiator -> UserPage <| DemographicsReportPage initiator id) (s "demographics-report" </> parseUuid </> parsePrenatalProgressReportInitiator)
         , map (UserPage <| IndividualEncounterTypesPage) (s "individual-encounter-types")
         , map (UserPage <| GroupEncounterTypesPage) (s "group-encounter-types")
+        , map (UserPage <| FamilyEncounterTypesPage) (s "family-encounter-types")
         , map (\encounterType -> UserPage <| IndividualEncounterParticipantsPage encounterType) (s "individual-participants" </> parseIndividualEncounterType)
+        , map (\encounterType -> UserPage <| FamilyEncounterParticipantsPage encounterType) (s "family-participants" </> parseFamilyEncounterType)
         , map (\id initiator -> UserPage <| PregnancyOutcomePage initiator id) (s "pregnancy-outcome" </> parseUuid </> parseRecordPreganancyInitiator)
         , map (\id -> UserPage <| NutritionEncounterPage id) (s "nutrition-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| NutritionActivityPage id activity) (s "nutrition-activity" </> parseUuid </> parseNutritionActivity)
@@ -573,6 +583,11 @@ parseHIVActivity =
 parseIndividualEncounterType : Parser (IndividualEncounterType -> c) c
 parseIndividualEncounterType =
     custom "IndividualEncounterType" individualEncounterTypeFromString
+
+
+parseFamilyEncounterType : Parser (FamilyEncounterType -> c) c
+parseFamilyEncounterType =
+    custom "FamilyEncounterType" familyEncounterTypeFromString
 
 
 parseOrigin : Parser (Initiator -> c) c
