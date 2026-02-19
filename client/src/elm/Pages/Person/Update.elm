@@ -38,7 +38,7 @@ update currentDate site reverseGeoInfo selectedHealthCenter maybeVillageId isChw
                         |> Maybe.andThen RemoteData.toMaybe
 
                 newForm =
-                    Form.update (validatePerson site related operation (Just currentDate)) subMsg model.form
+                    Form.update (validatePerson site related operation (Just currentDate) isChw) subMsg model.form
 
                 ( appMsgs, extraMsgs ) =
                     case subMsg of
