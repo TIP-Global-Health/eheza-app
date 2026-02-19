@@ -1543,3 +1543,45 @@ hivTreatmentReviewEndpoint : ReadWriteEndPoint Error HIVTreatmentReviewId HIVTre
 hivTreatmentReviewEndpoint =
     swEndpoint "nodes/hiv_treatment_review" decodeHIVTreatmentReview
         |> withValueEncoder (object << encodeHIVTreatmentReview)
+
+
+familyEncounterParticipantEndpoint : ReadWriteEndPoint Error FamilyEncounterParticipantId FamilyEncounterParticipant FamilyEncounterParticipant (List PersonId)
+familyEncounterParticipantEndpoint =
+    swEndpoint "nodes/family_participant" decodeFamilyEncounterParticipant
+        |> withValueEncoder (object << encodeFamilyEncounterParticipant)
+        |> withParamsEncoder encodeFamilyEncounterParticipantParams
+
+
+encodeFamilyEncounterParticipantParams : List PersonId -> List ( String, String )
+encodeFamilyEncounterParticipantParams ids =
+    if List.isEmpty ids then
+        []
+
+    else
+        let
+            value =
+                List.map fromEntityUuid ids
+                    |> String.join ","
+        in
+        [ ( "people", value ) ]
+
+
+familyFamilyNutritionEncounterEndpoint : ReadWriteEndPoint Error FamilyNutritionEncounterId FamilyNutritionEncounter FamilyNutritionEncounter (List IndividualEncounterParticipantId)
+familyFamilyNutritionEncounterEndpoint =
+    swEndpoint "nodes/family_nutrition_encounter" decodeFamilyNutritionEncounter
+        |> withValueEncoder (object << encodeFamilyNutritionEncounter)
+        |> withParamsEncoder encodeFamilyEncounterParams
+
+
+encodeFamilyEncounterParams : List FamilyEncounterParticipantId -> List ( String, String )
+encodeFamilyEncounterParams ids =
+    if List.isEmpty ids then
+        []
+
+    else
+        let
+            value =
+                List.map fromEntityUuid ids
+                    |> String.join ","
+        in
+        [ ( "family_participants", value ) ]
