@@ -563,8 +563,23 @@ withDefault related =
 
 
 {-| Helper function to validate geographic location fields.
-For CHW registration, fields are nullable and will be auto-populated on submit.
-For regular registration, fields are required unless there's a related person.
+
+Parameters:
+
+  - locationDict: Dictionary mapping location IDs to location records with names
+  - unknownError: ValidationError to use when the location ID is not found
+  - relatedValue: Optional default value from a related person (used in non-CHW mode)
+  - isChw: Whether this is a CHW registration
+
+For CHW registration (isChw=True):
+
+  - Fields are nullable and will be auto-populated on submit from the CHW's village
+  - If a value is provided, it must be a valid location ID
+
+For regular registration (isChw=False):
+
+  - Fields are required unless there's a related person with the value
+
 -}
 validateGeoLocation :
     AssocList.Dict Int { a | name : String }
