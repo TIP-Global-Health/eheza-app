@@ -108,6 +108,9 @@ viewHeader initiator relation title =
                     -- Not in use, as at Acute Ilness patient is created
                     -- from a dedicated form.
                     PinCodePage
+
+                FamilyEncounterOrigin _ ->
+                    PinCodePage
     in
     div
         [ class "ui basic segment head" ]

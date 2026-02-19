@@ -417,6 +417,9 @@ viewOtherPerson language currentDate isChw initiator db relationMainId ( otherPe
                         -- Not in use, as at Acute Ilness patient is created
                         -- from a dedicated form.
                         emptyNode
+
+                    FamilyEncounterOrigin _ ->
+                        emptyNode
                 )
 
         content =
@@ -741,6 +744,15 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                     , expectedGender = ExpectMaleOrFemale
                     , birthDateSelectorFrom = today
                     , birthDateSelectorTo = today
+                    , title = Translate.People
+                    }
+
+                FamilyEncounterOrigin _ ->
+                    { goBackPage = PinCodePage
+                    , expectedAge = ExpectAdultOrChild
+                    , expectedGender = ExpectMaleOrFemale
+                    , birthDateSelectorFrom = Date.add Years -120 currentDate
+                    , birthDateSelectorTo = currentDate
                     , title = Translate.People
                     }
 

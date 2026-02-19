@@ -1,6 +1,7 @@
 module Backend.Person.Model exposing (..)
 
 import Backend.Entities exposing (AcuteIllnessEncounterId, HealthCenterId, PersonId, PrenatalEncounterId, SessionId)
+import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterType)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
 import Backend.Measurement.Model exposing (Gender)
 import Gizra.NominalDate exposing (NominalDate)
@@ -145,6 +146,7 @@ type Initiator
     | GroupEncounterOrigin SessionId
     | PrenatalNextStepsNewbornEnrolmentOrigin NominalDate PrenatalEncounterId
     | AcuteIllnessContactsTracingActivityOrigin AcuteIllnessEncounterId
+    | FamilyEncounterOrigin FamilyEncounterType
 
 
 type ParticipantDirectoryOperation

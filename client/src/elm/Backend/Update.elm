@@ -4522,6 +4522,20 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                         ( setContactsTracingFormStateMsg
                                         , []
                                         )
+
+                                    FamilyEncounterOrigin _ ->
+                                        let
+                                            nextPage =
+                                                case relation of
+                                                    Just id ->
+                                                        RelationshipPage id personId initiator
+
+                                                    Nothing ->
+                                                        PersonPage personId initiator
+                                        in
+                                        ( [ resetFormMsg, navigationMsg nextPage ]
+                                        , []
+                                        )
                             )
                         |> Maybe.withDefault ( [], [] )
             in
