@@ -60,10 +60,6 @@ class HedleyRestfulFamilyParticipant extends HedleyRestfulSyncBase {
 
     // Get the UUID of the Person.
     hedley_general_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_person.field_person_target_id", 'uuid_person');
-
-    // Get the UUID of the Newborn.
-    // Not every node may have it, so we do not defined it as required.
-    hedley_general_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_newborn.field_newborn_target_id", 'uuid_newborn');
   }
 
   /**

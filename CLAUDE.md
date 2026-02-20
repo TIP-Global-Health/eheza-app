@@ -105,6 +105,10 @@ Offline-first: the Elm `SyncManager` handles bidirectional sync with the backend
 
 Programs are toggled via `drush vset hedley_admin_feature_<name>_enabled 1|0`. Flags include: `ncda`, `stock_management`, `tuberculosis_management`, `group_education`, `report_to_whatsapp`, `hiv_management`, `gps_coordinates`, `family_nutrition`.
 
+### Super User Mode
+
+`ddev drush vset hedley_super_user_mode 1` — bypasses content unpublishing/deletion restrictions and allows resetting device pairing codes on already-paired devices. Disable with `ddev drush vset hedley_super_user_mode 0`.
+
 ## CI (CircleCI)
 
 Four parallel jobs defined in `.circleci/config.yml`:

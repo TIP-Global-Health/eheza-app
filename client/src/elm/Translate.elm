@@ -6844,7 +6844,11 @@ translationSet trans =
         FamilyEncounterLabel encounterType ->
             case encounterType of
                 Backend.FamilyEncounterParticipant.Model.NutritionEncounter ->
-                    translationSet NutritionEncounterLabel
+                    { english = "Family Nutrition Encounter"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
 
         FamilyEncounterSelectVisit encounterType ->
             case encounterType of

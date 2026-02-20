@@ -3,12 +3,19 @@ module Pages.FamilyNutrition.Participant.View exposing (view)
 import App.Model
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
-import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterParticipant, FamilyParticipantInitiator(..), emptyFamilyEncounterParticipant)
+import Backend.FamilyEncounterParticipant.Model
+    exposing
+        ( FamilyEncounterParticipant
+        , FamilyEncounterType(..)
+        , FamilyParticipantInitiator(..)
+        , emptyFamilyEncounterParticipant
+        )
 import Backend.FamilyEncounterParticipant.Utils exposing (isDailyEncounterActive)
 import Backend.FamilyNutritionEncounter.Model
 import Backend.FamilyNutritionEncounter.Utils exposing (getFamilyNutritionEncountersForParticipant)
 import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.Person.Model exposing (Initiator(..))
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -29,7 +36,7 @@ view language currentDate selectedHealthCenter id isChw initiator db =
     in
     div
         [ class "wrap wrap-alt-2 page-participant family nutrition" ]
-        [ viewHeader language isChw initiator
+        [ viewHeader language id initiator
         , div
             [ class "ui full segment" ]
             [ viewWebData language (viewActions language currentDate selectedHealthCenter id isChw db) identity sessions
@@ -37,13 +44,13 @@ view language currentDate selectedHealthCenter id isChw initiator db =
         ]
 
 
-viewHeader : Language -> Bool -> FamilyParticipantInitiator -> Html App.Model.Msg
-viewHeader language isChw initiator =
+viewHeader : Language -> PersonId -> FamilyParticipantInitiator -> Html App.Model.Msg
+viewHeader language id initiator =
     let
         goBackPage =
             case initiator of
                 InitiatorParticipantsPage ->
-                    FamilyEncounterParticipantsPage Backend.FamilyEncounterParticipant.Model.NutritionEncounter
+                    PersonPage id (FamilyEncounterOrigin NutritionEncounter)
 
                 InitiatorPatientRecord patientRecordInitiator personId ->
                     PatientRecordPage patientRecordInitiator personId

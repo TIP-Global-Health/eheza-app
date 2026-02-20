@@ -50,7 +50,7 @@ import Form.Field
 import Form.Input
 import GeoLocation.Model exposing (GeoInfo, ReverseGeoInfo)
 import GeoLocation.Utils exposing (..)
-import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
+import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffMonths, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -242,6 +242,33 @@ viewParticipantDetailsForm language currentDate isChw initiator db id person =
                         ]
                     ]
                 ]
+
+        ( allowAddingFamilyMember, action ) =
+            case initiator of
+                FamilyEncounterOrigin Backend.FamilyEncounterParticipant.Model.NutritionEncounter ->
+                    ( RemoteData.toMaybe otherPeople
+                        |> Maybe.map
+                            (\people ->
+                                Dict.size people < 5
+                            )
+                        |> Maybe.withDefault False
+                    , div
+                        [ class "register-actions" ]
+                        [ button
+                            [ class "ui primary button fluid"
+                            , onClick <|
+                                App.Model.SetActivePage <|
+                                    UserPage <|
+                                        FamilyNutritionParticipantPage
+                                            Backend.FamilyEncounterParticipant.Model.InitiatorParticipantsPage
+                                            id
+                            ]
+                            [ text <| translate language Translate.Continue ]
+                        ]
+                    )
+
+                _ ->
+                    ( True, emptyNode )
     in
     div [ class "registration-page view" ]
         [ h3
@@ -255,7 +282,8 @@ viewParticipantDetailsForm language currentDate isChw initiator db id person =
             [ text <| translate language Translate.FamilyMembers ++ ": " ]
         , viewWebData language viewOtherPeople identity otherPeople
         , p [] []
-        , addFamilyMember
+        , addFamilyMember |> showIf allowAddingFamilyMember
+        , action
         ]
 
 
@@ -752,10 +780,10 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                     case encounterType of
                         Backend.FamilyEncounterParticipant.Model.NutritionEncounter ->
                             { goBackPage = UserPage (FamilyEncounterParticipantsPage Backend.FamilyEncounterParticipant.Model.NutritionEncounter)
-                            , expectedAge = ExpectAdult
-                            , expectedGender = ExpectFemale
-                            , birthDateSelectorFrom = Date.add Years -120 today
-                            , birthDateSelectorTo = Date.add Years -13 today
+                            , expectedAge = ExpectChild
+                            , expectedGender = ExpectMaleOrFemale
+                            , birthDateSelectorFrom = Date.add Years -13 today |> Date.add Days 1
+                            , birthDateSelectorTo = today
                             , title = Translate.People
                             }
 

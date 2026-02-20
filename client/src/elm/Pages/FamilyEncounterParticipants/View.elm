@@ -175,7 +175,11 @@ viewParticipant language currentDate encounterType db id person =
         action =
             case encounterType of
                 NutritionEncounter ->
-                    [ onClick <| SetActivePage <| UserPage <| FamilyNutritionParticipantPage InitiatorParticipantsPage id ]
+                    [ onClick <|
+                        SetActivePage <|
+                            UserPage <|
+                                PersonPage id (FamilyEncounterOrigin NutritionEncounter)
+                    ]
 
         viewAction =
             div [ class "action" ]
