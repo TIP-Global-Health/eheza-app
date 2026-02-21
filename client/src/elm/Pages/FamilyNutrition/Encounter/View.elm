@@ -170,7 +170,7 @@ viewContent language currentDate site zscores features id isChw db model data =
                 |> translate language
                 |> text
     in
-    div [ class ("ui unstackable items participant-page " ++ thumbnailClass) ]
+    (div [ class ("ui unstackable items participant-page " ++ thumbnailClass) ]
         [ div [ class "item" ]
             [ div [ class "ui image" ]
                 [ thumbnailImage thumbnailClass displayPerson.avatarUrl displayPerson.name 222 222 ]
@@ -183,6 +183,9 @@ viewContent language currentDate site zscores features id isChw db model data =
                 ]
             ]
         ]
+        :: viewMainPageContent language currentDate site zscores features id isChw db data model
+    )
+        |> div [ class "ui unstackable items" ]
 
 
 viewFamilyMemberLinks : Model -> AssembledData -> Html Msg
@@ -246,133 +249,44 @@ viewMainPageContent :
     -> Model
     -> List (Html Msg)
 viewMainPageContent language currentDate site zscores features id isChw db data model =
-    []
+    let
+        pendingTabTitle =
+            translate language <| Translate.ActivitiesToComplete 0
 
+        completedTabTitle =
+            translate language <| Translate.ActivitiesCompleted 0
 
+        tabs =
+            div [ class "ui tabular menu" ]
+                [ tabItem pendingTabTitle (model.selectedTab == Pending) "pending" (SetSelectedTab Pending)
+                , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
+                ]
 
---     let
---         ( completedActivities, pendingActivities ) =
---             partitionActivitiesConsideringSkipped currentDate site zscores features isChw db data model.skippedActivities
---
---         pendingTabTitle =
---             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
---
---         completedTabTitle =
---             translate language <| Translate.ActivitiesCompleted <| List.length completedActivities
---
---         reportsTabTitle =
---             translate language Translate.ProgressReport
---
---         tabs =
---             div [ class "ui tabular menu" ]
---                 [ tabItem pendingTabTitle (model.selectedTab == Pending) "pending" (SetSelectedTab Pending)
---                 , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
---                 , tabItem reportsTabTitle (model.selectedTab == Reports) "reports" (SetSelectedTab Reports)
---                 ]
---
---         ( selectedActivities, emptySectionMessage ) =
---             case model.selectedTab of
---                 Pending ->
---                     ( pendingActivities, translate language Translate.NoActivitiesPending )
---
---                 Completed ->
---                     ( completedActivities, translate language Translate.NoActivitiesCompleted )
---
---                 Reports ->
---                     ( [], "" )
---
---         innerContent =
---             if model.selectedTab == Reports then
---                 div [ class "reports-wrapper" ]
---                     [ viewReportLink language
---                         Translate.ProgressReport
---                         (SetActivePage <|
---                             UserPage <|
---                                 FamilyNutritionProgressReportPage data.id
---                         )
---                     ]
---
---             else
---                 div [ class "full content" ]
---                     [ div [ class "wrap-cards" ]
---                         [ div [ class "ui four cards" ] <|
---                             if List.isEmpty selectedActivities then
---                                 [ span [] [ text emptySectionMessage ] ]
---
---                             else
---                                 List.map viewCard selectedActivities
---                         ]
---                     ]
---
---         viewCard activity =
---             let
---                 action =
---                     case activity of
---                         NCDA ->
---                             SetDialogState <| Just DialogSkipNCDA
---
---                         _ ->
---                             SetActivePage <| UserPage <| FamilyNutritionActivityPage id activity
---             in
---             activityCard language
---                 (Translate.FamilyNutritionActivityTitle activity)
---                 (getActivityIcon activity)
---                 action
---
---         allowEndEncounter =
---             allowEndingEncounter site isChw pendingActivities
---
---         content =
---             div [ class "ui full segment" ]
---                 [ innerContent
---                 , viewEndEncounterButton language allowEndEncounter (SetDialogState <| Just DialogEndEncounter)
---                 ]
---     in
---     [ tabs
---     , content
---     ]
---
---
--- partitionActivities :
---     NominalDate
---     -> Site
---     -> ZScore.Model.Model
---     -> EverySet SiteFeature
---     -> Bool
---     -> ModelIndexedDb
---     -> AssembledData
---     -> ( List FamilyNutritionActivity, List FamilyNutritionActivity )
--- partitionActivities currentDate site zscores features isChw db assembled =
---     partitionActivitiesConsideringSkipped currentDate site zscores features isChw db assembled EverySet.empty
---
---
--- partitionActivitiesConsideringSkipped :
---     NominalDate
---     -> Site
---     -> ZScore.Model.Model
---     -> EverySet SiteFeature
---     -> Bool
---     -> ModelIndexedDb
---     -> AssembledData
---     -> EverySet FamilyNutritionActivity
---     -> ( List FamilyNutritionActivity, List FamilyNutritionActivity )
--- partitionActivitiesConsideringSkipped currentDate site zscores features isChw db assembled skipped =
---     List.filter (\activity -> EverySet.member activity skipped |> not) allActivities
---         |> List.filter (expectActivity currentDate site zscores features isChw assembled db)
---         |> List.partition (activityCompleted currentDate site zscores features isChw assembled db)
---
---
--- allowEndingEncounter : Site -> Bool -> List FamilyNutritionActivity -> Bool
--- allowEndingEncounter site isChw pendingActivities =
---     let
---         mandatoryActivities =
---             allMandatoryActivities site isChw
---     in
---     List.all
---         (\activity ->
---             -- Not an activity that is required to make a decision
---             -- on next steps, and not the Next Steps activity itself.
---             not (List.member activity mandatoryActivities)
---                 && (activity /= NextSteps)
---         )
---         pendingActivities
+        emptySectionMessage =
+            case model.selectedTab of
+                Pending ->
+                    translate language Translate.NoActivitiesPending
+
+                Completed ->
+                    translate language Translate.NoActivitiesCompleted
+
+                Reports ->
+                    ""
+
+        innerContent =
+            div [ class "full content" ]
+                [ div [ class "wrap-cards" ]
+                    [ div [ class "ui four cards" ]
+                        [ span [] [ text emptySectionMessage ] ]
+                    ]
+                ]
+
+        content =
+            div [ class "ui full segment" ]
+                [ innerContent
+                , viewEndEncounterButton language True (SetDialogState <| Just DialogEndEncounter)
+                ]
+    in
+    [ tabs
+    , content
+    ]
