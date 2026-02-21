@@ -98,7 +98,12 @@ viewHeader : Language -> Initiator -> String -> Html App.Model.Msg
 viewHeader language initiator name =
     let
         goBackPage =
-            UserPage (PersonsPage Nothing initiator)
+            case initiator of
+                FamilyEncounterOrigin Backend.FamilyEncounterParticipant.Model.NutritionEncounter ->
+                    UserPage (FamilyEncounterParticipantsPage Backend.FamilyEncounterParticipant.Model.NutritionEncounter)
+
+                _ ->
+                    UserPage (PersonsPage Nothing initiator)
     in
     div
         [ class "ui basic segment head" ]

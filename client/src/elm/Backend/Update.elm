@@ -5110,10 +5110,9 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                 appMsgs =
                     RemoteData.map
                         (\( familyNutritionEncounterId, _ ) ->
-                            [-- @todo:
-                             -- App.Model.SetActivePage <|
-                             --     UserPage <|
-                             --         Pages.Page.FamilyNutritionEncounterPage familyNutritionEncounterId
+                            [ App.Model.SetActivePage <|
+                                UserPage <|
+                                    Pages.Page.FamilyNutritionEncounterPage familyNutritionEncounterId
                             ]
                         )
                         data
