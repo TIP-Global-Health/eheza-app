@@ -13,6 +13,7 @@ import Pages.Page exposing (Page)
 type alias Model =
     { selectedTab : Tab
     , dialogState : Maybe DialogType
+    , selectedFamilyMember : FamilyMemberPage
     }
 
 
@@ -20,6 +21,7 @@ emptyModel : Model
 emptyModel =
     { selectedTab = Pending
     , dialogState = Nothing
+    , selectedFamilyMember = MotherPage
     }
 
 
@@ -28,6 +30,12 @@ type Msg
     | SetActivePage Page
     | SetSelectedTab Tab
     | SetDialogState (Maybe DialogType)
+    | SetSelectedFamilyMember FamilyMemberPage
+
+
+type FamilyMemberPage
+    = MotherPage
+    | ChildPage PersonId
 
 
 type Tab
@@ -47,4 +55,5 @@ type alias AssembledData =
     , person : Person
     , measurements : FamilyNutritionMeasurements
     , previousMeasurementsWithDates : List ( NominalDate, ( FamilyNutritionEncounterId, FamilyNutritionMeasurements ) )
+    , children : List ( PersonId, Person )
     }

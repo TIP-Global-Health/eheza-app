@@ -6,6 +6,7 @@ import Backend.FamilyNutritionEncounter.Utils exposing (getFamilyNutritionEncoun
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.FamilyNutrition.Encounter.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -44,6 +45,26 @@ generateAssembledData id db =
             --     |> Maybe.map (\encounter_ -> generatePreviousMeasurements (Just id) encounter_.participant db)
             --     |> Maybe.withDefault []
             []
+
+        children =
+            participant
+                |> RemoteData.andThen
+                    (\participant_ ->
+                        Dict.get participant_.person db.relationshipsByPerson
+                            |> Maybe.andThen RemoteData.toMaybe
+                            |> Maybe.map
+                                (Dict.values
+                                    >> List.filter (.relatedBy >> (==) MyChild)
+                                    >> List.filterMap
+                                        (\rel ->
+                                            Dict.get rel.relatedTo db.people
+                                                |> Maybe.andThen RemoteData.toMaybe
+                                                |> Maybe.map (\child -> ( rel.relatedTo, child ))
+                                        )
+                                )
+                            |> Maybe.withDefault []
+                            |> Success
+                    )
     in
     RemoteData.map AssembledData (Success id)
         |> RemoteData.andMap encounter
@@ -51,6 +72,7 @@ generateAssembledData id db =
         |> RemoteData.andMap person
         |> RemoteData.andMap measurements
         |> RemoteData.andMap (Success previousMeasurementsWithDates)
+        |> RemoteData.andMap children
 
 
 

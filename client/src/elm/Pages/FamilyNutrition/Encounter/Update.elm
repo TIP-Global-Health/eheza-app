@@ -34,3 +34,6 @@ update msg model =
 
         SetDialogState state ->
             ( { model | dialogState = state }, Cmd.none, [] )
+
+        SetSelectedFamilyMember member ->
+            ( { model | selectedFamilyMember = member }, Cmd.none, [] )

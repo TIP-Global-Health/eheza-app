@@ -111,10 +111,71 @@ viewContent :
     -> AssembledData
     -> Html Msg
 viewContent language currentDate site zscores features id isChw db model data =
-    ((viewPersonDetails language currentDate data.person Nothing |> div [ class "item" ])
+    let
+        displayPerson =
+            case model.selectedFamilyMember of
+                MotherPage ->
+                    data.person
+
+                ChildPage childId ->
+                    List.filter (\( cid, _ ) -> cid == childId) data.children
+                        |> List.head
+                        |> Maybe.map Tuple.second
+                        |> Maybe.withDefault data.person
+    in
+    ((viewPersonDetails language currentDate displayPerson Nothing |> div [ class "item" ])
+        :: viewFamilyMemberLinks model data
         :: viewMainPageContent language currentDate site zscores features id isChw db data model
     )
         |> div [ class "ui unstackable items" ]
+
+
+viewFamilyMemberLinks : Model -> AssembledData -> Html Msg
+viewFamilyMemberLinks model data =
+    let
+        motherMarkup =
+            let
+                isActive =
+                    model.selectedFamilyMember == MotherPage
+
+                attributes =
+                    if isActive then
+                        [ class "active" ]
+
+                    else
+                        [ onClick <| SetSelectedFamilyMember MotherPage ]
+            in
+            li attributes
+                [ span [ class "icon" ]
+                    [ span [ class "icon-mother" ] []
+                    ]
+                ]
+
+        childrenMarkup =
+            List.indexedMap viewChildMarkup data.children
+
+        viewChildMarkup index ( childId, _ ) =
+            let
+                isActive =
+                    model.selectedFamilyMember == ChildPage childId
+
+                attributes =
+                    if isActive then
+                        [ class "active" ]
+
+                    else
+                        [ onClick <| SetSelectedFamilyMember (ChildPage childId) ]
+            in
+            li attributes
+                [ span [ class "icon" ]
+                    [ span [ class "icon-baby" ] []
+                    , span [ class "count" ]
+                        [ text <| String.fromInt (index + 1) ]
+                    ]
+                ]
+    in
+    ul [ class "links-body" ]
+        (motherMarkup :: childrenMarkup)
 
 
 viewMainPageContent :
