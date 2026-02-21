@@ -31,7 +31,7 @@ abstract class HedleyRestfulFamilyNutritionActivityBase extends HedleyRestfulAct
     $query = parent::alterQueryForViewWithDbSelect($query);
 
     hedley_general_join_field_to_query($query, 'node', 'field_family_nutrition_encounter', FALSE);
-    // Get the UUID of the Prenatal encounter.
+    // Get the UUID of the Family Nutrition encounter.
     hedley_general_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_family_nutrition_encounter.field_family_nutrition_encounter_target_id", 'uuid_family_nutrition_encounter');
 
     return $query;
