@@ -3,6 +3,8 @@ module Pages.FamilyNutrition.Encounter.View exposing (view)
 import Backend.Entities exposing (..)
 import Backend.FamilyEncounterParticipant.Model exposing (FamilyParticipantInitiator(..))
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.Person.Model exposing (Person)
+import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -11,10 +13,11 @@ import Html.Events exposing (..)
 import Pages.FamilyNutrition.Encounter.Model exposing (..)
 import Pages.FamilyNutrition.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (viewConfirmationDialog, viewEndEncounterButton, viewPersonDetails, viewReportLink, viewSkipNCDADialog)
+import Pages.Utils exposing (isAboveAgeOf2Years, viewConfirmationDialog, viewEndEncounterButton, viewReportLink, viewSkipNCDADialog)
 import SyncManager.Model exposing (Site, SiteFeature)
-import Translate exposing (Language, translate)
-import Utils.Html exposing (activityCard, tabItem, viewModal)
+import Translate exposing (Language, TranslationId, translate)
+import Utils.Html exposing (activityCard, tabItem, thumbnailImage, viewModal)
+import Utils.NominalDate exposing (renderAgeMonthsDays, renderAgeYearsMonths, renderDate)
 import Utils.WebData exposing (viewWebData)
 import ZScore.Model
 
@@ -122,12 +125,64 @@ viewContent language currentDate site zscores features id isChw db model data =
                         |> List.head
                         |> Maybe.map Tuple.second
                         |> Maybe.withDefault data.person
+
+        isAdult =
+            isPersonAnAdult currentDate displayPerson
+                |> Maybe.withDefault True
+
+        thumbnailClass =
+            if isAdult then
+                "mother"
+
+            else
+                "child"
+
+        dateOfBirth =
+            displayPerson.birthDate
+                |> Maybe.map (renderDate language)
+                |> Maybe.withDefault (translate language Translate.NotAvailable)
+                |> Translate.ReportDOB
+                |> translate language
+                |> text
+
+        age =
+            displayPerson.birthDate
+                |> Maybe.map
+                    (\birthDate ->
+                        let
+                            renderAgeFunc =
+                                if isAboveAgeOf2Years currentDate displayPerson then
+                                    renderAgeYearsMonths
+
+                                else
+                                    renderAgeMonthsDays
+                        in
+                        renderAgeFunc language birthDate currentDate
+                    )
+                |> Maybe.withDefault (translate language Translate.NotAvailable)
+                |> Translate.ReportAge
+                |> translate language
+                |> text
+
+        gender =
+            displayPerson.gender
+                |> Translate.Gender
+                |> translate language
+                |> text
     in
-    ((viewPersonDetails language currentDate displayPerson Nothing |> div [ class "item" ])
-        :: viewFamilyMemberLinks model data
-        :: viewMainPageContent language currentDate site zscores features id isChw db data model
-    )
-        |> div [ class "ui unstackable items" ]
+    div [ class ("ui unstackable items participant-page " ++ thumbnailClass) ]
+        [ div [ class "item" ]
+            [ div [ class "ui image" ]
+                [ thumbnailImage thumbnailClass displayPerson.avatarUrl displayPerson.name 222 222 ]
+            , div [ class "content" ]
+                [ h2 [ class "ui header" ]
+                    [ text displayPerson.name ]
+                , p []
+                    [ dateOfBirth, br [] [], age, br [] [], gender ]
+                , viewFamilyMemberLinks model data
+                ]
+            ]
+        ]
 
 
 viewFamilyMemberLinks : Model -> AssembledData -> Html Msg
