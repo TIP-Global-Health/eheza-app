@@ -33,6 +33,7 @@ import Backend.Person.Utils
         , isAdult
         , isPersonAnAdult
         , maritalStatusToString
+        , maxChildrenAtFamilyEncounter
         , modeOfDeliveryToString
         , ubudeheToInt
         )
@@ -254,7 +255,7 @@ viewParticipantDetailsForm language currentDate isChw initiator db id person =
                     ( RemoteData.toMaybe otherPeople
                         |> Maybe.map
                             (\people ->
-                                Dict.size people < 5
+                                Dict.size people < maxChildrenAtFamilyEncounter
                             )
                         |> Maybe.withDefault False
                     , div

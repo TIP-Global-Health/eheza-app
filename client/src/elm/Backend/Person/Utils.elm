@@ -266,6 +266,11 @@ graduatingAgeInMonth =
     26
 
 
+maxChildrenAtFamilyEncounter : Int
+maxChildrenAtFamilyEncounter =
+    5
+
+
 getHealthCenterName : Maybe HealthCenterId -> ModelIndexedDb -> Maybe String
 getHealthCenterName healthCenterId db =
     Maybe.map2
