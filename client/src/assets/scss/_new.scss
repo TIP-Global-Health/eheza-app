@@ -1162,6 +1162,13 @@ div.page-activity {
   }
 }
 
+div.page-encounter.family-nutrition {
+
+  .ui.unstackable.items.participant-page .item .content {
+    padding-top: 0 !important;
+  }
+}
+
 div.page-encounter.nutrition,
 div.page-encounter.prenatal,
 div.page-encounter.acute-illness,
