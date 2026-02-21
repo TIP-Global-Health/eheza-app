@@ -480,6 +480,16 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeAcuteIllnessVitals
                             BackendAuthorityAcuteIllnessVitals
 
+                    "aheza_child" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeAhezaChild
+                            BackendAuthorityAhezaChild
+
+                    "aheza_mother" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeAhezaMother
+                            BackendAuthorityAhezaMother
+
                     "appointment_confirmation" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeAppointmentConfirmation
@@ -609,6 +619,16 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.FamilyNutritionEncounter.Decoder.decodeFamilyNutritionEncounter
                             BackendAuthorityFamilyNutritionEncounter
+
+                    "family_nutrition_muac_child" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeFamilyNutritionMuacChild
+                            BackendAuthorityFamilyNutritionMuacChild
+
+                    "family_nutrition_muac_mother" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeFamilyNutritionMuacMother
+                            BackendAuthorityFamilyNutritionMuacMother
 
                     "family_planning" ->
                         doDecode

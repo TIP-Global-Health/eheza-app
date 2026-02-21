@@ -588,6 +588,8 @@ type Revision
     | AcuteIllnessEncounterRevision AcuteIllnessEncounterId AcuteIllnessEncounter
     | AcuteIllnessTraceContactRevision AcuteIllnessTraceContactId AcuteIllnessTraceContact
     | AcuteIllnessVitalsRevision AcuteIllnessVitalsId AcuteIllnessVitals
+    | AhezaChildRevision AhezaChildId AhezaChild
+    | AhezaMotherRevision AhezaMotherId AhezaMother
     | AppointmentConfirmationRevision PrenatalAppointmentConfirmationId PrenatalAppointmentConfirmation
     | AttendanceRevision AttendanceId Attendance
     | BreastExamRevision BreastExamId BreastExam
@@ -619,6 +621,8 @@ type Revision
     | ExposureRevision ExposureId Exposure
     | FamilyEncounterParticipantRevision FamilyEncounterParticipantId FamilyEncounterParticipant
     | FamilyNutritionEncounterRevision FamilyNutritionEncounterId FamilyNutritionEncounter
+    | FamilyNutritionMuacChildRevision FamilyNutritionMuacChildId FamilyNutritionMuacChild
+    | FamilyNutritionMuacMotherRevision FamilyNutritionMuacMotherId FamilyNutritionMuacMother
     | FamilyPlanningRevision FamilyPlanningId FamilyPlanning
     | FollowUpRevision FollowUpId FollowUp
     | GroupHealthEducationRevision GroupHealthEducationId GroupHealthEducation

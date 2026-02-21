@@ -5325,6 +5325,31 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        AhezaChildRevision uuid data ->
+            ( mapFamilyNutritionMeasurements
+                data.encounterId
+                (\measurements -> { measurements | ahezaChild = Dict.insert data.participantId ( uuid, data ) measurements.ahezaChild })
+                model
+            , recalc
+            )
+
+        AhezaMotherRevision uuid data ->
+            ( mapFamilyNutritionMeasurements
+                data.encounterId
+                (\measurements ->
+                    { measurements
+                        | ahezaMother =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
+                model
+            , recalc
+            )
+
         AppointmentConfirmationRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
@@ -5785,6 +5810,31 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 | familyNutritionEncounters = familyNutritionEncounters
                 , familyNutritionEncountersByParticipant = familyNutritionEncountersByParticipant
               }
+            , recalc
+            )
+
+        FamilyNutritionMuacChildRevision uuid data ->
+            ( mapFamilyNutritionMeasurements
+                data.encounterId
+                (\measurements -> { measurements | muacChild = Dict.insert data.participantId ( uuid, data ) measurements.muacChild })
+                model
+            , recalc
+            )
+
+        FamilyNutritionMuacMotherRevision uuid data ->
+            ( mapFamilyNutritionMeasurements
+                data.encounterId
+                (\measurements ->
+                    { measurements
+                        | muacMother =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
+                model
             , recalc
             )
 

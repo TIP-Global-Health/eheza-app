@@ -9,6 +9,7 @@ import Backend.Measurement.Model
         ( AcuteIllnessMeasurements
         , ChildMeasurementList
         , ChildScoreboardMeasurements
+        , FamilyNutritionMeasurements
         , FollowUpMeasurements
         , HIVMeasurements
         , HomeVisitMeasurements
@@ -170,6 +171,16 @@ mapHIVMeasurements id func model =
     case id of
         Just encounterId ->
             { model | hivMeasurements = Dict.update encounterId (Maybe.map (RemoteData.map func)) model.hivMeasurements }
+
+        Nothing ->
+            model
+
+
+mapFamilyNutritionMeasurements : Maybe FamilyNutritionEncounterId -> (FamilyNutritionMeasurements -> FamilyNutritionMeasurements) -> ModelIndexedDb -> ModelIndexedDb
+mapFamilyNutritionMeasurements id func model =
+    case id of
+        Just encounterId ->
+            { model | familyNutritionMeasurements = Dict.update encounterId (Maybe.map (RemoteData.map func)) model.familyNutritionMeasurements }
 
         Nothing ->
             model

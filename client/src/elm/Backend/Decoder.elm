@@ -70,6 +70,12 @@ decodeRevision =
                     "acute_illness_vitals" ->
                         decodeWithUuid AcuteIllnessVitalsRevision decodeAcuteIllnessVitals
 
+                    "aheza_child" ->
+                        decodeWithUuid AhezaChildRevision decodeAhezaChild
+
+                    "aheza_mother" ->
+                        decodeWithUuid AhezaMotherRevision decodeAhezaMother
+
                     "appointment_confirmation" ->
                         decodeWithUuid AppointmentConfirmationRevision decodeAppointmentConfirmation
 
@@ -156,6 +162,12 @@ decodeRevision =
 
                     "family_nutrition_encounter" ->
                         decodeWithUuid FamilyNutritionEncounterRevision decodeFamilyNutritionEncounter
+
+                    "family_nutrition_muac_child" ->
+                        decodeWithUuid FamilyNutritionMuacChildRevision decodeFamilyNutritionMuacChild
+
+                    "family_nutrition_muac_mother" ->
+                        decodeWithUuid FamilyNutritionMuacMotherRevision decodeFamilyNutritionMuacMother
 
                     "family_planning" ->
                         decodeWithUuid FamilyPlanningRevision decodeFamilyPlanning

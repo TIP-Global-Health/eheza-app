@@ -1745,3 +1745,35 @@ type alias FamilyNutritionEncounterId =
 
 type FamilyNutritionEncounterUuidType
     = FamilyNutritionEncounterUuidType
+
+
+type alias AhezaMotherId =
+    EntityUuid AhezaMotherUuidType
+
+
+type AhezaMotherUuidType
+    = AhezaMotherUuidType
+
+
+type alias AhezaChildId =
+    EntityUuid AhezaChildUuidType
+
+
+type AhezaChildUuidType
+    = AhezaChildUuidType
+
+
+type alias FamilyNutritionMuacMotherId =
+    EntityUuid FamilyNutritionMuacMotherUuidType
+
+
+type FamilyNutritionMuacMotherUuidType
+    = FamilyNutritionMuacMotherUuidType
+
+
+type alias FamilyNutritionMuacChildId =
+    EntityUuid FamilyNutritionMuacChildUuidType
+
+
+type FamilyNutritionMuacChildUuidType
+    = FamilyNutritionMuacChildUuidType
