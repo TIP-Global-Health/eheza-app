@@ -2,6 +2,7 @@ module Pages.FamilyNutrition.Encounter.Utils exposing (..)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
+import Backend.FamilyNutritionActivity.Model exposing (FamilyNutritionActivity(..))
 import Backend.FamilyNutritionEncounter.Utils exposing (getFamilyNutritionEncountersForParticipant)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils
@@ -73,6 +74,22 @@ generateAssembledData id db =
         |> RemoteData.andMap measurements
         |> RemoteData.andMap (Success previousMeasurementsWithDates)
         |> RemoteData.andMap children
+
+
+activityCompleted : FamilyMemberPage -> FamilyNutritionMeasurements -> FamilyNutritionActivity -> Bool
+activityCompleted familyMember measurements activity =
+    case ( familyMember, activity ) of
+        ( MotherPage, Aheza ) ->
+            measurements.ahezaMother /= Nothing
+
+        ( MotherPage, FamilyNutritionMuac ) ->
+            measurements.muacMother /= Nothing
+
+        ( ChildPage childId, Aheza ) ->
+            Dict.member childId measurements.ahezaChild
+
+        ( ChildPage childId, FamilyNutritionMuac ) ->
+            Dict.member childId measurements.muacChild
 
 
 

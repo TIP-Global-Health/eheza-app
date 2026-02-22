@@ -30,16 +30,32 @@ emptyFamilyNutritionEncounter participant startDate shard =
 to peform the updates indicated by the `Msg` type below.
 -}
 type alias Model =
-    { updateFamilyNutritionEncounter : WebData ()
+    { saveAhezaChild : WebData ()
+    , saveAhezaMother : WebData ()
+    , saveMuacChild : WebData ()
+    , saveMuacMother : WebData ()
+    , updateFamilyNutritionEncounter : WebData ()
     }
 
 
 emptyModel : Model
 emptyModel =
-    { updateFamilyNutritionEncounter = NotAsked
+    { saveAhezaChild = NotAsked
+    , saveAhezaMother = NotAsked
+    , saveMuacChild = NotAsked
+    , saveMuacMother = NotAsked
+    , updateFamilyNutritionEncounter = NotAsked
     }
 
 
 type Msg
     = CloseFamilyNutritionEncounter
+    | HandleSavedAhezaChild (WebData ())
+    | HandleSavedAhezaMother (WebData ())
+    | HandleSavedMuacChild (WebData ())
+    | HandleSavedMuacMother (WebData ())
     | HandleUpdatedFamilyNutritionEncounter (WebData ())
+    | SaveAhezaChild PersonId (Maybe AhezaChildId) Float
+    | SaveAhezaMother PersonId (Maybe AhezaMotherId) Float
+    | SaveMuacChild PersonId (Maybe FamilyNutritionMuacChildId) MuacInCm
+    | SaveMuacMother PersonId (Maybe FamilyNutritionMuacMotherId) MuacInCm

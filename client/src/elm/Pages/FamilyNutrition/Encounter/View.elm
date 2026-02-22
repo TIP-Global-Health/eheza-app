@@ -1,7 +1,12 @@
 module Pages.FamilyNutrition.Encounter.View exposing (view)
 
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.FamilyEncounterParticipant.Model exposing (FamilyParticipantInitiator(..))
+import Backend.FamilyNutritionActivity.Model exposing (FamilyNutritionActivity(..))
+import Backend.FamilyNutritionActivity.Utils exposing (allActivities, getActivityIcon)
+import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
@@ -10,10 +15,12 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Measurement.Utils exposing (ahezaFormWithDefault, getInputConstraintsMuac, muacFormWithDefault, withinConstraints)
+import Measurement.View
 import Pages.FamilyNutrition.Encounter.Model exposing (..)
-import Pages.FamilyNutrition.Encounter.Utils exposing (generateAssembledData)
+import Pages.FamilyNutrition.Encounter.Utils exposing (activityCompleted, generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (isAboveAgeOf2Years, viewConfirmationDialog, viewEndEncounterButton, viewReportLink, viewSkipNCDADialog)
+import Pages.Utils exposing (isAboveAgeOf2Years, maybeToBoolTask, resolveTasksCompletedFromTotal, viewConfirmationDialog, viewEndEncounterButton, viewLabel, viewMeasurementInput, viewReportLink, viewSaveAction, viewSkipNCDADialog)
 import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (activityCard, tabItem, thumbnailImage, viewModal)
@@ -250,11 +257,16 @@ viewMainPageContent :
     -> List (Html Msg)
 viewMainPageContent language currentDate site zscores features id isChw db data model =
     let
+        ( completedActivities, pendingActivities ) =
+            List.partition
+                (activityCompleted model.selectedFamilyMember data.measurements)
+                allActivities
+
         pendingTabTitle =
-            translate language <| Translate.ActivitiesToComplete 0
+            translate language <| Translate.ActivitiesToComplete (List.length pendingActivities)
 
         completedTabTitle =
-            translate language <| Translate.ActivitiesCompleted 0
+            translate language <| Translate.ActivitiesCompleted (List.length completedActivities)
 
         tabs =
             div [ class "ui tabular menu" ]
@@ -262,31 +274,212 @@ viewMainPageContent language currentDate site zscores features id isChw db data 
                 , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
                 ]
 
-        emptySectionMessage =
-            case model.selectedTab of
-                Pending ->
-                    translate language Translate.NoActivitiesPending
+        viewCard activity =
+            activityCard language
+                (Translate.FamilyNutritionActivityTitle activity)
+                (getActivityIcon activity)
+                (SetSelectedActivity (Just activity))
 
+        displayedActivities =
+            case model.selectedTab of
                 Completed ->
-                    translate language Translate.NoActivitiesCompleted
+                    completedActivities
+
+                Pending ->
+                    pendingActivities
 
                 Reports ->
-                    ""
+                    []
+
+        cards =
+            if List.isEmpty displayedActivities then
+                [ span []
+                    [ text <|
+                        case model.selectedTab of
+                            Completed ->
+                                translate language Translate.NoActivitiesCompleted
+
+                            Pending ->
+                                translate language Translate.NoActivitiesPending
+
+                            Reports ->
+                                ""
+                    ]
+                ]
+
+            else
+                List.map viewCard displayedActivities
+
+        activityForm =
+            Maybe.map (viewActivityForm language currentDate site data model) model.selectedActivity
+                |> Maybe.withDefault []
 
         innerContent =
             div [ class "full content" ]
                 [ div [ class "wrap-cards" ]
                     [ div [ class "ui four cards" ]
-                        [ span [] [ text emptySectionMessage ] ]
+                        cards
                     ]
                 ]
 
+        endEncounterButton =
+            if model.selectedActivity == Nothing then
+                [ viewEndEncounterButton language True (SetDialogState <| Just DialogEndEncounter) ]
+
+            else
+                []
+
         content =
             div [ class "ui full segment" ]
-                [ innerContent
-                , viewEndEncounterButton language True (SetDialogState <| Just DialogEndEncounter)
-                ]
+                (innerContent
+                    :: activityForm
+                    ++ endEncounterButton
+                )
     in
     [ tabs
     , content
+    ]
+
+
+viewActivityForm :
+    Language
+    -> NominalDate
+    -> Site
+    -> AssembledData
+    -> Model
+    -> FamilyNutritionActivity
+    -> List (Html Msg)
+viewActivityForm language currentDate site data model activity =
+    case activity of
+        Aheza ->
+            viewAhezaForm language data model
+
+        FamilyNutritionMuac ->
+            viewMuacForm language currentDate site data model
+
+
+viewAhezaForm :
+    Language
+    -> AssembledData
+    -> Model
+    -> List (Html Msg)
+viewAhezaForm language data model =
+    let
+        existingValue =
+            case model.selectedFamilyMember of
+                MotherPage ->
+                    getMeasurementValueFunc data.measurements.ahezaMother
+
+                ChildPage childId ->
+                    Dict.get childId data.measurements.ahezaChild
+                        |> Maybe.map (Tuple.second >> .value)
+
+        form =
+            ahezaFormWithDefault model.ahezaData.form existingValue
+
+        currentValue =
+            form.aheza
+
+        disabled =
+            currentValue == Nothing
+
+        saveMsg =
+            case model.selectedFamilyMember of
+                MotherPage ->
+                    SaveAhezaMother data.participant.person data.measurements.ahezaMother
+
+                ChildPage childId ->
+                    SaveAhezaChild childId (Dict.get childId data.measurements.ahezaChild)
+    in
+    [ div [ class "full content" ]
+        [ div [ class "ui form aheza" ]
+            [ viewLabel language <| Translate.FamilyNutritionActivityTitle Aheza
+            , div [ class "ui grid" ]
+                [ div [ class "eleven wide column" ]
+                    [ viewMeasurementInput
+                        language
+                        currentValue
+                        SetAheza
+                        "aheza"
+                        Translate.Grams
+                    ]
+                ]
+            ]
+        ]
+    , viewSaveAction language
+        saveMsg
+        disabled
+    ]
+
+
+viewMuacForm :
+    Language
+    -> NominalDate
+    -> Site
+    -> AssembledData
+    -> Model
+    -> List (Html Msg)
+viewMuacForm language currentDate site data model =
+    let
+        existingValue =
+            case model.selectedFamilyMember of
+                MotherPage ->
+                    getMeasurementValueFunc data.measurements.muacMother
+
+                ChildPage childId ->
+                    Dict.get childId data.measurements.muacChild
+                        |> Maybe.map (Tuple.second >> .value)
+
+        displayPerson =
+            case model.selectedFamilyMember of
+                MotherPage ->
+                    data.person
+
+                ChildPage childId ->
+                    List.filter (\( cid, _ ) -> cid == childId) data.children
+                        |> List.head
+                        |> Maybe.map Tuple.second
+                        |> Maybe.withDefault data.person
+
+        form =
+            muacFormWithDefault model.muacData.form existingValue
+
+        ( inputs, tasks ) =
+            Measurement.View.muacFormInputsAndTasks language currentDate site displayPerson Nothing SetMuac form
+
+        ( tasksCompleted, tasksTotal ) =
+            resolveTasksCompletedFromTotal tasks
+
+        constraints =
+            getInputConstraintsMuac site
+
+        currentValue =
+            case site of
+                SyncManager.Model.SiteBurundi ->
+                    Maybe.map ((*) 10) form.muac
+
+                _ ->
+                    form.muac
+
+        disabled =
+            (tasksCompleted /= tasksTotal)
+                || (Maybe.map (withinConstraints constraints >> not) currentValue
+                        |> Maybe.withDefault True
+                   )
+
+        saveMsg =
+            case model.selectedFamilyMember of
+                MotherPage ->
+                    SaveMuacMother data.participant.person data.measurements.muacMother
+
+                ChildPage childId ->
+                    SaveMuacChild childId (Dict.get childId data.measurements.muacChild)
+    in
+    [ div [ class "full content" ]
+        [ div [ class "ui form muac" ]
+            inputs
+        ]
+    , viewSaveAction language
+        saveMsg
+        disabled
     ]

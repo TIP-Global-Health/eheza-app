@@ -22,6 +22,7 @@ import Backend.Counseling.Model exposing (CounselingTopic)
 import Backend.EducationSession.Model exposing (EducationTopic(..))
 import Backend.Entities exposing (..)
 import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterType(..))
+import Backend.FamilyNutritionActivity.Model exposing (FamilyNutritionActivity(..))
 import Backend.HIVActivity.Model exposing (HIVActivity)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)
 import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), IndividualEncounterType(..), PregnancyOutcome(..))
@@ -690,6 +691,7 @@ type TranslationId
     | FamilyHistoryOfPreeclampsia
     | FamilyInformation
     | FamilyMembers
+    | FamilyNutritionActivityTitle FamilyNutritionActivity
     | FamilyPlanningCurentlyQuestion
     | FamilyPlanningInFutureQuestion
     | FamilyPlanningSignLabel FamilyPlanningSign
@@ -6884,6 +6886,18 @@ translationSet trans =
             , kirundi = Just "Abagize umuryango"
             , somali = Just "Xubnaha Qoyska"
             }
+
+        FamilyNutritionActivityTitle activity ->
+            case activity of
+                Aheza ->
+                    { english = "Aheza"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                FamilyNutritionMuac ->
+                    translationSet MUAC
 
         FamilyPlanningCurentlyQuestion ->
             { english = "Which, if any, of the following methods do you use"

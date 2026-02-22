@@ -2,16 +2,21 @@ module Pages.FamilyNutrition.Encounter.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterParticipant)
+import Backend.FamilyNutritionActivity.Model exposing (FamilyNutritionActivity)
 import Backend.FamilyNutritionEncounter.Model exposing (..)
-import Backend.Measurement.Model exposing (FamilyNutritionMeasurements)
+import Backend.Measurement.Model exposing (..)
 import Backend.Person.Model exposing (Person)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
+import Measurement.Model exposing (AhezaForm, MuacForm, emptyAhezaForm, emptyMuacForm)
 import Pages.Page exposing (Page)
 
 
 type alias Model =
-    { selectedTab : Tab
+    { ahezaData : AhezaData
+    , muacData : MuacData
+    , selectedActivity : Maybe FamilyNutritionActivity
+    , selectedTab : Tab
     , dialogState : Maybe DialogType
     , selectedFamilyMember : FamilyMemberPage
     }
@@ -19,7 +24,10 @@ type alias Model =
 
 emptyModel : Model
 emptyModel =
-    { selectedTab = Pending
+    { ahezaData = emptyAhezaData
+    , muacData = emptyMuacData
+    , selectedActivity = Nothing
+    , selectedTab = Pending
     , dialogState = Nothing
     , selectedFamilyMember = MotherPage
     }
@@ -27,10 +35,17 @@ emptyModel =
 
 type Msg
     = CloseEncounter FamilyNutritionEncounterId
+    | SaveAhezaChild PersonId (Maybe ( AhezaChildId, AhezaChild ))
+    | SaveAhezaMother PersonId (Maybe ( AhezaMotherId, AhezaMother ))
+    | SaveMuacChild PersonId (Maybe ( FamilyNutritionMuacChildId, FamilyNutritionMuacChild ))
+    | SaveMuacMother PersonId (Maybe ( FamilyNutritionMuacMotherId, FamilyNutritionMuacMother ))
     | SetActivePage Page
-    | SetSelectedTab Tab
+    | SetAheza String
     | SetDialogState (Maybe DialogType)
+    | SetMuac String
+    | SetSelectedActivity (Maybe FamilyNutritionActivity)
     | SetSelectedFamilyMember FamilyMemberPage
+    | SetSelectedTab Tab
 
 
 type FamilyMemberPage
@@ -57,3 +72,23 @@ type alias AssembledData =
     , previousMeasurementsWithDates : List ( NominalDate, ( FamilyNutritionEncounterId, FamilyNutritionMeasurements ) )
     , children : List ( PersonId, Person )
     }
+
+
+type alias AhezaData =
+    { form : AhezaForm
+    }
+
+
+emptyAhezaData : AhezaData
+emptyAhezaData =
+    AhezaData emptyAhezaForm
+
+
+type alias MuacData =
+    { form : MuacForm
+    }
+
+
+emptyMuacData : MuacData
+emptyMuacData =
+    MuacData emptyMuacForm

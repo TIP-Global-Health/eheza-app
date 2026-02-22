@@ -330,6 +330,29 @@ resolveIndividualWellChildValue measurementsWithDates measurementFunc valueFunc 
         |> List.head
 
 
+ahezaFormWithDefault : AhezaForm -> Maybe Float -> AhezaForm
+ahezaFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { aheza = valueConsideringIsDirtyField form.ahezaDirty form.aheza value
+                , ahezaDirty = form.ahezaDirty
+                }
+            )
+
+
+toAhezaValueWithDefault : Maybe Float -> AhezaForm -> Maybe Float
+toAhezaValueWithDefault saved form =
+    ahezaFormWithDefault form saved
+        |> toAhezaValue
+
+
+toAhezaValue : AhezaForm -> Maybe Float
+toAhezaValue form =
+    form.aheza
+
+
 fromHeightValue : Maybe HeightInCm -> HeightForm
 fromHeightValue saved =
     { height = Maybe.map getHeightValue saved
