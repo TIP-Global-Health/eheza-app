@@ -7,6 +7,7 @@ import Backend.FamilyNutritionEncounter.Utils exposing (getFamilyNutritionEncoun
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.Person.Model exposing (Person)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.FamilyNutrition.Encounter.Model exposing (..)
@@ -76,29 +77,42 @@ generateAssembledData id db =
         |> RemoteData.andMap children
 
 
+nextFamilyMember : FamilyMemberPage -> List ( PersonId, Person ) -> FamilyMemberPage
+nextFamilyMember current children =
+    case current of
+        MotherPage ->
+            List.head children
+                |> Maybe.map (\( childId, _ ) -> ChildPage childId)
+                |> Maybe.withDefault MotherPage
+
+        ChildPage currentId ->
+            let
+                findNext list =
+                    case list of
+                        ( id1, _ ) :: ( id2, child2 ) :: rest ->
+                            if id1 == currentId then
+                                ChildPage id2
+
+                            else
+                                findNext (( id2, child2 ) :: rest)
+
+                        _ ->
+                            MotherPage
+            in
+            findNext children
+
+
 activityCompleted : FamilyMemberPage -> FamilyNutritionMeasurements -> FamilyNutritionActivity -> Bool
 activityCompleted familyMember measurements activity =
     case ( familyMember, activity ) of
-        ( MotherPage, Aheza ) ->
+        ( MotherPage, FamilyNutritionAheza ) ->
             measurements.ahezaMother /= Nothing
 
         ( MotherPage, FamilyNutritionMuac ) ->
             measurements.muacMother /= Nothing
 
-        ( ChildPage childId, Aheza ) ->
+        ( ChildPage childId, FamilyNutritionAheza ) ->
             Dict.member childId measurements.ahezaChild
 
         ( ChildPage childId, FamilyNutritionMuac ) ->
             Dict.member childId measurements.muacChild
-
-
-
---
---
--- generatePreviousMeasurements :
---     Maybe FamilyNutritionEncounterId
---     -> FamilyEncounterParticipantId
---     -> ModelIndexedDb
---     -> List ( NominalDate, ( FamilyNutritionEncounterId, FamilyNutritionMeasurements ) )
--- generatePreviousMeasurements =
---     Backend.Measurement.Utils.generatePreviousMeasurements getFamilyNutritionEncountersForParticipant .nutritionMeasurements

@@ -2,21 +2,25 @@ module Pages.FamilyNutrition.Encounter.Update exposing (update)
 
 import App.Model
 import Backend.Entities exposing (..)
+import Backend.FamilyNutritionActivity.Model exposing (FamilyNutritionActivity(..))
+import Backend.FamilyNutritionActivity.Utils exposing (allActivities)
 import Backend.FamilyNutritionEncounter.Model
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
-import Backend.Model
+import Backend.Model exposing (ModelIndexedDb)
 import EverySet
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (unwrap)
 import Measurement.Utils exposing (toAhezaValueWithDefault, toMuacValueWithDefault)
 import Pages.FamilyNutrition.Encounter.Model exposing (..)
+import Pages.FamilyNutrition.Encounter.Utils exposing (activityCompleted, generateAssembledData, nextFamilyMember)
 import Pages.Page exposing (Page(..))
 import Pages.Utils exposing (setMuacValueForSite)
+import RemoteData
 import SyncManager.Model exposing (Site)
 
 
-update : Site -> FamilyNutritionEncounterId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update site id msg model =
+update : Site -> FamilyNutritionEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update site id db msg model =
     case msg of
         CloseEncounter encounterId ->
             ( model
@@ -46,11 +50,19 @@ update site id msg model =
                                     |> App.Model.MsgIndexedDb
                                 ]
                             )
+
+                extraMsgs =
+                    if List.isEmpty appMsgs then
+                        []
+
+                    else
+                        generateAutoAdvanceMsgs id FamilyNutritionAheza db model.selectedFamilyMember
             in
             ( { model | ahezaData = emptyAhezaData }
             , Cmd.none
             , appMsgs
             )
+                |> sequenceExtra (update site id db) extraMsgs
 
         SaveAhezaMother personId saved ->
             let
@@ -70,11 +82,19 @@ update site id msg model =
                                     |> App.Model.MsgIndexedDb
                                 ]
                             )
+
+                extraMsgs =
+                    if List.isEmpty appMsgs then
+                        []
+
+                    else
+                        generateAutoAdvanceMsgs id FamilyNutritionAheza db model.selectedFamilyMember
             in
             ( { model | ahezaData = emptyAhezaData }
             , Cmd.none
             , appMsgs
             )
+                |> sequenceExtra (update site id db) extraMsgs
 
         SaveMuacChild personId saved ->
             let
@@ -95,11 +115,19 @@ update site id msg model =
                                     |> App.Model.MsgIndexedDb
                                 ]
                             )
+
+                extraMsgs =
+                    if List.isEmpty appMsgs then
+                        []
+
+                    else
+                        generateAutoAdvanceMsgs id FamilyNutritionMuac db model.selectedFamilyMember
             in
             ( { model | muacData = emptyMuacData }
             , Cmd.none
             , appMsgs
             )
+                |> sequenceExtra (update site id db) extraMsgs
 
         SaveMuacMother personId saved ->
             let
@@ -120,18 +148,26 @@ update site id msg model =
                                     |> App.Model.MsgIndexedDb
                                 ]
                             )
+
+                extraMsgs =
+                    if List.isEmpty appMsgs then
+                        []
+
+                    else
+                        generateAutoAdvanceMsgs id FamilyNutritionMuac db model.selectedFamilyMember
             in
             ( { model | muacData = emptyMuacData }
             , Cmd.none
             , appMsgs
             )
+                |> sequenceExtra (update site id db) extraMsgs
 
         SetActivePage page ->
             ( model
             , Cmd.none
             , [ App.Model.SetActivePage page ]
             )
-                |> sequenceExtra (update site id) [ SetDialogState Nothing ]
+                |> sequenceExtra (update site id db) [ SetDialogState Nothing ]
 
         SetAheza string ->
             let
@@ -201,3 +237,25 @@ update site id msg model =
 
         SetSelectedTab tab ->
             ( { model | selectedTab = tab }, Cmd.none, [] )
+
+
+generateAutoAdvanceMsgs : FamilyNutritionEncounterId -> FamilyNutritionActivity -> ModelIndexedDb -> FamilyMemberPage -> List Msg
+generateAutoAdvanceMsgs encounterId triggeringCompletedActivity db currentMember =
+    generateAssembledData encounterId db
+        |> RemoteData.toMaybe
+        |> Maybe.map
+            (\assembled ->
+                let
+                    allCompleted =
+                        List.filter ((/=) triggeringCompletedActivity) allActivities
+                            |> List.all (activityCompleted currentMember assembled.measurements)
+                in
+                if allCompleted then
+                    nextFamilyMember currentMember assembled.children
+                        |> SetSelectedFamilyMember
+                        |> List.singleton
+
+                else
+                    []
+            )
+        |> Maybe.withDefault []

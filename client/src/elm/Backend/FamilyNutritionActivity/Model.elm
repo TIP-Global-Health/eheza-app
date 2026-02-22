@@ -6,5 +6,5 @@ family nutrition activities.
 
 
 type FamilyNutritionActivity
-    = Aheza
+    = FamilyNutritionAheza
     | FamilyNutritionMuac

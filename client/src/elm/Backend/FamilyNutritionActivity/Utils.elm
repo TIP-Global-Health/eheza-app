@@ -19,7 +19,7 @@ for that).
 encodeActivityAsString : FamilyNutritionActivity -> String
 encodeActivityAsString activity =
     case activity of
-        Aheza ->
+        FamilyNutritionAheza ->
             "family-nutrition-aheza"
 
         FamilyNutritionMuac ->
@@ -32,7 +32,7 @@ decodeActivityFromString : String -> Maybe FamilyNutritionActivity
 decodeActivityFromString s =
     case s of
         "family-nutrition-aheza" ->
-            Just Aheza
+            Just FamilyNutritionAheza
 
         "family-nutrition-muac" ->
             Just FamilyNutritionMuac
@@ -47,7 +47,7 @@ decodeActivityFromString s =
 getActivityIcon : FamilyNutritionActivity -> String
 getActivityIcon activity =
     case activity of
-        Aheza ->
+        FamilyNutritionAheza ->
             "fbf"
 
         FamilyNutritionMuac ->
@@ -56,4 +56,4 @@ getActivityIcon activity =
 
 allActivities : List FamilyNutritionActivity
 allActivities =
-    [ Aheza, FamilyNutritionMuac ]
+    [ FamilyNutritionAheza, FamilyNutritionMuac ]

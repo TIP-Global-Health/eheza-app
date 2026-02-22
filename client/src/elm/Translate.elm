@@ -6897,7 +6897,7 @@ translationSet trans =
 
         FamilyNutritionActivityTitle activity ->
             case activity of
-                Aheza ->
+                FamilyNutritionAheza ->
                     { english = "Aheza"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing

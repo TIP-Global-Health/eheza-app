@@ -368,7 +368,7 @@ viewActivityForm :
     -> Html Msg
 viewActivityForm language currentDate site data model activity =
     case activity of
-        Aheza ->
+        FamilyNutritionAheza ->
             viewAhezaForm language data model
 
         FamilyNutritionMuac ->
@@ -410,7 +410,7 @@ viewAhezaForm language data model =
     in
     div [ class "ui full segment aheza" ]
         [ div [ class "content" ]
-            [ viewLabel language <| Translate.FamilyNutritionActivityTitle Aheza
+            [ viewLabel language <| Translate.FamilyNutritionActivityTitle FamilyNutritionAheza
             , p [ class "activity-helper" ]
                 [ text <| translate language Translate.AhezaActivityLabel ]
             , div [ class "ui grid" ]
