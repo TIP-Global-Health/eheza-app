@@ -1164,9 +1164,13 @@ div.page-activity {
 
 div.page-encounter.family-nutrition {
 
-  .ui.unstackable.items.participant-page .item .content {
+  .participant-page .item .content {
     padding-top: 0 !important;
   }
+
+  .ui.task.segment {
+    color: $color-text;
+  }  
 
   .ui.full.segment .content {
 
@@ -1225,7 +1229,7 @@ div.page-encounter.family-nutrition {
     }
   }
 
-  .ui.unstackable.items .end-encounter-button-wrapper .actions {
+  .end-encounter-button-wrapper .actions {
     margin: unset;
     margin-bottom: 20px;
   }

@@ -193,7 +193,7 @@ viewContent language currentDate site zscores features id isChw db model data =
         ]
         :: viewMainPageContent language currentDate site zscores features id isChw db data model
     )
-        |> div [ class "ui unstackable items" ]
+        |> div [ class "ui items" ]
 
 
 viewFamilyMemberLinks : Model -> AssembledData -> Html Msg

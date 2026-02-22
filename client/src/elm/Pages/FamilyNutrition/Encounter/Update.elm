@@ -191,6 +191,7 @@ update site id msg model =
             ( { model
                 | selectedFamilyMember = member
                 , selectedActivity = Nothing
+                , selectedTab = Pending
                 , ahezaData = emptyAhezaData
                 , muacData = emptyMuacData
               }
