@@ -1139,51 +1139,6 @@ function hedley_schedule_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-family_participant-field_children'.
-  $field_instances['node-family_participant-field_children'] = array(
-    'bundle' => 'family_participant',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'entityreference',
-        'settings' => array(
-          'bypass_access' => FALSE,
-          'link' => FALSE,
-        ),
-        'type' => 'entityreference_label',
-        'weight' => 1,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_children',
-    'label' => 'Children',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'entityreference',
-      'settings' => array(
-        'hide_ids' => 0,
-        'match_operator' => 'CONTAINS',
-        'path' => '',
-        'size' => 60,
-      ),
-      'type' => 'entityreference_autocomplete',
-      'weight' => 2,
-    ),
-  );
-
   // Exported field_instance: 'node-family_participant-field_deleted'.
   $field_instances['node-family_participant-field_deleted'] = array(
     'bundle' => 'family_participant',
@@ -3768,7 +3723,6 @@ Used to track location where pregnancies were completed.',
   t('At which point should these topics be addressed?');
   t('Between what dates is the child expected to participate in PMTCT encounters?');
   t('Child');
-  t('Children');
   t('Closed (DEPRECATED)');
   t('Completion Data');
   t('Date Measured');
