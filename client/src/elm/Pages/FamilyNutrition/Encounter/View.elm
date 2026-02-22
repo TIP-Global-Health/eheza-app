@@ -286,6 +286,18 @@ viewMainPageContent language currentDate site zscores features id isChw db data 
                 Reports ->
                     []
 
+        selectedActivity =
+            case model.selectedActivity of
+                Just activity ->
+                    if List.member activity displayedActivities then
+                        Just activity
+
+                    else
+                        List.head displayedActivities
+
+                Nothing ->
+                    List.head displayedActivities
+
         emptySectionMessage =
             case model.selectedTab of
                 Completed ->
@@ -300,7 +312,7 @@ viewMainPageContent language currentDate site zscores features id isChw db data 
         viewActivityItem activity =
             let
                 isActive =
-                    model.selectedActivity == Just activity
+                    selectedActivity == Just activity
 
                 isCompleted =
                     activityCompleted model.selectedFamilyMember data.measurements activity
@@ -325,7 +337,7 @@ viewMainPageContent language currentDate site zscores features id isChw db data 
                 ]
 
         activityForm =
-            Maybe.map (viewActivityForm language currentDate site data model) model.selectedActivity
+            Maybe.map (viewActivityForm language currentDate site data model) selectedActivity
                 |> Maybe.withDefault emptyNode
 
         innerContent =
