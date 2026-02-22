@@ -57,7 +57,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
-import Maybe.Extra exposing (isJust)
+import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.Model exposing (..)
@@ -523,19 +523,19 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
         formBeforeDefaults =
             model.form
 
-        personId =
+        maybeRelatedPersonId =
             case operation of
                 CreatePerson maybePersonId ->
                     maybePersonId
 
-                EditPerson personId_ ->
-                    Just personId_
+                EditPerson personId ->
+                    Just personId
 
         -- When we create new person, this is a person that we want to associate
         -- new person with.
         -- When editing, this is the person that is being edited.
         maybeRelatedPerson =
-            Maybe.andThen (\id -> Dict.get id db.people) personId
+            Maybe.andThen (\id -> Dict.get id db.people) maybeRelatedPersonId
                 |> Maybe.andThen RemoteData.toMaybe
 
         maybeVillage =
@@ -568,14 +568,14 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                         goBackPage =
                             case operation of
                                 CreatePerson _ ->
-                                    UserPage <| PersonsPage personId initiator
+                                    UserPage <| PersonsPage maybeRelatedPersonId initiator
 
                                 EditPerson _ ->
-                                    personId
-                                        |> Maybe.map
-                                            (\personId_ ->
-                                                UserPage <| PersonPage personId_ initiator
-                                            )
+                                    Maybe.map
+                                        (\personId ->
+                                            UserPage <| PersonPage personId initiator
+                                        )
+                                        maybeRelatedPersonId
                                         |> Maybe.withDefault PinCodePage
 
                         expectedAge =
@@ -754,7 +754,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                                 _ ->
                                     ( Date.add Years -120 currentDate, currentDate )
                     in
-                    { goBackPage = UserPage (PersonsPage personId initiator)
+                    { goBackPage = UserPage (PersonsPage maybeRelatedPersonId initiator)
                     , expectedAge = expectedAge
                     , expectedGender = ExpectMaleOrFemale
                     , birthDateSelectorFrom = birthDateSelectorFrom
@@ -785,13 +785,25 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                 FamilyEncounterOrigin encounterType ->
                     case encounterType of
                         Backend.FamilyEncounterParticipant.Model.NutritionEncounter ->
-                            { goBackPage = UserPage (FamilyEncounterParticipantsPage Backend.FamilyEncounterParticipant.Model.NutritionEncounter)
-                            , expectedAge = ExpectChild
-                            , expectedGender = ExpectMaleOrFemale
-                            , birthDateSelectorFrom = Date.add Years -13 today |> Date.add Days 1
-                            , birthDateSelectorTo = today
-                            , title = Translate.People
-                            }
+                            if isJust maybeRelatedPersonId then
+                                -- Registering a child for existing adult.
+                                { goBackPage = UserPage (PersonsPage maybeRelatedPersonId initiator)
+                                , expectedAge = ExpectChild
+                                , expectedGender = ExpectMaleOrFemale
+                                , birthDateSelectorFrom = Date.add Years -13 today |> Date.add Days 1
+                                , birthDateSelectorTo = today
+                                , title = Translate.People
+                                }
+
+                            else
+                                -- Registering an adult, as there was no related person passed.
+                                { goBackPage = UserPage (FamilyEncounterParticipantsPage Backend.FamilyEncounterParticipant.Model.NutritionEncounter)
+                                , expectedAge = ExpectAdult
+                                , expectedGender = ExpectFemale
+                                , birthDateSelectorFrom = Date.add Years -120 today
+                                , birthDateSelectorTo = Date.add Years -13 today
+                                , title = Translate.People
+                                }
 
         header =
             div [ class "ui basic segment head" ]
