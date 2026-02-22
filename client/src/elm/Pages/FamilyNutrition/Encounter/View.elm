@@ -11,6 +11,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import EverySet exposing (EverySet)
+import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -23,7 +24,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (isAboveAgeOf2Years, maybeToBoolTask, resolveTasksCompletedFromTotal, viewConfirmationDialog, viewEndEncounterButton, viewLabel, viewMeasurementInput, viewReportLink, viewSaveAction, viewSkipNCDADialog)
 import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (activityCard, tabItem, thumbnailImage, viewModal)
+import Utils.Html exposing (tabItem, thumbnailImage, viewModal)
 import Utils.NominalDate exposing (renderAgeMonthsDays, renderAgeYearsMonths, renderDate)
 import Utils.WebData exposing (viewWebData)
 import ZScore.Model
@@ -274,12 +275,6 @@ viewMainPageContent language currentDate site zscores features id isChw db data 
                 , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
                 ]
 
-        viewCard activity =
-            activityCard language
-                (Translate.FamilyNutritionActivityTitle activity)
-                (getActivityIcon activity)
-                (SetSelectedActivity (Just activity))
-
         displayedActivities =
             case model.selectedTab of
                 Completed ->
@@ -291,53 +286,63 @@ viewMainPageContent language currentDate site zscores features id isChw db data 
                 Reports ->
                     []
 
-        cards =
-            if List.isEmpty displayedActivities then
-                [ span []
-                    [ text <|
-                        case model.selectedTab of
-                            Completed ->
-                                translate language Translate.NoActivitiesCompleted
+        emptySectionMessage =
+            case model.selectedTab of
+                Completed ->
+                    translate language Translate.NoActivitiesCompleted
 
-                            Pending ->
-                                translate language Translate.NoActivitiesPending
+                Pending ->
+                    translate language Translate.NoActivitiesPending
 
-                            Reports ->
-                                ""
+                Reports ->
+                    ""
+
+        viewActivityItem activity =
+            let
+                isActive =
+                    model.selectedActivity == Just activity
+
+                isCompleted =
+                    activityCompleted model.selectedFamilyMember data.measurements activity
+            in
+            div [ class "column" ]
+                [ a
+                    (classList
+                        [ ( "link-section", True )
+                        , ( "active", isActive )
+                        , ( "completed", not isActive && isCompleted )
+                        ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetSelectedActivity (Just activity) ]
+                           )
+                    )
+                    [ span [ class <| "icon-activity-task icon-" ++ getActivityIcon activity ] []
+                    , text <| translate language (Translate.FamilyNutritionActivityTitle activity)
                     ]
                 ]
-
-            else
-                List.map viewCard displayedActivities
 
         activityForm =
             Maybe.map (viewActivityForm language currentDate site data model) model.selectedActivity
-                |> Maybe.withDefault []
+                |> Maybe.withDefault emptyNode
 
         innerContent =
-            div [ class "full content" ]
-                [ div [ class "wrap-cards" ]
-                    [ div [ class "ui four cards" ]
-                        cards
-                    ]
+            div [ class "ui task segment" ]
+                [ div [ class "ui five column grid" ] <|
+                    if List.isEmpty displayedActivities then
+                        [ span [] [ text emptySectionMessage ] ]
+
+                    else
+                        List.map viewActivityItem displayedActivities
                 ]
-
-        endEncounterButton =
-            if model.selectedActivity == Nothing then
-                [ viewEndEncounterButton language True (SetDialogState <| Just DialogEndEncounter) ]
-
-            else
-                []
-
-        content =
-            div [ class "ui full segment" ]
-                (innerContent
-                    :: activityForm
-                    ++ endEncounterButton
-                )
     in
     [ tabs
-    , content
+    , innerContent
+    , activityForm
+    , div [ class "end-encounter-button-wrapper" ]
+        [ viewEndEncounterButton language True (SetDialogState <| Just DialogEndEncounter) ]
     ]
 
 
@@ -348,7 +353,7 @@ viewActivityForm :
     -> AssembledData
     -> Model
     -> FamilyNutritionActivity
-    -> List (Html Msg)
+    -> Html Msg
 viewActivityForm language currentDate site data model activity =
     case activity of
         Aheza ->
@@ -362,7 +367,7 @@ viewAhezaForm :
     Language
     -> AssembledData
     -> Model
-    -> List (Html Msg)
+    -> Html Msg
 viewAhezaForm language data model =
     let
         existingValue =
@@ -391,25 +396,24 @@ viewAhezaForm language data model =
                 ChildPage childId ->
                     SaveAhezaChild childId (Dict.get childId data.measurements.ahezaChild)
     in
-    [ div [ class "full content" ]
-        [ div [ class "ui form aheza" ]
+    div [ class "ui full segment aheza" ]
+        [ div [ class "content" ]
             [ viewLabel language <| Translate.FamilyNutritionActivityTitle Aheza
+            , p [ class "activity-helper" ]
+                [ text <| translate language Translate.AhezaActivityLabel ]
             , div [ class "ui grid" ]
-                [ div [ class "eleven wide column" ]
-                    [ viewMeasurementInput
-                        language
-                        currentValue
-                        SetAheza
-                        "aheza"
-                        Translate.Grams
-                    ]
+                [ viewMeasurementInput
+                    language
+                    currentValue
+                    SetAheza
+                    "aheza"
+                    Translate.PackagesPerMonth
                 ]
+            , viewSaveAction language
+                saveMsg
+                disabled
             ]
         ]
-    , viewSaveAction language
-        saveMsg
-        disabled
-    ]
 
 
 viewMuacForm :
@@ -418,7 +422,7 @@ viewMuacForm :
     -> Site
     -> AssembledData
     -> Model
-    -> List (Html Msg)
+    -> Html Msg
 viewMuacForm language currentDate site data model =
     let
         existingValue =
@@ -475,11 +479,10 @@ viewMuacForm language currentDate site data model =
                 ChildPage childId ->
                     SaveMuacChild childId (Dict.get childId data.measurements.muacChild)
     in
-    [ div [ class "full content" ]
-        [ div [ class "ui form muac" ]
+    div [ class "ui full segment muac" ]
+        [ div [ class "content" ]
             inputs
+        , viewSaveAction language
+            saveMsg
+            disabled
         ]
-    , viewSaveAction language
-        saveMsg
-        disabled
-    ]

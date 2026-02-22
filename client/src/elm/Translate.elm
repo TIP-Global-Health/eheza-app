@@ -413,6 +413,7 @@ type TranslationId
     | AgeSingleMonthWithoutDay Int
     | AgeSingleDayWithMonth Int Int
     | AgeSingleDayWithoutMonth Int
+    | AhezaActivityLabel
     | AlertChwToFollowUp
     | AgeOneYearOld
     | AgeOneYearAndOneMonth
@@ -3571,6 +3572,13 @@ translationSet trans =
             , kinyarwanda = Just <| String.fromInt days ++ " Umunsi"
             , kirundi = Just <| String.fromInt days ++ " Umunsi"
             , somali = Just <| String.fromInt days ++ " Maalin"
+            }
+
+        AhezaActivityLabel ->
+            { english = "Enter the amount of CSB++ (FBF) distributed below."
+            , kinyarwanda = Just "Andika ingano ya  CSB++ (FBF) yahawe hano."
+            , kirundi = Just "Injiza/andika igitigiri ca CSB++ hamwe na FBF catanzwe aha hepfo"
+            , somali = Nothing
             }
 
         AlertChwToFollowUp ->
