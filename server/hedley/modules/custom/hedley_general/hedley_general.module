@@ -255,10 +255,10 @@ function hedley_general_get_measurement_types() {
  */
 function hedley_general_get_encounter_types() {
   $types = hedley_general_get_individual_encounter_types();
-  // Session represents group encounter.
-  $types[] = 'session';
   // @todo: We may want to add family encounters here as well, but need to
   // consider different places where this function is used.
+  // Session represents group encounter.
+  $types[] = 'session';
 
   return $types;
 }
