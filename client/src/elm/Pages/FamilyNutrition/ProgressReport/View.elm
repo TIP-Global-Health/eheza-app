@@ -1,9 +1,12 @@
 module Pages.FamilyNutrition.ProgressReport.View exposing (view)
 
+import AssocList as Dict
 import Backend.Entities exposing (..)
+import Backend.FamilyNutritionActivity.Model exposing (FamilyNutritionActivity(..))
+import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Utils exposing (isPersonAnAdult)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -11,11 +14,13 @@ import Pages.FamilyNutrition.Encounter.Model exposing (AssembledData, FamilyMemb
 import Pages.FamilyNutrition.Encounter.Utils exposing (generateAssembledData)
 import Pages.FamilyNutrition.ProgressReport.Model exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Report.View exposing (viewEntries)
 import Pages.Utils exposing (isAboveAgeOf2Years)
+import Pages.WellChild.ProgressReport.View exposing (viewPaneHeading)
 import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
-import Utils.NominalDate exposing (renderAgeMonthsDays, renderAgeYearsMonths, renderDate)
+import Utils.NominalDate exposing (renderAgeMonthsDays, renderAgeYearsMonths, renderDate, sortTuplesByDateDesc)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -152,6 +157,7 @@ viewContent language currentDate model data =
                     ]
                 ]
             ]
+        , viewAhezaPane language model data
         ]
 
 
@@ -201,3 +207,53 @@ viewFamilyMemberLinks model data =
     in
     ul [ class "links-body" ]
         (motherMarkup :: childrenMarkup)
+
+
+viewAhezaPane : Language -> Model -> AssembledData -> Html Msg
+viewAhezaPane language model data =
+    let
+        resolveAhezaValue measurements =
+            case model.selectedFamilyMember of
+                FamilyMemberMother ->
+                    measurements.ahezaMother
+                        |> Maybe.map (\( _, measurement ) -> ( measurement.dateMeasured, measurement.value ))
+
+                FamilyMemberChild childId ->
+                    Dict.get childId measurements.ahezaChild
+                        |> Maybe.map (\( _, measurement ) -> ( measurement.dateMeasured, measurement.value ))
+
+        currentEncounterEntry =
+            resolveAhezaValue data.measurements
+
+        previousEncounterEntries =
+            List.filterMap
+                (\( _, ( _, measurements ) ) -> resolveAhezaValue measurements)
+                data.previousMeasurementsWithDates
+
+        allEntries =
+            Maybe.map (\entry -> entry :: previousEncounterEntries) currentEncounterEntry
+                |> Maybe.withDefault previousEncounterEntries
+                |> List.sortWith sortTuplesByDateDesc
+
+        entriesHeading =
+            div [ class "heading aheza" ]
+                [ div [ class "date" ] [ text <| translate language Translate.Date ]
+                , div [ class "amount" ] [ text <| translate language Translate.DistributedAmount ]
+                ]
+
+        entries =
+            List.map
+                (\( date, value ) ->
+                    div [ class "entry aheza" ]
+                        [ div [ class "cell date" ] [ text <| formatDDMMYYYY date ]
+                        , div [ class "cell amount" ] [ text <| String.fromFloat value ++ " " ++ translate language Translate.KilogramShorthand ]
+                        ]
+                )
+                allEntries
+    in
+    div [ class "pane aheza" ]
+        [ viewPaneHeading language (Translate.FamilyNutritionActivityTitle FamilyNutritionAheza)
+        , div [ class "pane-content" ] <|
+            entriesHeading
+                :: viewEntries language entries
+        ]

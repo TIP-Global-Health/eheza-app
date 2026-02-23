@@ -624,6 +624,7 @@ type TranslationId
     | DifficultyBreathingLabel
     | Disabled
     | DiscordantCoupleStatus Bool Bool
+    | DistributedAmount
     | DistributionNotice DistributionNotice
     | District
     | DOB
@@ -5800,6 +5801,13 @@ translationSet trans =
                 , kirundi = Nothing
                 , somali = Nothing
                 }
+
+        DistributedAmount ->
+            { english = "Distributed Amount"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
 
         DistributionNotice notice ->
             case notice of
