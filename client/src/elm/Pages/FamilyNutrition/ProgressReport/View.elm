@@ -4,6 +4,7 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.FamilyNutritionActivity.Model exposing (FamilyNutritionActivity(..))
 import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils exposing (muacValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Utils exposing (isPersonAnAdult)
 import Date
@@ -280,35 +281,39 @@ viewMuacPane language currentDate model data =
             isPersonAnAdult currentDate displayPerson
                 |> Maybe.withDefault True
 
-        hasMuacMeasurement measurements =
+        resolveMuacValue measurements =
             case model.selectedFamilyMember of
                 FamilyMemberMother ->
-                    measurements.muacMother /= Nothing
+                    measurements.muacMother
+                        |> Maybe.map (\( _, measurement ) -> muacValueFunc measurement.value)
 
                 FamilyMemberChild childId ->
-                    Dict.member childId measurements.muacChild
+                    Dict.get childId measurements.muacChild
+                        |> Maybe.map (\( _, measurement ) -> muacValueFunc measurement.value)
 
-        allMuacDates =
-            let
-                previousEncounterDates =
-                    List.filterMap
-                        (\( date, ( _, measurements ) ) ->
-                            if hasMuacMeasurement measurements then
-                                Just date
+        previousEncounterMuacValues =
+            List.filterMap
+                (\( date, ( _, measurements ) ) ->
+                    resolveMuacValue measurements
+                        |> Maybe.map (\value -> ( date, value ))
+                )
+                data.previousMeasurementsWithDates
 
-                            else
-                                Nothing
-                        )
-                        data.previousMeasurementsWithDates
-            in
-            if hasMuacMeasurement data.measurements then
-                data.encounter.startDate :: previousEncounterDates
+        currentEncounterMuacValue =
+            resolveMuacValue data.measurements
+                |> Maybe.map (\value -> ( data.encounter.startDate, value ))
 
-            else
-                previousEncounterDates
+        allMuacValues =
+            case currentEncounterMuacValue of
+                Just point ->
+                    point :: previousEncounterMuacValues
+
+                Nothing ->
+                    previousEncounterMuacValues
 
         earliestMuacDate =
-            List.sortWith Date.compare allMuacDates
+            List.map Tuple.first allMuacValues
+                |> List.sortWith Date.compare
                 |> List.head
 
         anchorAge =
@@ -319,9 +324,32 @@ viewMuacPane language currentDate model data =
                             (earliestMuacDate |> Maybe.withDefault currentDate)
                     )
                 |> Maybe.withDefault { years = 0, months = 0 }
+
+        muacPoints =
+            displayPerson.birthDate
+                |> Maybe.map
+                    (\birthDate ->
+                        let
+                            anchorTotalMonths =
+                                anchorAge.years * 12 + anchorAge.months
+                        in
+                        List.map
+                            (\( date, value ) ->
+                                let
+                                    ageAtDate =
+                                        diffCalendarYearsAndMonths birthDate date
+
+                                    totalMonths =
+                                        ageAtDate.years * 12 + ageAtDate.months
+                                in
+                                ( totalMonths - anchorTotalMonths, value )
+                            )
+                            allMuacValues
+                    )
+                |> Maybe.withDefault []
     in
     div [ class "pane muac" ]
         [ viewPaneHeading language Translate.MUAC
         , div [ class "pane-content" ]
-            [ Svg.viewMuacChart language isAdult anchorAge ]
+            [ Svg.viewMuacChart language isAdult anchorAge muacPoints ]
         ]

@@ -7,8 +7,8 @@ import Svg.Attributes exposing (..)
 import Translate exposing (Language, translate)
 
 
-viewMuacChart : Language -> Bool -> { years : Int, months : Int } -> Html any
-viewMuacChart language isAdult anchorAge =
+viewMuacChart : Language -> Bool -> { years : Int, months : Int } -> List ( Int, Float ) -> Html any
+viewMuacChart language isAdult anchorAge muacPoints =
     let
         horizontalParts =
             36
@@ -26,6 +26,9 @@ viewMuacChart language isAdult anchorAge =
         verticalStep =
             heightPx / toFloat (verticalMax - verticalMin)
 
+        horizontalStep =
+            widthPx / toFloat horizontalParts
+
         ( redThreshold, yellowThreshold ) =
             if isAdult then
                 ( 18.5, 22 )
@@ -33,29 +36,56 @@ viewMuacChart language isAdult anchorAge =
             else
                 ( 11.5, 12.5 )
 
+        verticalMinFloat =
+            toFloat verticalMin
+
         redPoints =
             [ ( dimensionsPx.left, dimensionsPx.bottom )
-            , ( dimensionsPx.left, dimensionsPx.bottom - (redThreshold - verticalMin) * verticalStep )
-            , ( dimensionsPx.right, dimensionsPx.bottom - (redThreshold - verticalMin) * verticalStep )
+            , ( dimensionsPx.left, dimensionsPx.bottom - (redThreshold - verticalMinFloat) * verticalStep )
+            , ( dimensionsPx.right, dimensionsPx.bottom - (redThreshold - verticalMinFloat) * verticalStep )
             , ( dimensionsPx.right, dimensionsPx.bottom )
             , ( dimensionsPx.left, dimensionsPx.bottom )
             ]
 
         yellowPoints =
-            [ ( dimensionsPx.left, dimensionsPx.bottom - (redThreshold - verticalMin) * verticalStep )
-            , ( dimensionsPx.left, dimensionsPx.bottom - (yellowThreshold - verticalMin) * verticalStep )
-            , ( dimensionsPx.right, dimensionsPx.bottom - (yellowThreshold - verticalMin) * verticalStep )
-            , ( dimensionsPx.right, dimensionsPx.bottom - (redThreshold - verticalMin) * verticalStep )
-            , ( dimensionsPx.left, dimensionsPx.bottom - (redThreshold - verticalMin) * verticalStep )
+            [ ( dimensionsPx.left, dimensionsPx.bottom - (redThreshold - verticalMinFloat) * verticalStep )
+            , ( dimensionsPx.left, dimensionsPx.bottom - (yellowThreshold - verticalMinFloat) * verticalStep )
+            , ( dimensionsPx.right, dimensionsPx.bottom - (yellowThreshold - verticalMinFloat) * verticalStep )
+            , ( dimensionsPx.right, dimensionsPx.bottom - (redThreshold - verticalMinFloat) * verticalStep )
+            , ( dimensionsPx.left, dimensionsPx.bottom - (redThreshold - verticalMinFloat) * verticalStep )
             ]
 
         greenPoints =
-            [ ( dimensionsPx.left, dimensionsPx.bottom - (yellowThreshold - verticalMin) * verticalStep )
+            [ ( dimensionsPx.left, dimensionsPx.bottom - (yellowThreshold - verticalMinFloat) * verticalStep )
             , ( dimensionsPx.left, dimensionsPx.top )
             , ( dimensionsPx.right, dimensionsPx.top )
-            , ( dimensionsPx.right, dimensionsPx.bottom - (yellowThreshold - verticalMin) * verticalStep )
-            , ( dimensionsPx.left, dimensionsPx.bottom - (yellowThreshold - verticalMin) * verticalStep )
+            , ( dimensionsPx.right, dimensionsPx.bottom - (yellowThreshold - verticalMinFloat) * verticalStep )
+            , ( dimensionsPx.left, dimensionsPx.bottom - (yellowThreshold - verticalMinFloat) * verticalStep )
             ]
+
+        verticalMaxFloat =
+            toFloat verticalMax
+
+        measurements =
+            muacPoints
+                |> List.filterMap
+                    (\( monthOffset, muacCm ) ->
+                        let
+                            gridPos =
+                                toFloat monthOffset + 3
+                        in
+                        if
+                            withinRange gridPos 0 (toFloat horizontalParts)
+                                && withinRange muacCm verticalMinFloat verticalMaxFloat
+                        then
+                            Just
+                                ( dimensionsPx.left + gridPos * horizontalStep
+                                , dimensionsPx.bottom - (muacCm - verticalMinFloat) * verticalStep
+                                )
+
+                        else
+                            Nothing
+                    )
     in
     svg
         [ class "z-score"
@@ -69,18 +99,20 @@ viewMuacChart language isAdult anchorAge =
                 [ transform "matrix(1 0 0 1 373 541)"
                 , class "z-score-semibold chart-label"
                 ]
-                [ text <| translate language Translate.AgeWord ]
+                [ text <| translate language Translate.AgeAxisLabel ]
             , text_
                 [ transform "matrix(0 -1 1 0 81 350)"
                 , class "z-score-semibold chart-label"
                 ]
                 [ text <| translate language Translate.MUAC ]
             ]
-        , g []
+        , g [] <|
             [ drawPolygon redPoints "red-area"
             , drawPolygon yellowPoints "yellow-area"
             , drawPolygon greenPoints "green-area"
+            , drawPolyline measurements "data"
             ]
+                ++ drawPoints "#06B9FF" measurements
         , (referenceVerticalLines verticalParts
             ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.left - 17 |> String.fromFloat)
             ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.right + 7.5 |> String.fromFloat)

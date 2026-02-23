@@ -404,6 +404,7 @@ type TranslationId
     | AdverseEvents
     | AdverseEventSinglePlural Int
     | AfterEachLiquidStool
+    | AgeAxisLabel
     | AgeWord
     | Age Int Int
     | AgeDays Int
@@ -3036,6 +3037,13 @@ translationSet trans =
             , kinyarwanda = Just "buri uko amaze kwituma ibyoroshye"
             , kirundi = Just "Inyuma ya buri mwanda mukuru w'amazi"
             , somali = Just "kadib sarao walba oo jilcan"
+            }
+
+        AgeAxisLabel ->
+            { english = "Age (years-months)"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
             }
 
         AgeWord ->
