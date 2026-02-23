@@ -6,14 +6,15 @@ import Backend.FamilyNutritionActivity.Model exposing (FamilyNutritionActivity(.
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Utils exposing (isPersonAnAdult)
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
+import Date
+import Gizra.NominalDate exposing (NominalDate, diffCalendarYearsAndMonths, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.FamilyNutrition.Encounter.Model exposing (AssembledData, FamilyMember(..))
 import Pages.FamilyNutrition.Encounter.Utils exposing (generateAssembledData)
-import Pages.FamilyNutrition.ProgressReport.Svg as Svg
 import Pages.FamilyNutrition.ProgressReport.Model exposing (..)
+import Pages.FamilyNutrition.ProgressReport.Svg as Svg
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Report.View exposing (viewEntries)
 import Pages.Utils exposing (isAboveAgeOf2Years)
@@ -278,9 +279,49 @@ viewMuacPane language currentDate model data =
         isAdult =
             isPersonAnAdult currentDate displayPerson
                 |> Maybe.withDefault True
+
+        hasMuacMeasurement measurements =
+            case model.selectedFamilyMember of
+                FamilyMemberMother ->
+                    measurements.muacMother /= Nothing
+
+                FamilyMemberChild childId ->
+                    Dict.member childId measurements.muacChild
+
+        allMuacDates =
+            let
+                previousEncounterDates =
+                    List.filterMap
+                        (\( date, ( _, measurements ) ) ->
+                            if hasMuacMeasurement measurements then
+                                Just date
+
+                            else
+                                Nothing
+                        )
+                        data.previousMeasurementsWithDates
+            in
+            if hasMuacMeasurement data.measurements then
+                data.encounter.startDate :: previousEncounterDates
+
+            else
+                previousEncounterDates
+
+        earliestMuacDate =
+            List.sortWith Date.compare allMuacDates
+                |> List.head
+
+        anchorAge =
+            displayPerson.birthDate
+                |> Maybe.map
+                    (\birthDate ->
+                        diffCalendarYearsAndMonths birthDate
+                            (earliestMuacDate |> Maybe.withDefault currentDate)
+                    )
+                |> Maybe.withDefault { years = 0, months = 0 }
     in
     div [ class "pane muac" ]
         [ viewPaneHeading language Translate.MUAC
         , div [ class "pane-content" ]
-            [ Svg.viewMuacChart language isAdult ]
+            [ Svg.viewMuacChart language isAdult anchorAge ]
         ]

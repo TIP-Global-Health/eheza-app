@@ -7,9 +7,12 @@ import Svg.Attributes exposing (..)
 import Translate exposing (Language, translate)
 
 
-viewMuacChart : Language -> Bool -> Html any
-viewMuacChart language isAdult =
+viewMuacChart : Language -> Bool -> { years : Int, months : Int } -> Html any
+viewMuacChart language isAdult anchorAge =
     let
+        horizontalParts =
+            36
+
         verticalParts =
             18
 
@@ -66,7 +69,7 @@ viewMuacChart language isAdult =
                 [ transform "matrix(1 0 0 1 373 541)"
                 , class "z-score-semibold chart-label"
                 ]
-                [ text <| translate language Translate.EgaWeeks ]
+                [ text <| translate language Translate.AgeWord ]
             , text_
                 [ transform "matrix(0 -1 1 0 81 350)"
                 , class "z-score-semibold chart-label"
@@ -83,8 +86,47 @@ viewMuacChart language isAdult =
             ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.right + 7.5 |> String.fromFloat)
           )
             |> g []
-        , referenceHorizontalLines 21 ++ referenceHorizontalNumbers 21 0 2 |> g []
+        , referenceHorizontalLines horizontalParts ++ referenceHorizontalAgeLabels horizontalParts anchorAge |> g []
         ]
+
+
+referenceHorizontalAgeLabels : Int -> { years : Int, months : Int } -> List (Svg any)
+referenceHorizontalAgeLabels parts anchorAge =
+    let
+        margin =
+            widthPx / toFloat parts
+
+        anchorTotalMonths =
+            anchorAge.years * 12 + anchorAge.months
+    in
+    -- Render labels at every 3rd grid line: indices 2, 5, 8, ... 35
+    List.range 0 ((parts - 1) // 3)
+        |> List.map
+            (\step ->
+                let
+                    index =
+                        2 + step * 3
+
+                    posX =
+                        dimensionsPx.left + (toFloat (index + 1) * margin)
+
+                    totalMonths =
+                        anchorTotalMonths + (index - 2)
+
+                    labelYears =
+                        totalMonths // 12
+
+                    labelMonths =
+                        modBy 12 totalMonths
+
+                    label =
+                        String.fromInt labelYears ++ "-" ++ String.fromInt labelMonths
+
+                    posX_ =
+                        (posX - 7) |> String.fromFloat
+                in
+                text_ [ transform <| "matrix(1 0 0 1 " ++ posX_ ++ " 520)", class "z-score-semibold st17" ] [ text label ]
+            )
 
 
 frame : Svg any
