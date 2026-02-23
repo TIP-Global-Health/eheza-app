@@ -125,10 +125,10 @@ viewContent language currentDate site zscores features id isChw db model data =
     let
         displayPerson =
             case model.selectedFamilyMember of
-                MotherPage ->
+                FamilyMemberMother ->
                     data.person
 
-                ChildPage childId ->
+                FamilyMemberChild childId ->
                     List.filter (\( cid, _ ) -> cid == childId) data.children
                         |> List.head
                         |> Maybe.map Tuple.second
@@ -202,14 +202,14 @@ viewFamilyMemberLinks model data =
         motherMarkup =
             let
                 isActive =
-                    model.selectedFamilyMember == MotherPage
+                    model.selectedFamilyMember == FamilyMemberMother
 
                 attributes =
                     if isActive then
                         [ class "active" ]
 
                     else
-                        [ onClick <| SetSelectedFamilyMember MotherPage ]
+                        [ onClick <| SetSelectedFamilyMember FamilyMemberMother ]
             in
             li attributes
                 [ span [ class "icon" ]
@@ -223,14 +223,14 @@ viewFamilyMemberLinks model data =
         viewChildMarkup index ( childId, _ ) =
             let
                 isActive =
-                    model.selectedFamilyMember == ChildPage childId
+                    model.selectedFamilyMember == FamilyMemberChild childId
 
                 attributes =
                     if isActive then
                         [ class "active" ]
 
                     else
-                        [ onClick <| SetSelectedFamilyMember (ChildPage childId) ]
+                        [ onClick <| SetSelectedFamilyMember (FamilyMemberChild childId) ]
             in
             li attributes
                 [ span [ class "icon" ]
@@ -355,8 +355,8 @@ viewMainPageContent language currentDate site zscores features id isChw db data 
 
         -- Allow ending encounter once mother has completed all it's activities.
         allowEndEncounter =
-            activitiesForFamilyMember currentDate MotherPage data.children
-                |> List.all (activityCompleted MotherPage data.measurements)
+            activitiesForFamilyMember currentDate FamilyMemberMother data.children
+                |> List.all (activityCompleted FamilyMemberMother data.measurements)
     in
     [ tabs
     , innerContent
@@ -392,10 +392,10 @@ viewAhezaForm language data model =
     let
         existingValue =
             case model.selectedFamilyMember of
-                MotherPage ->
+                FamilyMemberMother ->
                     getMeasurementValueFunc data.measurements.ahezaMother
 
-                ChildPage childId ->
+                FamilyMemberChild childId ->
                     Dict.get childId data.measurements.ahezaChild
                         |> Maybe.map (Tuple.second >> .value)
 
@@ -410,10 +410,10 @@ viewAhezaForm language data model =
 
         saveMsg =
             case model.selectedFamilyMember of
-                MotherPage ->
+                FamilyMemberMother ->
                     SaveAhezaMother data.participant.person data.measurements.ahezaMother
 
-                ChildPage childId ->
+                FamilyMemberChild childId ->
                     SaveAhezaChild childId (Dict.get childId data.measurements.ahezaChild)
     in
     div [ class "ui full segment aheza" ]
@@ -447,19 +447,19 @@ viewMuacForm language currentDate site data model =
     let
         existingValue =
             case model.selectedFamilyMember of
-                MotherPage ->
+                FamilyMemberMother ->
                     getMeasurementValueFunc data.measurements.muacMother
 
-                ChildPage childId ->
+                FamilyMemberChild childId ->
                     Dict.get childId data.measurements.muacChild
                         |> Maybe.map (Tuple.second >> .value)
 
         displayPerson =
             case model.selectedFamilyMember of
-                MotherPage ->
+                FamilyMemberMother ->
                     data.person
 
-                ChildPage childId ->
+                FamilyMemberChild childId ->
                     List.filter (\( cid, _ ) -> cid == childId) data.children
                         |> List.head
                         |> Maybe.map Tuple.second
@@ -493,10 +493,10 @@ viewMuacForm language currentDate site data model =
 
         saveMsg =
             case model.selectedFamilyMember of
-                MotherPage ->
+                FamilyMemberMother ->
                     SaveMuacMother data.participant.person data.measurements.muacMother
 
-                ChildPage childId ->
+                FamilyMemberChild childId ->
                     SaveMuacChild childId (Dict.get childId data.measurements.muacChild)
     in
     div [ class "ui full segment muac" ]

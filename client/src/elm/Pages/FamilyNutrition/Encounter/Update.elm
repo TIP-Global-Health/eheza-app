@@ -238,7 +238,7 @@ update site id db msg model =
             ( { model | selectedTab = tab }, Cmd.none, [] )
 
 
-generateAutoAdvanceMsgs : FamilyNutritionEncounterId -> FamilyNutritionActivity -> ModelIndexedDb -> FamilyMemberPage -> List Msg
+generateAutoAdvanceMsgs : FamilyNutritionEncounterId -> FamilyNutritionActivity -> ModelIndexedDb -> FamilyMember -> List Msg
 generateAutoAdvanceMsgs encounterId triggeringCompletedActivity db currentMember =
     generateAssembledData encounterId db
         |> RemoteData.toMaybe

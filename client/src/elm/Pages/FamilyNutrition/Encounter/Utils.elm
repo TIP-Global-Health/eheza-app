@@ -91,27 +91,27 @@ generateAssembledData id db =
         |> RemoteData.andMap children
 
 
-nextFamilyMember : FamilyMemberPage -> List ( PersonId, Person ) -> FamilyMemberPage
+nextFamilyMember : FamilyMember -> List ( PersonId, Person ) -> FamilyMember
 nextFamilyMember current children =
     case current of
-        MotherPage ->
+        FamilyMemberMother ->
             List.head children
-                |> Maybe.map (\( childId, _ ) -> ChildPage childId)
-                |> Maybe.withDefault MotherPage
+                |> Maybe.map (\( childId, _ ) -> FamilyMemberChild childId)
+                |> Maybe.withDefault FamilyMemberMother
 
-        ChildPage currentId ->
+        FamilyMemberChild currentId ->
             let
                 findNext list =
                     case list of
                         ( id1, _ ) :: ( id2, child2 ) :: rest ->
                             if id1 == currentId then
-                                ChildPage id2
+                                FamilyMemberChild id2
 
                             else
                                 findNext (( id2, child2 ) :: rest)
 
                         _ ->
-                            MotherPage
+                            FamilyMemberMother
             in
             findNext children
 
@@ -139,13 +139,13 @@ generatePreviousMeasurements currentEncounterId participantId db =
         |> List.sortWith sortTuplesByDateDesc
 
 
-activitiesForFamilyMember : NominalDate -> FamilyMemberPage -> List ( PersonId, Person ) -> List FamilyNutritionActivity
+activitiesForFamilyMember : NominalDate -> FamilyMember -> List ( PersonId, Person ) -> List FamilyNutritionActivity
 activitiesForFamilyMember currentDate familyMember children =
     case familyMember of
-        MotherPage ->
+        FamilyMemberMother ->
             allActivities
 
-        ChildPage childId ->
+        FamilyMemberChild childId ->
             let
                 childIsAbove6Months =
                     List.filter (\( id, _ ) -> id == childId) children
@@ -161,17 +161,17 @@ activitiesForFamilyMember currentDate familyMember children =
                 List.filter ((/=) FamilyNutritionMuac) allActivities
 
 
-activityCompleted : FamilyMemberPage -> FamilyNutritionMeasurements -> FamilyNutritionActivity -> Bool
+activityCompleted : FamilyMember -> FamilyNutritionMeasurements -> FamilyNutritionActivity -> Bool
 activityCompleted familyMember measurements activity =
     case ( familyMember, activity ) of
-        ( MotherPage, FamilyNutritionAheza ) ->
+        ( FamilyMemberMother, FamilyNutritionAheza ) ->
             measurements.ahezaMother /= Nothing
 
-        ( MotherPage, FamilyNutritionMuac ) ->
+        ( FamilyMemberMother, FamilyNutritionMuac ) ->
             measurements.muacMother /= Nothing
 
-        ( ChildPage childId, FamilyNutritionAheza ) ->
+        ( FamilyMemberChild childId, FamilyNutritionAheza ) ->
             Dict.member childId measurements.ahezaChild
 
-        ( ChildPage childId, FamilyNutritionMuac ) ->
+        ( FamilyMemberChild childId, FamilyNutritionMuac ) ->
             Dict.member childId measurements.muacChild
