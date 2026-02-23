@@ -19,7 +19,7 @@ import Html.Events exposing (..)
 import Measurement.Utils exposing (ahezaFormWithDefault, getInputConstraintsMuac, muacFormWithDefault, withinConstraints)
 import Measurement.View
 import Pages.FamilyNutrition.Encounter.Model exposing (..)
-import Pages.FamilyNutrition.Encounter.Utils exposing (activityCompleted, generateAssembledData)
+import Pages.FamilyNutrition.Encounter.Utils exposing (activitiesForFamilyMember, activityCompleted, generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (isAboveAgeOf2Years, maybeToBoolTask, resolveTasksCompletedFromTotal, viewConfirmationDialog, viewEndEncounterButtonCustomColor, viewLabel, viewMeasurementInput, viewReportLink, viewSaveAction, viewSkipNCDADialog)
 import SyncManager.Model exposing (Site, SiteFeature)
@@ -258,10 +258,13 @@ viewMainPageContent :
     -> List (Html Msg)
 viewMainPageContent language currentDate site zscores features id isChw db data model =
     let
+        applicableActivities =
+            activitiesForFamilyMember currentDate model.selectedFamilyMember data.children
+
         ( completedActivities, pendingActivities ) =
             List.partition
                 (activityCompleted model.selectedFamilyMember data.measurements)
-                allActivities
+                applicableActivities
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete (List.length pendingActivities)
@@ -352,7 +355,8 @@ viewMainPageContent language currentDate site zscores features id isChw db data 
 
         -- Allow ending encounter once mother has completed all it's activities.
         allowEndEncounter =
-            List.all (activityCompleted MotherPage data.measurements) allActivities
+            activitiesForFamilyMember currentDate MotherPage data.children
+                |> List.all (activityCompleted MotherPage data.measurements)
     in
     [ tabs
     , innerContent

@@ -3,7 +3,6 @@ module Pages.FamilyNutrition.Encounter.Update exposing (update)
 import App.Model
 import Backend.Entities exposing (..)
 import Backend.FamilyNutritionActivity.Model exposing (FamilyNutritionActivity(..))
-import Backend.FamilyNutritionActivity.Utils exposing (allActivities)
 import Backend.FamilyNutritionEncounter.Model
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
@@ -12,7 +11,7 @@ import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (unwrap)
 import Measurement.Utils exposing (toAhezaValueWithDefault, toMuacValueWithDefault)
 import Pages.FamilyNutrition.Encounter.Model exposing (..)
-import Pages.FamilyNutrition.Encounter.Utils exposing (activityCompleted, generateAssembledData, nextFamilyMember)
+import Pages.FamilyNutrition.Encounter.Utils exposing (activitiesForFamilyMember, activityCompleted, generateAssembledData, nextFamilyMember)
 import Pages.Page exposing (Page(..))
 import Pages.Utils exposing (setMuacValueForSite)
 import RemoteData
@@ -246,8 +245,11 @@ generateAutoAdvanceMsgs encounterId triggeringCompletedActivity db currentMember
         |> Maybe.map
             (\assembled ->
                 let
+                    applicableActivities =
+                        activitiesForFamilyMember assembled.encounter.startDate currentMember assembled.children
+
                     allCompleted =
-                        List.filter ((/=) triggeringCompletedActivity) allActivities
+                        List.filter ((/=) triggeringCompletedActivity) applicableActivities
                             |> List.all (activityCompleted currentMember assembled.measurements)
                 in
                 if allCompleted then

@@ -3,11 +3,13 @@ module Pages.FamilyNutrition.Encounter.Utils exposing (..)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.FamilyNutritionActivity.Model exposing (FamilyNutritionActivity(..))
+import Backend.FamilyNutritionActivity.Utils exposing (allActivities)
 import Backend.FamilyNutritionEncounter.Utils exposing (getFamilyNutritionEncountersForParticipant)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
+import Backend.Person.Utils exposing (ageInMonths, isPersonAnAdult)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.FamilyNutrition.Encounter.Model exposing (..)
@@ -46,24 +48,34 @@ generateAssembledData id db =
             []
 
         children =
-            participant
-                |> RemoteData.andThen
-                    (\participant_ ->
-                        Dict.get participant_.person db.relationshipsByPerson
-                            |> Maybe.andThen RemoteData.toMaybe
-                            |> Maybe.map
-                                (Dict.values
-                                    >> List.filter (.relatedBy >> (==) MyChild)
-                                    >> List.filterMap
-                                        (\rel ->
-                                            Dict.get rel.relatedTo db.people
-                                                |> Maybe.andThen RemoteData.toMaybe
-                                                |> Maybe.map (\child -> ( rel.relatedTo, child ))
+            RemoteData.andThen
+                (\encounter_ ->
+                    participant
+                        |> RemoteData.andThen
+                            (\participant_ ->
+                                Dict.get participant_.person db.relationshipsByPerson
+                                    |> Maybe.andThen RemoteData.toMaybe
+                                    |> Maybe.map
+                                        (Dict.values
+                                            >> List.filter (.relatedBy >> (==) MyChild)
+                                            >> List.filterMap
+                                                (\rel ->
+                                                    Dict.get rel.relatedTo db.people
+                                                        |> Maybe.andThen RemoteData.toMaybe
+                                                        |> Maybe.map (\child -> ( rel.relatedTo, child ))
+                                                )
+                                            >> List.filter
+                                                (\( _, child ) ->
+                                                    isPersonAnAdult encounter_.startDate child
+                                                        |> Maybe.map not
+                                                        |> Maybe.withDefault True
+                                                )
                                         )
-                                )
-                            |> Maybe.withDefault []
-                            |> Success
-                    )
+                                    |> Maybe.withDefault []
+                                    |> Success
+                            )
+                )
+                encounter
     in
     RemoteData.map AssembledData (Success id)
         |> RemoteData.andMap encounter
@@ -97,6 +109,28 @@ nextFamilyMember current children =
                             MotherPage
             in
             findNext children
+
+
+activitiesForFamilyMember : NominalDate -> FamilyMemberPage -> List ( PersonId, Person ) -> List FamilyNutritionActivity
+activitiesForFamilyMember currentDate familyMember children =
+    case familyMember of
+        MotherPage ->
+            allActivities
+
+        ChildPage childId ->
+            let
+                childIsAbove6Months =
+                    List.filter (\( id, _ ) -> id == childId) children
+                        |> List.head
+                        |> Maybe.andThen (\( _, person ) -> ageInMonths currentDate person)
+                        |> Maybe.map (\months -> months >= 6)
+                        |> Maybe.withDefault False
+            in
+            if childIsAbove6Months then
+                allActivities
+
+            else
+                List.filter ((/=) FamilyNutritionMuac) allActivities
 
 
 activityCompleted : FamilyMemberPage -> FamilyNutritionMeasurements -> FamilyNutritionActivity -> Bool
