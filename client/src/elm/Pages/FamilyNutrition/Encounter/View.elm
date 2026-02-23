@@ -357,7 +357,7 @@ viewMainPageContent language currentDate site zscores features id isChw db data 
                         List.map viewActivityItem displayedActivities
                 ]
 
-        -- Allow ending encounter once mother has completed all it's activities.
+        -- Allow ending encounter once mother has completed all her activities.
         allowEndEncounter =
             activitiesForFamilyMember currentDate FamilyMemberMother data.children
                 |> List.all (activityCompleted FamilyMemberMother data.measurements)

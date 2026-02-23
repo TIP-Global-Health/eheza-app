@@ -1234,6 +1234,60 @@ div.page-encounter.family-nutrition {
   }
 }
 
+div.page-report.family-nutrition {
+
+  .participant-page .item .content {
+    padding-top: 0 !important;
+  }
+
+  .pane .pane-content {
+    color: $color-text;
+    padding: 20px;
+  }
+
+  .pane .pane-content .heading {
+    border-bottom: 1px solid $color-text;
+    color: $color-dark-gray;
+    display: flex;
+    font-size: 20px;
+    font-weight: 600;
+    padding: 15px 30px;
+    width: 100%;
+  }
+
+  .pane .pane-content .heading .date {
+    width: 50%;
+  }
+
+  .pane .pane-content .heading .amount {
+    width: 50%;
+  }
+
+  .pane .pane-content .entry {
+    border-bottom: 1px solid $color-lighter-gray;
+    display: flex;
+    line-height: 40px;
+    padding: 5px 30px;
+  }
+
+  .pane .pane-content .entry:last-child {
+    border-bottom: none;
+  }
+
+  .pane .pane-content .entry .cell.date {
+    width: 50%;
+  }
+
+  .pane .pane-content .entry .cell.amount {
+    width: 50%;
+  }
+
+  .pane .pane-content .entry.no-matches {
+    justify-content: center;
+    color: $color-dark-gray;
+  }
+}
+
 div.page-encounter.nutrition,
 div.page-encounter.prenatal,
 div.page-encounter.acute-illness,
@@ -4366,7 +4420,8 @@ div.page-report.demographics,
 div.page-activity.patient-record,
 div.page-report.child-scoreboard,
 div.page-report.ncd,
-div.page-report.tuberculosis {
+div.page-report.tuberculosis,
+div.page-report.family-nutrition {
   background: unset;
 
   .pane-heading {

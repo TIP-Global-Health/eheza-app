@@ -56,7 +56,7 @@ viewHeaderAndContent language currentDate site id model data =
         content =
             viewContent language currentDate model data
     in
-    div [ class "page-encounter family-nutrition" ]
+    div [ class "page-report family-nutrition" ]
         [ header
         , content
         ]
@@ -143,7 +143,7 @@ viewContent language currentDate model data =
                 |> translate language
                 |> text
     in
-    div [ class "ui items" ]
+    div [ class "ui report unstackable items" ]
         [ div [ class ("ui unstackable items participant-page " ++ thumbnailClass) ]
             [ div [ class "item" ]
                 [ div [ class "ui image" ]
