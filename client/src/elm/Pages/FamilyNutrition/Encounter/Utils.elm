@@ -14,6 +14,7 @@ import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.FamilyNutrition.Encounter.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
+import Utils.NominalDate exposing (sortTuplesByDateDesc)
 
 
 generateAssembledData : FamilyNutritionEncounterId -> ModelIndexedDb -> WebData AssembledData
@@ -44,8 +45,12 @@ generateAssembledData id db =
                     )
 
         previousMeasurementsWithDates =
-            -- @todo:
-            []
+            RemoteData.toMaybe encounter
+                |> Maybe.map
+                    (\encounter_ ->
+                        generatePreviousMeasurements (Just id) encounter_.participant db
+                    )
+                |> Maybe.withDefault []
 
         children =
             RemoteData.andThen
@@ -109,6 +114,29 @@ nextFamilyMember current children =
                             MotherPage
             in
             findNext children
+
+
+generatePreviousMeasurements :
+    Maybe FamilyNutritionEncounterId
+    -> FamilyEncounterParticipantId
+    -> ModelIndexedDb
+    -> List ( NominalDate, ( FamilyNutritionEncounterId, FamilyNutritionMeasurements ) )
+generatePreviousMeasurements currentEncounterId participantId db =
+    getFamilyNutritionEncountersForParticipant db participantId
+        |> List.filterMap
+            (\( encounterId, encounter ) ->
+                if currentEncounterId == Just encounterId then
+                    Nothing
+
+                else
+                    Dict.get encounterId db.familyNutritionMeasurements
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map
+                            (\data ->
+                                ( encounter.startDate, ( encounterId, data ) )
+                            )
+            )
+        |> List.sortWith sortTuplesByDateDesc
 
 
 activitiesForFamilyMember : NominalDate -> FamilyMemberPage -> List ( PersonId, Person ) -> List FamilyNutritionActivity
