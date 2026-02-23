@@ -863,6 +863,7 @@ type TranslationId
     | Issued
     | IssuedTo
     | KilogramShorthand
+    | KilogramsPerMonth
     | KnownAsPositiveQuestion LaboratoryTask
     | KnownPositive
     | KnownPositiveHepatitisB
@@ -9306,20 +9307,27 @@ translationSet trans =
             { english = "Issued"
             , kinyarwanda = Nothing
             , kirundi = Nothing
-            , somali = Just "La bixiyay "
+            , somali = Just "La bixiyay"
             }
 
         IssuedTo ->
             { english = "Issued To"
             , kinyarwanda = Nothing
             , kirundi = Nothing
-            , somali = Just "Loo bixiyay "
+            , somali = Just "Loo bixiyay"
             }
 
         KilogramShorthand ->
             { english = "kg"
-            , kinyarwanda = Just "kg"
-            , kirundi = Just "kg"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        KilogramsPerMonth ->
+            { english = "kg / month"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             , somali = Nothing
             }
 

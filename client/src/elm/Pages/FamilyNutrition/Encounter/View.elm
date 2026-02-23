@@ -21,7 +21,7 @@ import Measurement.View
 import Pages.FamilyNutrition.Encounter.Model exposing (..)
 import Pages.FamilyNutrition.Encounter.Utils exposing (activityCompleted, generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (isAboveAgeOf2Years, maybeToBoolTask, resolveTasksCompletedFromTotal, viewConfirmationDialog, viewEndEncounterButton, viewLabel, viewMeasurementInput, viewReportLink, viewSaveAction, viewSkipNCDADialog)
+import Pages.Utils exposing (isAboveAgeOf2Years, maybeToBoolTask, resolveTasksCompletedFromTotal, viewConfirmationDialog, viewEndEncounterButtonCustomColor, viewLabel, viewMeasurementInput, viewReportLink, viewSaveAction, viewSkipNCDADialog)
 import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewModal)
@@ -349,12 +349,16 @@ viewMainPageContent language currentDate site zscores features id isChw db data 
                     else
                         List.map viewActivityItem displayedActivities
                 ]
+
+        -- Allow ending encounter once mother has completed all it's activities.
+        allowEndEncounter =
+            List.all (activityCompleted MotherPage data.measurements) allActivities
     in
     [ tabs
     , innerContent
     , activityForm
     , div [ class "end-encounter-button-wrapper" ]
-        [ viewEndEncounterButton language True (SetDialogState <| Just DialogEndEncounter) ]
+        [ viewEndEncounterButtonCustomColor language "green" allowEndEncounter (SetDialogState <| Just DialogEndEncounter) ]
     ]
 
 
@@ -419,7 +423,7 @@ viewAhezaForm language data model =
                     currentValue
                     SetAheza
                     "aheza"
-                    Translate.PackagesPerMonth
+                    Translate.KilogramShorthand
                 ]
             , viewSaveAction language
                 saveMsg

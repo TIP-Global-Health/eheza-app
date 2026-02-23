@@ -43,9 +43,6 @@ generateAssembledData id db =
 
         previousMeasurementsWithDates =
             -- @todo:
-            -- RemoteData.toMaybe encounter
-            --     |> Maybe.map (\encounter_ -> generatePreviousMeasurements (Just id) encounter_.participant db)
-            --     |> Maybe.withDefault []
             []
 
         children =
