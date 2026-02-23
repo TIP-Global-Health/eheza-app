@@ -54,6 +54,8 @@ import Pages.EducationSession.Update
 import Pages.FamilyEncounterParticipants.Update
 import Pages.FamilyNutrition.Encounter.Model
 import Pages.FamilyNutrition.Encounter.Update
+import Pages.FamilyNutrition.ProgressReport.Model
+import Pages.FamilyNutrition.ProgressReport.Update
 import Pages.GlobalCaseManagement.Update
 import Pages.HIV.Activity.Model
 import Pages.HIV.Activity.Update
@@ -637,6 +639,19 @@ update msg model =
                             in
                             ( { data | familyNutritionEncounterPages = Dict.insert id subModel data.familyNutritionEncounterPages }
                             , Cmd.map (MsgLoggedIn << MsgPageFamilyNutritionEncounter id) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageFamilyNutritionProgressReport id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.familyNutritionProgressReportPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.FamilyNutrition.ProgressReport.Model.emptyModel
+                                        |> Pages.FamilyNutrition.ProgressReport.Update.update subMsg
+                            in
+                            ( { data | familyNutritionProgressReportPages = Dict.insert id subModel data.familyNutritionProgressReportPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageFamilyNutritionProgressReport id) subCmd
                             , extraMsgs
                             )
 

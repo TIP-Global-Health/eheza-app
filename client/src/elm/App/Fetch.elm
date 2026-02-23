@@ -26,6 +26,7 @@ import Pages.FamilyEncounterParticipants.Fetch
 import Pages.FamilyEncounterTypes.Fetch
 import Pages.FamilyNutrition.Encounter.Fetch
 import Pages.FamilyNutrition.Participant.Fetch
+import Pages.FamilyNutrition.ProgressReport.Fetch
 import Pages.GlobalCaseManagement.Fetch
 import Pages.GroupEncounterTypes.Fetch
 import Pages.HIV.Activity.Fetch
@@ -429,6 +430,10 @@ fetch model =
 
             UserPage (FamilyNutritionEncounterPage id) ->
                 Pages.FamilyNutrition.Encounter.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
+
+            UserPage (FamilyNutritionProgressReportPage id) ->
+                Pages.FamilyNutrition.ProgressReport.Fetch.fetch id model.indexedDb
                     |> List.map MsgIndexedDb
 
             UserPage (NutritionProgressReportPage id) ->

@@ -29920,6 +29920,9 @@ translateActivePage page =
                 FamilyNutritionEncounterPage _ ->
                     translationSet NutritionEncounterLabel
 
+                FamilyNutritionProgressReportPage _ ->
+                    translationSet ProgressReport
+
 
 translateChartPhrase : ChartPhrase -> TranslationSet String
 translateChartPhrase phrase =

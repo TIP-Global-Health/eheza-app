@@ -21,7 +21,7 @@ import Measurement.View
 import Pages.FamilyNutrition.Encounter.Model exposing (..)
 import Pages.FamilyNutrition.Encounter.Utils exposing (activitiesForFamilyMember, activityCompleted, generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (isAboveAgeOf2Years, maybeToBoolTask, resolveTasksCompletedFromTotal, viewConfirmationDialog, viewEndEncounterButtonCustomColor, viewLabel, viewMeasurementInput, viewReportLink, viewSaveAction, viewSkipNCDADialog)
+import Pages.Utils exposing (isAboveAgeOf2Years, maybeToBoolTask, resolveTasksCompletedFromTotal, viewConfirmationDialog, viewEndEncounterButtonCustomColor, viewLabel, viewMeasurementInput, viewSaveAction, viewSkipNCDADialog)
 import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewModal)
@@ -272,10 +272,14 @@ viewMainPageContent language currentDate site zscores features id isChw db data 
         completedTabTitle =
             translate language <| Translate.ActivitiesCompleted (List.length completedActivities)
 
+        reportsTabTitle =
+            translate language Translate.ProgressReport
+
         tabs =
             div [ class "ui tabular menu" ]
                 [ tabItem pendingTabTitle (model.selectedTab == Pending) "pending" (SetSelectedTab Pending)
                 , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
+                , tabItem reportsTabTitle False "reports" (SetActivePage <| UserPage <| FamilyNutritionProgressReportPage data.id)
                 ]
 
         displayedActivities =
