@@ -12,6 +12,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.FamilyNutrition.Encounter.Model exposing (AssembledData, FamilyMember(..))
 import Pages.FamilyNutrition.Encounter.Utils exposing (generateAssembledData)
+import Pages.FamilyNutrition.ProgressReport.Svg as Svg
 import Pages.FamilyNutrition.ProgressReport.Model exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Report.View exposing (viewEntries)
@@ -158,6 +159,7 @@ viewContent language currentDate model data =
                 ]
             ]
         , viewAhezaPane language model data
+        , viewMuacPane language currentDate model data
         ]
 
 
@@ -256,4 +258,29 @@ viewAhezaPane language model data =
         , div [ class "pane-content" ] <|
             entriesHeading
                 :: viewEntries language entries
+        ]
+
+
+viewMuacPane : Language -> NominalDate -> Model -> AssembledData -> Html Msg
+viewMuacPane language currentDate model data =
+    let
+        displayPerson =
+            case model.selectedFamilyMember of
+                FamilyMemberMother ->
+                    data.person
+
+                FamilyMemberChild childId ->
+                    List.filter (\( cid, _ ) -> cid == childId) data.children
+                        |> List.head
+                        |> Maybe.map Tuple.second
+                        |> Maybe.withDefault data.person
+
+        isAdult =
+            isPersonAnAdult currentDate displayPerson
+                |> Maybe.withDefault True
+    in
+    div [ class "pane muac" ]
+        [ viewPaneHeading language Translate.MUAC
+        , div [ class "pane-content" ]
+            [ Svg.viewMuacChart language isAdult ]
         ]
