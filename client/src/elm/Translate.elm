@@ -22,7 +22,7 @@ import Backend.Counseling.Model exposing (CounselingTopic)
 import Backend.EducationSession.Model exposing (EducationTopic(..))
 import Backend.Entities exposing (..)
 import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterType(..))
-import Backend.FamilyNutritionActivity.Model exposing (FamilyNutritionActivity(..))
+import Backend.FamilyNutritionActivity.Model exposing (FamilyActivity(..), FamilyNutritionActivity(..))
 import Backend.HIVActivity.Model exposing (HIVActivity)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)
 import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), IndividualEncounterType(..), PregnancyOutcome(..))
@@ -366,6 +366,7 @@ type TranslationId
     | ActivePage Page
     | AcuteIllnessActivityTitle AcuteIllnessActivity
     | AddChild
+    | AddChildOptional
     | AddContact
     | AddedToPatientRecordOn
     | AddFamilyMember
@@ -424,6 +425,7 @@ type TranslationId
     | All
     | AllowedValuesRangeHelper FloatInputConstraints
     | AlmostEveryday
+    | AmountDistributed
     | AmbulanceArrivalPeriodQuestion
     | ANCEncountersNotRecordedQuestion
     | ANCIndicateVisitsMonthsPhrase
@@ -453,6 +455,7 @@ type TranslationId
     | BreastfeedingSignQuestion BreastfeedingSign
     | BeatsPerMinuteUnitLabel
     | BeginNewEncounter
+    | BeginNewFamilyEncounter
     | Behind
     | BirthDefect BirthDefect
     | BirthDefectLabel
@@ -491,6 +494,7 @@ type TranslationId
     | Cancel
     | CandidiasisRecommendedTreatmentHeader
     | CandidiasisRecommendedTreatmentHelper
+    | CannotAddMoreChildren
     | CannotStartEncounterLabel
     | CardiacDisease
     | CaregiverAccompanyQuestion
@@ -514,7 +518,9 @@ type TranslationId
     | ChildNutritionSignLabel ChildNutritionSign
     | ChildName
     | ChildNutrition
+    | ChildReport
     | Children
+    | ChildrenInEncounter Int
     | ChildrenNames
     | ChildrenNationalId
     | ChildScoreboardActivityTitle ChildScoreboardActivity
@@ -589,6 +595,7 @@ type TranslationId
     | Date
     | DateConcludedEstimatedQuestion
     | DateOfContact
+    | DateOfEncounter
     | DatePregnancyConcluded
     | DashboardLabel
     | Dashboards
@@ -664,12 +671,14 @@ type TranslationId
     | EndEncounterQuestion
     | EndEncounterNoHIVDiagnosisPhrase
     | EndEncounterNoTuberculosisDiagnosisPhrase
+    | EndFamilyEncounter
     | EndGroupEncounter
     | EnrolNewborn
     | EnrolNewbornHelper Bool
     | EnrollToProgramAction
     | EnrollToProgramQuestion
     | EnterPairingCode
+    | EnterSupplementAmount
     | EntryStatusAntenatal PaneEntryStatus
     | EntryStatusDiagnosis PaneEntryStatus
     | EPDSPreformedOn
@@ -685,17 +694,30 @@ type TranslationId
     | Extremities
     | Eyes
     | Facility
+    | FamilyActivitiesCompleted Int
+    | FamilyActivitiesToComplete Int
+    | FamilyActivityHelp FamilyActivity
+    | FamilyActivityLabel FamilyActivity
+    | FamilyActivityTitle FamilyActivity
     | FamilyEncounter
+    | FamilyEncounterClosed
+    | FamilyEncounterExisting
     | FamilyEncounterLabel FamilyEncounterType
+    | FamilyEncounterNew
     | FamilyEncounterSelectVisit FamilyEncounterType
     | FamilyEncounterType FamilyEncounterType
+    | FamilyFbfDistribution
     | FamilyHistoryOfPreeclampsia
     | FamilyInformation
     | FamilyMembers
     | FamilyNutritionActivityTitle FamilyNutritionActivity
+    | FamilyNutritionEncounter
+    | FamilyNutritionProgressReport
     | FamilyPlanningCurentlyQuestion
     | FamilyPlanningInFutureQuestion
     | FamilyPlanningSignLabel FamilyPlanningSign
+    | FamilyProgressReport
+    | FamilySummary
     | FamilyUbudehe
     | FatherOrChiefId
     | FatherOrChiefName
@@ -857,6 +879,7 @@ type TranslationId
     | IntractableVomitingQuestion
     | InstructionsChooseOneMedication
     | InstructionsChooseTwoMedications
+    | InvalidSupplementAmount
     | IsCurrentlyBreastfeeding
     | IsolatedAtHome
     | IsThisYouQuestion
@@ -987,6 +1010,7 @@ type TranslationId
     | MaritalStatus MaritalStatus
     | MastitisRecommendedTreatmentHeader Bool
     | MastitisRecommendedTreatmentHelper
+    | MaximumChildrenReached
     | MeasurementNotTaken
     | MedicationCausingHypertension MedicationCausingHypertension
     | MedicationCausingHypertensionQuestion
@@ -1062,9 +1086,12 @@ type TranslationId
     | MotherId
     | MotherName String
     | MotherNameLabel
+    | MotherReport
     | MTDIn
     | MTDOut
     | MUAC
+    | MuacTrend
+    | MustSelectMother
     | MyRelatedBy MyRelatedBy
     | MyRelatedByQuestion MyRelatedBy
     | Name
@@ -1132,7 +1159,9 @@ type TranslationId
     | NoActivitiesCompletedForThisParticipant
     | NoActivitiesPending
     | NoActivitiesPendingForThisParticipant
+    | NoChildrenAdded
     | NoContactReason NoContactReason
+    | NoEncounterHistory
     | NoMatchesFound
     | None
     | NormalRange
@@ -1200,6 +1229,7 @@ type TranslationId
     | OnceInLastThreeMonths
     | OnceInTheLastTwoMonths
     | OnceYouEndTheEncounter
+    | OnceYouEndYourFamilyEncounter
     | OnceYouEndYourGroupEncounter
     | OngoingTreatmentTask OngoingTreatmentTask
     | OnlySickChild
@@ -1413,9 +1443,11 @@ type TranslationId
     | ReferToProgramAction
     | ReferToProgramQuestion
     | RegisterContactHelper
-    | RegisterParticipantHelper
+    | RegisterMother
+    | RegisterNewChild
     | RegisterNewContact
     | RegisterNewParticipant
+    | RegisterParticipantHelper
     | RegistratingHealthCenter
     | ReinforceAdherenceQuestion
     | ReinforceAdherenceTo
@@ -1900,6 +1932,8 @@ type TranslationId
     | SelectEncounterType
     | SelectExistingAcuteIllness
     | SelectExistingAcuteIllnessToRecordOutcome
+    | SelectExistingChild
+    | SelectMother
     | SelectProgram
     | SelectYourGroup
     | SelectYourHealthCenter
@@ -1949,6 +1983,7 @@ type TranslationId
     | Shared
     | Signature
     | SignOnDoorPostedQuestion
+    | SingleEncounterNoTrend
     | SkipNCDADialogConfirm
     | SkipNCDADialogQuestion
     | SkipNCDADialogReject
@@ -1978,6 +2013,9 @@ type TranslationId
     | SubsequentEncounter
     | SubsequentEncounterReferral AcuteIllnessEncounterType
     | Summary
+    | SupplementAmount
+    | SupplementAmountRequired
+    | SupplementDistributionHistory
     | SuspectedCovid19CaseAlert
     | SuspectedCovid19CaseAlertHelper
     | SuspectedCovid19CaseIsolate
@@ -2838,6 +2876,13 @@ translationSet trans =
             , somali = Just "Ku dar Canug"
             }
 
+        AddChildOptional ->
+            { english = "Add Child (Optional)"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Ku dar Canug (Ikhtiyaari)"
+            }
+
         AddContact ->
             { english = "Add Contact"
             , kinyarwanda = Just "Ongeraho uwo bahuye"
@@ -3678,6 +3723,13 @@ translationSet trans =
             , somali = Nothing
             }
 
+        AmountDistributed ->
+            { english = "Amount Distributed"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Tirada la Qeybiyay"
+            }
+
         AmbulanceArrivalPeriodQuestion ->
             { english = "How long did it take the ambulance to arrive"
             , kinyarwanda = Just "Bitwara igihe kingana gute ngo imbangukiragutabara ihagere"
@@ -3935,6 +3987,13 @@ translationSet trans =
             , kinyarwanda = Just "Tangira igikorwa gishya"
             , kirundi = Just "Ugutangura kubonana bushasha"
             , somali = Just "Bilow Ogaansho Cusub"
+            }
+
+        BeginNewFamilyEncounter ->
+            { english = "Begin New Encounter"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Billow Ogaansho Cusub"
             }
 
         Behind ->
@@ -4400,6 +4459,13 @@ translationSet trans =
             , somali = Just "Dooro dawada iyo dooska aad u qori doonto bukaanka"
             }
 
+        CannotAddMoreChildren ->
+            { english = "Maximum of 5 children reached"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Ugu badnaan 5 carruur ayaa lala kulmay"
+            }
+
         CannotStartEncounterLabel ->
             { english = "You cannot open a new encounter, as there's already a completed encounter today for"
             , kinyarwanda = Just "Ntago bishoboka gutangira isuzuma rishya, kuko hari isuzuma ryarangiye uyu munsi rya"
@@ -4672,6 +4738,13 @@ translationSet trans =
             , somali = Just "Kaarka Aqoonsiga Carruurta"
             }
 
+        ChildrenInEncounter n ->
+            { english = "Children (" ++ String.fromInt n ++ ")"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just ("Carruur (" ++ String.fromInt n ++ ")")
+            }
+
         ChildScoreboardActivityTitle activity ->
             case activity of
                 ChildScoreboardNCDA ->
@@ -4775,6 +4848,13 @@ translationSet trans =
             , kinyarwanda = Just "Imirire y'Umwana"
             , kirundi = Just "Ingaburo y’umwana"
             , somali = Just "Nafaqada Canuga"
+            }
+
+        ChildReport ->
+            { english = "Child Report"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Warbixinta Canuga"
             }
 
         Clear ->
@@ -5567,6 +5647,13 @@ translationSet trans =
             , kinyarwanda = Just "Itariki bahuriyeho"
             , kirundi = Just "Itarike yo kubonana"
             , somali = Just "Taariikhda la sameeyay Xiriirka"
+            }
+
+        DateOfEncounter ->
+            { english = "Date of Encounter"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Taariikhda Ogaanshaha"
             }
 
         DatePregnancyConcluded ->
@@ -6611,6 +6698,13 @@ translationSet trans =
             , somali = Nothing
             }
 
+        EndFamilyEncounter ->
+            { english = "End Encounter"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Dhamee Ogaanshaha"
+            }
+
         EndGroupEncounter ->
             { english = "End Group Encounter"
             , kinyarwanda = Just "Gusoza igikorwa"
@@ -6659,6 +6753,13 @@ translationSet trans =
             , kinyarwanda = Just "Umubare uhuza igikoresho cy'ikoranabuhanga na apulikasiyo"
             , kirundi = Just "andika igitigiri kabanga co guhuza"
             , somali = Just "Geli af-garadka labaalaha"
+            }
+
+        EnterSupplementAmount ->
+            { english = "Enter supplement amount"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Geli tirada boorashka"
             }
 
         EntryStatusAntenatal status ->
@@ -6845,11 +6946,121 @@ translationSet trans =
             , somali = Just "Adeega"
             }
 
+        FamilyActivitiesCompleted n ->
+            { english = "Completed (" ++ String.fromInt n ++ ")"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just ("La dhameeyay (" ++ String.fromInt n ++ ")")
+            }
+
+        FamilyActivitiesToComplete n ->
+            { english = "To Do (" ++ String.fromInt n ++ ")"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just ("La sameynayo (" ++ String.fromInt n ++ ")")
+            }
+
+        FamilyActivityHelp activity ->
+            case activity of
+                FamilyActivityFbfChild ->
+                    { english = "Every child should receive Aheza supplement. Record the amount distributed."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Just "Canug walba waa inuu helaa Aheza. Qor tirada la qeybiyay"
+                    }
+
+                FamilyActivityFbfMother ->
+                    { english = "The mother should receive Aheza supplement. Record the amount distributed."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Just "Hooyadu waa inay heshaa Aheza. Qor tirada la qeybiyay"
+                    }
+
+                FamilyActivityMuacChild ->
+                    { english = "Make sure to measure at the center of the baby's upper arm."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Just "Hubi in la cabiro cududa sare ee gacanta ilmaha"
+                    }
+
+                FamilyActivityMuacMother ->
+                    { english = "Measure at the center of the upper arm."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Just "Cabbir cududa sare ee gacanta"
+                    }
+
+        FamilyActivityLabel activity ->
+            case activity of
+                FamilyActivityFbfChild ->
+                    { english = "Enter the amount of Aheza distributed below."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Just "Geli qeybta hoose tirada Aheza ee la qeybiyay"
+                    }
+
+                FamilyActivityFbfMother ->
+                    { english = "Enter the amount of Aheza distributed below."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Just "Geli qeybta hoose tirada Aheza ee la qeybiyay"
+                    }
+
+                FamilyActivityMuacChild ->
+                    { english = "MUAC:"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Just "MUAC:"
+                    }
+
+                FamilyActivityMuacMother ->
+                    { english = "MUAC:"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Just "MUAC:"
+                    }
+
+        FamilyActivityTitle activity ->
+            case activity of
+                FamilyActivityFbfChild ->
+                    { english = "Aheza Child"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Just "Canug Aheza ah"
+                    }
+
+                FamilyActivityFbfMother ->
+                    { english = "Aheza Mother"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Just "Hooyo Aheza ah"
+                    }
+
+                FamilyActivityMuacChild ->
+                    translationSet MUAC
+
+                FamilyActivityMuacMother ->
+                    translationSet MUAC
+
         FamilyEncounter ->
             { english = "Family Encounter"
             , kinyarwanda = Nothing
             , kirundi = Nothing
-            , somali = Nothing
+            , somali = Just "Ogaanshaha Qoyska"
+            }
+
+        FamilyEncounterClosed ->
+            { english = "This encounter has been closed."
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Ogaanshahan waa la xiray"
+            }
+
+        FamilyEncounterExisting ->
+            { english = "Existing Family Encounter"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Ogaanshaha Qoyska ee Hadda"
             }
 
         FamilyEncounterLabel encounterType ->
@@ -6858,8 +7069,15 @@ translationSet trans =
                     { english = "Family Nutrition Encounter"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
-                    , somali = Nothing
+                    , somali = Just "Ogaanshaha Nafaqada Qoyska"
                     }
+
+        FamilyEncounterNew ->
+            { english = "New Family Encounter"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Ogaanshaha Cusub ee Qoyska"
+            }
 
         FamilyEncounterSelectVisit encounterType ->
             case encounterType of
@@ -6873,7 +7091,18 @@ translationSet trans =
         FamilyEncounterType encounterType ->
             case encounterType of
                 Backend.FamilyEncounterParticipant.Model.NutritionEncounter ->
-                    translationSet NutritionEncounterLabel
+                    { english = "Child Nutrition"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Just "Nafaqada Canuga"
+                    }
+
+        FamilyFbfDistribution ->
+            { english = "Aheza Distribution (Family)"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Qeybinta Aheza (Qoys)"
+            }
 
         FamilyHistoryOfPreeclampsia ->
             { english = "Family history of pre-eclampsia"
@@ -6907,6 +7136,20 @@ translationSet trans =
 
                 FamilyNutritionMuac ->
                     translationSet MUAC
+
+        FamilyNutritionEncounter ->
+            { english = "Family Nutrition Encounter"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Ogaanshaha Nafaqada Qoyska"
+            }
+
+        FamilyNutritionProgressReport ->
+            { english = "Family Nutrition Progress Report"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Warbixinta La socoshada Nafaqada Qoyska"
+            }
 
         FamilyPlanningCurentlyQuestion ->
             { english = "Which, if any, of the following methods do you use"
@@ -7017,6 +7260,20 @@ translationSet trans =
                     , kirundi = Just "ugukata imiringoti izana intanga z'abagabo"
                     , somali = Just "Xidid bixis (ragga)"
                     }
+
+        FamilyProgressReport ->
+            { english = "Family Progress Report"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Warbixinta La socoshada Qoyska"
+            }
+
+        FamilySummary ->
+            { english = "Family Summary"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Soo koobida Qoyska"
+            }
 
         FamilyUbudehe ->
             { english = "Family Ubudehe"
@@ -9280,6 +9537,13 @@ translationSet trans =
             , kinyarwanda = Just "Hitamo imiti ibiri ku rutonde uyihe umurwayi"
             , kirundi = Nothing
             , somali = Nothing
+            }
+
+        InvalidSupplementAmount ->
+            { english = "Please enter a valid whole number"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Fadlan geli lambar dhameys tiran oo shaqeynaya"
             }
 
         IsCurrentlyBreastfeeding ->
@@ -11951,6 +12215,13 @@ translationSet trans =
             , somali = Just "Dooro dawada ugu fiican ee bukaanka hoos ku xusan"
             }
 
+        MaximumChildrenReached ->
+            { english = "Maximum of 5 children per encounter"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Ugu badnaan 5 canug ogaanshihiiba"
+            }
+
         MeasurementNotTaken ->
             { english = "Unable to take measurements, skip this step"
             , kinyarwanda = Just "Ibipimo ntibyafashwe, komeza ku bikurikira"
@@ -13092,6 +13363,13 @@ translationSet trans =
             , somali = Just "Magaca Hooyada"
             }
 
+        MotherReport ->
+            { english = "Mother Report"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Warbixinta Hooyada"
+            }
+
         MTDIn ->
             { english = "MTD in"
             , kinyarwanda = Nothing
@@ -13111,6 +13389,20 @@ translationSet trans =
             , kinyarwanda = Just "Ikizigira cy'akaboko"
             , kirundi = Just "Igipimo c'inkikuro y'ukuboko"
             , somali = Nothing
+            }
+
+        MuacTrend ->
+            { english = "MUAC Trend"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Xogta MUAC"
+            }
+
+        MustSelectMother ->
+            { english = "Please select or register a mother to begin"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Si aad u billowdo fadlan dooro ama diiwaan geli hooyo"
             }
 
         MyRelatedBy relationship ->
@@ -14622,6 +14914,13 @@ translationSet trans =
             , somali = Just "Dhamaan howlaha waa loo dhameeyay qofkan"
             }
 
+        NoChildrenAdded ->
+            { english = "No children added"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Laguma darin carruur"
+            }
+
         NoContactReason reason ->
             case reason of
                 ReasonNoAnswer ->
@@ -14644,6 +14943,13 @@ translationSet trans =
                     , kirundi = Just "Yanse gukurikiranwa"
                     , somali = Just "Diiday in laga War Qabo"
                     }
+
+        NoEncounterHistory ->
+            { english = "No encounter history available"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Wax Taariikh ogaansho ah lama helin"
+            }
 
         NoMatchesFound ->
             { english = "No matches found"
@@ -15744,6 +16050,13 @@ translationSet trans =
             , kinyarwanda = Just "Igihe cyose urangije igikorwa ,nta bushobozi wongera kugira bwo guhindura ibyo winjije cyangwa amakuru."
             , kirundi = Just "Niwamara guheza umubonano, ntibikunda ko uhindura canke ngo wongeremwo amakuru/amatohoza"
             , somali = Just "Marka aad dhameyso Ogaanshaha, awood uma lahaan doontid inaad bedesho ama wax ku darto xogta"
+            }
+
+        OnceYouEndYourFamilyEncounter ->
+            { english = "Once you end this encounter, you will not be able to add or edit data for this encounter."
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Haddii aad dhameyso ogaanshahan, ma awoodi doontid inaad wax ka bedel ku sameyso ogaanshahan."
             }
 
         OnceYouEndYourGroupEncounter ->
@@ -21726,6 +22039,20 @@ translationSet trans =
             , somali = Just "Ma ahan ka qeyb qaataha aad raadineysay?"
             }
 
+        RegisterMother ->
+            { english = "Register Mother"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Diiwaan geli Hooyo"
+            }
+
+        RegisterNewChild ->
+            { english = "Register New Child"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Diiwaan geli Canug Cusub"
+            }
+
         RegisterNewContact ->
             { english = "Register a new contact"
             , kinyarwanda = Just "Andika umuntu mushya wahuye n'umurwayi"
@@ -25806,6 +26133,20 @@ translationSet trans =
             , somali = Just "Dooro Xanuun soo Bood ah leh si aad u diiwaan geliso natiijada"
             }
 
+        SelectExistingChild ->
+            { english = "Select Existing Child"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Dooro Canug horay u qornaa"
+            }
+
+        SelectMother ->
+            { english = "Select Mother"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Dooro Hooyo"
+            }
+
         SelectProgram ->
             { english = "Select Program"
             , kinyarwanda = Just "Hitamo porogaramu"
@@ -26175,6 +26516,13 @@ translationSet trans =
             , somali = Just "Maku dhajisay albaabka boorar muujinaya in goobtu tahay meel karantiil"
             }
 
+        SingleEncounterNoTrend ->
+            { english = "Only one encounter recorded - trend data will be available after additional encounters"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Hal ogaansho kaliya ayaa la qoray. Xogta dheeraadka waa lagu qori doonaa ogaanshaha"
+            }
+
         SkipNCDADialogConfirm ->
             { english = "Yes, proceed"
             , kinyarwanda = Nothing
@@ -26522,6 +26870,27 @@ translationSet trans =
             , kinyarwanda = Nothing
             , kirundi = Just "Ivyakozwe"
             , somali = Nothing
+            }
+
+        SupplementAmount ->
+            { english = "Supplement Amount"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Tirada Boorashka"
+            }
+
+        SupplementAmountRequired ->
+            { english = "Please enter the supplement amount"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Fadlan geli tirada boorashka"
+            }
+
+        SupplementDistributionHistory ->
+            { english = "Supplement Distribution History"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Taariikhda Qeybinta Boorashka"
             }
 
         SuspectedCovid19CaseAlert ->
@@ -29543,10 +29912,10 @@ translateActivePage page =
                 FamilyEncounterParticipantsPage encounterType ->
                     case encounterType of
                         Backend.FamilyEncounterParticipant.Model.NutritionEncounter ->
-                            { english = "Nutrition Participants"
+                            { english = "Family Participants"
                             , kinyarwanda = Nothing
                             , kirundi = Nothing
-                            , somali = Just "Ka qeyb galayaasha Nafaqada"
+                            , somali = Just "Xubnaha Qoyska"
                             }
 
                 RelationshipPage _ _ _ ->
@@ -29645,7 +30014,11 @@ translateActivePage page =
                     translationSet EncounterTypes
 
                 FamilyEncounterTypesPage ->
-                    translationSet EncounterTypes
+                    { english = "Family Encounter Types"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Just "Noocyada Ogaanshaha Qoyska"
+                    }
 
                 PregnancyOutcomePage _ _ ->
                     { english = "Pregnancy Outcome"
