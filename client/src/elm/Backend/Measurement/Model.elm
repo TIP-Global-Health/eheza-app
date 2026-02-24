@@ -3750,3 +3750,8 @@ type alias PreviousMeasurementsSet =
     , weights : List ( NominalDate, Float )
     , headCircumferences : List ( NominalDate, Float )
     }
+
+
+type SkippedForm
+    = SkippedHeight
+    | SkippedWeight

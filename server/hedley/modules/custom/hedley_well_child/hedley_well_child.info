@@ -105,6 +105,7 @@ features[field_instance][] = node-well_child_encounter-field_individual_particip
 features[field_instance][] = node-well_child_encounter-field_reports_data
 features[field_instance][] = node-well_child_encounter-field_scheduled_date
 features[field_instance][] = node-well_child_encounter-field_shards
+features[field_instance][] = node-well_child_encounter-field_skipped_forms
 features[field_instance][] = node-well_child_encounter-field_uuid
 features[field_instance][] = node-well_child_encounter-field_well_child_encounter_type
 features[field_instance][] = node-well_child_feeding-field_date_measured

@@ -1,4 +1,4 @@
-module Backend.AcuteIllnessActivity.Utils exposing (decodeActivityFromString, encodeActivityAsString, getActivityIcon, getAllActivities)
+module Backend.AcuteIllnessActivity.Utils exposing (activityFromString, activityToString, getActivityIcon, getAllActivities)
 
 {-| Various utilities that deal with "activities". An activity represents the
 need for a nurse to do something with respect to a person who is checked in.
@@ -16,8 +16,8 @@ import Backend.AcuteIllnessActivity.Model exposing (..)
 {-| Used for URL etc., not for display in the normal UI (since we'd translate
 for that).
 -}
-encodeActivityAsString : AcuteIllnessActivity -> String
-encodeActivityAsString activity =
+activityToString : AcuteIllnessActivity -> String
+activityToString activity =
     case activity of
         AcuteIllnessSymptoms ->
             "symptoms"
@@ -43,8 +43,8 @@ encodeActivityAsString activity =
 
 {-| The inverse of encodeActivityTypeAsString
 -}
-decodeActivityFromString : String -> Maybe AcuteIllnessActivity
-decodeActivityFromString s =
+activityFromString : String -> Maybe AcuteIllnessActivity
+activityFromString s =
     case s of
         "symptoms" ->
             Just AcuteIllnessSymptoms
@@ -76,7 +76,7 @@ decodeActivityFromString s =
 -}
 getActivityIcon : AcuteIllnessActivity -> String
 getActivityIcon activity =
-    encodeActivityAsString activity
+    activityToString activity
 
 
 getAllActivities : Bool -> List AcuteIllnessActivity

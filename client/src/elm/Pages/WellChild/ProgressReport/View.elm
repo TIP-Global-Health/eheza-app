@@ -167,7 +167,7 @@ view language currentDate zscores site features id isChw db model =
                         , setEndEncounterDialogStateMsg = SetEndEncounterDialogState
                         , startEncounterMsg = NoOp
                         }
-                    , mandatoryNutritionAssessmentTasksCompleted currentDate site assembled
+                    , mandatoryNutritionAssessmentTasksCompleted currentDate assembled
                     )
                 )
                 assembledData

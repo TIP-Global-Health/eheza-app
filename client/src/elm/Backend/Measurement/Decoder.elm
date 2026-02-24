@@ -5833,3 +5833,14 @@ decodeHIVSymptom =
 decodeHIVTreatmentReview : Decoder HIVTreatmentReview
 decodeHIVTreatmentReview =
     decodeHIVMeasurement decodeTreatmentOngoingValue
+
+
+decodeSkippedForm : Decoder SkippedForm
+decodeSkippedForm =
+    string
+        |> andThen
+            (\s ->
+                skippedFormFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized SkippedForm")
+            )
