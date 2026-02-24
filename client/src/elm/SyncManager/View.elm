@@ -347,6 +347,12 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityAcuteIllnessVitals identifier ->
                 viewMeasurement identifier "Acute Illness Vitals"
 
+            BackendAuthorityAhezaChild identifier ->
+                viewMeasurement identifier "Aheza Child"
+
+            BackendAuthorityAhezaMother identifier ->
+                viewMeasurement identifier "Aheza Mother"
+
             BackendAuthorityAppointmentConfirmation identifier ->
                 viewMeasurement identifier "Appointment Confirmation"
 
@@ -427,6 +433,12 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityFamilyNutritionEncounter identifier ->
                 text ("Family Nutrition Encounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
+
+            BackendAuthorityFamilyNutritionMuacChild identifier ->
+                viewMeasurement identifier "Family Nutrition MUAC Child"
+
+            BackendAuthorityFamilyNutritionMuacMother identifier ->
+                viewMeasurement identifier "Family Nutrition MUAC Mother"
 
             BackendAuthorityFamilyPlanning identifier ->
                 viewMeasurement identifier "Family Planning"

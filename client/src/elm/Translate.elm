@@ -22,6 +22,7 @@ import Backend.Counseling.Model exposing (CounselingTopic)
 import Backend.EducationSession.Model exposing (EducationTopic(..))
 import Backend.Entities exposing (..)
 import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterType(..))
+import Backend.FamilyNutritionActivity.Model exposing (FamilyNutritionActivity(..))
 import Backend.HIVActivity.Model exposing (HIVActivity)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)
 import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), IndividualEncounterType(..), PregnancyOutcome(..))
@@ -412,6 +413,7 @@ type TranslationId
     | AgeSingleMonthWithoutDay Int
     | AgeSingleDayWithMonth Int Int
     | AgeSingleDayWithoutMonth Int
+    | AhezaActivityLabel
     | AlertChwToFollowUp
     | AgeOneYearOld
     | AgeOneYearAndOneMonth
@@ -690,6 +692,7 @@ type TranslationId
     | FamilyHistoryOfPreeclampsia
     | FamilyInformation
     | FamilyMembers
+    | FamilyNutritionActivityTitle FamilyNutritionActivity
     | FamilyPlanningCurentlyQuestion
     | FamilyPlanningInFutureQuestion
     | FamilyPlanningSignLabel FamilyPlanningSign
@@ -860,6 +863,7 @@ type TranslationId
     | Issued
     | IssuedTo
     | KilogramShorthand
+    | KilogramsPerMonth
     | KnownAsPositiveQuestion LaboratoryTask
     | KnownPositive
     | KnownPositiveHepatitisB
@@ -3569,6 +3573,13 @@ translationSet trans =
             , kinyarwanda = Just <| String.fromInt days ++ " Umunsi"
             , kirundi = Just <| String.fromInt days ++ " Umunsi"
             , somali = Just <| String.fromInt days ++ " Maalin"
+            }
+
+        AhezaActivityLabel ->
+            { english = "Enter the amount of CSB++ (FBF) distributed below."
+            , kinyarwanda = Just "Andika ingano ya  CSB++ (FBF) yahawe hano."
+            , kirundi = Just "Injiza/andika igitigiri ca CSB++ hamwe na FBF catanzwe aha hepfo"
+            , somali = Nothing
             }
 
         AlertChwToFollowUp ->
@@ -6885,6 +6896,18 @@ translationSet trans =
             , somali = Just "Xubnaha Qoyska"
             }
 
+        FamilyNutritionActivityTitle activity ->
+            case activity of
+                FamilyNutritionAheza ->
+                    { english = "Aheza"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                FamilyNutritionMuac ->
+                    translationSet MUAC
+
         FamilyPlanningCurentlyQuestion ->
             { english = "Which, if any, of the following methods do you use"
             , kinyarwanda = Just "Ni ubuhe buryo, niba hari ubuhari, mu buryo bukurikira bwo kuboneza urubyaro ukoresha? Muri ubu buryo bukurikira bwo kuboneza urubyaro, ni ubuhe buryo mukoresha"
@@ -9284,20 +9307,27 @@ translationSet trans =
             { english = "Issued"
             , kinyarwanda = Nothing
             , kirundi = Nothing
-            , somali = Just "La bixiyay "
+            , somali = Just "La bixiyay"
             }
 
         IssuedTo ->
             { english = "Issued To"
             , kinyarwanda = Nothing
             , kirundi = Nothing
-            , somali = Just "Loo bixiyay "
+            , somali = Just "Loo bixiyay"
             }
 
         KilogramShorthand ->
             { english = "kg"
-            , kinyarwanda = Just "kg"
-            , kirundi = Just "kg"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        KilogramsPerMonth ->
+            { english = "kg / month"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             , somali = Nothing
             }
 

@@ -1164,8 +1164,73 @@ div.page-activity {
 
 div.page-encounter.family-nutrition {
 
-  .ui.unstackable.items.participant-page .item .content {
+  .participant-page .item .content {
     padding-top: 0 !important;
+  }
+
+  .ui.task.segment {
+    color: $color-text;
+  }
+
+  .ui.full.segment .content {
+
+    .label {
+      font-size: 30px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    .ui.grid .form-input.measurement {
+      margin-bottom: 10px;
+
+      input {
+        border: 2px solid $color-lighter-gray;
+        float: left;
+        font-size: 2rem;
+        height: 50px;
+        line-height: 0.5;
+        padding: 0 0.5em;
+        text-align: right;
+        width: 75%;
+      }
+
+      input:focus {
+        outline: none;
+      }
+
+      .unit {
+        float: left;
+        font-weight: normal;
+        margin-left: 20px;
+        margin-top: 10px;
+      }
+    }
+
+    .ui.grid .form-input.measurement.aheza {
+      width: 100%;
+
+      input {
+        width: 50%;
+      }
+    }
+  }
+
+  .ui.full.segment.muac .content {
+
+    .activity-helper {
+      margin-bottom: 0;
+    }
+  }
+
+  .ui.full.segment.aheza .content {
+
+    .activity-helper {
+      margin-bottom: 35px;
+    }
+  }
+
+  .end-encounter-button-wrapper .actions {
+    margin: 0 0 20px 0;
   }
 }
 

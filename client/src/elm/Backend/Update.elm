@@ -5150,6 +5150,13 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
 
             else
                 Dict.insert uuid data
+
+        familyMeasurementActionConsideringDeletedField uuid data =
+            if data.deleted then
+                Dict.remove data.participantId
+
+            else
+                Dict.insert data.participantId ( uuid, data )
     in
     case revision of
         AcuteFindingsRevision uuid data ->
@@ -5314,6 +5321,31 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 (\measurements ->
                     { measurements
                         | vitals =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
+                model
+            , recalc
+            )
+
+        AhezaChildRevision uuid data ->
+            ( mapFamilyNutritionMeasurements
+                data.encounterId
+                (\measurements -> { measurements | ahezaChild = familyMeasurementActionConsideringDeletedField uuid data measurements.ahezaChild })
+                model
+            , recalc
+            )
+
+        AhezaMotherRevision uuid data ->
+            ( mapFamilyNutritionMeasurements
+                data.encounterId
+                (\measurements ->
+                    { measurements
+                        | ahezaMother =
                             if data.deleted then
                                 Nothing
 
@@ -5785,6 +5817,31 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 | familyNutritionEncounters = familyNutritionEncounters
                 , familyNutritionEncountersByParticipant = familyNutritionEncountersByParticipant
               }
+            , recalc
+            )
+
+        FamilyNutritionMuacChildRevision uuid data ->
+            ( mapFamilyNutritionMeasurements
+                data.encounterId
+                (\measurements -> { measurements | muacChild = familyMeasurementActionConsideringDeletedField uuid data measurements.muacChild })
+                model
+            , recalc
+            )
+
+        FamilyNutritionMuacMotherRevision uuid data ->
+            ( mapFamilyNutritionMeasurements
+                data.encounterId
+                (\measurements ->
+                    { measurements
+                        | muacMother =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
+                model
             , recalc
             )
 

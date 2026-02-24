@@ -633,7 +633,7 @@ update msg model =
                                     data.familyNutritionEncounterPages
                                         |> Dict.get id
                                         |> Maybe.withDefault Pages.FamilyNutrition.Encounter.Model.emptyModel
-                                        |> Pages.FamilyNutrition.Encounter.Update.update subMsg
+                                        |> Pages.FamilyNutrition.Encounter.Update.update site id model.indexedDb subMsg
                             in
                             ( { data | familyNutritionEncounterPages = Dict.insert id subModel data.familyNutritionEncounterPages }
                             , Cmd.map (MsgLoggedIn << MsgPageFamilyNutritionEncounter id) subCmd

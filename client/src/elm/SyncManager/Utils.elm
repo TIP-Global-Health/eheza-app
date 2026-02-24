@@ -486,6 +486,12 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityAcuteIllnessVitals identifier ->
             getIdentifier identifier "acute_illness_vitals"
 
+        BackendAuthorityAhezaChild identifier ->
+            getIdentifier identifier "aheza_child"
+
+        BackendAuthorityAhezaMother identifier ->
+            getIdentifier identifier "aheza_mother"
+
         BackendAuthorityAppointmentConfirmation identifier ->
             getIdentifier identifier "appointment_confirmation"
 
@@ -563,6 +569,12 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
         BackendAuthorityFamilyNutritionEncounter identifier ->
             getIdentifier identifier "family_nutrition_encounter"
+
+        BackendAuthorityFamilyNutritionMuacChild identifier ->
+            getIdentifier identifier "family_nutrition_muac_child"
+
+        BackendAuthorityFamilyNutritionMuacMother identifier ->
+            getIdentifier identifier "family_nutrition_muac_mother"
 
         BackendAuthorityExposure identifier ->
             getIdentifier identifier "exposure"
@@ -1278,6 +1290,12 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityAcuteIllnessVitals identifier ->
             encode Backend.Measurement.Encoder.encodeAcuteIllnessVitals identifier
 
+        BackendAuthorityAhezaChild identifier ->
+            encode Backend.Measurement.Encoder.encodeAhezaChild identifier
+
+        BackendAuthorityAhezaMother identifier ->
+            encode Backend.Measurement.Encoder.encodeAhezaMother identifier
+
         BackendAuthorityAppointmentConfirmation identifier ->
             encode Backend.Measurement.Encoder.encodeAppointmentConfirmation identifier
 
@@ -1358,6 +1376,12 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityFamilyNutritionEncounter identifier ->
             encode Backend.FamilyNutritionEncounter.Encoder.encodeFamilyNutritionEncounter identifier
+
+        BackendAuthorityFamilyNutritionMuacChild identifier ->
+            encode Backend.Measurement.Encoder.encodeFamilyNutritionMuacChild identifier
+
+        BackendAuthorityFamilyNutritionMuacMother identifier ->
+            encode Backend.Measurement.Encoder.encodeFamilyNutritionMuacMother identifier
 
         BackendAuthorityFamilyPlanning identifier ->
             encode Backend.Measurement.Encoder.encodeFamilyPlanning identifier
@@ -2148,6 +2172,12 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityAcuteIllnessVitals identifier ->
             AcuteIllnessVitalsRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityAhezaChild identifier ->
+            AhezaChildRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityAhezaMother identifier ->
+            AhezaMotherRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityAppointmentConfirmation identifier ->
             AppointmentConfirmationRevision (toEntityUuid identifier.uuid) identifier.entity
 
@@ -2228,6 +2258,12 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityFamilyNutritionEncounter identifier ->
             FamilyNutritionEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityFamilyNutritionMuacChild identifier ->
+            FamilyNutritionMuacChildRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityFamilyNutritionMuacMother identifier ->
+            FamilyNutritionMuacMotherRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityFamilyPlanning identifier ->
             FamilyPlanningRevision (toEntityUuid identifier.uuid) identifier.entity

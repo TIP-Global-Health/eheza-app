@@ -1596,3 +1596,27 @@ encodeFamilyEncounterParams ids =
 familyNutritionMeasurementsEndpoint : ReadOnlyEndPoint Error FamilyNutritionEncounterId FamilyNutritionMeasurements ()
 familyNutritionMeasurementsEndpoint =
     swEndpoint "nodes/family-nutrition-measurements" decodeFamilyNutritionMeasurements
+
+
+ahezaMotherEndpoint : ReadWriteEndPoint Error AhezaMotherId AhezaMother AhezaMother ()
+ahezaMotherEndpoint =
+    swEndpoint "nodes/aheza_mother" decodeAhezaMother
+        |> withValueEncoder (object << encodeAhezaMother)
+
+
+ahezaChildEndpoint : ReadWriteEndPoint Error AhezaChildId AhezaChild AhezaChild ()
+ahezaChildEndpoint =
+    swEndpoint "nodes/aheza_child" decodeAhezaChild
+        |> withValueEncoder (object << encodeAhezaChild)
+
+
+familyNutritionMuacMotherEndpoint : ReadWriteEndPoint Error FamilyNutritionMuacMotherId FamilyNutritionMuacMother FamilyNutritionMuacMother ()
+familyNutritionMuacMotherEndpoint =
+    swEndpoint "nodes/family_nutrition_muac_mother" decodeFamilyNutritionMuacMother
+        |> withValueEncoder (object << encodeFamilyNutritionMuacMother)
+
+
+familyNutritionMuacChildEndpoint : ReadWriteEndPoint Error FamilyNutritionMuacChildId FamilyNutritionMuacChild FamilyNutritionMuacChild ()
+familyNutritionMuacChildEndpoint =
+    swEndpoint "nodes/family_nutrition_muac_child" decodeFamilyNutritionMuacChild
+        |> withValueEncoder (object << encodeFamilyNutritionMuacChild)

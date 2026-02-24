@@ -2,9 +2,9 @@ module Backend.Person.Utils exposing (..)
 
 import AssocList as Dict
 import Backend.Entities exposing (HealthCenterId)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterType)
 import Backend.FamilyEncounterParticipant.Utils exposing (familyEncounterTypeFromString, familyEncounterTypeToString)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.IndividualEncounterParticipant.Utils exposing (individualEncounterTypeToString)
 import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Model exposing (ModelIndexedDb)

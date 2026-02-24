@@ -73,6 +73,11 @@ decodeHIVMeasurement =
     decodeMeasurement "hiv_encounter"
 
 
+decodeFamilyNutritionMeasurement : Decoder value -> Decoder (Measurement FamilyNutritionEncounterId value)
+decodeFamilyNutritionMeasurement =
+    decodeMeasurement "family_nutrition_encounter"
+
+
 decodeMeasurement : String -> Decoder value -> Decoder (Measurement (EntityUuid a) value)
 decodeMeasurement encounterTag valueDecoder =
     succeed Measurement
@@ -345,6 +350,10 @@ decodeHIVMeasurements =
 decodeFamilyNutritionMeasurements : Decoder FamilyNutritionMeasurements
 decodeFamilyNutritionMeasurements =
     succeed FamilyNutritionMeasurements
+        |> optional "aheza_mother" (decodeHead decodeAhezaMother) Nothing
+        |> optional "aheza_child" (decodeChildDict decodeAhezaChild) Dict.empty
+        |> optional "family_nutrition_muac_mother" (decodeHead decodeFamilyNutritionMuacMother) Nothing
+        |> optional "family_nutrition_muac_child" (decodeChildDict decodeFamilyNutritionMuacChild) Dict.empty
 
 
 decodeStockManagementMeasurements : Decoder StockManagementMeasurements
@@ -358,6 +367,13 @@ decodeStockManagementMeasurements =
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
 decodeHead =
     map List.head << list << decodeWithEntityUuid
+
+
+decodeChildDict : Decoder (Measurement e v) -> Decoder (Dict PersonId ( EntityUuid b, Measurement e v ))
+decodeChildDict decoder =
+    list (decodeWithEntityUuid decoder)
+        |> map (List.map (\( uuid, measurement ) -> ( measurement.participantId, ( uuid, measurement ) )))
+        |> map Dict.fromList
 
 
 decodePregnancyTest : Decoder PregnancyTest
@@ -5838,3 +5854,29 @@ decodeHIVSymptom =
 decodeHIVTreatmentReview : Decoder HIVTreatmentReview
 decodeHIVTreatmentReview =
     decodeHIVMeasurement decodeTreatmentOngoingValue
+
+
+decodeAhezaMother : Decoder AhezaMother
+decodeAhezaMother =
+    field "distributed_amount" decodeFloat
+        |> decodeFamilyNutritionMeasurement
+
+
+decodeAhezaChild : Decoder AhezaChild
+decodeAhezaChild =
+    field "distributed_amount" decodeFloat
+        |> decodeFamilyNutritionMeasurement
+
+
+decodeFamilyNutritionMuacMother : Decoder FamilyNutritionMuacMother
+decodeFamilyNutritionMuacMother =
+    field "muac" decodeFloat
+        |> map MuacInCm
+        |> decodeFamilyNutritionMeasurement
+
+
+decodeFamilyNutritionMuacChild : Decoder FamilyNutritionMuacChild
+decodeFamilyNutritionMuacChild =
+    field "muac" decodeFloat
+        |> map MuacInCm
+        |> decodeFamilyNutritionMeasurement

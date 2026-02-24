@@ -78,6 +78,10 @@ type alias HIVMeasurement value =
     Measurement HIVEncounterId value
 
 
+type alias FamilyNutritionMeasurement value =
+    Measurement FamilyNutritionEncounterId value
+
+
 
 -- GROUP MEASUREMENT TYPES
 
@@ -3224,6 +3228,26 @@ type alias HIVTreatmentReview =
 
 
 
+-- Family Nutrition:
+
+
+type alias AhezaMother =
+    FamilyNutritionMeasurement Float
+
+
+type alias AhezaChild =
+    FamilyNutritionMeasurement Float
+
+
+type alias FamilyNutritionMuacMother =
+    FamilyNutritionMeasurement MuacInCm
+
+
+type alias FamilyNutritionMuacChild =
+    FamilyNutritionMeasurement MuacInCm
+
+
+
 -- Stock Management:
 
 
@@ -3630,7 +3654,11 @@ type alias HIVMeasurements =
 
 
 type alias FamilyNutritionMeasurements =
-    {}
+    { ahezaMother : Maybe ( AhezaMotherId, AhezaMother )
+    , ahezaChild : Dict PersonId ( AhezaChildId, AhezaChild )
+    , muacMother : Maybe ( FamilyNutritionMuacMotherId, FamilyNutritionMuacMother )
+    , muacChild : Dict PersonId ( FamilyNutritionMuacChildId, FamilyNutritionMuacChild )
+    }
 
 
 {-| A set of measurements that includes all required data for
