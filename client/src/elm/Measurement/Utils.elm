@@ -10102,7 +10102,7 @@ generateVaccinationProgressForChildScoreboard site measurements =
 muacMeasurementIsOff : Maybe MuacInCm -> Bool
 muacMeasurementIsOff =
     -- MUAC is not green.
-    Maybe.map (muacIndication >> (/=) ColorAlertGreen)
+    Maybe.map (muacIndicationForChild >> (/=) ColorAlertGreen)
         >> Maybe.withDefault False
 
 

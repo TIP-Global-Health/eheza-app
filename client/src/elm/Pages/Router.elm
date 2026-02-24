@@ -380,6 +380,9 @@ pageToFragment current =
                 FamilyNutritionEncounterPage id ->
                     Just <| "family-nutrition-encounter/" ++ fromEntityUuid id
 
+                FamilyNutritionProgressReportPage id ->
+                    Just <| "family-nutrition-progress-report/" ++ fromEntityUuid id
+
                 TraceContactPage id ->
                     Just <| "trace-contact/" ++ fromEntityUuid id
 
@@ -471,6 +474,7 @@ parser =
         , map (\id -> UserPage <| HIVEncounterPage id) (s "hiv-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| HIVActivityPage id activity) (s "hiv-activity" </> parseUuid </> parseHIVActivity)
         , map (\id -> UserPage <| FamilyNutritionEncounterPage id) (s "family-nutrition-encounter" </> parseUuid)
+        , map (\id -> UserPage <| FamilyNutritionProgressReportPage id) (s "family-nutrition-progress-report" </> parseUuid)
         , map (\id -> UserPage <| TraceContactPage id) (s "trace-contact" </> parseUuid)
         , map (\id initiator -> UserPage <| PatientRecordPage initiator id) (s "patient-record" </> parseUuid </> parsePatientRecordInitiator)
         , map (UserPage MessagingCenterPage) (s "messaging-center")

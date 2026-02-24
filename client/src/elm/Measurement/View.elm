@@ -16,7 +16,8 @@ import Backend.Measurement.Utils
         ( currentValues
         , getMeasurementValueFunc
         , mapMeasurementData
-        , muacIndication
+        , muacIndicationForChild
+        , muacIndicationForPerson
         , nutritionSignToString
         )
 import Backend.Model exposing (ModelIndexedDb)
@@ -204,7 +205,7 @@ muacFormConfig site =
     , inputValue = .muac
     , toBackendValue = toBackendValue
     , dateMeasured = .dateMeasured
-    , viewIndication = Just <| \language val -> viewColorAlertIndication language (muacIndication (MuacInCm val))
+    , viewIndication = Just <| \language val -> viewColorAlertIndication language (muacIndicationForChild (MuacInCm val))
     , updateMsg = UpdateMuac
     , saveMsg = \id value -> SendOutMsgChild <| SaveMuac id (MuacInCm value)
     }
@@ -3403,7 +3404,7 @@ ncdaFormInputsAndTasks language currentDate zscores site personId person config 
                                                     , div
                                                         [ class "five wide column" ]
                                                         [ showMaybe <|
-                                                            Maybe.map (muacIndication >> viewColorAlertIndication language) form.muac
+                                                            Maybe.map (muacIndicationForChild >> viewColorAlertIndication language) form.muac
                                                         ]
                                                     ]
                                                 ]
@@ -4374,7 +4375,7 @@ muacFormInputsAndTasks language currentDate site person previousValue setMuacMsg
             , div
                 [ class "five wide column" ]
                 [ showMaybe <|
-                    Maybe.map (MuacInCm >> muacIndication >> viewColorAlertIndication language) form.muac
+                    Maybe.map (MuacInCm >> muacIndicationForPerson currentDate person >> viewColorAlertIndication language) form.muac
                 ]
             ]
       , Pages.Utils.viewPreviousMeasurement language previousValue unitTransId

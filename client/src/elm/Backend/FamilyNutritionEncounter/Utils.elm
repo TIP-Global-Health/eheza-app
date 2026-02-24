@@ -8,7 +8,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils
     exposing
         ( getMeasurementValueFunc
-        , muacIndication
+        , muacIndicationForChild
         , muacValueFunc
         )
 import Backend.Model exposing (ModelIndexedDb)

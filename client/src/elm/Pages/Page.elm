@@ -212,6 +212,7 @@ type UserPage
     | StockManagementPage
     | FamilyNutritionParticipantPage FamilyParticipantInitiator PersonId
     | FamilyNutritionEncounterPage FamilyNutritionEncounterId
+    | FamilyNutritionProgressReportPage FamilyNutritionEncounterId
 
 
 type DashboardPage

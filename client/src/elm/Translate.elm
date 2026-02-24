@@ -404,6 +404,7 @@ type TranslationId
     | AdverseEvents
     | AdverseEventSinglePlural Int
     | AfterEachLiquidStool
+    | AgeAxisLabel
     | AgeWord
     | Age Int Int
     | AgeDays Int
@@ -624,6 +625,7 @@ type TranslationId
     | DifficultyBreathingLabel
     | Disabled
     | DiscordantCoupleStatus Bool Bool
+    | DistributedAmount
     | DistributionNotice DistributionNotice
     | District
     | DOB
@@ -3035,6 +3037,13 @@ translationSet trans =
             , kinyarwanda = Just "buri uko amaze kwituma ibyoroshye"
             , kirundi = Just "Inyuma ya buri mwanda mukuru w'amazi"
             , somali = Just "kadib sarao walba oo jilcan"
+            }
+
+        AgeAxisLabel ->
+            { english = "Age (years-months)"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
             }
 
         AgeWord ->
@@ -5800,6 +5809,13 @@ translationSet trans =
                 , kirundi = Nothing
                 , somali = Nothing
                 }
+
+        DistributedAmount ->
+            { english = "Distributed Amount"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
 
         DistributionNotice notice ->
             case notice of
@@ -29919,6 +29935,9 @@ translateActivePage page =
 
                 FamilyNutritionEncounterPage _ ->
                     translationSet NutritionEncounterLabel
+
+                FamilyNutritionProgressReportPage _ ->
+                    translationSet ProgressReport
 
 
 translateChartPhrase : ChartPhrase -> TranslationSet String

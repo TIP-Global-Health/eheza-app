@@ -45,6 +45,8 @@ import Pages.FamilyEncounterTypes.View
 import Pages.FamilyNutrition.Encounter.Model
 import Pages.FamilyNutrition.Encounter.View
 import Pages.FamilyNutrition.Participant.View
+import Pages.FamilyNutrition.ProgressReport.Model
+import Pages.FamilyNutrition.ProgressReport.View
 import Pages.GlobalCaseManagement.View
 import Pages.GroupEncounterTypes.View
 import Pages.HIV.Activity.Model
@@ -1084,6 +1086,21 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             model.indexedDb
                             page_
                             |> Html.map (MsgLoggedIn << MsgPageFamilyNutritionEncounter id)
+                            |> flexPageWrapper configured.config model
+
+                    FamilyNutritionProgressReportPage encounterId ->
+                        let
+                            page_ =
+                                Dict.get encounterId loggedInModel.familyNutritionProgressReportPages
+                                    |> Maybe.withDefault Pages.FamilyNutrition.ProgressReport.Model.emptyModel
+                        in
+                        Pages.FamilyNutrition.ProgressReport.View.view model.language
+                            currentDate
+                            site
+                            encounterId
+                            model.indexedDb
+                            page_
+                            |> Html.map (MsgLoggedIn << MsgPageFamilyNutritionProgressReport encounterId)
                             |> flexPageWrapper configured.config model
 
                     TraceContactPage traceContactId ->
