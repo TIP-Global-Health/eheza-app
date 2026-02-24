@@ -4,14 +4,23 @@ import Html exposing (Html)
 import Pages.Report.Svg exposing (..)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
+import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language, translate)
 
 
-viewMuacChart : Language -> Bool -> { years : Int, months : Int } -> List ( Float, Float ) -> Html any
-viewMuacChart language isAdult anchorAge muacPoints =
+viewMuacChart : Language -> Site -> Bool -> { years : Int, months : Int } -> List ( Float, Float ) -> Html any
+viewMuacChart language site isAdult anchorAge muacPoints =
     let
-        _ =
-            Debug.log "muacPoints" muacPoints
+        isBurundi =
+            site == SiteBurundi
+
+        -- Factor to convert cm values to display units (mm for Burundi).
+        displayFactor =
+            if isBurundi then
+                10
+
+            else
+                1
 
         horizontalParts =
             36
@@ -21,10 +30,10 @@ viewMuacChart language isAdult anchorAge muacPoints =
 
         ( verticalMin, verticalMax ) =
             if isAdult then
-                ( 10, 46 )
+                ( 10 * displayFactor, 46 * displayFactor )
 
             else
-                ( 0, 36 )
+                ( 0, 36 * displayFactor )
 
         verticalStep =
             heightPx / toFloat (verticalMax - verticalMin)
@@ -34,10 +43,26 @@ viewMuacChart language isAdult anchorAge muacPoints =
 
         ( redThreshold, yellowThreshold ) =
             if isAdult then
-                ( 18.5, 22 )
+                ( 18.5 * toFloat displayFactor, 22 * toFloat displayFactor )
 
             else
-                ( 11.5, 12.5 )
+                ( 11.5 * toFloat displayFactor, 12.5 * toFloat displayFactor )
+
+        verticalNumberGap =
+            2 * displayFactor
+
+        unitTransId =
+            if isBurundi then
+                Translate.UnitMillimeter
+
+            else
+                Translate.UnitCentimeter
+
+        yAxisLabel =
+            translate language Translate.MUAC
+                ++ " ("
+                ++ translate language unitTransId
+                ++ ")"
 
         verticalMinFloat =
             toFloat verticalMin
@@ -69,21 +94,27 @@ viewMuacChart language isAdult anchorAge muacPoints =
         verticalMaxFloat =
             toFloat verticalMax
 
+        displayFactorFloat =
+            toFloat displayFactor
+
         measurements =
             muacPoints
                 |> List.filterMap
                     (\( monthOffset, muacCm ) ->
                         let
+                            muacDisplay =
+                                muacCm * displayFactorFloat
+
                             gridPos =
                                 monthOffset + 3
                         in
                         if
                             withinRange gridPos 0 (toFloat horizontalParts)
-                                && withinRange muacCm verticalMinFloat verticalMaxFloat
+                                && withinRange muacDisplay verticalMinFloat verticalMaxFloat
                         then
                             Just
                                 ( dimensionsPx.left + gridPos * horizontalStep
-                                , dimensionsPx.bottom - (muacCm - verticalMinFloat) * verticalStep
+                                , dimensionsPx.bottom - (muacDisplay - verticalMinFloat) * verticalStep
                                 )
 
                         else
@@ -99,15 +130,15 @@ viewMuacChart language isAdult anchorAge muacPoints =
         [ frame
         , g []
             [ text_
-                [ transform "matrix(1 0 0 1 373 541)"
+                [ transform "matrix(1 0 0 1 325 541)"
                 , class "z-score-semibold chart-label"
                 ]
                 [ text <| translate language Translate.AgeAxisLabel ]
             , text_
-                [ transform "matrix(0 -1 1 0 81 350)"
+                [ transform "matrix(0 -1 1 0 81 380)"
                 , class "z-score-semibold chart-label"
                 ]
-                [ text <| translate language Translate.MUAC ]
+                [ text yAxisLabel ]
             ]
         , g [] <|
             [ drawPolygon redPoints "red-area"
@@ -117,8 +148,8 @@ viewMuacChart language isAdult anchorAge muacPoints =
             ]
                 ++ drawPoints "#06B9FF" measurements
         , (referenceVerticalLines verticalParts
-            ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.left - 17 |> String.fromFloat)
-            ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.right + 7.5 |> String.fromFloat)
+            ++ referenceVerticalNumbers verticalParts verticalMin verticalNumberGap (dimensionsPx.left - 17 |> String.fromFloat)
+            ++ referenceVerticalNumbers verticalParts verticalMin verticalNumberGap (dimensionsPx.right + 7.5 |> String.fromFloat)
           )
             |> g []
         , referenceHorizontalLines horizontalParts ++ referenceHorizontalAgeLabels horizontalParts anchorAge |> g []

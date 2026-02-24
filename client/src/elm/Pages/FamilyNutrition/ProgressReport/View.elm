@@ -56,7 +56,7 @@ viewHeaderAndContent language currentDate site id model data =
             viewHeader language id
 
         content =
-            viewContent language currentDate model data
+            viewContent language currentDate site model data
     in
     div [ class "page-report family-nutrition" ]
         [ header
@@ -85,10 +85,11 @@ viewHeader language id =
 viewContent :
     Language
     -> NominalDate
+    -> Site
     -> Model
     -> AssembledData
     -> Html Msg
-viewContent language currentDate model data =
+viewContent language currentDate site model data =
     let
         displayPerson =
             case model.selectedFamilyMember of
@@ -160,7 +161,7 @@ viewContent language currentDate model data =
                 ]
             ]
         , viewAhezaPane language model data
-        , viewMuacPane language currentDate model data
+        , viewMuacPane language currentDate site model data
         ]
 
 
@@ -270,8 +271,8 @@ viewAhezaPane language model data =
         ]
 
 
-viewMuacPane : Language -> NominalDate -> Model -> AssembledData -> Html Msg
-viewMuacPane language currentDate model data =
+viewMuacPane : Language -> NominalDate -> Site -> Model -> AssembledData -> Html Msg
+viewMuacPane language currentDate site model data =
     let
         displayPerson =
             case model.selectedFamilyMember of
@@ -358,5 +359,5 @@ viewMuacPane language currentDate model data =
     div [ class "pane muac" ]
         [ viewPaneHeading language Translate.MUAC
         , div [ class "pane-content" ]
-            [ Svg.viewMuacChart language isAdult anchorAge muacPoints ]
+            [ Svg.viewMuacChart language site isAdult anchorAge muacPoints ]
         ]
