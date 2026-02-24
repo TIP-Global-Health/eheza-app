@@ -41,6 +41,7 @@ type Msg
     | SaveMuacMother PersonId (Maybe ( FamilyNutritionMuacMotherId, FamilyNutritionMuacMother ))
     | SetActivePage Page
     | SetAheza String
+    | SetAhezaDistributionReason String
     | SetDialogState (Maybe DialogType)
     | SetMuac String
     | SetSelectedActivity (Maybe FamilyNutritionActivity)

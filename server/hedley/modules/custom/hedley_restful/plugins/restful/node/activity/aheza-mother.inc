@@ -12,6 +12,6 @@ $plugin = array(
   'entity_type' => 'node',
   'bundle' => 'aheza_mother',
   'description' => t('Exports the Aheza Mother bundle.'),
-  'class' => 'HedleyRestfulFamilyNutritionAheza',
+  'class' => 'HedleyRestfulFamilyNutritionAhezaMother',
   'authentication_types' => TRUE,
 );

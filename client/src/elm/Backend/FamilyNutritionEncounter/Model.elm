@@ -56,6 +56,6 @@ type Msg
     | HandleSavedMuacMother (WebData ())
     | HandleUpdatedFamilyNutritionEncounter (WebData ())
     | SaveAhezaChild PersonId (Maybe AhezaChildId) Float
-    | SaveAhezaMother PersonId (Maybe AhezaMotherId) Float
+    | SaveAhezaMother PersonId (Maybe AhezaMotherId) AhezaMotherValue
     | SaveMuacChild PersonId (Maybe FamilyNutritionMuacChildId) MuacInCm
     | SaveMuacMother PersonId (Maybe FamilyNutritionMuacMotherId) MuacInCm

@@ -3231,8 +3231,20 @@ type alias HIVTreatmentReview =
 -- Family Nutrition:
 
 
+type AhezaDistributionReason
+    = AhezaDistributionReasonBreastfeeding
+    | AhezaDistributionReasonOther
+    | AhezaDistributionReasonPregnant
+
+
+type alias AhezaMotherValue =
+    { distributedAmount : Float
+    , distributionReason : Maybe AhezaDistributionReason
+    }
+
+
 type alias AhezaMother =
-    FamilyNutritionMeasurement Float
+    FamilyNutritionMeasurement AhezaMotherValue
 
 
 type alias AhezaChild =

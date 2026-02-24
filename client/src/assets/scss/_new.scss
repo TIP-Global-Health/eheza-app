@@ -1180,10 +1180,11 @@ div.page-encounter.family-nutrition {
       margin-bottom: 20px;
     }
 
-    .ui.grid .form-input.measurement {
+    .form-input.measurement {
       margin-bottom: 10px;
 
-      input {
+      input,
+      select {
         border: 2px solid $color-lighter-gray;
         float: left;
         font-size: 2rem;
@@ -1194,7 +1195,8 @@ div.page-encounter.family-nutrition {
         width: 75%;
       }
 
-      input:focus {
+      input:focus,
+      select:focus {
         outline: none;
       }
 
@@ -1206,12 +1208,21 @@ div.page-encounter.family-nutrition {
       }
     }
 
-    .ui.grid .form-input.measurement.aheza {
+    .form-input.measurement.aheza,
+    .form-input.measurement.distribution-reason {
+      height: 60px;
+      margin-bottom: 30px;
       width: 100%;
+    }
 
-      input {
-        width: 50%;
-      }
+    .form-input.measurement.aheza input {
+      width: 70%;
+    }
+
+    .form-input.measurement.distribution-reason select {
+      background-color: $color-white;
+      text-align: center;
+      width: 70%;
     }
   }
 

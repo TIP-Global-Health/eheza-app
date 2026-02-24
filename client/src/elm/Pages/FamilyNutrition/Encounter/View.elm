@@ -6,7 +6,7 @@ import Backend.FamilyEncounterParticipant.Model exposing (FamilyParticipantIniti
 import Backend.FamilyNutritionActivity.Model exposing (FamilyNutritionActivity(..))
 import Backend.FamilyNutritionActivity.Utils exposing (allActivities, getActivityIcon)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
+import Backend.Measurement.Utils exposing (ahezaDistributionReasonToString, getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
@@ -16,12 +16,12 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Measurement.Utils exposing (ahezaFormWithDefault, getInputConstraintsMuac, muacFormWithDefault, withinConstraints)
+import Measurement.Utils exposing (ahezaFormWithDefault, ahezaMotherFormWithDefault, getInputConstraintsMuac, muacFormWithDefault, withinConstraints)
 import Measurement.View
 import Pages.FamilyNutrition.Encounter.Model exposing (..)
 import Pages.FamilyNutrition.Encounter.Utils exposing (activitiesForFamilyMember, activityCompleted, generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (isAboveAgeOf2Years, maybeToBoolTask, resolveTasksCompletedFromTotal, viewConfirmationDialog, viewEndEncounterButtonCustomColor, viewLabel, viewMeasurementInput, viewSaveAction, viewSkipNCDADialog)
+import Pages.Utils exposing (isAboveAgeOf2Years, maybeToBoolTask, resolveTasksCompletedFromTotal, viewConfirmationDialog, viewEndEncounterButtonCustomColor, viewLabel, viewMeasurementInput, viewSaveAction, viewSelectListInput, viewSkipNCDADialog)
 import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewModal)
@@ -407,17 +407,17 @@ viewAhezaForm :
     -> Html Msg
 viewAhezaForm language data model =
     let
-        existingValue =
+        form =
             case model.selectedFamilyMember of
                 FamilyMemberMother ->
-                    getMeasurementValueFunc data.measurements.ahezaMother
+                    ahezaMotherFormWithDefault model.ahezaData.form
+                        (getMeasurementValueFunc data.measurements.ahezaMother)
 
                 FamilyMemberChild childId ->
-                    Dict.get childId data.measurements.ahezaChild
-                        |> Maybe.map (Tuple.second >> .value)
-
-        form =
-            ahezaFormWithDefault model.ahezaData.form existingValue
+                    ahezaFormWithDefault model.ahezaData.form
+                        (Dict.get childId data.measurements.ahezaChild
+                            |> Maybe.map (Tuple.second >> .value)
+                        )
 
         currentValue =
             form.aheza
@@ -440,24 +440,47 @@ viewAhezaForm language data model =
 
                 FamilyMemberMother ->
                     Translate.AhezaMother
+
+        distributionReasonSection =
+            case model.selectedFamilyMember of
+                FamilyMemberMother ->
+                    [ p [] [ text <| translate language Translate.ReasonForDistribution ++ ":" ]
+                    , div [ class "form-input measurement distribution-reason" ]
+                        [ viewSelectListInput language
+                            form.distributionReason
+                            [ AhezaDistributionReasonBreastfeeding
+                            , AhezaDistributionReasonPregnant
+                            , AhezaDistributionReasonOther
+                            ]
+                            ahezaDistributionReasonToString
+                            SetAhezaDistributionReason
+                            Translate.AhezaDistributionReason
+                            "distribution-reason"
+                        ]
+                    ]
+
+                FamilyMemberChild _ ->
+                    []
     in
     div [ class "ui full segment aheza" ]
-        [ div [ class "content" ]
-            [ viewLabel language ahezaTitle
-            , p [ class "activity-helper" ]
-                [ text <| translate language Translate.AhezaActivityHelper ]
-            , div [ class "ui grid" ]
-                [ viewMeasurementInput
-                    language
-                    currentValue
-                    SetAheza
-                    "aheza"
-                    Translate.KilogramShorthand
-                ]
-            , viewSaveAction language
-                saveMsg
-                disabled
-            ]
+        [ div [ class "content" ] <|
+            viewLabel language ahezaTitle
+                :: distributionReasonSection
+                ++ [ p [ class "activity-helper" ]
+                        [ text <| translate language Translate.AhezaActivityHelper ]
+                   , div [ class "ui grid" ]
+                        [ viewMeasurementInput
+                            language
+                            currentValue
+                            SetAheza
+                            "aheza"
+                            Translate.KilogramsPerMonth
+                        ]
+                   ]
+                ++ [ viewSaveAction language
+                        saveMsg
+                        disabled
+                   ]
         ]
 
 

@@ -5858,8 +5858,22 @@ decodeHIVTreatmentReview =
 
 decodeAhezaMother : Decoder AhezaMother
 decodeAhezaMother =
-    field "distributed_amount" decodeFloat
+    (succeed AhezaMotherValue
+        |> required "distributed_amount" decodeFloat
+        |> optional "distribution_reason" (nullable decodeAhezaDistributionReason) Nothing
+    )
         |> decodeFamilyNutritionMeasurement
+
+
+decodeAhezaDistributionReason : Decoder AhezaDistributionReason
+decodeAhezaDistributionReason =
+    string
+        |> andThen
+            (\reason ->
+                ahezaDistributionReasonFromString reason
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail (reason ++ " is not a recognized AhezaDistributionReason."))
+            )
 
 
 decodeAhezaChild : Decoder AhezaChild

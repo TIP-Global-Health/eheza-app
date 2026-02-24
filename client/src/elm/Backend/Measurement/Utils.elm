@@ -4932,3 +4932,32 @@ occursInFamilySignFromString sign =
 
         _ ->
             Nothing
+
+
+ahezaDistributionReasonToString : AhezaDistributionReason -> String
+ahezaDistributionReasonToString reason =
+    case reason of
+        AhezaDistributionReasonBreastfeeding ->
+            "breastfeeding"
+
+        AhezaDistributionReasonOther ->
+            "other"
+
+        AhezaDistributionReasonPregnant ->
+            "pregnant"
+
+
+ahezaDistributionReasonFromString : String -> Maybe AhezaDistributionReason
+ahezaDistributionReasonFromString reason =
+    case reason of
+        "breastfeeding" ->
+            Just AhezaDistributionReasonBreastfeeding
+
+        "other" ->
+            Just AhezaDistributionReasonOther
+
+        "pregnant" ->
+            Just AhezaDistributionReasonPregnant
+
+        _ ->
+            Nothing

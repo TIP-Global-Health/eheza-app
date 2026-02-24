@@ -4,12 +4,12 @@ import App.Model
 import Backend.Entities exposing (..)
 import Backend.FamilyNutritionActivity.Model exposing (FamilyNutritionActivity(..))
 import Backend.FamilyNutritionEncounter.Model
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
+import Backend.Measurement.Utils exposing (ahezaDistributionReasonFromString, getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import EverySet
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (unwrap)
-import Measurement.Utils exposing (toAhezaValueWithDefault, toMuacValueWithDefault)
+import Measurement.Utils exposing (toAhezaMotherValueWithDefault, toAhezaValueWithDefault, toMuacValueWithDefault)
 import Pages.FamilyNutrition.Encounter.Model exposing (..)
 import Pages.FamilyNutrition.Encounter.Utils exposing (activitiesForFamilyMember, activityCompleted, generateAssembledData, nextFamilyMember)
 import Pages.Page exposing (Page(..))
@@ -72,7 +72,7 @@ update site id db msg model =
                     getMeasurementValueFunc saved
 
                 appMsgs =
-                    toAhezaValueWithDefault measurement model.ahezaData.form
+                    toAhezaMotherValueWithDefault measurement model.ahezaData.form
                         |> unwrap
                             []
                             (\value ->
@@ -187,6 +187,30 @@ update site id db msg model =
                                                                 Nothing
                                                         )
                                             , ahezaDirty = True
+                                        }
+                                   )
+                    in
+                    model.ahezaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ahezaData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetAhezaDistributionReason value ->
+            let
+                reason =
+                    ahezaDistributionReasonFromString value
+
+                updatedData =
+                    let
+                        updatedForm =
+                            model.ahezaData.form
+                                |> (\form ->
+                                        { form
+                                            | distributionReason = reason
+                                            , distributionReasonDirty = True
                                         }
                                    )
                     in

@@ -414,6 +414,7 @@ type TranslationId
     | AgeSingleDayWithoutMonth Int
     | AhezaActivityHelper
     | AhezaChild
+    | AhezaDistributionReason AhezaDistributionReason
     | AhezaMother
     | AlertChwToFollowUp
     | AgeOneYearOld
@@ -1380,6 +1381,7 @@ type TranslationId
     | Read
     | ReadToggle Bool
     | ReadyForReview
+    | ReasonForDistribution
     | ReasonForNotBreastfeeding BreastfeedingSign
     | ReasonForNotIsolating ReasonForNotIsolating
     | ReasonForNotTaking ReasonForNotTaking
@@ -3589,6 +3591,29 @@ translationSet trans =
             , kirundi = Nothing
             , somali = Nothing
             }
+
+        AhezaDistributionReason reason ->
+            case reason of
+                AhezaDistributionReasonBreastfeeding ->
+                    { english = "Patient is breastfeeding"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                AhezaDistributionReasonOther ->
+                    { english = "Other"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                AhezaDistributionReasonPregnant ->
+                    { english = "Patient is pregnant"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
 
         AhezaMother ->
             { english = "Aheza Mother"
@@ -20592,6 +20617,13 @@ translationSet trans =
             , kinyarwanda = Just "Busome"
             , kirundi = Just "Ivyasomwe"
             , somali = Just "Aqri"
+            }
+
+        ReasonForDistribution ->
+            { english = "Reason for distribution"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
             }
 
         ReasonForNotBreastfeeding reason ->

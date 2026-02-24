@@ -220,7 +220,7 @@ viewAhezaPane language model data =
             case model.selectedFamilyMember of
                 FamilyMemberMother ->
                     measurements.ahezaMother
-                        |> Maybe.map (\( _, measurement ) -> ( measurement.dateMeasured, measurement.value ))
+                        |> Maybe.map (\( _, measurement ) -> ( measurement.dateMeasured, measurement.value.distributedAmount ))
 
                 FamilyMemberChild childId ->
                     Dict.get childId measurements.ahezaChild

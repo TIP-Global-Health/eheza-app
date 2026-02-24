@@ -523,6 +523,44 @@ function hedley_family_nutrition_field_default_field_instances() {
   );
 
   // Exported field_instance:
+  // 'node-aheza_mother-field_distribution_reason'.
+  $field_instances['node-aheza_mother-field_distribution_reason'] = array(
+    'bundle' => 'aheza_mother',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_distribution_reason',
+    'label' => 'Distribution Reason',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 9,
+    ),
+  );
+
+  // Exported field_instance:
   // 'node-aheza_mother-field_family_nutrition_encounter'.
   $field_instances['node-aheza_mother-field_family_nutrition_encounter'] = array(
     'bundle' => 'aheza_mother',
@@ -1713,6 +1751,7 @@ function hedley_family_nutrition_field_default_field_instances() {
   t('Date Measured');
   t('Deleted');
   t('Distributed amount');
+  t('Distribution Reason');
   t('Family Nutrition Encounter');
   t('Family Participant');
   t('MUAC');
