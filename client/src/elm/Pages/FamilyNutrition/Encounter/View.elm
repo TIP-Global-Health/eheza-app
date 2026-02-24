@@ -323,6 +323,19 @@ viewMainPageContent language currentDate site zscores features id isChw db data 
 
                 isCompleted =
                     activityCompleted model.selectedFamilyMember data.measurements activity
+
+                activityTitle =
+                    case activity of
+                        FamilyNutritionAheza ->
+                            case model.selectedFamilyMember of
+                                FamilyMemberChild _ ->
+                                    Translate.AhezaChild
+
+                                FamilyMemberMother ->
+                                    Translate.AhezaMother
+
+                        FamilyNutritionMuac ->
+                            Translate.MUAC
             in
             div [ class "column" ]
                 [ a
@@ -339,7 +352,7 @@ viewMainPageContent language currentDate site zscores features id isChw db data 
                            )
                     )
                     [ span [ class <| "icon-activity-task icon-" ++ getActivityIcon activity ] []
-                    , text <| translate language (Translate.FamilyNutritionActivityTitle activity)
+                    , text <| translate language activityTitle
                     ]
                 ]
 
@@ -419,12 +432,20 @@ viewAhezaForm language data model =
 
                 FamilyMemberChild childId ->
                     SaveAhezaChild childId (Dict.get childId data.measurements.ahezaChild)
+
+        ahezaTitle =
+            case model.selectedFamilyMember of
+                FamilyMemberChild _ ->
+                    Translate.AhezaChild
+
+                FamilyMemberMother ->
+                    Translate.AhezaMother
     in
     div [ class "ui full segment aheza" ]
         [ div [ class "content" ]
-            [ viewLabel language <| Translate.FamilyNutritionActivityTitle FamilyNutritionAheza
+            [ viewLabel language ahezaTitle
             , p [ class "activity-helper" ]
-                [ text <| translate language Translate.AhezaActivityLabel ]
+                [ text <| translate language Translate.AhezaActivityHelper ]
             , div [ class "ui grid" ]
                 [ viewMeasurementInput
                     language
@@ -473,7 +494,7 @@ viewMuacForm language currentDate site data model =
             muacFormWithDefault model.muacData.form existingValue
 
         ( inputs, tasks ) =
-            Measurement.View.muacFormInputsAndTasks language currentDate site displayPerson Nothing SetMuac form
+            Measurement.View.muacFormInputsAndTasks language currentDate site displayPerson Nothing SetMuac False form
 
         ( tasksCompleted, tasksTotal ) =
             resolveTasksCompletedFromTotal tasks

@@ -2,7 +2,6 @@ module Pages.FamilyNutrition.ProgressReport.View exposing (view)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.FamilyNutritionActivity.Model exposing (FamilyNutritionActivity(..))
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (muacValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
@@ -254,9 +253,17 @@ viewAhezaPane language model data =
                         ]
                 )
                 allEntries
+
+        ahezaTitle =
+            case model.selectedFamilyMember of
+                FamilyMemberChild _ ->
+                    Translate.AhezaChild
+
+                FamilyMemberMother ->
+                    Translate.AhezaMother
     in
     div [ class "pane aheza" ]
-        [ viewPaneHeading language (Translate.FamilyNutritionActivityTitle FamilyNutritionAheza)
+        [ viewPaneHeading language ahezaTitle
         , div [ class "pane-content" ] <|
             entriesHeading
                 :: viewEntries language entries

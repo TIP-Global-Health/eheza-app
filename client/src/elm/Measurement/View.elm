@@ -4324,7 +4324,7 @@ viewMuacForm :
 viewMuacForm language currentDate site person previousValue setMuacMsg form =
     let
         ( inputs, _ ) =
-            muacFormInputsAndTasks language currentDate site person previousValue setMuacMsg form
+            muacFormInputsAndTasks language currentDate site person previousValue setMuacMsg True form
     in
     [ div [ class "ui form muac" ]
         inputs
@@ -4338,9 +4338,10 @@ muacFormInputsAndTasks :
     -> Person
     -> Maybe Float
     -> (String -> msg)
+    -> Bool
     -> MuacForm
     -> ( List (Html msg), List (Maybe Bool) )
-muacFormInputsAndTasks language currentDate site person previousValue setMuacMsg form =
+muacFormInputsAndTasks language currentDate site person previousValue setMuacMsg showRangeHelper form =
     let
         activity =
             Backend.NutritionActivity.Model.Muac
@@ -4359,10 +4360,17 @@ muacFormInputsAndTasks language currentDate site person previousValue setMuacMsg
 
                 _ ->
                     ( form.muac, Translate.UnitCentimeter )
+
+        rangeHelper =
+            if showRangeHelper then
+                p [ class "range-helper" ] [ text <| translate language (Translate.AllowedValuesRangeHelper constraints) ]
+
+            else
+                emptyNode
     in
     ( [ viewLabel language <| Translate.NutritionActivityTitle activity
       , p [ class "activity-helper" ] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
-      , p [ class "range-helper" ] [ text <| translate language (Translate.AllowedValuesRangeHelper constraints) ]
+      , rangeHelper
       , div [ class "ui grid" ]
             [ div [ class "eleven wide column" ]
                 [ viewMeasurementInput

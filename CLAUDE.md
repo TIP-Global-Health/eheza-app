@@ -140,3 +140,7 @@ Union type variants, case branches, and pattern matches must be in **alphabetica
 ### Files to Never Commit
 
 Do not commit `.ddev/.gitignore` or other DDEV-generated config files. These are local environment files and should not be included in commits.
+
+### Debug Code in Elm
+
+When committing Elm files, do not include `Debug.log` calls. Remove any `Debug.log` lines before staging.
