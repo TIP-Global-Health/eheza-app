@@ -1,9 +1,11 @@
 module Pages.FamilyNutrition.Encounter.Update exposing (update)
 
 import App.Model
+import App.Ports exposing (bindDropZone)
 import Backend.Entities exposing (..)
 import Backend.FamilyNutritionActivity.Model exposing (FamilyNutritionActivity(..))
 import Backend.FamilyNutritionEncounter.Model
+import Backend.Measurement.Model exposing (ImageUrl(..))
 import Backend.Measurement.Utils exposing (ahezaDistributionReasonFromString, getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import EverySet
@@ -29,6 +31,24 @@ update site id db msg model =
                     |> App.Model.MsgIndexedDb
               , App.Model.SetActivePage PinCodePage
               ]
+            )
+
+        DropZoneComplete result ->
+            let
+                updatedData =
+                    let
+                        updatedForm =
+                            model.photoData.form
+                                |> (\form ->
+                                        { form | url = Just (ImageUrl result.url) }
+                                   )
+                    in
+                    model.photoData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | photoData = updatedData }
+            , Cmd.none
+            , []
             )
 
         SaveAhezaChild personId saved ->
@@ -161,6 +181,35 @@ update site id db msg model =
             )
                 |> sequenceExtra (update site id db) extraMsgs
 
+        SavePhoto personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                appMsgs =
+                    case model.photoData.form.url of
+                        Just url ->
+                            [ Backend.FamilyNutritionEncounter.Model.SavePhoto personId measurementId url
+                                |> Backend.Model.MsgFamilyNutritionEncounter id
+                                |> App.Model.MsgIndexedDb
+                            ]
+
+                        Nothing ->
+                            []
+
+                extraMsgs =
+                    if List.isEmpty appMsgs then
+                        []
+
+                    else
+                        generateAutoAdvanceMsgs id FamilyNutritionPhoto db model.selectedFamilyMember
+            in
+            ( { model | photoData = emptyPhotoData }
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update site id db) extraMsgs
+
         SetActivePage page ->
             ( model
             , Cmd.none
@@ -244,22 +293,53 @@ update site id db msg model =
             )
 
         SetSelectedActivity activity ->
-            ( { model | selectedActivity = activity }, Cmd.none, [] )
+            let
+                cmd =
+                    case activity of
+                        Just FamilyNutritionPhoto ->
+                            bindDropZone ()
+
+                        _ ->
+                            Cmd.none
+            in
+            ( { model | selectedActivity = activity }, cmd, [] )
 
         SetSelectedFamilyMember member ->
+            let
+                cmd =
+                    case member of
+                        FamilyMemberChild _ ->
+                            bindDropZone ()
+
+                        FamilyMemberMother ->
+                            Cmd.none
+            in
             ( { model
                 | selectedFamilyMember = member
                 , selectedActivity = Nothing
                 , selectedTab = Pending
                 , ahezaData = emptyAhezaData
                 , muacData = emptyMuacData
+                , photoData = emptyPhotoData
               }
-            , Cmd.none
+            , cmd
             , []
             )
 
         SetSelectedTab tab ->
-            ( { model | selectedTab = tab }, Cmd.none, [] )
+            let
+                cmd =
+                    case tab of
+                        Completed ->
+                            bindDropZone ()
+
+                        Pending ->
+                            bindDropZone ()
+
+                        Reports ->
+                            Cmd.none
+            in
+            ( { model | selectedTab = tab }, cmd, [] )
 
 
 generateAutoAdvanceMsgs : FamilyNutritionEncounterId -> FamilyNutritionActivity -> ModelIndexedDb -> FamilyMember -> List Msg

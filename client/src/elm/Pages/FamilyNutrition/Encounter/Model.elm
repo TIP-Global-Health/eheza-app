@@ -8,13 +8,14 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Person.Model exposing (Person)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model exposing (AhezaForm, MuacForm, emptyAhezaForm, emptyMuacForm)
+import Measurement.Model exposing (AhezaForm, DropZoneFile, MuacForm, PhotoForm, emptyAhezaForm, emptyMuacForm, emptyPhotoForm)
 import Pages.Page exposing (Page)
 
 
 type alias Model =
     { ahezaData : AhezaData
     , muacData : MuacData
+    , photoData : PhotoData
     , selectedActivity : Maybe FamilyNutritionActivity
     , selectedTab : Tab
     , dialogState : Maybe DialogType
@@ -26,6 +27,7 @@ emptyModel : Model
 emptyModel =
     { ahezaData = emptyAhezaData
     , muacData = emptyMuacData
+    , photoData = emptyPhotoData
     , selectedActivity = Nothing
     , selectedTab = Pending
     , dialogState = Nothing
@@ -35,10 +37,12 @@ emptyModel =
 
 type Msg
     = CloseEncounter FamilyNutritionEncounterId
+    | DropZoneComplete DropZoneFile
     | SaveAhezaChild PersonId (Maybe ( AhezaChildId, AhezaChild ))
     | SaveAhezaMother PersonId (Maybe ( AhezaMotherId, AhezaMother ))
     | SaveMuacChild PersonId (Maybe ( FamilyNutritionMuacChildId, FamilyNutritionMuacChild ))
     | SaveMuacMother PersonId (Maybe ( FamilyNutritionMuacMotherId, FamilyNutritionMuacMother ))
+    | SavePhoto PersonId (Maybe ( FamilyNutritionPhotoId, FamilyNutritionPhoto ))
     | SetActivePage Page
     | SetAheza String
     | SetAhezaDistributionReason String
@@ -93,3 +97,13 @@ type alias MuacData =
 emptyMuacData : MuacData
 emptyMuacData =
     MuacData emptyMuacForm
+
+
+type alias PhotoData =
+    { form : PhotoForm
+    }
+
+
+emptyPhotoData : PhotoData
+emptyPhotoData =
+    PhotoData emptyPhotoForm

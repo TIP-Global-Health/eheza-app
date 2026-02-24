@@ -915,7 +915,6 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
       })();
       break;
 
-
     case 'IndexDbQueryUploadWhatsApp':
       (async () => {
         const batchSize = 50;

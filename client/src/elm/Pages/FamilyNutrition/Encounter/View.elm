@@ -19,9 +19,10 @@ import Html.Events exposing (..)
 import Measurement.Utils exposing (ahezaFormWithDefault, ahezaMotherFormWithDefault, getInputConstraintsMuac, muacFormWithDefault, withinConstraints)
 import Measurement.View
 import Pages.FamilyNutrition.Encounter.Model exposing (..)
+import Pages.Nutrition.Activity.View exposing (viewPhotoForm)
 import Pages.FamilyNutrition.Encounter.Utils exposing (activitiesForFamilyMember, activityCompleted, generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (isAboveAgeOf2Years, maybeToBoolTask, resolveTasksCompletedFromTotal, viewConfirmationDialog, viewEndEncounterButtonCustomColor, viewLabel, viewMeasurementInput, viewSaveAction, viewSelectListInput, viewSkipNCDADialog)
+import Pages.Utils exposing (isAboveAgeOf2Years, maybeToBoolTask, resolveTasksCompletedFromTotal, taskCompleted, viewConfirmationDialog, viewEndEncounterButtonCustomColor, viewLabel, viewMeasurementInput, viewSaveAction, viewSelectListInput, viewSkipNCDADialog, viewTasksCount)
 import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewModal)
@@ -336,6 +337,9 @@ viewMainPageContent language currentDate site zscores features id isChw db data 
 
                         FamilyNutritionMuac ->
                             Translate.MUAC
+
+                        FamilyNutritionPhoto ->
+                            Translate.Photo
             in
             div [ class "column" ]
                 [ a
@@ -398,6 +402,9 @@ viewActivityForm language currentDate site data model activity =
 
         FamilyNutritionMuac ->
             viewMuacForm language currentDate site data model
+
+        FamilyNutritionPhoto ->
+            viewPhotoActivity language currentDate data model
 
 
 viewAhezaForm :
@@ -554,3 +561,51 @@ viewMuacForm language currentDate site data model =
             saveMsg
             disabled
         ]
+
+
+viewPhotoActivity :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> Model
+    -> Html Msg
+viewPhotoActivity language currentDate data model =
+    case model.selectedFamilyMember of
+        FamilyMemberChild childId ->
+            let
+                existingMeasurement =
+                    Dict.get childId data.measurements.photo
+
+                ( displayPhoto, saveMsg, disabled ) =
+                    case model.photoData.form.url of
+                        Just url ->
+                            let
+                                photoId =
+                                    Maybe.map Tuple.first existingMeasurement
+                            in
+                            ( Just url
+                            , SavePhoto childId existingMeasurement
+                            , False
+                            )
+
+                        Nothing ->
+                            ( getMeasurementValueFunc existingMeasurement
+                            , SavePhoto childId existingMeasurement
+                            , True
+                            )
+
+                totalTasks =
+                    1
+
+                tasksCompleted =
+                    taskCompleted displayPhoto
+            in
+            div [ class "ui full segment photo" ]
+                [ viewTasksCount language tasksCompleted totalTasks
+                , div [ class "full content" ] <|
+                    viewPhotoForm language currentDate displayPhoto DropZoneComplete
+                , viewSaveAction language saveMsg disabled
+                ]
+
+        FamilyMemberMother ->
+            emptyNode

@@ -92,6 +92,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'exposure' => 'exposures',
   'family_nutrition_muac_child' => 'family-nutrition-muac-child',
   'family_nutrition_muac_mother' => 'family-nutrition-muac-mother',
+  'family_nutrition_photo' => 'family-nutrition-photo',
   'family_planning' => 'family-plannings',
   'follow_up' => 'follow-up',
   'group_health_education' => 'group-health-education',

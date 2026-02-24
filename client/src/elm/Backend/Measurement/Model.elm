@@ -3259,6 +3259,10 @@ type alias FamilyNutritionMuacChild =
     FamilyNutritionMeasurement MuacInCm
 
 
+type alias FamilyNutritionPhoto =
+    FamilyNutritionMeasurement ImageUrl
+
+
 
 -- Stock Management:
 
@@ -3670,6 +3674,7 @@ type alias FamilyNutritionMeasurements =
     , ahezaChild : Dict PersonId ( AhezaChildId, AhezaChild )
     , muacMother : Maybe ( FamilyNutritionMuacMotherId, FamilyNutritionMuacMother )
     , muacChild : Dict PersonId ( FamilyNutritionMuacChildId, FamilyNutritionMuacChild )
+    , photo : Dict PersonId ( FamilyNutritionPhotoId, FamilyNutritionPhoto )
     }
 
 

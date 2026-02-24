@@ -143,7 +143,8 @@ activitiesForFamilyMember : NominalDate -> FamilyMember -> List ( PersonId, Pers
 activitiesForFamilyMember currentDate familyMember children =
     case familyMember of
         FamilyMemberMother ->
-            allActivities
+            -- Photo is only for children, not for mother.
+            List.filter ((/=) FamilyNutritionPhoto) allActivities
 
         FamilyMemberChild childId ->
             let
@@ -170,8 +171,15 @@ activityCompleted familyMember measurements activity =
         ( FamilyMemberMother, FamilyNutritionMuac ) ->
             measurements.muacMother /= Nothing
 
+        -- Photo is not applicable for mother, but handle the case gracefully.
+        ( FamilyMemberMother, FamilyNutritionPhoto ) ->
+            True
+
         ( FamilyMemberChild childId, FamilyNutritionAheza ) ->
             Dict.member childId measurements.ahezaChild
 
         ( FamilyMemberChild childId, FamilyNutritionMuac ) ->
             Dict.member childId measurements.muacChild
+
+        ( FamilyMemberChild childId, FamilyNutritionPhoto ) ->
+            Dict.member childId measurements.photo

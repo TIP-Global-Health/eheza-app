@@ -1620,3 +1620,9 @@ familyNutritionMuacChildEndpoint : ReadWriteEndPoint Error FamilyNutritionMuacCh
 familyNutritionMuacChildEndpoint =
     swEndpoint "nodes/family_nutrition_muac_child" decodeFamilyNutritionMuacChild
         |> withValueEncoder (object << encodeFamilyNutritionMuacChild)
+
+
+familyNutritionPhotoEndpoint : ReadWriteEndPoint Error FamilyNutritionPhotoId FamilyNutritionPhoto FamilyNutritionPhoto ()
+familyNutritionPhotoEndpoint =
+    swEndpoint "nodes/family_nutrition_photo" decodeFamilyNutritionPhoto
+        |> withValueEncoder (object << encodeFamilyNutritionPhoto)

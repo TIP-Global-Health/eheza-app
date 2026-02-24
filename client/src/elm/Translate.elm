@@ -1255,6 +1255,7 @@ type TranslationId
     | Person
     | PersonHasBeenSaved
     | PertinentSymptoms
+    | Photo
     | PhotosTransferStatus
     | PhysicalConditions
     | PhysicalExam
@@ -16255,6 +16256,13 @@ translationSet trans =
             , kinyarwanda = Just " Ibimenyetso by'ingenzi"
             , kirundi = Just "Ibimenyetso bibandanya"
             , somali = Just "Calaamado sii jira"
+            }
+
+        Photo ->
+            { english = "Photo"
+            , kinyarwanda = Just "Ifoto"
+            , kirundi = Just "Ifoto"
+            , somali = Just "Sawir"
             }
 
         PhotosTransferStatus ->

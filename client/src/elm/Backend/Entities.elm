@@ -1777,3 +1777,11 @@ type alias FamilyNutritionMuacChildId =
 
 type FamilyNutritionMuacChildUuidType
     = FamilyNutritionMuacChildUuidType
+
+
+type alias FamilyNutritionPhotoId =
+    EntityUuid FamilyNutritionPhotoUuidType
+
+
+type FamilyNutritionPhotoUuidType
+    = FamilyNutritionPhotoUuidType

@@ -354,6 +354,7 @@ decodeFamilyNutritionMeasurements =
         |> optional "aheza_child" (decodeChildDict decodeAhezaChild) Dict.empty
         |> optional "family_nutrition_muac_mother" (decodeHead decodeFamilyNutritionMuacMother) Nothing
         |> optional "family_nutrition_muac_child" (decodeChildDict decodeFamilyNutritionMuacChild) Dict.empty
+        |> optional "family_nutrition_photo" (decodeChildDict decodeFamilyNutritionPhoto) Dict.empty
 
 
 decodeStockManagementMeasurements : Decoder StockManagementMeasurements
@@ -5893,4 +5894,11 @@ decodeFamilyNutritionMuacChild : Decoder FamilyNutritionMuacChild
 decodeFamilyNutritionMuacChild =
     field "muac" decodeFloat
         |> map MuacInCm
+        |> decodeFamilyNutritionMeasurement
+
+
+decodeFamilyNutritionPhoto : Decoder FamilyNutritionPhoto
+decodeFamilyNutritionPhoto =
+    field "photo" (decodeStringWithDefault "")
+        |> map ImageUrl
         |> decodeFamilyNutritionMeasurement

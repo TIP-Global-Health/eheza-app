@@ -60,6 +60,12 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             , triggerRollbarOnFailure data
             )
 
+        HandleSavedPhoto data ->
+            ( { model | savePhoto = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
+
         HandleUpdatedFamilyNutritionEncounter data ->
             ( { model | updateFamilyNutritionEncounter = data }
             , Cmd.none
@@ -87,5 +93,11 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
         SaveMuacMother personId valueId value ->
             ( { model | saveMuacMother = Loading }
             , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value familyNutritionMuacMotherEndpoint HandleSavedMuacMother
+            , []
+            )
+
+        SavePhoto personId valueId value ->
+            ( { model | savePhoto = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value familyNutritionPhotoEndpoint HandleSavedPhoto
             , []
             )

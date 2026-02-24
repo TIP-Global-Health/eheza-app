@@ -169,6 +169,9 @@ decodeRevision =
                     "family_nutrition_muac_mother" ->
                         decodeWithUuid FamilyNutritionMuacMotherRevision decodeFamilyNutritionMuacMother
 
+                    "family_nutrition_photo" ->
+                        decodeWithUuid FamilyNutritionPhotoRevision decodeFamilyNutritionPhoto
+
                     "family_planning" ->
                         decodeWithUuid FamilyPlanningRevision decodeFamilyPlanning
 

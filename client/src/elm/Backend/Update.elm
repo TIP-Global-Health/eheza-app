@@ -5845,6 +5845,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        FamilyNutritionPhotoRevision uuid data ->
+            ( mapFamilyNutritionMeasurements
+                data.encounterId
+                (\measurements -> { measurements | photo = familyMeasurementActionConsideringDeletedField uuid data measurements.photo })
+                model
+            , recalc
+            )
+
         FamilyPlanningRevision uuid data ->
             ( mapMotherMeasurements
                 data.participantId

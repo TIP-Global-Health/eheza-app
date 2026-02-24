@@ -4664,3 +4664,8 @@ encodeFamilyNutritionMuacMother =
 encodeFamilyNutritionMuacChild : FamilyNutritionMuacChild -> List ( String, Value )
 encodeFamilyNutritionMuacChild =
     encodeFamilyNutritionMeasurement (encodeMuacValueWithType "family_nutrition_muac_child")
+
+
+encodeFamilyNutritionPhoto : FamilyNutritionPhoto -> List ( String, Value )
+encodeFamilyNutritionPhoto =
+    encodeFamilyNutritionMeasurement (encodeImageUrlWithType "family_nutrition_photo")
