@@ -5150,6 +5150,13 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
 
             else
                 Dict.insert uuid data
+
+        familyMeasurementActionConsideringDeletedField uuid data =
+            if data.deleted then
+                Dict.remove data.participantId
+
+            else
+                Dict.insert data.participantId ( uuid, data )
     in
     case revision of
         AcuteFindingsRevision uuid data ->
@@ -5328,7 +5335,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         AhezaChildRevision uuid data ->
             ( mapFamilyNutritionMeasurements
                 data.encounterId
-                (\measurements -> { measurements | ahezaChild = Dict.insert data.participantId ( uuid, data ) measurements.ahezaChild })
+                (\measurements -> { measurements | ahezaChild = familyMeasurementActionConsideringDeletedField uuid data measurements.ahezaChild })
                 model
             , recalc
             )
@@ -5816,7 +5823,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         FamilyNutritionMuacChildRevision uuid data ->
             ( mapFamilyNutritionMeasurements
                 data.encounterId
-                (\measurements -> { measurements | muacChild = Dict.insert data.participantId ( uuid, data ) measurements.muacChild })
+                (\measurements -> { measurements | muacChild = familyMeasurementActionConsideringDeletedField uuid data measurements.muacChild })
                 model
             , recalc
             )
