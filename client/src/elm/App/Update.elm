@@ -240,9 +240,6 @@ updateAndThenFetch msg model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
-        _ =
-            Debug.log "" model.activePage
-
         currentDate =
             fromLocalDateTime model.currentTime
 
