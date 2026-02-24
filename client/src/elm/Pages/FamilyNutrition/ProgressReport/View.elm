@@ -8,7 +8,7 @@ import Backend.Measurement.Utils exposing (muacValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Utils exposing (isPersonAnAdult)
 import Date
-import Gizra.NominalDate exposing (NominalDate, diffCalendarYearsAndMonths, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate, diffCalendarYearsAndMonths, diffDays, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -331,18 +331,18 @@ viewMuacPane language currentDate model data =
                     (\birthDate ->
                         let
                             anchorTotalMonths =
-                                anchorAge.years * 12 + anchorAge.months
+                                toFloat (anchorAge.years * 12 + anchorAge.months)
                         in
                         List.map
                             (\( date, value ) ->
                                 let
-                                    ageAtDate =
-                                        diffCalendarYearsAndMonths birthDate date
+                                    ageInMonths =
+                                        toFloat (diffDays birthDate date) / 30.4375
 
-                                    totalMonths =
-                                        ageAtDate.years * 12 + ageAtDate.months
+                                    monthOffset =
+                                        ageInMonths - anchorTotalMonths
                                 in
-                                ( totalMonths - anchorTotalMonths, value )
+                                ( monthOffset, value )
                             )
                             allMuacValues
                     )

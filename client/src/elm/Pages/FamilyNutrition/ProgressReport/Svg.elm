@@ -7,9 +7,12 @@ import Svg.Attributes exposing (..)
 import Translate exposing (Language, translate)
 
 
-viewMuacChart : Language -> Bool -> { years : Int, months : Int } -> List ( Int, Float ) -> Html any
+viewMuacChart : Language -> Bool -> { years : Int, months : Int } -> List ( Float, Float ) -> Html any
 viewMuacChart language isAdult anchorAge muacPoints =
     let
+        _ =
+            Debug.log "muacPoints" muacPoints
+
         horizontalParts =
             36
 
@@ -72,7 +75,7 @@ viewMuacChart language isAdult anchorAge muacPoints =
                     (\( monthOffset, muacCm ) ->
                         let
                             gridPos =
-                                toFloat monthOffset + 3
+                                monthOffset + 3
                         in
                         if
                             withinRange gridPos 0 (toFloat horizontalParts)
