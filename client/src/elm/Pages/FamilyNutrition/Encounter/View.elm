@@ -579,10 +579,6 @@ viewPhotoActivity language currentDate data model =
                 ( displayPhoto, saveMsg, disabled ) =
                     case model.photoData.form.url of
                         Just url ->
-                            let
-                                photoId =
-                                    Maybe.map Tuple.first existingMeasurement
-                            in
                             ( Just url
                             , SavePhoto childId existingMeasurement
                             , False
