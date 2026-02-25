@@ -123,9 +123,31 @@ viewContent :
     -> AssembledData
     -> Html Msg
 viewContent language currentDate site zscores features id isChw db model data =
+    case model.selectedFamilyMember of
+        Just familyMember ->
+            viewContentForMember language currentDate site zscores features id isChw db model data familyMember
+
+        Nothing ->
+            viewContentAllCompleted language id model data
+
+
+viewContentForMember :
+    Language
+    -> NominalDate
+    -> Site
+    -> ZScore.Model.Model
+    -> EverySet SiteFeature
+    -> FamilyNutritionEncounterId
+    -> Bool
+    -> ModelIndexedDb
+    -> Model
+    -> AssembledData
+    -> FamilyMember
+    -> Html Msg
+viewContentForMember language currentDate site zscores features id isChw db model data familyMember =
     let
         displayPerson =
-            case model.selectedFamilyMember of
+            case familyMember of
                 FamilyMemberMother ->
                     data.person
 
@@ -192,9 +214,31 @@ viewContent language currentDate site zscores features id isChw db model data =
                 ]
             ]
         ]
-        :: viewMainPageContent language currentDate site zscores features id isChw db data model
+        :: viewMainPageContent language currentDate site zscores features id isChw db data model familyMember
     )
         |> div [ class "ui items" ]
+
+
+viewContentAllCompleted :
+    Language
+    -> FamilyNutritionEncounterId
+    -> Model
+    -> AssembledData
+    -> Html Msg
+viewContentAllCompleted language id model data =
+    div [ class "ui items" ]
+        [ div [ class "ui unstackable items participant-page mother" ]
+            [ div [ class "item" ]
+                [ div [ class "content" ]
+                    [ viewFamilyMemberLinks model data
+                    ]
+                ]
+            ]
+        , div [ class "ui task segment" ]
+            [ span [] [ text <| translate language Translate.NoActivitiesPending ] ]
+        , div [ class "end-encounter-button-wrapper" ]
+            [ viewEndEncounterButtonCustomColor language "green" True (SetDialogState <| Just DialogEndEncounter) ]
+        ]
 
 
 viewFamilyMemberLinks : Model -> AssembledData -> Html Msg
@@ -203,14 +247,14 @@ viewFamilyMemberLinks model data =
         motherMarkup =
             let
                 isActive =
-                    model.selectedFamilyMember == FamilyMemberMother
+                    model.selectedFamilyMember == Just FamilyMemberMother
 
                 attributes =
                     if isActive then
                         [ class "active" ]
 
                     else
-                        [ onClick <| SetSelectedFamilyMember FamilyMemberMother ]
+                        [ onClick <| SetSelectedFamilyMember (Just FamilyMemberMother) ]
             in
             li attributes
                 [ span [ class "icon" ]
@@ -224,14 +268,14 @@ viewFamilyMemberLinks model data =
         viewChildMarkup index ( childId, _ ) =
             let
                 isActive =
-                    model.selectedFamilyMember == FamilyMemberChild childId
+                    model.selectedFamilyMember == Just (FamilyMemberChild childId)
 
                 attributes =
                     if isActive then
                         [ class "active" ]
 
                     else
-                        [ onClick <| SetSelectedFamilyMember (FamilyMemberChild childId) ]
+                        [ onClick <| SetSelectedFamilyMember (Just (FamilyMemberChild childId)) ]
             in
             li attributes
                 [ span [ class "icon" ]
@@ -256,15 +300,16 @@ viewMainPageContent :
     -> ModelIndexedDb
     -> AssembledData
     -> Model
+    -> FamilyMember
     -> List (Html Msg)
-viewMainPageContent language currentDate site zscores features id isChw db data model =
+viewMainPageContent language currentDate site zscores features id isChw db data model familyMember =
     let
         applicableActivities =
-            activitiesForFamilyMember currentDate model.selectedFamilyMember data.children
+            activitiesForFamilyMember currentDate familyMember data.children
 
         ( completedActivities, pendingActivities ) =
             List.partition
-                (activityCompleted model.selectedFamilyMember data.measurements)
+                (activityCompleted familyMember data.measurements)
                 applicableActivities
 
         pendingTabTitle =
@@ -323,12 +368,12 @@ viewMainPageContent language currentDate site zscores features id isChw db data 
                     selectedActivity == Just activity
 
                 isCompleted =
-                    activityCompleted model.selectedFamilyMember data.measurements activity
+                    activityCompleted familyMember data.measurements activity
 
                 activityTitle =
                     case activity of
                         FamilyNutritionAheza ->
-                            case model.selectedFamilyMember of
+                            case familyMember of
                                 FamilyMemberChild _ ->
                                     Translate.AhezaChild
 
@@ -361,7 +406,7 @@ viewMainPageContent language currentDate site zscores features id isChw db data 
                 ]
 
         activityForm =
-            Maybe.map (viewActivityForm language currentDate site data model) selectedActivity
+            Maybe.map (viewActivityForm language currentDate site data model familyMember) selectedActivity
                 |> Maybe.withDefault emptyNode
 
         innerContent =
@@ -393,29 +438,31 @@ viewActivityForm :
     -> Site
     -> AssembledData
     -> Model
+    -> FamilyMember
     -> FamilyNutritionActivity
     -> Html Msg
-viewActivityForm language currentDate site data model activity =
+viewActivityForm language currentDate site data model familyMember activity =
     case activity of
         FamilyNutritionAheza ->
-            viewAhezaForm language data model
+            viewAhezaForm language data model familyMember
 
         FamilyNutritionMuac ->
-            viewMuacForm language currentDate site data model
+            viewMuacForm language currentDate site data model familyMember
 
         FamilyNutritionPhoto ->
-            viewPhotoActivity language currentDate data model
+            viewPhotoActivity language currentDate data model familyMember
 
 
 viewAhezaForm :
     Language
     -> AssembledData
     -> Model
+    -> FamilyMember
     -> Html Msg
-viewAhezaForm language data model =
+viewAhezaForm language data model familyMember =
     let
         form =
-            case model.selectedFamilyMember of
+            case familyMember of
                 FamilyMemberMother ->
                     ahezaMotherFormWithDefault model.ahezaData.form
                         (getMeasurementValueFunc data.measurements.ahezaMother)
@@ -433,7 +480,7 @@ viewAhezaForm language data model =
             currentValue == Nothing
 
         saveMsg =
-            case model.selectedFamilyMember of
+            case familyMember of
                 FamilyMemberMother ->
                     SaveAhezaMother data.participant.person data.measurements.ahezaMother
 
@@ -441,7 +488,7 @@ viewAhezaForm language data model =
                     SaveAhezaChild childId (Dict.get childId data.measurements.ahezaChild)
 
         ahezaTitle =
-            case model.selectedFamilyMember of
+            case familyMember of
                 FamilyMemberChild _ ->
                     Translate.AhezaChild
 
@@ -449,7 +496,7 @@ viewAhezaForm language data model =
                     Translate.AhezaMother
 
         distributionReasonSection =
-            case model.selectedFamilyMember of
+            case familyMember of
                 FamilyMemberMother ->
                     [ p [] [ text <| translate language Translate.ReasonForDistribution ++ ":" ]
                     , div [ class "form-input measurement distribution-reason" ]
@@ -497,11 +544,12 @@ viewMuacForm :
     -> Site
     -> AssembledData
     -> Model
+    -> FamilyMember
     -> Html Msg
-viewMuacForm language currentDate site data model =
+viewMuacForm language currentDate site data model familyMember =
     let
         existingValue =
-            case model.selectedFamilyMember of
+            case familyMember of
                 FamilyMemberMother ->
                     getMeasurementValueFunc data.measurements.muacMother
 
@@ -510,7 +558,7 @@ viewMuacForm language currentDate site data model =
                         |> Maybe.map (Tuple.second >> .value)
 
         displayPerson =
-            case model.selectedFamilyMember of
+            case familyMember of
                 FamilyMemberMother ->
                     data.person
 
@@ -547,7 +595,7 @@ viewMuacForm language currentDate site data model =
                    )
 
         saveMsg =
-            case model.selectedFamilyMember of
+            case familyMember of
                 FamilyMemberMother ->
                     SaveMuacMother data.participant.person data.measurements.muacMother
 
@@ -568,9 +616,10 @@ viewPhotoActivity :
     -> NominalDate
     -> AssembledData
     -> Model
+    -> FamilyMember
     -> Html Msg
-viewPhotoActivity language currentDate data model =
-    case model.selectedFamilyMember of
+viewPhotoActivity language currentDate data model familyMember =
+    case familyMember of
         FamilyMemberChild childId ->
             let
                 existingMeasurement =

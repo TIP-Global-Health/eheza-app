@@ -13,7 +13,7 @@ import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (unwrap)
 import Measurement.Utils exposing (toAhezaMotherValueWithDefault, toAhezaValueWithDefault, toMuacValueWithDefault)
 import Pages.FamilyNutrition.Encounter.Model exposing (..)
-import Pages.FamilyNutrition.Encounter.Utils exposing (activitiesForFamilyMember, activityCompleted, generateAssembledData, nextFamilyMember)
+import Pages.FamilyNutrition.Encounter.Utils exposing (activitiesForFamilyMember, activityCompleted, generateAssembledData, nextFamilyMemberWithPendingActivities)
 import Pages.Page exposing (Page(..))
 import Pages.Utils exposing (setMuacValueForSite)
 import RemoteData
@@ -308,10 +308,10 @@ update site id db msg model =
             let
                 cmd =
                     case member of
-                        FamilyMemberChild _ ->
+                        Just (FamilyMemberChild _) ->
                             bindDropZone ()
 
-                        FamilyMemberMother ->
+                        _ ->
                             Cmd.none
             in
             ( { model
@@ -342,26 +342,37 @@ update site id db msg model =
             ( { model | selectedTab = tab }, cmd, [] )
 
 
-generateAutoAdvanceMsgs : FamilyNutritionEncounterId -> FamilyNutritionActivity -> ModelIndexedDb -> FamilyMember -> List Msg
-generateAutoAdvanceMsgs encounterId triggeringCompletedActivity db currentMember =
-    generateAssembledData encounterId db
-        |> RemoteData.toMaybe
-        |> Maybe.map
-            (\assembled ->
-                let
-                    applicableActivities =
-                        activitiesForFamilyMember assembled.encounter.startDate currentMember assembled.children
+generateAutoAdvanceMsgs : FamilyNutritionEncounterId -> FamilyNutritionActivity -> ModelIndexedDb -> Maybe FamilyMember -> List Msg
+generateAutoAdvanceMsgs encounterId triggeringCompletedActivity db maybeMember =
+    case maybeMember of
+        Nothing ->
+            []
 
-                    allCompleted =
-                        List.filter ((/=) triggeringCompletedActivity) applicableActivities
-                            |> List.all (activityCompleted currentMember assembled.measurements)
-                in
-                if allCompleted then
-                    nextFamilyMember currentMember assembled.children
-                        |> SetSelectedFamilyMember
-                        |> List.singleton
+        Just currentMember ->
+            generateAssembledData encounterId db
+                |> RemoteData.toMaybe
+                |> Maybe.map
+                    (\assembled ->
+                        let
+                            applicableActivities =
+                                activitiesForFamilyMember assembled.encounter.startDate currentMember assembled.children
 
-                else
-                    []
-            )
-        |> Maybe.withDefault []
+                            currentMemberAllCompleted =
+                                List.filter ((/=) triggeringCompletedActivity) applicableActivities
+                                    |> List.all (activityCompleted currentMember assembled.measurements)
+                        in
+                        if not currentMemberAllCompleted then
+                            -- Current member still has pending activities — switch to Pending tab.
+                            [ SetSelectedTab Pending ]
+
+                        else
+                            case nextFamilyMemberWithPendingActivities assembled.encounter.startDate currentMember assembled.children assembled.measurements of
+                                Just nextMember ->
+                                    -- Current member done, advance to next member with pending activities.
+                                    [ SetSelectedFamilyMember (Just nextMember) ]
+
+                                Nothing ->
+                                    -- All members completed — show "all done" state.
+                                    [ SetSelectedFamilyMember Nothing ]
+                    )
+                |> Maybe.withDefault []

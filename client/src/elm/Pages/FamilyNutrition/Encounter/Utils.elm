@@ -91,29 +91,51 @@ generateAssembledData id db =
         |> RemoteData.andMap children
 
 
-nextFamilyMember : FamilyMember -> List ( PersonId, Person ) -> FamilyMember
-nextFamilyMember current children =
-    case current of
-        FamilyMemberMother ->
-            List.head children
-                |> Maybe.map (\( childId, _ ) -> FamilyMemberChild childId)
-                |> Maybe.withDefault FamilyMemberMother
+nextFamilyMemberWithPendingActivities :
+    NominalDate
+    -> FamilyMember
+    -> List ( PersonId, Person )
+    -> FamilyNutritionMeasurements
+    -> Maybe FamilyMember
+nextFamilyMemberWithPendingActivities currentDate current children measurements =
+    let
+        allMembers =
+            FamilyMemberMother
+                :: List.map (\( childId, _ ) -> FamilyMemberChild childId) children
 
-        FamilyMemberChild currentId ->
-            let
-                findNext list =
-                    case list of
-                        ( id1, _ ) :: ( id2, child2 ) :: rest ->
-                            if id1 == currentId then
-                                FamilyMemberChild id2
+        -- Get members after current in cycle order (excluding current),
+        -- wrapping around to include members before current.
+        membersAfterCurrent =
+            case current of
+                FamilyMemberMother ->
+                    List.drop 1 allMembers
 
-                            else
-                                findNext (( id2, child2 ) :: rest)
+                FamilyMemberChild currentId ->
+                    let
+                        splitAtCurrent remaining before =
+                            case remaining of
+                                [] ->
+                                    before
 
-                        _ ->
-                            FamilyMemberMother
-            in
-            findNext children
+                                (FamilyMemberChild cid) :: rest ->
+                                    if cid == currentId then
+                                        rest ++ List.reverse before
+
+                                    else
+                                        splitAtCurrent rest (FamilyMemberChild cid :: before)
+
+                                member :: rest ->
+                                    splitAtCurrent rest (member :: before)
+                    in
+                    splitAtCurrent allMembers []
+
+        hasPendingActivities member =
+            activitiesForFamilyMember currentDate member children
+                |> List.all (activityCompleted member measurements)
+                |> not
+    in
+    List.filter hasPendingActivities membersAfterCurrent
+        |> List.head
 
 
 generatePreviousMeasurements :

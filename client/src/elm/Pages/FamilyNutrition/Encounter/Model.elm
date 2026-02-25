@@ -19,7 +19,7 @@ type alias Model =
     , selectedActivity : Maybe FamilyNutritionActivity
     , selectedTab : Tab
     , dialogState : Maybe DialogType
-    , selectedFamilyMember : FamilyMember
+    , selectedFamilyMember : Maybe FamilyMember
     }
 
 
@@ -31,7 +31,7 @@ emptyModel =
     , selectedActivity = Nothing
     , selectedTab = Pending
     , dialogState = Nothing
-    , selectedFamilyMember = FamilyMemberMother
+    , selectedFamilyMember = Just FamilyMemberMother
     }
 
 
@@ -49,7 +49,7 @@ type Msg
     | SetDialogState (Maybe DialogType)
     | SetMuac String
     | SetSelectedActivity (Maybe FamilyNutritionActivity)
-    | SetSelectedFamilyMember FamilyMember
+    | SetSelectedFamilyMember (Maybe FamilyMember)
     | SetSelectedTab Tab
 
 
