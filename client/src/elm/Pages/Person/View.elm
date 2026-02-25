@@ -1008,6 +1008,10 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                 SiteBurundi ->
                     viewTextInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
 
+                -- @todo - change to number input, if validation is required?
+                SiteSomalia ->
+                    viewTextInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
+
                 _ ->
                     viewNumberInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
 

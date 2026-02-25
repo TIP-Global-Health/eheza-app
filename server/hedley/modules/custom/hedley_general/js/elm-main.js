@@ -7991,6 +7991,7 @@ var $author$project$Backend$Completion$Decoder$decodeSelectedEntity = A2(
 	$elm$json$Json$Decode$string);
 var $author$project$App$Types$SiteBurundi = {$: 'SiteBurundi'};
 var $author$project$App$Types$SiteRwanda = {$: 'SiteRwanda'};
+var $author$project$App$Types$SiteSomalia = {$: 'SiteSomalia'};
 var $author$project$App$Types$SiteUnknown = {$: 'SiteUnknown'};
 var $elm$core$String$toLower = _String_toLower;
 var $author$project$Backend$Decoder$siteFromString = function (str) {
@@ -8000,6 +8001,8 @@ var $author$project$Backend$Decoder$siteFromString = function (str) {
 			return $author$project$App$Types$SiteRwanda;
 		case 'burundi':
 			return $author$project$App$Types$SiteBurundi;
+		case 'somalia':
+			return $author$project$App$Types$SiteSomalia;
 		default:
 			return $author$project$App$Types$SiteUnknown;
 	}
@@ -10701,17 +10704,17 @@ var $author$project$Translate$Vitals = {$: 'Vitals'};
 var $author$project$Translate$translateHttpError = function (transId) {
 	switch (transId.$) {
 		case 'ErrorBadUrl':
-			return {english: 'URL is not valid.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			return {english: 'URL is not valid.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 		case 'ErrorBadPayload':
 			var message = transId.a;
-			return {english: 'The server responded with data of an unexpected type: ' + message, kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			return {english: 'The server responded with data of an unexpected type: ' + message, kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 		case 'ErrorBadStatus':
 			var err = transId.a;
-			return {english: err, kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			return {english: err, kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 		case 'ErrorNetworkError':
-			return {english: 'There was a network error.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			return {english: 'There was a network error.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 		default:
-			return {english: 'The network request timed out.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			return {english: 'The network request timed out.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 	}
 };
 var $author$project$Translate$translateMonth = F2(
@@ -10721,121 +10724,145 @@ var $author$project$Translate$translateMonth = F2(
 				return _short ? {
 					english: 'Jan',
 					kinyarwanda: $elm$core$Maybe$Just('Mut'),
-					kirundi: $elm$core$Maybe$Just('Nze')
+					kirundi: $elm$core$Maybe$Just('Nze'),
+					somali: $elm$core$Maybe$Nothing
 				} : {
 					english: 'January',
 					kinyarwanda: $elm$core$Maybe$Just('Mutarama'),
-					kirundi: $elm$core$Maybe$Just('Nzero')
+					kirundi: $elm$core$Maybe$Just('Nzero'),
+					somali: $elm$core$Maybe$Just('Janaayo')
 				};
 			case 'Feb':
 				return _short ? {
 					english: 'Feb',
 					kinyarwanda: $elm$core$Maybe$Just('Gas'),
-					kirundi: $elm$core$Maybe$Just('Ruh')
+					kirundi: $elm$core$Maybe$Just('Ruh'),
+					somali: $elm$core$Maybe$Nothing
 				} : {
 					english: 'February',
 					kinyarwanda: $elm$core$Maybe$Just('Gashyantare'),
-					kirundi: $elm$core$Maybe$Just('Ruhuhuma')
+					kirundi: $elm$core$Maybe$Just('Ruhuhuma'),
+					somali: $elm$core$Maybe$Just('Febaraayo')
 				};
 			case 'Mar':
 				return _short ? {
 					english: 'Mar',
 					kinyarwanda: $elm$core$Maybe$Just('Wer'),
-					kirundi: $elm$core$Maybe$Just('Ntw')
+					kirundi: $elm$core$Maybe$Just('Ntw'),
+					somali: $elm$core$Maybe$Nothing
 				} : {
 					english: 'March',
 					kinyarwanda: $elm$core$Maybe$Just('Werurwe'),
-					kirundi: $elm$core$Maybe$Just('Ntwarante')
+					kirundi: $elm$core$Maybe$Just('Ntwarante'),
+					somali: $elm$core$Maybe$Nothing
 				};
 			case 'Apr':
 				return _short ? {
 					english: 'Apr',
 					kinyarwanda: $elm$core$Maybe$Just('Mat'),
-					kirundi: $elm$core$Maybe$Just('Nda')
+					kirundi: $elm$core$Maybe$Just('Nda'),
+					somali: $elm$core$Maybe$Nothing
 				} : {
 					english: 'April',
 					kinyarwanda: $elm$core$Maybe$Just('Mata'),
-					kirundi: $elm$core$Maybe$Just('Ndamukiza')
+					kirundi: $elm$core$Maybe$Just('Ndamukiza'),
+					somali: $elm$core$Maybe$Nothing
 				};
 			case 'May':
 				return _short ? {
 					english: 'May',
 					kinyarwanda: $elm$core$Maybe$Just('Gic'),
-					kirundi: $elm$core$Maybe$Just('Rus')
+					kirundi: $elm$core$Maybe$Just('Rus'),
+					somali: $elm$core$Maybe$Nothing
 				} : {
 					english: 'May',
 					kinyarwanda: $elm$core$Maybe$Just('Gicurasi'),
-					kirundi: $elm$core$Maybe$Just('Rusama')
+					kirundi: $elm$core$Maybe$Just('Rusama'),
+					somali: $elm$core$Maybe$Nothing
 				};
 			case 'Jun':
 				return _short ? {
 					english: 'Jun',
 					kinyarwanda: $elm$core$Maybe$Just('Kam'),
-					kirundi: $elm$core$Maybe$Just('Ruh')
+					kirundi: $elm$core$Maybe$Just('Ruh'),
+					somali: $elm$core$Maybe$Nothing
 				} : {
 					english: 'June',
 					kinyarwanda: $elm$core$Maybe$Just('Kamena'),
-					kirundi: $elm$core$Maybe$Just('Ruheshi')
+					kirundi: $elm$core$Maybe$Just('Ruheshi'),
+					somali: $elm$core$Maybe$Just('Juun')
 				};
 			case 'Jul':
 				return _short ? {
 					english: 'Jul',
 					kinyarwanda: $elm$core$Maybe$Just('Nya'),
-					kirundi: $elm$core$Maybe$Just('Muk')
+					kirundi: $elm$core$Maybe$Just('Muk'),
+					somali: $elm$core$Maybe$Nothing
 				} : {
 					english: 'July',
 					kinyarwanda: $elm$core$Maybe$Just('Nyakanga'),
-					kirundi: $elm$core$Maybe$Just('Mukakaro')
+					kirundi: $elm$core$Maybe$Just('Mukakaro'),
+					somali: $elm$core$Maybe$Just('Yuulyo')
 				};
 			case 'Aug':
 				return _short ? {
 					english: 'Aug',
 					kinyarwanda: $elm$core$Maybe$Just('Kan'),
-					kirundi: $elm$core$Maybe$Just('Mya')
+					kirundi: $elm$core$Maybe$Just('Mya'),
+					somali: $elm$core$Maybe$Nothing
 				} : {
 					english: 'August',
 					kinyarwanda: $elm$core$Maybe$Just('Kanama'),
-					kirundi: $elm$core$Maybe$Just('Myandagaro')
+					kirundi: $elm$core$Maybe$Just('Myandagaro'),
+					somali: $elm$core$Maybe$Just('Agoosto')
 				};
 			case 'Sep':
 				return _short ? {
 					english: 'Sep',
 					kinyarwanda: $elm$core$Maybe$Just('Nze'),
-					kirundi: $elm$core$Maybe$Just('Nya')
+					kirundi: $elm$core$Maybe$Just('Nya'),
+					somali: $elm$core$Maybe$Nothing
 				} : {
 					english: 'September',
 					kinyarwanda: $elm$core$Maybe$Just('Nzeri'),
-					kirundi: $elm$core$Maybe$Just('Nyakanga')
+					kirundi: $elm$core$Maybe$Just('Nyakanga'),
+					somali: $elm$core$Maybe$Just('Sebteembar')
 				};
 			case 'Oct':
 				return _short ? {
 					english: 'Oct',
 					kinyarwanda: $elm$core$Maybe$Just('Ukw'),
-					kirundi: $elm$core$Maybe$Just('Git')
+					kirundi: $elm$core$Maybe$Just('Git'),
+					somali: $elm$core$Maybe$Nothing
 				} : {
 					english: 'October',
 					kinyarwanda: $elm$core$Maybe$Just('Ukwakira'),
-					kirundi: $elm$core$Maybe$Just('Gitugutu')
+					kirundi: $elm$core$Maybe$Just('Gitugutu'),
+					somali: $elm$core$Maybe$Just('Oktoobar')
 				};
 			case 'Nov':
 				return _short ? {
 					english: 'Nov',
 					kinyarwanda: $elm$core$Maybe$Just('Ukw'),
-					kirundi: $elm$core$Maybe$Just('Muny')
+					kirundi: $elm$core$Maybe$Just('Muny'),
+					somali: $elm$core$Maybe$Nothing
 				} : {
 					english: 'November',
 					kinyarwanda: $elm$core$Maybe$Just('Ugushyingo'),
-					kirundi: $elm$core$Maybe$Just('Munyonyo')
+					kirundi: $elm$core$Maybe$Just('Munyonyo'),
+					somali: $elm$core$Maybe$Just('Noofeembar')
 				};
 			default:
 				return _short ? {
 					english: 'Dec',
 					kinyarwanda: $elm$core$Maybe$Just('Uku'),
-					kirundi: $elm$core$Maybe$Just('Kig')
+					kirundi: $elm$core$Maybe$Just('Kig'),
+					somali: $elm$core$Maybe$Nothing
 				} : {
 					english: 'December',
 					kinyarwanda: $elm$core$Maybe$Just('Ukuboza'),
-					kirundi: $elm$core$Maybe$Just('Kigarama')
+					kirundi: $elm$core$Maybe$Just('Kigarama'),
+					somali: $elm$core$Maybe$Just('Diseembar')
 				};
 		}
 	});
@@ -10855,7 +10882,13 @@ var $author$project$Translate$translateMonthYY = F3(
 					function (kirundi) {
 						return $elm$core$String$fromInt(year) + (' ' + kirundi);
 					},
-					set.kirundi)
+					set.kirundi),
+				somali: A2(
+					$elm$core$Maybe$map,
+					function (somali) {
+						return $elm$core$String$fromInt(year) + (' ' + somali);
+					},
+					set.somali)
 			};
 		}(
 			A2(
@@ -10868,18 +10901,18 @@ var $author$project$Translate$translationSet = function (transId) {
 	while (true) {
 		switch (transId.$) {
 			case 'ACHI':
-				return {english: 'ACHI', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'ACHI', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Activity':
-				return {english: 'Activity', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Activity', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'AcuteIllness':
-				return {english: 'Acute Illness', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Acute Illness', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'AcuteIllnessActivity':
 				var activity = transId.a;
 				switch (activity.$) {
 					case 'AcuteIllnessAcuteFindings':
-						return {english: 'Acute Findings', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Acute Findings', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'AcuteIllnessContactsTracing':
-						return {english: 'Contacts Tracing', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Contacts Tracing', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'AcuteIllnessCoreExam':
 						var $temp$transId = $author$project$Translate$CoreExam;
 						transId = $temp$transId;
@@ -10893,7 +10926,7 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'AcuteIllnessMUAC':
-						return {english: 'MUAC', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'MUAC', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'AcuteIllnessNutrition':
 						var $temp$transId = $author$project$Translate$Nutrition;
 						transId = $temp$transId;
@@ -10903,39 +10936,39 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'AcuteIllnessCall114':
-						return {english: 'Call 114', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Call 114', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'AcuteIllnessCOVIDTesting':
-						return {english: 'COVID Testing', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'COVID Testing', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'AcuteIllnessExposure':
-						return {english: 'Exposure', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Exposure', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'AcuteIllnessContactHC':
-						return {english: 'Contact HC', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Contact HC', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'AcuteIllnessHealthEducation':
 						var $temp$transId = $author$project$Translate$HealthEducation;
 						transId = $temp$transId;
 						continue translationSet;
 					case 'AcuteIllnessIsolation':
-						return {english: 'Isolation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Isolation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'AcuteIllnessMalariaTesting':
-						return {english: 'Malaria Testing', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Malaria Testing', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'AcuteIllnessMedicationDistribution':
 						var $temp$transId = $author$project$Translate$MedicationDistribution;
 						transId = $temp$transId;
 						continue translationSet;
 					case 'AcuteIllnessSendToHC':
-						return {english: 'Referral', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Referral', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'AcuteIllnessSymptomsGeneral':
-						return {english: 'Symptoms General', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Symptoms General', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'AcuteIllnessSymptomsGI':
-						return {english: 'Symptoms GI', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Symptoms GI', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'AcuteIllnessSymptomsRespiratory':
-						return {english: 'Symptoms Respiratory', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Symptoms Respiratory', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'AcuteIllnessTravelHistory':
-						return {english: 'Travel History', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Travel History', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'AcuteIllnessPriorTreatment':
-						return {english: 'Prior Treatment', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Prior Treatment', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					default:
-						return {english: 'Ongoing Treatment', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Ongoing Treatment', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 				}
 			case 'AcuteIllnessDiagnosis':
 				var diagnosis = transId.a;
@@ -10944,119 +10977,134 @@ var $author$project$Translate$translationSet = function (transId) {
 						return {
 							english: 'Suspected COVID-19',
 							kinyarwanda: $elm$core$Maybe$Just('Aracyekwaho indwara ya COVID-19'),
-							kirundi: $elm$core$Maybe$Just('Hiketswe umugera wa COVID-19')
+							kirundi: $elm$core$Maybe$Just('Hiketswe umugera wa COVID-19'),
+							somali: $elm$core$Maybe$Just('Looga shakisan yahay COVID-19')
 						};
 					case 'DiagnosisSevereCovid19':
 						return {
 							english: 'Severe COVID-19',
 							kinyarwanda: $elm$core$Maybe$Just('Uburwayi bwa Covid-19 bukabije'),
-							kirundi: $elm$core$Maybe$Just('COVID-19 ikaze')
+							kirundi: $elm$core$Maybe$Just('COVID-19 ikaze'),
+							somali: $elm$core$Maybe$Just('COVID-19 aad u daran')
 						};
 					case 'DiagnosisPneuminialCovid19':
 						return {
 							english: 'COVID-19 with signs of Pneumonia',
 							kinyarwanda: $elm$core$Maybe$Just('Uburwayi bwa Covid-19 hamwe n\'ibimenyetso by\'Umusonga'),
-							kirundi: $elm$core$Maybe$Just('Virisi ya Korona - 19 n\'ibimenyetso vy\'umusonga')
+							kirundi: $elm$core$Maybe$Just('Virisi ya Korona - 19 n\'ibimenyetso vy\'umusonga'),
+							somali: $elm$core$Maybe$Just('COVID-19 oo leh calaamadaha Oof wareenka')
 						};
 					case 'DiagnosisLowRiskCovid19':
 						return {
 							english: 'Simple COVID-19',
 							kinyarwanda: $elm$core$Maybe$Just('Uburwayi bwa Covid-19 bworoheje'),
-							kirundi: $elm$core$Maybe$Just('Korona (COVID-19) isanzwe')
+							kirundi: $elm$core$Maybe$Just('Korona (COVID-19) isanzwe'),
+							somali: $elm$core$Maybe$Just('COVID-19 Fudud')
 						};
 					case 'DiagnosisMalariaComplicated':
 						return {
 							english: 'Complicated Malaria',
 							kinyarwanda: $elm$core$Maybe$Just('Malariya y\'igikatu'),
-							kirundi: $elm$core$Maybe$Just('Malariya ikomeye')
+							kirundi: $elm$core$Maybe$Just('Malariya ikomeye'),
+							somali: $elm$core$Maybe$Just('Duumo Liidata')
 						};
 					case 'DiagnosisMalariaUncomplicated':
 						return {
 							english: 'Uncomplicated Malaria',
 							kinyarwanda: $elm$core$Maybe$Just('Malariya yoroheje'),
-							kirundi: $elm$core$Maybe$Just('Malariya yoroshe/isanzwe')
+							kirundi: $elm$core$Maybe$Just('Malariya yoroshe/isanzwe'),
+							somali: $elm$core$Maybe$Just('Duumo aan Waxyeello lahayn')
 						};
 					case 'DiagnosisMalariaUncomplicatedAndPregnant':
 						return {
 							english: 'Uncomplicated Malaria',
 							kinyarwanda: $elm$core$Maybe$Just('Malariya yoroheje'),
-							kirundi: $elm$core$Maybe$Just('Malariya yoroshe/isanzwe')
+							kirundi: $elm$core$Maybe$Just('Malariya yoroshe/isanzwe'),
+							somali: $elm$core$Maybe$Just('Duumo aan Waxyeello lahayn')
 						};
 					case 'DiagnosisGastrointestinalInfectionComplicated':
 						return {
 							english: 'Gastrointestinal Infection with Complications',
 							kinyarwanda: $elm$core$Maybe$Just('Indwara yo mu nda ikabije'),
-							kirundi: $elm$core$Maybe$Just('Ingwara yo mu mara/m\'umushishito hamwe n\'ingorane zijanye nazo')
+							kirundi: $elm$core$Maybe$Just('Ingwara yo mu mara/m\'umushishito hamwe n\'ingorane zijanye nazo'),
+							somali: $elm$core$Maybe$Just('Caabuqa Caloosha oo leh Waxyeello')
 						};
 					case 'DiagnosisGastrointestinalInfectionUncomplicated':
 						return {
 							english: 'Gastrointestinal Infection without Complications',
 							kinyarwanda: $elm$core$Maybe$Just('Indwara yo mu nda yoroheje'),
-							kirundi: $elm$core$Maybe$Just('Ingwara yo mu mara/m\'umushishito ata ngorane zijanye nazo')
+							kirundi: $elm$core$Maybe$Just('Ingwara yo mu mara/m\'umushishito ata ngorane zijanye nazo'),
+							somali: $elm$core$Maybe$Just('Caabuqa Caloosha aan lahayn Waxyeello')
 						};
 					case 'DiagnosisSimpleColdAndCough':
 						return {
 							english: 'Simple Cold and Cough',
 							kinyarwanda: $elm$core$Maybe$Just('Ibicurane n\'inkorora byoroheje'),
-							kirundi: $elm$core$Maybe$Just('Imbeho hamwe n\'inkorora biswnzwe')
+							kirundi: $elm$core$Maybe$Just('Imbeho hamwe n\'inkorora biswnzwe'),
+							somali: $elm$core$Maybe$Just('Qufac iyo Qarqaryo fudud')
 						};
 					case 'DiagnosisRespiratoryInfectionComplicated':
 						return {
 							english: 'Acute Respiratory Infection with Complications',
 							kinyarwanda: $elm$core$Maybe$Just('Indwara y\'ubuhumekero ikabije'),
-							kirundi: $elm$core$Maybe$Just('Ingwara yo guhema nabi ibabaje/uguhema nabi bibabaje hamwe n\'ingorane bijanye')
+							kirundi: $elm$core$Maybe$Just('Ingwara yo guhema nabi ibabaje/uguhema nabi bibabaje hamwe n\'ingorane bijanye'),
+							somali: $elm$core$Maybe$Just('Looga Shakisan yahay Caabuqa Saableyda (leh waxyeello)')
 						};
 					case 'DiagnosisRespiratoryInfectionUncomplicated':
 						return {
 							english: 'Uncomplicated Pneumonia',
 							kinyarwanda: $elm$core$Maybe$Just('Umusonga woroheje'),
-							kirundi: $elm$core$Maybe$Just('Hiketswe ingwara y\'umusonga igoye')
+							kirundi: $elm$core$Maybe$Just('Hiketswe ingwara y\'umusonga igoye'),
+							somali: $elm$core$Maybe$Just('Oof wareen aan waxyeello lahayn`')
 						};
 					case 'DiagnosisFeverOfUnknownOrigin':
 						return {
 							english: 'Fever of Unknown Origin',
 							kinyarwanda: $elm$core$Maybe$Just('Umuriro utazi icyawuteye'),
-							kirundi: $elm$core$Maybe$Just('Ubushuhe bitazwi iyo bwazananye')
+							kirundi: $elm$core$Maybe$Just('Ubushuhe bitazwi iyo bwazananye'),
+							somali: $elm$core$Maybe$Just('Qandho aan asalkeeda la garanayn')
 						};
 					case 'DiagnosisUndeterminedMoreEvaluationNeeded':
 						return {
 							english: 'Undetermined - More Evaluation Needed',
 							kinyarwanda: $elm$core$Maybe$Just('Ntibisobanutse - Hakenewe Isuzuma Ryimbitse'),
-							kirundi: $elm$core$Maybe$Just('Ntibimenyekana - Isuzuma ryinshi rirakenewe')
+							kirundi: $elm$core$Maybe$Just('Ntibimenyekana - Isuzuma ryinshi rirakenewe'),
+							somali: $elm$core$Maybe$Just('Aan la xaqiijinin - U baahan Qiimeyn dheeraad ah')
 						};
 					default:
-						return {english: 'Tuberculosis Suspect', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Tuberculosis Suspect', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 				}
 			case 'AcuteIllnessTotal':
-				return {english: 'Acute Illness (total)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Acute Illness (total)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'AcuteMalnutrition':
-				return {english: 'Acute Malnutrition', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Acute Malnutrition', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'AggregatedChildScoreboard':
-				return {english: 'Aggregated Child Scoreboard', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Aggregated Child Scoreboard', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Antenatal':
-				return {english: 'Antenatal', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Antenatal', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'All':
-				return {english: 'All', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'All', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'ANCNewborn':
-				return {english: 'ANC + Newborn', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'ANC + Newborn', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'ANCTotal':
-				return {english: 'ANC (total)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'ANC (total)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Any':
-				return {english: 'Any', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Any', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Colline':
-				return {english: 'Colline', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Colline', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'CollineSub':
-				return {english: 'Sub-Colline', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Sub-Colline', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Diagnosis':
 				return {
 					english: 'Diagnosis',
 					kinyarwanda: $elm$core$Maybe$Just('Uburwayi bwabonetse'),
-					kirundi: $elm$core$Maybe$Just('Isuzumwa')
+					kirundi: $elm$core$Maybe$Just('Isuzumwa'),
+					somali: $elm$core$Maybe$Just('Baaritaan')
 				};
 			case 'Commune':
-				return {english: 'Commune', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Commune', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Completed':
-				return {english: 'Completed', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Completed', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'CompletionReportType':
 				var reportType = transId.a;
 				switch (reportType.$) {
@@ -11106,13 +11154,13 @@ var $author$project$Translate$translationSet = function (transId) {
 						continue translationSet;
 				}
 			case 'CBNP':
-				return {english: 'CBNP', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'CBNP', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Caring':
-				return {english: 'Caring', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Caring', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Cell':
-				return {english: 'Cell', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Cell', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'ChildScorecard':
-				return {english: 'Child Scorecard', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Child Scorecard', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'ChildScoreboardActivity':
 				var activity = transId.a;
 				switch (activity.$) {
@@ -11154,74 +11202,76 @@ var $author$project$Translate$translationSet = function (transId) {
 						continue translationSet;
 				}
 			case 'CHW':
-				return {english: 'CHW', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'CHW', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'CoreExam':
-				return {english: 'Core Exam', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Core Exam', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'DangerSigns':
-				return {english: 'Danger Signs', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Danger Signs', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'DeliveryLocation':
 				var location = transId.a;
 				if (location.$ === 'FacilityDelivery') {
 					return {
 						english: 'Facility',
 						kinyarwanda: $elm$core$Maybe$Just('Ivuriro'),
-						kirundi: $elm$core$Maybe$Just('Ikigo')
+						kirundi: $elm$core$Maybe$Just('Ikigo'),
+						somali: $elm$core$Maybe$Just('Adeega')
 					};
 				} else {
 					return {
 						english: 'Home',
 						kinyarwanda: $elm$core$Maybe$Just('Mu rugo'),
-						kirundi: $elm$core$Maybe$Just('Muhira')
+						kirundi: $elm$core$Maybe$Just('Muhira'),
+						somali: $elm$core$Maybe$Just('Guri')
 					};
 				}
 			case 'DeliveryLocationsTableHeading':
-				return {english: 'Outcome Location', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Outcome Location', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'DeliveryLocationsTablePercentage':
-				return {english: 'Percentage of completed pregnancies reported', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Percentage of completed pregnancies reported', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'DeliveryLocationsTableTotals':
-				return {english: 'Total # delivery outcomes documented', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Total # delivery outcomes documented', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Demographics':
-				return {english: 'Demographics', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Demographics', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Diagnostics':
-				return {english: 'Diagnostics', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Diagnostics', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'District':
-				return {english: 'District', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'District', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'DownloadCSV':
-				return {english: 'Download CSV', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Download CSV', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'EmptyString':
-				return {english: '', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: '', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Encounters':
-				return {english: 'Encounters', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Encounters', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'EncounterType':
-				return {english: 'Encounter Type', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Encounter Type', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Expected':
-				return {english: 'Expected', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Expected', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'FamilyPlanning':
-				return {english: 'Family Planning', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Family Planning', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'FBF':
-				return {english: 'FBF', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'FBF', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Feeding':
-				return {english: 'Feeding', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Feeding', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Female':
-				return {english: 'Female', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Female', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Global':
-				return {english: 'Global', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Global', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'FirstVisit':
-				return {english: 'First Visit', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'First Visit', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'FollowUp':
-				return {english: 'Follow Up', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Follow Up', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'FoodSecurity':
-				return {english: 'Food Security', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Food Security', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'GenerateReport':
-				return {english: 'Generate Report', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Generate Report', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'HC':
-				return {english: 'HC', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'HC', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'HealthCenter':
-				return {english: 'Health Center', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Health Center', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'HealthEducation':
-				return {english: 'Health Education', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Health Education', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'HIV':
-				return {english: 'HIV', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'HIV', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'HIVActivity':
 				var activity = transId.a;
 				switch (activity.$) {
@@ -11255,9 +11305,9 @@ var $author$project$Translate$translationSet = function (transId) {
 						continue translationSet;
 				}
 			case 'HIVTest':
-				return {english: 'HIV Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'HIV Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'HomeVisit':
-				return {english: 'Home Visit', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Home Visit', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'HomeVisitActivity':
 				var activity = transId.a;
 				switch (activity.$) {
@@ -11282,53 +11332,53 @@ var $author$project$Translate$translationSet = function (transId) {
 				var val = transId.a;
 				return $author$project$Translate$translateHttpError(val);
 			case 'Hygiene':
-				return {english: 'Hygiene', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Hygiene', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'ImmunisationBCG':
-				return {english: 'BCG Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'BCG Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'ImmunisationDTP':
-				return {english: 'DTP Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'DTP Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'ImmunisationDTPSA':
-				return {english: 'DTP Standalone Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'DTP Standalone Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'ImmunisationHPV':
-				return {english: 'HPV Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'HPV Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'ImmunisationIPV':
-				return {english: 'IPV Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'IPV Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'ImmunisationMR':
-				return {english: 'MR Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'MR Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'ImmunisationOPV':
-				return {english: 'OPV Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'OPV Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'ImmunisationPCV13':
-				return {english: 'PCV13 Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'PCV13 Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'ImmunisationRotarix':
-				return {english: 'Rotarix Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Rotarix Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Impacted':
-				return {english: 'Impacted (2+ visits)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Impacted (2+ visits)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'IncidenceByMonthOneVisitOrMore':
-				return {english: 'Incidence by month - one visit or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Incidence by month - one visit or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'IncidenceByMonthTwoVisitsOrMore':
-				return {english: 'Incidence by month - two visits or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Incidence by month - two visits or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'IncidenceByQuarterOneVisitOrMore':
-				return {english: 'Incidence by quarter - one visit or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Incidence by quarter - one visit or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'IncidenceByQuarterTwoVisitsOrMore':
-				return {english: 'Incidence by quarter - two visits or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Incidence by quarter - two visits or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'IncidenceByYearOneVisitOrMore':
-				return {english: 'Incidence by year - one visit or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Incidence by year - one visit or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'IncidenceByYearTwoVisitsOrMore':
-				return {english: 'Incidence by year - two visits or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Incidence by year - two visits or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Individual':
-				return {english: 'Individual', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Individual', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'InfrastructureEnvironmentWash':
-				return {english: 'Infrastructure, Environment & Wash', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Infrastructure, Environment & Wash', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'LoadData':
-				return {english: 'Load Data', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Load Data', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Location':
-				return {english: 'Location', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Location', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Male':
-				return {english: 'Male', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Male', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Medication':
-				return {english: 'Medication', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Medication', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'MedicationDistribution':
-				return {english: 'Medication Distribution', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Medication Distribution', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Month':
 				var month = transId.a;
 				return A2($author$project$Translate$translateMonth, month, false);
@@ -11336,7 +11386,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {
 					english: 'Month',
 					kinyarwanda: $elm$core$Maybe$Just('Ukwezi'),
-					kirundi: $elm$core$Maybe$Just('Ukwezi')
+					kirundi: $elm$core$Maybe$Just('Ukwezi'),
+					somali: $elm$core$Maybe$Just('Bil')
 				};
 			case 'MonthYear':
 				var month = transId.a;
@@ -11344,9 +11395,9 @@ var $author$project$Translate$translationSet = function (transId) {
 				var _short = transId.c;
 				return A3($author$project$Translate$translateMonthYY, month, year, _short);
 			case 'NCD':
-				return {english: 'NCD', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'NCD', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'NCDA':
-				return {english: 'NCDA', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'NCDA', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'NCDActivity':
 				var activity = transId.a;
 				switch (activity.$) {
@@ -11355,21 +11406,21 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'NCDCoMorbidities':
-						return {english: 'Co-Morbidities', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Co-Morbidities', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'NCDCreatinineTest':
-						return {english: 'Creatinine Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Creatinine Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'NCDDangerSigns':
 						var $temp$transId = $author$project$Translate$DangerSigns;
 						transId = $temp$transId;
 						continue translationSet;
 					case 'NCDFamilyHistory':
-						return {english: 'Family History', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Family History', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'NCDFamilyPlanning':
 						var $temp$transId = $author$project$Translate$FamilyPlanning;
 						transId = $temp$transId;
 						continue translationSet;
 					case 'NCDHba1cTest':
-						return {english: 'HBA1C Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'HBA1C Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'NCDHealthEducation':
 						var $temp$transId = $author$project$Translate$HealthEducation;
 						transId = $temp$transId;
@@ -11379,15 +11430,15 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'NCDLipidPanelTest':
-						return {english: 'Lipid Panel Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Lipid Panel Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'NCDLiverFunctionTest':
-						return {english: 'Liver Function Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Liver Function Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'NCDMedicationDistribution':
 						var $temp$transId = $author$project$Translate$MedicationDistribution;
 						transId = $temp$transId;
 						continue translationSet;
 					case 'NCDMedicationHistory':
-						return {english: 'Medication History', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Medication History', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'NCDOutsideCare':
 						var $temp$transId = $author$project$Translate$OutsideCare;
 						transId = $temp$transId;
@@ -11421,11 +11472,11 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'NCDCreatinineTestResult':
-						return {english: 'Creatinine Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Creatinine Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'NCDLipidPanelTestResult':
-						return {english: 'Lipid Panel Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Lipid Panel Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'NCDLiverFunctionTestResult':
-						return {english: 'Liver Function Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Liver Function Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'NCDRandomBloodSugarTestResult':
 						var $temp$transId = $author$project$Translate$RandomBloodSugarTestResult;
 						transId = $temp$transId;
@@ -11439,31 +11490,31 @@ var $author$project$Translate$translationSet = function (transId) {
 				var item = transId.a;
 				switch (item.$) {
 					case 'ChildrenUnder2':
-						return {english: 'Children under 2', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Children under 2', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'NewbornsThisMonth':
-						return {english: 'Number of Newborns this month', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Number of Newborns this month', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					default:
-						return {english: 'Low Birth Weigh (Y/N)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Low Birth Weigh (Y/N)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 				}
 			case 'NCDAAcuteMalnutritionItemLabel':
 				var item = transId.a;
 				switch (item.$) {
 					case 'SevereAcuteMalnutrition':
-						return {english: 'Severe Acute Malnutrition', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Severe Acute Malnutrition', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'ModerateAcuteMalnutrition':
-						return {english: 'Moderate Acute Malnutrition', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Moderate Acute Malnutrition', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					default:
-						return {english: 'Good Nutrition', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Good Nutrition', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 				}
 			case 'NCDAStuntingItemLabel':
 				var item = transId.a;
 				switch (item.$) {
 					case 'SevereStunting':
-						return {english: 'Severe Stunting', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Severe Stunting', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'ModerateStunting':
-						return {english: 'Moderate Stunting', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Moderate Stunting', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					default:
-						return {english: 'No Stunting', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'No Stunting', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 				}
 			case 'NCDAANCNewbornItemLabel':
 				var item = transId.a;
@@ -11471,13 +11522,15 @@ var $author$project$Translate$translationSet = function (transId) {
 					return {
 						english: 'Regular prenatal and postpartum checkups',
 						kinyarwanda: $elm$core$Maybe$Just('Yisuzumishije uko bikwiye atwite na nyuma yo kubyara'),
-						kirundi: $elm$core$Maybe$Nothing
+						kirundi: $elm$core$Maybe$Nothing,
+						somali: $elm$core$Maybe$Nothing
 					};
 				} else {
 					return {
 						english: 'Iron during pregnancy',
 						kinyarwanda: $elm$core$Maybe$Just('Yafashe umuti wongera amaraso atwite'),
-						kirundi: $elm$core$Maybe$Nothing
+						kirundi: $elm$core$Maybe$Nothing,
+						somali: $elm$core$Maybe$Nothing
 					};
 				}
 			case 'NCDAInfrastructureEnvironmentWashItemLabel':
@@ -11487,31 +11540,36 @@ var $author$project$Translate$translationSet = function (transId) {
 						return {
 							english: 'Household has toilets',
 							kinyarwanda: $elm$core$Maybe$Just('Urugo rufite ubwiherero'),
-							kirundi: $elm$core$Maybe$Nothing
+							kirundi: $elm$core$Maybe$Nothing,
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'HasCleanWater':
 						return {
 							english: 'Household has clean water',
 							kinyarwanda: $elm$core$Maybe$Just('Urugo rufite amazi meza'),
-							kirundi: $elm$core$Maybe$Nothing
+							kirundi: $elm$core$Maybe$Nothing,
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'HasHandwashingFacility':
 						return {
 							english: 'Household has handwashing facility',
 							kinyarwanda: $elm$core$Maybe$Just('Urugo rufite kandagirukarabe'),
-							kirundi: $elm$core$Maybe$Nothing
+							kirundi: $elm$core$Maybe$Nothing,
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'HasKitchenGarden':
 						return {
 							english: 'Household has kitchen garden',
 							kinyarwanda: $elm$core$Maybe$Just('Urugo rufite akarima k\'igikoni'),
-							kirundi: $elm$core$Maybe$Nothing
+							kirundi: $elm$core$Maybe$Nothing,
+							somali: $elm$core$Maybe$Nothing
 						};
 					default:
 						return {
 							english: 'Insecticide treated bed nets',
 							kinyarwanda: $elm$core$Maybe$Just('Urugo rufite nzitiramibu ikoranye umuti'),
-							kirundi: $elm$core$Maybe$Nothing
+							kirundi: $elm$core$Maybe$Nothing,
+							somali: $elm$core$Maybe$Nothing
 						};
 				}
 			case 'NCDANutritionBehaviorItemLabel':
@@ -11521,53 +11579,60 @@ var $author$project$Translate$translationSet = function (transId) {
 						return {
 							english: 'Breastfed baby for 6 mo without interruption',
 							kinyarwanda: $elm$core$Maybe$Just('Konsa umwana amezi 6 utamuvangiye'),
-							kirundi: $elm$core$Maybe$Nothing
+							kirundi: $elm$core$Maybe$Nothing,
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'AppropriateComplementaryFeeding':
 						return {
 							english: 'Appropriate complementary feeding (6-24 mo)',
 							kinyarwanda: $elm$core$Maybe$Just('Imfashabere igizwe n’indyo yuzuye (Amezi 6-24)'),
-							kirundi: $elm$core$Maybe$Nothing
+							kirundi: $elm$core$Maybe$Nothing,
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiverseDiet':
-						return {english: 'Diverse diet', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Diverse diet', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					default:
-						return {english: 'Appropriate frequency of meals', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Appropriate frequency of meals', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 				}
 			case 'NCDATargetedInterventionsItemLabel':
 				var item = transId.a;
 				switch (item.$) {
 					case 'FBFGiven':
-						return {english: 'FBF', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'FBF', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'TreatmentForAcuteMalnutrition':
 						return {
 							english: 'Treatment for acute malnutrition (severe or moderate)',
 							kinyarwanda: $elm$core$Maybe$Just('Kuvura imiritre mibi  ifatiyeho(Ikabije cg yoroheje)'),
-							kirundi: $elm$core$Maybe$Nothing
+							kirundi: $elm$core$Maybe$Nothing,
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'TreatmentForDiarrhea':
 						return {
 							english: 'Treatment of diarrhea (ORS & Zinc)',
 							kinyarwanda: $elm$core$Maybe$Just('Kuvura impiswi(Ukoresheje Zinc cg ORS)'),
-							kirundi: $elm$core$Maybe$Nothing
+							kirundi: $elm$core$Maybe$Nothing,
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'SupportChildWithDisability':
 						return {
 							english: 'Provide support to a child with a disability ',
 							kinyarwanda: $elm$core$Maybe$Just('Guha umwana ufite ubumuga ubufasha bwihariye'),
-							kirundi: $elm$core$Maybe$Nothing
+							kirundi: $elm$core$Maybe$Nothing,
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'ConditionalCashTransfer':
 						return {
 							english: 'Receipt of conditional cash transfer e.g. NSDS, VUP',
 							kinyarwanda: $elm$core$Maybe$Just('Gufata amafaranga y’inkunga agenerwa umugore utwite n’uwonsa bo mu miryango ikennye (icyiciro cya 1 n’icya 2) – NSDS, VUP'),
-							kirundi: $elm$core$Maybe$Nothing
+							kirundi: $elm$core$Maybe$Nothing,
+							somali: $elm$core$Maybe$Nothing
 						};
 					default:
 						return {
 							english: 'Receipt of conditional food items including small livestock',
 							kinyarwanda: $elm$core$Maybe$Just('Gufata inkunga z’ingoboka harimo ibiryo n\'amatungo magufi'),
-							kirundi: $elm$core$Maybe$Nothing
+							kirundi: $elm$core$Maybe$Nothing,
+							somali: $elm$core$Maybe$Nothing
 						};
 				}
 			case 'NCDAUniversalInterventionItemLabel':
@@ -11577,57 +11642,63 @@ var $author$project$Translate$translationSet = function (transId) {
 						return {
 							english: 'Immunization',
 							kinyarwanda: $elm$core$Maybe$Just('Ikingira'),
-							kirundi: $elm$core$Maybe$Nothing
+							kirundi: $elm$core$Maybe$Nothing,
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'VitaminA':
-						return {english: 'Vitamin A', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Vitamin A', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'Deworming':
 						return {
 							english: 'Deworming',
 							kinyarwanda: $elm$core$Maybe$Just('Imiti y\'inzoka'),
-							kirundi: $elm$core$Maybe$Nothing
+							kirundi: $elm$core$Maybe$Nothing,
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'OngeraMNP':
 						return {
 							english: 'Use additional nutrients (Ongera)',
 							kinyarwanda: $elm$core$Maybe$Just('Koresha Ongera intungamubiri'),
-							kirundi: $elm$core$Maybe$Nothing
+							kirundi: $elm$core$Maybe$Nothing,
+							somali: $elm$core$Maybe$Nothing
 						};
 					default:
 						return {
 							english: 'ECD services provided to child',
 							kinyarwanda: $elm$core$Maybe$Just('Umwana yahawe servise n\'ikigo mboneza mikurire'),
-							kirundi: $elm$core$Maybe$Nothing
+							kirundi: $elm$core$Maybe$Nothing,
+							somali: $elm$core$Maybe$Nothing
 						};
 				}
 			case 'NewbornExam':
-				return {english: 'Newborn Exam', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Newborn Exam', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'NewScope':
-				return {english: 'New Scope', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'New Scope', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'NewSelection':
-				return {english: 'New Selection', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'New Selection', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'NoDiagnosis':
 				return {
 					english: 'No Diagnosis',
 					kinyarwanda: $elm$core$Maybe$Nothing,
-					kirundi: $elm$core$Maybe$Just('Nta Gupima/gusuzuma')
+					kirundi: $elm$core$Maybe$Just('Nta Gupima/gusuzuma'),
+					somali: $elm$core$Maybe$Just('Ma jiro Baaritaan')
 				};
 			case 'NumberOfVisits':
 				var number = transId.a;
-				return (number === 1) ? {english: '1 visit', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing} : ((number > 4) ? {english: '5+ visits', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing} : {
+				return (number === 1) ? {english: '1 visit', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing} : ((number > 4) ? {english: '5+ visits', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing} : {
 					english: $elm$core$String$fromInt(number) + ' visits',
 					kinyarwanda: $elm$core$Maybe$Nothing,
-					kirundi: $elm$core$Maybe$Nothing
+					kirundi: $elm$core$Maybe$Nothing,
+					somali: $elm$core$Maybe$Nothing
 				});
 			case 'NumberOfVisitsLabel':
-				return {english: '# Visits', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: '# Visits', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Nutrition':
-				return {english: 'Nutrition', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Nutrition', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'NutritionChildActivity':
 				var activity = transId.a;
 				switch (activity.$) {
 					case 'NutritionHeight':
-						return {english: 'Height', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Height', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'NutritionNutrition':
 						var $temp$transId = $author$project$Translate$Nutrition;
 						transId = $temp$transId;
@@ -11637,11 +11708,11 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'NutritionWeight':
-						return {english: 'Weight', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Weight', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'NutritionMUAC':
-						return {english: 'MUAC', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'MUAC', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'NutritionContributingFactors':
-						return {english: 'Contributing Factors', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Contributing Factors', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'NutritionFollowUp':
 						var $temp$transId = $author$project$Translate$FollowUp;
 						transId = $temp$transId;
@@ -11655,9 +11726,9 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'NutritionNCDA':
-						return {english: 'NCDA', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'NCDA', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					default:
-						return {english: 'Child FBF', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Child FBF', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 				}
 			case 'NutritionMotherActivity':
 				var activity = transId.a;
@@ -11667,16 +11738,16 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'NutritionLactation':
-						return {english: 'Lactation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Lactation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					default:
-						return {english: 'Mother FBF', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Mother FBF', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 				}
 			case 'NutritionBehavior':
-				return {english: 'Nutrition Behavior', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Nutrition Behavior', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'NutritionIndividual':
-				return {english: 'Nutrition Individual', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Nutrition Individual', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'NutritionGroup':
-				return {english: 'Nutrition Group', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Nutrition Group', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'NutritionReportTableType':
 				var tableType = transId.a;
 				switch (tableType.$) {
@@ -11714,37 +11785,37 @@ var $author$project$Translate$translationSet = function (transId) {
 						continue translationSet;
 				}
 			case 'NutritionTotal':
-				return {english: 'Nutrition (total)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Nutrition (total)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'OutcomesTableHeading':
-				return {english: 'Outcomes of completed pregnancies (anything 30 days beyond EDD)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Outcomes of completed pregnancies (anything 30 days beyond EDD)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'OutsideCare':
-				return {english: 'Outside Care', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Outside Care', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'PatientsWith3OrMoreVisitsPercentage':
-				return {english: '3+ visits (%)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: '3+ visits (%)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'PatientsWith4OrMoreVisitsPercentage':
-				return {english: '4+ visits (%)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: '4+ visits (%)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Photo':
-				return {english: 'Photo', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Photo', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'PleaseWaitMessage':
-				return {english: 'This action may take several minutes to complete.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'This action may take several minutes to complete.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'PMTCT':
-				return {english: 'PMTCT', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'PMTCT', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'PopulationSelectionOption':
 				var selectionOption = transId.a;
 				switch (selectionOption.$) {
 					case 'SelectionOptionGlobal':
-						return {english: 'Entire Population', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Entire Population', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'SelectionOptionDemographics':
-						return {english: 'Demographic Region', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Demographic Region', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					default:
-						return {english: 'Health Center Catchment', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Health Center Catchment', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 				}
 			case 'PregnanciesActive':
-				return {english: 'Active Pregnancies', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Active Pregnancies', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'PregnanciesAll':
-				return {english: 'All Pregnancies', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'All Pregnancies', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'PregnanciesCompleted':
-				return {english: 'Completed Pregnancies', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Completed Pregnancies', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'PregnancyOutcome':
 				var outcome = transId.a;
 				switch (outcome.$) {
@@ -11752,37 +11823,42 @@ var $author$project$Translate$translationSet = function (transId) {
 						return {
 							english: 'Live Birth at Term (38 weeks EGA or more)',
 							kinyarwanda: $elm$core$Maybe$Just('Kubyara umwana muzima/Ushyitse (ku byumweru 38 kuzamura)'),
-							kirundi: $elm$core$Maybe$Just('Imbanyi ivutse ikomeye ikiringo kigeze (Indwi 38 z\'imbanyi canke zirenga)')
+							kirundi: $elm$core$Maybe$Just('Imbanyi ivutse ikomeye ikiringo kigeze (Indwi 38 z\'imbanyi canke zirenga)'),
+							somali: $elm$core$Maybe$Just('Nolol ku Dhashay oo Bilo Dhameestay (38 usbuuc EGA ama ka badan)')
 						};
 					case 'OutcomeLivePreTerm':
 						return {
 							english: 'Live Birth Preterm (less than 38 weeks EGA)',
 							kinyarwanda: $elm$core$Maybe$Just('Kubyara mwana udashyitse (munsi y\'ibyumweru 38)'),
-							kirundi: $elm$core$Maybe$Just('Imbanyi ivutse imbere y\'ikiringo (mbere y\'indwi 38)')
+							kirundi: $elm$core$Maybe$Just('Imbanyi ivutse imbere y\'ikiringo (mbere y\'indwi 38)'),
+							somali: $elm$core$Maybe$Just('Nolol ku dhashay oo aan Bilo dhameesan (ka yar 38 usbuuc EGA)')
 						};
 					case 'OutcomeStillAtTerm':
 						return {
 							english: 'Stillbirth at Term (38 weeks EGA or more)',
 							kinyarwanda: $elm$core$Maybe$Just('Abana bapfiriye mu nda bageze igihe cyo kuvuka (ku byumweru 38 kuzamura)'),
-							kirundi: $elm$core$Maybe$Just('Kuvyarira ku gihe (Indwi 38 - AGE (z\'Igihe co Kwibungenga Caharuwe ) canke zirenga)')
+							kirundi: $elm$core$Maybe$Just('Kuvyarira ku gihe (Indwi 38 - AGE (z\'Igihe co Kwibungenga Caharuwe ) canke zirenga)'),
+							somali: $elm$core$Maybe$Just('Uur meyd bilo dhameystay (38 usbuuc EGA ama ka badan)')
 						};
 					case 'OutcomeStillPreTerm':
 						return {
 							english: 'Stillbirth Preterm (less than 38 weeks EGA)',
 							kinyarwanda: $elm$core$Maybe$Just('Abana bapfiriye mu nda batagejeje igihe cyo kuvuka (munsi y\'ibyumweru 38)'),
-							kirundi: $elm$core$Maybe$Just('Kuvyara imbere yuko igihe kigera (imbere y\'indwi 38 - AGE (Igihe co Kwibungenga Caharuwe)')
+							kirundi: $elm$core$Maybe$Just('Kuvyara imbere yuko igihe kigera (imbere y\'indwi 38 - AGE (Igihe co Kwibungenga Caharuwe)'),
+							somali: $elm$core$Maybe$Just('Uur meyd aan bilo dhameysan (ka yar 38 usbuuc EGA)')
 						};
 					default:
 						return {
 							english: 'Abortions (before 24 weeks EGA)',
 							kinyarwanda: $elm$core$Maybe$Just('Kuvanamo inda (mbere y\'ibyumweru 24)'),
-							kirundi: $elm$core$Maybe$Just('Ugukoroka kw\'imbanyi (imbere y\'indwi 24 ugereranije nigihe imbanyi imaze)')
+							kirundi: $elm$core$Maybe$Just('Ugukoroka kw\'imbanyi (imbere y\'indwi 24 ugereranije nigihe imbanyi imaze)'),
+							somali: $elm$core$Maybe$Just('Dhicis (ka hor 24 todobaad EGA)')
 						};
 				}
 			case 'PregnancyOutcomeLabel':
-				return {english: 'Pregnancy Outcome', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Pregnancy Outcome', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'PregnancyTest':
-				return {english: 'Pregnancy Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Pregnancy Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'PregnancyTrimester':
 				var trimester = transId.a;
 				switch (trimester.$) {
@@ -11790,42 +11866,45 @@ var $author$project$Translate$translationSet = function (transId) {
 						return {
 							english: 'First Trimester',
 							kinyarwanda: $elm$core$Maybe$Just('Igihembwe cya mbere'),
-							kirundi: $elm$core$Maybe$Just('Igice ca mbere')
+							kirundi: $elm$core$Maybe$Just('Igice ca mbere'),
+							somali: $elm$core$Maybe$Just('Saddex-biloodka Koowaad')
 						};
 					case 'SecondTrimester':
 						return {
 							english: 'Second Trimester',
 							kinyarwanda: $elm$core$Maybe$Just('Igihembwe cya kabiri'),
-							kirundi: $elm$core$Maybe$Just('Igice ca kabiri')
+							kirundi: $elm$core$Maybe$Just('Igice ca kabiri'),
+							somali: $elm$core$Maybe$Just('Saddex-biloodka labaad')
 						};
 					default:
 						return {
 							english: 'Third Trimester',
 							kinyarwanda: $elm$core$Maybe$Just('Igihembwe cya gatatu'),
-							kirundi: $elm$core$Maybe$Just('Igice ca 3')
+							kirundi: $elm$core$Maybe$Just('Igice ca 3'),
+							somali: $elm$core$Maybe$Just('Saddex-biloodka Saddexaad')
 						};
 				}
 			case 'PrenatalActivity':
 				var activity = transId.a;
 				switch (activity.$) {
 					case 'PrenatalAspirin':
-						return {english: 'Low dose Aspirin', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Low dose Aspirin', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalAppointmentConfirmation':
-						return {english: 'Appointment Confirmation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Appointment Confirmation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalBirthPlan':
-						return {english: 'Birth Plan', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Birth Plan', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalBloodGprsTest':
-						return {english: 'Blood Group and Rhesus Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Blood Group and Rhesus Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalBloodGprsTestResult':
-						return {english: 'Blood Group and Rhesus Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Blood Group and Rhesus Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalBreastExam':
-						return {english: 'Breast Exam', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Breast Exam', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalCalcium':
-						return {english: 'Calcium', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Calcium', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalBreastfeeding':
-						return {english: 'Breastfeeding', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Breastfeeding', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalCorePhysicalExam':
-						return {english: 'Core Physical Exam', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Core Physical Exam', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalDangerSigns':
 						var $temp$transId = $author$project$Translate$DangerSigns;
 						transId = $temp$transId;
@@ -11835,49 +11914,49 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'PrenatalFefol':
-						return {english: 'Fefol', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Fefol', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalFolate':
-						return {english: 'Folate', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Folate', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalFollowUp':
 						var $temp$transId = $author$project$Translate$FollowUp;
 						transId = $temp$transId;
 						continue translationSet;
 					case 'PrenatalGuExam':
-						return {english: 'GU Exam', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'GU Exam', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalHealthEducation':
 						var $temp$transId = $author$project$Translate$HealthEducation;
 						transId = $temp$transId;
 						continue translationSet;
 					case 'PrenatalHemoglobinTest':
-						return {english: 'Hemoglobin Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Hemoglobin Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalHemoglobinTestResult':
-						return {english: 'Hemoglobin Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Hemoglobin Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalHepatitisBTest':
-						return {english: 'Hepatitis B Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Hepatitis B Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalHepatitisBTestResult':
-						return {english: 'Hepatitis B Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Hepatitis B Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalHIVPCRTest':
-						return {english: 'HIV PCR Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'HIV PCR Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalHIVPCRTestResult':
-						return {english: 'HIV PCR Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'HIV PCR Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalHIVTest':
 						var $temp$transId = $author$project$Translate$HIVTest;
 						transId = $temp$transId;
 						continue translationSet;
 					case 'PrenatalHIVTestResult':
-						return {english: 'HIV Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'HIV Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalIron':
-						return {english: 'Iron', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Iron', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalLastMenstrualPeriod':
-						return {english: 'Last Menstrual Period', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Last Menstrual Period', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalMalariaTest':
-						return {english: 'Malaria Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Malaria Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalMalariaTestResult':
-						return {english: 'Malaria Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Malaria Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalMebendazole':
-						return {english: 'Mebendazole', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Mebendazole', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalMedicalHistory':
-						return {english: 'Medical History', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Medical History', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalMedication':
 						var $temp$transId = $author$project$Translate$Medication;
 						transId = $temp$transId;
@@ -11887,39 +11966,39 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'PrenatalMentalHealth':
-						return {english: 'Mental Health', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Mental Health', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalMMS':
-						return {english: 'MMS', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'MMS', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalNutrition':
 						var $temp$transId = $author$project$Translate$Nutrition;
 						transId = $temp$transId;
 						continue translationSet;
 					case 'PrenatalObstetricalExam':
-						return {english: 'Obstetrical Exam', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Obstetrical Exam', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalObstetricHistory':
-						return {english: 'Obstetric History', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Obstetric History', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalObstetricHistoryStep2':
-						return {english: 'Obstetric History Second Step', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Obstetric History Second Step', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalOutsideCare':
 						var $temp$transId = $author$project$Translate$OutsideCare;
 						transId = $temp$transId;
 						continue translationSet;
 					case 'PrenatalPartnerHIVTest':
-						return {english: 'Partner HIV Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Partner HIV Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalPartnerHIVTestResult':
-						return {english: 'Partner HIV Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Partner HIV Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalPhoto':
 						var $temp$transId = $author$project$Translate$Photo;
 						transId = $temp$transId;
 						continue translationSet;
 					case 'PrenatalPostpartumTreatmentReview':
-						return {english: 'Postpartum Treatment Review', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Postpartum Treatment Review', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalPregnancyOutcome':
 						var $temp$transId = $author$project$Translate$PregnancyOutcomeLabel;
 						transId = $temp$transId;
 						continue translationSet;
 					case 'PrenatalPregnancyTesting':
-						return {english: 'Pregnancy Testing', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Pregnancy Testing', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalRandomBloodSugarTest':
 						var $temp$transId = $author$project$Translate$RandomBloodSugarTest;
 						transId = $temp$transId;
@@ -11929,7 +12008,7 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'PrenatalResource':
-						return {english: 'Resource', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Resource', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalSendToHC':
 						var $temp$transId = $author$project$Translate$Referral;
 						transId = $temp$transId;
@@ -11939,17 +12018,17 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'PrenatalSpecialityCare':
-						return {english: 'Speciality Care', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Speciality Care', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalSymptomReview':
 						var $temp$transId = $author$project$Translate$SymptomsReview;
 						transId = $temp$transId;
 						continue translationSet;
 					case 'PrenatalSyphilisTest':
-						return {english: 'Syphilis Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Syphilis Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalSyphilisTestResult':
-						return {english: 'Syphilis Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Syphilis Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalTetanusImmunisation':
-						return {english: 'Tetanus Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Tetanus Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'PrenatalTreatmentReview':
 						var $temp$transId = $author$project$Translate$TreatmentReview;
 						transId = $temp$transId;
@@ -11967,7 +12046,7 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					default:
-						return {english: 'Vitals Recheck', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Vitals Recheck', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 				}
 			case 'PrenatalDiagnosis':
 				var diagnosis = transId.a;
@@ -11976,401 +12055,464 @@ var $author$project$Translate$translationSet = function (transId) {
 						return {
 							english: 'Chronic Hypertension',
 							kinyarwanda: $elm$core$Maybe$Just('Indwara y\'Umuvuduko w\'Amaraso Imaze Igihe Kirekire'),
-							kirundi: $elm$core$Maybe$Just('Umuvuduko ukabije w\'amaraso wamaho')
+							kirundi: $elm$core$Maybe$Just('Umuvuduko ukabije w\'amaraso wamaho'),
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisGestationalHypertension':
 						return {
 							english: 'Pregnancy-Induced Hypertension',
 							kinyarwanda: $elm$core$Maybe$Just('Umuvuduko w\'amaraso watewe no gutwita'),
-							kirundi: $elm$core$Maybe$Just('Umuvuduko w\'amaraso utewe n\'imbanyi')
+							kirundi: $elm$core$Maybe$Just('Umuvuduko w\'amaraso utewe n\'imbanyi'),
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisModeratePreeclampsia':
 						return {
 							english: 'Mild to Moderate Preeclampsia',
 							kinyarwanda: $elm$core$Maybe$Just('Preklampusi Yoroheje'),
-							kirundi: $elm$core$Maybe$Just('Umuvuduko w\'amaraso mu gihe c\'imbanyi woroshe')
+							kirundi: $elm$core$Maybe$Just('Umuvuduko w\'amaraso mu gihe c\'imbanyi woroshe'),
+							somali: $elm$core$Maybe$Just('Dhiig karka Uurka u dhaxeeya mid hoose iyo mid dhexe')
 						};
 					case 'DiagnosisSeverePreeclampsia':
 						return {
 							english: 'Severe Preeclampsia',
 							kinyarwanda: $elm$core$Maybe$Just('Preklampusi Ikabije'),
-							kirundi: $elm$core$Maybe$Just('Severe Preeclampsia')
+							kirundi: $elm$core$Maybe$Just('Severe Preeclampsia'),
+							somali: $elm$core$Maybe$Just('Dhiig karka uurka oo aad u daran')
 						};
 					case 'DiagnosisEclampsia':
 						return {
 							english: 'Eclampsia',
 							kinyarwanda: $elm$core$Maybe$Just('Ekalampusi'),
-							kirundi: $elm$core$Maybe$Just('Éclampsie')
+							kirundi: $elm$core$Maybe$Just('Éclampsie'),
+							somali: $elm$core$Maybe$Just('Ekalaamsiyo')
 						};
 					case 'DiagnosisHIV':
 						return {
 							english: 'HIV',
 							kinyarwanda: $elm$core$Maybe$Just('Virusi itera SIDA'),
-							kirundi: $elm$core$Maybe$Just('Umugera wa SIDA')
+							kirundi: $elm$core$Maybe$Just('Umugera wa SIDA'),
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisHIVDetectableViralLoad':
 						return {
 							english: 'Detectable HIV Viral Load',
 							kinyarwanda: $elm$core$Maybe$Just('Agaragaza udukoko dutera virusi ya SIDA mu maraso'),
-							kirundi: $elm$core$Maybe$Just('Afise umugera wa SIDA ugaragara')
+							kirundi: $elm$core$Maybe$Just('Afise umugera wa SIDA ugaragara'),
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisDiscordantPartnership':
 						return {
 							english: 'Discordant Partnership',
 							kinyarwanda: $elm$core$Maybe$Just('Umwe mubo babana afite ubwandu'),
-							kirundi: $elm$core$Maybe$Just('Umwe afise umugera wa SIDA kandi uwundi atawafise')
+							kirundi: $elm$core$Maybe$Just('Umwe afise umugera wa SIDA kandi uwundi atawafise'),
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisSyphilis':
 						return {
 							english: 'Syphilis',
 							kinyarwanda: $elm$core$Maybe$Just('Mburugu'),
-							kirundi: $elm$core$Maybe$Just('Ingwara yo mu bihimba vy\'irondoka')
+							kirundi: $elm$core$Maybe$Just('Ingwara yo mu bihimba vy\'irondoka'),
+							somali: $elm$core$Maybe$Just('Waraabow')
 						};
 					case 'DiagnosisSyphilisWithComplications':
 						return {
 							english: 'Syphilis with Complications',
 							kinyarwanda: $elm$core$Maybe$Just('Mburugu n\'ibibazo bishamikiyeho'),
-							kirundi: $elm$core$Maybe$Just('Syphilis hamwe n\'ingorane')
+							kirundi: $elm$core$Maybe$Just('Syphilis hamwe n\'ingorane'),
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisNeurosyphilis':
 						return {
 							english: 'Neurosyphilis',
 							kinyarwanda: $elm$core$Maybe$Just('Mburugu yageze mu bwonko'),
-							kirundi: $elm$core$Maybe$Just('Ingwara yo m\'ubwonko')
+							kirundi: $elm$core$Maybe$Just('Ingwara yo m\'ubwonko'),
+							somali: $elm$core$Maybe$Just('Jabtada Dareen Sidaha')
 						};
 					case 'DiagnosisHepatitisB':
 						return {
 							english: 'Hepatitis B',
 							kinyarwanda: $elm$core$Maybe$Just('Umwijima wo mu bwoko bwa B'),
-							kirundi: $elm$core$Maybe$Just('Ingwara y\'igitigu')
+							kirundi: $elm$core$Maybe$Just('Ingwara y\'igitigu'),
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisMalaria':
 						return {
 							english: 'Malaria',
 							kinyarwanda: $elm$core$Maybe$Just('Malariya'),
-							kirundi: $elm$core$Maybe$Just('Malariya')
+							kirundi: $elm$core$Maybe$Just('Malariya'),
+							somali: $elm$core$Maybe$Just('Duumo')
 						};
 					case 'DiagnosisMalariaWithAnemia':
 						return {
 							english: 'Malaria with Anemia',
 							kinyarwanda: $elm$core$Maybe$Just('Malariya n\'Amaraso Macye'),
-							kirundi: $elm$core$Maybe$Just('Malariya hamwe n\'igabanuka ry\'amaraso m\'umubiri')
+							kirundi: $elm$core$Maybe$Just('Malariya hamwe n\'igabanuka ry\'amaraso m\'umubiri'),
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisMalariaWithSevereAnemia':
 						return {
 							english: 'Malaria with Severe Anemia',
 							kinyarwanda: $elm$core$Maybe$Just('Malariya n\'Amaraso Macye Cyane'),
-							kirundi: $elm$core$Maybe$Just('Malariya kumwe n\'igabanuka ry\'amaraso m\'umubiri ridasanzwe')
+							kirundi: $elm$core$Maybe$Just('Malariya kumwe n\'igabanuka ry\'amaraso m\'umubiri ridasanzwe'),
+							somali: $elm$core$Maybe$Just('Duumo leh Dhiig la`aan Daran')
 						};
 					case 'DiagnosisModerateAnemia':
 						return {
 							english: 'Mild to Moderate Anemia',
 							kinyarwanda: $elm$core$Maybe$Just('Amaraso Macye byoroheje'),
-							kirundi: $elm$core$Maybe$Just('Igabanuka ry\'amaraso kuva bisanzwe')
+							kirundi: $elm$core$Maybe$Just('Igabanuka ry\'amaraso kuva bisanzwe'),
+							somali: $elm$core$Maybe$Just('Dhiig la`aan u dhaxeysa mid hoose iyo mid dhexe')
 						};
 					case 'DiagnosisSevereAnemia':
 						return {
 							english: 'Severe Anemia',
 							kinyarwanda: $elm$core$Maybe$Just('Amaraso Macye Cyane'),
-							kirundi: $elm$core$Maybe$Just('Ibura ry\'amaraso rikaze')
+							kirundi: $elm$core$Maybe$Just('Ibura ry\'amaraso rikaze'),
+							somali: $elm$core$Maybe$Just('Dhiig yari aad u daran')
 						};
 					case 'DiagnosisSevereAnemiaWithComplications':
 						return {
 							english: 'Severe Anemia with Complications',
 							kinyarwanda: $elm$core$Maybe$Just('Amaraso Macye Cyane n\'Ibibazo Bishamikiyeho'),
-							kirundi: $elm$core$Maybe$Just('Ibura ry\'amaraso rikaze hamwe n\'ingorane bijanye')
+							kirundi: $elm$core$Maybe$Just('Ibura ry\'amaraso rikaze hamwe n\'ingorane bijanye'),
+							somali: $elm$core$Maybe$Just('Dhiig yari aad u daran oo leh waxyeello')
 						};
 					case 'DiagnosisMiscarriage':
 						return {
 							english: 'Miscarriage',
 							kinyarwanda: $elm$core$Maybe$Just('Inda yavuyemo'),
-							kirundi: $elm$core$Maybe$Just('Ugukoroka kw\'imbanyi')
+							kirundi: $elm$core$Maybe$Just('Ugukoroka kw\'imbanyi'),
+							somali: $elm$core$Maybe$Just('Umuliso biyaan')
 						};
 					case 'DiagnosisMolarPregnancy':
 						return {
 							english: 'Molar Pregnancy',
 							kinyarwanda: $elm$core$Maybe$Just('Atwite amahuri'),
-							kirundi: $elm$core$Maybe$Just('Imbanyi idakomeye')
+							kirundi: $elm$core$Maybe$Just('Imbanyi idakomeye'),
+							somali: $elm$core$Maybe$Just('Uur Beenaad')
 						};
 					case 'DiagnosisPlacentaPrevia':
 						return {
 							english: 'Placenta Previa',
 							kinyarwanda: $elm$core$Maybe$Just('Ingobyi iri hasi ku nkondo y\'umura'),
-							kirundi: $elm$core$Maybe$Just('Igitereko cugaye isohokera')
+							kirundi: $elm$core$Maybe$Just('Igitereko cugaye isohokera'),
+							somali: $elm$core$Maybe$Just('Ibida Qalloocatay')
 						};
 					case 'DiagnosisPlacentalAbruption':
 						return {
 							english: 'Placental Abruption',
 							kinyarwanda: $elm$core$Maybe$Just('Ingobyi yomotse hakiri kare'),
-							kirundi: $elm$core$Maybe$Just('Itabuka ry\'igitereko')
+							kirundi: $elm$core$Maybe$Just('Itabuka ry\'igitereko'),
+							somali: $elm$core$Maybe$Just('Ibida Go`day')
 						};
 					case 'DiagnosisUterineRupture':
 						return {
 							english: 'Uterine Rupture',
 							kinyarwanda: $elm$core$Maybe$Just('Nyababyeyi yaturitse'),
-							kirundi: $elm$core$Maybe$Just('uguturika kw\'igitereko')
+							kirundi: $elm$core$Maybe$Just('uguturika kw\'igitereko'),
+							somali: $elm$core$Maybe$Just('Dillaaca Ilmo galeenka')
 						};
 					case 'DiagnosisObstructedLabor':
 						return {
 							english: 'Obstructed Labor',
 							kinyarwanda: $elm$core$Maybe$Just('Inda yanze kuvuka '),
-							kirundi: $elm$core$Maybe$Just('Igikorwa cabujijwe')
+							kirundi: $elm$core$Maybe$Just('Igikorwa cabujijwe'),
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisPostAbortionSepsis':
 						return {
 							english: 'Post Abortion Sepsis',
 							kinyarwanda: $elm$core$Maybe$Just('Afite uburwayi bwa infegisiyo yo mu maraso bwatewe no gukuramo inda'),
-							kirundi: $elm$core$Maybe$Just('Birashoboka ko ingwara y\'igitereko izamwo')
+							kirundi: $elm$core$Maybe$Just('Birashoboka ko ingwara y\'igitereko izamwo'),
+							somali: $elm$core$Maybe$Just('Caabuqa Dhiciska kadib')
 						};
 					case 'DiagnosisEctopicPregnancy':
 						return {
 							english: 'Ectopic Pregnancy',
 							kinyarwanda: $elm$core$Maybe$Just('Yasamiye hanze y\'umura'),
-							kirundi: $elm$core$Maybe$Just('Imbanyi iri hanze y\'Igitereko')
+							kirundi: $elm$core$Maybe$Just('Imbanyi iri hanze y\'Igitereko'),
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisPROM':
 						return {
 							english: 'Premature Rupture of Membranes (PROM)',
 							kinyarwanda: $elm$core$Maybe$Just('Isuha yamenetse hakiri kare'),
-							kirundi: $elm$core$Maybe$Just('Itabuka ry\'isimbizo y\'umwana mu gitereko imbere yuko imbanyi ishika kw\'itarike yayo/igihe cayo')
+							kirundi: $elm$core$Maybe$Just('Itabuka ry\'isimbizo y\'umwana mu gitereko imbere yuko imbanyi ishika kw\'itarike yayo/igihe cayo'),
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisPPROM':
 						return {
 							english: 'Preterm Premature Rupture of Membranes (PPROM)',
 							kinyarwanda: $elm$core$Maybe$Just('Isuha yamenetse hakiri kare inda itarageza igihe'),
-							kirundi: $elm$core$Maybe$Just('Itabuka ry\'isimbizo y\'umwana mu gitereko imbere yuko imbanyi ishika kw\'itarike yayo')
+							kirundi: $elm$core$Maybe$Just('Itabuka ry\'isimbizo y\'umwana mu gitereko imbere yuko imbanyi ishika kw\'itarike yayo'),
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisHyperemesisGravidum':
 						return {
 							english: 'Hyperemesis Gravidum',
 							kinyarwanda: $elm$core$Maybe$Just('Kuruka bikabije k\'umugore utwite'),
-							kirundi: $elm$core$Maybe$Just('Hyperémèse gravidique')
+							kirundi: $elm$core$Maybe$Just('Hyperémèse gravidique'),
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisSevereVomiting':
 						return {
 							english: 'Severe Vomiting',
 							kinyarwanda: $elm$core$Maybe$Just('Kuruka bikabije'),
-							kirundi: $elm$core$Maybe$Just('Ukudahwa gukaze')
+							kirundi: $elm$core$Maybe$Just('Ukudahwa gukaze'),
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisMaternalComplications':
 						return {
 							english: 'Maternal Complications',
 							kinyarwanda: $elm$core$Maybe$Just('Ibibazo bishobora kwibasira umugore utwite'),
-							kirundi: $elm$core$Maybe$Just('Ingorane z\'abavyeyi')
+							kirundi: $elm$core$Maybe$Just('Ingorane z\'abavyeyi'),
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisInfection':
 						return {
 							english: 'Infection',
 							kinyarwanda: $elm$core$Maybe$Just('Indwara iterwa n\'udukoko tutabonwa n\'amaso (Microbes)'),
-							kirundi: $elm$core$Maybe$Just('Ivyanduza')
+							kirundi: $elm$core$Maybe$Just('Ivyanduza'),
+							somali: $elm$core$Maybe$Just('Caabuq')
 						};
 					case 'DiagnosisImminentDelivery':
 						return {
 							english: 'Imminent Delivery',
 							kinyarwanda: $elm$core$Maybe$Just('Kubyara biri hafi'),
-							kirundi: $elm$core$Maybe$Just('Gutanga bigaragara/')
+							kirundi: $elm$core$Maybe$Just('Gutanga bigaragara/'),
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisLaborAndDelivery':
 						return {
 							english: 'Labor + Delivery',
 							kinyarwanda: $elm$core$Maybe$Just('Kujya ku nda + Kubyara'),
-							kirundi: $elm$core$Maybe$Just('Ibise + Kuvyara')
+							kirundi: $elm$core$Maybe$Just('Ibise + Kuvyara'),
+							somali: $elm$core$Maybe$Just('Fool + Dhalmo')
 						};
 					case 'DiagnosisHeartburn':
 						return {
 							english: 'Heartburn',
 							kinyarwanda: $elm$core$Maybe$Just('Ikirungurira'),
-							kirundi: $elm$core$Maybe$Just('Ugusha k\'umutima')
+							kirundi: $elm$core$Maybe$Just('Ugusha k\'umutima'),
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisDeepVeinThrombosis':
 						return {
 							english: 'Deep Vein Thrombosis',
 							kinyarwanda: $elm$core$Maybe$Just('Gufatana(Kuvura) gukabije kw\'amaraso'),
-							kirundi: $elm$core$Maybe$Just('Umutsi w\'indani ufise Thrombose')
+							kirundi: $elm$core$Maybe$Just('Umutsi w\'indani ufise Thrombose'),
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisPelvicPainIntense':
 						return {
 							english: 'Intense Pelvic Pain',
 							kinyarwanda: $elm$core$Maybe$Just('Ububabare bukabije mu kiziba cy\'inda'),
-							kirundi: $elm$core$Maybe$Just('Ububabare bukomeye bwo mu nda yo hepfo')
+							kirundi: $elm$core$Maybe$Just('Ububabare bukomeye bwo mu nda yo hepfo'),
+							somali: $elm$core$Maybe$Just('Xanuun Dhabarka ah oo daran')
 						};
 					case 'DiagnosisUrinaryTractInfection':
 						return {
 							english: 'Urinary Tract Infection',
 							kinyarwanda: $elm$core$Maybe$Just('Indwara y\'ubwandu bw\'umuyoboro w\'inkari'),
-							kirundi: $elm$core$Maybe$Just('Ingwara yo mu miringoti y\'umukoyo')
+							kirundi: $elm$core$Maybe$Just('Ingwara yo mu miringoti y\'umukoyo'),
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisPyelonephritis':
 						return {
 							english: 'Pyelonephritis',
 							kinyarwanda: $elm$core$Maybe$Just('Indwara yo kubyimba impyiko'),
-							kirundi: $elm$core$Maybe$Just('Ingwara y\'Amafyigo')
+							kirundi: $elm$core$Maybe$Just('Ingwara y\'Amafyigo'),
+							somali: $elm$core$Maybe$Just('Caabuqa Kellida')
 						};
 					case 'DiagnosisCandidiasis':
 						return {
 							english: 'Candidiasis',
 							kinyarwanda: $elm$core$Maybe$Just('Kandidoze'),
-							kirundi: $elm$core$Maybe$Just('Candidose')
+							kirundi: $elm$core$Maybe$Just('Candidose'),
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisGonorrhea':
 						return {
 							english: 'Gonorrhea',
 							kinyarwanda: $elm$core$Maybe$Just('Indwara y\'umutezi'),
-							kirundi: $elm$core$Maybe$Just('Ingwara yo mu bihimba vy\'irondoka')
+							kirundi: $elm$core$Maybe$Just('Ingwara yo mu bihimba vy\'irondoka'),
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisTrichomonasOrBacterialVaginosis':
 						return {
 							english: 'Trichomonas or Bacterial Vaginosis',
 							kinyarwanda: $elm$core$Maybe$Just('Tirikomonasi cyangwa Mikorobe zo mu nda ibyara'),
-							kirundi: $elm$core$Maybe$Just('Ingwara yo mu bihimba vy\'irondoka igaragazwa kenshi no kuhiyagaza')
+							kirundi: $elm$core$Maybe$Just('Ingwara yo mu bihimba vy\'irondoka igaragazwa kenshi no kuhiyagaza'),
+							somali: $elm$core$Maybe$Just('Trichomonas ama Bakteeriyada Makaanka')
 						};
 					case 'DiagnosisTuberculosis':
 						return {
 							english: 'Tuberculosis',
 							kinyarwanda: $elm$core$Maybe$Just('Igituntu'),
-							kirundi: $elm$core$Maybe$Just('Igituntu')
+							kirundi: $elm$core$Maybe$Just('Igituntu'),
+							somali: $elm$core$Maybe$Just('Qaaxo')
 						};
 					case 'DiagnosisDiabetes':
 						return {
 							english: 'Diabetes',
 							kinyarwanda: $elm$core$Maybe$Just('Diyabete (Indwara y\'igisukari)'),
-							kirundi: $elm$core$Maybe$Just('Diyabete')
+							kirundi: $elm$core$Maybe$Just('Diyabete'),
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisGestationalDiabetes':
 						return {
 							english: 'Gestational Diabetes',
 							kinyarwanda: $elm$core$Maybe$Just('Diyabete iterwa no gutwita'),
-							kirundi: $elm$core$Maybe$Just('Diyabete y\'imbanyi')
+							kirundi: $elm$core$Maybe$Just('Diyabete y\'imbanyi'),
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisRhesusNegative':
 						return {
 							english: 'RH Factor Negative',
 							kinyarwanda: $elm$core$Maybe$Just('Rezisi Negatifu'),
-							kirundi: $elm$core$Maybe$Just('Rhesus negatif')
+							kirundi: $elm$core$Maybe$Just('Rhesus negatif'),
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisDepressionNotLikely':
 						return {
 							english: 'Depression not Likely',
 							kinyarwanda: $elm$core$Maybe$Just('Birashoboka ko adafite indwara y\'agahinda gakabije'),
-							kirundi: $elm$core$Maybe$Just('Kwihebura ntibishoboka')
+							kirundi: $elm$core$Maybe$Just('Kwihebura ntibishoboka'),
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisDepressionPossible':
 						return {
 							english: 'Depression Possible',
 							kinyarwanda: $elm$core$Maybe$Just('Birashoboka ko yagira indwara y\'agahinda gakabije'),
-							kirundi: $elm$core$Maybe$Just('Kwihebura birashoboka')
+							kirundi: $elm$core$Maybe$Just('Kwihebura birashoboka'),
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisDepressionHighlyPossible':
 						return {
 							english: 'Fairly High Possibility of Depression',
 							kinyarwanda: $elm$core$Maybe$Just('Birashoboka cyane ko afite indwara y\'agahinda gakabije'),
-							kirundi: $elm$core$Maybe$Just('Birashoboka cane kwihebura')
+							kirundi: $elm$core$Maybe$Just('Birashoboka cane kwihebura'),
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisDepressionProbable':
 						return {
 							english: 'Probable Depression',
 							kinyarwanda: $elm$core$Maybe$Just('Birashoboka ko afite indwara y\'agahinda gakabije'),
-							kirundi: $elm$core$Maybe$Just('Ukwihebura gushoboka')
+							kirundi: $elm$core$Maybe$Just('Ukwihebura gushoboka'),
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisSuicideRisk':
 						return {
 							english: 'Suicide Risk',
 							kinyarwanda: $elm$core$Maybe$Just('Afite ibyago byo kwiyahura'),
-							kirundi: $elm$core$Maybe$Just('Ingorane zimutuma ashobora kwiyahura')
+							kirundi: $elm$core$Maybe$Just('Ingorane zimutuma ashobora kwiyahura'),
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisOther':
 						return {
 							english: 'Other',
 							kinyarwanda: $elm$core$Maybe$Just('Ibindi'),
-							kirundi: $elm$core$Maybe$Just('Ibindi')
+							kirundi: $elm$core$Maybe$Just('Ibindi'),
+							somali: $elm$core$Maybe$Just('Kale')
 						};
 					case 'DiagnosisPostpartumAbdominalPain':
 						return {
 							english: 'Abdominal Pain',
 							kinyarwanda: $elm$core$Maybe$Just('Kubabara mu nda'),
-							kirundi: $elm$core$Maybe$Just('Ukubabara mu nda')
+							kirundi: $elm$core$Maybe$Just('Ukubabara mu nda'),
+							somali: $elm$core$Maybe$Just('Calool Xanuun')
 						};
 					case 'DiagnosisPostpartumUrinaryIncontinence':
 						return {
 							english: 'Urinary Incontinence',
 							kinyarwanda: $elm$core$Maybe$Just('Ntabasha kunyara'),
-							kirundi: $elm$core$Maybe$Nothing
+							kirundi: $elm$core$Maybe$Nothing,
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisPostpartumHeadache':
 						return {
 							english: 'Headache',
 							kinyarwanda: $elm$core$Maybe$Just('Kubabara umutwe'),
-							kirundi: $elm$core$Maybe$Just('Kumeneka umutwe')
+							kirundi: $elm$core$Maybe$Just('Kumeneka umutwe'),
+							somali: $elm$core$Maybe$Just('Madax xanuun')
 						};
 					case 'DiagnosisPostpartumFatigue':
 						return {
 							english: 'Fatigue',
 							kinyarwanda: $elm$core$Maybe$Just('umunaniro'),
-							kirundi: $elm$core$Maybe$Just('Uburuhe')
+							kirundi: $elm$core$Maybe$Just('Uburuhe'),
+							somali: $elm$core$Maybe$Just('Daal')
 						};
 					case 'DiagnosisPostpartumFever':
 						return {
 							english: 'Fever',
 							kinyarwanda: $elm$core$Maybe$Just('Umuriro'),
-							kirundi: $elm$core$Maybe$Just('Ubushuhe')
+							kirundi: $elm$core$Maybe$Just('Ubushuhe'),
+							somali: $elm$core$Maybe$Just('Qandho')
 						};
 					case 'DiagnosisPostpartumPerinealPainOrDischarge':
 						return {
 							english: 'Perineal Pain or Discharge',
 							kinyarwanda: $elm$core$Maybe$Just('Arababara perine cg aratakaza ibintu budasanzwe'),
-							kirundi: $elm$core$Maybe$Just('Ububabare bw\'umugongo hepfo')
+							kirundi: $elm$core$Maybe$Just('Ububabare bw\'umugongo hepfo'),
+							somali: $elm$core$Maybe$Just('Xanuun qaska ah ama Dheecaan')
 						};
 					case 'DiagnosisPostpartumInfection':
-						return {english: 'Infection (Postpartum)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Infection (Postpartum)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'DiagnosisPostpartumExcessiveBleeding':
 						return {
 							english: 'Excessive Bleeding',
 							kinyarwanda: $elm$core$Maybe$Just('Kuva cyane'),
-							kirundi: $elm$core$Maybe$Just('Kuva amaraso cane')
+							kirundi: $elm$core$Maybe$Just('Kuva amaraso cane'),
+							somali: $elm$core$Maybe$Just('Dhiigbax aad u daran')
 						};
 					case 'DiagnosisPostpartumEarlyMastitisOrEngorgment':
 						return {
 							english: 'Early Mastitis or Engorgement',
 							kinyarwanda: $elm$core$Maybe$Just('Uburwayi bwo kubyimba amabere bwaje kare cyane'),
-							kirundi: $elm$core$Maybe$Just('Iyuzura ry\'amaberebere (Mastite précoce)')
+							kirundi: $elm$core$Maybe$Just('Iyuzura ry\'amaberebere (Mastite précoce)'),
+							somali: $elm$core$Maybe$Nothing
 						};
 					case 'DiagnosisPostpartumMastitis':
 						return {
 							english: 'Mastitis',
 							kinyarwanda: $elm$core$Maybe$Just('Uburwayi bw\'amabere'),
-							kirundi: $elm$core$Maybe$Just('Ingwara y\'imoko ituma amaberebere adasohoka')
+							kirundi: $elm$core$Maybe$Just('Ingwara y\'imoko ituma amaberebere adasohoka'),
+							somali: $elm$core$Maybe$Nothing
 						};
 					default:
 						return {
 							english: 'None',
 							kinyarwanda: $elm$core$Maybe$Just('Ntabyo'),
-							kirundi: $elm$core$Maybe$Just('Nta na kimwe')
+							kirundi: $elm$core$Maybe$Just('Nta na kimwe'),
+							somali: $elm$core$Maybe$Just('Midna')
 						};
 				}
 			case 'PrevalenceByMonthOneVisitOrMore':
-				return {english: 'Prevalence by month - one visit or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Prevalence by month - one visit or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'PrevalenceByMonthTwoVisitsOrMore':
-				return {english: 'Prevalence by month - two visits or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Prevalence by month - two visits or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Province':
-				return {english: 'Province', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Province', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'QuarterYear':
 				var quarter = transId.a;
 				var year = transId.b;
 				return {
 					english: $elm$core$String$fromInt(year) + (' Q' + $elm$core$String$fromInt(quarter)),
 					kinyarwanda: $elm$core$Maybe$Nothing,
-					kirundi: $elm$core$Maybe$Nothing
+					kirundi: $elm$core$Maybe$Nothing,
+					somali: $elm$core$Maybe$Nothing
 				};
 			case 'RandomBloodSugarTest':
-				return {english: 'Random Blood Sugar Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Random Blood Sugar Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'RandomBloodSugarTestResult':
-				return {english: 'Random Blood Sugar Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Random Blood Sugar Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Referral':
-				return {english: 'Referral', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Referral', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Registered':
-				return {english: 'Registered', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Registered', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'RegisteredPatients':
-				return {english: 'Registered Patients', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Registered Patients', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'ReportType':
 				var reportType = transId.a;
 				switch (reportType.$) {
@@ -12379,7 +12521,7 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'ReportDemographics':
-						return {english: 'Demographics', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Demographics', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'ReportNutrition':
 						var $temp$transId = $author$project$Translate$Nutrition;
 						transId = $temp$transId;
@@ -12389,10 +12531,10 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					default:
-						return {english: 'ANC Diagnoses', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'ANC Diagnoses', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 				}
 			case 'ReportTypeLabel':
-				return {english: 'Report Type', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Report Type', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'ResolveMonth':
 				var _short = transId.a;
 				var month = transId.b;
@@ -12401,12 +12543,13 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {
 					english: 'Save',
 					kinyarwanda: $elm$core$Maybe$Just('Kubika'),
-					kirundi: $elm$core$Maybe$Just('Emeza')
+					kirundi: $elm$core$Maybe$Just('Emeza'),
+					somali: $elm$core$Maybe$Just('Xaree')
 				};
 			case 'Scope':
-				return {english: 'Scope', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Scope', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Sector':
-				return {english: 'Sector', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Sector', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'SelectedEntity':
 				var entity = transId.a;
 				switch (entity.$) {
@@ -12460,55 +12603,56 @@ var $author$project$Translate$translationSet = function (transId) {
 						continue translationSet;
 				}
 			case 'SelectLimitDate':
-				return {english: 'End date', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'End date', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'SelectStartDate':
-				return {english: 'Start date', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Start date', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'SelectScope':
-				return {english: 'Please select desired scope', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Please select desired scope', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'SelectViewMode':
-				return {english: 'Please select desired view mode', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Please select desired view mode', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'SocialHistory':
-				return {english: 'Social History', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Social History', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Sorwathe':
-				return {english: 'Sorwathe', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Sorwathe', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'StandardPediatricVisit':
-				return {english: 'Standard Pediatric Visit', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Standard Pediatric Visit', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Stunting':
-				return {english: 'Stunting', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Stunting', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'StuntingModerate':
-				return {english: 'Stunting Moderate', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Stunting Moderate', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'StuntingSevere':
-				return {english: 'Stunting Severe', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Stunting Severe', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Status':
-				return {english: 'Status', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Status', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'SymptomsReview':
-				return {english: 'Symptoms Review', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Symptoms Review', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'TakenBy':
 				var value = transId.a;
 				switch (value.$) {
 					case 'TakenByNurse':
-						return {english: 'Nurse', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Nurse', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'TakenByCHW':
-						return {english: 'CHW', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'CHW', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					default:
-						return {english: 'Unknown', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Unknown', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 				}
 			case 'TakenByLabel':
-				return {english: 'Taken By', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Taken By', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'TargetedInterventions':
-				return {english: 'Targeted Interventions', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Targeted Interventions', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Total':
-				return {english: 'Total', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Total', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'TreatmentReview':
-				return {english: 'Treatment Review', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Treatment Review', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Trimester':
 				return {
 					english: 'Trimester',
 					kinyarwanda: $elm$core$Maybe$Just('Igihembwe'),
-					kirundi: $elm$core$Maybe$Just('Igice')
+					kirundi: $elm$core$Maybe$Just('Igice'),
+					somali: $elm$core$Maybe$Nothing
 				};
 			case 'Tuberculosis':
-				return {english: 'Tuberculosis', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Tuberculosis', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'TuberculosisActivity':
 				var activity = transId.a;
 				switch (activity.$) {
@@ -12517,7 +12661,7 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'TuberculosisDOT':
-						return {english: 'DOT', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'DOT', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'TuberculosisFollowUp':
 						var $temp$transId = $author$project$Translate$FollowUp;
 						transId = $temp$transId;
@@ -12544,32 +12688,32 @@ var $author$project$Translate$translationSet = function (transId) {
 						continue translationSet;
 				}
 			case 'ViewMode':
-				return {english: 'View Mode', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'View Mode', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Vitals':
-				return {english: 'Vitals', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Vitals', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Village':
-				return {english: 'Village', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Village', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'UnderweightModerate':
-				return {english: 'Underweight Moderate', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Underweight Moderate', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'UnderweightSevere':
-				return {english: 'Underweight Severe', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Underweight Severe', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Unique':
-				return {english: 'Unique', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Unique', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'UniversalIntervention':
-				return {english: 'Universal Intervention', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Universal Intervention', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'UrineDipstickTest':
-				return {english: 'Urine Dipstick Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Urine Dipstick Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'UrineDipstickTestResult':
-				return {english: 'Urine Dipstick Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Urine Dipstick Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'WastingModerate':
-				return {english: 'Wasting Moderate', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Wasting Moderate', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'WastingSevere':
-				return {english: 'Wasting Severe', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Wasting Severe', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'WellChildActivity':
 				var activity = transId.a;
 				switch (activity.$) {
 					case 'WellChildAlbendazole':
-						return {english: 'Albendazole', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Albendazole', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'WellChildBCGImmunisation':
 						var $temp$transId = $author$project$Translate$ImmunisationBCG;
 						transId = $temp$transId;
@@ -12579,7 +12723,7 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'WellChildContributingFactors':
-						return {english: 'Contributing Factors', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Contributing Factors', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'WellChildDTPImmunisation':
 						var $temp$transId = $author$project$Translate$ImmunisationDTP;
 						transId = $temp$transId;
@@ -12589,7 +12733,7 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'WellChildECD':
-						return {english: 'ECD', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'ECD', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'WellChildFeeding':
 						var $temp$transId = $author$project$Translate$Feeding;
 						transId = $temp$transId;
@@ -12603,13 +12747,13 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'WellChildHeadCircumference':
-						return {english: 'Head Circumference', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Head Circumference', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'WellChildHealthEducation':
 						var $temp$transId = $author$project$Translate$HealthEducation;
 						transId = $temp$transId;
 						continue translationSet;
 					case 'WellChildHeight':
-						return {english: 'Height', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Height', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'WellChildHPVImmunisation':
 						var $temp$transId = $author$project$Translate$ImmunisationHPV;
 						transId = $temp$transId;
@@ -12623,19 +12767,19 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'WellChildMebendezole':
-						return {english: 'Mebendazole', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Mebendazole', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'WellChildMRImmunisation':
 						var $temp$transId = $author$project$Translate$ImmunisationMR;
 						transId = $temp$transId;
 						continue translationSet;
 					case 'WellChildMUAC':
-						return {english: 'MUAC', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'MUAC', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'WellChildNCDA':
 						var $temp$transId = $author$project$Translate$NCDA;
 						transId = $temp$transId;
 						continue translationSet;
 					case 'WellChildNextVisit':
-						return {english: 'Next Visit', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Next Visit', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'WellChildNutrition':
 						var $temp$transId = $author$project$Translate$Nutrition;
 						transId = $temp$transId;
@@ -12653,7 +12797,7 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'WellChildPregnancySummary':
-						return {english: 'Pregnancy Summary', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Pregnancy Summary', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'WellChildRotarixImmunisation':
 						var $temp$transId = $author$project$Translate$ImmunisationRotarix;
 						transId = $temp$transId;
@@ -12671,27 +12815,29 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'WellChildVitaminA':
-						return {english: 'Vitamin A', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Vitamin A', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					default:
-						return {english: 'Weight', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Weight', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 				}
 			case 'WideScopeNote':
-				return {english: 'The selected scope may contain a large number of patients and report generation could take several minutes.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'The selected scope may contain a large number of patients and report generation could take several minutes.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Year':
 				var year = transId.a;
 				return {
 					english: $elm$core$String$fromInt(year),
 					kinyarwanda: $elm$core$Maybe$Nothing,
-					kirundi: $elm$core$Maybe$Nothing
+					kirundi: $elm$core$Maybe$Nothing,
+					somali: $elm$core$Maybe$Nothing
 				};
 			case 'YearLabel':
 				return {
 					english: 'Year',
 					kinyarwanda: $elm$core$Maybe$Just('Umwaka'),
-					kirundi: $elm$core$Maybe$Just('Umwaka')
+					kirundi: $elm$core$Maybe$Just('Umwaka'),
+					somali: $elm$core$Maybe$Just('Sanadka')
 				};
 			default:
-				return {english: 'Zone', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Zone', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 		}
 	}
 };
@@ -12712,7 +12858,7 @@ var $author$project$Translate$translate = F2(
 					function ($) {
 						return $.kinyarwanda;
 					}(set));
-			default:
+			case 'Kirundi':
 				return A2(
 					$elm$core$Maybe$withDefault,
 					function ($) {
@@ -12720,6 +12866,15 @@ var $author$project$Translate$translate = F2(
 					}(set),
 					function ($) {
 						return $.kirundi;
+					}(set));
+			default:
+				return A2(
+					$elm$core$Maybe$withDefault,
+					function ($) {
+						return $.english;
+					}(set),
+					function ($) {
+						return $.somali;
 					}(set));
 		}
 	});
@@ -22425,12 +22580,46 @@ var $author$project$Utils$GeoLocation$getGeoCellsForRwanda = $pzp1997$assoc_list
 					$elm$core$Maybe$Just(
 						$author$project$Backend$Entities$toEntityId(5479))))
 			])));
+var $author$project$Utils$GeoLocation$getGeoCellsForSomalia = $pzp1997$assoc_list$AssocList$fromList(
+	_List_fromArray(
+		[
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(4),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Koshin',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(3)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(7),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Zeytuun',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(6)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(11),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Iskaashi',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(10)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(14),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Qodaxley',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(13))))
+		]));
 var $author$project$Utils$GeoLocation$getGeoCells = function (site) {
 	switch (site.$) {
 		case 'SiteRwanda':
 			return $author$project$Utils$GeoLocation$getGeoCellsForRwanda;
 		case 'SiteBurundi':
 			return $author$project$Utils$GeoLocation$getGeoCellsForBurundi;
+		case 'SiteSomalia':
+			return $author$project$Utils$GeoLocation$getGeoCellsForSomalia;
 		default:
 			return $pzp1997$assoc_list$AssocList$empty;
 	}
@@ -22517,6 +22706,25 @@ var $author$project$Utils$GeoLocation$getGeoDistricts = function (site) {
 							$elm$core$Maybe$Just(
 								$author$project$Backend$Entities$toEntityId(46))))
 					]));
+		case 'SiteSomalia':
+			return $pzp1997$assoc_list$AssocList$fromList(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						$author$project$Backend$Entities$toEntityId(2),
+						A2(
+							$author$project$Utils$GeoLocation$GeoLocation,
+							'Deynile',
+							$elm$core$Maybe$Just(
+								$author$project$Backend$Entities$toEntityId(1)))),
+						_Utils_Tuple2(
+						$author$project$Backend$Entities$toEntityId(9),
+						A2(
+							$author$project$Utils$GeoLocation$GeoLocation,
+							'Garasbaley',
+							$elm$core$Maybe$Just(
+								$author$project$Backend$Entities$toEntityId(1))))
+					]));
 		default:
 			return $pzp1997$assoc_list$AssocList$empty;
 	}
@@ -22550,6 +22758,14 @@ var $author$project$Utils$GeoLocation$getGeoProvinces = function (site) {
 						_Utils_Tuple2(
 						$author$project$Backend$Entities$toEntityId(46),
 						A2($author$project$Utils$GeoLocation$GeoLocation, 'Burunga', $elm$core$Maybe$Nothing))
+					]));
+		case 'SiteSomalia':
+			return $pzp1997$assoc_list$AssocList$fromList(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						$author$project$Backend$Entities$toEntityId(1),
+						A2($author$project$Utils$GeoLocation$GeoLocation, 'Banadir', $elm$core$Maybe$Nothing))
 					]));
 		default:
 			return $pzp1997$assoc_list$AssocList$empty;
@@ -22608,35 +22824,35 @@ var $author$project$Utils$GeoLocation$getGeoSectorsForBurundi = $pzp1997$assoc_l
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(47)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(60),
+			$author$project$Backend$Entities$toEntityId(56),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Vyuya',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(47)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(63),
+			$author$project$Backend$Entities$toEntityId(59),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Mwumba',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(47)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(70),
+			$author$project$Backend$Entities$toEntityId(66),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Kivumu',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(47)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(73),
+			$author$project$Backend$Entities$toEntityId(69),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Muraramba',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(47)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(76),
+			$author$project$Backend$Entities$toEntityId(72),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Nyagasasa',
@@ -23151,12 +23367,46 @@ var $author$project$Utils$GeoLocation$getGeoSectorsForRwanda = $pzp1997$assoc_li
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(5478))))
 		]));
+var $author$project$Utils$GeoLocation$getGeoSectorsForSomalia = $pzp1997$assoc_list$AssocList$fromList(
+	_List_fromArray(
+		[
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(3),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Koshin',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(2)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(6),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Zeytuun',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(2)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(10),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Iskaashi',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(9)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(13),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Qodaxley',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(9))))
+		]));
 var $author$project$Utils$GeoLocation$getGeoSectors = function (site) {
 	switch (site.$) {
 		case 'SiteRwanda':
 			return $author$project$Utils$GeoLocation$getGeoSectorsForRwanda;
 		case 'SiteBurundi':
 			return $author$project$Utils$GeoLocation$getGeoSectorsForBurundi;
+		case 'SiteSomalia':
+			return $author$project$Utils$GeoLocation$getGeoSectorsForSomalia;
 		default:
 			return $pzp1997$assoc_list$AssocList$empty;
 	}
@@ -39956,12 +40206,46 @@ var $author$project$Utils$GeoLocation$getGeoVillagesForRwanda = $pzp1997$assoc_l
 													$elm$core$Maybe$Just(
 														$author$project$Backend$Entities$toEntityId(5525))))
 											])))))))))));
+var $author$project$Utils$GeoLocation$getGeoVillagesForSomalia = $pzp1997$assoc_list$AssocList$fromList(
+	_List_fromArray(
+		[
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(5),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Koshin',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(4)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(8),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Zeytuun',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(7)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(12),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Iskaashi',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(11)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(15),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Qodaxley',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(14))))
+		]));
 var $author$project$Utils$GeoLocation$getGeoVillages = function (site) {
 	switch (site.$) {
 		case 'SiteRwanda':
 			return $author$project$Utils$GeoLocation$getGeoVillagesForRwanda;
 		case 'SiteBurundi':
 			return $author$project$Utils$GeoLocation$getGeoVillagesForBurundi;
+		case 'SiteSomalia':
+			return $author$project$Utils$GeoLocation$getGeoVillagesForSomalia;
 		default:
 			return $pzp1997$assoc_list$AssocList$empty;
 	}
@@ -39985,6 +40269,8 @@ var $author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel2 = function (
 			return $author$project$Translate$District;
 		case 'SiteBurundi':
 			return $author$project$Translate$Commune;
+		case 'SiteSomalia':
+			return $author$project$Translate$District;
 		default:
 			return $author$project$Translate$EmptyString;
 	}
@@ -39996,6 +40282,8 @@ var $author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel3 = function (
 			return $author$project$Translate$Sector;
 		case 'SiteBurundi':
 			return $author$project$Translate$Zone;
+		case 'SiteSomalia':
+			return $author$project$Translate$Sector;
 		default:
 			return $author$project$Translate$EmptyString;
 	}
@@ -40007,6 +40295,8 @@ var $author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel4 = function (
 			return $author$project$Translate$Cell;
 		case 'SiteBurundi':
 			return $author$project$Translate$Colline;
+		case 'SiteSomalia':
+			return $author$project$Translate$Cell;
 		default:
 			return $author$project$Translate$EmptyString;
 	}
@@ -40018,6 +40308,8 @@ var $author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel5 = function (
 			return $author$project$Translate$Village;
 		case 'SiteBurundi':
 			return $author$project$Translate$CollineSub;
+		case 'SiteSomalia':
+			return $author$project$Translate$Village;
 		default:
 			return $author$project$Translate$EmptyString;
 	}

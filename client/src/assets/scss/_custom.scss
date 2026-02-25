@@ -1786,7 +1786,8 @@ input::placeholder {
 
 .icon-english,
 .icon-kinyarwanda,
-.icon-kirundi {
+.icon-kirundi,
+.icon-somali{
   width: 27px;
   height: 27px;
   display: block;
@@ -1804,6 +1805,10 @@ input::placeholder {
 
 .icon-kirundi {
   background: url(#{$img-path}icon-kirundi.png) no-repeat center;
+  background-size: 16px 11px;
+}
+.icon-somali {
+  background: url(#{$img-path}icon-somali.png) no-repeat center;
   background-size: 16px 11px;
 }
 
