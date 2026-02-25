@@ -67,7 +67,9 @@ getGeoProvinces site =
 
         SiteSomalia ->
             Dict.fromList
-                [ ( toEntityId 1, GeoLocation "Banadir" Nothing ) ]
+                [ ( toEntityId 1, GeoLocation "Banadir" Nothing )
+                , ( toEntityId 16, GeoLocation "Lower Jubba" Nothing )
+                ]
 
         _ ->
             Dict.empty
@@ -98,6 +100,7 @@ getGeoDistricts site =
             Dict.fromList
                 [ ( toEntityId 2, GeoLocation "Deynile" (Just <| toEntityId 1) )
                 , ( toEntityId 9, GeoLocation "Garasbaley" (Just <| toEntityId 1) )
+                , ( toEntityId 17, GeoLocation "Afmadow" (Just <| toEntityId 16) )
                 ]
 
         _ ->
@@ -223,6 +226,7 @@ getGeoSectorsForSomalia =
         , ( toEntityId 6, GeoLocation "Zeytuun" (Just <| toEntityId 2) )
         , ( toEntityId 10, GeoLocation "Iskaashi" (Just <| toEntityId 9) )
         , ( toEntityId 13, GeoLocation "Qodaxley" (Just <| toEntityId 9) )
+        , ( toEntityId 18, GeoLocation "Dhobley" (Just <| toEntityId 17) )
         ]
 
 
@@ -644,6 +648,7 @@ getGeoCellsForSomalia =
         , ( toEntityId 7, GeoLocation "Zeytuun" (Just <| toEntityId 6) )
         , ( toEntityId 11, GeoLocation "Iskaashi" (Just <| toEntityId 10) )
         , ( toEntityId 14, GeoLocation "Qodaxley" (Just <| toEntityId 13) )
+        , ( toEntityId 19, GeoLocation "Dhobley" (Just <| toEntityId 18) )
         ]
 
 
@@ -3084,6 +3089,7 @@ getGeoVillagesForSomalia =
         , ( toEntityId 8, GeoLocation "Zeytuun" (Just <| toEntityId 7) )
         , ( toEntityId 12, GeoLocation "Iskaashi" (Just <| toEntityId 11) )
         , ( toEntityId 15, GeoLocation "Qodaxley" (Just <| toEntityId 14) )
+        , ( toEntityId 20, GeoLocation "Kowaad" (Just <| toEntityId 19) )
         ]
 
 
