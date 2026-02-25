@@ -3043,9 +3043,9 @@ translationSet trans =
 
         AgeAxisLabel ->
             { english = "Age (years-months)"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
-            , somali = Nothing
+            , kinyarwanda = Just "Imyaka (imyaka-amezi)"
+            , kirundi = Just "Imyaka (imyaka-amezi)"
+            , somali = Just "Da'da (sano-bilood)"
             }
 
         AgeWord ->
@@ -3583,44 +3583,44 @@ translationSet trans =
             { english = "Enter the amount of Aheza distributed below."
             , kinyarwanda = Just "Andika ingano ya Aheza yahawe hano."
             , kirundi = Just "Injiza/andika igitigiri ca Aheza catanzwe aha hepfo."
-            , somali = Nothing
+            , somali = Just "Geli qadarka Aheza la qaybiyay ee hoos ku qoran."
             }
 
         AhezaChild ->
             { english = "Aheza Child"
             , kinyarwanda = Just "Aheza igenewe umwana"
-            , kirundi = Nothing
-            , somali = Nothing
+            , kirundi = Just "Aheza igenewe umwana"
+            , somali = Just "Aheza Ilmo"
             }
 
         AhezaDistributionReason reason ->
             case reason of
                 AhezaDistributionReasonBreastfeeding ->
                     { english = "Patient is breastfeeding"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
+                    , kinyarwanda = Just "Umurwayi aronsa"
+                    , kirundi = Just "Umugwayi ari ku gonsa"
+                    , somali = Just "Bukaanka wuu naas-nuujinayaa"
                     }
 
                 AhezaDistributionReasonOther ->
                     { english = "Other"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
+                    , kinyarwanda = Just "Ibindi"
+                    , kirundi = Just "Ibindi"
+                    , somali = Just "Kale"
                     }
 
                 AhezaDistributionReasonPregnant ->
                     { english = "Patient is pregnant"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
+                    , kinyarwanda = Just "Umurwayi atwite"
+                    , kirundi = Just "Umugwayi yibungenze"
+                    , somali = Just "Bukaanka waa uur leh"
                     }
 
         AhezaMother ->
             { english = "Aheza Mother"
             , kinyarwanda = Just "Aheza igenewe umubyeyi"
-            , kirundi = Nothing
-            , somali = Nothing
+            , kirundi = Just "Aheza igenewe umuvyeyi"
+            , somali = Just "Aheza Hooyo"
             }
 
         AlertChwToFollowUp ->
@@ -5844,9 +5844,9 @@ translationSet trans =
 
         DistributedAmount ->
             { english = "Distributed Amount"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
-            , somali = Nothing
+            , kinyarwanda = Just "Ingano yahawe"
+            , kirundi = Just "Igitigiri catanzwe"
+            , somali = Just "Qaddarka La Qaybiyay"
             }
 
         DistributionNotice notice ->
@@ -6895,18 +6895,18 @@ translationSet trans =
 
         FamilyEncounter ->
             { english = "Family Encounter"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
-            , somali = Nothing
+            , kinyarwanda = Just "Isuzuma ry'umuryango"
+            , kirundi = Just "Isuzumwa ry'umuryango"
+            , somali = Just "Ogaanshaha Qoyska"
             }
 
         FamilyEncounterLabel encounterType ->
             case encounterType of
                 Backend.FamilyEncounterParticipant.Model.NutritionEncounter ->
                     { english = "Family Nutrition Encounter"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
+                    , kinyarwanda = Just "Isuzuma ry'imirire y'umuryango"
+                    , kirundi = Just "Isuzumwa ry'ingaburo y'umuryango"
+                    , somali = Just "Ogaanshaha Nafaqada Qoyska"
                     }
 
         FamilyEncounterSelectVisit encounterType ->
@@ -9362,9 +9362,9 @@ translationSet trans =
 
         KilogramsPerMonth ->
             { english = "kg / month"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
-            , somali = Nothing
+            , kinyarwanda = Just "kg / ukwezi"
+            , kirundi = Just "kg / ukwezi"
+            , somali = Just "kg / bishii"
             }
 
         KnownAsPositiveQuestion task ->
@@ -20629,9 +20629,9 @@ translationSet trans =
 
         ReasonForDistribution ->
             { english = "Reason for distribution"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
-            , somali = Nothing
+            , kinyarwanda = Just "Impamvu yo gutanga"
+            , kirundi = Just "Inkomoko yo gutanga"
+            , somali = Just "Sababta qaybinta"
             }
 
         ReasonForNotBreastfeeding reason ->

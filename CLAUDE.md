@@ -141,6 +141,10 @@ Union type variants, case branches, and pattern matches must be in **alphabetica
 
 Do not commit `.ddev/.gitignore` or other DDEV-generated config files. These are local environment files and should not be included in commits.
 
+### Translations in Elm
+
+Translations in `Translate.elm` use a record with `english`, `kinyarwanda`, `kirundi`, and `somali` fields. When a non-English field is `Nothing`, it falls back to the English value at runtime. Therefore, if a translation would be identical to English (e.g., unit abbreviations like "kg", "cm", "MUAC"), leave it as `Nothing` — do not set it to `Just "kg"` etc.
+
 ### Debug Code in Elm
 
 When committing Elm files, do not include `Debug.log` calls. Remove any `Debug.log` lines before staging.
