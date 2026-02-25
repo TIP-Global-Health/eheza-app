@@ -50,6 +50,7 @@ type CountryCode
       -- We have this for testing only.
       -- Israel will not appear in available options.
     | CountryCodeIsrael
+    | CountryCodeSomalia
 
 
 type alias ReportComponentsConfig msg =

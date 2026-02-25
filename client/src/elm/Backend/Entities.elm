@@ -1729,3 +1729,59 @@ type alias HIVTreatmentReviewId =
 
 type HIVTreatmentReviewUuidType
     = HIVTreatmentReviewUuidType
+
+
+type alias FamilyEncounterParticipantId =
+    EntityUuid FamilyEncounterParticipantUuidType
+
+
+type FamilyEncounterParticipantUuidType
+    = FamilyEncounterParticipantUuidType
+
+
+type alias FamilyNutritionEncounterId =
+    EntityUuid FamilyNutritionEncounterUuidType
+
+
+type FamilyNutritionEncounterUuidType
+    = FamilyNutritionEncounterUuidType
+
+
+type alias AhezaMotherId =
+    EntityUuid AhezaMotherUuidType
+
+
+type AhezaMotherUuidType
+    = AhezaMotherUuidType
+
+
+type alias AhezaChildId =
+    EntityUuid AhezaChildUuidType
+
+
+type AhezaChildUuidType
+    = AhezaChildUuidType
+
+
+type alias FamilyNutritionMuacMotherId =
+    EntityUuid FamilyNutritionMuacMotherUuidType
+
+
+type FamilyNutritionMuacMotherUuidType
+    = FamilyNutritionMuacMotherUuidType
+
+
+type alias FamilyNutritionMuacChildId =
+    EntityUuid FamilyNutritionMuacChildUuidType
+
+
+type FamilyNutritionMuacChildUuidType
+    = FamilyNutritionMuacChildUuidType
+
+
+type alias FamilyNutritionPhotoId =
+    EntityUuid FamilyNutritionPhotoUuidType
+
+
+type FamilyNutritionPhotoUuidType
+    = FamilyNutritionPhotoUuidType

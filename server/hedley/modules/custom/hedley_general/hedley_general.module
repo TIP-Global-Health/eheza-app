@@ -255,6 +255,8 @@ function hedley_general_get_measurement_types() {
  */
 function hedley_general_get_encounter_types() {
   $types = hedley_general_get_individual_encounter_types();
+  // @todo: We may want to add family encounters here as well, but need to
+  // consider different places where this function is used.
   // Session represents group encounter.
   $types[] = 'session';
 
@@ -273,7 +275,27 @@ function hedley_general_get_individual_encounter_types() {
 
   // As a convention, name of encounter content type ends with `_encounter`.
   foreach ($content_types as $type) {
-    if (preg_match('/_encounter$/', $type)) {
+    if (preg_match('/_encounter$/', $type) && !preg_match('/^family_/', $type)) {
+      $encounter_types[] = $type;
+    }
+  }
+
+  return $encounter_types;
+}
+
+/**
+ * Returns a list of family encounters content type names.
+ *
+ * @return array
+ *   List of family encounters content type names.
+ */
+function hedley_general_get_family_encounter_types() {
+  $encounter_types = [];
+  $content_types = array_keys(node_type_get_types());
+
+  // As a convention, name of encounter content type ends with `_encounter`.
+  foreach ($content_types as $type) {
+    if (preg_match('/_encounter$/', $type) && preg_match('/^family_/', $type)) {
       $encounter_types[] = $type;
     }
   }

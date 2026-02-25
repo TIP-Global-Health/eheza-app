@@ -1,0 +1,8 @@
+<?php
+
+/**
+ * @file
+ * Code for the Hedley Family Nutrition feature.
+ */
+
+include_once 'hedley_family_nutrition.features.inc';

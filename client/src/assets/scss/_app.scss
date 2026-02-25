@@ -96,8 +96,8 @@ a {
   }
 
   .icon-mother, .icon-baby {
-    width: 56px;
-    height: 56px;
+    width: 52px;
+    height: 52px;
   }
 
   .icon-mother {
@@ -115,16 +115,16 @@ a {
 
   .icon {
     display: block;
-    width: 58px;
-    height: 58px;
+    width: 54px;
+    height: 54px;
     background: #fff;
     border-radius: 50%;
     position: relative;
   }
 
   li.active .icon:before {
-    width: 72px;
-    height: 72px;
+    width: 65px;
+    height: 65px;
     border: 6px solid $color-dark-blue;
     content: " ";
     display: block;

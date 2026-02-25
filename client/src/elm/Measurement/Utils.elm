@@ -330,6 +330,62 @@ resolveIndividualWellChildValue measurementsWithDates measurementFunc valueFunc 
         |> List.head
 
 
+ahezaFormWithDefault : AhezaForm -> Maybe Float -> AhezaForm
+ahezaFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { aheza = valueConsideringIsDirtyField form.ahezaDirty form.aheza value
+                , ahezaDirty = form.ahezaDirty
+                , distributionReason = form.distributionReason
+                , distributionReasonDirty = form.distributionReasonDirty
+                }
+            )
+
+
+ahezaMotherFormWithDefault : AhezaForm -> Maybe AhezaMotherValue -> AhezaForm
+ahezaMotherFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { aheza = valueConsideringIsDirtyField form.ahezaDirty form.aheza value.distributedAmount
+                , ahezaDirty = form.ahezaDirty
+                , distributionReason = maybeValueConsideringIsDirtyField form.distributionReasonDirty form.distributionReason value.distributionReason
+                , distributionReasonDirty = form.distributionReasonDirty
+                }
+            )
+
+
+toAhezaValueWithDefault : Maybe Float -> AhezaForm -> Maybe Float
+toAhezaValueWithDefault saved form =
+    ahezaFormWithDefault form saved
+        |> toAhezaValue
+
+
+toAhezaValue : AhezaForm -> Maybe Float
+toAhezaValue form =
+    form.aheza
+
+
+toAhezaMotherValueWithDefault : Maybe AhezaMotherValue -> AhezaForm -> Maybe AhezaMotherValue
+toAhezaMotherValueWithDefault saved form =
+    ahezaMotherFormWithDefault form saved
+        |> toAhezaMotherValue
+
+
+toAhezaMotherValue : AhezaForm -> Maybe AhezaMotherValue
+toAhezaMotherValue form =
+    form.aheza
+        |> Maybe.map
+            (\amount ->
+                { distributedAmount = amount
+                , distributionReason = form.distributionReason
+                }
+            )
+
+
 fromHeightValue : Maybe HeightInCm -> HeightForm
 fromHeightValue saved =
     { height = Maybe.map getHeightValue saved
@@ -10079,7 +10135,7 @@ generateVaccinationProgressForChildScoreboard site measurements =
 muacMeasurementIsOff : Maybe MuacInCm -> Bool
 muacMeasurementIsOff =
     -- MUAC is not green.
-    Maybe.map (muacIndication >> (/=) ColorAlertGreen)
+    Maybe.map (muacIndicationForChild >> (/=) ColorAlertGreen)
         >> Maybe.withDefault False
 
 

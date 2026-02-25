@@ -463,6 +463,7 @@ nutritionAssessmentTasksCompletedFromTotal currentDate zscores assembled data ta
                             assembled.person
                             Nothing
                             Pages.WellChild.Activity.Model.SetMuac
+                            True
 
                 TaskNutrition ->
                     getMeasurementValueFunc measurements.nutrition

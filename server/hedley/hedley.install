@@ -745,3 +745,10 @@ function hedley_update_7046() {
   $now = hedley_stats_convert_timestamp_to_nominal(time());
   variable_set('hedley_prenatal_change_medications', $now);
 }
+
+/**
+ * Enable the Hedley Family Nutrition module.
+ */
+function hedley_update_7047() {
+  module_enable(['hedley_family_nutrition']);
+}

@@ -226,10 +226,17 @@ function hedley_device_assign_shards($node, $wrapper) {
   }
 
   $individual_encounter_types = hedley_general_get_individual_encounter_types();
+  $family_encounter_types = hedley_general_get_family_encounter_types();
   if (in_array($node->type, $individual_encounter_types)) {
     // Assign shards based on Person of the individual participant,
     // to which encounter belongs.
     $person_id = $wrapper->field_individual_participant->field_person->getIdentifier();
+    $shards = hedley_general_shards_by_person($person_id);
+  }
+  elseif (in_array($node->type, $family_encounter_types)) {
+    // Assign shards based on Person of the family participant,
+    // to which encounter belongs.
+    $person_id = $wrapper->field_family_participant->field_person->getIdentifier();
     $shards = hedley_general_shards_by_person($person_id);
   }
   else {

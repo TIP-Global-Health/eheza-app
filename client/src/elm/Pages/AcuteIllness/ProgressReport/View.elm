@@ -4,7 +4,7 @@ import AssocList as Dict
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..), AcuteIllnessProgressReportInitiator(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndicationForPerson)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths, isChildUnderAgeOf5, isPersonAnAdult)
@@ -527,7 +527,7 @@ viewPhysicalExamPane language currentDate firstInitialWithSubsequent secondIniti
                                         muacWarning =
                                             Maybe.map
                                                 (\muac_ ->
-                                                    case muacIndication (MuacInCm muac_) of
+                                                    case muacIndicationForPerson currentDate assembled.person (MuacInCm muac_) of
                                                         ColorAlertRed ->
                                                             "red"
 
