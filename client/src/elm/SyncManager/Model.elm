@@ -740,6 +740,7 @@ type SiteFeature
     | FeatureNCDA
     | FeatureReportToWhatsApp
     | FeatureStockManagement
+    | FeatureStockManagementChw
     | FeatureTuberculosisManagement
 
 

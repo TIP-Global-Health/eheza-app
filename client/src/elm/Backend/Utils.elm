@@ -323,6 +323,11 @@ stockManagementEnabled =
     EverySet.member FeatureStockManagement
 
 
+stockManagementChwEnabled : EverySet SiteFeature -> Bool
+stockManagementChwEnabled =
+    EverySet.member FeatureStockManagementChw
+
+
 tuberculosisManagementEnabled : EverySet SiteFeature -> Bool
 tuberculosisManagementEnabled =
     EverySet.member FeatureTuberculosisManagement

@@ -1997,6 +1997,9 @@ siteFeatureFromString str =
         "stock_management" ->
             Just FeatureStockManagement
 
+        "stock_management_chw" ->
+            Just FeatureStockManagementChw
+
         "tuberculosis_management" ->
             Just FeatureTuberculosisManagement
 
@@ -2027,6 +2030,9 @@ siteFeatureToString feature =
 
         FeatureStockManagement ->
             "stock_management"
+
+        FeatureStockManagementChw ->
+            "stock_management_chw"
 
         FeatureTuberculosisManagement ->
             "tuberculosis_management"
