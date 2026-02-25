@@ -22,7 +22,6 @@ import Backend.Counseling.Model exposing (CounselingTopic)
 import Backend.EducationSession.Model exposing (EducationTopic(..))
 import Backend.Entities exposing (..)
 import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterType(..))
-import Backend.FamilyNutritionActivity.Model exposing (FamilyNutritionActivity(..))
 import Backend.HIVActivity.Model exposing (HIVActivity)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)
 import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), IndividualEncounterType(..), PregnancyOutcome(..))
@@ -360,7 +359,6 @@ type TranslationId
     | ActivitiesLabel Activity
     | ActivitiesTitle Activity
     | Activity
-    | ActivitityTitleAchi
     | ActivitiesToComplete Int
     | ActivitityLabelAchi
     | ActivePage Page
@@ -414,7 +412,10 @@ type TranslationId
     | AgeSingleMonthWithoutDay Int
     | AgeSingleDayWithMonth Int Int
     | AgeSingleDayWithoutMonth Int
-    | AhezaActivityLabel
+    | AhezaActivityHelper
+    | AhezaChild
+    | AhezaDistributionReason AhezaDistributionReason
+    | AhezaMother
     | AlertChwToFollowUp
     | AgeOneYearOld
     | AgeOneYearAndOneMonth
@@ -694,7 +695,6 @@ type TranslationId
     | FamilyHistoryOfPreeclampsia
     | FamilyInformation
     | FamilyMembers
-    | FamilyNutritionActivityTitle FamilyNutritionActivity
     | FamilyPlanningCurentlyQuestion
     | FamilyPlanningInFutureQuestion
     | FamilyPlanningSignLabel FamilyPlanningSign
@@ -1255,6 +1255,7 @@ type TranslationId
     | Person
     | PersonHasBeenSaved
     | PertinentSymptoms
+    | Photo
     | PhotosTransferStatus
     | PhysicalConditions
     | PhysicalExam
@@ -1381,6 +1382,7 @@ type TranslationId
     | Read
     | ReadToggle Bool
     | ReadyForReview
+    | ReasonForDistribution
     | ReasonForNotBreastfeeding BreastfeedingSign
     | ReasonForNotIsolating ReasonForNotIsolating
     | ReasonForNotTaking ReasonForNotTaking
@@ -3178,14 +3180,14 @@ translationSet trans =
                 MotherActivity MotherFbf ->
                     { english = "Enter the amount of CSB++ (FBF) distributed below."
                     , kinyarwanda = Just "Andika ingano ya  CSB++ (FBF) yahawe hano."
-                    , kirundi = Just "Injiza/andika igitigiri ca CSB++ hamwe na FBF catanzwe aha hepfo"
+                    , kirundi = Just "Injiza/andika igitigiri ca CSB++ hamwe na FBF catanzwe aha hepfo."
                     , somali = Nothing
                     }
 
                 MotherActivity ParticipantConsent ->
                     { english = "Forms:"
                     , kinyarwanda = Nothing
-                    , kirundi = Just "Amafishi"
+                    , kirundi = Just "Amafishi:"
                     , somali = Just "Foomyo:"
                     }
 
@@ -3197,7 +3199,7 @@ translationSet trans =
                 ChildActivity ChildFbf ->
                     { english = "Enter the amount of CSB++ (FBF) distributed below."
                     , kinyarwanda = Just "Andika ingano ya  CSB++ (FBF) yahawe hano."
-                    , kirundi = Just "Injiza/andika igitigiri ca CSB++ hamwe na FBF catanzwe aha hepfo"
+                    , kirundi = Just "Injiza/andika igitigiri ca CSB++ hamwe na FBF catanzwe aha hepfo."
                     , somali = Nothing
                     }
 
@@ -3366,13 +3368,6 @@ translationSet trans =
             , somali = Just "Howsha"
             }
 
-        ActivitityTitleAchi ->
-            { english = "Aheza Child"
-            , kinyarwanda = Just "Aheza igenewe umwana"
-            , kirundi = Nothing
-            , somali = Nothing
-            }
-
         ActivitiesToComplete count ->
             { english = "To Do (" ++ String.fromInt count ++ ")"
             , kinyarwanda = Just <| "Ibisabwa gukora (" ++ String.fromInt count ++ ")"
@@ -3382,7 +3377,7 @@ translationSet trans =
 
         ActivitityLabelAchi ->
             { english = "Enter the amount of Aheza distributed below."
-            , kinyarwanda = Just "Uzuza hano ingano ya Aheza utanze"
+            , kinyarwanda = Just "Uzuza hano ingano ya Aheza utanze."
             , kirundi = Just "Andika igitigiri c'ivya Aheza watanze aha hepfo."
             , somali = Nothing
             }
@@ -3584,10 +3579,47 @@ translationSet trans =
             , somali = Just <| String.fromInt days ++ " Maalin"
             }
 
-        AhezaActivityLabel ->
-            { english = "Enter the amount of CSB++ (FBF) distributed below."
-            , kinyarwanda = Just "Andika ingano ya  CSB++ (FBF) yahawe hano."
-            , kirundi = Just "Injiza/andika igitigiri ca CSB++ hamwe na FBF catanzwe aha hepfo"
+        AhezaActivityHelper ->
+            { english = "Enter the amount of Aheza distributed below."
+            , kinyarwanda = Just "Andika ingano ya Aheza yahawe hano."
+            , kirundi = Just "Injiza/andika igitigiri ca Aheza catanzwe aha hepfo."
+            , somali = Nothing
+            }
+
+        AhezaChild ->
+            { english = "Aheza Child"
+            , kinyarwanda = Just "Aheza igenewe umwana"
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        AhezaDistributionReason reason ->
+            case reason of
+                AhezaDistributionReasonBreastfeeding ->
+                    { english = "Patient is breastfeeding"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                AhezaDistributionReasonOther ->
+                    { english = "Other"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                AhezaDistributionReasonPregnant ->
+                    { english = "Patient is pregnant"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+        AhezaMother ->
+            { english = "Aheza Mother"
+            , kinyarwanda = Just "Aheza igenewe umubyeyi"
+            , kirundi = Nothing
             , somali = Nothing
             }
 
@@ -6911,18 +6943,6 @@ translationSet trans =
             , kirundi = Just "Abagize umuryango"
             , somali = Just "Xubnaha Qoyska"
             }
-
-        FamilyNutritionActivityTitle activity ->
-            case activity of
-                FamilyNutritionAheza ->
-                    { english = "Aheza"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
-
-                FamilyNutritionMuac ->
-                    translationSet MUAC
 
         FamilyPlanningCurentlyQuestion ->
             { english = "Which, if any, of the following methods do you use"
@@ -16238,6 +16258,13 @@ translationSet trans =
             , somali = Just "Calaamado sii jira"
             }
 
+        Photo ->
+            { english = "Photo"
+            , kinyarwanda = Just "Ifoto"
+            , kirundi = Just "Ifoto"
+            , somali = Just "Sawir"
+            }
+
         PhotosTransferStatus ->
             { english = "Photos Transfer Status"
             , kinyarwanda = Just "Uko kohereza amafoto bihagaze"
@@ -20598,6 +20625,13 @@ translationSet trans =
             , kinyarwanda = Just "Busome"
             , kirundi = Just "Ivyasomwe"
             , somali = Just "Aqri"
+            }
+
+        ReasonForDistribution ->
+            { english = "Reason for distribution"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
             }
 
         ReasonForNotBreastfeeding reason ->

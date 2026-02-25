@@ -205,7 +205,7 @@ view config language currentDate zscores site features isChw selectedActivity ( 
 
         activityTitle =
             if activity == ChildActivity ChildFbf && session.offlineSession.session.clinicType == Achi then
-                Translate.ActivitityTitleAchi
+                Translate.AhezaChild
 
             else
                 Translate.ActivitiesTitle activity

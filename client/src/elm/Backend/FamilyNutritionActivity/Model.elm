@@ -8,3 +8,4 @@ family nutrition activities.
 type FamilyNutritionActivity
     = FamilyNutritionAheza
     | FamilyNutritionMuac
+    | FamilyNutritionPhoto

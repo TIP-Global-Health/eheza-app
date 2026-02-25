@@ -354,6 +354,7 @@ decodeFamilyNutritionMeasurements =
         |> optional "aheza_child" (decodeChildDict decodeAhezaChild) Dict.empty
         |> optional "family_nutrition_muac_mother" (decodeHead decodeFamilyNutritionMuacMother) Nothing
         |> optional "family_nutrition_muac_child" (decodeChildDict decodeFamilyNutritionMuacChild) Dict.empty
+        |> optional "family_nutrition_photo" (decodeChildDict decodeFamilyNutritionPhoto) Dict.empty
 
 
 decodeStockManagementMeasurements : Decoder StockManagementMeasurements
@@ -5858,8 +5859,22 @@ decodeHIVTreatmentReview =
 
 decodeAhezaMother : Decoder AhezaMother
 decodeAhezaMother =
-    field "distributed_amount" decodeFloat
+    (succeed AhezaMotherValue
+        |> required "distributed_amount" decodeFloat
+        |> optional "distribution_reason" (nullable decodeAhezaDistributionReason) Nothing
+    )
         |> decodeFamilyNutritionMeasurement
+
+
+decodeAhezaDistributionReason : Decoder AhezaDistributionReason
+decodeAhezaDistributionReason =
+    string
+        |> andThen
+            (\reason ->
+                ahezaDistributionReasonFromString reason
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail (reason ++ " is not a recognized AhezaDistributionReason."))
+            )
 
 
 decodeAhezaChild : Decoder AhezaChild
@@ -5879,4 +5894,11 @@ decodeFamilyNutritionMuacChild : Decoder FamilyNutritionMuacChild
 decodeFamilyNutritionMuacChild =
     field "muac" decodeFloat
         |> map MuacInCm
+        |> decodeFamilyNutritionMeasurement
+
+
+decodeFamilyNutritionPhoto : Decoder FamilyNutritionPhoto
+decodeFamilyNutritionPhoto =
+    field "photo" (decodeStringWithDefault "")
+        |> map ImageUrl
         |> decodeFamilyNutritionMeasurement

@@ -80,6 +80,7 @@ var tableForType = {
     family_nutrition_encounter: 'shards',
     family_nutrition_muac_child: 'shards',
     family_nutrition_muac_mother: 'shards',
+    family_nutrition_photo: 'shards',
     family_participant: 'shards',
     family_planning: 'shards',
     follow_up: 'shards',

@@ -440,6 +440,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityFamilyNutritionMuacMother identifier ->
                 viewMeasurement identifier "Family Nutrition MUAC Mother"
 
+            BackendAuthorityFamilyNutritionPhoto identifier ->
+                viewMeasurement identifier "Family Nutrition Photo"
+
             BackendAuthorityFamilyPlanning identifier ->
                 viewMeasurement identifier "Family Planning"
 

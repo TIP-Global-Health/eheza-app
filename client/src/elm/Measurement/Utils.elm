@@ -338,6 +338,22 @@ ahezaFormWithDefault form saved =
             (\value ->
                 { aheza = valueConsideringIsDirtyField form.ahezaDirty form.aheza value
                 , ahezaDirty = form.ahezaDirty
+                , distributionReason = form.distributionReason
+                , distributionReasonDirty = form.distributionReasonDirty
+                }
+            )
+
+
+ahezaMotherFormWithDefault : AhezaForm -> Maybe AhezaMotherValue -> AhezaForm
+ahezaMotherFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { aheza = valueConsideringIsDirtyField form.ahezaDirty form.aheza value.distributedAmount
+                , ahezaDirty = form.ahezaDirty
+                , distributionReason = maybeValueConsideringIsDirtyField form.distributionReasonDirty form.distributionReason value.distributionReason
+                , distributionReasonDirty = form.distributionReasonDirty
                 }
             )
 
@@ -351,6 +367,23 @@ toAhezaValueWithDefault saved form =
 toAhezaValue : AhezaForm -> Maybe Float
 toAhezaValue form =
     form.aheza
+
+
+toAhezaMotherValueWithDefault : Maybe AhezaMotherValue -> AhezaForm -> Maybe AhezaMotherValue
+toAhezaMotherValueWithDefault saved form =
+    ahezaMotherFormWithDefault form saved
+        |> toAhezaMotherValue
+
+
+toAhezaMotherValue : AhezaForm -> Maybe AhezaMotherValue
+toAhezaMotherValue form =
+    form.aheza
+        |> Maybe.map
+            (\amount ->
+                { distributedAmount = amount
+                , distributionReason = form.distributionReason
+                }
+            )
 
 
 fromHeightValue : Maybe HeightInCm -> HeightForm

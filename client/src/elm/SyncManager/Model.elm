@@ -101,6 +101,7 @@ type BackendAuthorityEntity
     | BackendAuthorityFamilyNutritionEncounter (BackendEntity FamilyNutritionEncounter)
     | BackendAuthorityFamilyNutritionMuacChild (BackendEntity FamilyNutritionMuacChild)
     | BackendAuthorityFamilyNutritionMuacMother (BackendEntity FamilyNutritionMuacMother)
+    | BackendAuthorityFamilyNutritionPhoto (BackendEntity FamilyNutritionPhoto)
     | BackendAuthorityFamilyParticipant (BackendEntity FamilyEncounterParticipant)
     | BackendAuthorityFamilyPlanning (BackendEntity FamilyPlanning)
     | BackendAuthorityFollowUp (BackendEntity FollowUp)

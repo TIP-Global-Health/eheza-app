@@ -34,6 +34,7 @@ type alias Model =
     , saveAhezaMother : WebData ()
     , saveMuacChild : WebData ()
     , saveMuacMother : WebData ()
+    , savePhoto : WebData ()
     , updateFamilyNutritionEncounter : WebData ()
     }
 
@@ -44,6 +45,7 @@ emptyModel =
     , saveAhezaMother = NotAsked
     , saveMuacChild = NotAsked
     , saveMuacMother = NotAsked
+    , savePhoto = NotAsked
     , updateFamilyNutritionEncounter = NotAsked
     }
 
@@ -54,8 +56,10 @@ type Msg
     | HandleSavedAhezaMother (WebData ())
     | HandleSavedMuacChild (WebData ())
     | HandleSavedMuacMother (WebData ())
+    | HandleSavedPhoto (WebData ())
     | HandleUpdatedFamilyNutritionEncounter (WebData ())
     | SaveAhezaChild PersonId (Maybe AhezaChildId) Float
-    | SaveAhezaMother PersonId (Maybe AhezaMotherId) Float
+    | SaveAhezaMother PersonId (Maybe AhezaMotherId) AhezaMotherValue
     | SaveMuacChild PersonId (Maybe FamilyNutritionMuacChildId) MuacInCm
     | SaveMuacMother PersonId (Maybe FamilyNutritionMuacMotherId) MuacInCm
+    | SavePhoto PersonId (Maybe FamilyNutritionPhotoId) ImageUrl

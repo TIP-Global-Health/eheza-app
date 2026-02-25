@@ -322,12 +322,14 @@ type NextStepsTask
 type alias AhezaForm =
     { aheza : Maybe Float
     , ahezaDirty : Bool
+    , distributionReason : Maybe AhezaDistributionReason
+    , distributionReasonDirty : Bool
     }
 
 
 emptyAhezaForm : AhezaForm
 emptyAhezaForm =
-    AhezaForm Nothing False
+    AhezaForm Nothing False Nothing False
 
 
 type alias HeightForm =

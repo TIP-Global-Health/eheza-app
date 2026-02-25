@@ -1,6 +1,7 @@
 module Backend.FamilyNutritionEncounter.Update exposing (update)
 
 import App.Model
+import App.Ports exposing (bindDropZone)
 import App.Utils exposing (triggerRollbarOnFailure)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
@@ -38,31 +39,37 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
 
         HandleSavedAhezaChild data ->
             ( { model | saveAhezaChild = data }
-            , Cmd.none
+            , bindDropZone ()
             , triggerRollbarOnFailure data
             )
 
         HandleSavedAhezaMother data ->
             ( { model | saveAhezaMother = data }
-            , Cmd.none
+            , bindDropZone ()
             , triggerRollbarOnFailure data
             )
 
         HandleSavedMuacChild data ->
             ( { model | saveMuacChild = data }
-            , Cmd.none
+            , bindDropZone ()
             , triggerRollbarOnFailure data
             )
 
         HandleSavedMuacMother data ->
             ( { model | saveMuacMother = data }
-            , Cmd.none
+            , bindDropZone ()
+            , triggerRollbarOnFailure data
+            )
+
+        HandleSavedPhoto data ->
+            ( { model | savePhoto = data }
+            , bindDropZone ()
             , triggerRollbarOnFailure data
             )
 
         HandleUpdatedFamilyNutritionEncounter data ->
             ( { model | updateFamilyNutritionEncounter = data }
-            , Cmd.none
+            , bindDropZone ()
             , triggerRollbarOnFailure data
             )
 
@@ -87,5 +94,11 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
         SaveMuacMother personId valueId value ->
             ( { model | saveMuacMother = Loading }
             , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value familyNutritionMuacMotherEndpoint HandleSavedMuacMother
+            , []
+            )
+
+        SavePhoto personId valueId value ->
+            ( { model | savePhoto = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value familyNutritionPhotoEndpoint HandleSavedPhoto
             , []
             )

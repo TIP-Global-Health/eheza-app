@@ -630,6 +630,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeFamilyNutritionMuacMother
                             BackendAuthorityFamilyNutritionMuacMother
 
+                    "family_nutrition_photo" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeFamilyNutritionPhoto
+                            BackendAuthorityFamilyNutritionPhoto
+
                     "family_planning" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeFamilyPlanning

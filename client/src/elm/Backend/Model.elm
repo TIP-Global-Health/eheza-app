@@ -623,6 +623,7 @@ type Revision
     | FamilyNutritionEncounterRevision FamilyNutritionEncounterId FamilyNutritionEncounter
     | FamilyNutritionMuacChildRevision FamilyNutritionMuacChildId FamilyNutritionMuacChild
     | FamilyNutritionMuacMotherRevision FamilyNutritionMuacMotherId FamilyNutritionMuacMother
+    | FamilyNutritionPhotoRevision FamilyNutritionPhotoId FamilyNutritionPhoto
     | FamilyPlanningRevision FamilyPlanningId FamilyPlanning
     | FollowUpRevision FollowUpId FollowUp
     | GroupHealthEducationRevision GroupHealthEducationId GroupHealthEducation

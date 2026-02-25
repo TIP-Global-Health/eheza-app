@@ -1460,6 +1460,9 @@ update msg model =
                         UserPage (WellChildActivityPage _ WellChildPhoto) ->
                             App.Ports.bindDropZone ()
 
+                        UserPage (FamilyNutritionEncounterPage _) ->
+                            App.Ports.bindDropZone ()
+
                         _ ->
                             Cmd.none
             in

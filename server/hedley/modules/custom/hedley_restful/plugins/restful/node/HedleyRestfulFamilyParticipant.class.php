@@ -2,11 +2,11 @@
 
 /**
  * @file
- * Contains HedleyRestfulFamilyParticipants.
+ * Contains HedleyRestfulFamilyParticipant.
  */
 
 /**
- * Class HedleyRestfulFamilyParticipants.
+ * Class HedleyRestfulFamilyParticipant.
  */
 class HedleyRestfulFamilyParticipant extends HedleyRestfulSyncBase {
 

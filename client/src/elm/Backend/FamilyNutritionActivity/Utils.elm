@@ -25,6 +25,9 @@ encodeActivityAsString activity =
         FamilyNutritionMuac ->
             "family-nutrition-muac"
 
+        FamilyNutritionPhoto ->
+            "family-nutrition-photo"
+
 
 {-| The inverse of encodeActivityAsString
 -}
@@ -36,6 +39,9 @@ decodeActivityFromString s =
 
         "family-nutrition-muac" ->
             Just FamilyNutritionMuac
+
+        "family-nutrition-photo" ->
+            Just FamilyNutritionPhoto
 
         _ ->
             Nothing
@@ -53,7 +59,10 @@ getActivityIcon activity =
         FamilyNutritionMuac ->
             "muac"
 
+        FamilyNutritionPhoto ->
+            "photo"
+
 
 allActivities : List FamilyNutritionActivity
 allActivities =
-    [ FamilyNutritionAheza, FamilyNutritionMuac ]
+    [ FamilyNutritionAheza, FamilyNutritionMuac, FamilyNutritionPhoto ]

@@ -576,6 +576,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityFamilyNutritionMuacMother identifier ->
             getIdentifier identifier "family_nutrition_muac_mother"
 
+        BackendAuthorityFamilyNutritionPhoto identifier ->
+            getIdentifier identifier "family_nutrition_photo"
+
         BackendAuthorityExposure identifier ->
             getIdentifier identifier "exposure"
 
@@ -1088,6 +1091,9 @@ getImageFromBackendAuthorityEntity backendAuthorityEntity =
         BackendAuthorityPhoto identifier ->
             getImageFromMeasurement identifier
 
+        BackendAuthorityFamilyNutritionPhoto identifier ->
+            getImageFromMeasurement identifier
+
         BackendAuthorityNutritionPhoto identifier ->
             getImageFromMeasurement identifier
 
@@ -1382,6 +1388,9 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityFamilyNutritionMuacMother identifier ->
             encode Backend.Measurement.Encoder.encodeFamilyNutritionMuacMother identifier
+
+        BackendAuthorityFamilyNutritionPhoto identifier ->
+            encode Backend.Measurement.Encoder.encodeFamilyNutritionPhoto identifier
 
         BackendAuthorityFamilyPlanning identifier ->
             encode Backend.Measurement.Encoder.encodeFamilyPlanning identifier
@@ -2264,6 +2273,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityFamilyNutritionMuacMother identifier ->
             FamilyNutritionMuacMotherRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityFamilyNutritionPhoto identifier ->
+            FamilyNutritionPhotoRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityFamilyPlanning identifier ->
             FamilyPlanningRevision (toEntityUuid identifier.uuid) identifier.entity

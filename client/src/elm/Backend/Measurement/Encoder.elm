@@ -4634,10 +4634,16 @@ encodeAhezaMother : AhezaMother -> List ( String, Value )
 encodeAhezaMother =
     encodeFamilyNutritionMeasurement
         (\value ->
-            [ ( "distributed_amount", float value )
+            [ ( "distributed_amount", float value.distributedAmount )
             , ( "type", string "aheza_mother" )
             ]
+                ++ encodeNullable "distribution_reason" value.distributionReason encodeAhezaDistributionReason
         )
+
+
+encodeAhezaDistributionReason : AhezaDistributionReason -> Value
+encodeAhezaDistributionReason =
+    ahezaDistributionReasonToString >> string
 
 
 encodeAhezaChild : AhezaChild -> List ( String, Value )
@@ -4658,3 +4664,8 @@ encodeFamilyNutritionMuacMother =
 encodeFamilyNutritionMuacChild : FamilyNutritionMuacChild -> List ( String, Value )
 encodeFamilyNutritionMuacChild =
     encodeFamilyNutritionMeasurement (encodeMuacValueWithType "family_nutrition_muac_child")
+
+
+encodeFamilyNutritionPhoto : FamilyNutritionPhoto -> List ( String, Value )
+encodeFamilyNutritionPhoto =
+    encodeFamilyNutritionMeasurement (encodeImageUrlWithType "family_nutrition_photo")

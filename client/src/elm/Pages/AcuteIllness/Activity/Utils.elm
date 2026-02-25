@@ -353,7 +353,7 @@ physicalExamTasksCompletedFromTotal currentDate isChw person assembled data task
                 PhysicalExamMuac ->
                     getMeasurementValueFunc measurements.muac
                         |> muacFormWithDefault data.muacForm
-                        |> Measurement.View.muacFormInputsAndTasks English currentDate SiteRwanda assembled.person Nothing SetMuac
+                        |> Measurement.View.muacFormInputsAndTasks English currentDate SiteRwanda assembled.person Nothing SetMuac True
 
                 PhysicalExamAcuteFindings ->
                     getMeasurementValueFunc measurements.acuteFindings
