@@ -11,7 +11,7 @@ import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication, nutritionAssessmentToComparable)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndicationForChild, nutritionAssessmentToComparable)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
@@ -2767,7 +2767,7 @@ viewFillTheBlanksPane language currentDate zscores child db allNCDAQuestionnaire
                         (\value ->
                             let
                                 cellValue =
-                                    case muacIndication value of
+                                    case muacIndicationForChild value of
                                         ColorAlertRed ->
                                             NCDACellValueT
 
@@ -2791,7 +2791,7 @@ viewFillTheBlanksPane language currentDate zscores child db allNCDAQuestionnaire
                         (\value ->
                             let
                                 cellValue =
-                                    case muacIndication value of
+                                    case muacIndicationForChild value of
                                         ColorAlertRed ->
                                             NCDACellValueT
 

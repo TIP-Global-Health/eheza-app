@@ -13,7 +13,7 @@ import Backend.Measurement.Utils
         ( getHeightValue
         , getMeasurementValueFunc
         , headCircumferenceValueFunc
-        , muacIndication
+        , muacIndicationForChild
         , muacValueFunc
         , nutritionSignToString
         , weightValueFunc
@@ -699,12 +699,12 @@ zScoreWeightForAgeSevere zScore =
 
 muacSevere : MuacInCm -> Bool
 muacSevere muac =
-    muacIndication muac == ColorAlertRed
+    muacIndicationForChild muac == ColorAlertRed
 
 
 muacModerate : MuacInCm -> Bool
 muacModerate muac =
-    muacIndication muac == ColorAlertYellow
+    muacIndicationForChild muac == ColorAlertYellow
 
 
 nutritionAssessmentForBackend : List NutritionAssessment -> EverySet NutritionAssessment

@@ -5,7 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInMonths)
+import Backend.Person.Utils exposing (ageInMonths, isPersonAnAdult)
 import Backend.Session.Model exposing (OfflineSession)
 import Backend.Utils exposing (ncdaEnabled)
 import Date
@@ -49,12 +49,33 @@ generatePreviousMeasurements encountersByParticipantFunc measurementsByEncouterF
 {-| Given a MUAC in cm, classify according to the measurement tool shown
 at <https://github.com/Gizra/ihangane/issues/282>
 -}
-muacIndication : MuacInCm -> ColorAlertIndication
-muacIndication (MuacInCm value) =
+muacIndicationForChild : MuacInCm -> ColorAlertIndication
+muacIndicationForChild (MuacInCm value) =
     if value <= 11.5 then
         ColorAlertRed
 
     else if value <= 12.5 then
+        ColorAlertYellow
+
+    else
+        ColorAlertGreen
+
+
+muacIndicationForPerson : NominalDate -> Person -> MuacInCm -> ColorAlertIndication
+muacIndicationForPerson currentDate person muac =
+    if isPersonAnAdult currentDate person |> Maybe.withDefault False then
+        muacIndicationForAdult muac
+
+    else
+        muacIndicationForChild muac
+
+
+muacIndicationForAdult : MuacInCm -> ColorAlertIndication
+muacIndicationForAdult (MuacInCm value) =
+    if value < 18.5 then
+        ColorAlertRed
+
+    else if value < 22 then
         ColorAlertYellow
 
     else
@@ -4908,6 +4929,35 @@ occursInFamilySignFromString sign =
 
         "do-not-know" ->
             Just NotKnownIfOccurs
+
+        _ ->
+            Nothing
+
+
+ahezaDistributionReasonToString : AhezaDistributionReason -> String
+ahezaDistributionReasonToString reason =
+    case reason of
+        AhezaDistributionReasonBreastfeeding ->
+            "breastfeeding"
+
+        AhezaDistributionReasonOther ->
+            "other"
+
+        AhezaDistributionReasonPregnant ->
+            "pregnant"
+
+
+ahezaDistributionReasonFromString : String -> Maybe AhezaDistributionReason
+ahezaDistributionReasonFromString reason =
+    case reason of
+        "breastfeeding" ->
+            Just AhezaDistributionReasonBreastfeeding
+
+        "other" ->
+            Just AhezaDistributionReasonOther
+
+        "pregnant" ->
+            Just AhezaDistributionReasonPregnant
 
         _ ->
             Nothing

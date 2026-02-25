@@ -21,6 +21,7 @@ import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTopic)
 import Backend.EducationSession.Model exposing (EducationTopic(..))
 import Backend.Entities exposing (..)
+import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterType(..))
 import Backend.HIVActivity.Model exposing (HIVActivity)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)
 import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), IndividualEncounterType(..), PregnancyOutcome(..))
@@ -358,7 +359,6 @@ type TranslationId
     | ActivitiesLabel Activity
     | ActivitiesTitle Activity
     | Activity
-    | ActivitityTitleAchi
     | ActivitiesToComplete Int
     | ActivitityLabelAchi
     | ActivePage Page
@@ -402,6 +402,7 @@ type TranslationId
     | AdverseEvents
     | AdverseEventSinglePlural Int
     | AfterEachLiquidStool
+    | AgeAxisLabel
     | AgeWord
     | Age Int Int
     | AgeDays Int
@@ -411,6 +412,10 @@ type TranslationId
     | AgeSingleMonthWithoutDay Int
     | AgeSingleDayWithMonth Int Int
     | AgeSingleDayWithoutMonth Int
+    | AhezaActivityHelper
+    | AhezaChild
+    | AhezaDistributionReason AhezaDistributionReason
+    | AhezaMother
     | AlertChwToFollowUp
     | AgeOneYearOld
     | AgeOneYearAndOneMonth
@@ -621,6 +626,7 @@ type TranslationId
     | DifficultyBreathingLabel
     | Disabled
     | DiscordantCoupleStatus Bool Bool
+    | DistributedAmount
     | DistributionNotice DistributionNotice
     | District
     | DOB
@@ -682,6 +688,10 @@ type TranslationId
     | Extremities
     | Eyes
     | Facility
+    | FamilyEncounter
+    | FamilyEncounterLabel FamilyEncounterType
+    | FamilyEncounterSelectVisit FamilyEncounterType
+    | FamilyEncounterType FamilyEncounterType
     | FamilyHistoryOfPreeclampsia
     | FamilyInformation
     | FamilyMembers
@@ -855,6 +865,7 @@ type TranslationId
     | Issued
     | IssuedTo
     | KilogramShorthand
+    | KilogramsPerMonth
     | KnownAsPositiveQuestion LaboratoryTask
     | KnownPositive
     | KnownPositiveHepatitisB
@@ -1166,6 +1177,7 @@ type TranslationId
     | NutritionAssessmentTask NutritionAssessmentTask
     | NutritionBehavior
     | NutritionCaringOption CaringOption
+    | NutritionEncounterLabel
     | NutritionFeedingSignQuestion NutritionFeedingSign
     | NutritionFoodSecuritySignQuestion NutritionFoodSecuritySign
     | NutritionHelper
@@ -1243,6 +1255,7 @@ type TranslationId
     | Person
     | PersonHasBeenSaved
     | PertinentSymptoms
+    | Photo
     | PhotosTransferStatus
     | PhysicalConditions
     | PhysicalExam
@@ -1369,6 +1382,7 @@ type TranslationId
     | Read
     | ReadToggle Bool
     | ReadyForReview
+    | ReasonForDistribution
     | ReasonForNotBreastfeeding BreastfeedingSign
     | ReasonForNotIsolating ReasonForNotIsolating
     | ReasonForNotTaking ReasonForNotTaking
@@ -3027,6 +3041,13 @@ translationSet trans =
             , somali = Just "kadib sarao walba oo jilcan"
             }
 
+        AgeAxisLabel ->
+            { english = "Age (years-months)"
+            , kinyarwanda = Just "Imyaka (imyaka-amezi)"
+            , kirundi = Just "Imyaka (imyaka-amezi)"
+            , somali = Just "Da'da (sano-bilood)"
+            }
+
         AgeWord ->
             { english = "Age"
             , kinyarwanda = Just "Imyaka"
@@ -3159,14 +3180,14 @@ translationSet trans =
                 MotherActivity MotherFbf ->
                     { english = "Enter the amount of CSB++ (FBF) distributed below."
                     , kinyarwanda = Just "Andika ingano ya  CSB++ (FBF) yahawe hano."
-                    , kirundi = Just "Injiza/andika igitigiri ca CSB++ hamwe na FBF catanzwe aha hepfo"
+                    , kirundi = Just "Injiza/andika igitigiri ca CSB++ hamwe na FBF catanzwe aha hepfo."
                     , somali = Nothing
                     }
 
                 MotherActivity ParticipantConsent ->
                     { english = "Forms:"
                     , kinyarwanda = Nothing
-                    , kirundi = Just "Amafishi"
+                    , kirundi = Just "Amafishi:"
                     , somali = Just "Foomyo:"
                     }
 
@@ -3178,7 +3199,7 @@ translationSet trans =
                 ChildActivity ChildFbf ->
                     { english = "Enter the amount of CSB++ (FBF) distributed below."
                     , kinyarwanda = Just "Andika ingano ya  CSB++ (FBF) yahawe hano."
-                    , kirundi = Just "Injiza/andika igitigiri ca CSB++ hamwe na FBF catanzwe aha hepfo"
+                    , kirundi = Just "Injiza/andika igitigiri ca CSB++ hamwe na FBF catanzwe aha hepfo."
                     , somali = Nothing
                     }
 
@@ -3347,13 +3368,6 @@ translationSet trans =
             , somali = Just "Howsha"
             }
 
-        ActivitityTitleAchi ->
-            { english = "Aheza Child"
-            , kinyarwanda = Just "Aheza igenewe umwana"
-            , kirundi = Nothing
-            , somali = Nothing
-            }
-
         ActivitiesToComplete count ->
             { english = "To Do (" ++ String.fromInt count ++ ")"
             , kinyarwanda = Just <| "Ibisabwa gukora (" ++ String.fromInt count ++ ")"
@@ -3363,7 +3377,7 @@ translationSet trans =
 
         ActivitityLabelAchi ->
             { english = "Enter the amount of Aheza distributed below."
-            , kinyarwanda = Just "Uzuza hano ingano ya Aheza utanze"
+            , kinyarwanda = Just "Uzuza hano ingano ya Aheza utanze."
             , kirundi = Just "Andika igitigiri c'ivya Aheza watanze aha hepfo."
             , somali = Nothing
             }
@@ -3563,6 +3577,50 @@ translationSet trans =
             , kinyarwanda = Just <| String.fromInt days ++ " Umunsi"
             , kirundi = Just <| String.fromInt days ++ " Umunsi"
             , somali = Just <| String.fromInt days ++ " Maalin"
+            }
+
+        AhezaActivityHelper ->
+            { english = "Enter the amount of Aheza distributed below."
+            , kinyarwanda = Just "Andika ingano ya Aheza yahawe hano."
+            , kirundi = Just "Injiza/andika igitigiri ca Aheza catanzwe aha hepfo."
+            , somali = Just "Geli qadarka Aheza la qaybiyay ee hoos ku qoran."
+            }
+
+        AhezaChild ->
+            { english = "Aheza Child"
+            , kinyarwanda = Just "Aheza igenewe umwana"
+            , kirundi = Just "Aheza igenewe umwana"
+            , somali = Just "Aheza Ilmo"
+            }
+
+        AhezaDistributionReason reason ->
+            case reason of
+                AhezaDistributionReasonBreastfeeding ->
+                    { english = "Patient is breastfeeding"
+                    , kinyarwanda = Just "Umurwayi aronsa"
+                    , kirundi = Just "Umugwayi ari ku gonsa"
+                    , somali = Just "Bukaanka wuu naas-nuujinayaa"
+                    }
+
+                AhezaDistributionReasonOther ->
+                    { english = "Other"
+                    , kinyarwanda = Just "Ibindi"
+                    , kirundi = Just "Ibindi"
+                    , somali = Just "Kale"
+                    }
+
+                AhezaDistributionReasonPregnant ->
+                    { english = "Patient is pregnant"
+                    , kinyarwanda = Just "Umurwayi atwite"
+                    , kirundi = Just "Umugwayi yibungenze"
+                    , somali = Just "Bukaanka waa uur leh"
+                    }
+
+        AhezaMother ->
+            { english = "Aheza Mother"
+            , kinyarwanda = Just "Aheza igenewe umubyeyi"
+            , kirundi = Just "Aheza igenewe umuvyeyi"
+            , somali = Just "Aheza Hooyo"
             }
 
         AlertChwToFollowUp ->
@@ -5784,6 +5842,13 @@ translationSet trans =
                 , somali = Nothing
                 }
 
+        DistributedAmount ->
+            { english = "Distributed Amount"
+            , kinyarwanda = Just "Ingano yahawe"
+            , kirundi = Just "Igitigiri catanzwe"
+            , somali = Just "Qaddarka La Qaybiyay"
+            }
+
         DistributionNotice notice ->
             case notice of
                 DistributedFully ->
@@ -6446,7 +6511,7 @@ translationSet trans =
                 InmmunizationEncounter ->
                     translationSet EmptyString
 
-                NutritionEncounter ->
+                Backend.IndividualEncounterParticipant.Model.NutritionEncounter ->
                     translationSet EmptyString
 
                 NCDEncounter ->
@@ -6827,6 +6892,36 @@ translationSet trans =
             , kirundi = Just "Ikigo"
             , somali = Just "Adeega"
             }
+
+        FamilyEncounter ->
+            { english = "Family Encounter"
+            , kinyarwanda = Just "Isuzuma ry'umuryango"
+            , kirundi = Just "Isuzumwa ry'umuryango"
+            , somali = Just "Ogaanshaha Qoyska"
+            }
+
+        FamilyEncounterLabel encounterType ->
+            case encounterType of
+                Backend.FamilyEncounterParticipant.Model.NutritionEncounter ->
+                    { english = "Family Nutrition Encounter"
+                    , kinyarwanda = Just "Isuzuma ry'imirire y'umuryango"
+                    , kirundi = Just "Isuzumwa ry'ingaburo y'umuryango"
+                    , somali = Just "Ogaanshaha Nafaqada Qoyska"
+                    }
+
+        FamilyEncounterSelectVisit encounterType ->
+            case encounterType of
+                Backend.FamilyEncounterParticipant.Model.NutritionEncounter ->
+                    { english = "Select Nutrition Visit"
+                    , kinyarwanda = Just "Hitamo isuzuma ry’imirire"
+                    , kirundi = Just "Hitamo isuzumwa ry'ingaburo"
+                    , somali = Just "Dooro Booqasho Nafaqo"
+                    }
+
+        FamilyEncounterType encounterType ->
+            case encounterType of
+                Backend.FamilyEncounterParticipant.Model.NutritionEncounter ->
+                    translationSet NutritionEncounterLabel
 
         FamilyHistoryOfPreeclampsia ->
             { english = "Family history of pre-eclampsia"
@@ -8834,7 +8929,7 @@ translationSet trans =
                     , somali = Just "Ogaansha Koowaad ee CKQ"
                     }
 
-                NutritionEncounter ->
+                Backend.IndividualEncounterParticipant.Model.NutritionEncounter ->
                     { english = "First Nutrition Encounter"
                     , kinyarwanda = Just "Isuzuma rya mbere ku mirire"
                     , kirundi = Just "Isuzumwa ryambere ry’ingaburo"
@@ -8906,12 +9001,8 @@ translationSet trans =
                     , somali = Nothing
                     }
 
-                NutritionEncounter ->
-                    { english = "Nutrition Encounter"
-                    , kinyarwanda = Just "Isuzuma ry’imirire"
-                    , kirundi = Just "Isuzumwa ry’ingaburo"
-                    , somali = Just "Ogaanshaha Nafaqada"
-                    }
+                Backend.IndividualEncounterParticipant.Model.NutritionEncounter ->
+                    translationSet NutritionEncounterLabel
 
                 TuberculosisEncounter ->
                     { english = "Tuberculosis Encounter"
@@ -8986,7 +9077,7 @@ translationSet trans =
                     , somali = Just "Dooro Booqasho NCD"
                     }
 
-                NutritionEncounter ->
+                Backend.IndividualEncounterParticipant.Model.NutritionEncounter ->
                     { english = "Select Nutrition Visit"
                     , kinyarwanda = Just "Hitamo isuzuma ry’imirire"
                     , kirundi = Just "Hitamo isuzumwa ry'ingaburo"
@@ -9066,7 +9157,7 @@ translationSet trans =
                     , somali = Just "Booqashada CKQ ee is Xig xigta"
                     }
 
-                NutritionEncounter ->
+                Backend.IndividualEncounterParticipant.Model.NutritionEncounter ->
                     { english = "Subsequent Nutrition Encounter"
                     , kinyarwanda = Just "Isuzuma rikurikiyeho ku mugore utwite"
                     , kirundi = Just "Umubonano ukurikira kuvyerekeye isuzumwa ry’ingaburo"
@@ -9122,7 +9213,7 @@ translationSet trans =
                     , somali = Nothing
                     }
 
-                NutritionEncounter ->
+                Backend.IndividualEncounterParticipant.Model.NutritionEncounter ->
                     translationSet ChildNutrition
 
                 TuberculosisEncounter ->
@@ -9252,21 +9343,28 @@ translationSet trans =
             { english = "Issued"
             , kinyarwanda = Nothing
             , kirundi = Nothing
-            , somali = Just "La bixiyay "
+            , somali = Just "La bixiyay"
             }
 
         IssuedTo ->
             { english = "Issued To"
             , kinyarwanda = Nothing
             , kirundi = Nothing
-            , somali = Just "Loo bixiyay "
+            , somali = Just "Loo bixiyay"
             }
 
         KilogramShorthand ->
             { english = "kg"
-            , kinyarwanda = Just "kg"
-            , kirundi = Just "kg"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             , somali = Nothing
+            }
+
+        KilogramsPerMonth ->
+            { english = "kg / month"
+            , kinyarwanda = Just "kg / ukwezi"
+            , kirundi = Just "kg / ukwezi"
+            , somali = Just "kg / bishii"
             }
 
         KnownAsPositiveQuestion task ->
@@ -15234,6 +15332,13 @@ translationSet trans =
                     , somali = Just "Xanaano"
                     }
 
+        NutritionEncounterLabel ->
+            { english = "Nutrition Encounter"
+            , kinyarwanda = Just "Isuzuma ry’imirire"
+            , kirundi = Just "Isuzumwa ry’ingaburo"
+            , somali = Just "Ogaanshaha Nafaqada"
+            }
+
         NutritionFeedingSignQuestion sign ->
             case sign of
                 ReceiveSupplement ->
@@ -16151,6 +16256,13 @@ translationSet trans =
             , kinyarwanda = Just " Ibimenyetso by'ingenzi"
             , kirundi = Just "Ibimenyetso bibandanya"
             , somali = Just "Calaamado sii jira"
+            }
+
+        Photo ->
+            { english = "Photo"
+            , kinyarwanda = Just "Ifoto"
+            , kirundi = Just "Ifoto"
+            , somali = Just "Sawir"
             }
 
         PhotosTransferStatus ->
@@ -20513,6 +20625,13 @@ translationSet trans =
             , kinyarwanda = Just "Busome"
             , kirundi = Just "Ivyasomwe"
             , somali = Just "Aqri"
+            }
+
+        ReasonForDistribution ->
+            { english = "Reason for distribution"
+            , kinyarwanda = Just "Impamvu yo gutanga"
+            , kirundi = Just "Inkomoko yo gutanga"
+            , somali = Just "Sababta qaybinta"
             }
 
         ReasonForNotBreastfeeding reason ->
@@ -29450,7 +29569,7 @@ translateActivePage page =
                             , somali = Nothing
                             }
 
-                        NutritionEncounter ->
+                        Backend.IndividualEncounterParticipant.Model.NutritionEncounter ->
                             { english = "Nutrition Participants"
                             , kinyarwanda = Nothing
                             , kirundi = Nothing
@@ -29469,6 +29588,15 @@ translateActivePage page =
                             , kinyarwanda = Nothing
                             , kirundi = Nothing
                             , somali = Just "Booqashada Carruurta Caadiga ah ee ka Qeyb galaha"
+                            }
+
+                FamilyEncounterParticipantsPage encounterType ->
+                    case encounterType of
+                        Backend.FamilyEncounterParticipant.Model.NutritionEncounter ->
+                            { english = "Nutrition Participants"
+                            , kinyarwanda = Nothing
+                            , kirundi = Nothing
+                            , somali = Just "Ka qeyb galayaasha Nafaqada"
                             }
 
                 RelationshipPage _ _ _ ->
@@ -29566,6 +29694,9 @@ translateActivePage page =
                 GroupEncounterTypesPage ->
                     translationSet EncounterTypes
 
+                FamilyEncounterTypesPage ->
+                    translationSet EncounterTypes
+
                 PregnancyOutcomePage _ _ ->
                     { english = "Pregnancy Outcome"
                     , kinyarwanda = Nothing
@@ -29574,18 +29705,10 @@ translateActivePage page =
                     }
 
                 NutritionParticipantPage _ _ ->
-                    { english = "Nutrition Encounter"
-                    , kinyarwanda = Just "Isuzuma ry’imirire"
-                    , kirundi = Just "Isuzumwa ry’ingaburo"
-                    , somali = Just "Ogaanshaha Nafaqada"
-                    }
+                    translationSet NutritionEncounterLabel
 
                 NutritionEncounterPage _ ->
-                    { english = "Nutrition Encounter"
-                    , kinyarwanda = Just "Isuzuma ry’imirire"
-                    , kirundi = Just "Isuzumwa ry’ingaburo"
-                    , somali = Just "Ogaanshaha Nafaqada"
-                    }
+                    translationSet NutritionEncounterLabel
 
                 NutritionActivityPage _ _ ->
                     { english = "Nutrition Activity"
@@ -29840,6 +29963,15 @@ translateActivePage page =
                     , kirundi = Just "Igikorwa ku barwayi ba SIDA"
                     , somali = Just "Howlaha HIV"
                     }
+
+                FamilyNutritionParticipantPage _ _ ->
+                    translationSet NutritionEncounterLabel
+
+                FamilyNutritionEncounterPage _ ->
+                    translationSet NutritionEncounterLabel
+
+                FamilyNutritionProgressReportPage _ ->
+                    translationSet ProgressReport
 
 
 translateChartPhrase : ChartPhrase -> TranslationSet String

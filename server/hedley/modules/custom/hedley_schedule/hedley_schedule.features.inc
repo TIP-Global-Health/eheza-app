@@ -59,6 +59,14 @@ function hedley_schedule_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'family_participant' => array(
+      'name' => t('Family Participant'),
+      'base' => 'node_content',
+      'description' => t('Identifies an adult and a group of children as a participant in family encounter activities, according to type of family encounter.'),
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'home_visit_encounter' => array(
       'name' => t('Home Visit Encounter'),
       'base' => 'node_content',
