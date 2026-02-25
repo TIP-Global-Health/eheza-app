@@ -62,7 +62,12 @@ generateAssembledData id db =
                                     |> Maybe.andThen RemoteData.toMaybe
                                     |> Maybe.map
                                         (Dict.values
-                                            >> List.filter (.relatedBy >> (==) MyChild)
+                                            >> List.filter
+                                                (.relatedBy
+                                                    >> (\relatedBy ->
+                                                            List.member relatedBy [ MyChild, MyCaregiven ]
+                                                       )
+                                                )
                                             >> List.filterMap
                                                 (\rel ->
                                                     Dict.get rel.relatedTo db.people
