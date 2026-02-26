@@ -12,6 +12,11 @@ workflows:
             - lint_phpcs
             - lint_elm
             - lint_shellcheck
+      - e2e_playwright:
+          requires:
+            - lint_phpcs
+            - lint_elm
+            - lint_shellcheck
 
 jobs:
   lint_phpcs:
@@ -44,3 +49,38 @@ jobs:
       - run: ci-scripts/install_ddev.sh
       - run: ci-scripts/install_drupal.sh
       - run: ci-scripts/circleci_wait.sh ddev simpletest
+  e2e_playwright:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large
+    steps:
+      - checkout
+      - run:
+          name: Install DDEV
+          command: ci-scripts/install_ddev.sh
+      - run:
+          name: Install Drupal
+          command: ci-scripts/install_drupal.sh
+      - run:
+          name: Install client dependencies
+          command: ci-scripts/install_client.sh
+      - run:
+          name: Install Playwright browsers
+          command: ddev exec "cd /var/www/html/client && npx playwright install --with-deps chromium"
+      - run:
+          name: Start app
+          command: ddev gulp &
+          background: true
+      - run:
+          name: Wait for app
+          command: |
+            for i in $(seq 1 60); do
+              curl -s http://localhost:3000 > /dev/null && break
+              sleep 2
+            done
+      - run:
+          name: Run E2E tests
+          command: ddev exec "cd /var/www/html/client && npx playwright test"
+      - store_artifacts:
+          path: client/test-results
+          destination: playwright-results

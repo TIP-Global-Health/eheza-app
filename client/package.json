@@ -12,6 +12,7 @@
     "workbox-build": "^6.5.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.52.0",
     "browser-sync": "^2.26.5",
     "chance": "^1.0.18",
     "csv-parse": "^4.4.1",
@@ -63,6 +64,8 @@
     "node": ">10.0"
   },
   "scripts": {
-    "test": "gulp zscore && gulp version && elm-test"
+    "test": "gulp zscore && gulp version && elm-test",
+    "test:e2e": "npx playwright test",
+    "test:e2e:headed": "npx playwright test --headed"
   }
 }
