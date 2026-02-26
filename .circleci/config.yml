@@ -73,7 +73,7 @@ jobs:
             ddev exec 'export PATH=$(npm prefix -g)/bin:$PATH && cd /var/www/html/client && gulp build'
       - run:
           name: Install Playwright browsers
-          command: cd client && npx playwright install --with-deps chromium
+          command: cd client && DEBIAN_FRONTEND=noninteractive npx playwright install --with-deps chromium
       - run:
           name: Start app
           command: ddev gulp &
