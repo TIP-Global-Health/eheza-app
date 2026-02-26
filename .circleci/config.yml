@@ -63,10 +63,17 @@ jobs:
           command: ci-scripts/install_drupal.sh
       - run:
           name: Install client dependencies
-          command: ci-scripts/install_client.sh
+          command: |
+            ddev exec "npm install -g elm@latest-0.19.1 elm-test@0.19.1-revision6 gulp-cli bower"
+            ddev exec "cd /var/www/html/client && bower install && npm install"
+      - run:
+          name: Build client
+          command: |
+            ddev exec "cp /var/www/html/client/src/elm/LocalConfig.Example.elm /var/www/html/client/src/elm/LocalConfig.elm"
+            ddev exec "cd /var/www/html/client && gulp build"
       - run:
           name: Install Playwright browsers
-          command: ddev exec "cd /var/www/html/client && npx playwright install --with-deps chromium"
+          command: cd client && npx playwright install --with-deps chromium
       - run:
           name: Start app
           command: ddev gulp &
@@ -80,7 +87,7 @@ jobs:
             done
       - run:
           name: Run E2E tests
-          command: ddev exec "cd /var/www/html/client && npx playwright test"
+          command: cd client && npx playwright test
       - store_artifacts:
           path: client/test-results
           destination: playwright-results
