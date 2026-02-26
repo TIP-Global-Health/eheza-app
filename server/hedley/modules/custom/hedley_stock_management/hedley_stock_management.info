@@ -60,3 +60,4 @@ features[variable][] = menu_parent_stock_update
 features[variable][] = node_options_stock_update
 features[variable][] = node_preview_stock_update
 features[variable][] = node_submitted_stock_update
+files[] = tests/HedleyStockManagementEndpoints.test
