@@ -111,6 +111,7 @@ import Pages.Relationship.Update
 import Pages.Router exposing (activePageByUrl, pageToFragment)
 import Pages.Session.Model
 import Pages.Session.Update
+import Pages.StockManagement.Model
 import Pages.StockManagement.Update
 import Pages.TraceContact.Model
 import Pages.TraceContact.Update
@@ -976,7 +977,13 @@ update msg model =
                         MsgPageStockManagement subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
-                                    Pages.StockManagement.Update.update currentDate model.healthCenterId subMsg data.stockManagementPage
+                                    case model.healthCenterId of
+                                        Just hcId ->
+                                            Pages.StockManagement.Model.resolveStockManagementContext hcId model.villageId
+                                                |> (\ctx -> Pages.StockManagement.Update.update currentDate ctx subMsg data.stockManagementPage)
+
+                                        Nothing ->
+                                            ( data.stockManagementPage, Cmd.none, [] )
                             in
                             ( { data | stockManagementPage = subModel }
                             , Cmd.map (MsgLoggedIn << MsgPageStockManagement) subCmd

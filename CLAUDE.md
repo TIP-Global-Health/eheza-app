@@ -148,3 +148,7 @@ Translations in `Translate.elm` use a record with `english`, `kinyarwanda`, `kir
 ### Debug Code in Elm
 
 When committing Elm files, do not include `Debug.log` calls. Remove any `Debug.log` lines before staging.
+
+### Code Duplication
+
+Avoid code duplication. Extract shared logic into common functions rather than copying similar code blocks.

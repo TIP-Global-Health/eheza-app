@@ -172,6 +172,8 @@ type alias ModelIndexedDb =
     , familyNutritionMeasurements : Dict FamilyNutritionEncounterId (WebData FamilyNutritionMeasurements)
     , stockManagementMeasurements : Dict HealthCenterId (WebData StockManagementMeasurements)
     , stockManagementData : Dict HealthCenterId (WebData StockManagementData)
+    , villageStockManagementMeasurements : Dict HealthCenterId (WebData VillageStockManagementMeasurements)
+    , villageStockManagementData : Dict HealthCenterId (WebData StockManagementData)
     , pregnancyByNewborn : Dict PersonId (WebData (Maybe ( IndividualEncounterParticipantId, IndividualEncounterParticipant )))
 
     -- From the point of view of the specified person, all of their relationships.
@@ -250,6 +252,8 @@ emptyModelIndexedDb =
     , familyNutritionMeasurements = Dict.empty
     , stockManagementMeasurements = Dict.empty
     , stockManagementData = Dict.empty
+    , villageStockManagementMeasurements = Dict.empty
+    , villageStockManagementData = Dict.empty
     , pregnancyByNewborn = Dict.empty
     , childScoreboardEncounters = Dict.empty
     , childScoreboardEncountersByParticipant = Dict.empty
@@ -414,6 +418,8 @@ type MsgIndexedDb
     | FetchSessionsByClinic ClinicId
     | FetchStockManagementMeasurements HealthCenterId
     | FetchStockManagementData HealthCenterId
+    | FetchVillageStockManagementMeasurements HealthCenterId
+    | FetchVillageStockManagementData HealthCenterId VillageId
     | FetchTuberculosisEncounter TuberculosisEncounterId
     | FetchTuberculosisEncounters (List TuberculosisEncounterId)
     | FetchTuberculosisEncountersForParticipant IndividualEncounterParticipantId
@@ -425,6 +431,7 @@ type MsgIndexedDb
     | FetchHIVEncountersForParticipants (List IndividualEncounterParticipantId)
     | FetchHIVMeasurements HIVEncounterId
     | MarkForRecalculationStockManagementData HealthCenterId
+    | MarkForRecalculationVillageStockManagementData HealthCenterId
     | FetchVillages
     | FetchTraceContact AcuteIllnessTraceContactId
     | FetchPregnancyByNewborn PersonId
@@ -494,6 +501,7 @@ type MsgIndexedDb
     | HandleFetchedSession SessionId (WebData Session)
     | HandleFetchedSessionsByClinic ClinicId (WebData (Dict SessionId Session))
     | HandleFetchedStockManagementMeasurements HealthCenterId (WebData StockManagementMeasurements)
+    | HandleFetchedVillageStockManagementMeasurements HealthCenterId (WebData VillageStockManagementMeasurements)
     | HandleFetchedTuberculosisEncounter TuberculosisEncounterId (WebData TuberculosisEncounter)
     | HandleFetchedTuberculosisEncounters (WebData (Dict TuberculosisEncounterId TuberculosisEncounter))
     | HandleFetchedTuberculosisEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict TuberculosisEncounterId TuberculosisEncounter))
