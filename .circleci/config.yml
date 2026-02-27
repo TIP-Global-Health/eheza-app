@@ -65,16 +65,8 @@ jobs:
           name: Install Drupal
           command: ci-scripts/install_drupal.sh
       - run:
-          name: Install client dependencies
-          command: |
-            ddev exec "npm install -g elm@latest-0.19.1 elm-test@0.19.1-revision6 gulp-cli bower"
-            ddev exec 'export PATH=$(npm prefix -g)/bin:$PATH && cd /var/www/html/client && bower install && npm install'
-      - run:
-          name: Build client
-          command: |
-            ddev exec "cp /var/www/html/client/src/elm/LocalConfig.Example.elm /var/www/html/client/src/elm/LocalConfig.elm"
-            ddev exec "sed -i 's/module LocalConfig.Example/module LocalConfig/' /var/www/html/client/src/elm/LocalConfig.elm"
-            ddev exec 'export PATH=$(npm prefix -g)/bin:$PATH && cd /var/www/html/client && gulp build'
+          name: Install and build client
+          command: ci-scripts/install_client.sh
       - run:
           name: Verify Elm compiled
           command: |
