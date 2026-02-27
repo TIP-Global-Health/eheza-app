@@ -20,6 +20,8 @@ var browserSync = require("browser-sync");
 
 var elm = require('gulp-elm');
 
+var sass = require('gulp-sass')(require('sass'));
+
 var fs = require('fs');
 var path = require('path');
 var csvParse = require('csv-parse/lib/es5');
@@ -58,7 +60,7 @@ gulp.task("styles", function() {
   // Looks at the style.scss file for what to include and creates a style.css file
   return gulp.src("src/assets/scss/style.scss")
     .pipe(plumber())
-    .pipe($.sass())
+    .pipe(sass())
     .on('error', function(err) {
       browserSync.notify("SASS error");
 
