@@ -56,6 +56,9 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Free port 3000 for host-side serving
+          command: rm -f .ddev/docker-compose.client-http.yaml
+      - run:
           name: Install DDEV
           command: ci-scripts/install_ddev.sh
       - run:
@@ -70,13 +73,14 @@ jobs:
           name: Build client
           command: |
             ddev exec "cp /var/www/html/client/src/elm/LocalConfig.Example.elm /var/www/html/client/src/elm/LocalConfig.elm"
+            ddev exec "sed -i 's/module LocalConfig.Example/module LocalConfig/' /var/www/html/client/src/elm/LocalConfig.elm"
             ddev exec 'export PATH=$(npm prefix -g)/bin:$PATH && cd /var/www/html/client && gulp build'
       - run:
           name: Install Playwright browsers
           command: cd client && DEBIAN_FRONTEND=noninteractive npx playwright install --with-deps chromium
       - run:
           name: Start app
-          command: ddev exec 'export PATH=$(npm prefix -g)/bin:$PATH && export TZ=Europe/Budapest && cd /var/www/html/client && gulp'
+          command: cd client/serve && python3 -m http.server 3000
           background: true
       - run:
           name: Wait for app
