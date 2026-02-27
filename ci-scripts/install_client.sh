@@ -29,5 +29,3 @@ then
 else
   gulp publish
 fi
-
-elm make ./src/elm/Main.elm
