@@ -2978,7 +2978,7 @@ viewTableHeader language =
                     )
                 |> div [ class "months" ]
             ]
-        , div [ class "flex-column 0-5" ]
+        , div [ class "flex-column age-0-5" ]
             [ div [ class "column-heading" ] [ text <| translate language Translate.Child0to5 ]
             , List.repeat 6 ""
                 |> List.indexedMap

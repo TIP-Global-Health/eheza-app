@@ -60,7 +60,7 @@ gulp.task("styles", function() {
   // Looks at the style.scss file for what to include and creates a style.css file
   return gulp.src("src/assets/scss/style.scss")
     .pipe(plumber())
-    .pipe(sass())
+    .pipe(sass({silenceDeprecations: ['legacy-js-api', 'import']}))
     .on('error', function(err) {
       browserSync.notify("SASS error");
 
