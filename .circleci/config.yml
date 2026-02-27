@@ -76,6 +76,9 @@ jobs:
             ddev exec "sed -i 's/module LocalConfig.Example/module LocalConfig/' /var/www/html/client/src/elm/LocalConfig.elm"
             ddev exec 'export PATH=$(npm prefix -g)/bin:$PATH && cd /var/www/html/client && gulp build'
       - run:
+          name: Verify Elm compiled
+          command: test -f client/serve/Main.js || (echo "ERROR: Main.js not found — Elm compilation failed" && exit 1)
+      - run:
           name: Install Playwright browsers
           command: cd client && DEBIAN_FRONTEND=noninteractive npx playwright install --with-deps chromium
       - run:
