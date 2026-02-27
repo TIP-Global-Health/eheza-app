@@ -144,7 +144,7 @@ Union type variants, case branches, and pattern matches must be in **alphabetica
 
 ### Commit Messages
 
-Always append `[ci skip]` to commit messages to avoid triggering CI, unless the user explicitly asks to run CI.
+Always append `[ci skip]` at the very end of commit messages (after the Co-Authored-By line) to avoid triggering CI, unless the user explicitly asks to run CI.
 
 ### Files to Never Commit
 
