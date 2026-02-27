@@ -142,6 +142,10 @@ Default credentials (created by migration): pairing code `12345678`, nurse PIN `
 
 Union type variants, case branches, and pattern matches must be in **alphabetical order**. This applies throughout the codebase, including `Backend/Model.elm` (Revision type), `SyncManager/Model.elm` (BackendAuthorityEntity type), and all corresponding decoders, encoders, update handlers, and view functions.
 
+### Commit Messages
+
+Always append `[ci skip]` to commit messages to avoid triggering CI, unless the user explicitly asks to run CI.
+
 ### Files to Never Commit
 
 Do not commit `.ddev/.gitignore` or other DDEV-generated config files. These are local environment files and should not be included in commits.
