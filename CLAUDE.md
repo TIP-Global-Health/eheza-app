@@ -57,6 +57,11 @@ ddev simpletest
 
 # Shell scripts
 ci-scripts/test_shell.sh
+
+# E2E tests (Playwright, from client/)
+./node_modules/.bin/playwright test              # Headless, fast
+RECORD=1 ./node_modules/.bin/playwright test     # Headed, with video recording and visual cursor
+# Video saved to client/test-results/*/video.webm
 ```
 
 ### Deployment
