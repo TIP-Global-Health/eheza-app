@@ -76,7 +76,7 @@ jobs:
           command: cd client && DEBIAN_FRONTEND=noninteractive npx playwright install --with-deps chromium
       - run:
           name: Start app
-          command: cd client/serve && python3 -m http.server 3000
+          command: ddev exec 'export PATH=$(npm prefix -g)/bin:$PATH && export TZ=Europe/Budapest && cd /var/www/html/client && gulp'
           background: true
       - run:
           name: Wait for app
