@@ -1,4 +1,18 @@
-import { Page } from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
+
+const recording = !!process.env.RECORD;
+
+/**
+ * Click a locator. In recording mode, hover first and pause
+ * so the cursor position is visible in the video.
+ */
+async function click(locator: Locator, page: Page) {
+  if (recording) {
+    await locator.hover();
+    await page.waitForTimeout(1000);
+  }
+  await locator.click();
+}
 
 /**
  * Wait for the app to finish initializing. The app goes through
@@ -55,7 +69,7 @@ export async function pairDevice(page: Page, pairingCode = '99999999') {
   // Wait for Elm to process the input and enable the submit button.
   const enabledSubmit = page.locator('button.ui.fluid.primary.button:not([disabled])');
   await enabledSubmit.waitFor({ timeout: 5000 });
-  await enabledSubmit.click();
+  await click(enabledSubmit, page);
 
   // After successful pairing, the app auto-navigates to the PIN page.
   await page.locator('input[name="pincode"]').waitFor({ timeout: 60000 });
@@ -72,15 +86,17 @@ export async function pairDevice(page: Page, pairingCode = '99999999') {
 export async function login(page: Page, pin = '1234') {
   await pairDevice(page);
 
+  // Give the sync manager time to download nurse data after pairing.
+  await page.waitForTimeout(2000);
+
   const pinInput = page.locator('input[name="pincode"]');
   const signInButton = page.getByRole('button', { name: 'Sign In' });
 
-  // Retry PIN login — after fresh pairing, the sync manager needs
-  // time to download nurse data before PIN validation works.
+  // Retry PIN login — in case the sync hasn't completed yet.
   for (let attempt = 0; attempt < 20; attempt++) {
     await pinInput.fill(pin);
     await signInButton.waitFor({ timeout: 5000 });
-    await signInButton.click();
+    await click(signInButton, page);
 
     // Wait briefly and check if we got past the PIN page.
     await page.waitForTimeout(3000);
@@ -101,7 +117,7 @@ export async function login(page: Page, pin = '1234') {
   // If we see the health center selection, select Nyange Health Center.
   const selectLocation = await page.locator('p.select-location').isVisible().catch(() => false);
   if (selectLocation) {
-    await page.locator('button.ui.primary.button', { hasText: 'Nyange Health Center' }).click();
+    await click(page.locator('button.ui.primary.button', { hasText: 'Nyange Health Center' }), page);
   }
 
   // Wait for the main dashboard to appear.
@@ -117,7 +133,7 @@ export async function setupDevice(page: Page, pin = '1234') {
   await login(page, pin);
 
   // Navigate to Device Status page via dashboard card.
-  await page.locator('.icon-task-device-status').click();
+  await click(page.locator('.icon-task-device-status'), page);
   await page.locator('.device-status').waitFor({ timeout: 10000 });
 
   // Find the Nyange Health Center section.
@@ -129,7 +145,7 @@ export async function setupDevice(page: Page, pin = '1234') {
   // Click "Start Syncing" if not already syncing.
   const startBtn = nyange.locator('button.ui.button', { hasText: 'Start Syncing' });
   if (await startBtn.isVisible()) {
-    await startBtn.click();
+    await click(startBtn, page);
   }
 
   // Wait for sync to complete — "Status: Success" in the sync-status div.
