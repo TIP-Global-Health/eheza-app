@@ -27,9 +27,12 @@ class HedleyStockManagementEndpoints extends HedleyWebTestBase {
   public function setUp() {
     parent::setUp(['hedley_stock_management']);
     // Ensure all feature-managed fields are present.
-    features_revert_module('hedley_stock_management');
-    features_revert_module('hedley_chw');
-    features_revert_module('hedley_health_center');
+    // Revert only field components (not image styles) to avoid a known
+    // Drupal 7 notice in image_default_style_revert() (undefined index: isid).
+    $components = ['field_base', 'field_instance'];
+    features_revert(['hedley_stock_management' => $components]);
+    features_revert(['hedley_chw' => $components]);
+    features_revert(['hedley_health_center' => $components]);
   }
 
   /**
