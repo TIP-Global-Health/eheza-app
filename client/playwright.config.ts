@@ -1,4 +1,4 @@
-import { defineConfig } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   globalSetup: './e2e/global-setup.ts',
@@ -11,6 +11,7 @@ export default defineConfig({
     ignoreHTTPSErrors: true,
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
+    ...devices['iPad Mini'],
   },
   projects: [
     { name: 'chromium', use: { browserName: 'chromium' } },

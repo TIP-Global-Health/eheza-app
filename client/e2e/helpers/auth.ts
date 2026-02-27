@@ -98,12 +98,45 @@ export async function login(page: Page, pin = '1234') {
     }
   }
 
-  // If we see the health center selection, select the first one.
+  // If we see the health center selection, select Nyange Health Center.
   const selectLocation = await page.locator('p.select-location').isVisible().catch(() => false);
   if (selectLocation) {
-    await page.locator('p.select-location ~ button.ui.primary.button').first().click();
+    await page.locator('button.ui.primary.button', { hasText: 'Nyange Health Center' }).click();
   }
 
   // Wait for the main dashboard to appear.
   await page.waitForSelector('button.ui.button.logout', { timeout: 30000 });
+}
+
+/**
+ * Full device setup: login, navigate to Device Status page,
+ * start syncing for Nyange Health Center, and wait for sync
+ * to complete.
+ */
+export async function setupDevice(page: Page, pin = '1234') {
+  await login(page, pin);
+
+  // Navigate to Device Status page via dashboard card.
+  await page.locator('.icon-task-device-status').click();
+  await page.locator('.device-status').waitFor({ timeout: 10000 });
+
+  // Find the Nyange Health Center section.
+  const nyange = page.locator('.health-center', {
+    has: page.locator('h2', { hasText: 'Nyange Health Center' }),
+  });
+  await nyange.waitFor({ timeout: 10000 });
+
+  // Click "Start Syncing" if not already syncing.
+  const startBtn = nyange.locator('button.ui.button', { hasText: 'Start Syncing' });
+  if (await startBtn.isVisible()) {
+    await startBtn.click();
+  }
+
+  // Wait for sync to complete — "Status: Success" in the sync-status div.
+  await nyange.locator('.sync-status', { hasText: 'Status: Success' })
+    .waitFor({ timeout: 120000 });
+
+  // Navigate back to the dashboard.
+  await page.goBack();
+  await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
 }
