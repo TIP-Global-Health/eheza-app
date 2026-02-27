@@ -8,7 +8,6 @@
     "include-media": "^1.4.9",
     "rollbar": "^2.26.2",
     "signature_pad": "^4.1.5",
-    "webdriverio": "^5.9.1",
     "workbox-build": "^6.5.4"
   },
   "devDependencies": {
@@ -54,10 +53,6 @@
     "merge-stream": "^2.0.0",
     "sass": "^1.77.0",
     "vinyl-source-stream": "^2.0.0",
-    "wdio-browserstack-service": "^0.1.18",
-    "wdio-mocha-framework": "^0.6.4",
-    "wdio-selenium-standalone-service": "^0.0.12",
-    "wdio-spec-reporter": "^0.1.5",
     "wiredep": "^4.0.0"
   },
   "engines": {
