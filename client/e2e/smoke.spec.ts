@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
+import { resetDevice } from './helpers/device';
 
 test.describe('Smoke test', () => {
   if (process.env.RECORD) {
@@ -10,6 +11,7 @@ test.describe('Smoke test', () => {
   }
 
   test('setup device and sync Nyange Health Center', async ({ page }) => {
+    resetDevice();
     await setupDevice(page);
 
     // Verify we're back on the dashboard after device setup.

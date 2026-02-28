@@ -6,7 +6,7 @@ const recording = !!process.env.RECORD;
  * Click a locator. In recording mode, hover first and pause
  * so the cursor position is visible in the video.
  */
-async function click(locator: Locator, page: Page) {
+export async function click(locator: Locator, page: Page) {
   if (recording) {
     await locator.hover();
     await page.waitForTimeout(1000);
