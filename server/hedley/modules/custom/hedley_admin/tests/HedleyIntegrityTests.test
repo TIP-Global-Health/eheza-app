@@ -2,8 +2,7 @@
 
 /**
  * @file
- * Combined integrity tests for pairing codes, PIN codes, deletion, and
- * unpublishing constraints.
+ * Combined integrity tests for pairing codes, PIN codes, and constraints.
  */
 
 /**
