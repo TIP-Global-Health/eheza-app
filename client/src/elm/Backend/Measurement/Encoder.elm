@@ -1003,6 +1003,11 @@ encodeHIVMeasurement =
     encodeMeasurement "hiv_encounter"
 
 
+encodeFamilyNutritionMeasurement : (value -> List ( String, Value )) -> FamilyNutritionMeasurement value -> List ( String, Value )
+encodeFamilyNutritionMeasurement =
+    encodeMeasurement "family_nutrition_encounter"
+
+
 encodeMeasurement : String -> (value -> List ( String, Value )) -> Measurement (EntityUuid a) value -> List ( String, Value )
 encodeMeasurement encounterTag encoder measurement =
     List.concat
@@ -4623,3 +4628,44 @@ encodeHIVSymptom =
 encodeHIVTreatmentReview : HIVTreatmentReview -> List ( String, Value )
 encodeHIVTreatmentReview =
     encodeHIVMeasurement (encodeTreatmentOngoingValueWithType "hiv_treatment_review")
+
+
+encodeAhezaMother : AhezaMother -> List ( String, Value )
+encodeAhezaMother =
+    encodeFamilyNutritionMeasurement
+        (\value ->
+            [ ( "distributed_amount", float value.distributedAmount )
+            , ( "type", string "aheza_mother" )
+            ]
+                ++ encodeNullable "distribution_reason" value.distributionReason encodeAhezaDistributionReason
+        )
+
+
+encodeAhezaDistributionReason : AhezaDistributionReason -> Value
+encodeAhezaDistributionReason =
+    ahezaDistributionReasonToString >> string
+
+
+encodeAhezaChild : AhezaChild -> List ( String, Value )
+encodeAhezaChild =
+    encodeFamilyNutritionMeasurement
+        (\value ->
+            [ ( "distributed_amount", float value )
+            , ( "type", string "aheza_child" )
+            ]
+        )
+
+
+encodeFamilyNutritionMuacMother : FamilyNutritionMuacMother -> List ( String, Value )
+encodeFamilyNutritionMuacMother =
+    encodeFamilyNutritionMeasurement (encodeMuacValueWithType "family_nutrition_muac_mother")
+
+
+encodeFamilyNutritionMuacChild : FamilyNutritionMuacChild -> List ( String, Value )
+encodeFamilyNutritionMuacChild =
+    encodeFamilyNutritionMeasurement (encodeMuacValueWithType "family_nutrition_muac_child")
+
+
+encodeFamilyNutritionPhoto : FamilyNutritionPhoto -> List ( String, Value )
+encodeFamilyNutritionPhoto =
+    encodeFamilyNutritionMeasurement (encodeImageUrlWithType "family_nutrition_photo")

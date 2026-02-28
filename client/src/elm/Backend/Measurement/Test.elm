@@ -1,7 +1,7 @@
 module Backend.Measurement.Test exposing (all)
 
 import Backend.Measurement.Model exposing (ColorAlertIndication(..), MuacInCm(..))
-import Backend.Measurement.Utils exposing (muacIndication)
+import Backend.Measurement.Utils exposing (muacIndicationForAdult, muacIndicationForChild)
 import Expect
 import Test exposing (Test, describe, test)
 
@@ -9,22 +9,40 @@ import Test exposing (Test, describe, test)
 muacIndicationTest : Test
 muacIndicationTest =
     describe "MuacIndication tests"
-        [ describe "muacIndication"
+        [ describe "muacIndicationForChild"
             [ test "red" <|
                 \_ ->
-                    muacIndication (MuacInCm 11.5)
+                    muacIndicationForChild (MuacInCm 11.5)
                         |> Expect.equal ColorAlertRed
             , test "yellow1" <|
                 \_ ->
-                    muacIndication (MuacInCm 11.6)
+                    muacIndicationForChild (MuacInCm 11.6)
                         |> Expect.equal ColorAlertYellow
             , test "yellow2" <|
                 \_ ->
-                    muacIndication (MuacInCm 12.5)
+                    muacIndicationForChild (MuacInCm 12.5)
                         |> Expect.equal ColorAlertYellow
             , test "green" <|
                 \_ ->
-                    muacIndication (MuacInCm 12.6)
+                    muacIndicationForChild (MuacInCm 12.6)
+                        |> Expect.equal ColorAlertGreen
+            ]
+        , describe "muacIndicationForAdult"
+            [ test "red" <|
+                \_ ->
+                    muacIndicationForAdult (MuacInCm 18.4)
+                        |> Expect.equal ColorAlertRed
+            , test "yellow boundary" <|
+                \_ ->
+                    muacIndicationForAdult (MuacInCm 18.5)
+                        |> Expect.equal ColorAlertYellow
+            , test "yellow" <|
+                \_ ->
+                    muacIndicationForAdult (MuacInCm 21.9)
+                        |> Expect.equal ColorAlertYellow
+            , test "green" <|
+                \_ ->
+                    muacIndicationForAdult (MuacInCm 22)
                         |> Expect.equal ColorAlertGreen
             ]
         ]
