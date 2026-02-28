@@ -33,3 +33,4 @@ features[views_view][] = historical_child
 features[views_view][] = ledger
 files[] = hedley_admin_handlers.inc
 files[] = hedley_admin_health_center_access_plugin.inc
+files[] = tests/HedleyIntegrityTests.test

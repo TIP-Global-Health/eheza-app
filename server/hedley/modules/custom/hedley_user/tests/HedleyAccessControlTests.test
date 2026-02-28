@@ -2,16 +2,16 @@
 
 /**
  * @file
- * Class HedleyUserNodePermissions.
+ * Combined access control tests.
+ *
+ * Merges HedleyActivityEndpoints and HedleyUserNodePermissions into a single
+ * test class to reduce the number of Drupal installs in CI.
  */
 
 /**
- * Class HedleyUserNodePermissions.
- *
- * Tests that administrator and sync users have the correct permissions
- * for all node types.
+ * HedleyAccessControlTests.
  */
-class HedleyUserNodePermissions extends HedleyWebTestBase {
+class HedleyAccessControlTests extends HedleyWebTestBase {
 
   /**
    * The profile name.
@@ -21,10 +21,26 @@ class HedleyUserNodePermissions extends HedleyWebTestBase {
   protected $profile = 'hedley';
 
   /**
-   * Overrides DrupalWebTestCase::setUp().
+   * A user object.
+   *
+   * @var object
+   */
+  protected $user;
+
+  /**
+   * Anonymous user object.
+   *
+   * @var object
+   */
+  protected $anonymousUser;
+
+  /**
+   * {@inheritdoc}
    */
   public function setUp() {
     // Enable all hedley modules that define node types and permissions.
+    // This is the union of modules needed by both endpoint and permission
+    // tests.
     $modules = array(
       'hedley_activity',
       'hedley_acute_illness',
@@ -54,17 +70,86 @@ class HedleyUserNodePermissions extends HedleyWebTestBase {
     );
 
     parent::setUp($modules);
+
+    // Common test users for endpoint tests.
+    $this->anonymousUser = user_load(0);
+    $this->user = $this->drupalCreateUser(['bypass node access']);
   }
 
   /**
-   * Get info.
+   * Info hook.
    */
   public static function getInfo() {
-    return array(
-      'name' => 'Testing node permissions for administrator and sync users',
-      'description' => 'Verify that administrator and sync users have the correct permissions for each node type.',
+    return [
+      'name' => 'HedleyAccessControlTests',
+      'description' => 'Tests REST endpoints and node permissions for administrator and sync users.',
       'group' => 'Hedley',
-    );
+    ];
+  }
+
+  /**
+   * Testing the entry point of the photos.
+   */
+  public function testPhotosEndpoint() {
+    $photo = $this->drupalCreateNode(['type' => 'photo']);
+
+    /** @var RestfulEntityBaseNode $handler */
+    $handler = restful_get_restful_handler('photos');
+
+    // Make sure anonymous user doesn't get the content.
+    $handler->setAccount($this->anonymousUser);
+    $anonymous_results = $handler->get('');
+    $this->assertFalse($anonymous_results, 'Anonymous user doesn\'t have access to the "photo" content.');
+
+    // Test authorized user.
+    $handler->setAccount($this->user);
+
+    $results = $handler->get('');
+    $this->assertEqual($results[0]['created'], date('c', $photo->created), 'Photo "created date" is correct.');
+
+  }
+
+  /**
+   * Testing the entry point of the Nutrition Signs.
+   */
+  public function testNutritionsEndpoint() {
+    $nutrition = $this->drupalCreateNode(['type' => 'nutrition']);
+
+    /** @var RestfulEntityBaseNode $handler */
+    $handler = restful_get_restful_handler('nutritions');
+
+    // Make sure anonymous user doesn't get the content.
+    $handler->setAccount($this->anonymousUser);
+    $anonymous_results = $handler->get('');
+    $this->assertFalse($anonymous_results, 'Anonymous user doesn\'t have access to the "nutrition" content.');
+
+    // Test authorized user.
+    $handler->setAccount($this->user);
+
+    $results = $handler->get('');
+    $this->assertEqual($results[0]['created'], date('c', $nutrition->created), 'Nutrition "created date" is correct.');
+
+  }
+
+  /**
+   * Testing the entry point of the muacs.
+   */
+  public function testMuacsEndpoint() {
+    $muac = $this->drupalCreateNode(['type' => 'muac']);
+
+    /** @var RestfulEntityBaseNode $handler */
+    $handler = restful_get_restful_handler('muacs');
+
+    // Make sure anonymous user doesn't get the content.
+    $handler->setAccount($this->anonymousUser);
+    $anonymous_results = $handler->get('');
+    $this->assertFalse($anonymous_results, 'Anonymous user doesn\'t have access to the "muac" content.');
+
+    // Test authorized user.
+    $handler->setAccount($this->user);
+
+    $results = $handler->get('');
+    $this->assertEqual($results[0]['created'], date('c', $muac->created), 'Muac "created date" is correct.');
   }
 
   /**

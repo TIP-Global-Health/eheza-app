@@ -1,0 +1,172 @@
+<?php
+
+/**
+ * @file
+ * Combined integrity tests for pairing codes, PIN codes, deletion, and
+ * unpublishing constraints.
+ */
+
+/**
+ * HedleyIntegrityTests.
+ *
+ * Merges HedleyDevicePairingCode, HedleyUserPinCode, HedleyDeviceRevisions,
+ * and HedleyScheduleIntegrity into a single test class to reduce the number
+ * of Drupal installs in CI.
+ */
+class HedleyIntegrityTests extends HedleyWebTestBase {
+
+  /**
+   * The profile name.
+   *
+   * @var string
+   */
+  protected $profile = 'hedley';
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setUp() {
+    parent::setUp([
+      'hedley_admin',
+      'hedley_device',
+      'hedley_schedule',
+      'hedley_user',
+    ]);
+  }
+
+  /**
+   * Info hook.
+   */
+  public static function getInfo() {
+    return [
+      'name' => 'HedleyIntegrityTests',
+      'description' => 'Tests pairing codes, PIN codes, node deletion, and unpublishing constraints.',
+      'group' => 'Hedley',
+    ];
+  }
+
+  /**
+   * Test "Device pairing" functionality.
+   */
+  public function testPairingCode() {
+    $device = $this->drupalCreateNode([
+      'type' => 'device',
+      'title' => $this->randomName(),
+    ]);
+
+    $wrapper = entity_metadata_wrapper('node', $device);
+
+    // Newly created device should automatically get a pairing code.
+    $this->assertTrue($wrapper->field_pairing_code->value());
+
+    // We should be able to save it without an exception.
+    $wrapper->save();
+
+    // We should be able to change it.
+    $wrapper->field_pairing_code->set('12345678');
+    $wrapper->save();
+
+    // But we should get an exception if we have a duplicate.
+    $device = $this->drupalCreateNode([
+      'type' => 'device',
+      'title' => $this->randomName(),
+    ]);
+
+    $wrapper = entity_metadata_wrapper('node', $device);
+    $wrapper->field_pairing_code->set('12345678');
+
+    try {
+      $wrapper->save();
+
+      $this->fail('Failed to throw exception for duplicate pairing code');
+    }
+    catch (Exception $e) {
+      $this->assertEqual($e->getMessage(), 'The provided pairing code was not unique.');
+    }
+  }
+
+  /**
+   * Test PIN codes.
+   */
+  public function testPinCodes() {
+    $node = $this->drupalCreateNode(['type' => 'nurse']);
+    $wrapper = entity_metadata_wrapper('node', $node);
+
+    // Check that it gets a PIN code on save.
+    $wrapper->save();
+    $this->assertTrue($wrapper->field_pin_code->value());
+
+    // Check that we can save it again without an exception.
+    $wrapper->save();
+    $this->pass('Saved with unchanged PIN without exception.');
+
+    // Check that we can change the PIN code.
+    $wrapper->field_pin_code->set('1234');
+    $wrapper->save();
+
+    $node = node_load($wrapper->getIdentifier());
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $this->assertEqual($wrapper->field_pin_code->value(), '1234');
+
+    // Test tht we get an error if we make a duplicate.
+    $node = $this->drupalCreateNode(['type' => 'nurse']);
+    $wrapper = entity_metadata_wrapper('node', $node);
+
+    $wrapper->field_pin_code->set('1234');
+
+    try {
+      $wrapper->save();
+
+      $this->fail('Failed to throw exception for duplicate PIN code');
+    }
+    catch (Exception $e) {
+      $this->assertEqual($e->getMessage(), 'The provided PIN code is not unique.');
+    }
+  }
+
+  /**
+   * Test revisions functionality — node deletion is forbidden.
+   */
+  public function testNodeDeletion() {
+    $device = $this->drupalCreateNode([
+      'type' => 'device',
+      'title' => $this->randomName(),
+    ]);
+
+    try {
+      node_delete($device->nid);
+
+      $this->fail('Failed to throw exception for deleting node.');
+    }
+    catch (Exception $e) {
+      $this->assertEqual($e->getMessage(), 'Content deletion is forbidden!');
+    }
+  }
+
+  /**
+   * Test that unpublishing a session is forbidden.
+   */
+  public function testSessionUnpublish() {
+    $health_center_id = $this->createHealthCenter();
+    $clinic_id = $this->createClinic($health_center_id);
+    $session_id = $this->createSession($clinic_id);
+
+    // Make sure we can get it the session now.
+    $session_node = node_load($session_id);
+
+    // Should retrieve session we just created.
+    $this->assertTrue($session_node);
+
+    // Unpublish the session node.
+    $session_node->status = NODE_NOT_PUBLISHED;
+    try {
+      node_save($session_node);
+
+      $this->fail('Failed to throw exception for when unpublishing session.');
+    }
+    catch (Exception $e) {
+      $this->assertEqual($e->getMessage(), 'Content unpublishing is forbidden!');
+    }
+  }
+
+}

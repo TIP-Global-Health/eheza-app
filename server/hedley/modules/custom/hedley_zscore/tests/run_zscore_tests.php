@@ -2,33 +2,32 @@
 
 /**
  * @file
- * Test Z-Score calculations.
+ * Standalone Z-Score calculation tests.
+ *
+ * Runs without Drupal bootstrap. Stubs drupal_get_path() and
+ * drupal_static() so that hedley_zscore.module can be loaded directly.
  */
+
+// Stub drupal_get_path() to return the module directory.
+function drupal_get_path($type, $name) {
+  return dirname(__DIR__);
+}
+
+// Stub drupal_static() to provide a static cache.
+function &drupal_static($name) {
+  static $cache = [];
+  if (!isset($cache[$name])) {
+    $cache[$name] = NULL;
+  }
+  return $cache[$name];
+}
+
+require_once dirname(__DIR__) . '/hedley_zscore.module';
 
 /**
- * HedleyZScore calculation tests.
+ * Test data — same ~2500 cases as the original Simpletest.
  */
-class HedleyZScoreCalculation extends DrupalWebTestCase {
-
-  /**
-   * Info hook.
-   */
-  public static function getInfo() {
-    return [
-      'name' => 'HedleyZScoreCalculation tests',
-      'description' => 'Tests Z-Score calculations.',
-      'group' => 'Hedley',
-    ];
-  }
-
-  /**
-   * A representation of the test cases.
-   *
-   * The idea is that we can copy & paste this into the Elm frontend tests as
-   * well, with very simple changes.  (What here is an array is a tuple5 in
-   * Elm).
-   */
-  public function zScoreCalculationData() {
+function zscore_test_data() {
     return [
       ['lfa', 0, 'male', 40.1, -5.17],
       ['lfa', 0, 'male', 44.1, -3.06],
@@ -2505,68 +2504,92 @@ class HedleyZScoreCalculation extends DrupalWebTestCase {
       ['bmi', 659, 'male', 15.81, -0.04],
       ['bmi', 535, 'female', 15.79, 0.02],
     ];
-  }
+}
 
-  /**
-   * Like assertEqual, but with a delta.
-   */
-  public function assertSimilar($result, $expected, $case) {
-    $explanation = implode(", ", $case);
+/**
+ * Assert that result is close to expected, within delta of 0.01.
+ */
+function assert_similar($result, $expected, $case, &$passed, &$failed) {
+  $explanation = implode(", ", array_map(function ($v) {
+    return $v === NULL ? 'NULL' : $v;
+  }, $case));
 
-    // We need the `is_null` check, because PHP considers 0.0 to be empty.
-    if (is_null($expected)) {
-      $this->assertNull($result);
-    }
-    elseif (is_null($result)) {
-      $this->assertNull($expected);
+  if (is_null($expected)) {
+    if (is_null($result)) {
+      $passed++;
     }
     else {
-      $diff = abs($result - $expected);
-      $this->assertTrue($diff <= 0.01, "$explanation -- expected: $expected, result: $result");
+      $failed++;
+      echo "FAIL: $explanation -- expected NULL, got $result\n";
     }
   }
-
-  /**
-   * Entry point for the test.
-   */
-  public function testZscoreCalculations() {
-    foreach ($this->zScoreCalculationData() as $case) {
-      $func = $case[0];
-      $scale = $case[1];
-      $gender = $case[2];
-      $measurement = $case[3];
-      $expected = $case[4];
-
-      switch ($func) {
-        case 'lfa':
-          $result = hedley_zscore_length_for_age($scale, $gender, $measurement);
-          $this->assertSimilar($result, $expected, $case);
-          break;
-
-        case 'wfa':
-          $result = hedley_zscore_weight_for_age($scale, $gender, $measurement);
-          $this->assertSimilar($result, $expected, $case);
-          break;
-
-        case 'wfl':
-          $result = hedley_zscore_weight_for_length($scale, $gender, $measurement);
-          $this->assertSimilar($result, $expected, $case);
-          break;
-
-        case 'wfh':
-          $result = hedley_zscore_weight_for_height($scale, $gender, $measurement);
-          $this->assertSimilar($result, $expected, $case);
-          break;
-
-        case 'bmi':
-          $result = hedley_zscore_bmi_for_age($scale, $gender, $measurement);
-          $this->assertSimilar($result, $expected, $case);
-          break;
-
-        default:
-          $this->fail("Unrecognized calculation: $func");
-      }
+  elseif (is_null($result)) {
+    $failed++;
+    echo "FAIL: $explanation -- expected $expected, got NULL\n";
+  }
+  else {
+    $diff = abs($result - $expected);
+    if ($diff <= 0.01) {
+      $passed++;
+    }
+    else {
+      $failed++;
+      echo "FAIL: $explanation -- expected: $expected, result: $result\n";
     }
   }
-
 }
+
+// Run all test cases.
+$passed = 0;
+$failed = 0;
+
+foreach (zscore_test_data() as $case) {
+  $func = $case[0];
+  $scale = $case[1];
+  $gender = $case[2];
+  $measurement = $case[3];
+  $expected = $case[4];
+
+  switch ($func) {
+    case 'lfa':
+      $result = hedley_zscore_length_for_age($scale, $gender, $measurement);
+      assert_similar($result, $expected, $case, $passed, $failed);
+      break;
+
+    case 'wfa':
+      $result = hedley_zscore_weight_for_age($scale, $gender, $measurement);
+      assert_similar($result, $expected, $case, $passed, $failed);
+      break;
+
+    case 'wfl':
+      $result = hedley_zscore_weight_for_length($scale, $gender, $measurement);
+      assert_similar($result, $expected, $case, $passed, $failed);
+      break;
+
+    case 'wfh':
+      $result = hedley_zscore_weight_for_height($scale, $gender, $measurement);
+      assert_similar($result, $expected, $case, $passed, $failed);
+      break;
+
+    case 'bmi':
+      $result = hedley_zscore_bmi_for_age($scale, $gender, $measurement);
+      assert_similar($result, $expected, $case, $passed, $failed);
+      break;
+
+    default:
+      $failed++;
+      echo "FAIL: Unrecognized calculation: $func\n";
+  }
+}
+
+$total = $passed + $failed;
+echo "\n";
+echo "Z-Score tests: $total total, $passed passed, $failed failed.\n";
+
+if ($failed > 0) {
+  echo "FAILED\n";
+  exit(1);
+}
+
+echo "OK\n";
+exit(0);
