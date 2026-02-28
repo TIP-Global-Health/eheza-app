@@ -9,9 +9,9 @@
  */
 
 /**
- * HedleyAccessControlTests.
+ * HedleyUserAccessControlTests.
  */
-class HedleyAccessControlTests extends HedleyWebTestBase {
+class HedleyUserAccessControlTests extends HedleyWebTestBase {
 
   /**
    * The profile name.

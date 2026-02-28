@@ -6,13 +6,13 @@
  */
 
 /**
- * HedleyIntegrityTests.
+ * HedleyAdminIntegrityTests.
  *
  * Merges HedleyDevicePairingCode, HedleyUserPinCode, HedleyDeviceRevisions,
  * and HedleyScheduleIntegrity into a single test class to reduce the number
  * of Drupal installs in CI.
  */
-class HedleyIntegrityTests extends HedleyWebTestBase {
+class HedleyAdminIntegrityTests extends HedleyWebTestBase {
 
   /**
    * The profile name.
