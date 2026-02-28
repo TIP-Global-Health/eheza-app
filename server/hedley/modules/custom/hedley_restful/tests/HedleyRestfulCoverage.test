@@ -1,0 +1,65 @@
+<?php
+
+/**
+ * @file
+ * Contains \HedleyRestfulCoverage.
+ */
+
+/**
+ * HedleyRestfulCoverage tests.
+ */
+class HedleyRestfulCoverage extends HedleyWebTestBase {
+
+  /**
+   * Info hook.
+   */
+  public static function getInfo() {
+    return [
+      'name' => 'Hedley RESTful coverage tests',
+      'description' => 'Ensures RESTful handlers cover all encounter and measurement content types.',
+      'group' => 'Hedley',
+    ];
+  }
+
+  /**
+   * Verify RESTful mappings for encounter and measurement content types.
+   */
+  public function testShardedHandlersCoverage() {
+    $encounter_types = hedley_general_get_encounter_types();
+    $measurement_types = hedley_general_get_measurement_types();
+    $sharded = array_keys(HEDLEY_RESTFUL_SHARDED);
+
+    $missing_encounters = array_values(array_diff($encounter_types, $sharded));
+    $missing_measurements = array_values(array_diff($measurement_types, $sharded));
+
+    $this->assertIdentical([], $missing_encounters, format_string('Missing RESTful handlers for encounter types: @bundles', ['@bundles' => implode(', ', $missing_encounters)]));
+    $this->assertIdentical([], $missing_measurements, format_string('Missing RESTful handlers for measurement types: @bundles', ['@bundles' => implode(', ', $missing_measurements)]));
+
+    $this->assertHandlersResolvable(array_unique(array_merge($encounter_types, $measurement_types)));
+  }
+
+  /**
+   * Assert handlers are resolvable for provided bundles.
+   *
+   * @param array $bundles
+   *   Bundles to validate.
+   */
+  protected function assertHandlersResolvable(array $bundles) {
+    foreach ($bundles as $bundle) {
+      $handler_name = HEDLEY_RESTFUL_SHARDED[$bundle];
+
+      try {
+        $handler = restful_get_restful_handler($handler_name);
+        $this->assertTrue(is_object($handler), format_string('Handler @handler available for bundle @bundle.', ['@handler' => $handler_name, '@bundle' => $bundle]));
+      }
+      catch (Exception $e) {
+        $this->fail(format_string('Missing RESTful handler @handler for bundle @bundle: @message', [
+          '@handler' => $handler_name,
+          '@bundle' => $bundle,
+          '@message' => $e->getMessage(),
+        ]));
+      }
+    }
+  }
+
+}

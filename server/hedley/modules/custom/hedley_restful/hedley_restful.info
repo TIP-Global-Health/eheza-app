@@ -20,3 +20,4 @@ files[] = plugins/restful/node/activity/HedleyRestfulFamilyNutritionActivityBase
 
 files[] = plugins/restful/node/HedleyRestfulEntityBaseNode.php
 files[] = plugins/restful/node/HedleyRestfulSyncBase.class.php
+# files[] = tests/HedleyRestfulCoverage.test
