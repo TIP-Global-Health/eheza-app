@@ -4,6 +4,7 @@ const recording = !!process.env.RECORD;
 
 export default defineConfig({
   globalSetup: './e2e/global-setup.ts',
+  globalTeardown: recording ? './e2e/global-teardown.ts' : undefined,
   testDir: './e2e',
   timeout: 120000,
   retries: 1,
