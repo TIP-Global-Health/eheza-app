@@ -43,12 +43,18 @@ function formInput(page: Page, labelText: string) {
  */
 export async function createChildAndStartEncounter(
   page: Page,
-  options?: { ageMonths?: number; firstName?: string; isChw?: boolean },
+  options?: {
+    ageMonths?: number;
+    firstName?: string;
+    isChw?: boolean;
+    startEncounter?: boolean;
+  },
 ) {
   const ageMonths = options?.ageMonths ?? 24;
   const firstName = options?.firstName ?? `TestChild${Date.now()}`;
   const secondName = 'E2ETest';
   const isChw = options?.isChw ?? false;
+  const startEncounter = options?.startEncounter ?? true;
 
   // Navigate: Dashboard → Clinical
   await click(page.locator('.icon-task-clinical'), page);
@@ -129,14 +135,16 @@ export async function createChildAndStartEncounter(
     .locator('div.page-participant.individual.nutrition')
     .waitFor({ timeout: 30000 });
 
-  // Start a new encounter.
-  await click(
-    page.locator('div.ui.primary.button', { hasText: 'Nutrition Encounter' }),
-    page,
-  );
-  await page
-    .locator('div.page-encounter.nutrition')
-    .waitFor({ timeout: 10000 });
+  if (startEncounter) {
+    // Start a new nutrition encounter.
+    await click(
+      page.locator('div.ui.primary.button', { hasText: 'Nutrition Encounter' }),
+      page,
+    );
+    await page
+      .locator('div.page-encounter.nutrition')
+      .waitFor({ timeout: 10000 });
+  }
 
   // Drupal stores the person title as "secondName firstName".
   return { firstName, secondName, fullName: `${secondName} ${firstName}` };
