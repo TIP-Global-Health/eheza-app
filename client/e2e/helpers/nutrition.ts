@@ -43,11 +43,12 @@ function formInput(page: Page, labelText: string) {
  */
 export async function createChildAndStartEncounter(
   page: Page,
-  options?: { ageMonths?: number; firstName?: string },
+  options?: { ageMonths?: number; firstName?: string; isChw?: boolean },
 ) {
   const ageMonths = options?.ageMonths ?? 24;
   const firstName = options?.firstName ?? `TestChild${Date.now()}`;
   const secondName = 'E2ETest';
+  const isChw = options?.isChw ?? false;
 
   // Navigate: Dashboard → Clinical
   await click(page.locator('.icon-task-clinical'), page);
@@ -98,23 +99,27 @@ export async function createChildAndStartEncounter(
   // Select mode of delivery (required field).
   await selectByLabel(page, 'Mode of delivery:', 1);
 
-  // Fill address (cascading dropdowns — each selection populates the next).
-  await selectByLabel(page, 'Province:', 1);
-  await page.waitForTimeout(500);
-  await selectByLabel(page, 'District:', 1);
-  await page.waitForTimeout(500);
-  await selectByLabel(page, 'Sector:', 1);
-  await page.waitForTimeout(500);
-  await selectByLabel(page, 'Cell:', 1);
-  await page.waitForTimeout(500);
-  await selectByLabel(page, 'Village:', 1);
+  if (!isChw) {
+    // Nurse: fill address (cascading dropdowns) and health center.
+    await selectByLabel(page, 'Province:', 1);
+    await page.waitForTimeout(500);
+    await selectByLabel(page, 'District:', 1);
+    await page.waitForTimeout(500);
+    await selectByLabel(page, 'Sector:', 1);
+    await page.waitForTimeout(500);
+    await selectByLabel(page, 'Cell:', 1);
+    await page.waitForTimeout(500);
+    await selectByLabel(page, 'Village:', 1);
 
-  // Select health center.
-  const hcSelect = page
-    .locator('.ui.grid')
-    .filter({ hasText: 'Health Center:' })
-    .locator('select');
-  await hcSelect.selectOption({ label: 'Nyange Health Center' });
+    // Select health center.
+    const hcSelect = page
+      .locator('.ui.grid')
+      .filter({ hasText: 'Health Center:' })
+      .locator('select');
+    await hcSelect.selectOption({ label: 'Nyange Health Center' });
+  }
+  // CHW: address fields are auto-filled from the assigned village;
+  // the form does not render address or health center sections.
 
   // Submit the form.
   await click(page.locator('button[type="submit"]'), page);

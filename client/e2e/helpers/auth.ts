@@ -83,7 +83,7 @@ export async function pairDevice(page: Page, pairingCode = '99999999') {
  * download nurse data from the backend. This function retries the
  * PIN login until the data is available.
  */
-export async function login(page: Page, pin = '1234') {
+export async function login(page: Page, pin = '1234', location = 'Nyange Health Center') {
   await pairDevice(page);
 
   // Give the sync manager time to download nurse data after pairing.
@@ -117,7 +117,7 @@ export async function login(page: Page, pin = '1234') {
   // If we see the health center selection, select Nyange Health Center.
   const selectLocation = await page.locator('p.select-location').isVisible().catch(() => false);
   if (selectLocation) {
-    await click(page.locator('button.ui.primary.button', { hasText: 'Nyange Health Center' }), page);
+    await click(page.locator('button.ui.primary.button', { hasText: location }), page);
   }
 
   // Wait for the main dashboard to appear.
@@ -129,8 +129,8 @@ export async function login(page: Page, pin = '1234') {
  * start syncing for Nyange Health Center, and wait for sync
  * to complete.
  */
-export async function setupDevice(page: Page, pin = '1234') {
-  await login(page, pin);
+export async function setupDevice(page: Page, pin = '1234', location = 'Nyange Health Center') {
+  await login(page, pin, location);
 
   // Navigate to Device Status page via dashboard card.
   await click(page.locator('.icon-task-device-status'), page);

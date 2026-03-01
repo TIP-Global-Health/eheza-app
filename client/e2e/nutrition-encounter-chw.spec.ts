@@ -4,7 +4,6 @@ import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import {
   createChildAndStartEncounter,
-  enterHeight,
   enterWeight,
   enterMuac,
   enterNutritionSigns,
@@ -18,29 +17,26 @@ import {
   queryBackendNodes,
 } from './helpers/nutrition';
 
-test.describe('Nurse: Individual Nutrition Encounter', () => {
+test.describe('CHW: Individual Nutrition Encounter', () => {
   if (process.env.RECORD) {
     test.beforeEach(async ({ page }) => {
       await page.addInitScript(installCursorScript());
     });
   }
 
-  // Reset device (fresh pairing code) and do full setup before each test.
+  // Login as CHW Jojo (PIN 2345), select Akanduga village.
   test.beforeEach(async ({ page }) => {
     resetDevice();
-    await setupDevice(page);
+    await setupDevice(page, '2345', 'Akanduga');
   });
 
-  test('complete normal encounter and verify backend sync', async ({
+  test('normal encounter without height (optional for CHW) and backend sync', async ({
     page,
   }) => {
     const { fullName } = await createChildAndStartEncounter(page, {
       ageMonths: 24,
+      isChw: true,
     });
-
-    // Height: 85 cm
-    await enterHeight(page, '85');
-    await saveActivity(page);
 
     // Weight: 12 kg
     await enterWeight(page, '12');
@@ -55,7 +51,8 @@ test.describe('Nurse: Individual Nutrition Encounter', () => {
     const diagnosisAppeared = await saveActivity(page);
     expect(diagnosisAppeared).toBe(false);
 
-    // End encounter.
+    // Height is optional for CHW — skip it entirely.
+    // End Encounter should be enabled without height.
     const endBtn = page.locator('div.actions button.ui.fluid.button', {
       hasText: 'End Encounter',
     });
@@ -65,77 +62,21 @@ test.describe('Nurse: Individual Nutrition Encounter', () => {
     // Sync to backend.
     await syncAndWait(page);
 
-    // Verify measurements in backend.
+    // Verify measurements in backend — no height node expected.
     const nodes = queryBackendNodes(fullName);
-    expect(nodes.height).toBe(85);
     expect(nodes.weight).toBe(12);
     expect(nodes.muac).toBe(14);
     expect(nodes.nutrition).toBe(true);
+    expect(nodes.height).toBeUndefined();
   });
 
-  test('measurement validation rejects out-of-range values', async ({
-    page,
-  }) => {
-    await createChildAndStartEncounter(page, { ageMonths: 24 });
-
-    const saveBtn = page.locator('button.ui.fluid.primary.button');
-
-    // --- Height validation ---
-    await enterHeight(page, '10');
-    await expect(saveBtn).toHaveClass(/disabled/);
-
-    await page
-      .locator('.form-input.measurement.height input[type="number"]')
-      .fill('260');
-    await expect(saveBtn).toHaveClass(/disabled/);
-
-    await page
-      .locator('.form-input.measurement.height input[type="number"]')
-      .fill('85');
-    await expect(saveBtn).toHaveClass(/active/);
-    await saveActivity(page);
-
-    // --- Weight validation ---
-    await enterWeight(page, '0.1');
-    await expect(saveBtn).toHaveClass(/disabled/);
-
-    await page
-      .locator('.form-input.measurement.weight input[type="number"]')
-      .fill('250');
-    await expect(saveBtn).toHaveClass(/disabled/);
-
-    await page
-      .locator('.form-input.measurement.weight input[type="number"]')
-      .fill('12');
-    await expect(saveBtn).toHaveClass(/active/);
-    await saveActivity(page);
-
-    // --- MUAC validation ---
-    await enterMuac(page, '3');
-    await expect(saveBtn).toHaveClass(/disabled/);
-
-    await page
-      .locator('.form-input.measurement.muac input[type="number"]')
-      .fill('100');
-    await expect(saveBtn).toHaveClass(/disabled/);
-
-    await page
-      .locator('.form-input.measurement.muac input[type="number"]')
-      .fill('14');
-    await expect(saveBtn).toHaveClass(/active/);
-    await saveActivity(page);
-  });
-
-  test('abnormal MUAC triggers assessment and NextSteps with backend sync', async ({
+  test('abnormal MUAC triggers NextSteps with backend sync', async ({
     page,
   }) => {
     const { fullName } = await createChildAndStartEncounter(page, {
       ageMonths: 24,
+      isChw: true,
     });
-
-    // Height: 80 cm
-    await enterHeight(page, '80');
-    await saveActivity(page);
 
     // Weight: 8 kg (underweight)
     await enterWeight(page, '8');
@@ -145,8 +86,7 @@ test.describe('Nurse: Individual Nutrition Encounter', () => {
     await enterMuac(page, '11');
     await saveActivity(page);
 
-    // Nutrition signs: Edema — triggers diagnosis popup and auto-navigates
-    // to NextSteps page (doesn't return to encounter page).
+    // Nutrition signs: Edema — triggers diagnosis popup.
     await enterNutritionSigns(page, ['Edema']);
     await click(page.locator('button.ui.fluid.primary.button.active'), page);
 
@@ -158,14 +98,13 @@ test.describe('Nurse: Individual Nutrition Encounter', () => {
     // App auto-navigates to NextSteps after diagnosis.
     await page.locator('div.page-activity.nutrition').waitFor({ timeout: 10000 });
 
-    // Complete all sub-tasks (each saves individually).
+    // Complete all sub-tasks.
     await completeSendToHC(page);
     await completeHealthEducation(page);
     await completeContributingFactors(page);
     await completeFollowUp(page);
 
-    // After completing all sub-tasks, wait for navigation to settle
-    // then ensure we're on the encounter page.
+    // Wait for navigation to settle, then ensure we're on the encounter page.
     await page.waitForTimeout(2000);
     await page
       .locator('div.page-encounter.nutrition')
@@ -177,12 +116,12 @@ test.describe('Nurse: Individual Nutrition Encounter', () => {
     // Sync to backend.
     await syncAndWait(page);
 
-    // Verify all measurement nodes in backend.
+    // Verify all measurement nodes in backend (no height for CHW).
     const nodes = queryBackendNodes(fullName);
-    expect(nodes.height).toBe(80);
     expect(nodes.weight).toBe(8);
     expect(nodes.muac).toBe(11);
     expect(nodes.nutrition).toBe(true);
+    expect(nodes.height).toBeUndefined();
     expect(nodes.sendToHc).toBe(true);
     expect(nodes.healthEducation).toBe(true);
     expect(nodes.contributingFactors).toBe(true);
