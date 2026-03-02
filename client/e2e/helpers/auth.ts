@@ -6,7 +6,7 @@ const recording = !!process.env.RECORD;
  * Click a locator. In recording mode, hover first and pause
  * so the cursor position is visible in the video.
  */
-async function click(locator: Locator, page: Page) {
+export async function click(locator: Locator, page: Page) {
   if (recording) {
     await locator.hover();
     await page.waitForTimeout(1000);
@@ -83,7 +83,7 @@ export async function pairDevice(page: Page, pairingCode = '99999999') {
  * download nurse data from the backend. This function retries the
  * PIN login until the data is available.
  */
-export async function login(page: Page, pin = '1234') {
+export async function login(page: Page, pin = '1234', location = 'Nyange Health Center') {
   await pairDevice(page);
 
   // Give the sync manager time to download nurse data after pairing.
@@ -117,7 +117,7 @@ export async function login(page: Page, pin = '1234') {
   // If we see the health center selection, select Nyange Health Center.
   const selectLocation = await page.locator('p.select-location').isVisible().catch(() => false);
   if (selectLocation) {
-    await click(page.locator('button.ui.primary.button', { hasText: 'Nyange Health Center' }), page);
+    await click(page.locator('button.ui.primary.button', { hasText: location }), page);
   }
 
   // Wait for the main dashboard to appear.
@@ -129,27 +129,33 @@ export async function login(page: Page, pin = '1234') {
  * start syncing for Nyange Health Center, and wait for sync
  * to complete.
  */
-export async function setupDevice(page: Page, pin = '1234') {
-  await login(page, pin);
+export async function setupDevice(
+  page: Page,
+  pin = '1234',
+  location = 'Nyange Health Center',
+  healthCenter = 'Nyange Health Center',
+) {
+  await login(page, pin, location);
 
   // Navigate to Device Status page via dashboard card.
   await click(page.locator('.icon-task-device-status'), page);
   await page.locator('.device-status').waitFor({ timeout: 10000 });
 
-  // Find the Nyange Health Center section.
-  const nyange = page.locator('.health-center', {
-    has: page.locator('h2', { hasText: 'Nyange Health Center' }),
+  // Find the health center section (always a health center, even when
+  // login location is a village for CHW users).
+  const hcSection = page.locator('.health-center', {
+    has: page.locator('h2', { hasText: healthCenter }),
   });
-  await nyange.waitFor({ timeout: 10000 });
+  await hcSection.waitFor({ timeout: 10000 });
 
   // Click "Start Syncing" if not already syncing.
-  const startBtn = nyange.locator('button.ui.button', { hasText: 'Start Syncing' });
+  const startBtn = hcSection.locator('button.ui.button', { hasText: 'Start Syncing' });
   if (await startBtn.isVisible()) {
     await click(startBtn, page);
   }
 
   // Wait for sync to complete — "Status: Success" in the sync-status div.
-  await nyange.locator('.sync-status', { hasText: 'Status: Success' })
+  await hcSection.locator('.sync-status', { hasText: 'Status: Success' })
     .waitFor({ timeout: 120000 });
 
   // Navigate back to the dashboard.
