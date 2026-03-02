@@ -129,16 +129,22 @@ export async function login(page: Page, pin = '1234', location = 'Nyange Health 
  * start syncing for Nyange Health Center, and wait for sync
  * to complete.
  */
-export async function setupDevice(page: Page, pin = '1234', location = 'Nyange Health Center') {
+export async function setupDevice(
+  page: Page,
+  pin = '1234',
+  location = 'Nyange Health Center',
+  healthCenter = 'Nyange Health Center',
+) {
   await login(page, pin, location);
 
   // Navigate to Device Status page via dashboard card.
   await click(page.locator('.icon-task-device-status'), page);
   await page.locator('.device-status').waitFor({ timeout: 10000 });
 
-  // Find the health center section.
+  // Find the health center section (always a health center, even when
+  // login location is a village for CHW users).
   const hcSection = page.locator('.health-center', {
-    has: page.locator('h2', { hasText: location }),
+    has: page.locator('h2', { hasText: healthCenter }),
   });
   await hcSection.waitFor({ timeout: 10000 });
 
