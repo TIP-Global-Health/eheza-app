@@ -48,6 +48,7 @@ jobs:
       - checkout
       - run: ci-scripts/install_ddev.sh
       - run: ci-scripts/install_drupal.sh
+      - run: ci-scripts/circleci_wait.sh ddev zscore-test
       - run: ci-scripts/circleci_wait.sh ddev simpletest
   e2e_playwright:
     machine:
