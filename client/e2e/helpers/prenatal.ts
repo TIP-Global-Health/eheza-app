@@ -1268,11 +1268,13 @@ export async function completePregnancyOutcome(page: Page) {
  * the same day the previous encounter was completed.
  */
 export function backdatePrenatalEncounter(personName: string) {
+  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
   const php = `
+    \\$person_name = base64_decode('${personNameB64}');
     \\$query = new EntityFieldQuery();
     \\$result = \\$query->entityCondition('entity_type', 'node')
       ->propertyCondition('type', 'person')
-      ->propertyCondition('title', '${personName}')
+      ->propertyCondition('title', \\$person_name)
       ->execute();
     if (empty(\\$result['node'])) {
       echo 'Person not found';
@@ -1339,11 +1341,13 @@ export function queryPrenatalNodes(
   personName: string,
   expectedTypes?: string[],
 ): Record<string, boolean> {
+  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
   const php = `
+    \\$person_name = base64_decode('${personNameB64}');
     \\$query = new EntityFieldQuery();
     \\$result = \\$query->entityCondition('entity_type', 'node')
       ->propertyCondition('type', 'person')
-      ->propertyCondition('title', '${personName}')
+      ->propertyCondition('title', \\$person_name)
       ->execute();
     if (empty(\\$result['node'])) {
       echo json_encode(['error' => 'Person not found']);
@@ -1444,7 +1448,10 @@ export function queryPrenatalNodes(
       } else {
         return parsed;
       }
-    } catch {
+    } catch (e) {
+      if (e instanceof Error && e.message.startsWith('Backend error:')) {
+        throw e;
+      }
       console.error('Failed to parse drush output:', output);
     }
     if (attempt < 4) {
