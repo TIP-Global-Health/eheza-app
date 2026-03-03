@@ -43,6 +43,8 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
   });
 
   test('complete all activities and verify backend sync', async ({ page }) => {
+    // Nurse initial encounter completes 12+ activities; needs more than the default 2m.
+    test.setTimeout(600000);
     // LMP date ~30 weeks ago — ensures EGA >= 28w for MentalHealth,
     // >= 13w for MalariaPrevention, and triggers all Medication tabs.
     const lmpDate = new Date();
@@ -116,6 +118,8 @@ test.describe('Nurse: Prenatal Subsequent Encounter', () => {
   test('complete treatment review and verify backend sync', async ({
     page,
   }) => {
+    // Subsequent encounter: full initial + backdate + subsequent — needs extra time.
+    test.setTimeout(600000);
     const lmpDate = new Date();
     lmpDate.setDate(lmpDate.getDate() - 30 * 7);
 
@@ -188,6 +192,8 @@ test.describe('Nurse: Prenatal Postpartum Encounter', () => {
   });
 
   test('complete breastfeeding and verify backend sync', async ({ page }) => {
+    // Postpartum encounter: full initial + backdate + postpartum — needs extra time.
+    test.setTimeout(600000);
     const lmpDate = new Date();
     lmpDate.setDate(lmpDate.getDate() - 30 * 7);
 
