@@ -212,11 +212,13 @@ export function queryHomeVisitNodes(personName: string): {
   hygiene?: boolean;
   foodSecurity?: boolean;
 } {
+  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
   const php = `
+    \\$person_name = base64_decode('${personNameB64}');
     \\$query = new EntityFieldQuery();
     \\$result = \\$query->entityCondition('entity_type', 'node')
       ->propertyCondition('type', 'person')
-      ->propertyCondition('title', '${personName}')
+      ->propertyCondition('title', \\$person_name)
       ->execute();
     if (empty(\\$result['node'])) {
       echo json_encode(['error' => 'Person not found']);
@@ -261,8 +263,15 @@ export function queryHomeVisitNodes(personName: string): {
   });
 
   try {
-    return JSON.parse(output.trim());
-  } catch {
+    const parsed = JSON.parse(output.trim());
+    if (parsed.error) {
+      throw new Error(`Backend error: ${parsed.error}`);
+    }
+    return parsed;
+  } catch (e) {
+    if (e instanceof Error && e.message.startsWith('Backend error:')) {
+      throw e;
+    }
     console.error('Failed to parse drush output:', output);
     return {};
   }

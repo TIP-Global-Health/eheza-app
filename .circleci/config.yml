@@ -48,6 +48,7 @@ jobs:
       - checkout
       - run: ci-scripts/install_ddev.sh
       - run: ci-scripts/install_drupal.sh
+      - run: ci-scripts/circleci_wait.sh ddev zscore-test
       - run: ci-scripts/circleci_wait.sh ddev simpletest
   e2e_playwright:
     machine:
@@ -82,9 +83,14 @@ jobs:
           name: Wait for app
           command: |
             for i in $(seq 1 60); do
-              curl -s http://localhost:3000 > /dev/null && break
+              if curl --silent --fail http://localhost:3000 > /dev/null; then
+                echo "App is up on http://localhost:3000"
+                exit 0
+              fi
               sleep 2
             done
+            echo "App failed to become reachable on http://localhost:3000 within timeout"
+            exit 1
       - run:
           name: Run E2E tests
           command: cd client && npx playwright test
