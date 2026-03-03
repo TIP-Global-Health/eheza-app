@@ -2,6 +2,23 @@ import { execSync } from 'child_process';
 import { existsSync } from 'fs';
 
 /**
+ * Resolve the drush command and working directory for running backend
+ * commands.  When E2E_DDEV_PROJECT is set (a path to the DDEV project
+ * root), drush commands target that project.  Otherwise, we detect
+ * whether we are inside the DDEV container or fall back to the current
+ * repo root.
+ */
+export function drushEnv(): { drushCmd: string; cwd: string } {
+  const insideDdev = existsSync('/var/www/html/server/www/sites/default/settings.php');
+  if (insideDdev) {
+    return { drushCmd: 'drush', cwd: '/var/www/html' };
+  }
+  const projectDir = process.env.E2E_DDEV_PROJECT
+    || process.cwd().replace(/\/client$/, '');
+  return { drushCmd: 'ddev drush', cwd: projectDir };
+}
+
+/**
  * Delete any existing E2E test device and create a fresh one with
  * a known pairing code. Device pairing codes are single-use, so
  * this must be called before each test that needs to pair.
@@ -49,9 +66,7 @@ export function resetDevice(pairingCode = '99999999') {
     echo 'E2E device created with pairing code ${pairingCode}';
   `;
 
-  const insideDdev = existsSync('/var/www/html/server/www/sites/default/settings.php');
-  const drushCmd = insideDdev ? 'drush' : 'ddev drush';
-  const cwd = insideDdev ? '/var/www/html' : process.cwd().replace(/\/client$/, '');
+  const { drushCmd, cwd } = drushEnv();
 
   const output = execSync(`${drushCmd} eval "${php}"`, {
     cwd,

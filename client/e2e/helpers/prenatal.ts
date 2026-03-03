@@ -1,7 +1,7 @@
 import { Page, Locator } from '@playwright/test';
 import { execSync } from 'child_process';
-import { existsSync } from 'fs';
 import { click } from './auth';
+import { drushEnv } from './device';
 
 // ---------------------------------------------------------------------------
 // Private form helpers
@@ -1396,13 +1396,7 @@ export function backdatePrenatalEncounter(personName: string) {
     echo 'No matching encounter found';
   `;
 
-  const insideDdev = existsSync(
-    '/var/www/html/server/www/sites/default/settings.php',
-  );
-  const drushCmd = insideDdev ? 'drush' : 'ddev drush';
-  const cwd = insideDdev
-    ? '/var/www/html'
-    : process.cwd().replace(/\/client$/, '');
+  const { drushCmd, cwd } = drushEnv();
 
   // Retry: the person may not yet be uploaded after the first sync cycle.
   for (let attempt = 0; attempt < 5; attempt++) {
@@ -1504,13 +1498,7 @@ export function queryPrenatalNodes(
     echo json_encode(\\$measurements);
   `;
 
-  const insideDdev = existsSync(
-    '/var/www/html/server/www/sites/default/settings.php',
-  );
-  const drushCmd = insideDdev ? 'drush' : 'ddev drush';
-  const cwd = insideDdev
-    ? '/var/www/html'
-    : process.cwd().replace(/\/client$/, '');
+  const { drushCmd, cwd } = drushEnv();
 
   // Retry up to 5 times with 10s delay.  The person node may not yet be
   // uploaded when the first sync cycle only completed downloads.
