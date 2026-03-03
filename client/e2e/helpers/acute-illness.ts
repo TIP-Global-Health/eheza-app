@@ -602,6 +602,7 @@ export async function completeSymptoms(
   options?: {
     general?: string[];
     respiratory?: string[];
+    coughMoreThan2Weeks?: boolean;
     gi?: string[];
     intractableVomiting?: boolean;
   },
@@ -635,6 +636,14 @@ export async function completeSymptoms(
   } else {
     for (const sign of respiratorySigns) {
       await selectCheckbox(page, sign);
+    }
+    // Handle cough duration conditional question.
+    if (respiratorySigns.includes('Cough')) {
+      const durationLabel = (options?.coughMoreThan2Weeks ?? false)
+        ? 'More than 2 weeks'
+        : '2 weeks or less';
+      await page.locator('label', { hasText: durationLabel }).click();
+      await page.waitForTimeout(300);
     }
   }
   // Save respiratory — advances to GI tab.
@@ -674,6 +683,7 @@ export async function completeSymptoms(
 export async function completePhysicalExam(
   page: Page,
   options?: {
+    isChw?: boolean;
     sys?: string;
     dia?: string;
     heartRate?: string;
@@ -682,6 +692,7 @@ export async function completePhysicalExam(
     muac?: string;
   },
 ) {
+  const isChw = options?.isChw ?? false;
   const sys = options?.sys ?? '120';
   const dia = options?.dia ?? '80';
   const heartRate = options?.heartRate ?? '80';
@@ -693,9 +704,13 @@ export async function completePhysicalExam(
 
   // --- Vitals tab ---
   await clickSubTaskTab(page, 'physical-exam-vitals');
-  await fillMeasurement(page, 'sys-blood-pressure', sys);
-  await fillMeasurement(page, 'dia-blood-pressure', dia);
-  await fillMeasurement(page, 'heart-rate', heartRate);
+  if (!isChw) {
+    // Nurse: full vitals form (BP, HR, RR, Temp).
+    await fillMeasurement(page, 'sys-blood-pressure', sys);
+    await fillMeasurement(page, 'dia-blood-pressure', dia);
+    await fillMeasurement(page, 'heart-rate', heartRate);
+  }
+  // Both CHW (basic) and nurse (full) have respiratory rate + body temp.
   await fillMeasurement(page, 'respiratory-rate', respiratoryRate);
   await fillMeasurement(page, 'body-temperature', bodyTemp);
   // Save vitals — advances to next tab.
@@ -705,20 +720,23 @@ export async function completePhysicalExam(
   );
   await page.waitForTimeout(500);
 
-  // --- Core Exam tab ---
-  await clickSubTaskTab(page, 'physical-exam-core-exam');
-  // Heart: select "Normal Rate And Rhythm"
-  const coreExamForm = page.locator('.ui.form.physical-exam.core-exam');
-  await coreExamForm.waitFor({ timeout: 5000 });
-  await selectCheckbox(page, 'Normal Rate And Rhythm');
-  // Lungs: select "Normal"
-  await selectCheckbox(page, 'Normal');
-  // Save core exam.
-  await click(
-    page.locator('.actions.symptoms button.ui.fluid.primary.button'),
-    page,
-  );
-  await page.waitForTimeout(500);
+  // --- Core Exam tab (nurse only — CHW skips) ---
+  const coreExamTab = page.locator('.link-section:has(.icon-activity-task.icon-physical-exam-core-exam)');
+  if (await coreExamTab.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await clickSubTaskTab(page, 'physical-exam-core-exam');
+    // Heart: select "Normal Rate And Rhythm"
+    const coreExamForm = page.locator('.ui.form.physical-exam.core-exam');
+    await coreExamForm.waitFor({ timeout: 5000 });
+    await selectCheckbox(page, 'Normal Rate And Rhythm');
+    // Lungs: select "Normal"
+    await selectCheckbox(page, 'Normal');
+    // Save core exam.
+    await click(
+      page.locator('.actions.symptoms button.ui.fluid.primary.button'),
+      page,
+    );
+    await page.waitForTimeout(500);
+  }
 
   // --- MUAC tab (children only — may not appear for adults) ---
   const muacTab = page.locator('.link-section:has(.icon-activity-task.icon-physical-exam-muac)');
