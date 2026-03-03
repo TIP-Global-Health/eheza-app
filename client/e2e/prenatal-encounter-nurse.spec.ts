@@ -27,6 +27,10 @@ import {
   completePregnancyOutcome,
   backdatePrenatalEncounter,
   queryPrenatalNodes,
+  navigateToCaseManagement,
+  openRecurrentEncounterFromCaseManagement,
+  completeRecurrentExamination,
+  endRecurrentEncounter,
 } from './helpers/prenatal';
 
 test.describe('Nurse: Prenatal Initial Encounter', () => {
@@ -248,5 +252,77 @@ test.describe('Nurse: Prenatal Postpartum Encounter', () => {
     const expectedTypes = ['prenatal_breastfeeding'];
     const nodes = queryPrenatalNodes(fullName, expectedTypes);
     expect(nodes['prenatal_breastfeeding']).toBe(true);
+  });
+});
+
+test.describe('Nurse: Prenatal Recurrent Encounter (BP Recheck)', () => {
+  if (process.env.RECORD) {
+    test.beforeEach(async ({ page }) => {
+      await page.addInitScript(installCursorScript());
+    });
+  }
+
+  test.beforeEach(async ({ page }) => {
+    resetDevice();
+    await setupDevice(page, '1234', 'Nyange Health Center');
+  });
+
+  test('marginal BP triggers recurrent phase with vitals recheck', async ({
+    page,
+  }) => {
+    // Recurrent encounter: full initial (with marginal BP) + sync + case management
+    // + recurrent vitals recheck — needs extra time.
+    test.setTimeout(600000);
+    const lmpDate = new Date();
+    lmpDate.setDate(lmpDate.getDate() - 30 * 7);
+
+    // --- Phase 1: Complete initial encounter with marginal blood pressure ---
+    const { fullName } = await createAdultFemaleAndStartEncounter(page, {
+      isChw: false,
+      encounterType: 'first',
+    });
+
+    await completePregnancyDating(page, lmpDate);
+    await completeHistory(page);
+    // Marginal BP: sys=145 (140 ≤ x < 160), dia=95 (90 ≤ x < 110).
+    // This triggers TestVitalsRecheck → Wait task → Pause Encounter flow.
+    await completeExamination(page, { vitals: { sys: '145', dia: '95' } });
+    await completeFamilyPlanning(page);
+    await completeDangerSigns(page);
+    await completeSymptomReview(page);
+    await completeMalariaPrevention(page);
+    await completeMentalHealth(page);
+    await completeImmunisation(page);
+    await completeMedication(page);
+    await completeLaboratoryNurse(page);
+    // NextSteps will show the Wait sub-task due to marginal BP.
+    // completeNextSteps handles Wait → clicks "Pause Encounter" → PinCodePage.
+    const completedSteps = await completeNextSteps(page);
+    expect(completedSteps).toContain('wait');
+
+    // --- Phase 2: Sync and navigate to recurrent encounter via Case Management ---
+    // After pause, nurse is on PinCodePage (still logged in).
+    await syncAndWait(page);
+
+    // Navigate to Case Management from the nurse menu.
+    await navigateToCaseManagement(page);
+
+    // Find the patient in the Prenatal Labs pane and open the recurrent encounter.
+    await openRecurrentEncounterFromCaseManagement(page, fullName);
+
+    // --- Phase 3: Complete recurrent encounter (vitals recheck) ---
+    // RecurrentExamination: VitalsFormRepeated mode (BP only, no HR/RR/temp).
+    // Normal BP (120/80) — no hypertension confirmed.
+    await completeRecurrentExamination(page);
+
+    // End the recurrent encounter from the progress report page.
+    await endRecurrentEncounter(page);
+
+    // --- Phase 4: Sync and verify backend ---
+    await syncAndWait(page);
+
+    const expectedTypes = ['prenatal_labs_results'];
+    const nodes = queryPrenatalNodes(fullName, expectedTypes);
+    expect(nodes['prenatal_labs_results']).toBe(true);
   });
 });

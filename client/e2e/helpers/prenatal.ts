@@ -620,7 +620,7 @@ export async function completeHistory(
  */
 export async function completeExamination(
   page: Page,
-  options?: { isPostpartum?: boolean },
+  options?: { isPostpartum?: boolean; vitals?: { sys?: string; dia?: string } },
 ) {
   await openActivity(page, 'examination');
 
@@ -628,8 +628,8 @@ export async function completeExamination(
   await clickSubTaskTab(page, 'vitals');
   await page.waitForTimeout(500);
 
-  await fillMeasurement(page, 'sys-blood-pressure', '120');
-  await fillMeasurement(page, 'dia-blood-pressure', '80');
+  await fillMeasurement(page, 'sys-blood-pressure', options?.vitals?.sys ?? '120');
+  await fillMeasurement(page, 'dia-blood-pressure', options?.vitals?.dia ?? '80');
   await fillMeasurement(page, 'heart-rate', '72');
   await fillMeasurement(page, 'respiratory-rate', '18');
   await fillMeasurement(page, 'body-temperature', '36.5');
@@ -1086,8 +1086,18 @@ export async function completeNextSteps(page: Page): Promise<string[]> {
           nextDate.setDate(nextDate.getDate() + 30);
           await setDate(page, nextDate, '.form-input.date');
         }
+      } else if (step.name === 'wait') {
+        // Wait has no form inputs. It shows "Pause Encounter" button instead of "Save".
+        // Clicking it closes the encounter and navigates to PinCodePage.
+        const pauseBtn = page.locator('div.actions button', { hasText: 'Pause Encounter' });
+        if (await pauseBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await click(pauseBtn, page);
+          completedSteps.push(step.name);
+          // App navigates to PinCodePage after pause — return immediately.
+          await page.waitForTimeout(2000);
+          return completedSteps;
+        }
       }
-      // "wait" has no form inputs — save button is always enabled.
 
       // Save this sub-task.
       const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
@@ -1252,6 +1262,81 @@ export async function completePregnancyOutcome(page: Page) {
   await page
     .locator('div.page-encounter.prenatal')
     .waitFor({ timeout: 15000 });
+}
+
+// ---------------------------------------------------------------------------
+// Recurrent encounter helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Navigate to Case Management from the nurse menu (PinCodePage when logged in).
+ */
+export async function navigateToCaseManagement(page: Page) {
+  // Menu card icons use class "icon-task icon-task-{name}".
+  await click(page.locator('.icon-task-case-management'), page);
+  await page.locator('.page-case-management').waitFor({ timeout: 10000 });
+  await page.waitForTimeout(500);
+}
+
+/**
+ * Open a recurrent encounter from the Case Management Prenatal Labs pane.
+ * Finds the patient entry by name and clicks the forward icon.
+ */
+export async function openRecurrentEncounterFromCaseManagement(
+  page: Page,
+  personName: string,
+) {
+  const entry = page.locator('.follow-up-entry', {
+    has: page.locator('.name', { hasText: personName }),
+  });
+  await entry.waitFor({ timeout: 10000 });
+  await click(entry.locator('.icon-forward'), page);
+  // Recurrent encounter page has same CSS as initial: div.page-encounter.prenatal.
+  await page.locator('div.page-encounter.prenatal').waitFor({ timeout: 10000 });
+  await page.waitForTimeout(500);
+}
+
+/**
+ * Complete RecurrentExamination: vitals recheck (BP only).
+ * The recurrent vitals form uses VitalsFormRepeated mode — only sys and dia
+ * blood pressure fields (no heart rate, respiratory rate, body temperature).
+ * After saving the last recurrent activity, the app auto-navigates to the
+ * Clinical Progress Report page.
+ */
+export async function completeRecurrentExamination(
+  page: Page,
+  options?: { sys?: string; dia?: string },
+) {
+  await openActivity(page, 'examination');
+
+  // VitalsFormRepeated: only BP fields shown.
+  await fillMeasurement(page, 'sys-blood-pressure', options?.sys ?? '120');
+  await fillMeasurement(page, 'dia-blood-pressure', options?.dia ?? '80');
+
+  // Save.
+  await click(
+    page.locator('button.ui.fluid.primary.button', { hasText: 'Save' }),
+    page,
+  );
+  await page.waitForTimeout(2000);
+
+  // After saving the last recurrent activity, the app auto-navigates to
+  // ClinicalProgressReportPage (div.page-report.clinical).
+  await page
+    .locator('div.page-report.clinical')
+    .waitFor({ timeout: 15000 });
+  await page.waitForTimeout(500);
+}
+
+/**
+ * End the recurrent encounter from the Clinical Progress Report page.
+ * Clicking "End Encounter" navigates directly to PinCodePage (no dialog).
+ */
+export async function endRecurrentEncounter(page: Page) {
+  const endBtn = page.locator('button', { hasText: 'End Encounter' });
+  await endBtn.waitFor({ timeout: 10000 });
+  await click(endBtn, page);
+  await page.waitForTimeout(3000);
 }
 
 // ---------------------------------------------------------------------------
