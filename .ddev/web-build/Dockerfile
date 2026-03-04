@@ -40,7 +40,7 @@ RUN gunzip binary-for-linux-64-bit.gz
 RUN mv binary-for-linux-64-bit /usr/bin/elm
 RUN chmod +x /usr/bin/elm
 # gulp for the client compilation.
-RUN npm install -g gulp
+RUN npm install -g gulp-cli
 # For Elm Unit tests
 ENV NPM_CONFIG_UNSAFE_PERM=true
 RUN npm install -g elm-test@0.19.1-revision6
