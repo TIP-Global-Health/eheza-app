@@ -369,22 +369,12 @@ export async function navigateToParticipantPage(
     return;
   }
 
-  // Navigate from the dashboard.
-  // First, make sure we're on the dashboard. Click the back arrow until we get there,
-  // or navigate directly.
+  // Navigate to the dashboard. Going to '/' is more reliable than clicking
+  // back buttons, which can get detached during background sync re-renders.
   const dashboard = page.locator('.wrap-cards');
   if (!await dashboard.isVisible({ timeout: 1000 }).catch(() => false)) {
-    // Try clicking back repeatedly to reach dashboard.
-    for (let i = 0; i < 5; i++) {
-      const backBtn = page.locator('.icon-back').first();
-      if (await backBtn.isVisible({ timeout: 500 }).catch(() => false)) {
-        await click(backBtn, page);
-        await page.waitForTimeout(500);
-      }
-      if (await dashboard.isVisible({ timeout: 500 }).catch(() => false)) {
-        break;
-      }
-    }
+    await page.goto('/');
+    await dashboard.waitFor({ timeout: 30000 });
   }
 
   await click(page.locator('.icon-task-clinical'), page);
