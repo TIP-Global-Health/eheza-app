@@ -180,3 +180,97 @@ test.describe('Nurse: Acute Illness Initial + Subsequent Encounter — Malaria U
     expect(subsequentNodes['treatment_ongoing']).toBe(true);
   });
 });
+
+// =========================================================================
+// Test 2: Nurse Initial — GI Infection Complicated
+// =========================================================================
+
+test.describe('Nurse: Acute Illness Initial Encounter — GI Infection', () => {
+  test.describe.configure({ timeout: 600000 });
+
+  if (process.env.RECORD) {
+    test.beforeEach(async ({ page }) => {
+      await page.addInitScript(installCursorScript());
+    });
+  }
+
+  test.beforeEach(async ({ page }) => {
+    resetDevice();
+    await setupDevice(page, '1234', 'Nyange Health Center');
+  });
+
+  test('complete GI infection encounter with dehydration signs, verify backend sync', async ({ page }) => {
+
+    const { fullName } = await createAdultAndStartEncounter(page, {
+      isChw: false,
+      gender: 'male',
+    });
+
+    // 1. Symptoms: Fever + Lethargy + dehydration signs (general);
+    //    None (respiratory); Bloody Diarrhea + Vomiting with intractable vomiting (GI).
+    await completeSymptoms(page, {
+      general: ['Fever', 'Lethargy', 'Increased Thirst', 'Dry/Sticky Mouth'],
+      respiratory: [],
+      gi: ['Bloody Diarrhea', 'Vomiting'],
+      intractableVomiting: true,
+    });
+
+    // 2. Physical Exam: low BP, tachycardia, elevated temp.
+    //    Acute Findings: Sunken Eyes + Poor Skin Turgor (dehydration).
+    await completePhysicalExam(page, {
+      sys: '90',
+      dia: '60',
+      heartRate: '110',
+      respiratoryRate: '22',
+      bodyTemp: '39.0',
+      acuteFindingsGeneral: ['Sunken Eyes', 'Poor Skin Turgor'],
+      acuteFindingsRespiratory: [],
+    });
+
+    // 3. Prior Treatment: no prior medication.
+    await completePriorTreatment(page);
+
+    // 4. Laboratory: Malaria RDT negative, COVID not performed.
+    await completeLaboratory(page, {
+      malariaResult: 'Negative',
+    });
+
+    // 5. Next Steps: whatever the app offers for this diagnosis.
+    await completeNextSteps(page, {
+      hasMedicationDistribution: true,
+      hasFollowUp: true,
+      hasSendToHC: true,
+      hasContactTracing: false,
+      hasSymptomsRelief: false,
+      hasHealthEducation: true,
+    });
+
+    // End encounter.
+    await endEncounter(page);
+
+    // Sync to backend.
+    await syncAndWait(page);
+
+    // Verify core content types.
+    const expectedTypes = [
+      'symptoms_general',
+      'symptoms_respiratory',
+      'symptoms_gi',
+      'acute_illness_vitals',
+      'acute_illness_core_exam',
+      'acute_findings',
+      'treatment_history',
+      'malaria_testing',
+    ];
+    const nodes = queryAcuteIllnessNodes(fullName, expectedTypes);
+
+    expect(nodes['symptoms_general']).toBe(true);
+    expect(nodes['symptoms_respiratory']).toBe(true);
+    expect(nodes['symptoms_gi']).toBe(true);
+    expect(nodes['acute_illness_vitals']).toBe(true);
+    expect(nodes['acute_illness_core_exam']).toBe(true);
+    expect(nodes['acute_findings']).toBe(true);
+    expect(nodes['treatment_history']).toBe(true);
+    expect(nodes['malaria_testing']).toBe(true);
+  });
+});

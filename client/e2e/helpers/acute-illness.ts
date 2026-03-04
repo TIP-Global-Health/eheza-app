@@ -90,10 +90,15 @@ async function clickSubTaskTab(page: Page, iconClass: string) {
 
 /**
  * Open an activity from the encounter page by clicking its card icon.
+ * Dismisses any alert/diagnosis popup that may be blocking the page.
  */
 async function openActivity(page: Page, activityIcon: string) {
   await page.locator('div.page-encounter.acute-illness').waitFor({ timeout: 10000 });
   await page.waitForTimeout(500);
+
+  // Dismiss any alert or diagnosis popup that may overlay the encounter page.
+  await dismissDiagnosisPopup(page);
+
   await click(page.locator(`.icon-task-${activityIcon}`), page);
   await page.locator('div.page-activity.acute-illness').waitFor({ timeout: 10000 });
 }
@@ -101,12 +106,22 @@ async function openActivity(page: Page, activityIcon: string) {
 /**
  * Dismiss the diagnosis assessment popup if it appears.
  * After completing all mandatory activities, the app may show a modal
- * with the diagnosis and a "Continue" button.
+ * with the diagnosis and a "Continue" button. There are two variants:
+ * 1. `.ui.active.modal` — standard diagnosis assessment popup
+ * 2. `.overlay` — alert popup (e.g., "Suspected Uncomplicated Pneumonia")
  */
 async function dismissDiagnosisPopup(page: Page) {
-  const continueBtn = page.locator('.ui.active.modal button', { hasText: 'Continue' });
-  if (await continueBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
-    await click(continueBtn, page);
+  // Try the standard modal first.
+  const modalContinue = page.locator('.ui.active.modal button', { hasText: 'Continue' });
+  if (await modalContinue.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await click(modalContinue, page);
+    await page.waitForTimeout(1000);
+    return;
+  }
+  // Try the overlay popup (alert with "Continue" button).
+  const overlayContinue = page.locator('.overlay button', { hasText: 'Continue' });
+  if (await overlayContinue.isVisible({ timeout: 1000 }).catch(() => false)) {
+    await click(overlayContinue, page);
     await page.waitForTimeout(1000);
   }
 }
@@ -690,6 +705,10 @@ export async function completePhysicalExam(
     respiratoryRate?: string;
     bodyTemp?: string;
     muac?: string;
+    /** General acute findings to select (e.g. ['Sunken Eyes', 'Poor Skin Turgor']). Empty = "None of the above". */
+    acuteFindingsGeneral?: string[];
+    /** Respiratory acute findings to select. Empty = "None of the above". */
+    acuteFindingsRespiratory?: string[];
   },
 ) {
   const isChw = options?.isChw ?? false;
@@ -719,6 +738,9 @@ export async function completePhysicalExam(
     page,
   );
   await page.waitForTimeout(500);
+
+  // Dismiss any alert popup triggered by vitals (e.g., elevated RR → Suspected Pneumonia).
+  await dismissDiagnosisPopup(page);
 
   // --- Core Exam tab (nurse only — CHW skips) ---
   const coreExamTab = page.locator('.link-section:has(.icon-activity-task.icon-physical-exam-core-exam)');
@@ -780,13 +802,44 @@ export async function completePhysicalExam(
       await clickSubTaskTab(page, 'acute-findings');
       const acuteFindingsForm = page.locator('.ui.form.physical-exam.acute-findings');
       await acuteFindingsForm.waitFor({ timeout: 5000 });
-      // Select "None of the above" for both general and respiratory findings.
-      const noneCheckboxes = acuteFindingsForm.locator('.ui.checkbox', {
-        hasText: /^None of the above$/i,
-      });
-      const count = await noneCheckboxes.count();
-      for (let i = 0; i < count; i++) {
-        await click(noneCheckboxes.nth(i).locator('label'), page);
+
+      const generalFindings = options?.acuteFindingsGeneral ?? [];
+      const respiratoryFindings = options?.acuteFindingsRespiratory ?? [];
+
+      if (generalFindings.length === 0 && respiratoryFindings.length === 0) {
+        // Select "None of the above" for both general and respiratory findings.
+        const noneCheckboxes = acuteFindingsForm.locator('.ui.checkbox', {
+          hasText: /^None of the above$/i,
+        });
+        const count = await noneCheckboxes.count();
+        for (let i = 0; i < count; i++) {
+          await click(noneCheckboxes.nth(i).locator('label'), page);
+        }
+      } else {
+        // Select specific general findings, or "None of the above".
+        if (generalFindings.length > 0) {
+          for (const finding of generalFindings) {
+            await selectCheckboxInForm(page, '.ui.form.physical-exam.acute-findings', finding);
+          }
+        } else {
+          // First "None of the above" is for general findings.
+          const noneCheckboxes = acuteFindingsForm.locator('.ui.checkbox', {
+            hasText: /^None of the above$/i,
+          });
+          await click(noneCheckboxes.first().locator('label'), page);
+        }
+        // Select specific respiratory findings, or "None of the above".
+        if (respiratoryFindings.length > 0) {
+          for (const finding of respiratoryFindings) {
+            await selectCheckboxInForm(page, '.ui.form.physical-exam.acute-findings', finding);
+          }
+        } else {
+          // Last "None of the above" is for respiratory findings.
+          const noneCheckboxes = acuteFindingsForm.locator('.ui.checkbox', {
+            hasText: /^None of the above$/i,
+          });
+          await click(noneCheckboxes.last().locator('label'), page);
+        }
       }
       // Save acute findings — all tasks complete, return to encounter page.
       // Physical exam actions div uses class "actions symptoms" (not "physical-exam").
@@ -835,10 +888,13 @@ export async function completeLaboratory(
   options?: {
     malariaResult?: string;
     covidTestPerformed?: boolean;
+    covidResult?: string;
     isPregnant?: boolean;
   },
 ) {
   const malariaResult = options?.malariaResult ?? 'Positive';
+  const covidTestPerformed = options?.covidTestPerformed ?? false;
+  const covidResult = options?.covidResult ?? 'Positive';
   const isPregnant = options?.isPregnant ?? false;
 
   await openActivity(page, 'laboratory');
@@ -875,18 +931,30 @@ export async function completeLaboratory(
     const covidForm = page.locator('.ui.form.laboratory.covid-testing');
     await covidForm.waitFor({ timeout: 5000 });
 
-    // "Test performed?" → No
-    await answerYesNo(page, 'test-performed', 'No');
+    if (covidTestPerformed) {
+      // "Test performed?" → Yes
+      await answerYesNo(page, 'test-performed', 'Yes');
 
-    // "Why not?" — select a reason from the checkbox list.
-    const whyNotSection = page.locator('.why-not');
-    await whyNotSection.waitFor({ timeout: 3000 }).catch(() => {});
-    if (await whyNotSection.isVisible()) {
-      // Select "Lack of Stock" as the reason.
-      await click(
-        whyNotSection.locator('.ui.checkbox.activity').first(),
-        page,
-      );
+      // Select the test result from dropdown.
+      const covidResultSelect = covidForm.locator('select').first();
+      await covidResultSelect.waitFor({ timeout: 3000 }).catch(() => {});
+      if (await covidResultSelect.isVisible()) {
+        await covidResultSelect.selectOption({ label: covidResult });
+      }
+    } else {
+      // "Test performed?" → No
+      await answerYesNo(page, 'test-performed', 'No');
+
+      // "Why not?" — select a reason from the checkbox list.
+      const whyNotSection = page.locator('.why-not');
+      await whyNotSection.waitFor({ timeout: 3000 }).catch(() => {});
+      if (await whyNotSection.isVisible()) {
+        // Select "Lack of Stock" as the reason.
+        await click(
+          whyNotSection.locator('.ui.checkbox.activity').first(),
+          page,
+        );
+      }
     }
 
     // Save COVID testing.
