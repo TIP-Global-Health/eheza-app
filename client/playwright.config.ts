@@ -18,6 +18,7 @@ export default defineConfig({
     trace: 'on-first-retry',
     video: recording ? 'on' : 'off',
     ...devices['iPad Mini'],
+    ...(recording ? { deviceScaleFactor: 1, viewport: { width: 820, height: 1024 } } : {}),
     hasTouch: false,
     isMobile: false,
   },
