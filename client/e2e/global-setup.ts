@@ -1,22 +1,5 @@
-import { readFileSync } from 'fs';
-import { resolve } from 'path';
 import { resetDevice } from './helpers/device';
-
-/**
- * Read the host port from .ddev/docker-compose.client-http.yaml.
- * Falls back to 3000 if the file is missing or unparseable.
- */
-function getClientPort(): number {
-  try {
-    const yamlPath = resolve(__dirname, '../../.ddev/docker-compose.client-http.yaml');
-    const content = readFileSync(yamlPath, 'utf-8');
-    const match = content.match(/- (\d+):3000/);
-    if (match) return parseInt(match[1], 10);
-  } catch {
-    // File not found or unreadable — use default.
-  }
-  return 3000;
-}
+import { getClientPort } from './helpers/client-port';
 
 /**
  * Wait for the frontend to be reachable on the configured port.
@@ -30,10 +13,16 @@ async function waitForFrontend() {
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      const res = await fetch(url);
-      if (res.ok) {
-        console.log(`Frontend ready at ${url}`);
-        return;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
+      try {
+        const res = await fetch(url, { signal: controller.signal });
+        if (res.ok) {
+          console.log(`Frontend ready at ${url}`);
+          return;
+        }
+      } finally {
+        clearTimeout(timeoutId);
       }
     } catch {
       // Not ready yet.

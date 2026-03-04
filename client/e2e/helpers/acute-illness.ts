@@ -340,14 +340,17 @@ export async function endEncounter(page: Page) {
   await endBtn.click({ force: true });
 
   // Wait for and confirm the "End Encounter?" dialog.
-  const continueBtn = page.locator('button', { hasText: 'Continue' });
-  await continueBtn.waitFor({ timeout: 5000 }).catch(() => {});
-  if (await continueBtn.isVisible()) {
-    await continueBtn.click({ force: true });
+  // Scope to the tiny modal to avoid clicking diagnosis/alert overlay buttons.
+  const confirmModal = page.locator('div.ui.tiny.active.modal');
+  await confirmModal.waitFor({ timeout: 5000 }).catch(() => {});
+  if (await confirmModal.isVisible()) {
+    await confirmModal.locator('button', { hasText: 'Continue' }).click({ force: true });
   }
 
-  // Wait for navigation away.
-  await page.waitForTimeout(5000);
+  // Wait for navigation away from the encounter page.
+  await page
+    .locator('div.page-encounter.acute-illness')
+    .waitFor({ state: 'hidden', timeout: 30000 });
 }
 
 /**
@@ -1004,12 +1007,12 @@ export async function completeNextSteps(
 
   // After completing all mandatory activities, the app may auto-navigate
   // to Next Steps with the diagnosis popup already dismissed.  Only open
-  // the activity explicitly if we're still on the encounter page.
-  const alreadyOnActivity = await page
-    .locator('div.page-activity.acute-illness')
+  // the activity explicitly if we're not already on the Next Steps page.
+  const alreadyOnNextSteps = await page
+    .locator('.actions.next-steps')
     .isVisible()
     .catch(() => false);
-  if (!alreadyOnActivity) {
+  if (!alreadyOnNextSteps) {
     await openActivity(page, 'next-steps');
   }
 
