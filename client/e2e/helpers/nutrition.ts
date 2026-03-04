@@ -1,7 +1,7 @@
 import { Page } from '@playwright/test';
 import { execSync } from 'child_process';
-import { existsSync } from 'fs';
 import { click } from './auth';
+import { drushEnv } from './device';
 
 /**
  * Select an option in a form dropdown identified by its label text.
@@ -517,13 +517,7 @@ export function queryBackendNodes(personName: string): {
     echo json_encode(\\$measurements);
   `;
 
-  const insideDdev = existsSync(
-    '/var/www/html/server/www/sites/default/settings.php',
-  );
-  const drushCmd = insideDdev ? 'drush' : 'ddev drush';
-  const cwd = insideDdev
-    ? '/var/www/html'
-    : process.cwd().replace(/\/client$/, '');
+  const { drushCmd, cwd } = drushEnv();
 
   const output = execSync(`${drushCmd} eval "${php}"`, {
     cwd,

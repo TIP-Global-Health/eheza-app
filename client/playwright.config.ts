@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import { getClientPort } from './e2e/helpers/client-port';
 
 const recording = !!process.env.RECORD;
 
@@ -10,13 +11,14 @@ export default defineConfig({
   retries: 1,
   workers: 1,
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: `http://localhost:${getClientPort()}`,
     headless: !recording,
     ignoreHTTPSErrors: true,
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
     video: recording ? 'on' : 'off',
     ...devices['iPad Mini'],
+    ...(recording ? { deviceScaleFactor: 1, viewport: { width: 820, height: 1024 } } : {}),
     hasTouch: false,
     isMobile: false,
   },
