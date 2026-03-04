@@ -991,6 +991,180 @@ export async function completeLaboratoryNurse(page: Page): Promise<string[]> {
 }
 
 /**
+ * Complete Laboratory for Nurse, ordering tests for lab processing.
+ * Unlike completeLaboratoryNurse (which declines all tests), this helper
+ * answers "Yes" to performing each test and selects "Lab" (not Point of Care)
+ * for the immediate-result question. This leaves results pending for a Lab
+ * Technician to enter later via Case Management.
+ * Creates: prenatal_hiv_test, prenatal_syphilis_test, etc. with executionNote=RunToday.
+ */
+export async function completeLaboratoryNurseForLab(page: Page): Promise<string[]> {
+  await openActivity(page, 'laboratory');
+
+  const completedTests: string[] = [];
+  const allTabs = page.locator('.link-section');
+  const tabCount = await allTabs.count();
+
+  for (let i = 0; i < tabCount; i++) {
+    const tab = allTabs.nth(i);
+    if (!(await tab.isVisible())) continue;
+
+    const isCompleted = await tab.evaluate(el =>
+      el.classList.contains('completed'),
+    ).catch(() => false);
+    if (isCompleted) continue;
+
+    const isActive = await tab.evaluate(el =>
+      el.classList.contains('active'),
+    ).catch(() => false);
+    if (!isActive) {
+      await click(tab, page);
+      await page.waitForTimeout(500);
+    }
+
+    const tabLabel = (await tab.textContent()) || `tab-${i}`;
+
+    // 1. "Known as positive?" (HIV, Partner HIV, Hepatitis B) → No
+    const knownPositive = page.locator('.form-input.yes-no.known-as-positive');
+    if (await knownPositive.isVisible().catch(() => false)) {
+      await click(knownPositive.locator('label', { hasText: 'No' }), page);
+      await page.waitForTimeout(500);
+    }
+
+    // 2. "Will this test be performed today?" → Yes
+    const testPerformed = page.locator('.form-input.yes-no.test-performed');
+    if (await testPerformed.isVisible().catch(() => false)) {
+      await click(testPerformed.locator('label', { hasText: 'Yes' }), page);
+      await page.waitForTimeout(500);
+    }
+
+    // 3. "Immediate result?" → Lab (the "No" side of the bool input)
+    const immediateResult = page.locator('.form-input.yes-no.immediate-result');
+    if (await immediateResult.isVisible().catch(() => false)) {
+      await click(immediateResult.locator('label', { hasText: 'Lab' }), page);
+      await page.waitForTimeout(500);
+    }
+
+    // 4. "Urine Dipstick variant?" → Short Dip (checkbox, appears for Urine Dipstick)
+    const shortDip = page.locator('.ui.checkbox label', { hasText: /^Short Dip$/i });
+    if (await shortDip.isVisible().catch(() => false)) {
+      await click(shortDip, page);
+      await page.waitForTimeout(300);
+    }
+
+    // 5. "Was this test performed before a meal?" → No (Random Blood Sugar only)
+    const patientFasted = page.locator('.form-input.yes-no.patient-fasted');
+    if (await patientFasted.isVisible().catch(() => false)) {
+      await click(patientFasted.locator('label', { hasText: 'No' }), page);
+      await page.waitForTimeout(300);
+    }
+
+    // Save this lab test tab.
+    const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+    if (await saveBtn.isVisible()) {
+      await click(saveBtn, page);
+      completedTests.push(tabLabel);
+      await page.waitForTimeout(500);
+    }
+  }
+
+  // Wait for return to encounter page.
+  await page
+    .locator('div.page-encounter.prenatal')
+    .waitFor({ timeout: 10000 });
+
+  return completedTests;
+}
+
+/**
+ * Complete Lab Results as Lab Technician: iterate through visible lab test
+ * tabs on the LabResults recurrent activity page. For each test:
+ * 1. Confirm the test was run ("Yes" to test-performed).
+ * 2. Enter a result (select from dropdown or fill a numeric input).
+ * 3. Save.
+ * Returns the list of completed test tab labels.
+ */
+export async function completeLabResultsAsLabTech(page: Page): Promise<string[]> {
+  const completedTests: string[] = [];
+  const allTabs = page.locator('.link-section');
+  const tabCount = await allTabs.count();
+
+  for (let i = 0; i < tabCount; i++) {
+    const tab = allTabs.nth(i);
+    if (!(await tab.isVisible())) continue;
+
+    const isCompleted = await tab.evaluate(el =>
+      el.classList.contains('completed'),
+    ).catch(() => false);
+    if (isCompleted) continue;
+
+    const isActive = await tab.evaluate(el =>
+      el.classList.contains('active'),
+    ).catch(() => false);
+    if (!isActive) {
+      await click(tab, page);
+      await page.waitForTimeout(500);
+    }
+
+    const tabLabel = (await tab.textContent()) || `tab-${i}`;
+
+    // 1. "Will this test be performed today?" → Yes (confirms run by lab tech)
+    const testPerformed = page.locator('.form-input.yes-no.test-performed');
+    if (await testPerformed.isVisible().catch(() => false)) {
+      await click(testPerformed.locator('label', { hasText: 'Yes' }), page);
+      await page.waitForTimeout(500);
+    }
+
+    // 2. Enter result — fill all visible select dropdowns and numeric inputs.
+    // The select element itself has class "form-input select" (not a wrapper).
+    const allSelects = page.locator('select.form-input');
+    const selectCount = await allSelects.count();
+    for (let s = 0; s < selectCount; s++) {
+      const sel = allSelects.nth(s);
+      if (await sel.isVisible().catch(() => false)) {
+        const opts = sel.locator('option');
+        const oCount = await opts.count();
+        if (oCount > 1) {
+          const currentVal = await sel.inputValue();
+          if (!currentVal) {
+            const val = await opts.nth(1).getAttribute('value');
+            if (val !== null) {
+              await sel.selectOption(val);
+              await page.waitForTimeout(300);
+            }
+          }
+        }
+      }
+    }
+
+    // Numeric inputs (hemoglobin count, random blood sugar, etc.)
+    // Elm renders these as: <div class="form-input measurement <id>"><input type="number" ...>
+    const numericInputs = page.locator('.form-input.measurement input[type="number"]');
+    const numCount = await numericInputs.count();
+    for (let n = 0; n < numCount; n++) {
+      const numInput = numericInputs.nth(n);
+      if (await numInput.isVisible().catch(() => false)) {
+        const currentVal = await numInput.inputValue();
+        if (!currentVal) {
+          await numInput.fill('12');
+          await page.waitForTimeout(300);
+        }
+      }
+    }
+
+    // Save this lab test tab.
+    const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+    if (await saveBtn.isVisible()) {
+      await click(saveBtn, page);
+      completedTests.push(tabLabel);
+      await page.waitForTimeout(500);
+    }
+  }
+
+  return completedTests;
+}
+
+/**
  * Complete NextSteps: iterate through visible sub-task tabs.
  * Creates: appointment_confirmation, prenatal_follow_up, prenatal_send_to_hc, etc.
  */
