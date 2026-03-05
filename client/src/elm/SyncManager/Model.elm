@@ -8,6 +8,8 @@ import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic)
 import Backend.Dashboard.Model exposing (DashboardStatsRaw)
 import Backend.EducationSession.Model exposing (EducationSession)
 import Backend.Entities exposing (HealthCenterId)
+import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterParticipant)
+import Backend.FamilyNutritionEncounter.Model exposing (FamilyNutritionEncounter)
 import Backend.HIVEncounter.Model exposing (HIVEncounter)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
 import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
@@ -69,6 +71,8 @@ type BackendAuthorityEntity
     | BackendAuthorityAcuteIllnessNutrition (BackendEntity AcuteIllnessNutrition)
     | BackendAuthorityAcuteIllnessTraceContact (BackendEntity AcuteIllnessTraceContact)
     | BackendAuthorityAcuteIllnessVitals (BackendEntity AcuteIllnessVitals)
+    | BackendAuthorityAhezaChild (BackendEntity AhezaChild)
+    | BackendAuthorityAhezaMother (BackendEntity AhezaMother)
     | BackendAuthorityAppointmentConfirmation (BackendEntity PrenatalAppointmentConfirmation)
     | BackendAuthorityAttendance (BackendEntity Attendance)
     | BackendAuthorityBreastExam (BackendEntity BreastExam)
@@ -94,6 +98,11 @@ type BackendAuthorityEntity
     | BackendAuthorityDashboardStats (BackendEntity DashboardStatsRaw)
     | BackendAuthorityEducationSession (BackendEntity EducationSession)
     | BackendAuthorityExposure (BackendEntity Exposure)
+    | BackendAuthorityFamilyNutritionEncounter (BackendEntity FamilyNutritionEncounter)
+    | BackendAuthorityFamilyNutritionMuacChild (BackendEntity FamilyNutritionMuacChild)
+    | BackendAuthorityFamilyNutritionMuacMother (BackendEntity FamilyNutritionMuacMother)
+    | BackendAuthorityFamilyNutritionPhoto (BackendEntity FamilyNutritionPhoto)
+    | BackendAuthorityFamilyParticipant (BackendEntity FamilyEncounterParticipant)
     | BackendAuthorityFamilyPlanning (BackendEntity FamilyPlanning)
     | BackendAuthorityFollowUp (BackendEntity FollowUp)
     | BackendAuthorityGroupHealthEducation (BackendEntity GroupHealthEducation)
@@ -721,11 +730,13 @@ type alias IncidentContnentIdentifier =
 type Site
     = SiteRwanda
     | SiteBurundi
+    | SiteSomalia
     | SiteUnknown
 
 
 type SiteFeature
-    = FeatureGPSCoordinates
+    = FeatureFamilyNutrition
+    | FeatureGPSCoordinates
     | FeatureGroupEducation
     | FeatureHealthyStart -- defines few slightly different behaviors at Prenatal flows.
     | FeatureHIVManagement

@@ -51,6 +51,11 @@ import Pages.Device.Model
 import Pages.Device.Update
 import Pages.EducationSession.Model
 import Pages.EducationSession.Update
+import Pages.FamilyEncounterParticipants.Update
+import Pages.FamilyNutrition.Encounter.Model
+import Pages.FamilyNutrition.Encounter.Update
+import Pages.FamilyNutrition.ProgressReport.Model
+import Pages.FamilyNutrition.ProgressReport.Update
 import Pages.GlobalCaseManagement.Update
 import Pages.HIV.Activity.Model
 import Pages.HIV.Activity.Update
@@ -409,6 +414,16 @@ update msg model =
                             , appMsgs
                             )
 
+                        MsgPageFamilyEncounterParticipants subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    Pages.FamilyEncounterParticipants.Update.update subMsg data.familyEncounterParticipantsPage
+                            in
+                            ( { data | familyEncounterParticipantsPage = subModel }
+                            , Cmd.map (MsgLoggedIn << MsgPageFamilyEncounterParticipants) subCmd
+                            , appMsgs
+                            )
+
                         MsgPageRelationship id1 id2 subMsg ->
                             let
                                 ( subModel, subCmd, extraMsgs ) =
@@ -611,6 +626,32 @@ update msg model =
                             in
                             ( { data | hivEncounterPages = Dict.insert id subModel data.hivEncounterPages }
                             , Cmd.map (MsgLoggedIn << MsgPageHIVEncounter id) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageFamilyNutritionEncounter id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.familyNutritionEncounterPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.FamilyNutrition.Encounter.Model.emptyModel
+                                        |> Pages.FamilyNutrition.Encounter.Update.update site id model.indexedDb subMsg
+                            in
+                            ( { data | familyNutritionEncounterPages = Dict.insert id subModel data.familyNutritionEncounterPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageFamilyNutritionEncounter id) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageFamilyNutritionProgressReport id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.familyNutritionProgressReportPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.FamilyNutrition.ProgressReport.Model.emptyModel
+                                        |> Pages.FamilyNutrition.ProgressReport.Update.update subMsg
+                            in
+                            ( { data | familyNutritionProgressReportPages = Dict.insert id subModel data.familyNutritionProgressReportPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageFamilyNutritionProgressReport id) subCmd
                             , extraMsgs
                             )
 
@@ -1417,6 +1458,9 @@ update msg model =
                             App.Ports.bindDropZone ()
 
                         UserPage (WellChildActivityPage _ WellChildPhoto) ->
+                            App.Ports.bindDropZone ()
+
+                        UserPage (FamilyNutritionEncounterPage _) ->
                             App.Ports.bindDropZone ()
 
                         _ ->

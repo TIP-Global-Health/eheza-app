@@ -15,7 +15,7 @@ function hedley_forms_user_default_permissions() {
   $permissions['create participant_consent content'] = array(
     'name' => 'create participant_consent content',
     'roles' => array(
-      'nurse' => 'nurse',
+      'administrator' => 'administrator',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -25,6 +25,7 @@ function hedley_forms_user_default_permissions() {
   $permissions['create participant_form content'] = array(
     'name' => 'create participant_form content',
     'roles' => array(
+      'administrator' => 'administrator',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -33,28 +34,36 @@ function hedley_forms_user_default_permissions() {
   // Exported permission: 'delete any participant_consent content'.
   $permissions['delete any participant_consent content'] = array(
     'name' => 'delete any participant_consent content',
-    'roles' => array(),
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
     'module' => 'node',
   );
 
   // Exported permission: 'delete any participant_form content'.
   $permissions['delete any participant_form content'] = array(
     'name' => 'delete any participant_form content',
-    'roles' => array(),
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
     'module' => 'node',
   );
 
   // Exported permission: 'delete own participant_consent content'.
   $permissions['delete own participant_consent content'] = array(
     'name' => 'delete own participant_consent content',
-    'roles' => array(),
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
     'module' => 'node',
   );
 
   // Exported permission: 'delete own participant_form content'.
   $permissions['delete own participant_form content'] = array(
     'name' => 'delete own participant_form content',
-    'roles' => array(),
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
     'module' => 'node',
   );
 
@@ -62,7 +71,7 @@ function hedley_forms_user_default_permissions() {
   $permissions['edit any participant_consent content'] = array(
     'name' => 'edit any participant_consent content',
     'roles' => array(
-      'nurse' => 'nurse',
+      'administrator' => 'administrator',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -72,6 +81,7 @@ function hedley_forms_user_default_permissions() {
   $permissions['edit any participant_form content'] = array(
     'name' => 'edit any participant_form content',
     'roles' => array(
+      'administrator' => 'administrator',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -81,7 +91,7 @@ function hedley_forms_user_default_permissions() {
   $permissions['edit own participant_consent content'] = array(
     'name' => 'edit own participant_consent content',
     'roles' => array(
-      'nurse' => 'nurse',
+      'administrator' => 'administrator',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -91,6 +101,7 @@ function hedley_forms_user_default_permissions() {
   $permissions['edit own participant_form content'] = array(
     'name' => 'edit own participant_form content',
     'roles' => array(
+      'administrator' => 'administrator',
       'sync' => 'sync',
     ),
     'module' => 'node',

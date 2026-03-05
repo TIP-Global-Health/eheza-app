@@ -22,6 +22,11 @@ import Pages.Dashboard.Fetch
 import Pages.Device.Fetch
 import Pages.EducationSession.Fetch
 import Pages.EducationSession.Model
+import Pages.FamilyEncounterParticipants.Fetch
+import Pages.FamilyEncounterTypes.Fetch
+import Pages.FamilyNutrition.Encounter.Fetch
+import Pages.FamilyNutrition.Participant.Fetch
+import Pages.FamilyNutrition.ProgressReport.Fetch
 import Pages.GlobalCaseManagement.Fetch
 import Pages.GroupEncounterTypes.Fetch
 import Pages.HIV.Activity.Fetch
@@ -247,6 +252,15 @@ fetch model =
                         )
                     |> Maybe.withDefault []
 
+            UserPage (FamilyNutritionParticipantPage _ personId) ->
+                getLoggedInData model
+                    |> Maybe.map
+                        (\_ ->
+                            Pages.FamilyNutrition.Participant.Fetch.fetch personId model.indexedDb
+                                |> List.map MsgIndexedDb
+                        )
+                    |> Maybe.withDefault []
+
             UserPage (IndividualEncounterParticipantsPage encounterType) ->
                 getLoggedInData model
                     |> Maybe.map
@@ -259,6 +273,15 @@ fetch model =
             UserPage (RelationshipPage id1 id2 _) ->
                 Pages.Relationship.Fetch.fetch id1 id2 model.indexedDb
                     |> List.map MsgIndexedDb
+
+            UserPage (FamilyEncounterParticipantsPage encounterType) ->
+                getLoggedInData model
+                    |> Maybe.map
+                        (\( _, loggedIn ) ->
+                            Pages.FamilyEncounterParticipants.Fetch.fetch encounterType loggedIn.familyEncounterParticipantsPage
+                                |> List.map MsgIndexedDb
+                        )
+                    |> Maybe.withDefault []
 
             UserPage (SessionPage sessionId sessionPage) ->
                 let
@@ -299,6 +322,10 @@ fetch model =
 
             UserPage GroupEncounterTypesPage ->
                 Pages.GroupEncounterTypes.Fetch.fetch
+                    |> List.map MsgIndexedDb
+
+            UserPage FamilyEncounterTypesPage ->
+                Pages.FamilyEncounterTypes.Fetch.fetch
                     |> List.map MsgIndexedDb
 
             UserPage (PregnancyOutcomePage _ id) ->
@@ -399,6 +426,14 @@ fetch model =
 
             UserPage (HIVActivityPage id activity) ->
                 Pages.HIV.Activity.Fetch.fetch id activity model.indexedDb
+                    |> List.map MsgIndexedDb
+
+            UserPage (FamilyNutritionEncounterPage id) ->
+                Pages.FamilyNutrition.Encounter.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
+
+            UserPage (FamilyNutritionProgressReportPage id) ->
+                Pages.FamilyNutrition.ProgressReport.Fetch.fetch id model.indexedDb
                     |> List.map MsgIndexedDb
 
             UserPage (NutritionProgressReportPage id) ->

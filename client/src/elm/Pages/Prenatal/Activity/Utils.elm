@@ -81,6 +81,7 @@ import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (translate)
 import Translate.Model exposing (Language(..))
 import Utils.Html exposing (viewModal)
+import Utils.NominalDate exposing (sortTuplesByDate)
 import ZScore.Model
 import ZScore.Utils exposing (viewZScore, zScoreBmiForAge)
 
@@ -1503,8 +1504,8 @@ resolvePreviouslyMeasuredHeight assembled =
     Maybe.Extra.or heightMeasuredByNurse heightMeasuredByCHW
 
 
-resolvePrePregnancyWeight : AssembledData -> Maybe WeightInKg
-resolvePrePregnancyWeight assembled =
+resolvePrePregnancyWeight : NominalDate -> AssembledData -> Maybe WeightInKg
+resolvePrePregnancyWeight currentDate assembled =
     let
         resolveWeight measurements =
             getMeasurementValueFunc measurements.lastMenstrualPeriod
@@ -1526,10 +1527,46 @@ resolvePrePregnancyWeight assembled =
                 assembled.chwPreviousMeasurementsWithDates
                 |> List.head
 
-        withoutCurrent =
-            Maybe.Extra.or byNurse byCHW
+        -- As last resort - first weight measurement taken as
+        -- part of Nutrition Assessment activity.
+        byNutritionAssessmentWeight =
+            let
+                current =
+                    Maybe.map (\nutrition -> [ ( currentDate, nutrition ) ])
+                        assembled.measurements.nutrition
+                        |> Maybe.withDefault []
+
+                nurseMeasurements =
+                    List.filterMap
+                        (\data ->
+                            Maybe.map (\nutrition -> ( data.startDate, nutrition ))
+                                data.measurements.nutrition
+                        )
+                        assembled.nursePreviousEncountersData
+
+                chwMeasurements =
+                    List.filterMap
+                        (\( date, _, measurements ) ->
+                            Maybe.map (\nutrition -> ( date, nutrition ))
+                                measurements.nutrition
+                        )
+                        assembled.chwPreviousMeasurementsWithDates
+            in
+            current
+                ++ nurseMeasurements
+                ++ chwMeasurements
+                |> List.sortWith sortTuplesByDate
+                |> List.head
+                |> Maybe.map
+                    (Tuple.second
+                        >> Tuple.second
+                        >> .value
+                        >> .weight
+                    )
     in
-    Maybe.Extra.or withoutCurrent byCurrent
+    Maybe.Extra.or byNurse byCHW
+        |> Maybe.Extra.orElse byCurrent
+        |> Maybe.Extra.orElse byNutritionAssessmentWeight
 
 
 {-| For Healthy Start.
@@ -4213,7 +4250,12 @@ lastMenstrualPeriodFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
+                let
+                    prePregnancyWeightKnownByValue =
+                        isJust value.prePregnancyWeight
+                in
                 { lmpDate = or form.lmpDate (Just value.date)
+                , prePregnancyWeightKnown = or form.prePregnancyWeightKnown (Just prePregnancyWeightKnownByValue)
                 , prePregnancyWeight =
                     maybeValueConsideringIsDirtyField form.prePregnancyWeightDirty
                         form.prePregnancyWeight

@@ -2,12 +2,14 @@ module Backend.Utils exposing (..)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
+import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterType)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
 import Backend.Measurement.Model
     exposing
         ( AcuteIllnessMeasurements
         , ChildMeasurementList
         , ChildScoreboardMeasurements
+        , FamilyNutritionMeasurements
         , FollowUpMeasurements
         , HIVMeasurements
         , HomeVisitMeasurements
@@ -174,6 +176,16 @@ mapHIVMeasurements id func model =
             model
 
 
+mapFamilyNutritionMeasurements : Maybe FamilyNutritionEncounterId -> (FamilyNutritionMeasurements -> FamilyNutritionMeasurements) -> ModelIndexedDb -> ModelIndexedDb
+mapFamilyNutritionMeasurements id func model =
+    case id of
+        Just encounterId ->
+            { model | familyNutritionMeasurements = Dict.update encounterId (Maybe.map (RemoteData.map func)) model.familyNutritionMeasurements }
+
+        Nothing ->
+            model
+
+
 mapStockManagementMeasurements : Maybe HealthCenterId -> (StockManagementMeasurements -> StockManagementMeasurements) -> ModelIndexedDb -> ModelIndexedDb
 mapStockManagementMeasurements id func model =
     case id of
@@ -252,6 +264,30 @@ resolveIndividualParticipantForPerson personId encounterType db =
         |> List.head
 
 
+resolveFamilyParticipantsForPerson : PersonId -> FamilyEncounterType -> ModelIndexedDb -> List FamilyEncounterParticipantId
+resolveFamilyParticipantsForPerson personId encounterType db =
+    Dict.get personId db.familyParticipantsByPerson
+        |> Maybe.andThen RemoteData.toMaybe
+        |> Maybe.map
+            (Dict.toList
+                >> List.filterMap
+                    (\( participantId, participant ) ->
+                        if participant.encounterType == encounterType then
+                            Just participantId
+
+                        else
+                            Nothing
+                    )
+            )
+        |> Maybe.withDefault []
+
+
+resolveFamilyParticipantForPerson : PersonId -> FamilyEncounterType -> ModelIndexedDb -> Maybe FamilyEncounterParticipantId
+resolveFamilyParticipantForPerson personId encounterType db =
+    resolveFamilyParticipantsForPerson personId encounterType db
+        |> List.head
+
+
 everySetsEqual : EverySet a -> EverySet a -> Bool
 everySetsEqual set1 set2 =
     let
@@ -310,3 +346,8 @@ hivManagementEnabled =
 healthyStartEnabled : EverySet SiteFeature -> Bool
 healthyStartEnabled =
     EverySet.member FeatureHealthyStart
+
+
+familyNutritionEnabled : EverySet SiteFeature -> Bool
+familyNutritionEnabled =
+    EverySet.member FeatureFamilyNutrition

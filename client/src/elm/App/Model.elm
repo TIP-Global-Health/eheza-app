@@ -48,6 +48,9 @@ import Pages.Clinics.Model
 import Pages.Dashboard.Model
 import Pages.Device.Model
 import Pages.EducationSession.Model
+import Pages.FamilyEncounterParticipants.Model
+import Pages.FamilyNutrition.Encounter.Model
+import Pages.FamilyNutrition.ProgressReport.Model
 import Pages.GlobalCaseManagement.Model
 import Pages.HIV.Activity.Model
 import Pages.HIV.Encounter.Model
@@ -288,6 +291,7 @@ type alias LoggedInModel =
     , relationshipPages : Dict ( PersonId, PersonId ) Pages.Relationship.Model.Model
     , personsPage : Pages.People.Model.Model
     , individualEncounterParticipantsPage : Pages.IndividualEncounterParticipants.Model.Model
+    , familyEncounterParticipantsPage : Pages.FamilyEncounterParticipants.Model.Model
     , clinicsPage : Pages.Clinics.Model.Model
     , stockManagementPage : Pages.StockManagement.Model.Model
 
@@ -328,6 +332,8 @@ type alias LoggedInModel =
     , educationSessionPages : Dict EducationSessionId Pages.EducationSession.Model.Model
     , hivEncounterPages : Dict HIVEncounterId Pages.HIV.Encounter.Model.Model
     , hivActivityPages : Dict ( HIVEncounterId, HIVActivity ) Pages.HIV.Activity.Model.Model
+    , familyNutritionEncounterPages : Dict FamilyNutritionEncounterId Pages.FamilyNutrition.Encounter.Model.Model
+    , familyNutritionProgressReportPages : Dict FamilyNutritionEncounterId Pages.FamilyNutrition.ProgressReport.Model.Model
     , traceContactPages : Dict AcuteIllnessTraceContactId Pages.TraceContact.Model.Model
     , clinicalProgressReportPages : Dict PrenatalEncounterId Pages.Prenatal.ProgressReport.Model.Model
     , patientRecordPages : Dict PersonId Pages.PatientRecord.Model.Model
@@ -343,6 +349,7 @@ emptyLoggedInModel site villageId nurse =
     , editPersonPages = Dict.empty
     , personsPage = Pages.People.Model.emptyModel
     , individualEncounterParticipantsPage = Components.PatientsSearchForm.Model.emptyModel
+    , familyEncounterParticipantsPage = Components.PatientsSearchForm.Model.emptyModel
     , clinicsPage = Pages.Clinics.Model.emptyModel
     , stockManagementPage = Pages.StockManagement.Model.emptyModel
     , relationshipPages = Dict.empty
@@ -382,6 +389,8 @@ emptyLoggedInModel site villageId nurse =
     , educationSessionPages = Dict.empty
     , hivEncounterPages = Dict.empty
     , hivActivityPages = Dict.empty
+    , familyNutritionEncounterPages = Dict.empty
+    , familyNutritionProgressReportPages = Dict.empty
     , traceContactPages = Dict.empty
     , clinicalProgressReportPages = Dict.empty
     , patientRecordPages = Dict.empty
@@ -436,6 +445,7 @@ type MsgLoggedIn
     | MsgPagePersons Pages.People.Model.Msg
     | MsgPagePrenatalParticipant PersonId Pages.Prenatal.Participant.Model.Msg
     | MsgPageIndividualEncounterParticipants Pages.IndividualEncounterParticipants.Model.Msg
+    | MsgPageFamilyEncounterParticipants Pages.FamilyEncounterParticipants.Model.Msg
     | MsgPageRelationship PersonId PersonId Pages.Relationship.Model.Msg
     | MsgPageAcuteIllnessParticipant PersonId Pages.AcuteIllness.Participant.Model.Msg
     | MsgPageSession SessionId Pages.Session.Model.Msg
@@ -451,6 +461,8 @@ type MsgLoggedIn
     | MsgPageTuberculosisEncounter TuberculosisEncounterId Pages.Tuberculosis.Encounter.Model.Msg
     | MsgPageHIVEncounter HIVEncounterId Pages.HIV.Encounter.Model.Msg
     | MsgPageEducationSession EducationSessionId Pages.EducationSession.Model.Msg
+    | MsgPageFamilyNutritionEncounter FamilyNutritionEncounterId Pages.FamilyNutrition.Encounter.Model.Msg
+    | MsgPageFamilyNutritionProgressReport FamilyNutritionEncounterId Pages.FamilyNutrition.ProgressReport.Model.Msg
     | MsgPagePrenatalActivity PrenatalEncounterId PrenatalActivity Pages.Prenatal.Activity.Model.Msg
     | MsgPagePrenatalRecurrentActivity PrenatalEncounterId PrenatalRecurrentActivity Pages.Prenatal.RecurrentActivity.Model.Msg
     | MsgPagePrenatalLabsHistory PrenatalEncounterId PrenatalEncounterId LaboratoryTest Pages.Prenatal.RecurrentActivity.Model.Msg

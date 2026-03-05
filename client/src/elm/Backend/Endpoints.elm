@@ -18,6 +18,12 @@ import Backend.EducationSession.Decoder exposing (decodeEducationSession)
 import Backend.EducationSession.Encoder exposing (encodeEducationSession)
 import Backend.EducationSession.Model exposing (EducationSession)
 import Backend.Entities exposing (..)
+import Backend.FamilyEncounterParticipant.Decoder exposing (decodeFamilyEncounterParticipant)
+import Backend.FamilyEncounterParticipant.Encoder exposing (encodeFamilyEncounterParticipant)
+import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterParticipant)
+import Backend.FamilyNutritionEncounter.Decoder exposing (decodeFamilyNutritionEncounter)
+import Backend.FamilyNutritionEncounter.Encoder exposing (encodeFamilyNutritionEncounter)
+import Backend.FamilyNutritionEncounter.Model exposing (FamilyNutritionEncounter)
 import Backend.HIVEncounter.Decoder exposing (decodeHIVEncounter)
 import Backend.HIVEncounter.Encoder exposing (encodeHIVEncounter)
 import Backend.HIVEncounter.Model exposing (HIVEncounter)
@@ -1543,6 +1549,83 @@ hivTreatmentReviewEndpoint : ReadWriteEndPoint Error HIVTreatmentReviewId HIVTre
 hivTreatmentReviewEndpoint =
     swEndpoint "nodes/hiv_treatment_review" decodeHIVTreatmentReview
         |> withValueEncoder (object << encodeHIVTreatmentReview)
+
+
+familyEncounterParticipantEndpoint : ReadWriteEndPoint Error FamilyEncounterParticipantId FamilyEncounterParticipant FamilyEncounterParticipant (List PersonId)
+familyEncounterParticipantEndpoint =
+    swEndpoint "nodes/family_participant" decodeFamilyEncounterParticipant
+        |> withValueEncoder (object << encodeFamilyEncounterParticipant)
+        |> withParamsEncoder encodeFamilyEncounterParticipantParams
+
+
+encodeFamilyEncounterParticipantParams : List PersonId -> List ( String, String )
+encodeFamilyEncounterParticipantParams ids =
+    if List.isEmpty ids then
+        []
+
+    else
+        let
+            value =
+                List.map fromEntityUuid ids
+                    |> String.join ","
+        in
+        [ ( "people", value ) ]
+
+
+familyNutritionEncounterEndpoint : ReadWriteEndPoint Error FamilyNutritionEncounterId FamilyNutritionEncounter FamilyNutritionEncounter (List FamilyEncounterParticipantId)
+familyNutritionEncounterEndpoint =
+    swEndpoint "nodes/family_nutrition_encounter" decodeFamilyNutritionEncounter
+        |> withValueEncoder (object << encodeFamilyNutritionEncounter)
+        |> withParamsEncoder encodeFamilyEncounterParams
+
+
+encodeFamilyEncounterParams : List FamilyEncounterParticipantId -> List ( String, String )
+encodeFamilyEncounterParams ids =
+    if List.isEmpty ids then
+        []
+
+    else
+        let
+            value =
+                List.map fromEntityUuid ids
+                    |> String.join ","
+        in
+        [ ( "family_participants", value ) ]
+
+
+familyNutritionMeasurementsEndpoint : ReadOnlyEndPoint Error FamilyNutritionEncounterId FamilyNutritionMeasurements ()
+familyNutritionMeasurementsEndpoint =
+    swEndpoint "nodes/family-nutrition-measurements" decodeFamilyNutritionMeasurements
+
+
+ahezaMotherEndpoint : ReadWriteEndPoint Error AhezaMotherId AhezaMother AhezaMother ()
+ahezaMotherEndpoint =
+    swEndpoint "nodes/aheza_mother" decodeAhezaMother
+        |> withValueEncoder (object << encodeAhezaMother)
+
+
+ahezaChildEndpoint : ReadWriteEndPoint Error AhezaChildId AhezaChild AhezaChild ()
+ahezaChildEndpoint =
+    swEndpoint "nodes/aheza_child" decodeAhezaChild
+        |> withValueEncoder (object << encodeAhezaChild)
+
+
+familyNutritionMuacMotherEndpoint : ReadWriteEndPoint Error FamilyNutritionMuacMotherId FamilyNutritionMuacMother FamilyNutritionMuacMother ()
+familyNutritionMuacMotherEndpoint =
+    swEndpoint "nodes/family_nutrition_muac_mother" decodeFamilyNutritionMuacMother
+        |> withValueEncoder (object << encodeFamilyNutritionMuacMother)
+
+
+familyNutritionMuacChildEndpoint : ReadWriteEndPoint Error FamilyNutritionMuacChildId FamilyNutritionMuacChild FamilyNutritionMuacChild ()
+familyNutritionMuacChildEndpoint =
+    swEndpoint "nodes/family_nutrition_muac_child" decodeFamilyNutritionMuacChild
+        |> withValueEncoder (object << encodeFamilyNutritionMuacChild)
+
+
+familyNutritionPhotoEndpoint : ReadWriteEndPoint Error FamilyNutritionPhotoId FamilyNutritionPhoto FamilyNutritionPhoto ()
+familyNutritionPhotoEndpoint =
+    swEndpoint "nodes/family_nutrition_photo" decodeFamilyNutritionPhoto
+        |> withValueEncoder (object << encodeFamilyNutritionPhoto)
 
 
 prenatalUltrasoundEndpoint : ReadWriteEndPoint Error PrenatalUltrasoundId PrenatalUltrasound PrenatalUltrasound ()

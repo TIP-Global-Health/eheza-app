@@ -13,6 +13,8 @@ import Backend.Clinic.Decoder
 import Backend.Counseling.Decoder
 import Backend.Dashboard.Decoder
 import Backend.EducationSession.Decoder
+import Backend.FamilyEncounterParticipant.Decoder
+import Backend.FamilyNutritionEncounter.Decoder
 import Backend.HIVEncounter.Decoder
 import Backend.HealthCenter.Decoder
 import Backend.HomeVisitEncounter.Decoder
@@ -478,6 +480,16 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeAcuteIllnessVitals
                             BackendAuthorityAcuteIllnessVitals
 
+                    "aheza_child" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeAhezaChild
+                            BackendAuthorityAhezaChild
+
+                    "aheza_mother" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeAhezaMother
+                            BackendAuthorityAhezaMother
+
                     "appointment_confirmation" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeAppointmentConfirmation
@@ -597,6 +609,31 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeExposure
                             BackendAuthorityExposure
+
+                    "family_participant" ->
+                        doDecode
+                            Backend.FamilyEncounterParticipant.Decoder.decodeFamilyEncounterParticipant
+                            BackendAuthorityFamilyParticipant
+
+                    "family_nutrition_encounter" ->
+                        doDecode
+                            Backend.FamilyNutritionEncounter.Decoder.decodeFamilyNutritionEncounter
+                            BackendAuthorityFamilyNutritionEncounter
+
+                    "family_nutrition_muac_child" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeFamilyNutritionMuacChild
+                            BackendAuthorityFamilyNutritionMuacChild
+
+                    "family_nutrition_muac_mother" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeFamilyNutritionMuacMother
+                            BackendAuthorityFamilyNutritionMuacMother
+
+                    "family_nutrition_photo" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeFamilyNutritionPhoto
+                            BackendAuthorityFamilyNutritionPhoto
 
                     "family_planning" ->
                         doDecode
