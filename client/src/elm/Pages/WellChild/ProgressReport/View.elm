@@ -11,7 +11,7 @@ import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication, nutritionAssessmentToComparable)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndicationForChild, nutritionAssessmentToComparable)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
@@ -162,12 +162,12 @@ view language currentDate zscores site features id isChw db model =
                     in
                     ( Just <|
                         { showEndEncounterDialog = model.showEndEncounterDialog
-                        , allowEndEncounter = allowEndingEncounter currentDate pendingActivities assembled
+                        , allowEndEncounter = allowEndingEncounter currentDate site pendingActivities assembled
                         , closeEncounterMsg = CloseEncounter id
                         , setEndEncounterDialogStateMsg = SetEndEncounterDialogState
                         , startEncounterMsg = NoOp
                         }
-                    , mandatoryNutritionAssessmentTasksCompleted currentDate assembled
+                    , mandatoryNutritionAssessmentTasksCompleted currentDate site assembled
                     )
                 )
                 assembledData
@@ -2767,7 +2767,7 @@ viewFillTheBlanksPane language currentDate zscores child db allNCDAQuestionnaire
                         (\value ->
                             let
                                 cellValue =
-                                    case muacIndication value of
+                                    case muacIndicationForChild value of
                                         ColorAlertRed ->
                                             NCDACellValueT
 
@@ -2791,7 +2791,7 @@ viewFillTheBlanksPane language currentDate zscores child db allNCDAQuestionnaire
                         (\value ->
                             let
                                 cellValue =
-                                    case muacIndication value of
+                                    case muacIndicationForChild value of
                                         ColorAlertRed ->
                                             NCDACellValueT
 

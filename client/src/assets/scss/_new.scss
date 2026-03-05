@@ -612,7 +612,8 @@ div.page-clinical {
 
 button.ui.primary.button.group-assessment,
 button.ui.primary.button.dashboard,
-button.ui.primary.button.individual-assessment {
+button.ui.primary.button.individual-assessment,
+  button.ui.primary.button.family-assessment {
   padding: 0;
   height: 60px;
   margin-left: auto;
@@ -645,7 +646,8 @@ button.ui.primary.button.individual-assessment {
 }
 
 button.ui.primary.button.group-assessment,
-button.ui.primary.button.individual-assessment {
+button.ui.primary.button.individual-assessment,
+  button.ui.primary.button.family-assessment {
 
   img {
     float: left;
@@ -661,7 +663,8 @@ button.ui.primary.button.individual-assessment {
   }
 }
 
-button.ui.primary.button.group-assessment img {
+button.ui.primary.button.group-assessment img,
+button.ui.primary.button.family-assessment img {
   height: 40px;
   width: 50px;
   margin-top: 8px;
@@ -1156,6 +1159,143 @@ div.page-activity {
     .form.muac .ui.grid {
       margin-top: 30px;
     }
+  }
+}
+
+div.page-encounter.family-nutrition {
+
+  .participant-page .item .content {
+    padding-top: 0 !important;
+  }
+
+  .ui.task.segment {
+    color: $color-text;
+  }
+
+  .ui.full.segment .content {
+
+    .label {
+      font-size: 30px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    .form-input.measurement {
+      margin-bottom: 10px;
+
+      input,
+      select {
+        border: 2px solid $color-lighter-gray;
+        float: left;
+        font-size: 2rem;
+        height: 50px;
+        line-height: 0.5;
+        padding: 0 0.5em;
+        text-align: right;
+        width: 75%;
+      }
+
+      input:focus,
+      select:focus {
+        outline: none;
+      }
+
+      .unit {
+        float: left;
+        font-weight: normal;
+        margin-left: 20px;
+        margin-top: 10px;
+      }
+    }
+
+    .form-input.measurement.aheza,
+    .form-input.measurement.distribution-reason {
+      height: 60px;
+      margin-bottom: 30px;
+      width: 100%;
+    }
+
+    .form-input.measurement.aheza input {
+      width: 70%;
+    }
+
+    .form-input.measurement.distribution-reason select {
+      background-color: $color-white;
+      text-align: center;
+      width: 70%;
+    }
+  }
+
+  .ui.full.segment.muac .content {
+
+    .activity-helper {
+      margin-bottom: 0;
+    }
+  }
+
+  .ui.full.segment.aheza .content {
+
+    .activity-helper {
+      margin-bottom: 35px;
+    }
+  }
+
+  .end-encounter-button-wrapper .actions {
+    margin: 0 0 20px 0;
+  }
+}
+
+div.page-report.family-nutrition {
+
+  .participant-page .item .content {
+    padding-top: 0 !important;
+  }
+
+  .pane .pane-content {
+    color: $color-text;
+    padding: 20px;
+  }
+
+  .pane .pane-content .heading {
+    border-bottom: 1px solid $color-text;
+    color: $color-dark-gray;
+    display: flex;
+    font-size: 20px;
+    font-weight: 600;
+    padding: 15px 30px;
+    width: 100%;
+  }
+
+  .pane .pane-content .heading .date {
+    width: 50%;
+  }
+
+  .pane .pane-content .heading .amount {
+    width: 50%;
+  }
+
+  .pane .pane-content .entry {
+    border-bottom: 1px solid $color-lighter-gray;
+    display: flex;
+    line-height: 40px;
+    padding: 5px 30px;
+  }
+
+  .pane .pane-content .entry:last-child {
+    border-bottom: none;
+  }
+
+  .pane .pane-content .entry .cell.date {
+    width: 50%;
+  }
+
+  .pane .pane-content .entry .cell.amount {
+    width: 50%;
+  }
+
+  .pane .pane-content .entry.no-matches {
+    justify-content: center;
+    color: $color-dark-gray;
   }
 }
 
@@ -3657,6 +3797,7 @@ div.page-participant.group {
   }
 }
 
+div.page-participant.family,
 div.page-participant.individual {
     padding-bottom: 35px;
 
@@ -4290,7 +4431,8 @@ div.page-report.demographics,
 div.page-activity.patient-record,
 div.page-report.child-scoreboard,
 div.page-report.ncd,
-div.page-report.tuberculosis {
+div.page-report.tuberculosis,
+div.page-report.family-nutrition {
   background: unset;
 
   .pane-heading {

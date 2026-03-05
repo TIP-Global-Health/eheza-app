@@ -321,21 +321,6 @@ update language currentDate id isLabTech db msg model =
             , []
             )
 
-        SetPrePregnancyWeight value ->
-            let
-                updatedForm =
-                    model.pregnancyDatingData.form
-                        |> (\form -> { form | prePregnancyWeight = String.toFloat value, prePregnancyWeightDirty = True })
-
-                updatedData =
-                    model.pregnancyDatingData
-                        |> (\data -> { data | form = updatedForm })
-            in
-            ( { model | pregnancyDatingData = updatedData }
-            , Cmd.none
-            , []
-            )
-
         SavePregnancyDating prenatalParticipantId personId saved ->
             let
                 measurementId =

@@ -2,6 +2,8 @@ module Backend.Person.Utils exposing (..)
 
 import AssocList as Dict
 import Backend.Entities exposing (HealthCenterId)
+import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterType)
+import Backend.FamilyEncounterParticipant.Utils exposing (familyEncounterTypeFromString, familyEncounterTypeToString)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.IndividualEncounterParticipant.Utils exposing (individualEncounterTypeToString)
 import Backend.Measurement.Model exposing (Gender(..))
@@ -173,6 +175,9 @@ initiatorToUrlFragment initiator =
             -- from a dedicated form.
             ""
 
+        FamilyEncounterOrigin encounterType ->
+            "family-" ++ familyEncounterTypeToString encounterType
+
 
 initiatorFromUrlFragment : String -> Maybe Initiator
 initiatorFromUrlFragment s =
@@ -247,6 +252,11 @@ initiatorFromUrlFragment s =
                     _ ->
                         Nothing
 
+            else if String.startsWith "family-" s then
+                String.dropLeft 7 s
+                    |> familyEncounterTypeFromString
+                    |> Maybe.map FamilyEncounterOrigin
+
             else
                 Nothing
 
@@ -254,6 +264,11 @@ initiatorFromUrlFragment s =
 graduatingAgeInMonth : Int
 graduatingAgeInMonth =
     26
+
+
+maxChildrenAtFamilyEncounter : Int
+maxChildrenAtFamilyEncounter =
+    5
 
 
 getHealthCenterName : Maybe HealthCenterId -> ModelIndexedDb -> Maybe String

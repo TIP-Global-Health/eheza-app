@@ -2,20 +2,23 @@ module Pages.Clinical.View exposing (view)
 
 import App.Model exposing (Msg(..))
 import Backend.Entities exposing (..)
+import Backend.Utils exposing (familyNutritionEnabled)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewBySyncStatus)
+import SyncManager.Model exposing (SiteFeature)
 import Translate exposing (Language, translate)
 
 
-view : Language -> NominalDate -> HealthCenterId -> Bool -> App.Model.Model -> Html App.Model.Msg
-view language currentDate healthCenterId isChw model =
+view : Language -> NominalDate -> EverySet SiteFeature -> HealthCenterId -> Bool -> App.Model.Model -> Html App.Model.Msg
+view language currentDate features healthCenterId isChw model =
     div [ class "ui basic segment page-clinical" ]
         [ viewHeader language
-        , viewContent language currentDate isChw model
+        , viewContent language currentDate features isChw model
             |> viewBySyncStatus language healthCenterId model.syncManager.syncInfoAuthorities
         ]
 
@@ -33,8 +36,8 @@ viewHeader language =
         ]
 
 
-viewContent : Language -> NominalDate -> Bool -> App.Model.Model -> Html App.Model.Msg
-viewContent language currentDate isChw model =
+viewContent : Language -> NominalDate -> EverySet SiteFeature -> Bool -> App.Model.Model -> Html App.Model.Msg
+viewContent language currentDate features isChw model =
     let
         groupAssessmentButtonAction =
             if isChw then
@@ -52,8 +55,19 @@ viewContent language currentDate isChw model =
                 , span [ class "text" ] [ text <| translate language label ]
                 , span [ class "icon-back" ] []
                 ]
+
+        familyEncounterButton =
+            if isChw && familyNutritionEnabled features then
+                [ viewButton Translate.FamilyEncounter
+                    "family-assessment"
+                    "icon-group-encounter.svg"
+                    (SetActivePage <| UserPage FamilyEncounterTypesPage)
+                ]
+
+            else
+                []
     in
-    div []
+    div [] <|
         [ p [] [ text <| translate language Translate.WhatDoYouWantToDo ]
         , viewButton Translate.IndividualEncounter
             "individual-assessment"
@@ -64,3 +78,4 @@ viewContent language currentDate isChw model =
             "icon-group-encounter.svg"
             groupAssessmentButtonAction
         ]
+            ++ familyEncounterButton

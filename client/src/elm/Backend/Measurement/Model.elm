@@ -78,6 +78,10 @@ type alias HIVMeasurement value =
     Measurement HIVEncounterId value
 
 
+type alias FamilyNutritionMeasurement value =
+    Measurement FamilyNutritionEncounterId value
+
+
 
 -- GROUP MEASUREMENT TYPES
 
@@ -654,7 +658,8 @@ type PostpartumChildDangerSign
 
 type alias LastMenstrualPeriodValue =
     { date : NominalDate
-    , prePregnancyWeight : Maybe WeightInKg
+    , -- Deprecated, but kept for backward compatibility.
+      prePregnancyWeight : Maybe WeightInKg
     , confident : Bool
     , notConfidentReason : Maybe LmpDateNotConfidentReason
     , lateFirstVisitReason : Maybe LateFirstANCVisitReason
@@ -3223,6 +3228,42 @@ type alias HIVTreatmentReview =
 
 
 
+-- Family Nutrition:
+
+
+type AhezaDistributionReason
+    = AhezaDistributionReasonBreastfeeding
+    | AhezaDistributionReasonOther
+    | AhezaDistributionReasonPregnant
+
+
+type alias AhezaMotherValue =
+    { distributedAmount : Float
+    , distributionReason : Maybe AhezaDistributionReason
+    }
+
+
+type alias AhezaMother =
+    FamilyNutritionMeasurement AhezaMotherValue
+
+
+type alias AhezaChild =
+    FamilyNutritionMeasurement Float
+
+
+type alias FamilyNutritionMuacMother =
+    FamilyNutritionMeasurement MuacInCm
+
+
+type alias FamilyNutritionMuacChild =
+    FamilyNutritionMeasurement MuacInCm
+
+
+type alias FamilyNutritionPhoto =
+    FamilyNutritionMeasurement ImageUrl
+
+
+
 -- Stock Management:
 
 
@@ -3625,6 +3666,15 @@ type alias HIVMeasurements =
     , referral : Maybe ( HIVReferralId, HIVReferral )
     , symptomReview : Maybe ( HIVSymptomReviewId, HIVSymptomReview )
     , treatmentReview : Maybe ( HIVTreatmentReviewId, HIVTreatmentReview )
+    }
+
+
+type alias FamilyNutritionMeasurements =
+    { ahezaMother : Maybe ( AhezaMotherId, AhezaMother )
+    , ahezaChild : Dict PersonId ( AhezaChildId, AhezaChild )
+    , muacMother : Maybe ( FamilyNutritionMuacMotherId, FamilyNutritionMuacMother )
+    , muacChild : Dict PersonId ( FamilyNutritionMuacChildId, FamilyNutritionMuacChild )
+    , photo : Dict PersonId ( FamilyNutritionPhotoId, FamilyNutritionPhoto )
     }
 
 

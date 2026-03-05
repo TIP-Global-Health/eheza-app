@@ -279,7 +279,7 @@ viewMuacContent language currentDate site assembled data previousValue =
                 |> muacFormWithDefault data.form
 
         ( inputs, tasks ) =
-            Measurement.View.muacFormInputsAndTasks language currentDate site assembled.person previousValue SetMuac form
+            Measurement.View.muacFormInputsAndTasks language currentDate site assembled.person previousValue SetMuac True form
 
         ( tasksCompleted, tasksTotal ) =
             resolveTasksCompletedFromTotal tasks
