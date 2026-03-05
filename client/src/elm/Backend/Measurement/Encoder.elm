@@ -865,6 +865,40 @@ encodePrenatalMedicationValue type_ note =
     ]
 
 
+encodePrenatalUltrasound : PrenatalUltrasound -> List ( String, Value )
+encodePrenatalUltrasound =
+    encodePrenatalMeasurement encodeUltrasoundValue
+
+
+encodeUltrasoundValue : UltrasoundValue -> List ( String, Value )
+encodeUltrasoundValue value =
+    [ ( "pregnancy_signs", encodeEverySet encodePregnancySign value.signs )
+    , ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD value.executionDate )
+    , ( "edd_weeks", int value.eddWeeks )
+    , ( "edd_days", int value.eddDays )
+    , ( "expected_date_concluded", Gizra.NominalDate.encodeYYYYMMDD value.eddDate )
+    , ( "deleted", bool False )
+    , ( "type", string "prenatal_ultrasound" )
+    ]
+
+
+encodePregnancySign : PregnancySign -> Value
+encodePregnancySign sign =
+    string <|
+        case sign of
+            PregnancyNotViable ->
+                "not-viable"
+
+            PregnancyEctopic ->
+                "ectopic"
+
+            PregnancyMultipleFetuses ->
+                "multiple-fetuses"
+
+            NoPregnancySigns ->
+                "none"
+
+
 encodeNutrition : ChildNutrition -> List ( String, Value )
 encodeNutrition =
     encodeGroupMeasurement (encodeNutritionValueWithType "nutrition")

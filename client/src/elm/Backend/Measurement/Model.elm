@@ -1807,6 +1807,26 @@ type alias PrenatalMebendazole =
     PrenatalMeasurement AdministrationNote
 
 
+type alias PrenatalUltrasound =
+    PrenatalMeasurement UltrasoundValue
+
+
+type alias UltrasoundValue =
+    { signs : EverySet PregnancySign
+    , executionDate : NominalDate
+    , eddWeeks : Int
+    , eddDays : Int
+    , eddDate : NominalDate
+    }
+
+
+type PregnancySign
+    = PregnancyNotViable
+    | PregnancyEctopic
+    | PregnancyMultipleFetuses
+    | NoPregnancySigns
+
+
 
 -- ACUTE ILLNESS MEASUREMENTS
 
@@ -3440,6 +3460,7 @@ type alias PrenatalMeasurements =
     , iron : Maybe ( PrenatalIronId, PrenatalIron )
     , mms : Maybe ( PrenatalMMSId, PrenatalMMS )
     , mebendazole : Maybe ( PrenatalMebendazoleId, PrenatalMebendazole )
+    , ultrasound : Maybe ( PrenatalUltrasoundId, PrenatalUltrasound )
     }
 
 
@@ -3492,6 +3513,7 @@ emptyPrenatalMeasurements =
     , iron = Nothing
     , mms = Nothing
     , mebendazole = Nothing
+    , ultrasound = Nothing
     }
 
 

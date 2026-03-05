@@ -87,6 +87,9 @@ activityToString activity =
         SpecialityCare ->
             "speciality-care"
 
+        Ultrasound ->
+            "ultrasound"
+
         PostpartumTreatmentReview ->
             "postpartum-treatment-review"
 
@@ -152,6 +155,9 @@ activityFromString s =
 
         "speciality-care" ->
             Just SpecialityCare
+
+        "ultrasound" ->
+            Just Ultrasound
 
         "postpartum-treatment-review" ->
             Just PostpartumTreatmentReview

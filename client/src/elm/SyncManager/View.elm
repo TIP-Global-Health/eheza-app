@@ -761,6 +761,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityPrenatalTetanusImmunisation identifier ->
                 viewMeasurement identifier "Prenatal Tetanus Immunisation"
 
+            BackendAuthorityPrenatalUltrasound identifier ->
+                viewMeasurement identifier "Prenatal Ultrasound"
+
             BackendAuthorityPrenatalUrineDipstickTest identifier ->
                 viewMeasurement identifier "Prenatal Urine Dipstick Test"
 

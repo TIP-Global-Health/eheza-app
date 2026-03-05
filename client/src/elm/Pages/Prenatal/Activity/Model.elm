@@ -65,6 +65,13 @@ type Msg
     | SetLmpDateNotConfidentReason LmpDateNotConfidentReason
     | SetLateFirstVisitReason LateFirstANCVisitReason
     | SavePregnancyDating IndividualEncounterParticipantId PersonId (Maybe ( LastMenstrualPeriodId, LastMenstrualPeriod ))
+      -- UltrasoundMsgs
+    | SetUltrasoundBoolInput (Bool -> UltrasoundForm -> UltrasoundForm) Bool
+    | SetExecutionDate (Maybe Int) (Maybe Int) Date
+    | SetExecutionDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SetEDDWeeks (Maybe NominalDate) (Maybe Int) String
+    | SetEDDDays (Maybe NominalDate) (Maybe Int) String
+    | SaveUltrasound IndividualEncounterParticipantId PersonId (Maybe ( PrenatalUltrasoundId, PrenatalUltrasound ))
       -- HistoryMsgs
     | SetActiveHistoryTask HistoryTask
       -- HistoryMsgs, OB, Step 1
@@ -316,6 +323,7 @@ type alias Model =
     , postpartumTreatmentReviewData : PostpartumTreatmentReviewData
     , breastfeedingData : BreastfeedingData
     , specialityCareData : SpecialityCareData
+    , ultrasoundData : UltrasoundData
     , nextStepsData : NextStepsData
     , showAlertsDialog : Bool
     , warningPopupState : Maybe (WarningPopupType Msg)
@@ -342,14 +350,11 @@ emptyModel =
     , postpartumTreatmentReviewData = emptyPostpartumTreatmentReviewData
     , breastfeedingData = emptyBreastfeedingData
     , specialityCareData = emptySpecialityCareData
+    , ultrasoundData = emptyUltrasoundData
     , nextStepsData = emptyNextStepsData
     , showAlertsDialog = False
     , warningPopupState = Nothing
     }
-
-
-
--- DATA
 
 
 type alias PregnancyDatingData =
@@ -723,6 +728,42 @@ emptySpecialityCareForm =
     }
 
 
+type alias UltrasoundData =
+    { form : UltrasoundForm
+    }
+
+
+emptyUltrasoundData : UltrasoundData
+emptyUltrasoundData =
+    { form = emptyUltrasoundForm
+    }
+
+
+type alias UltrasoundForm =
+    { pregnancyNotViable : Maybe Bool
+    , pregnancyEctopic : Maybe Bool
+    , pregnancyMultipleFetuses : Maybe Bool
+    , executionDate : Maybe NominalDate
+    , eddWeeks : Maybe Int
+    , eddDays : Maybe Int
+    , eddDate : Maybe NominalDate
+    , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
+    }
+
+
+emptyUltrasoundForm : UltrasoundForm
+emptyUltrasoundForm =
+    { pregnancyNotViable = Nothing
+    , pregnancyEctopic = Nothing
+    , pregnancyMultipleFetuses = Nothing
+    , executionDate = Nothing
+    , eddWeeks = Nothing
+    , eddDays = Nothing
+    , eddDate = Nothing
+    , dateSelectorPopupState = Nothing
+    }
+
+
 type alias NextStepsData =
     { appointmentConfirmationForm : AppointmentConfirmationForm
     , followUpForm : FollowUpForm
@@ -744,10 +785,6 @@ emptyNextStepsData =
     , medicationDistributionForm = emptyMedicationDistributionForm
     , activeTask = Nothing
     }
-
-
-
--- FORMS
 
 
 type alias PregnancyDatingForm =
