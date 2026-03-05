@@ -414,6 +414,7 @@ viewWeightGainForEGAHealthyStart language ( perDayFirstTrimester, perDayOtherTri
             , drawPolygon firstTrimesterGreenPoints "green-area"
             , drawPolygon remainingTrimestersRedPoints "red-area"
             , drawPolygon remainingTrimestersGreenPoints "green-area"
+            , drawPolyline measurements "data"
             ]
                 ++ drawPoints "#06B9FF" measurements
         , (referenceVerticalLines verticalParts
