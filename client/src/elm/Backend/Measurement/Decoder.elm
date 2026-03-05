@@ -365,6 +365,14 @@ decodeStockManagementMeasurements =
         |> optional "stock_update" (map Dict.fromList <| list (decodeWithEntityUuid decodeStockUpdate)) Dict.empty
 
 
+decodeVillageStockManagementMeasurements : Decoder VillageStockManagementMeasurements
+decodeVillageStockManagementMeasurements =
+    succeed VillageStockManagementMeasurements
+        |> optional "aheza_child" (map Dict.fromList <| list (decodeWithEntityUuid decodeAhezaChild)) Dict.empty
+        |> optional "aheza_mother" (map Dict.fromList <| list (decodeWithEntityUuid decodeAhezaMother)) Dict.empty
+        |> optional "stock_update" (map Dict.fromList <| list (decodeWithEntityUuid decodeStockUpdate)) Dict.empty
+
+
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
 decodeHead =
     map List.head << list << decodeWithEntityUuid

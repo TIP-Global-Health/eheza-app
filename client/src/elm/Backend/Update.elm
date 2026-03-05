@@ -81,7 +81,7 @@ import Backend.Session.Update
 import Backend.Session.Utils exposing (getChildMeasurementData2, getMyMother)
 import Backend.StockUpdate.Model
 import Backend.StockUpdate.Update
-import Backend.StockUpdate.Utils exposing (generateStockManagementData)
+import Backend.StockUpdate.Utils exposing (generateStockManagementData, generateVillageStockManagementData)
 import Backend.TraceContact.Model
 import Backend.TraceContact.Update
 import Backend.TuberculosisEncounter.Model
@@ -1246,6 +1246,48 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
 
         MarkForRecalculationStockManagementData id ->
             ( { model | stockManagementData = Dict.insert id NotAsked model.stockManagementData }
+            , Cmd.none
+            , []
+            )
+
+        FetchVillageStockManagementMeasurements id ->
+            ( { model | villageStockManagementMeasurements = Dict.insert id Loading model.villageStockManagementMeasurements }
+            , sw.get villageStockManagementMeasurementsEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedVillageStockManagementMeasurements id)
+            , []
+            )
+
+        HandleFetchedVillageStockManagementMeasurements id data ->
+            ( { model | villageStockManagementMeasurements = Dict.insert id data model.villageStockManagementMeasurements }
+            , Cmd.none
+            , []
+            )
+
+        FetchVillageStockManagementData fetchHealthCenterId fetchVillageId ->
+            let
+                updatedModel =
+                    case Dict.get fetchHealthCenterId model.villageStockManagementData of
+                        Just (Success _) ->
+                            -- Data already calculated, and there's no need to recalculate.
+                            model
+
+                        _ ->
+                            let
+                                data =
+                                    Dict.get fetchHealthCenterId model.villageStockManagementMeasurements
+                                        |> Maybe.andThen RemoteData.toMaybe
+                                        |> Maybe.map (generateVillageStockManagementData currentDate fetchVillageId model >> Success)
+                                        |> Maybe.withDefault NotAsked
+                            in
+                            { model | villageStockManagementData = Dict.insert fetchHealthCenterId data model.villageStockManagementData }
+            in
+            ( updatedModel
+            , Cmd.none
+            , []
+            )
+
+        MarkForRecalculationVillageStockManagementData id ->
+            ( { model | villageStockManagementData = Dict.insert id NotAsked model.villageStockManagementData }
             , Cmd.none
             , []
             )
