@@ -180,6 +180,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       'family_nutrition',
       'gps_coordinates',
       'group_education',
+      'healthy_start',
       'hiv_management',
       'ncda',
       'report_to_whatsapp',

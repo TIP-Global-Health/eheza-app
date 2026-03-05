@@ -2021,6 +2021,9 @@ siteFeatureFromString str =
         "family_nutrition" ->
             Just FeatureFamilyNutrition
 
+        "healthy_start" ->
+            Just FeatureHealthyStart
+
         _ ->
             Nothing
 
@@ -2051,6 +2054,9 @@ siteFeatureToString feature =
 
         FeatureFamilyNutrition ->
             "family_nutrition"
+
+        FeatureHealthyStart ->
+            "healthy_start"
 
 
 siteFeaturesFromString : String -> EverySet SiteFeature

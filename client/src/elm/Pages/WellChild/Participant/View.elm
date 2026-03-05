@@ -139,7 +139,7 @@ viewWellChildAction language currentDate selectedHealthCenter id isChw db sessio
                                 |> List.isEmpty
                                 |> not
                             , if not newbornEncounterExists && newborn then
-                                -- Child is bellow 2 months old and did not
+                                -- Child is below 2 months old and did not
                                 -- have Newborn Exam before.
                                 NewbornExam
 

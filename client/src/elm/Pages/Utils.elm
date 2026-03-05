@@ -1396,7 +1396,7 @@ viewBySyncStatus language healthCenterId syncInfoAuthorities contentForView =
                         -- is initial HC sync (since downloaded data may not be
                         -- complete, which may cause errors and unstable behavior).
                         -- Subsequent syncs will download (much) less than 1500
-                        -- entities, so if we bellow that, it's safe to allow operations.
+                        -- entities, so if we below that, it's safe to allow operations.
                         -- Since download is done with batches of 500, it will take only
                         -- 3 batches to complete download, a matter or few seconds, so,
                         -- we should not get to operations with incomplete data situation.
