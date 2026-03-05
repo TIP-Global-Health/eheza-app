@@ -6815,6 +6815,7 @@ translationSet trans =
             { english = "Estimated Delivery Date"
             , kinyarwanda = Nothing
             , kirundi = Nothing
+            , somali = Just "Taariikhda la qiyaasay ee umulidda"
             }
 
         ExaminationTask task ->
@@ -16620,12 +16621,14 @@ translationSet trans =
                     { english = "Normal (intrauterine)"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
+                    , somali = Just "Caadi (uurka gudihiisa)"
                     }
 
                 PregnancyMultipleFetuses ->
                     { english = "Single"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
+                    , somali = Just "Hal ilmo"
                     }
 
                 NoPregnancySigns ->
@@ -16640,12 +16643,14 @@ translationSet trans =
                     { english = "Ectopic (extrauterine)"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
+                    , somali = Just "Uur meel ka baxsan (uurka dibitiisa)"
                     }
 
                 PregnancyMultipleFetuses ->
                     { english = "Multiple"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
+                    , somali = Just "Dhowr ilmo"
                     }
 
                 _ ->
@@ -16657,18 +16662,21 @@ translationSet trans =
                     { english = "Is the pregnancy viable"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
+                    , somali = Just "Uurku ma nool yahay"
                     }
 
                 PregnancyEctopic ->
                     { english = "Where is the pregnancy located"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
+                    , somali = Just "Meesha uurku ku yaal"
                     }
 
                 PregnancyMultipleFetuses ->
                     { english = "How many fetuses are present"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
+                    , somali = Just "Imisa ilmo ayaa jira"
                     }
 
                 NoPregnancySigns ->
@@ -16880,6 +16888,7 @@ translationSet trans =
                     { english = "Ultrasound"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
+                    , somali = Just "Baaritaanka Uur ku jirta"
                     }
 
                 PostpartumTreatmentReview ->
@@ -28019,12 +28028,14 @@ translationSet trans =
             { english = "How far along the pregnancy is (weeks + days) based on the ultrasound"
             , kinyarwanda = Nothing
             , kirundi = Nothing
+            , somali = Just "Uurka intee le gaaray (toddobaad + maalmood) oo ku saleysan baaritaanka"
             }
 
         UltrasoundExecutionDateLabel ->
             { english = "Date Ultrasound was performed"
             , kinyarwanda = Nothing
             , kirundi = Nothing
+            , somali = Just "Taariikhda baaritaanka uurka lagu sameeyay"
             }
 
         Underweight ->
@@ -28513,6 +28524,7 @@ translationSet trans =
             { english = "weeks"
             , kinyarwanda = Nothing
             , kirundi = Nothing
+            , somali = Just "toddobaad"
             }
 
         WelcomeUser name ->
