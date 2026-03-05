@@ -35,7 +35,7 @@ import Backend.Measurement.Utils exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
-import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate, pregnancyDurationInWeeks)
+import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate, pregnancyDurationInDays, pregnancyDurationInWeeks)
 import Date
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
@@ -377,8 +377,7 @@ update language currentDate id isLabTech db msg model =
                                     eddDate =
                                         Maybe.map2
                                             (\weeks days ->
-                                                Date.add Date.Weeks weeks value
-                                                    |> Date.add Date.Days days
+                                                Date.add Date.Days (pregnancyDurationInDays - (weeks * 7 + days)) value
                                             )
                                             weeksValue
                                             daysValue
@@ -433,8 +432,7 @@ update language currentDate id isLabTech db msg model =
                                             eddDate =
                                                 Maybe.map2
                                                     (\executionDate days ->
-                                                        Date.add Date.Weeks newValue executionDate
-                                                            |> Date.add Date.Days days
+                                                        Date.add Date.Days (pregnancyDurationInDays - (newValue * 7 + days)) executionDate
                                                     )
                                                     executionDateValue
                                                     daysValue
@@ -473,8 +471,7 @@ update language currentDate id isLabTech db msg model =
                                             eddDate =
                                                 Maybe.map2
                                                     (\executionDate weeks ->
-                                                        Date.add Date.Weeks weeks executionDate
-                                                            |> Date.add Date.Days newValue
+                                                        Date.add Date.Days (pregnancyDurationInDays - (weeks * 7 + newValue)) executionDate
                                                     )
                                                     executionDateValue
                                                     weeksValue
