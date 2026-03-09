@@ -175,3 +175,21 @@ GROUP BY
 HAVING
       COUNT(DISTINCT field_session_target_id) + COUNT(DISTINCT field_nutrition_encounter_target_id) +
       COUNT(DISTINCT field_prenatal_encounter_target_id) + COUNT(DISTINCT field_acute_illness_encounter_target_id) > 1;
+
+# Add family nutrition persons to impacted patients.
+INSERT IGNORE
+INTO
+  person_impacted
+SELECT
+  p.field_person_target_id
+FROM
+  node ms
+    LEFT JOIN field_data_field_family_nutrition_encounter fne ON fne.entity_id = ms.nid
+    LEFT JOIN field_data_field_person p ON p.entity_id = ms.nid
+WHERE
+    ms.type IN ('aheza_child', 'aheza_mother', 'family_nutrition_muac_child', 'family_nutrition_muac_mother')
+    AND FROM_UNIXTIME(ms.created) < :limit
+GROUP BY
+  p.field_person_target_id
+HAVING
+  COUNT(DISTINCT fne.field_family_nutrition_encounter_target_id) > 1
