@@ -13,6 +13,7 @@
  */
 
 require_once __DIR__ . '/../lib/export-framework.php';
+require_once __DIR__ . '/export-well-child-research.php';
 require_once __DIR__ . '/../lib/delta-exporter.php';
 
 $last_vid = drush_get_option('since-vid', NULL);
