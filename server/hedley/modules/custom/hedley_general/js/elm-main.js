@@ -22610,7 +22610,14 @@ var $author$project$Utils$GeoLocation$getGeoCellsForSomalia = $pzp1997$assoc_lis
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Qodaxley',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(13))))
+					$author$project$Backend$Entities$toEntityId(13)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(19),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Dhobley',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(18))))
 		]));
 var $author$project$Utils$GeoLocation$getGeoCells = function (site) {
 	switch (site.$) {
@@ -22723,7 +22730,14 @@ var $author$project$Utils$GeoLocation$getGeoDistricts = function (site) {
 							$author$project$Utils$GeoLocation$GeoLocation,
 							'Garasbaley',
 							$elm$core$Maybe$Just(
-								$author$project$Backend$Entities$toEntityId(1))))
+								$author$project$Backend$Entities$toEntityId(1)))),
+						_Utils_Tuple2(
+						$author$project$Backend$Entities$toEntityId(17),
+						A2(
+							$author$project$Utils$GeoLocation$GeoLocation,
+							'Afmadow',
+							$elm$core$Maybe$Just(
+								$author$project$Backend$Entities$toEntityId(16))))
 					]));
 		default:
 			return $pzp1997$assoc_list$AssocList$empty;
@@ -22765,7 +22779,10 @@ var $author$project$Utils$GeoLocation$getGeoProvinces = function (site) {
 					[
 						_Utils_Tuple2(
 						$author$project$Backend$Entities$toEntityId(1),
-						A2($author$project$Utils$GeoLocation$GeoLocation, 'Banadir', $elm$core$Maybe$Nothing))
+						A2($author$project$Utils$GeoLocation$GeoLocation, 'Banadir', $elm$core$Maybe$Nothing)),
+						_Utils_Tuple2(
+						$author$project$Backend$Entities$toEntityId(16),
+						A2($author$project$Utils$GeoLocation$GeoLocation, 'Lower Jubba', $elm$core$Maybe$Nothing))
 					]));
 		default:
 			return $pzp1997$assoc_list$AssocList$empty;
@@ -23397,7 +23414,14 @@ var $author$project$Utils$GeoLocation$getGeoSectorsForSomalia = $pzp1997$assoc_l
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Qodaxley',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(9))))
+					$author$project$Backend$Entities$toEntityId(9)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(18),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Dhobley',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(17))))
 		]));
 var $author$project$Utils$GeoLocation$getGeoSectors = function (site) {
 	switch (site.$) {
@@ -40236,7 +40260,14 @@ var $author$project$Utils$GeoLocation$getGeoVillagesForSomalia = $pzp1997$assoc_
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Qodaxley',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(14))))
+					$author$project$Backend$Entities$toEntityId(14)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(20),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Kowaad',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(19))))
 		]));
 var $author$project$Utils$GeoLocation$getGeoVillages = function (site) {
 	switch (site.$) {
