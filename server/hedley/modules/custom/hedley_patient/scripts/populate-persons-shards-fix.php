@@ -28,7 +28,7 @@ $base_query
   ->propertyCondition('type', 'person')
   ->propertyCondition('nid', 31240, '<')
   ->propertyCondition('status', NODE_PUBLISHED)
-  ->propertyOrderBy('nid', 'ASC');
+  ->propertyOrderBy('nid');
 
 $count_query = clone $base_query;
 $count_query->propertyCondition('nid', $nid, '>');

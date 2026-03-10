@@ -495,7 +495,7 @@ function hedley_admin_resilience_survey_results_table(array $form, array &$form_
   $base_query = hedley_general_create_entity_field_query_excluding_deleted();
   $base_query->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'resilience_survey')
-    ->propertyCondition('status', 1);
+    ->propertyCondition('status', NODE_PUBLISHED);
 
   $count = clone $base_query;
   $count = $count->count()->execute();

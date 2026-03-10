@@ -24,6 +24,7 @@ $query = hedley_general_create_entity_field_query_excluding_deleted();
 $result = $query
   ->entityCondition('entity_type', 'node')
   ->entityCondition('bundle', 'village')
+  ->propertyCondition('status', NODE_PUBLISHED)
   ->execute();
 
 if (empty($result['node'])) {

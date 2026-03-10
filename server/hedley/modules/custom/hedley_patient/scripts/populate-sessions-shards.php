@@ -27,7 +27,7 @@ $base_query
   ->entityCondition('entity_type', 'node')
   ->propertyCondition('type', 'session')
   ->propertyCondition('status', NODE_PUBLISHED)
-  ->propertyOrderBy('nid', 'ASC');
+  ->propertyOrderBy('nid');
 
 $count_query = clone $base_query;
 $count_query->propertyCondition('nid', $nid, '>');
