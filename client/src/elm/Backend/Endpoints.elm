@@ -336,6 +336,11 @@ stockManagementMeasurementsEndpoint =
     swEndpoint "nodes/stock-management-measurements" decodeStockManagementMeasurements
 
 
+villageStockManagementMeasurementsEndpoint : ReadOnlyEndPoint Error HealthCenterId VillageStockManagementMeasurements ()
+villageStockManagementMeasurementsEndpoint =
+    swEndpoint "nodes/village-stock-management-measurements" decodeVillageStockManagementMeasurements
+
+
 {-| Type-safe params ... how nice!
 -}
 type SessionParams

@@ -2003,8 +2003,11 @@ siteFeatureFromString str =
         "report_to_whatsapp" ->
             Just FeatureReportToWhatsApp
 
-        "stock_management" ->
-            Just FeatureStockManagement
+        "stock_management_hc" ->
+            Just FeatureStockManagementHC
+
+        "stock_management_village" ->
+            Just FeatureStockManagementVillage
 
         "tuberculosis_management" ->
             Just FeatureTuberculosisManagement
@@ -2034,8 +2037,11 @@ siteFeatureToString feature =
         FeatureReportToWhatsApp ->
             "report_to_whatsapp"
 
-        FeatureStockManagement ->
-            "stock_management"
+        FeatureStockManagementHC ->
+            "stock_management_hc"
+
+        FeatureStockManagementVillage ->
+            "stock_management_village"
 
         FeatureTuberculosisManagement ->
             "tuberculosis_management"

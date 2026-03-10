@@ -3281,6 +3281,7 @@ type alias StockUpdate =
     , healthCenter : HealthCenterId
     , deleted : Bool
     , shard : Maybe HealthCenterId
+    , village : Maybe VillageId
     , signature : ImageUrl
     }
 
@@ -3684,6 +3685,13 @@ Stock management data presentation.
 type alias StockManagementMeasurements =
     { childFbf : Dict ChildFbfId Fbf
     , motherFbf : Dict MotherFbfId Fbf
+    , stockUpdate : Dict StockUpdateId StockUpdate
+    }
+
+
+type alias VillageStockManagementMeasurements =
+    { ahezaChild : Dict AhezaChildId AhezaChild
+    , ahezaMother : Dict AhezaMotherId AhezaMother
     , stockUpdate : Dict StockUpdateId StockUpdate
     }
 

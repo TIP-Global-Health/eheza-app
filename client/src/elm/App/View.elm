@@ -109,6 +109,7 @@ import Pages.Relationship.Model
 import Pages.Relationship.View
 import Pages.Session.Model
 import Pages.Session.View
+import Pages.StockManagement.Model
 import Pages.StockManagement.View
 import Pages.TraceContact.Model
 import Pages.TraceContact.View
@@ -1180,10 +1181,13 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                         let
                             ( nurseId, nurse ) =
                                 loggedInModel.nurse
+
+                            context =
+                                Pages.StockManagement.Model.resolveStockManagementContext healthCenterId model.villageId
                         in
                         Pages.StockManagement.View.view model.language
                             currentDate
-                            model.healthCenterId
+                            context
                             nurseId
                             nurse
                             model.syncManager.syncInfoAuthorities
