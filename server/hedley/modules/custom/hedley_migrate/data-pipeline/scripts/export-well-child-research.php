@@ -13,10 +13,12 @@
  * - fact_ecd: ECD assessments with stored warnings
  * - fact_home_visit: Household socioeconomic data
  * - fact_medication: Vitamin A, deworming
- * - fact_danger_signs: Symptoms and vitals
+ * - fact_danger_signs: Symptoms and vitals.
  *
  * Execution:
- *   ddev exec "cd /var/www/html/server/www && drush scr /path/to/export-well-child-research.php" > research-export.sql
+ *   ddev exec "cd /var/www/html/server/www && \
+ *     drush scr /path/to/export-well-child-research.php" \
+ *     > research-export.sql
  *
  * Options:
  *   --nid=N: Start from encounter node ID N (for resuming)
@@ -33,36 +35,38 @@ require_once dirname(__FILE__) . '/../lib/export-framework.php';
 /**
  * Well-child research data exporter.
  */
-class WellChildResearchExporter extends EntityExporter {
+class HedleyMigrateWellChildResearchExporter extends HedleyMigrateEntityExporter {
 
   /**
    * Vaccine schedule by site.
    *
    * @var array
    */
-  protected $vaccine_schedule = [];
+  protected $vaccineSchedule = [];
 
   /**
-   * Track previous dose dates per child/vaccine for interval-based timing.
-   * Keyed by "{child_id}:{vaccine_type}", value is array of dose_num => timestamp.
+   * Track previous dose dates for interval-based timing.
+   *
+   * Keyed by "{child_id}:{vaccine_type}", value is
+   * array of dose_num => timestamp.
    *
    * @var array
    */
-  protected $previous_dose_dates = [];
+  protected $previousDoseDates = [];
 
   /**
    * Cache of health centers.
    *
    * @var array
    */
-  protected $health_centers = [];
+  protected $healthCenters = [];
 
   /**
    * Cache of child data (birth dates, etc.) for age calculations.
    *
    * @var array
    */
-  protected $child_cache = [];
+  protected $childCache = [];
 
   /**
    * Constructor.
@@ -77,7 +81,7 @@ class WellChildResearchExporter extends EntityExporter {
    */
   protected function initializeVaccineSchedule() {
     // Rwanda schedule (days from birth).
-    $this->vaccine_schedule['rwanda'] = [
+    $this->vaccineSchedule['rwanda'] = [
       'bcg' => [1 => ['expected' => 0, 'grace' => 28]],
       'opv' => [
         0 => ['expected' => 0, 'grace' => 28],
@@ -111,7 +115,7 @@ class WellChildResearchExporter extends EntityExporter {
     ];
 
     // Burundi schedule (similar with minor differences).
-    $this->vaccine_schedule['burundi'] = $this->vaccine_schedule['rwanda'];
+    $this->vaccineSchedule['burundi'] = $this->vaccineSchedule['rwanda'];
   }
 
   /**
@@ -142,7 +146,7 @@ class WellChildResearchExporter extends EntityExporter {
     if (!is_array($drupal_warnings)) {
       $drupal_warnings = [$drupal_warnings];
     }
-    
+
     foreach ($drupal_warnings as $warning) {
       if ($warning === 'warning-ecd-milestone-refer-to-specialist') {
         return 'refer_to_specialist';
@@ -166,7 +170,7 @@ class WellChildResearchExporter extends EntityExporter {
     if (!is_array($drupal_warnings)) {
       $drupal_warnings = [$drupal_warnings];
     }
-    
+
     foreach ($drupal_warnings as $warning) {
       if ($warning === 'warning-head-circumference-microcephaly') {
         return 'microcephaly';
@@ -183,7 +187,7 @@ class WellChildResearchExporter extends EntityExporter {
    */
   protected function getSchemaConfig() {
     return [
-      // Dimension: Health Centers
+      // Dimension: Health Centers.
       'dim_health_center' => [
         'columns' => [
           'health_center_id' => ['type' => 'BIGINT', 'constraint' => 'PRIMARY KEY'],
@@ -192,7 +196,11 @@ class WellChildResearchExporter extends EntityExporter {
           'province' => ['type' => 'VARCHAR(100)'],
           'district' => ['type' => 'VARCHAR(100)'],
           'sector' => ['type' => 'VARCHAR(100)'],
-          'site' => ['type' => 'VARCHAR(20)', 'constraint' => 'NOT NULL', 'default' => 'rwanda'],
+          'site' => [
+            'type' => 'VARCHAR(20)',
+            'constraint' => 'NOT NULL',
+            'default' => 'rwanda',
+          ],
           'drupal_nid' => ['type' => 'BIGINT'],
           'created_at' => ['type' => 'TIMESTAMP', 'default' => 'CURRENT_TIMESTAMP'],
         ],
@@ -202,7 +210,7 @@ class WellChildResearchExporter extends EntityExporter {
         ],
       ],
 
-      // Dimension: Children
+      // Dimension: Children.
       'dim_child' => [
         'columns' => [
           'child_id' => ['type' => 'BIGINT', 'constraint' => 'PRIMARY KEY'],
@@ -241,7 +249,7 @@ class WellChildResearchExporter extends EntityExporter {
         ],
       ],
 
-      // Fact: Encounters
+      // Fact: Encounters.
       'fact_encounter' => [
         'columns' => [
           'encounter_id' => ['type' => 'BIGINT', 'constraint' => 'PRIMARY KEY'],
@@ -266,7 +274,7 @@ class WellChildResearchExporter extends EntityExporter {
         ],
       ],
 
-      // Fact: Vaccinations
+      // Fact: Vaccinations.
       'fact_vaccination' => [
         'columns' => [
           'vaccination_id' => ['type' => 'BIGSERIAL', 'constraint' => 'PRIMARY KEY'],
@@ -293,7 +301,7 @@ class WellChildResearchExporter extends EntityExporter {
         ],
       ],
 
-      // Fact: Growth
+      // Fact: Growth.
       'fact_growth' => [
         'columns' => [
           'growth_id' => ['type' => 'BIGSERIAL', 'constraint' => 'PRIMARY KEY'],
@@ -323,7 +331,7 @@ class WellChildResearchExporter extends EntityExporter {
         ],
       ],
 
-      // Fact: ECD
+      // Fact: ECD.
       'fact_ecd' => [
         'columns' => [
           'ecd_id' => ['type' => 'BIGSERIAL', 'constraint' => 'PRIMARY KEY'],
@@ -345,7 +353,7 @@ class WellChildResearchExporter extends EntityExporter {
         ],
       ],
 
-      // Fact: Home Visit
+      // Fact: Home Visit.
       'fact_home_visit' => [
         'columns' => [
           'home_visit_id' => ['type' => 'BIGSERIAL', 'constraint' => 'PRIMARY KEY'],
@@ -376,7 +384,7 @@ class WellChildResearchExporter extends EntityExporter {
         ],
       ],
 
-      // Fact: Medication
+      // Fact: Medication.
       'fact_medication' => [
         'columns' => [
           'medication_id' => ['type' => 'BIGSERIAL', 'constraint' => 'PRIMARY KEY'],
@@ -396,7 +404,7 @@ class WellChildResearchExporter extends EntityExporter {
         ],
       ],
 
-      // Fact: Danger Signs
+      // Fact: Danger Signs.
       'fact_danger_signs' => [
         'columns' => [
           'danger_sign_id' => ['type' => 'BIGSERIAL', 'constraint' => 'PRIMARY KEY'],
@@ -484,7 +492,7 @@ class WellChildResearchExporter extends EntityExporter {
       ]);
 
       $this->markExported('health_center', $hc->nid);
-      $this->health_centers[$hc->nid] = [
+      $this->healthCenters[$hc->nid] = [
         'name' => $hc->title,
         'province' => $province,
         'district' => $district,
@@ -492,7 +500,7 @@ class WellChildResearchExporter extends EntityExporter {
     }
 
     entity_get_controller('node')->resetCache(array_keys($health_centers));
-    drush_print("-- Exported " . count($this->health_centers) . " health centers");
+    drush_print("-- Exported " . count($this->healthCenters) . " health centers");
     drush_print("");
   }
 
@@ -583,7 +591,8 @@ class WellChildResearchExporter extends EntityExporter {
           'village' => $village,
           'health_center_id' => $hc_id,
           'hiv_status' => $hiv_status,
-          'birth_weight_grams' => NULL,  // Will be updated from newborn exam.
+          // Will be updated from newborn exam.
+          'birth_weight_grams' => NULL,
           'birth_length_cm' => NULL,
           'apgar_1_min' => NULL,
           'apgar_5_min' => NULL,
@@ -597,7 +606,7 @@ class WellChildResearchExporter extends EntityExporter {
         ]);
 
         $this->markExported('child', $child->nid);
-        $this->child_cache[$child->nid] = [
+        $this->childCache[$child->nid] = [
           'birth_date' => $birth_ts,
           'gender' => $gender,
         ];
@@ -659,7 +668,7 @@ class WellChildResearchExporter extends EntityExporter {
    */
   protected function exportEncountersAndMeasurements() {
     $start_nid = drush_get_option('nid', 0);
-    $batch_size = $this->batch_size;
+    $batch_size = $this->batchSize;
 
     drush_print("-- Exporting encounters and measurements...");
     if ($start_nid > 0) {
@@ -770,7 +779,7 @@ class WellChildResearchExporter extends EntityExporter {
     }
 
     // Calculate child age at encounter.
-    $child_birth = isset($this->child_cache[$child_id]['birth_date']) ? $this->child_cache[$child_id]['birth_date'] : NULL;
+    $child_birth = isset($this->childCache[$child_id]['birth_date']) ? $this->childCache[$child_id]['birth_date'] : NULL;
     $age_days = $this->calculateAgeDays($child_birth, $encounter_ts);
     $age_weeks = $this->calculateAgeWeeks($child_birth, $encounter_ts);
     $age_months = $this->calculateAgeMonths($child_birth, $encounter_ts);
@@ -782,8 +791,7 @@ class WellChildResearchExporter extends EntityExporter {
 
     // Determine encounter type.
     $encounter_type = 'pediatric_care';
-    // Could check for CHW encounters or newborn exams if there's a field for that.
-
+    // Could check for CHW encounters or newborn exams.
     // Export encounter.
     $this->printInsert('fact_encounter', [
       'encounter_id' => $encounter->nid,
@@ -889,7 +897,8 @@ class WellChildResearchExporter extends EntityExporter {
     $measured_date = $this->safeGetFieldValue($wrapper, 'field_date_measured');
     $measured_ts = $this->convertDateToTimestamp($measured_date);
     if (!$measured_ts) {
-      $measured_ts = $encounter_ts;  // Fall back to encounter date.
+      // Fall back to encounter date.
+      $measured_ts = $encounter_ts;
     }
 
     // Route to appropriate handler.
@@ -1027,7 +1036,7 @@ class WellChildResearchExporter extends EntityExporter {
     }
 
     // Get schedule for timing calculation.
-    $schedule = isset($this->vaccine_schedule[$this->site][$vaccine_type]) ? $this->vaccine_schedule[$this->site][$vaccine_type] : [];
+    $schedule = isset($this->vaccineSchedule[$this->site][$vaccine_type]) ? $this->vaccineSchedule[$this->site][$vaccine_type] : [];
 
     foreach ($doses as $dose) {
       // Parse dose number from value (e.g., "dose-1" -> 1).
@@ -1054,7 +1063,7 @@ class WellChildResearchExporter extends EntityExporter {
       $prev_dose_num = $dose_num - 1;
       // For OPV, dose 0 is birth dose, so dose 1's previous is dose 0.
       $prev_expected = isset($schedule[$prev_dose_num]['expected']) ? $schedule[$prev_dose_num]['expected'] : NULL;
-      $prev_date = isset($this->previous_dose_dates[$dose_key][$prev_dose_num]) ? $this->previous_dose_dates[$dose_key][$prev_dose_num] : NULL;
+      $prev_date = isset($this->previousDoseDates[$dose_key][$prev_dose_num]) ? $this->previousDoseDates[$dose_key][$prev_dose_num] : NULL;
 
       if ($age_days !== NULL && $expected_days !== NULL) {
         if ($prev_date !== NULL && $prev_expected !== NULL) {
@@ -1072,10 +1081,10 @@ class WellChildResearchExporter extends EntityExporter {
       }
 
       // Record this dose date for future interval calculations.
-      if (!isset($this->previous_dose_dates[$dose_key])) {
-        $this->previous_dose_dates[$dose_key] = [];
+      if (!isset($this->previousDoseDates[$dose_key])) {
+        $this->previousDoseDates[$dose_key] = [];
       }
-      $this->previous_dose_dates[$dose_key][$dose_num] = $measured_ts;
+      $this->previousDoseDates[$dose_key][$dose_num] = $measured_ts;
 
       // Get administration note if available.
       $admin_note = NULL;
@@ -1266,7 +1275,7 @@ class WellChildResearchExporter extends EntityExporter {
     }
 
     // Check if we have enough data to export (at least one meaningful field).
-    $has_data = $cache['main_water_source'] || $cache['main_income_source'] || 
+    $has_data = $cache['main_water_source'] || $cache['main_income_source'] ||
                 $cache['is_breastfeeding'] !== NULL || $cache['caring_option'];
 
     if ($has_data && !$cache['_complete']) {
@@ -1325,7 +1334,6 @@ class WellChildResearchExporter extends EntityExporter {
 // ============================================================================
 // Main execution
 // ============================================================================
-
 // Only run full export when this script is called directly (not via require).
 if (basename($_SERVER['argv'][1] ?? '') === basename(__FILE__)) {
   $config = [
@@ -1334,6 +1342,6 @@ if (basename($_SERVER['argv'][1] ?? '') === basename(__FILE__)) {
     'site' => drush_get_option('site', 'rwanda'),
   ];
 
-  $exporter = new WellChildResearchExporter('well_child_encounter', $config);
-  $exporter->exportToSQL();
+  $exporter = new HedleyMigrateWellChildResearchExporter('well_child_encounter', $config);
+  $exporter->exportToSql();
 }

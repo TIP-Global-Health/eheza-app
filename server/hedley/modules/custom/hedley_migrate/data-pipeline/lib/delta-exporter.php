@@ -4,7 +4,7 @@
  * @file
  * Delta (incremental) exporter for well-child research data.
  *
- * Extends WellChildResearchExporter to export only changed entities
+ * Extends the well-child exporter to export only changed entities
  * since the last sync, using Drupal's revision IDs (vid) for change detection.
  *
  * Output: DELETE+INSERT SQL wrapped in a transaction (no DDL).
@@ -16,56 +16,56 @@
 /**
  * Delta exporter — exports only entities changed since a given revision ID.
  */
-class DeltaExporter extends WellChildResearchExporter {
+class HedleyMigrateDeltaExporter extends HedleyMigrateWellChildResearchExporter {
 
   /**
    * Last synced revision ID.
    *
    * @var int
    */
-  protected $last_vid = 0;
+  protected $lastVid = 0;
 
   /**
    * Maximum revision ID seen during this export.
    *
    * @var int
    */
-  protected $max_vid = 0;
+  protected $maxVid = 0;
 
   /**
    * NIDs of changed encounters (direct or via measurement changes).
    *
    * @var array
    */
-  protected $changed_encounter_nids = [];
+  protected $changedEncounterNids = [];
 
   /**
    * NIDs of changed child (person) nodes.
    *
    * @var array
    */
-  protected $changed_child_nids = [];
+  protected $changedChildNids = [];
 
   /**
    * NIDs of changed health center nodes.
    *
    * @var array
    */
-  protected $changed_hc_nids = [];
+  protected $changedHcNids = [];
 
   /**
    * NIDs of deleted (unpublished) encounters.
    *
    * @var array
    */
-  protected $deleted_encounter_nids = [];
+  protected $deletedEncounterNids = [];
 
   /**
    * Fact tables that reference encounter_id, in DELETE order.
    *
    * @var array
    */
-  protected $encounter_fact_tables = [
+  protected $encounterFactTables = [
     'fact_danger_signs',
     'fact_medication',
     'fact_home_visit',
@@ -80,7 +80,7 @@ class DeltaExporter extends WellChildResearchExporter {
    *
    * @var array
    */
-  protected $measurement_types = [
+  protected $measurementTypes = [
     'well_child_height',
     'well_child_weight',
     'well_child_muac',
@@ -113,17 +113,17 @@ class DeltaExporter extends WellChildResearchExporter {
    *   Process revisions with vid > this value.
    */
   public function exportDelta($last_vid) {
-    $this->last_vid = (int) $last_vid;
+    $this->lastVid = (int) $last_vid;
 
     // Capture max vid before we start (watermark for next run).
-    $this->max_vid = (int) db_query("SELECT MAX(vid) FROM {node_revision}")->fetchField();
+    $this->maxVid = (int) db_query("SELECT MAX(vid) FROM {node_revision}")->fetchField();
 
     drush_print("-- ============================================================================");
     drush_print("-- E-Heza Delta Export");
     drush_print("-- Generated: " . date('Y-m-d H:i:s'));
     drush_print("-- Site: " . $this->site);
-    drush_print("-- Since vid: " . $this->last_vid);
-    drush_print("-- max_vid: " . $this->max_vid);
+    drush_print("-- Since vid: " . $this->lastVid);
+    drush_print("-- max_vid: " . $this->maxVid);
     drush_print("-- ============================================================================");
     drush_print("");
 
@@ -131,14 +131,14 @@ class DeltaExporter extends WellChildResearchExporter {
     $this->detectChanges();
     $this->detectDeletions();
 
-    $total_changes = count($this->changed_hc_nids) + count($this->changed_child_nids)
-      + count($this->changed_encounter_nids) + count($this->deleted_encounter_nids);
+    $total_changes = count($this->changedHcNids) + count($this->changedChildNids)
+      + count($this->changedEncounterNids) + count($this->deletedEncounterNids);
 
     drush_print("-- Changes detected:");
-    drush_print("--   Health centers: " . count($this->changed_hc_nids));
-    drush_print("--   Children: " . count($this->changed_child_nids));
-    drush_print("--   Encounters (new/modified): " . count($this->changed_encounter_nids));
-    drush_print("--   Encounters (deleted): " . count($this->deleted_encounter_nids));
+    drush_print("--   Health centers: " . count($this->changedHcNids));
+    drush_print("--   Children: " . count($this->changedChildNids));
+    drush_print("--   Encounters (new/modified): " . count($this->changedEncounterNids));
+    drush_print("--   Encounters (deleted): " . count($this->deletedEncounterNids));
     drush_print("--   Total: " . $total_changes);
     drush_print("");
 
@@ -166,8 +166,8 @@ class DeltaExporter extends WellChildResearchExporter {
     drush_print("");
     drush_print("COMMIT;");
     drush_print("");
-    drush_print("-- encounters_processed: " . count($this->changed_encounter_nids));
-    drush_print("-- children_processed: " . count($this->changed_child_nids));
+    drush_print("-- encounters_processed: " . count($this->changedEncounterNids));
+    drush_print("-- children_processed: " . count($this->changedChildNids));
     drush_print("-- Delta export complete at: " . date('Y-m-d H:i:s'));
   }
 
@@ -184,7 +184,7 @@ class DeltaExporter extends WellChildResearchExporter {
       WHERE r.vid > :last_vid
         AND n.status = :published
     ", [
-      ':last_vid' => $this->last_vid,
+      ':last_vid' => $this->lastVid,
       ':published' => NODE_PUBLISHED,
     ]);
 
@@ -194,25 +194,25 @@ class DeltaExporter extends WellChildResearchExporter {
     }
 
     // Health centers.
-    $this->changed_hc_nids = isset($changed_by_type['health_center']) ? $changed_by_type['health_center'] : [];
+    $this->changedHcNids = isset($changed_by_type['health_center']) ? $changed_by_type['health_center'] : [];
 
     // Children (person nodes).
     if (isset($changed_by_type['person'])) {
       // Filter to only persons that are children in well-child encounters.
-      $this->changed_child_nids = $this->filterToWellChildChildren($changed_by_type['person']);
+      $this->changedChildNids = $this->filterToWellChildChildren($changed_by_type['person']);
     }
 
     // Encounters — changed directly.
     $encounter_nids = isset($changed_by_type['well_child_encounter']) ? $changed_by_type['well_child_encounter'] : [];
 
     // Encounters — changed via measurement modifications.
-    $measurement_changed_types = array_intersect_key($changed_by_type, array_flip($this->measurement_types));
-    foreach ($measurement_changed_types as $type => $nids) {
+    $measurement_changed_types = array_intersect_key($changed_by_type, array_flip($this->measurementTypes));
+    foreach ($measurement_changed_types as $nids) {
       $parent_encounters = $this->resolveParentEncounters($nids);
       $encounter_nids = array_merge($encounter_nids, $parent_encounters);
     }
 
-    $this->changed_encounter_nids = array_unique($encounter_nids);
+    $this->changedEncounterNids = array_unique($encounter_nids);
   }
 
   /**
@@ -227,11 +227,11 @@ class DeltaExporter extends WellChildResearchExporter {
         AND n.type = 'well_child_encounter'
         AND n.status = :unpublished
     ", [
-      ':last_vid' => $this->last_vid,
+      ':last_vid' => $this->lastVid,
       ':unpublished' => NODE_NOT_PUBLISHED,
     ]);
 
-    $this->deleted_encounter_nids = $query->fetchCol();
+    $this->deletedEncounterNids = $query->fetchCol();
 
     // Also check for soft-deleted encounters (field_deleted = TRUE).
     $soft_deleted = db_query("
@@ -241,28 +241,31 @@ class DeltaExporter extends WellChildResearchExporter {
       JOIN {field_data_field_deleted} d ON d.entity_id = n.nid AND d.field_deleted_value = 1
       WHERE r.vid > :last_vid
         AND n.type = 'well_child_encounter'
-    ", [':last_vid' => $this->last_vid])->fetchCol();
+    ", [':last_vid' => $this->lastVid])->fetchCol();
 
-    $this->deleted_encounter_nids = array_unique(array_merge(
-      $this->deleted_encounter_nids,
+    $this->deletedEncounterNids = array_unique(array_merge(
+      $this->deletedEncounterNids,
       $soft_deleted
     ));
 
     // Remove deleted encounters from the changed list (no need to re-export).
-    $this->changed_encounter_nids = array_diff(
-      $this->changed_encounter_nids,
-      $this->deleted_encounter_nids
+    $this->changedEncounterNids = array_diff(
+      $this->changedEncounterNids,
+      $this->deletedEncounterNids
     );
   }
 
   /**
-   * Filter person NIDs to only those that are children in well-child encounters.
+   * Filter person NIDs to only well-child children.
+   *
+   * Only returns persons that appear as children in well-child encounters.
    *
    * @param array $person_nids
    *   Person node IDs to filter.
    *
    * @return array
-   *   Filtered list of person NIDs that appear as children in well-child encounters.
+   *   Filtered list of person NIDs that appear as children in well-child
+   *   encounters.
    */
   protected function filterToWellChildChildren(array $person_nids) {
     if (empty($person_nids)) {
@@ -306,13 +309,13 @@ class DeltaExporter extends WellChildResearchExporter {
    * Export changed health centers (DELETE + INSERT).
    */
   protected function exportChangedHealthCenters() {
-    if (empty($this->changed_hc_nids)) {
+    if (empty($this->changedHcNids)) {
       return;
     }
 
-    drush_print("-- Exporting " . count($this->changed_hc_nids) . " changed health centers...");
+    drush_print("-- Exporting " . count($this->changedHcNids) . " changed health centers...");
 
-    $health_centers = node_load_multiple($this->changed_hc_nids);
+    $health_centers = node_load_multiple($this->changedHcNids);
 
     foreach ($health_centers as $hc) {
       $wrapper = entity_metadata_wrapper('node', $hc);
@@ -342,7 +345,7 @@ class DeltaExporter extends WellChildResearchExporter {
       ]);
 
       $this->markExported('health_center', $hc->nid);
-      $this->health_centers[$hc->nid] = [
+      $this->healthCenters[$hc->nid] = [
         'name' => $hc->title,
         'province' => $province,
         'district' => $district,
@@ -358,17 +361,17 @@ class DeltaExporter extends WellChildResearchExporter {
    * Export changed children (DELETE + INSERT for dim_child only).
    */
   protected function exportChangedChildren() {
-    if (empty($this->changed_child_nids)) {
+    if (empty($this->changedChildNids)) {
       return;
     }
 
-    drush_print("-- Exporting " . count($this->changed_child_nids) . " changed children...");
+    drush_print("-- Exporting " . count($this->changedChildNids) . " changed children...");
 
     // We need all health centers loaded for the wasExported check.
     // Load any health centers not already in memory.
     $this->ensureHealthCentersLoaded();
 
-    $batches = array_chunk($this->changed_child_nids, 500);
+    $batches = array_chunk($this->changedChildNids, 500);
 
     foreach ($batches as $batch_ids) {
       $children = node_load_multiple($batch_ids);
@@ -455,7 +458,7 @@ class DeltaExporter extends WellChildResearchExporter {
     ]);
 
     $this->markExported('child', $child->nid);
-    $this->child_cache[$child->nid] = [
+    $this->childCache[$child->nid] = [
       'birth_date' => $birth_ts,
       'gender' => $gender,
     ];
@@ -465,13 +468,13 @@ class DeltaExporter extends WellChildResearchExporter {
    * Process deleted encounters — emit cascading DELETEs.
    */
   protected function processDeletedEncounters() {
-    if (empty($this->deleted_encounter_nids)) {
+    if (empty($this->deletedEncounterNids)) {
       return;
     }
 
-    drush_print("-- Deleting " . count($this->deleted_encounter_nids) . " encounters...");
+    drush_print("-- Deleting " . count($this->deletedEncounterNids) . " encounters...");
 
-    foreach ($this->deleted_encounter_nids as $enc_nid) {
+    foreach ($this->deletedEncounterNids as $enc_nid) {
       $this->emitEncounterDelete((int) $enc_nid);
     }
 
@@ -482,17 +485,17 @@ class DeltaExporter extends WellChildResearchExporter {
    * Export changed encounters (DELETE + INSERT).
    */
   protected function exportChangedEncounters() {
-    if (empty($this->changed_encounter_nids)) {
+    if (empty($this->changedEncounterNids)) {
       return;
     }
 
-    drush_print("-- Exporting " . count($this->changed_encounter_nids) . " changed encounters...");
+    drush_print("-- Exporting " . count($this->changedEncounterNids) . " changed encounters...");
 
     // Ensure all referenced children and health centers are loaded.
     $this->ensureHealthCentersLoaded();
-    $this->ensureChildrenLoaded($this->changed_encounter_nids);
+    $this->ensureChildrenLoaded($this->changedEncounterNids);
 
-    $batches = array_chunk($this->changed_encounter_nids, $this->batch_size);
+    $batches = array_chunk($this->changedEncounterNids, $this->batchSize);
     $processed = 0;
 
     foreach ($batches as $batch_nids) {
@@ -529,7 +532,7 @@ class DeltaExporter extends WellChildResearchExporter {
    *   The encounter node ID.
    */
   protected function emitEncounterDelete($encounter_nid) {
-    foreach ($this->encounter_fact_tables as $table) {
+    foreach ($this->encounterFactTables as $table) {
       drush_print("DELETE FROM {$table} WHERE encounter_id = {$encounter_nid};");
     }
   }
@@ -537,10 +540,11 @@ class DeltaExporter extends WellChildResearchExporter {
   /**
    * Ensure all health centers are loaded into memory.
    *
-   * For delta, we need the health center cache populated even if no HCs changed.
+   * For delta, we need the health center cache populated even if no HCs
+   * changed.
    */
   protected function ensureHealthCentersLoaded() {
-    if (!empty($this->health_centers)) {
+    if (!empty($this->healthCenters)) {
       return;
     }
 
@@ -558,7 +562,7 @@ class DeltaExporter extends WellChildResearchExporter {
         continue;
       }
       $this->markExported('health_center', $hc->nid);
-      $this->health_centers[$hc->nid] = [
+      $this->healthCenters[$hc->nid] = [
         'name' => $hc->title,
         'province' => $this->safeGetFieldValue($wrapper, 'field_province'),
         'district' => $this->safeGetFieldValue($wrapper, 'field_district'),
@@ -590,7 +594,7 @@ class DeltaExporter extends WellChildResearchExporter {
     // Filter to children not already in cache.
     $missing = [];
     foreach ($child_ids as $cid) {
-      if (!isset($this->child_cache[$cid]) && !$this->wasExported('child', $cid)) {
+      if (!isset($this->childCache[$cid]) && !$this->wasExported('child', $cid)) {
         $missing[] = $cid;
       }
     }
@@ -603,7 +607,8 @@ class DeltaExporter extends WellChildResearchExporter {
       return;
     }
 
-    // Load and cache missing children (but don't INSERT them — they're in the DB already).
+    // Load and cache missing children (but don't INSERT them — they're in
+    // the DB already).
     $batches = array_chunk($missing, 500);
     foreach ($batches as $batch_ids) {
       $children = node_load_multiple($batch_ids);
@@ -614,7 +619,7 @@ class DeltaExporter extends WellChildResearchExporter {
         $gender = $this->safeGetFieldValue($wrapper, 'field_gender') ?: 'unknown';
 
         $this->markExported('child', $child->nid);
-        $this->child_cache[$child->nid] = [
+        $this->childCache[$child->nid] = [
           'birth_date' => $birth_ts,
           'gender' => $gender,
         ];
@@ -654,7 +659,7 @@ class DeltaExporter extends WellChildResearchExporter {
   /**
    * Pre-load vaccine dose history for a child from Drupal.
    *
-   * This populates $this->previous_dose_dates so that interval-based
+   * This populates $this->previousDoseDates so that interval-based
    * timing calculations work correctly for delta exports.
    *
    * @param int $child_id
@@ -729,22 +734,18 @@ class DeltaExporter extends WellChildResearchExporter {
         }
 
         $dose_key = "{$child_id}:{$vaccine_type}";
-        if (!isset($this->previous_dose_dates[$dose_key])) {
-          $this->previous_dose_dates[$dose_key] = [];
+        if (!isset($this->previousDoseDates[$dose_key])) {
+          $this->previousDoseDates[$dose_key] = [];
         }
-        $this->previous_dose_dates[$dose_key][$dose_num] = $measured_ts;
+        $this->previousDoseDates[$dose_key][$dose_num] = $measured_ts;
       }
     }
   }
 
-  // =========================================================================
-  // Overrides to prevent full-export behavior.
-  // =========================================================================
-
   /**
    * Override: no DDL output for delta exports.
    */
-  protected function printDDL() {
+  protected function printDdl() {
     // No-op.
   }
 

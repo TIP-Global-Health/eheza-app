@@ -19,14 +19,14 @@
 /**
  * Base class for exporting Drupal entities to normalized SQL.
  */
-abstract class EntityExporter {
+abstract class HedleyMigrateEntityExporter {
 
   /**
    * The entity type being exported.
    *
    * @var string
    */
-  protected $entity_type;
+  protected $entityType;
 
   /**
    * Schema configuration for all tables.
@@ -40,35 +40,35 @@ abstract class EntityExporter {
    *
    * @var int
    */
-  protected $batch_size = 50;
+  protected $batchSize = 50;
 
   /**
    * Memory limit in MB before stopping.
    *
    * @var int
    */
-  protected $memory_limit = 800;
+  protected $memoryLimit = 800;
 
   /**
    * Track exported entity IDs to prevent orphaned references.
    *
    * @var array
    */
-  protected $exported_ids = [];
+  protected $exportedIds = [];
 
   /**
    * Buffer for multi-row INSERT statements, keyed by table name.
    *
    * @var array
    */
-  protected $insert_buffer = [];
+  protected $insertBuffer = [];
 
   /**
    * Number of rows per multi-row INSERT statement.
    *
    * @var int
    */
-  protected $insert_batch_size = 500;
+  protected $insertBatchSize = 500;
 
   /**
    * Site identifier (rwanda or burundi).
@@ -80,15 +80,15 @@ abstract class EntityExporter {
   /**
    * Constructor.
    *
-   * @param string $entity_type
+   * @param string $entityType
    *   The entity type being exported.
    * @param array $config
    *   Optional configuration array.
    */
-  public function __construct($entity_type, array $config = []) {
-    $this->entity_type = $entity_type;
-    $this->batch_size = isset($config['batch_size']) ? $config['batch_size'] : 50;
-    $this->memory_limit = isset($config['memory_limit']) ? $config['memory_limit'] : 800;
+  public function __construct($entityType, array $config = []) {
+    $this->entityType = $entityType;
+    $this->batchSize = isset($config['batch_size']) ? $config['batch_size'] : 50;
+    $this->memoryLimit = isset($config['memory_limit']) ? $config['memory_limit'] : 800;
     $this->site = isset($config['site']) ? $config['site'] : 'rwanda';
     $this->tables = $this->getSchemaConfig();
   }
@@ -96,9 +96,9 @@ abstract class EntityExporter {
   /**
    * Main export method - generates complete SQL output.
    */
-  public function exportToSQL() {
+  public function exportToSql() {
     $this->printHeader();
-    $this->printDDL();
+    $this->printDdl();
     $this->exportData();
     $this->flushAllInserts();
     $this->printFooter();
@@ -131,7 +131,7 @@ abstract class EntityExporter {
   /**
    * Outputs all DDL statements.
    */
-  protected function printDDL() {
+  protected function printDdl() {
     foreach ($this->tables as $table_name => $schema) {
       $this->printDropTable($table_name);
       $this->printCreateTable($table_name, $schema);
@@ -214,7 +214,7 @@ abstract class EntityExporter {
    * Buffers a row for batch INSERT output.
    *
    * Rows are accumulated per table and flushed as multi-row INSERT
-   * statements every $insert_batch_size rows.
+   * statements every $insertBatchSize rows.
    */
   protected function printInsert($table_name, array $values) {
     if (empty($values)) {
@@ -233,16 +233,16 @@ abstract class EntityExporter {
 
     $row_str = '(' . implode(', ', $value_list) . ')';
 
-    if (!isset($this->insert_buffer[$table_name])) {
-      $this->insert_buffer[$table_name] = [
+    if (!isset($this->insertBuffer[$table_name])) {
+      $this->insertBuffer[$table_name] = [
         'columns' => $columns,
         'rows' => [],
       ];
     }
 
-    $this->insert_buffer[$table_name]['rows'][] = $row_str;
+    $this->insertBuffer[$table_name]['rows'][] = $row_str;
 
-    if (count($this->insert_buffer[$table_name]['rows']) >= $this->insert_batch_size) {
+    if (count($this->insertBuffer[$table_name]['rows']) >= $this->insertBatchSize) {
       $this->flushInserts($table_name);
     }
   }
@@ -251,24 +251,24 @@ abstract class EntityExporter {
    * Flushes buffered INSERT rows for a specific table.
    */
   protected function flushInserts($table_name) {
-    if (empty($this->insert_buffer[$table_name]['rows'])) {
+    if (empty($this->insertBuffer[$table_name]['rows'])) {
       return;
     }
 
-    $column_list = implode(', ', $this->insert_buffer[$table_name]['columns']);
-    $rows = $this->insert_buffer[$table_name]['rows'];
+    $column_list = implode(', ', $this->insertBuffer[$table_name]['columns']);
+    $rows = $this->insertBuffer[$table_name]['rows'];
 
     drush_print("INSERT INTO {$table_name} ({$column_list}) VALUES");
     drush_print(implode(",\n", $rows) . ";");
 
-    $this->insert_buffer[$table_name]['rows'] = [];
+    $this->insertBuffer[$table_name]['rows'] = [];
   }
 
   /**
    * Flushes all buffered INSERT rows for all tables.
    */
   protected function flushAllInserts() {
-    foreach (array_keys($this->insert_buffer) as $table_name) {
+    foreach (array_keys($this->insertBuffer) as $table_name) {
       $this->flushInserts($table_name);
     }
   }
@@ -317,7 +317,7 @@ abstract class EntityExporter {
           $format = ($type === 'DATE') ? 'Y-m-d' : 'Y-m-d H:i:s';
           return "'" . date($format, $value) . "'";
         }
-        return "'" . $this->escapeSQLString($value) . "'";
+        return "'" . $this->escapeSqlString($value) . "'";
 
       case 'TEXT':
       case 'VARCHAR':
@@ -325,9 +325,9 @@ abstract class EntityExporter {
       default:
         // Handle VARCHAR with length specification.
         if (strpos($type, 'VARCHAR') === 0) {
-          return "'" . $this->escapeSQLString($value) . "'";
+          return "'" . $this->escapeSqlString($value) . "'";
         }
-        return "'" . $this->escapeSQLString($value) . "'";
+        return "'" . $this->escapeSqlString($value) . "'";
     }
   }
 
@@ -356,7 +356,7 @@ abstract class EntityExporter {
   /**
    * Escapes a string for safe SQL insertion.
    */
-  protected function escapeSQLString($value) {
+  protected function escapeSqlString($value) {
     $value = (string) $value;
     $value = str_replace("'", "''", $value);
     $value = str_replace("\\", "\\\\", $value);
@@ -438,11 +438,11 @@ abstract class EntityExporter {
     }
     $birth_ts = is_numeric($birth_date) ? $birth_date : strtotime($birth_date);
     $event_ts = is_numeric($event_date) ? $event_date : strtotime($event_date);
-    
+
     if (!$birth_ts || !$event_ts) {
       return NULL;
     }
-    
+
     return (int) floor(($event_ts - $birth_ts) / 86400);
   }
 
@@ -508,7 +508,7 @@ abstract class EntityExporter {
   protected function checkMemoryLimit($last_nid = 0) {
     $memory_usage_mb = round(memory_get_usage() / 1048576);
 
-    if ($memory_usage_mb >= $this->memory_limit) {
+    if ($memory_usage_mb >= $this->memoryLimit) {
       if ($last_nid > 0) {
         drush_print("-- Stopped before out of memory. Resume from node ID: " . $last_nid);
       }
@@ -522,17 +522,17 @@ abstract class EntityExporter {
    * Mark an entity as exported.
    */
   protected function markExported($type, $id) {
-    if (!isset($this->exported_ids[$type])) {
-      $this->exported_ids[$type] = [];
+    if (!isset($this->exportedIds[$type])) {
+      $this->exportedIds[$type] = [];
     }
-    $this->exported_ids[$type][$id] = TRUE;
+    $this->exportedIds[$type][$id] = TRUE;
   }
 
   /**
    * Check if an entity was exported.
    */
   protected function wasExported($type, $id) {
-    return isset($this->exported_ids[$type][$id]);
+    return isset($this->exportedIds[$type][$id]);
   }
 
   /**

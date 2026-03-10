@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Delta export script — exports only changes since a given revision ID.
@@ -34,5 +35,5 @@ if (!in_array($site, ['rwanda', 'burundi'])) {
   exit(1);
 }
 
-$exporter = new DeltaExporter($site);
+$exporter = new HedleyMigrateDeltaExporter($site);
 $exporter->exportDelta($last_vid);
