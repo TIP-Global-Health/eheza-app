@@ -20,7 +20,7 @@ $base_query = hedley_general_create_entity_field_query_excluding_deleted();
 $base_query
   ->entityCondition('entity_type', 'node')
   ->propertyCondition('type', 'mother')
-  ->propertyOrderBy('nid', 'ASC')
+  ->propertyOrderBy('nid')
   ->addTag('exclude_existing_relationships')
   ->addTag('DANGEROUS_ACCESS_CHECK_OPT_OUT');
 if ($nid) {
