@@ -425,7 +425,7 @@ class DeltaExporter extends WellChildResearchExporter {
     $has_birth_history = ($birth_weight || $birth_length || $apgar_one || $apgar_five || $delivery_mode);
 
     // Caregiver data.
-    $caregiver_data = $this->getCaregiverData($child);
+    $caregiver_data = $this->getCaregiverData($child->nid);
 
     $this->printInsert('dim_child', [
       'child_id' => $child->nid,
