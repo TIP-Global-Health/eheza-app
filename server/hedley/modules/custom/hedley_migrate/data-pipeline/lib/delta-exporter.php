@@ -146,6 +146,8 @@ class DeltaExporter extends WellChildResearchExporter {
       drush_print("-- No changes detected. Empty delta.");
       drush_print("BEGIN;");
       drush_print("COMMIT;");
+      drush_print("-- encounters_processed: 0");
+      drush_print("-- children_processed: 0");
       return;
     }
 
@@ -164,6 +166,8 @@ class DeltaExporter extends WellChildResearchExporter {
     drush_print("");
     drush_print("COMMIT;");
     drush_print("");
+    drush_print("-- encounters_processed: " . count($this->changed_encounter_nids));
+    drush_print("-- children_processed: " . count($this->changed_child_nids));
     drush_print("-- Delta export complete at: " . date('Y-m-d H:i:s'));
   }
 
