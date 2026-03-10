@@ -420,34 +420,33 @@ class DeltaExporter extends WellChildResearchExporter {
     $cell = $this->safeGetFieldValue($wrapper, 'field_cell');
     $village = $this->safeGetFieldValue($wrapper, 'field_village');
 
-    // Birth history.
-    $birth_weight = $this->safeGetFieldValue($wrapper, 'field_birth_weight');
-    $birth_length = $this->safeGetFieldValue($wrapper, 'field_birth_length');
-    $apgar_one = $this->safeGetFieldValue($wrapper, 'field_apgar_one');
-    $apgar_five = $this->safeGetFieldValue($wrapper, 'field_apgar_five');
-    $delivery_mode = $this->safeGetFieldValue($wrapper, 'field_mode_of_delivery');
-    $has_birth_history = ($birth_weight || $birth_length || $apgar_one || $apgar_five || $delivery_mode);
-
     // Caregiver data.
     $caregiver_data = $this->getCaregiverData($child->nid);
 
+    // Match parent's column names exactly.
+    $hiv_status = $this->safeGetFieldValue($wrapper, 'field_hiv_status');
+
     $this->printInsert('dim_child', [
       'child_id' => $child->nid,
-      'birth_date' => $birth_ts,
+      'national_id' => $this->safeGetFieldValue($wrapper, 'field_national_id_number'),
+      'hmis_number' => $this->safeGetFieldValue($wrapper, 'field_hmis_number'),
       'gender' => $gender,
-      'health_center_id' => $hc_id,
+      'birth_date' => $birth_ts,
+      'birth_date_estimated' => $this->safeGetFieldValue($wrapper, 'field_birth_date_estimated') ? TRUE : FALSE,
+      'registration_date' => $child->created,
       'province' => $province,
       'district' => $district,
       'sector' => $sector,
       'cell' => $cell,
       'village' => $village,
-      'registration_date' => $child->created,
-      'birth_weight_kg' => $birth_weight,
-      'birth_length_cm' => $birth_length,
-      'apgar_one_min' => $apgar_one,
-      'apgar_five_min' => $apgar_five,
-      'delivery_mode' => $delivery_mode,
-      'has_birth_history' => $has_birth_history ? TRUE : FALSE,
+      'health_center_id' => $hc_id,
+      'hiv_status' => $hiv_status,
+      'birth_weight_grams' => NULL,
+      'birth_length_cm' => NULL,
+      'apgar_1_min' => NULL,
+      'apgar_5_min' => NULL,
+      'delivery_mode' => NULL,
+      'has_birth_history' => FALSE,
       'caregiver_id' => $caregiver_data['id'],
       'caregiver_education' => $caregiver_data['education'],
       'caregiver_ubudehe' => $caregiver_data['ubudehe'],
