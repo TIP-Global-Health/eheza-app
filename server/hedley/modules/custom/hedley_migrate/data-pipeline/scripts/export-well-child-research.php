@@ -1326,11 +1326,14 @@ class WellChildResearchExporter extends EntityExporter {
 // Main execution
 // ============================================================================
 
-$config = [
-  'batch_size' => drush_get_option('batch', 50),
-  'memory_limit' => drush_get_option('memory_limit', 800),
-  'site' => drush_get_option('site', 'rwanda'),
-];
+// Only run full export when this script is called directly (not via require).
+if (basename($_SERVER['argv'][1] ?? '') === basename(__FILE__)) {
+  $config = [
+    'batch_size' => drush_get_option('batch', 50),
+    'memory_limit' => drush_get_option('memory_limit', 800),
+    'site' => drush_get_option('site', 'rwanda'),
+  ];
 
-$exporter = new WellChildResearchExporter('well_child_encounter', $config);
-$exporter->exportToSQL();
+  $exporter = new WellChildResearchExporter('well_child_encounter', $config);
+  $exporter->exportToSQL();
+}
