@@ -32,6 +32,7 @@ type ReportType
     = ReportAcuteIllness
     | ReportDemographics
     | ReportNutrition
+    | ReportPeripartum
     | ReportPrenatal
     | ReportPrenatalContacts
     | ReportPrenatalDiagnoses

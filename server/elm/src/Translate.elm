@@ -240,6 +240,9 @@ type TranslationId
     | TakenByLabel
     | TargetedInterventions
     | Total
+    | TotalDeliveries
+    | TotalLiveBirths
+    | TotalLivePreTermBirths
     | TreatmentReview
     | Trimester
     | Tuberculosis
@@ -2470,6 +2473,12 @@ translationSet transId =
                     , kirundi = Nothing
                     }
 
+                IndicatorBreastfedFirstHour ->
+                    { english = "Newborns breastfed within one hour of delivery"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 IndicatorDiagnosedAnemia ->
                     { english = "Pregnant women diagnosed with anemia"
                     , kinyarwanda = Nothing
@@ -2516,6 +2525,12 @@ translationSet transId =
 
                 IndicatorReceivedMMS ->
                     { english = "Pregnant women who received MMS"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                IndicatorPrematureOnsetContractions ->
+                    { english = "Pregnant women with premature labour"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
@@ -2613,6 +2628,12 @@ translationSet transId =
 
                 ReportNutrition ->
                     translationSet Nutrition
+
+                ReportPeripartum ->
+                    { english = "Peripartum"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
 
                 ReportPrenatal ->
                     translationSet Antenatal
@@ -2799,6 +2820,24 @@ translationSet transId =
 
         Total ->
             { english = "Total"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        TotalDeliveries ->
+            { english = "Total deliveries"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        TotalLiveBirths ->
+            { english = "Total live births"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        TotalLivePreTermBirths ->
+            { english = "Preterm birth newborns"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

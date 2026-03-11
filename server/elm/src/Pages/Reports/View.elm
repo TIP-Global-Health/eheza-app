@@ -293,6 +293,9 @@ viewReportsData language currentDate themePath data model =
                             ReportNutrition ->
                                 viewNutritionReport language limitDate scopeLabel data.nutritionReportData model.nutritionReportData
 
+                            ReportPeripartum ->
+                                viewPeripartumReport language limitDate scopeLabel recordsTillLimitDate
+
                             ReportPrenatal ->
                                 viewPrenatalReport language limitDate scopeLabel recordsTillLimitDate
 
@@ -325,6 +328,7 @@ viewReportsData language currentDate themePath data model =
                 , ReportPrenatalDiagnoses
                 , ReportDemographics
                 , ReportNutrition
+                , ReportPeripartum
                 ]
                 reportTypeToString
                 SetReportType
@@ -2386,6 +2390,90 @@ generatePrenatalDiagnosesReportData language limitDate records =
         , translate language Translate.Total
         ]
     , rows = rows ++ [ totalsRow ]
+    }
+
+
+viewPeripartumReport : Language -> NominalDate -> String -> List PatientData -> Html Msg
+viewPeripartumReport language limitDate scopeLabel records =
+    let
+        data =
+            generatePeripartumReportData language limitDate records
+
+        captionsRow =
+            viewStandardCells data.captions
+                |> div [ class "row captions" ]
+
+        csvFileName =
+            "peripartum-report-"
+                ++ (String.toLower <| String.replace " " "-" scopeLabel)
+                ++ "-"
+                ++ customFormatDDMMYYYY "-" limitDate
+                ++ ".csv"
+
+        csvContent =
+            reportTableDataToCSV data
+    in
+    div [ class "report peripartum" ] <|
+        [ div [ class "table" ] <|
+            captionsRow
+                :: List.map viewStandardRow data.rows
+        , viewDownloadCSVButton language csvFileName csvContent
+        ]
+
+
+generatePeripartumReportData :
+    Language
+    -> NominalDate
+    -> List PatientData
+    -> MetricsResultsTableData
+generatePeripartumReportData language limitDate records =
+    let
+        pregnancies =
+            List.map .prenatalData records
+                |> Maybe.Extra.values
+                |> List.concat
+
+        countPregnanciesByOutcome outcome =
+            List.filter (.outcome >> (==) (Just outcome)) pregnancies
+                |> List.length
+
+        totalLiveAtTerm =
+            countPregnanciesByOutcome OutcomeLiveAtTerm
+
+        totalLivePreTerm =
+            countPregnanciesByOutcome OutcomeLivePreTerm
+
+        totalStillAtTerm =
+            countPregnanciesByOutcome OutcomeStillAtTerm
+
+        totalStillPreTerm =
+            countPregnanciesByOutcome OutcomeStillPreTerm
+
+        pregnanciesWithIndicator indicator =
+            List.filter
+                (.encounters
+                    >> List.any (.indicators >> List.member indicator)
+                )
+
+        generateRow label value =
+            [ translate language label
+            , String.fromInt value
+            ]
+    in
+    { heading = ""
+    , captions =
+        [ ""
+        , translate language Translate.Total
+        ]
+    , rows =
+        [ generateRow Translate.TotalDeliveries (totalLiveAtTerm + totalLivePreTerm + totalStillAtTerm + totalStillPreTerm)
+        , generateRow Translate.TotalLiveBirths (totalLiveAtTerm + totalLivePreTerm)
+        , generateRow Translate.TotalLivePreTermBirths totalLivePreTerm
+        , generateRow (Translate.PrenatalIndicatorLabel IndicatorPrematureOnsetContractions)
+            (List.length <| pregnanciesWithIndicator IndicatorPrematureOnsetContractions pregnancies)
+        , generateRow (Translate.PrenatalIndicatorLabel IndicatorBreastfedFirstHour)
+            (List.length <| pregnanciesWithIndicator IndicatorBreastfedFirstHour pregnancies)
+        ]
     }
 
 
