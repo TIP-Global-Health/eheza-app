@@ -13,6 +13,9 @@
  *   --site       Site identifier: 'rwanda' (default) or 'burundi'.
  */
 
+// Prevent the well-child script from running its full export.
+define('HEDLEY_DELTA_EXPORT', TRUE);
+
 require_once __DIR__ . '/../lib/export-framework.php';
 require_once __DIR__ . '/export-well-child-research.php';
 require_once __DIR__ . '/../lib/delta-exporter.php';

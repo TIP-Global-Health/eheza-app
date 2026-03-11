@@ -1423,8 +1423,8 @@ class HedleyMigrateWellChildResearchExporter extends HedleyMigrateEntityExporter
 // ============================================================================
 // Main execution
 // ============================================================================
-// Only run full export when this script is called directly (not via require).
-if (basename($_SERVER['argv'][1] ?? '') === basename(__FILE__)) {
+// Only run full export when this script is called directly (not via delta).
+if (!defined('HEDLEY_DELTA_EXPORT')) {
   $config = [
     'batch_size' => drush_get_option('batch', 50),
     'memory_limit' => drush_get_option('memory_limit', 800),
