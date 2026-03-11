@@ -1386,9 +1386,10 @@ class HedleyMigrateWellChildResearchExporter extends HedleyMigrateEntityExporter
     }
 
     $sets = [];
+    // Drupal stores weight in kg; convert to grams.
     if ($weight !== NULL && $weight !== '') {
       $sets[] = 'birth_weight_grams = '
-        . (int) $weight;
+        . round((float) $weight * 1000);
     }
     if ($height !== NULL && $height !== '') {
       $sets[] = 'birth_length_cm = '
