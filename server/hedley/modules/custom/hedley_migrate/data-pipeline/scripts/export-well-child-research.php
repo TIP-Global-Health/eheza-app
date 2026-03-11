@@ -69,6 +69,13 @@ class HedleyMigrateWellChildResearchExporter extends HedleyMigrateEntityExporter
   protected $childCache = [];
 
   /**
+   * Deferred home visit data, keyed by encounter ID.
+   *
+   * @var array
+   */
+  protected $homeVisitCache = [];
+
+  /**
    * Constructor.
    */
   public function __construct($entity_type, array $config = []) {
@@ -231,7 +238,7 @@ class HedleyMigrateWellChildResearchExporter extends HedleyMigrateEntityExporter
           'birth_length_cm' => ['type' => 'DOUBLE PRECISION'],
           'apgar_1_min' => ['type' => 'DECIMAL(3,1)'],
           'apgar_5_min' => ['type' => 'DECIMAL(3,1)'],
-          'delivery_mode' => ['type' => 'VARCHAR(50)'],
+          'delivery_complication' => ['type' => 'VARCHAR(50)'],
           'has_birth_history' => ['type' => 'BOOLEAN', 'default' => 'FALSE'],
           'caregiver_id' => ['type' => 'BIGINT'],
           'caregiver_education' => ['type' => 'VARCHAR(50)'],
@@ -596,7 +603,7 @@ class HedleyMigrateWellChildResearchExporter extends HedleyMigrateEntityExporter
           'birth_length_cm' => NULL,
           'apgar_1_min' => NULL,
           'apgar_5_min' => NULL,
-          'delivery_mode' => NULL,
+          'delivery_complication' => NULL,
           'has_birth_history' => FALSE,
           'caregiver_id' => $caregiver_data['id'],
           'caregiver_education' => $caregiver_data['education'],
@@ -862,20 +869,18 @@ class HedleyMigrateWellChildResearchExporter extends HedleyMigrateEntityExporter
       'well_child_photo',
     ];
 
-    foreach ($measurement_types as $type) {
-      $this->exportMeasurementsByType($type, $encounter_id, $child_id, $child_birth, $encounter_ts, $ecd_warning);
-    }
-  }
-
-  /**
-   * Export measurements of a specific type for an encounter.
-   */
-  protected function exportMeasurementsByType($type, $encounter_id, $child_id, $child_birth, $encounter_ts, $ecd_warning) {
+    // Fetch all measurements for this encounter in one query.
     $query = db_select('node', 'n');
-    $query->join('field_data_field_well_child_encounter', 'e', 'e.entity_id = n.nid');
-    $query->condition('n.type', $type);
+    $query->join(
+      'field_data_field_well_child_encounter', 'e',
+      'e.entity_id = n.nid'
+    );
     $query->condition('n.status', NODE_PUBLISHED);
-    $query->condition('e.field_well_child_encounter_target_id', $encounter_id);
+    $query->condition(
+      'e.field_well_child_encounter_target_id',
+      $encounter_id
+    );
+    $query->condition('n.type', $measurement_types, 'IN');
     $query->fields('n', ['nid']);
 
     $nids = $query->execute()->fetchCol();
@@ -887,10 +892,19 @@ class HedleyMigrateWellChildResearchExporter extends HedleyMigrateEntityExporter
     $measurements = node_load_multiple($nids);
 
     foreach ($measurements as $measurement) {
-      $this->exportSingleMeasurement($measurement, $type, $encounter_id, $child_id, $child_birth, $encounter_ts, $ecd_warning);
+      $this->exportSingleMeasurement(
+        $measurement, $measurement->type,
+        $encounter_id, $child_id,
+        $child_birth, $encounter_ts, $ecd_warning
+      );
     }
 
-    entity_get_controller('node')->resetCache(array_keys($measurements));
+    entity_get_controller('node')->resetCache(
+      array_keys($measurements)
+    );
+
+    // Flush deferred home visit data for this encounter.
+    $this->flushHomeVisitCache($encounter_id);
   }
 
   /**
@@ -1237,17 +1251,15 @@ class HedleyMigrateWellChildResearchExporter extends HedleyMigrateEntityExporter
   }
 
   /**
-   * Export home visit data.
+   * Export home visit data (deferred — accumulated per encounter).
+   *
+   * Data from hygiene, food_security, feeding, and caring measurements
+   * is collected into homeVisitCache. The INSERT is emitted later by
+   * flushHomeVisitCache() after all measurements are processed.
    */
   protected function exportHomeVisitData($measurement, $wrapper, $type, $encounter_id, $child_id, $measured_ts) {
-    // Build home visit record incrementally from different measurement types.
-    // Use a static cache to combine data from same encounter.
-    static $home_visit_cache = [];
-
-    $cache_key = $encounter_id;
-
-    if (!isset($home_visit_cache[$cache_key])) {
-      $home_visit_cache[$cache_key] = [
+    if (!isset($this->homeVisitCache[$encounter_id])) {
+      $this->homeVisitCache[$encounter_id] = [
         'child_id' => $child_id,
         'encounter_id' => $encounter_id,
         'visit_date' => $measured_ts,
@@ -1265,70 +1277,99 @@ class HedleyMigrateWellChildResearchExporter extends HedleyMigrateEntityExporter
         'child_clean' => NULL,
         'caring_option' => NULL,
         'drupal_nid' => $measurement->nid,
-        '_complete' => FALSE,
       ];
     }
 
-    $cache = &$home_visit_cache[$cache_key];
+    $cache = &$this->homeVisitCache[$encounter_id];
 
     switch ($type) {
       case 'well_child_hygiene':
-        $cache['main_water_source'] = $this->safeGetFieldValue($wrapper, 'field_main_water_source');
-        $cache['water_preparation'] = $this->safeGetFieldValue($wrapper, 'field_water_preparation_option');
-        $signs = $this->safeGetMultiFieldValue($wrapper, 'field_hygiene_signs');
-        $cache['has_soap'] = in_array('soap-in-the-house', $signs);
-        $cache['wash_hands_before_feeding'] = in_array('wash-hands-before-feeding', $signs);
-        $cache['food_covered'] = in_array('food-is-covered', $signs);
+        $cache['main_water_source'] = $this->safeGetFieldValue(
+          $wrapper, 'field_main_water_source'
+        );
+        $cache['water_preparation'] = $this->safeGetFieldValue(
+          $wrapper, 'field_water_preparation_option'
+        );
+        $signs = $this->safeGetMultiFieldValue(
+          $wrapper, 'field_hygiene_signs'
+        );
+        $cache['has_soap'] = in_array(
+          'soap-in-the-house', $signs
+        );
+        $cache['wash_hands_before_feeding'] = in_array(
+          'wash-hands-before-feeding', $signs
+        );
+        $cache['food_covered'] = in_array(
+          'food-is-covered', $signs
+        );
         break;
 
       case 'well_child_food_security':
-        $cache['main_income_source'] = $this->safeGetFieldValue($wrapper, 'field_main_income_source');
-        $signs = $this->safeGetMultiFieldValue($wrapper, 'field_food_security_signs');
-        $cache['household_has_food'] = in_array('household-got-food', $signs);
+        $cache['main_income_source'] = $this->safeGetFieldValue(
+          $wrapper, 'field_main_income_source'
+        );
+        $signs = $this->safeGetMultiFieldValue(
+          $wrapper, 'field_food_security_signs'
+        );
+        $cache['household_has_food'] = in_array(
+          'household-got-food', $signs
+        );
         break;
 
       case 'well_child_feeding':
-        $signs = $this->safeGetMultiFieldValue($wrapper, 'field_nutrition_feeding_signs');
-        $cache['is_breastfeeding'] = in_array('receive-breast-milk', $signs) || in_array('breastfed-only', $signs);
-        $cache['receives_supplement'] = in_array('supplementary-food', $signs);
-        $cache['supplement_type'] = $this->safeGetFieldValue($wrapper, 'field_supplement_type');
+        $signs = $this->safeGetMultiFieldValue(
+          $wrapper, 'field_nutrition_feeding_signs'
+        );
+        $cache['is_breastfeeding'] = in_array(
+          'receive-breast-milk', $signs
+        ) || in_array('breastfed-only', $signs);
+        $cache['receives_supplement'] = in_array(
+          'supplementary-food', $signs
+        );
+        $cache['supplement_type'] = $this->safeGetFieldValue(
+          $wrapper, 'field_supplement_type'
+        );
         break;
 
       case 'well_child_caring':
-        $signs = $this->safeGetMultiFieldValue($wrapper, 'field_caring_signs');
-        $cache['parents_alive_healthy'] = in_array('parents-alive-healthy', $signs);
-        $cache['child_clean'] = in_array('child-clean', $signs);
-        $cache['caring_option'] = $this->safeGetFieldValue($wrapper, 'field_caring_option');
+        $signs = $this->safeGetMultiFieldValue(
+          $wrapper, 'field_caring_signs'
+        );
+        $cache['parents_alive_healthy'] = in_array(
+          'parents-alive-healthy', $signs
+        );
+        $cache['child_clean'] = in_array(
+          'child-clean', $signs
+        );
+        $cache['caring_option'] = $this->safeGetFieldValue(
+          $wrapper, 'field_caring_option'
+        );
         break;
     }
+  }
 
-    // Check if we have enough data to export (at least one meaningful field).
-    $has_data = $cache['main_water_source'] || $cache['main_income_source'] ||
-                $cache['is_breastfeeding'] !== NULL || $cache['caring_option'];
-
-    if ($has_data && !$cache['_complete']) {
-      $cache['_complete'] = TRUE;
-
-      $this->printInsert('fact_home_visit', [
-        'child_id' => $cache['child_id'],
-        'encounter_id' => $cache['encounter_id'],
-        'visit_date' => $cache['visit_date'],
-        'main_water_source' => $cache['main_water_source'],
-        'water_preparation' => $cache['water_preparation'],
-        'has_soap' => $cache['has_soap'],
-        'wash_hands_before_feeding' => $cache['wash_hands_before_feeding'],
-        'food_covered' => $cache['food_covered'],
-        'main_income_source' => $cache['main_income_source'],
-        'household_has_food' => $cache['household_has_food'],
-        'is_breastfeeding' => $cache['is_breastfeeding'],
-        'receives_supplement' => $cache['receives_supplement'],
-        'supplement_type' => $cache['supplement_type'],
-        'parents_alive_healthy' => $cache['parents_alive_healthy'],
-        'child_clean' => $cache['child_clean'],
-        'caring_option' => $cache['caring_option'],
-        'drupal_nid' => $cache['drupal_nid'],
-      ]);
+  /**
+   * Flush deferred home visit data for a given encounter.
+   */
+  protected function flushHomeVisitCache($encounter_id) {
+    if (empty($this->homeVisitCache[$encounter_id])) {
+      return;
     }
+
+    $cache = $this->homeVisitCache[$encounter_id];
+    unset($this->homeVisitCache[$encounter_id]);
+
+    // Only emit if at least one meaningful field is set.
+    $has_data = $cache['main_water_source']
+      || $cache['main_income_source']
+      || $cache['is_breastfeeding'] !== NULL
+      || $cache['caring_option'];
+
+    if (!$has_data) {
+      return;
+    }
+
+    $this->printInsert('fact_home_visit', $cache);
   }
 
   /**
@@ -1402,7 +1443,7 @@ class HedleyMigrateWellChildResearchExporter extends HedleyMigrateEntityExporter
       $sets[] = 'apgar_5_min = ' . (int) $apgar5;
     }
     if ($complications !== NULL && $complications !== '') {
-      $sets[] = "delivery_mode = '"
+      $sets[] = "delivery_complication = '"
         . $this->escapeSqlString($complications) . "'";
     }
 

@@ -27,8 +27,17 @@ PG_PORT="5432"
 PG_DB="encounters"
 PG_USER="encounters-admin"
 
-DELTA_DIR="/tmp/delta-sync"
+DELTA_BASE_DIR="/tmp/delta-sync"
 RETENTION_DAYS=30
+
+# Per-build directory to avoid collisions between concurrent runs.
+if [[ -n "${BUILD_TAG:-}" ]]; then
+  DELTA_DIR="${DELTA_BASE_DIR}/${BUILD_TAG}"
+elif [[ -n "${BUILD_ID:-}" ]]; then
+  DELTA_DIR="${DELTA_BASE_DIR}/${BUILD_ID}"
+else
+  DELTA_DIR="${DELTA_BASE_DIR}/$$"
+fi
 # ==============================================================================
 
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"; }
@@ -111,18 +120,20 @@ log "Created sync record #$SYNC_ID"
 mkdir -p "$DELTA_DIR"
 DELTA_FILE="$DELTA_DIR/delta-$(date '+%Y%m%d-%H%M%S').sql"
 
+DELTA_STDERR_FILE="${DELTA_FILE%.sql}-stderr.log"
+
 log "Running delta export (since vid $LAST_VID)..."
 terminus drush "$PANTHEON_SITE.$PANTHEON_ENV" -- \
   scr "$DRUPAL_SCRIPT_DIR/export-delta.php" --since-vid="$LAST_VID" --site="$EXPORT_SITE" \
-  > "$DELTA_FILE" 2>/tmp/delta-export-stderr.log
+  > "$DELTA_FILE" 2>"$DELTA_STDERR_FILE"
 
 # Check for PHP errors in output
 if grep -qiE '(Fatal error|Parse error|Warning:|Notice:|Drush command terminated)' "$DELTA_FILE"; then
   die "PHP errors detected in delta export output. Check $DELTA_FILE"
 fi
 
-if grep -qiE '(Fatal error|Parse error)' /tmp/delta-export-stderr.log 2>/dev/null; then
-  die "PHP errors on stderr. Check /tmp/delta-export-stderr.log"
+if grep -qiE '(Fatal error|Parse error)' "$DELTA_STDERR_FILE" 2>/dev/null; then
+  die "PHP errors on stderr. Check $DELTA_STDERR_FILE"
 fi
 
 # Extract metadata from SQL comments
@@ -155,6 +166,8 @@ psql "$CONNSTR" -q -c \
 log "Sync #$SYNC_ID completed successfully (vid $LAST_VID → $MAX_VID_NEW)"
 
 # --- Cleanup old delta files --------------------------------------------------
-find "$DELTA_DIR" -name 'delta-*.sql' -mtime +$RETENTION_DAYS -delete 2>/dev/null || true
+find "$DELTA_BASE_DIR" -name 'delta-*.sql' -mtime +$RETENTION_DAYS -delete 2>/dev/null || true
+find "$DELTA_BASE_DIR" -name 'delta-*-stderr.log' -mtime +$RETENTION_DAYS -delete 2>/dev/null || true
+find "$DELTA_BASE_DIR" -type d -empty -delete 2>/dev/null || true
 
 log "Done."

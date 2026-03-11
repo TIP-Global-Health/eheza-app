@@ -455,7 +455,7 @@ class HedleyMigrateDeltaExporter extends HedleyMigrateWellChildResearchExporter 
       'birth_length_cm' => NULL,
       'apgar_1_min' => NULL,
       'apgar_5_min' => NULL,
-      'delivery_mode' => NULL,
+      'delivery_complication' => NULL,
       'has_birth_history' => FALSE,
       'caregiver_id' => $caregiver_data['id'],
       'caregiver_education' => $caregiver_data['education'],
