@@ -549,6 +549,7 @@ type alias CorePhysicalExamFormConfig msg =
     , setAbdomenMsg : AbdomenCPESign -> msg
     , setHandsMsg : HandsCPESign -> msg
     , setLegsMsg : LegsCPESign -> msg
+    , showHeadHairInput : Bool
     }
 
 
