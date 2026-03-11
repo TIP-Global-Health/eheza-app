@@ -12,6 +12,8 @@
 require_once __DIR__ . '/report_common.inc';
 
 $limit_date = drush_get_option('limit_date', FALSE);
+$region = drush_get_option('region', FALSE);
+
 if (!$limit_date) {
   drush_print('Please specify --limit_date option');
   exit;
@@ -47,6 +49,8 @@ $queries = [
 // 1 visit => 6
 // 5+ visits => 15.
 $group_limit = 5;
+$region_clause = ($region) ? "AND field_district_value LIKE '%$region%'" : "";
+
 foreach ($queries as $label => $query) {
   $table = new HedleyAdminTextTable([$label, 'Counter']);
   $data = [];
