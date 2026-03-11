@@ -849,6 +849,17 @@ class HedleyMigrateWellChildResearchExporter extends HedleyMigrateEntityExporter
       'well_child_caring',
       // Danger signs.
       'well_child_symptoms_review',
+      // Pregnancy summary (populates dim_child birth history).
+      'well_child_pregnancy_summary',
+      // Types tracked for change detection only (no fact tables).
+      'well_child_ncda',
+      'well_child_next_visit',
+      'well_child_nutrition',
+      'well_child_follow_up',
+      'well_child_contributing_factors',
+      'well_child_send_to_hc',
+      'well_child_health_education',
+      'well_child_photo',
     ];
 
     foreach ($measurement_types as $type) {
@@ -954,6 +965,23 @@ class HedleyMigrateWellChildResearchExporter extends HedleyMigrateEntityExporter
 
       case 'well_child_symptoms_review':
         $this->exportDangerSigns($measurement, $wrapper, $encounter_id, $child_id, $measured_ts);
+        break;
+
+      case 'well_child_pregnancy_summary':
+        $this->exportPregnancySummary(
+          $wrapper, $child_id
+        );
+        break;
+
+      // Types tracked for change detection only.
+      case 'well_child_ncda':
+      case 'well_child_next_visit':
+      case 'well_child_nutrition':
+      case 'well_child_follow_up':
+      case 'well_child_contributing_factors':
+      case 'well_child_send_to_hc':
+      case 'well_child_health_education':
+      case 'well_child_photo':
         break;
     }
   }
@@ -1327,6 +1355,67 @@ class HedleyMigrateWellChildResearchExporter extends HedleyMigrateEntityExporter
       'body_temperature' => NULL,
       'drupal_nid' => $measurement->nid,
     ]);
+  }
+
+  /**
+   * Export pregnancy summary as UPDATE to dim_child birth history.
+   *
+   * @param object $wrapper
+   *   Entity metadata wrapper for the measurement.
+   * @param int $child_id
+   *   The child node ID.
+   */
+  protected function exportPregnancySummary($wrapper, $child_id) {
+    $weight = $this->safeGetFieldValue($wrapper, 'field_weight');
+    $height = $this->safeGetFieldValue($wrapper, 'field_height');
+    $apgar1 = $this->safeGetFieldValue(
+      $wrapper, 'field_apgar_one_min'
+    );
+    $apgar5 = $this->safeGetFieldValue(
+      $wrapper, 'field_apgar_five_min'
+    );
+    $complications = $this->safeGetFieldValue(
+      $wrapper, 'field_delivery_complications'
+    );
+
+    // Extract first complication value if it's an array.
+    if (is_array($complications)) {
+      $complications = !empty($complications)
+        ? reset($complications)
+        : NULL;
+    }
+
+    $sets = [];
+    if ($weight !== NULL && $weight !== '') {
+      $sets[] = 'birth_weight_grams = '
+        . (int) $weight;
+    }
+    if ($height !== NULL && $height !== '') {
+      $sets[] = 'birth_length_cm = '
+        . (float) $height;
+    }
+    if ($apgar1 !== NULL && $apgar1 !== '') {
+      $sets[] = 'apgar_1_min = ' . (int) $apgar1;
+    }
+    if ($apgar5 !== NULL && $apgar5 !== '') {
+      $sets[] = 'apgar_5_min = ' . (int) $apgar5;
+    }
+    if ($complications !== NULL && $complications !== '') {
+      $sets[] = "delivery_mode = '"
+        . $this->escapeSqlString($complications) . "'";
+    }
+
+    if (empty($sets)) {
+      return;
+    }
+
+    $sets[] = 'has_birth_history = TRUE';
+
+    drush_print(
+      "UPDATE dim_child SET "
+      . implode(', ', $sets)
+      . " WHERE child_id = " . (int) $child_id . ";"
+    );
   }
 
 }
