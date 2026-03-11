@@ -926,17 +926,21 @@ export function queryWellChildNodes(
     try {
       const parsed = JSON.parse(output);
       if (parsed.error) {
-        if (attempt < 4) {
-          execSync('sleep 10');
-          continue;
+        console.log(`queryWellChildNodes attempt ${attempt + 1}: ${parsed.error}`);
+      } else if (expectedTypes && expectedTypes.length > 0) {
+        const missing = expectedTypes.filter(t => !parsed[t]);
+        if (missing.length === 0) {
+          return parsed;
         }
-        return {};
+        console.log(`queryWellChildNodes attempt ${attempt + 1}: missing [${missing.join(', ')}]`);
+      } else {
+        return parsed;
       }
-      return parsed;
     } catch {
-      if (attempt < 4) {
-        execSync('sleep 10');
-      }
+      console.error('queryWellChildNodes: failed to parse drush output:', output);
+    }
+    if (attempt < 4) {
+      execSync('sleep 10');
     }
   }
   return {};

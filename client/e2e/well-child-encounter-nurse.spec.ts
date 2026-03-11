@@ -92,6 +92,7 @@ test.describe('Nurse: Well Child PediatricCare — Normal Encounter', () => {
       'well_child_ecd',
       'well_child_mebendezole',
       'well_child_vitamin_a',
+      'well_child_next_visit',
     ];
     const nodes = queryWellChildNodes(fullName, expectedTypes);
 
@@ -105,6 +106,7 @@ test.describe('Nurse: Well Child PediatricCare — Normal Encounter', () => {
     expect(nodes['well_child_ecd']).toBe(true);
     expect(nodes['well_child_mebendezole']).toBe(true);
     expect(nodes['well_child_vitamin_a']).toBe(true);
+    expect(nodes['well_child_next_visit']).toBe(true);
   });
 });
 
@@ -192,17 +194,21 @@ test.describe('Nurse: Well Child PediatricCare — Abnormal Nutrition with NextS
       'well_child_health_education',
       'well_child_send_to_hc',
       'well_child_follow_up',
+      'well_child_next_visit',
     ];
     const nodes = queryWellChildNodes(fullName, expectedTypes);
 
     expect(nodes['well_child_symptoms_review']).toBe(true);
     expect(nodes['well_child_vitals']).toBe(true);
     expect(nodes['well_child_height']).toBe(true);
+    expect(nodes['well_child_head_circumference']).toBe(true);
+    expect(nodes['well_child_muac']).toBe(true);
     expect(nodes['well_child_nutrition']).toBe(true);
     expect(nodes['well_child_weight']).toBe(true);
     expect(nodes['well_child_contributing_factors']).toBe(true);
     expect(nodes['well_child_health_education']).toBe(true);
     expect(nodes['well_child_send_to_hc']).toBe(true);
     expect(nodes['well_child_follow_up']).toBe(true);
+    expect(nodes['well_child_next_visit']).toBe(true);
   });
 });

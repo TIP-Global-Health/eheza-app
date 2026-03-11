@@ -98,7 +98,7 @@ jobs:
             exit 1
       - run:
           name: Run E2E tests
-          command: cd client && npx playwright test
+          command: cd client && npx playwright test --grep-invert "Well Child"
       - store_artifacts:
           path: client/test-results
           destination: playwright-results

@@ -77,6 +77,9 @@ test.describe('CHW: Well Child NewbornExam Encounter', () => {
       'well_child_head_circumference',
       'well_child_nutrition',
       'well_child_weight',
+      'well_child_health_education',
+      'well_child_send_to_hc',
+      'well_child_next_visit',
     ];
     const nodes = queryWellChildNodes(fullName, expectedTypes);
 
@@ -84,6 +87,9 @@ test.describe('CHW: Well Child NewbornExam Encounter', () => {
     expect(nodes['well_child_head_circumference']).toBe(true);
     expect(nodes['well_child_nutrition']).toBe(true);
     expect(nodes['well_child_weight']).toBe(true);
+    expect(nodes['well_child_health_education']).toBe(true);
+    expect(nodes['well_child_send_to_hc']).toBe(true);
+    expect(nodes['well_child_next_visit']).toBe(true);
   });
 });
 
@@ -157,6 +163,9 @@ test.describe('CHW: Well Child PediatricCareChw Encounter with HomeVisit', () =>
       'well_child_caring',
       'well_child_hygiene',
       'well_child_food_security',
+      'well_child_health_education',
+      'well_child_send_to_hc',
+      'well_child_next_visit',
     ];
     const nodes = queryWellChildNodes(fullName, expectedTypes);
 
@@ -171,5 +180,8 @@ test.describe('CHW: Well Child PediatricCareChw Encounter with HomeVisit', () =>
     expect(nodes['well_child_caring']).toBe(true);
     expect(nodes['well_child_hygiene']).toBe(true);
     expect(nodes['well_child_food_security']).toBe(true);
+    expect(nodes['well_child_health_education']).toBe(true);
+    expect(nodes['well_child_send_to_hc']).toBe(true);
+    expect(nodes['well_child_next_visit']).toBe(true);
   });
 });
