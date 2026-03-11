@@ -234,7 +234,7 @@ class HedleyMigrateWellChildResearchExporter extends HedleyMigrateEntityExporter
           'village' => ['type' => 'VARCHAR(100)'],
           'health_center_id' => ['type' => 'BIGINT'],
           'hiv_status' => ['type' => 'VARCHAR(30)'],
-          'birth_weight_grams' => ['type' => 'DECIMAL(6,1)'],
+          'birth_weight_grams' => ['type' => 'INTEGER'],
           'birth_length_cm' => ['type' => 'DOUBLE PRECISION'],
           'apgar_1_min' => ['type' => 'DECIMAL(3,1)'],
           'apgar_5_min' => ['type' => 'DECIMAL(3,1)'],
@@ -1427,10 +1427,12 @@ class HedleyMigrateWellChildResearchExporter extends HedleyMigrateEntityExporter
     }
 
     $sets = [];
-    // Drupal stores weight in kg; convert to grams.
+    // Drupal stores weight inconsistently: some in kg, some
+    // in grams. Values <= 30 are kg, above are grams.
     if ($weight !== NULL && $weight !== '') {
-      $sets[] = 'birth_weight_grams = '
-        . round((float) $weight * 1000);
+      $w = (float) $weight;
+      $grams = $w <= 30 ? round($w * 1000) : round($w);
+      $sets[] = 'birth_weight_grams = ' . $grams;
     }
     if ($height !== NULL && $height !== '') {
       $sets[] = 'birth_length_cm = '
