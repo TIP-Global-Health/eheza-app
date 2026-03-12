@@ -606,17 +606,23 @@ export async function completeLaboratory(
       await page.waitForTimeout(500);
     }
 
+    // Helper: click a label with force:true (safe for radios/checkboxes,
+    // avoids sticky .actions bar interception in headed mode).
+    const forceClick = async (locator: import('@playwright/test').Locator) => {
+      await locator.click({ force: true });
+    };
+
     // 1. "Known as positive?" (HIV, Pregnancy) → No
     const knownPositive = page.locator('.form-input.yes-no.known-as-positive');
     if (await knownPositive.isVisible().catch(() => false)) {
-      await click(knownPositive.locator('label', { hasText: 'No' }), page);
+      await forceClick(knownPositive.locator('label', { hasText: 'No' }));
       await page.waitForTimeout(500);
     }
 
     // 2. "Got results previously?" (HBA1C) → No
     const gotResults = page.locator('.form-input.yes-no.got-results-previously');
     if (await gotResults.isVisible().catch(() => false)) {
-      await click(gotResults.locator('label', { hasText: 'No' }), page);
+      await forceClick(gotResults.locator('label', { hasText: 'No' }));
       await page.waitForTimeout(500);
     }
 
@@ -624,40 +630,39 @@ export async function completeLaboratory(
     const testPerformed = page.locator('.form-input.yes-no.test-performed');
     if (await testPerformed.isVisible().catch(() => false)) {
       if (performTests) {
-        await click(testPerformed.locator('label', { hasText: 'Yes' }), page);
-        await page.waitForTimeout(500);
+        await forceClick(testPerformed.locator('label', { hasText: 'Yes' }));
       } else {
-        await click(testPerformed.locator('label', { hasText: 'No' }), page);
-        await page.waitForTimeout(500);
+        await forceClick(testPerformed.locator('label', { hasText: 'No' }));
       }
+      await page.waitForTimeout(500);
     }
 
     if (performTests) {
       // 4. "Immediate result?" → Lab (custom labels: "Point of Care" / "Lab")
       const immediateResult = page.locator('.form-input.yes-no.immediate-result');
       if (await immediateResult.isVisible().catch(() => false)) {
-        await click(immediateResult.locator('label', { hasText: 'Lab' }), page);
+        await forceClick(immediateResult.locator('label', { hasText: 'Lab' }));
         await page.waitForTimeout(500);
       }
 
       // 5. "Urine Dipstick variant?" → Short Dip
       const shortDip = page.locator('.ui.checkbox label', { hasText: /^Short Dip$/i });
       if (await shortDip.isVisible().catch(() => false)) {
-        await click(shortDip, page);
+        await forceClick(shortDip);
         await page.waitForTimeout(300);
       }
 
       // 6. "Was this test performed before a meal?" → No (Random Blood Sugar)
       const patientFasted = page.locator('.form-input.yes-no.patient-fasted');
       if (await patientFasted.isVisible().catch(() => false)) {
-        await click(patientFasted.locator('label', { hasText: 'No' }), page);
+        await forceClick(patientFasted.locator('label', { hasText: 'No' }));
         await page.waitForTimeout(300);
       }
 
       // 7. "Did you perform this test today?" → Yes
       const testPerformedToday = page.locator('.form-input.yes-no.test-performed-today');
       if (await testPerformedToday.isVisible().catch(() => false)) {
-        await click(testPerformedToday.locator('label', { hasText: 'Yes' }), page);
+        await forceClick(testPerformedToday.locator('label', { hasText: 'Yes' }));
         await page.waitForTimeout(300);
       }
 
@@ -700,14 +705,14 @@ export async function completeLaboratory(
       // 10. "Is the patient's partner HIV positive?" → No (appears after HIV result)
       const partnerHIV = page.locator('.form-input.yes-no.partner-hiv-positive');
       if (await partnerHIV.isVisible().catch(() => false)) {
-        await click(partnerHIV.locator('label', { hasText: 'No' }), page);
+        await forceClick(partnerHIV.locator('label', { hasText: 'No' }));
         await page.waitForTimeout(300);
       }
     } else {
-      // "Why not?" reason checkbox → select first option
+      // "Why not?" reason checkbox → select first option.
       const whyNot = page.locator('.why-not .ui.checkbox label').first();
       if (await whyNot.isVisible().catch(() => false)) {
-        await click(whyNot, page);
+        await forceClick(whyNot);
         await page.waitForTimeout(300);
       }
     }
@@ -1095,7 +1100,7 @@ export async function leaveRecurrentEncounter(page: Page) {
   const leaveBtn = page.locator('button', { hasText: 'Leave Encounter' });
   await leaveBtn.waitFor({ timeout: 10000 });
   await click(leaveBtn, page);
-  await page.waitForTimeout(2000);
+  await page.locator('.page-case-management').waitFor({ timeout: 10000 });
 }
 
 // ---------------------------------------------------------------------------
@@ -1110,22 +1115,19 @@ export async function syncAndWait(page: Page) {
   // Navigate to device status.
   await click(page.locator('span.sync-icon'), page);
 
+  // Wait for the Device Status page to be rendered.
+  await page.locator('.device-status').waitFor({ timeout: 10000 });
+
   // Find the health center section for "Nyange Health Center".
   const hcSection = page.locator('.health-center', {
     has: page.locator('h2', { hasText: 'Nyange Health Center' }),
   });
-
-  // Click "Start Syncing" if visible.
-  const syncBtn = hcSection.locator('button', { hasText: 'Start Syncing' });
-  if (await syncBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-    await click(syncBtn, page);
-  }
+  await hcSection.waitFor({ timeout: 10000 });
 
   // Wait for sync success.
   await hcSection
     .locator('.sync-status', { hasText: 'Status: Success' })
     .waitFor({ timeout: 120000 });
-  await page.waitForTimeout(1000);
 
   // Go back.
   await page.goBack();

@@ -145,7 +145,8 @@ test.describe('Nurse: NCD First Encounter — Female, Hypertension', () => {
     await completeLaboratory(page);
 
     // 7. NextSteps: triggered by hypertension diagnosis.
-    //    MedicationDistribution and Referral should appear.
+    //    MedicationDistribution appears (Stage 2 hypertension).
+    //    Referral does NOT appear (requires Stage 3 or pregnant patient).
     await completeNextSteps(page);
 
     // End encounter.
@@ -321,13 +322,15 @@ test.describe('Nurse: NCD Recurrent Encounter — Lab Results', () => {
 
     // --- PART 3: Complete recurrent encounter activities ---
 
-    // Check if LabResults activity is visible and complete it.
+    // LabResults activity must be visible (tests were performed in initial phase).
     const labResultsCard = page.locator('.icon-task-laboratory');
-    if (await labResultsCard.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await completeLabResults(page);
-    }
+    await expect(
+      labResultsCard,
+      'Expected Lab Results activity card to be visible in recurrent NCD encounter.',
+    ).toBeVisible({ timeout: 5000 });
+    await completeLabResults(page);
 
-    // Check if RecurrentNextSteps is visible and complete it.
+    // RecurrentNextSteps should appear (lab results may trigger diagnosis).
     const nextStepsCard = page.locator('.icon-task-next-steps');
     if (await nextStepsCard.isVisible({ timeout: 5000 }).catch(() => false)) {
       await completeRecurrentNextSteps(page);
