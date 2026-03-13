@@ -545,6 +545,32 @@ function hedley_general_file_insert($file) {
 }
 
 /**
+ * Implements hook_cron().
+ *
+ * Prune old cache_field and advancedqueue entries to prevent unbounded growth.
+ */
+function hedley_general_cron() {
+  $threshold = REQUEST_TIME - 30 * 24 * 60 * 60;
+  $deleted = db_delete('cache_field')
+    ->condition('created', $threshold, '<')
+    ->execute();
+
+  if ($deleted) {
+    watchdog('hedley_general', 'Pruned @count old entries from cache_field.', ['@count' => $deleted]);
+  }
+
+  // Remove queue items older than 6 months.
+  $threshold = REQUEST_TIME - 6 * 30 * 24 * 60 * 60;
+  $deleted = db_delete('advancedqueue')
+    ->condition('created', $threshold, '<')
+    ->execute();
+
+  if ($deleted) {
+    watchdog('hedley_general', 'Pruned @count old entries from advancedqueue.', ['@count' => $deleted]);
+  }
+}
+
+/**
  * Build Elm application for aggregated NCDA.
  *
  * @param string $page
