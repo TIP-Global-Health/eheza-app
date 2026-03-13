@@ -603,7 +603,12 @@ export async function completeLaboratory(
     ).catch(() => false);
     if (!isActive) {
       await click(tab, page);
-      await page.waitForTimeout(500);
+      // Wait for the form to render (every lab tab has at least one yes/no field).
+      await page
+        .locator('.form-input.yes-no')
+        .first()
+        .waitFor({ timeout: 5000 });
+      await page.waitForTimeout(300);
     }
 
     // Helper: click a label with force:true (safe for radios/checkboxes,
@@ -631,10 +636,15 @@ export async function completeLaboratory(
     if (await testPerformed.isVisible().catch(() => false)) {
       if (performTests) {
         await forceClick(testPerformed.locator('label', { hasText: 'Yes' }));
+        await page.waitForTimeout(500);
       } else {
         await forceClick(testPerformed.locator('label', { hasText: 'No' }));
+        // Wait for "Why not?" section and select first reason.
+        const whyNot = page.locator('.why-not .ui.checkbox label').first();
+        await whyNot.waitFor({ timeout: 5000 });
+        await forceClick(whyNot);
+        await page.waitForTimeout(300);
       }
-      await page.waitForTimeout(500);
     }
 
     if (performTests) {
@@ -708,21 +718,15 @@ export async function completeLaboratory(
         await forceClick(partnerHIV.locator('label', { hasText: 'No' }));
         await page.waitForTimeout(300);
       }
-    } else {
-      // "Why not?" reason checkbox → select first option.
-      const whyNot = page.locator('.why-not .ui.checkbox label').first();
-      if (await whyNot.isVisible().catch(() => false)) {
-        await forceClick(whyNot);
-        await page.waitForTimeout(300);
-      }
     }
 
     // Save this test's sub-task.
-    const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
-    if (await saveBtn.isVisible()) {
-      await click(saveBtn, page);
-      await page.waitForTimeout(500);
-    }
+    // Wait for Save to be enabled (form complete), then force-click
+    // (avoids sticky footer / viewport issues in headed mode).
+    const saveBtn = page.locator('button.ui.fluid.primary.button:not(.disabled)', { hasText: 'Save' });
+    await saveBtn.waitFor({ timeout: 10000 });
+    await saveBtn.click({ force: true });
+    await page.waitForTimeout(500);
   }
 
   // After all tabs, we should be back on the encounter page.
@@ -759,19 +763,18 @@ export async function completeNextSteps(page: Page) {
       // HealthEducation: answer bool input (hypertension education).
       await answerYesNo(page, 'hypertension', 'Yes');
     } else if (classAttr?.includes('next-steps-treatment')) {
-      // MedicationDistribution: select recommended treatment.
-      // The form shows radio-style checkboxes for treatment options.
-      // Click the first available treatment checkbox.
+      // MedicationDistribution: select recommended medications.
+      // Stage 2 hypertension requires choosing two medications.
       const treatmentCheckboxes = page.locator('.ui.form.medication-distribution .ui.checkbox label');
       const checkboxCount = await treatmentCheckboxes.count();
-      if (checkboxCount > 0) {
-        await click(treatmentCheckboxes.first(), page);
-        await page.waitForTimeout(500);
+      for (let c = 0; c < Math.min(checkboxCount, 2); c++) {
+        await treatmentCheckboxes.nth(c).click({ force: true });
+        await page.waitForTimeout(300);
       }
       // "Guided to return in one month?" → Yes
       const guidedReturn = page.locator('.form-input.yes-no.return-in-one-month label', { hasText: 'Yes' });
       if (await guidedReturn.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await click(guidedReturn, page);
+        await guidedReturn.click({ force: true });
       }
     } else if (classAttr?.includes('next-steps-referral')) {
       // Referral: refer to hospital.
@@ -780,16 +783,15 @@ export async function completeNextSteps(page: Page) {
       // "Hand referral form?" → Yes
       const handForm = page.locator('.form-input.yes-no.hand-referral-form label', { hasText: 'Yes' });
       if (await handForm.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await click(handForm, page);
+        await handForm.click({ force: true });
       }
     }
 
-    // Save sub-task.
-    const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
-    if (await saveBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await click(saveBtn, page);
-      await page.waitForTimeout(1000);
-    }
+    // Save sub-task (wait for enabled, then force-click for headed mode).
+    const saveBtn = page.locator('button.ui.fluid.primary.button:not(.disabled)', { hasText: 'Save' });
+    await saveBtn.waitFor({ timeout: 10000 });
+    await saveBtn.click({ force: true });
+    await page.waitForTimeout(1000);
   }
 
   // Wait for encounter page.
