@@ -35,7 +35,8 @@ test.describe('CHW: Child Scoreboard Encounter — First NCDA + Vaccination Hist
   // Conditions: First NCDA → AntenatalCare step shown. Child 10 months → NutritionBehavior shown.
   //             Normal MUAC (14.0) → TreatedForAcuteMalnutrition NOT shown. No diarrhea → no popup.
   //             ChildBehindOnVaccination → "No" triggers VaccinationHistory activity.
-  // Backend: Verifies child_scoreboard_ncda + vaccination nodes created.
+  // Backend: Verifies child_scoreboard_ncda + 7 vaccination nodes created,
+  //          confirms child_scoreboard_dtp_sa_iz absent (Burundi-only).
   test('complete NCDA and vaccination history, verify backend sync', async ({ page }) => {
     // 1. Register a 10-month-old child and start the encounter.
     const { fullName } = await createChildAndStartEncounter(page, {
@@ -56,29 +57,30 @@ test.describe('CHW: Child Scoreboard Encounter — First NCDA + Vaccination Hist
     await syncAndWait(page);
 
     // 6. Verify backend nodes.
+    // For a 10-month-old male on Rwanda site with no vaccination history,
+    // all 7 common vaccines are overdue (BCG, OPV, DTP, PCV13, Rotarix, IPV, MR).
+    // DTPStandalone is Burundi-only, so absent on Rwanda.
     const expectedTypes = [
       'child_scoreboard_ncda',
+      'child_scoreboard_bcg_iz',
+      'child_scoreboard_opv_iz',
+      'child_scoreboard_dtp_iz',
+      'child_scoreboard_pcv13_iz',
+      'child_scoreboard_rotarix_iz',
+      'child_scoreboard_ipv_iz',
+      'child_scoreboard_mr_iz',
     ];
     const nodes = queryChildScoreboardNodes(fullName, expectedTypes);
 
-    // NCDA node should be created.
     expect(nodes['child_scoreboard_ncda']).toBe(true);
-
-    // Vaccination nodes — at least some should be created since
-    // VaccinationHistory was triggered for a 10-month-old with no records.
-    // Which specific vaccines appear depends on the child's age and site
-    // schedule, so we verify that at least one vaccination node exists.
-    const vaccinationTypes = [
-      'child_scoreboard_bcg_iz',
-      'child_scoreboard_dtp_iz',
-      'child_scoreboard_dtp_sa_iz',
-      'child_scoreboard_ipv_iz',
-      'child_scoreboard_mr_iz',
-      'child_scoreboard_opv_iz',
-      'child_scoreboard_pcv13_iz',
-      'child_scoreboard_rotarix_iz',
-    ];
-    const createdVaccinations = vaccinationTypes.filter(t => nodes[t] === true);
-    expect(createdVaccinations.length).toBeGreaterThan(0);
+    expect(nodes['child_scoreboard_bcg_iz']).toBe(true);
+    expect(nodes['child_scoreboard_opv_iz']).toBe(true);
+    expect(nodes['child_scoreboard_dtp_iz']).toBe(true);
+    expect(nodes['child_scoreboard_pcv13_iz']).toBe(true);
+    expect(nodes['child_scoreboard_rotarix_iz']).toBe(true);
+    expect(nodes['child_scoreboard_ipv_iz']).toBe(true);
+    expect(nodes['child_scoreboard_mr_iz']).toBe(true);
+    // DTPStandalone is Burundi-only, not present on Rwanda site.
+    expect(nodes['child_scoreboard_dtp_sa_iz']).toBe(false);
   });
 });
