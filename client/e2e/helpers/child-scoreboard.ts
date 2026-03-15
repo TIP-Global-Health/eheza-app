@@ -318,11 +318,13 @@ export async function completeNCDA(page: Page) {
   await page.waitForTimeout(500);
 
   // ChildBehindOnVaccination — conditional, may or may not appear.
+  // Answer "No" (caregiver says child is up-to-date) to trigger
+  // VaccinationHistory activity after NCDA is saved.
   const vaccinationQuestion = page.locator('.ui.form.ncda .label', {
     hasText: 'behind on vaccinations',
   });
   if (await vaccinationQuestion.isVisible({ timeout: 1000 }).catch(() => false)) {
-    await answerNCDAYesNo(page, 'behind on vaccinations', 'Yes');
+    await answerNCDAYesNo(page, 'behind on vaccinations', 'No');
     await page.waitForTimeout(300);
   }
 
@@ -471,6 +473,66 @@ export async function completeNCDA(page: Page) {
   ]);
 
   // If we landed on the progress report, navigate back to the encounter page.
+  if (await progressReport.isVisible({ timeout: 500 }).catch(() => false)) {
+    await click(page.locator('span.icon-back').first(), page);
+    await encounterPage.waitFor({ timeout: 10000 });
+  }
+
+  await page.waitForTimeout(500);
+}
+
+// ---------------------------------------------------------------------------
+// Vaccination History activity
+// ---------------------------------------------------------------------------
+
+/**
+ * Complete the Vaccination History activity by iterating all visible
+ * vaccine tabs and answering "No" to "Did the child receive any [vaccine]
+ * immunizations prior to today that are not recorded above".
+ *
+ * In Child Scoreboard, suggestDoseToday is false, so answering "No"
+ * to the previous-doses question completes each vaccine tab.
+ *
+ * Creates: child_scoreboard_*_iz nodes for each vaccine tab completed.
+ */
+export async function completeVaccinationHistory(page: Page) {
+  await openActivity(page, 'immunisation');
+
+  const tabs = page.locator('.link-section:has(.icon-activity-task)');
+  const tabCount = await tabs.count();
+
+  for (let i = 0; i < tabCount; i++) {
+    await click(tabs.nth(i), page);
+    await page.waitForTimeout(500);
+
+    // Answer "No" to "Did the child receive any [vaccine] immunizations
+    // prior to today that are not recorded above".
+    // The vaccination form (.ui.form.vaccination) has a single yes/no
+    // input with empty CSS class, so locate the .form-input.yes-no within it.
+    const vaccinationForm = page.locator('.ui.form.vaccination');
+    const yesNoInput = vaccinationForm.locator('.form-input.yes-no');
+    if (await yesNoInput.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await click(yesNoInput.locator('label', { hasText: 'No' }), page);
+      await page.waitForTimeout(300);
+    }
+
+    // Save the vaccine tab.
+    const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+    await saveBtn.waitFor({ timeout: 5000 });
+    await click(saveBtn, page);
+    await page.waitForTimeout(1000);
+  }
+
+  // After saving the last tab, the app may navigate to the encounter page
+  // or the progress report page. Handle both cases.
+  const encounterPage = page.locator('div.page-encounter.child-scoreboard');
+  const progressReport = page.locator('h1', { hasText: 'PROGRESS REPORT' });
+
+  await Promise.race([
+    encounterPage.waitFor({ timeout: 15000 }),
+    progressReport.waitFor({ timeout: 15000 }),
+  ]);
+
   if (await progressReport.isVisible({ timeout: 500 }).catch(() => false)) {
     await click(page.locator('span.icon-back').first(), page);
     await encounterPage.waitFor({ timeout: 10000 });
