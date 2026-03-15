@@ -12,6 +12,16 @@ workflows:
             - lint_phpcs
             - lint_elm
             - lint_shellcheck
+      - e2e_playwright_1:
+          requires:
+            - lint_phpcs
+            - lint_elm
+            - lint_shellcheck
+      - e2e_playwright_2:
+          requires:
+            - lint_phpcs
+            - lint_elm
+            - lint_shellcheck
 
 jobs:
   lint_phpcs:
@@ -45,3 +55,100 @@ jobs:
       - run: ci-scripts/install_drupal.sh
       - run: ci-scripts/circleci_wait.sh ddev zscore-test
       - run: ci-scripts/circleci_wait.sh ddev simpletest
+  e2e_playwright_1:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large
+    steps:
+      - checkout
+      - run:
+          name: Free port 3000 for host-side serving
+          command: rm -f .ddev/docker-compose.client-http.yaml
+      - run:
+          name: Install DDEV
+          command: ci-scripts/install_ddev.sh
+      - run:
+          name: Install Drupal
+          command: ci-scripts/install_drupal.sh
+      - run:
+          name: Install and build client
+          command: ci-scripts/install_client.sh
+          no_output_timeout: 4m
+      - run:
+          name: Verify Elm compiled
+          command: |
+            test -f client/serve/Main.js || (echo "Main.js not found - Elm compilation failed" && exit 1)
+      - run:
+          name: Install Playwright browsers
+          command: cd client && DEBIAN_FRONTEND=noninteractive npx playwright install --with-deps chromium
+      - run:
+          name: Start app
+          command: cd client/serve && python3 -m http.server 3000
+          background: true
+      - run:
+          name: Wait for app
+          command: |
+            for i in $(seq 1 60); do
+              if curl --silent --fail http://localhost:3000 > /dev/null; then
+                echo "App is up on http://localhost:3000"
+                exit 0
+              fi
+              sleep 2
+            done
+            echo "App failed to become reachable on http://localhost:3000 within timeout"
+            exit 1
+      - run:
+          name: Run E2E tests
+          command: cd client && npx playwright test --grep-invert "Well Child|NCD|HIV|Tuberculosis|Child Scoreboard"
+      - store_artifacts:
+          path: client/test-results
+          destination: playwright-results
+  e2e_playwright_2:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large
+    steps:
+      - checkout
+      - run:
+          name: Free port 3000 for host-side serving
+          command: rm -f .ddev/docker-compose.client-http.yaml
+      - run:
+          name: Install DDEV
+          command: ci-scripts/install_ddev.sh
+      - run:
+          name: Install Drupal
+          command: ci-scripts/install_drupal.sh
+      - run:
+          name: Install and build client
+          command: ci-scripts/install_client.sh
+          no_output_timeout: 4m
+      - run:
+          name: Verify Elm compiled
+          command: |
+            test -f client/serve/Main.js || (echo "Main.js not found - Elm compilation failed" && exit 1)
+      - run:
+          name: Install Playwright browsers
+          command: cd client && DEBIAN_FRONTEND=noninteractive npx playwright install --with-deps chromium
+      - run:
+          name: Start app
+          command: cd client/serve && python3 -m http.server 3000
+          background: true
+      - run:
+          name: Wait for app
+          command: |
+            for i in $(seq 1 60); do
+              if curl --silent --fail http://localhost:3000 > /dev/null; then
+                echo "App is up on http://localhost:3000"
+                exit 0
+              fi
+              sleep 2
+            done
+            echo "App failed to become reachable on http://localhost:3000 within timeout"
+            exit 1
+      - run:
+          name: Run E2E tests
+          command: cd client && npx playwright test well-child ncd hiv tuberculosis child-scoreboard
+          no_output_timeout: 15m
+      - store_artifacts:
+          path: client/test-results
+          destination: playwright-results
