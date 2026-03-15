@@ -4,6 +4,7 @@ import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import {
   createChildAndStartEncounter,
+  completeNCDA,
   enterHeight,
   enterWeight,
   enterMuac,
@@ -31,19 +32,20 @@ test.describe('Nurse: Individual Nutrition Encounter', () => {
     await setupDevice(page);
   });
 
-  test('complete normal encounter and verify backend sync', async ({
+  test('complete normal encounter with NCDA and verify backend sync', async ({
     page,
   }) => {
+    // Use age 10 months (< 24) so NCDA activity appears for nurse.
     const { fullName } = await createChildAndStartEncounter(page, {
-      ageMonths: 24,
+      ageMonths: 10,
     });
 
-    // Height: 85 cm
-    await enterHeight(page, '85');
+    // Height: 70 cm
+    await enterHeight(page, '70');
     await saveActivity(page);
 
-    // Weight: 12 kg
-    await enterWeight(page, '12');
+    // Weight: 8.5 kg
+    await enterWeight(page, '8.5');
     await saveActivity(page);
 
     // MUAC: 14 cm
@@ -54,6 +56,9 @@ test.describe('Nurse: Individual Nutrition Encounter', () => {
     await enterNutritionSigns(page, ['None']);
     const diagnosisAppeared = await saveActivity(page);
     expect(diagnosisAppeared).toBe(false);
+
+    // Complete NCDA activity (Nurse, atHealthCenter).
+    await completeNCDA(page);
 
     // End encounter.
     const endBtn = page.locator('div.actions button.ui.fluid.button', {
@@ -67,10 +72,11 @@ test.describe('Nurse: Individual Nutrition Encounter', () => {
 
     // Verify measurements in backend.
     const nodes = queryBackendNodes(fullName);
-    expect(nodes.height).toBe(85);
-    expect(nodes.weight).toBe(12);
+    expect(nodes.height).toBe(70);
+    expect(nodes.weight).toBe(8.5);
     expect(nodes.muac).toBe(14);
     expect(nodes.nutrition).toBe(true);
+    expect(nodes.ncda).toBe(true);
   });
 
   test('measurement validation rejects out-of-range values', async ({
