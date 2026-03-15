@@ -173,11 +173,13 @@ test.describe('Nurse: Acute Illness Initial + Subsequent Encounter — Malaria U
     const subsequentTypes = [
       'acute_illness_danger_signs',
       'treatment_ongoing',
+      'health_education',
     ];
     const subsequentNodes = queryAcuteIllnessNodes(fullName, subsequentTypes);
 
     expect(subsequentNodes['acute_illness_danger_signs']).toBe(true);
     expect(subsequentNodes['treatment_ongoing']).toBe(true);
+    expect(subsequentNodes['health_education']).toBe(true);
   });
 });
 
