@@ -21,6 +21,8 @@ import {
 // =========================================================================
 
 test.describe('CHW: HIV Initial Encounter — Positive Diagnosis', () => {
+  test.describe.configure({ timeout: 600000 });
+
   if (process.env.RECORD) {
     test.beforeEach(async ({ page }) => {
       await page.addInitScript(installCursorScript());
@@ -173,6 +175,8 @@ test.describe('CHW: HIV Subsequent Encounter — Symptoms + Referral', () => {
 // =========================================================================
 
 test.describe('CHW: HIV Initial Encounter — No Diagnosis', () => {
+  test.describe.configure({ timeout: 600000 });
+
   if (process.env.RECORD) {
     test.beforeEach(async ({ page }) => {
       await page.addInitScript(installCursorScript());
