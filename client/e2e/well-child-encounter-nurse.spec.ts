@@ -81,6 +81,9 @@ test.describe('Nurse: Well Child PediatricCare — Normal Encounter', () => {
     await syncAndWait(page);
 
     // Verify backend nodes.
+    // For a 24-month-old male on Rwanda with no vaccination history,
+    // all 7 common vaccines are overdue (BCG, OPV, DTP, PCV13, Rotarix, IPV, MR).
+    // DTPStandalone is Burundi-only, HPV is female-only.
     const expectedTypes = [
       'well_child_symptoms_review',
       'well_child_vitals',
@@ -93,6 +96,13 @@ test.describe('Nurse: Well Child PediatricCare — Normal Encounter', () => {
       'well_child_mebendezole',
       'well_child_vitamin_a',
       'well_child_next_visit',
+      'well_child_bcg_immunisation',
+      'well_child_opv_immunisation',
+      'well_child_dtp_immunisation',
+      'well_child_pcv13_immunisation',
+      'well_child_rotarix_immunisation',
+      'well_child_ipv_immunisation',
+      'well_child_mr_immunisation',
     ];
     const nodes = queryWellChildNodes(fullName, expectedTypes);
 
@@ -107,6 +117,17 @@ test.describe('Nurse: Well Child PediatricCare — Normal Encounter', () => {
     expect(nodes['well_child_mebendezole']).toBe(true);
     expect(nodes['well_child_vitamin_a']).toBe(true);
     expect(nodes['well_child_next_visit']).toBe(true);
+    // Immunisation nodes.
+    expect(nodes['well_child_bcg_immunisation']).toBe(true);
+    expect(nodes['well_child_opv_immunisation']).toBe(true);
+    expect(nodes['well_child_dtp_immunisation']).toBe(true);
+    expect(nodes['well_child_pcv13_immunisation']).toBe(true);
+    expect(nodes['well_child_rotarix_immunisation']).toBe(true);
+    expect(nodes['well_child_ipv_immunisation']).toBe(true);
+    expect(nodes['well_child_mr_immunisation']).toBe(true);
+    // DTPStandalone is Burundi-only, HPV is female-only — not queried/created.
+    expect(nodes['well_child_dtp_sa_immunisation']).toBeFalsy();
+    expect(nodes['well_child_hpv_immunisation']).toBeFalsy();
   });
 });
 
@@ -181,7 +202,7 @@ test.describe('Nurse: Well Child PediatricCare — Abnormal Nutrition with NextS
     // Sync to backend.
     await syncAndWait(page);
 
-    // Verify backend nodes — includes NextSteps measurements.
+    // Verify backend nodes — includes NextSteps + immunisation measurements.
     const expectedTypes = [
       'well_child_symptoms_review',
       'well_child_vitals',
@@ -195,6 +216,13 @@ test.describe('Nurse: Well Child PediatricCare — Abnormal Nutrition with NextS
       'well_child_send_to_hc',
       'well_child_follow_up',
       'well_child_next_visit',
+      'well_child_bcg_immunisation',
+      'well_child_opv_immunisation',
+      'well_child_dtp_immunisation',
+      'well_child_pcv13_immunisation',
+      'well_child_rotarix_immunisation',
+      'well_child_ipv_immunisation',
+      'well_child_mr_immunisation',
     ];
     const nodes = queryWellChildNodes(fullName, expectedTypes);
 
@@ -210,5 +238,13 @@ test.describe('Nurse: Well Child PediatricCare — Abnormal Nutrition with NextS
     expect(nodes['well_child_send_to_hc']).toBe(true);
     expect(nodes['well_child_follow_up']).toBe(true);
     expect(nodes['well_child_next_visit']).toBe(true);
+    // Immunisation nodes.
+    expect(nodes['well_child_bcg_immunisation']).toBe(true);
+    expect(nodes['well_child_opv_immunisation']).toBe(true);
+    expect(nodes['well_child_dtp_immunisation']).toBe(true);
+    expect(nodes['well_child_pcv13_immunisation']).toBe(true);
+    expect(nodes['well_child_rotarix_immunisation']).toBe(true);
+    expect(nodes['well_child_ipv_immunisation']).toBe(true);
+    expect(nodes['well_child_mr_immunisation']).toBe(true);
   });
 });
