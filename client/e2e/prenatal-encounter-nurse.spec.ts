@@ -81,7 +81,12 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
     await syncAndWait(page);
 
     // Verify CTs exist in Drupal.
-    const nodes = queryPrenatalNodes(fullName);
+    const expectedTypes = [
+      'last_menstrual_period',
+      'obstetric_history',
+      'prenatal_hiv_test',
+    ];
+    const nodes = queryPrenatalNodes(fullName, expectedTypes);
 
     // PregnancyDating
     expect(nodes['last_menstrual_period']).toBe(true);
@@ -104,6 +109,16 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
     expect(nodes['prenatal_symptom_review']).toBe(true);
     expect(nodes['prenatal_mental_health']).toBe(true);
     expect(nodes['prenatal_tetanus_immunisation']).toBe(true);
+
+    // Laboratory (8 standard tests).
+    expect(nodes['prenatal_hiv_test']).toBe(true);
+    expect(nodes['prenatal_syphilis_test']).toBe(true);
+    expect(nodes['prenatal_hepatitis_b_test']).toBe(true);
+    expect(nodes['prenatal_malaria_test']).toBe(true);
+    expect(nodes['prenatal_blood_gprs_test']).toBe(true);
+    expect(nodes['prenatal_urine_dipstick_test']).toBe(true);
+    expect(nodes['prenatal_hemoglobin_test']).toBe(true);
+    expect(nodes['prenatal_random_blood_sugar_test']).toBe(true);
   });
 });
 
