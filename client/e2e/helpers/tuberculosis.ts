@@ -82,18 +82,6 @@ async function selectCheckbox(page: Page, optionText: string) {
 }
 
 /**
- * Select a checkbox inside a specific form container.
- */
-async function selectCheckboxInForm(page: Page, formSelector: string, optionText: string) {
-  await click(
-    page.locator(`${formSelector} .ui.checkbox`, {
-      hasText: new RegExp(`^${optionText}$`, 'i'),
-    }).locator('label'),
-    page,
-  );
-}
-
-/**
  * Click a sub-task tab icon and wait for it to become active.
  */
 async function clickSubTaskTab(page: Page, iconClass: string) {
