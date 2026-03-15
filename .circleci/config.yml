@@ -98,7 +98,7 @@ jobs:
             exit 1
       - run:
           name: Run E2E tests
-          command: cd client && npx playwright test --grep-invert "Well Child|NCD"
+          command: cd client && npx playwright test --grep-invert "Well Child|NCD|HIV"
       - store_artifacts:
           path: client/test-results
           destination: playwright-results
@@ -145,7 +145,7 @@ jobs:
             exit 1
       - run:
           name: Run E2E tests
-          command: cd client && npx playwright test well-child ncd
+          command: cd client && npx playwright test well-child ncd hiv
           no_output_timeout: 15m
       - store_artifacts:
           path: client/test-results
