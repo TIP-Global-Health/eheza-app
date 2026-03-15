@@ -26,10 +26,10 @@ import {
 } from './helpers/ncd';
 
 // =========================================================================
-// Test 1: Nurse First NCD Encounter — Male, Normal Values
+// Test 1: Nurse First NCD Encounter — Male, Stage 1 Hypertension + Labs
 // =========================================================================
 
-test.describe('Nurse: NCD First Encounter — Male, Normal Values', () => {
+test.describe('Nurse: NCD First Encounter — Male, Stage 1 Hypertension', () => {
   if (process.env.RECORD) {
     test.beforeEach(async ({ page }) => {
       await page.addInitScript(installCursorScript());
@@ -41,7 +41,7 @@ test.describe('Nurse: NCD First Encounter — Male, Normal Values', () => {
     await setupDevice(page, '1234', 'Nyange Health Center');
   });
 
-  test('complete first NCD encounter with normal values, verify backend sync', async ({ page }) => {
+  test('complete first NCD encounter with Stage 1 hypertension, verify backend sync', async ({ page }) => {
     const { fullName } = await createAdultAndStartNCDEncounter(page, {
       isFemale: false,
     });
@@ -52,16 +52,25 @@ test.describe('Nurse: NCD First Encounter — Male, Normal Values', () => {
     // 2. SymptomReview: none for all 3 groups.
     await completeSymptomReview(page);
 
-    // 3. Examination: normal vitals + normal core exam.
-    await completeExamination(page);
+    // 3. Examination: Stage 1 hypertension (sys=145, dia=95).
+    await completeExamination(page, {
+      sys: '145',
+      dia: '95',
+      heartRate: '80',
+      respiratoryRate: '18',
+      bodyTemp: '36.6',
+    });
 
     // 4. MedicalHistory: all 5 sub-tasks with "No"/"None".
     await completeMedicalHistory(page);
 
-    // 5. Laboratory: tests not performed.
-    await completeLaboratory(page);
+    // 5. Laboratory: perform all tests.
+    await completeLaboratory(page, { performTests: true });
 
-    // NextSteps should NOT appear (normal values → no diagnosis).
+    // 6. NextSteps: Stage 1 hypertension (first encounter, no complications)
+    //    triggers HealthEducation only (no MedicationDistribution, no Referral).
+    await completeNextSteps(page);
+
     // FamilyPlanning should NOT appear (male patient).
 
     // End encounter.
@@ -81,6 +90,14 @@ test.describe('Nurse: NCD First Encounter — Male, Normal Values', () => {
       'ncd_social_history',
       'ncd_family_history',
       'ncd_outside_care',
+      'ncd_health_education',
+      'ncd_hiv_test',
+      'ncd_random_blood_sugar_test',
+      'ncd_urine_dipstick_test',
+      'ncd_creatinine_test',
+      'ncd_liver_function_test',
+      'ncd_lipid_panel_test',
+      'ncd_hba1c_test',
     ];
     const nodes = queryNCDNodes(fullName, expectedTypes);
 
@@ -93,8 +110,24 @@ test.describe('Nurse: NCD First Encounter — Male, Normal Values', () => {
     expect(nodes['ncd_social_history']).toBe(true);
     expect(nodes['ncd_family_history']).toBe(true);
     expect(nodes['ncd_outside_care']).toBe(true);
+    // Stage 1 hypertension triggers HealthEducation.
+    expect(nodes['ncd_health_education']).toBe(true);
+    // Lab test nodes.
+    expect(nodes['ncd_hiv_test']).toBe(true);
+    expect(nodes['ncd_random_blood_sugar_test']).toBe(true);
+    expect(nodes['ncd_urine_dipstick_test']).toBe(true);
+    expect(nodes['ncd_creatinine_test']).toBe(true);
+    expect(nodes['ncd_liver_function_test']).toBe(true);
+    expect(nodes['ncd_lipid_panel_test']).toBe(true);
+    expect(nodes['ncd_hba1c_test']).toBe(true);
     // FamilyPlanning not created (male patient).
     expect(nodes['ncd_family_planning']).toBe(false);
+    // PregnancyTest not created (male patient).
+    expect(nodes['ncd_pregnancy_test']).toBe(false);
+    // No MedicationDistribution (Stage 1, first encounter, no complications).
+    expect(nodes['ncd_medication_distribution']).toBe(false);
+    // No Referral (Stage 1, not pregnant).
+    expect(nodes['ncd_referral']).toBe(false);
   });
 });
 
@@ -141,8 +174,8 @@ test.describe('Nurse: NCD First Encounter — Female, Hypertension', () => {
     // 5. MedicalHistory: all sub-tasks with "No"/"None".
     await completeMedicalHistory(page);
 
-    // 6. Laboratory: tests not performed.
-    await completeLaboratory(page);
+    // 6. Laboratory: perform all tests (female → includes pregnancy test).
+    await completeLaboratory(page, { performTests: true });
 
     // 7. NextSteps: triggered by hypertension diagnosis.
     //    MedicationDistribution appears (Stage 2 hypertension).
@@ -155,9 +188,7 @@ test.describe('Nurse: NCD First Encounter — Female, Hypertension', () => {
     // Sync to backend.
     await syncAndWait(page);
 
-    // Verify backend nodes including FamilyPlanning and NextSteps.
-    // Hypertension Stage 2 triggers MedicationDistribution but NOT Referral
-    // (Referral requires Stage 3 or pregnant patient).
+    // Verify backend nodes including FamilyPlanning, labs, and NextSteps.
     const expectedTypes = [
       'ncd_danger_signs',
       'ncd_symptom_review',
@@ -170,6 +201,14 @@ test.describe('Nurse: NCD First Encounter — Female, Hypertension', () => {
       'ncd_family_history',
       'ncd_outside_care',
       'ncd_medication_distribution',
+      'ncd_hiv_test',
+      'ncd_random_blood_sugar_test',
+      'ncd_urine_dipstick_test',
+      'ncd_pregnancy_test',
+      'ncd_creatinine_test',
+      'ncd_liver_function_test',
+      'ncd_lipid_panel_test',
+      'ncd_hba1c_test',
     ];
     const nodes = queryNCDNodes(fullName, expectedTypes);
 
@@ -184,6 +223,15 @@ test.describe('Nurse: NCD First Encounter — Female, Hypertension', () => {
     expect(nodes['ncd_family_history']).toBe(true);
     expect(nodes['ncd_outside_care']).toBe(true);
     expect(nodes['ncd_medication_distribution']).toBe(true);
+    // Lab test nodes (female → pregnancy test also created).
+    expect(nodes['ncd_hiv_test']).toBe(true);
+    expect(nodes['ncd_random_blood_sugar_test']).toBe(true);
+    expect(nodes['ncd_urine_dipstick_test']).toBe(true);
+    expect(nodes['ncd_pregnancy_test']).toBe(true);
+    expect(nodes['ncd_creatinine_test']).toBe(true);
+    expect(nodes['ncd_liver_function_test']).toBe(true);
+    expect(nodes['ncd_lipid_panel_test']).toBe(true);
+    expect(nodes['ncd_hba1c_test']).toBe(true);
     // Referral not created (Stage 2 hypertension, non-pregnant).
     expect(nodes['ncd_referral']).toBe(false);
   });
