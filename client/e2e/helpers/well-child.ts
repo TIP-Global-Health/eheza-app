@@ -272,8 +272,22 @@ export async function createChildAndStartWellChildEncounter(
     await genderRadios.first().check();
   }
 
-  // Mode of delivery (required field for children).
-  await selectByLabel(page, 'Mode of delivery:', 1);
+  // Wait for form to re-render after DOB (fields change based on age).
+  await page.waitForTimeout(1000);
+
+  // Fill all visible required fields — older children (> 12yr) show both
+  // child fields (Mode of delivery) and adult fields (Education, Marital Status).
+  const modeOfDelivery = page.locator('.ui.grid').filter({ hasText: 'Mode of delivery:' });
+  if (await modeOfDelivery.isVisible({ timeout: 500 }).catch(() => false)) {
+    await selectByLabel(page, 'Mode of delivery:', 1);
+  }
+  const educationField = page.locator('.ui.grid').filter({ hasText: 'Level of Education:' });
+  if (await educationField.isVisible({ timeout: 500 }).catch(() => false)) {
+    await educationField.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(300);
+    await selectByLabel(page, 'Level of Education:', 1);
+    await selectByLabel(page, 'Marital Status:', 1);
+  }
 
   if (!isChw) {
     // Nurse: fill address (cascading dropdowns) and health center.
