@@ -860,13 +860,18 @@ export async function completeImmunisation(page: Page) {
  * Each tab: select whether medication was administered.
  * Creates: prenatal_iron, prenatal_folate, etc.
  */
-export async function completeMedication(page: Page): Promise<string[]> {
+export async function completeMedication(
+  page: Page,
+  options?: { preferIronFolate?: boolean },
+): Promise<string[]> {
   await openActivity(page, 'medication');
 
   const completedMeds: string[] = [];
-  const medicationIcons = [
-    'calcium', 'fefol', 'folate', 'iron', 'mms', 'mebendezole',
-  ];
+  // Default order: fefol before iron/folate (fefol blocks both).
+  // With preferIronFolate: iron+folate first (blocks fefol).
+  const medicationIcons = options?.preferIronFolate
+    ? ['calcium', 'iron', 'folate', 'fefol', 'mms', 'mebendezole']
+    : ['calcium', 'fefol', 'folate', 'iron', 'mms', 'mebendezole'];
 
   for (const med of medicationIcons) {
     const tab = page.locator(`.link-section:has(.icon-activity-task.icon-${med})`);

@@ -71,7 +71,8 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
     await completeMalariaPrevention(page);
     await completeMentalHealth(page);
     await completeImmunisation(page);
-    await completeMedication(page);
+    // Prefer iron+folate over fefol (mutually exclusive — iron blocks fefol).
+    await completeMedication(page, { preferIronFolate: true });
     // HIV test positive → creates HIV diagnosis, triggers NextSteps
     // (HealthEducation, SendToHC) + HIV PCR in subsequent.
     // Combined with Stage 1 hypertension → also triggers MedicationDistribution.
@@ -118,10 +119,11 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
     expect(nodes['prenatal_mental_health']).toBe(true);
     expect(nodes['prenatal_tetanus_immunisation']).toBe(true);
 
-    // Medication (EGA ~30w, first encounter):
-    // Calcium (>= 14w), Fefol (blocks Iron/Folate), MMS, Mebendazole (>= 24w).
+    // Medication (EGA ~30w, first encounter, preferIronFolate):
+    // Calcium (>= 14w), Iron+Folate (blocks Fefol), MMS, Mebendazole (>= 24w).
     expect(nodes['prenatal_calcium']).toBe(true);
-    expect(nodes['prenatal_fefol']).toBe(true);
+    expect(nodes['prenatal_iron']).toBe(true);
+    expect(nodes['prenatal_folate']).toBe(true);
     expect(nodes['prenatal_mms']).toBe(true);
     expect(nodes['prenatal_mebendazole']).toBe(true);
 
