@@ -132,7 +132,13 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
   });
 });
 
-test.describe('Nurse: Prenatal Subsequent Encounter', () => {
+// =========================================================================
+// Test 2: Nurse Initial → Subsequent → Postpartum (chained)
+// =========================================================================
+
+test.describe('Nurse: Prenatal Initial → Subsequent → Postpartum', () => {
+  test.describe.configure({ timeout: 600000 });
+
   if (process.env.RECORD) {
     test.beforeEach(async ({ page }) => {
       await page.addInitScript(installCursorScript());
@@ -144,15 +150,16 @@ test.describe('Nurse: Prenatal Subsequent Encounter', () => {
     await setupDevice(page, '1234', 'Nyange Health Center');
   });
 
-  test('complete treatment review and verify backend sync', async ({
+  test('complete all three encounter phases and verify backend sync', async ({
     page,
   }) => {
-    // Subsequent encounter: full initial + backdate + subsequent — needs extra time.
-    test.setTimeout(600000);
     const lmpDate = new Date();
     lmpDate.setDate(lmpDate.getDate() - 30 * 7);
 
-    // First: complete a minimal nurse initial encounter.
+    // =====================================================================
+    // PHASE 1: Initial Encounter
+    // =====================================================================
+
     const { fullName } = await createAdultFemaleAndStartEncounter(page, {
       isChw: false,
       encounterType: 'first',
@@ -168,20 +175,16 @@ test.describe('Nurse: Prenatal Subsequent Encounter', () => {
     await completeMentalHealth(page);
     await completeImmunisation(page);
     await completeMedication(page);
-    // HIV known positive in initial encounter → HIV PCR tab appears in subsequent.
+    // HIV known positive → triggers HIV PCR in subsequent + SpecialityCare in postpartum.
     await completeLaboratoryNurse(page, { hivKnownPositive: true });
     await completeNextSteps(page);
     await endPrenatalEncounter(page);
 
-    // Sync first encounter to backend, then backdate it to yesterday so the
-    // app allows starting a subsequent encounter (same-day block).
+    // Sync + backdate for subsequent encounter.
     await syncAndWait(page);
     backdatePrenatalEncounter(fullName);
-    // Sync again so the app downloads the backdated encounter, then reload
-    // to force the Elm model to reinitialize with fresh data.
     await syncAndWait(page);
     await page.reload();
-    // After reload, the app may show PIN page or go straight to dashboard.
     await Promise.race([
       page.locator('input[name="pincode"]').waitFor({ timeout: 30000 }),
       page.locator('.wrap-cards').waitFor({ timeout: 30000 }),
@@ -199,11 +202,13 @@ test.describe('Nurse: Prenatal Subsequent Encounter', () => {
     }
     await page.locator('.wrap-cards').waitFor({ timeout: 30000 });
 
-    // Navigate back to participant page and start subsequent encounter.
+    // =====================================================================
+    // PHASE 2: Subsequent Encounter
+    // =====================================================================
+
     await navigateToParticipantPage(page, fullName);
     await startPrenatalEncounter(page, 'subsequent');
 
-    // Complete subsequent encounter activities.
     await completeHistory(page, { isSubsequent: true });
     await completeExamination(page);
     await completeFamilyPlanning(page);
@@ -212,71 +217,11 @@ test.describe('Nurse: Prenatal Subsequent Encounter', () => {
     await completeTreatmentReview(page);
     await completeLaboratoryNurse(page);
     await completeNextSteps(page);
-
-    // End encounter.
     await endPrenatalEncounter(page);
 
-    // Sync to backend.
-    await syncAndWait(page);
-
-    // Verify unique CTs for subsequent encounter.
-    // HIV PCR appears because initial encounter marked HIV as known positive.
-    const expectedTypes = ['medication', 'prenatal_outside_care', 'prenatal_hiv_pcr_test'];
-    const nodes = queryPrenatalNodes(fullName, expectedTypes);
-    // TreatmentReview creates medication node.
-    expect(nodes['medication']).toBe(true);
-    // OutsideCare (subsequent only).
-    expect(nodes['prenatal_outside_care']).toBe(true);
-    // HIV PCR (appears because initial encounter set HIV known positive).
-    expect(nodes['prenatal_hiv_pcr_test']).toBe(true);
-  });
-});
-
-test.describe('Nurse: Prenatal Postpartum Encounter', () => {
-  if (process.env.RECORD) {
-    test.beforeEach(async ({ page }) => {
-      await page.addInitScript(installCursorScript());
-    });
-  }
-
-  test.beforeEach(async ({ page }) => {
-    resetDevice();
-    await setupDevice(page, '1234', 'Nyange Health Center');
-  });
-
-  test('complete breastfeeding and verify backend sync', async ({ page }) => {
-    // Postpartum encounter: full initial + backdate + postpartum — needs extra time.
-    test.setTimeout(600000);
-    const lmpDate = new Date();
-    lmpDate.setDate(lmpDate.getDate() - 30 * 7);
-
-    // First: complete a minimal nurse initial encounter.
-    const { fullName } = await createAdultFemaleAndStartEncounter(page, {
-      isChw: false,
-      encounterType: 'first',
-    });
-
-    await completePregnancyDating(page, lmpDate);
-    await completeHistory(page);
-    await completeExamination(page);
-    await completeFamilyPlanning(page);
-    await completeDangerSigns(page);
-    await completeSymptomReview(page);
-    await completeMalariaPrevention(page);
-    await completeMentalHealth(page);
-    await completeImmunisation(page);
-    await completeMedication(page);
-    // HIV known positive → triggers SpecialityCare in postpartum encounter.
-    await completeLaboratoryNurse(page, { hivKnownPositive: true });
-    await completeNextSteps(page);
-    await endPrenatalEncounter(page);
-
-    // Sync first encounter to backend, then backdate it to yesterday so the
-    // app allows starting a postpartum encounter (same-day block).
+    // Sync + backdate for postpartum encounter.
     await syncAndWait(page);
     backdatePrenatalEncounter(fullName);
-    // Sync again so the app downloads the backdated encounter, then reload
-    // to force the Elm model to reinitialize with fresh data.
     await syncAndWait(page);
     await page.reload();
     await Promise.race([
@@ -296,14 +241,14 @@ test.describe('Nurse: Prenatal Postpartum Encounter', () => {
     }
     await page.locator('.wrap-cards').waitFor({ timeout: 30000 });
 
-    // Navigate back and start postpartum encounter.
+    // =====================================================================
+    // PHASE 3: Postpartum Encounter
+    // =====================================================================
+
     await navigateToParticipantPage(page, fullName);
     await startPrenatalEncounter(page, 'postpartum');
 
-    // Complete PregnancyOutcome first (required before other postpartum activities).
     await completePregnancyOutcome(page);
-
-    // Complete postpartum-specific activities (no DangerSigns or NextSteps).
     await completeSymptomReview(page);
     await completeMentalHealth(page);
     await completeBreastfeeding(page);
@@ -312,22 +257,40 @@ test.describe('Nurse: Prenatal Postpartum Encounter', () => {
     await completePostpartumTreatmentReview(page);
     // SpecialityCare: appears because initial encounter set HIV known positive.
     await completeSpecialityCare(page);
-
-    // End encounter.
     await endPrenatalEncounter(page);
 
-    // Sync to backend.
+    // =====================================================================
+    // Sync + Verify all phases
+    // =====================================================================
+
     await syncAndWait(page);
 
-    // Verify postpartum-unique CTs.
-    const expectedTypes = ['prenatal_breastfeeding', 'prenatal_gu_exam', 'prenatal_speciality_care'];
+    const expectedTypes = [
+      'medication',
+      'prenatal_outside_care',
+      'prenatal_hiv_pcr_test',
+      'prenatal_breastfeeding',
+      'prenatal_gu_exam',
+      'prenatal_speciality_care',
+    ];
     const nodes = queryPrenatalNodes(fullName, expectedTypes);
+
+    // Subsequent encounter CTs.
+    expect(nodes['medication']).toBe(true);
+    expect(nodes['prenatal_outside_care']).toBe(true);
+    // HIV PCR (subsequent — triggered by HIV known positive in initial).
+    expect(nodes['prenatal_hiv_pcr_test']).toBe(true);
+    // Postpartum encounter CTs.
     expect(nodes['prenatal_breastfeeding']).toBe(true);
     expect(nodes['prenatal_gu_exam']).toBe(true);
-    // SpecialityCare (HIV known positive in initial → ARV program referral).
+    // SpecialityCare (postpartum — triggered by HIV known positive in initial).
     expect(nodes['prenatal_speciality_care']).toBe(true);
   });
 });
+
+// =========================================================================
+// Test 3: Nurse Recurrent Encounter (BP Recheck)
+// =========================================================================
 
 test.describe('Nurse: Prenatal Recurrent Encounter (BP Recheck)', () => {
   if (process.env.RECORD) {
