@@ -363,6 +363,21 @@ function hedley_reports_trigger_recalculation_by_new_content($node) {
   $triggering_encounters = hedley_reports_get_triggering_encounter_types();
   $triggering_measurements = hedley_reports_get_triggering_measurement_types();
 
+  // Family nutrition encounters use family_participant instead of
+  // individual_participant, so person resolution is handled separately.
+  if ($node->type == HEDLEY_ACTIVITY_FAMILY_NUTRITION_ENCOUNTER_CONTENT_TYPE) {
+    $participant_id = $node->field_family_participant[LANGUAGE_NONE][0]['target_id'];
+    if (empty($participant_id)) {
+      return;
+    }
+    $wrapper = entity_metadata_wrapper('node', $participant_id);
+    $person_id = $wrapper->field_person->value(['identifier' => TRUE]);
+    hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA, $person_id, [
+      'person_id' => $person_id,
+    ]);
+    return;
+  }
+
   if (!in_array($node->type, array_merge($triggering_encounters, $triggering_measurements))) {
     // Not a triggering content.
     return;
@@ -458,6 +473,7 @@ function hedley_reports_get_triggering_measurement_types() {
     HEDLEY_ACTIVITY_HEIGHT_BUNDLES,
     HEDLEY_ACTIVITY_WEIGHT_BUNDLES,
     HEDLEY_ACTIVITY_REPORTS_GROUP_MEASUREMENT_BUNDLES,
+    HEDLEY_ACTIVITY_FAMILY_NUTRITION_BUNDLES,
   ));
 }
 
@@ -723,6 +739,61 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
   }
   if (!empty($sessions_data)) {
     $data['group_nutrition'] = $sessions_data;
+  }
+
+  // Load family nutrition encounter dates for this person.
+  // A person may participate as a mother (via family_participant) or as a
+  // child (via family nutrition measurements).
+  $family_nutrition_encounter_dates = [];
+
+  // Mother role: find family participants for this person.
+  $family_participants_query = new EntityFieldQuery();
+  $family_participants_result = $family_participants_query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', HEDLEY_ACTIVITY_FAMILY_PARTICIPANT_CONTENT_TYPE)
+    ->fieldCondition('field_person', 'target_id', $person->nid)
+    ->execute();
+
+  if (!empty($family_participants_result['node'])) {
+    $family_participants_ids = array_keys($family_participants_result['node']);
+    $family_encounters_query = new EntityFieldQuery();
+    $family_encounters_result = $family_encounters_query
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', HEDLEY_ACTIVITY_FAMILY_NUTRITION_ENCOUNTER_CONTENT_TYPE)
+      ->fieldCondition('field_family_participant', 'target_id', $family_participants_ids, 'IN')
+      ->execute();
+
+    if (!empty($family_encounters_result['node'])) {
+      $family_encounters = node_load_multiple(array_keys($family_encounters_result['node']));
+      foreach ($family_encounters as $family_encounter) {
+        $family_nutrition_encounter_dates[] = date("Y-m-d", strtotime($family_encounter->field_scheduled_date[LANGUAGE_NONE][0]['value']));
+      }
+    }
+  }
+
+  // Child role: find family nutrition measurements for this person.
+  $family_nutrition_measurements_ids = hedley_general_get_person_measurements($person->nid, HEDLEY_ACTIVITY_FAMILY_NUTRITION_BUNDLES);
+  if (!empty($family_nutrition_measurements_ids)) {
+    $family_nutrition_measurements = node_load_multiple($family_nutrition_measurements_ids);
+    $child_encounter_ids = [];
+    foreach ($family_nutrition_measurements as $measurement) {
+      $encounter_id = $measurement->field_family_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
+      if (!empty($encounter_id)) {
+        $child_encounter_ids[] = $encounter_id;
+      }
+    }
+    $child_encounter_ids = array_unique($child_encounter_ids);
+    if (!empty($child_encounter_ids)) {
+      $child_encounters = node_load_multiple($child_encounter_ids);
+      foreach ($child_encounters as $child_encounter) {
+        $family_nutrition_encounter_dates[] = date("Y-m-d", strtotime($child_encounter->field_scheduled_date[LANGUAGE_NONE][0]['value']));
+      }
+    }
+  }
+
+  $family_nutrition_encounter_dates = array_unique($family_nutrition_encounter_dates);
+  if (!empty($family_nutrition_encounter_dates)) {
+    $data['individual']['family-nutrition'] = array_values($family_nutrition_encounter_dates);
   }
 
   $encoded_data = json_encode($data);
@@ -1081,13 +1152,13 @@ function hedley_reports_generate_results_data($province, $district, $sector, $ce
 function hedley_reports_load_results_data($report_variant, $scope, $province = NULL, $district = NULL, $health_center = NULL) {
   $node_id = hedley_reports_load_results_data_node($report_variant, $scope, $province, $district, $health_center);
   if (!$node_id) {
-    return [];
+    return [[], NULL];
   }
 
   $node = node_load($node_id);
   $file = file_load($node->field_data_file[LANGUAGE_NONE][0]['fid']);
   if (!$file) {
-    return [];
+    return [[], NULL];
   }
 
   // Get the real path of the file.
@@ -1095,7 +1166,7 @@ function hedley_reports_load_results_data($report_variant, $scope, $province = N
   // Open the gzipped file and read its contents.
   $gz_fp = gzopen($file_path, 'r');
   if (!$gz_fp) {
-    return [];
+    return [[], NULL];
   }
 
   $data = '';
