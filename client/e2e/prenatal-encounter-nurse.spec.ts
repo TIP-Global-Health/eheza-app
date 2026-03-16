@@ -62,7 +62,9 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
     // Complete all nurse initial encounter activities.
     await completePregnancyDating(page, lmpDate);
     await completeHistory(page);
-    await completeExamination(page);
+    // Stage 2 hypertension (sys=160, dia=100) → triggers MedicationDistribution.
+    // Note: marginal BP (Stage 1) would trigger Wait/Pause flow instead.
+    await completeExamination(page, { vitals: { sys: '160', dia: '100' } });
     await completeFamilyPlanning(page);
     await completeDangerSigns(page);
     await completeSymptomReview(page);
@@ -71,7 +73,8 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
     await completeImmunisation(page);
     await completeMedication(page);
     // HIV test positive → creates HIV diagnosis, triggers NextSteps
-    // (MedicationDistribution, HealthEducation, SendToHC) + HIV PCR in subsequent.
+    // (HealthEducation, SendToHC) + HIV PCR in subsequent.
+    // Combined with Stage 1 hypertension → also triggers MedicationDistribution.
     await completeLaboratoryNurse(page, { hivPositive: true });
     await completeNextSteps(page);
     // PrenatalPhoto skipped (file upload; encounter allows ending without it).
@@ -89,6 +92,7 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
       'prenatal_hiv_test',
       'prenatal_calcium',
       'prenatal_send_to_hc',
+      'prenatal_medication_distribution',
     ];
     const nodes = queryPrenatalNodes(fullName, expectedTypes);
 
@@ -132,9 +136,10 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
     expect(nodes['prenatal_random_blood_sugar_test']).toBe(true);
     expect(nodes['prenatal_partner_hiv_test']).toBe(true);
 
-    // NextSteps (triggered by HIV diagnosis → referral + education).
+    // NextSteps (HIV diagnosis → referral + education; hypertension → medication).
     expect(nodes['prenatal_health_education']).toBe(true);
     expect(nodes['prenatal_send_to_hc']).toBe(true);
+    expect(nodes['prenatal_medication_distribution']).toBe(true);
   });
 });
 
