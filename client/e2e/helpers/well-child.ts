@@ -216,12 +216,14 @@ export async function createChildAndStartWellChildEncounter(
     ageMonths?: number;
     firstName?: string;
     isChw?: boolean;
+    isFemale?: boolean;
   },
 ) {
   const ageMonths = options?.ageMonths ?? 24;
   const firstName = options?.firstName ?? `TestChild${Date.now()}`;
   const secondName = 'E2ETest';
   const isChw = options?.isChw ?? false;
+  const isFemale = options?.isFemale ?? false;
 
   // Navigate: Dashboard → Clinical
   await click(page.locator('.icon-task-clinical'), page);
@@ -259,13 +261,16 @@ export async function createChildAndStartWellChildEncounter(
   dob.setMonth(dob.getMonth() - ageMonths);
   await setDateOfBirth(page, dob);
 
-  // Select gender = male.
-  await page
+  // Select gender.
+  const genderRadios = page
     .locator('.ui.grid')
     .filter({ hasText: 'Gender:' })
-    .locator('input[type="radio"]')
-    .first()
-    .check();
+    .locator('input[type="radio"]');
+  if (isFemale) {
+    await genderRadios.last().check();
+  } else {
+    await genderRadios.first().check();
+  }
 
   // Mode of delivery (required field for children).
   await selectByLabel(page, 'Mode of delivery:', 1);

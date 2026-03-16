@@ -248,3 +248,99 @@ test.describe('Nurse: Well Child PediatricCare — Abnormal Nutrition with NextS
     expect(nodes['well_child_mr_immunisation']).toBe(true);
   });
 });
+
+// =========================================================================
+// Test 3: Nurse PediatricCare — 7-year-old Female (Albendazole + HPV vaccine)
+// =========================================================================
+
+test.describe('Nurse: Well Child PediatricCare — 7yr Female, Albendazole', () => {
+  test.describe.configure({ timeout: 600000 });
+
+  if (process.env.RECORD) {
+    test.beforeEach(async ({ page }) => {
+      await page.addInitScript(installCursorScript());
+    });
+  }
+
+  test.beforeEach(async ({ page }) => {
+    resetDevice();
+    await setupDevice(page, '1234', 'Nyange Health Center');
+  });
+
+  // Scenario: 7-year-old female on Rwanda site.
+  // Medication: Albendazole appears (6-12yr), no Mebendezole (1-6yr), no VitaminA (6mo-6yr).
+  // Immunisation: All 7 common vaccines + HPV (female, but HPV starts at 12yr so NOT expected at 7yr).
+  // Backend: Verifies well_child_albendazole created.
+  test('complete encounter for 7yr female with albendazole, verify backend sync', async ({ page }) => {
+
+    const { fullName } = await createChildAndStartWellChildEncounter(page, {
+      ageMonths: 84,
+      isChw: false,
+      isFemale: true,
+    });
+
+    // 1. Danger Signs: no symptoms, normal vitals.
+    await completeDangerSigns(page, {
+      respiratoryRate: '20',
+      bodyTemp: '36.5',
+    });
+
+    // 2. Nutrition Assessment: normal values for 7-year-old.
+    //    Head circumference not expected at this age.
+    await completeNutritionAssessment(page, {
+      height: '120',
+      muac: '17',
+      weight: '22',
+      nutritionSigns: [],
+    });
+
+    // 3. ECD: answer all milestone questions "Yes".
+    await completeECD(page);
+
+    // 4. Medication: albendazole only (6-12yr on Rwanda).
+    await completeMedication(page);
+
+    // 5. Immunisation: administer all available vaccines.
+    await completeImmunisation(page, { isChw: false });
+
+    // 6. Next Steps: NextVisit.
+    await completeNextSteps(page, {
+      hasContributingFactors: false,
+      hasHealthEducation: false,
+      hasSendToHC: false,
+      hasFollowUp: false,
+    });
+
+    // End encounter.
+    await endWellChildEncounter(page);
+
+    // Sync to backend.
+    await syncAndWait(page);
+
+    // Verify backend nodes.
+    const expectedTypes = [
+      'well_child_symptoms_review',
+      'well_child_vitals',
+      'well_child_height',
+      'well_child_muac',
+      'well_child_nutrition',
+      'well_child_weight',
+      'well_child_albendazole',
+      'well_child_next_visit',
+    ];
+    const nodes = queryWellChildNodes(fullName, expectedTypes);
+
+    expect(nodes['well_child_symptoms_review']).toBe(true);
+    expect(nodes['well_child_vitals']).toBe(true);
+    expect(nodes['well_child_height']).toBe(true);
+    expect(nodes['well_child_muac']).toBe(true);
+    expect(nodes['well_child_nutrition']).toBe(true);
+    expect(nodes['well_child_weight']).toBe(true);
+    // Albendazole (6-12yr on Rwanda).
+    expect(nodes['well_child_albendazole']).toBe(true);
+    // No Mebendezole (1-6yr) or VitaminA (6mo-6yr) at age 7.
+    expect(nodes['well_child_mebendezole']).toBeFalsy();
+    expect(nodes['well_child_vitamin_a']).toBeFalsy();
+    expect(nodes['well_child_next_visit']).toBe(true);
+  });
+});
