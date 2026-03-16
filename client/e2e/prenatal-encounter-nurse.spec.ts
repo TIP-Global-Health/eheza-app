@@ -127,6 +127,7 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
     expect(nodes['prenatal_urine_dipstick_test']).toBe(true);
     expect(nodes['prenatal_hemoglobin_test']).toBe(true);
     expect(nodes['prenatal_random_blood_sugar_test']).toBe(true);
+    expect(nodes['prenatal_partner_hiv_test']).toBe(true);
   });
 });
 
