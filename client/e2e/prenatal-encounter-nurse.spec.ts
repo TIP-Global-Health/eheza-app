@@ -85,6 +85,7 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
       'last_menstrual_period',
       'obstetric_history',
       'prenatal_hiv_test',
+      'prenatal_calcium',
     ];
     const nodes = queryPrenatalNodes(fullName, expectedTypes);
 
@@ -109,6 +110,13 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
     expect(nodes['prenatal_symptom_review']).toBe(true);
     expect(nodes['prenatal_mental_health']).toBe(true);
     expect(nodes['prenatal_tetanus_immunisation']).toBe(true);
+
+    // Medication (EGA ~30w, first encounter):
+    // Calcium (>= 14w), Fefol (blocks Iron/Folate), MMS, Mebendazole (>= 24w).
+    expect(nodes['prenatal_calcium']).toBe(true);
+    expect(nodes['prenatal_fefol']).toBe(true);
+    expect(nodes['prenatal_mms']).toBe(true);
+    expect(nodes['prenatal_mebendazole']).toBe(true);
 
     // Laboratory (8 standard tests).
     expect(nodes['prenatal_hiv_test']).toBe(true);

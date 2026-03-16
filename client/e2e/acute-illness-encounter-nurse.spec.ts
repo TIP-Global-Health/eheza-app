@@ -253,7 +253,9 @@ test.describe('Nurse: Acute Illness Initial Encounter — GI Infection', () => {
     // Sync to backend.
     await syncAndWait(page);
 
-    // Verify core content types.
+    // Verify core + NextSteps content types.
+    // GI Infection Complicated triggers send_to_hc and follow_up,
+    // but NOT medication_distribution (only Uncomplicated gets meds).
     const expectedTypes = [
       'symptoms_general',
       'symptoms_respiratory',
@@ -263,6 +265,8 @@ test.describe('Nurse: Acute Illness Initial Encounter — GI Infection', () => {
       'acute_findings',
       'treatment_history',
       'malaria_testing',
+      'send_to_hc',
+      'acute_illness_follow_up',
     ];
     const nodes = queryAcuteIllnessNodes(fullName, expectedTypes);
 
@@ -274,5 +278,8 @@ test.describe('Nurse: Acute Illness Initial Encounter — GI Infection', () => {
     expect(nodes['acute_findings']).toBe(true);
     expect(nodes['treatment_history']).toBe(true);
     expect(nodes['malaria_testing']).toBe(true);
+    // NextSteps: GI Complicated → send_to_hc + follow_up (no medication_distribution).
+    expect(nodes['send_to_hc']).toBe(true);
+    expect(nodes['acute_illness_follow_up']).toBe(true);
   });
 });
