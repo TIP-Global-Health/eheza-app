@@ -9,6 +9,7 @@ import {
   completeECD,
   completeMedication,
   completeImmunisation,
+  completeNCDA,
   completeNextSteps,
   endWellChildEncounter,
   syncAndWait,
@@ -35,8 +36,9 @@ test.describe('Nurse: Well Child PediatricCare — Normal Encounter', () => {
 
   test('complete normal encounter with all mandatory activities and verify backend sync', async ({ page }) => {
 
+    // Use 23 months (< 24) so NCDA activity appears for nurse.
     const { fullName } = await createChildAndStartWellChildEncounter(page, {
-      ageMonths: 24,
+      ageMonths: 23,
       isChw: false,
     });
 
@@ -46,9 +48,9 @@ test.describe('Nurse: Well Child PediatricCare — Normal Encounter', () => {
       bodyTemp: '36.5',
     });
 
-    // 2. Nutrition Assessment: normal values for 24-month child.
+    // 2. Nutrition Assessment: normal values for 23-month child.
     await completeNutritionAssessment(page, {
-      height: '85',
+      height: '84',
       headCircumference: '48',
       muac: '14',
       weight: '12',
@@ -59,13 +61,16 @@ test.describe('Nurse: Well Child PediatricCare — Normal Encounter', () => {
     await completeECD(page);
 
     // 4. Medication: administer all available meds
-    //    (Mebendezole + VitaminA for 24mo in Rwanda).
+    //    (Mebendezole + VitaminA for 23mo in Rwanda).
     await completeMedication(page);
 
     // 5. Immunisation: administer all available vaccines.
     await completeImmunisation(page, { isChw: false });
 
-    // 6. Next Steps: NextVisit is required once
+    // 6. NCDA (Nurse, child < 24 months).
+    await completeNCDA(page);
+
+    // 7. Next Steps: NextVisit is required once
     //    nutrition/immunisation/ECD/medication are all done.
     await completeNextSteps(page, {
       hasContributingFactors: false,
@@ -95,6 +100,7 @@ test.describe('Nurse: Well Child PediatricCare — Normal Encounter', () => {
       'well_child_ecd',
       'well_child_mebendezole',
       'well_child_vitamin_a',
+      'well_child_ncda',
       'well_child_next_visit',
       'well_child_bcg_immunisation',
       'well_child_opv_immunisation',
@@ -116,6 +122,7 @@ test.describe('Nurse: Well Child PediatricCare — Normal Encounter', () => {
     expect(nodes['well_child_ecd']).toBe(true);
     expect(nodes['well_child_mebendezole']).toBe(true);
     expect(nodes['well_child_vitamin_a']).toBe(true);
+    expect(nodes['well_child_ncda']).toBe(true);
     expect(nodes['well_child_next_visit']).toBe(true);
     // Immunisation nodes.
     expect(nodes['well_child_bcg_immunisation']).toBe(true);

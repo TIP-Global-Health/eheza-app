@@ -787,6 +787,162 @@ export async function completeNextSteps(
 // Encounter lifecycle
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// NCDA activity (Nurse-only, child < 24 months, atHealthCenter=true)
+// ---------------------------------------------------------------------------
+
+/**
+ * Answer an NCDA yes/no question by its question text.
+ */
+async function answerNCDAYesNo(page: Page, questionSubstring: string, answer: 'Yes' | 'No') {
+  const ncdaForm = page.locator('.ui.form.ncda');
+  const questionLabel = ncdaForm.locator('.label', { hasText: questionSubstring }).first();
+  await questionLabel.waitFor({ timeout: 5000 });
+
+  const yesNoId = await questionLabel.evaluate((el) => {
+    function findFormInput(startEl: Element): Element | null {
+      let sibling = startEl.nextElementSibling;
+      while (sibling) {
+        if (sibling.classList.contains('form-input')) return sibling;
+        sibling = sibling.nextElementSibling;
+      }
+      return null;
+    }
+    let formInput = findFormInput(el);
+    if (!formInput && el.parentElement) formInput = findFormInput(el.parentElement);
+    if (formInput) {
+      const tmpId = 'ncda-yn-' + Math.random().toString(36).slice(2);
+      formInput.id = tmpId;
+      return tmpId;
+    }
+    return null;
+  });
+
+  if (!yesNoId) throw new Error(`Could not find yes/no input after question: "${questionSubstring}"`);
+  await click(page.locator(`#${yesNoId} label`, { hasText: answer }), page);
+  await page.waitForTimeout(300);
+}
+
+/**
+ * Click an NCDA step tab icon.
+ */
+async function clickNCDAStepTab(page: Page, iconClass: string) {
+  const tab = page.locator(`.link-section:has(.icon-activity-task.icon-${iconClass})`);
+  const isActive = await tab.evaluate(el => el.classList.contains('active')).catch(() => false);
+  if (!isActive) {
+    await click(tab, page);
+    await page.waitForTimeout(500);
+  }
+}
+
+/**
+ * Click the NCDA Save button.
+ */
+async function clickNCDASave(page: Page) {
+  const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+  await saveBtn.waitFor({ timeout: 5000 });
+  await click(saveBtn, page);
+  await page.waitForTimeout(1000);
+}
+
+/**
+ * Complete the NCDA activity in a Well Child encounter (Nurse, atHealthCenter).
+ * Same form as Nutrition NCDA — shared Measurement.View.viewNCDAContent.
+ *
+ * Creates: well_child_ncda
+ */
+export async function completeNCDA(page: Page) {
+  await page.locator('div.page-encounter.well-child').waitFor({ timeout: 10000 });
+  await page.waitForTimeout(500);
+  await click(page.locator('.icon-task-history'), page);
+
+  // Handle NCDA confirmation popup.
+  const confirmPopup = page.locator('div.ui.active.modal');
+  await confirmPopup.waitFor({ timeout: 5000 }).catch(() => {});
+  if (await confirmPopup.isVisible()) {
+    const proceedBtn = confirmPopup.locator('button').first();
+    await proceedBtn.click({ force: true });
+    await confirmPopup.waitFor({ state: 'hidden', timeout: 5000 });
+  }
+
+  await page.locator('div.page-activity.well-child').waitFor({ timeout: 10000 });
+
+  // --- Step 1: Antenatal Care (first fill only) ---
+  const antenatalTab = page.locator('.link-section:has(.icon-activity-task.icon-ncda-antenatal)');
+  if (await antenatalTab.isVisible({ timeout: 1000 }).catch(() => false)) {
+    await clickNCDAStepTab(page, 'ncda-antenatal');
+    await page.waitForTimeout(500);
+    await answerNCDAYesNo(page, 'ANC encounters that are not recorded', 'No');
+    await answerNCDAYesNo(page, 'receive Iron, Folic Acid', 'Yes');
+    await answerNCDAYesNo(page, 'taken it as per guidance', 'Yes');
+
+    const birthWeightInput = page.locator('.form-input.measurement.birth-weight input[type="number"]');
+    if (await birthWeightInput.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await birthWeightInput.fill('3200');
+      await page.waitForTimeout(300);
+    }
+    const birthDefectQ = page.locator('.ui.form.ncda .label', { hasText: 'born with a birth defect' });
+    if (await birthDefectQ.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await answerNCDAYesNo(page, 'born with a birth defect', 'No');
+    }
+    await clickNCDASave(page);
+  }
+
+  // --- Step 2: Universal Interventions (atHealthCenter: only OngeraMNP) ---
+  await clickNCDAStepTab(page, 'ncda-universal-intervention');
+  await page.waitForTimeout(500);
+  await answerNCDAYesNo(page, 'receive Ongera-MNP', 'Yes');
+  await clickNCDASave(page);
+
+  // --- Step 3: Nutrition Behavior (child >= 6 months) ---
+  const nutritionBehaviorTab = page.locator('.link-section:has(.icon-activity-task.icon-ncda-nutrition-behavior)');
+  if (await nutritionBehaviorTab.isVisible({ timeout: 1000 }).catch(() => false)) {
+    await clickNCDAStepTab(page, 'ncda-nutrition-behavior');
+    await page.waitForTimeout(500);
+    await answerNCDAYesNo(page, '5 food groups', 'Yes');
+    const breastfedQ = page.locator('.ui.form.ncda .label', { hasText: 'breastfed for 6 months' });
+    if (await breastfedQ.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await answerNCDAYesNo(page, 'breastfed for 6 months', 'Yes');
+    }
+    await answerNCDAYesNo(page, 'appropriate complementary feeding', 'Yes');
+    await answerNCDAYesNo(page, 'eat at the recommended times', 'Yes');
+    await clickNCDASave(page);
+  }
+
+  // --- Step 4: NutritionAssessment — NOT shown at health center ---
+
+  // --- Step 5: Targeted Interventions (atHealthCenter: no FBF, no diarrhea) ---
+  await clickNCDAStepTab(page, 'ncda-targeted-intervention');
+  await page.waitForTimeout(500);
+  await answerNCDAYesNo(page, 'beneficiary of cash transfer', 'No');
+  await answerNCDAYesNo(page, 'other support', 'No');
+  await answerNCDAYesNo(page, 'have disability', 'No');
+  await clickNCDASave(page);
+
+  // --- Step 6: Infrastructure & Environment ---
+  await clickNCDAStepTab(page, 'ncda-infrastructure-environment');
+  await page.waitForTimeout(500);
+  await answerNCDAYesNo(page, 'clean water', 'Yes');
+  await answerNCDAYesNo(page, 'handwashing facility', 'Yes');
+  await answerNCDAYesNo(page, 'have toilets', 'Yes');
+  await answerNCDAYesNo(page, 'kitchen garden', 'Yes');
+  await answerNCDAYesNo(page, 'insecticide-treated bednets', 'Yes');
+  await clickNCDASave(page);
+
+  // Wait for encounter page (may land on progress report).
+  const encounterPage = page.locator('div.page-encounter.well-child');
+  const progressReport = page.locator('h1', { hasText: 'PROGRESS REPORT' });
+  await Promise.race([
+    encounterPage.waitFor({ timeout: 15000 }),
+    progressReport.waitFor({ timeout: 15000 }),
+  ]);
+  if (await progressReport.isVisible({ timeout: 500 }).catch(() => false)) {
+    await click(page.locator('span.icon-back').first(), page);
+    await encounterPage.waitFor({ timeout: 10000 });
+  }
+  await page.waitForTimeout(500);
+}
+
 export async function endWellChildEncounter(page: Page) {
   await page.locator('div.page-encounter.well-child').waitFor({ timeout: 10000 });
   await page.waitForTimeout(2000);
