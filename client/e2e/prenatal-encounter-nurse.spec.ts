@@ -70,8 +70,9 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
     await completeMentalHealth(page);
     await completeImmunisation(page);
     await completeMedication(page);
-    // HIV known positive → triggers HIV PCR test tab + HIV diagnosis.
-    await completeLaboratoryNurse(page, { hivKnownPositive: true });
+    // HIV test positive → creates HIV diagnosis, triggers NextSteps
+    // (MedicationDistribution, HealthEducation, SendToHC) + HIV PCR in subsequent.
+    await completeLaboratoryNurse(page, { hivPositive: true });
     await completeNextSteps(page);
     // PrenatalPhoto skipped (file upload; encounter allows ending without it).
 
@@ -87,6 +88,7 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
       'obstetric_history',
       'prenatal_hiv_test',
       'prenatal_calcium',
+      'prenatal_send_to_hc',
     ];
     const nodes = queryPrenatalNodes(fullName, expectedTypes);
 
@@ -129,6 +131,10 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
     expect(nodes['prenatal_hemoglobin_test']).toBe(true);
     expect(nodes['prenatal_random_blood_sugar_test']).toBe(true);
     expect(nodes['prenatal_partner_hiv_test']).toBe(true);
+
+    // NextSteps (triggered by HIV diagnosis → referral + education).
+    expect(nodes['prenatal_health_education']).toBe(true);
+    expect(nodes['prenatal_send_to_hc']).toBe(true);
   });
 });
 
@@ -176,7 +182,7 @@ test.describe('Nurse: Prenatal Initial → Subsequent → Postpartum', () => {
     await completeImmunisation(page);
     await completeMedication(page);
     // HIV known positive → triggers HIV PCR in subsequent + SpecialityCare in postpartum.
-    await completeLaboratoryNurse(page, { hivKnownPositive: true });
+    await completeLaboratoryNurse(page, { hivPositive: true });
     await completeNextSteps(page);
     await endPrenatalEncounter(page);
 

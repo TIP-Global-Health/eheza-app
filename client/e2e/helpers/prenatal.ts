@@ -913,9 +913,9 @@ export async function completeMedication(page: Page): Promise<string[]> {
  */
 export async function completeLaboratoryNurse(
   page: Page,
-  options?: { hivKnownPositive?: boolean },
+  options?: { hivPositive?: boolean },
 ): Promise<string[]> {
-  const hivKnownPositive = options?.hivKnownPositive ?? false;
+  const hivPositive = options?.hivPositive ?? false;
   await openActivity(page, 'laboratory');
 
   const completedTests: string[] = [];
@@ -949,27 +949,59 @@ export async function completeLaboratoryNurse(
     // Answer yes/no fields by their specific CSS classes.
     // Fields appear sequentially: known-as-positive → test-performed → why-not → blood-smear.
 
-    // 1. "Known as positive?" (HIV, Partner HIV, Hepatitis B)
+    // Detect if this is the HIV tab (not Partner HIV, not HIV PCR).
+    const isHivTab = hivPositive
+      && /^\s*HIV\s*$/i.test(tabLabel)
+      && !tabLabel.includes('Partner')
+      && !tabLabel.includes('PCR');
+
+    // 1. "Known as positive?" (HIV, Partner HIV, Hepatitis B) → No
     const knownPositive = page.locator('.form-input.yes-no.known-as-positive');
     if (await knownPositive.isVisible().catch(() => false)) {
-      // For HIV tab (label is "HIV", not "Partner HIV"): answer Yes if hivKnownPositive.
-      const isHivTab = hivKnownPositive
-        && /^HIV$/i.test(tabLabel.trim())
-        && !tabLabel.includes('Partner')
-        && !tabLabel.includes('PCR');
-      const answer = isHivTab ? 'Yes' : 'No';
-      await click(knownPositive.locator('label', { hasText: answer }), page);
+      await click(knownPositive.locator('label', { hasText: 'No' }), page);
       await page.waitForTimeout(500);
     }
 
-    // 2. "Will this test be performed today?" → No (skipped when known as positive)
+    // 2. "Will this test be performed today?"
     const testPerformed = page.locator('.form-input.yes-no.test-performed');
     if (await testPerformed.isVisible().catch(() => false)) {
-      await click(testPerformed.locator('label', { hasText: 'No' }), page);
-      await page.waitForTimeout(500);
+      if (isHivTab) {
+        // HIV tab: perform the test with positive result.
+        await click(testPerformed.locator('label', { hasText: 'Yes' }), page);
+        await page.waitForTimeout(500);
+
+        // "Immediate result?" → Yes (Point of Care) to satisfy immediateResult check.
+        const immediateResult = page.locator('.form-input.yes-no.immediate-result');
+        if (await immediateResult.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await click(immediateResult.locator('label').first(), page);
+          await page.waitForTimeout(500);
+        }
+
+        // Select result: "Positive"
+        const resultSelect = page.locator('select.form-input').first();
+        if (await resultSelect.isVisible({ timeout: 2000 }).catch(() => false)) {
+          const posOption = resultSelect.locator('option', { hasText: 'Positive' });
+          if (await posOption.count() > 0) {
+            const val = await posOption.getAttribute('value');
+            if (val) await resultSelect.selectOption(val);
+          }
+          await page.waitForTimeout(300);
+        }
+
+        // "Does the health center have an ARV services program?" → Yes
+        const hivProgram = page.locator('.form-input.yes-no.hiv-program');
+        if (await hivProgram.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await click(hivProgram.locator('label', { hasText: 'Yes' }), page);
+          await page.waitForTimeout(300);
+        }
+      } else {
+        // All other tabs: test not performed.
+        await click(testPerformed.locator('label', { hasText: 'No' }), page);
+        await page.waitForTimeout(500);
+      }
     }
 
-    // 3. "Why not?" reason checkbox → select first option
+    // 3. "Why not?" reason checkbox → select first option (only when test not performed)
     const whyNot = page.locator('.why-not .ui.checkbox label').first();
     if (await whyNot.isVisible().catch(() => false)) {
       await click(whyNot, page);
@@ -1236,11 +1268,24 @@ export async function completeNextSteps(page: Page): Promise<string[]> {
           await click(firstOption, page);
         }
       } else if (step.name === 'sendToHC') {
-        // Referral form — answer Yes/No fields.
-        const yesLabels = page.locator('.form-input.yes-no label', { hasText: 'Yes' });
-        const yesCount = await yesLabels.count();
-        for (let i = 0; i < yesCount; i++) {
-          await click(yesLabels.nth(i), page);
+        // Referral form — answer Yes/No fields sequentially.
+        // Some fields appear conditionally after answering "Yes" to previous ones.
+        for (let round = 0; round < 5; round++) {
+          const yesLabels = page.locator('.form-input.yes-no label', { hasText: 'Yes' });
+          const yesCount = await yesLabels.count();
+          let clicked = false;
+          for (let i = 0; i < yesCount; i++) {
+            const label = yesLabels.nth(i);
+            // Skip if parent already has a checked radio.
+            const parent = label.locator('..');
+            const isChecked = await parent.locator('input.checked').count() > 0;
+            if (!isChecked) {
+              await click(label, page);
+              clicked = true;
+              await page.waitForTimeout(500);
+            }
+          }
+          if (!clicked) break;
         }
       } else if (step.name === 'healthEducation') {
         // Health education — answer Yes/No fields.
