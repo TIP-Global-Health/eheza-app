@@ -132,10 +132,10 @@ test.describe('Nurse: NCD First Encounter — Male, Stage 1 Hypertension', () =>
 });
 
 // =========================================================================
-// Test 2: Nurse First NCD Encounter — Female, with Hypertension
+// Test 2: Nurse First NCD Encounter — Female, Stage 3 Hypertension + Referral
 // =========================================================================
 
-test.describe('Nurse: NCD First Encounter — Female, Hypertension', () => {
+test.describe('Nurse: NCD First Encounter — Female, Stage 3 Hypertension', () => {
   if (process.env.RECORD) {
     test.beforeEach(async ({ page }) => {
       await page.addInitScript(installCursorScript());
@@ -159,10 +159,10 @@ test.describe('Nurse: NCD First Encounter — Female, Hypertension', () => {
     // 2. SymptomReview: none.
     await completeSymptomReview(page);
 
-    // 3. Examination: HIGH BP (sys=160, dia=100 → Hypertension Stage 2).
+    // 3. Examination: HIGH BP (sys=180, dia=110 → Hypertension Stage 3).
     await completeExamination(page, {
-      sys: '160',
-      dia: '100',
+      sys: '180',
+      dia: '110',
       heartRate: '80',
       respiratoryRate: '18',
       bodyTemp: '36.6',
@@ -178,8 +178,7 @@ test.describe('Nurse: NCD First Encounter — Female, Hypertension', () => {
     await completeLaboratory(page, { performTests: true });
 
     // 7. NextSteps: triggered by hypertension diagnosis.
-    //    MedicationDistribution appears (Stage 2 hypertension).
-    //    Referral does NOT appear (requires Stage 3 or pregnant patient).
+    //    MedicationDistribution + Referral appear (Stage 3 hypertension).
     await completeNextSteps(page);
 
     // End encounter.
@@ -209,6 +208,7 @@ test.describe('Nurse: NCD First Encounter — Female, Hypertension', () => {
       'ncd_liver_function_test',
       'ncd_lipid_panel_test',
       'ncd_hba1c_test',
+      'ncd_referral',
     ];
     const nodes = queryNCDNodes(fullName, expectedTypes);
 
@@ -232,8 +232,8 @@ test.describe('Nurse: NCD First Encounter — Female, Hypertension', () => {
     expect(nodes['ncd_liver_function_test']).toBe(true);
     expect(nodes['ncd_lipid_panel_test']).toBe(true);
     expect(nodes['ncd_hba1c_test']).toBe(true);
-    // Referral not created (Stage 2 hypertension, non-pregnant).
-    expect(nodes['ncd_referral']).toBe(false);
+    // Referral created (Stage 3 hypertension).
+    expect(nodes['ncd_referral']).toBe(true);
   });
 });
 
