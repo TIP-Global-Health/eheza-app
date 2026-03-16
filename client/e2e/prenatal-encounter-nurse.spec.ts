@@ -70,7 +70,8 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
     await completeMentalHealth(page);
     await completeImmunisation(page);
     await completeMedication(page);
-    await completeLaboratoryNurse(page);
+    // HIV known positive → triggers HIV PCR test tab + HIV diagnosis.
+    await completeLaboratoryNurse(page, { hivKnownPositive: true });
     await completeNextSteps(page);
     // PrenatalPhoto skipped (file upload; encounter allows ending without it).
 
@@ -167,7 +168,8 @@ test.describe('Nurse: Prenatal Subsequent Encounter', () => {
     await completeMentalHealth(page);
     await completeImmunisation(page);
     await completeMedication(page);
-    await completeLaboratoryNurse(page);
+    // HIV known positive in initial encounter → HIV PCR tab appears in subsequent.
+    await completeLaboratoryNurse(page, { hivKnownPositive: true });
     await completeNextSteps(page);
     await endPrenatalEncounter(page);
 
@@ -218,12 +220,15 @@ test.describe('Nurse: Prenatal Subsequent Encounter', () => {
     await syncAndWait(page);
 
     // Verify unique CTs for subsequent encounter.
-    const expectedTypes = ['medication', 'prenatal_outside_care'];
+    // HIV PCR appears because initial encounter marked HIV as known positive.
+    const expectedTypes = ['medication', 'prenatal_outside_care', 'prenatal_hiv_pcr_test'];
     const nodes = queryPrenatalNodes(fullName, expectedTypes);
     // TreatmentReview creates medication node.
     expect(nodes['medication']).toBe(true);
     // OutsideCare (subsequent only).
     expect(nodes['prenatal_outside_care']).toBe(true);
+    // HIV PCR (appears because initial encounter set HIV known positive).
+    expect(nodes['prenatal_hiv_pcr_test']).toBe(true);
   });
 });
 

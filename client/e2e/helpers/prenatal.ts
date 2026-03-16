@@ -911,7 +911,11 @@ export async function completeMedication(page: Page): Promise<string[]> {
  * Each test: interact with the form to complete it.
  * Creates: prenatal_hiv_test, prenatal_syphilis_test, etc.
  */
-export async function completeLaboratoryNurse(page: Page): Promise<string[]> {
+export async function completeLaboratoryNurse(
+  page: Page,
+  options?: { hivKnownPositive?: boolean },
+): Promise<string[]> {
+  const hivKnownPositive = options?.hivKnownPositive ?? false;
   await openActivity(page, 'laboratory');
 
   const completedTests: string[] = [];
@@ -945,14 +949,20 @@ export async function completeLaboratoryNurse(page: Page): Promise<string[]> {
     // Answer yes/no fields by their specific CSS classes.
     // Fields appear sequentially: known-as-positive → test-performed → why-not → blood-smear.
 
-    // 1. "Known as positive?" (HIV, Partner HIV, Hepatitis B) → No
+    // 1. "Known as positive?" (HIV, Partner HIV, Hepatitis B)
     const knownPositive = page.locator('.form-input.yes-no.known-as-positive');
     if (await knownPositive.isVisible().catch(() => false)) {
-      await click(knownPositive.locator('label', { hasText: 'No' }), page);
+      // For HIV tab (label is "HIV", not "Partner HIV"): answer Yes if hivKnownPositive.
+      const isHivTab = hivKnownPositive
+        && /^HIV$/i.test(tabLabel.trim())
+        && !tabLabel.includes('Partner')
+        && !tabLabel.includes('PCR');
+      const answer = isHivTab ? 'Yes' : 'No';
+      await click(knownPositive.locator('label', { hasText: answer }), page);
       await page.waitForTimeout(500);
     }
 
-    // 2. "Will this test be performed today?" → No
+    // 2. "Will this test be performed today?" → No (skipped when known as positive)
     const testPerformed = page.locator('.form-input.yes-no.test-performed');
     if (await testPerformed.isVisible().catch(() => false)) {
       await click(testPerformed.locator('label', { hasText: 'No' }), page);
