@@ -310,10 +310,11 @@ test.describe('Nurse: Prenatal Postpartum Encounter', () => {
     // Sync to backend.
     await syncAndWait(page);
 
-    // Verify postpartum-unique CT.
-    const expectedTypes = ['prenatal_breastfeeding'];
+    // Verify postpartum-unique CTs.
+    const expectedTypes = ['prenatal_breastfeeding', 'prenatal_gu_exam'];
     const nodes = queryPrenatalNodes(fullName, expectedTypes);
     expect(nodes['prenatal_breastfeeding']).toBe(true);
+    expect(nodes['prenatal_gu_exam']).toBe(true);
   });
 });
 
