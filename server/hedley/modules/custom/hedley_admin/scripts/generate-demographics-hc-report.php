@@ -322,6 +322,57 @@ function encounter_unique_count($type, $filter = NULL, $limit = NULL, $center_id
   }
 }
 
+/**
+ * Counts all family nutrition encounters.
+ *
+ * @param string $limit
+ *   The date limit.
+ * @param string $center_id
+ *   The health center node ID.
+ *
+ * @return int
+ *   Amount of encounters.
+ */
+function family_nutrition_encounter_all_count($limit = NULL, $center_id = NULL) {
+  $center_clause = ($center_id) ? "AND field_health_center_target_id = '$center_id'" : "";
+
+  return db_query("SELECT COUNT(DISTINCT enc.nid)
+    FROM node enc
+    LEFT JOIN field_data_field_family_participant fp ON enc.nid = fp.entity_id
+    LEFT JOIN field_data_field_person person ON fp.field_family_participant_target_id = person.entity_id
+    LEFT JOIN field_data_field_health_center hc ON person.field_person_target_id = hc.entity_id
+    WHERE enc.type = 'family_nutrition_encounter'
+    AND FROM_UNIXTIME(enc.created) < '$limit'
+    {$center_clause}")->fetchField();
+}
+
+/**
+ * Counts unique participants across all family nutrition measurements.
+ *
+ * @param string $limit
+ *   The date limit.
+ * @param string $center_id
+ *   The health center node ID.
+ *
+ * @return int
+ *   Amount of unique participants.
+ */
+function family_nutrition_encounter_unique_count($limit = NULL, $center_id = NULL) {
+  $center_clause = ($center_id) ? "AND field_health_center_target_id = '$center_id'" : "";
+
+  return db_query("SELECT COUNT(DISTINCT person.field_person_target_id)
+    FROM node ms
+    LEFT JOIN field_data_field_family_nutrition_encounter fne ON fne.entity_id = ms.nid
+    LEFT JOIN node enc ON fne.field_family_nutrition_encounter_target_id = enc.nid
+    LEFT JOIN field_data_field_family_participant fp ON enc.nid = fp.entity_id
+    LEFT JOIN field_data_field_person person_for_hc ON fp.field_family_participant_target_id = person_for_hc.entity_id
+    LEFT JOIN field_data_field_health_center hc ON person_for_hc.field_person_target_id = hc.entity_id
+    LEFT JOIN field_data_field_person person ON ms.nid = person.entity_id
+    WHERE ms.type IN ('aheza_child', 'aheza_mother', 'family_nutrition_muac_child', 'family_nutrition_muac_mother')
+    AND FROM_UNIXTIME(enc.created) < '$limit'
+    {$center_clause}")->fetchField();
+}
+
 $bootstrap_data_structures = file_get_contents(__DIR__ . '/bootstrap-demographics-report.SQL');
 $commands = explode(';', $bootstrap_data_structures);
 $k = 0;
@@ -616,9 +667,14 @@ $encounters = [
     encounter_unique_count('nutrition', 'chw', $limit_date, $center_id),
   ],
   [
+    'Family Nutrition',
+    family_nutrition_encounter_all_count($limit_date, $center_id),
+    family_nutrition_encounter_unique_count($limit_date, $center_id),
+  ],
+  [
     'TOTAL',
-    $group_encounter_all['pmtct']->counter + $group_encounter_all['fbf']->counter + $group_encounter_all['sorwathe']->counter + $group_encounter_all['chw']->counter + $group_encounter_all['achi']->counter + encounter_all_count('nutrition', 'chw', $limit_date, $center_id) + encounter_all_count('prenatal', 'all', $limit_date, $center_id) + encounter_all_count('acute_illness', 'all', $limit_date) + encounter_all_count('well_child', 'chw', $limit_date),
-    $group_encounter_unique['pmtct']->counter + $group_encounter_unique['fbf']->counter + $group_encounter_unique['sorwathe']->counter + $group_encounter_unique['chw']->counter + $group_encounter_unique['achi']->counter + encounter_unique_count('nutrition', 'chw', $limit_date) + encounter_unique_count('prenatal', 'all', $limit_date, $center_id) + encounter_unique_count('acute_illness', 'all', $limit_date, $center_id) + encounter_unique_count('well_child', 'hc', $limit_date, $center_id),
+    $group_encounter_all['pmtct']->counter + $group_encounter_all['fbf']->counter + $group_encounter_all['sorwathe']->counter + $group_encounter_all['chw']->counter + $group_encounter_all['achi']->counter + encounter_all_count('nutrition', 'chw', $limit_date, $center_id) + encounter_all_count('prenatal', 'all', $limit_date, $center_id) + encounter_all_count('acute_illness', 'all', $limit_date) + encounter_all_count('well_child', 'chw', $limit_date) + family_nutrition_encounter_all_count($limit_date, $center_id),
+    $group_encounter_unique['pmtct']->counter + $group_encounter_unique['fbf']->counter + $group_encounter_unique['sorwathe']->counter + $group_encounter_unique['chw']->counter + $group_encounter_unique['achi']->counter + encounter_unique_count('nutrition', 'chw', $limit_date) + encounter_unique_count('prenatal', 'all', $limit_date, $center_id) + encounter_unique_count('acute_illness', 'all', $limit_date, $center_id) + encounter_unique_count('well_child', 'hc', $limit_date, $center_id) + family_nutrition_encounter_unique_count($limit_date, $center_id),
   ],
 ];
 
