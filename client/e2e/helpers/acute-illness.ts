@@ -309,6 +309,56 @@ export async function createAdultAndStartEncounter(
   return { firstName, secondName, fullName: `${secondName} ${firstName}` };
 }
 
+/**
+ * Register a child and start an Acute Illness encounter (Nurse flow).
+ */
+export async function createChildAndStartEncounter(
+  page: Page,
+  options?: { ageMonths?: number; firstName?: string },
+) {
+  const ageMonths = options?.ageMonths ?? 24;
+  const firstName = options?.firstName ?? `TestChild${Date.now()}`;
+  const secondName = 'E2ETest';
+
+  await click(page.locator('.icon-task-clinical'), page);
+  await page.locator('div.page-clinical').waitFor({ timeout: 10000 });
+  await click(page.locator('button.individual-assessment'), page);
+  await page.locator('div.page-encounter-types').waitFor({ timeout: 10000 });
+  await click(page.locator('button.encounter-type', { hasText: 'Acute Illness' }), page);
+  await page.locator('div.page-participants').waitFor({ timeout: 10000 });
+  await click(page.locator('button.ui.primary.button.fluid', { hasText: 'Register a new participant' }), page);
+  await page.locator('.ui.grid .column', { hasText: 'First Name:' }).waitFor({ timeout: 10000 });
+
+  await formInput(page, 'First Name:').fill(firstName);
+  await formInput(page, 'Second Name:').fill(secondName);
+
+  const dob = new Date();
+  dob.setMonth(dob.getMonth() - ageMonths);
+  await setDate(page, dob);
+
+  await page.locator('.ui.grid').filter({ hasText: 'Gender:' }).locator('input[type="radio"]').first().check();
+  await selectByLabel(page, 'Mode of delivery:', 1);
+
+  // Nurse: address + health center.
+  await selectByLabel(page, 'Province:', 1);
+  await page.waitForTimeout(500);
+  await selectByLabel(page, 'District:', 1);
+  await page.waitForTimeout(500);
+  await selectByLabel(page, 'Sector:', 1);
+  await page.waitForTimeout(500);
+  await selectByLabel(page, 'Cell:', 1);
+  await page.waitForTimeout(500);
+  await selectByLabel(page, 'Village:', 1);
+  const hcSelect = page.locator('.ui.grid').filter({ hasText: 'Health Center:' }).locator('select');
+  await hcSelect.selectOption({ label: 'Nyange Health Center' });
+
+  await click(page.locator('button[type="submit"]'), page);
+  await page.locator('div.page-participant.individual.acute-illness').waitFor({ timeout: 30000 });
+  await startNewAcuteIllness(page);
+
+  return { firstName, secondName, fullName: `${secondName} ${firstName}` };
+}
+
 // ---------------------------------------------------------------------------
 // Encounter lifecycle
 // ---------------------------------------------------------------------------
@@ -718,9 +768,16 @@ export async function completePhysicalExam(
   await clickSubTaskTab(page, 'physical-exam-vitals');
   if (!isChw) {
     // Nurse: full vitals form (BP, HR, RR, Temp).
-    await fillMeasurement(page, 'sys-blood-pressure', sys);
-    await fillMeasurement(page, 'dia-blood-pressure', dia);
-    await fillMeasurement(page, 'heart-rate', heartRate);
+    // BP and HR may not appear for children.
+    const bpField = page.locator('.form-input.measurement.sys-blood-pressure input[type="number"]');
+    if (await bpField.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await fillMeasurement(page, 'sys-blood-pressure', sys);
+      await fillMeasurement(page, 'dia-blood-pressure', dia);
+    }
+    const hrField = page.locator('.form-input.measurement.heart-rate input[type="number"]');
+    if (await hrField.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await fillMeasurement(page, 'heart-rate', heartRate);
+    }
   }
   // Both CHW (basic) and nurse (full) have respiratory rate + body temp.
   await fillMeasurement(page, 'respiratory-rate', respiratoryRate);
@@ -921,18 +978,32 @@ export async function completeLaboratory(
   const covidTab = page.locator('.link-section:has(.icon-activity-task.icon-laboratory-covid-testing)');
   if (await covidTab.isVisible({ timeout: 2000 }).catch(() => false)) {
     await clickSubTaskTab(page, 'laboratory-covid-testing');
+
+    // Dismiss "SUSPECTED COVID-19" warning overlay if present.
+    const covidWarning = page.locator('.overlay button', { hasText: /continue/i });
+    if (await covidWarning.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await covidWarning.click({ force: true });
+      await page.waitForTimeout(500);
+    }
+
     const covidForm = page.locator('.ui.form.laboratory.covid-testing');
     await covidForm.waitFor({ timeout: 5000 });
 
     if (covidTestPerformed) {
       // "Test performed?" → Yes
       await answerYesNo(page, 'test-performed', 'Yes');
+      await page.waitForTimeout(500);
 
-      // Select the test result from dropdown.
+      // Select the test result (may be dropdown or radio buttons).
       const covidResultSelect = covidForm.locator('select').first();
-      await covidResultSelect.waitFor({ timeout: 3000 }).catch(() => {});
-      if (await covidResultSelect.isVisible()) {
+      if (await covidResultSelect.isVisible({ timeout: 1000 }).catch(() => false)) {
         await covidResultSelect.selectOption({ label: covidResult });
+      } else {
+        // Radio buttons: click the label matching the result text.
+        const resultLabel = covidForm.locator('.form-input label', { hasText: covidResult });
+        if (await resultLabel.isVisible({ timeout: 1000 }).catch(() => false)) {
+          await resultLabel.click({ force: true });
+        }
       }
     } else {
       // "Test performed?" → No
