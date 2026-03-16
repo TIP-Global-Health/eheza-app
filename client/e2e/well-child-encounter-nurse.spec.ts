@@ -351,3 +351,93 @@ test.describe('Nurse: Well Child PediatricCare — 7yr Female, Albendazole', () 
     expect(nodes['well_child_next_visit']).toBe(true);
   });
 });
+
+// =========================================================================
+// Test 4: Nurse PediatricCare — 12.5-year-old Female (HPV vaccine)
+// =========================================================================
+
+test.describe('Nurse: Well Child PediatricCare — 12.5yr Female, HPV', () => {
+  test.describe.configure({ timeout: 600000 });
+
+  if (process.env.RECORD) {
+    test.beforeEach(async ({ page }) => {
+      await page.addInitScript(installCursorScript());
+    });
+  }
+
+  test.beforeEach(async ({ page }) => {
+    resetDevice();
+    await setupDevice(page, '1234', 'Nyange Health Center');
+  });
+
+  // Scenario: 12.5-year-old female on Rwanda site.
+  // Immunisation: HPV appears (female, 12yr+, Rwanda). All common vaccines also overdue.
+  // Medication: albendazole (6-12yr), no mebendezole or vitaminA.
+  test('complete encounter for 12.5yr female with HPV vaccine, verify backend sync', async ({ page }) => {
+
+    const { fullName } = await createChildAndStartWellChildEncounter(page, {
+      ageMonths: 150,
+      isChw: false,
+      isFemale: true,
+    });
+
+    // 1. Danger Signs: no symptoms, normal vitals.
+    await completeDangerSigns(page, {
+      respiratoryRate: '18',
+      bodyTemp: '36.5',
+    });
+
+    // 2. Nutrition Assessment: normal values for 12.5-year-old.
+    await completeNutritionAssessment(page, {
+      height: '150',
+      muac: '21',
+      weight: '40',
+      nutritionSigns: [],
+    });
+
+    // 3. ECD: answer all milestone questions "Yes".
+    await completeECD(page);
+
+    // No medication at 12.5yr on Rwanda (albendazole < 12yr, mebendezole < 6yr, vitaminA < 6yr).
+
+    // 4. Immunisation: all common vaccines + HPV (female 12yr+).
+    await completeImmunisation(page, { isChw: false });
+
+    // 5. Next Steps: NextVisit.
+    await completeNextSteps(page, {
+      hasContributingFactors: false,
+      hasHealthEducation: false,
+      hasSendToHC: false,
+      hasFollowUp: false,
+    });
+
+    // End encounter.
+    await endWellChildEncounter(page);
+
+    // Sync to backend.
+    await syncAndWait(page);
+
+    // Verify backend nodes.
+    const expectedTypes = [
+      'well_child_symptoms_review',
+      'well_child_vitals',
+      'well_child_height',
+      'well_child_muac',
+      'well_child_nutrition',
+      'well_child_weight',
+      'well_child_next_visit',
+      'well_child_hpv_immunisation',
+    ];
+    const nodes = queryWellChildNodes(fullName, expectedTypes);
+
+    expect(nodes['well_child_symptoms_review']).toBe(true);
+    expect(nodes['well_child_vitals']).toBe(true);
+    expect(nodes['well_child_height']).toBe(true);
+    expect(nodes['well_child_muac']).toBe(true);
+    expect(nodes['well_child_nutrition']).toBe(true);
+    expect(nodes['well_child_weight']).toBe(true);
+    expect(nodes['well_child_next_visit']).toBe(true);
+    // HPV (female, 12yr+, Rwanda).
+    expect(nodes['well_child_hpv_immunisation']).toBe(true);
+  });
+});
