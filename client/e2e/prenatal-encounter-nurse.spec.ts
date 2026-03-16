@@ -266,7 +266,8 @@ test.describe('Nurse: Prenatal Postpartum Encounter', () => {
     await completeMentalHealth(page);
     await completeImmunisation(page);
     await completeMedication(page);
-    await completeLaboratoryNurse(page);
+    // HIV known positive → triggers SpecialityCare in postpartum encounter.
+    await completeLaboratoryNurse(page, { hivKnownPositive: true });
     await completeNextSteps(page);
     await endPrenatalEncounter(page);
 
@@ -309,6 +310,8 @@ test.describe('Nurse: Prenatal Postpartum Encounter', () => {
     await completeExamination(page, { isPostpartum: true });
     await completeFamilyPlanning(page);
     await completePostpartumTreatmentReview(page);
+    // SpecialityCare: appears because initial encounter set HIV known positive.
+    await completeSpecialityCare(page);
 
     // End encounter.
     await endPrenatalEncounter(page);
@@ -317,10 +320,12 @@ test.describe('Nurse: Prenatal Postpartum Encounter', () => {
     await syncAndWait(page);
 
     // Verify postpartum-unique CTs.
-    const expectedTypes = ['prenatal_breastfeeding', 'prenatal_gu_exam'];
+    const expectedTypes = ['prenatal_breastfeeding', 'prenatal_gu_exam', 'prenatal_speciality_care'];
     const nodes = queryPrenatalNodes(fullName, expectedTypes);
     expect(nodes['prenatal_breastfeeding']).toBe(true);
     expect(nodes['prenatal_gu_exam']).toBe(true);
+    // SpecialityCare (HIV known positive in initial → ARV program referral).
+    expect(nodes['prenatal_speciality_care']).toBe(true);
   });
 });
 
