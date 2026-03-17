@@ -23,40 +23,20 @@ npm install
 cp ./src/elm/LocalConfig.Example.elm ./src/elm/LocalConfig.elm
 sed -i 's/module LocalConfig.Example/module LocalConfig/' ./src/elm/LocalConfig.elm
 
+# On CI, add swap space to prevent OOM kills during Elm compilation.
+# The Elm compiler is memory-intensive and can exceed the 8GB available
+# on CircleCI large machines when running alongside DDEV containers.
+if [ -n "$CIRCLECI" ]; then
+  echo "Adding 2GB swap space for Elm compilation..."
+  sudo fallocate -l 2G /swapfile
+  sudo chmod 600 /swapfile
+  sudo mkswap /swapfile
+  sudo swapon /swapfile
+fi
+
 if [ -z "$DEPLOY" ]
 then
-  # On CI, stop DDEV containers during the memory-intensive Elm compilation
-  # to avoid OOM kills, then restart them after without re-running hooks.
-  if [ -n "$CIRCLECI" ]; then
-    echo "Stopping DDEV containers to free memory for Elm compilation..."
-    docker ps -q --filter "label=com.ddev.site-name" | xargs -r docker stop || true
-  fi
-
   gulp build
-
-  if [ -n "$CIRCLECI" ]; then
-    echo "Restarting DDEV containers..."
-    docker ps -aq --filter "label=com.ddev.site-name" | xargs -r docker start || true
-    # Wait for the DB container to accept connections.
-    # Use docker exec directly — ddev commands may hang after docker stop/start.
-    echo "Waiting for MariaDB to be ready..."
-    DB_CONTAINER=$(docker ps -q --filter "name=ddev-.*-db" 2>/dev/null | head -1)
-    if [ -n "$DB_CONTAINER" ]; then
-      ATTEMPTS=0
-      while [ $ATTEMPTS -lt 30 ]; do
-        ATTEMPTS=$((ATTEMPTS + 1))
-        if docker exec "$DB_CONTAINER" mysql -udb -pdb -e "SELECT 1" db >/dev/null 2>&1; then
-          echo "MariaDB is ready (attempt $ATTEMPTS)."
-          break
-        fi
-        echo "  Attempt $ATTEMPTS/30: waiting..."
-        sleep 2
-      done
-    else
-      echo "No DB container found, sleeping 15s as fallback..."
-      sleep 15
-    fi
-  fi
 else
   gulp publish
 fi
