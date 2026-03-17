@@ -641,6 +641,15 @@ export async function syncAndWait(page: Page) {
     .locator('.sync-status', { hasText: 'Remaining for Upload: 0' })
     .waitFor({ timeout: 10000 });
 
+  // Wait 1 second and verify sync is still showing success (not a transient state).
+  await page.waitForTimeout(1000);
+  await hcSection
+    .locator('.sync-status', { hasText: 'Remaining for Download: 0' })
+    .waitFor({ timeout: 5000 });
+  await hcSection
+    .locator('.sync-status', { hasText: 'Remaining for Upload: 0' })
+    .waitFor({ timeout: 5000 });
+
   await page.goBack();
 }
 
