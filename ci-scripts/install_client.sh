@@ -27,11 +27,15 @@ sed -i 's/module LocalConfig.Example/module LocalConfig/' ./src/elm/LocalConfig.
 # The Elm compiler is memory-intensive and can exceed the 8GB available
 # on CircleCI large machines when running alongside DDEV containers.
 if [ -n "$CIRCLECI" ]; then
-  echo "Adding 2GB swap space for Elm compilation..."
-  sudo fallocate -l 2G /swapfile
-  sudo chmod 600 /swapfile
-  sudo mkswap /swapfile
-  sudo swapon /swapfile
+  echo "Adding 4GB swap space for Elm compilation..."
+  sudo fallocate -l 4G /swapfile && \
+    sudo chmod 600 /swapfile && \
+    sudo mkswap /swapfile && \
+    sudo swapon /swapfile && \
+    echo "Swap enabled: $(swapon --show)" || \
+    echo "WARNING: Failed to create swap, continuing without it"
+  echo "Memory status:"
+  free -h
 fi
 
 if [ -z "$DEPLOY" ]
