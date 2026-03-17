@@ -37,19 +37,25 @@ then
   if [ -n "$CIRCLECI" ]; then
     echo "Restarting DDEV containers..."
     docker ps -aq --filter "label=com.ddev.site-name" | xargs -r docker start || true
-    # Wait for MariaDB to accept connections before proceeding.
+    # Wait for the DB container to accept connections.
+    # Use docker exec directly — ddev commands may hang after docker stop/start.
     echo "Waiting for MariaDB to be ready..."
-    ATTEMPTS=0
-    while [ $ATTEMPTS -lt 30 ]; do
-      DB_STATUS=$(ddev drush status --fields=db-status 2>&1 || true)
-      echo "  Attempt $((ATTEMPTS + 1))/30: $DB_STATUS"
-      if echo "$DB_STATUS" | grep -q "Connected"; then
-        echo "MariaDB is ready."
-        break
-      fi
-      ATTEMPTS=$((ATTEMPTS + 1))
-      sleep 2
-    done
+    DB_CONTAINER=$(docker ps -q --filter "name=ddev-.*-db" 2>/dev/null | head -1)
+    if [ -n "$DB_CONTAINER" ]; then
+      ATTEMPTS=0
+      while [ $ATTEMPTS -lt 30 ]; do
+        ATTEMPTS=$((ATTEMPTS + 1))
+        if docker exec "$DB_CONTAINER" mysql -udb -pdb -e "SELECT 1" db >/dev/null 2>&1; then
+          echo "MariaDB is ready (attempt $ATTEMPTS)."
+          break
+        fi
+        echo "  Attempt $ATTEMPTS/30: waiting..."
+        sleep 2
+      done
+    else
+      echo "No DB container found, sleeping 15s as fallback..."
+      sleep 15
+    fi
   fi
 else
   gulp publish
