@@ -241,24 +241,32 @@ export async function addChild(
     .locator('div.page-relationship')
     .waitFor({ timeout: 30000 });
 
-  // The Relationship page may show "Not Found" if the backend hasn't
-  // made the child available via GET yet. Retry with page reloads.
+  // Wait for the relationship form. It may show "Not Found" if the backend
+  // hasn't made the child available via GET yet.
   const relationForm = page.locator('.ui.form.relationship-selector');
-  for (let attempt = 0; attempt < 3; attempt++) {
-    const formVisible = await relationForm
-      .isVisible({ timeout: 10000 })
-      .catch(() => false);
+  let formVisible = await relationForm
+    .waitFor({ timeout: 15000 })
+    .then(() => true)
+    .catch(() => false);
 
-    if (formVisible) {
-      break;
+  // If form didn't appear, retry with page reloads.
+  if (!formVisible) {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      await page.waitForTimeout(3000);
+      await page.reload();
+      await page
+        .locator('div.page-relationship')
+        .waitFor({ timeout: 10000 });
+
+      formVisible = await relationForm
+        .waitFor({ timeout: 15000 })
+        .then(() => true)
+        .catch(() => false);
+
+      if (formVisible) {
+        break;
+      }
     }
-
-    // Wait and reload to re-trigger FetchPerson.
-    await page.waitForTimeout(3000);
-    await page.reload();
-    await page
-      .locator('div.page-relationship')
-      .waitFor({ timeout: 10000 });
   }
 
   // Select relationship type: "My Child" (first radio option for adults).
