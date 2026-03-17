@@ -41,7 +41,9 @@ then
     echo "Waiting for MariaDB to be ready..."
     ATTEMPTS=0
     while [ $ATTEMPTS -lt 30 ]; do
-      if ddev drush status --fields=db-status 2>/dev/null | grep -q "Connected"; then
+      DB_STATUS=$(ddev drush status --fields=db-status 2>&1 || true)
+      echo "  Attempt $((ATTEMPTS + 1))/30: $DB_STATUS"
+      if echo "$DB_STATUS" | grep -q "Connected"; then
         echo "MariaDB is ready."
         break
       fi
