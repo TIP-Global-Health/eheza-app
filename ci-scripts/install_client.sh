@@ -25,7 +25,27 @@ sed -i 's/module LocalConfig.Example/module LocalConfig/' ./src/elm/LocalConfig.
 
 if [ -z "$DEPLOY" ]
 then
+  # On CI, stop DDEV containers during the memory-intensive Elm compilation
+  # to avoid OOM kills, then restart them after without re-running hooks.
+  if [ -n "$CIRCLECI" ]; then
+    echo "Stopping DDEV containers to free memory for Elm compilation..."
+    DDEV_CONTAINERS=$(docker ps -q --filter "label=com.ddev.site-name")
+    if [ -n "$DDEV_CONTAINERS" ]; then
+      docker stop $DDEV_CONTAINERS || true
+    fi
+  fi
+
   gulp build
+
+  if [ -n "$CIRCLECI" ]; then
+    echo "Restarting DDEV containers..."
+    DDEV_STOPPED=$(docker ps -aq --filter "label=com.ddev.site-name")
+    if [ -n "$DDEV_STOPPED" ]; then
+      docker start $DDEV_STOPPED || true
+    fi
+    # Wait for MariaDB to be ready.
+    sleep 5
+  fi
 else
   gulp publish
 fi
