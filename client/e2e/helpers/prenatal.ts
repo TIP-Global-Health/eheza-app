@@ -1543,9 +1543,30 @@ export async function completeRecurrentExamination(
 ) {
   await openActivity(page, 'examination');
 
+  // Wait for form to fully render before filling inputs.
+  const sysInput = page.locator(
+    '.form-input.measurement.sys-blood-pressure input[type="number"]',
+  );
+  await sysInput.waitFor({ timeout: 5000 });
+  await page.waitForTimeout(500);
+
   // VitalsFormRepeated: only BP fields shown.
-  await fillMeasurement(page, 'sys-blood-pressure', options?.sys ?? '120');
-  await fillMeasurement(page, 'dia-blood-pressure', options?.dia ?? '80');
+  // Use click + fill to ensure the input is focused and the value registers.
+  await sysInput.click();
+  await sysInput.fill(options?.sys ?? '120');
+  // Wait for Elm to process the input event before filling the next field.
+  await page.waitForTimeout(500);
+
+  const diaInput = page.locator(
+    '.form-input.measurement.dia-blood-pressure input[type="number"]',
+  );
+  await diaInput.click();
+  await diaInput.fill(options?.dia ?? '80');
+
+  // Wait for save button to become enabled (Elm processed both inputs).
+  await page
+    .locator('button.ui.fluid.primary.button:not(.disabled)', { hasText: 'Save' })
+    .waitFor({ timeout: 10000 });
 
   // Save.
   await click(
@@ -1554,17 +1575,20 @@ export async function completeRecurrentExamination(
   );
   await page.waitForTimeout(2000);
 
-  // After saving the last recurrent activity, the app auto-navigates to
-  // ClinicalProgressReportPage (div.page-report.clinical).
+  // For nurses, the app navigates back to the recurrent encounter page
+  // (where "End Encounter" button appears since all activities are done).
+  // For lab techs, it navigates to ClinicalProgressReportPage.
   await page
-    .locator('div.page-report.clinical')
+    .locator('div.page-encounter.prenatal')
+    .or(page.locator('div.page-report.clinical'))
     .waitFor({ timeout: 15000 });
   await page.waitForTimeout(500);
 }
 
 /**
- * End the recurrent encounter from the Clinical Progress Report page.
- * Clicking "End Encounter" navigates directly to PinCodePage (no dialog).
+ * End the recurrent encounter.
+ * For nurses: "End Encounter" button on the encounter page (all activities done).
+ * For lab techs: "End Encounter" button on the Clinical Progress Report page.
  */
 export async function endRecurrentEncounter(page: Page) {
   const endBtn = page.locator('button', { hasText: 'End Encounter' });

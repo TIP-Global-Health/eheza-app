@@ -197,23 +197,6 @@ test.describe('Nurse: Prenatal Initial → Subsequent → Postpartum', () => {
     await syncAndWait(page);
     backdatePrenatalEncounter(fullName);
     await syncAndWait(page);
-    await page.reload();
-    await Promise.race([
-      page.locator('input[name="pincode"]').waitFor({ timeout: 30000 }),
-      page.locator('.wrap-cards').waitFor({ timeout: 30000 }),
-    ]);
-    if (await page.locator('input[name="pincode"]').isVisible().catch(() => false)) {
-      await page.locator('input[name="pincode"]').fill('1234');
-      await page.getByRole('button', { name: 'Sign In' }).click();
-      await Promise.race([
-        page.locator('p.select-location').waitFor({ timeout: 30000 }),
-        page.locator('.wrap-cards').waitFor({ timeout: 30000 }),
-      ]);
-      if (await page.locator('p.select-location').isVisible().catch(() => false)) {
-        await page.locator('button.ui.primary.button', { hasText: 'Nyange Health Center' }).click();
-      }
-    }
-    await page.locator('.wrap-cards').waitFor({ timeout: 30000 });
 
     // =====================================================================
     // PHASE 2: Subsequent Encounter
@@ -236,23 +219,6 @@ test.describe('Nurse: Prenatal Initial → Subsequent → Postpartum', () => {
     await syncAndWait(page);
     backdatePrenatalEncounter(fullName);
     await syncAndWait(page);
-    await page.reload();
-    await Promise.race([
-      page.locator('input[name="pincode"]').waitFor({ timeout: 30000 }),
-      page.locator('.wrap-cards').waitFor({ timeout: 30000 }),
-    ]);
-    if (await page.locator('input[name="pincode"]').isVisible().catch(() => false)) {
-      await page.locator('input[name="pincode"]').fill('1234');
-      await page.getByRole('button', { name: 'Sign In' }).click();
-      await Promise.race([
-        page.locator('p.select-location').waitFor({ timeout: 30000 }),
-        page.locator('.wrap-cards').waitFor({ timeout: 30000 }),
-      ]);
-      if (await page.locator('p.select-location').isVisible().catch(() => false)) {
-        await page.locator('button.ui.primary.button', { hasText: 'Nyange Health Center' }).click();
-      }
-    }
-    await page.locator('.wrap-cards').waitFor({ timeout: 30000 });
 
     // =====================================================================
     // PHASE 3: Postpartum Encounter
