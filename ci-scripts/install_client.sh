@@ -31,7 +31,7 @@ then
     echo "Stopping DDEV containers to free memory for Elm compilation..."
     DDEV_CONTAINERS=$(docker ps -q --filter "label=com.ddev.site-name")
     if [ -n "$DDEV_CONTAINERS" ]; then
-      docker stop $DDEV_CONTAINERS || true
+      docker stop "$DDEV_CONTAINERS" || true
     fi
   fi
 
@@ -41,7 +41,7 @@ then
     echo "Restarting DDEV containers..."
     DDEV_STOPPED=$(docker ps -aq --filter "label=com.ddev.site-name")
     if [ -n "$DDEV_STOPPED" ]; then
-      docker start $DDEV_STOPPED || true
+      docker start "$DDEV_STOPPED" || true
     fi
     # Wait for MariaDB to be ready.
     sleep 5
