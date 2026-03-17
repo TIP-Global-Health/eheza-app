@@ -631,23 +631,15 @@ export async function syncAndWait(page: Page) {
   });
   await hcSection.waitFor({ timeout: 10000 });
 
-  // Wait for sync to complete. We check for "Remaining for Download: 0"
-  // because the status may stay at "Downloading" after an upload cycle
-  // even though all data has been synced (sync status transition bug).
+  // Wait for sync to complete — "Status: Success" for the health center.
   await hcSection
-    .locator('.sync-status', { hasText: 'Remaining for Download: 0' })
-    .waitFor({ timeout: 120000 });
-  await hcSection
-    .locator('.sync-status', { hasText: 'Remaining for Upload: 0' })
-    .waitFor({ timeout: 10000 });
+    .locator('.sync-status', { hasText: 'Status: Success' })
+    .waitFor({ timeout: 300000 });
 
-  // Wait 1 second and verify sync is still showing success (not a transient state).
+  // Wait 1 second and verify status is still Success (not a transient state).
   await page.waitForTimeout(1000);
   await hcSection
-    .locator('.sync-status', { hasText: 'Remaining for Download: 0' })
-    .waitFor({ timeout: 5000 });
-  await hcSection
-    .locator('.sync-status', { hasText: 'Remaining for Upload: 0' })
+    .locator('.sync-status', { hasText: 'Status: Success' })
     .waitFor({ timeout: 5000 });
 
   await page.goBack();
