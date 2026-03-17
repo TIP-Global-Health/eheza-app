@@ -241,12 +241,10 @@ export async function addChild(
     .locator('div.page-relationship')
     .waitFor({ timeout: 30000 });
 
-  // Wait for the relationship form or error to appear.
+  // The Relationship page may show "Not Found" if the backend hasn't
+  // made the child available via GET yet. Retry with page reloads.
   const relationForm = page.locator('.ui.form.relationship-selector');
-  const errorMsg = page.locator('.ui.warning.message');
-
-  // Poll for either the form or error, with retries.
-  for (let attempt = 0; attempt < 3; attempt++) {
+  for (let attempt = 0; attempt < 5; attempt++) {
     const formVisible = await relationForm
       .isVisible({ timeout: 5000 })
       .catch(() => false);
@@ -255,39 +253,12 @@ export async function addChild(
       break;
     }
 
-    // Check if error is showing.
-    const errorVisible = await errorMsg
-      .isVisible({ timeout: 1000 })
-      .catch(() => false);
-
-    if (errorVisible && attempt < 2) {
-      // Go back to Person page and wait for backend to catch up.
-      await click(page.locator('.link-back'), page);
-      await page.locator('div.page-person').waitFor({ timeout: 10000 });
-      await page.waitForTimeout(5000);
-
-      // Re-navigate: click add child → search for child → click result.
-      await click(page.locator('.add-participant-icon'), page);
-      await page.locator('div.page-people').waitFor({ timeout: 10000 });
-
-      // Search for the child we just created.
-      const searchInput = page.locator('input[type="text"]').first();
-      await searchInput.fill(firstName);
-      await page.waitForTimeout(3000);
-
-      // Click the child in search results.
-      await click(
-        page
-          .locator('.item.participant-view .action-icon.forward')
-          .first(),
-        page,
-      );
-
-      // Wait for relationship page again.
-      await page
-        .locator('div.page-relationship')
-        .waitFor({ timeout: 30000 });
-    }
+    // Wait and reload to re-trigger FetchPerson.
+    await page.waitForTimeout(3000);
+    await page.reload();
+    await page
+      .locator('div.page-relationship')
+      .waitFor({ timeout: 10000 });
   }
 
   // Select relationship type: "My Child" (first radio option for adults).
