@@ -860,13 +860,18 @@ export async function completeImmunisation(page: Page) {
  * Each tab: select whether medication was administered.
  * Creates: prenatal_iron, prenatal_folate, etc.
  */
-export async function completeMedication(page: Page): Promise<string[]> {
+export async function completeMedication(
+  page: Page,
+  options?: { preferIronFolate?: boolean },
+): Promise<string[]> {
   await openActivity(page, 'medication');
 
   const completedMeds: string[] = [];
-  const medicationIcons = [
-    'calcium', 'fefol', 'folate', 'iron', 'mms', 'mebendezole',
-  ];
+  // Default order: fefol before iron/folate (fefol blocks both).
+  // With preferIronFolate: iron+folate first (blocks fefol).
+  const medicationIcons = options?.preferIronFolate
+    ? ['calcium', 'iron', 'folate', 'fefol', 'mms', 'mebendezole']
+    : ['calcium', 'fefol', 'folate', 'iron', 'mms', 'mebendezole'];
 
   for (const med of medicationIcons) {
     const tab = page.locator(`.link-section:has(.icon-activity-task.icon-${med})`);
@@ -911,7 +916,11 @@ export async function completeMedication(page: Page): Promise<string[]> {
  * Each test: interact with the form to complete it.
  * Creates: prenatal_hiv_test, prenatal_syphilis_test, etc.
  */
-export async function completeLaboratoryNurse(page: Page): Promise<string[]> {
+export async function completeLaboratoryNurse(
+  page: Page,
+  options?: { hivPositive?: boolean },
+): Promise<string[]> {
+  const hivPositive = options?.hivPositive ?? false;
   await openActivity(page, 'laboratory');
 
   const completedTests: string[] = [];
@@ -945,6 +954,12 @@ export async function completeLaboratoryNurse(page: Page): Promise<string[]> {
     // Answer yes/no fields by their specific CSS classes.
     // Fields appear sequentially: known-as-positive → test-performed → why-not → blood-smear.
 
+    // Detect if this is the HIV tab (not Partner HIV, not HIV PCR).
+    const isHivTab = hivPositive
+      && /^\s*HIV\s*$/i.test(tabLabel)
+      && !tabLabel.includes('Partner')
+      && !tabLabel.includes('PCR');
+
     // 1. "Known as positive?" (HIV, Partner HIV, Hepatitis B) → No
     const knownPositive = page.locator('.form-input.yes-no.known-as-positive');
     if (await knownPositive.isVisible().catch(() => false)) {
@@ -952,14 +967,46 @@ export async function completeLaboratoryNurse(page: Page): Promise<string[]> {
       await page.waitForTimeout(500);
     }
 
-    // 2. "Will this test be performed today?" → No
+    // 2. "Will this test be performed today?"
     const testPerformed = page.locator('.form-input.yes-no.test-performed');
     if (await testPerformed.isVisible().catch(() => false)) {
-      await click(testPerformed.locator('label', { hasText: 'No' }), page);
-      await page.waitForTimeout(500);
+      if (isHivTab) {
+        // HIV tab: perform the test with positive result.
+        await click(testPerformed.locator('label', { hasText: 'Yes' }), page);
+        await page.waitForTimeout(500);
+
+        // "Immediate result?" → Yes (Point of Care) to satisfy immediateResult check.
+        const immediateResult = page.locator('.form-input.yes-no.immediate-result');
+        if (await immediateResult.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await click(immediateResult.locator('label').first(), page);
+          await page.waitForTimeout(500);
+        }
+
+        // Select result: "Positive"
+        const resultSelect = page.locator('select.form-input').first();
+        if (await resultSelect.isVisible({ timeout: 2000 }).catch(() => false)) {
+          const posOption = resultSelect.locator('option', { hasText: 'Positive' });
+          if (await posOption.count() > 0) {
+            const val = await posOption.getAttribute('value');
+            if (val) await resultSelect.selectOption(val);
+          }
+          await page.waitForTimeout(300);
+        }
+
+        // "Does the health center have an ARV services program?" → Yes
+        const hivProgram = page.locator('.form-input.yes-no.hiv-program');
+        if (await hivProgram.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await click(hivProgram.locator('label', { hasText: 'Yes' }), page);
+          await page.waitForTimeout(300);
+        }
+      } else {
+        // All other tabs: test not performed.
+        await click(testPerformed.locator('label', { hasText: 'No' }), page);
+        await page.waitForTimeout(500);
+      }
     }
 
-    // 3. "Why not?" reason checkbox → select first option
+    // 3. "Why not?" reason checkbox → select first option (only when test not performed)
     const whyNot = page.locator('.why-not .ui.checkbox label').first();
     if (await whyNot.isVisible().catch(() => false)) {
       await click(whyNot, page);
@@ -1226,11 +1273,24 @@ export async function completeNextSteps(page: Page): Promise<string[]> {
           await click(firstOption, page);
         }
       } else if (step.name === 'sendToHC') {
-        // Referral form — answer Yes/No fields.
-        const yesLabels = page.locator('.form-input.yes-no label', { hasText: 'Yes' });
-        const yesCount = await yesLabels.count();
-        for (let i = 0; i < yesCount; i++) {
-          await click(yesLabels.nth(i), page);
+        // Referral form — answer Yes/No fields sequentially.
+        // Some fields appear conditionally after answering "Yes" to previous ones.
+        for (let round = 0; round < 5; round++) {
+          const yesLabels = page.locator('.form-input.yes-no label', { hasText: 'Yes' });
+          const yesCount = await yesLabels.count();
+          let clicked = false;
+          for (let i = 0; i < yesCount; i++) {
+            const label = yesLabels.nth(i);
+            // Skip if parent already has a checked radio.
+            const parent = label.locator('..');
+            const isChecked = await parent.locator('input.checked').count() > 0;
+            if (!isChecked) {
+              await click(label, page);
+              clicked = true;
+              await page.waitForTimeout(500);
+            }
+          }
+          if (!clicked) break;
         }
       } else if (step.name === 'healthEducation') {
         // Health education — answer Yes/No fields.
@@ -1483,9 +1543,30 @@ export async function completeRecurrentExamination(
 ) {
   await openActivity(page, 'examination');
 
+  // Wait for form to fully render before filling inputs.
+  const sysInput = page.locator(
+    '.form-input.measurement.sys-blood-pressure input[type="number"]',
+  );
+  await sysInput.waitFor({ timeout: 5000 });
+  await page.waitForTimeout(500);
+
   // VitalsFormRepeated: only BP fields shown.
-  await fillMeasurement(page, 'sys-blood-pressure', options?.sys ?? '120');
-  await fillMeasurement(page, 'dia-blood-pressure', options?.dia ?? '80');
+  // Use click + fill to ensure the input is focused and the value registers.
+  await sysInput.click();
+  await sysInput.fill(options?.sys ?? '120');
+  // Wait for Elm to process the input event before filling the next field.
+  await page.waitForTimeout(500);
+
+  const diaInput = page.locator(
+    '.form-input.measurement.dia-blood-pressure input[type="number"]',
+  );
+  await diaInput.click();
+  await diaInput.fill(options?.dia ?? '80');
+
+  // Wait for save button to become enabled (Elm processed both inputs).
+  await page
+    .locator('button.ui.fluid.primary.button:not(.disabled)', { hasText: 'Save' })
+    .waitFor({ timeout: 10000 });
 
   // Save.
   await click(
@@ -1494,17 +1575,20 @@ export async function completeRecurrentExamination(
   );
   await page.waitForTimeout(2000);
 
-  // After saving the last recurrent activity, the app auto-navigates to
-  // ClinicalProgressReportPage (div.page-report.clinical).
+  // For nurses, the app navigates back to the recurrent encounter page
+  // (where "End Encounter" button appears since all activities are done).
+  // For lab techs, it navigates to ClinicalProgressReportPage.
   await page
-    .locator('div.page-report.clinical')
+    .locator('div.page-encounter.prenatal')
+    .or(page.locator('div.page-report.clinical'))
     .waitFor({ timeout: 15000 });
   await page.waitForTimeout(500);
 }
 
 /**
- * End the recurrent encounter from the Clinical Progress Report page.
- * Clicking "End Encounter" navigates directly to PinCodePage (no dialog).
+ * End the recurrent encounter.
+ * For nurses: "End Encounter" button on the encounter page (all activities done).
+ * For lab techs: "End Encounter" button on the Clinical Progress Report page.
  */
 export async function endRecurrentEncounter(page: Page) {
   const endBtn = page.locator('button', { hasText: 'End Encounter' });
