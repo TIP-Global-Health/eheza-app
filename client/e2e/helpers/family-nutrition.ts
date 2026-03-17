@@ -244,9 +244,9 @@ export async function addChild(
   // The Relationship page may show "Not Found" if the backend hasn't
   // made the child available via GET yet. Retry with page reloads.
   const relationForm = page.locator('.ui.form.relationship-selector');
-  for (let attempt = 0; attempt < 5; attempt++) {
+  for (let attempt = 0; attempt < 3; attempt++) {
     const formVisible = await relationForm
-      .isVisible({ timeout: 5000 })
+      .isVisible({ timeout: 10000 })
       .catch(() => false);
 
     if (formVisible) {
