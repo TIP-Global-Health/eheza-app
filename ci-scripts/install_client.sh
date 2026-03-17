@@ -39,11 +39,13 @@ then
     docker ps -aq --filter "label=com.ddev.site-name" | xargs -r docker start || true
     # Wait for MariaDB to accept connections before proceeding.
     echo "Waiting for MariaDB to be ready..."
-    for _i in $(seq 1 30); do
+    ATTEMPTS=0
+    while [ $ATTEMPTS -lt 30 ]; do
       if ddev drush status --fields=db-status 2>/dev/null | grep -q "Connected"; then
         echo "MariaDB is ready."
         break
       fi
+      ATTEMPTS=$((ATTEMPTS + 1))
       sleep 2
     done
   fi
