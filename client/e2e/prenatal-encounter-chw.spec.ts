@@ -106,7 +106,7 @@ test.describe('CHW: Prenatal Second Encounter', () => {
 
     // Navigate back to participant page and start second encounter.
     await navigateToParticipantPage(page, fullName);
-    await startPrenatalEncounter(page, 'subsequent');
+    await startPrenatalEncounter(page, 'subsequent', fullName);
 
     // Complete all 4 CHW second encounter activities.
     await completeDangerSigns(page);

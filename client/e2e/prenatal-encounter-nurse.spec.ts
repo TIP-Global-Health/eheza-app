@@ -203,7 +203,7 @@ test.describe('Nurse: Prenatal Initial → Subsequent → Postpartum', () => {
     // =====================================================================
 
     await navigateToParticipantPage(page, fullName);
-    await startPrenatalEncounter(page, 'subsequent');
+    await startPrenatalEncounter(page, 'subsequent', fullName);
 
     await completeHistory(page, { isSubsequent: true });
     await completeExamination(page);
@@ -225,7 +225,7 @@ test.describe('Nurse: Prenatal Initial → Subsequent → Postpartum', () => {
     // =====================================================================
 
     await navigateToParticipantPage(page, fullName);
-    await startPrenatalEncounter(page, 'postpartum');
+    await startPrenatalEncounter(page, 'postpartum', fullName);
 
     await completePregnancyOutcome(page);
     await completeSymptomReview(page);
