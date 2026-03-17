@@ -29,20 +29,14 @@ then
   # to avoid OOM kills, then restart them after without re-running hooks.
   if [ -n "$CIRCLECI" ]; then
     echo "Stopping DDEV containers to free memory for Elm compilation..."
-    DDEV_CONTAINERS=$(docker ps -q --filter "label=com.ddev.site-name")
-    if [ -n "$DDEV_CONTAINERS" ]; then
-      docker stop "$DDEV_CONTAINERS" || true
-    fi
+    docker ps -q --filter "label=com.ddev.site-name" | xargs -r docker stop || true
   fi
 
   gulp build
 
   if [ -n "$CIRCLECI" ]; then
     echo "Restarting DDEV containers..."
-    DDEV_STOPPED=$(docker ps -aq --filter "label=com.ddev.site-name")
-    if [ -n "$DDEV_STOPPED" ]; then
-      docker start "$DDEV_STOPPED" || true
-    fi
+    docker ps -aq --filter "label=com.ddev.site-name" | xargs -r docker start || true
     # Wait for MariaDB to be ready.
     sleep 5
   fi
