@@ -37,8 +37,15 @@ then
   if [ -n "$CIRCLECI" ]; then
     echo "Restarting DDEV containers..."
     docker ps -aq --filter "label=com.ddev.site-name" | xargs -r docker start || true
-    # Wait for MariaDB to be ready.
-    sleep 5
+    # Wait for MariaDB to accept connections before proceeding.
+    echo "Waiting for MariaDB to be ready..."
+    for i in $(seq 1 30); do
+      if ddev drush status --fields=db-status 2>/dev/null | grep -q "Connected"; then
+        echo "MariaDB is ready."
+        break
+      fi
+      sleep 2
+    done
   fi
 else
   gulp publish
