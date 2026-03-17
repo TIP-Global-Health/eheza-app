@@ -4,6 +4,7 @@ import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import {
   createAdultAndStartEncounter,
+  createChildAndStartEncounter,
   completeSymptoms,
   completePhysicalExam,
   completePriorTreatment,
@@ -201,15 +202,17 @@ test.describe('Nurse: Acute Illness Initial Encounter — GI Infection', () => {
     await setupDevice(page, '1234', 'Nyange Health Center');
   });
 
-  test('complete GI infection encounter with dehydration signs, verify backend sync', async ({ page }) => {
+  // Scenario: 24-month-old child with GI Infection Complicated + COVID test (negative).
+  // Child patient → MUAC + Nutrition tabs appear in Physical Exam.
+  // COVID test performed (negative) → covid_testing node created, GI diagnosis unchanged.
+  test('complete child GI infection with COVID test, verify backend sync', async ({ page }) => {
 
-    const { fullName } = await createAdultAndStartEncounter(page, {
-      isChw: false,
-      gender: 'male',
+    const { fullName } = await createChildAndStartEncounter(page, {
+      ageMonths: 24,
     });
 
-    // 1. Symptoms: Fever + Lethargy + dehydration signs (general);
-    //    None (respiratory); Bloody Diarrhea + Vomiting with intractable vomiting (GI).
+    // 1. Symptoms: Fever + dehydration signs (general);
+    //    None (respiratory); Bloody Diarrhea + Vomiting (GI).
     await completeSymptoms(page, {
       general: ['Fever', 'Lethargy', 'Increased Thirst', 'Dry/Sticky Mouth'],
       respiratory: [],
@@ -217,14 +220,13 @@ test.describe('Nurse: Acute Illness Initial Encounter — GI Infection', () => {
       intractableVomiting: true,
     });
 
-    // 2. Physical Exam: low BP, tachycardia, elevated temp.
+    // 2. Physical Exam: elevated temp, child vitals (no BP).
+    //    MUAC + Nutrition tabs appear for child.
     //    Acute Findings: Sunken Eyes + Poor Skin Turgor (dehydration).
     await completePhysicalExam(page, {
-      sys: '90',
-      dia: '60',
-      heartRate: '110',
-      respiratoryRate: '22',
+      respiratoryRate: '30',
       bodyTemp: '39.0',
+      muac: '14',
       acuteFindingsGeneral: ['Sunken Eyes', 'Poor Skin Turgor'],
       acuteFindingsRespiratory: [],
     });
@@ -232,12 +234,15 @@ test.describe('Nurse: Acute Illness Initial Encounter — GI Infection', () => {
     // 3. Prior Treatment: no prior medication.
     await completePriorTreatment(page);
 
-    // 4. Laboratory: Malaria RDT negative, COVID not performed.
+    // 4. Laboratory: Malaria RDT negative, COVID test negative.
+    //    COVID negative keeps GI diagnosis but creates covid_testing node.
     await completeLaboratory(page, {
       malariaResult: 'Negative',
+      covidTestPerformed: true,
+      covidResult: 'Negative',
     });
 
-    // 5. Next Steps: whatever the app offers for this diagnosis.
+    // 5. Next Steps: GI Complicated → send_to_hc + follow_up.
     await completeNextSteps(page, {
       hasMedicationDistribution: true,
       hasFollowUp: true,
@@ -253,9 +258,7 @@ test.describe('Nurse: Acute Illness Initial Encounter — GI Infection', () => {
     // Sync to backend.
     await syncAndWait(page);
 
-    // Verify core + NextSteps content types.
-    // GI Infection Complicated triggers send_to_hc and follow_up,
-    // but NOT medication_distribution (only Uncomplicated gets meds).
+    // Verify core + child-specific + COVID content types.
     const expectedTypes = [
       'symptoms_general',
       'symptoms_respiratory',
@@ -263,6 +266,8 @@ test.describe('Nurse: Acute Illness Initial Encounter — GI Infection', () => {
       'acute_illness_vitals',
       'acute_illness_core_exam',
       'acute_findings',
+      'acute_illness_muac',
+      'acute_illness_nutrition',
       'treatment_history',
       'malaria_testing',
       'send_to_hc',
@@ -276,9 +281,13 @@ test.describe('Nurse: Acute Illness Initial Encounter — GI Infection', () => {
     expect(nodes['acute_illness_vitals']).toBe(true);
     expect(nodes['acute_illness_core_exam']).toBe(true);
     expect(nodes['acute_findings']).toBe(true);
+    // Child-specific nodes.
+    expect(nodes['acute_illness_muac']).toBe(true);
+    expect(nodes['acute_illness_nutrition']).toBe(true);
+    // Lab nodes.
     expect(nodes['treatment_history']).toBe(true);
     expect(nodes['malaria_testing']).toBe(true);
-    // NextSteps: GI Complicated → send_to_hc + follow_up (no medication_distribution).
+    // NextSteps.
     expect(nodes['send_to_hc']).toBe(true);
     expect(nodes['acute_illness_follow_up']).toBe(true);
   });
