@@ -269,6 +269,13 @@ export async function addChild(
     }
   }
 
+  if (!formVisible) {
+    throw new Error(
+      'Relationship form never appeared after retries. ' +
+      'The backend may not have indexed the newly created person yet.',
+    );
+  }
+
   // Select relationship type: "My Child" (first radio option for adults).
   const relationRadio = page.locator(
     '.ui.radio.checkbox label.relationship-selection',
@@ -449,8 +456,12 @@ export async function startFamilyNutritionEncounter(page: Page) {
  */
 export async function selectFamilyMember(page: Page, memberIndex: number) {
   const links = page.locator('.links-body li');
-  await click(links.nth(memberIndex), page);
-  await page.waitForTimeout(500);
+  const target = links.nth(memberIndex);
+  // Scroll into view and force click — the activity form below may
+  // intercept pointer events if we don't scroll up first.
+  await target.scrollIntoViewIfNeeded();
+  await target.click({ force: true });
+  await page.waitForTimeout(1000);
 }
 
 // ---------------------------------------------------------------------------
@@ -719,6 +730,7 @@ export function queryFamilyNutritionNodes(
         \\$r = \\$q->entityCondition('entity_type', 'node')
           ->propertyCondition('type', \\$node_type)
           ->fieldCondition('field_person', 'target_id', \\$mother_nid)
+          ->range(0, 1)
           ->execute();
         \\$result[\\$key] = !empty(\\$r['node']);
       } else {
@@ -739,6 +751,7 @@ export function queryFamilyNutritionNodes(
         \\$r = \\$q->entityCondition('entity_type', 'node')
           ->propertyCondition('type', \\$node_type)
           ->fieldCondition('field_person', 'target_id', \\$child_nid)
+          ->range(0, 1)
           ->execute();
         if (!empty(\\$r['node'])) {
           \\$found = TRUE;
@@ -755,6 +768,7 @@ export function queryFamilyNutritionNodes(
       \\$r = \\$q->entityCondition('entity_type', 'node')
         ->propertyCondition('type', 'family_participant')
         ->fieldCondition('field_person', 'target_id', \\$mother_nid)
+        ->range(0, 1)
         ->execute();
       if (!empty(\\$r['node'])) {
         \\$participant_nid = key(\\$r['node']);
@@ -762,6 +776,7 @@ export function queryFamilyNutritionNodes(
         \\$r2 = \\$q2->entityCondition('entity_type', 'node')
           ->propertyCondition('type', 'family_nutrition_encounter')
           ->fieldCondition('field_family_participant', 'target_id', \\$participant_nid)
+          ->range(0, 1)
           ->execute();
         \\$result['encounter'] = !empty(\\$r2['node']);
       } else {
@@ -775,6 +790,12 @@ export function queryFamilyNutritionNodes(
   `;
 
   const { drushCmd, cwd } = drushEnv();
+
+  // Determine which keys must be true before we stop retrying.
+  const requiredKeys = ['ahezaMother', 'muacMother', 'encounter'];
+  if (childNames && childNames.length > 0) {
+    requiredKeys.push('ahezaChild', 'muacChild');
+  }
 
   // Retry for eventual consistency after sync.
   for (let attempt = 0; attempt < 10; attempt++) {
@@ -790,14 +811,21 @@ export function queryFamilyNutritionNodes(
         throw new Error(`Backend error: ${parsed.error}`);
       }
 
-      // Check if all expected mother types are found.
-      if (parsed.ahezaMother && parsed.muacMother && parsed.encounter) {
+      // Check if all required keys are found.
+      const allFound = requiredKeys.every((k) => parsed[k] === true);
+      if (allFound) {
         return parsed;
       }
 
-      // Not all types found yet — retry.
-    } catch {
-      // Parse error or execution error — retry.
+      // Log which keys are still missing.
+      const missing = requiredKeys.filter((k) => !parsed[k]);
+      console.log(
+        `[queryFamilyNutritionNodes] attempt ${attempt + 1}: missing ${missing.join(', ')}`,
+      );
+    } catch (e) {
+      console.log(
+        `[queryFamilyNutritionNodes] attempt ${attempt + 1}: error — ${e instanceof Error ? e.message : String(e)}`,
+      );
     }
 
     if (attempt < 9) {
