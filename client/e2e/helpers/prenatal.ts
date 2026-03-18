@@ -726,7 +726,7 @@ export async function completeExamination(
   await selectCheckbox(page, 'Normal');
 
   // Self-examination guidance → Yes
-  const selfExamYes = page.locator('.form-input.yes-no label', { hasText: 'Yes' }).first();
+  const selfExamYes = page.locator('.form-input.yes-no.self-guidance label', { hasText: 'Yes' });
   if (await selfExamYes.isVisible()) {
     await click(selfExamYes, page);
   }
