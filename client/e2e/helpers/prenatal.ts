@@ -281,7 +281,6 @@ export async function createAdultFemaleAndStartEncounter(
 export async function startPrenatalEncounter(
   page: Page,
   encounterType: 'first' | 'subsequent' | 'postpartum',
-  personName?: string,
 ) {
   let buttonText: string;
   switch (encounterType) {
@@ -296,22 +295,10 @@ export async function startPrenatalEncounter(
       break;
   }
 
-  const btn = page.locator('div.ui.primary.button', { hasText: buttonText });
-
-  // If the button is disabled (e.g. after backdating on CI), the Elm model
-  // may not have processed the synced data yet. Reload + re-sync to force it.
-  if (encounterType !== 'first') {
-    const isDisabled = await btn
-      .evaluate((el) => el.classList.contains('disabled'))
-      .catch(() => true);
-    if (isDisabled && personName) {
-      console.log(`${buttonText} button disabled, reloading to re-sync...`);
-      await syncAndWait(page);
-      await navigateToParticipantPage(page, personName);
-    }
-  }
-
-  await click(btn, page);
+  await click(
+    page.locator('div.ui.primary.button', { hasText: buttonText }),
+    page,
+  );
   await page
     .locator('div.page-encounter.prenatal')
     .waitFor({ timeout: 30000 });

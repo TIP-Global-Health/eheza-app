@@ -197,13 +197,32 @@ test.describe('Nurse: Prenatal Initial → Subsequent → Postpartum', () => {
     await syncAndWait(page);
     backdatePrenatalEncounter(fullName);
     await syncAndWait(page);
+    // Reload to force Elm model to reinitialize with the backdated data.
+    await page.reload();
+    await Promise.race([
+      page.locator('input[name="pincode"]').waitFor({ timeout: 30000 }),
+      page.locator('.wrap-cards').waitFor({ timeout: 30000 }),
+    ]);
+    if (await page.locator('input[name="pincode"]').isVisible().catch(() => false)) {
+      await page.locator('input[name="pincode"]').fill('1234');
+      await page.getByRole('button', { name: 'Sign In' }).click();
+      await Promise.race([
+        page.locator('p.select-location').waitFor({ timeout: 30000 }),
+        page.locator('.wrap-cards').waitFor({ timeout: 30000 }),
+      ]);
+      if (await page.locator('p.select-location').isVisible().catch(() => false)) {
+        await page.locator('button.ui.primary.button', { hasText: 'Nyange Health Center' }).click();
+      }
+    }
+    await page.locator('.wrap-cards').waitFor({ timeout: 30000 });
+    await syncAndWait(page);
 
     // =====================================================================
     // PHASE 2: Subsequent Encounter
     // =====================================================================
 
     await navigateToParticipantPage(page, fullName);
-    await startPrenatalEncounter(page, 'subsequent', fullName);
+    await startPrenatalEncounter(page, 'subsequent');
 
     await completeHistory(page, { isSubsequent: true });
     await completeExamination(page);
@@ -219,13 +238,32 @@ test.describe('Nurse: Prenatal Initial → Subsequent → Postpartum', () => {
     await syncAndWait(page);
     backdatePrenatalEncounter(fullName);
     await syncAndWait(page);
+    // Reload to force Elm model to reinitialize with the backdated data.
+    await page.reload();
+    await Promise.race([
+      page.locator('input[name="pincode"]').waitFor({ timeout: 30000 }),
+      page.locator('.wrap-cards').waitFor({ timeout: 30000 }),
+    ]);
+    if (await page.locator('input[name="pincode"]').isVisible().catch(() => false)) {
+      await page.locator('input[name="pincode"]').fill('1234');
+      await page.getByRole('button', { name: 'Sign In' }).click();
+      await Promise.race([
+        page.locator('p.select-location').waitFor({ timeout: 30000 }),
+        page.locator('.wrap-cards').waitFor({ timeout: 30000 }),
+      ]);
+      if (await page.locator('p.select-location').isVisible().catch(() => false)) {
+        await page.locator('button.ui.primary.button', { hasText: 'Nyange Health Center' }).click();
+      }
+    }
+    await page.locator('.wrap-cards').waitFor({ timeout: 30000 });
+    await syncAndWait(page);
 
     // =====================================================================
     // PHASE 3: Postpartum Encounter
     // =====================================================================
 
     await navigateToParticipantPage(page, fullName);
-    await startPrenatalEncounter(page, 'postpartum', fullName);
+    await startPrenatalEncounter(page, 'postpartum');
 
     await completePregnancyOutcome(page);
     await completeSymptomReview(page);
