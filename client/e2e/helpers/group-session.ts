@@ -585,6 +585,9 @@ export async function navigateBackToAttendance(page: Page) {
  * the activity name as text (e.g., "Height", "MUAC", "Weight").
  */
 async function openActivity(page: Page, activityName: string) {
+  // Dismiss any overlay that might be blocking (e.g., nutrition warning).
+  await dismissOverlay(page);
+
   // The activity tabs are in the .ui.task.segment grid.
   // Each tab is a div with the activity icon and name text.
   const tab = page.locator('.ui.task.segment div', {
@@ -804,6 +807,78 @@ export async function completeNCDA(page: Page) {
   }
 }
 
+/**
+ * Complete the NutritionSigns activity with abnormal signs (Edema).
+ * This triggers NextSteps activities.
+ */
+export async function completeNutritionSignsAbnormal(page: Page) {
+  await openActivity(page, 'Nutrition');
+  const edemaLabel = page.getByText('Edema', { exact: true });
+  await edemaLabel.scrollIntoViewIfNeeded();
+  await edemaLabel.click({ force: true });
+  await page.waitForTimeout(300);
+  await saveActivity(page);
+}
+
+// ---------------------------------------------------------------------------
+// NextSteps activity helpers (triggered by abnormal nutrition values)
+// ---------------------------------------------------------------------------
+
+/**
+ * Complete the Contributing Factors activity.
+ * Selects "None" (NoContributingFactorsSign).
+ */
+export async function completeContributingFactors(page: Page) {
+  await openActivity(page, 'Contributing Factors');
+  const noneLabel = page.getByText('None of these', { exact: true });
+  await noneLabel.scrollIntoViewIfNeeded();
+  await noneLabel.click({ force: true });
+  await page.waitForTimeout(300);
+  await saveActivity(page);
+}
+
+/**
+ * Complete the Health Education activity.
+ * Selects "Yes" for providing health education.
+ */
+export async function completeHealthEducation(page: Page) {
+  await openActivity(page, 'Health Education');
+  const yesLabel = page.getByText('Yes', { exact: true }).first();
+  await yesLabel.click({ force: true });
+  await page.waitForTimeout(300);
+  await saveActivity(page);
+}
+
+/**
+ * Complete the Send to HC activity.
+ * Selects referral reason.
+ */
+export async function completeSendToHC(page: Page) {
+  await openActivity(page, 'Send to Health Center');
+  // Answer Yes/No questions — click all "Yes" labels.
+  const yesLabels = page.getByText('Yes', { exact: true });
+  const count = await yesLabels.count();
+  for (let i = 0; i < count; i++) {
+    await yesLabels.nth(i).click({ force: true });
+    await page.waitForTimeout(200);
+  }
+  await saveActivity(page);
+}
+
+/**
+ * Complete the Follow Up activity.
+ * Selects a follow-up option.
+ */
+export async function completeFollowUp(page: Page) {
+  await openActivity(page, 'Follow Up');
+  // Select "1 Day" follow-up option.
+  const option = page.getByText('1 Day', { exact: true });
+  await option.scrollIntoViewIfNeeded();
+  await option.click({ force: true });
+  await page.waitForTimeout(300);
+  await saveActivity(page);
+}
+
 // ---------------------------------------------------------------------------
 // Mother activity helpers
 // ---------------------------------------------------------------------------
@@ -992,6 +1067,8 @@ export function queryGroupSessionNodes(
         'nutrition' => 'nutrition',
         'child_fbf' => 'childFbf',
         'photo' => 'photo',
+        'contributing_factors' => 'contributingFactors',
+        'follow_up' => 'followUp',
         'group_health_education' => 'groupHealthEducation',
         'group_send_to_hc' => 'groupSendToHC',
         'group_ncda' => 'groupNcda',
@@ -1012,6 +1089,8 @@ export function queryGroupSessionNodes(
       \\$out['nutrition'] = FALSE;
       \\$out['childFbf'] = FALSE;
       \\$out['photo'] = FALSE;
+      \\$out['contributingFactors'] = FALSE;
+      \\$out['followUp'] = FALSE;
       \\$out['groupHealthEducation'] = FALSE;
       \\$out['groupSendToHC'] = FALSE;
       \\$out['groupNcda'] = FALSE;
