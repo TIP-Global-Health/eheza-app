@@ -193,9 +193,9 @@ test.describe('Nurse: Prenatal Initial → Subsequent → Postpartum', () => {
     await completeNextSteps(page);
     await endPrenatalEncounter(page);
 
-    // Sync + backdate for subsequent encounter.
+    // Sync + backdate initial encounter to 2 weeks ago.
     await syncAndWait(page);
-    backdatePrenatalEncounter(fullName);
+    backdatePrenatalEncounter(fullName, 14);
     await syncAndWait(page);
     // Reload to force Elm model to reinitialize with the backdated data.
     await page.reload();
@@ -234,9 +234,9 @@ test.describe('Nurse: Prenatal Initial → Subsequent → Postpartum', () => {
     await completeNextSteps(page);
     await endPrenatalEncounter(page);
 
-    // Sync + backdate for postpartum encounter.
+    // Sync + backdate subsequent encounter to 1 week ago.
     await syncAndWait(page);
-    backdatePrenatalEncounter(fullName);
+    backdatePrenatalEncounter(fullName, 7);
     await syncAndWait(page);
     // Reload to force Elm model to reinitialize with the backdated data.
     await page.reload();

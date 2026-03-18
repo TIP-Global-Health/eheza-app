@@ -1498,6 +1498,42 @@ export async function completePregnancyOutcome(page: Page) {
     .waitFor({ timeout: 15000 });
 }
 
+/**
+ * Record Pregnancy Outcome from the participant page.
+ * This is required before starting a Postpartum encounter.
+ * Clicks "Record Pregnancy Outcome", fills the form, and saves.
+ * After saving, the app navigates to PinCodePage.
+ */
+export async function recordPregnancyOutcome(page: Page) {
+  await click(
+    page.locator('div.ui.primary.button', { hasText: 'Record Pregnancy Outcome' }),
+    page,
+  );
+  await page.locator('div.page-outcome.pregnancy').waitFor({ timeout: 10000 });
+  await page.waitForTimeout(500);
+
+  // 1. Date Pregnancy Concluded — calendar popup via .form-input.date.
+  await setDate(page, new Date(), '.form-input.date');
+
+  // 2. Pregnancy Outcome — dropdown, select "Live Birth at Term".
+  const outcomeSelect = page.locator('select').first();
+  await outcomeSelect.selectOption({ index: 1 });
+  await page.waitForTimeout(300);
+
+  // 3. Delivery Location — bool input (Facility/Home).
+  await click(
+    page.locator('.form-input.yes-no.delivery-location label', { hasText: 'Facility' }),
+    page,
+  );
+
+  // Save — navigates to PinCodePage.
+  await click(
+    page.locator('button.ui.fluid.primary.button', { hasText: 'Save' }),
+    page,
+  );
+  await page.waitForTimeout(3000);
+}
+
 // ---------------------------------------------------------------------------
 // Recurrent encounter helpers
 // ---------------------------------------------------------------------------
@@ -1606,11 +1642,12 @@ export async function endRecurrentEncounter(page: Page) {
  * Returns an object keyed by node type with boolean (exists) values.
  */
 /**
- * Backdate the most recent prenatal encounter for a given person to yesterday.
+ * Backdate the most recent prenatal encounter for a given person.
+ * @param daysAgo - how many days to backdate (default: 1 = yesterday)
  * This is needed because the app prevents starting a subsequent encounter on
  * the same day the previous encounter was completed.
  */
-export function backdatePrenatalEncounter(personName: string) {
+export function backdatePrenatalEncounter(personName: string, daysAgo: number = 1) {
   const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
   const php = `
     \\$person_name = base64_decode('${personNameB64}');
@@ -1637,7 +1674,7 @@ export function backdatePrenatalEncounter(personName: string) {
       return;
     }
 
-    \\$yesterday = date('Y-m-d H:i:s', strtotime('-1 day'));
+    \\$target_date = date('Y-m-d H:i:s', strtotime('-${daysAgo} days'));
     foreach (array_keys(\\$r['node']) as \\$enc_nid) {
       \\$enc = node_load(\\$enc_nid);
       \\$participant_nid = \\$enc->field_individual_participant[LANGUAGE_NONE][0]['target_id'];
@@ -1645,8 +1682,8 @@ export function backdatePrenatalEncounter(personName: string) {
       if (empty(\\$participant->field_person[LANGUAGE_NONE][0]['target_id'])) continue;
       if (\\$participant->field_person[LANGUAGE_NONE][0]['target_id'] != \\$person_nid) continue;
 
-      \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value'] = \\$yesterday;
-      \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value2'] = \\$yesterday;
+      \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value'] = \\$target_date;
+      \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value2'] = \\$target_date;
       node_save(\\$enc);
       echo 'Backdated encounter ' . \\$enc_nid;
       return;
