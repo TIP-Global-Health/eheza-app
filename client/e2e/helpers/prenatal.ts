@@ -1675,12 +1675,17 @@ export function backdatePrenatalEncounter(personName: string, daysAgo: number = 
     }
 
     \\$target_date = date('Y-m-d H:i:s', strtotime('-${daysAgo} days'));
+    \\$today = date('Y-m-d');
     foreach (array_keys(\\$r['node']) as \\$enc_nid) {
       \\$enc = node_load(\\$enc_nid);
       \\$participant_nid = \\$enc->field_individual_participant[LANGUAGE_NONE][0]['target_id'];
       \\$participant = node_load(\\$participant_nid);
       if (empty(\\$participant->field_person[LANGUAGE_NONE][0]['target_id'])) continue;
       if (\\$participant->field_person[LANGUAGE_NONE][0]['target_id'] != \\$person_nid) continue;
+
+      // Only backdate encounters that are dated today (skip already-backdated ones).
+      \\$enc_date = substr(\\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value'], 0, 10);
+      if (\\$enc_date !== \\$today) continue;
 
       \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value'] = \\$target_date;
       \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value2'] = \\$target_date;
