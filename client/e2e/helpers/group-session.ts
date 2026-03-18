@@ -251,9 +251,50 @@ export async function navigateToChild(page: Page, childIndex: number = 0) {
  * the mother icon in the family links bar.
  */
 export async function navigateToMother(page: Page) {
+  // Dismiss any overlay/modal that might be blocking (e.g., NCDA skip dialog).
+  await dismissOverlay(page);
+
   const motherLink = page.locator('ul.links-body li:has(.icon-mother)');
   await motherLink.click();
   await page.waitForTimeout(1000);
+}
+
+/**
+ * Dismiss any overlay or modal dialog that may be blocking clicks.
+ * Common overlays: NCDA skip dialog, diagnosis popups, warning alerts.
+ */
+async function dismissOverlay(page: Page) {
+  // Check for overlay (e.g., NCDA "Child Scorecard" prompt).
+  const overlay = page.locator('div.overlay');
+  if (await overlay.isVisible().catch(() => false)) {
+    // Try clicking any button inside the overlay to dismiss it.
+    const buttons = overlay.locator('button');
+    const count = await buttons.count();
+    if (count > 0) {
+      // Prefer "No, skip" or the last button (usually dismiss/cancel).
+      const skipBtn = overlay.locator('button', { hasText: /skip|cancel|close/i });
+      if (await skipBtn.first().isVisible().catch(() => false)) {
+        await skipBtn.first().click({ force: true });
+      } else {
+        await buttons.last().click({ force: true });
+      }
+    }
+    await overlay.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
+    await page.waitForTimeout(300);
+  }
+
+  // Check for modal dialog.
+  const modal = page.locator('div.ui.tiny.active.modal');
+  if (await modal.isVisible().catch(() => false)) {
+    const skipBtn = modal.locator('button', { hasText: /skip|cancel/i });
+    if (await skipBtn.first().isVisible().catch(() => false)) {
+      await skipBtn.first().click({ force: true });
+    } else {
+      await modal.locator('button').last().click({ force: true });
+    }
+    await modal.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
+    await page.waitForTimeout(300);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -633,6 +674,134 @@ export async function completeChildFbf(page: Page) {
   await fbfSelect.selectOption('1');
   await page.waitForTimeout(300);
   await saveActivity(page);
+}
+
+/**
+ * Complete the NCDA (Child Scorecard) activity for a child.
+ * The NCDA form has multiple steps, each with Yes/No questions.
+ * This helper answers "No" to all questions on each step and saves.
+ *
+ * Steps shown for a new child at health center:
+ *   AntenatalCare, UniversalInterventions, NutritionBehavior,
+ *   TargetedInterventions, InfrastructureEnvironment.
+ */
+export async function completeNCDA(page: Page) {
+  await openActivity(page, 'Child Scorecard');
+
+  // The NCDA "Child Scorecard" triggers a skip dialog overlay:
+  // "Would you like to proceed?" with "Yes, proceed" / "No, skip".
+  // Click "Yes, proceed" to enter the actual NCDA form.
+  await page.waitForTimeout(500);
+  const overlay = page.locator('div.overlay');
+  if (await overlay.isVisible().catch(() => false)) {
+    const proceedBtn = overlay.locator('button', { hasText: 'Yes, proceed' });
+    if (await proceedBtn.isVisible().catch(() => false)) {
+      await proceedBtn.click({ force: true });
+      await overlay.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
+      await page.waitForTimeout(500);
+    }
+  }
+
+  // Also check for modal dialog version.
+  const modal = page.locator('div.ui.tiny.active.modal');
+  if (await modal.isVisible().catch(() => false)) {
+    const proceedBtn = modal.locator('button', { hasText: 'Yes, proceed' });
+    if (await proceedBtn.isVisible().catch(() => false)) {
+      await proceedBtn.click({ force: true });
+      await modal.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
+      await page.waitForTimeout(500);
+    }
+  }
+
+  // The NCDA form has multiple tabs (steps). For each step:
+  // 1. Answer all visible Yes/No questions with "No"
+  // 2. Click Save to advance to the next step (or complete)
+  // Repeat until the Save completes (activity moves to Completed tab).
+
+  for (let step = 0; step < 6; step++) {
+    await page.waitForTimeout(500);
+
+    // Answer all visible Yes/No questions with "No".
+    const noButtons = page.locator('.form-input label', { hasText: /^No$/ });
+    const noCount = await noButtons.count();
+
+    for (let i = 0; i < noCount; i++) {
+      const btn = noButtons.nth(i);
+      await btn.scrollIntoViewIfNeeded();
+      await btn.click({ force: true });
+      await page.waitForTimeout(200);
+    }
+
+    // Fill any visible number inputs (e.g., birthweight in grams).
+    const numberInputs = page.locator('.form-input input[type="number"]');
+    const numCount = await numberInputs.count();
+    for (let i = 0; i < numCount; i++) {
+      const input = numberInputs.nth(i);
+      if (await input.isVisible() && (await input.inputValue()) === '') {
+        await input.fill('3000');
+        await page.waitForTimeout(200);
+      }
+    }
+
+    if (noCount === 0 && numCount === 0) {
+      // No inputs found — might be done.
+      break;
+    }
+
+    // Click Save — the NCDA uses a different save button than #save-form.
+    const saveBtn = page.locator('button', { hasText: /^Save$/i });
+    await saveBtn.scrollIntoViewIfNeeded();
+    await saveBtn.click({ force: true });
+    await page.waitForTimeout(1000);
+
+    // After saving the last NCDA step, an overlay/dialog may appear
+    // ("The Child Scorecard activity requires entering information...").
+    // Dismiss it if present.
+    const overlay = page.locator('div.overlay');
+    const overlayVisible = await overlay
+      .isVisible()
+      .catch(() => false);
+
+    if (overlayVisible) {
+      // The overlay may have a close button or "No, skip" button.
+      const skipBtn = overlay.locator('button', { hasText: 'No, skip' });
+      const closeBtn = overlay.locator('button');
+      if (await skipBtn.isVisible().catch(() => false)) {
+        await skipBtn.click({ force: true });
+      } else if (await closeBtn.first().isVisible().catch(() => false)) {
+        await closeBtn.first().click({ force: true });
+      }
+      await overlay.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
+      await page.waitForTimeout(500);
+    }
+
+    // Also check for modal dialog version.
+    const modal = page.locator('div.ui.tiny.active.modal');
+    const modalVisible = await modal
+      .isVisible()
+      .catch(() => false);
+
+    if (modalVisible) {
+      const proceedBtn = modal.locator('button', { hasText: 'Yes, proceed' });
+      const skipModalBtn = modal.locator('button', { hasText: 'No, skip' });
+      if (await skipModalBtn.isVisible().catch(() => false)) {
+        await skipModalBtn.click({ force: true });
+      } else if (await proceedBtn.isVisible().catch(() => false)) {
+        await proceedBtn.click({ force: true });
+      }
+      await modal.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
+      await page.waitForTimeout(500);
+    }
+
+    // Check if we're still on the NCDA form (more steps remain).
+    // If the activity moved to Completed tab, the form disappears.
+    const stillOnNCDA = await page
+      .locator('.link-section.active')
+      .isVisible()
+      .catch(() => false);
+
+    if (!stillOnNCDA) break;
+  }
 }
 
 // ---------------------------------------------------------------------------

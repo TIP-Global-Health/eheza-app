@@ -17,6 +17,7 @@ import {
   completeMuac,
   completeNutritionSigns,
   completeChildFbf,
+  completeNCDA,
   completeFamilyPlanning,
   completeLactation,
   completeMotherFbf,
@@ -46,12 +47,12 @@ test.describe('Nurse: FBF Group Nutrition Session', () => {
     // Scenario: Nurse creates an FBF group session, registers a new mother
     //   and child (<24mo), completes all child and mother activities with
     //   normal/healthy values, ends the session, syncs, and verifies backend.
-    // Child activities: Height, Weight, MUAC, NutritionSigns, ChildFbf.
+    // Child activities: Height, Weight, MUAC, NutritionSigns, ChildFbf, NCDA.
     // Mother activities: FamilyPlanning, Lactation, MotherFbf.
     // Conditions: Normal values → NextSteps NOT triggered.
     //   FBF clinic type → ChildFbf + Lactation + MotherFbf available.
-    // Backend: Verifies 9 node types created (attendance, height, weight,
-    //   muac, nutrition, child_fbf, family_planning, lactation, mother_fbf).
+    // Backend: Verifies 10 node types created (attendance, height, weight,
+    //   muac, nutrition, child_fbf, group_ncda, family_planning, lactation, mother_fbf).
     //   Confirms group_health_education, group_send_to_hc absent.
 
     // 1. Navigate to FBF group session.
@@ -91,6 +92,7 @@ test.describe('Nurse: FBF Group Nutrition Session', () => {
     await completeMuac(page, '14');
     await completeNutritionSigns(page);
     await completeChildFbf(page);
+    await completeNCDA(page);
 
     // 9. Navigate back to the mother's page.
     await navigateToMother(page);
@@ -124,6 +126,7 @@ test.describe('Nurse: FBF Group Nutrition Session', () => {
     expect(nodes.muac).toBe(true);
     expect(nodes.nutrition).toBe(true);
     expect(nodes.childFbf).toBe(true);
+    expect(nodes.groupNcda).toBe(true);
 
     // NextSteps NOT triggered (normal values).
     expect(nodes.groupHealthEducation).toBe(false);
