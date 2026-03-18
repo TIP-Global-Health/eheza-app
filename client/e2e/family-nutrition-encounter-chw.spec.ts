@@ -11,7 +11,6 @@ import {
   completeAhezaMother,
   completeAhezaChild,
   completeMuac,
-  completePhoto,
   endFamilyNutritionEncounter,
   syncAndWait,
   queryFamilyNutritionNodes,
@@ -76,28 +75,29 @@ test.describe('CHW: Family Nutrition Encounter', () => {
     page,
   }) => {
     // Scenario: Family nutrition encounter with mother and 2 children.
-    //   Child 1: 8 months old → activities: Aheza + MUAC + Photo
-    //   Child 2: 18 months old → activities: Aheza + MUAC + Photo
+    //   Child 1: 3 months old → activities: Aheza + Photo (no MUAC, age <6mo)
+    //   Child 2: 12 months old → activities: Aheza + MUAC + Photo
     //   Mother: Aheza + MUAC (no Photo for mother)
-    // Activities: Complete Aheza + MUAC for all members. Photo skipped
+    // Activities: Complete Aheza for child 1 (no MUAC due to age).
+    //   Complete Aheza + MUAC for child 2. Photo skipped for both
     //   (Dropzone file upload not supported in headless tests).
     //   End encounter requires only mother's activities to be complete.
     // Backend: Verifies 5 node types created:
     //   aheza_mother, aheza_child, family_nutrition_muac_mother,
-    //   family_nutrition_muac_child, family_nutrition_encounter.
+    //   family_nutrition_muac_child (child 2 only), family_nutrition_encounter.
 
     // 1. Register mother.
     const mother = await createMotherAndNavigateToPersonPage(page);
 
-    // 2. Add child 1 (8 months old — all activities including MUAC).
+    // 2. Add child 1 (3 months old — no MUAC due to age <6mo).
     const child1 = await addChild(page, {
-      ageMonths: 8,
+      ageMonths: 3,
       firstName: `TestChild1_${Date.now()}`,
     });
 
-    // 3. Add child 2 (18 months old — all activities).
+    // 3. Add child 2 (12 months old — all activities).
     const child2 = await addChild(page, {
-      ageMonths: 18,
+      ageMonths: 12,
       firstName: `TestChild2_${Date.now()}`,
     });
 
@@ -111,23 +111,25 @@ test.describe('CHW: Family Nutrition Encounter', () => {
     await completeAhezaMother(page, { amount: '3', reasonIndex: 1 });
     await completeMuac(page, { value: '24.5' });
 
-    // 7. Switch to child 1 and complete Aheza + MUAC.
+    // 7. Switch to child 1 and complete Aheza only (no MUAC for <6mo).
     await selectFamilyMember(page, 1);
     await completeAhezaChild(page, { amount: '1' });
-    await completeMuac(page, { value: '13.0' });
+    // Photo remains pending for child 1 (optional, can't upload in headless).
 
-    // 8. Switch to child 2 and complete Aheza + MUAC.
+    // 8. Switch to child 2 — wait for Elm re-render after Aheza save.
+    await page.waitForTimeout(1000);
     await selectFamilyMember(page, 2);
+    await page.waitForTimeout(500);
     await completeAhezaChild(page, { amount: '2' });
     await completeMuac(page, { value: '14.0' });
 
-    // 11. All activities done → End Encounter.
+    // 9. End Encounter (mother's activities are complete).
     await endFamilyNutritionEncounter(page);
 
-    // 12. Sync to backend.
+    // 10. Sync to backend.
     await syncAndWait(page);
 
-    // 13. Verify all backend nodes.
+    // 11. Verify all backend nodes.
     const nodes = queryFamilyNutritionNodes(mother.fullName, [
       child1.fullName,
       child2.fullName,
