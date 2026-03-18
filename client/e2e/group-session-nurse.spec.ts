@@ -15,10 +15,9 @@ import {
   completeHeight,
   completeWeight,
   completeMuac,
-  completeNutritionSigns,
+  completeNutritionSignsAbnormal,
   completeChildFbf,
   completeNCDA,
-  completeNutritionSignsAbnormal,
   completeContributingFactors,
   completeHealthEducation,
   completeSendToHC,
@@ -46,110 +45,17 @@ test.describe('Nurse: FBF Group Nutrition Session', () => {
     await setupDevice(page, '1234', 'Nyange Health Center');
   });
 
-  test('FBF group session: register mother+child, complete all activities', async ({
-    page,
-  }) => {
-    // Scenario: Nurse creates an FBF group session, registers a new mother
-    //   and child (<24mo), completes all child and mother activities with
-    //   normal/healthy values, ends the session, syncs, and verifies backend.
-    // Child activities: Height, Weight, MUAC, NutritionSigns, ChildFbf, NCDA.
-    // Mother activities: FamilyPlanning, Lactation, MotherFbf.
-    // Conditions: Normal values → NextSteps NOT triggered.
-    //   FBF clinic type → ChildFbf + Lactation + MotherFbf available.
-    // Backend: Verifies 10 node types created (attendance, height, weight,
-    //   muac, nutrition, child_fbf, group_ncda, family_planning, lactation, mother_fbf).
-    //   Confirms group_health_education, group_send_to_hc absent.
-
-    // 1. Navigate to FBF group session.
-    await navigateToNurseGroupSession(page, 'FBF', 'Nyange I');
-
-    // 2. Register a new mother.
-    const mother = await createMotherOnAttendancePage(page, {
-      isChw: false,
-    });
-
-    // 3. Add a child (<24 months).
-    const child = await addChildToMother(page, {
-      ageMonths: 12,
-      isChw: false,
-    });
-
-    // 4. After saving relationship, app auto-navigates to AttendancePage
-    //    (PMTCT participant created, mother auto-checked-in).
-    //    If we landed on PersonPage instead, navigate back.
-    if (await page.locator('div.page-person').isVisible()) {
-      await navigateBackToAttendance(page);
-    }
-
-    // 5. From AttendancePage, navigate to ParticipantsPage.
-    await page.locator('div.page-attendance').waitFor({ timeout: 10000 });
-    await goToParticipantsPage(page);
-
-    // 6. Click the mother's card to go to MotherPage.
-    await clickMotherCard(page, mother.firstName);
-
-    // 7. Navigate to the child's page.
-    await navigateToChild(page);
-
-    // 8. Complete child activities.
-    await completeHeight(page, '70');
-    await completeWeight(page, '8.5');
-    await completeMuac(page, '14');
-    await completeNutritionSigns(page);
-    await completeChildFbf(page);
-    await completeNCDA(page);
-
-    // 9. Navigate back to the mother's page.
-    await navigateToMother(page);
-
-    // 10. Complete mother activities.
-    await completeFamilyPlanning(page);
-    await completeLactation(page);
-    await completeMotherFbf(page);
-
-    // 11. Go back to ParticipantsPage, then to ActivitiesPage, and end session.
-    await click(page.locator('.link-back'), page);
-    await page.locator('div.page-participants').waitFor({ timeout: 10000 });
-    await goToActivitiesPage(page);
-    await endGroupSession(page);
-
-    // 12. Sync to backend.
-    await syncAndWait(page, 'Nyange Health Center');
-
-    // 13. Verify backend nodes.
-    const nodes = queryGroupSessionNodes(mother.fullName, child.fullName);
-
-    // Mother measurements.
-    expect(nodes.attendance).toBe(true);
-    expect(nodes.familyPlanning).toBe(true);
-    expect(nodes.lactation).toBe(true);
-    expect(nodes.motherFbf).toBe(true);
-
-    // Child measurements.
-    expect(nodes.height).toBe(true);
-    expect(nodes.weight).toBe(true);
-    expect(nodes.muac).toBe(true);
-    expect(nodes.nutrition).toBe(true);
-    expect(nodes.childFbf).toBe(true);
-    expect(nodes.groupNcda).toBe(true);
-
-    // NextSteps NOT triggered (normal values).
-    expect(nodes.groupHealthEducation).toBe(false);
-    expect(nodes.groupSendToHC).toBe(false);
-    expect(nodes.contributingFactors).toBe(false);
-    expect(nodes.followUp).toBe(false);
-  });
-
-  test('FBF group session: abnormal values trigger NextSteps', async ({
+  test('FBF group session: all activities including NextSteps', async ({
     page,
   }) => {
     // Scenario: Nurse creates an FBF group session with abnormal nutrition
-    //   values (Edema sign + low MUAC) to trigger NextSteps activities.
+    //   values (Edema sign + low MUAC) to trigger all activities including
+    //   NextSteps.
     // Child activities: Height, Weight, MUAC (low), NutritionSigns (Edema),
-    //   ChildFbf, then NextSteps: ContributingFactors, HealthEducation,
+    //   ChildFbf, NCDA, then NextSteps: ContributingFactors, HealthEducation,
     //   SendToHC, FollowUp.
     // Mother activities: FamilyPlanning, Lactation, MotherFbf.
-    // Backend: Verifies 13 node types including all 4 NextSteps types.
+    // Backend: Verifies 14 node types (all group session content types).
 
     // 1. Navigate to FBF group session.
     await navigateToNurseGroupSession(page, 'FBF', 'Nyange I');
@@ -174,14 +80,15 @@ test.describe('Nurse: FBF Group Nutrition Session', () => {
     await clickMotherCard(page, mother.firstName);
     await navigateToChild(page);
 
-    // 5. Complete mandatory child activities with ABNORMAL values.
+    // 5. Complete mandatory child activities with abnormal values.
     await completeHeight(page, '70');
     await completeWeight(page, '8.5');
     await completeMuac(page, '11.5'); // Low MUAC → triggers malnutrition
     await completeNutritionSignsAbnormal(page); // Edema → triggers NextSteps
     await completeChildFbf(page);
+    await completeNCDA(page);
 
-    // 6. NextSteps should now be available. Complete all 4.
+    // 6. NextSteps triggered by abnormal values. Complete all 4.
     await completeContributingFactors(page);
     await completeHealthEducation(page);
     await completeSendToHC(page);
@@ -203,16 +110,19 @@ test.describe('Nurse: FBF Group Nutrition Session', () => {
     await syncAndWait(page, 'Nyange Health Center');
     const nodes = queryGroupSessionNodes(mother.fullName, child.fullName);
 
-    // All measurements present.
+    // Mother measurements.
     expect(nodes.attendance).toBe(true);
+    expect(nodes.familyPlanning).toBe(true);
+    expect(nodes.lactation).toBe(true);
+    expect(nodes.motherFbf).toBe(true);
+
+    // Child measurements.
     expect(nodes.height).toBe(true);
     expect(nodes.weight).toBe(true);
     expect(nodes.muac).toBe(true);
     expect(nodes.nutrition).toBe(true);
     expect(nodes.childFbf).toBe(true);
-    expect(nodes.familyPlanning).toBe(true);
-    expect(nodes.lactation).toBe(true);
-    expect(nodes.motherFbf).toBe(true);
+    expect(nodes.groupNcda).toBe(true);
 
     // NextSteps triggered by abnormal values.
     expect(nodes.contributingFactors).toBe(true);
