@@ -193,9 +193,28 @@ test.describe('Nurse: Prenatal Initial → Subsequent → Postpartum', () => {
     await completeNextSteps(page);
     await endPrenatalEncounter(page);
 
-    // Sync + backdate for subsequent encounter.
+    // Sync + backdate initial encounter to 2 weeks ago.
     await syncAndWait(page);
-    backdatePrenatalEncounter(fullName);
+    backdatePrenatalEncounter(fullName, 14);
+    await syncAndWait(page);
+    // Reload to force Elm model to reinitialize with the backdated data.
+    await page.reload();
+    await Promise.race([
+      page.locator('input[name="pincode"]').waitFor({ timeout: 30000 }),
+      page.locator('.wrap-cards').waitFor({ timeout: 30000 }),
+    ]);
+    if (await page.locator('input[name="pincode"]').isVisible().catch(() => false)) {
+      await page.locator('input[name="pincode"]').fill('1234');
+      await page.getByRole('button', { name: 'Sign In' }).click();
+      await Promise.race([
+        page.locator('p.select-location').waitFor({ timeout: 30000 }),
+        page.locator('.wrap-cards').waitFor({ timeout: 30000 }),
+      ]);
+      if (await page.locator('p.select-location').isVisible().catch(() => false)) {
+        await page.locator('button.ui.primary.button', { hasText: 'Nyange Health Center' }).click();
+      }
+    }
+    await page.locator('.wrap-cards').waitFor({ timeout: 30000 });
     await syncAndWait(page);
 
     // =====================================================================
@@ -215,9 +234,28 @@ test.describe('Nurse: Prenatal Initial → Subsequent → Postpartum', () => {
     await completeNextSteps(page);
     await endPrenatalEncounter(page);
 
-    // Sync + backdate for postpartum encounter.
+    // Sync + backdate subsequent encounter to 1 week ago.
     await syncAndWait(page);
-    backdatePrenatalEncounter(fullName);
+    backdatePrenatalEncounter(fullName, 7);
+    await syncAndWait(page);
+    // Reload to force Elm model to reinitialize with the backdated data.
+    await page.reload();
+    await Promise.race([
+      page.locator('input[name="pincode"]').waitFor({ timeout: 30000 }),
+      page.locator('.wrap-cards').waitFor({ timeout: 30000 }),
+    ]);
+    if (await page.locator('input[name="pincode"]').isVisible().catch(() => false)) {
+      await page.locator('input[name="pincode"]').fill('1234');
+      await page.getByRole('button', { name: 'Sign In' }).click();
+      await Promise.race([
+        page.locator('p.select-location').waitFor({ timeout: 30000 }),
+        page.locator('.wrap-cards').waitFor({ timeout: 30000 }),
+      ]);
+      if (await page.locator('p.select-location').isVisible().catch(() => false)) {
+        await page.locator('button.ui.primary.button', { hasText: 'Nyange Health Center' }).click();
+      }
+    }
+    await page.locator('.wrap-cards').waitFor({ timeout: 30000 });
     await syncAndWait(page);
 
     // =====================================================================

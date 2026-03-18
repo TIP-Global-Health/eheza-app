@@ -103,6 +103,25 @@ test.describe('CHW: Prenatal Second Encounter', () => {
     backdatePrenatalEncounter(fullName);
     // Sync again so the app downloads the backdated encounter.
     await syncAndWait(page);
+    // Reload to force Elm model to reinitialize with the backdated data.
+    await page.reload();
+    await Promise.race([
+      page.locator('input[name="pincode"]').waitFor({ timeout: 30000 }),
+      page.locator('.wrap-cards').waitFor({ timeout: 30000 }),
+    ]);
+    if (await page.locator('input[name="pincode"]').isVisible().catch(() => false)) {
+      await page.locator('input[name="pincode"]').fill('2345');
+      await page.getByRole('button', { name: 'Sign In' }).click();
+      await Promise.race([
+        page.locator('p.select-location').waitFor({ timeout: 30000 }),
+        page.locator('.wrap-cards').waitFor({ timeout: 30000 }),
+      ]);
+      if (await page.locator('p.select-location').isVisible().catch(() => false)) {
+        await page.locator('button.ui.primary.button', { hasText: 'Akanduga' }).click();
+      }
+    }
+    await page.locator('.wrap-cards').waitFor({ timeout: 30000 });
+    await syncAndWait(page);
 
     // Navigate back to participant page and start second encounter.
     await navigateToParticipantPage(page, fullName);
