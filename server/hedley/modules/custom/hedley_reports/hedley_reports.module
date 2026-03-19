@@ -1484,7 +1484,13 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
   $impacted = [];
   $nutrition_data = [];
 
+  $total = count($data);
+  $processed = 0;
   foreach ($data as $patient_data) {
+    $processed++;
+    if (drupal_is_cli() && $processed % 10000 === 0) {
+      drush_print("  Processed $processed / $total patients...");
+    }
     if (hedley_reports_calculate_year_difference($patient_data->birth_date) > 5) {
       continue;
     }
