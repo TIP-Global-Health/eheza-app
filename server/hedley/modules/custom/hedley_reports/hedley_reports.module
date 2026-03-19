@@ -1015,6 +1015,7 @@ function hedley_reports_generate_results_data($province, $district, $sector, $ce
   $data = [];
   $nid = 0;
   $batch = 400;
+  $processed = 0;
   while (TRUE) {
     // Free up memory.
     drupal_static_reset();
@@ -1036,6 +1037,10 @@ function hedley_reports_generate_results_data($province, $district, $sector, $ce
     $ids = array_keys($result['node']);
     $nodes = node_load_multiple($ids);
     foreach ($nodes as $node) {
+      $processed++;
+      if (drupal_is_cli() && $processed % 5000 === 0) {
+        drush_print("Loaded data of $processed patients...");
+      }
       $json_data = $node->field_reports_data[LANGUAGE_NONE][0]['value'];
       if (empty($json_data)) {
         continue;
@@ -1488,8 +1493,8 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
   $processed = 0;
   foreach ($data as $patient_data) {
     $processed++;
-    if (drupal_is_cli() && $processed % 10000 === 0) {
-      drush_print("  Processed $processed / $total patients...");
+    if (drupal_is_cli() && $processed % 5000 === 0) {
+      drush_print("Processed $processed out of $total patients...");
     }
     if (hedley_reports_calculate_year_difference($patient_data->birth_date) > 5) {
       continue;
