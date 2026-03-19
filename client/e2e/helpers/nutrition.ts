@@ -181,7 +181,7 @@ async function setDateOfBirth(page: Page, dob: Date) {
     'div.calendar table tbody td:not(.date-selector--dimmed)',
     { hasText: new RegExp(`^${day}$`) },
   );
-  await dayCell.first().click();
+  await click(dayCell.first(), page);
 
   // Confirm the date selection (Save is a div, not a button).
   await click(
@@ -287,7 +287,7 @@ export async function completeNCDA(page: Page) {
   await confirmPopup.waitFor({ timeout: 5000 }).catch(() => {});
   if (await confirmPopup.isVisible()) {
     const proceedBtn = confirmPopup.locator('button').first();
-    await proceedBtn.click({ force: true });
+    await click(proceedBtn, page);
     await confirmPopup.waitFor({ state: 'hidden', timeout: 5000 });
   }
 
@@ -522,7 +522,7 @@ export async function endEncounter(page: Page) {
     hasText: 'End Encounter',
   });
   await endBtn.waitFor({ timeout: 10000 });
-  await endBtn.click({ force: true });
+  await click(endBtn, page);
 
   // Confirm in the dialog.
   const dialog = page.locator('div.ui.tiny.active.modal');
@@ -671,7 +671,10 @@ export async function completeFollowUp(page: Page) {
  * Query the Drupal backend for measurement nodes linked to a person.
  * Returns an object with the measurement values found.
  */
-export function queryBackendNodes(personName: string): {
+export function queryBackendNodes(
+  personName: string,
+  expectedKeys?: string[],
+): {
   height?: number;
   weight?: number;
   muac?: number;
@@ -737,23 +740,44 @@ export function queryBackendNodes(personName: string): {
 
   const { drushCmd, cwd } = drushEnv();
 
-  const output = execSync(`${drushCmd} eval "${php}"`, {
-    cwd,
-    timeout: 30000,
-    encoding: 'utf-8',
-  });
+  for (let attempt = 0; attempt < 10; attempt++) {
+    try {
+      const output = execSync(`${drushCmd} eval "${php}"`, {
+        cwd,
+        timeout: 30000,
+        encoding: 'utf-8',
+      }).trim();
 
-  try {
-    const parsed = JSON.parse(output.trim());
-    if (parsed.error) {
-      throw new Error(`Backend error: ${parsed.error}`);
+      const parsed = JSON.parse(output);
+      if (parsed.error) {
+        console.log(`queryBackendNodes attempt ${attempt + 1}: ${parsed.error}`);
+        if (attempt < 9) {
+          execSync('sleep 5');
+          continue;
+        }
+        return parsed;
+      }
+
+      if (expectedKeys) {
+        const missing = expectedKeys.filter(k => !(k in parsed));
+        if (missing.length === 0) {
+          return parsed;
+        }
+        console.log(`queryBackendNodes attempt ${attempt + 1}: missing [${missing.join(', ')}]`);
+        if (attempt < 9) {
+          execSync('sleep 5');
+          continue;
+        }
+      }
+
+      return parsed;
+    } catch (err) {
+      console.log(`queryBackendNodes attempt ${attempt + 1}: error`, err);
+      if (attempt < 9) {
+        execSync('sleep 5');
+      }
     }
-    return parsed;
-  } catch (e) {
-    if (e instanceof Error && e.message.startsWith('Backend error:')) {
-      throw e;
-    }
-    console.error('Failed to parse drush output:', output);
-    return {};
   }
+
+  return {};
 }

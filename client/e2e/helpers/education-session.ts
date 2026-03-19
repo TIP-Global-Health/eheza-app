@@ -152,7 +152,7 @@ export async function selectParticipant(
  * After this, the app navigates back to the Dashboard.
  */
 export async function endEducationSession(page: Page) {
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(2000);
 
   const recordBtn = page.locator('div.actions button.ui.fluid.button', {
     hasText: 'Record Group Education',

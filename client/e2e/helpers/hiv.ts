@@ -143,7 +143,7 @@ async function setDate(page: Page, date: Date, triggerSelector = '.date-input') 
     'div.calendar table tbody td:not(.date-selector--dimmed)',
     { hasText: new RegExp(`^${day}$`) },
   );
-  await dayCell.first().click();
+  await click(dayCell.first(), page);
 
   await click(
     page.locator('.ui.active.modal.calendar-popup div.ui.button'),
@@ -299,7 +299,7 @@ export async function completeDiagnostics(
     // Wait for the end encounter confirmation dialog.
     const confirmModal = page.locator('div.ui.tiny.active.modal');
     await confirmModal.waitFor({ timeout: 5000 });
-    await confirmModal.locator('button', { hasText: 'Continue' }).click({ force: true });
+    await click(confirmModal.locator('button', { hasText: 'Continue' }), page);
 
     // Encounter closes — wait for navigation away from encounter page.
     await page
@@ -470,14 +470,14 @@ export async function completeNextSteps(page: Page) {
       // "Hand referral form?" → Yes
       const handForm = page.locator('.form-input.yes-no.hand-referral-form label', { hasText: 'Yes' });
       if (await handForm.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await handForm.click({ force: true });
+        await click(handForm, page);
       }
     }
 
     // Save sub-task.
     const saveBtn = page.locator('button.ui.fluid.primary.button:not(.disabled)', { hasText: 'Save' });
     await saveBtn.waitFor({ timeout: 10000 });
-    await saveBtn.click({ force: true });
+    await click(saveBtn, page);
     await page.waitForTimeout(1000);
   }
 
@@ -498,13 +498,13 @@ export async function endHIVEncounter(page: Page) {
 
   const endBtn = page.locator('button', { hasText: 'End Encounter' }).first();
   await endBtn.waitFor({ timeout: 10000 });
-  await endBtn.click({ force: true });
+  await click(endBtn, page);
 
   // Wait for and confirm the "End Encounter?" dialog.
   const confirmModal = page.locator('div.ui.tiny.active.modal');
   await confirmModal.waitFor({ timeout: 5000 }).catch(() => {});
   if (await confirmModal.isVisible()) {
-    await confirmModal.locator('button', { hasText: 'Continue' }).click({ force: true });
+    await click(confirmModal.locator('button', { hasText: 'Continue' }), page);
   }
 
   // Wait for navigation away from the encounter page.

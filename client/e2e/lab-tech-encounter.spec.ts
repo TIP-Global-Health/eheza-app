@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { setupDevice } from './helpers/auth';
+import { click, setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { syncAndWait } from './helpers/nutrition';
@@ -99,7 +99,7 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     await entry.waitFor({ timeout: 15000 });
 
     // Click forward icon → navigates directly to LabResults activity page.
-    await entry.locator('.icon-forward').click();
+    await click(entry.locator('.icon-forward'), page);
     await page.locator('div.page-activity.prenatal').waitFor({ timeout: 15000 });
     await page.waitForTimeout(500);
 
@@ -116,13 +116,13 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     // First go back to main menu.
     const backBtn = page.locator('.icon-back');
     if (await backBtn.isVisible().catch(() => false)) {
-      await backBtn.click();
+      await click(backBtn, page);
       await page.waitForTimeout(1000);
     }
     // If we're on encounter page, go back to main menu.
     const backBtn2 = page.locator('.icon-back');
     if (await backBtn2.isVisible().catch(() => false)) {
-      await backBtn2.click();
+      await click(backBtn2, page);
       await page.waitForTimeout(1000);
     }
 

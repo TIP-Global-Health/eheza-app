@@ -206,7 +206,10 @@ export async function endHomeVisit(page: Page) {
 /**
  * Query the Drupal backend for Home Visit measurement nodes linked to a person.
  */
-export function queryHomeVisitNodes(personName: string): {
+export function queryHomeVisitNodes(
+  personName: string,
+  expectedKeys?: string[],
+): {
   feeding?: boolean;
   caring?: boolean;
   hygiene?: boolean;
@@ -250,23 +253,44 @@ export function queryHomeVisitNodes(personName: string): {
 
   const { drushCmd, cwd } = drushEnv();
 
-  const output = execSync(`${drushCmd} eval "${php}"`, {
-    cwd,
-    timeout: 30000,
-    encoding: 'utf-8',
-  });
+  for (let attempt = 0; attempt < 10; attempt++) {
+    try {
+      const output = execSync(`${drushCmd} eval "${php}"`, {
+        cwd,
+        timeout: 30000,
+        encoding: 'utf-8',
+      }).trim();
 
-  try {
-    const parsed = JSON.parse(output.trim());
-    if (parsed.error) {
-      throw new Error(`Backend error: ${parsed.error}`);
+      const parsed = JSON.parse(output);
+      if (parsed.error) {
+        console.log(`queryHomeVisitNodes attempt ${attempt + 1}: ${parsed.error}`);
+        if (attempt < 9) {
+          execSync('sleep 5');
+          continue;
+        }
+        return parsed;
+      }
+
+      if (expectedKeys) {
+        const missing = expectedKeys.filter(k => !(k in parsed));
+        if (missing.length === 0) {
+          return parsed;
+        }
+        console.log(`queryHomeVisitNodes attempt ${attempt + 1}: missing [${missing.join(', ')}]`);
+        if (attempt < 9) {
+          execSync('sleep 5');
+          continue;
+        }
+      }
+
+      return parsed;
+    } catch (err) {
+      console.log(`queryHomeVisitNodes attempt ${attempt + 1}: error`, err);
+      if (attempt < 9) {
+        execSync('sleep 5');
+      }
     }
-    return parsed;
-  } catch (e) {
-    if (e instanceof Error && e.message.startsWith('Backend error:')) {
-      throw e;
-    }
-    console.error('Failed to parse drush output:', output);
-    return {};
   }
+
+  return {};
 }
