@@ -299,7 +299,7 @@ export async function completeDiagnostics(
     // Wait for the end encounter confirmation dialog.
     const confirmModal = page.locator('div.ui.tiny.active.modal');
     await confirmModal.waitFor({ timeout: 5000 });
-    await click(confirmModal.locator('button', { hasText: 'Continue' }), page);
+    await confirmModal.locator('button', { hasText: 'Continue' }).click({ force: true });
 
     // Encounter closes — wait for navigation away from encounter page.
     await page
@@ -477,7 +477,7 @@ export async function completeNextSteps(page: Page) {
     // Save sub-task.
     const saveBtn = page.locator('button.ui.fluid.primary.button:not(.disabled)', { hasText: 'Save' });
     await saveBtn.waitFor({ timeout: 10000 });
-    await click(saveBtn, page);
+    await saveBtn.click({ force: true });
     await page.waitForTimeout(1000);
   }
 
@@ -498,13 +498,13 @@ export async function endHIVEncounter(page: Page) {
 
   const endBtn = page.locator('button', { hasText: 'End Encounter' }).first();
   await endBtn.waitFor({ timeout: 10000 });
-  await click(endBtn, page);
+  await endBtn.click({ force: true });
 
   // Wait for and confirm the "End Encounter?" dialog.
   const confirmModal = page.locator('div.ui.tiny.active.modal');
   await confirmModal.waitFor({ timeout: 5000 }).catch(() => {});
   if (await confirmModal.isVisible()) {
-    await click(confirmModal.locator('button', { hasText: 'Continue' }), page);
+    await confirmModal.locator('button', { hasText: 'Continue' }).click({ force: true });
   }
 
   // Wait for navigation away from the encounter page.

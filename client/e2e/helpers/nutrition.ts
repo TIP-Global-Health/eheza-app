@@ -287,7 +287,7 @@ export async function completeNCDA(page: Page) {
   await confirmPopup.waitFor({ timeout: 5000 }).catch(() => {});
   if (await confirmPopup.isVisible()) {
     const proceedBtn = confirmPopup.locator('button').first();
-    await click(proceedBtn, page);
+    await proceedBtn.click({ force: true });
     await confirmPopup.waitFor({ state: 'hidden', timeout: 5000 });
   }
 
@@ -522,7 +522,7 @@ export async function endEncounter(page: Page) {
     hasText: 'End Encounter',
   });
   await endBtn.waitFor({ timeout: 10000 });
-  await click(endBtn, page);
+  await endBtn.click({ force: true });
 
   // Confirm in the dialog.
   const dialog = page.locator('div.ui.tiny.active.modal');
