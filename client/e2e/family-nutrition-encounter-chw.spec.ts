@@ -111,17 +111,38 @@ test.describe('CHW: Family Nutrition Encounter', () => {
     await completeAhezaMother(page, { amount: '3', reasonIndex: 1 });
     await completeMuac(page, { value: '24.5' });
 
-    // 7. Switch to child 1 and complete Aheza only (no MUAC for <6mo).
+    // 7-8. Complete activities for both children.
+    //   Children order in the family member list is not guaranteed
+    //   (depends on backend relationship ordering), so detect which
+    //   child has MUAC (>=6mo) by checking the activity icons.
     await selectFamilyMember(page, 1);
-    await completeAhezaChild(page, { amount: '1' });
-    // Photo remains pending for child 1 (optional, can't upload in headless).
+    // Wait for activity grid to render for the selected child.
+    await page
+      .locator('.link-section:has(.icon-activity-task.icon-fbf)')
+      .waitFor({ timeout: 10000 });
+    const firstChildHasMuac = await page
+      .locator('.link-section:has(.icon-activity-task.icon-muac)')
+      .isVisible();
 
-    // 8. Switch to child 2 — wait for Elm re-render after Aheza save.
-    await page.waitForTimeout(1000);
-    await selectFamilyMember(page, 2);
-    await page.waitForTimeout(500);
-    await completeAhezaChild(page, { amount: '2' });
-    await completeMuac(page, { value: '14.0' });
+    if (firstChildHasMuac) {
+      // Index 1 is the >=6mo child — complete Aheza + MUAC.
+      await completeAhezaChild(page, { amount: '2' });
+      await completeMuac(page, { value: '14.0' });
+      // Switch to the <6mo child at index 2 — complete Aheza only.
+      await page.waitForTimeout(1000);
+      await selectFamilyMember(page, 2);
+      await page.waitForTimeout(500);
+      await completeAhezaChild(page, { amount: '1' });
+    } else {
+      // Index 1 is the <6mo child — complete Aheza only.
+      await completeAhezaChild(page, { amount: '1' });
+      // Switch to the >=6mo child at index 2 — complete Aheza + MUAC.
+      await page.waitForTimeout(1000);
+      await selectFamilyMember(page, 2);
+      await page.waitForTimeout(500);
+      await completeAhezaChild(page, { amount: '2' });
+      await completeMuac(page, { value: '14.0' });
+    }
 
     // 9. End Encounter (mother's activities are complete).
     await endFamilyNutritionEncounter(page);
