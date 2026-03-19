@@ -102,7 +102,7 @@ export async function navigateToNurseGroupSession(
 
   for (let attempt = 0; attempt < 5; attempt++) {
     const programVisible = await programBtn
-      .waitFor({ timeout: 10000 })
+      .waitFor({ timeout: 3000 })
       .then(() => true)
       .catch(() => false);
 
@@ -114,8 +114,8 @@ export async function navigateToNurseGroupSession(
       );
     }
 
-    await page.waitForTimeout(2000);
     await page.reload();
+    await page.waitForTimeout(1000);
   }
 
   await click(programBtn, page);
@@ -177,7 +177,7 @@ export async function navigateToChwGroupSession(page: Page) {
 
     const attendanceVisible = await page
       .locator('div.page-attendance')
-      .waitFor({ timeout: 10000 })
+      .waitFor({ timeout: 3000 })
       .then(() => true)
       .catch(() => false);
 
@@ -192,8 +192,8 @@ export async function navigateToChwGroupSession(page: Page) {
     // Go back and reload to trigger data fetch.
     await click(page.locator('.link-back'), page);
     await page.locator('div.page-clinical').waitFor({ timeout: 10000 });
-    await page.waitForTimeout(3000);
     await page.reload();
+    await page.waitForTimeout(1000);
     await page.locator('div.page-clinical').waitFor({ timeout: 10000 });
   }
 }
