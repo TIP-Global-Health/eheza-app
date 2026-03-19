@@ -1555,7 +1555,15 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
   $starting_year = $today->format('Y') - 3;
   // Initialize the dictionary (associative array in PHP)
   $encounters_by_month = [];
+  $total = count($nutrition_data);
+  $processed = 0;
   foreach ($nutrition_data as $nutrition_data_item) {
+    $processed++;
+    if (drupal_is_cli() && $processed % 5000 === 0) {
+      if (function_exists('drush_print')) {
+        drush_print("Processed $processed out of $total nutrition data items...");
+      }
+    }
     foreach ($nutrition_data_item['encounters'] as $index => $encounter_data) {
       $parts = explode(' ', $encounter_data);
       $start_date_as_string = $parts[0];
