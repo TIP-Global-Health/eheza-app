@@ -1039,7 +1039,9 @@ function hedley_reports_generate_results_data($province, $district, $sector, $ce
     foreach ($nodes as $node) {
       $processed++;
       if (drupal_is_cli() && $processed % 5000 === 0) {
-        drush_print("Loaded data of $processed patients...");
+        if (function_exists('drush_print')) {
+          drush_print("Loaded data of $processed patients...");
+        }
       }
       $json_data = $node->field_reports_data[LANGUAGE_NONE][0]['value'];
       if (empty($json_data)) {
@@ -1494,7 +1496,9 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
   foreach ($data as $patient_data) {
     $processed++;
     if (drupal_is_cli() && $processed % 5000 === 0) {
-      drush_print("Processed $processed out of $total patients...");
+      if (function_exists('drush_print')) {
+        drush_print("Processed $processed out of $total patients...");
+      }
     }
     if (hedley_reports_calculate_year_difference($patient_data->birth_date) > 5) {
       continue;
