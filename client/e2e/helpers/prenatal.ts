@@ -1698,8 +1698,9 @@ export function backdatePrenatalEncounter(personName: string, daysAgo: number = 
 
   const { drushCmd, cwd } = drushEnv();
 
-  // Retry: the person may not yet be uploaded after the first sync cycle.
-  for (let attempt = 0; attempt < 5; attempt++) {
+  // Retry: the person/encounter may not yet be uploaded after the first sync cycle.
+  // Use 10 attempts with 10s delay (100s total) to handle slow CI environments.
+  for (let attempt = 0; attempt < 10; attempt++) {
     const output = execSync(`${drushCmd} eval "${php}"`, {
       cwd,
       timeout: 30000,
@@ -1709,11 +1710,11 @@ export function backdatePrenatalEncounter(personName: string, daysAgo: number = 
     if (output.startsWith('Backdated')) {
       return;
     }
-    if (attempt < 4) {
+    if (attempt < 9) {
       execSync('sleep 10');
     }
   }
-  console.error('backdatePrenatalEncounter: failed after 5 attempts');
+  console.error('backdatePrenatalEncounter: failed after 10 attempts');
 }
 
 export function queryPrenatalNodes(
