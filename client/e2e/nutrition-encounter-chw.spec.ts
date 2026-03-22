@@ -1,5 +1,10 @@
 import { test, expect } from '@playwright/test';
 import { click, setupDevice } from './helpers/auth';
+import {
+  navigateToCaseManagement,
+  verifyCaseManagementEntry,
+  verifyFollowUpDialog,
+} from './helpers/case-management';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import {
@@ -126,5 +131,18 @@ test.describe('CHW: Individual Nutrition Encounter', () => {
     expect(nodes.healthEducation).toBe(true);
     expect(nodes.contributingFactors).toBe(true);
     expect(nodes.followUp).toBe(true);
+
+    // --- Case Management verification ---
+    // Navigate to Case Management and verify the nutrition follow-up entry appears.
+    await navigateToCaseManagement(page);
+    await verifyCaseManagementEntry(
+      page,
+      'Home Visit',
+      'Child Nutrition Follow Up',
+      fullName,
+    );
+
+    // Verify follow-up dialog: click forward icon, assert modal with name, dismiss.
+    await verifyFollowUpDialog(page, fullName);
   });
 });

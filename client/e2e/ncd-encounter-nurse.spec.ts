@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { setupDevice } from './helpers/auth';
+import { verifyCaseManagementEntry } from './helpers/case-management';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import {
@@ -364,6 +365,9 @@ test.describe('Nurse: NCD Recurrent Encounter — Lab Results', () => {
 
     // Navigate to Case Management and find patient in NCD Labs pane.
     await navigateToCaseManagement(page);
+
+    // Verify Case Management: NCD Labs pane shows entry for this patient.
+    await verifyCaseManagementEntry(page, 'NCD Labs', 'NCD Labs', fullName);
 
     // Open the recurrent encounter.
     await openNCDRecurrentEncounterFromCaseManagement(page, fullName);

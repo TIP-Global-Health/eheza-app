@@ -1,5 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { setupDevice } from './helpers/auth';
+import {
+  navigateToCaseManagement,
+  verifyCaseManagementEntry,
+} from './helpers/case-management';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import {
@@ -78,6 +82,17 @@ test.describe('CHW: HIV Initial Encounter — Positive Diagnosis', () => {
     expect(nodes['hiv_referral']).toBe(false);
     // No symptom review in initial encounter.
     expect(nodes['hiv_symptom_review']).toBe(false);
+
+    // --- Case Management verification ---
+    // The HIV follow-up should appear in the HIV pane (feature-flag gated).
+    await navigateToCaseManagement(page);
+    const hivFilter = page.locator('div.ui.segment.filters button', {
+      hasText: /HIV/i,
+    });
+    // HIV filter is feature-flag dependent; only assert if visible.
+    if (await hivFilter.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await verifyCaseManagementEntry(page, 'HIV', 'HIV', fullName);
+    }
   });
 });
 

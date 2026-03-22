@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { setupDevice } from './helpers/auth';
+import { verifyCaseManagementEntry } from './helpers/case-management';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { syncAndWait } from './helpers/nutrition';
@@ -360,6 +361,9 @@ test.describe('Nurse: Prenatal Recurrent Encounter (BP Recheck)', () => {
 
     // Navigate to Case Management from the nurse menu.
     await navigateToCaseManagement(page);
+
+    // Verify Case Management: ANC Labs pane shows entry for this patient.
+    await verifyCaseManagementEntry(page, 'ANC Labs', 'ANC Labs', fullName);
 
     // Find the patient in the Prenatal Labs pane and open the recurrent encounter.
     await openRecurrentEncounterFromCaseManagement(page, fullName);

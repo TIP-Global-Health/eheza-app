@@ -1,5 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { setupDevice } from './helpers/auth';
+import {
+  navigateToCaseManagement,
+  verifyCaseManagementEntry,
+} from './helpers/case-management';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { syncAndWait } from './helpers/nutrition';
@@ -64,6 +68,16 @@ test.describe('CHW: Prenatal First Encounter', () => {
     // and prenatal_follow_up should exist with no danger signs).
     expect(nodes['appointment_confirmation']).toBe(true);
     expect(nodes['prenatal_follow_up']).toBe(true);
+
+    // --- Case Management verification ---
+    // The prenatal follow-up should appear in the Antenatal Care pane.
+    await navigateToCaseManagement(page);
+    await verifyCaseManagementEntry(
+      page,
+      'Antenatal Care',
+      'Antenatal Care',
+      fullName,
+    );
   });
 });
 
