@@ -56,8 +56,9 @@ async function confirmIdentity(page: Page) {
     page,
   );
   // Wait for Elm to re-render the form fields and for the JS signature
-  // pad to bind via the bindSignaturePad port.
-  await page.waitForTimeout(2000);
+  // pad to bind via the bindSignaturePad port by waiting for the
+  // signature pad canvas to be ready instead of using a fixed timeout.
+  await page.locator('#signature-pad canvas').waitFor({ timeout: 10000 });
 }
 
 /**
@@ -363,7 +364,7 @@ export function queryStockUpdateNodes(
           execSync('sleep 5');
           continue;
         }
-        return parsed;
+        throw new Error(`queryStockUpdateNodes: ${parsed.error}`);
       }
 
       // Check if we've reached the expected count.
