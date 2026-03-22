@@ -11,8 +11,15 @@
  *   - District.
  *   - Health center.
  *
+ * Accepts an optional --scope parameter to run a specific subset:
+ *   - all (default): runs everything (provinces, health centers, global).
+ *   - provinces: runs Province + District calculations only.
+ *   - health-centers: runs Health Center calculations only.
+ *   - global: runs Global calculation only.
+ *
  * Execution: drush scr
- *   profiles/hedley/modules/custom/hedley_reports/scripts/recalculate-large-datasets.php.
+ *   profiles/hedley/modules/custom/hedley_reports/scripts/recalculate-large-datasets.php
+ *   --scope=provinces
  */
 
 if (!drupal_is_cli()) {
@@ -20,50 +27,66 @@ if (!drupal_is_cli()) {
   return;
 }
 
-// Resolving unique provinces as they appear at DB.
-$query = db_select('field_data_field_province', 'fp')
-  ->fields('fp', array('field_province_value'))
-  ->distinct();
-$result = $query->execute();
-$provinces = [];
-foreach ($result as $record) {
-  $provinces[] = $record->field_province_value;
+$scope = drush_get_option('scope', 'all');
+$allowed_scopes = ['all', 'provinces', 'health-centers', 'global'];
+if (!in_array($scope, $allowed_scopes)) {
+  drush_set_error('INVALID_SCOPE', dt('Invalid --scope value: @scope. Allowed values: @allowed.', [
+    '@scope' => $scope,
+    '@allowed' => implode(', ', $allowed_scopes),
+  ]));
+  return;
 }
 
-foreach ($provinces as $province) {
-  $province = trim($province);
-  if (empty($province)) {
-    continue;
+if ($scope === 'all' || $scope === 'provinces') {
+  // Resolving unique provinces as they appear at DB.
+  $query = db_select('field_data_field_province', 'fp')
+    ->fields('fp', array('field_province_value'))
+    ->distinct();
+  $result = $query->execute();
+  $provinces = [];
+  foreach ($result as $record) {
+    $provinces[] = $record->field_province_value;
   }
 
-  drush_print("Running calculation for Province scope. Province: $province.");
-  $duration = create_or_update_results_data_node('province', $province, NULL, NULL);
-  drush_print("Calculation completed within $duration seconds.");
-
-  // Resolving unique districts for the province, as they appear at DB.
-  $districts = hedley_reports_get_unique_districts_by_province($province);
-  foreach ($districts as $district) {
-    $district = trim($district);
-    if (empty($district)) {
+  foreach ($provinces as $province) {
+    $province = trim($province);
+    if (empty($province)) {
       continue;
     }
-    drush_print("Running calculation for District scope. Province: $province, District: $district.");
-    $duration = create_or_update_results_data_node('district', $province, $district, NULL);
+
+    drush_print("Running calculation for Province scope. Province: $province.");
+    $duration = create_or_update_results_data_node('province', $province, NULL, NULL);
+    drush_print("Calculation completed within $duration seconds.");
+
+    // Resolving unique districts for the province, as they appear at DB.
+    $districts = hedley_reports_get_unique_districts_by_province($province);
+    foreach ($districts as $district) {
+      $district = trim($district);
+      if (empty($district)) {
+        continue;
+      }
+      drush_print("Running calculation for District scope. Province: $province, District: $district.");
+      $duration = create_or_update_results_data_node('district', $province, $district, NULL);
+      drush_print("Calculation completed within $duration seconds.");
+    }
+  }
+}
+
+if ($scope === 'all' || $scope === 'health-centers') {
+  // Resolving all health centers.
+  $health_center_ids = hedley_health_center_get_all_health_centers_ids();
+  foreach ($health_center_ids as $health_center_id) {
+    drush_print("Running calculation for Health center scope. Health center ID: $health_center_id.");
+    $duration = create_or_update_results_data_node('health-center', NULL, NULL, $health_center_id);
     drush_print("Calculation completed within $duration seconds.");
   }
 }
 
-// Resolving all health centers.
-$health_center_ids = hedley_health_center_get_all_health_centers_ids();
-foreach ($health_center_ids as $health_center_id) {
-  drush_print("Running calculation for Health center scope. Health center ID: $health_center_id.");
-  $duration = create_or_update_results_data_node('health-center', NULL, NULL, $health_center_id);
+if ($scope === 'all' || $scope === 'global') {
+  drush_print("Running calculation for Global scope.");
+  $duration = create_or_update_results_data_node('global', NULL, NULL, NULL);
   drush_print("Calculation completed within $duration seconds.");
 }
-
-drush_print("Running calculation for Global scope.");
-$duration = create_or_update_results_data_node('global', NULL, NULL, NULL);
-drush_print("Calculation completed within $duration seconds.");
 
 drush_print('');
 drush_print('All calculations completed!');
