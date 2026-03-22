@@ -181,6 +181,17 @@ test.describe('CHW: Acute Illness Initial + Subsequent Encounter', () => {
     expect(initialNodes['acute_illness_vitals']).toBe(true);
     expect(initialNodes['malaria_testing']).toBe(true);
 
+    // --- Case Management verification ---
+    // After initial encounter, the follow-up should appear in CM.
+    // (Must verify before subsequent encounter, which concludes the illness.)
+    await navigateToCaseManagement(page);
+    await verifyCaseManagementEntry(
+      page,
+      'Acute Illness',
+      'Acute Illness Follow Up',
+      fullName,
+    );
+
     // === PART 2: CHW Subsequent Encounter ===
 
     // Backdate initial encounter to allow subsequent.
@@ -242,15 +253,5 @@ test.describe('CHW: Acute Illness Initial + Subsequent Encounter', () => {
 
     expect(subsequentNodes['acute_illness_danger_signs']).toBe(true);
     expect(subsequentNodes['treatment_ongoing']).toBe(true);
-
-    // --- Case Management verification ---
-    // The subsequent encounter created a follow-up. Verify it appears in CM.
-    await navigateToCaseManagement(page);
-    await verifyCaseManagementEntry(
-      page,
-      'Acute Illness',
-      'Acute Illness Follow Up',
-      fullName,
-    );
   });
 });
