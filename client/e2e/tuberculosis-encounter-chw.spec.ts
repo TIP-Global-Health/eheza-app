@@ -1,5 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { setupDevice } from './helpers/auth';
+import {
+  navigateToCaseManagement,
+  verifyCaseManagementEntry,
+} from './helpers/case-management';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import {
@@ -82,6 +86,22 @@ test.describe('CHW: Tuberculosis Initial Encounter — Positive Diagnosis', () =
     expect(nodes['tuberculosis_referral']).toBe(false);
     // No symptom review in initial encounter.
     expect(nodes['tuberculosis_symptom_review']).toBe(false);
+
+    // --- Case Management verification ---
+    // The TB follow-up should appear in the Tuberculosis pane (feature-flag gated).
+    await navigateToCaseManagement(page);
+    const tbFilter = page.locator('div.ui.segment.filters button', {
+      hasText: /Tuberculosis/i,
+    });
+    // TB filter is feature-flag dependent; only assert if visible.
+    if (await tbFilter.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await verifyCaseManagementEntry(
+        page,
+        'Tuberculosis',
+        'Tuberculosis',
+        fullName,
+      );
+    }
   });
 });
 

@@ -1,5 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { setupDevice } from './helpers/auth';
+import {
+  navigateToCaseManagement,
+  verifyCaseManagementEntry,
+} from './helpers/case-management';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import {
@@ -238,5 +242,15 @@ test.describe('CHW: Acute Illness Initial + Subsequent Encounter', () => {
 
     expect(subsequentNodes['acute_illness_danger_signs']).toBe(true);
     expect(subsequentNodes['treatment_ongoing']).toBe(true);
+
+    // --- Case Management verification ---
+    // The subsequent encounter created a follow-up. Verify it appears in CM.
+    await navigateToCaseManagement(page);
+    await verifyCaseManagementEntry(
+      page,
+      'Acute Illness',
+      'Acute Illness Follow Up',
+      fullName,
+    );
   });
 });

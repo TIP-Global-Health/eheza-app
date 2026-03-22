@@ -92,6 +92,14 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     // Navigate to Case Management.
     await navigateToCaseManagement(page);
 
+    // Verify Lab Tech Case Management structure: only 2 filter buttons (All + ANC Labs).
+    const filterButtons = page.locator('div.ui.segment.filters button');
+    await expect(filterButtons).toHaveCount(2);
+    // Verify ANC Labs pane heading is visible.
+    await expect(
+      page.locator('div.pane-heading', { hasText: 'ANC Labs' }),
+    ).toBeVisible({ timeout: 5000 });
+
     // Find the patient in the Prenatal Labs pane.
     const entry = page.locator('.follow-up-entry', {
       has: page.locator('.name', { hasText: fullName }),
