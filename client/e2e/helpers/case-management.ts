@@ -26,9 +26,10 @@ export async function verifyCaseManagementEntry(
   paneHeadingText: string,
   patientName: string,
 ) {
-  // Click the filter button.
+  // Click the filter button. Escape filterText to avoid regex metacharacter issues.
+  const escaped = filterText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const filterBtn = page.locator('div.ui.segment.filters button', {
-    hasText: new RegExp(filterText, 'i'),
+    hasText: new RegExp(escaped, 'i'),
   });
   await click(filterBtn, page);
   await page.waitForTimeout(500);
@@ -39,8 +40,10 @@ export async function verifyCaseManagementEntry(
   });
   await expect(paneHeading).toBeVisible({ timeout: 5000 });
 
-  // Verify follow-up entry with patient name exists.
-  const entry = page.locator('div.follow-up-entry', {
+  // Scope entry search to the pane containing the heading to avoid
+  // false positives when multiple panes are visible.
+  const pane = page.locator('div.pane', { has: paneHeading });
+  const entry = pane.locator('div.follow-up-entry', {
     hasText: patientName,
   });
   await expect(entry).toBeVisible({ timeout: 5000 });
@@ -56,10 +59,11 @@ export async function verifyFollowUpDialog(
   page: Page,
   patientName: string,
 ) {
-  // Find the entry and click its forward icon.
+  // Find the first matching entry and click its forward icon.
   const entry = page.locator('div.follow-up-entry', {
     hasText: patientName,
-  });
+  }).first();
+  await expect(entry).toBeVisible({ timeout: 5000 });
   await click(entry.locator('.icon-forward'), page);
 
   // Verify dialog appears with patient name.
