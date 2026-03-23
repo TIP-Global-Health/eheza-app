@@ -1,0 +1,458 @@
+import { Page } from '@playwright/test';
+import { execSync } from 'child_process';
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
+import { drushEnv } from './device';
+
+// ---------------------------------------------------------------------------
+// DDEV URL resolution
+// ---------------------------------------------------------------------------
+
+/**
+ * Get the Drupal admin base URL from DDEV.
+ *
+ * DDEV uses the project directory name as the hostname (not necessarily
+ * the `name` field in config.yaml). We read the HTTPS port from config
+ * and derive the hostname from the directory name.
+ */
+export function getDdevUrl(): string {
+  const projectRoot = process.cwd().replace(/\/client$/, '');
+  const dirName = projectRoot.split('/').pop() ?? 'sec-ihangane';
+
+  // Read HTTPS port from DDEV config (default: 4443).
+  let port = '4443';
+  const candidates = [
+    resolve(projectRoot, '.ddev/config.yaml'),
+    resolve(__dirname, '../../../.ddev/config.yaml'),
+  ];
+  for (const configPath of candidates) {
+    try {
+      const content = readFileSync(configPath, 'utf-8');
+      const portMatch = content.match(/^router_https_port:\s*"?(\d+)"?$/m);
+      if (portMatch) {
+        port = portMatch[1];
+        break;
+      }
+    } catch {
+      // Try next candidate.
+    }
+  }
+
+  return `https://${dirName}.ddev.site:${port}`;
+}
+
+// ---------------------------------------------------------------------------
+// Drupal authentication
+// ---------------------------------------------------------------------------
+
+/**
+ * Login to the Drupal admin interface.
+ */
+export async function drupalLogin(
+  page: Page,
+  username = 'admin',
+  password = 'admin',
+) {
+  const baseUrl = getDdevUrl();
+  await page.goto(`${baseUrl}/user/login`);
+
+  await page.locator('input[name="name"]').fill(username);
+  await page.locator('input[name="pass"]').fill(password);
+  await page.locator('#edit-submit').click();
+
+  // Wait for redirect — either admin dashboard or the page we came from.
+  await page.waitForURL(url => !url.toString().includes('/user/login'), {
+    timeout: 15000,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Report data generation via drush
+// ---------------------------------------------------------------------------
+
+/**
+ * Generate base reports data for all existing persons.
+ * This populates `field_reports_data` on person nodes.
+ *
+ * Note: execSync is used here following the same pattern as other E2E
+ * helpers (device.ts, stock-management.ts) for drush command execution.
+ * The input is hardcoded (no user-provided data), so shell injection
+ * is not a concern.
+ */
+export function generateBaseReportsData() {
+  const { drushCmd, cwd } = drushEnv();
+  console.log('Generating base reports data (generate-data-for-all.php)...');
+  execSync(
+    `${drushCmd} scr profiles/hedley/modules/custom/hedley_reports/scripts/generate-data-for-all.php`,
+    { cwd, timeout: 300000, encoding: 'utf-8', stdio: 'pipe' },
+  );
+  console.log('Base reports data generated.');
+}
+
+/**
+ * Delete all pending Advanced Queue items.
+ * Call this before creating test encounters to ensure only
+ * the items triggered by our test data get processed.
+ */
+export function clearAdvancedQueue() {
+  const { drushCmd, cwd } = drushEnv();
+  console.log('Clearing Advanced Queue...');
+  const php = `
+    db_delete('advancedqueue')
+      ->condition('status', array(-1, 0, 1), 'IN')
+      ->execute();
+    echo 'AQ cleared';
+  `;
+  execSync(`${drushCmd} eval "${php}"`, {
+    cwd,
+    timeout: 15000,
+    encoding: 'utf-8',
+    stdio: 'pipe',
+  });
+  console.log('Advanced Queue cleared.');
+}
+
+/**
+ * Process all Advanced Queue items. After syncing new encounters,
+ * the backend queues recalculation tasks for affected persons.
+ */
+export function processAdvancedQueue() {
+  const { drushCmd, cwd } = drushEnv();
+  console.log('Processing Advanced Queue items...');
+  execSync(`${drushCmd} advancedqueue --all --timeout=30`, {
+    cwd,
+    timeout: 60000,
+    encoding: 'utf-8',
+    stdio: 'pipe',
+  });
+  console.log('Advanced Queue processing complete.');
+}
+
+/**
+ * Recalculate large datasets — aggregates per-person data into
+ * scope-level report_data nodes (global, province, district, HC).
+ */
+export function recalculateLargeDatasets() {
+  const { drushCmd, cwd } = drushEnv();
+  console.log('Recalculating large datasets...');
+  execSync(
+    `${drushCmd} scr profiles/hedley/modules/custom/hedley_reports/scripts/recalculate-large-datasets.php`,
+    { cwd, timeout: 300000, encoding: 'utf-8', stdio: 'pipe' },
+  );
+  console.log('Large datasets recalculated.');
+}
+
+// ---------------------------------------------------------------------------
+// Navigation
+// ---------------------------------------------------------------------------
+
+/**
+ * Navigate to the Statistical Queries results page for a Health Center scope.
+ */
+export async function navigateToHCReportsPage(
+  page: Page,
+  healthCenterId: number,
+) {
+  const baseUrl = getDdevUrl();
+  await page.goto(
+    `${baseUrl}/admin/reports/statistical-queries/health-center/${healthCenterId}`,
+  );
+  await page.locator('.page-content.reports').waitFor({ timeout: 30000 });
+}
+
+/**
+ * Navigate to the Statistical Queries menu page.
+ */
+export async function navigateToReportsMenu(page: Page) {
+  const baseUrl = getDdevUrl();
+  await page.goto(`${baseUrl}/admin/reports/statistical-queries`);
+  await page.locator('.page-content.reports-menu').waitFor({ timeout: 30000 });
+}
+
+// ---------------------------------------------------------------------------
+// Report type & date selection
+// ---------------------------------------------------------------------------
+
+/**
+ * Select a report type from the dropdown on the results page.
+ * Values: "demographics", "acute-illness", "prenatal", "prenatal-diagnoses", "nutrition"
+ */
+export async function selectReportType(page: Page, reportType: string) {
+  const select = page
+    .locator('.page-content.reports .select-input-wrapper')
+    .first()
+    .locator('select.select-input');
+  await select.selectOption(reportType);
+  // Wait for the report to render.
+  await page.waitForTimeout(1000);
+}
+
+/**
+ * Set the date range (start date and limit date) using the calendar popups.
+ * The reports page shows date inputs only after a report type is selected
+ * (and not for Nutrition reports).
+ */
+export async function setDateRange(
+  page: Page,
+  startDate: Date,
+  limitDate: Date,
+) {
+  // Click first date input (Start Date).
+  const dateInputs = page.locator('.page-content.reports div.form-input.date');
+  await dateInputs.nth(0).click();
+  await selectDateInCalendar(page, startDate);
+
+  // Wait for limit date input to appear.
+  await page.waitForTimeout(500);
+
+  // Click second date input (Limit Date).
+  await dateInputs.nth(1).click();
+  await selectDateInCalendar(page, limitDate);
+
+  // Wait for report content to render with the filtered data.
+  await page.waitForTimeout(2000);
+}
+
+/**
+ * Select a date in the calendar popup.
+ */
+async function selectDateInCalendar(page: Page, date: Date) {
+  const popup = page.locator('.ui.active.modal.calendar-popup');
+  await popup.waitFor({ timeout: 5000 });
+
+  // Select year.
+  await popup
+    .locator('div.calendar > div.year > select')
+    .selectOption(date.getFullYear().toString());
+
+  // Select month (1-indexed).
+  await popup
+    .locator('div.calendar > div.month > select')
+    .selectOption((date.getMonth() + 1).toString());
+
+  // Click day.
+  const day = date.getDate();
+  const dayCell = popup.locator(
+    'div.calendar table tbody td:not(.date-selector--dimmed)',
+    { hasText: new RegExp(`^${day}$`) },
+  );
+  await dayCell.first().click();
+
+  // Click Save button in calendar popup.
+  await popup.locator('div.ui.button').click();
+
+  // Wait for popup to close.
+  await popup.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => {});
+}
+
+// ---------------------------------------------------------------------------
+// Table reading helpers
+// ---------------------------------------------------------------------------
+
+export interface PatientsTableRow {
+  label: string;
+  male: number;
+  female: number;
+}
+
+export interface PatientsTableData {
+  rows: PatientsTableRow[];
+  total: number;
+}
+
+/**
+ * Read the Registered Patients table from the Demographics report.
+ * Table selector: div.table.registered
+ * Each row has 3 cells: label, male count, female count.
+ */
+export async function readRegisteredPatientsTable(
+  page: Page,
+): Promise<PatientsTableData> {
+  return readPatientsTable(page, 'div.report.demographics div.table.registered');
+}
+
+/**
+ * Read the Impacted Patients table from the Demographics report.
+ * Table selector: div.table.impacted
+ */
+export async function readImpactedPatientsTable(
+  page: Page,
+): Promise<PatientsTableData> {
+  return readPatientsTable(page, 'div.report.demographics div.table.impacted');
+}
+
+/**
+ * Generic reader for patients tables (registered or impacted).
+ * Rows have 3 cells: [label, male, female].
+ */
+async function readPatientsTable(
+  page: Page,
+  tableSelector: string,
+): Promise<PatientsTableData> {
+  const table = page.locator(tableSelector);
+  await table.waitFor({ timeout: 10000 });
+
+  // Data rows (skip captions row).
+  const dataRows = table.locator('div.row:not(.captions)');
+  const count = await dataRows.count();
+
+  const rows: PatientsTableRow[] = [];
+  for (let i = 0; i < count; i++) {
+    const cells = dataRows.nth(i).locator('div.item');
+    const cellTexts: string[] = [];
+    const cellCount = await cells.count();
+    for (let j = 0; j < cellCount; j++) {
+      cellTexts.push((await cells.nth(j).textContent()) ?? '');
+    }
+    if (cellTexts.length >= 3) {
+      rows.push({
+        label: cellTexts[0].trim(),
+        male: parseInt(cellTexts[1].trim(), 10) || 0,
+        female: parseInt(cellTexts[2].trim(), 10) || 0,
+      });
+    }
+  }
+
+  // Total is the sum of all male + female across all rows.
+  const total = rows.reduce((sum, r) => sum + r.male + r.female, 0);
+
+  return { rows, total };
+}
+
+export interface EncountersTableRow {
+  label: string;
+  all: number;
+  unique: number;
+}
+
+export interface EncountersTableData {
+  rows: EncountersTableRow[];
+  totalAll: number;
+  totalUnique: number;
+}
+
+/**
+ * Read the Encounters table from the Demographics report.
+ * The encounters section is rendered after the patients tables.
+ * Each row has 3 cells: [encounter type label, all count, unique count].
+ *
+ * The encounters table is the third div.table in the demographics report
+ * (after registered and impacted).
+ */
+export async function readEncountersTable(
+  page: Page,
+): Promise<EncountersTableData> {
+  const report = page.locator('div.report.demographics');
+
+  // Tables: 0=registered, 1=impacted, 2=encounters
+  const tables = report.locator('div.table');
+  const tableCount = await tables.count();
+
+  if (tableCount < 3) {
+    return { rows: [], totalAll: 0, totalUnique: 0 };
+  }
+
+  const encountersTable = tables.nth(2);
+  const dataRows = encountersTable.locator('div.row:not(.captions):not(.encounters-totals)');
+  const count = await dataRows.count();
+
+  const rows: EncountersTableRow[] = [];
+  for (let i = 0; i < count; i++) {
+    const cells = dataRows.nth(i).locator('div.item');
+    const cellTexts: string[] = [];
+    const cellCount = await cells.count();
+    for (let j = 0; j < cellCount; j++) {
+      cellTexts.push((await cells.nth(j).textContent()) ?? '');
+    }
+    if (cellTexts.length >= 3) {
+      rows.push({
+        label: cellTexts[0].trim(),
+        all: parseInt(cellTexts[1].trim(), 10) || 0,
+        unique: parseInt(cellTexts[2].trim(), 10) || 0,
+      });
+    }
+  }
+
+  // Read totals from the encounters-totals row.
+  const totalsRow = encountersTable.locator('div.row.encounters-totals');
+  let totalAll = 0;
+  let totalUnique = 0;
+  if ((await totalsRow.count()) > 0) {
+    const totalCells = totalsRow.locator('div.item');
+    const totalCellCount = await totalCells.count();
+    if (totalCellCount >= 3) {
+      totalAll = parseInt((await totalCells.nth(1).textContent()) ?? '0', 10) || 0;
+      totalUnique = parseInt((await totalCells.nth(2).textContent()) ?? '0', 10) || 0;
+    }
+  }
+
+  return { rows, totalAll, totalUnique };
+}
+
+/**
+ * Find a row in a patients table by its label.
+ */
+export function findRow(
+  data: PatientsTableData,
+  label: string,
+): PatientsTableRow | undefined {
+  return data.rows.find(r => r.label === label);
+}
+
+/**
+ * Find a row in the encounters table by label text (partial match).
+ */
+export function findEncounterRow(
+  data: EncountersTableData,
+  labelSubstring: string,
+): EncountersTableRow | undefined {
+  return data.rows.find(r => r.label.includes(labelSubstring));
+}
+
+/**
+ * End any encounter by clicking "End Encounter" and handling the
+ * optional confirmation dialog. Unlike module-specific endEncounter
+ * helpers, this works even when no activities have been completed.
+ */
+export async function endAnyEncounter(page: Page) {
+  await page.waitForTimeout(2000);
+
+  // Try multiple selectors — different encounter types use slightly different markup.
+  const selectors = [
+    'div.actions button.ui.fluid.button:has-text("End Encounter")',
+    'button.ui.fluid.button:has-text("End Encounter")',
+    'button:has-text("End Encounter")',
+  ];
+
+  let endBtn;
+  for (const sel of selectors) {
+    const candidate = page.locator(sel).first();
+    if (await candidate.isVisible({ timeout: 2000 }).catch(() => false)) {
+      endBtn = candidate;
+      break;
+    }
+  }
+
+  if (!endBtn) {
+    // Maybe we're already past the encounter page (e.g., navigated away).
+    console.log('endAnyEncounter: No "End Encounter" button found, skipping.');
+    return;
+  }
+
+  await endBtn.click({ force: true });
+
+  // Handle optional confirmation dialog.
+  const dialog = page.locator('div.ui.tiny.active.modal');
+  const dialogVisible = await dialog
+    .waitFor({ timeout: 3000 })
+    .then(() => true)
+    .catch(() => false);
+
+  if (dialogVisible) {
+    const confirmBtn = dialog.locator('button.ui.primary.fluid.button');
+    await confirmBtn.click({ force: true });
+    await dialog.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
+  }
+
+  await page.waitForTimeout(1000);
+}
