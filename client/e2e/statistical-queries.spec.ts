@@ -19,7 +19,7 @@ import {
   findRow,
   findEncounterRow,
   getDdevUrl,
-  endAnyEncounter,
+  goToDashboard,
   PatientsTableData,
   EncountersTableData,
 } from './helpers/reports';
@@ -37,7 +37,12 @@ import { createAdultAndStartHIVEncounter } from './helpers/hiv';
 import { createAdultAndStartTBEncounter } from './helpers/tuberculosis';
 import { createChildAndStartEncounter as createChildScoreboardChild } from './helpers/child-scoreboard';
 import { startHomeVisit } from './helpers/home-visit';
-import { navigateToNurseGroupSession } from './helpers/group-session';
+import {
+  navigateToNurseGroupSession,
+  createMotherOnAttendancePage,
+  navigateBackToAttendance,
+  goToParticipantsPage,
+} from './helpers/group-session';
 
 const pwaBaseUrl = `http://localhost:${getClientPort()}`;
 
@@ -129,7 +134,7 @@ test.describe('Statistical Queries — Demographics Report', () => {
 
       // --- NutrChild (male, 10 months): Nutrition encounter ---
       const nutrChild = await createNutritionChild(page, { ageMonths: 10 });
-      await endAnyEncounter(page);
+      await goToDashboard(page);
       console.log('Created NutrChild:', nutrChild.fullName);
 
       // --- NutrChild: Well Child (SPV) encounter on the SAME child ---
@@ -166,14 +171,14 @@ test.describe('Statistical Queries — Demographics Report', () => {
       });
       await click(spvBtn, page);
       await page.locator('div.page-encounter.well-child').waitFor({ timeout: 10000 });
-      await endAnyEncounter(page);
+      await goToDashboard(page);
       console.log('Created SPV encounter for NutrChild');
 
       // --- PrenatalMom (female, 25 years): Prenatal encounter ---
       await page.goto(pwaBaseUrl);
       await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
       const prenatalMom = await createPrenatalAdult(page, { ageYears: 25 });
-      await endAnyEncounter(page);
+      await goToDashboard(page);
       console.log('Created PrenatalMom:', prenatalMom.fullName);
 
       // --- PrenatalMom: Acute Illness encounter (2nd encounter → impacted) ---
@@ -206,7 +211,7 @@ test.describe('Statistical Queries — Demographics Report', () => {
       });
       await click(startAIBtn, page);
       await page.locator('div.page-encounter.acute-illness').waitFor({ timeout: 10000 });
-      await endAnyEncounter(page);
+      await goToDashboard(page);
       console.log('Created AI encounter for PrenatalMom');
 
       // --- NCDAdult (male, 40 years): NCD encounter ---
@@ -216,18 +221,18 @@ test.describe('Statistical Queries — Demographics Report', () => {
         isFemale: false,
         ageYears: 40,
       });
-      await endAnyEncounter(page);
+      await goToDashboard(page);
       console.log('Created NCDAdult:', ncdAdult.fullName);
 
       // --- FBF Group Session ---
-      // Navigate to the FBF attendance page — this creates the session node.
-      // We don't need to complete attendance or activities; just creating the
-      // session is enough for encounter counting.
-      await page.goto(pwaBaseUrl);
-      await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
-      await navigateToNurseGroupSession(page, 'FBF', 'Nyange');
-      // Navigate away — session node already exists in local DB.
-      console.log('Created FBF group session');
+      // Navigate to FBF, register a mother as participant, and go to
+      // participants page so the session participation is created.
+      await goToDashboard(page);
+      await navigateToNurseGroupSession(page, 'FBF', 'Nyange I');
+      const fbfMother = await createMotherOnAttendancePage(page);
+      await navigateBackToAttendance(page);
+      await goToParticipantsPage(page);
+      console.log('Created FBF group session with participant:', fbfMother.fullName);
     });
 
     await test.step('Sync nurse data to backend', async () => {
@@ -264,7 +269,7 @@ test.describe('Statistical Queries — Demographics Report', () => {
         isChw: true,
         ageYears: 28,
       });
-      await endAnyEncounter(page);
+      await goToDashboard(page);
       console.log('Created PrenatalCHW:', prenatalCHW.fullName);
 
       // --- AICHW (female, 26 years) ---
@@ -275,7 +280,7 @@ test.describe('Statistical Queries — Demographics Report', () => {
         gender: 'female',
         ageYears: 26,
       });
-      await endAnyEncounter(page);
+      await goToDashboard(page);
       console.log('Created AICHW:', aiCHW.fullName);
 
       // --- HIVAdult (female, 35 years) ---
@@ -285,7 +290,7 @@ test.describe('Statistical Queries — Demographics Report', () => {
         isFemale: true,
         ageYears: 35,
       });
-      await endAnyEncounter(page);
+      await goToDashboard(page);
       console.log('Created HIVAdult:', hivAdult.fullName);
 
       // --- TBAdult (male, 45 years) ---
@@ -295,19 +300,30 @@ test.describe('Statistical Queries — Demographics Report', () => {
         isFemale: false,
         ageYears: 45,
       });
-      await endAnyEncounter(page);
+      await goToDashboard(page);
       console.log('Created TBAdult:', tbAdult.fullName);
 
       // --- CSChild (male, 6 months): Child Scoreboard ---
       await page.goto(pwaBaseUrl);
       await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
       const csChild = await createChildScoreboardChild(page, { ageMonths: 6 });
-      await endAnyEncounter(page);
+      await goToDashboard(page);
       console.log('Created CSChild:', csChild.fullName);
 
-      // NOTE: Home Visit skipped for now — requires properly ending a nutrition
-      // encounter first (which needs completed activities for the dialog flow).
-      // TODO: Add Home Visit encounter in a follow-up.
+      // --- HVChild (male, 8 months): Home Visit ---
+      // Create child via nutrition helper (starts encounter), navigate back
+      // to participant page (don't end encounter), then start home visit.
+      await goToDashboard(page);
+      const hvChild = await createNutritionChild(page, {
+        ageMonths: 8,
+        isChw: true,
+      });
+      // Navigate back from encounter page to participant page.
+      await click(page.locator('.icon-back').first(), page);
+      await page.locator('div.page-participant.individual.nutrition').waitFor({ timeout: 10000 });
+      // Start home visit from participant page.
+      await startHomeVisit(page);
+      console.log('Created HVChild + Home Visit:', hvChild.fullName);
     });
 
     await test.step('Sync CHW data to backend', async () => {
@@ -347,21 +363,21 @@ test.describe('Statistical Queries — Demographics Report', () => {
       }
       console.log(`Total: baseline=${baselineRegistered.total}, new=${newRegistered.total}, delta=+${newRegistered.total - baselineRegistered.total}`);
 
-      // Row "1M - 2Y": male +2 (NutrChild, CSChild)
+      // Row "1M - 2Y": male +3 (NutrChild, CSChild, HVChild)
       const row1M2Y = findRow(newRegistered, '1M - 2Y')!;
       const base1M2Y = findRow(baselineRegistered, '1M - 2Y')!;
-      expect(row1M2Y.male, '1M-2Y male should increase by 2').toBe(base1M2Y.male + 2);
+      expect(row1M2Y.male, '1M-2Y male should increase by 3').toBe(base1M2Y.male + 3);
       expect(row1M2Y.female, '1M-2Y female should be unchanged').toBe(base1M2Y.female);
 
-      // Row "20Y - 50Y": male +2 (NCDAdult, TBAdult), female +4
+      // Row "20Y - 50Y": male +2 (NCDAdult, TBAdult), female +5 (PrenatalMom, PrenatalCHW, AICHW, HIVAdult, FBFMother)
       const row20Y50Y = findRow(newRegistered, '20Y - 50Y')!;
       const base20Y50Y = findRow(baselineRegistered, '20Y - 50Y')!;
       expect(row20Y50Y.male, '20Y-50Y male should increase by 2').toBe(base20Y50Y.male + 2);
-      expect(row20Y50Y.female, '20Y-50Y female should increase by 4').toBe(base20Y50Y.female + 4);
+      expect(row20Y50Y.female, '20Y-50Y female should increase by 5').toBe(base20Y50Y.female + 5);
 
-      // Total: +8 (3 nurse patients + 5 CHW patients)
-      expect(newRegistered.total, 'Registered total should increase by 8').toBe(
-        baselineRegistered.total + 8,
+      // Total: +10 (3 nurse + 1 FBF mother + 6 CHW patients)
+      expect(newRegistered.total, 'Registered total should increase by 10').toBe(
+        baselineRegistered.total + 10,
       );
 
       // Other rows should be unchanged.
@@ -388,11 +404,11 @@ test.describe('Statistical Queries — Demographics Report', () => {
       }
       console.log(`Total: baseline=${baselineImpacted.total}, new=${newImpacted.total}, delta=+${newImpacted.total - baselineImpacted.total}`);
 
-      // Row "1M - 2Y": male +1 (NutrChild has Nutrition + SPV = 2 encounters)
+      // Row "1M - 2Y": male +2 (NutrChild: Nutrition+SPV, HVChild: Nutrition+HomeVisit)
       const imp1M2Y = findRow(newImpacted, '1M - 2Y')!;
       const baseImp1M2Y = findRow(baselineImpacted, '1M - 2Y')!;
-      expect(imp1M2Y.male, 'Impacted 1M-2Y male should increase by 1').toBe(
-        baseImp1M2Y.male + 1,
+      expect(imp1M2Y.male, 'Impacted 1M-2Y male should increase by 2').toBe(
+        baseImp1M2Y.male + 2,
       );
 
       // Row "20Y - 50Y": female +1 (PrenatalMom has Prenatal + AI = 2 encounters)
@@ -402,9 +418,9 @@ test.describe('Statistical Queries — Demographics Report', () => {
         baseImp20Y50Y.female + 1,
       );
 
-      // Total: +2
-      expect(newImpacted.total, 'Impacted total should increase by 2').toBe(
-        baselineImpacted.total + 2,
+      // Total: +3
+      expect(newImpacted.total, 'Impacted total should increase by 3').toBe(
+        baselineImpacted.total + 3,
       );
     });
 
@@ -435,17 +451,16 @@ test.describe('Statistical Queries — Demographics Report', () => {
       assertDelta('ANC (total)', 2);         // nurse +1, CHW +1
       assertDelta('Acute Illness (total)', 2); // nurse +1, CHW +1
       assertDelta('Standard Pediatric Visit', 1);
-      // assertDelta('Home Visit', 1);       // TODO: skipped for now
+      assertDelta('Home Visit', 1);
       assertDelta('Child Scorecard', 1);
       assertDelta('NCD', 1);
       assertDelta('HIV', 1);
       assertDelta('Tuberculosis', 1);
-      assertDelta('Nutrition (total)', 1);   // Individual +1
-      // FBF group session: navigating to attendance page creates the session
-      // but doesn't create a participant-level encounter that counts in reports.
-      // TODO: Complete a full FBF session with participant to test FBF delta.
-      // assertDelta('FBF', 1);
-      assertDelta('Individual', 1);
+      assertDelta('Nutrition (total)', 2);   // Individual +2 (NutrChild + HVChild)
+      // FBF: registering a participant doesn't create a countable encounter
+      // in reports — actual nutrition measurements are needed.
+      // TODO: Complete FBF activities to test FBF delta.
+      assertDelta('Individual', 2);         // NutrChild + HVChild each have a nutrition encounter
     });
 
     await test.step('Verify CSV download button is visible', async () => {

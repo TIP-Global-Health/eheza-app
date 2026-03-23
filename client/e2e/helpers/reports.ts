@@ -2,6 +2,7 @@ import { Page } from '@playwright/test';
 import { execSync } from 'child_process';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
+import { getClientPort } from './client-port';
 import { drushEnv } from './device';
 
 // ---------------------------------------------------------------------------
@@ -410,49 +411,13 @@ export function findEncounterRow(
 }
 
 /**
- * End any encounter by clicking "End Encounter" and handling the
- * optional confirmation dialog. Unlike module-specific endEncounter
- * helpers, this works even when no activities have been completed.
+ * Navigate back to the PWA dashboard from any page.
+ * Used after starting encounters without completing activities
+ * (encounters can only be ended after all mandatory activities
+ * are completed, so we just navigate away).
  */
-export async function endAnyEncounter(page: Page) {
-  await page.waitForTimeout(2000);
-
-  // Try multiple selectors — different encounter types use slightly different markup.
-  const selectors = [
-    'div.actions button.ui.fluid.button:has-text("End Encounter")',
-    'button.ui.fluid.button:has-text("End Encounter")',
-    'button:has-text("End Encounter")',
-  ];
-
-  let endBtn;
-  for (const sel of selectors) {
-    const candidate = page.locator(sel).first();
-    if (await candidate.isVisible({ timeout: 2000 }).catch(() => false)) {
-      endBtn = candidate;
-      break;
-    }
-  }
-
-  if (!endBtn) {
-    // Maybe we're already past the encounter page (e.g., navigated away).
-    console.log('endAnyEncounter: No "End Encounter" button found, skipping.');
-    return;
-  }
-
-  await endBtn.click({ force: true });
-
-  // Handle optional confirmation dialog.
-  const dialog = page.locator('div.ui.tiny.active.modal');
-  const dialogVisible = await dialog
-    .waitFor({ timeout: 3000 })
-    .then(() => true)
-    .catch(() => false);
-
-  if (dialogVisible) {
-    const confirmBtn = dialog.locator('button.ui.primary.fluid.button');
-    await confirmBtn.click({ force: true });
-    await dialog.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
-  }
-
-  await page.waitForTimeout(1000);
+export async function goToDashboard(page: Page) {
+  const pwaBaseUrl = `http://localhost:${getClientPort()}`;
+  await page.goto(pwaBaseUrl);
+  await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
 }
