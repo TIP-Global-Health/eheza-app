@@ -40,8 +40,13 @@ import { startHomeVisit } from './helpers/home-visit';
 import {
   navigateToNurseGroupSession,
   createMotherOnAttendancePage,
+  addChildToMother,
   navigateBackToAttendance,
   goToParticipantsPage,
+  clickMotherCard,
+  navigateToChild,
+  completeHeight,
+  completeWeight,
 } from './helpers/group-session';
 
 const pwaBaseUrl = `http://localhost:${getClientPort()}`;
@@ -225,14 +230,30 @@ test.describe('Statistical Queries — Demographics Report', () => {
       console.log('Created NCDAdult:', ncdAdult.fullName);
 
       // --- FBF Group Session ---
-      // Navigate to FBF, register a mother as participant, and go to
-      // participants page so the session participation is created.
+      // For FBF to count in reports, the child needs height + weight
+      // measurements (which produce z-scores). Register mother + child,
+      // navigate to child, complete height + weight.
       await goToDashboard(page);
       await navigateToNurseGroupSession(page, 'FBF', 'Nyange I');
       const fbfMother = await createMotherOnAttendancePage(page);
-      await navigateBackToAttendance(page);
+      const fbfChild = await addChildToMother(page, { ageMonths: 12 });
+
+      // After addChildToMother we may be on PersonPage or elsewhere.
+      // Navigate back to attendance, then to participants.
+      if (await page.locator('div.page-person').isVisible({ timeout: 1000 }).catch(() => false)) {
+        await navigateBackToAttendance(page);
+      }
+      // If we overshot past attendance, re-navigate from dashboard.
+      if (!(await page.locator('div.page-attendance').isVisible({ timeout: 2000 }).catch(() => false))) {
+        await goToDashboard(page);
+        await navigateToNurseGroupSession(page, 'FBF', 'Nyange I');
+      }
       await goToParticipantsPage(page);
-      console.log('Created FBF group session with participant:', fbfMother.fullName);
+      await clickMotherCard(page, fbfMother.firstName);
+      await navigateToChild(page);
+      await completeHeight(page, '70');
+      await completeWeight(page, '8.5');
+      console.log('Created FBF session with child measurements:', fbfChild.fullName);
     });
 
     await test.step('Sync nurse data to backend', async () => {
@@ -363,10 +384,10 @@ test.describe('Statistical Queries — Demographics Report', () => {
       }
       console.log(`Total: baseline=${baselineRegistered.total}, new=${newRegistered.total}, delta=+${newRegistered.total - baselineRegistered.total}`);
 
-      // Row "1M - 2Y": male +3 (NutrChild, CSChild, HVChild)
+      // Row "1M - 2Y": male +4 (NutrChild, CSChild, HVChild, FBFChild)
       const row1M2Y = findRow(newRegistered, '1M - 2Y')!;
       const base1M2Y = findRow(baselineRegistered, '1M - 2Y')!;
-      expect(row1M2Y.male, '1M-2Y male should increase by 3').toBe(base1M2Y.male + 3);
+      expect(row1M2Y.male, '1M-2Y male should increase by 4').toBe(base1M2Y.male + 4);
       expect(row1M2Y.female, '1M-2Y female should be unchanged').toBe(base1M2Y.female);
 
       // Row "20Y - 50Y": male +2 (NCDAdult, TBAdult), female +5 (PrenatalMom, PrenatalCHW, AICHW, HIVAdult, FBFMother)
@@ -375,9 +396,9 @@ test.describe('Statistical Queries — Demographics Report', () => {
       expect(row20Y50Y.male, '20Y-50Y male should increase by 2').toBe(base20Y50Y.male + 2);
       expect(row20Y50Y.female, '20Y-50Y female should increase by 5').toBe(base20Y50Y.female + 5);
 
-      // Total: +10 (3 nurse + 1 FBF mother + 6 CHW patients)
-      expect(newRegistered.total, 'Registered total should increase by 10').toBe(
-        baselineRegistered.total + 10,
+      // Total: +11 (3 nurse + FBFMother + FBFChild + 6 CHW patients)
+      expect(newRegistered.total, 'Registered total should increase by 11').toBe(
+        baselineRegistered.total + 11,
       );
 
       // Other rows should be unchanged.
@@ -456,10 +477,8 @@ test.describe('Statistical Queries — Demographics Report', () => {
       assertDelta('NCD', 1);
       assertDelta('HIV', 1);
       assertDelta('Tuberculosis', 1);
-      assertDelta('Nutrition (total)', 2);   // Individual +2 (NutrChild + HVChild)
-      // FBF: registering a participant doesn't create a countable encounter
-      // in reports — actual nutrition measurements are needed.
-      // TODO: Complete FBF activities to test FBF delta.
+      assertDelta('Nutrition (total)', 3);   // Individual +2 (NutrChild + HVChild) + FBF +1
+      assertDelta('FBF', 1);                // FBF child with height + weight measurements
       assertDelta('Individual', 2);         // NutrChild + HVChild each have a nutrition encounter
     });
 
