@@ -334,6 +334,19 @@ test.describe('Statistical Queries — Demographics Report', () => {
     await test.step('Verify Registered Patients table deltas', async () => {
       const newRegistered = await readRegisteredPatientsTable(page);
 
+      // Log all rows: baseline → new (expected delta)
+      console.log('\n=== REGISTERED PATIENTS ===');
+      console.log('Row              | Baseline M/F | New M/F    | Expected delta');
+      for (const row of newRegistered.rows) {
+        const base = findRow(baselineRegistered, row.label);
+        const bm = base?.male ?? 0;
+        const bf = base?.female ?? 0;
+        console.log(
+          `${row.label.padEnd(16)} | ${String(bm).padEnd(5)}/${String(bf).padEnd(5)} | ${String(row.male).padEnd(5)}/${String(row.female).padEnd(5)} | +${row.male - bm}/+${row.female - bf}`,
+        );
+      }
+      console.log(`Total: baseline=${baselineRegistered.total}, new=${newRegistered.total}, delta=+${newRegistered.total - baselineRegistered.total}`);
+
       // Row "1M - 2Y": male +2 (NutrChild, CSChild)
       const row1M2Y = findRow(newRegistered, '1M - 2Y')!;
       const base1M2Y = findRow(baselineRegistered, '1M - 2Y')!;
@@ -363,6 +376,18 @@ test.describe('Statistical Queries — Demographics Report', () => {
     await test.step('Verify Impacted Patients table deltas', async () => {
       const newImpacted = await readImpactedPatientsTable(page);
 
+      console.log('\n=== IMPACTED PATIENTS ===');
+      console.log('Row              | Baseline M/F | New M/F    | Expected delta');
+      for (const row of newImpacted.rows) {
+        const base = findRow(baselineImpacted, row.label);
+        const bm = base?.male ?? 0;
+        const bf = base?.female ?? 0;
+        console.log(
+          `${row.label.padEnd(16)} | ${String(bm).padEnd(5)}/${String(bf).padEnd(5)} | ${String(row.male).padEnd(5)}/${String(row.female).padEnd(5)} | +${row.male - bm}/+${row.female - bf}`,
+        );
+      }
+      console.log(`Total: baseline=${baselineImpacted.total}, new=${newImpacted.total}, delta=+${newImpacted.total - baselineImpacted.total}`);
+
       // Row "1M - 2Y": male +1 (NutrChild has Nutrition + SPV = 2 encounters)
       const imp1M2Y = findRow(newImpacted, '1M - 2Y')!;
       const baseImp1M2Y = findRow(baselineImpacted, '1M - 2Y')!;
@@ -385,6 +410,16 @@ test.describe('Statistical Queries — Demographics Report', () => {
 
     await test.step('Verify Encounters table deltas', async () => {
       const newEnc = await readEncountersTable(page);
+
+      console.log('\n=== ENCOUNTERS ===');
+      console.log('Row                          | Baseline All | New All | Delta');
+      for (const row of newEnc.rows) {
+        const base = findEncounterRow(baselineEncounters, row.label);
+        const ba = base?.all ?? 0;
+        console.log(
+          `${row.label.padEnd(28)} | ${String(ba).padEnd(12)} | ${String(row.all).padEnd(7)} | +${row.all - ba}`,
+        );
+      }
 
       const assertDelta = (label: string, expectedDelta: number) => {
         const newRow = findEncounterRow(newEnc, label);
