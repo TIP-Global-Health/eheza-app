@@ -12,34 +12,60 @@ import { drushEnv } from './device';
 /**
  * Get the Drupal admin base URL from DDEV.
  *
- * DDEV uses the project directory name as the hostname (not necessarily
- * the `name` field in config.yaml). We read the HTTPS port from config
- * and derive the hostname from the directory name.
+ * DDEV hostname can be the directory name OR the `name` field in
+ * config.yaml depending on the environment. We try the `ddev describe`
+ * command first for accuracy, then fall back to config parsing.
  */
 export function getDdevUrl(): string {
-  const projectRoot = process.cwd().replace(/\/client$/, '');
-  const dirName = projectRoot.split('/').pop() ?? 'sec-ihangane';
+  const { drushCmd, cwd } = drushEnv();
+  // Derive `ddev` command from `ddev drush` → `ddev`.
+  // Inside the container, drushCmd is just 'drush' — ddev describe won't work.
+  const isDdev = drushCmd.startsWith('ddev');
+  const ddevCmd = isDdev ? 'ddev' : null;
 
-  // Read HTTPS port from DDEV config (default: 4443).
+  // Try `ddev describe` to get the actual URL (only outside the container).
+  if (ddevCmd) try {
+    const output = execSync(`${ddevCmd} describe -j`, {
+      cwd,
+      timeout: 15000,
+      encoding: 'utf-8',
+      stdio: 'pipe',
+    });
+    const data = JSON.parse(output);
+    // ddev describe -j returns { raw: { ... } } with httpurl/httpsurl fields.
+    const raw = data?.raw;
+    if (raw?.httpsurl) {
+      return raw.httpsurl;
+    }
+    if (raw?.httpurl) {
+      return raw.httpurl;
+    }
+  } catch {
+    // Fall back to config parsing.
+  }
+
+  // Fallback: read from config.
+  const projectRoot = process.cwd().replace(/\/client$/, '');
+  let name = projectRoot.split('/').pop() ?? 'eheza-app';
   let port = '4443';
-  const candidates = [
+  const configCandidates = [
     resolve(projectRoot, '.ddev/config.yaml'),
     resolve(__dirname, '../../../.ddev/config.yaml'),
   ];
-  for (const configPath of candidates) {
+  for (const configPath of configCandidates) {
     try {
       const content = readFileSync(configPath, 'utf-8');
+      const nameMatch = content.match(/^name:\s*(.+)$/m);
       const portMatch = content.match(/^router_https_port:\s*"?(\d+)"?$/m);
-      if (portMatch) {
-        port = portMatch[1];
-        break;
-      }
+      if (nameMatch) name = nameMatch[1].trim();
+      if (portMatch) port = portMatch[1];
+      break;
     } catch {
-      // Try next candidate.
+      // Try next.
     }
   }
 
-  return `https://${dirName}.ddev.site:${port}`;
+  return `https://${name}.ddev.site:${port}`;
 }
 
 // ---------------------------------------------------------------------------
