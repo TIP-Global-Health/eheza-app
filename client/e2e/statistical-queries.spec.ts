@@ -20,8 +20,11 @@ import {
   findEncounterRow,
   getDdevUrl,
   goToDashboard,
+  readAcuteIllnessTable,
+  findSimpleRow,
   PatientsTableData,
   EncountersTableData,
+  SimpleTableData,
 } from './helpers/reports';
 
 // Encounter creation helpers — we only start, no activities needed.
@@ -31,7 +34,14 @@ import {
 } from './helpers/nutrition';
 import { createChildAndStartWellChildEncounter } from './helpers/well-child';
 import { createAdultFemaleAndStartEncounter as createPrenatalAdult } from './helpers/prenatal';
-import { createAdultAndStartEncounter as createAIAdult } from './helpers/acute-illness';
+import {
+  createAdultAndStartEncounter as createAIAdult,
+  completeDangerSigns as completeAIDangerSigns,
+  completeSymptoms as completeAISymptoms,
+  completePhysicalExam as completeAIPhysicalExam,
+  completeLaboratory as completeAILaboratory,
+  completePriorTreatment as completeAIPriorTreatment,
+} from './helpers/acute-illness';
 import { createAdultAndStartNCDEncounter } from './helpers/ncd';
 import { createAdultAndStartHIVEncounter } from './helpers/hiv';
 import { createAdultAndStartTBEncounter } from './helpers/tuberculosis';
@@ -101,19 +111,20 @@ test.describe('Statistical Queries — Demographics Report', () => {
     // ── Phase 0: Generate base reports data + record baselines ──
 
     await test.step('Generate base reports data from existing demo persons', async () => {
-      // Run generate-data-for-all twice to ensure all persons are processed
-      // (handles previously unprocessed persons from prior test runs).
+      // Generate per-person data, process any resulting AQ items, then
+      // recalculate to ensure baseline captures ALL persons.
       generateBaseReportsData();
+      processAdvancedQueue();
       generateBaseReportsData();
       recalculateLargeDatasets();
-      // Clear any accumulated AQ items from previous runs so only
-      // items triggered by our new encounters get processed.
+      // Clear AQ so only items from our new encounters get processed later.
       clearAdvancedQueue();
     });
 
     let baselineRegistered: PatientsTableData;
     let baselineImpacted: PatientsTableData;
     let baselineEncounters: EncountersTableData;
+    let baselineAI: SimpleTableData;
 
     await test.step('Login to Drupal admin and record baseline values', async () => {
       await drupalLogin(page);
@@ -125,9 +136,15 @@ test.describe('Statistical Queries — Demographics Report', () => {
       baselineImpacted = await readImpactedPatientsTable(page);
       baselineEncounters = await readEncountersTable(page);
 
+      // Record AI report baseline.
+      await selectReportType(page, 'acute-illness');
+      await setDateRange(page, REPORT_START_DATE, reportLimitDate);
+      baselineAI = await readAcuteIllnessTable(page);
+
       console.log('Baseline registered total:', baselineRegistered.total);
       console.log('Baseline impacted total:', baselineImpacted.total);
       console.log('Baseline encounters rows:', baselineEncounters.rows.length);
+      console.log('Baseline AI rows:', baselineAI.rows.length);
     });
 
     // ── Phase 1a: Nurse encounters ──
@@ -186,38 +203,19 @@ test.describe('Statistical Queries — Demographics Report', () => {
       await goToDashboard(page);
       console.log('Created PrenatalMom:', prenatalMom.fullName);
 
-      // --- PrenatalMom: Acute Illness encounter (2nd encounter → impacted) ---
-      await page.goto(pwaBaseUrl);
-      await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
-      await click(page.locator('.icon-task-clinical'), page);
-      await page.locator('div.page-clinical').waitFor({ timeout: 10000 });
-      await click(page.locator('button.individual-assessment'), page);
-      await page.locator('div.page-encounter-types').waitFor({ timeout: 10000 });
-      await click(
-        page.locator('button.encounter-type', { hasText: /Acute Illness/i }),
-        page,
-      );
-      await page.locator('div.page-participants').waitFor({ timeout: 10000 });
-
-      // Search for PrenatalMom.
-      const aiSearchInput = page.getByPlaceholder('Enter participant name here');
-      await aiSearchInput.waitFor({ timeout: 5000 });
-      await aiSearchInput.fill(prenatalMom.firstName);
-      await page.waitForTimeout(1000);
-      const aiResult = page.locator('.item.participant-view', {
-        hasText: prenatalMom.firstName,
-      }).first();
-      await aiResult.waitFor({ timeout: 10000 });
-      await click(aiResult.locator('.action-icon.forward'), page);
-      await page.locator('div.page-participant.individual.acute-illness').waitFor({ timeout: 10000 });
-
-      const startAIBtn = page.locator('div.ui.primary.button', {
-        hasText: /New|Start/i,
-      });
-      await click(startAIBtn, page);
-      await page.locator('div.page-encounter.acute-illness').waitFor({ timeout: 10000 });
+      // --- AINurse (female, 30 years): Acute Illness with malaria diagnosis ---
+      // Create a separate patient (not PrenatalMom) so we get a proper initial
+      // encounter with all nurse activities including DangerSigns + Laboratory.
       await goToDashboard(page);
-      console.log('Created AI encounter for PrenatalMom');
+      const aiNurse = await createAIAdult(page, { gender: 'female', ageYears: 30 });
+      // Complete activities → Uncomplicated Malaria diagnosis.
+      // Nurse initial AI: Symptoms → PhysicalExam → PriorTreatment → Laboratory (appears after first 3).
+      await completeAISymptoms(page);
+      await completeAIPhysicalExam(page);
+      await completeAIPriorTreatment(page);
+      await completeAILaboratory(page);
+      await goToDashboard(page);
+      console.log('Created AINurse (Uncomplicated Malaria):', aiNurse.fullName);
 
       // --- NCDAdult (male, 40 years): NCD encounter ---
       await page.goto(pwaBaseUrl);
@@ -301,8 +299,20 @@ test.describe('Statistical Queries — Demographics Report', () => {
         gender: 'female',
         ageYears: 26,
       });
+      // Complete activities → Uncomplicated Pneumonia diagnosis.
+      await completeAISymptoms(page, {
+        general: ['Headache'],
+        respiratory: ['Cough', 'Nasal Congestion', 'Sore Throat'],
+        gi: [],
+      });
+      await completeAIPhysicalExam(page, {
+        isChw: true,
+        respiratoryRate: '32',
+        bodyTemp: '37.0',
+      });
+      await completeAIPriorTreatment(page);
       await goToDashboard(page);
-      console.log('Created AICHW:', aiCHW.fullName);
+      console.log('Created AICHW (Uncomplicated Pneumonia):', aiCHW.fullName);
 
       // --- HIVAdult (female, 35 years) ---
       await page.goto(pwaBaseUrl);
@@ -390,15 +400,15 @@ test.describe('Statistical Queries — Demographics Report', () => {
       expect(row1M2Y.male, '1M-2Y male should increase by 4').toBe(base1M2Y.male + 4);
       expect(row1M2Y.female, '1M-2Y female should be unchanged').toBe(base1M2Y.female);
 
-      // Row "20Y - 50Y": male +2 (NCDAdult, TBAdult), female +5 (PrenatalMom, PrenatalCHW, AICHW, HIVAdult, FBFMother)
+      // Row "20Y - 50Y": male +2 (NCDAdult, TBAdult), female +6 (PrenatalMom, AINurse, FBFMother, PrenatalCHW, AICHW, HIVAdult)
       const row20Y50Y = findRow(newRegistered, '20Y - 50Y')!;
       const base20Y50Y = findRow(baselineRegistered, '20Y - 50Y')!;
       expect(row20Y50Y.male, '20Y-50Y male should increase by 2').toBe(base20Y50Y.male + 2);
-      expect(row20Y50Y.female, '20Y-50Y female should increase by 5').toBe(base20Y50Y.female + 5);
+      expect(row20Y50Y.female, '20Y-50Y female should increase by 6').toBe(base20Y50Y.female + 6);
 
-      // Total: +11 (3 nurse + FBFMother + FBFChild + 6 CHW patients)
-      expect(newRegistered.total, 'Registered total should increase by 11').toBe(
-        baselineRegistered.total + 11,
+      // Total: +12 (6 nurse patients + 6 CHW patients)
+      expect(newRegistered.total, 'Registered total should increase by 12').toBe(
+        baselineRegistered.total + 12,
       );
 
       // Other rows should be unchanged.
@@ -432,16 +442,16 @@ test.describe('Statistical Queries — Demographics Report', () => {
         baseImp1M2Y.male + 2,
       );
 
-      // Row "20Y - 50Y": female +1 (PrenatalMom has Prenatal + AI = 2 encounters)
+      // Row "20Y - 50Y": unchanged (PrenatalMom now has only 1 encounter)
       const imp20Y50Y = findRow(newImpacted, '20Y - 50Y')!;
       const baseImp20Y50Y = findRow(baselineImpacted, '20Y - 50Y')!;
-      expect(imp20Y50Y.female, 'Impacted 20Y-50Y female should increase by 1').toBe(
-        baseImp20Y50Y.female + 1,
+      expect(imp20Y50Y.female, 'Impacted 20Y-50Y female should be unchanged').toBe(
+        baseImp20Y50Y.female,
       );
 
-      // Total: +3
-      expect(newImpacted.total, 'Impacted total should increase by 3').toBe(
-        baselineImpacted.total + 3,
+      // Total: +2 (NutrChild + HVChild)
+      expect(newImpacted.total, 'Impacted total should increase by 2').toBe(
+        baselineImpacted.total + 2,
       );
     });
 
@@ -483,6 +493,49 @@ test.describe('Statistical Queries — Demographics Report', () => {
     });
 
     await test.step('Verify CSV download button is visible', async () => {
+      await expect(page.locator('button.download-csv')).toBeVisible();
+    });
+
+    // ── Acute Illness report verification ──
+
+    await test.step('Verify Acute Illness report deltas', async () => {
+      await selectReportType(page, 'acute-illness');
+      await setDateRange(page, REPORT_START_DATE, reportLimitDate);
+
+      const newAI = await readAcuteIllnessTable(page);
+
+      console.log('\n=== ACUTE ILLNESS ===');
+      console.log('Row                                          | Baseline | New | Delta');
+      for (const row of newAI.rows) {
+        const base = findSimpleRow(baselineAI, row.label);
+        const bt = base?.total ?? 0;
+        console.log(
+          `${row.label.padEnd(44)} | ${String(bt).padEnd(8)} | ${String(row.total).padEnd(3)} | +${row.total - bt}`,
+        );
+      }
+
+      // "Uncomplicated Malaria": +1 (PrenatalMom nurse AI with RDT+)
+      const malariaRow = findSimpleRow(newAI, 'Uncomplicated Malaria')!;
+      const baseMalaria = findSimpleRow(baselineAI, 'Uncomplicated Malaria')!;
+      expect(malariaRow.total, 'Uncomplicated Malaria should increase by 1').toBe(
+        baseMalaria.total + 1,
+      );
+
+      // "Acute Respiratory Infection with Complications": +1 (AICHW CHW AI with respiratory symptoms)
+      const respRow = findSimpleRow(newAI, 'Acute Respiratory Infection with Complications')!;
+      const baseResp = findSimpleRow(baselineAI, 'Acute Respiratory Infection with Complications')!;
+      expect(respRow.total, 'Acute Respiratory Infection should increase by 1').toBe(
+        baseResp.total + 1,
+      );
+
+      // "Total": +2
+      const totalRow = findSimpleRow(newAI, 'Total')!;
+      const baseTotal = findSimpleRow(baselineAI, 'Total')!;
+      expect(totalRow.total, 'AI Total should increase by 2').toBe(
+        baseTotal.total + 2,
+      );
+
+      // CSV download button.
       await expect(page.locator('button.download-csv')).toBeVisible();
     });
 

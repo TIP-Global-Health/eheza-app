@@ -410,6 +410,74 @@ export function findEncounterRow(
   return data.rows.find(r => r.label.includes(labelSubstring));
 }
 
+// ---------------------------------------------------------------------------
+// Acute Illness report table
+// ---------------------------------------------------------------------------
+
+export interface SimpleTableRow {
+  label: string;
+  total: number;
+}
+
+export interface SimpleTableData {
+  rows: SimpleTableRow[];
+}
+
+/**
+ * Read the Acute Illness report table.
+ * Container: div.report.acute-illness div.table
+ * Each row has 2 cells: [diagnosis label, total count].
+ * Includes diagnosis rows + "Total" + "No Diagnosis" rows.
+ */
+export async function readAcuteIllnessTable(
+  page: Page,
+): Promise<SimpleTableData> {
+  return readSimpleTable(page, 'div.report.acute-illness div.table');
+}
+
+/**
+ * Generic reader for tables with 2 columns: [label, total].
+ */
+async function readSimpleTable(
+  page: Page,
+  tableSelector: string,
+): Promise<SimpleTableData> {
+  const table = page.locator(tableSelector);
+  await table.waitFor({ timeout: 10000 });
+
+  const dataRows = table.locator('div.row:not(.captions)');
+  const count = await dataRows.count();
+
+  const rows: SimpleTableRow[] = [];
+  for (let i = 0; i < count; i++) {
+    const cells = dataRows.nth(i).locator('div.item');
+    const cellTexts: string[] = [];
+    const cellCount = await cells.count();
+    for (let j = 0; j < cellCount; j++) {
+      cellTexts.push((await cells.nth(j).textContent()) ?? '');
+    }
+    if (cellTexts.length >= 2) {
+      rows.push({
+        label: cellTexts[0].trim(),
+        total: parseInt(cellTexts[1].trim(), 10) || 0,
+      });
+    }
+  }
+
+  return { rows };
+}
+
+/**
+ * Find a row in a simple table by label text (exact or partial match).
+ */
+export function findSimpleRow(
+  data: SimpleTableData,
+  label: string,
+): SimpleTableRow | undefined {
+  return data.rows.find(r => r.label === label)
+    || data.rows.find(r => r.label.includes(label));
+}
+
 /**
  * Navigate back to the PWA dashboard from any page.
  * Used after starting encounters without completing activities
