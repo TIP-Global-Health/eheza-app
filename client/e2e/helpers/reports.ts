@@ -615,3 +615,203 @@ export async function goToDashboard(page: Page) {
   await page.goto(pwaBaseUrl);
   await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
 }
+
+// ---------------------------------------------------------------------------
+// Backdating helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Backdate a person's nutrition encounter and measurement nodes so they
+ * appear in the nutrition report (which only shows completed months).
+ *
+ * Updates:
+ *   - `field_scheduled_date` on the nutrition_encounter node
+ *   - `field_date_measured` on all measurement nodes linked to the person
+ *
+ * @param personName - Person title as stored in Drupal ("SecondName FirstName")
+ * @param targetDate - The date to set (e.g., 1 month ago)
+ *
+ * Note: execSync is used here following the same pattern as other E2E
+ * helpers (device.ts, reports.ts) for drush command execution.
+ * The input is base64-encoded (no user-provided data in the shell
+ * command), so shell injection is not a concern.
+ */
+export function backdateNutritionEncounter(
+  personName: string,
+  targetDate: Date,
+) {
+  const { drushCmd, cwd } = drushEnv();
+  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
+  const dateStr = targetDate.toISOString().split('T')[0]; // YYYY-MM-DD
+
+  const php = `
+    \\$person_name = base64_decode('${personNameB64}');
+    \\$date_str = '${dateStr}';
+
+    // Find person.
+    \\$query = new EntityFieldQuery();
+    \\$result = \\$query->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'person')
+      ->propertyCondition('title', \\$person_name)
+      ->execute();
+    if (empty(\\$result['node'])) {
+      echo json_encode(['error' => 'Person not found: ' . \\$person_name]);
+      return;
+    }
+    \\$person_nid = key(\\$result['node']);
+    \\$updated = [];
+
+    // Find individual_participant for this person (nutrition program).
+    \\$q = new EntityFieldQuery();
+    \\$r = \\$q->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'individual_participant')
+      ->fieldCondition('field_person', 'target_id', \\$person_nid)
+      ->execute();
+    if (!empty(\\$r['node'])) {
+      foreach (array_keys(\\$r['node']) as \\$participant_nid) {
+        // Find nutrition_encounter linked to this participant.
+        \\$eq = new EntityFieldQuery();
+        \\$er = \\$eq->entityCondition('entity_type', 'node')
+          ->propertyCondition('type', 'nutrition_encounter')
+          ->fieldCondition('field_individual_participant', 'target_id', \\$participant_nid)
+          ->execute();
+        if (!empty(\\$er['node'])) {
+          foreach (array_keys(\\$er['node']) as \\$nid) {
+            \\$node = node_load(\\$nid);
+            \\$node->field_scheduled_date[LANGUAGE_NONE][0]['value'] = \\$date_str;
+            node_save(\\$node);
+            \\$updated[] = 'encounter:' . \\$nid;
+          }
+        }
+      }
+    }
+
+    // Update measurement nodes: field_date_measured.
+    \\$types = ['nutrition_height', 'nutrition_weight', 'nutrition_muac', 'nutrition_nutrition'];
+    foreach (\\$types as \\$type) {
+      \\$q = new EntityFieldQuery();
+      \\$r = \\$q->entityCondition('entity_type', 'node')
+        ->propertyCondition('type', \\$type)
+        ->fieldCondition('field_person', 'target_id', \\$person_nid)
+        ->execute();
+      if (!empty(\\$r['node'])) {
+        foreach (array_keys(\\$r['node']) as \\$nid) {
+          \\$node = node_load(\\$nid);
+          \\$node->field_date_measured[LANGUAGE_NONE][0]['value'] = \\$date_str;
+          node_save(\\$node);
+          \\$updated[] = \\$type . ':' . \\$nid;
+        }
+      }
+    }
+
+    echo json_encode(['updated' => \\$updated]);
+  `;
+
+  console.log(`Backdating nutrition data for "${personName}" to ${dateStr}...`);
+  execSync(`${drushCmd} eval "${php}"`, {
+    cwd,
+    timeout: 30000,
+    encoding: 'utf-8',
+    stdio: 'pipe',
+  });
+  console.log('Backdated successfully.');
+}
+
+// ---------------------------------------------------------------------------
+// Nutrition report table
+// ---------------------------------------------------------------------------
+
+export interface NutritionMetricRow {
+  label: string;
+  values: number[]; // all column values (reverse chronological: newest first)
+}
+
+/**
+ * The 8 nutrition tables alternate One Visit / Two Visits:
+ *   0 = Prevalence By Month (One Visit Or More)
+ *   1 = Prevalence By Month (Two Visits Or More)
+ *   2 = Incidence By Month  (One Visit Or More)
+ *   3 = Incidence By Month  (Two Visits Or More)
+ *   4 = Incidence By Quarter (One Visit Or More)
+ *   5 = Incidence By Quarter (Two Visits Or More)
+ *   6 = Incidence By Year   (One Visit Or More)
+ *   7 = Incidence By Year   (Two Visits Or More)
+ *
+ * "One Visit Or More" tables are at even indices: 0, 2, 4, 6.
+ * Columns are in reverse chronological order (newest first).
+ * The current month is NOT included — only completed months.
+ */
+export const NUTRITION_ONE_VISIT_TABLES = [
+  { index: 0, name: 'Prevalence By Month' },
+  { index: 2, name: 'Incidence By Month' },
+  { index: 4, name: 'Incidence By Quarter' },
+  { index: 6, name: 'Incidence By Year' },
+] as const;
+
+/**
+ * Read a nutrition table by its 0-based index.
+ * Each data row has: [metric label, value1%, value2%, ...].
+ * Columns are reverse chronological (newest first).
+ * The header row has no .captions class — it's skipped by the
+ * empty row-label check.
+ */
+export async function readNutritionTable(
+  page: Page,
+  tableIndex: number,
+): Promise<NutritionMetricRow[]> {
+  const table = page.locator('div.report.nutrition div.table.wide').nth(tableIndex);
+  await table.waitFor({ timeout: 10000 });
+
+  const allRows = table.locator('div.row');
+  const count = await allRows.count();
+  const rows: NutritionMetricRow[] = [];
+
+  for (let i = 0; i < count; i++) {
+    const labelEl = allRows.nth(i).locator('div.item.row-label');
+    const label = (await labelEl.textContent())?.trim() ?? '';
+    if (!label) continue; // skip header row (empty row-label)
+
+    const valueCells = allRows.nth(i).locator('div.item.value');
+    const valCount = await valueCells.count();
+    const values: number[] = [];
+    for (let j = 0; j < valCount; j++) {
+      const text = (await valueCells.nth(j).textContent()) ?? '0';
+      values.push(parseFloat(text.replace('%', '').trim()) || 0);
+    }
+    rows.push({ label, values });
+  }
+  return rows;
+}
+
+/**
+ * Read the column headers from a nutrition table.
+ * Returns labels in display order (reverse chronological: newest first).
+ */
+export async function readNutritionColumnHeaders(
+  page: Page,
+  tableIndex: number,
+): Promise<string[]> {
+  const table = page.locator('div.report.nutrition div.table.wide').nth(tableIndex);
+  await table.waitFor({ timeout: 10000 });
+
+  // Header row is the first div.row. Its cells after the row-label
+  // have class "heading".
+  const headerRow = table.locator('div.row').first();
+  const headings = headerRow.locator('div.item.heading');
+  const count = await headings.count();
+  const labels: string[] = [];
+  for (let i = 0; i < count; i++) {
+    labels.push((await headings.nth(i).textContent())?.trim() ?? '');
+  }
+  return labels;
+}
+
+/**
+ * Find a nutrition metric row by label substring.
+ */
+export function findNutritionMetric(
+  rows: NutritionMetricRow[],
+  labelSubstring: string,
+): NutritionMetricRow | undefined {
+  return rows.find(r => r.label.includes(labelSubstring));
+}

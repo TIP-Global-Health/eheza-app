@@ -27,14 +27,25 @@ import {
   findPrenatalRow,
   PrenatalVisitsRow,
   findSimpleRow,
+  readNutritionTable,
+  readNutritionColumnHeaders,
+  findNutritionMetric,
+  backdateNutritionEncounter,
+  NUTRITION_ONE_VISIT_TABLES,
+  NutritionMetricRow,
   PatientsTableData,
   EncountersTableData,
   SimpleTableData,
 } from './helpers/reports';
 
-// Encounter creation helpers — we only start, no activities needed.
+// Encounter creation helpers.
 import {
   createChildAndStartEncounter as createNutritionChild,
+  enterHeight,
+  enterWeight,
+  enterMuac,
+  enterNutritionSigns,
+  saveActivity,
   syncAndWait,
 } from './helpers/nutrition';
 import { createChildAndStartWellChildEncounter } from './helpers/well-child';
@@ -101,7 +112,7 @@ test.describe('Statistical Queries — Demographics Report', () => {
   // Demographics report tables show the correct deltas.
   //
   // Patients created:
-  //   Nurse: NutrChild (M 10mo) — Nutrition + SPV (2 encounters, impacted)
+  //   Nurse: NutrChild (M 10mo) — Nutrition (with measurements) + SPV (2 encounters, impacted)
   //          PrenatalMom (F 25y) — Prenatal + AI (2 encounters, impacted)
   //          NCDAdult (M 40y) — NCD
   //          FBF group session (no new patient)
@@ -148,6 +159,9 @@ test.describe('Statistical Queries — Demographics Report', () => {
     let baselineGestHypertension: number;
     let baselineDepression: number;
     let baselinePrenatalTotal: number;
+    let baselineNutrition: Map<number, NutritionMetricRow[]>;
+    let nutrChildName: string;
+    let hvChildName: string;
 
     await test.step('Login to Drupal admin and record baseline values', async () => {
       await drupalLogin(page);
@@ -180,6 +194,16 @@ test.describe('Statistical Queries — Demographics Report', () => {
       baselineDepression = await readPrenatalDiagnosisRow(page, 'diagnosis-depression-not-likely');
       baselinePrenatalTotal = await readPrenatalDiagnosisRow(page, 'totals');
 
+      // Record Nutrition report baseline (first column = newest completed month).
+      // The nutrition report only shows completed months, so test encounters
+      // will be backdated to the previous month after syncing.
+      await selectReportType(page, 'nutrition');
+      await page.waitForTimeout(2000);
+      baselineNutrition = new Map();
+      for (const { index } of NUTRITION_ONE_VISIT_TABLES) {
+        baselineNutrition.set(index, await readNutritionTable(page, index));
+      }
+
       console.log('Baseline registered total:', baselineRegistered.total);
       console.log('Baseline impacted total:', baselineImpacted.total);
       console.log('Baseline encounters rows:', baselineEncounters.rows.length);
@@ -199,9 +223,31 @@ test.describe('Statistical Queries — Demographics Report', () => {
       await setupDevice(page, '1234', 'Nyange Health Center');
 
       // --- NutrChild (male, 10 months): Nutrition encounter ---
+      // Complete mandatory activities with abnormal measurements to trigger
+      // stunting severe (height 60cm at 10mo) + underweight severe (6.0kg at 10mo).
       const nutrChild = await createNutritionChild(page, { ageMonths: 10 });
+      nutrChildName = nutrChild.fullName;
+      await enterHeight(page, '60');
+      await saveActivity(page);
+      await enterWeight(page, '6.0');
+      await saveActivity(page);
+      await enterMuac(page, '11.0');
+      await saveActivity(page);
+      // Nutrition signs is the last mandatory activity. With abnormal z-scores,
+      // saving it triggers a diagnosis popup then NextSteps (Contributing
+      // Factors, etc.) instead of returning to the encounter page.
+      // Measurements are already persisted, so we dismiss the popup and
+      // navigate to the dashboard.
+      await enterNutritionSigns(page, ['None']);
+      await click(page.locator('button.ui.fluid.primary.button.active'), page);
+      const nursePopup = page.locator('div.ui.active.modal.diagnosis-popup');
+      try {
+        await nursePopup.waitFor({ timeout: 3000 });
+        await click(nursePopup.locator('button.ui.primary.fluid.button'), page);
+      } catch { /* no popup */ }
+      await page.waitForTimeout(2000);
       await goToDashboard(page);
-      console.log('Created NutrChild:', nutrChild.fullName);
+      console.log('Created NutrChild with measurements:', nutrChild.fullName);
 
       // --- NutrChild: Well Child (SPV) encounter on the SAME child ---
       // Navigate from dashboard: Clinical → Individual → Well Child → search
@@ -409,8 +455,46 @@ test.describe('Statistical Queries — Demographics Report', () => {
         ageMonths: 8,
         isChw: true,
       });
-      // Navigate back from encounter page to participant page.
-      await click(page.locator('.icon-back').first(), page);
+      hvChildName = hvChild.fullName;
+      // Complete CHW mandatory nutrition activities (no height for Rwanda CHW).
+      // Underweight severe: 5.5kg at 8mo (median ~8.6kg, -3SD ~6.2kg).
+      await enterWeight(page, '5.5');
+      await saveActivity(page);
+      await enterMuac(page, '11.0');
+      await saveActivity(page);
+      // Nutrition signs is the last mandatory activity. Abnormal z-scores
+      // trigger a diagnosis popup then NextSteps, so we save, dismiss the
+      // popup, and navigate to dashboard instead.
+      await enterNutritionSigns(page, ['None']);
+      await click(page.locator('button.ui.fluid.primary.button.active'), page);
+      const chwPopup = page.locator('div.ui.active.modal.diagnosis-popup');
+      try {
+        await chwPopup.waitFor({ timeout: 3000 });
+        await click(chwPopup.locator('button.ui.primary.fluid.button'), page);
+      } catch { /* no popup */ }
+      await page.waitForTimeout(2000);
+      // Navigate back to participant page for HVChild to start home visit.
+      // From NextSteps or encounter page, go to dashboard then re-navigate.
+      await goToDashboard(page);
+      // Re-find HVChild via nutrition participant flow.
+      await click(page.locator('.icon-task-clinical'), page);
+      await page.locator('div.page-clinical').waitFor({ timeout: 10000 });
+      await click(page.locator('button.individual-assessment'), page);
+      await page.locator('div.page-encounter-types').waitFor({ timeout: 10000 });
+      await click(
+        page.locator('button.encounter-type', { hasText: 'Child Nutrition' }),
+        page,
+      );
+      await page.locator('div.page-participants').waitFor({ timeout: 10000 });
+      const hvSearch = page.getByPlaceholder('Enter participant name here');
+      await hvSearch.waitFor({ timeout: 5000 });
+      await hvSearch.fill(hvChild.firstName);
+      await page.waitForTimeout(1000);
+      const hvResult = page.locator('.item.participant-view', {
+        hasText: hvChild.firstName,
+      }).first();
+      await hvResult.waitFor({ timeout: 10000 });
+      await click(hvResult.locator('.action-icon.forward'), page);
       await page.locator('div.page-participant.individual.nutrition').waitFor({ timeout: 10000 });
       // Start home visit from participant page.
       await startHomeVisit(page);
@@ -423,9 +507,21 @@ test.describe('Statistical Queries — Demographics Report', () => {
       await syncAndWait(page);
     });
 
+    // ── Phase 1c: Backdate nutrition encounters to previous month ──
+    // The nutrition report only shows completed months. Backdating makes
+    // our test data appear in the first (newest) column.
+
+    await test.step('Backdate nutrition encounters to previous month', async () => {
+      const lastMonth = new Date();
+      lastMonth.setMonth(lastMonth.getMonth() - 1);
+      backdateNutritionEncounter(nutrChildName, lastMonth);
+      backdateNutritionEncounter(hvChildName, lastMonth);
+    });
+
     // ── Phase 2: Process AQ + re-aggregate ──
 
     await test.step('Process Advanced Queue and recalculate large datasets', async () => {
+      // AQ runs once, after all content is generated (including backdating).
       processAdvancedQueue();
       recalculateLargeDatasets();
     });
@@ -658,6 +754,52 @@ test.describe('Statistical Queries — Demographics Report', () => {
       // Total: HIV + Gestational Hypertension + Depression Not Likely
       // + NoPrenatalDiagnosis (from CHW encounter with no activities) = +4.
       expect(newPrenatalTotal, 'Prenatal Total +4').toBe(baselinePrenatalTotal + 4);
+
+      // CSV download button.
+      await expect(page.locator('button.download-csv')).toBeVisible();
+    });
+
+    // ── Nutrition report verification ──
+
+    await test.step('Verify Nutrition report deltas', async () => {
+      await selectReportType(page, 'nutrition');
+      // No date range — nutrition report always shows last 12 months.
+      await page.waitForTimeout(2000);
+
+      await expect(page.locator('div.report.nutrition')).toBeVisible();
+
+      console.log('\n=== NUTRITION ===');
+
+      // Nutrition encounters were backdated to the previous month.
+      // Columns are reverse chronological — first column (index 0) is the
+      // newest completed month where our test data should now appear.
+      const columnHeaders = await readNutritionColumnHeaders(page, 0);
+      console.log(`Columns (${columnHeaders.length}): ${columnHeaders.join(' | ')}`);
+
+      // Verify all 4 "One Visit Or More" tables.
+      for (const { index, name } of NUTRITION_ONE_VISIT_TABLES) {
+        const baseline = baselineNutrition.get(index) ?? [];
+        const current = await readNutritionTable(page, index);
+        expect(current.length, `${name}: should have 6 metric rows`).toBe(6);
+
+        const colCount = current[0]?.values.length ?? 0;
+        expect(colCount, `${name}: should have data columns`).toBeGreaterThan(0);
+
+        // First column = newest completed month (where backdated data lives).
+        // NutrChild (height=60 at 10mo) → Stunting Severe.
+        const baseStunting = findNutritionMetric(baseline, 'Stunting Severe')?.values[0] ?? 0;
+        const newStunting = findNutritionMetric(current, 'Stunting Severe')?.values[0] ?? 0;
+        console.log(`${name} — Stunting Severe: baseline=${baseStunting}%, new=${newStunting}%`);
+        expect(newStunting, `${name}: Stunting Severe % should increase`)
+          .toBeGreaterThanOrEqual(baseStunting);
+
+        // NutrChild (weight=6.0 at 10mo) + HVChild (weight=5.5 at 8mo) → Underweight Severe.
+        const baseUnderweight = findNutritionMetric(baseline, 'Underweight Severe')?.values[0] ?? 0;
+        const newUnderweight = findNutritionMetric(current, 'Underweight Severe')?.values[0] ?? 0;
+        console.log(`${name} — Underweight Severe: baseline=${baseUnderweight}%, new=${newUnderweight}%`);
+        expect(newUnderweight, `${name}: Underweight Severe % should increase`)
+          .toBeGreaterThanOrEqual(baseUnderweight);
+      }
 
       // CSV download button.
       await expect(page.locator('button.download-csv')).toBeVisible();
