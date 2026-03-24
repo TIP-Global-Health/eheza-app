@@ -39,6 +39,7 @@ import {
 } from './helpers/reports';
 
 // Encounter creation helpers.
+import { syncAndWait } from './helpers/common';
 import {
   createChildAndStartEncounter as createNutritionChild,
   enterHeight,
@@ -46,7 +47,6 @@ import {
   enterMuac,
   enterNutritionSigns,
   saveActivity,
-  syncAndWait,
 } from './helpers/nutrition';
 import { createChildAndStartWellChildEncounter } from './helpers/well-child';
 import {

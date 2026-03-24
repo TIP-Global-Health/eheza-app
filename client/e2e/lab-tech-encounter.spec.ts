@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { click, setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
-import { syncAndWait } from './helpers/nutrition';
+import { syncAndWait } from './helpers/common';
 import {
   createAdultFemaleAndStartEncounter,
   completePregnancyDating,

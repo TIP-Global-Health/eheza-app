@@ -3,6 +3,7 @@ import { setupDevice } from './helpers/auth';
 import { verifyCaseManagementEntry } from './helpers/case-management';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
+import { syncAndWait } from './helpers/common';
 import {
   createAdultAndStartNCDEncounter,
   completeDangerSigns,
@@ -14,7 +15,6 @@ import {
   completeOutsideCare,
   completeNextSteps,
   endNCDEncounter,
-  syncAndWait,
   queryNCDNodes,
   backdateNCDEncounter,
   navigateToParticipantPage,

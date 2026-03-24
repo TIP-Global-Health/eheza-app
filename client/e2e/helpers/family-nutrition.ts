@@ -635,36 +635,6 @@ export async function endFamilyNutritionEncounter(page: Page) {
 }
 
 // ---------------------------------------------------------------------------
-// Sync
-// ---------------------------------------------------------------------------
-
-/**
- * Trigger a sync cycle and wait for it to complete.
- */
-export async function syncAndWait(page: Page) {
-  await click(page.locator('span.sync-icon'), page);
-  await page.locator('.device-status').waitFor({ timeout: 10000 });
-
-  const hcSection = page.locator('.health-center', {
-    has: page.locator('h2', { hasText: 'Nyange Health Center' }),
-  });
-  await hcSection.waitFor({ timeout: 10000 });
-
-  // Wait for sync to complete — "Status: Success" for the health center.
-  await hcSection
-    .locator('.sync-status', { hasText: 'Status: Success' })
-    .waitFor({ timeout: 300000 });
-
-  // Wait 1 second and verify status is still Success (not a transient state).
-  await page.waitForTimeout(1000);
-  await hcSection
-    .locator('.sync-status', { hasText: 'Status: Success' })
-    .waitFor({ timeout: 5000 });
-
-  await page.goBack();
-}
-
-// ---------------------------------------------------------------------------
 // Backend verification
 // ---------------------------------------------------------------------------
 

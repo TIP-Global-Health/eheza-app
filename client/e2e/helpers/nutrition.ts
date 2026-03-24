@@ -539,28 +539,7 @@ export async function endEncounter(page: Page) {
     .waitFor({ state: 'hidden', timeout: 10000 });
 }
 
-/**
- * Click the sync icon, wait for sync to complete on Nyange HC,
- * then navigate back.
- */
-export async function syncAndWait(page: Page) {
-  await click(page.locator('span.sync-icon'), page);
 
-  // Wait for the device status page.
-  await page.locator('.device-status').waitFor({ timeout: 10000 });
-
-  const nyange = page.locator('.health-center', {
-    has: page.locator('h2', { hasText: 'Nyange Health Center' }),
-  });
-  await nyange.waitFor({ timeout: 10000 });
-
-  // Wait for sync to complete.
-  await nyange
-    .locator('.sync-status', { hasText: 'Status: Success' })
-    .waitFor({ timeout: 120000 });
-
-  await page.goBack();
-}
 
 // ---------------------------------------------------------------------------
 // NextSteps helpers

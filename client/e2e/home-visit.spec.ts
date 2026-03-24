@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
+import { syncAndWait } from './helpers/common';
 import { createChildAndStartEncounter } from './helpers/nutrition';
 import {
   startHomeVisit,
@@ -13,7 +14,6 @@ import {
   endHomeVisit,
   queryHomeVisitNodes,
 } from './helpers/home-visit';
-import { syncAndWait } from './helpers/nutrition';
 
 test.describe('CHW: Home Visit Encounter', () => {
   if (process.env.RECORD) {

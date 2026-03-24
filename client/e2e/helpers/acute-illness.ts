@@ -1178,31 +1178,6 @@ export async function completeNextSteps(
 }
 
 // ---------------------------------------------------------------------------
-// Sync helper
-// ---------------------------------------------------------------------------
-
-/**
- * Click the sync icon, wait for sync to complete on Nyange HC,
- * then navigate back.
- */
-export async function syncAndWait(page: Page) {
-  await click(page.locator('span.sync-icon'), page);
-
-  await page.locator('.device-status').waitFor({ timeout: 10000 });
-
-  const nyange = page.locator('.health-center', {
-    has: page.locator('h2', { hasText: 'Nyange Health Center' }),
-  });
-  await nyange.waitFor({ timeout: 10000 });
-
-  await nyange
-    .locator('.sync-status', { hasText: 'Status: Success' })
-    .waitFor({ timeout: 480000 });
-
-  await page.goBack();
-}
-
-// ---------------------------------------------------------------------------
 // Backend verification via drush
 // ---------------------------------------------------------------------------
 

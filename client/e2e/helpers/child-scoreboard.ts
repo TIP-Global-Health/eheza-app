@@ -563,32 +563,6 @@ export async function endChildScoreboardEncounter(page: Page) {
 }
 
 // ---------------------------------------------------------------------------
-// Sync
-// ---------------------------------------------------------------------------
-
-/**
- * Sync data and wait for success.
- * Click sync icon → device status → wait for success → go back.
- */
-export async function syncAndWait(page: Page) {
-  await click(page.locator('span.sync-icon'), page);
-
-  await page.locator('.device-status').waitFor({ timeout: 10000 });
-
-  const hcSection = page.locator('.health-center', {
-    has: page.locator('h2', { hasText: 'Nyange Health Center' }),
-  });
-  await hcSection.waitFor({ timeout: 10000 });
-
-  await hcSection
-    .locator('.sync-status', { hasText: 'Status: Success' })
-    .waitFor({ timeout: 120000 });
-
-  await page.goBack();
-  await page.waitForTimeout(1000);
-}
-
-// ---------------------------------------------------------------------------
 // Backend verification via drush
 // ---------------------------------------------------------------------------
 

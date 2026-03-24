@@ -167,36 +167,6 @@ export async function endEducationSession(page: Page) {
 }
 
 // ---------------------------------------------------------------------------
-// Sync
-// ---------------------------------------------------------------------------
-
-/**
- * Trigger a sync cycle and wait for it to complete.
- */
-export async function syncAndWait(page: Page, healthCenter: string) {
-  await click(page.locator('span.sync-icon'), page);
-  await page.locator('.device-status').waitFor({ timeout: 10000 });
-
-  const hcSection = page.locator('.health-center', {
-    has: page.locator('h2', { hasText: healthCenter }),
-  });
-  await hcSection.waitFor({ timeout: 10000 });
-
-  // Wait for sync to complete.
-  await hcSection
-    .locator('.sync-status', { hasText: 'Status: Success' })
-    .waitFor({ timeout: 300000 });
-
-  // Verify status is stable.
-  await page.waitForTimeout(1000);
-  await hcSection
-    .locator('.sync-status', { hasText: 'Status: Success' })
-    .waitFor({ timeout: 5000 });
-
-  await page.goBack();
-}
-
-// ---------------------------------------------------------------------------
 // Backend verification
 // ---------------------------------------------------------------------------
 
