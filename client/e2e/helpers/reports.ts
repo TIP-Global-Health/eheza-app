@@ -166,6 +166,10 @@ export function recalculateLargeDatasets() {
     `${drushCmd} scr profiles/hedley/modules/custom/hedley_reports/scripts/recalculate-large-datasets.php`,
     { cwd, timeout: 300000, encoding: 'utf-8', stdio: 'pipe' },
   );
+  // Clear Drupal caches so pages serve the fresh report_data.
+  execSync(`${drushCmd} cc all`, {
+    cwd, timeout: 30000, encoding: 'utf-8', stdio: 'pipe',
+  });
   console.log('Large datasets recalculated.');
 }
 
