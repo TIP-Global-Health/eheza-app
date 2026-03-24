@@ -528,6 +528,64 @@ export function findSimpleRow(
     || data.rows.find(r => r.label.includes(label));
 }
 
+// ---------------------------------------------------------------------------
+// Prenatal (ANC) report tables
+// ---------------------------------------------------------------------------
+
+export interface PrenatalVisitsRow {
+  label: string;
+  chw: number;
+  hc: number;
+  all: number;
+}
+
+/**
+ * Read a prenatal visits table by its CSS class.
+ * Tables: all-pregnancies, active-pregnancies, completed-pregnancies.
+ * Each row has 4 cells: [label, CHW, HC, All].
+ */
+export async function readPrenatalVisitsTable(
+  page: Page,
+  tableClass: string,
+): Promise<PrenatalVisitsRow[]> {
+  const table = page.locator(`div.report.prenatal div.table.${tableClass}`);
+  await table.waitFor({ timeout: 10000 });
+
+  const dataRows = table.locator('div.row:not(.captions)');
+  const count = await dataRows.count();
+
+  const rows: PrenatalVisitsRow[] = [];
+  for (let i = 0; i < count; i++) {
+    const cells = dataRows.nth(i).locator('div.item');
+    const cellTexts: string[] = [];
+    const cellCount = await cells.count();
+    for (let j = 0; j < cellCount; j++) {
+      cellTexts.push((await cells.nth(j).textContent()) ?? '');
+    }
+    if (cellTexts.length >= 4) {
+      rows.push({
+        label: cellTexts[0].trim(),
+        chw: parseInt(cellTexts[1].trim(), 10) || 0,
+        hc: parseInt(cellTexts[2].trim(), 10) || 0,
+        all: parseInt(cellTexts[3].trim(), 10) || 0,
+      });
+    }
+  }
+
+  return rows;
+}
+
+/**
+ * Find a row in a prenatal visits table by label.
+ */
+export function findPrenatalRow(
+  rows: PrenatalVisitsRow[],
+  label: string,
+): PrenatalVisitsRow | undefined {
+  return rows.find(r => r.label === label)
+    || rows.find(r => r.label.includes(label));
+}
+
 /**
  * Read a specific prenatal diagnosis row by its CSS class.
  */

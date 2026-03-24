@@ -1379,9 +1379,19 @@ viewPrenatalReport language limitDate scopeLabel records =
         data =
             generatePrenatalReportData language limitDate records
 
-        viewTable tableData =
+        -- CSS class per table for E2E test targeting.
+        tableClasses =
+            [ "all-pregnancies"
+            , "active-pregnancies"
+            , "completed-pregnancies"
+            , "first-visit"
+            , "outcomes"
+            , "delivery-locations"
+            ]
+
+        viewTableWithClass cssClass tableData =
             [ div [ class "section heading" ] [ text tableData.heading ]
-            , div [ class "table anc" ] <|
+            , div [ class <| "table anc " ++ cssClass ] <|
                 (div [ class "row captions" ] <|
                     viewStandardCells tableData.captions
                 )
@@ -1399,7 +1409,7 @@ viewPrenatalReport language limitDate scopeLabel records =
             reportTablesDataToCSV data
     in
     div [ class "report prenatal" ] <|
-        List.concatMap viewTable data
+        List.concat (List.map2 viewTableWithClass tableClasses data)
             ++ [ viewDownloadCSVButton language csvFileName csvContent ]
 
 

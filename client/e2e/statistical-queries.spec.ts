@@ -23,6 +23,9 @@ import {
   readAcuteIllnessTable,
   readAIDiagnosisRow,
   readPrenatalDiagnosisRow,
+  readPrenatalVisitsTable,
+  findPrenatalRow,
+  PrenatalVisitsRow,
   findSimpleRow,
   PatientsTableData,
   EncountersTableData,
@@ -139,6 +142,8 @@ test.describe('Statistical Queries — Demographics Report', () => {
     let baselineMalaria: number;
     let baselineResp: number;
     let baselineAITotal: number;
+    let baselineAllPregnancies: PrenatalVisitsRow[];
+    let baselineActivePregnancies: PrenatalVisitsRow[];
     let baselinePrenatalHIV: number;
     let baselineGestHypertension: number;
     let baselineDepression: number;
@@ -161,6 +166,12 @@ test.describe('Statistical Queries — Demographics Report', () => {
       baselineResp = await readAIDiagnosisRow(page, 'diagnosis-respiratory-complicated');
       baselineAITotal = await readAIDiagnosisRow(page, 'totals');
 
+      // Record Prenatal (ANC) report baseline.
+      await selectReportType(page, 'prenatal');
+      await setDateRange(page, REPORT_START_DATE, reportLimitDate);
+      baselineAllPregnancies = await readPrenatalVisitsTable(page, 'all-pregnancies');
+      baselineActivePregnancies = await readPrenatalVisitsTable(page, 'active-pregnancies');
+
       // Record Prenatal Diagnoses report baseline by CSS class.
       await selectReportType(page, 'prenatal-diagnoses');
       await setDateRange(page, REPORT_START_DATE, reportLimitDate);
@@ -173,6 +184,10 @@ test.describe('Statistical Queries — Demographics Report', () => {
       console.log('Baseline impacted total:', baselineImpacted.total);
       console.log('Baseline encounters rows:', baselineEncounters.rows.length);
       console.log('Baseline AI: malaria=%d, resp=%d, total=%d', baselineMalaria, baselineResp, baselineAITotal);
+      const baseAllTotal = findPrenatalRow(baselineAllPregnancies, 'Total');
+      const baseActiveTotal = findPrenatalRow(baselineActivePregnancies, 'Total');
+      console.log('Baseline ANC All Total: HC=%d, All=%d', baseAllTotal?.hc ?? 0, baseAllTotal?.all ?? 0);
+      console.log('Baseline ANC Active Total: HC=%d, All=%d', baseActiveTotal?.hc ?? 0, baseActiveTotal?.all ?? 0);
       console.log('Baseline Prenatal Dx: hiv=%d, total=%d', baselinePrenatalHIV, baselinePrenatalTotal);
     });
 
@@ -573,6 +588,45 @@ test.describe('Statistical Queries — Demographics Report', () => {
       expect(newTotal, 'AI Total should increase by 2').toBe(
         baselineAITotal + 2,
       );
+
+      // CSV download button.
+      await expect(page.locator('button.download-csv')).toBeVisible();
+    });
+
+    // ── Prenatal (ANC) report verification ──
+
+    await test.step('Verify Prenatal (ANC) report deltas', async () => {
+      await selectReportType(page, 'prenatal');
+      await setDateRange(page, REPORT_START_DATE, reportLimitDate);
+
+      const newAll = await readPrenatalVisitsTable(page, 'all-pregnancies');
+      const newActive = await readPrenatalVisitsTable(page, 'active-pregnancies');
+
+      // PrenatalMom: 1 nurse encounter, active pregnancy.
+      // All Pregnancies: 1 Visit HC +1, Total HC +1.
+      const newAll1Visit = findPrenatalRow(newAll, '1 visit')!;
+      const baseAll1Visit = findPrenatalRow(baselineAllPregnancies, '1 visit')!;
+      const newAllTotal = findPrenatalRow(newAll, 'Total')!;
+      const baseAllTotal2 = findPrenatalRow(baselineAllPregnancies, 'Total')!;
+
+      console.log('\n=== PRENATAL (ANC) ===');
+      console.log(`All 1 Visit HC: baseline=${baseAll1Visit.hc}, new=${newAll1Visit.hc}, delta=+${newAll1Visit.hc - baseAll1Visit.hc}`);
+      console.log(`All Total HC:   baseline=${baseAllTotal2.hc}, new=${newAllTotal.hc}, delta=+${newAllTotal.hc - baseAllTotal2.hc}`);
+
+      expect(newAll1Visit.hc, 'All Pregnancies 1 Visit HC +1').toBe(baseAll1Visit.hc + 1);
+      expect(newAllTotal.hc, 'All Pregnancies Total HC +1').toBe(baseAllTotal2.hc + 1);
+
+      // Active Pregnancies: 1 Visit HC +1, Total HC +1.
+      const newActive1Visit = findPrenatalRow(newActive, '1 visit')!;
+      const baseActive1Visit = findPrenatalRow(baselineActivePregnancies, '1 visit')!;
+      const newActiveTotal = findPrenatalRow(newActive, 'Total')!;
+      const baseActiveTotal2 = findPrenatalRow(baselineActivePregnancies, 'Total')!;
+
+      console.log(`Active 1 Visit HC: baseline=${baseActive1Visit.hc}, new=${newActive1Visit.hc}, delta=+${newActive1Visit.hc - baseActive1Visit.hc}`);
+      console.log(`Active Total HC:   baseline=${baseActiveTotal2.hc}, new=${newActiveTotal.hc}, delta=+${newActiveTotal.hc - baseActiveTotal2.hc}`);
+
+      expect(newActive1Visit.hc, 'Active Pregnancies 1 Visit HC +1').toBe(baseActive1Visit.hc + 1);
+      expect(newActiveTotal.hc, 'Active Pregnancies Total HC +1').toBe(baseActiveTotal2.hc + 1);
 
       // CSV download button.
       await expect(page.locator('button.download-csv')).toBeVisible();

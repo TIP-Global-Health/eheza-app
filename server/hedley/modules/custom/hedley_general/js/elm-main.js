@@ -19624,37 +19624,40 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 	});
 var $author$project$Pages$Reports$View$viewPrenatalReport = F4(
 	function (language, limitDate, scopeLabel, records) {
-		var viewTable = function (tableData) {
-			return _List_fromArray(
-				[
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('section heading')
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text(tableData.heading)
-						])),
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('table anc')
-						]),
-					A2(
-						$elm$core$List$cons,
+		var viewTableWithClass = F2(
+			function (cssClass, tableData) {
+				return _List_fromArray(
+					[
 						A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('row captions')
-								]),
-							$author$project$Pages$Components$View$viewStandardCells(tableData.captions)),
-						A2($elm$core$List$map, $author$project$Pages$Components$View$viewStandardRow, tableData.rows)))
-				]);
-		};
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('section heading')
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text(tableData.heading)
+							])),
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('table anc ' + cssClass)
+							]),
+						A2(
+							$elm$core$List$cons,
+							A2(
+								$elm$html$Html$div,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('row captions')
+									]),
+								$author$project$Pages$Components$View$viewStandardCells(tableData.captions)),
+							A2($elm$core$List$map, $author$project$Pages$Components$View$viewStandardRow, tableData.rows)))
+					]);
+			});
+		var tableClasses = _List_fromArray(
+			['all-pregnancies', 'active-pregnancies', 'completed-pregnancies', 'first-visit', 'outcomes', 'delivery-locations']);
 		var data = A3($author$project$Pages$Reports$View$generatePrenatalReportData, language, limitDate, records);
 		var csvFileName = 'anc-report-' + ($elm$core$String$toLower(
 			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
@@ -19666,7 +19669,8 @@ var $author$project$Pages$Reports$View$viewPrenatalReport = F4(
 					$elm$html$Html$Attributes$class('report prenatal')
 				]),
 			_Utils_ap(
-				A2($elm$core$List$concatMap, viewTable, data),
+				$elm$core$List$concat(
+					A3($elm$core$List$map2, viewTableWithClass, tableClasses, data)),
 				_List_fromArray(
 					[
 						A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
