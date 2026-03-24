@@ -21,6 +21,7 @@ import {
   getDdevUrl,
   goToDashboard,
   readAcuteIllnessTable,
+  readAIDiagnosisRow,
   findSimpleRow,
   PatientsTableData,
   EncountersTableData,
@@ -64,8 +65,11 @@ const pwaBaseUrl = `http://localhost:${getClientPort()}`;
 // Nyange Health Center node ID (from migration CSV).
 const NYANGE_HC_ID = 4;
 
-// Start date for report filtering (Elm's launchDate).
-const REPORT_START_DATE = new Date(2023, 0, 1);
+// Start date for report filtering.
+// Must NOT equal Elm's launchDate (2023-01-01) — the Elm app skips date
+// filtering when both start and limit dates match the defaults, which
+// would include pre-existing demo data from 2020.
+const REPORT_START_DATE = new Date(2023, 0, 2);
 
 test.describe('Statistical Queries — Demographics Report', () => {
   test.describe.configure({ timeout: 600000 });
@@ -112,19 +116,22 @@ test.describe('Statistical Queries — Demographics Report', () => {
 
     await test.step('Generate base reports data from existing demo persons', async () => {
       // Generate per-person data, process any resulting AQ items, then
-      // recalculate to ensure baseline captures ALL persons.
+      // generate again to capture any cascading updates.
       generateBaseReportsData();
       processAdvancedQueue();
       generateBaseReportsData();
-      recalculateLargeDatasets();
       // Clear AQ so only items from our new encounters get processed later.
       clearAdvancedQueue();
+      // Recalculate + cache clear right before reading baselines.
+      recalculateLargeDatasets();
     });
 
     let baselineRegistered: PatientsTableData;
     let baselineImpacted: PatientsTableData;
     let baselineEncounters: EncountersTableData;
-    let baselineAI: SimpleTableData;
+    let baselineMalaria: number;
+    let baselineResp: number;
+    let baselineAITotal: number;
 
     await test.step('Login to Drupal admin and record baseline values', async () => {
       await drupalLogin(page);
@@ -136,15 +143,17 @@ test.describe('Statistical Queries — Demographics Report', () => {
       baselineImpacted = await readImpactedPatientsTable(page);
       baselineEncounters = await readEncountersTable(page);
 
-      // Record AI report baseline.
+      // Record AI report baseline by CSS class.
       await selectReportType(page, 'acute-illness');
       await setDateRange(page, REPORT_START_DATE, reportLimitDate);
-      baselineAI = await readAcuteIllnessTable(page);
+      baselineMalaria = await readAIDiagnosisRow(page, 'diagnosis-malaria-uncomplicated');
+      baselineResp = await readAIDiagnosisRow(page, 'diagnosis-respiratory-complicated');
+      baselineAITotal = await readAIDiagnosisRow(page, 'totals');
 
       console.log('Baseline registered total:', baselineRegistered.total);
       console.log('Baseline impacted total:', baselineImpacted.total);
       console.log('Baseline encounters rows:', baselineEncounters.rows.length);
-      console.log('Baseline AI rows:', baselineAI.rows.length);
+      console.log('Baseline AI: malaria=%d, resp=%d, total=%d', baselineMalaria, baselineResp, baselineAITotal);
     });
 
     // ── Phase 1a: Nurse encounters ──
@@ -502,37 +511,32 @@ test.describe('Statistical Queries — Demographics Report', () => {
       await selectReportType(page, 'acute-illness');
       await setDateRange(page, REPORT_START_DATE, reportLimitDate);
 
-      const newAI = await readAcuteIllnessTable(page);
+      // Read specific rows by CSS class — deterministic, no label ambiguity.
+      const newMalaria = await readAIDiagnosisRow(page, 'diagnosis-malaria-uncomplicated');
+      const newResp = await readAIDiagnosisRow(page, 'diagnosis-respiratory-complicated');
+      const newTotal = await readAIDiagnosisRow(page, 'totals');
 
-      console.log('\n=== ACUTE ILLNESS ===');
-      console.log('Row                                          | Baseline | New | Delta');
-      for (const row of newAI.rows) {
-        const base = findSimpleRow(baselineAI, row.label);
-        const bt = base?.total ?? 0;
-        console.log(
-          `${row.label.padEnd(44)} | ${String(bt).padEnd(8)} | ${String(row.total).padEnd(3)} | +${row.total - bt}`,
-        );
-      }
+      console.log('\n=== ACUTE ILLNESS (by CSS class) ===');
+      console.log(`Malaria Uncomplicated:  baseline=${baselineMalaria}, new=${newMalaria}, delta=+${newMalaria - baselineMalaria}`);
+      console.log(`Respiratory Complicated: baseline=${baselineResp}, new=${newResp}, delta=+${newResp - baselineResp}`);
+      console.log(`Total:                  baseline=${baselineAITotal}, new=${newTotal}, delta=+${newTotal - baselineAITotal}`);
 
-      // "Uncomplicated Malaria": +1 (PrenatalMom nurse AI with RDT+)
-      const malariaRow = findSimpleRow(newAI, 'Uncomplicated Malaria')!;
-      const baseMalaria = findSimpleRow(baselineAI, 'Uncomplicated Malaria')!;
-      expect(malariaRow.total, 'Uncomplicated Malaria should increase by 1').toBe(
-        baseMalaria.total + 1,
+      // "Uncomplicated Malaria": +1 (AINurse with RDT+)
+      expect(newMalaria, 'Malaria Uncomplicated should increase by 1').toBe(
+        baselineMalaria + 1,
       );
 
-      // "Acute Respiratory Infection with Complications": +1 (AICHW CHW AI with respiratory symptoms)
-      const respRow = findSimpleRow(newAI, 'Acute Respiratory Infection with Complications')!;
-      const baseResp = findSimpleRow(baselineAI, 'Acute Respiratory Infection with Complications')!;
-      expect(respRow.total, 'Acute Respiratory Infection should increase by 1').toBe(
-        baseResp.total + 1,
+      // "Acute Respiratory Infection with Complications": +1 (AICHW respiratory symptoms)
+      expect(newResp, 'Respiratory Complicated should increase by 1').toBe(
+        baselineResp + 1,
       );
 
-      // Total: verify it's at least 2 (our 2 diagnoses).
-      // Don't assert exact delta — pre-existing demo data can shift between
-      // baseline and post-update recalculations.
-      const totalRow = findSimpleRow(newAI, 'Total')!;
-      expect(totalRow.total, 'AI Total should be at least 2').toBeGreaterThanOrEqual(2);
+      // "Total": +2.
+      // If this fails due to pre-existing demo data shifting, the root
+      // cause is in the reports data generation pipeline, not in targeting.
+      expect(newTotal, 'AI Total should increase by 2').toBe(
+        baselineAITotal + 2,
+      );
 
       // CSV download button.
       await expect(page.locator('button.download-csv')).toBeVisible();

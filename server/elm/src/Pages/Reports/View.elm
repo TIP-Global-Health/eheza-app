@@ -5,7 +5,8 @@ import AssocList as Dict exposing (Dict)
 import Backend.Model exposing (ModelBackend)
 import Backend.Reports.Model
     exposing
-        ( AcuteIllnessEncounterType(..)
+        ( AcuteIllnessDiagnosis(..)
+        , AcuteIllnessEncounterType(..)
         , BackendGeneratedNutritionReportTableDate
         , DeliveryLocation(..)
         , Gender(..)
@@ -1967,6 +1968,20 @@ viewAcuteIllnessReport language limitDate startDate scopeLabel records =
             viewStandardCells data.captions
                 |> div [ class "row captions" ]
 
+        -- Each diagnosis gets a CSS class for E2E test targeting.
+        diagnosisClasses =
+            List.map acuteIllnessDiagnosisCssClass allAcuteIllnessDiagnoses
+                ++ [ "totals", "no-diagnosis" ]
+
+        dataRows =
+            List.map2
+                (\cssClass row ->
+                    viewStandardCells row
+                        |> div [ class <| "row " ++ cssClass ]
+                )
+                diagnosisClasses
+                data.rows
+
         csvFileName =
             "acute-illness-report-"
                 ++ (String.toLower <| String.replace " " "-" scopeLabel)
@@ -1982,9 +1997,58 @@ viewAcuteIllnessReport language limitDate startDate scopeLabel records =
     div [ class "report acute-illness" ] <|
         [ div [ class "table" ] <|
             captionsRow
-                :: List.map viewStandardRow data.rows
+                :: dataRows
         , viewDownloadCSVButton language csvFileName csvContent
         ]
+
+
+acuteIllnessDiagnosisCssClass : AcuteIllnessDiagnosis -> String
+acuteIllnessDiagnosisCssClass diagnosis =
+    case diagnosis of
+        DiagnosisCovid19Suspect ->
+            "diagnosis-covid19-suspect"
+
+        DiagnosisSevereCovid19 ->
+            "diagnosis-covid19-severe"
+
+        DiagnosisPneuminialCovid19 ->
+            "diagnosis-covid19-pneumonia"
+
+        DiagnosisLowRiskCovid19 ->
+            "diagnosis-covid19-simple"
+
+        DiagnosisMalariaComplicated ->
+            "diagnosis-malaria-complicated"
+
+        DiagnosisMalariaUncomplicated ->
+            "diagnosis-malaria-uncomplicated"
+
+        DiagnosisMalariaUncomplicatedAndPregnant ->
+            "diagnosis-malaria-uncomplicated-pregnant"
+
+        DiagnosisGastrointestinalInfectionComplicated ->
+            "diagnosis-gi-complicated"
+
+        DiagnosisGastrointestinalInfectionUncomplicated ->
+            "diagnosis-gi-uncomplicated"
+
+        DiagnosisSimpleColdAndCough ->
+            "diagnosis-cold-cough"
+
+        DiagnosisRespiratoryInfectionComplicated ->
+            "diagnosis-respiratory-complicated"
+
+        DiagnosisRespiratoryInfectionUncomplicated ->
+            "diagnosis-respiratory-uncomplicated"
+
+        DiagnosisFeverOfUnknownOrigin ->
+            "diagnosis-fever-unknown"
+
+        DiagnosisUndeterminedMoreEvaluationNeeded ->
+            "diagnosis-undetermined"
+
+        DiagnosisTuberculosisSuspect ->
+            "diagnosis-tb-suspect"
 
 
 generateAcuteIllnessReportData :

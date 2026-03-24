@@ -16516,14 +16516,48 @@ var $author$project$Pages$Reports$Utils$reportTypeToString = function (reportTyp
 			return 'prenatal-diagnoses';
 	}
 };
+var $author$project$Pages$Reports$View$acuteIllnessDiagnosisCssClass = function (diagnosis) {
+	switch (diagnosis.$) {
+		case 'DiagnosisCovid19Suspect':
+			return 'diagnosis-covid19-suspect';
+		case 'DiagnosisSevereCovid19':
+			return 'diagnosis-covid19-severe';
+		case 'DiagnosisPneuminialCovid19':
+			return 'diagnosis-covid19-pneumonia';
+		case 'DiagnosisLowRiskCovid19':
+			return 'diagnosis-covid19-simple';
+		case 'DiagnosisMalariaComplicated':
+			return 'diagnosis-malaria-complicated';
+		case 'DiagnosisMalariaUncomplicated':
+			return 'diagnosis-malaria-uncomplicated';
+		case 'DiagnosisMalariaUncomplicatedAndPregnant':
+			return 'diagnosis-malaria-uncomplicated-pregnant';
+		case 'DiagnosisGastrointestinalInfectionComplicated':
+			return 'diagnosis-gi-complicated';
+		case 'DiagnosisGastrointestinalInfectionUncomplicated':
+			return 'diagnosis-gi-uncomplicated';
+		case 'DiagnosisSimpleColdAndCough':
+			return 'diagnosis-cold-cough';
+		case 'DiagnosisRespiratoryInfectionComplicated':
+			return 'diagnosis-respiratory-complicated';
+		case 'DiagnosisRespiratoryInfectionUncomplicated':
+			return 'diagnosis-respiratory-uncomplicated';
+		case 'DiagnosisFeverOfUnknownOrigin':
+			return 'diagnosis-fever-unknown';
+		case 'DiagnosisUndeterminedMoreEvaluationNeeded':
+			return 'diagnosis-undetermined';
+		default:
+			return 'diagnosis-tb-suspect';
+	}
+};
+var $author$project$Backend$Reports$Utils$allAcuteIllnessDiagnoses = _List_fromArray(
+	[$author$project$Backend$Reports$Model$DiagnosisCovid19Suspect, $author$project$Backend$Reports$Model$DiagnosisSevereCovid19, $author$project$Backend$Reports$Model$DiagnosisPneuminialCovid19, $author$project$Backend$Reports$Model$DiagnosisLowRiskCovid19, $author$project$Backend$Reports$Model$DiagnosisMalariaComplicated, $author$project$Backend$Reports$Model$DiagnosisMalariaUncomplicated, $author$project$Backend$Reports$Model$DiagnosisMalariaUncomplicatedAndPregnant, $author$project$Backend$Reports$Model$DiagnosisGastrointestinalInfectionComplicated, $author$project$Backend$Reports$Model$DiagnosisGastrointestinalInfectionUncomplicated, $author$project$Backend$Reports$Model$DiagnosisSimpleColdAndCough, $author$project$Backend$Reports$Model$DiagnosisRespiratoryInfectionComplicated, $author$project$Backend$Reports$Model$DiagnosisRespiratoryInfectionUncomplicated, $author$project$Backend$Reports$Model$DiagnosisFeverOfUnknownOrigin, $author$project$Backend$Reports$Model$DiagnosisUndeterminedMoreEvaluationNeeded, $author$project$Backend$Reports$Model$DiagnosisTuberculosisSuspect]);
 var $author$project$Translate$AcuteIllnessDiagnosis = function (a) {
 	return {$: 'AcuteIllnessDiagnosis', a: a};
 };
 var $author$project$Translate$Diagnosis = {$: 'Diagnosis'};
 var $author$project$Translate$NoDiagnosis = {$: 'NoDiagnosis'};
 var $author$project$Translate$Total = {$: 'Total'};
-var $author$project$Backend$Reports$Utils$allAcuteIllnessDiagnoses = _List_fromArray(
-	[$author$project$Backend$Reports$Model$DiagnosisCovid19Suspect, $author$project$Backend$Reports$Model$DiagnosisSevereCovid19, $author$project$Backend$Reports$Model$DiagnosisPneuminialCovid19, $author$project$Backend$Reports$Model$DiagnosisLowRiskCovid19, $author$project$Backend$Reports$Model$DiagnosisMalariaComplicated, $author$project$Backend$Reports$Model$DiagnosisMalariaUncomplicated, $author$project$Backend$Reports$Model$DiagnosisMalariaUncomplicatedAndPregnant, $author$project$Backend$Reports$Model$DiagnosisGastrointestinalInfectionComplicated, $author$project$Backend$Reports$Model$DiagnosisGastrointestinalInfectionUncomplicated, $author$project$Backend$Reports$Model$DiagnosisSimpleColdAndCough, $author$project$Backend$Reports$Model$DiagnosisRespiratoryInfectionComplicated, $author$project$Backend$Reports$Model$DiagnosisRespiratoryInfectionUncomplicated, $author$project$Backend$Reports$Model$DiagnosisFeverOfUnknownOrigin, $author$project$Backend$Reports$Model$DiagnosisUndeterminedMoreEvaluationNeeded, $author$project$Backend$Reports$Model$DiagnosisTuberculosisSuspect]);
 var $author$project$Gizra$NominalDate$sortByDateDesc = F3(
 	function (getDateFunc, entity1, entity2) {
 		return A2(
@@ -16681,17 +16715,27 @@ var $author$project$Pages$Reports$View$viewDownloadCSVButton = F3(
 				]));
 	});
 var $author$project$Pages$Components$View$viewStandardCells = A2($author$project$Pages$Components$View$viewCustomCells, 'label', 'value');
-var $author$project$Pages$Components$View$viewStandardRow = A2(
-	$elm$core$Basics$composeR,
-	$author$project$Pages$Components$View$viewStandardCells,
-	$elm$html$Html$div(
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('row')
-			])));
 var $author$project$Pages$Reports$View$viewAcuteIllnessReport = F5(
 	function (language, limitDate, startDate, scopeLabel, records) {
+		var diagnosisClasses = _Utils_ap(
+			A2($elm$core$List$map, $author$project$Pages$Reports$View$acuteIllnessDiagnosisCssClass, $author$project$Backend$Reports$Utils$allAcuteIllnessDiagnoses),
+			_List_fromArray(
+				['totals', 'no-diagnosis']));
 		var data = A3($author$project$Pages$Reports$View$generateAcuteIllnessReportData, language, startDate, records);
+		var dataRows = A3(
+			$elm$core$List$map2,
+			F2(
+				function (cssClass, row) {
+					return A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('row ' + cssClass)
+							]),
+						$author$project$Pages$Components$View$viewStandardCells(row));
+				}),
+			diagnosisClasses,
+			data.rows);
 		var csvFileName = 'acute-illness-report-' + ($elm$core$String$toLower(
 			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', startDate) + ('-to-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')))));
 		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
@@ -16716,10 +16760,7 @@ var $author$project$Pages$Reports$View$viewAcuteIllnessReport = F5(
 						[
 							$elm$html$Html$Attributes$class('table')
 						]),
-					A2(
-						$elm$core$List$cons,
-						captionsRow,
-						A2($elm$core$List$map, $author$project$Pages$Components$View$viewStandardRow, data.rows))),
+					A2($elm$core$List$cons, captionsRow, dataRows)),
 					A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
 				]));
 	});
@@ -17372,6 +17413,14 @@ var $author$project$Pages$Reports$View$viewDemographicsReportEncounters = functi
 						]))))
 		]);
 };
+var $author$project$Pages$Components$View$viewStandardRow = A2(
+	$elm$core$Basics$composeR,
+	$author$project$Pages$Components$View$viewStandardCells,
+	$elm$html$Html$div(
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('row')
+			])));
 var $author$project$Pages$Reports$View$viewDemographicsReportPatients = function (data) {
 	var viewTable = function (tableData) {
 		return A2(

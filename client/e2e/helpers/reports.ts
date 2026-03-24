@@ -185,8 +185,9 @@ export async function navigateToHCReportsPage(
   healthCenterId: number,
 ) {
   const baseUrl = getDdevUrl();
+  // Cache-busting parameter to prevent browser from serving stale page.
   await page.goto(
-    `${baseUrl}/admin/reports/statistical-queries/health-center/${healthCenterId}`,
+    `${baseUrl}/admin/reports/statistical-queries/health-center/${healthCenterId}?t=${Date.now()}`,
   );
   await page.locator('.page-content.reports').waitFor({ timeout: 30000 });
 }
@@ -457,12 +458,31 @@ export interface SimpleTableData {
  * Read the Acute Illness report table.
  * Container: div.report.acute-illness div.table
  * Each row has 2 cells: [diagnosis label, total count].
- * Includes diagnosis rows + "Total" + "No Diagnosis" rows.
+ * Rows have CSS class identifiers (e.g., diagnosis-malaria-uncomplicated, totals).
  */
 export async function readAcuteIllnessTable(
   page: Page,
 ): Promise<SimpleTableData> {
   return readSimpleTable(page, 'div.report.acute-illness div.table');
+}
+
+/**
+ * Read a specific AI diagnosis row by its CSS class.
+ * Returns the total count, or 0 if the row is not found.
+ */
+export async function readAIDiagnosisRow(
+  page: Page,
+  cssClass: string,
+): Promise<number> {
+  const row = page.locator(`div.report.acute-illness div.table div.row.${cssClass}`);
+  if (!(await row.isVisible({ timeout: 2000 }).catch(() => false))) {
+    return 0;
+  }
+  const cells = row.locator('div.item');
+  const count = await cells.count();
+  if (count < 2) return 0;
+  const text = (await cells.nth(1).textContent()) ?? '0';
+  return parseInt(text.trim(), 10) || 0;
 }
 
 /**
