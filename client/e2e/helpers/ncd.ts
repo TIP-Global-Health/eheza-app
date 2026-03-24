@@ -905,33 +905,38 @@ export function backdateNCDEncounter(personName: string) {
     }
     \\$person_nid = key(\\$result['node']);
 
+    // Find individual_participant for this person.
     \\$q = new EntityFieldQuery();
     \\$r = \\$q->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'ncd_encounter')
-      ->fieldCondition('field_individual_participant', 'target_id', NULL, 'IS NOT NULL')
-      ->propertyOrderBy('nid', 'DESC')
-      ->range(0, 50)
+      ->propertyCondition('type', 'individual_participant')
+      ->fieldCondition('field_person', 'target_id', \\$person_nid)
       ->execute();
     if (empty(\\$r['node'])) {
-      echo 'No encounters found';
+      echo 'No participant found';
       return;
     }
 
+    // Find ncd_encounter for this person's participants.
+    \\$participant_nids = array_keys(\\$r['node']);
+    \\$eq = new EntityFieldQuery();
+    \\$er = \\$eq->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'ncd_encounter')
+      ->fieldCondition('field_individual_participant', 'target_id', \\$participant_nids, 'IN')
+      ->propertyOrderBy('nid', 'DESC')
+      ->execute();
+    if (empty(\\$er['node'])) {
+      echo 'No encounter found';
+      return;
+    }
+
+    // Backdate the most recent encounter.
     \\$yesterday = date('Y-m-d H:i:s', strtotime('-1 day'));
-    foreach (array_keys(\\$r['node']) as \\$enc_nid) {
-      \\$enc = node_load(\\$enc_nid);
-      \\$participant_nid = \\$enc->field_individual_participant[LANGUAGE_NONE][0]['target_id'];
-      \\$participant = node_load(\\$participant_nid);
-      if (empty(\\$participant->field_person[LANGUAGE_NONE][0]['target_id'])) continue;
-      if (\\$participant->field_person[LANGUAGE_NONE][0]['target_id'] != \\$person_nid) continue;
-
-      \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value'] = \\$yesterday;
-      \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value2'] = \\$yesterday;
-      node_save(\\$enc);
-      echo 'Backdated encounter ' . \\$enc_nid;
-      return;
-    }
-    echo 'No matching encounter found';
+    \\$enc_nid = key(\\$er['node']);
+    \\$enc = node_load(\\$enc_nid);
+    \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value'] = \\$yesterday;
+    \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value2'] = \\$yesterday;
+    node_save(\\$enc);
+    echo 'Backdated encounter ' . \\$enc_nid;
   `;
 
   const { drushCmd, cwd } = drushEnv();
