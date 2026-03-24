@@ -18876,11 +18876,11 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F5(
 					])));
 	});
 var $author$project$Backend$Reports$Model$NoPrenatalDiagnosis = {$: 'NoPrenatalDiagnosis'};
+var $author$project$Backend$Reports$Utils$allPrenatalDiagnoses = _List_fromArray(
+	[$author$project$Backend$Reports$Model$DiagnosisChronicHypertension, $author$project$Backend$Reports$Model$DiagnosisGestationalHypertension, $author$project$Backend$Reports$Model$DiagnosisModeratePreeclampsia, $author$project$Backend$Reports$Model$DiagnosisSeverePreeclampsia, $author$project$Backend$Reports$Model$DiagnosisEclampsia, $author$project$Backend$Reports$Model$DiagnosisHIV, $author$project$Backend$Reports$Model$DiagnosisHIVDetectableViralLoad, $author$project$Backend$Reports$Model$DiagnosisDiscordantPartnership, $author$project$Backend$Reports$Model$DiagnosisSyphilis, $author$project$Backend$Reports$Model$DiagnosisSyphilisWithComplications, $author$project$Backend$Reports$Model$DiagnosisNeurosyphilis, $author$project$Backend$Reports$Model$DiagnosisHepatitisB, $author$project$Backend$Reports$Model$DiagnosisMalaria, $author$project$Backend$Reports$Model$DiagnosisMalariaWithAnemia, $author$project$Backend$Reports$Model$DiagnosisMalariaWithSevereAnemia, $author$project$Backend$Reports$Model$DiagnosisModerateAnemia, $author$project$Backend$Reports$Model$DiagnosisSevereAnemia, $author$project$Backend$Reports$Model$DiagnosisSevereAnemiaWithComplications, $author$project$Backend$Reports$Model$DiagnosisMiscarriage, $author$project$Backend$Reports$Model$DiagnosisMolarPregnancy, $author$project$Backend$Reports$Model$DiagnosisPlacentaPrevia, $author$project$Backend$Reports$Model$DiagnosisPlacentalAbruption, $author$project$Backend$Reports$Model$DiagnosisUterineRupture, $author$project$Backend$Reports$Model$DiagnosisObstructedLabor, $author$project$Backend$Reports$Model$DiagnosisPostAbortionSepsis, $author$project$Backend$Reports$Model$DiagnosisEctopicPregnancy, $author$project$Backend$Reports$Model$DiagnosisPROM, $author$project$Backend$Reports$Model$DiagnosisPPROM, $author$project$Backend$Reports$Model$DiagnosisHyperemesisGravidum, $author$project$Backend$Reports$Model$DiagnosisSevereVomiting, $author$project$Backend$Reports$Model$DiagnosisMaternalComplications, $author$project$Backend$Reports$Model$DiagnosisInfection, $author$project$Backend$Reports$Model$DiagnosisImminentDelivery, $author$project$Backend$Reports$Model$DiagnosisLaborAndDelivery, $author$project$Backend$Reports$Model$DiagnosisHeartburn, $author$project$Backend$Reports$Model$DiagnosisDeepVeinThrombosis, $author$project$Backend$Reports$Model$DiagnosisPelvicPainIntense, $author$project$Backend$Reports$Model$DiagnosisUrinaryTractInfection, $author$project$Backend$Reports$Model$DiagnosisPyelonephritis, $author$project$Backend$Reports$Model$DiagnosisCandidiasis, $author$project$Backend$Reports$Model$DiagnosisGonorrhea, $author$project$Backend$Reports$Model$DiagnosisTrichomonasOrBacterialVaginosis, $author$project$Backend$Reports$Model$DiagnosisTuberculosis, $author$project$Backend$Reports$Model$DiagnosisDiabetes, $author$project$Backend$Reports$Model$DiagnosisGestationalDiabetes, $author$project$Backend$Reports$Model$DiagnosisRhesusNegative, $author$project$Backend$Reports$Model$DiagnosisDepressionNotLikely, $author$project$Backend$Reports$Model$DiagnosisDepressionPossible, $author$project$Backend$Reports$Model$DiagnosisDepressionHighlyPossible, $author$project$Backend$Reports$Model$DiagnosisDepressionProbable, $author$project$Backend$Reports$Model$DiagnosisSuicideRisk, $author$project$Backend$Reports$Model$DiagnosisOther, $author$project$Backend$Reports$Model$DiagnosisPostpartumAbdominalPain, $author$project$Backend$Reports$Model$DiagnosisPostpartumUrinaryIncontinence, $author$project$Backend$Reports$Model$DiagnosisPostpartumHeadache, $author$project$Backend$Reports$Model$DiagnosisPostpartumFatigue, $author$project$Backend$Reports$Model$DiagnosisPostpartumFever, $author$project$Backend$Reports$Model$DiagnosisPostpartumPerinealPainOrDischarge, $author$project$Backend$Reports$Model$DiagnosisPostpartumInfection, $author$project$Backend$Reports$Model$DiagnosisPostpartumExcessiveBleeding, $author$project$Backend$Reports$Model$DiagnosisPostpartumEarlyMastitisOrEngorgment, $author$project$Backend$Reports$Model$DiagnosisPostpartumMastitis, $author$project$Backend$Reports$Model$NoPrenatalDiagnosis]);
 var $author$project$Translate$PrenatalDiagnosis = function (a) {
 	return {$: 'PrenatalDiagnosis', a: a};
 };
-var $author$project$Backend$Reports$Utils$allPrenatalDiagnoses = _List_fromArray(
-	[$author$project$Backend$Reports$Model$DiagnosisChronicHypertension, $author$project$Backend$Reports$Model$DiagnosisGestationalHypertension, $author$project$Backend$Reports$Model$DiagnosisModeratePreeclampsia, $author$project$Backend$Reports$Model$DiagnosisSeverePreeclampsia, $author$project$Backend$Reports$Model$DiagnosisEclampsia, $author$project$Backend$Reports$Model$DiagnosisHIV, $author$project$Backend$Reports$Model$DiagnosisHIVDetectableViralLoad, $author$project$Backend$Reports$Model$DiagnosisDiscordantPartnership, $author$project$Backend$Reports$Model$DiagnosisSyphilis, $author$project$Backend$Reports$Model$DiagnosisSyphilisWithComplications, $author$project$Backend$Reports$Model$DiagnosisNeurosyphilis, $author$project$Backend$Reports$Model$DiagnosisHepatitisB, $author$project$Backend$Reports$Model$DiagnosisMalaria, $author$project$Backend$Reports$Model$DiagnosisMalariaWithAnemia, $author$project$Backend$Reports$Model$DiagnosisMalariaWithSevereAnemia, $author$project$Backend$Reports$Model$DiagnosisModerateAnemia, $author$project$Backend$Reports$Model$DiagnosisSevereAnemia, $author$project$Backend$Reports$Model$DiagnosisSevereAnemiaWithComplications, $author$project$Backend$Reports$Model$DiagnosisMiscarriage, $author$project$Backend$Reports$Model$DiagnosisMolarPregnancy, $author$project$Backend$Reports$Model$DiagnosisPlacentaPrevia, $author$project$Backend$Reports$Model$DiagnosisPlacentalAbruption, $author$project$Backend$Reports$Model$DiagnosisUterineRupture, $author$project$Backend$Reports$Model$DiagnosisObstructedLabor, $author$project$Backend$Reports$Model$DiagnosisPostAbortionSepsis, $author$project$Backend$Reports$Model$DiagnosisEctopicPregnancy, $author$project$Backend$Reports$Model$DiagnosisPROM, $author$project$Backend$Reports$Model$DiagnosisPPROM, $author$project$Backend$Reports$Model$DiagnosisHyperemesisGravidum, $author$project$Backend$Reports$Model$DiagnosisSevereVomiting, $author$project$Backend$Reports$Model$DiagnosisMaternalComplications, $author$project$Backend$Reports$Model$DiagnosisInfection, $author$project$Backend$Reports$Model$DiagnosisImminentDelivery, $author$project$Backend$Reports$Model$DiagnosisLaborAndDelivery, $author$project$Backend$Reports$Model$DiagnosisHeartburn, $author$project$Backend$Reports$Model$DiagnosisDeepVeinThrombosis, $author$project$Backend$Reports$Model$DiagnosisPelvicPainIntense, $author$project$Backend$Reports$Model$DiagnosisUrinaryTractInfection, $author$project$Backend$Reports$Model$DiagnosisPyelonephritis, $author$project$Backend$Reports$Model$DiagnosisCandidiasis, $author$project$Backend$Reports$Model$DiagnosisGonorrhea, $author$project$Backend$Reports$Model$DiagnosisTrichomonasOrBacterialVaginosis, $author$project$Backend$Reports$Model$DiagnosisTuberculosis, $author$project$Backend$Reports$Model$DiagnosisDiabetes, $author$project$Backend$Reports$Model$DiagnosisGestationalDiabetes, $author$project$Backend$Reports$Model$DiagnosisRhesusNegative, $author$project$Backend$Reports$Model$DiagnosisDepressionNotLikely, $author$project$Backend$Reports$Model$DiagnosisDepressionPossible, $author$project$Backend$Reports$Model$DiagnosisDepressionHighlyPossible, $author$project$Backend$Reports$Model$DiagnosisDepressionProbable, $author$project$Backend$Reports$Model$DiagnosisSuicideRisk, $author$project$Backend$Reports$Model$DiagnosisOther, $author$project$Backend$Reports$Model$DiagnosisPostpartumAbdominalPain, $author$project$Backend$Reports$Model$DiagnosisPostpartumUrinaryIncontinence, $author$project$Backend$Reports$Model$DiagnosisPostpartumHeadache, $author$project$Backend$Reports$Model$DiagnosisPostpartumFatigue, $author$project$Backend$Reports$Model$DiagnosisPostpartumFever, $author$project$Backend$Reports$Model$DiagnosisPostpartumPerinealPainOrDischarge, $author$project$Backend$Reports$Model$DiagnosisPostpartumInfection, $author$project$Backend$Reports$Model$DiagnosisPostpartumExcessiveBleeding, $author$project$Backend$Reports$Model$DiagnosisPostpartumEarlyMastitisOrEngorgment, $author$project$Backend$Reports$Model$DiagnosisPostpartumMastitis, $author$project$Backend$Reports$Model$NoPrenatalDiagnosis]);
 var $author$project$Pages$Reports$View$generatePrenatalDiagnosesReportData = F3(
 	function (language, limitDate, records) {
 		var generateRow = F2(
@@ -18956,9 +18956,157 @@ var $author$project$Pages$Reports$View$generatePrenatalDiagnosesReportData = F3(
 					[totalsRow]))
 		};
 	});
+var $author$project$Pages$Reports$View$prenatalDiagnosisCssClass = function (diagnosis) {
+	switch (diagnosis.$) {
+		case 'DiagnosisChronicHypertension':
+			return 'diagnosis-chronic-hypertension';
+		case 'DiagnosisGestationalHypertension':
+			return 'diagnosis-gestational-hypertension';
+		case 'DiagnosisModeratePreeclampsia':
+			return 'diagnosis-moderate-preeclampsia';
+		case 'DiagnosisSeverePreeclampsia':
+			return 'diagnosis-severe-preeclampsia';
+		case 'DiagnosisEclampsia':
+			return 'diagnosis-eclampsia';
+		case 'DiagnosisHIV':
+			return 'diagnosis-hiv';
+		case 'DiagnosisHIVDetectableViralLoad':
+			return 'diagnosis-hiv-detectable-viral-load';
+		case 'DiagnosisDiscordantPartnership':
+			return 'diagnosis-discordant-partnership';
+		case 'DiagnosisSyphilis':
+			return 'diagnosis-syphilis';
+		case 'DiagnosisSyphilisWithComplications':
+			return 'diagnosis-syphilis-complications';
+		case 'DiagnosisNeurosyphilis':
+			return 'diagnosis-neurosyphilis';
+		case 'DiagnosisHepatitisB':
+			return 'diagnosis-hepatitis-b';
+		case 'DiagnosisMalaria':
+			return 'diagnosis-malaria';
+		case 'DiagnosisMalariaWithAnemia':
+			return 'diagnosis-malaria-anemia';
+		case 'DiagnosisMalariaWithSevereAnemia':
+			return 'diagnosis-malaria-severe-anemia';
+		case 'DiagnosisModerateAnemia':
+			return 'diagnosis-moderate-anemia';
+		case 'DiagnosisSevereAnemia':
+			return 'diagnosis-severe-anemia';
+		case 'DiagnosisSevereAnemiaWithComplications':
+			return 'diagnosis-severe-anemia-complications';
+		case 'DiagnosisMiscarriage':
+			return 'diagnosis-miscarriage';
+		case 'DiagnosisMolarPregnancy':
+			return 'diagnosis-molar-pregnancy';
+		case 'DiagnosisPlacentaPrevia':
+			return 'diagnosis-placenta-previa';
+		case 'DiagnosisPlacentalAbruption':
+			return 'diagnosis-placental-abruption';
+		case 'DiagnosisUterineRupture':
+			return 'diagnosis-uterine-rupture';
+		case 'DiagnosisObstructedLabor':
+			return 'diagnosis-obstructed-labor';
+		case 'DiagnosisPostAbortionSepsis':
+			return 'diagnosis-post-abortion-sepsis';
+		case 'DiagnosisEctopicPregnancy':
+			return 'diagnosis-ectopic-pregnancy';
+		case 'DiagnosisPROM':
+			return 'diagnosis-prom';
+		case 'DiagnosisPPROM':
+			return 'diagnosis-pprom';
+		case 'DiagnosisHyperemesisGravidum':
+			return 'diagnosis-hyperemesis';
+		case 'DiagnosisSevereVomiting':
+			return 'diagnosis-severe-vomiting';
+		case 'DiagnosisMaternalComplications':
+			return 'diagnosis-maternal-complications';
+		case 'DiagnosisInfection':
+			return 'diagnosis-infection';
+		case 'DiagnosisImminentDelivery':
+			return 'diagnosis-imminent-delivery';
+		case 'DiagnosisLaborAndDelivery':
+			return 'diagnosis-labor-delivery';
+		case 'DiagnosisHeartburn':
+			return 'diagnosis-heartburn';
+		case 'DiagnosisDeepVeinThrombosis':
+			return 'diagnosis-dvt';
+		case 'DiagnosisPelvicPainIntense':
+			return 'diagnosis-pelvic-pain';
+		case 'DiagnosisUrinaryTractInfection':
+			return 'diagnosis-uti';
+		case 'DiagnosisPyelonephritis':
+			return 'diagnosis-pyelonephritis';
+		case 'DiagnosisCandidiasis':
+			return 'diagnosis-candidiasis';
+		case 'DiagnosisGonorrhea':
+			return 'diagnosis-gonorrhea';
+		case 'DiagnosisTrichomonasOrBacterialVaginosis':
+			return 'diagnosis-trichomonas-bv';
+		case 'DiagnosisTuberculosis':
+			return 'diagnosis-tuberculosis';
+		case 'DiagnosisDiabetes':
+			return 'diagnosis-diabetes';
+		case 'DiagnosisGestationalDiabetes':
+			return 'diagnosis-gestational-diabetes';
+		case 'DiagnosisRhesusNegative':
+			return 'diagnosis-rhesus-negative';
+		case 'DiagnosisDepressionNotLikely':
+			return 'diagnosis-depression-not-likely';
+		case 'DiagnosisDepressionPossible':
+			return 'diagnosis-depression-possible';
+		case 'DiagnosisDepressionHighlyPossible':
+			return 'diagnosis-depression-highly-possible';
+		case 'DiagnosisDepressionProbable':
+			return 'diagnosis-depression-probable';
+		case 'DiagnosisSuicideRisk':
+			return 'diagnosis-suicide-risk';
+		case 'DiagnosisOther':
+			return 'diagnosis-other';
+		case 'DiagnosisPostpartumAbdominalPain':
+			return 'diagnosis-pp-abdominal-pain';
+		case 'DiagnosisPostpartumUrinaryIncontinence':
+			return 'diagnosis-pp-urinary-incontinence';
+		case 'DiagnosisPostpartumHeadache':
+			return 'diagnosis-pp-headache';
+		case 'DiagnosisPostpartumFatigue':
+			return 'diagnosis-pp-fatigue';
+		case 'DiagnosisPostpartumFever':
+			return 'diagnosis-pp-fever';
+		case 'DiagnosisPostpartumPerinealPainOrDischarge':
+			return 'diagnosis-pp-perineal';
+		case 'DiagnosisPostpartumInfection':
+			return 'diagnosis-pp-infection';
+		case 'DiagnosisPostpartumExcessiveBleeding':
+			return 'diagnosis-pp-excessive-bleeding';
+		case 'DiagnosisPostpartumEarlyMastitisOrEngorgment':
+			return 'diagnosis-pp-early-mastitis';
+		case 'DiagnosisPostpartumMastitis':
+			return 'diagnosis-pp-mastitis';
+		default:
+			return 'no-diagnosis';
+	}
+};
 var $author$project$Pages$Reports$View$viewPrenatalDiagnosesReport = F4(
 	function (language, limitDate, scopeLabel, records) {
+		var prenatalDiagnosisClasses = _Utils_ap(
+			A2($elm$core$List$map, $author$project$Pages$Reports$View$prenatalDiagnosisCssClass, $author$project$Backend$Reports$Utils$allPrenatalDiagnoses),
+			_List_fromArray(
+				['totals']));
 		var data = A3($author$project$Pages$Reports$View$generatePrenatalDiagnosesReportData, language, limitDate, records);
+		var dataRows = A3(
+			$elm$core$List$map2,
+			F2(
+				function (cssClass, row) {
+					return A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('row ' + cssClass)
+							]),
+						$author$project$Pages$Components$View$viewStandardCells(row));
+				}),
+			prenatalDiagnosisClasses,
+			data.rows);
 		var csvFileName = 'anc-diagnoses-report-' + ($elm$core$String$toLower(
 			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
 		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
@@ -18983,10 +19131,7 @@ var $author$project$Pages$Reports$View$viewPrenatalDiagnosesReport = F4(
 						[
 							$elm$html$Html$Attributes$class('table')
 						]),
-					A2(
-						$elm$core$List$cons,
-						captionsRow,
-						A2($elm$core$List$map, $author$project$Pages$Components$View$viewStandardRow, data.rows))),
+					A2($elm$core$List$cons, captionsRow, dataRows)),
 					A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
 				]));
 	});

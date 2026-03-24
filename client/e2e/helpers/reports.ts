@@ -529,6 +529,24 @@ export function findSimpleRow(
 }
 
 /**
+ * Read a specific prenatal diagnosis row by its CSS class.
+ */
+export async function readPrenatalDiagnosisRow(
+  page: Page,
+  cssClass: string,
+): Promise<number> {
+  const row = page.locator(`div.report.prenatal-diagnoses div.table div.row.${cssClass}`);
+  if (!(await row.isVisible({ timeout: 2000 }).catch(() => false))) {
+    return 0;
+  }
+  const cells = row.locator('div.item');
+  const count = await cells.count();
+  if (count < 2) return 0;
+  const text = (await cells.nth(1).textContent()) ?? '0';
+  return parseInt(text.trim(), 10) || 0;
+}
+
+/**
  * Navigate back to the PWA dashboard from any page.
  * Used after starting encounters without completing activities
  * (encounters can only be ended after all mandatory activities

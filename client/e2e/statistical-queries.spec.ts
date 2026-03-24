@@ -22,6 +22,7 @@ import {
   goToDashboard,
   readAcuteIllnessTable,
   readAIDiagnosisRow,
+  readPrenatalDiagnosisRow,
   findSimpleRow,
   PatientsTableData,
   EncountersTableData,
@@ -34,7 +35,22 @@ import {
   syncAndWait,
 } from './helpers/nutrition';
 import { createChildAndStartWellChildEncounter } from './helpers/well-child';
-import { createAdultFemaleAndStartEncounter as createPrenatalAdult } from './helpers/prenatal';
+import {
+  createAdultFemaleAndStartEncounter as createPrenatalAdult,
+  completePregnancyDating,
+  completeHistory,
+  completeExamination,
+  completeFamilyPlanning,
+  completeDangerSigns as completePrenatalDangerSigns,
+  completeSymptomReview,
+  completeMalariaPrevention,
+  completeMentalHealth,
+  completeImmunisation,
+  completeMedication,
+  completeLaboratoryNurse,
+  completeNextSteps as completePrenatalNextSteps,
+  endPrenatalEncounter,
+} from './helpers/prenatal';
 import {
   createAdultAndStartEncounter as createAIAdult,
   completeDangerSigns as completeAIDangerSigns,
@@ -65,11 +81,8 @@ const pwaBaseUrl = `http://localhost:${getClientPort()}`;
 // Nyange Health Center node ID (from migration CSV).
 const NYANGE_HC_ID = 4;
 
-// Start date for report filtering.
-// Must NOT equal Elm's launchDate (2023-01-01) — the Elm app skips date
-// filtering when both start and limit dates match the defaults, which
-// would include pre-existing demo data from 2020.
-const REPORT_START_DATE = new Date(2023, 0, 2);
+// Start date for report filtering — early enough to include all data.
+const REPORT_START_DATE = new Date(2018, 0, 1);
 
 test.describe('Statistical Queries — Demographics Report', () => {
   test.describe.configure({ timeout: 600000 });
@@ -126,6 +139,10 @@ test.describe('Statistical Queries — Demographics Report', () => {
     let baselineMalaria: number;
     let baselineResp: number;
     let baselineAITotal: number;
+    let baselinePrenatalHIV: number;
+    let baselineGestHypertension: number;
+    let baselineDepression: number;
+    let baselinePrenatalTotal: number;
 
     await test.step('Login to Drupal admin and record baseline values', async () => {
       await drupalLogin(page);
@@ -144,10 +161,19 @@ test.describe('Statistical Queries — Demographics Report', () => {
       baselineResp = await readAIDiagnosisRow(page, 'diagnosis-respiratory-complicated');
       baselineAITotal = await readAIDiagnosisRow(page, 'totals');
 
+      // Record Prenatal Diagnoses report baseline by CSS class.
+      await selectReportType(page, 'prenatal-diagnoses');
+      await setDateRange(page, REPORT_START_DATE, reportLimitDate);
+      baselinePrenatalHIV = await readPrenatalDiagnosisRow(page, 'diagnosis-hiv');
+      baselineGestHypertension = await readPrenatalDiagnosisRow(page, 'diagnosis-gestational-hypertension');
+      baselineDepression = await readPrenatalDiagnosisRow(page, 'diagnosis-depression-not-likely');
+      baselinePrenatalTotal = await readPrenatalDiagnosisRow(page, 'totals');
+
       console.log('Baseline registered total:', baselineRegistered.total);
       console.log('Baseline impacted total:', baselineImpacted.total);
       console.log('Baseline encounters rows:', baselineEncounters.rows.length);
       console.log('Baseline AI: malaria=%d, resp=%d, total=%d', baselineMalaria, baselineResp, baselineAITotal);
+      console.log('Baseline Prenatal Dx: hiv=%d, total=%d', baselinePrenatalHIV, baselinePrenatalTotal);
     });
 
     // ── Phase 1a: Nurse encounters ──
@@ -199,12 +225,28 @@ test.describe('Statistical Queries — Demographics Report', () => {
       await goToDashboard(page);
       console.log('Created SPV encounter for NutrChild');
 
-      // --- PrenatalMom (female, 25 years): Prenatal encounter ---
+      // --- PrenatalMom (female, 25 years): Prenatal encounter with HIV diagnosis ---
+      // Complete all mandatory activities so the encounter can be ended
+      // and the HIV diagnosis is persisted to the encounter node.
       await page.goto(pwaBaseUrl);
       await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
       const prenatalMom = await createPrenatalAdult(page, { ageYears: 25 });
-      await goToDashboard(page);
-      console.log('Created PrenatalMom:', prenatalMom.fullName);
+      const lmpDate = new Date();
+      lmpDate.setDate(lmpDate.getDate() - 30 * 7); // ~30 weeks ago
+      await completePregnancyDating(page, lmpDate);
+      await completeHistory(page);
+      await completeExamination(page, { vitals: { sys: '160', dia: '100' } });
+      await completeFamilyPlanning(page);
+      await completePrenatalDangerSigns(page);
+      await completeSymptomReview(page);
+      await completeMalariaPrevention(page);
+      await completeMentalHealth(page);
+      await completeImmunisation(page);
+      await completeMedication(page, { preferIronFolate: true });
+      await completeLaboratoryNurse(page, { hivPositive: true });
+      await completePrenatalNextSteps(page);
+      await endPrenatalEncounter(page);
+      console.log('Created PrenatalMom (HIV diagnosis):', prenatalMom.fullName);
 
       // --- AINurse (female, 30 years): Acute Illness with malaria diagnosis ---
       // Create a separate patient (not PrenatalMom) so we get a proper initial
@@ -531,6 +573,37 @@ test.describe('Statistical Queries — Demographics Report', () => {
       expect(newTotal, 'AI Total should increase by 2').toBe(
         baselineAITotal + 2,
       );
+
+      // CSV download button.
+      await expect(page.locator('button.download-csv')).toBeVisible();
+    });
+
+    // ── Prenatal Diagnoses report verification ──
+
+    await test.step('Verify Prenatal Diagnoses report deltas', async () => {
+      await selectReportType(page, 'prenatal-diagnoses');
+      await setDateRange(page, REPORT_START_DATE, reportLimitDate);
+
+      // Completing all nurse activities with sys=160/dia=100 + HIV+ generates
+      // 4 diagnoses: HIV, Gestational Hypertension, Moderate Preeclampsia,
+      // Depression Not Likely.
+      const newHIV = await readPrenatalDiagnosisRow(page, 'diagnosis-hiv');
+      const newGestHypertension = await readPrenatalDiagnosisRow(page, 'diagnosis-gestational-hypertension');
+      const newDepression = await readPrenatalDiagnosisRow(page, 'diagnosis-depression-not-likely');
+      const newPrenatalTotal = await readPrenatalDiagnosisRow(page, 'totals');
+
+      console.log('\n=== PRENATAL DIAGNOSES (by CSS class) ===');
+      console.log(`HIV:                    baseline=${baselinePrenatalHIV}, new=${newHIV}, delta=+${newHIV - baselinePrenatalHIV}`);
+      console.log(`Gestational Hypert.:    baseline=${baselineGestHypertension}, new=${newGestHypertension}, delta=+${newGestHypertension - baselineGestHypertension}`);
+      console.log(`Depression Not Likely:  baseline=${baselineDepression}, new=${newDepression}, delta=+${newDepression - baselineDepression}`);
+      console.log(`Total:                  baseline=${baselinePrenatalTotal}, new=${newPrenatalTotal}, delta=+${newPrenatalTotal - baselinePrenatalTotal}`);
+
+      expect(newHIV, 'Prenatal HIV +1').toBe(baselinePrenatalHIV + 1);
+      expect(newGestHypertension, 'Gestational Hypertension +1').toBe(baselineGestHypertension + 1);
+      expect(newDepression, 'Depression Not Likely +1').toBe(baselineDepression + 1);
+      // Total: HIV + Gestational Hypertension + Depression Not Likely
+      // + NoPrenatalDiagnosis (from CHW encounter with no activities) = +4.
+      expect(newPrenatalTotal, 'Prenatal Total +4').toBe(baselinePrenatalTotal + 4);
 
       // CSV download button.
       await expect(page.locator('button.download-csv')).toBeVisible();
