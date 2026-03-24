@@ -115,14 +115,8 @@ test.describe('Statistical Queries — Demographics Report', () => {
     // ── Phase 0: Generate base reports data + record baselines ──
 
     await test.step('Generate base reports data from existing demo persons', async () => {
-      // Generate per-person data, process any resulting AQ items, then
-      // generate again to capture any cascading updates.
       generateBaseReportsData();
-      processAdvancedQueue();
-      generateBaseReportsData();
-      // Clear AQ so only items from our new encounters get processed later.
       clearAdvancedQueue();
-      // Recalculate + cache clear right before reading baselines.
       recalculateLargeDatasets();
     });
 
