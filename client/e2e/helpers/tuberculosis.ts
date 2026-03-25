@@ -593,37 +593,6 @@ export async function startTBEncounter(page: Page) {
 }
 
 // ---------------------------------------------------------------------------
-// Sync
-// ---------------------------------------------------------------------------
-
-/**
- * Sync data and wait for success.
- * Click sync icon -> device status -> wait for success -> go back.
- */
-export async function syncAndWait(page: Page) {
-  // Navigate to device status.
-  await click(page.locator('span.sync-icon'), page);
-
-  // Wait for the Device Status page to be rendered.
-  await page.locator('.device-status').waitFor({ timeout: 10000 });
-
-  // Find the health center section for "Nyange Health Center".
-  const hcSection = page.locator('.health-center', {
-    has: page.locator('h2', { hasText: 'Nyange Health Center' }),
-  });
-  await hcSection.waitFor({ timeout: 10000 });
-
-  // Wait for sync success.
-  await hcSection
-    .locator('.sync-status', { hasText: 'Status: Success' })
-    .waitFor({ timeout: 120000 });
-
-  // Go back.
-  await page.goBack();
-  await page.waitForTimeout(1000);
-}
-
-// ---------------------------------------------------------------------------
 // Backend verification via drush
 // ---------------------------------------------------------------------------
 
@@ -744,33 +713,38 @@ export function backdateTBEncounter(personName: string) {
     }
     \\$person_nid = key(\\$result['node']);
 
+    // Find individual_participant for this person.
     \\$q = new EntityFieldQuery();
     \\$r = \\$q->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'tuberculosis_encounter')
-      ->fieldCondition('field_individual_participant', 'target_id', NULL, 'IS NOT NULL')
-      ->propertyOrderBy('nid', 'DESC')
-      ->range(0, 50)
+      ->propertyCondition('type', 'individual_participant')
+      ->fieldCondition('field_person', 'target_id', \\$person_nid)
       ->execute();
     if (empty(\\$r['node'])) {
-      echo 'No encounters found';
+      echo 'No participant found';
       return;
     }
 
+    // Find tuberculosis_encounter for this person's participants.
+    \\$participant_nids = array_keys(\\$r['node']);
+    \\$eq = new EntityFieldQuery();
+    \\$er = \\$eq->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'tuberculosis_encounter')
+      ->fieldCondition('field_individual_participant', 'target_id', \\$participant_nids, 'IN')
+      ->propertyOrderBy('nid', 'DESC')
+      ->execute();
+    if (empty(\\$er['node'])) {
+      echo 'No encounter found';
+      return;
+    }
+
+    // Backdate the most recent encounter.
     \\$yesterday = date('Y-m-d H:i:s', strtotime('-1 day'));
-    foreach (array_keys(\\$r['node']) as \\$enc_nid) {
-      \\$enc = node_load(\\$enc_nid);
-      \\$participant_nid = \\$enc->field_individual_participant[LANGUAGE_NONE][0]['target_id'];
-      \\$participant = node_load(\\$participant_nid);
-      if (empty(\\$participant->field_person[LANGUAGE_NONE][0]['target_id'])) continue;
-      if (\\$participant->field_person[LANGUAGE_NONE][0]['target_id'] != \\$person_nid) continue;
-
-      \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value'] = \\$yesterday;
-      \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value2'] = \\$yesterday;
-      node_save(\\$enc);
-      echo 'Backdated encounter ' . \\$enc_nid;
-      return;
-    }
-    echo 'No matching encounter found';
+    \\$enc_nid = key(\\$er['node']);
+    \\$enc = node_load(\\$enc_nid);
+    \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value'] = \\$yesterday;
+    \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value2'] = \\$yesterday;
+    node_save(\\$enc);
+    echo 'Backdated encounter ' . \\$enc_nid;
   `;
 
   const { drushCmd, cwd } = drushEnv();

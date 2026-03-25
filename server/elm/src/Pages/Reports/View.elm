@@ -5,7 +5,8 @@ import AssocList as Dict exposing (Dict)
 import Backend.Model exposing (ModelBackend)
 import Backend.Reports.Model
     exposing
-        ( AcuteIllnessEncounterType(..)
+        ( AcuteIllnessDiagnosis(..)
+        , AcuteIllnessEncounterType(..)
         , BackendGeneratedNutritionReportTableDate
         , DeliveryLocation(..)
         , Gender(..)
@@ -1378,9 +1379,19 @@ viewPrenatalReport language limitDate scopeLabel records =
         data =
             generatePrenatalReportData language limitDate records
 
-        viewTable tableData =
+        -- CSS class per table for E2E test targeting.
+        tableClasses =
+            [ "all-pregnancies"
+            , "active-pregnancies"
+            , "completed-pregnancies"
+            , "first-visit"
+            , "outcomes"
+            , "delivery-locations"
+            ]
+
+        viewTableWithClass cssClass tableData =
             [ div [ class "section heading" ] [ text tableData.heading ]
-            , div [ class "table anc" ] <|
+            , div [ class <| "table anc " ++ cssClass ] <|
                 (div [ class "row captions" ] <|
                     viewStandardCells tableData.captions
                 )
@@ -1398,7 +1409,7 @@ viewPrenatalReport language limitDate scopeLabel records =
             reportTablesDataToCSV data
     in
     div [ class "report prenatal" ] <|
-        List.concatMap viewTable data
+        List.concat (List.map2 viewTableWithClass tableClasses data)
             ++ [ viewDownloadCSVButton language csvFileName csvContent ]
 
 
@@ -1967,6 +1978,20 @@ viewAcuteIllnessReport language limitDate startDate scopeLabel records =
             viewStandardCells data.captions
                 |> div [ class "row captions" ]
 
+        -- Each diagnosis gets a CSS class for E2E test targeting.
+        diagnosisClasses =
+            List.map acuteIllnessDiagnosisCssClass allAcuteIllnessDiagnoses
+                ++ [ "totals", "no-diagnosis" ]
+
+        dataRows =
+            List.map2
+                (\cssClass row ->
+                    viewStandardCells row
+                        |> div [ class <| "row " ++ cssClass ]
+                )
+                diagnosisClasses
+                data.rows
+
         csvFileName =
             "acute-illness-report-"
                 ++ (String.toLower <| String.replace " " "-" scopeLabel)
@@ -1982,9 +2007,251 @@ viewAcuteIllnessReport language limitDate startDate scopeLabel records =
     div [ class "report acute-illness" ] <|
         [ div [ class "table" ] <|
             captionsRow
-                :: List.map viewStandardRow data.rows
+                :: dataRows
         , viewDownloadCSVButton language csvFileName csvContent
         ]
+
+
+acuteIllnessDiagnosisCssClass : AcuteIllnessDiagnosis -> String
+acuteIllnessDiagnosisCssClass diagnosis =
+    case diagnosis of
+        DiagnosisCovid19Suspect ->
+            "diagnosis-covid19-suspect"
+
+        DiagnosisSevereCovid19 ->
+            "diagnosis-covid19-severe"
+
+        DiagnosisPneuminialCovid19 ->
+            "diagnosis-covid19-pneumonia"
+
+        DiagnosisLowRiskCovid19 ->
+            "diagnosis-covid19-simple"
+
+        DiagnosisMalariaComplicated ->
+            "diagnosis-malaria-complicated"
+
+        DiagnosisMalariaUncomplicated ->
+            "diagnosis-malaria-uncomplicated"
+
+        DiagnosisMalariaUncomplicatedAndPregnant ->
+            "diagnosis-malaria-uncomplicated-pregnant"
+
+        DiagnosisGastrointestinalInfectionComplicated ->
+            "diagnosis-gi-complicated"
+
+        DiagnosisGastrointestinalInfectionUncomplicated ->
+            "diagnosis-gi-uncomplicated"
+
+        DiagnosisSimpleColdAndCough ->
+            "diagnosis-cold-cough"
+
+        DiagnosisRespiratoryInfectionComplicated ->
+            "diagnosis-respiratory-complicated"
+
+        DiagnosisRespiratoryInfectionUncomplicated ->
+            "diagnosis-respiratory-uncomplicated"
+
+        DiagnosisFeverOfUnknownOrigin ->
+            "diagnosis-fever-unknown"
+
+        DiagnosisUndeterminedMoreEvaluationNeeded ->
+            "diagnosis-undetermined"
+
+        DiagnosisTuberculosisSuspect ->
+            "diagnosis-tb-suspect"
+
+
+prenatalDiagnosisCssClass : PrenatalDiagnosis -> String
+prenatalDiagnosisCssClass diagnosis =
+    case diagnosis of
+        DiagnosisChronicHypertension ->
+            "diagnosis-chronic-hypertension"
+
+        DiagnosisGestationalHypertension ->
+            "diagnosis-gestational-hypertension"
+
+        DiagnosisModeratePreeclampsia ->
+            "diagnosis-moderate-preeclampsia"
+
+        DiagnosisSeverePreeclampsia ->
+            "diagnosis-severe-preeclampsia"
+
+        DiagnosisEclampsia ->
+            "diagnosis-eclampsia"
+
+        DiagnosisHIV ->
+            "diagnosis-hiv"
+
+        DiagnosisHIVDetectableViralLoad ->
+            "diagnosis-hiv-detectable-viral-load"
+
+        DiagnosisDiscordantPartnership ->
+            "diagnosis-discordant-partnership"
+
+        DiagnosisSyphilis ->
+            "diagnosis-syphilis"
+
+        DiagnosisSyphilisWithComplications ->
+            "diagnosis-syphilis-complications"
+
+        DiagnosisNeurosyphilis ->
+            "diagnosis-neurosyphilis"
+
+        DiagnosisHepatitisB ->
+            "diagnosis-hepatitis-b"
+
+        DiagnosisMalaria ->
+            "diagnosis-malaria"
+
+        DiagnosisMalariaWithAnemia ->
+            "diagnosis-malaria-anemia"
+
+        DiagnosisMalariaWithSevereAnemia ->
+            "diagnosis-malaria-severe-anemia"
+
+        DiagnosisModerateAnemia ->
+            "diagnosis-moderate-anemia"
+
+        DiagnosisSevereAnemia ->
+            "diagnosis-severe-anemia"
+
+        DiagnosisSevereAnemiaWithComplications ->
+            "diagnosis-severe-anemia-complications"
+
+        DiagnosisMiscarriage ->
+            "diagnosis-miscarriage"
+
+        DiagnosisMolarPregnancy ->
+            "diagnosis-molar-pregnancy"
+
+        DiagnosisPlacentaPrevia ->
+            "diagnosis-placenta-previa"
+
+        DiagnosisPlacentalAbruption ->
+            "diagnosis-placental-abruption"
+
+        DiagnosisUterineRupture ->
+            "diagnosis-uterine-rupture"
+
+        DiagnosisObstructedLabor ->
+            "diagnosis-obstructed-labor"
+
+        DiagnosisPostAbortionSepsis ->
+            "diagnosis-post-abortion-sepsis"
+
+        DiagnosisEctopicPregnancy ->
+            "diagnosis-ectopic-pregnancy"
+
+        DiagnosisPROM ->
+            "diagnosis-prom"
+
+        DiagnosisPPROM ->
+            "diagnosis-pprom"
+
+        DiagnosisHyperemesisGravidum ->
+            "diagnosis-hyperemesis"
+
+        DiagnosisSevereVomiting ->
+            "diagnosis-severe-vomiting"
+
+        DiagnosisMaternalComplications ->
+            "diagnosis-maternal-complications"
+
+        DiagnosisInfection ->
+            "diagnosis-infection"
+
+        DiagnosisImminentDelivery ->
+            "diagnosis-imminent-delivery"
+
+        DiagnosisLaborAndDelivery ->
+            "diagnosis-labor-delivery"
+
+        DiagnosisHeartburn ->
+            "diagnosis-heartburn"
+
+        DiagnosisDeepVeinThrombosis ->
+            "diagnosis-dvt"
+
+        DiagnosisPelvicPainIntense ->
+            "diagnosis-pelvic-pain"
+
+        DiagnosisUrinaryTractInfection ->
+            "diagnosis-uti"
+
+        DiagnosisPyelonephritis ->
+            "diagnosis-pyelonephritis"
+
+        DiagnosisCandidiasis ->
+            "diagnosis-candidiasis"
+
+        DiagnosisGonorrhea ->
+            "diagnosis-gonorrhea"
+
+        DiagnosisTrichomonasOrBacterialVaginosis ->
+            "diagnosis-trichomonas-bv"
+
+        DiagnosisTuberculosis ->
+            "diagnosis-tuberculosis"
+
+        DiagnosisDiabetes ->
+            "diagnosis-diabetes"
+
+        DiagnosisGestationalDiabetes ->
+            "diagnosis-gestational-diabetes"
+
+        DiagnosisRhesusNegative ->
+            "diagnosis-rhesus-negative"
+
+        DiagnosisDepressionNotLikely ->
+            "diagnosis-depression-not-likely"
+
+        DiagnosisDepressionPossible ->
+            "diagnosis-depression-possible"
+
+        DiagnosisDepressionHighlyPossible ->
+            "diagnosis-depression-highly-possible"
+
+        DiagnosisDepressionProbable ->
+            "diagnosis-depression-probable"
+
+        DiagnosisSuicideRisk ->
+            "diagnosis-suicide-risk"
+
+        DiagnosisOther ->
+            "diagnosis-other"
+
+        DiagnosisPostpartumAbdominalPain ->
+            "diagnosis-pp-abdominal-pain"
+
+        DiagnosisPostpartumUrinaryIncontinence ->
+            "diagnosis-pp-urinary-incontinence"
+
+        DiagnosisPostpartumHeadache ->
+            "diagnosis-pp-headache"
+
+        DiagnosisPostpartumFatigue ->
+            "diagnosis-pp-fatigue"
+
+        DiagnosisPostpartumFever ->
+            "diagnosis-pp-fever"
+
+        DiagnosisPostpartumPerinealPainOrDischarge ->
+            "diagnosis-pp-perineal"
+
+        DiagnosisPostpartumInfection ->
+            "diagnosis-pp-infection"
+
+        DiagnosisPostpartumExcessiveBleeding ->
+            "diagnosis-pp-excessive-bleeding"
+
+        DiagnosisPostpartumEarlyMastitisOrEngorgment ->
+            "diagnosis-pp-early-mastitis"
+
+        DiagnosisPostpartumMastitis ->
+            "diagnosis-pp-mastitis"
+
+        NoPrenatalDiagnosis ->
+            "no-diagnosis"
 
 
 generateAcuteIllnessReportData :
@@ -2082,11 +2349,25 @@ viewPrenatalDiagnosesReport language limitDate scopeLabel records =
 
         csvContent =
             reportTableDataToCSV data
+
+        -- Each diagnosis gets a CSS class for E2E test targeting.
+        prenatalDiagnosisClasses =
+            List.map prenatalDiagnosisCssClass allPrenatalDiagnoses
+                ++ [ "totals" ]
+
+        dataRows =
+            List.map2
+                (\cssClass row ->
+                    viewStandardCells row
+                        |> div [ class <| "row " ++ cssClass ]
+                )
+                prenatalDiagnosisClasses
+                data.rows
     in
     div [ class "report prenatal-diagnoses" ] <|
         [ div [ class "table" ] <|
             captionsRow
-                :: List.map viewStandardRow data.rows
+                :: dataRows
         , viewDownloadCSVButton language csvFileName csvContent
         ]
 

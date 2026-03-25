@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
+import { syncAndWait } from './helpers/common';
 import {
   createAdultAndStartEncounter,
   createChildAndStartEncounter,
@@ -11,7 +12,6 @@ import {
   completeLaboratory,
   completeNextSteps,
   endEncounter,
-  syncAndWait,
   queryAcuteIllnessNodes,
   backdateAcuteIllnessEncounter,
   navigateToParticipantPage,

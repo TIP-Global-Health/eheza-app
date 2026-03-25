@@ -6,6 +6,7 @@ import {
 } from './helpers/case-management';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
+import { syncAndWait } from './helpers/common';
 import {
   createAdultAndStartHIVEncounter,
   completeDiagnostics,
@@ -13,7 +14,6 @@ import {
   completeSymptomReview,
   completeNextSteps,
   endHIVEncounter,
-  syncAndWait,
   queryHIVNodes,
   backdateHIVEncounter,
   navigateToParticipantPage,

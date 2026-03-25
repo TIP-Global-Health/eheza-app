@@ -19,56 +19,44 @@ export function drushEnv(): { drushCmd: string; cwd: string } {
 }
 
 /**
- * Delete any existing E2E test device and create a fresh one with
- * a known pairing code. Device pairing codes are single-use, so
- * this must be called before each test that needs to pair.
+ * Create a fresh E2E test device with a known pairing code and a
+ * unique title. Device pairing codes are single-use, so this must
+ * be called before each test that needs to pair.
  *
- * Enables super_user_mode temporarily to bypass content deletion
- * restrictions on paired devices.
+ * Old devices are never deleted — deleting them would cascade-delete
+ * the robot user and all nodes it owns (encounters, measurements,
+ * etc.) via Drupal's node_user_delete hook.
  */
 export function resetDevice(pairingCode = '99999999') {
   if (!/^\d+$/.test(pairingCode)) {
     throw new Error(`Invalid pairing code: must be digits only, got "${pairingCode}"`);
   }
 
+  const title = `E2E Device ${Date.now()}`;
+
   const php = `
-    // Enable super user mode to allow deletion of paired devices.
-    variable_set('hedley_super_user_mode', 1);
-    try {
-      // Delete any existing E2E test device and its robot user.
+      // Clear pairing code on any existing device that holds it,
+      // so the uniqueness check passes for the new device.
+      variable_set('hedley_super_user_mode', 1);
       \\$query = new EntityFieldQuery();
       \\$result = \\$query->entityCondition('entity_type', 'node')
         ->propertyCondition('type', 'device')
-        ->propertyCondition('title', 'E2E Test Device')
+        ->fieldCondition('field_pairing_code', 'value', '${pairingCode}')
         ->execute();
       if (!empty(\\$result['node'])) {
-        foreach (array_keys(\\$result['node']) as \\$nid) {
-          // Load the device to find its robot user.
-          \\$device = node_load(\\$nid);
-          if (\\$device && \\$device->uid) {
-            user_delete(\\$device->uid);
-          }
-          node_delete(\\$nid);
+        foreach (node_load_multiple(array_keys(\\$result['node'])) as \\$old) {
+          \\$old->field_pairing_code[LANGUAGE_NONE][0]['value'] = '';
+          node_save(\\$old);
         }
       }
+      variable_set('hedley_super_user_mode', 0);
 
-      // Also clean up any orphaned robot user from a previous run.
-      \\$robot = user_load_by_name('E2E Test Device Robot');
-      if (\\$robot) {
-        user_delete(\\$robot->uid);
-      }
-
-      // Create a new device with a known pairing code.
-      \\$node = entity_create('node', ['type' => 'device', 'title' => 'E2E Test Device']);
+      \\$node = entity_create('node', ['type' => 'device', 'title' => '${title}']);
       \\$wrapper = entity_metadata_wrapper('node', \\$node);
       \\$wrapper->field_pairing_code->set('${pairingCode}');
       node_save(\\$node);
 
       echo 'E2E device created with pairing code ${pairingCode}';
-    } finally {
-      // Disable super user mode even if an error occurred above.
-      variable_set('hedley_super_user_mode', 0);
-    }
   `;
 
   const { drushCmd, cwd } = drushEnv();

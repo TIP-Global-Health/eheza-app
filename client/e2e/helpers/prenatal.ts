@@ -1649,8 +1649,14 @@ export async function endRecurrentEncounter(page: Page) {
  */
 export function backdatePrenatalEncounter(personName: string, daysAgo: number = 1) {
   const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
+  // Note: execSync is used here following the same pattern as other E2E
+  // helpers for drush command execution. The input is base64-encoded
+  // (no user-provided data in the shell command).
   const php = `
     \\$person_name = base64_decode('${personNameB64}');
+    \\$target_date = date('Y-m-d H:i:s', strtotime('-${daysAgo} days'));
+
+    // 1. Find person by name.
     \\$query = new EntityFieldQuery();
     \\$result = \\$query->entityCondition('entity_type', 'node')
       ->propertyCondition('type', 'person')
@@ -1662,38 +1668,37 @@ export function backdatePrenatalEncounter(personName: string, daysAgo: number = 
     }
     \\$person_nid = key(\\$result['node']);
 
+    // 2. Find individual_participant for this person.
     \\$q = new EntityFieldQuery();
     \\$r = \\$q->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'prenatal_encounter')
-      ->fieldCondition('field_individual_participant', 'target_id', NULL, 'IS NOT NULL')
-      ->propertyOrderBy('nid', 'DESC')
-      ->range(0, 50)
+      ->propertyCondition('type', 'individual_participant')
+      ->fieldCondition('field_person', 'target_id', \\$person_nid)
       ->execute();
     if (empty(\\$r['node'])) {
-      echo 'No encounters found';
+      echo 'No participant found';
       return;
     }
 
-    \\$target_date = date('Y-m-d H:i:s', strtotime('-${daysAgo} days'));
-    \\$today = date('Y-m-d');
-    foreach (array_keys(\\$r['node']) as \\$enc_nid) {
-      \\$enc = node_load(\\$enc_nid);
-      \\$participant_nid = \\$enc->field_individual_participant[LANGUAGE_NONE][0]['target_id'];
-      \\$participant = node_load(\\$participant_nid);
-      if (empty(\\$participant->field_person[LANGUAGE_NONE][0]['target_id'])) continue;
-      if (\\$participant->field_person[LANGUAGE_NONE][0]['target_id'] != \\$person_nid) continue;
-
-      // Only backdate encounters that are dated today (skip already-backdated ones).
-      \\$enc_date = substr(\\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value'], 0, 10);
-      if (\\$enc_date !== \\$today) continue;
-
-      \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value'] = \\$target_date;
-      \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value2'] = \\$target_date;
-      node_save(\\$enc);
-      echo 'Backdated encounter ' . \\$enc_nid;
+    // 3. Find prenatal encounters for this person's participants.
+    \\$participant_nids = array_keys(\\$r['node']);
+    \\$eq = new EntityFieldQuery();
+    \\$er = \\$eq->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'prenatal_encounter')
+      ->fieldCondition('field_individual_participant', 'target_id', \\$participant_nids, 'IN')
+      ->propertyOrderBy('nid', 'DESC')
+      ->execute();
+    if (empty(\\$er['node'])) {
+      echo 'No encounter found';
       return;
     }
-    echo 'No matching encounter found';
+
+    // 4. Backdate the most recent encounter (highest nid = first in DESC order).
+    \\$enc_nid = key(\\$er['node']);
+    \\$enc = node_load(\\$enc_nid);
+    \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value'] = \\$target_date;
+    \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value2'] = \\$target_date;
+    node_save(\\$enc);
+    echo 'Backdated encounter ' . \\$enc_nid;
   `;
 
   const { drushCmd, cwd } = drushEnv();

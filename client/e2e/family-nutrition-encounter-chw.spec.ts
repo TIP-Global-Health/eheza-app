@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
+import { syncAndWait } from './helpers/common';
 import {
   createMotherAndNavigateToPersonPage,
   addChild,
@@ -12,7 +13,6 @@ import {
   completeAhezaChild,
   completeMuac,
   endFamilyNutritionEncounter,
-  syncAndWait,
   queryFamilyNutritionNodes,
 } from './helpers/family-nutrition';
 
