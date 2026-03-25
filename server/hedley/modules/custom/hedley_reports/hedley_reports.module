@@ -740,7 +740,6 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
     $data['group_nutrition'] = $sessions_data;
   }
 
-  // Load family nutrition encounter dates for this person.
   // A person may participate as a mother (via family_participant) or as a
   // child (via family nutrition measurements).
   $family_nutrition_encounter_dates = [];
