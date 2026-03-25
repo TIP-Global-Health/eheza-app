@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { click, setupDevice } from './helpers/auth';
+import { getClientPort } from './helpers/client-port';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { syncAndWait } from './helpers/common';
@@ -65,20 +66,14 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     await syncAndWait(page);
 
     // --- Phase 2: Lab Tech logs in and enters results via Case Management ---
-    // Clear all browser state (SW caches, localStorage, sessionStorage) to
-    // ensure the nurse's cached data doesn't interfere with the lab tech session.
-    await page.evaluate(async () => {
-      localStorage.clear();
-      sessionStorage.clear();
-      const registrations = await navigator.serviceWorker.getRegistrations();
-      for (const reg of registrations) {
-        await reg.unregister();
-      }
-      const cacheNames = await caches.keys();
-      for (const name of cacheNames) {
-        await caches.delete(name);
-      }
+    // Clear all browser state (including IndexedDB) to ensure the nurse's
+    // locally-created nodes don't leak into the lab tech session.
+    const client = await page.context().newCDPSession(page);
+    await client.send('Storage.clearDataForOrigin', {
+      origin: `http://localhost:${getClientPort()}`,
+      storageTypes: 'all',
     });
+    await client.detach();
 
     resetDevice();
     await setupDevice(page, '3333', 'Nyange Health Center');
