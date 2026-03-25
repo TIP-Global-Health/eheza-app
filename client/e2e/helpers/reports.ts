@@ -815,3 +815,183 @@ export function findNutritionMetric(
 ): NutritionMetricRow | undefined {
   return rows.find(r => r.label.includes(labelSubstring));
 }
+
+// ---------------------------------------------------------------------------
+// Completion Report helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Generate per-encounter completion data for a specific encounter type.
+ * Runs the Layer 1 PHP script that populates `field_reports_data` on
+ * encounter nodes with completion strings.
+ *
+ * Note: execSync is used here following the same pattern as other E2E
+ * helpers (generateBaseReportsData, recalculateLargeDatasets) for drush
+ * command execution. The input is hardcoded (no user-provided data),
+ * so shell injection is not a concern.
+ *
+ * @param encounterType - e.g., 'acute-illness', 'prenatal', 'ncd'
+ */
+export function generateCompletionData(encounterType: string) {
+  const { drushCmd, cwd } = drushEnv();
+  console.log(`Generating completion data (completion-generate-${encounterType}-data.php)...`);
+  execSync(
+    `${drushCmd} scr profiles/hedley/modules/custom/hedley_reports/scripts/completion-generate-${encounterType}-data.php`,
+    { cwd, timeout: 300000, encoding: 'utf-8', stdio: 'pipe' },
+  );
+  console.log(`Completion data generated for ${encounterType}.`);
+}
+
+/**
+ * Aggregate per-encounter completion data into scope-level report_data
+ * nodes (global + per health center), then clear Drupal caches.
+ *
+ * Note: execSync with hardcoded commands — same pattern as
+ * recalculateLargeDatasets(). No user input involved.
+ */
+export function completionRecalculateLargeDatasets() {
+  const { drushCmd, cwd } = drushEnv();
+  console.log('Recalculating completion large datasets...');
+  execSync(
+    `${drushCmd} scr profiles/hedley/modules/custom/hedley_reports/scripts/completion-recalculate-large-datasets.php`,
+    { cwd, timeout: 300000, encoding: 'utf-8', stdio: 'pipe' },
+  );
+  execSync(`${drushCmd} cc all`, {
+    cwd, timeout: 30000, encoding: 'utf-8', stdio: 'pipe',
+  });
+  console.log('Completion large datasets recalculated.');
+}
+
+/**
+ * Navigate to the Completion report results page for a Health Center scope.
+ */
+export async function navigateToCompletionReportPage(
+  page: Page,
+  healthCenterId: number,
+) {
+  const baseUrl = getDdevUrl();
+  await page.goto(
+    `${baseUrl}/admin/reports/completion/health-center/${healthCenterId}?t=${Date.now()}`,
+  );
+  await page.locator('.page-content.completion').waitFor({ timeout: 30000 });
+}
+
+/**
+ * Select a report type from the Completion report dropdown.
+ * Values: "acute-illness", "prenatal", "ncd", "hiv", "tuberculosis", etc.
+ */
+export async function selectCompletionReportType(page: Page, reportType: string) {
+  const select = page
+    .locator('.page-content.completion .select-input-wrapper')
+    .first()
+    .locator('select.select-input');
+  await select.selectOption(reportType);
+  await page.waitForTimeout(1000);
+}
+
+/**
+ * Select the "Taken By" filter on the Completion report.
+ * Values: "nurse", "chw", or "" for Any (default).
+ * Only visible for report types that support both roles.
+ */
+export async function selectCompletionTakenBy(page: Page, takenBy: string) {
+  const select = page
+    .locator('.page-content.completion .select-input-wrapper')
+    .nth(1)
+    .locator('select.select-input');
+  await select.selectOption(takenBy);
+  await page.waitForTimeout(1000);
+}
+
+/**
+ * Set the date range on the Completion report page.
+ */
+export async function setCompletionDateRange(
+  page: Page,
+  startDate: Date,
+  limitDate: Date,
+) {
+  const dateInputs = page.locator('.page-content.completion div.form-input.date');
+  await dateInputs.nth(0).click();
+  await selectDateInCalendar(page, startDate);
+
+  await page.waitForTimeout(500);
+
+  await dateInputs.nth(1).click();
+  await selectDateInCalendar(page, limitDate);
+
+  await page.waitForTimeout(2000);
+}
+
+// ---------------------------------------------------------------------------
+// Completion Report table reading
+// ---------------------------------------------------------------------------
+
+export interface CompletionTableRow {
+  activity: string;
+  expected: number;
+  completed: number;
+  percent: string;
+}
+
+export interface CompletionTableData {
+  heading: string;
+  rows: CompletionTableRow[];
+}
+
+/**
+ * Read the Completion report table rendered by viewMetricsResultsTable.
+ *
+ * Structure:
+ *   div.report.{reportClass}
+ *     div.section.heading  → heading text
+ *     div.table.wide
+ *       div.row (captions — cells have class "item heading")
+ *       div.row (data — cells have class "item value")
+ *       ...
+ *
+ * @param reportClass - e.g., 'acute-illness', 'prenatal', 'ncd'
+ */
+export async function readCompletionTable(
+  page: Page,
+  reportClass: string,
+): Promise<CompletionTableData> {
+  const report = page.locator(`div.report.${reportClass}`);
+  await report.waitFor({ timeout: 10000 });
+
+  const heading = (await report.locator('div.section.heading').textContent())?.trim() ?? '';
+
+  const table = report.locator('div.table.wide');
+  const allRows = table.locator('div.row');
+  const rowCount = await allRows.count();
+
+  const rows: CompletionTableRow[] = [];
+  // Skip first row (captions).
+  for (let i = 1; i < rowCount; i++) {
+    const cells = allRows.nth(i).locator('div.item');
+    const cellCount = await cells.count();
+    if (cellCount >= 4) {
+      const activity = (await cells.nth(0).textContent())?.trim() ?? '';
+      const expected = parseInt((await cells.nth(1).textContent())?.trim() ?? '0', 10) || 0;
+      const completed = parseInt((await cells.nth(2).textContent())?.trim() ?? '0', 10) || 0;
+      const percent = (await cells.nth(3).textContent())?.trim() ?? '0%';
+      rows.push({ activity, expected, completed, percent });
+    }
+  }
+
+  return { heading, rows };
+}
+
+/**
+ * Find a row in the completion table by activity label.
+ * Tries exact match first, then partial match.
+ */
+export function findCompletionRow(
+  data: CompletionTableData,
+  activityLabel: string,
+): CompletionTableRow | undefined {
+  return (
+    data.rows.find(r => r.activity === activityLabel) ??
+    data.rows.find(r => r.activity.includes(activityLabel))
+  );
+}

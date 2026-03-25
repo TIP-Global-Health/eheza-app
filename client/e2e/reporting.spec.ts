@@ -36,6 +36,15 @@ import {
   PatientsTableData,
   EncountersTableData,
   SimpleTableData,
+  generateCompletionData,
+  completionRecalculateLargeDatasets,
+  navigateToCompletionReportPage,
+  selectCompletionReportType,
+  selectCompletionTakenBy,
+  setCompletionDateRange,
+  readCompletionTable,
+  findCompletionRow,
+  CompletionTableData,
 } from './helpers/reports';
 
 // Encounter creation helpers.
@@ -67,11 +76,17 @@ import {
 } from './helpers/prenatal';
 import {
   createAdultAndStartEncounter as createAIAdult,
+  createChildAndStartEncounter as createAIChild,
   completeDangerSigns as completeAIDangerSigns,
   completeSymptoms as completeAISymptoms,
   completePhysicalExam as completeAIPhysicalExam,
   completeLaboratory as completeAILaboratory,
   completePriorTreatment as completeAIPriorTreatment,
+  completeNextSteps as completeAINextSteps,
+  completeOngoingTreatment as completeAIOngoingTreatment,
+  backdateAcuteIllnessEncounter,
+  navigateToParticipantPage as navigateToAIParticipant,
+  startSubsequentEncounter as startSubsequentAI,
 } from './helpers/acute-illness';
 import { createAdultAndStartNCDEncounter } from './helpers/ncd';
 import { createAdultAndStartHIVEncounter } from './helpers/hiv';
@@ -98,7 +113,7 @@ const NYANGE_HC_ID = 4;
 // Start date for report filtering — early enough to include all data.
 const REPORT_START_DATE = new Date(2018, 0, 1);
 
-test.describe('Statistical Queries — Demographics Report', () => {
+test.describe('Admin Reports', () => {
   test.describe.configure({ timeout: 600000 });
 
   test.beforeEach(async ({ page }) => {
@@ -109,11 +124,13 @@ test.describe('Statistical Queries — Demographics Report', () => {
 
   // Scenario: Full pipeline — record baselines from existing demo data, create
   // encounters for every encounter type (nurse + CHW), then verify that the
-  // Demographics report tables show the correct deltas.
+  // Statistical Queries and Completion reports show the correct deltas.
   //
   // Patients created:
   //   Nurse: NutrChild (M 10mo) — Nutrition (with measurements) + SPV (2 encounters, impacted)
-  //          PrenatalMom (F 25y) — Prenatal + AI (2 encounters, impacted)
+  //          PrenatalMom (F 25y) — Prenatal
+  //          AINurse (F 30y) — AI initial + subsequent (2 encounters, impacted)
+  //          AIChild (M 24mo) — AI initial (with MUAC + Nutrition)
   //          NCDAdult (M 40y) — NCD
   //          FBF group session (no new patient)
   //   CHW:   PrenatalCHW (F 28y) — Prenatal
@@ -123,20 +140,21 @@ test.describe('Statistical Queries — Demographics Report', () => {
   //          CSChild (M 6mo) — Child Scoreboard
   //
   // Expected Registered Patients deltas:
-  //   1M-2Y: male +2 (NutrChild, CSChild)
-  //   20Y-50Y: male +2 (NCDAdult, TBAdult), female +4 (PrenatalMom, PrenatalCHW, AICHW, HIVAdult)
-  //   Total: +9
+  //   1M-2Y: male +4 (NutrChild, CSChild, HVChild, FBFChild)
+  //   2Y-5Y: male +1 (AIChild 24mo)
+  //   20Y-50Y: male +2 (NCDAdult, TBAdult), female +6 (PrenatalMom, AINurse, FBFMother, PrenatalCHW, AICHW, HIVAdult)
+  //   Total: +13
   //
   // Expected Impacted Patients deltas:
-  //   1M-2Y: male +1 (NutrChild — 2 encounters)
-  //   20Y-50Y: female +1 (PrenatalMom — 2 encounters)
-  //   Total: +2
+  //   1M-2Y: male +2 (NutrChild: Nutrition+SPV, HVChild: Nutrition+HomeVisit)
+  //   20Y-50Y: female +1 (AINurse: AI initial + subsequent)
+  //   Total: +3
   //
   // Expected Encounters deltas (All column, +1 each unless noted):
-  //   ANC Total +2 (HC +1, CHW +1), AI Total +2 (HC +1, CHW +1),
+  //   ANC Total +2 (HC +1, CHW +1), AI Total +4 (nurse initial +1, child +1, subsequent +1, CHW +1),
   //   SPV +1, Home Visit +1, Child Scoreboard +1, NCD +1, HIV +1, TB +1,
-  //   Nutrition Total +2 (Individual +1, FBF +1)
-  test('Demographics report reflects new patients and encounters', async ({ page }) => {
+  //   Nutrition Total +3 (Individual +2, FBF +1)
+  test('Reports reflect new patients, encounters, and completion data', async ({ page }) => {
     const reportLimitDate = new Date();
 
     // ── Phase 0: Generate base reports data + record baselines ──
@@ -160,8 +178,10 @@ test.describe('Statistical Queries — Demographics Report', () => {
     let baselineDepression: number;
     let baselinePrenatalTotal: number;
     let baselineNutrition: Map<number, NutritionMetricRow[]>;
+    let baselineCompletion: CompletionTableData;
     let nutrChildName: string;
     let hvChildName: string;
+    let aiNurseName: string;
 
     await test.step('Login to Drupal admin and record baseline values', async () => {
       await drupalLogin(page);
@@ -213,6 +233,22 @@ test.describe('Statistical Queries — Demographics Report', () => {
       console.log('Baseline ANC All Total: HC=%d, All=%d', baseAllTotal?.hc ?? 0, baseAllTotal?.all ?? 0);
       console.log('Baseline ANC Active Total: HC=%d, All=%d', baseActiveTotal?.hc ?? 0, baseActiveTotal?.all ?? 0);
       console.log('Baseline Prenatal Dx: hiv=%d, total=%d', baselinePrenatalHIV, baselinePrenatalTotal);
+    });
+
+    // Record Completion report baseline for Acute Illness.
+    await test.step('Generate base completion data and record baseline', async () => {
+      generateCompletionData('acute-illness');
+      completionRecalculateLargeDatasets();
+
+      await navigateToCompletionReportPage(page, NYANGE_HC_ID);
+      await selectCompletionReportType(page, 'acute-illness');
+      await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
+      baselineCompletion = await readCompletionTable(page, 'acute-illness');
+
+      console.log('Baseline completion rows:', baselineCompletion.rows.length);
+      const baseVitals = findCompletionRow(baselineCompletion, 'Vitals');
+      console.log('Baseline completion Vitals: expected=%d, completed=%d',
+        baseVitals?.expected ?? 0, baseVitals?.completed ?? 0);
     });
 
     // ── Phase 1a: Nurse encounters ──
@@ -311,17 +347,33 @@ test.describe('Statistical Queries — Demographics Report', () => {
 
       // --- AINurse (female, 30 years): Acute Illness with malaria diagnosis ---
       // Create a separate patient (not PrenatalMom) so we get a proper initial
-      // encounter with all nurse activities including DangerSigns + Laboratory.
+      // encounter with all nurse activities including Laboratory + NextSteps.
       await goToDashboard(page);
       const aiNurse = await createAIAdult(page, { gender: 'female', ageYears: 30 });
+      aiNurseName = aiNurse.fullName;
       // Complete activities → Uncomplicated Malaria diagnosis.
-      // Nurse initial AI: Symptoms → PhysicalExam → PriorTreatment → Laboratory (appears after first 3).
+      // Nurse initial AI: Symptoms → PhysicalExam → PriorTreatment → Laboratory → NextSteps.
       await completeAISymptoms(page);
       await completeAIPhysicalExam(page);
       await completeAIPriorTreatment(page);
       await completeAILaboratory(page);
+      await completeAINextSteps(page);
       await goToDashboard(page);
       console.log('Created AINurse (Uncomplicated Malaria):', aiNurse.fullName);
+
+      // --- AIChild (male, 24 months): Acute Illness with malaria diagnosis ---
+      // Child encounter to exercise MUAC + Nutrition completion activities,
+      // which are only expected for patients aged 6 months to 5 years.
+      await page.goto(pwaBaseUrl);
+      await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
+      const aiChild = await createAIChild(page, { ageMonths: 24 });
+      await completeAISymptoms(page);
+      await completeAIPhysicalExam(page); // Includes MUAC + Nutrition tabs for children.
+      await completeAIPriorTreatment(page);
+      await completeAILaboratory(page);
+      await completeAINextSteps(page);
+      await goToDashboard(page);
+      console.log('Created AIChild (Uncomplicated Malaria):', aiChild.fullName);
 
       // --- NCDAdult (male, 40 years): NCD encounter ---
       await page.goto(pwaBaseUrl);
@@ -362,6 +414,30 @@ test.describe('Statistical Queries — Demographics Report', () => {
 
     await test.step('Sync nurse data to backend', async () => {
       // Navigate to dashboard first (may be on attendance page from FBF session).
+      await page.goto(pwaBaseUrl);
+      await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
+      await syncAndWait(page);
+    });
+
+    // ── Phase 1a-extra: Subsequent AI encounter ──
+    // AINurse initial encounter is now synced. Backdate it to yesterday
+    // so we can start a subsequent encounter today and cover
+    // DangerSigns + OngoingTreatment completion activities.
+
+    await test.step('Backdate and create subsequent nurse AI encounter', async () => {
+      backdateAcuteIllnessEncounter(aiNurseName);
+
+      await page.goto(pwaBaseUrl);
+      await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
+      await navigateToAIParticipant(page, aiNurseName);
+      await startSubsequentAI(page);
+      await completeAIDangerSigns(page);
+      await completeAIOngoingTreatment(page);
+      await goToDashboard(page);
+      console.log('Created subsequent AI encounter for:', aiNurseName);
+    });
+
+    await test.step('Sync subsequent AI encounter', async () => {
       await page.goto(pwaBaseUrl);
       await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
       await syncAndWait(page);
@@ -524,6 +600,10 @@ test.describe('Statistical Queries — Demographics Report', () => {
       // AQ runs once, after all content is generated (including backdating).
       processAdvancedQueue();
       recalculateLargeDatasets();
+
+      // Generate completion data for newly created encounters.
+      generateCompletionData('acute-illness');
+      completionRecalculateLargeDatasets();
     });
 
     // ── Phase 3: Verify Demographics deltas — HC scope ──
@@ -556,19 +636,24 @@ test.describe('Statistical Queries — Demographics Report', () => {
       expect(row1M2Y.male, '1M-2Y male should increase by 4').toBe(base1M2Y.male + 4);
       expect(row1M2Y.female, '1M-2Y female should be unchanged').toBe(base1M2Y.female);
 
+      // Row "2Y - 5Y": male +1 (AIChild 24mo falls into this bucket)
+      const row2Y5Y = findRow(newRegistered, '2Y - 5Y')!;
+      const base2Y5Y = findRow(baselineRegistered, '2Y - 5Y')!;
+      expect(row2Y5Y.male, '2Y-5Y male should increase by 1').toBe(base2Y5Y.male + 1);
+
       // Row "20Y - 50Y": male +2 (NCDAdult, TBAdult), female +6 (PrenatalMom, AINurse, FBFMother, PrenatalCHW, AICHW, HIVAdult)
       const row20Y50Y = findRow(newRegistered, '20Y - 50Y')!;
       const base20Y50Y = findRow(baselineRegistered, '20Y - 50Y')!;
       expect(row20Y50Y.male, '20Y-50Y male should increase by 2').toBe(base20Y50Y.male + 2);
       expect(row20Y50Y.female, '20Y-50Y female should increase by 6').toBe(base20Y50Y.female + 6);
 
-      // Total: +12 (6 nurse patients + 6 CHW patients)
-      expect(newRegistered.total, 'Registered total should increase by 12').toBe(
-        baselineRegistered.total + 12,
+      // Total: +13 (7 nurse patients + 6 CHW patients)
+      expect(newRegistered.total, 'Registered total should increase by 13').toBe(
+        baselineRegistered.total + 13,
       );
 
       // Other rows should be unchanged.
-      for (const label of ['0 - 1M', '2Y - 5Y', '5Y - 10Y', '10Y - 20Y', '50Y +']) {
+      for (const label of ['0 - 1M', '5Y - 10Y', '10Y - 20Y', '50Y +']) {
         const newRow = findRow(newRegistered, label)!;
         const baseRow = findRow(baselineRegistered, label)!;
         expect(newRow.male, `${label} male should be unchanged`).toBe(baseRow.male);
@@ -598,16 +683,16 @@ test.describe('Statistical Queries — Demographics Report', () => {
         baseImp1M2Y.male + 2,
       );
 
-      // Row "20Y - 50Y": unchanged (PrenatalMom now has only 1 encounter)
+      // Row "20Y - 50Y": female +1 (AINurse has 2 AI encounters: initial + subsequent)
       const imp20Y50Y = findRow(newImpacted, '20Y - 50Y')!;
       const baseImp20Y50Y = findRow(baselineImpacted, '20Y - 50Y')!;
-      expect(imp20Y50Y.female, 'Impacted 20Y-50Y female should be unchanged').toBe(
-        baseImp20Y50Y.female,
+      expect(imp20Y50Y.female, 'Impacted 20Y-50Y female should increase by 1').toBe(
+        baseImp20Y50Y.female + 1,
       );
 
-      // Total: +2 (NutrChild + HVChild)
-      expect(newImpacted.total, 'Impacted total should increase by 2').toBe(
-        baselineImpacted.total + 2,
+      // Total: +3 (NutrChild + HVChild + AINurse)
+      expect(newImpacted.total, 'Impacted total should increase by 3').toBe(
+        baselineImpacted.total + 3,
       );
     });
 
@@ -636,7 +721,7 @@ test.describe('Statistical Queries — Demographics Report', () => {
 
       // Labels match Translate.elm: "ANC (total)", "Acute Illness (total)", etc.
       assertDelta('ANC (total)', 2);         // nurse +1, CHW +1
-      assertDelta('Acute Illness (total)', 2); // nurse +1, CHW +1
+      assertDelta('Acute Illness (total)', 4); // nurse initial +1, nurse child +1, nurse subsequent +1, CHW +1
       assertDelta('Standard Pediatric Visit', 1);
       assertDelta('Home Visit', 1);
       assertDelta('Child Scorecard', 1);
@@ -668,9 +753,10 @@ test.describe('Statistical Queries — Demographics Report', () => {
       console.log(`Respiratory Complicated: baseline=${baselineResp}, new=${newResp}, delta=+${newResp - baselineResp}`);
       console.log(`Total:                  baseline=${baselineAITotal}, new=${newTotal}, delta=+${newTotal - baselineAITotal}`);
 
-      // "Uncomplicated Malaria": +1 (AINurse with RDT+)
-      expect(newMalaria, 'Malaria Uncomplicated should increase by 1').toBe(
-        baselineMalaria + 1,
+      // "Uncomplicated Malaria": +2 (AINurse initial + AIChild initial;
+      // subsequent encounter continues the same illness, no new diagnosis).
+      expect(newMalaria, 'Malaria Uncomplicated should increase by 2').toBe(
+        baselineMalaria + 2,
       );
 
       // "Acute Respiratory Infection with Complications": +1 (AICHW respiratory symptoms)
@@ -678,11 +764,11 @@ test.describe('Statistical Queries — Demographics Report', () => {
         baselineResp + 1,
       );
 
-      // "Total": +2.
+      // "Total": +3 (2 malaria + 1 respiratory; subsequent doesn't add a diagnosis).
       // If this fails due to pre-existing demo data shifting, the root
       // cause is in the reports data generation pipeline, not in targeting.
-      expect(newTotal, 'AI Total should increase by 2').toBe(
-        baselineAITotal + 2,
+      expect(newTotal, 'AI Total should increase by 3').toBe(
+        baselineAITotal + 3,
       );
 
       // CSV download button.
@@ -856,6 +942,122 @@ test.describe('Statistical Queries — Demographics Report', () => {
       await expect(page.locator('div.report.demographics')).toBeVisible();
       const provinceRegistered = await readRegisteredPatientsTable(page);
       expect(provinceRegistered.total, 'Province registered total should be > 0').toBeGreaterThan(0);
+    });
+
+    // ── Phase 5: Completion Report — Acute Illness ──
+    //
+    // The test created 2 AI encounters (nurse initial + CHW initial).
+    // The completion pipeline was run in Phase 2 after encounters synced.
+    // Now we verify the Completion report table reflects the new data.
+
+    let completion: CompletionTableData;
+
+    await test.step('Verify Completion Report — AI table renders', async () => {
+      await navigateToCompletionReportPage(page, NYANGE_HC_ID);
+      await selectCompletionReportType(page, 'acute-illness');
+      await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
+
+      completion = await readCompletionTable(page, 'acute-illness');
+
+      console.log('\n=== COMPLETION: ACUTE ILLNESS ===');
+      console.log('Heading:', completion.heading);
+      console.log('Rows:', completion.rows.length);
+      for (const row of completion.rows) {
+        const base = findCompletionRow(baselineCompletion, row.activity);
+        console.log(
+          `${row.activity.padEnd(25)} | E: ${String(base?.expected ?? 0).padEnd(3)}→${String(row.expected).padEnd(3)} | C: ${String(base?.completed ?? 0).padEnd(3)}→${String(row.completed).padEnd(3)} | ${row.percent}`,
+        );
+      }
+
+      expect(completion.heading).toContain('Acute Illness');
+      expect(completion.rows.length, 'Should have 23 activity rows').toBe(23);
+    });
+
+    await test.step('Verify Completion Report — AI activity deltas (Any role)', async () => {
+      // We created 4 AI encounters: nurse initial (adult), nurse initial (child),
+      // nurse subsequent (adult), CHW initial (adult).
+      // 3 initial encounters contribute to initial-only activities.
+      // 1 subsequent encounter contributes to subsequent-only activities.
+
+      // Vitals: expected +4 (always expected for all encounters),
+      // completed +3 (3 initial encounters fill it; subsequent only does DangerSigns + OngoingTreatment).
+      const vitals = findCompletionRow(completion, 'Vitals')!;
+      const baseVitals = findCompletionRow(baselineCompletion, 'Vitals')!;
+      expect(vitals.expected, 'Vitals expected +4').toBe(baseVitals.expected + 4);
+      expect(vitals.completed, 'Vitals completed +3').toBe(baseVitals.completed + 3);
+
+      // SymptomsGeneral: expected +3 (initial encounters only), completed +3.
+      const sympGen = findCompletionRow(completion, 'Symptoms General')!;
+      const baseSympGen = findCompletionRow(baselineCompletion, 'Symptoms General')!;
+      expect(sympGen.expected, 'Symptoms General expected +3').toBe(baseSympGen.expected + 3);
+      expect(sympGen.completed, 'Symptoms General completed +3').toBe(baseSympGen.completed + 3);
+
+      // CoreExam: expected +3 (all nurse encounters, including subsequent),
+      // completed +2 (only 2 initial nurse encounters fill it).
+      const coreExam = findCompletionRow(completion, 'Core Exam')!;
+      const baseCoreExam = findCompletionRow(baselineCompletion, 'Core Exam')!;
+      expect(coreExam.expected, 'Core Exam expected +3').toBe(baseCoreExam.expected + 3);
+      expect(coreExam.completed, 'Core Exam completed +2').toBe(baseCoreExam.completed + 2);
+
+      // MUAC: expected +1 (AIChild is 24mo, in 6mo-5yr range), completed +1.
+      const muac = findCompletionRow(completion, 'MUAC')!;
+      const baseMuac = findCompletionRow(baselineCompletion, 'MUAC')!;
+      expect(muac.expected, 'MUAC expected +1').toBe(baseMuac.expected + 1);
+      expect(muac.completed, 'MUAC completed +1').toBe(baseMuac.completed + 1);
+
+      // Nutrition: expected +1 (AIChild < 5yr), completed +1.
+      const nutrition = findCompletionRow(completion, 'Nutrition')!;
+      const baseNutrition = findCompletionRow(baselineCompletion, 'Nutrition')!;
+      expect(nutrition.expected, 'Nutrition expected +1').toBe(baseNutrition.expected + 1);
+      expect(nutrition.completed, 'Nutrition completed +1').toBe(baseNutrition.completed + 1);
+
+      // MedicationDistribution: expected +2 (NextSteps triggered for 2 nurse initial
+      // malaria encounters), completed +2.
+      const medDist = findCompletionRow(completion, 'Medication Distribution')!;
+      const baseMedDist = findCompletionRow(baselineCompletion, 'Medication Distribution')!;
+      expect(medDist.expected, 'Medication Distribution expected +2').toBe(baseMedDist.expected + 2);
+      expect(medDist.completed, 'Medication Distribution completed +2').toBe(baseMedDist.completed + 2);
+
+      // FollowUp: expected +2, completed +2 (same as MedicationDistribution).
+      const followUp = findCompletionRow(completion, 'Follow Up')!;
+      const baseFollowUp = findCompletionRow(baselineCompletion, 'Follow Up')!;
+      expect(followUp.expected, 'Follow Up expected +2').toBe(baseFollowUp.expected + 2);
+      expect(followUp.completed, 'Follow Up completed +2').toBe(baseFollowUp.completed + 2);
+
+      // DangerSigns: expected +1 (subsequent encounter), completed +1.
+      const dangerSigns = findCompletionRow(completion, 'Danger Signs')!;
+      const baseDangerSigns = findCompletionRow(baselineCompletion, 'Danger Signs')!;
+      expect(dangerSigns.expected, 'Danger Signs expected +1').toBe(baseDangerSigns.expected + 1);
+      expect(dangerSigns.completed, 'Danger Signs completed +1').toBe(baseDangerSigns.completed + 1);
+
+      // OngoingTreatment: expected +1 (subsequent, medication prescribed in initial),
+      // completed +1.
+      const ongoing = findCompletionRow(completion, 'Ongoing Treatment')!;
+      const baseOngoing = findCompletionRow(baselineCompletion, 'Ongoing Treatment')!;
+      expect(ongoing.expected, 'Ongoing Treatment expected +1').toBe(baseOngoing.expected + 1);
+      expect(ongoing.completed, 'Ongoing Treatment completed +1').toBe(baseOngoing.completed + 1);
+    });
+
+    await test.step('Verify Completion Report — Taken By filter (Nurse)', async () => {
+      await selectCompletionTakenBy(page, 'nurse');
+      const nurseData = await readCompletionTable(page, 'acute-illness');
+
+      // CoreExam should show delta (nurse encounter has it).
+      const coreExam = findCompletionRow(nurseData, 'Core Exam')!;
+      expect(coreExam.expected, 'Nurse filter: Core Exam expected > 0').toBeGreaterThan(0);
+      expect(coreExam.completed, 'Nurse filter: Core Exam completed > 0').toBeGreaterThan(0);
+    });
+
+    await test.step('Verify Completion Report — Taken By filter (CHW)', async () => {
+      await selectCompletionTakenBy(page, 'chw');
+      const chwData = await readCompletionTable(page, 'acute-illness');
+
+      // CoreExam should NOT have increased from CHW encounters (nurse-only activity).
+      const coreExam = findCompletionRow(chwData, 'Core Exam')!;
+      const baseCoreExam = findCompletionRow(baselineCompletion, 'Core Exam')!;
+      expect(coreExam.expected, 'CHW filter: Core Exam expected <= baseline').toBeLessThanOrEqual(
+        baseCoreExam.expected,
+      );
     });
   });
 });
