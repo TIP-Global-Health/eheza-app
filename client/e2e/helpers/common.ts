@@ -36,7 +36,7 @@ export async function syncAndWait(
   await page.waitForTimeout(1000);
   await hcSection
     .locator('.sync-status', { hasText: 'Status: Success' })
-    .waitFor({ timeout: 5000 });
+    .waitFor({ timeout });
 
   await page.goBack();
 }
