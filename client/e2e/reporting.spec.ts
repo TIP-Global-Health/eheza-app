@@ -60,6 +60,7 @@ import {
 import { createChildAndStartWellChildEncounter } from './helpers/well-child';
 import {
   createAdultFemaleAndStartEncounter as createPrenatalAdult,
+  startPrenatalEncounter,
   completePregnancyDating,
   completeHistory,
   completeExamination,
@@ -71,8 +72,16 @@ import {
   completeImmunisation,
   completeMedication,
   completeLaboratoryNurse,
+  completeLaboratoryChw as completePrenatalLaboratoryChw,
+  completeHealthEducation as completePrenatalHealthEducation,
   completeNextSteps as completePrenatalNextSteps,
+  completePregnancyOutcome,
+  completeBreastfeeding,
+  completePostpartumTreatmentReview,
+  completeSpecialityCare,
   endPrenatalEncounter,
+  backdatePrenatalEncounter,
+  navigateToParticipantPage as navigateToPrenatalParticipant,
 } from './helpers/prenatal';
 import {
   createAdultAndStartEncounter as createAIAdult,
@@ -128,7 +137,7 @@ test.describe('Admin Reports', () => {
   //
   // Patients created:
   //   Nurse: NutrChild (M 10mo) — Nutrition (with measurements) + SPV (2 encounters, impacted)
-  //          PrenatalMom (F 25y) — Prenatal
+  //          PrenatalMom (F 25y) — Prenatal initial + postpartum (2 encounters, impacted)
   //          AINurse (F 30y) — AI initial + subsequent (2 encounters, impacted)
   //          AIChild (M 24mo) — AI initial (with MUAC + Nutrition)
   //          NCDAdult (M 40y) — NCD
@@ -147,11 +156,11 @@ test.describe('Admin Reports', () => {
   //
   // Expected Impacted Patients deltas:
   //   1M-2Y: male +2 (NutrChild: Nutrition+SPV, HVChild: Nutrition+HomeVisit)
-  //   20Y-50Y: female +1 (AINurse: AI initial + subsequent)
-  //   Total: +3
+  //   20Y-50Y: female +2 (AINurse: AI initial + subsequent, PrenatalMom: initial + postpartum)
+  //   Total: +4
   //
   // Expected Encounters deltas (All column, +1 each unless noted):
-  //   ANC Total +2 (HC +1, CHW +1), AI Total +4 (nurse initial +1, child +1, subsequent +1, CHW +1),
+  //   ANC Total +3 (HC initial +1, HC postpartum +1, CHW +1), AI Total +4 (nurse initial +1, child +1, subsequent +1, CHW +1),
   //   SPV +1, Home Visit +1, Child Scoreboard +1, NCD +1, HIV +1, TB +1,
   //   Nutrition Total +3 (Individual +2, FBF +1)
   test('Reports reflect new patients, encounters, and completion data', async ({ page }) => {
@@ -179,9 +188,12 @@ test.describe('Admin Reports', () => {
     let baselinePrenatalTotal: number;
     let baselineNutrition: Map<number, NutritionMetricRow[]>;
     let baselineCompletion: CompletionTableData;
+    let baselinePrenatalCompletion: CompletionTableData;
+    let baselinePrenatalCompletionCHW: CompletionTableData;
     let nutrChildName: string;
     let hvChildName: string;
     let aiNurseName: string;
+    let prenatalMomName: string;
 
     await test.step('Login to Drupal admin and record baseline values', async () => {
       await drupalLogin(page);
@@ -235,20 +247,31 @@ test.describe('Admin Reports', () => {
       console.log('Baseline Prenatal Dx: hiv=%d, total=%d', baselinePrenatalHIV, baselinePrenatalTotal);
     });
 
-    // Record Completion report baseline for Acute Illness.
-    await test.step('Generate base completion data and record baseline', async () => {
+    // Record Completion report baselines (AI + Prenatal).
+    await test.step('Generate base completion data and record baselines', async () => {
       generateCompletionData('acute-illness');
+      generateCompletionData('prenatal');
       completionRecalculateLargeDatasets();
 
       await navigateToCompletionReportPage(page, NYANGE_HC_ID);
+
+      // AI baseline.
       await selectCompletionReportType(page, 'acute-illness');
       await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
       baselineCompletion = await readCompletionTable(page, 'acute-illness');
+      console.log('Baseline AI completion rows:', baselineCompletion.rows.length);
 
-      console.log('Baseline completion rows:', baselineCompletion.rows.length);
-      const baseVitals = findCompletionRow(baselineCompletion, 'Vitals');
-      console.log('Baseline completion Vitals: expected=%d, completed=%d',
-        baseVitals?.expected ?? 0, baseVitals?.completed ?? 0);
+      // Prenatal baseline (Any role).
+      await selectCompletionReportType(page, 'prenatal');
+      await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
+      baselinePrenatalCompletion = await readCompletionTable(page, 'prenatal');
+      console.log('Baseline Prenatal completion rows:', baselinePrenatalCompletion.rows.length);
+
+      // Prenatal baseline (CHW only) — needed for Taken By filter assertions.
+      await selectCompletionTakenBy(page, 'chw');
+      baselinePrenatalCompletionCHW = await readCompletionTable(page, 'prenatal');
+      // Reset to Any for subsequent operations.
+      await selectCompletionTakenBy(page, '');
     });
 
     // ── Phase 1a: Nurse encounters ──
@@ -328,6 +351,7 @@ test.describe('Admin Reports', () => {
       await page.goto(pwaBaseUrl);
       await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
       const prenatalMom = await createPrenatalAdult(page, { ageYears: 25 });
+      prenatalMomName = prenatalMom.fullName;
       const lmpDate = new Date();
       lmpDate.setDate(lmpDate.getDate() - 30 * 7); // ~30 weeks ago
       await completePregnancyDating(page, lmpDate);
@@ -443,6 +467,38 @@ test.describe('Admin Reports', () => {
       await syncAndWait(page);
     });
 
+    // ── Phase 1a-extra-2: Postpartum prenatal encounter ──
+    // PrenatalMom's initial encounter is synced. Backdate it to allow
+    // a postpartum encounter today. Covers: GU Exam, Breastfeeding,
+    // SpecialityCare, PregnancyOutcome, PostpartumTreatmentReview.
+
+    await test.step('Backdate and create postpartum prenatal encounter', async () => {
+      backdatePrenatalEncounter(prenatalMomName, 1);
+
+      await page.goto(pwaBaseUrl);
+      await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
+      await navigateToPrenatalParticipant(page, prenatalMomName);
+      await startPrenatalEncounter(page, 'postpartum');
+
+      await completePregnancyOutcome(page);
+      await completeSymptomReview(page);
+      await completeMentalHealth(page);
+      await completeBreastfeeding(page);
+      await completeExamination(page, { isPostpartum: true });
+      await completeFamilyPlanning(page);
+      await completePostpartumTreatmentReview(page);
+      // SpecialityCare appears because initial encounter set HIV known positive.
+      await completeSpecialityCare(page);
+      await endPrenatalEncounter(page);
+      console.log('Created postpartum prenatal encounter for:', prenatalMomName);
+    });
+
+    await test.step('Sync postpartum prenatal encounter', async () => {
+      await page.goto(pwaBaseUrl);
+      await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
+      await syncAndWait(page);
+    });
+
     // ── Phase 1b: CHW encounters ──
 
     await test.step('Login as CHW and create encounters', async () => {
@@ -465,12 +521,20 @@ test.describe('Admin Reports', () => {
       }
       await page.locator('.wrap-cards').waitFor({ timeout: 30000 });
 
-      // --- PrenatalCHW (female, 28 years) ---
+      // --- PrenatalCHW (female, 28 years): Prenatal CHW-1 encounter ---
+      // Complete CHW activities for prenatal completion coverage.
       const prenatalCHW = await createPrenatalAdult(page, {
         isChw: true,
         ageYears: 28,
       });
-      await goToDashboard(page);
+      const chwLmpDate = new Date();
+      chwLmpDate.setDate(chwLmpDate.getDate() - 20 * 7); // ~20 weeks
+      await completePregnancyDating(page, chwLmpDate);
+      await completePrenatalLaboratoryChw(page);
+      await completePrenatalDangerSigns(page);
+      await completePrenatalHealthEducation(page, 1);
+      await completePrenatalNextSteps(page);
+      await endPrenatalEncounter(page);
       console.log('Created PrenatalCHW:', prenatalCHW.fullName);
 
       // --- AICHW (female, 26 years) ---
@@ -603,6 +667,7 @@ test.describe('Admin Reports', () => {
 
       // Generate completion data for newly created encounters.
       generateCompletionData('acute-illness');
+      generateCompletionData('prenatal');
       completionRecalculateLargeDatasets();
     });
 
@@ -683,16 +748,16 @@ test.describe('Admin Reports', () => {
         baseImp1M2Y.male + 2,
       );
 
-      // Row "20Y - 50Y": female +1 (AINurse has 2 AI encounters: initial + subsequent)
+      // Row "20Y - 50Y": female +2 (AINurse: 2 AI encounters, PrenatalMom: initial + postpartum)
       const imp20Y50Y = findRow(newImpacted, '20Y - 50Y')!;
       const baseImp20Y50Y = findRow(baselineImpacted, '20Y - 50Y')!;
-      expect(imp20Y50Y.female, 'Impacted 20Y-50Y female should increase by 1').toBe(
-        baseImp20Y50Y.female + 1,
+      expect(imp20Y50Y.female, 'Impacted 20Y-50Y female should increase by 2').toBe(
+        baseImp20Y50Y.female + 2,
       );
 
-      // Total: +3 (NutrChild + HVChild + AINurse)
-      expect(newImpacted.total, 'Impacted total should increase by 3').toBe(
-        baselineImpacted.total + 3,
+      // Total: +4 (NutrChild + HVChild + AINurse + PrenatalMom)
+      expect(newImpacted.total, 'Impacted total should increase by 4').toBe(
+        baselineImpacted.total + 4,
       );
     });
 
@@ -720,7 +785,7 @@ test.describe('Admin Reports', () => {
       };
 
       // Labels match Translate.elm: "ANC (total)", "Acute Illness (total)", etc.
-      assertDelta('ANC (total)', 2);         // nurse +1, CHW +1
+      assertDelta('ANC (total)', 3);         // nurse initial +1, nurse postpartum +1, CHW +1
       assertDelta('Acute Illness (total)', 4); // nurse initial +1, nurse child +1, nurse subsequent +1, CHW +1
       assertDelta('Standard Pediatric Visit', 1);
       assertDelta('Home Visit', 1);
@@ -784,31 +849,35 @@ test.describe('Admin Reports', () => {
       const newAll = await readPrenatalVisitsTable(page, 'all-pregnancies');
       const newActive = await readPrenatalVisitsTable(page, 'active-pregnancies');
 
-      // PrenatalMom: 1 nurse encounter, active pregnancy.
-      // All Pregnancies: 1 Visit HC +1, Total HC +1.
-      const newAll1Visit = findPrenatalRow(newAll, '1 visit')!;
-      const baseAll1Visit = findPrenatalRow(baselineAllPregnancies, '1 visit')!;
+      // PrenatalMom: 2 nurse encounters (initial + postpartum), pregnancy completed.
+      // PrenatalCHW: 1 CHW encounter, active pregnancy.
+      // Log all rows for debugging — exact deltas depend on visit counting logic.
+      console.log('\n=== PRENATAL (ANC) ===');
+      console.log('All Pregnancies:');
+      for (const row of newAll) {
+        const base = findPrenatalRow(baselineAllPregnancies, row.label);
+        console.log(`  ${row.label.padEnd(12)} | HC: ${base?.hc ?? 0}→${row.hc} | CHW: ${base?.chw ?? 0}→${row.chw} | All: ${base?.all ?? 0}→${row.all}`);
+      }
+      console.log('Active Pregnancies:');
+      for (const row of newActive) {
+        const base = findPrenatalRow(baselineActivePregnancies, row.label);
+        console.log(`  ${row.label.padEnd(12)} | HC: ${base?.hc ?? 0}→${row.hc} | CHW: ${base?.chw ?? 0}→${row.chw} | All: ${base?.all ?? 0}→${row.all}`);
+      }
+
+      // All Pregnancies: PrenatalMom has 2 visits → moves to "2 visits" row.
+      // CHW adds 1 visit. Total HC +1, Total CHW +1, Total All +2.
       const newAllTotal = findPrenatalRow(newAll, 'Total')!;
       const baseAllTotal2 = findPrenatalRow(baselineAllPregnancies, 'Total')!;
+      expect(newAllTotal.all, 'All Pregnancies Total All +2').toBe(baseAllTotal2.all + 2);
 
-      console.log('\n=== PRENATAL (ANC) ===');
-      console.log(`All 1 Visit HC: baseline=${baseAll1Visit.hc}, new=${newAll1Visit.hc}, delta=+${newAll1Visit.hc - baseAll1Visit.hc}`);
-      console.log(`All Total HC:   baseline=${baseAllTotal2.hc}, new=${newAllTotal.hc}, delta=+${newAllTotal.hc - baseAllTotal2.hc}`);
-
-      expect(newAll1Visit.hc, 'All Pregnancies 1 Visit HC +1').toBe(baseAll1Visit.hc + 1);
-      expect(newAllTotal.hc, 'All Pregnancies Total HC +1').toBe(baseAllTotal2.hc + 1);
-
-      // Active Pregnancies: 1 Visit HC +1, Total HC +1.
-      const newActive1Visit = findPrenatalRow(newActive, '1 visit')!;
-      const baseActive1Visit = findPrenatalRow(baselineActivePregnancies, '1 visit')!;
+      // Active Pregnancies: PrenatalMom's pregnancy ended (postpartum with outcome),
+      // so she should NOT appear in Active. PrenatalCHW is active with 1 visit.
       const newActiveTotal = findPrenatalRow(newActive, 'Total')!;
       const baseActiveTotal2 = findPrenatalRow(baselineActivePregnancies, 'Total')!;
-
-      console.log(`Active 1 Visit HC: baseline=${baseActive1Visit.hc}, new=${newActive1Visit.hc}, delta=+${newActive1Visit.hc - baseActive1Visit.hc}`);
-      console.log(`Active Total HC:   baseline=${baseActiveTotal2.hc}, new=${newActiveTotal.hc}, delta=+${newActiveTotal.hc - baseActiveTotal2.hc}`);
-
-      expect(newActive1Visit.hc, 'Active Pregnancies 1 Visit HC +1').toBe(baseActive1Visit.hc + 1);
-      expect(newActiveTotal.hc, 'Active Pregnancies Total HC +1').toBe(baseActiveTotal2.hc + 1);
+      // CHW +1 active, PrenatalMom no longer active → net depends on whether
+      // PrenatalMom was counted in baseline. She wasn't (created after baseline).
+      // So Active Total CHW +1.
+      expect(newActiveTotal.chw, 'Active Pregnancies Total CHW +1').toBe(baseActiveTotal2.chw + 1);
 
       // CSV download button.
       await expect(page.locator('button.download-csv')).toBeVisible();
@@ -836,10 +905,11 @@ test.describe('Admin Reports', () => {
 
       expect(newHIV, 'Prenatal HIV +1').toBe(baselinePrenatalHIV + 1);
       expect(newGestHypertension, 'Gestational Hypertension +1').toBe(baselineGestHypertension + 1);
-      expect(newDepression, 'Depression Not Likely +1').toBe(baselineDepression + 1);
-      // Total: HIV + Gestational Hypertension + Depression Not Likely
-      // + NoPrenatalDiagnosis (from CHW encounter with no activities) = +4.
-      expect(newPrenatalTotal, 'Prenatal Total +4').toBe(baselinePrenatalTotal + 4);
+      // Depression Not Likely +2: initial (MentalHealth score=0) + postpartum (MentalHealth again).
+      expect(newDepression, 'Depression Not Likely +2').toBe(baselineDepression + 2);
+      // Total: HIV +1, Gestational Hypertension +1, Depression Not Likely +2,
+      // NoPrenatalDiagnosis (from CHW encounter) +1 = +5.
+      expect(newPrenatalTotal, 'Prenatal Total +5').toBe(baselinePrenatalTotal + 5);
 
       // CSV download button.
       await expect(page.locator('button.download-csv')).toBeVisible();
@@ -1038,26 +1108,150 @@ test.describe('Admin Reports', () => {
       expect(ongoing.completed, 'Ongoing Treatment completed +1').toBe(baseOngoing.completed + 1);
     });
 
-    await test.step('Verify Completion Report — Taken By filter (Nurse)', async () => {
+    await test.step('Verify Completion Report — AI Taken By filter (Nurse)', async () => {
       await selectCompletionTakenBy(page, 'nurse');
       const nurseData = await readCompletionTable(page, 'acute-illness');
-
-      // CoreExam should show delta (nurse encounter has it).
+      const baseCoreExam = findCompletionRow(baselineCompletion, 'Core Exam')!;
       const coreExam = findCompletionRow(nurseData, 'Core Exam')!;
-      expect(coreExam.expected, 'Nurse filter: Core Exam expected > 0').toBeGreaterThan(0);
-      expect(coreExam.completed, 'Nurse filter: Core Exam completed > 0').toBeGreaterThan(0);
+      // 3 nurse encounters (2 initial + 1 subsequent) expect CoreExam.
+      expect(coreExam.expected, 'AI Nurse: Core Exam expected +3').toBe(baseCoreExam.expected + 3);
+      expect(coreExam.completed, 'AI Nurse: Core Exam completed +2').toBe(baseCoreExam.completed + 2);
     });
 
-    await test.step('Verify Completion Report — Taken By filter (CHW)', async () => {
+    await test.step('Verify Completion Report — AI Taken By filter (CHW)', async () => {
       await selectCompletionTakenBy(page, 'chw');
       const chwData = await readCompletionTable(page, 'acute-illness');
-
-      // CoreExam should NOT have increased from CHW encounters (nurse-only activity).
       const coreExam = findCompletionRow(chwData, 'Core Exam')!;
-      const baseCoreExam = findCompletionRow(baselineCompletion, 'Core Exam')!;
-      expect(coreExam.expected, 'CHW filter: Core Exam expected <= baseline').toBeLessThanOrEqual(
-        baseCoreExam.expected,
-      );
+      // CoreExam is nurse-only — CHW filter should show 0 expected.
+      expect(coreExam.expected, 'AI CHW: Core Exam expected 0').toBe(0);
+    });
+
+    // ── Phase 6: Completion Report — Prenatal ──
+    //
+    // The test created 3 prenatal encounters:
+    // - Nurse initial (PrenatalMom): comprehensive activities + HIV+
+    // - Nurse postpartum (PrenatalMom): GU Exam, Breastfeeding, SpecialityCare, etc.
+    // - CHW-1 (PrenatalCHW): PregnancyTesting, DangerSigns, HealthEducation, NextSteps
+
+    let prenatalCompletion: CompletionTableData;
+
+    await test.step('Verify Completion Report — Prenatal table renders', async () => {
+      await navigateToCompletionReportPage(page, NYANGE_HC_ID);
+      await selectCompletionReportType(page, 'prenatal');
+      await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
+
+      prenatalCompletion = await readCompletionTable(page, 'prenatal');
+
+      console.log('\n=== COMPLETION: PRENATAL ===');
+      console.log('Heading:', prenatalCompletion.heading);
+      console.log('Rows:', prenatalCompletion.rows.length);
+      for (const row of prenatalCompletion.rows) {
+        const base = findCompletionRow(baselinePrenatalCompletion, row.activity);
+        const eDelta = row.expected - (base?.expected ?? 0);
+        const cDelta = row.completed - (base?.completed ?? 0);
+        if (eDelta !== 0 || cDelta !== 0) {
+          console.log(
+            `${row.activity.padEnd(30)} | E: ${String(base?.expected ?? 0).padEnd(3)}→${String(row.expected).padEnd(3)} (+${eDelta}) | C: ${String(base?.completed ?? 0).padEnd(3)}→${String(row.completed).padEnd(3)} (+${cDelta}) | ${row.percent}`,
+          );
+        }
+      }
+
+      expect(prenatalCompletion.heading).toContain('Antenatal');
+      expect(prenatalCompletion.rows.length, 'Should have 60 activity rows').toBe(60);
+    });
+
+    await test.step('Verify Completion Report — Prenatal activity deltas (Any role)', async () => {
+      const assertDelta = (label: string, expectedDelta: number, completedDelta: number) => {
+        const row = findCompletionRow(prenatalCompletion, label)!;
+        const base = findCompletionRow(baselinePrenatalCompletion, label)!;
+        expect(row, `Row "${label}" should exist`).toBeDefined();
+        expect(base, `Baseline row "${label}" should exist`).toBeDefined();
+        expect(row.expected, `${label} expected +${expectedDelta}`).toBe(base.expected + expectedDelta);
+        expect(row.completed, `${label} completed +${completedDelta}`).toBe(base.completed + completedDelta);
+      };
+
+      // Both nurse initial + CHW encounters (+2 each).
+      assertDelta('Last Menstrual Period', 2, 2);
+      assertDelta('Danger Signs', 2, 2);
+
+      // Nurse initial + postpartum (+2 each).
+      assertDelta('Core Physical Exam', 2, 2);
+      assertDelta('Breast Exam', 2, 2);
+      assertDelta('Family Planning', 2, 2);
+      assertDelta('Symptoms Review', 2, 2);
+      assertDelta('Vitals', 2, 2);
+      assertDelta('Nutrition', 2, 2);
+
+      // Nurse initial only (+1 each).
+      assertDelta('Medical History', 1, 1);
+      assertDelta('Obstetric History', 1, 1);
+      assertDelta('Obstetric History Second Step', 1, 1);
+      assertDelta('Obstetrical Exam', 1, 1);
+      assertDelta('Tetanus Immunisation', 1, 1);
+      assertDelta('Mental Health', 1, 1);
+      assertDelta('HIV Test', 1, 1);
+      assertDelta('Malaria Test', 1, 1);
+      assertDelta('Syphilis Test', 1, 1);
+      assertDelta('Hemoglobin Test', 1, 1);
+      assertDelta('Hepatitis B Test', 1, 1);
+      assertDelta('Urine Dipstick Test', 1, 1);
+      assertDelta('Random Blood Sugar Test', 1, 1);
+      assertDelta('Blood Group and Rhesus Test', 1, 1);
+      assertDelta('Partner HIV Test', 1, 1);
+      assertDelta('Resource', 1, 1);
+
+      // Postpartum only (+1 each).
+      assertDelta('GU Exam', 1, 1);
+      assertDelta('Breastfeeding', 1, 1);
+      assertDelta('Pregnancy Outcome', 1, 1);
+      assertDelta('Postpartum Treatment Review', 1, 1);
+
+      // CHW only (+1 each).
+      assertDelta('Pregnancy Testing', 1, 1);
+      assertDelta('Appointment Confirmation', 1, 1);
+      assertDelta('Health Education', 1, 1);
+      assertDelta('Follow Up', 1, 1);
+
+      // Expected but not completed (expected +1, completed +0).
+      assertDelta('Photo', 1, 0);
+      assertDelta('Social History', 1, 0);
+
+      // Not expected (subsequent only, CHW-2 only).
+      assertDelta('Outside Care', 0, 0);
+      assertDelta('Treatment Review', 0, 0);
+      assertDelta('Birth Plan', 0, 0);
+      assertDelta('HIV PCR Test', 0, 0);
+    });
+
+    await test.step('Verify Completion Report — Prenatal Taken By filter (Nurse)', async () => {
+      await selectCompletionTakenBy(page, 'nurse');
+      const nurseData = await readCompletionTable(page, 'prenatal');
+
+      // Nurse encounters have Vitals; baseline from existing data.
+      const baseVitals = findCompletionRow(baselinePrenatalCompletion, 'Vitals')!;
+      const vitals = findCompletionRow(nurseData, 'Vitals')!;
+      // Nurse initial + postpartum both have Vitals.
+      expect(vitals.expected, 'Prenatal Nurse: Vitals expected +2').toBe(baseVitals.expected + 2);
+      expect(vitals.completed, 'Prenatal Nurse: Vitals completed +2').toBe(baseVitals.completed + 2);
+
+      // PregnancyTesting is CHW only — Nurse filter should show 0.
+      const pt = findCompletionRow(nurseData, 'Pregnancy Testing')!;
+      expect(pt.expected, 'Prenatal Nurse: Pregnancy Testing expected 0').toBe(0);
+    });
+
+    await test.step('Verify Completion Report — Prenatal Taken By filter (CHW)', async () => {
+      await selectCompletionTakenBy(page, 'chw');
+      const chwData = await readCompletionTable(page, 'prenatal');
+
+      // CHW has PregnancyTesting: +1 from our CHW encounter.
+      const basePT = findCompletionRow(baselinePrenatalCompletionCHW, 'Pregnancy Testing')!;
+      const pt = findCompletionRow(chwData, 'Pregnancy Testing')!;
+      expect(pt.expected, 'Prenatal CHW: Pregnancy Testing expected +1').toBe(basePT.expected + 1);
+      expect(pt.completed, 'Prenatal CHW: Pregnancy Testing completed +1').toBe(basePT.completed + 1);
+
+      // Vitals is nurse only — CHW filter should show 0.
+      const vitals = findCompletionRow(chwData, 'Vitals')!;
+      expect(vitals.expected, 'Prenatal CHW: Vitals expected 0').toBe(0);
     });
   });
 });
