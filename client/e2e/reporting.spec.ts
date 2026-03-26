@@ -111,7 +111,13 @@ import {
   completeNCDA,
   completeVaccinationHistory,
 } from './helpers/child-scoreboard';
-import { startHomeVisit } from './helpers/home-visit';
+import {
+  startHomeVisit,
+  completeFeeding,
+  completeCaring,
+  completeHygiene,
+  completeFoodSecurity,
+} from './helpers/home-visit';
 import {
   navigateToNurseGroupSession,
   createMotherOnAttendancePage,
@@ -202,6 +208,7 @@ test.describe('Admin Reports', () => {
     let baselinePrenatalCompletionCHW: CompletionTableData;
     let baselineCSCompletion: CompletionTableData;
     let baselineHIVCompletion: CompletionTableData;
+    let baselineHVCompletion: CompletionTableData;
     let nutrChildName: string;
     let hvChildName: string;
     let aiNurseName: string;
@@ -265,6 +272,7 @@ test.describe('Admin Reports', () => {
       generateCompletionData('prenatal', true);
       generateCompletionData('child-scoreboard', true);
       generateCompletionData('hiv', true);
+      generateCompletionData('home-visit', true);
       completionRecalculateLargeDatasets();
 
       await navigateToCompletionReportPage(page, NYANGE_HC_ID);
@@ -297,6 +305,12 @@ test.describe('Admin Reports', () => {
       await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
       baselineHIVCompletion = await readCompletionTable(page, 'hiv');
       console.log('Baseline HIV completion rows:', baselineHIVCompletion.rows.length);
+
+      // Home Visit baseline (CHW-only module, no Taken By filter).
+      await selectCompletionReportType(page, 'home-visit');
+      await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
+      baselineHVCompletion = await readCompletionTable(page, 'home-visit');
+      console.log('Baseline HV completion rows:', baselineHVCompletion.rows.length);
     });
 
     // ── Phase 1a: Nurse encounters ──
@@ -678,8 +692,12 @@ test.describe('Admin Reports', () => {
       await hvResult.waitFor({ timeout: 10000 });
       await click(hvResult.locator('.action-icon.forward'), page);
       await page.locator('div.page-participant.individual.nutrition').waitFor({ timeout: 10000 });
-      // Start home visit from participant page.
+      // Start home visit from participant page and complete all 4 activities.
       await startHomeVisit(page);
+      await completeFeeding(page);
+      await completeCaring(page);
+      await completeHygiene(page);
+      await completeFoodSecurity(page);
       console.log('Created HVChild + Home Visit:', hvChild.fullName);
     });
 
@@ -713,6 +731,7 @@ test.describe('Admin Reports', () => {
       generateCompletionData('prenatal', true);
       generateCompletionData('child-scoreboard', true);
       generateCompletionData('hiv', true);
+      generateCompletionData('home-visit', true);
       completionRecalculateLargeDatasets();
     });
 
@@ -1410,6 +1429,54 @@ test.describe('Admin Reports', () => {
 
       // Referral: conditional on symptoms/adverse events — not triggered.
       assertDelta('Referral', 0, 0);
+    });
+
+    // ── Phase 9: Completion Report — Home Visit ──
+    //
+    // HVChild (8mo male, CHW) completed all 4 home visit activities:
+    // Feeding, Caring, Hygiene, Food Security.
+    // CHW-only module — no Taken By filter.
+
+    let hvCompletion: CompletionTableData;
+
+    await test.step('Verify Completion Report — Home Visit table renders', async () => {
+      await navigateToCompletionReportPage(page, NYANGE_HC_ID);
+      await selectCompletionReportType(page, 'home-visit');
+      await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
+
+      hvCompletion = await readCompletionTable(page, 'home-visit');
+
+      console.log('\n=== COMPLETION: HOME VISIT ===');
+      console.log('Heading:', hvCompletion.heading);
+      console.log('Rows:', hvCompletion.rows.length);
+      for (const row of hvCompletion.rows) {
+        const base = findCompletionRow(baselineHVCompletion, row.activity);
+        const eDelta = row.expected - (base?.expected ?? 0);
+        const cDelta = row.completed - (base?.completed ?? 0);
+        console.log(
+          `${row.activity.padEnd(20)} | E: ${String(base?.expected ?? 0).padEnd(3)}→${String(row.expected).padEnd(3)} (+${eDelta}) | C: ${String(base?.completed ?? 0).padEnd(3)}→${String(row.completed).padEnd(3)} (+${cDelta}) | ${row.percent}`,
+        );
+      }
+
+      expect(hvCompletion.heading).toContain('Home Visit');
+      expect(hvCompletion.rows.length, 'Should have 4 activity rows').toBe(4);
+    });
+
+    await test.step('Verify Completion Report — Home Visit activity deltas', async () => {
+      const assertDelta = (label: string, expectedDelta: number, completedDelta: number) => {
+        const row = findCompletionRow(hvCompletion, label)!;
+        const base = findCompletionRow(baselineHVCompletion, label)!;
+        expect(row, `Row "${label}" should exist`).toBeDefined();
+        expect(base, `Baseline row "${label}" should exist`).toBeDefined();
+        expect(row.expected, `${label} expected +${expectedDelta}`).toBe(base.expected + expectedDelta);
+        expect(row.completed, `${label} completed +${completedDelta}`).toBe(base.completed + completedDelta);
+      };
+
+      // All 4 activities mandatory and completed.
+      assertDelta('Caring', 1, 1);
+      assertDelta('Feeding', 1, 1);
+      assertDelta('Food Security', 1, 1);
+      assertDelta('Hygiene', 1, 1);
     });
   });
 });
