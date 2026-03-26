@@ -57,7 +57,13 @@ import {
   enterNutritionSigns,
   saveActivity,
 } from './helpers/nutrition';
-import { createChildAndStartWellChildEncounter } from './helpers/well-child';
+import {
+  createChildAndStartWellChildEncounter,
+  completePregnancySummary,
+  completeNutritionAssessment as completeWCNutritionAssessment,
+  completeImmunisation as completeWCImmunisation,
+  completeNextSteps as completeWCNextSteps,
+} from './helpers/well-child';
 import {
   createAdultFemaleAndStartEncounter as createPrenatalAdult,
   startPrenatalEncounter,
@@ -172,9 +178,10 @@ test.describe('Admin Reports', () => {
   //          HIVAdult (F 35y) — HIV
   //          TBAdult (M 45y) — Tuberculosis
   //          CSChild (M 10mo) — Child Scoreboard
+  //          NBChild (M 1mo) — Newborn Exam
   //
   // Expected Registered Patients deltas:
-  //   1M-2Y: male +4 (NutrChild, CSChild, HVChild, FBFChild)
+  //   1M-2Y: male +5 (NutrChild, CSChild, HVChild, FBFChild, NBChild)
   //   2Y-5Y: male +1 (AIChild 24mo)
   //   20Y-50Y: male +1 (TBAdult), female +7 (PrenatalMom, AINurse, FBFMother, NCDAdult, PrenatalCHW, AICHW, HIVAdult)
   //   Total: +13
@@ -219,6 +226,7 @@ test.describe('Admin Reports', () => {
     let baselineHIVCompletion: CompletionTableData;
     let baselineHVCompletion: CompletionTableData;
     let baselineNCDCompletion: CompletionTableData;
+    let baselineNBCompletion: CompletionTableData;
     let nutrChildName: string;
     let hvChildName: string;
     let aiNurseName: string;
@@ -284,6 +292,7 @@ test.describe('Admin Reports', () => {
       generateCompletionData('hiv', true);
       generateCompletionData('home-visit', true);
       generateCompletionData('ncd', true);
+      generateCompletionData('well-child', true);
       completionRecalculateLargeDatasets();
 
       await navigateToCompletionReportPage(page, NYANGE_HC_ID);
@@ -328,6 +337,17 @@ test.describe('Admin Reports', () => {
       await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
       baselineNCDCompletion = await readCompletionTable(page, 'ncd');
       console.log('Baseline NCD completion rows:', baselineNCDCompletion.rows.length);
+
+      // Newborn Exam baseline (CHW-only, shares CSS class 'well-child' with SPV).
+      await selectCompletionReportType(page, 'newborn-exam');
+      await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
+      const nbReport = page.locator('div.report.well-child');
+      if (await nbReport.isVisible({ timeout: 3000 }).catch(() => false)) {
+        baselineNBCompletion = await readCompletionTable(page, 'well-child');
+      } else {
+        baselineNBCompletion = { heading: '', rows: [] };
+      }
+      console.log('Baseline NB completion rows:', baselineNBCompletion.rows.length);
     });
 
     // ── Phase 1a: Nurse encounters ──
@@ -725,6 +745,30 @@ test.describe('Admin Reports', () => {
       await completeHygiene(page);
       await completeFoodSecurity(page);
       console.log('Created HVChild + Home Visit:', hvChild.fullName);
+
+      // --- NBChild (male, 1 month): Newborn Exam ---
+      // CHW Well Child encounter for a 1-month-old triggers Newborn Exam type.
+      // Complete PregnancySummary, NutritionAssessment, Immunisation, NextSteps.
+      await goToDashboard(page);
+      const nbChild = await createChildAndStartWellChildEncounter(page, {
+        ageMonths: 1,
+        isChw: true,
+      });
+      await completePregnancySummary(page);
+      await completeWCNutritionAssessment(page, {
+        headCircumference: '35',
+        weight: '4',
+        nutritionSigns: [],
+      });
+      await completeWCImmunisation(page, { isChw: true });
+      await completeWCNextSteps(page, {
+        hasContributingFactors: false,
+        hasHealthEducation: true,
+        hasSendToHC: true,
+        hasFollowUp: false,
+      });
+      await goToDashboard(page);
+      console.log('Created NBChild (Newborn Exam):', nbChild.fullName);
     });
 
     await test.step('Sync CHW data to backend', async () => {
@@ -759,6 +803,7 @@ test.describe('Admin Reports', () => {
       generateCompletionData('hiv', true);
       generateCompletionData('home-visit', true);
       generateCompletionData('ncd', true);
+      generateCompletionData('well-child', true);
       completionRecalculateLargeDatasets();
     });
 
@@ -786,10 +831,10 @@ test.describe('Admin Reports', () => {
       }
       console.log(`Total: baseline=${baselineRegistered.total}, new=${newRegistered.total}, delta=+${newRegistered.total - baselineRegistered.total}`);
 
-      // Row "1M - 2Y": male +4 (NutrChild, CSChild, HVChild, FBFChild)
+      // Row "1M - 2Y": male +5 (NutrChild, CSChild, HVChild, FBFChild, NBChild)
       const row1M2Y = findRow(newRegistered, '1M - 2Y')!;
       const base1M2Y = findRow(baselineRegistered, '1M - 2Y')!;
-      expect(row1M2Y.male, '1M-2Y male should increase by 4').toBe(base1M2Y.male + 4);
+      expect(row1M2Y.male, '1M-2Y male should increase by 5').toBe(base1M2Y.male + 5);
       expect(row1M2Y.female, '1M-2Y female should be unchanged').toBe(base1M2Y.female);
 
       // Row "2Y - 5Y": male +1 (AIChild 24mo falls into this bucket)
@@ -803,9 +848,9 @@ test.describe('Admin Reports', () => {
       expect(row20Y50Y.male, '20Y-50Y male should increase by 1').toBe(base20Y50Y.male + 1);
       expect(row20Y50Y.female, '20Y-50Y female should increase by 7').toBe(base20Y50Y.female + 7);
 
-      // Total: +13 (7 nurse patients + 6 CHW patients)
-      expect(newRegistered.total, 'Registered total should increase by 13').toBe(
-        baselineRegistered.total + 13,
+      // Total: +14 (8 nurse patients + 7 CHW patients including NBChild)
+      expect(newRegistered.total, 'Registered total should increase by 14').toBe(
+        baselineRegistered.total + 14,
       );
 
       // Other rows should be unchanged.
@@ -878,7 +923,7 @@ test.describe('Admin Reports', () => {
       // Labels match Translate.elm: "ANC (total)", "Acute Illness (total)", etc.
       assertDelta('ANC (total)', 3);         // nurse initial +1, nurse postpartum +1, CHW +1
       assertDelta('Acute Illness (total)', 4); // nurse initial +1, nurse child +1, nurse subsequent +1, CHW +1
-      assertDelta('Standard Pediatric Visit', 1);
+      assertDelta('Standard Pediatric Visit', 2); // NutrChild SPV +1, NBChild Newborn Exam +1
       assertDelta('Home Visit', 1);
       assertDelta('Child Scorecard', 1);
       assertDelta('NCD', 1);
@@ -1574,6 +1619,75 @@ test.describe('Admin Reports', () => {
       // Female patient (age 40, within 13-44 range).
       assertDelta('Family Planning', 1, 1);
       assertDelta('Pregnancy Test', 1, 1);
+
+      // Test results: not recorded (tests not performed).
+      assertDelta('Creatinine Result', 0, 0);
+      assertDelta('Lipid Panel Result', 0, 0);
+      assertDelta('Liver Function Result', 0, 0);
+      assertDelta('Random Blood Sugar Test Result', 0, 0);
+      assertDelta('Urine Dipstick Test Result', 0, 0);
+
+      // Diagnosis-conditional NextSteps: not triggered (Stage 1 only).
+      assertDelta('Medication Distribution', 0, 0);
+      assertDelta('Referral', 0, 0);
+    });
+
+    // ── Phase 11: Completion Report — Newborn Exam ──
+    //
+    // NBChild (1mo male, CHW) completed Newborn Exam:
+    // PregnancySummary, NutritionAssessment (HeadCircumference + Weight),
+    // Immunisation, NextSteps (HealthEducation + SendToHC).
+    // CHW-only module — no Taken By filter.
+
+    let nbCompletion: CompletionTableData;
+
+    await test.step('Verify Completion Report — Newborn Exam table renders', async () => {
+      await navigateToCompletionReportPage(page, NYANGE_HC_ID);
+      await selectCompletionReportType(page, 'newborn-exam');
+      await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
+
+      // Newborn Exam uses same CSS class "report well-child" as SPV.
+      nbCompletion = await readCompletionTable(page, 'well-child');
+
+      console.log('\n=== COMPLETION: NEWBORN EXAM ===');
+      console.log('Heading:', nbCompletion.heading);
+      console.log('Rows:', nbCompletion.rows.length);
+      for (const row of nbCompletion.rows) {
+        const base = findCompletionRow(baselineNBCompletion, row.activity);
+        const eDelta = row.expected - (base?.expected ?? 0);
+        const cDelta = row.completed - (base?.completed ?? 0);
+        console.log(
+          `${row.activity.padEnd(25)} | E: ${String(base?.expected ?? 0).padEnd(3)}→${String(row.expected).padEnd(3)} (+${eDelta}) | C: ${String(base?.completed ?? 0).padEnd(3)}→${String(row.completed).padEnd(3)} (+${cDelta}) | ${row.percent}`,
+        );
+      }
+
+      expect(nbCompletion.heading).toContain('Newborn Exam');
+      expect(nbCompletion.rows.length, 'Should have 11 activity rows').toBe(11);
+    });
+
+    await test.step('Verify Completion Report — Newborn Exam activity deltas', async () => {
+      const assertDelta = (label: string, expectedDelta: number, completedDelta: number) => {
+        const row = findCompletionRow(nbCompletion, label)!;
+        const base = findCompletionRow(baselineNBCompletion, label);
+        expect(row, `Row "${label}" should exist`).toBeDefined();
+        const baseExpected = base?.expected ?? 0;
+        const baseCompleted = base?.completed ?? 0;
+        expect(row.expected, `${label} expected +${expectedDelta}`).toBe(baseExpected + expectedDelta);
+        expect(row.completed, `${label} completed +${completedDelta}`).toBe(baseCompleted + completedDelta);
+      };
+
+      // Core activities completed.
+      assertDelta('Pregnancy Summary', 1, 1);
+      assertDelta('Weight', 1, 1);
+      assertDelta('Head Circumference', 1, 1);
+      assertDelta('Nutrition', 1, 1);
+
+      // NextSteps completed.
+      assertDelta('Health Education', 1, 1);
+      assertDelta('Referral', 1, 1);
+
+      // Photo: expected but not completed (no upload helper).
+      assertDelta('Photo', 1, 0);
     });
   });
 });
