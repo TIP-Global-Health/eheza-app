@@ -79,6 +79,7 @@ import {
   completeBreastfeeding,
   completePostpartumTreatmentReview,
   completeSpecialityCare,
+  recordPregnancyOutcome,
   endPrenatalEncounter,
   backdatePrenatalEncounter,
   navigateToParticipantPage as navigateToPrenatalParticipant,
@@ -100,7 +101,11 @@ import {
 import { createAdultAndStartNCDEncounter } from './helpers/ncd';
 import { createAdultAndStartHIVEncounter } from './helpers/hiv';
 import { createAdultAndStartTBEncounter } from './helpers/tuberculosis';
-import { createChildAndStartEncounter as createChildScoreboardChild } from './helpers/child-scoreboard';
+import {
+  createChildAndStartEncounter as createChildScoreboardChild,
+  completeNCDA,
+  completeVaccinationHistory,
+} from './helpers/child-scoreboard';
 import { startHomeVisit } from './helpers/home-visit';
 import {
   navigateToNurseGroupSession,
@@ -123,7 +128,7 @@ const NYANGE_HC_ID = 4;
 const REPORT_START_DATE = new Date(2018, 0, 1);
 
 test.describe('Admin Reports', () => {
-  test.describe.configure({ timeout: 600000 });
+  test.describe.configure({ timeout: 1200000 });
 
   test.beforeEach(async ({ page }) => {
     if (process.env.RECORD) {
@@ -190,6 +195,7 @@ test.describe('Admin Reports', () => {
     let baselineCompletion: CompletionTableData;
     let baselinePrenatalCompletion: CompletionTableData;
     let baselinePrenatalCompletionCHW: CompletionTableData;
+    let baselineCSCompletion: CompletionTableData;
     let nutrChildName: string;
     let hvChildName: string;
     let aiNurseName: string;
@@ -249,8 +255,9 @@ test.describe('Admin Reports', () => {
 
     // Record Completion report baselines (AI + Prenatal).
     await test.step('Generate base completion data and record baselines', async () => {
-      generateCompletionData('acute-illness');
-      generateCompletionData('prenatal');
+      generateCompletionData('acute-illness', true);
+      generateCompletionData('prenatal', true);
+      generateCompletionData('child-scoreboard', true);
       completionRecalculateLargeDatasets();
 
       await navigateToCompletionReportPage(page, NYANGE_HC_ID);
@@ -270,8 +277,13 @@ test.describe('Admin Reports', () => {
       // Prenatal baseline (CHW only) — needed for Taken By filter assertions.
       await selectCompletionTakenBy(page, 'chw');
       baselinePrenatalCompletionCHW = await readCompletionTable(page, 'prenatal');
-      // Reset to Any for subsequent operations.
       await selectCompletionTakenBy(page, '');
+
+      // Child Scoreboard baseline (CHW-only module, no Taken By filter).
+      await selectCompletionReportType(page, 'child-scoreboard');
+      await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
+      baselineCSCompletion = await readCompletionTable(page, 'child-scoreboard');
+      console.log('Baseline CS completion rows:', baselineCSCompletion.rows.length);
     });
 
     // ── Phase 1a: Nurse encounters ──
@@ -478,9 +490,18 @@ test.describe('Admin Reports', () => {
       await page.goto(pwaBaseUrl);
       await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
       await navigateToPrenatalParticipant(page, prenatalMomName);
+
+      // Record pregnancy outcome from participant page first —
+      // required before the Postpartum encounter button becomes active.
+      await recordPregnancyOutcome(page);
+
+      // Re-navigate to participant page after outcome recording
+      // (recordPregnancyOutcome lands on PinCodePage).
+      await page.goto(pwaBaseUrl);
+      await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
+      await navigateToPrenatalParticipant(page, prenatalMomName);
       await startPrenatalEncounter(page, 'postpartum');
 
-      await completePregnancyOutcome(page);
       await completeSymptomReview(page);
       await completeMentalHealth(page);
       await completeBreastfeeding(page);
@@ -581,9 +602,14 @@ test.describe('Admin Reports', () => {
       console.log('Created TBAdult:', tbAdult.fullName);
 
       // --- CSChild (male, 6 months): Child Scoreboard ---
+      // Complete NCDA + VaccinationHistory for completion coverage.
+      // At 6 months: 7 immunisations expected (BCG, OPV, DTP, PCV13, Rotarix, IPV, NCDA).
+      // MR not expected yet (requires 36+ weeks ≈ 9 months).
       await page.goto(pwaBaseUrl);
       await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
       const csChild = await createChildScoreboardChild(page, { ageMonths: 6 });
+      await completeNCDA(page);
+      await completeVaccinationHistory(page);
       await goToDashboard(page);
       console.log('Created CSChild:', csChild.fullName);
 
@@ -665,9 +691,11 @@ test.describe('Admin Reports', () => {
       processAdvancedQueue();
       recalculateLargeDatasets();
 
-      // Generate completion data for newly created encounters.
-      generateCompletionData('acute-illness');
-      generateCompletionData('prenatal');
+      // Generate completion data for newly created encounters only
+      // (--exclude_set=1 skips encounters already processed in Phase 0).
+      generateCompletionData('acute-illness', true);
+      generateCompletionData('prenatal', true);
+      generateCompletionData('child-scoreboard', true);
       completionRecalculateLargeDatasets();
     });
 
@@ -1252,6 +1280,61 @@ test.describe('Admin Reports', () => {
       // Vitals is nurse only — CHW filter should show 0.
       const vitals = findCompletionRow(chwData, 'Vitals')!;
       expect(vitals.expected, 'Prenatal CHW: Vitals expected 0').toBe(0);
+    });
+
+    // ── Phase 7: Completion Report — Child Scoreboard ──
+    //
+    // CSChild (6mo male) completed NCDA + VaccinationHistory in CHW phase.
+    // CHW-only module — no Taken By filter.
+
+    let csCompletion: CompletionTableData;
+
+    await test.step('Verify Completion Report — Child Scoreboard table renders', async () => {
+      await navigateToCompletionReportPage(page, NYANGE_HC_ID);
+      await selectCompletionReportType(page, 'child-scoreboard');
+      await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
+
+      csCompletion = await readCompletionTable(page, 'child-scoreboard');
+
+      console.log('\n=== COMPLETION: CHILD SCOREBOARD ===');
+      console.log('Heading:', csCompletion.heading);
+      console.log('Rows:', csCompletion.rows.length);
+      for (const row of csCompletion.rows) {
+        const base = findCompletionRow(baselineCSCompletion, row.activity);
+        const eDelta = row.expected - (base?.expected ?? 0);
+        const cDelta = row.completed - (base?.completed ?? 0);
+        console.log(
+          `${row.activity.padEnd(25)} | E: ${String(base?.expected ?? 0).padEnd(3)}→${String(row.expected).padEnd(3)} (+${eDelta}) | C: ${String(base?.completed ?? 0).padEnd(3)}→${String(row.completed).padEnd(3)} (+${cDelta}) | ${row.percent}`,
+        );
+      }
+
+      expect(csCompletion.heading).toContain('Child Scorecard');
+      expect(csCompletion.rows.length, 'Should have 8 activity rows (Rwanda)').toBe(8);
+    });
+
+    await test.step('Verify Completion Report — Child Scoreboard activity deltas', async () => {
+      const assertDelta = (label: string, expectedDelta: number, completedDelta: number) => {
+        const row = findCompletionRow(csCompletion, label)!;
+        const base = findCompletionRow(baselineCSCompletion, label)!;
+        expect(row, `Row "${label}" should exist`).toBeDefined();
+        expect(base, `Baseline row "${label}" should exist`).toBeDefined();
+        expect(row.expected, `${label} expected +${expectedDelta}`).toBe(base.expected + expectedDelta);
+        expect(row.completed, `${label} completed +${completedDelta}`).toBe(base.completed + completedDelta);
+      };
+
+      // NCDA: always expected, completed via completeNCDA.
+      assertDelta('NCDA', 1, 1);
+
+      // Immunisations expected at 6 months (26 weeks):
+      assertDelta('BCG Immunisation', 1, 1);      // from birth
+      assertDelta('OPV Immunisation', 1, 1);      // from birth
+      assertDelta('DTP Immunisation', 1, 1);      // from 6 weeks
+      assertDelta('PCV13 Immunisation', 1, 1);    // from 6 weeks
+      assertDelta('Rotarix Immunisation', 1, 1);  // from 6 weeks
+      assertDelta('IPV Immunisation', 1, 1);      // from 14 weeks
+
+      // MR: not expected at 6 months (requires 36+ weeks ≈ 9 months).
+      assertDelta('MR Immunisation', 0, 0);
     });
   });
 });

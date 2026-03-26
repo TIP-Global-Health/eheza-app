@@ -831,12 +831,14 @@ export function findNutritionMetric(
  * so shell injection is not a concern.
  *
  * @param encounterType - e.g., 'acute-illness', 'prenatal', 'ncd'
+ * @param excludeSet - if true, skip encounters that already have completion data
  */
-export function generateCompletionData(encounterType: string) {
+export function generateCompletionData(encounterType: string, excludeSet = false) {
   const { drushCmd, cwd } = drushEnv();
-  console.log(`Generating completion data (completion-generate-${encounterType}-data.php)...`);
+  const excludeFlag = excludeSet ? ' --exclude_set=1' : '';
+  console.log(`Generating completion data (completion-generate-${encounterType}-data.php${excludeFlag})...`);
   execSync(
-    `${drushCmd} scr profiles/hedley/modules/custom/hedley_reports/scripts/completion-generate-${encounterType}-data.php`,
+    `${drushCmd} scr profiles/hedley/modules/custom/hedley_reports/scripts/completion-generate-${encounterType}-data.php${excludeFlag}`,
     { cwd, timeout: 300000, encoding: 'utf-8', stdio: 'pipe' },
   );
   console.log(`Completion data generated for ${encounterType}.`);
