@@ -98,7 +98,15 @@ import {
   navigateToParticipantPage as navigateToAIParticipant,
   startSubsequentEncounter as startSubsequentAI,
 } from './helpers/acute-illness';
-import { createAdultAndStartNCDEncounter } from './helpers/ncd';
+import {
+  createAdultAndStartNCDEncounter,
+  completeDangerSigns as completeNCDDangerSigns,
+  completeSymptomReview as completeNCDSymptomReview,
+  completeExamination as completeNCDExamination,
+  completeMedicalHistory as completeNCDMedicalHistory,
+  completeLaboratory as completeNCDLaboratory,
+  completeNextSteps as completeNCDNextSteps,
+} from './helpers/ncd';
 import {
   createAdultAndStartHIVEncounter,
   completeDiagnostics as completeHIVDiagnostics,
@@ -209,6 +217,7 @@ test.describe('Admin Reports', () => {
     let baselineCSCompletion: CompletionTableData;
     let baselineHIVCompletion: CompletionTableData;
     let baselineHVCompletion: CompletionTableData;
+    let baselineNCDCompletion: CompletionTableData;
     let nutrChildName: string;
     let hvChildName: string;
     let aiNurseName: string;
@@ -273,6 +282,7 @@ test.describe('Admin Reports', () => {
       generateCompletionData('child-scoreboard', true);
       generateCompletionData('hiv', true);
       generateCompletionData('home-visit', true);
+      generateCompletionData('ncd', true);
       completionRecalculateLargeDatasets();
 
       await navigateToCompletionReportPage(page, NYANGE_HC_ID);
@@ -311,6 +321,12 @@ test.describe('Admin Reports', () => {
       await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
       baselineHVCompletion = await readCompletionTable(page, 'home-visit');
       console.log('Baseline HV completion rows:', baselineHVCompletion.rows.length);
+
+      // NCD baseline (Nurse-only module, no Taken By filter).
+      await selectCompletionReportType(page, 'ncd');
+      await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
+      baselineNCDCompletion = await readCompletionTable(page, 'ncd');
+      console.log('Baseline NCD completion rows:', baselineNCDCompletion.rows.length);
     });
 
     // ── Phase 1a: Nurse encounters ──
@@ -439,12 +455,20 @@ test.describe('Admin Reports', () => {
       console.log('Created AIChild (Uncomplicated Malaria):', aiChild.fullName);
 
       // --- NCDAdult (male, 40 years): NCD encounter ---
+      // Complete all nurse initial activities for completion coverage.
       await page.goto(pwaBaseUrl);
       await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
       const ncdAdult = await createAdultAndStartNCDEncounter(page, {
         isFemale: false,
         ageYears: 40,
       });
+      await completeNCDDangerSigns(page);
+      await completeNCDSymptomReview(page);
+      // Stage 1 hypertension (sys=145, dia=95) triggers HealthEducation in NextSteps.
+      await completeNCDExamination(page, { sys: '145', dia: '95' });
+      await completeNCDMedicalHistory(page);
+      await completeNCDLaboratory(page);
+      await completeNCDNextSteps(page);
       await goToDashboard(page);
       console.log('Created NCDAdult:', ncdAdult.fullName);
 
@@ -732,6 +756,7 @@ test.describe('Admin Reports', () => {
       generateCompletionData('child-scoreboard', true);
       generateCompletionData('hiv', true);
       generateCompletionData('home-visit', true);
+      generateCompletionData('ncd', true);
       completionRecalculateLargeDatasets();
     });
 
@@ -1477,6 +1502,76 @@ test.describe('Admin Reports', () => {
       assertDelta('Feeding', 1, 1);
       assertDelta('Food Security', 1, 1);
       assertDelta('Hygiene', 1, 1);
+    });
+
+    // ── Phase 10: Completion Report — NCD ──
+    //
+    // NCDAdult (male 40yo, Nurse) completed initial encounter:
+    // DangerSigns, SymptomReview, Examination, MedicalHistory, Laboratory, NextSteps.
+    // Nurse-only module — no Taken By filter.
+
+    let ncdCompletion: CompletionTableData;
+
+    await test.step('Verify Completion Report — NCD table renders', async () => {
+      await navigateToCompletionReportPage(page, NYANGE_HC_ID);
+      await selectCompletionReportType(page, 'ncd');
+      await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
+
+      ncdCompletion = await readCompletionTable(page, 'ncd');
+
+      console.log('\n=== COMPLETION: NCD ===');
+      console.log('Heading:', ncdCompletion.heading);
+      console.log('Rows:', ncdCompletion.rows.length);
+      for (const row of ncdCompletion.rows) {
+        const base = findCompletionRow(baselineNCDCompletion, row.activity);
+        const eDelta = row.expected - (base?.expected ?? 0);
+        const cDelta = row.completed - (base?.completed ?? 0);
+        if (eDelta !== 0 || cDelta !== 0) {
+          console.log(
+            `${row.activity.padEnd(30)} | E: ${String(base?.expected ?? 0).padEnd(3)}→${String(row.expected).padEnd(3)} (+${eDelta}) | C: ${String(base?.completed ?? 0).padEnd(3)}→${String(row.completed).padEnd(3)} (+${cDelta}) | ${row.percent}`,
+          );
+        }
+      }
+
+      expect(ncdCompletion.heading).toContain('NCD');
+      expect(ncdCompletion.rows.length, 'Should have 26 activity rows').toBe(26);
+    });
+
+    await test.step('Verify Completion Report — NCD activity deltas', async () => {
+      const assertDelta = (label: string, expectedDelta: number, completedDelta: number) => {
+        const row = findCompletionRow(ncdCompletion, label)!;
+        const base = findCompletionRow(baselineNCDCompletion, label)!;
+        expect(row, `Row "${label}" should exist`).toBeDefined();
+        expect(base, `Baseline row "${label}" should exist`).toBeDefined();
+        expect(row.expected, `${label} expected +${expectedDelta}`).toBe(base.expected + expectedDelta);
+        expect(row.completed, `${label} completed +${completedDelta}`).toBe(base.completed + completedDelta);
+      };
+
+      // Base activities (always expected for initial encounter).
+      assertDelta('Danger Signs', 1, 1);
+      assertDelta('Symptoms Review', 1, 1);
+      assertDelta('Vitals', 1, 1);
+      assertDelta('Core Exam', 1, 1);
+
+      // History activities (first encounter only).
+      assertDelta('Co-Morbidities', 1, 1);
+      assertDelta('Medication History', 1, 1);
+      assertDelta('Social History', 1, 1);
+      assertDelta('Family History', 1, 1);
+      assertDelta('Outside Care', 1, 1);
+
+      // Labs (first encounter, never tested → all expected).
+      assertDelta('Random Blood Sugar Test', 1, 1);
+      assertDelta('Creatinine Test', 1, 1);
+      assertDelta('HBA1C Test', 1, 1);
+      assertDelta('HIV Test', 1, 1);
+      assertDelta('Lipid Panel Test', 1, 1);
+      assertDelta('Liver Function Test', 1, 1);
+      assertDelta('Urine Dipstick Test', 1, 1);
+
+      // Not applicable for male patient.
+      assertDelta('Family Planning', 0, 0);
+      assertDelta('Pregnancy Test', 0, 0);
     });
   });
 });
