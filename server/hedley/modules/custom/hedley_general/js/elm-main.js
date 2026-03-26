@@ -9506,7 +9506,8 @@ var $author$project$Backend$Reports$Decoder$decodePatientData = A4(
 													_List_fromArray(
 														['individual', 'family-nutrition']),
 													$elm$json$Json$Decode$nullable(
-														$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD)),
+														$elm$json$Json$Decode$list(
+															$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD))),
 													$elm$core$Maybe$Nothing,
 													A4(
 														$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,

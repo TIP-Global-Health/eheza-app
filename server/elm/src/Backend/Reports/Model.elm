@@ -31,7 +31,7 @@ type alias PatientData =
     , gender : Gender
     , acuteIllnessData : Maybe (List (List AcuteIllnessEncounterData))
     , prenatalData : Maybe (List PrenatalParticipantData)
-    , familyNutritionData : Maybe (List NominalDate)
+    , familyNutritionData : Maybe (List (List NominalDate))
     , homeVisitData : Maybe (List (List HomeVisitEncounterData))
     , wellChildData : Maybe (List (List NutritionEncounterData))
     , childScorecardData : Maybe (List (List ChildScorecardEncounterData))

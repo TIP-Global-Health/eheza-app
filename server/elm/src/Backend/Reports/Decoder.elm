@@ -63,7 +63,7 @@ decodePatientData =
         |> required "gender" (decodeWithFallback Female decodeGender)
         |> optionalAt [ "individual", "acute-illness" ] (nullable (list (list decodeAcuteIllnessEncounterData))) Nothing
         |> optionalAt [ "individual", "antenatal" ] (nullable (list decodePrenatalParticipantData)) Nothing
-        |> optionalAt [ "individual", "family-nutrition" ] (nullable (list decodeYYYYMMDD)) Nothing
+        |> optionalAt [ "individual", "family-nutrition" ] (nullable (list (list decodeYYYYMMDD))) Nothing
         |> optionalAt [ "individual", "home-visit" ] (nullable (list (list decodeYYYYMMDD))) Nothing
         |> optionalAt [ "individual", "well-child" ] (nullable (list (list decodeNutritionEncounterData))) Nothing
         |> optionalAt [ "individual", "child-scoreboard" ] (nullable (list (list decodeYYYYMMDD))) Nothing
