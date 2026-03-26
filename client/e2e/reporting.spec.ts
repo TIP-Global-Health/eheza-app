@@ -124,7 +124,12 @@ import {
   completeMedication as completeHIVMedication,
   completeNextSteps as completeHIVNextSteps,
 } from './helpers/hiv';
-import { createAdultAndStartTBEncounter } from './helpers/tuberculosis';
+import {
+  createAdultAndStartTBEncounter,
+  completeDiagnostics as completeTBDiagnostics,
+  completeMedication as completeTBMedication,
+  completeNextSteps as completeTBNextSteps,
+} from './helpers/tuberculosis';
 import {
   createChildAndStartEncounter as createChildScoreboardChild,
   completeNCDA,
@@ -232,6 +237,7 @@ test.describe('Admin Reports', () => {
     let baselineNCDCompletion: CompletionTableData;
     let baselineNBCompletion: CompletionTableData;
     let baselineSPVCompletion: CompletionTableData;
+    let baselineTBCompletion: CompletionTableData;
     let nutrChildName: string;
     let hvChildName: string;
     let aiNurseName: string;
@@ -298,6 +304,7 @@ test.describe('Admin Reports', () => {
       generateCompletionData('home-visit', true);
       generateCompletionData('ncd', true);
       generateCompletionData('well-child', true);
+      generateCompletionData('tuberculosis', true);
       completionRecalculateLargeDatasets();
 
       await navigateToCompletionReportPage(page, NYANGE_HC_ID);
@@ -364,6 +371,17 @@ test.describe('Admin Reports', () => {
         baselineSPVCompletion = { heading: '', rows: [] };
       }
       console.log('Baseline SPV completion rows:', baselineSPVCompletion.rows.length);
+
+      // Tuberculosis baseline (CHW-only module, no Taken By filter).
+      await selectCompletionReportType(page, 'tuberculosis');
+      await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
+      const tbReport = page.locator('div.report.tuberculosis');
+      if (await tbReport.isVisible({ timeout: 3000 }).catch(() => false)) {
+        baselineTBCompletion = await readCompletionTable(page, 'tuberculosis');
+      } else {
+        baselineTBCompletion = { heading: '', rows: [] };
+      }
+      console.log('Baseline TB completion rows:', baselineTBCompletion.rows.length);
     });
 
     // ── Phase 1a: Nurse encounters ──
@@ -703,13 +721,17 @@ test.describe('Admin Reports', () => {
       await goToDashboard(page);
       console.log('Created HIVAdult:', hivAdult.fullName);
 
-      // --- TBAdult (male, 45 years) ---
+      // --- TBAdult (male, 45 years): TB initial encounter ---
+      // Complete Diagnostics (positive) + Medication + NextSteps for completion coverage.
       await page.goto(pwaBaseUrl);
       await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
       const tbAdult = await createAdultAndStartTBEncounter(page, {
         isFemale: false,
         ageYears: 45,
       });
+      await completeTBDiagnostics(page);
+      await completeTBMedication(page, { sideEffects: true }); // Triggers Referral in NextSteps.
+      await completeTBNextSteps(page);
       await goToDashboard(page);
       console.log('Created TBAdult:', tbAdult.fullName);
 
@@ -839,6 +861,7 @@ test.describe('Admin Reports', () => {
       generateCompletionData('home-visit', true);
       generateCompletionData('ncd', true);
       generateCompletionData('well-child', true);
+      generateCompletionData('tuberculosis', true);
       completionRecalculateLargeDatasets();
     });
 
@@ -1814,6 +1837,63 @@ test.describe('Admin Reports', () => {
       // No CHW SPV encounters created — Vitals should be 0.
       const vitals = findCompletionRow(chwData, 'Vitals')!;
       expect(vitals.expected, 'SPV CHW: Vitals expected 0').toBe(0);
+    });
+
+    // ── Phase 13: Completion Report — Tuberculosis ──
+    //
+    // TBAdult (male 45yo, CHW) completed initial encounter:
+    // Diagnostics (positive) + Medication (DOT + TreatmentReview) + NextSteps.
+    // CHW-only module — no Taken By filter.
+
+    let tbCompletion: CompletionTableData;
+
+    await test.step('Verify Completion Report — Tuberculosis table renders', async () => {
+      await navigateToCompletionReportPage(page, NYANGE_HC_ID);
+      await selectCompletionReportType(page, 'tuberculosis');
+      await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
+
+      tbCompletion = await readCompletionTable(page, 'tuberculosis');
+
+      console.log('\n=== COMPLETION: TUBERCULOSIS ===');
+      console.log('Heading:', tbCompletion.heading);
+      console.log('Rows:', tbCompletion.rows.length);
+      for (const row of tbCompletion.rows) {
+        const base = findCompletionRow(baselineTBCompletion, row.activity);
+        const eDelta = row.expected - (base?.expected ?? 0);
+        const cDelta = row.completed - (base?.completed ?? 0);
+        console.log(
+          `${row.activity.padEnd(25)} | E: ${String(base?.expected ?? 0).padEnd(3)}→${String(row.expected).padEnd(3)} (+${eDelta}) | C: ${String(base?.completed ?? 0).padEnd(3)}→${String(row.completed).padEnd(3)} (+${cDelta}) | ${row.percent}`,
+        );
+      }
+
+      expect(tbCompletion.heading).toContain('Tuberculosis');
+      expect(tbCompletion.rows.length, 'Should have 8 activity rows').toBe(8);
+    });
+
+    await test.step('Verify Completion Report — Tuberculosis activity deltas', async () => {
+      const assertDelta = (label: string, expectedDelta: number, completedDelta: number) => {
+        const row = findCompletionRow(tbCompletion, label)!;
+        const base = findCompletionRow(baselineTBCompletion, label);
+        expect(row, `Row "${label}" should exist`).toBeDefined();
+        const baseExpected = base?.expected ?? 0;
+        const baseCompleted = base?.completed ?? 0;
+        expect(row.expected, `${label} expected +${expectedDelta}`).toBe(baseExpected + expectedDelta);
+        expect(row.completed, `${label} completed +${completedDelta}`).toBe(baseCompleted + completedDelta);
+      };
+
+      // Initial encounter activities (completed).
+      assertDelta('Diagnostics', 1, 1);
+      assertDelta('Medication', 1, 1);
+      assertDelta('DOT', 1, 1);
+      assertDelta('Treatment Review', 1, 1);
+      assertDelta('Health Education', 1, 1);
+      assertDelta('Follow Up', 1, 1);
+
+      // Not expected for initial encounter.
+      assertDelta('Symptoms Review', 0, 0);
+
+      // Referral: triggered by adverse events (sideEffects: true in Medication).
+      assertDelta('Referral', 1, 1);
     });
   });
 });
