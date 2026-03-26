@@ -59,9 +59,13 @@ import {
 } from './helpers/nutrition';
 import {
   createChildAndStartWellChildEncounter,
+  completeDangerSigns as completeWCDangerSigns,
   completePregnancySummary,
   completeNutritionAssessment as completeWCNutritionAssessment,
+  completeECD,
+  completeMedication as completeWCMedication,
   completeImmunisation as completeWCImmunisation,
+  completeNCDA as completeWCNCDA,
   completeNextSteps as completeWCNextSteps,
 } from './helpers/well-child';
 import {
@@ -227,6 +231,7 @@ test.describe('Admin Reports', () => {
     let baselineHVCompletion: CompletionTableData;
     let baselineNCDCompletion: CompletionTableData;
     let baselineNBCompletion: CompletionTableData;
+    let baselineSPVCompletion: CompletionTableData;
     let nutrChildName: string;
     let hvChildName: string;
     let aiNurseName: string;
@@ -348,6 +353,17 @@ test.describe('Admin Reports', () => {
         baselineNBCompletion = { heading: '', rows: [] };
       }
       console.log('Baseline NB completion rows:', baselineNBCompletion.rows.length);
+
+      // Well Child SPV baseline (supports Nurse + CHW Taken By filter).
+      await selectCompletionReportType(page, 'well-child');
+      await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
+      const spvReport = page.locator('div.report.well-child');
+      if (await spvReport.isVisible({ timeout: 3000 }).catch(() => false)) {
+        baselineSPVCompletion = await readCompletionTable(page, 'well-child');
+      } else {
+        baselineSPVCompletion = { heading: '', rows: [] };
+      }
+      console.log('Baseline SPV completion rows:', baselineSPVCompletion.rows.length);
     });
 
     // ── Phase 1a: Nurse encounters ──
@@ -418,6 +434,25 @@ test.describe('Admin Reports', () => {
       });
       await click(spvBtn, page);
       await page.locator('div.page-encounter.well-child').waitFor({ timeout: 10000 });
+      // Complete nurse SPV activities for completion coverage.
+      await completeWCDangerSigns(page);
+      await completeWCNutritionAssessment(page, {
+        height: '70',
+        headCircumference: '45',
+        weight: '8',
+        muac: '14',
+        nutritionSigns: [],
+      });
+      await completeECD(page);
+      await completeWCMedication(page);
+      await completeWCImmunisation(page);
+      await completeWCNCDA(page);
+      await completeWCNextSteps(page, {
+        hasContributingFactors: false,
+        hasHealthEducation: false,
+        hasSendToHC: false,
+        hasFollowUp: false,
+      });
       await goToDashboard(page);
       console.log('Created SPV encounter for NutrChild');
 
@@ -1688,6 +1723,97 @@ test.describe('Admin Reports', () => {
 
       // Photo: expected but not completed (no upload helper).
       assertDelta('Photo', 1, 0);
+    });
+
+    // ── Phase 12: Completion Report — Well Child (SPV) ──
+    //
+    // NutrChild (10mo male, Nurse) completed SPV encounter:
+    // DangerSigns, NutritionAssessment, ECD, Medication, Immunisation, NCDA, NextSteps.
+    // Supports Taken By filter (Nurse + CHW).
+
+    let spvCompletion: CompletionTableData;
+
+    await test.step('Verify Completion Report — Well Child SPV table renders', async () => {
+      await navigateToCompletionReportPage(page, NYANGE_HC_ID);
+      await selectCompletionReportType(page, 'well-child');
+      await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
+
+      spvCompletion = await readCompletionTable(page, 'well-child');
+
+      console.log('\n=== COMPLETION: WELL CHILD SPV ===');
+      console.log('Heading:', spvCompletion.heading);
+      console.log('Rows:', spvCompletion.rows.length);
+      for (const row of spvCompletion.rows) {
+        const base = findCompletionRow(baselineSPVCompletion, row.activity);
+        const eDelta = row.expected - (base?.expected ?? 0);
+        const cDelta = row.completed - (base?.completed ?? 0);
+        if (eDelta !== 0 || cDelta !== 0) {
+          console.log(
+            `${row.activity.padEnd(25)} | E: ${String(base?.expected ?? 0).padEnd(3)}→${String(row.expected).padEnd(3)} (+${eDelta}) | C: ${String(base?.completed ?? 0).padEnd(3)}→${String(row.completed).padEnd(3)} (+${cDelta}) | ${row.percent}`,
+          );
+        }
+      }
+
+      expect(spvCompletion.rows.length, 'Should have 29 activity rows (Rwanda)').toBe(29);
+    });
+
+    await test.step('Verify Completion Report — Well Child SPV activity deltas', async () => {
+      const assertDelta = (label: string, expectedDelta: number, completedDelta: number) => {
+        const row = findCompletionRow(spvCompletion, label)!;
+        const base = findCompletionRow(baselineSPVCompletion, label);
+        expect(row, `Row "${label}" should exist`).toBeDefined();
+        const baseExpected = base?.expected ?? 0;
+        const baseCompleted = base?.completed ?? 0;
+        expect(row.expected, `${label} expected +${expectedDelta}`).toBe(baseExpected + expectedDelta);
+        expect(row.completed, `${label} completed +${completedDelta}`).toBe(baseCompleted + completedDelta);
+      };
+
+      // DangerSigns = SymptomsReview + Vitals.
+      assertDelta('Symptoms Review', 1, 1);
+      assertDelta('Vitals', 1, 1);
+
+      // NutritionAssessment sub-tasks.
+      assertDelta('Height', 1, 1);
+      assertDelta('Head Circumference', 1, 1);  // age 10mo < 36mo
+      assertDelta('MUAC', 1, 1);                // age 10mo >= 6mo
+      assertDelta('Nutrition', 1, 1);
+      assertDelta('Weight', 1, 1);
+
+      // Nurse-only activities.
+      assertDelta('ECD', 1, 1);
+      assertDelta('NCDA', 1, 1);  // age 10mo < 24mo
+
+      // Photo: expected but not completed.
+      assertDelta('Photo', 1, 0);
+
+      // Not applicable for nurse encounter (CHW-only).
+      assertDelta('Caring', 0, 0);
+      assertDelta('Feeding', 0, 0);
+      assertDelta('Food Security', 0, 0);
+      assertDelta('Hygiene', 0, 0);
+
+      // HPV: not expected at 10mo (female 12yr+ only).
+      assertDelta('HPV Immunisation', 0, 0);
+    });
+
+    await test.step('Verify Completion Report — SPV Taken By filter (Nurse)', async () => {
+      await selectCompletionTakenBy(page, 'nurse');
+      const nurseData = await readCompletionTable(page, 'well-child');
+
+      // Nurse encounter has Vitals.
+      const baseVitals = findCompletionRow(baselineSPVCompletion, 'Vitals');
+      const vitals = findCompletionRow(nurseData, 'Vitals')!;
+      expect(vitals.expected, 'SPV Nurse: Vitals expected +1').toBe((baseVitals?.expected ?? 0) + 1);
+      expect(vitals.completed, 'SPV Nurse: Vitals completed +1').toBe((baseVitals?.completed ?? 0) + 1);
+    });
+
+    await test.step('Verify Completion Report — SPV Taken By filter (CHW)', async () => {
+      await selectCompletionTakenBy(page, 'chw');
+      const chwData = await readCompletionTable(page, 'well-child');
+
+      // No CHW SPV encounters created — Vitals should be 0.
+      const vitals = findCompletionRow(chwData, 'Vitals')!;
+      expect(vitals.expected, 'SPV CHW: Vitals expected 0').toBe(0);
     });
   });
 });
