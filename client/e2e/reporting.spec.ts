@@ -155,8 +155,20 @@ import {
   goToParticipantsPage,
   clickMotherCard,
   navigateToChild,
+  navigateToMother,
   completeHeight,
   completeWeight,
+  completeMuac as completeGroupMuac,
+  completeNutritionSignsAbnormal,
+  completeChildFbf,
+  completeNCDA as completeGroupNCDA,
+  completeContributingFactors as completeGroupContributingFactors,
+  completeHealthEducation as completeGroupHealthEducation,
+  completeSendToHC as completeGroupSendToHC,
+  completeFollowUp as completeGroupFollowUp,
+  completeFamilyPlanning as completeGroupFamilyPlanning,
+  completeLactation,
+  completeMotherFbf,
 } from './helpers/group-session';
 
 const pwaBaseUrl = `http://localhost:${getClientPort()}`;
@@ -244,6 +256,7 @@ test.describe('Admin Reports', () => {
     let baselineSPVCompletion: CompletionTableData;
     let baselineTBCompletion: CompletionTableData;
     let baselineNutrIndCompletion: CompletionTableData;
+    let baselineNutrGrpCompletion: CompletionTableData;
     let nutrChildName: string;
     let hvChildName: string;
     let aiNurseName: string;
@@ -312,6 +325,7 @@ test.describe('Admin Reports', () => {
       generateCompletionData('well-child', true);
       generateCompletionData('tuberculosis', true);
       generateCompletionData('nutrition-individual', true);
+      generateCompletionData('nutrition-group', true);
       completionRecalculateLargeDatasets();
 
       await navigateToCompletionReportPage(page, NYANGE_HC_ID);
@@ -400,6 +414,17 @@ test.describe('Admin Reports', () => {
         baselineNutrIndCompletion = { heading: '', rows: [] };
       }
       console.log('Baseline NutrInd completion rows:', baselineNutrIndCompletion.rows.length);
+
+      // Nutrition Group baseline (Nurse + CHW, Taken By filter shown).
+      await selectCompletionReportType(page, 'nutrition-group');
+      await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
+      const nutrGrpReport = page.locator('div.report.nutrition-group');
+      if (await nutrGrpReport.isVisible({ timeout: 3000 }).catch(() => false)) {
+        baselineNutrGrpCompletion = await readCompletionTable(page, 'nutrition-group');
+      } else {
+        baselineNutrGrpCompletion = { heading: '', rows: [] };
+      }
+      console.log('Baseline NutrGrp completion rows:', baselineNutrGrpCompletion.rows.length);
     });
 
     // ── Phase 1a: Nurse encounters ──
@@ -593,7 +618,21 @@ test.describe('Admin Reports', () => {
       await navigateToChild(page);
       await completeHeight(page, '70');
       await completeWeight(page, '8.5');
-      console.log('Created FBF session with child measurements:', fbfChild.fullName);
+      await completeGroupMuac(page, '11.5');
+      await completeNutritionSignsAbnormal(page); // Triggers NextSteps.
+      await completeChildFbf(page);
+      await completeGroupNCDA(page);
+      // NextSteps (triggered by abnormal nutrition signs).
+      await completeGroupContributingFactors(page);
+      await completeGroupHealthEducation(page);
+      await completeGroupSendToHC(page);
+      await completeGroupFollowUp(page);
+      // Navigate to mother and complete mother activities.
+      await navigateToMother(page);
+      await completeGroupFamilyPlanning(page);
+      await completeLactation(page);
+      await completeMotherFbf(page);
+      console.log('Created FBF session with full activities:', fbfChild.fullName);
     });
 
     await test.step('Sync nurse data to backend', async () => {
@@ -885,6 +924,7 @@ test.describe('Admin Reports', () => {
       generateCompletionData('well-child', true);
       generateCompletionData('tuberculosis', true);
       generateCompletionData('nutrition-individual', true);
+      generateCompletionData('nutrition-group', true);
       completionRecalculateLargeDatasets();
     });
 
@@ -1010,8 +1050,8 @@ test.describe('Admin Reports', () => {
       assertDelta('NCD', 1);
       assertDelta('HIV', 1);
       assertDelta('Tuberculosis', 1);
-      assertDelta('Nutrition (total)', 3);   // Individual +2 (NutrChild + HVChild) + FBF +1
-      assertDelta('FBF', 1);                // FBF child with height + weight measurements
+      assertDelta('Nutrition (total)', 4);   // Individual +2 (NutrChild + HVChild) + FBF +2 (mother + child)
+      assertDelta('FBF', 2);                // FBF mother + child both have measurements
       assertDelta('Individual', 2);         // NutrChild + HVChild each have a nutrition encounter
     });
 
@@ -2000,6 +2040,77 @@ test.describe('Admin Reports', () => {
       // NCDA is nurse-only — CHW should show 0.
       const ncda = findCompletionRow(chwData, 'NCDA')!;
       expect(ncda.expected, 'NutrInd CHW: NCDA expected 0').toBe(0);
+    });
+
+    // ── Phase 15: Completion Report — Nutrition Group ──
+    //
+    // FBF group session (Nurse): Mother (FamilyPlanning, Lactation, MotherFbf)
+    // + Child (Height, Weight, MUAC, Nutrition abnormal, ChildFbf, NCDA, NextSteps).
+    // Supports Taken By filter (Nurse + CHW).
+
+    let nutrGrpCompletion: CompletionTableData;
+
+    await test.step('Verify Completion Report — Nutrition Group table renders', async () => {
+      await navigateToCompletionReportPage(page, NYANGE_HC_ID);
+      await selectCompletionReportType(page, 'nutrition-group');
+      await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
+
+      nutrGrpCompletion = await readCompletionTable(page, 'nutrition-group');
+
+      console.log('\n=== COMPLETION: NUTRITION GROUP ===');
+      console.log('Heading:', nutrGrpCompletion.heading);
+      console.log('Rows:', nutrGrpCompletion.rows.length);
+      for (const row of nutrGrpCompletion.rows) {
+        const base = findCompletionRow(baselineNutrGrpCompletion, row.activity);
+        const eDelta = row.expected - (base?.expected ?? 0);
+        const cDelta = row.completed - (base?.completed ?? 0);
+        if (eDelta !== 0 || cDelta !== 0) {
+          console.log(
+            `${row.activity.padEnd(25)} | E: ${String(base?.expected ?? 0).padEnd(3)}→${String(row.expected).padEnd(3)} (+${eDelta}) | C: ${String(base?.completed ?? 0).padEnd(3)}→${String(row.completed).padEnd(3)} (+${cDelta}) | ${row.percent}`,
+          );
+        }
+      }
+
+      expect(nutrGrpCompletion.rows.length, 'Should have 14 activity rows').toBe(14);
+    });
+
+    await test.step('Verify Completion Report — Nutrition Group activity deltas', async () => {
+      const assertDelta = (label: string, expectedDelta: number, completedDelta: number) => {
+        const row = findCompletionRow(nutrGrpCompletion, label)!;
+        const base = findCompletionRow(baselineNutrGrpCompletion, label);
+        expect(row, `Row "${label}" should exist`).toBeDefined();
+        const baseExpected = base?.expected ?? 0;
+        const baseCompleted = base?.completed ?? 0;
+        expect(row.expected, `${label} expected +${expectedDelta}`).toBe(baseExpected + expectedDelta);
+        expect(row.completed, `${label} completed +${completedDelta}`).toBe(baseCompleted + completedDelta);
+      };
+
+      // Mother activities.
+      assertDelta('Family Planning', 1, 1);
+      assertDelta('Lactation', 1, 1);
+      // Mother FBF: conditional on breastfeeding AND ubudehe 1/2 — not triggered.
+      assertDelta('Mother FBF', 0, 0);
+
+      // Child: always expected.
+      assertDelta('Height', 1, 1);
+      assertDelta('Weight', 1, 1);
+      assertDelta('Nutrition', 1, 1);
+      assertDelta('MUAC', 1, 1);
+
+      // Photo: expected but not completed.
+      assertDelta('Photo', 1, 0);
+
+      // FBF-specific.
+      assertDelta('Child FBF', 1, 1);
+
+      // Nurse + age < 24mo.
+      assertDelta('NCDA', 1, 1);
+
+      // NextSteps (triggered by abnormal nutrition signs).
+      assertDelta('Contributing Factors', 1, 1);
+      assertDelta('Follow Up', 1, 1);
+      assertDelta('Health Education', 1, 1);
+      assertDelta('Referral', 1, 1);
     });
   });
 });
