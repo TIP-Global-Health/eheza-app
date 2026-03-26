@@ -56,6 +56,11 @@ import {
   enterMuac,
   enterNutritionSigns,
   saveActivity,
+  completeNCDA as completeNutritionNCDA,
+  completeContributingFactors,
+  completeFollowUp as completeNutritionFollowUp,
+  completeHealthEducation as completeNutritionHealthEducation,
+  completeSendToHC,
 } from './helpers/nutrition';
 import {
   createChildAndStartWellChildEncounter,
@@ -238,6 +243,7 @@ test.describe('Admin Reports', () => {
     let baselineNBCompletion: CompletionTableData;
     let baselineSPVCompletion: CompletionTableData;
     let baselineTBCompletion: CompletionTableData;
+    let baselineNutrIndCompletion: CompletionTableData;
     let nutrChildName: string;
     let hvChildName: string;
     let aiNurseName: string;
@@ -305,6 +311,7 @@ test.describe('Admin Reports', () => {
       generateCompletionData('ncd', true);
       generateCompletionData('well-child', true);
       generateCompletionData('tuberculosis', true);
+      generateCompletionData('nutrition-individual', true);
       completionRecalculateLargeDatasets();
 
       await navigateToCompletionReportPage(page, NYANGE_HC_ID);
@@ -382,6 +389,17 @@ test.describe('Admin Reports', () => {
         baselineTBCompletion = { heading: '', rows: [] };
       }
       console.log('Baseline TB completion rows:', baselineTBCompletion.rows.length);
+
+      // Nutrition Individual baseline (Nurse + CHW, Taken By filter shown).
+      await selectCompletionReportType(page, 'nutrition-individual');
+      await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
+      const nutrIndReport = page.locator('div.report.nutrition-individual');
+      if (await nutrIndReport.isVisible({ timeout: 3000 }).catch(() => false)) {
+        baselineNutrIndCompletion = await readCompletionTable(page, 'nutrition-individual');
+      } else {
+        baselineNutrIndCompletion = { heading: '', rows: [] };
+      }
+      console.log('Baseline NutrInd completion rows:', baselineNutrIndCompletion.rows.length);
     });
 
     // ── Phase 1a: Nurse encounters ──
@@ -402,12 +420,9 @@ test.describe('Admin Reports', () => {
       await saveActivity(page);
       await enterMuac(page, '11.0');
       await saveActivity(page);
-      // Nutrition signs is the last mandatory activity. With abnormal z-scores,
-      // saving it triggers a diagnosis popup then NextSteps (Contributing
-      // Factors, etc.) instead of returning to the encounter page.
-      // Measurements are already persisted, so we dismiss the popup and
-      // navigate to the dashboard.
-      await enterNutritionSigns(page, ['None']);
+      // Nutrition signs: use abnormal sign ('Edema') to trigger NextSteps
+      // (Contributing Factors, FollowUp, HealthEducation, SendToHC).
+      await enterNutritionSigns(page, ['Edema']);
       await click(page.locator('button.ui.fluid.primary.button.active'), page);
       const nursePopup = page.locator('div.ui.active.modal.diagnosis-popup');
       try {
@@ -415,6 +430,13 @@ test.describe('Admin Reports', () => {
         await click(nursePopup.locator('button.ui.primary.fluid.button'), page);
       } catch { /* no popup */ }
       await page.waitForTimeout(2000);
+      // Complete NextSteps activities triggered by abnormal nutrition signs.
+      await completeContributingFactors(page);
+      await completeNutritionFollowUp(page);
+      await completeNutritionHealthEducation(page);
+      await completeSendToHC(page);
+      // Complete NCDA (nurse, age < 24 months).
+      await completeNutritionNCDA(page);
       await goToDashboard(page);
       console.log('Created NutrChild with measurements:', nutrChild.fullName);
 
@@ -862,6 +884,7 @@ test.describe('Admin Reports', () => {
       generateCompletionData('ncd', true);
       generateCompletionData('well-child', true);
       generateCompletionData('tuberculosis', true);
+      generateCompletionData('nutrition-individual', true);
       completionRecalculateLargeDatasets();
     });
 
@@ -1894,6 +1917,89 @@ test.describe('Admin Reports', () => {
 
       // Referral: triggered by adverse events (sideEffects: true in Medication).
       assertDelta('Referral', 1, 1);
+    });
+
+    // ── Phase 14: Completion Report — Nutrition Individual ──
+    //
+    // NutrChild (10mo male, Nurse): Height, Weight, MUAC, Nutrition (Edema),
+    //   NCDA, ContributingFactors, FollowUp, HealthEducation, SendToHC.
+    // HVChild (8mo male, CHW): Weight, MUAC, Nutrition (None).
+    // Supports Taken By filter (Nurse + CHW).
+
+    let nutrIndCompletion: CompletionTableData;
+
+    await test.step('Verify Completion Report — Nutrition Individual table renders', async () => {
+      await navigateToCompletionReportPage(page, NYANGE_HC_ID);
+      await selectCompletionReportType(page, 'nutrition-individual');
+      await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
+
+      nutrIndCompletion = await readCompletionTable(page, 'nutrition-individual');
+
+      console.log('\n=== COMPLETION: NUTRITION INDIVIDUAL ===');
+      console.log('Heading:', nutrIndCompletion.heading);
+      console.log('Rows:', nutrIndCompletion.rows.length);
+      for (const row of nutrIndCompletion.rows) {
+        const base = findCompletionRow(baselineNutrIndCompletion, row.activity);
+        const eDelta = row.expected - (base?.expected ?? 0);
+        const cDelta = row.completed - (base?.completed ?? 0);
+        console.log(
+          `${row.activity.padEnd(25)} | E: ${String(base?.expected ?? 0).padEnd(3)}→${String(row.expected).padEnd(3)} (+${eDelta}) | C: ${String(base?.completed ?? 0).padEnd(3)}→${String(row.completed).padEnd(3)} (+${cDelta}) | ${row.percent}`,
+        );
+      }
+
+      expect(nutrIndCompletion.rows.length, 'Should have 10 activity rows').toBe(10);
+    });
+
+    await test.step('Verify Completion Report — Nutrition Individual activity deltas', async () => {
+      const assertDelta = (label: string, expectedDelta: number, completedDelta: number) => {
+        const row = findCompletionRow(nutrIndCompletion, label)!;
+        const base = findCompletionRow(baselineNutrIndCompletion, label);
+        expect(row, `Row "${label}" should exist`).toBeDefined();
+        const baseExpected = base?.expected ?? 0;
+        const baseCompleted = base?.completed ?? 0;
+        expect(row.expected, `${label} expected +${expectedDelta}`).toBe(baseExpected + expectedDelta);
+        expect(row.completed, `${label} completed +${completedDelta}`).toBe(baseCompleted + completedDelta);
+      };
+
+      // Both encounters: always expected.
+      assertDelta('Weight', 2, 2);
+      assertDelta('MUAC', 2, 2);
+      assertDelta('Nutrition', 2, 2);
+
+      // Height: both expected, but CHW Rwanda doesn't complete it.
+      assertDelta('Height', 2, 1);
+
+      // Photo: both expected, neither completed.
+      assertDelta('Photo', 2, 0);
+
+      // Nurse only: NCDA (age < 24mo).
+      assertDelta('NCDA', 1, 1);
+
+      // NextSteps: expected +2 (both encounters have abnormal z-scores),
+      // completed +1 (only NutrChild completes them).
+      assertDelta('Contributing Factors', 2, 1);
+      assertDelta('Follow Up', 2, 1);
+      assertDelta('Health Education', 2, 1);
+      assertDelta('Referral', 2, 1);
+    });
+
+    await test.step('Verify Completion Report — Nutrition Individual Taken By (Nurse)', async () => {
+      await selectCompletionTakenBy(page, 'nurse');
+      const nurseData = await readCompletionTable(page, 'nutrition-individual');
+
+      const baseNCDA = findCompletionRow(baselineNutrIndCompletion, 'NCDA');
+      const ncda = findCompletionRow(nurseData, 'NCDA')!;
+      expect(ncda.expected, 'NutrInd Nurse: NCDA expected +1').toBe((baseNCDA?.expected ?? 0) + 1);
+      expect(ncda.completed, 'NutrInd Nurse: NCDA completed +1').toBe((baseNCDA?.completed ?? 0) + 1);
+    });
+
+    await test.step('Verify Completion Report — Nutrition Individual Taken By (CHW)', async () => {
+      await selectCompletionTakenBy(page, 'chw');
+      const chwData = await readCompletionTable(page, 'nutrition-individual');
+
+      // NCDA is nurse-only — CHW should show 0.
+      const ncda = findCompletionRow(chwData, 'NCDA')!;
+      expect(ncda.expected, 'NutrInd CHW: NCDA expected 0').toBe(0);
     });
   });
 });
