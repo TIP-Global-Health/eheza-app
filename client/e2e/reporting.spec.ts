@@ -99,7 +99,12 @@ import {
   startSubsequentEncounter as startSubsequentAI,
 } from './helpers/acute-illness';
 import { createAdultAndStartNCDEncounter } from './helpers/ncd';
-import { createAdultAndStartHIVEncounter } from './helpers/hiv';
+import {
+  createAdultAndStartHIVEncounter,
+  completeDiagnostics as completeHIVDiagnostics,
+  completeMedication as completeHIVMedication,
+  completeNextSteps as completeHIVNextSteps,
+} from './helpers/hiv';
 import { createAdultAndStartTBEncounter } from './helpers/tuberculosis';
 import {
   createChildAndStartEncounter as createChildScoreboardChild,
@@ -196,6 +201,7 @@ test.describe('Admin Reports', () => {
     let baselinePrenatalCompletion: CompletionTableData;
     let baselinePrenatalCompletionCHW: CompletionTableData;
     let baselineCSCompletion: CompletionTableData;
+    let baselineHIVCompletion: CompletionTableData;
     let nutrChildName: string;
     let hvChildName: string;
     let aiNurseName: string;
@@ -258,6 +264,7 @@ test.describe('Admin Reports', () => {
       generateCompletionData('acute-illness', true);
       generateCompletionData('prenatal', true);
       generateCompletionData('child-scoreboard', true);
+      generateCompletionData('hiv', true);
       completionRecalculateLargeDatasets();
 
       await navigateToCompletionReportPage(page, NYANGE_HC_ID);
@@ -284,6 +291,12 @@ test.describe('Admin Reports', () => {
       await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
       baselineCSCompletion = await readCompletionTable(page, 'child-scoreboard');
       console.log('Baseline CS completion rows:', baselineCSCompletion.rows.length);
+
+      // HIV baseline (CHW-only module, no Taken By filter).
+      await selectCompletionReportType(page, 'hiv');
+      await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
+      baselineHIVCompletion = await readCompletionTable(page, 'hiv');
+      console.log('Baseline HIV completion rows:', baselineHIVCompletion.rows.length);
     });
 
     // ── Phase 1a: Nurse encounters ──
@@ -581,13 +594,17 @@ test.describe('Admin Reports', () => {
       await goToDashboard(page);
       console.log('Created AICHW (Uncomplicated Pneumonia):', aiCHW.fullName);
 
-      // --- HIVAdult (female, 35 years) ---
+      // --- HIVAdult (female, 35 years): HIV initial encounter ---
+      // Complete Diagnostics (positive) + Medication + NextSteps for completion coverage.
       await page.goto(pwaBaseUrl);
       await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
       const hivAdult = await createAdultAndStartHIVEncounter(page, {
         isFemale: true,
         ageYears: 35,
       });
+      await completeHIVDiagnostics(page);
+      await completeHIVMedication(page);
+      await completeHIVNextSteps(page);
       await goToDashboard(page);
       console.log('Created HIVAdult:', hivAdult.fullName);
 
@@ -695,6 +712,7 @@ test.describe('Admin Reports', () => {
       generateCompletionData('acute-illness', true);
       generateCompletionData('prenatal', true);
       generateCompletionData('child-scoreboard', true);
+      generateCompletionData('hiv', true);
       completionRecalculateLargeDatasets();
     });
 
@@ -1337,6 +1355,61 @@ test.describe('Admin Reports', () => {
 
       // MR: expected at 10 months (~43 weeks, requires 36+ weeks).
       assertDelta('MR Immunisation', 1, 1);
+    });
+
+    // ── Phase 8: Completion Report — HIV ──
+    //
+    // HIVAdult (female 35yo, CHW) completed initial encounter:
+    // Diagnostics (positive) + Medication + NextSteps (HealthEducation + FollowUp).
+    // CHW-only module — no Taken By filter.
+
+    let hivCompletion: CompletionTableData;
+
+    await test.step('Verify Completion Report — HIV table renders', async () => {
+      await navigateToCompletionReportPage(page, NYANGE_HC_ID);
+      await selectCompletionReportType(page, 'hiv');
+      await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
+
+      hivCompletion = await readCompletionTable(page, 'hiv');
+
+      console.log('\n=== COMPLETION: HIV ===');
+      console.log('Heading:', hivCompletion.heading);
+      console.log('Rows:', hivCompletion.rows.length);
+      for (const row of hivCompletion.rows) {
+        const base = findCompletionRow(baselineHIVCompletion, row.activity);
+        const eDelta = row.expected - (base?.expected ?? 0);
+        const cDelta = row.completed - (base?.completed ?? 0);
+        console.log(
+          `${row.activity.padEnd(25)} | E: ${String(base?.expected ?? 0).padEnd(3)}→${String(row.expected).padEnd(3)} (+${eDelta}) | C: ${String(base?.completed ?? 0).padEnd(3)}→${String(row.completed).padEnd(3)} (+${cDelta}) | ${row.percent}`,
+        );
+      }
+
+      expect(hivCompletion.heading).toContain('HIV');
+      expect(hivCompletion.rows.length, 'Should have 7 activity rows').toBe(7);
+    });
+
+    await test.step('Verify Completion Report — HIV activity deltas', async () => {
+      const assertDelta = (label: string, expectedDelta: number, completedDelta: number) => {
+        const row = findCompletionRow(hivCompletion, label)!;
+        const base = findCompletionRow(baselineHIVCompletion, label)!;
+        expect(row, `Row "${label}" should exist`).toBeDefined();
+        expect(base, `Baseline row "${label}" should exist`).toBeDefined();
+        expect(row.expected, `${label} expected +${expectedDelta}`).toBe(base.expected + expectedDelta);
+        expect(row.completed, `${label} completed +${completedDelta}`).toBe(base.completed + completedDelta);
+      };
+
+      // Initial encounter activities (completed).
+      assertDelta('Diagnostics', 1, 1);
+      assertDelta('Medication', 1, 1);
+      assertDelta('Treatment Review', 1, 1);
+      assertDelta('Health Education', 1, 1);
+      assertDelta('Follow Up', 1, 1);
+
+      // Not expected for initial encounter.
+      assertDelta('Symptoms Review', 0, 0);
+
+      // Referral: conditional on symptoms/adverse events — not triggered.
+      assertDelta('Referral', 0, 0);
     });
   });
 });
