@@ -103,6 +103,7 @@ import {
   completeDangerSigns as completeNCDDangerSigns,
   completeSymptomReview as completeNCDSymptomReview,
   completeExamination as completeNCDExamination,
+  completeFamilyPlanning as completeNCDFamilyPlanning,
   completeMedicalHistory as completeNCDMedicalHistory,
   completeLaboratory as completeNCDLaboratory,
   completeNextSteps as completeNCDNextSteps,
@@ -164,7 +165,7 @@ test.describe('Admin Reports', () => {
   //          PrenatalMom (F 25y) — Prenatal initial + postpartum (2 encounters, impacted)
   //          AINurse (F 30y) — AI initial + subsequent (2 encounters, impacted)
   //          AIChild (M 24mo) — AI initial (with MUAC + Nutrition)
-  //          NCDAdult (M 40y) — NCD
+  //          NCDAdult (F 40y) — NCD
   //          FBF group session (no new patient)
   //   CHW:   PrenatalCHW (F 28y) — Prenatal
   //          AICHW (F 26y) — Acute Illness
@@ -175,7 +176,7 @@ test.describe('Admin Reports', () => {
   // Expected Registered Patients deltas:
   //   1M-2Y: male +4 (NutrChild, CSChild, HVChild, FBFChild)
   //   2Y-5Y: male +1 (AIChild 24mo)
-  //   20Y-50Y: male +2 (NCDAdult, TBAdult), female +6 (PrenatalMom, AINurse, FBFMother, PrenatalCHW, AICHW, HIVAdult)
+  //   20Y-50Y: male +1 (TBAdult), female +7 (PrenatalMom, AINurse, FBFMother, NCDAdult, PrenatalCHW, AICHW, HIVAdult)
   //   Total: +13
   //
   // Expected Impacted Patients deltas:
@@ -459,13 +460,14 @@ test.describe('Admin Reports', () => {
       await page.goto(pwaBaseUrl);
       await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
       const ncdAdult = await createAdultAndStartNCDEncounter(page, {
-        isFemale: false,
+        isFemale: true,
         ageYears: 40,
       });
       await completeNCDDangerSigns(page);
       await completeNCDSymptomReview(page);
       // Stage 1 hypertension (sys=145, dia=95) triggers HealthEducation in NextSteps.
       await completeNCDExamination(page, { sys: '145', dia: '95' });
+      await completeNCDFamilyPlanning(page); // Female patient — FamilyPlanning + PregnancyTest expected.
       await completeNCDMedicalHistory(page);
       await completeNCDLaboratory(page);
       await completeNCDNextSteps(page);
@@ -795,11 +797,11 @@ test.describe('Admin Reports', () => {
       const base2Y5Y = findRow(baselineRegistered, '2Y - 5Y')!;
       expect(row2Y5Y.male, '2Y-5Y male should increase by 1').toBe(base2Y5Y.male + 1);
 
-      // Row "20Y - 50Y": male +2 (NCDAdult, TBAdult), female +6 (PrenatalMom, AINurse, FBFMother, PrenatalCHW, AICHW, HIVAdult)
+      // Row "20Y - 50Y": male +1 (TBAdult), female +7 (PrenatalMom, AINurse, FBFMother, NCDAdult, PrenatalCHW, AICHW, HIVAdult)
       const row20Y50Y = findRow(newRegistered, '20Y - 50Y')!;
       const base20Y50Y = findRow(baselineRegistered, '20Y - 50Y')!;
-      expect(row20Y50Y.male, '20Y-50Y male should increase by 2').toBe(base20Y50Y.male + 2);
-      expect(row20Y50Y.female, '20Y-50Y female should increase by 6').toBe(base20Y50Y.female + 6);
+      expect(row20Y50Y.male, '20Y-50Y male should increase by 1').toBe(base20Y50Y.male + 1);
+      expect(row20Y50Y.female, '20Y-50Y female should increase by 7').toBe(base20Y50Y.female + 7);
 
       // Total: +13 (7 nurse patients + 6 CHW patients)
       expect(newRegistered.total, 'Registered total should increase by 13').toBe(
@@ -1569,9 +1571,9 @@ test.describe('Admin Reports', () => {
       assertDelta('Liver Function Test', 1, 1);
       assertDelta('Urine Dipstick Test', 1, 1);
 
-      // Not applicable for male patient.
-      assertDelta('Family Planning', 0, 0);
-      assertDelta('Pregnancy Test', 0, 0);
+      // Female patient (age 40, within 13-44 range).
+      assertDelta('Family Planning', 1, 1);
+      assertDelta('Pregnancy Test', 1, 1);
     });
   });
 });
