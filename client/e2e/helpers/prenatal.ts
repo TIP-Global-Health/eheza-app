@@ -295,10 +295,13 @@ export async function startPrenatalEncounter(
       break;
   }
 
-  await click(
-    page.locator('div.ui.primary.button', { hasText: buttonText }),
-    page,
-  );
+  // Wait for the button to be enabled (not .disabled) — after backdating,
+  // the Elm model may need time to re-render with updated encounter data.
+  const btn = page.locator('div.ui.primary.button:not(.disabled)', {
+    hasText: buttonText,
+  });
+  await btn.waitFor({ timeout: 30000 });
+  await click(btn, page);
   await page
     .locator('div.page-encounter.prenatal')
     .waitFor({ timeout: 30000 });
