@@ -1215,6 +1215,14 @@ export async function completeLabResultsAsLabTech(page: Page): Promise<string[]>
       await page.waitForTimeout(300);
     }
 
+    // Conditional symptom/sign checkboxes (e.g., Syphilis positive → symptoms).
+    // Select "None of these" if visible.
+    const noneCheckbox = page.locator('.ui.checkbox label', { hasText: /^None of these$/i });
+    if (await noneCheckbox.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await click(noneCheckbox, page);
+      await page.waitForTimeout(300);
+    }
+
     // Save this lab test tab.
     const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
     if (await saveBtn.isVisible()) {
