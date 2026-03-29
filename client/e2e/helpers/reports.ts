@@ -973,7 +973,7 @@ export async function readCompletionTable(
     const cells = allRows.nth(i).locator('div.item');
     const cellCount = await cells.count();
     if (cellCount >= 4) {
-      const activity = (await cells.nth(0).textContent())?.trim() ?? '';
+      const activity = ((await cells.nth(0).textContent()) ?? '').replace(/\s+/g, ' ').trim();
       const expected = parseInt((await cells.nth(1).textContent())?.trim() ?? '0', 10) || 0;
       const completed = parseInt((await cells.nth(2).textContent())?.trim() ?? '0', 10) || 0;
       const percent = (await cells.nth(3).textContent())?.trim() ?? '0%';
