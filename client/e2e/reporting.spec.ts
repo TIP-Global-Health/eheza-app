@@ -1476,15 +1476,30 @@ test.describe('Admin Reports', () => {
       assertDelta('Blood Group and Rhesus Test Result', 1, 1);
       assertDelta('Partner HIV Test Result', 1, 1);
 
+      // Medication activities (nurse initial, completeMedication with preferIronFolate).
+      assertDelta('Iron', 1, 1);
+      assertDelta('Folate', 1, 1);
+      assertDelta('MMS', 1, 1);
+      assertDelta('Mebendazole', 1, 1);    // EGA ~30w ≥ 24w
+
+      // NextSteps activities (nurse initial, triggered by HIV+ and hypertension).
+      assertDelta('Medication Distribution', 1, 1);
+      assertDelta('Referral', 1, 1);        // SendToHC
+
       // Expected but not completed (expected +1, completed +0).
       assertDelta('Photo', 1, 0);
       assertDelta('Social History', 1, 0);
 
-      // Not expected (subsequent only, CHW-2 only).
-      assertDelta('Outside Care', 0, 0);
-      assertDelta('Treatment Review', 0, 0);
-      assertDelta('Birth Plan', 0, 0);
-      assertDelta('HIV PCR Test', 0, 0);
+      // Not expected / blocked / conditional.
+      assertDelta('Low dose Aspirin', 0, 0);// Conditional on hypertension-before-pregnancy
+      assertDelta('Calcium', 0, 0);         // May already be distributed
+      assertDelta('Fefol', 0, 0);           // Blocked by Iron+Folate
+      assertDelta('Vitals Recheck', 0, 0);  // Only for borderline BP, ours is stage 2
+      assertDelta('Medication', 0, 0);      // Legacy pre-2022
+      assertDelta('Outside Care', 0, 0);    // Subsequent only
+      assertDelta('Treatment Review', 0, 0);// Subsequent only
+      assertDelta('Birth Plan', 0, 0);      // CHW-2 only
+      assertDelta('HIV PCR Test', 0, 0);    // Subsequent only
       assertDelta('HIV PCR Test Result', 0, 0);
     });
 
