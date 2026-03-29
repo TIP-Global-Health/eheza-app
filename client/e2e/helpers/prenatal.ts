@@ -564,13 +564,14 @@ export async function completeHistory(
     // --- Obstetric History Step 2 ---
     await page.locator('.form.history.obstetric.second').waitFor({ timeout: 5000 });
     await answerYesNo(page, 'c-section-past', 'No');
+    // First checkbox group: "Previous delivery" → "None of these".
+    await selectCheckbox(page, 'None of these');
+    // Second checkbox group: "conditions during previous pregnancy".
     if (options?.preeclampsiaPrevious) {
-      // Select "Preeclampsia" to trigger Aspirin medication in completion.
       await selectCheckbox(page, 'Preeclampsia');
     } else {
-      await selectCheckbox(page, 'None of these');
+      await selectCheckbox(page, 'None of the above');
     }
-    await selectCheckbox(page, 'None of the above');
 
     await click(
       page.locator('div.actions button.ui.fluid.primary.button').filter({ hasText: /Save/ }),
