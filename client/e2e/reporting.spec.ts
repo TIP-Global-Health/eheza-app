@@ -550,24 +550,9 @@ test.describe('Admin Reports', () => {
       await completeLaboratoryNurseForLab(page);
       // NextSteps may show "Wait" (pause) or complete normally depending on
       // diagnosis. Handle both outcomes.
-      const nextStepsResult = await completePrenatalNextSteps(page);
-      if (nextStepsResult.includes('wait')) {
-        // Encounter paused → re-login from PinCodePage.
-        await page.locator('input[name="pincode"]').waitFor({ timeout: 10000 });
-        await page.locator('input[name="pincode"]').fill('1234');
-        await page.getByRole('button', { name: 'Sign In' }).click();
-        await Promise.race([
-          page.locator('p.select-location').waitFor({ timeout: 30000 }),
-          page.locator('.wrap-cards').waitFor({ timeout: 30000 }),
-        ]);
-        if (await page.locator('p.select-location').isVisible().catch(() => false)) {
-          await page.locator('button.ui.primary.button', { hasText: 'Nyange Health Center' }).click();
-        }
-        await page.locator('.wrap-cards').waitFor({ timeout: 30000 });
-      } else {
-        // Encounter completed normally → navigate to dashboard.
-        await goToDashboard(page);
-      }
+      await completePrenatalNextSteps(page);
+      // After NextSteps (with or without Wait/Pause), navigate to dashboard.
+      await goToDashboard(page);
       // Sync so lab data is available in Case Management.
       await syncAndWait(page);
       // Enter lab results via Case Management recurrent encounter.
