@@ -558,8 +558,13 @@ test.describe('Admin Reports', () => {
       // Enter lab results via Case Management recurrent encounter.
       await navigateToPrenatalCaseManagement(page);
       await openRecurrentEncounterFromCaseManagement(page, prenatalMomName);
+      // Open the LAB RESULTS activity on the recurrent encounter page.
+      await click(page.locator('.icon-task-laboratory'), page);
+      await page.locator('div.page-activity.prenatal').waitFor({ timeout: 10000 });
       await completeLabResultsAsLabTech(page);
-      await endRecurrentEncounter(page);
+      // Button says "LEAVE ENCOUNTER" on recurrent encounters (not "End Encounter").
+      await click(page.locator('button', { hasText: /Leave Encounter/i }), page);
+      await page.waitForTimeout(2000);
       console.log('Created PrenatalMom (HIV diagnosis + lab results):', prenatalMom.fullName);
 
       // --- AINurse (female, 30 years): Acute Illness with malaria diagnosis ---
