@@ -124,7 +124,9 @@ async function openActivity(page: Page, activityIcon: string) {
   // Ensure encounter page is fully rendered before clicking an activity card.
   await page.locator('div.page-encounter.prenatal').waitFor({ timeout: 10000 });
   await page.waitForTimeout(500);
-  await click(page.locator(`.icon-task-${activityIcon}`), page);
+  const icon = page.locator(`.icon-task-${activityIcon}`);
+  await icon.waitFor({ timeout: 10000 });
+  await click(icon, page);
   await page.locator('div.page-activity.prenatal').waitFor({ timeout: 10000 });
 }
 

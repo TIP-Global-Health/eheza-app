@@ -99,7 +99,9 @@ async function openActivity(page: Page, activityIcon: string) {
   // Dismiss any alert or diagnosis popup that may overlay the encounter page.
   await dismissDiagnosisPopup(page);
 
-  await click(page.locator(`.icon-task-${activityIcon}`), page);
+  const icon = page.locator(`.icon-task-${activityIcon}`);
+  await icon.waitFor({ timeout: 10000 });
+  await click(icon, page);
   await page.locator('div.page-activity.acute-illness').waitFor({ timeout: 10000 });
 }
 

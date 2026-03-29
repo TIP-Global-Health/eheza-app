@@ -94,7 +94,9 @@ async function clickSubTaskTab(page: Page, iconClass: string) {
 async function openActivity(page: Page, activityIcon: string) {
   await page.locator('div.page-encounter.ncd').waitFor({ timeout: 10000 });
   await page.waitForTimeout(500);
-  await click(page.locator(`.icon-task-${activityIcon}`), page);
+  const icon = page.locator(`.icon-task-${activityIcon}`);
+  await icon.waitFor({ timeout: 10000 });
+  await click(icon, page);
   await page.locator('div.page-activity.ncd').waitFor({ timeout: 10000 });
 }
 
