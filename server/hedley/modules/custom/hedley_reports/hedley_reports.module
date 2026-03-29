@@ -6671,7 +6671,11 @@ function hedley_reports_prenatal_add_history_activities(array $encounter_data, a
     return;
   }
 
-  $expected[] = 'social_history';
+  // Social history was disabled on Sep 19, 2024 (issue #1323).
+  $social_history_cutoff = new DateTime('2024-09-19');
+  if ($encounter_data['start_date_obj'] < $social_history_cutoff) {
+    $expected[] = 'social_history';
+  }
   $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
   if (empty($previous_nurse_encounters_data)) {
     $expected = array_merge(

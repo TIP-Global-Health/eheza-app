@@ -1488,7 +1488,7 @@ test.describe('Admin Reports', () => {
 
       // Expected but not completed (expected +1, completed +0).
       assertDelta('Photo', 1, 0);
-      assertDelta('Social History', 1, 0);
+      assertDelta('Social History', 0, 0);  // Disabled since Sep 2024 (#1323)
 
       // Not expected / blocked / conditional.
       assertDelta('Calcium', 1, 1);          // EGA ~30w ≥ 14w
