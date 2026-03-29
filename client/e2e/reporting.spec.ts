@@ -201,7 +201,7 @@ test.describe('Admin Reports', () => {
   //   Nurse: NutrChild (M 10mo) — Nutrition (with measurements) + SPV (2 encounters, impacted)
   //          PrenatalMom (F 25y) — Prenatal initial + postpartum (2 encounters, impacted)
   //          AINurse (F 30y) — AI initial + subsequent (2 encounters, impacted)
-  //          AIChild (M 24mo) — AI initial (with MUAC + Nutrition)
+  //          AIChild (M 30mo) — AI initial (with MUAC + Nutrition)
   //          NCDAdult (F 40y) — NCD
   //          FBF group session (no new patient)
   //   CHW:   PrenatalCHW (F 28y) — Prenatal
@@ -213,7 +213,7 @@ test.describe('Admin Reports', () => {
   //
   // Expected Registered Patients deltas:
   //   1M-2Y: male +5 (NutrChild, CSChild, HVChild, FBFChild, NBChild)
-  //   2Y-5Y: male +1 (AIChild 24mo)
+  //   2Y-5Y: male +1 (AIChild 30mo)
   //   20Y-50Y: male +1 (TBAdult), female +7 (PrenatalMom, AINurse, FBFMother, NCDAdult, PrenatalCHW, AICHW, HIVAdult)
   //   Total: +13
   //
@@ -583,12 +583,12 @@ test.describe('Admin Reports', () => {
       await goToDashboard(page);
       console.log('Created AINurse (Uncomplicated Malaria):', aiNurse.fullName);
 
-      // --- AIChild (male, 24 months): Acute Illness with malaria diagnosis ---
+      // --- AIChild (male, 30 months): Acute Illness with malaria diagnosis ---
       // Child encounter to exercise MUAC + Nutrition completion activities,
       // which are only expected for patients aged 6 months to 5 years.
       await page.goto(pwaBaseUrl);
       await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
-      const aiChild = await createAIChild(page, { ageMonths: 24 });
+      const aiChild = await createAIChild(page, { ageMonths: 30 });
       await completeAISymptoms(page);
       await completeAIPhysicalExam(page); // Includes MUAC + Nutrition tabs for children.
       await completeAIPriorTreatment(page);
@@ -985,7 +985,7 @@ test.describe('Admin Reports', () => {
       expect(nbDelta0to1M + nbDelta1M2Y, '0-1M + 1M-2Y male should increase by 5 total').toBe(5);
       expect(row1M2Y.female, '1M-2Y female should be unchanged').toBe(base1M2Y.female);
 
-      // Row "2Y - 5Y": male +1 (AIChild 24mo falls into this bucket)
+      // Row "2Y - 5Y": male +1 (AIChild 30mo falls into this bucket)
       const row2Y5Y = findRow(newRegistered, '2Y - 5Y')!;
       const base2Y5Y = findRow(baselineRegistered, '2Y - 5Y')!;
       expect(row2Y5Y.male, '2Y-5Y male should increase by 1').toBe(base2Y5Y.male + 1);
