@@ -19,36 +19,22 @@ export function drushEnv(): { drushCmd: string; cwd: string } {
 }
 
 /**
- * Create a fresh E2E test device with a known pairing code and a
- * unique title. Device pairing codes are single-use, so this must
- * be called before each test that needs to pair.
+ * Delete all E2E test devices and their associated data.
+ * user_delete() on the robot user cascade-deletes all owned nodes
+ * (encounters, measurements, persons) via node_user_delete hook.
  *
- * Cleans up old E2E devices (created > 1 hour ago) by deleting their
- * robot users, which cascade-deletes all owned nodes (encounters,
- * measurements, persons) via Drupal's node_user_delete hook. This
- * prevents test data from accumulating across runs and slowing down
- * report generation scripts.
+ * Called once from globalSetup before any tests run, to clean up
+ * data from previous test runs.
  *
- * Note: execSync with hardcoded commands — same pattern as other E2E
- * helpers. No user input involved.
+ * Note: execSync with hardcoded commands — no user input involved.
  */
-export function resetDevice(pairingCode = '99999999') {
-  if (!/^\d+$/.test(pairingCode)) {
-    throw new Error(`Invalid pairing code: must be digits only, got "${pairingCode}"`);
-  }
-
-  const title = `E2E Device ${Date.now()}`;
-
+export function cleanupStaleTestData() {
+  const { drushCmd, cwd } = drushEnv();
   const php = `
-      // 1. Delete E2E devices created more than 1 hour ago.
-      // user_delete() on the robot user cascade-deletes all nodes it
-      // owns (encounters, measurements, persons) via node_user_delete.
-      \\$cutoff = strtotime('-1 hour');
       \\$eq = new EntityFieldQuery();
       \\$old_devices = \\$eq->entityCondition('entity_type', 'node')
         ->propertyCondition('type', 'device')
         ->propertyCondition('title', 'E2E Device%', 'LIKE')
-        ->propertyCondition('created', \\$cutoff, '<')
         ->execute();
       if (!empty(\\$old_devices['node'])) {
         variable_set('hedley_super_user_mode', 1);
@@ -61,10 +47,36 @@ export function resetDevice(pairingCode = '99999999') {
           \\$count++;
         }
         variable_set('hedley_super_user_mode', 0);
-        echo 'Cleaned up ' . \\$count . ' old E2E devices. ';
+        echo 'Cleaned up ' . \\$count . ' old E2E devices.';
+      } else {
+        echo 'No stale E2E devices to clean up.';
       }
+  `;
 
-      // 2. Clear pairing code on any existing device that holds it,
+  const output = execSync(`${drushCmd} eval "${php}"`, {
+    cwd,
+    timeout: 300000,
+    encoding: 'utf-8',
+  });
+  console.log(output.trim());
+}
+
+/**
+ * Create a fresh E2E test device with a known pairing code and a
+ * unique title. Device pairing codes are single-use, so this must
+ * be called before each test that needs to pair.
+ *
+ * Note: execSync with hardcoded commands — no user input involved.
+ */
+export function resetDevice(pairingCode = '99999999') {
+  if (!/^\d+$/.test(pairingCode)) {
+    throw new Error(`Invalid pairing code: must be digits only, got "${pairingCode}"`);
+  }
+
+  const title = `E2E Device ${Date.now()}`;
+
+  const php = `
+      // Clear pairing code on any existing device that holds it,
       // so the uniqueness check passes for the new device.
       variable_set('hedley_super_user_mode', 1);
       \\$query = new EntityFieldQuery();
@@ -91,12 +103,9 @@ export function resetDevice(pairingCode = '99999999') {
 
   const { drushCmd, cwd } = drushEnv();
 
-  // Timeout increased to 5 minutes to handle cleanup of accumulated
-  // old E2E devices (cascade deletion of many nodes).
-  // Note: execSync with hardcoded drush commands — no user input.
   const output = execSync(`${drushCmd} eval "${php}"`, {
     cwd,
-    timeout: 300000,
+    timeout: 30000,
     encoding: 'utf-8',
   });
   console.log(output.trim());
