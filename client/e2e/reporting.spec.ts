@@ -1491,8 +1491,8 @@ test.describe('Admin Reports', () => {
       assertDelta('Social History', 1, 0);
 
       // Not expected / blocked / conditional.
+      assertDelta('Calcium', 1, 1);          // EGA ~30w ≥ 14w
       assertDelta('Low dose Aspirin', 0, 0);// Conditional on hypertension-before-pregnancy
-      assertDelta('Calcium', 0, 0);         // May already be distributed
       assertDelta('Fefol', 0, 0);           // Blocked by Iron+Folate
       assertDelta('Vitals Recheck', 0, 0);  // Only for borderline BP, ours is stage 2
       assertDelta('Medication', 0, 0);      // Legacy pre-2022
