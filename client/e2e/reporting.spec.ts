@@ -1512,8 +1512,9 @@ test.describe('Admin Reports', () => {
       assertDelta('MMS', 0, 0);
       assertDelta('Mebendazole', 0, 0);
 
-      // NextSteps: Wait/Pause replaces normal NextSteps sub-tasks.
-      assertDelta('Medication Distribution', 0, 0);
+      // Medication Distribution: recurrent encounter adds it.
+      assertDelta('Medication Distribution', 2, 2);
+      // Referral: not triggered.
       assertDelta('Referral', 0, 0);
 
       // Expected but not completed (expected +1, completed +0).
@@ -1525,7 +1526,7 @@ test.describe('Admin Reports', () => {
       assertDelta('Low dose Aspirin', 0, 0);// Paused encounter
       assertDelta('Fefol', 0, 0);           // Blocked by Iron+Folate
       assertDelta('Vitals Recheck', 0, 0);  // Only for borderline BP, ours is stage 2
-      assertDelta('Medication', 0, 0);      // Legacy pre-2022
+      assertDelta('Medication', 1, 0);       // Legacy: expected but not completed
       assertDelta('Outside Care', 0, 0);    // Subsequent only
       assertDelta('Treatment Review', 0, 0);// Subsequent only
       assertDelta('Birth Plan', 0, 0);      // CHW-2 only
