@@ -889,7 +889,7 @@ export async function startNCDEncounter(page: Page) {
 }
 
 /**
- * Backdate the most recent NCD encounter for a person to yesterday.
+ * Backdate the most recent NCD encounter for a person to 7 days ago.
  * Retries up to 5 times with 10s delay for eventual consistency.
  */
 export function backdateNCDEncounter(personName: string) {
@@ -932,11 +932,11 @@ export function backdateNCDEncounter(personName: string) {
     }
 
     // Backdate the most recent encounter.
-    \\$yesterday = date('Y-m-d H:i:s', strtotime('-1 day'));
+    \\$target_date = date('Y-m-d H:i:s', strtotime('-7 days'));
     \\$enc_nid = key(\\$er['node']);
     \\$enc = node_load(\\$enc_nid);
-    \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value'] = \\$yesterday;
-    \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value2'] = \\$yesterday;
+    \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value'] = \\$target_date;
+    \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value2'] = \\$target_date;
     node_save(\\$enc);
     echo 'Backdated encounter ' . \\$enc_nid;
   `;

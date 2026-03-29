@@ -694,7 +694,7 @@ test.describe('Admin Reports', () => {
     // SpecialityCare, PregnancyOutcome, PostpartumTreatmentReview.
 
     await test.step('Backdate and create postpartum prenatal encounter', async () => {
-      backdatePrenatalEncounter(prenatalMomName, 1);
+      backdatePrenatalEncounter(prenatalMomName, 7);
 
       await page.goto(pwaBaseUrl);
       await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
