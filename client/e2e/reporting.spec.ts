@@ -886,12 +886,12 @@ test.describe('Admin Reports', () => {
       await completeFoodSecurity(page);
       console.log('Created HVChild + Home Visit:', hvChild.fullName);
 
-      // --- NBChild (male, 2 months): Newborn Exam ---
-      // CHW Well Child encounter for a young child triggers Newborn Exam type.
-      // Using 2 months to avoid 0-1M/1M-2Y age bucket boundary issues.
+      // --- NBChild (male, 1 month): Newborn Exam ---
+      // CHW Well Child encounter for a 1-month-old triggers Newborn Exam type.
+      // Note: at 2 months the app creates PediatricCareChw instead.
       await goToDashboard(page);
       const nbChild = await createChildAndStartWellChildEncounter(page, {
-        ageMonths: 2,
+        ageMonths: 1,
         isChw: true,
       });
       await completePregnancySummary(page);
@@ -974,10 +974,15 @@ test.describe('Admin Reports', () => {
       }
       console.log(`Total: baseline=${baselineRegistered.total}, new=${newRegistered.total}, delta=+${newRegistered.total - baselineRegistered.total}`);
 
-      // Row "1M - 2Y": male +5 (NutrChild, CSChild, HVChild, FBFChild, NBChild)
+      // Row "1M - 2Y": male +4 or +5 depending on whether NBChild (1mo) lands
+      // in 0-1M or 1M-2Y (date math boundary). Check both buckets sum to +5.
+      const row0to1M = findRow(newRegistered, '0 - 1M')!;
+      const base0to1M = findRow(baselineRegistered, '0 - 1M')!;
       const row1M2Y = findRow(newRegistered, '1M - 2Y')!;
       const base1M2Y = findRow(baselineRegistered, '1M - 2Y')!;
-      expect(row1M2Y.male, '1M-2Y male should increase by 5').toBe(base1M2Y.male + 5);
+      const nbDelta0to1M = row0to1M.male - base0to1M.male;
+      const nbDelta1M2Y = row1M2Y.male - base1M2Y.male;
+      expect(nbDelta0to1M + nbDelta1M2Y, '0-1M + 1M-2Y male should increase by 5 total').toBe(5);
       expect(row1M2Y.female, '1M-2Y female should be unchanged').toBe(base1M2Y.female);
 
       // Row "2Y - 5Y": male +1 (AIChild 24mo falls into this bucket)
@@ -997,7 +1002,7 @@ test.describe('Admin Reports', () => {
       );
 
       // Other rows should be unchanged.
-      for (const label of ['0 - 1M', '5Y - 10Y', '10Y - 20Y', '50Y +']) {
+      for (const label of ['5Y - 10Y', '10Y - 20Y', '50Y +']) {
         const newRow = findRow(newRegistered, label)!;
         const baseRow = findRow(baselineRegistered, label)!;
         expect(newRow.male, `${label} male should be unchanged`).toBe(baseRow.male);
