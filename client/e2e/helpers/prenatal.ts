@@ -926,10 +926,9 @@ export async function completeMedication(
  */
 export async function completeLaboratoryNurse(
   page: Page,
-  options?: { hivPositive?: boolean; performAllTests?: boolean },
+  options?: { hivPositive?: boolean },
 ): Promise<string[]> {
   const hivPositive = options?.hivPositive ?? false;
-  const performAllTests = options?.performAllTests ?? false;
   await openActivity(page, 'laboratory');
 
   const completedTests: string[] = [];
@@ -979,71 +978,30 @@ export async function completeLaboratoryNurse(
     // 2. "Will this test be performed today?"
     const testPerformed = page.locator('.form-input.yes-no.test-performed');
     if (await testPerformed.isVisible().catch(() => false)) {
-      if (isHivTab || performAllTests) {
-        // Perform the test at point of care with immediate result.
+      if (isHivTab) {
+        // HIV tab: perform the test with positive result.
         await click(testPerformed.locator('label', { hasText: 'Yes' }), page);
         await page.waitForTimeout(500);
 
-        // "Immediate result?" → Point of Care (first label).
+        // "Immediate result?" → Yes (Point of Care) to satisfy immediateResult check.
         const immediateResult = page.locator('.form-input.yes-no.immediate-result');
         if (await immediateResult.isVisible({ timeout: 2000 }).catch(() => false)) {
           await click(immediateResult.locator('label').first(), page);
           await page.waitForTimeout(500);
         }
 
-        // "Urine Dipstick variant?" → Short Dip
-        const shortDip = page.locator('.ui.checkbox label', { hasText: /^Short Dip$/i });
-        if (await shortDip.isVisible().catch(() => false)) {
-          await click(shortDip, page);
+        // Select result: "Positive"
+        const resultSelect = page.locator('select.form-input').first();
+        if (await resultSelect.isVisible({ timeout: 2000 }).catch(() => false)) {
+          const posOption = resultSelect.locator('option', { hasText: 'Positive' });
+          if (await posOption.count() > 0) {
+            const val = await posOption.getAttribute('value');
+            if (val) await resultSelect.selectOption(val);
+          }
           await page.waitForTimeout(300);
         }
 
-        // "Was this test performed before a meal?" → No (Random Blood Sugar)
-        const patientFasted = page.locator('.form-input.yes-no.patient-fasted');
-        if (await patientFasted.isVisible().catch(() => false)) {
-          await click(patientFasted.locator('label', { hasText: 'No' }), page);
-          await page.waitForTimeout(300);
-        }
-
-        // Select dropdown results (HIV, Partner HIV, Hepatitis B, Blood Group + Rhesus, etc.)
-        // Some tabs have multiple dropdowns (e.g., Blood Group + Rhesus has 2).
-        const resultSelects = page.locator('select.form-input');
-        const selectCount = await resultSelects.count();
-        for (let s = 0; s < selectCount; s++) {
-          const sel = resultSelects.nth(s);
-          if (await sel.isVisible().catch(() => false)) {
-            const currentVal = await sel.inputValue();
-            if (!currentVal) {
-              // Select "Positive" for HIV, "Negative" for others, fallback to second option.
-              const targetText = (isHivTab && s === 0) ? 'Positive' : 'Negative';
-              const option = sel.locator('option', { hasText: targetText });
-              if (await option.count() > 0) {
-                const val = await option.getAttribute('value');
-                if (val) await sel.selectOption(val);
-              } else {
-                const val = await sel.locator('option').nth(1).getAttribute('value');
-                if (val) await sel.selectOption(val);
-              }
-              await page.waitForTimeout(300);
-            }
-          }
-        }
-
-        // Numeric result inputs (Hemoglobin, Random Blood Sugar, etc.)
-        const numericInputs = page.locator('.form-input.measurement input[type="number"]');
-        const numCount = await numericInputs.count();
-        for (let n = 0; n < numCount; n++) {
-          const input = numericInputs.nth(n);
-          if (await input.isVisible().catch(() => false)) {
-            const currentVal = await input.inputValue();
-            if (!currentVal) {
-              await input.fill('5');
-              await page.waitForTimeout(200);
-            }
-          }
-        }
-
-        // "Does the health center have an ARV services program?" → Yes (HIV only)
+        // "Does the health center have an ARV services program?" → Yes
         const hivProgram = page.locator('.form-input.yes-no.hiv-program');
         if (await hivProgram.isVisible({ timeout: 2000 }).catch(() => false)) {
           await click(hivProgram.locator('label', { hasText: 'Yes' }), page);

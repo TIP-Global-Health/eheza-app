@@ -87,6 +87,11 @@ import {
   completeImmunisation,
   completeMedication,
   completeLaboratoryNurse,
+  completeLaboratoryNurseForLab,
+  navigateToCaseManagement as navigateToPrenatalCaseManagement,
+  openRecurrentEncounterFromCaseManagement,
+  completeLabResultsAsLabTech,
+  endRecurrentEncounter,
   completeLaboratoryChw as completePrenatalLaboratoryChw,
   completeHealthEducation as completePrenatalHealthEducation,
   completeNextSteps as completePrenatalNextSteps,
@@ -540,10 +545,31 @@ test.describe('Admin Reports', () => {
       await completeMentalHealth(page);
       await completeImmunisation(page);
       await completeMedication(page, { preferIronFolate: true });
-      await completeLaboratoryNurse(page, { hivPositive: true, performAllTests: true });
+      // Send all labs to Lab (not point of care) to create prenatal_labs_results
+      // node, which the completion script needs for test result activities.
+      await completeLaboratoryNurseForLab(page);
+      // NextSteps includes "Wait" sub-task → pauses encounter → PinCodePage.
       await completePrenatalNextSteps(page);
-      await endPrenatalEncounter(page);
-      console.log('Created PrenatalMom (HIV diagnosis):', prenatalMom.fullName);
+      // Re-login after pause.
+      await page.locator('input[name="pincode"]').waitFor({ timeout: 10000 });
+      await page.locator('input[name="pincode"]').fill('1234');
+      await page.getByRole('button', { name: 'Sign In' }).click();
+      await Promise.race([
+        page.locator('p.select-location').waitFor({ timeout: 30000 }),
+        page.locator('.wrap-cards').waitFor({ timeout: 30000 }),
+      ]);
+      if (await page.locator('p.select-location').isVisible().catch(() => false)) {
+        await page.locator('button.ui.primary.button', { hasText: 'Nyange Health Center' }).click();
+      }
+      await page.locator('.wrap-cards').waitFor({ timeout: 30000 });
+      // Sync so lab data is available in Case Management.
+      await syncAndWait(page);
+      // Enter lab results via Case Management recurrent encounter.
+      await navigateToPrenatalCaseManagement(page);
+      await openRecurrentEncounterFromCaseManagement(page, prenatalMomName);
+      await completeLabResultsAsLabTech(page);
+      await endRecurrentEncounter(page);
+      console.log('Created PrenatalMom (HIV diagnosis + lab results):', prenatalMom.fullName);
 
       // --- AINurse (female, 30 years): Acute Illness with malaria diagnosis ---
       // Create a separate patient (not PrenatalMom) so we get a proper initial
@@ -864,12 +890,12 @@ test.describe('Admin Reports', () => {
       await completeFoodSecurity(page);
       console.log('Created HVChild + Home Visit:', hvChild.fullName);
 
-      // --- NBChild (male, 1 month): Newborn Exam ---
-      // CHW Well Child encounter for a 1-month-old triggers Newborn Exam type.
-      // Complete PregnancySummary, NutritionAssessment, Immunisation, NextSteps.
+      // --- NBChild (male, 2 months): Newborn Exam ---
+      // CHW Well Child encounter for a young child triggers Newborn Exam type.
+      // Using 2 months to avoid 0-1M/1M-2Y age bucket boundary issues.
       await goToDashboard(page);
       const nbChild = await createChildAndStartWellChildEncounter(page, {
-        ageMonths: 1,
+        ageMonths: 2,
         isChw: true,
       });
       await completePregnancySummary(page);
