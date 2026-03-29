@@ -1512,8 +1512,8 @@ test.describe('Admin Reports', () => {
       assertDelta('MMS', 0, 0);
       assertDelta('Mebendazole', 0, 0);
 
-      // Medication Distribution: recurrent encounter adds it.
-      assertDelta('Medication Distribution', 2, 2);
+      // Medication Distribution: not triggered (encounter paused via Wait).
+      assertDelta('Medication Distribution', 0, 0);
       // Referral: not triggered.
       assertDelta('Referral', 0, 0);
 
