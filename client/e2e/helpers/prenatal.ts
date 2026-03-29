@@ -541,7 +541,7 @@ export async function completeBirthPlan(page: Page) {
  */
 export async function completeHistory(
   page: Page,
-  options?: { isSubsequent?: boolean },
+  options?: { isSubsequent?: boolean; preeclampsiaPrevious?: boolean },
 ) {
   await openActivity(page, 'history');
 
@@ -564,7 +564,12 @@ export async function completeHistory(
     // --- Obstetric History Step 2 ---
     await page.locator('.form.history.obstetric.second').waitFor({ timeout: 5000 });
     await answerYesNo(page, 'c-section-past', 'No');
-    await selectCheckbox(page, 'None of these');
+    if (options?.preeclampsiaPrevious) {
+      // Select "Preeclampsia" to trigger Aspirin medication in completion.
+      await selectCheckbox(page, 'Preeclampsia');
+    } else {
+      await selectCheckbox(page, 'None of these');
+    }
     await selectCheckbox(page, 'None of the above');
 
     await click(

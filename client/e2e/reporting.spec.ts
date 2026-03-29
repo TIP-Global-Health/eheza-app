@@ -531,7 +531,7 @@ test.describe('Admin Reports', () => {
       const lmpDate = new Date();
       lmpDate.setDate(lmpDate.getDate() - 30 * 7); // ~30 weeks ago
       await completePregnancyDating(page, lmpDate);
-      await completeHistory(page);
+      await completeHistory(page, { preeclampsiaPrevious: true });
       await completeExamination(page, { vitals: { sys: '160', dia: '100' } });
       await completeFamilyPlanning(page);
       await completePrenatalDangerSigns(page);
@@ -1492,7 +1492,7 @@ test.describe('Admin Reports', () => {
 
       // Not expected / blocked / conditional.
       assertDelta('Calcium', 1, 1);          // EGA ~30w ≥ 14w
-      assertDelta('Low dose Aspirin', 0, 0);// Conditional on hypertension-before-pregnancy
+      assertDelta('Low dose Aspirin', 1, 1);// preeclampsia-previous-pregnancy triggers it
       assertDelta('Fefol', 0, 0);           // Blocked by Iron+Folate
       assertDelta('Vitals Recheck', 0, 0);  // Only for borderline BP, ours is stage 2
       assertDelta('Medication', 0, 0);      // Legacy pre-2022
