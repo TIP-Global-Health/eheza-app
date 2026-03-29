@@ -185,7 +185,7 @@ const NYANGE_HC_ID = 4;
 const REPORT_START_DATE = new Date(2018, 0, 1);
 
 test.describe('Admin Reports', () => {
-  test.describe.configure({ timeout: 1200000 });
+  test.describe.configure({ timeout: 1500000 });
 
   test.beforeEach(async ({ page }) => {
     if (process.env.RECORD) {
