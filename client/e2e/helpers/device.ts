@@ -34,7 +34,7 @@ export function cleanupStaleTestData() {
       \\$eq = new EntityFieldQuery();
       \\$old_devices = \\$eq->entityCondition('entity_type', 'node')
         ->propertyCondition('type', 'device')
-        ->propertyCondition('title', 'E2E Device%', 'LIKE')
+        ->propertyCondition('title', 'E2E%', 'LIKE')
         ->execute();
       if (!empty(\\$old_devices['node'])) {
         variable_set('hedley_super_user_mode', 1);
