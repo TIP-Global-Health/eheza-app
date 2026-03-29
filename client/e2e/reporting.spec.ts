@@ -540,7 +540,7 @@ test.describe('Admin Reports', () => {
       await completeMentalHealth(page);
       await completeImmunisation(page);
       await completeMedication(page, { preferIronFolate: true });
-      await completeLaboratoryNurse(page, { hivPositive: true });
+      await completeLaboratoryNurse(page, { hivPositive: true, performAllTests: true });
       await completePrenatalNextSteps(page);
       await endPrenatalEncounter(page);
       console.log('Created PrenatalMom (HIV diagnosis):', prenatalMom.fullName);
@@ -1165,8 +1165,8 @@ test.describe('Admin Reports', () => {
       // Depression Not Likely +2: initial (MentalHealth score=0) + postpartum (MentalHealth again).
       expect(newDepression, 'Depression Not Likely +2').toBe(baselineDepression + 2);
       // Total: HIV +1, Gestational Hypertension +1, Depression Not Likely +2,
-      // NoPrenatalDiagnosis (from CHW encounter) +1 = +5.
-      expect(newPrenatalTotal, 'Prenatal Total +5').toBe(baselinePrenatalTotal + 5);
+      // NoPrenatalDiagnosis (from CHW) +1, + additional diagnoses from lab results +2 = +7.
+      expect(newPrenatalTotal, 'Prenatal Total +7').toBe(baselinePrenatalTotal + 7);
 
       // CSV download button.
       await expect(page.locator('button.download-csv')).toBeVisible();
@@ -1189,30 +1189,23 @@ test.describe('Admin Reports', () => {
       const columnHeaders = await readNutritionColumnHeaders(page, 0);
       console.log(`Columns (${columnHeaders.length}): ${columnHeaders.join(' | ')}`);
 
-      // Verify all 4 "One Visit Or More" tables.
+      // Verify all 4 "One Visit Or More" tables have data.
       for (const { index, name } of NUTRITION_ONE_VISIT_TABLES) {
-        const baseline = baselineNutrition.get(index) ?? [];
         const current = await readNutritionTable(page, index);
         expect(current.length, `${name}: should have 6 metric rows`).toBe(6);
 
         const colCount = current[0]?.values.length ?? 0;
         expect(colCount, `${name}: should have data columns`).toBeGreaterThan(0);
-
-        // First column = newest completed month (where backdated data lives).
-        // NutrChild (height=60 at 10mo) → Stunting Severe.
-        const baseStunting = findNutritionMetric(baseline, 'Stunting Severe')?.values[0] ?? 0;
-        const newStunting = findNutritionMetric(current, 'Stunting Severe')?.values[0] ?? 0;
-        console.log(`${name} — Stunting Severe: baseline=${baseStunting}%, new=${newStunting}%`);
-        expect(newStunting, `${name}: Stunting Severe % should increase`)
-          .toBeGreaterThanOrEqual(baseStunting);
-
-        // NutrChild (weight=6.0 at 10mo) + HVChild (weight=5.5 at 8mo) → Underweight Severe.
-        const baseUnderweight = findNutritionMetric(baseline, 'Underweight Severe')?.values[0] ?? 0;
-        const newUnderweight = findNutritionMetric(current, 'Underweight Severe')?.values[0] ?? 0;
-        console.log(`${name} — Underweight Severe: baseline=${baseUnderweight}%, new=${newUnderweight}%`);
-        expect(newUnderweight, `${name}: Underweight Severe % should increase`)
-          .toBeGreaterThanOrEqual(baseUnderweight);
       }
+
+      // Prevalence table (index 0): verify abnormal measurements produce non-zero %.
+      // Incidence tables may show 0% if the child had prior encounters in demo data.
+      const prevalence = await readNutritionTable(page, 0);
+      const newStunting = findNutritionMetric(prevalence, 'Stunting Severe')?.values[0] ?? 0;
+      const newUnderweight = findNutritionMetric(prevalence, 'Underweight Severe')?.values[0] ?? 0;
+      console.log(`Prevalence — Stunting Severe: ${newStunting}%, Underweight Severe: ${newUnderweight}%`);
+      expect(newStunting, 'Prevalence: Stunting Severe % should be > 0').toBeGreaterThan(0);
+      expect(newUnderweight, 'Prevalence: Underweight Severe % should be > 0').toBeGreaterThan(0);
 
       // CSV download button.
       await expect(page.locator('button.download-csv')).toBeVisible();
@@ -1472,6 +1465,17 @@ test.describe('Admin Reports', () => {
       assertDelta('Health Education', 1, 1);
       assertDelta('Follow Up', 1, 1);
 
+      // Lab test results (all tests performed at point of care).
+      assertDelta('HIV Test Result', 1, 1);
+      assertDelta('Malaria Test Result', 1, 1);
+      assertDelta('Syphilis Test Result', 1, 1);
+      assertDelta('Hemoglobin Test Result', 1, 1);
+      assertDelta('Hepatitis B Test Result', 1, 1);
+      assertDelta('Urine Dipstick Test Result', 1, 1);
+      assertDelta('Random Blood Sugar Test Result', 1, 1);
+      assertDelta('Blood Group and Rhesus Test Result', 1, 1);
+      assertDelta('Partner HIV Test Result', 1, 1);
+
       // Expected but not completed (expected +1, completed +0).
       assertDelta('Photo', 1, 0);
       assertDelta('Social History', 1, 0);
@@ -1481,6 +1485,7 @@ test.describe('Admin Reports', () => {
       assertDelta('Treatment Review', 0, 0);
       assertDelta('Birth Plan', 0, 0);
       assertDelta('HIV PCR Test', 0, 0);
+      assertDelta('HIV PCR Test Result', 0, 0);
     });
 
     await test.step('Verify Completion Report — Prenatal Taken By filter (Nurse)', async () => {
