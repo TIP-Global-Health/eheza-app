@@ -1208,6 +1208,13 @@ export async function completeLabResultsAsLabTech(page: Page): Promise<string[]>
       }
     }
 
+    // "Does the health center have an ARV services program?" → Yes (HIV only).
+    const hivProgram = page.locator('.form-input.yes-no.hiv-program');
+    if (await hivProgram.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await click(hivProgram.locator('label', { hasText: 'Yes' }), page);
+      await page.waitForTimeout(300);
+    }
+
     // Save this lab test tab.
     const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
     if (await saveBtn.isVisible()) {
