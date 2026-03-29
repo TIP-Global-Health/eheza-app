@@ -114,7 +114,7 @@ test.describe('CHW: Prenatal Second Encounter', () => {
     // Sync first encounter to backend, then backdate it to yesterday so the
     // app allows starting a subsequent encounter (same-day block).
     await syncAndWait(page);
-    backdatePrenatalEncounter(fullName);
+    backdatePrenatalEncounter(fullName, 7);
     // Sync again so the app downloads the backdated encounter.
     await syncAndWait(page);
     // Reload to force Elm model to reinitialize with the backdated data.
