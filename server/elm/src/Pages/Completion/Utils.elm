@@ -299,8 +299,7 @@ allTuberculosisActivities =
 
 allPrenatalActivities : List PrenatalActivity
 allPrenatalActivities =
-    [ PrenatalAspirin
-    , PrenatalAppointmentConfirmation
+    [ PrenatalAppointmentConfirmation
     , PrenatalBirthPlan
     , PrenatalBloodGprsTest
     , PrenatalBloodGprsTestResult

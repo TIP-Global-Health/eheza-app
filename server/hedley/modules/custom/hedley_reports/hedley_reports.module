@@ -6786,17 +6786,9 @@ function hedley_reports_prenatal_add_medication_activities(array $encounter_data
         $lmp_date_obj = new DateTime($lmp_date);
         $ega_in_weeks = hedley_reports_prenatal_calculate_ega_weeks($lmp_date_obj, $encounter_data['start_date_obj']);
 
-        if (
-          ($ega_in_weeks >= 12) &&
-          !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_aspirin') &&
-          (hedley_reports_prenatal_medical_history_sign_recorded_previously($encounter_data, 'hypertension-before-pregnancy') ||
-            hedley_reports_prenatal_medical_history_sign_recorded_today($encounter_data, 'hypertension-before-pregnancy') ||
-            hedley_reports_prenatal_obstetric_history_step2_sign_recorded_previously($encounter_data, 'preeclampsia-previous-pregnancy') ||
-            hedley_reports_prenatal_obstetric_history_step2_sign_recorded_today($encounter_data, 'preeclampsia-previous-pregnancy')
-          )
-        ) {
-          $expected_activities[] = 'prenatal_aspirin';
-        }
+        // Note: prenatal_aspirin is NOT a standalone activity in the Elm UI.
+        // Aspirin is administered via Medication Distribution (NextSteps),
+        // so we do not add it to expected here.
 
         if (
           ($ega_in_weeks >= 14) &&

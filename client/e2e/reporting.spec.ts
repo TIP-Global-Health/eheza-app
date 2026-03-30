@@ -229,9 +229,15 @@ test.describe('Admin Reports', () => {
   test('Reports reflect new patients, encounters, and completion data', async ({ page }) => {
     const reportLimitDate = new Date();
 
+    // Helper to log step name to stdout for progress tracking.
+    const step = (name: string, fn: () => Promise<void>) => {
+      console.log(`\n▶ ${name}`);
+      return test.step(name, fn);
+    };
+
     // ── Phase 0: Generate base reports data + record baselines ──
 
-    await test.step('Generate base reports data from existing demo persons', async () => {
+    await step('Generate base reports data from existing demo persons', async () => {
       generateBaseReportsData();
       clearAdvancedQueue();
       recalculateLargeDatasets();
@@ -267,7 +273,7 @@ test.describe('Admin Reports', () => {
     let aiNurseName: string;
     let prenatalMomName: string;
 
-    await test.step('Login to Drupal admin and record baseline values', async () => {
+    await step('Login to Drupal admin and record baseline values', async () => {
       await drupalLogin(page);
       await navigateToHCReportsPage(page, NYANGE_HC_ID);
       await selectReportType(page, 'demographics');
@@ -320,7 +326,7 @@ test.describe('Admin Reports', () => {
     });
 
     // Record Completion report baselines (AI + Prenatal).
-    await test.step('Generate base completion data and record baselines', async () => {
+    await step('Generate base completion data and record baselines', async () => {
       generateCompletionData('acute-illness', true);
       generateCompletionData('prenatal', true);
       generateCompletionData('child-scoreboard', true);
@@ -434,7 +440,7 @@ test.describe('Admin Reports', () => {
 
     // ── Phase 1a: Nurse encounters ──
 
-    await test.step('Login as nurse and create encounters', async () => {
+    await step('Login as nurse and create encounters', async () => {
       resetDevice();
       await page.goto(pwaBaseUrl);
       await setupDevice(page, '1234', 'Nyange Health Center');
@@ -562,8 +568,77 @@ test.describe('Admin Reports', () => {
       await click(page.locator('.icon-task-laboratory'), page);
       await page.locator('div.page-activity.prenatal').waitFor({ timeout: 10000 });
       await completeLabResultsAsLabTech(page);
-      // Button says "LEAVE ENCOUNTER" on recurrent encounters (not "End Encounter").
-      await click(page.locator('button', { hasText: /Leave Encounter/i }), page);
+      // Return to recurrent encounter page and complete NextSteps.
+      await page.locator('div.page-encounter.prenatal').waitFor({ timeout: 10000 });
+      await click(page.locator('.icon-task-next-steps'), page);
+      await page.locator('div.page-activity.prenatal').waitFor({ timeout: 10000 });
+      // Dismiss diagnosis warning popup if present.
+      const warningContinue = page.locator('button', { hasText: 'Continue' });
+      if (await warningContinue.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await warningContinue.click({ force: true });
+        await page.waitForTimeout(500);
+      }
+      // Complete each NextSteps tab on the recurrent encounter.
+      // Tabs: Health Education (HIV counseling), Medication Distribution, Referral.
+      for (let i = 0; i < 5; i++) {
+        const tab = page.locator('.link-section:not(.completed)').first();
+        if (!(await tab.isVisible({ timeout: 2000 }).catch(() => false))) break;
+        await click(tab, page);
+        await page.waitForTimeout(500);
+        // Answer all visible Yes/No questions with "Yes".
+        // Run multiple rounds: answering "Yes" can reveal new questions.
+        for (let round = 0; round < 5; round++) {
+          const yesLabels = page.locator('label:text-is("Yes")');
+          const yesCount = await yesLabels.count();
+          let clicked = false;
+          for (let j = 0; j < yesCount; j++) {
+            const lbl = yesLabels.nth(j);
+            // Skip already-selected radio buttons.
+            const radio = lbl.locator('..').locator('input[type="radio"]');
+            const isChecked = await radio.isChecked().catch(() => false);
+            if (!isChecked) {
+              await click(lbl, page);
+              clicked = true;
+              await page.waitForTimeout(300);
+            }
+          }
+          if (!clicked) break;
+        }
+        // Medication Distribution may have multiple treatment sections.
+        // Selecting a checkbox in one section may reset another section's
+        // pre-selection due to shared Elm form state. Select treatments for
+        // ALL sections: Coartem for Malaria, Penicillin for Syphilis.
+        const treatments = ['Coartem', 'Penicillin'];
+        for (const med of treatments) {
+          const label = page.locator('label', { hasText: med }).first();
+          if (await label.isVisible({ timeout: 500 }).catch(() => false)) {
+            await click(label, page);
+            await page.waitForTimeout(300);
+          }
+        }
+        // Save this tab.
+        const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+        if (await saveBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await click(saveBtn, page);
+          await page.waitForTimeout(500);
+        }
+      }
+      // After completing all tabs, the app may show the encounter page
+      // (with "Leave Encounter") or the Progress Report. Handle both.
+      const leaveBtn = page.locator('button', { hasText: /Leave Encounter/i });
+      const endBtn = page.locator('button', { hasText: /End Encounter/i }).first();
+      const backArrow = page.locator('div.page-report span.icon-back');
+      if (await leaveBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await click(leaveBtn, page);
+      } else if (await endBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await endBtn.click({ force: true });
+        const continueBtn2 = page.locator('button', { hasText: 'Continue' });
+        if (await continueBtn2.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await continueBtn2.click({ force: true });
+        }
+      } else if (await backArrow.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await click(backArrow, page);
+      }
       await page.waitForTimeout(2000);
       console.log('Created PrenatalMom (HIV diagnosis + lab results):', prenatalMom.fullName);
 
@@ -657,7 +732,7 @@ test.describe('Admin Reports', () => {
       console.log('Created FBF session with full activities:', fbfChild.fullName);
     });
 
-    await test.step('Sync nurse data to backend', async () => {
+    await step('Sync nurse data to backend', async () => {
       // Navigate to dashboard first (may be on attendance page from FBF session).
       await page.goto(pwaBaseUrl);
       await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
@@ -669,7 +744,7 @@ test.describe('Admin Reports', () => {
     // so we can start a subsequent encounter today and cover
     // DangerSigns + OngoingTreatment completion activities.
 
-    await test.step('Backdate and create subsequent nurse AI encounter', async () => {
+    await step('Backdate and create subsequent nurse AI encounter', async () => {
       backdateAcuteIllnessEncounter(aiNurseName);
 
       await page.goto(pwaBaseUrl);
@@ -682,7 +757,7 @@ test.describe('Admin Reports', () => {
       console.log('Created subsequent AI encounter for:', aiNurseName);
     });
 
-    await test.step('Sync subsequent AI encounter', async () => {
+    await step('Sync subsequent AI encounter', async () => {
       await page.goto(pwaBaseUrl);
       await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
       await syncAndWait(page);
@@ -693,7 +768,7 @@ test.describe('Admin Reports', () => {
     // a postpartum encounter today. Covers: GU Exam, Breastfeeding,
     // SpecialityCare, PregnancyOutcome, PostpartumTreatmentReview.
 
-    await test.step('Backdate and create postpartum prenatal encounter', async () => {
+    await step('Backdate and create postpartum prenatal encounter', async () => {
       backdatePrenatalEncounter(prenatalMomName, 7);
 
       await page.goto(pwaBaseUrl);
@@ -723,7 +798,7 @@ test.describe('Admin Reports', () => {
       console.log('Created postpartum prenatal encounter for:', prenatalMomName);
     });
 
-    await test.step('Sync postpartum prenatal encounter', async () => {
+    await step('Sync postpartum prenatal encounter', async () => {
       await page.goto(pwaBaseUrl);
       await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
       await syncAndWait(page);
@@ -731,7 +806,7 @@ test.describe('Admin Reports', () => {
 
     // ── Phase 1b: CHW encounters ──
 
-    await test.step('Login as CHW and create encounters', async () => {
+    await step('Login as CHW and create encounters', async () => {
       // Log out from nurse and log in as CHW — same device, no re-pairing needed.
       await page.goto(pwaBaseUrl);
       await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
@@ -911,7 +986,7 @@ test.describe('Admin Reports', () => {
       console.log('Created NBChild (Newborn Exam):', nbChild.fullName);
     });
 
-    await test.step('Sync CHW data to backend', async () => {
+    await step('Sync CHW data to backend', async () => {
       await page.goto(pwaBaseUrl);
       await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
       await syncAndWait(page);
@@ -921,7 +996,7 @@ test.describe('Admin Reports', () => {
     // The nutrition report only shows completed months. Backdating makes
     // our test data appear in the first (newest) column.
 
-    await test.step('Backdate nutrition encounters to previous month', async () => {
+    await step('Backdate nutrition encounters to previous month', async () => {
       const lastMonth = new Date();
       lastMonth.setMonth(lastMonth.getMonth() - 1);
       backdateNutritionEncounter(nutrChildName, lastMonth);
@@ -930,7 +1005,7 @@ test.describe('Admin Reports', () => {
 
     // ── Phase 2: Process AQ + re-aggregate ──
 
-    await test.step('Process Advanced Queue and recalculate large datasets', async () => {
+    await step('Process Advanced Queue and recalculate large datasets', async () => {
       // AQ runs once, after all content is generated (including backdating).
       processAdvancedQueue();
       recalculateLargeDatasets();
@@ -952,13 +1027,13 @@ test.describe('Admin Reports', () => {
 
     // ── Phase 3: Verify Demographics deltas — HC scope ──
 
-    await test.step('Navigate to updated Demographics report', async () => {
+    await step('Navigate to updated Demographics report', async () => {
       await navigateToHCReportsPage(page, NYANGE_HC_ID);
       await selectReportType(page, 'demographics');
       await setDateRange(page, REPORT_START_DATE, reportLimitDate);
     });
 
-    await test.step('Verify Registered Patients table deltas', async () => {
+    await step('Verify Registered Patients table deltas', async () => {
       const newRegistered = await readRegisteredPatientsTable(page);
 
       // Log all rows: baseline → new (expected delta)
@@ -1010,7 +1085,7 @@ test.describe('Admin Reports', () => {
       }
     });
 
-    await test.step('Verify Impacted Patients table deltas', async () => {
+    await step('Verify Impacted Patients table deltas', async () => {
       const newImpacted = await readImpactedPatientsTable(page);
 
       console.log('\n=== IMPACTED PATIENTS ===');
@@ -1045,7 +1120,7 @@ test.describe('Admin Reports', () => {
       );
     });
 
-    await test.step('Verify Encounters table deltas', async () => {
+    await step('Verify Encounters table deltas', async () => {
       const newEnc = await readEncountersTable(page);
 
       console.log('\n=== ENCOUNTERS ===');
@@ -1082,13 +1157,13 @@ test.describe('Admin Reports', () => {
       assertDelta('Individual', 2);         // NutrChild + HVChild each have a nutrition encounter
     });
 
-    await test.step('Verify CSV download button is visible', async () => {
+    await step('Verify CSV download button is visible', async () => {
       await expect(page.locator('button.download-csv')).toBeVisible();
     });
 
     // ── Acute Illness report verification ──
 
-    await test.step('Verify Acute Illness report deltas', async () => {
+    await step('Verify Acute Illness report deltas', async () => {
       await selectReportType(page, 'acute-illness');
       await setDateRange(page, REPORT_START_DATE, reportLimitDate);
 
@@ -1126,7 +1201,7 @@ test.describe('Admin Reports', () => {
 
     // ── Prenatal (ANC) report verification ──
 
-    await test.step('Verify Prenatal (ANC) report deltas', async () => {
+    await step('Verify Prenatal (ANC) report deltas', async () => {
       await selectReportType(page, 'prenatal');
       await setDateRange(page, REPORT_START_DATE, reportLimitDate);
 
@@ -1169,7 +1244,7 @@ test.describe('Admin Reports', () => {
 
     // ── Prenatal Diagnoses report verification ──
 
-    await test.step('Verify Prenatal Diagnoses report deltas', async () => {
+    await step('Verify Prenatal Diagnoses report deltas', async () => {
       await selectReportType(page, 'prenatal-diagnoses');
       await setDateRange(page, REPORT_START_DATE, reportLimitDate);
 
@@ -1202,7 +1277,7 @@ test.describe('Admin Reports', () => {
 
     // ── Nutrition report verification ──
 
-    await test.step('Verify Nutrition report deltas', async () => {
+    await step('Verify Nutrition report deltas', async () => {
       await selectReportType(page, 'nutrition');
       // No date range — nutrition report always shows last 12 months.
       await page.waitForTimeout(2000);
@@ -1241,7 +1316,7 @@ test.describe('Admin Reports', () => {
 
     // ── Phase 4: Demographics scope (Province) ──
 
-    await test.step('Verify Demographics report at Province scope', async () => {
+    await step('Verify Demographics report at Province scope', async () => {
       await navigateToReportsMenu(page);
 
       // Select "Demographic Region" scope.
@@ -1300,7 +1375,7 @@ test.describe('Admin Reports', () => {
 
     let completion: CompletionTableData;
 
-    await test.step('Verify Completion Report — AI table renders', async () => {
+    await step('Verify Completion Report — AI table renders', async () => {
       await navigateToCompletionReportPage(page, NYANGE_HC_ID);
       await selectCompletionReportType(page, 'acute-illness');
       await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
@@ -1321,7 +1396,7 @@ test.describe('Admin Reports', () => {
       expect(completion.rows.length, 'Should have 23 activity rows').toBe(23);
     });
 
-    await test.step('Verify Completion Report — AI activity deltas (Any role)', async () => {
+    await step('Verify Completion Report — AI activity deltas (Any role)', async () => {
       // We created 4 AI encounters: nurse initial (adult), nurse initial (child),
       // nurse subsequent (adult), CHW initial (adult).
       // 3 initial encounters contribute to initial-only activities.
@@ -1386,7 +1461,7 @@ test.describe('Admin Reports', () => {
       expect(ongoing.completed, 'Ongoing Treatment completed +1').toBe(baseOngoing.completed + 1);
     });
 
-    await test.step('Verify Completion Report — AI Taken By filter (Nurse)', async () => {
+    await step('Verify Completion Report — AI Taken By filter (Nurse)', async () => {
       await selectCompletionTakenBy(page, 'nurse');
       const nurseData = await readCompletionTable(page, 'acute-illness');
       const baseCoreExam = findCompletionRow(baselineCompletion, 'Core Exam')!;
@@ -1396,7 +1471,7 @@ test.describe('Admin Reports', () => {
       expect(coreExam.completed, 'AI Nurse: Core Exam completed +2').toBe(baseCoreExam.completed + 2);
     });
 
-    await test.step('Verify Completion Report — AI Taken By filter (CHW)', async () => {
+    await step('Verify Completion Report — AI Taken By filter (CHW)', async () => {
       await selectCompletionTakenBy(page, 'chw');
       const chwData = await readCompletionTable(page, 'acute-illness');
       const coreExam = findCompletionRow(chwData, 'Core Exam')!;
@@ -1413,7 +1488,7 @@ test.describe('Admin Reports', () => {
 
     let prenatalCompletion: CompletionTableData;
 
-    await test.step('Verify Completion Report — Prenatal table renders', async () => {
+    await step('Verify Completion Report — Prenatal table renders', async () => {
       await navigateToCompletionReportPage(page, NYANGE_HC_ID);
       await selectCompletionReportType(page, 'prenatal');
       await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
@@ -1435,10 +1510,10 @@ test.describe('Admin Reports', () => {
       }
 
       expect(prenatalCompletion.heading).toContain('Antenatal');
-      expect(prenatalCompletion.rows.length, 'Should have 60 activity rows').toBe(60);
+      expect(prenatalCompletion.rows.length, 'Should have 59 activity rows').toBe(59);
     });
 
-    await test.step('Verify Completion Report — Prenatal activity deltas (Any role)', async () => {
+    await step('Verify Completion Report — Prenatal activity deltas (Any role)', async () => {
       const assertDelta = (label: string, expectedDelta: number, completedDelta: number) => {
         const row = findCompletionRow(prenatalCompletion, label)!;
         const base = findCompletionRow(baselinePrenatalCompletion, label)!;
@@ -1490,7 +1565,9 @@ test.describe('Admin Reports', () => {
       // CHW only (+1 each).
       assertDelta('Pregnancy Testing', 1, 1);
       assertDelta('Appointment Confirmation', 1, 1);
-      assertDelta('Health Education', 1, 1);
+      // Health Education: +2/+2 — CHW encounter (+1) and nurse NextSteps (+1,
+      // triggered by HIV test result, completed before Wait/Pause).
+      assertDelta('Health Education', 2, 2);
       assertDelta('Follow Up', 1, 1);
 
       // Lab test results (all tests performed at point of care).
@@ -1504,29 +1581,29 @@ test.describe('Admin Reports', () => {
       assertDelta('Blood Group and Rhesus Test Result', 1, 1);
       assertDelta('Partner HIV Test Result', 1, 1);
 
-      // Medication activities: with lab tech flow (Wait/Pause), the completion
-      // script may not count medications from a paused encounter.
-      // TODO: investigate PHP completion logic for paused encounters.
-      assertDelta('Iron', 0, 0);
-      assertDelta('Folate', 0, 0);
-      assertDelta('MMS', 0, 0);
-      assertDelta('Mebendazole', 0, 0);
+      // Individual medication activities: expected and completed at nurse initial.
+      // Requires hedley_prenatal_change_medications variable to be set.
+      assertDelta('Iron', 1, 1);
+      assertDelta('Folate', 1, 1);
+      assertDelta('MMS', 1, 1);
+      assertDelta('Mebendazole', 1, 1);       // EGA 30 >= 24w
+      assertDelta('Calcium', 1, 1);            // EGA 30 >= 14w
 
-      // Medication Distribution: not triggered (encounter paused via Wait).
-      assertDelta('Medication Distribution', 0, 0);
-      // Referral: not triggered.
-      assertDelta('Referral', 0, 0);
+      // Medication Distribution: expected (HIV diagnosis + hypertension),
+      // completed before Wait/Pause in NextSteps.
+      assertDelta('Medication Distribution', 1, 1);
+      // Referral: expected on recurrent encounter (after lab results),
+      // completed via NextSteps on that encounter.
+      assertDelta('Referral', 1, 1);
 
       // Expected but not completed (expected +1, completed +0).
       assertDelta('Photo', 1, 0);
       assertDelta('Social History', 0, 0);  // Disabled since Sep 2024 (#1323)
 
       // Not expected / blocked / conditional.
-      assertDelta('Calcium', 0, 0);          // Paused encounter
-      assertDelta('Low dose Aspirin', 0, 0);// Paused encounter
-      assertDelta('Fefol', 0, 0);           // Blocked by Iron+Folate
+      assertDelta('Fefol', 0, 0);           // Blocked by Iron+Folate distributed today
       assertDelta('Vitals Recheck', 0, 0);  // Only for borderline BP, ours is stage 2
-      assertDelta('Medication', 1, 0);       // Legacy: expected but not completed
+      assertDelta('Medication', 0, 0);       // Legacy: no longer expected (variable set)
       assertDelta('Outside Care', 0, 0);    // Subsequent only
       assertDelta('Treatment Review', 0, 0);// Subsequent only
       assertDelta('Birth Plan', 0, 0);      // CHW-2 only
@@ -1534,7 +1611,7 @@ test.describe('Admin Reports', () => {
       assertDelta('HIV PCR Test Result', 0, 0);
     });
 
-    await test.step('Verify Completion Report — Prenatal Taken By filter (Nurse)', async () => {
+    await step('Verify Completion Report — Prenatal Taken By filter (Nurse)', async () => {
       await selectCompletionTakenBy(page, 'nurse');
       const nurseData = await readCompletionTable(page, 'prenatal');
 
@@ -1550,7 +1627,7 @@ test.describe('Admin Reports', () => {
       expect(pt.expected, 'Prenatal Nurse: Pregnancy Testing expected 0').toBe(0);
     });
 
-    await test.step('Verify Completion Report — Prenatal Taken By filter (CHW)', async () => {
+    await step('Verify Completion Report — Prenatal Taken By filter (CHW)', async () => {
       await selectCompletionTakenBy(page, 'chw');
       const chwData = await readCompletionTable(page, 'prenatal');
 
@@ -1572,7 +1649,7 @@ test.describe('Admin Reports', () => {
 
     let csCompletion: CompletionTableData;
 
-    await test.step('Verify Completion Report — Child Scoreboard table renders', async () => {
+    await step('Verify Completion Report — Child Scoreboard table renders', async () => {
       await navigateToCompletionReportPage(page, NYANGE_HC_ID);
       await selectCompletionReportType(page, 'child-scoreboard');
       await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
@@ -1595,7 +1672,7 @@ test.describe('Admin Reports', () => {
       expect(csCompletion.rows.length, 'Should have 8 activity rows (Rwanda)').toBe(8);
     });
 
-    await test.step('Verify Completion Report — Child Scoreboard activity deltas', async () => {
+    await step('Verify Completion Report — Child Scoreboard activity deltas', async () => {
       const assertDelta = (label: string, expectedDelta: number, completedDelta: number) => {
         const row = findCompletionRow(csCompletion, label)!;
         const base = findCompletionRow(baselineCSCompletion, label)!;
@@ -1628,7 +1705,7 @@ test.describe('Admin Reports', () => {
 
     let hivCompletion: CompletionTableData;
 
-    await test.step('Verify Completion Report — HIV table renders', async () => {
+    await step('Verify Completion Report — HIV table renders', async () => {
       await navigateToCompletionReportPage(page, NYANGE_HC_ID);
       await selectCompletionReportType(page, 'hiv');
       await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
@@ -1651,7 +1728,7 @@ test.describe('Admin Reports', () => {
       expect(hivCompletion.rows.length, 'Should have 7 activity rows').toBe(7);
     });
 
-    await test.step('Verify Completion Report — HIV activity deltas', async () => {
+    await step('Verify Completion Report — HIV activity deltas', async () => {
       const assertDelta = (label: string, expectedDelta: number, completedDelta: number) => {
         const row = findCompletionRow(hivCompletion, label)!;
         const base = findCompletionRow(baselineHIVCompletion, label)!;
@@ -1683,7 +1760,7 @@ test.describe('Admin Reports', () => {
 
     let hvCompletion: CompletionTableData;
 
-    await test.step('Verify Completion Report — Home Visit table renders', async () => {
+    await step('Verify Completion Report — Home Visit table renders', async () => {
       await navigateToCompletionReportPage(page, NYANGE_HC_ID);
       await selectCompletionReportType(page, 'home-visit');
       await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
@@ -1706,7 +1783,7 @@ test.describe('Admin Reports', () => {
       expect(hvCompletion.rows.length, 'Should have 4 activity rows').toBe(4);
     });
 
-    await test.step('Verify Completion Report — Home Visit activity deltas', async () => {
+    await step('Verify Completion Report — Home Visit activity deltas', async () => {
       const assertDelta = (label: string, expectedDelta: number, completedDelta: number) => {
         const row = findCompletionRow(hvCompletion, label)!;
         const base = findCompletionRow(baselineHVCompletion, label)!;
@@ -1731,7 +1808,7 @@ test.describe('Admin Reports', () => {
 
     let ncdCompletion: CompletionTableData;
 
-    await test.step('Verify Completion Report — NCD table renders', async () => {
+    await step('Verify Completion Report — NCD table renders', async () => {
       await navigateToCompletionReportPage(page, NYANGE_HC_ID);
       await selectCompletionReportType(page, 'ncd');
       await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
@@ -1756,7 +1833,7 @@ test.describe('Admin Reports', () => {
       expect(ncdCompletion.rows.length, 'Should have 26 activity rows').toBe(26);
     });
 
-    await test.step('Verify Completion Report — NCD activity deltas', async () => {
+    await step('Verify Completion Report — NCD activity deltas', async () => {
       const assertDelta = (label: string, expectedDelta: number, completedDelta: number) => {
         const row = findCompletionRow(ncdCompletion, label)!;
         const base = findCompletionRow(baselineNCDCompletion, label)!;
@@ -1813,7 +1890,7 @@ test.describe('Admin Reports', () => {
 
     let nbCompletion: CompletionTableData;
 
-    await test.step('Verify Completion Report — Newborn Exam table renders', async () => {
+    await step('Verify Completion Report — Newborn Exam table renders', async () => {
       await navigateToCompletionReportPage(page, NYANGE_HC_ID);
       await selectCompletionReportType(page, 'newborn-exam');
       await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
@@ -1837,7 +1914,7 @@ test.describe('Admin Reports', () => {
       expect(nbCompletion.rows.length, 'Should have 11 activity rows').toBe(11);
     });
 
-    await test.step('Verify Completion Report — Newborn Exam activity deltas', async () => {
+    await step('Verify Completion Report — Newborn Exam activity deltas', async () => {
       const assertDelta = (label: string, expectedDelta: number, completedDelta: number) => {
         const row = findCompletionRow(nbCompletion, label)!;
         const base = findCompletionRow(baselineNBCompletion, label);
@@ -1870,7 +1947,7 @@ test.describe('Admin Reports', () => {
 
     let spvCompletion: CompletionTableData;
 
-    await test.step('Verify Completion Report — Well Child SPV table renders', async () => {
+    await step('Verify Completion Report — Well Child SPV table renders', async () => {
       await navigateToCompletionReportPage(page, NYANGE_HC_ID);
       await selectCompletionReportType(page, 'well-child');
       await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
@@ -1894,7 +1971,7 @@ test.describe('Admin Reports', () => {
       expect(spvCompletion.rows.length, 'Should have 29 activity rows (Rwanda)').toBe(29);
     });
 
-    await test.step('Verify Completion Report — Well Child SPV activity deltas', async () => {
+    await step('Verify Completion Report — Well Child SPV activity deltas', async () => {
       const assertDelta = (label: string, expectedDelta: number, completedDelta: number) => {
         const row = findCompletionRow(spvCompletion, label)!;
         const base = findCompletionRow(baselineSPVCompletion, label);
@@ -1933,7 +2010,7 @@ test.describe('Admin Reports', () => {
       assertDelta('HPV Immunisation', 0, 0);
     });
 
-    await test.step('Verify Completion Report — SPV Taken By filter (Nurse)', async () => {
+    await step('Verify Completion Report — SPV Taken By filter (Nurse)', async () => {
       await selectCompletionTakenBy(page, 'nurse');
       const nurseData = await readCompletionTable(page, 'well-child');
 
@@ -1944,7 +2021,7 @@ test.describe('Admin Reports', () => {
       expect(vitals.completed, 'SPV Nurse: Vitals completed +1').toBe((baseVitals?.completed ?? 0) + 1);
     });
 
-    await test.step('Verify Completion Report — SPV Taken By filter (CHW)', async () => {
+    await step('Verify Completion Report — SPV Taken By filter (CHW)', async () => {
       await selectCompletionTakenBy(page, 'chw');
       const chwData = await readCompletionTable(page, 'well-child');
 
@@ -1961,7 +2038,7 @@ test.describe('Admin Reports', () => {
 
     let tbCompletion: CompletionTableData;
 
-    await test.step('Verify Completion Report — Tuberculosis table renders', async () => {
+    await step('Verify Completion Report — Tuberculosis table renders', async () => {
       await navigateToCompletionReportPage(page, NYANGE_HC_ID);
       await selectCompletionReportType(page, 'tuberculosis');
       await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
@@ -1984,7 +2061,7 @@ test.describe('Admin Reports', () => {
       expect(tbCompletion.rows.length, 'Should have 8 activity rows').toBe(8);
     });
 
-    await test.step('Verify Completion Report — Tuberculosis activity deltas', async () => {
+    await step('Verify Completion Report — Tuberculosis activity deltas', async () => {
       const assertDelta = (label: string, expectedDelta: number, completedDelta: number) => {
         const row = findCompletionRow(tbCompletion, label)!;
         const base = findCompletionRow(baselineTBCompletion, label);
@@ -2019,7 +2096,7 @@ test.describe('Admin Reports', () => {
 
     let nutrIndCompletion: CompletionTableData;
 
-    await test.step('Verify Completion Report — Nutrition Individual table renders', async () => {
+    await step('Verify Completion Report — Nutrition Individual table renders', async () => {
       await navigateToCompletionReportPage(page, NYANGE_HC_ID);
       await selectCompletionReportType(page, 'nutrition-individual');
       await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
@@ -2041,7 +2118,7 @@ test.describe('Admin Reports', () => {
       expect(nutrIndCompletion.rows.length, 'Should have 10 activity rows').toBe(10);
     });
 
-    await test.step('Verify Completion Report — Nutrition Individual activity deltas', async () => {
+    await step('Verify Completion Report — Nutrition Individual activity deltas', async () => {
       const assertDelta = (label: string, expectedDelta: number, completedDelta: number) => {
         const row = findCompletionRow(nutrIndCompletion, label)!;
         const base = findCompletionRow(baselineNutrIndCompletion, label);
@@ -2074,7 +2151,7 @@ test.describe('Admin Reports', () => {
       assertDelta('Referral', 2, 1);
     });
 
-    await test.step('Verify Completion Report — Nutrition Individual Taken By (Nurse)', async () => {
+    await step('Verify Completion Report — Nutrition Individual Taken By (Nurse)', async () => {
       await selectCompletionTakenBy(page, 'nurse');
       const nurseData = await readCompletionTable(page, 'nutrition-individual');
 
@@ -2084,7 +2161,7 @@ test.describe('Admin Reports', () => {
       expect(ncda.completed, 'NutrInd Nurse: NCDA completed +1').toBe((baseNCDA?.completed ?? 0) + 1);
     });
 
-    await test.step('Verify Completion Report — Nutrition Individual Taken By (CHW)', async () => {
+    await step('Verify Completion Report — Nutrition Individual Taken By (CHW)', async () => {
       await selectCompletionTakenBy(page, 'chw');
       const chwData = await readCompletionTable(page, 'nutrition-individual');
 
@@ -2101,7 +2178,7 @@ test.describe('Admin Reports', () => {
 
     let nutrGrpCompletion: CompletionTableData;
 
-    await test.step('Verify Completion Report — Nutrition Group table renders', async () => {
+    await step('Verify Completion Report — Nutrition Group table renders', async () => {
       await navigateToCompletionReportPage(page, NYANGE_HC_ID);
       await selectCompletionReportType(page, 'nutrition-group');
       await setCompletionDateRange(page, REPORT_START_DATE, reportLimitDate);
@@ -2125,7 +2202,7 @@ test.describe('Admin Reports', () => {
       expect(nutrGrpCompletion.rows.length, 'Should have 14 activity rows').toBe(14);
     });
 
-    await test.step('Verify Completion Report — Nutrition Group activity deltas', async () => {
+    await step('Verify Completion Report — Nutrition Group activity deltas', async () => {
       const assertDelta = (label: string, expectedDelta: number, completedDelta: number) => {
         const row = findCompletionRow(nutrGrpCompletion, label)!;
         const base = findCompletionRow(baselineNutrGrpCompletion, label);
