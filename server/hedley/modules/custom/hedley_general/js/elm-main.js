@@ -8951,6 +8951,7 @@ var $author$project$Backend$Reports$Decoder$decodeAcuteIllnessEncounterData = A2
 		}
 	},
 	$elm$json$Json$Decode$string);
+var $author$project$Backend$Reports$Decoder$decodeFamilyNutritionEncounterData = $author$project$Gizra$NominalDate$decodeYYYYMMDD;
 var $author$project$Backend$Reports$Model$Male = {$: 'Male'};
 var $author$project$Backend$Reports$Utils$genderFromString = function (s) {
 	switch (s) {
@@ -9507,7 +9508,7 @@ var $author$project$Backend$Reports$Decoder$decodePatientData = A4(
 														['individual', 'family-nutrition']),
 													$elm$json$Json$Decode$nullable(
 														$elm$json$Json$Decode$list(
-															$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD))),
+															$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeFamilyNutritionEncounterData))),
 													$elm$core$Maybe$Nothing,
 													A4(
 														$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
@@ -16950,9 +16951,12 @@ var $author$project$Pages$Reports$View$generateDemographicsReportEncountersData 
 			});
 		var familyNutritionEncountersData = A2(
 			$elm$core$List$filterMap,
-			function ($) {
-				return $.familyNutritionData;
-			},
+			A2(
+				$elm$core$Basics$composeR,
+				function ($) {
+					return $.familyNutritionData;
+				},
+				$elm$core$Maybe$map($elm$core$List$concat)),
 			records);
 		var countUnique = A2(
 			$elm$core$Basics$composeR,

@@ -872,7 +872,7 @@ generateDemographicsReportEncountersData language records =
 
         familyNutritionEncountersData =
             List.filterMap
-                .familyNutritionData
+                (.familyNutritionData >> Maybe.map List.concat)
                 records
 
         familyNutritionEncountersTotal =
