@@ -51,10 +51,7 @@ function hedley_install() {
   hedley_update_7015();
   hedley_update_7016();
   hedley_update_7032();
-
-  // Set the prenatal medication change date directly (not via
-  // hedley_update_7046 which depends on hedley_stats module).
-  variable_set('hedley_prenatal_change_medications', date('Y-m-d'));
+  hedley_update_7046();
 
   hedley_initial_sync_permissions();
 }

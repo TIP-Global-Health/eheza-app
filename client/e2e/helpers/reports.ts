@@ -106,6 +106,21 @@ export async function drupalLogin(
  * The input is hardcoded (no user-provided data), so shell injection
  * is not a concern.
  */
+/**
+ * Ensure hedley_prenatal_change_medications is set.
+ * Required for the completion script to use individual medication types
+ * (Iron, Folate, etc.) instead of the legacy single 'medication' activity.
+ * On fresh installs, hedley_install() sets this, but CI may use a DB dump
+ * where the variable is missing.
+ */
+export function ensurePrenatalMedicationsVariable() {
+  const { drushCmd, cwd } = drushEnv();
+  execSync(
+    `${drushCmd} eval "if (!variable_get('hedley_prenatal_change_medications', FALSE)) { variable_set('hedley_prenatal_change_medications', date('Y-m-d')); echo 'Set.'; } else { echo 'Already set.'; }"`,
+    { cwd, timeout: 15000, encoding: 'utf-8', stdio: 'pipe' },
+  );
+}
+
 export function generateBaseReportsData() {
   const { drushCmd, cwd } = drushEnv();
   console.log('Generating base reports data (generate-data-for-all.php)...');

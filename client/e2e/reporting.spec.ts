@@ -36,6 +36,7 @@ import {
   PatientsTableData,
   EncountersTableData,
   SimpleTableData,
+  ensurePrenatalMedicationsVariable,
   generateCompletionData,
   completionRecalculateLargeDatasets,
   navigateToCompletionReportPage,
@@ -238,6 +239,7 @@ test.describe('Admin Reports', () => {
     // ── Phase 0: Generate base reports data + record baselines ──
 
     await step('Generate base reports data from existing demo persons', async () => {
+      ensurePrenatalMedicationsVariable();
       generateBaseReportsData();
       clearAdvancedQueue();
       recalculateLargeDatasets();
@@ -979,14 +981,14 @@ test.describe('Admin Reports', () => {
       await completeWCNutritionAssessment(page, {
         headCircumference: '35',
         weight: '4',
-        nutritionSigns: [],
+        nutritionSigns: ['Edema'],
       });
       await completeWCImmunisation(page, { isChw: true });
       await completeWCNextSteps(page, {
-        hasContributingFactors: false,
+        hasContributingFactors: true,
         hasHealthEducation: true,
         hasSendToHC: true,
-        hasFollowUp: false,
+        hasFollowUp: true,
       });
       await goToDashboard(page);
       console.log('Created NBChild (Newborn Exam):', nbChild.fullName);
@@ -1944,7 +1946,9 @@ test.describe('Admin Reports', () => {
       assertDelta('Head Circumference', 1, 1);
       assertDelta('Nutrition', 1, 1);
 
-      // NextSteps completed.
+      // NextSteps completed (triggered by abnormal nutrition signs: Edema).
+      assertDelta('Contributing Factors', 1, 1);
+      assertDelta('Follow Up', 1, 1);
       assertDelta('Health Education', 1, 1);
       assertDelta('Referral', 1, 1);
 
