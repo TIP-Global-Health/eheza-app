@@ -6789,7 +6789,6 @@ function hedley_reports_prenatal_add_medication_activities(array $encounter_data
         // Note: prenatal_aspirin is NOT a standalone activity in the Elm UI.
         // Aspirin is administered via Medication Distribution (NextSteps),
         // so we do not add it to expected here.
-
         if (
           ($ega_in_weeks >= 14) &&
           !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_calcium')
