@@ -128,6 +128,10 @@ import {
   completeMedicalHistory as completeNCDMedicalHistory,
   completeLaboratory as completeNCDLaboratory,
   completeNextSteps as completeNCDNextSteps,
+  navigateToCaseManagement as navigateToNCDCaseManagement,
+  openNCDRecurrentEncounterFromCaseManagement,
+  completeLabResults as completeNCDLabResults,
+  leaveRecurrentEncounter as leaveNCDRecurrentEncounter,
 } from './helpers/ncd';
 import {
   createAdultAndStartHIVEncounter,
@@ -274,6 +278,7 @@ test.describe('Admin Reports', () => {
     let hvChildName: string;
     let aiNurseName: string;
     let prenatalMomName: string;
+    let ncdAdultName: string;
 
     await step('Login to Drupal admin and record baseline values', async () => {
       await drupalLogin(page);
@@ -682,13 +687,14 @@ test.describe('Admin Reports', () => {
         isFemale: true,
         ageYears: 40,
       });
+      ncdAdultName = ncdAdult.fullName;
       await completeNCDDangerSigns(page);
       await completeNCDSymptomReview(page);
       // Stage 1 hypertension (sys=145, dia=95) triggers HealthEducation in NextSteps.
       await completeNCDExamination(page, { sys: '145', dia: '95' });
       await completeNCDFamilyPlanning(page); // Female patient — FamilyPlanning + PregnancyTest expected.
       await completeNCDMedicalHistory(page);
-      await completeNCDLaboratory(page);
+      await completeNCDLaboratory(page, { performTests: true });
       await completeNCDNextSteps(page);
       await goToDashboard(page);
       console.log('Created NCDAdult:', ncdAdult.fullName);
@@ -739,6 +745,18 @@ test.describe('Admin Reports', () => {
       await page.goto(pwaBaseUrl);
       await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
       await syncAndWait(page);
+    });
+
+    // ── Phase 1a-extra-0: NCD lab results via recurrent encounter ──
+    // NCDAdult labs were sent to lab. Enter results via Case Management.
+
+    await step('Enter NCD lab results via recurrent encounter', async () => {
+      await page.goto(pwaBaseUrl);
+      await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
+      await navigateToNCDCaseManagement(page);
+      await openNCDRecurrentEncounterFromCaseManagement(page, ncdAdultName);
+      await completeNCDLabResults(page);
+      await leaveNCDRecurrentEncounter(page);
     });
 
     // ── Phase 1a-extra: Subsequent AI encounter ──
@@ -1884,12 +1902,12 @@ test.describe('Admin Reports', () => {
       assertDelta('Family Planning', 1, 1);
       assertDelta('Pregnancy Test', 1, 1);
 
-      // Test results: not recorded (tests not performed).
-      assertDelta('Creatinine Result', 0, 0);
-      assertDelta('Lipid Panel Result', 0, 0);
-      assertDelta('Liver Function Result', 0, 0);
-      assertDelta('Random Blood Sugar Test Result', 0, 0);
-      assertDelta('Urine Dipstick Test Result', 0, 0);
+      // Test results: labs sent to lab, results entered via recurrent encounter.
+      assertDelta('Creatinine Result', 1, 1);
+      assertDelta('Lipid Panel Result', 1, 1);
+      assertDelta('Liver Function Result', 1, 1);
+      assertDelta('Random Blood Sugar Test Result', 1, 1);
+      assertDelta('Urine Dipstick Test Result', 1, 1);
 
       // Diagnosis-conditional NextSteps: not triggered (Stage 1 only).
       assertDelta('Medication Distribution', 0, 0);
