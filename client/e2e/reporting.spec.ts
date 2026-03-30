@@ -752,7 +752,13 @@ test.describe('Admin Reports', () => {
       await navigateToAIParticipant(page, aiNurseName);
       await startSubsequentAI(page);
       await completeAIDangerSigns(page);
+      await completeAIPhysicalExam(page);
       await completeAIOngoingTreatment(page);
+      await completeAINextSteps(page, {
+        hasMedicationDistribution: false,
+        hasFollowUp: true,
+        hasHealthEducation: true,
+      });
       await goToDashboard(page);
       console.log('Created subsequent AI encounter for:', aiNurseName);
     });
@@ -1403,11 +1409,11 @@ test.describe('Admin Reports', () => {
       // 1 subsequent encounter contributes to subsequent-only activities.
 
       // Vitals: expected +4 (always expected for all encounters),
-      // completed +3 (3 initial encounters fill it; subsequent only does DangerSigns + OngoingTreatment).
+      // completed +4 (3 initial + subsequent physical exam).
       const vitals = findCompletionRow(completion, 'Vitals')!;
       const baseVitals = findCompletionRow(baselineCompletion, 'Vitals')!;
       expect(vitals.expected, 'Vitals expected +4').toBe(baseVitals.expected + 4);
-      expect(vitals.completed, 'Vitals completed +3').toBe(baseVitals.completed + 3);
+      expect(vitals.completed, 'Vitals completed +4').toBe(baseVitals.completed + 4);
 
       // SymptomsGeneral: expected +3 (initial encounters only), completed +3.
       const sympGen = findCompletionRow(completion, 'Symptoms General')!;
@@ -1416,11 +1422,11 @@ test.describe('Admin Reports', () => {
       expect(sympGen.completed, 'Symptoms General completed +3').toBe(baseSympGen.completed + 3);
 
       // CoreExam: expected +3 (all nurse encounters, including subsequent),
-      // completed +2 (only 2 initial nurse encounters fill it).
+      // completed +3 (2 initial + subsequent physical exam).
       const coreExam = findCompletionRow(completion, 'Core Exam')!;
       const baseCoreExam = findCompletionRow(baselineCompletion, 'Core Exam')!;
       expect(coreExam.expected, 'Core Exam expected +3').toBe(baseCoreExam.expected + 3);
-      expect(coreExam.completed, 'Core Exam completed +2').toBe(baseCoreExam.completed + 2);
+      expect(coreExam.completed, 'Core Exam completed +3').toBe(baseCoreExam.completed + 3);
 
       // MUAC: expected +1 (AIChild is 24mo, in 6mo-5yr range), completed +1.
       const muac = findCompletionRow(completion, 'MUAC')!;
@@ -1441,11 +1447,11 @@ test.describe('Admin Reports', () => {
       expect(medDist.expected, 'Medication Distribution expected +2').toBe(baseMedDist.expected + 2);
       expect(medDist.completed, 'Medication Distribution completed +2').toBe(baseMedDist.completed + 2);
 
-      // FollowUp: expected +2, completed +2 (same as MedicationDistribution).
+      // FollowUp: expected +3, completed +3 (2 initial malaria + 1 subsequent).
       const followUp = findCompletionRow(completion, 'Follow Up')!;
       const baseFollowUp = findCompletionRow(baselineCompletion, 'Follow Up')!;
-      expect(followUp.expected, 'Follow Up expected +2').toBe(baseFollowUp.expected + 2);
-      expect(followUp.completed, 'Follow Up completed +2').toBe(baseFollowUp.completed + 2);
+      expect(followUp.expected, 'Follow Up expected +3').toBe(baseFollowUp.expected + 3);
+      expect(followUp.completed, 'Follow Up completed +3').toBe(baseFollowUp.completed + 3);
 
       // DangerSigns: expected +1 (subsequent encounter), completed +1.
       const dangerSigns = findCompletionRow(completion, 'Danger Signs')!;
@@ -1459,6 +1465,13 @@ test.describe('Admin Reports', () => {
       const baseOngoing = findCompletionRow(baselineCompletion, 'Ongoing Treatment')!;
       expect(ongoing.expected, 'Ongoing Treatment expected +1').toBe(baseOngoing.expected + 1);
       expect(ongoing.completed, 'Ongoing Treatment completed +1').toBe(baseOngoing.completed + 1);
+
+      // HealthEducation: expected +1 (subsequent, no malaria at current encounter),
+      // completed +1.
+      const healthEd = findCompletionRow(completion, 'Health Education')!;
+      const baseHealthEd = findCompletionRow(baselineCompletion, 'Health Education')!;
+      expect(healthEd.expected, 'Health Education expected +1').toBe(baseHealthEd.expected + 1);
+      expect(healthEd.completed, 'Health Education completed +1').toBe(baseHealthEd.completed + 1);
     });
 
     await step('Verify Completion Report — AI Taken By filter (Nurse)', async () => {
@@ -1468,7 +1481,7 @@ test.describe('Admin Reports', () => {
       const coreExam = findCompletionRow(nurseData, 'Core Exam')!;
       // 3 nurse encounters (2 initial + 1 subsequent) expect CoreExam.
       expect(coreExam.expected, 'AI Nurse: Core Exam expected +3').toBe(baseCoreExam.expected + 3);
-      expect(coreExam.completed, 'AI Nurse: Core Exam completed +2').toBe(baseCoreExam.completed + 2);
+      expect(coreExam.completed, 'AI Nurse: Core Exam completed +3').toBe(baseCoreExam.completed + 3);
     });
 
     await step('Verify Completion Report — AI Taken By filter (CHW)', async () => {
