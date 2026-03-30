@@ -370,7 +370,8 @@ function hedley_reports_trigger_recalculation_by_new_content($node) {
 
   if (in_array($node->type, $triggering_encounters)) {
     // For encounters, resolving person ID through participant.
-    // Family nutrition encounters use field_family_participant; all others use field_individual_participant.
+    // Family nutrition encounters use field_family_participant;
+    // all others use field_individual_participant.
     $participant_field = $node->type == HEDLEY_ACTIVITY_FAMILY_NUTRITION_ENCOUNTER_CONTENT_TYPE
       ? 'field_family_participant'
       : 'field_individual_participant';
