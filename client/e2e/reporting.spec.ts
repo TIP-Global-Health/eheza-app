@@ -779,6 +779,7 @@ test.describe('Admin Reports', () => {
       await completeAIOngoingTreatment(page);
       await completeAINextSteps(page, {
         hasMedicationDistribution: false,
+        hasSendToHC: true,
         hasFollowUp: true,
         hasHealthEducation: true,
       });
@@ -903,7 +904,7 @@ test.describe('Admin Reports', () => {
         ageYears: 35,
       });
       await completeHIVDiagnostics(page);
-      await completeHIVMedication(page);
+      await completeHIVMedication(page, { sideEffects: true });
       await completeHIVNextSteps(page);
       await goToDashboard(page);
       console.log('Created HIVAdult:', hivAdult.fullName);
@@ -1524,6 +1525,13 @@ test.describe('Admin Reports', () => {
       const baseHealthEd = findCompletionRow(baselineCompletion, 'Health Education')!;
       expect(healthEd.expected, 'Health Education expected +1').toBe(baseHealthEd.expected + 1);
       expect(healthEd.completed, 'Health Education completed +1').toBe(baseHealthEd.completed + 1);
+
+      // Referral: expected +1 (subsequent, fever triggers send_to_hc),
+      // completed +1.
+      const referral = findCompletionRow(completion, 'Referral')!;
+      const baseReferral = findCompletionRow(baselineCompletion, 'Referral')!;
+      expect(referral.expected, 'Referral expected +1').toBe(baseReferral.expected + 1);
+      expect(referral.completed, 'Referral completed +1').toBe(baseReferral.completed + 1);
     });
 
     await step('Verify Completion Report — AI Taken By filter (Nurse)', async () => {
@@ -1813,8 +1821,8 @@ test.describe('Admin Reports', () => {
       // Not expected for initial encounter.
       assertDelta('Symptoms Review', 0, 0);
 
-      // Referral: conditional on symptoms/adverse events — not triggered.
-      assertDelta('Referral', 0, 0);
+      // Referral: triggered by adverse event (Rash or Itching) in TreatmentReview.
+      assertDelta('Referral', 1, 1);
     });
 
     // ── Phase 9: Completion Report — Home Visit ──
