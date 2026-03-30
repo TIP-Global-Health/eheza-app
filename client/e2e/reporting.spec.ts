@@ -131,6 +131,7 @@ import {
   navigateToCaseManagement as navigateToNCDCaseManagement,
   openNCDRecurrentEncounterFromCaseManagement,
   completeLabResults as completeNCDLabResults,
+  completeRecurrentNextSteps as completeNCDRecurrentNextSteps,
   leaveRecurrentEncounter as leaveNCDRecurrentEncounter,
 } from './helpers/ncd';
 import {
@@ -190,7 +191,7 @@ const NYANGE_HC_ID = 4;
 const REPORT_START_DATE = new Date(2018, 0, 1);
 
 test.describe('Admin Reports', () => {
-  test.describe.configure({ timeout: 900000 });
+  test.describe.configure({ timeout: 1080000 }); // 18 minutes
 
   test.beforeEach(async ({ page }) => {
     if (process.env.RECORD) {
@@ -756,6 +757,7 @@ test.describe('Admin Reports', () => {
       await navigateToNCDCaseManagement(page);
       await openNCDRecurrentEncounterFromCaseManagement(page, ncdAdultName);
       await completeNCDLabResults(page);
+      await completeNCDRecurrentNextSteps(page);
       await leaveNCDRecurrentEncounter(page);
     });
 
@@ -998,7 +1000,7 @@ test.describe('Admin Reports', () => {
       await completePregnancySummary(page);
       await completeWCNutritionAssessment(page, {
         headCircumference: '35',
-        weight: '4',
+        weight: '2',
         nutritionSigns: ['Edema'],
       });
       await completeWCImmunisation(page, { isChw: true });
@@ -1909,9 +1911,9 @@ test.describe('Admin Reports', () => {
       assertDelta('Random Blood Sugar Test Result', 1, 1);
       assertDelta('Urine Dipstick Test Result', 1, 1);
 
-      // Diagnosis-conditional NextSteps: not triggered (Stage 1 only).
-      assertDelta('Medication Distribution', 0, 0);
-      assertDelta('Referral', 0, 0);
+      // Recurrent NextSteps: expected and completed on recurrent encounter.
+      assertDelta('Medication Distribution', 1, 1);
+      assertDelta('Referral', 1, 1);
     });
 
     // ── Phase 11: Completion Report — Newborn Exam ──
