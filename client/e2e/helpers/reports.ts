@@ -115,7 +115,7 @@ export async function drupalLogin(
  */
 export function ensurePrenatalMedicationsVariable() {
   const { drushCmd, cwd } = drushEnv();
-  const php = `variable_set('hedley_prenatal_change_medications', date('Y-m-d')); echo variable_get('hedley_prenatal_change_medications', 'NOT SET');`;
+  const php = 'variable_set("hedley_prenatal_change_medications", date("Y-m-d")); echo variable_get("hedley_prenatal_change_medications", "NOT SET");';
   const result = execSync(
     `${drushCmd} eval '${php}'`,
     { cwd, timeout: 15000, encoding: 'utf-8', stdio: 'pipe' },
