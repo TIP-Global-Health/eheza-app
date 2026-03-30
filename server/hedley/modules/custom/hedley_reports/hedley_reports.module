@@ -363,29 +363,18 @@ function hedley_reports_trigger_recalculation_by_new_content($node) {
   $triggering_encounters = hedley_reports_get_triggering_encounter_types();
   $triggering_measurements = hedley_reports_get_triggering_measurement_types();
 
-  // Family nutrition encounters use family_participant instead of
-  // individual_participant, so person resolution is handled separately.
-  if ($node->type == HEDLEY_ACTIVITY_FAMILY_NUTRITION_ENCOUNTER_CONTENT_TYPE) {
-    $participant_id = $node->field_family_participant[LANGUAGE_NONE][0]['target_id'];
-    if (empty($participant_id)) {
-      return;
-    }
-    $wrapper = entity_metadata_wrapper('node', $participant_id);
-    $person_id = $wrapper->field_person->value(['identifier' => TRUE]);
-    hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA, $person_id, [
-      'person_id' => $person_id,
-    ]);
-    return;
-  }
-
   if (!in_array($node->type, array_merge($triggering_encounters, $triggering_measurements))) {
     // Not a triggering content.
     return;
   }
 
   if (in_array($node->type, $triggering_encounters)) {
-    // For encounters, resolving person ID through individual participant.
-    $participant_id = $node->field_individual_participant[LANGUAGE_NONE][0]['target_id'];
+    // For encounters, resolving person ID through participant.
+    // Family nutrition encounters use field_family_participant; all others use field_individual_participant.
+    $participant_field = $node->type == HEDLEY_ACTIVITY_FAMILY_NUTRITION_ENCOUNTER_CONTENT_TYPE
+      ? 'field_family_participant'
+      : 'field_individual_participant';
+    $participant_id = $node->{$participant_field}[LANGUAGE_NONE][0]['target_id'];
     if (empty($participant_id)) {
       // Can't resolve to which participant encounter belongs.
       return;
@@ -452,6 +441,7 @@ function hedley_reports_get_triggering_encounter_types() {
   return [
     HEDLEY_ACTIVITY_ACUTE_ILLNESS_ENCOUNTER_CONTENT_TYPE,
     HEDLEY_ACTIVITY_CHILD_SCOREBOARD_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_FAMILY_NUTRITION_ENCOUNTER_CONTENT_TYPE,
     HEDLEY_ACTIVITY_HIV_ENCOUNTER_CONTENT_TYPE,
     HEDLEY_ACTIVITY_HOME_VISIT_ENCOUNTER_CONTENT_TYPE,
     HEDLEY_ACTIVITY_NCD_ENCOUNTER_CONTENT_TYPE,
@@ -701,20 +691,22 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
   }
 
   // Family nutrition encounters: find family participants for this person.
-  $family_participants_query = new EntityFieldQuery();
+  $family_participants_query = hedley_general_create_entity_field_query_excluding_deleted();
   $family_participants_result = $family_participants_query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', HEDLEY_ACTIVITY_FAMILY_PARTICIPANT_CONTENT_TYPE)
     ->fieldCondition('field_person', 'target_id', $person->nid)
+    ->propertyCondition('status', NODE_PUBLISHED)
     ->execute();
 
   if (!empty($family_participants_result['node'])) {
     $family_participants_ids = array_keys($family_participants_result['node']);
-    $family_encounters_query = new EntityFieldQuery();
+    $family_encounters_query = hedley_general_create_entity_field_query_excluding_deleted();
     $family_encounters_result = $family_encounters_query
       ->entityCondition('entity_type', 'node')
       ->entityCondition('bundle', HEDLEY_ACTIVITY_FAMILY_NUTRITION_ENCOUNTER_CONTENT_TYPE)
       ->fieldCondition('field_family_participant', 'target_id', $family_participants_ids, 'IN')
+      ->propertyCondition('status', NODE_PUBLISHED)
       ->execute();
 
     if (!empty($family_encounters_result['node'])) {
