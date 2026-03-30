@@ -73,6 +73,7 @@ import {
   completeImmunisation as completeWCImmunisation,
   completeNCDA as completeWCNCDA,
   completeNextSteps as completeWCNextSteps,
+  completeHomeVisit as completeWCHomeVisit,
 } from './helpers/well-child';
 import {
   createAdultFemaleAndStartEncounter as createPrenatalAdult,
@@ -1012,6 +1013,34 @@ test.describe('Admin Reports', () => {
       });
       await goToDashboard(page);
       console.log('Created NBChild (Newborn Exam):', nbChild.fullName);
+
+      // --- SPVChild (male, 10 months): CHW Well Child encounter ---
+      // Abnormal weight triggers nutrition assessment → NextSteps.
+      // Covers: Caring, Feeding, FoodSecurity, Hygiene, ContributingFactors,
+      // FollowUp, HealthEducation, SendToHC.
+      await goToDashboard(page);
+      const spvChwChild = await createChildAndStartWellChildEncounter(page, {
+        ageMonths: 10,
+        isChw: true,
+      });
+      await completeWCDangerSigns(page);
+      await completeWCNutritionAssessment(page, {
+        height: '60',
+        headCircumference: '45',
+        weight: '3',
+        muac: '11',
+        nutritionSigns: ['Edema'],
+      });
+      await completeWCHomeVisit(page);
+      await completeWCImmunisation(page, { isChw: true });
+      await completeWCNextSteps(page, {
+        hasContributingFactors: true,
+        hasHealthEducation: true,
+        hasSendToHC: true,
+        hasFollowUp: true,
+      });
+      await goToDashboard(page);
+      console.log('Created SPVChild (CHW Well Child):', spvChwChild.fullName);
     });
 
     await step('Sync CHW data to backend', async () => {
@@ -1085,7 +1114,7 @@ test.describe('Admin Reports', () => {
       const base1M2Y = findRow(baselineRegistered, '1M - 2Y')!;
       const nbDelta0to1M = row0to1M.male - base0to1M.male;
       const nbDelta1M2Y = row1M2Y.male - base1M2Y.male;
-      expect(nbDelta0to1M + nbDelta1M2Y, '0-1M + 1M-2Y male should increase by 5 total').toBe(5);
+      expect(nbDelta0to1M + nbDelta1M2Y, '0-1M + 1M-2Y male should increase by 6 total').toBe(6);
       expect(row1M2Y.female, '1M-2Y female should be unchanged').toBe(base1M2Y.female);
 
       // Row "2Y - 5Y": male +1 (AIChild 30mo falls into this bucket)
@@ -1099,9 +1128,9 @@ test.describe('Admin Reports', () => {
       expect(row20Y50Y.male, '20Y-50Y male should increase by 1').toBe(base20Y50Y.male + 1);
       expect(row20Y50Y.female, '20Y-50Y female should increase by 7').toBe(base20Y50Y.female + 7);
 
-      // Total: +14 (8 nurse patients + 7 CHW patients including NBChild)
-      expect(newRegistered.total, 'Registered total should increase by 14').toBe(
-        baselineRegistered.total + 14,
+      // Total: +15 (8 nurse patients + 8 CHW patients including NBChild + SPVChild)
+      expect(newRegistered.total, 'Registered total should increase by 15').toBe(
+        baselineRegistered.total + 15,
       );
 
       // Other rows should be unchanged.
@@ -1129,6 +1158,7 @@ test.describe('Admin Reports', () => {
       console.log(`Total: baseline=${baselineImpacted.total}, new=${newImpacted.total}, delta=+${newImpacted.total - baselineImpacted.total}`);
 
       // Row "1M - 2Y": male +2 (NutrChild: Nutrition+SPV, HVChild: Nutrition+HomeVisit)
+      // SPVChild CHW WellChild does not count as impacted.
       const imp1M2Y = findRow(newImpacted, '1M - 2Y')!;
       const baseImp1M2Y = findRow(baselineImpacted, '1M - 2Y')!;
       expect(imp1M2Y.male, 'Impacted 1M-2Y male should increase by 2').toBe(
@@ -1174,7 +1204,7 @@ test.describe('Admin Reports', () => {
       // Labels match Translate.elm: "ANC (total)", "Acute Illness (total)", etc.
       assertDelta('ANC (total)', 3);         // nurse initial +1, nurse postpartum +1, CHW +1
       assertDelta('Acute Illness (total)', 4); // nurse initial +1, nurse child +1, nurse subsequent +1, CHW +1
-      assertDelta('Standard Pediatric Visit', 2); // NutrChild SPV +1, NBChild Newborn Exam +1
+      assertDelta('Standard Pediatric Visit', 3); // NutrChild SPV +1, NBChild Newborn Exam +1, SPVChild CHW +1
       assertDelta('Home Visit', 1);
       assertDelta('Child Scorecard', 1);
       assertDelta('NCD', 1);
@@ -2019,29 +2049,35 @@ test.describe('Admin Reports', () => {
         expect(row.completed, `${label} completed +${completedDelta}`).toBe(baseCompleted + completedDelta);
       };
 
-      // DangerSigns = SymptomsReview + Vitals.
-      assertDelta('Symptoms Review', 1, 1);
-      assertDelta('Vitals', 1, 1);
+      // DangerSigns = SymptomsReview + Vitals (nurse + CHW).
+      assertDelta('Symptoms Review', 2, 2);
+      assertDelta('Vitals', 2, 2);
 
-      // NutritionAssessment sub-tasks.
-      assertDelta('Height', 1, 1);
-      assertDelta('Head Circumference', 1, 1);  // age 10mo < 36mo
-      assertDelta('MUAC', 1, 1);                // age 10mo >= 6mo
-      assertDelta('Nutrition', 1, 1);
-      assertDelta('Weight', 1, 1);
+      // NutritionAssessment sub-tasks (nurse + CHW).
+      assertDelta('Height', 2, 2);
+      assertDelta('Head Circumference', 2, 2);  // age 10mo < 36mo
+      assertDelta('MUAC', 2, 2);                // age 10mo >= 6mo
+      assertDelta('Nutrition', 2, 2);
+      assertDelta('Weight', 2, 2);
 
-      // Nurse-only activities.
+      // Nurse-only activities (unchanged).
       assertDelta('ECD', 1, 1);
       assertDelta('NCDA', 1, 1);  // age 10mo < 24mo
 
-      // Photo: expected but not completed.
-      assertDelta('Photo', 1, 0);
+      // Photo: expected on both encounters but not completed.
+      assertDelta('Photo', 2, 0);
 
-      // Not applicable for nurse encounter (CHW-only).
-      assertDelta('Caring', 0, 0);
-      assertDelta('Feeding', 0, 0);
-      assertDelta('Food Security', 0, 0);
-      assertDelta('Hygiene', 0, 0);
+      // CHW HomeVisit activities (+1/+1 from CHW encounter).
+      assertDelta('Caring', 1, 1);
+      assertDelta('Feeding', 1, 1);
+      assertDelta('Food Security', 1, 1);
+      assertDelta('Hygiene', 1, 1);
+
+      // NextSteps triggered by abnormal nutrition on CHW encounter.
+      assertDelta('Contributing Factors', 1, 1);
+      assertDelta('Follow Up', 1, 1);
+      assertDelta('Health Education', 1, 1);
+      assertDelta('Referral', 1, 1);
 
       // HPV: not expected at 10mo (female 12yr+ only).
       assertDelta('HPV Immunisation', 0, 0);
@@ -2062,9 +2098,14 @@ test.describe('Admin Reports', () => {
       await selectCompletionTakenBy(page, 'chw');
       const chwData = await readCompletionTable(page, 'well-child');
 
-      // No CHW SPV encounters created — Vitals should be 0.
-      const vitals = findCompletionRow(chwData, 'Vitals')!;
-      expect(vitals.expected, 'SPV CHW: Vitals expected 0').toBe(0);
+      // CHW encounter has Caring (CHW-only).
+      const caring = findCompletionRow(chwData, 'Caring')!;
+      expect(caring.expected, 'SPV CHW: Caring expected +1').toBe(1);
+      expect(caring.completed, 'SPV CHW: Caring completed +1').toBe(1);
+
+      // ECD is nurse-only — CHW filter should show 0.
+      const ecd = findCompletionRow(chwData, 'ECD')!;
+      expect(ecd.expected, 'SPV CHW: ECD expected 0').toBe(0);
     });
 
     // ── Phase 13: Completion Report — Tuberculosis ──
