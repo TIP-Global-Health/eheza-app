@@ -198,7 +198,8 @@ const pwaBaseUrl = `http://localhost:${getClientPort()}`;
 const NYANGE_HC_ID = 4;
 
 // Start date for report filtering — early enough to include all data.
-const REPORT_START_DATE = new Date(2018, 0, 1);
+// Use UTC — Elm date pickers derive dates via Time.utc.
+const REPORT_START_DATE = new Date(Date.UTC(2018, 0, 1));
 
 test.describe('Admin Reports', () => {
   test.describe.configure({ timeout: 1080000 }); // 18 minutes
@@ -471,10 +472,10 @@ test.describe('Admin Reports', () => {
       generateNCDAData();
       recalculateNCDALargeDatasets();
 
-      // Navigate to sector-level scoreboard. Nurse children land in Birambo
-      // (first cell option in dropdown), CHW children in Akanduga (assigned
-      // village). Using sector scope (Coko) captures both.
-      await navigateToNCDAScoreboard(page, 'Amajyaruguru', 'Gakenke', 'Coko');
+      // Navigate to district-level scoreboard. Nurse children land in
+      // Busengo sector (first option), CHW children in Coko/Akanduga.
+      // District scope (Gakenke) captures both sectors.
+      await navigateToNCDAScoreboard(page, 'Amajyaruguru', 'Gakenke');
 
       // Switch to # (values) mode for deterministic integer assertions.
       const hashToggle = page.locator('.values-percents .item', { hasText: '#' });
@@ -2402,9 +2403,9 @@ test.describe('Admin Reports', () => {
     });
 
     await step('Navigate to NCDA scoreboard and verify structure', async () => {
-      // Sector scope (Coko) captures both nurse children (Birambo cell)
-      // and CHW children (Akanduga village in Mbirima cell).
-      await navigateToNCDAScoreboard(page, 'Amajyaruguru', 'Gakenke', 'Coko');
+      // District scope (Gakenke) captures both nurse children (Busengo sector)
+      // and CHW children (Coko sector).
+      await navigateToNCDAScoreboard(page, 'Amajyaruguru', 'Gakenke');
 
       // Switch to # (values) mode for integer assertions.
       const hashToggle = page.locator('.values-percents .item', { hasText: '#' });
@@ -2434,12 +2435,12 @@ test.describe('Admin Reports', () => {
         await expect(pane, `Pane "${paneName}" should be visible`).toBeVisible();
       }
 
-      // Verify entity pane shows the sector name.
+      // Verify entity pane shows the district name.
       const entityPane = page.locator('div.pane').filter({
         has: page.locator('.pane-heading', { hasText: 'Aggregated Child Scoreboard' }),
       });
       const entityContent = await entityPane.locator('.pane-content').textContent();
-      expect(entityContent).toContain('Coko');
+      expect(entityContent).toContain('Gakenke');
     });
 
     await step('Verify NCDA Demographics pane deltas', async () => {
@@ -2628,21 +2629,21 @@ test.describe('Admin Reports', () => {
       expect(findNCDARow(anc, 'Iron')).toBeDefined();
     });
 
-    await step('Verify NCDA district-level scoreboard loads', async () => {
-      // District scope loads from cached report_data nodes.
-      await navigateToNCDAScoreboard(page, 'Amajyaruguru', 'Gakenke');
+    await step('Verify NCDA sector-level scoreboard loads (on-the-fly)', async () => {
+      // Sector scope generates data on-the-fly (not from cached report_data).
+      await navigateToNCDAScoreboard(page, 'Amajyaruguru', 'Gakenke', 'Coko');
 
       const entityPane = page.locator('div.pane').filter({
         has: page.locator('.pane-heading', { hasText: 'Aggregated Child Scoreboard' }),
       });
       await expect(entityPane).toBeVisible();
       const content = await entityPane.locator('.pane-content').textContent();
-      expect(content).toContain('Gakenke');
+      expect(content).toContain('Coko');
 
       // All 9 panes should render.
       const paneCount = await page.locator('div.pane').count();
-      expect(paneCount, 'District view should render 9 panes').toBe(9);
-      console.log('District-level NCDA scoreboard loaded successfully.');
+      expect(paneCount, 'Sector view should render 9 panes').toBe(9);
+      console.log('Sector-level NCDA scoreboard loaded successfully.');
     });
   });
 });

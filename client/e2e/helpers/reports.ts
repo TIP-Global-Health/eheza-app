@@ -269,18 +269,22 @@ async function selectDateInCalendar(page: Page, date: Date) {
   const popup = page.locator('.ui.active.modal.calendar-popup');
   await popup.waitFor({ timeout: 5000 });
 
+  // Use UTC accessors — the server-side Elm app derives its currentDate
+  // via Time.utc (Gizra/NominalDate.elm:fromLocalDateTime), so the
+  // calendar's min/max dates are UTC-based.
+
   // Select year.
   await popup
     .locator('div.calendar > div.year > select')
-    .selectOption(date.getFullYear().toString());
+    .selectOption(date.getUTCFullYear().toString());
 
   // Select month (1-indexed).
   await popup
     .locator('div.calendar > div.month > select')
-    .selectOption((date.getMonth() + 1).toString());
+    .selectOption((date.getUTCMonth() + 1).toString());
 
   // Click day.
-  const day = date.getDate();
+  const day = date.getUTCDate();
   const dayCell = popup.locator(
     'div.calendar table tbody td:not(.date-selector--dimmed)',
     { hasText: new RegExp(`^${day}$`) },
@@ -1218,9 +1222,10 @@ export function findNCDARow(
 }
 
 /**
- * Get the 0-based column index for the current month.
+ * Get the 0-based column index for the current month (UTC).
  * The scoreboard renders Jan=0, Feb=1, ..., Dec=11.
+ * Uses UTC because the Elm app derives currentDate via Time.utc.
  */
 export function getCurrentMonthColumnIndex(): number {
-  return new Date().getMonth();
+  return new Date().getUTCMonth();
 }
