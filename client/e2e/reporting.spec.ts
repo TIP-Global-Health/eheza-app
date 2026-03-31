@@ -46,6 +46,15 @@ import {
   readCompletionTable,
   findCompletionRow,
   CompletionTableData,
+  enableNCDAFeatureFlag,
+  generateNCDAData,
+  recalculateNCDALargeDatasets,
+  backdatePersonCreated,
+  navigateToNCDAScoreboard,
+  readNCDAScoreboardPane,
+  findNCDARow,
+  getCurrentMonthColumnIndex,
+  NCDAScoreboardPane,
 } from './helpers/reports';
 
 // Encounter creation helpers.
@@ -281,6 +290,15 @@ test.describe('Admin Reports', () => {
     let aiNurseName: string;
     let prenatalMomName: string;
     let ncdAdultName: string;
+    let csChildName: string;
+    let fbfChildName: string;
+    let nbChildName: string;
+    let baselineNCDADemographics: NCDAScoreboardPane;
+    let baselineNCDAAcuteMalnutrition: NCDAScoreboardPane;
+    let baselineNCDAStunting: NCDAScoreboardPane;
+    let baselineNCDAUniversalIntervention: NCDAScoreboardPane;
+    let baselineNCDANutritionBehavior: NCDAScoreboardPane;
+    let baselineNCDAInfrastructure: NCDAScoreboardPane;
 
     await step('Login to Drupal admin and record baseline values', async () => {
       await drupalLogin(page);
@@ -445,6 +463,33 @@ test.describe('Admin Reports', () => {
         baselineNutrGrpCompletion = { heading: '', rows: [] };
       }
       console.log('Baseline NutrGrp completion rows:', baselineNutrGrpCompletion.rows.length);
+    });
+
+    // Record Aggregated NCDA scoreboard baselines.
+    await step('Enable NCDA and record scoreboard baseline', async () => {
+      enableNCDAFeatureFlag();
+      generateNCDAData();
+      recalculateNCDALargeDatasets();
+
+      // Navigate to sector-level scoreboard. Nurse children land in Birambo
+      // (first cell option in dropdown), CHW children in Akanduga (assigned
+      // village). Using sector scope (Coko) captures both.
+      await navigateToNCDAScoreboard(page, 'Amajyaruguru', 'Gakenke', 'Coko');
+
+      // Switch to # (values) mode for deterministic integer assertions.
+      const hashToggle = page.locator('.values-percents .item', { hasText: '#' });
+      await click(hashToggle, page);
+      await page.waitForTimeout(1000);
+
+      baselineNCDADemographics = await readNCDAScoreboardPane(page, 'Demographics');
+      baselineNCDAAcuteMalnutrition = await readNCDAScoreboardPane(page, 'Acute Malnutrition');
+      baselineNCDAStunting = await readNCDAScoreboardPane(page, 'Stunting');
+      baselineNCDAUniversalIntervention = await readNCDAScoreboardPane(page, 'Universal Intervention');
+      baselineNCDANutritionBehavior = await readNCDAScoreboardPane(page, 'Nutrition Behavior');
+      baselineNCDAInfrastructure = await readNCDAScoreboardPane(page, 'Infrastructure');
+
+      console.log('Baseline NCDA Demographics rows:', baselineNCDADemographics.rows.length);
+      console.log('Baseline NCDA Infrastructure rows:', baselineNCDAInfrastructure.rows.length);
     });
 
     // ── Phase 1a: Nurse encounters ──
@@ -709,6 +754,7 @@ test.describe('Admin Reports', () => {
       await navigateToNurseGroupSession(page, 'FBF', 'Nyange I');
       const fbfMother = await createMotherOnAttendancePage(page);
       const fbfChild = await addChildToMother(page, { ageMonths: 12 });
+      fbfChildName = fbfChild.fullName;
 
       // After addChildToMother we may be on PersonPage or elsewhere.
       // Navigate back to attendance, then to participants.
@@ -929,6 +975,7 @@ test.describe('Admin Reports', () => {
       await page.goto(pwaBaseUrl);
       await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
       const csChild = await createChildScoreboardChild(page, { ageMonths: 10 });
+      csChildName = csChild.fullName;
       await completeNCDA(page);
       await completeVaccinationHistory(page);
       await goToDashboard(page);
@@ -999,6 +1046,7 @@ test.describe('Admin Reports', () => {
         ageMonths: 1,
         isChw: true,
       });
+      nbChildName = nbChild.fullName;
       await completePregnancySummary(page);
       await completeWCNutritionAssessment(page, {
         headCircumference: '35',
@@ -2325,6 +2373,276 @@ test.describe('Admin Reports', () => {
       assertDelta('Follow Up', 1, 1);
       assertDelta('Health Education', 1, 1);
       assertDelta('Referral', 1, 1);
+    });
+
+    // ── Phase 16: Aggregated NCDA Scoreboard ──
+    //
+    // Verifies the NCDA scoreboard at village level using test-created
+    // children whose NCDA data was filled during Phases 1a/1b.
+    //
+    // Children with NCDA data (under 2):
+    //   NutrChild (M, 10mo, Nurse): Nutrition NCDA + SPV NCDA — Infrastructure Yes, Nutrition Behavior Yes
+    //   CSChild (M, 10mo, CHW): Child Scoreboard NCDA — all healthy, Infrastructure Yes, Universal Intervention Yes
+    //   FBFChild (M, 12mo, Nurse): Group NCDA — all "No" answers
+    //   HVChild (M, 8mo, CHW): Nutrition measurements only (no NCDA questionnaire)
+    //   NBChild (M, 1mo, CHW): Newborn Exam measurements only (no NCDA questionnaire)
+
+    await step('Regenerate NCDA data with new encounters', async () => {
+      // Backdate created timestamps so children pass the Elm scoreboard's
+      // existedDuringExaminationMonth check (strict LT against current date).
+      backdatePersonCreated(nutrChildName);
+      backdatePersonCreated(csChildName);
+      backdatePersonCreated(fbfChildName);
+      backdatePersonCreated(hvChildName);
+      backdatePersonCreated(nbChildName);
+
+      // Regenerate NCDA aggregated data (includes new children).
+      generateNCDAData();
+      recalculateNCDALargeDatasets();
+    });
+
+    await step('Navigate to NCDA scoreboard and verify structure', async () => {
+      // Sector scope (Coko) captures both nurse children (Birambo cell)
+      // and CHW children (Akanduga village in Mbirima cell).
+      await navigateToNCDAScoreboard(page, 'Amajyaruguru', 'Gakenke', 'Coko');
+
+      // Switch to # (values) mode for integer assertions.
+      const hashToggle = page.locator('.values-percents .item', { hasText: '#' });
+      await click(hashToggle, page);
+      await page.waitForTimeout(1000);
+
+      // Verify top bar.
+      await expect(page.locator('.top-bar')).toBeVisible();
+      await expect(page.locator('.top-bar .new-selection')).toBeVisible();
+
+      // Verify all 9 panes render.
+      const expectedPanes = [
+        'Aggregated Child Scoreboard',
+        'Demographics',
+        'Acute Malnutrition',
+        'Stunting',
+        'ANC + Newborn',
+        'Universal Intervention',
+        'Nutrition Behavior',
+        'Targeted Interventions',
+        'Infrastructure',
+      ];
+      for (const paneName of expectedPanes) {
+        const pane = page.locator('div.pane').filter({
+          has: page.locator('.pane-heading', { hasText: paneName }),
+        });
+        await expect(pane, `Pane "${paneName}" should be visible`).toBeVisible();
+      }
+
+      // Verify entity pane shows the sector name.
+      const entityPane = page.locator('div.pane').filter({
+        has: page.locator('.pane-heading', { hasText: 'Aggregated Child Scoreboard' }),
+      });
+      const entityContent = await entityPane.locator('.pane-content').textContent();
+      expect(entityContent).toContain('Coko');
+    });
+
+    await step('Verify NCDA Demographics pane deltas', async () => {
+      const demo = await readNCDAScoreboardPane(page, 'Demographics');
+      const monthIdx = getCurrentMonthColumnIndex();
+
+      console.log('\n=== NCDA: DEMOGRAPHICS ===');
+      for (const row of demo.rows) {
+        console.log(`${row.indicator.padEnd(40)} | ${row.values.join(' | ')}`);
+      }
+
+      expect(demo.rows.length, 'Demographics should have 3 rows').toBe(3);
+
+      // Children under 2: +5 (NutrChild, CSChild, FBFChild, HVChild, NBChild).
+      const baseCU2 = findNCDARow(baselineNCDADemographics, 'Children under 2');
+      const cu2 = findNCDARow(demo, 'Children under 2');
+      expect(cu2, 'Children under 2 row should exist').toBeDefined();
+      const baseCU2Val = parseInt(baseCU2?.values[monthIdx] ?? '0', 10) || 0;
+      const cu2Val = parseInt(cu2!.values[monthIdx] ?? '0', 10) || 0;
+      expect(cu2Val, 'Children under 2 delta should be +5').toBe(baseCU2Val + 5);
+      console.log(`Children under 2: baseline=${baseCU2Val}, post=${cu2Val}, delta=+${cu2Val - baseCU2Val}`);
+    });
+
+    await step('Verify NCDA Infrastructure/WASH pane deltas', async () => {
+      const infra = await readNCDAScoreboardPane(page, 'Infrastructure');
+      const monthIdx = getCurrentMonthColumnIndex();
+
+      console.log('\n=== NCDA: INFRASTRUCTURE/WASH ===');
+      for (const row of infra.rows) {
+        console.log(`${row.indicator.padEnd(45)} | ${row.values.join(' | ')}`);
+      }
+
+      expect(infra.rows.length, 'Infrastructure/WASH should have 5 rows').toBe(5);
+
+      // CSChild and NutrChild answered Yes to all 5 infrastructure questions → +2 each.
+      // FBFChild answered all No; HVChild/NBChild have no NCDA questionnaire.
+      const checks = [
+        { label: 'toilets', expected: 2 },
+        { label: 'clean water', expected: 2 },
+        { label: 'handwashing', expected: 2 },
+        { label: 'kitchen garden', expected: 2 },
+        { label: 'bed nets', expected: 2 },
+      ];
+
+      for (const { label, expected } of checks) {
+        const baseRow = findNCDARow(baselineNCDAInfrastructure, label);
+        const row = findNCDARow(infra, label);
+        expect(row, `${label} row should exist`).toBeDefined();
+        const baseVal = parseInt(baseRow?.values[monthIdx] ?? '0', 10) || 0;
+        const val = parseInt(row!.values[monthIdx] ?? '0', 10) || 0;
+        expect(val, `${label} delta should be +${expected}`).toBe(baseVal + expected);
+        console.log(`${label}: baseline=${baseVal}, post=${val}, delta=+${val - baseVal}`);
+      }
+    });
+
+    await step('Verify NCDA Universal Intervention pane deltas', async () => {
+      const ui = await readNCDAScoreboardPane(page, 'Universal Intervention');
+      const monthIdx = getCurrentMonthColumnIndex();
+
+      console.log('\n=== NCDA: UNIVERSAL INTERVENTION ===');
+      for (const row of ui.rows) {
+        console.log(`${row.indicator.padEnd(45)} | ${row.values.join(' | ')}`);
+      }
+
+      expect(ui.rows.length, 'Universal Intervention should have 5 rows').toBe(5);
+
+      // CSChild: Vitamin A Yes, Deworming Yes, Ongera MNP (taking) Yes, ECD Yes.
+      // NutrChild (at health center): only Ongera MNP "receive" (not "taking") → doesn't count for row4.
+      const vitA = findNCDARow(ui, 'Vitamin A');
+      const baseVitA = findNCDARow(baselineNCDAUniversalIntervention, 'Vitamin A');
+      expect(vitA).toBeDefined();
+      const baseVitAVal = parseInt(baseVitA?.values[monthIdx] ?? '0', 10) || 0;
+      const vitAVal = parseInt(vitA!.values[monthIdx] ?? '0', 10) || 0;
+      expect(vitAVal, 'Vitamin A delta should be +1 (CSChild)').toBe(baseVitAVal + 1);
+
+      const deworming = findNCDARow(ui, 'Deworming');
+      const baseDeworming = findNCDARow(baselineNCDAUniversalIntervention, 'Deworming');
+      expect(deworming).toBeDefined();
+      const baseDewormVal = parseInt(baseDeworming?.values[monthIdx] ?? '0', 10) || 0;
+      const dewormVal = parseInt(deworming!.values[monthIdx] ?? '0', 10) || 0;
+      expect(dewormVal, 'Deworming delta should be +1 (CSChild)').toBe(baseDewormVal + 1);
+
+      const ecd = findNCDARow(ui, 'ECD');
+      const baseEcd = findNCDARow(baselineNCDAUniversalIntervention, 'ECD');
+      expect(ecd).toBeDefined();
+      const baseEcdVal = parseInt(baseEcd?.values[monthIdx] ?? '0', 10) || 0;
+      const ecdVal = parseInt(ecd!.values[monthIdx] ?? '0', 10) || 0;
+      expect(ecdVal, 'ECD delta should be +1 (CSChild)').toBe(baseEcdVal + 1);
+
+      console.log(`Vitamin A: +${vitAVal - baseVitAVal}, Deworming: +${dewormVal - baseDewormVal}, ECD: +${ecdVal - baseEcdVal}`);
+    });
+
+    await step('Verify NCDA Nutrition Behavior pane deltas', async () => {
+      const nb = await readNCDAScoreboardPane(page, 'Nutrition Behavior');
+      const monthIdx = getCurrentMonthColumnIndex();
+
+      console.log('\n=== NCDA: NUTRITION BEHAVIOR ===');
+      for (const row of nb.rows) {
+        console.log(`${row.indicator.padEnd(55)} | ${row.values.join(' | ')}`);
+      }
+
+      expect(nb.rows.length, 'Nutrition Behavior should have 4 rows').toBe(4);
+
+      // CSChild and NutrChild both answered Yes to complementary feeding, diverse diet, meals → +2 each.
+      // Breastfed has an age gate (gap < 6 months only), so 10-month children don't count.
+      const checks = [
+        { label: 'complementary feeding', expected: 2 },
+        { label: 'Diverse diet', expected: 2 },
+        { label: 'frequency of meals', expected: 2 },
+      ];
+
+      for (const { label, expected } of checks) {
+        const baseRow = findNCDARow(baselineNCDANutritionBehavior, label);
+        const row = findNCDARow(nb, label);
+        expect(row, `${label} row should exist`).toBeDefined();
+        const baseVal = parseInt(baseRow?.values[monthIdx] ?? '0', 10) || 0;
+        const val = parseInt(row!.values[monthIdx] ?? '0', 10) || 0;
+        expect(val, `${label} delta should be +${expected}`).toBe(baseVal + expected);
+        console.log(`${label}: baseline=${baseVal}, post=${val}, delta=+${val - baseVal}`);
+      }
+    });
+
+    await step('Verify NCDA Acute Malnutrition and Stunting panes', async () => {
+      const am = await readNCDAScoreboardPane(page, 'Acute Malnutrition');
+      const stunting = await readNCDAScoreboardPane(page, 'Stunting');
+      const monthIdx = getCurrentMonthColumnIndex();
+
+      console.log('\n=== NCDA: ACUTE MALNUTRITION ===');
+      for (const row of am.rows) {
+        console.log(`${row.indicator.padEnd(35)} | ${row.values.join(' | ')}`);
+      }
+
+      console.log('\n=== NCDA: STUNTING ===');
+      for (const row of stunting.rows) {
+        console.log(`${row.indicator.padEnd(25)} | ${row.values.join(' | ')}`);
+      }
+
+      expect(am.rows.length, 'Acute Malnutrition should have 3 rows').toBe(3);
+      expect(stunting.rows.length, 'Stunting should have 3 rows').toBe(3);
+
+      // Acute Malnutrition — Good Nutrition: CSChild MUAC 14.0 → normal → +1.
+      const baseGood = findNCDARow(baselineNCDAAcuteMalnutrition, 'Good Nutrition');
+      const good = findNCDARow(am, 'Good Nutrition');
+      expect(good).toBeDefined();
+      const baseGoodVal = parseInt(baseGood?.values[monthIdx] ?? '0', 10) || 0;
+      const goodVal = parseInt(good!.values[monthIdx] ?? '0', 10) || 0;
+      expect(goodVal, 'Good Nutrition delta should be >= +1 (CSChild)').toBeGreaterThanOrEqual(baseGoodVal + 1);
+
+      // Stunting — No Stunting: CSChild Stunting Green → +1.
+      const baseNoStunt = findNCDARow(baselineNCDAStunting, 'No Stunting');
+      const noStunt = findNCDARow(stunting, 'No Stunting');
+      expect(noStunt).toBeDefined();
+      const baseNoStuntVal = parseInt(baseNoStunt?.values[monthIdx] ?? '0', 10) || 0;
+      const noStuntVal = parseInt(noStunt!.values[monthIdx] ?? '0', 10) || 0;
+      expect(noStuntVal, 'No Stunting delta should be >= +1 (CSChild)').toBeGreaterThanOrEqual(baseNoStuntVal + 1);
+
+      console.log(`Good Nutrition: baseline=${baseGoodVal}, post=${goodVal}`);
+      console.log(`No Stunting: baseline=${baseNoStuntVal}, post=${noStuntVal}`);
+    });
+
+    await step('Verify NCDA Targeted Interventions and ANC panes structure', async () => {
+      const ti = await readNCDAScoreboardPane(page, 'Targeted Interventions');
+      const anc = await readNCDAScoreboardPane(page, 'ANC + Newborn');
+
+      console.log('\n=== NCDA: TARGETED INTERVENTIONS ===');
+      for (const row of ti.rows) {
+        console.log(`${row.indicator.padEnd(55)} | ${row.values.join(' | ')}`);
+      }
+
+      console.log('\n=== NCDA: ANC + NEWBORN ===');
+      for (const row of anc.rows) {
+        console.log(`${row.indicator.padEnd(55)} | ${row.values.join(' | ')}`);
+      }
+
+      expect(ti.rows.length, 'Targeted Interventions should have 6 rows').toBe(6);
+      expect(anc.rows.length, 'ANC + Newborn should have 2 rows').toBe(2);
+
+      // Verify expected row labels exist.
+      expect(findNCDARow(ti, 'FBF')).toBeDefined();
+      expect(findNCDARow(ti, 'malnutrition')).toBeDefined();
+      expect(findNCDARow(ti, 'diarrhea')).toBeDefined();
+      expect(findNCDARow(ti, 'disability')).toBeDefined();
+      expect(findNCDARow(ti, 'cash transfer')).toBeDefined();
+      expect(findNCDARow(ti, 'food items')).toBeDefined();
+      expect(findNCDARow(anc, 'checkups')).toBeDefined();
+      expect(findNCDARow(anc, 'Iron')).toBeDefined();
+    });
+
+    await step('Verify NCDA district-level scoreboard loads', async () => {
+      // District scope loads from cached report_data nodes.
+      await navigateToNCDAScoreboard(page, 'Amajyaruguru', 'Gakenke');
+
+      const entityPane = page.locator('div.pane').filter({
+        has: page.locator('.pane-heading', { hasText: 'Aggregated Child Scoreboard' }),
+      });
+      await expect(entityPane).toBeVisible();
+      const content = await entityPane.locator('.pane-content').textContent();
+      expect(content).toContain('Gakenke');
+
+      // All 9 panes should render.
+      const paneCount = await page.locator('div.pane').count();
+      expect(paneCount, 'District view should render 9 panes').toBe(9);
+      console.log('District-level NCDA scoreboard loaded successfully.');
     });
   });
 });

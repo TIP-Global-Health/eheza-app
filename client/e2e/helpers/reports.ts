@@ -1014,3 +1014,213 @@ export function findCompletionRow(
     data.rows.find(r => r.activity.includes(activityLabel))
   );
 }
+
+// ---------------------------------------------------------------------------
+// Aggregated NCDA Scoreboard helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Enable the NCDA feature flag. Required before NCDA admin pages work.
+ *
+ * Note: execSync with hardcoded PHP — same pattern as
+ * ensurePrenatalMedicationsVariable(). No user input involved.
+ */
+export function enableNCDAFeatureFlag() {
+  const { drushCmd, cwd } = drushEnv();
+  const php = 'variable_set("hedley_admin_feature_ncda_enabled", 1); echo variable_get("hedley_admin_feature_ncda_enabled", "NOT SET");';
+  const result = execSync(
+    `${drushCmd} eval '${php}'`,
+    { cwd, timeout: 15000, encoding: 'utf-8', stdio: 'pipe' },
+  ).trim();
+  console.log('hedley_admin_feature_ncda_enabled:', result);
+}
+
+/**
+ * Generate aggregated NCDA data for all children.
+ * Runs the NCDA-specific generate-data-for-all.php which populates
+ * field_ncda_data on person nodes.
+ *
+ * Note: execSync with hardcoded drush command — same pattern as
+ * generateBaseReportsData(). No user input involved.
+ */
+export function generateNCDAData() {
+  const { drushCmd, cwd } = drushEnv();
+  console.log('Generating NCDA data (hedley_ncda generate-data-for-all.php)...');
+  execSync(
+    `${drushCmd} scr profiles/hedley/modules/custom/hedley_ncda/scripts/generate-data-for-all.php`,
+    { cwd, timeout: 300000, encoding: 'utf-8', stdio: 'pipe' },
+  );
+  console.log('NCDA data generated.');
+}
+
+/**
+ * Aggregate NCDA data into district-level report_data nodes, then
+ * clear Drupal caches so pages serve fresh data.
+ *
+ * Note: execSync with hardcoded commands — same pattern as
+ * recalculateLargeDatasets(). No user input involved.
+ */
+export function recalculateNCDALargeDatasets() {
+  const { drushCmd, cwd } = drushEnv();
+  console.log('Recalculating NCDA large datasets...');
+  execSync(
+    `${drushCmd} scr profiles/hedley/modules/custom/hedley_ncda/scripts/recalculate-large-datasets.php`,
+    { cwd, timeout: 300000, encoding: 'utf-8', stdio: 'pipe' },
+  );
+  execSync(`${drushCmd} cc all`, {
+    cwd, timeout: 30000, encoding: 'utf-8', stdio: 'pipe',
+  });
+  console.log('NCDA large datasets recalculated.');
+}
+
+/**
+ * Backdate a person node's `created` timestamp.
+ *
+ * The NCDA scoreboard Elm view uses a strict less-than check
+ * (Date.compare record.created targetDateForMonth == LT) to determine
+ * whether a child existed during an examination month. Children created
+ * on the same day as the target date are excluded. This helper sets
+ * the created timestamp to `monthsAgo` months in the past so that
+ * test-created children appear in the scoreboard.
+ *
+ * Uses db_update (not node_save) to avoid triggering hooks.
+ *
+ * Note: execSync with base64-encoded person name — same pattern as
+ * backdateNutritionEncounter(). The name is base64-encoded to prevent
+ * shell metacharacter issues (not user-provided data).
+ */
+export function backdatePersonCreated(personName: string, monthsAgo = 2) {
+  const { drushCmd, cwd } = drushEnv();
+  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
+  const target = new Date();
+  target.setMonth(target.getMonth() - monthsAgo);
+  const timestamp = Math.floor(target.getTime() / 1000);
+
+  const php = `
+    \\$name = base64_decode('${personNameB64}');
+    \\$q = new EntityFieldQuery();
+    \\$r = \\$q->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'person')
+      ->propertyCondition('title', \\$name)
+      ->execute();
+    if (empty(\\$r['node'])) { echo 'NOT FOUND'; return; }
+    \\$nid = key(\\$r['node']);
+    db_update('node')
+      ->fields(['created' => ${timestamp}])
+      ->condition('nid', \\$nid)
+      ->execute();
+    echo \\$nid;
+  `;
+
+  const result = execSync(`${drushCmd} eval "${php}"`, {
+    cwd, timeout: 30000, encoding: 'utf-8', stdio: 'pipe',
+  }).trim();
+  console.log(`Backdated person "${personName}": nid=${result}`);
+}
+
+/**
+ * Navigate to the Aggregated NCDA scoreboard results page.
+ * Province and district are required; sector/cell/village are optional
+ * for drilling down to smaller geographic scopes.
+ */
+export async function navigateToNCDAScoreboard(
+  page: Page,
+  province: string,
+  district: string,
+  sector?: string,
+  cell?: string,
+  village?: string,
+) {
+  const baseUrl = getDdevUrl();
+  let path = `/admin/reports/aggregated-ncda/${encodeURIComponent(province)}/${encodeURIComponent(district)}`;
+  if (sector) path += `/${encodeURIComponent(sector)}`;
+  if (cell) path += `/${encodeURIComponent(cell)}`;
+  if (village) path += `/${encodeURIComponent(village)}`;
+  await page.goto(`${baseUrl}${path}?t=${Date.now()}`);
+  await page.locator('div.page-content').waitFor({ timeout: 60000 });
+}
+
+/**
+ * Get a scoreboard pane locator by its heading text.
+ * Multiple panes share the same color CSS class (e.g., "pane cyan"),
+ * so we filter by the unique .pane-heading text content.
+ */
+export function getNCDAPaneByHeading(page: Page, headingText: string) {
+  return page.locator('div.pane').filter({
+    has: page.locator('.pane-heading', { hasText: headingText }),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// NCDA Scoreboard table reading
+// ---------------------------------------------------------------------------
+
+export interface NCDAScoreboardRow {
+  indicator: string;
+  values: string[];  // 12 monthly values (Jan-Dec), '' for future months
+}
+
+export interface NCDAScoreboardPane {
+  heading: string;
+  rows: NCDAScoreboardRow[];
+}
+
+/**
+ * Read the NCDA scoreboard pane table identified by heading text.
+ *
+ * Structure per pane:
+ *   div.pane
+ *     div.pane-heading  → heading text
+ *     div.pane-content
+ *       div.table-header  → "Status" + 12 month cells
+ *       div.table-row     → indicator name (.cell.activity) + 12 value cells (.cell.value)
+ */
+export async function readNCDAScoreboardPane(
+  page: Page,
+  headingText: string,
+): Promise<NCDAScoreboardPane> {
+  const pane = getNCDAPaneByHeading(page, headingText);
+  await pane.waitFor({ timeout: 10000 });
+
+  const heading = (await pane.locator('.pane-heading').textContent())?.trim() ?? '';
+
+  const tableRows = pane.locator('.pane-content .table-row');
+  const rowCount = await tableRows.count();
+
+  const rows: NCDAScoreboardRow[] = [];
+  for (let i = 0; i < rowCount; i++) {
+    const row = tableRows.nth(i);
+    const indicator = (await row.locator('.cell.activity').textContent())?.trim() ?? '';
+    const valueCells = row.locator('.cell.value');
+    const valueCount = await valueCells.count();
+    const values: string[] = [];
+    for (let j = 0; j < valueCount; j++) {
+      values.push((await valueCells.nth(j).textContent())?.trim() ?? '');
+    }
+    rows.push({ indicator, values });
+  }
+
+  return { heading, rows };
+}
+
+/**
+ * Find a row in an NCDA scoreboard pane by indicator label.
+ * Tries exact match first, then partial (includes) match.
+ */
+export function findNCDARow(
+  pane: NCDAScoreboardPane,
+  indicatorSubstring: string,
+): NCDAScoreboardRow | undefined {
+  return (
+    pane.rows.find(r => r.indicator === indicatorSubstring) ??
+    pane.rows.find(r => r.indicator.includes(indicatorSubstring))
+  );
+}
+
+/**
+ * Get the 0-based column index for the current month.
+ * The scoreboard renders Jan=0, Feb=1, ..., Dec=11.
+ */
+export function getCurrentMonthColumnIndex(): number {
+  return new Date().getMonth();
+}
