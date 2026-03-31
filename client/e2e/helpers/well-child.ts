@@ -75,7 +75,9 @@ async function openActivity(page: Page, activityIcon: string) {
   // Dismiss any popup that may overlay the encounter page.
   await dismissPopup(page);
 
-  await click(page.locator(`.icon-task-${activityIcon}`), page);
+  const icon = page.locator(`.icon-task-${activityIcon}`);
+  await icon.waitFor({ timeout: 10000 });
+  await click(icon, page);
   await page.locator('div.page-activity.well-child').waitFor({ timeout: 10000 });
 }
 

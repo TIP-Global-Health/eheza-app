@@ -67,7 +67,9 @@ async function openActivity(
   iconClass: string,
   verifySelector: string,
 ) {
-  await click(page.locator(`.${iconClass}`), page);
+  const icon = page.locator(`.${iconClass}`);
+  await icon.waitFor({ timeout: 10000 });
+  await click(icon, page);
   await page.locator(verifySelector).waitFor({ timeout: 10000 });
 }
 

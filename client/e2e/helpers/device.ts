@@ -19,13 +19,54 @@ export function drushEnv(): { drushCmd: string; cwd: string } {
 }
 
 /**
+ * Delete all E2E test devices and their associated data.
+ * user_delete() on the robot user cascade-deletes all owned nodes
+ * (encounters, measurements, persons) via node_user_delete hook.
+ *
+ * Called once from globalSetup before any tests run, to clean up
+ * data from previous test runs.
+ *
+ * Note: execSync with hardcoded commands — no user input involved.
+ */
+export function cleanupStaleTestData() {
+  const { drushCmd, cwd } = drushEnv();
+  const php = `
+      \\$eq = new EntityFieldQuery();
+      \\$old_devices = \\$eq->entityCondition('entity_type', 'node')
+        ->propertyCondition('type', 'device')
+        ->propertyCondition('title', 'E2E%', 'LIKE')
+        ->execute();
+      if (!empty(\\$old_devices['node'])) {
+        variable_set('hedley_super_user_mode', 1);
+        \\$count = 0;
+        foreach (node_load_multiple(array_keys(\\$old_devices['node'])) as \\$old) {
+          if (\\$old->uid) {
+            user_delete(\\$old->uid);
+          }
+          node_delete(\\$old->nid);
+          \\$count++;
+        }
+        variable_set('hedley_super_user_mode', 0);
+        echo 'Cleaned up ' . \\$count . ' old E2E devices.';
+      } else {
+        echo 'No stale E2E devices to clean up.';
+      }
+  `;
+
+  const output = execSync(`${drushCmd} eval "${php}"`, {
+    cwd,
+    timeout: 300000,
+    encoding: 'utf-8',
+  });
+  console.log(output.trim());
+}
+
+/**
  * Create a fresh E2E test device with a known pairing code and a
  * unique title. Device pairing codes are single-use, so this must
  * be called before each test that needs to pair.
  *
- * Old devices are never deleted — deleting them would cascade-delete
- * the robot user and all nodes it owns (encounters, measurements,
- * etc.) via Drupal's node_user_delete hook.
+ * Note: execSync with hardcoded commands — no user input involved.
  */
 export function resetDevice(pairingCode = '99999999') {
   if (!/^\d+$/.test(pairingCode)) {
@@ -51,6 +92,7 @@ export function resetDevice(pairingCode = '99999999') {
       }
       variable_set('hedley_super_user_mode', 0);
 
+      // 3. Create the new device.
       \\$node = entity_create('node', ['type' => 'device', 'title' => '${title}']);
       \\$wrapper = entity_metadata_wrapper('node', \\$node);
       \\$wrapper->field_pairing_code->set('${pairingCode}');

@@ -124,7 +124,9 @@ async function openActivity(page: Page, activityIcon: string) {
   // Ensure encounter page is fully rendered before clicking an activity card.
   await page.locator('div.page-encounter.prenatal').waitFor({ timeout: 10000 });
   await page.waitForTimeout(500);
-  await click(page.locator(`.icon-task-${activityIcon}`), page);
+  const icon = page.locator(`.icon-task-${activityIcon}`);
+  await icon.waitFor({ timeout: 10000 });
+  await click(icon, page);
   await page.locator('div.page-activity.prenatal').waitFor({ timeout: 10000 });
 }
 
@@ -295,10 +297,13 @@ export async function startPrenatalEncounter(
       break;
   }
 
-  await click(
-    page.locator('div.ui.primary.button', { hasText: buttonText }),
-    page,
-  );
+  // Wait for the button to be enabled (not .disabled) — after backdating,
+  // the Elm model may need time to re-render with updated encounter data.
+  const btn = page.locator('div.ui.primary.button:not(.disabled)', {
+    hasText: buttonText,
+  });
+  await btn.waitFor({ timeout: 30000 });
+  await click(btn, page);
   await page
     .locator('div.page-encounter.prenatal')
     .waitFor({ timeout: 30000 });
@@ -538,7 +543,7 @@ export async function completeBirthPlan(page: Page) {
  */
 export async function completeHistory(
   page: Page,
-  options?: { isSubsequent?: boolean },
+  options?: { isSubsequent?: boolean; preeclampsiaPrevious?: boolean },
 ) {
   await openActivity(page, 'history');
 
@@ -561,8 +566,14 @@ export async function completeHistory(
     // --- Obstetric History Step 2 ---
     await page.locator('.form.history.obstetric.second').waitFor({ timeout: 5000 });
     await answerYesNo(page, 'c-section-past', 'No');
+    // First checkbox group: "Previous delivery" → "None of these".
     await selectCheckbox(page, 'None of these');
-    await selectCheckbox(page, 'None of the above');
+    // Second checkbox group: "conditions during previous pregnancy".
+    if (options?.preeclampsiaPrevious) {
+      await selectCheckbox(page, 'Preeclampsia');
+    } else {
+      await selectCheckbox(page, 'None of the above');
+    }
 
     await click(
       page.locator('div.actions button.ui.fluid.primary.button').filter({ hasText: /Save/ }),
@@ -1197,6 +1208,21 @@ export async function completeLabResultsAsLabTech(page: Page): Promise<string[]>
           await page.waitForTimeout(300);
         }
       }
+    }
+
+    // "Does the health center have an ARV services program?" → Yes (HIV only).
+    const hivProgram = page.locator('.form-input.yes-no.hiv-program');
+    if (await hivProgram.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await click(hivProgram.locator('label', { hasText: 'Yes' }), page);
+      await page.waitForTimeout(300);
+    }
+
+    // Conditional symptom/sign checkboxes (e.g., Syphilis positive → symptoms).
+    // Select "None of these" if visible.
+    const noneCheckbox = page.locator('.ui.checkbox label', { hasText: /^None of these$/i });
+    if (await noneCheckbox.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await click(noneCheckbox, page);
+      await page.waitForTimeout(300);
     }
 
     // Save this lab test tab.

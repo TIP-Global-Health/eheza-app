@@ -2774,9 +2774,12 @@ function hedley_reports_acute_illness_generate_expected_initial_activities(array
 
   // Activities that are only shown at initial encounter.
   if ($encounter_data['is_initial']) {
-    // Exposure activity.
-    $expected[] = 'exposure';
-    $expected[] = 'travel_history';
+    // Exposure activity was dropped on 2025-02-11.
+    $exposure_cutoff = new DateTime('2025-02-23');
+    if ($encounter_data['start_date_obj'] < $exposure_cutoff) {
+      $expected[] = 'exposure';
+      $expected[] = 'travel_history';
+    }
     // Symptoms activity.
     $expected[] = 'symptoms_general';
     $expected[] = 'symptoms_gi';
@@ -3056,24 +3059,29 @@ function hedley_reports_acute_illness_add_next_steps_activities_initial_encounte
     $medication_prescribed = TRUE;
   }
 
-  // Adding Isolation activity.
-  if (($is_chw && $diagnosis == 'covid19') || in_array($diagnosis, ['covid19-pneumonia', 'covid19-low-risk'])) {
-    $expected[] = 'isolation';
-  }
+  // COVID NextSteps activities (Isolation, Call 114, HC Contact) were
+  // dropped from the Elm UI on 2025-02-23 (PR #1424).
+  $covid_nextsteps_cutoff = new DateTime('2025-02-23');
+  if ($encounter_data['start_date_obj'] < $covid_nextsteps_cutoff) {
+    // Adding Isolation activity.
+    if (($is_chw && $diagnosis == 'covid19') || in_array($diagnosis, ['covid19-pneumonia', 'covid19-low-risk'])) {
+      $expected[] = 'isolation';
+    }
 
-  // Adding Call 114 activity.
-  if (($is_chw && $diagnosis == 'covid19')) {
-    $expected[] = 'call_114';
-  }
+    // Adding Call 114 activity.
+    if (($is_chw && $diagnosis == 'covid19')) {
+      $expected[] = 'call_114';
+    }
 
-  // Adding Contact HC activity.
-  if ($is_chw && $diagnosis == 'covid19' && !empty($measurements_by_type['call_114'])) {
-    // If suspected COVID case, but call to 114 was not made, need
-    // to contact HC. This means that 114 contact filed got single
-    // value set to 'none'.
-    $sign = $measurements_by_type['call_114']->field_114_contact[LANGUAGE_NONE][0]['value'];
-    if ($sign == 'none') {
-      $expected[] = 'hc_contact';
+    // Adding Contact HC activity.
+    if ($is_chw && $diagnosis == 'covid19' && !empty($measurements_by_type['call_114'])) {
+      // If suspected COVID case, but call to 114 was not made, need
+      // to contact HC. This means that 114 contact filed got single
+      // value set to 'none'.
+      $sign = $measurements_by_type['call_114']->field_114_contact[LANGUAGE_NONE][0]['value'];
+      if ($sign == 'none') {
+        $expected[] = 'hc_contact';
+      }
     }
   }
 
@@ -6671,7 +6679,11 @@ function hedley_reports_prenatal_add_history_activities(array $encounter_data, a
     return;
   }
 
-  $expected[] = 'social_history';
+  // Social history was disabled on Sep 19, 2024 (issue #1323).
+  $social_history_cutoff = new DateTime('2024-09-19');
+  if ($encounter_data['start_date_obj'] < $social_history_cutoff) {
+    $expected[] = 'social_history';
+  }
   $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
   if (empty($previous_nurse_encounters_data)) {
     $expected = array_merge(
@@ -6782,18 +6794,9 @@ function hedley_reports_prenatal_add_medication_activities(array $encounter_data
         $lmp_date_obj = new DateTime($lmp_date);
         $ega_in_weeks = hedley_reports_prenatal_calculate_ega_weeks($lmp_date_obj, $encounter_data['start_date_obj']);
 
-        if (
-          ($ega_in_weeks >= 12) &&
-          !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_aspirin') &&
-          (hedley_reports_prenatal_medical_history_sign_recorded_previously($encounter_data, 'hypertension-before-pregnancy') ||
-            hedley_reports_prenatal_medical_history_sign_recorded_today($encounter_data, 'hypertension-before-pregnancy') ||
-            hedley_reports_prenatal_obstetric_history_step2_sign_recorded_previously($encounter_data, 'preeclampsia-previous-pregnancy') ||
-            hedley_reports_prenatal_obstetric_history_step2_sign_recorded_today($encounter_data, 'preeclampsia-previous-pregnancy')
-          )
-        ) {
-          $expected_activities[] = 'prenatal_aspirin';
-        }
-
+        // Note: prenatal_aspirin is NOT a standalone activity in the Elm UI.
+        // Aspirin is administered via Medication Distribution (NextSteps),
+        // so we do not add it to expected here.
         if (
           ($ega_in_weeks >= 14) &&
           !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_calcium')

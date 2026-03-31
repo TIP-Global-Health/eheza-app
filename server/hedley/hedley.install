@@ -51,6 +51,7 @@ function hedley_install() {
   hedley_update_7015();
   hedley_update_7016();
   hedley_update_7032();
+  hedley_update_7046();
 
   hedley_initial_sync_permissions();
 }

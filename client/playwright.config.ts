@@ -8,7 +8,7 @@ export default defineConfig({
   globalTeardown: recording ? './e2e/global-teardown.ts' : undefined,
   testDir: './e2e',
   timeout: 120000,
-  retries: 1,
+  retries: 0,
   workers: 1,
   use: {
     baseURL: `http://localhost:${getClientPort()}`,

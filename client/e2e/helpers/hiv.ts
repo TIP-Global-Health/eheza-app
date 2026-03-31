@@ -94,7 +94,9 @@ async function clickSubTaskTab(page: Page, iconClass: string) {
 async function openActivity(page: Page, activityIcon: string) {
   await page.locator('div.page-encounter.hiv').waitFor({ timeout: 10000 });
   await page.waitForTimeout(500);
-  await click(page.locator(`.icon-task-${activityIcon}`), page);
+  const icon = page.locator(`.icon-task-${activityIcon}`);
+  await icon.waitFor({ timeout: 10000 });
+  await click(icon, page);
   await page.locator('div.page-activity.hiv').waitFor({ timeout: 10000 });
 }
 
@@ -673,7 +675,7 @@ export function queryHIVNodes(
 }
 
 /**
- * Backdate the most recent HIV encounter for a person to yesterday.
+ * Backdate the most recent HIV encounter for a person to 7 days ago.
  * Retries up to 5 times with 10s delay for eventual consistency.
  */
 export function backdateHIVEncounter(personName: string) {
@@ -716,11 +718,11 @@ export function backdateHIVEncounter(personName: string) {
     }
 
     // Backdate the most recent encounter.
-    \\$yesterday = date('Y-m-d H:i:s', strtotime('-1 day'));
+    \\$target_date = date('Y-m-d H:i:s', strtotime('-7 days'));
     \\$enc_nid = key(\\$er['node']);
     \\$enc = node_load(\\$enc_nid);
-    \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value'] = \\$yesterday;
-    \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value2'] = \\$yesterday;
+    \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value'] = \\$target_date;
+    \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value2'] = \\$target_date;
     node_save(\\$enc);
     echo 'Backdated encounter ' . \\$enc_nid;
   `;

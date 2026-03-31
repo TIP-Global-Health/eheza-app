@@ -473,10 +473,9 @@ export async function selectFamilyMember(page: Page, memberIndex: number) {
  */
 async function openActivity(page: Page, iconClass: string, formSelector: string) {
   // Click the activity icon in the task grid.
-  await click(
-    page.locator(`.link-section:has(.icon-activity-task.icon-${iconClass})`),
-    page,
-  );
+  const icon = page.locator(`.link-section:has(.icon-activity-task.icon-${iconClass})`);
+  await icon.waitFor({ timeout: 10000 });
+  await click(icon, page);
   await page.locator(formSelector).waitFor({ timeout: 10000 });
 }
 

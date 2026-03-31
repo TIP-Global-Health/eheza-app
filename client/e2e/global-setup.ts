@@ -1,4 +1,4 @@
-import { resetDevice } from './helpers/device';
+import { cleanupStaleTestData, resetDevice } from './helpers/device';
 import { getClientPort } from './helpers/client-port';
 
 /**
@@ -41,5 +41,6 @@ async function waitForFrontend() {
  */
 export default async function globalSetup() {
   await waitForFrontend();
+  cleanupStaleTestData();
   resetDevice();
 }
