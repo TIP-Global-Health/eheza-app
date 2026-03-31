@@ -90,6 +90,7 @@ foreach ($config as $type => $data) {
       $trace_query
         ->entityCondition('entity_type', 'node')
         ->propertyCondition('type', $target_type)
+        ->propertyCondition('status', NODE_PUBLISHED)
         ->fieldCondition('field_person', 'target_id', $person_id)
         ->fieldCondition($session_field, 'target_id', $session_id)
         ->range(0, $batch);
@@ -135,6 +136,7 @@ function base_query_for_bundle($bundle) {
   $base_query
     ->entityCondition('entity_type', 'node')
     ->propertyCondition('type', $bundle)
+    ->propertyCondition('status', NODE_PUBLISHED)
     ->propertyOrderBy('nid');
 
   return $base_query;

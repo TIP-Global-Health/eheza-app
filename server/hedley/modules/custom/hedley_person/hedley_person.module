@@ -1049,7 +1049,7 @@ function hedley_person_resolve_content_by_name($type, $health_center) {
   $result = $query->entityCondition('entity_type', 'node')
     ->propertyCondition('type', $type)
     ->propertyCondition('title', $health_center)
-    ->propertyCondition('status', 1)
+    ->propertyCondition('status', NODE_PUBLISHED)
     ->propertyOrderBy('nid', 'DESC')
     ->range(0, 1)
     ->execute();
@@ -1074,7 +1074,7 @@ function hedley_person_resolve_person_by_name($name) {
   $result = $query->entityCondition('entity_type', 'node')
     ->propertyCondition('type', 'person')
     ->propertyCondition('title', $name)
-    ->propertyCondition('status', 1)
+    ->propertyCondition('status', NODE_PUBLISHED)
     ->propertyOrderBy('nid', 'DESC')
     ->range(0, 1)
     ->execute();
@@ -1102,7 +1102,7 @@ function hedley_person_resolve_person_by_national_id($national_id) {
 
   $result = $query->entityCondition('entity_type', 'node')
     ->propertyCondition('type', 'person')
-    ->propertyCondition('status', 1)
+    ->propertyCondition('status', NODE_PUBLISHED)
     ->fieldCondition('field_national_id_number', 'value', $national_id)
     ->propertyOrderBy('nid', 'DESC')
     ->range(0, 1)

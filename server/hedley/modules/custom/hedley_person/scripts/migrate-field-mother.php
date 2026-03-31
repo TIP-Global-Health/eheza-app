@@ -30,7 +30,7 @@ $base_query
   ->entityCondition('entity_type', 'node')
   ->propertyCondition('status', NODE_PUBLISHED)
   ->propertyCondition('type', 'family_planning')
-  ->propertyOrderBy('nid', 'ASC');
+  ->propertyOrderBy('nid');
 
 if ($nid) {
   $base_query->propertyCondition('nid', $nid, '>');

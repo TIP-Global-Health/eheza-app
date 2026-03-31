@@ -870,6 +870,17 @@ generateDemographicsReportEncountersData language records =
         nutritionGroupAchiEncountersUnique =
             countUnique nutritionGroupAchiEncountersData
 
+        familyNutritionEncountersData =
+            List.filterMap
+                (.familyNutritionData >> Maybe.map List.concat)
+                records
+
+        familyNutritionEncountersTotal =
+            countTotal familyNutritionEncountersData
+
+        familyNutritionEncountersUnique =
+            countUnique familyNutritionEncountersData
+
         overallNutritionTotal =
             nutritionIndividualEncountersTotal
                 + nutritionGroupPmtctEncountersTotal
@@ -898,6 +909,7 @@ generateDemographicsReportEncountersData language records =
                 + hivDataEncountersTotal
                 + tuberculosisDataEncountersTotal
                 + overallNutritionTotal
+                + familyNutritionEncountersTotal
 
         overallUnique =
             prenatalDataNurseEncountersUnique
@@ -911,6 +923,7 @@ generateDemographicsReportEncountersData language records =
                 + hivDataEncountersUnique
                 + tuberculosisDataEncountersUnique
                 + overallNutritionUnique
+                + familyNutritionEncountersUnique
 
         countTotal =
             List.map List.length >> List.sum
@@ -949,6 +962,7 @@ generateDemographicsReportEncountersData language records =
         , generateRow Translate.CBNP nutritionGroupChwEncountersTotal nutritionGroupChwEncountersUnique True
         , generateRow Translate.ACHI nutritionGroupAchiEncountersTotal nutritionGroupAchiEncountersUnique True
         , generateRow Translate.Individual nutritionIndividualEncountersTotal nutritionIndividualEncountersUnique True
+        , generateRow Translate.FamilyNutrition familyNutritionEncountersTotal familyNutritionEncountersUnique False
         ]
     , totals =
         { label = translate language Translate.Total

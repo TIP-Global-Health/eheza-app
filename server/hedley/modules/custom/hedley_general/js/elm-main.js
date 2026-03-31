@@ -8806,19 +8806,21 @@ var $author$project$Backend$Reports$Model$PatientData = function (id) {
 			return function (gender) {
 				return function (acuteIllnessData) {
 					return function (prenatalData) {
-						return function (homeVisitData) {
-							return function (wellChildData) {
-								return function (childScorecardData) {
-									return function (ncdData) {
-										return function (hivData) {
-											return function (tuberculosisData) {
-												return function (individualNutritionData) {
-													return function (groupNutritionPmtctData) {
-														return function (groupNutritionFbfData) {
-															return function (groupNutritionSorwatheData) {
-																return function (groupNutritionChwData) {
-																	return function (groupNutritionAchiData) {
-																		return {acuteIllnessData: acuteIllnessData, birthDate: birthDate, childScorecardData: childScorecardData, created: created, gender: gender, groupNutritionAchiData: groupNutritionAchiData, groupNutritionChwData: groupNutritionChwData, groupNutritionFbfData: groupNutritionFbfData, groupNutritionPmtctData: groupNutritionPmtctData, groupNutritionSorwatheData: groupNutritionSorwatheData, hivData: hivData, homeVisitData: homeVisitData, id: id, individualNutritionData: individualNutritionData, ncdData: ncdData, prenatalData: prenatalData, tuberculosisData: tuberculosisData, wellChildData: wellChildData};
+						return function (familyNutritionData) {
+							return function (homeVisitData) {
+								return function (wellChildData) {
+									return function (childScorecardData) {
+										return function (ncdData) {
+											return function (hivData) {
+												return function (tuberculosisData) {
+													return function (individualNutritionData) {
+														return function (groupNutritionPmtctData) {
+															return function (groupNutritionFbfData) {
+																return function (groupNutritionSorwatheData) {
+																	return function (groupNutritionChwData) {
+																		return function (groupNutritionAchiData) {
+																			return {acuteIllnessData: acuteIllnessData, birthDate: birthDate, childScorecardData: childScorecardData, created: created, familyNutritionData: familyNutritionData, gender: gender, groupNutritionAchiData: groupNutritionAchiData, groupNutritionChwData: groupNutritionChwData, groupNutritionFbfData: groupNutritionFbfData, groupNutritionPmtctData: groupNutritionPmtctData, groupNutritionSorwatheData: groupNutritionSorwatheData, hivData: hivData, homeVisitData: homeVisitData, id: id, individualNutritionData: individualNutritionData, ncdData: ncdData, prenatalData: prenatalData, tuberculosisData: tuberculosisData, wellChildData: wellChildData};
+																		};
 																	};
 																};
 															};
@@ -8949,6 +8951,7 @@ var $author$project$Backend$Reports$Decoder$decodeAcuteIllnessEncounterData = A2
 		}
 	},
 	$elm$json$Json$Decode$string);
+var $author$project$Backend$Reports$Decoder$decodeFamilyNutritionEncounterData = $author$project$Gizra$NominalDate$decodeYYYYMMDD;
 var $author$project$Backend$Reports$Model$Male = {$: 'Male'};
 var $author$project$Backend$Reports$Utils$genderFromString = function (s) {
 	switch (s) {
@@ -9502,35 +9505,43 @@ var $author$project$Backend$Reports$Decoder$decodePatientData = A4(
 												A4(
 													$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 													_List_fromArray(
-														['individual', 'antenatal']),
+														['individual', 'family-nutrition']),
 													$elm$json$Json$Decode$nullable(
-														$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodePrenatalParticipantData)),
+														$elm$json$Json$Decode$list(
+															$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeFamilyNutritionEncounterData))),
 													$elm$core$Maybe$Nothing,
 													A4(
 														$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 														_List_fromArray(
-															['individual', 'acute-illness']),
+															['individual', 'antenatal']),
 														$elm$json$Json$Decode$nullable(
-															$elm$json$Json$Decode$list(
-																$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeAcuteIllnessEncounterData))),
+															$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodePrenatalParticipantData)),
 														$elm$core$Maybe$Nothing,
-														A3(
-															$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-															'gender',
-															A2($author$project$Backend$Decoder$decodeWithFallback, $author$project$Backend$Reports$Model$Female, $author$project$Backend$Reports$Decoder$decodeGender),
+														A4(
+															$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
+															_List_fromArray(
+																['individual', 'acute-illness']),
+															$elm$json$Json$Decode$nullable(
+																$elm$json$Json$Decode$list(
+																	$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeAcuteIllnessEncounterData))),
+															$elm$core$Maybe$Nothing,
 															A3(
 																$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-																'birth_date',
-																$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+																'gender',
+																A2($author$project$Backend$Decoder$decodeWithFallback, $author$project$Backend$Reports$Model$Female, $author$project$Backend$Reports$Decoder$decodeGender),
 																A3(
 																	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-																	'created',
+																	'birth_date',
 																	$author$project$Gizra$NominalDate$decodeYYYYMMDD,
 																	A3(
 																		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-																		'id',
-																		$author$project$Gizra$Json$decodeInt,
-																		$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$PatientData)))))))))))))))))));
+																		'created',
+																		$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+																		A3(
+																			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+																			'id',
+																			$author$project$Gizra$Json$decodeInt,
+																			$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$PatientData))))))))))))))))))));
 var $author$project$Backend$Reports$Model$EntityCell = {$: 'EntityCell'};
 var $author$project$Backend$Reports$Model$EntitySector = {$: 'EntitySector'};
 var $author$project$Backend$Reports$Model$EntityVillage = {$: 'EntityVillage'};
@@ -11246,6 +11257,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Encounter Type', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Expected':
 				return {english: 'Expected', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'FamilyNutrition':
+				return {english: 'Family Nutrition', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'FamilyPlanning':
 				return {english: 'Family Planning', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'FBF':
@@ -16787,6 +16800,7 @@ var $author$project$Translate$CHW = {$: 'CHW'};
 var $author$project$Translate$EncounterType = {$: 'EncounterType'};
 var $author$project$Translate$Encounters = {$: 'Encounters'};
 var $author$project$Translate$FBF = {$: 'FBF'};
+var $author$project$Translate$FamilyNutrition = {$: 'FamilyNutrition'};
 var $author$project$Translate$Individual = {$: 'Individual'};
 var $author$project$Translate$NutritionTotal = {$: 'NutritionTotal'};
 var $author$project$Translate$PMTCT = {$: 'PMTCT'};
@@ -16935,11 +16949,21 @@ var $author$project$Pages$Reports$View$generateDemographicsReportEncountersData 
 						]),
 					shiftLeft);
 			});
+		var familyNutritionEncountersData = A2(
+			$elm$core$List$filterMap,
+			A2(
+				$elm$core$Basics$composeR,
+				function ($) {
+					return $.familyNutritionData;
+				},
+				$elm$core$Maybe$map($elm$core$List$concat)),
+			records);
 		var countUnique = A2(
 			$elm$core$Basics$composeR,
 			$elm$core$List$filter(
 				A2($elm$core$Basics$composeL, $elm$core$Basics$not, $elm$core$List$isEmpty)),
 			$elm$core$List$length);
+		var familyNutritionEncountersUnique = countUnique(familyNutritionEncountersData);
 		var hivDataEncountersUnique = countUnique(hivEncountersData);
 		var homeVisitDataEncountersUnique = countUnique(homeVisitEncountersData);
 		var ncdDataEncountersUnique = countUnique(ncdEncountersData);
@@ -16958,6 +16982,7 @@ var $author$project$Pages$Reports$View$generateDemographicsReportEncountersData 
 			$elm$core$Basics$composeR,
 			$elm$core$List$map($elm$core$List$length),
 			$elm$core$List$sum);
+		var familyNutritionEncountersTotal = countTotal(familyNutritionEncountersData);
 		var hivDataEncountersTotal = countTotal(hivEncountersData);
 		var homeVisitDataEncountersTotal = countTotal(homeVisitEncountersData);
 		var ncdDataEncountersTotal = countTotal(ncdEncountersData);
@@ -17026,9 +17051,9 @@ var $author$project$Pages$Reports$View$generateDemographicsReportEncountersData 
 							})))),
 			records);
 		var acuteIllnessDataChwEncountersTotal = countTotal(acuteIllnessDataChwEncounters);
-		var overallTotal = (((((((((prenatalDataNurseEncountersTotal + prenatalDataChwEncountersTotal) + acuteIllnessDataNurseEncountersTotal) + acuteIllnessDataChwEncountersTotal) + wellChildDataEncountersTotal) + homeVisitDataEncountersTotal) + childScorecardDataEncountersTotal) + ncdDataEncountersTotal) + hivDataEncountersTotal) + tuberculosisDataEncountersTotal) + overallNutritionTotal;
+		var overallTotal = ((((((((((prenatalDataNurseEncountersTotal + prenatalDataChwEncountersTotal) + acuteIllnessDataNurseEncountersTotal) + acuteIllnessDataChwEncountersTotal) + wellChildDataEncountersTotal) + homeVisitDataEncountersTotal) + childScorecardDataEncountersTotal) + ncdDataEncountersTotal) + hivDataEncountersTotal) + tuberculosisDataEncountersTotal) + overallNutritionTotal) + familyNutritionEncountersTotal;
 		var acuteIllnessDataChwEncountersUnique = countUnique(acuteIllnessDataChwEncounters);
-		var overallUnique = (((((((((prenatalDataNurseEncountersUnique + prenatalDataChwEncountersUnique) + acuteIllnessDataNurseEncountersUnique) + acuteIllnessDataChwEncountersUnique) + wellChildDataEncountersUnique) + homeVisitDataEncountersUnique) + childScorecardDataEncountersUnique) + ncdDataEncountersUnique) + hivDataEncountersUnique) + tuberculosisDataEncountersUnique) + overallNutritionUnique;
+		var overallUnique = ((((((((((prenatalDataNurseEncountersUnique + prenatalDataChwEncountersUnique) + acuteIllnessDataNurseEncountersUnique) + acuteIllnessDataChwEncountersUnique) + wellChildDataEncountersUnique) + homeVisitDataEncountersUnique) + childScorecardDataEncountersUnique) + ncdDataEncountersUnique) + hivDataEncountersUnique) + tuberculosisDataEncountersUnique) + overallNutritionUnique) + familyNutritionEncountersUnique;
 		return {
 			captions: A2(
 				$elm$core$List$map,
@@ -17056,7 +17081,8 @@ var $author$project$Pages$Reports$View$generateDemographicsReportEncountersData 
 					A4(generateRow, $author$project$Translate$Sorwathe, nutritionGroupSorwatheEncountersTotal, nutritionGroupSorwatheEncountersUnique, true),
 					A4(generateRow, $author$project$Translate$CBNP, nutritionGroupChwEncountersTotal, nutritionGroupChwEncountersUnique, true),
 					A4(generateRow, $author$project$Translate$ACHI, nutritionGroupAchiEncountersTotal, nutritionGroupAchiEncountersUnique, true),
-					A4(generateRow, $author$project$Translate$Individual, nutritionIndividualEncountersTotal, nutritionIndividualEncountersUnique, true)
+					A4(generateRow, $author$project$Translate$Individual, nutritionIndividualEncountersTotal, nutritionIndividualEncountersUnique, true),
+					A4(generateRow, $author$project$Translate$FamilyNutrition, familyNutritionEncountersTotal, familyNutritionEncountersUnique, false)
 				]),
 			totals: {
 				label: A2($author$project$Translate$translate, language, $author$project$Translate$Total),
@@ -22610,7 +22636,14 @@ var $author$project$Utils$GeoLocation$getGeoCellsForSomalia = $pzp1997$assoc_lis
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Qodaxley',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(13))))
+					$author$project$Backend$Entities$toEntityId(13)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(19),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Dhobley',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(18))))
 		]));
 var $author$project$Utils$GeoLocation$getGeoCells = function (site) {
 	switch (site.$) {
@@ -22723,7 +22756,14 @@ var $author$project$Utils$GeoLocation$getGeoDistricts = function (site) {
 							$author$project$Utils$GeoLocation$GeoLocation,
 							'Garasbaley',
 							$elm$core$Maybe$Just(
-								$author$project$Backend$Entities$toEntityId(1))))
+								$author$project$Backend$Entities$toEntityId(1)))),
+						_Utils_Tuple2(
+						$author$project$Backend$Entities$toEntityId(17),
+						A2(
+							$author$project$Utils$GeoLocation$GeoLocation,
+							'Afmadow',
+							$elm$core$Maybe$Just(
+								$author$project$Backend$Entities$toEntityId(16))))
 					]));
 		default:
 			return $pzp1997$assoc_list$AssocList$empty;
@@ -22765,7 +22805,10 @@ var $author$project$Utils$GeoLocation$getGeoProvinces = function (site) {
 					[
 						_Utils_Tuple2(
 						$author$project$Backend$Entities$toEntityId(1),
-						A2($author$project$Utils$GeoLocation$GeoLocation, 'Banadir', $elm$core$Maybe$Nothing))
+						A2($author$project$Utils$GeoLocation$GeoLocation, 'Banadir', $elm$core$Maybe$Nothing)),
+						_Utils_Tuple2(
+						$author$project$Backend$Entities$toEntityId(16),
+						A2($author$project$Utils$GeoLocation$GeoLocation, 'Lower Jubba', $elm$core$Maybe$Nothing))
 					]));
 		default:
 			return $pzp1997$assoc_list$AssocList$empty;
@@ -23397,7 +23440,14 @@ var $author$project$Utils$GeoLocation$getGeoSectorsForSomalia = $pzp1997$assoc_l
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Qodaxley',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(9))))
+					$author$project$Backend$Entities$toEntityId(9)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(18),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Dhobley',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(17))))
 		]));
 var $author$project$Utils$GeoLocation$getGeoSectors = function (site) {
 	switch (site.$) {
@@ -40236,7 +40286,14 @@ var $author$project$Utils$GeoLocation$getGeoVillagesForSomalia = $pzp1997$assoc_
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Qodaxley',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(14))))
+					$author$project$Backend$Entities$toEntityId(14)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(20),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Kowaad',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(19))))
 		]));
 var $author$project$Utils$GeoLocation$getGeoVillages = function (site) {
 	switch (site.$) {
