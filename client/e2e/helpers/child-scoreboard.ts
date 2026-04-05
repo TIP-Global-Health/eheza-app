@@ -444,8 +444,10 @@ export async function completeNCDA(page: Page) {
   await answerNCDAYesNo(page, 'receive support', 'Yes');
   await page.waitForTimeout(300);
 
-  // ChildGotDiarrhea → Yes (NCDA sign only, does not trigger pane4.row3)
-  await answerNCDAYesNo(page, 'have diarrhea', 'Yes');
+  // ChildGotDiarrhea → No (does not contribute to any scoreboard pane —
+  // pane4.row3 requires ORS/Zinc medication, not this sign. Answering Yes
+  // triggers a popup on end-encounter that breaks the standalone test).
+  await answerNCDAYesNo(page, 'have diarrhea', 'No');
   await page.waitForTimeout(300);
 
   await clickSave(page);
