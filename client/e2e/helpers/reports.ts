@@ -178,44 +178,48 @@ export function ncdaRecalculateLargeDatasets() {
 }
 
 /**
- * Backdate E2E test persons' `created` timestamp to last month.
- * The NCDA scoreboard's Elm view requires `record.created < targetDateForMonth`
- * to count a child in a given month. Since test persons are created during the
- * same test run (today), they would be excluded from the current month's column.
- * Backdating to last month ensures they appear in the current month.
+ * Backdate a person node's `created` timestamp.
  *
- * Also regenerates field_ncda_data for affected persons (the `created` field
- * is embedded in the JSON passed to the Elm app).
+ * The NCDA scoreboard Elm view uses a strict less-than check
+ * (Date.compare record.created targetDateForMonth == LT) to determine
+ * whether a child existed during an examination month. Children created
+ * on the same day as the target date are excluded. This helper sets
+ * the created timestamp to `monthsAgo` months in the past so that
+ * test-created children appear in the scoreboard.
+ *
+ * Uses db_update (not node_save) to avoid triggering hooks.
+ *
+ * Note: execSync with base64-encoded person name — same pattern as
+ * backdateNutritionEncounter(). The name is base64-encoded to prevent
+ * shell metacharacter issues (not user-provided data).
  */
-export function backdateE2EPersonsForNCDA() {
+export function backdatePersonCreated(personName: string, monthsAgo = 2) {
   const { drushCmd, cwd } = drushEnv();
-  console.log('Backdating E2E test persons for NCDA scoreboard...');
+  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
+  const target = new Date();
+  target.setMonth(target.getMonth() - monthsAgo);
+  const timestamp = Math.floor(target.getTime() / 1000);
+
   const php = `
-    \\$last_month = strtotime('-1 month');
-    \\$query = new EntityFieldQuery();
-    \\$result = \\$query->entityCondition('entity_type', 'node')
-      ->entityCondition('bundle', 'person')
-      ->propertyCondition('title', 'E2ETest%', 'LIKE')
+    \\$name = base64_decode('${personNameB64}');
+    \\$q = new EntityFieldQuery();
+    \\$r = \\$q->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'person')
+      ->propertyCondition('title', \\$name)
       ->execute();
-    if (!empty(\\$result['node'])) {
-      \\$count = 0;
-      foreach (array_keys(\\$result['node']) as \\$nid) {
-        db_update('node')
-          ->fields(array('created' => \\$last_month))
-          ->condition('nid', \\$nid)
-          ->execute();
-        \\$count++;
-      }
-      echo 'Backdated ' . \\$count . ' persons.';
-    } else {
-      echo 'No E2E persons found.';
-    }
+    if (empty(\\$r['node'])) { echo 'NOT FOUND'; return; }
+    \\$nid = key(\\$r['node']);
+    db_update('node')
+      ->fields(['created' => ${timestamp}])
+      ->condition('nid', \\$nid)
+      ->execute();
+    echo \\$nid;
   `;
-  const result = execSync(
-    `${drushCmd} eval "${php}"`,
-    { cwd, timeout: 30000, encoding: 'utf-8', stdio: 'pipe' },
-  ).trim();
-  console.log(result);
+
+  const result = execSync(`${drushCmd} eval "${php}"`, {
+    cwd, timeout: 30000, encoding: 'utf-8', stdio: 'pipe',
+  }).trim();
+  console.log(`Backdated person "${personName}": nid=${result}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -265,12 +269,15 @@ export async function navigateToNCDAScoreboard(page: Page, geoPath: string): Pro
 }
 
 /**
- * Read the content of a scoreboard pane by index.
- * Returns the pane heading and all data rows.
+ * Read the content of a scoreboard pane identified by heading text.
+ * More robust than index-based lookup — survives pane reordering.
  */
-export async function readScoreboardPane(page: Page, paneIndex: number): Promise<ScoreboardPaneData> {
-  const pane = page.locator('.pane').nth(paneIndex);
-  const heading = await pane.locator('.pane-heading').innerText();
+export async function readScoreboardPane(page: Page, headingText: string): Promise<ScoreboardPaneData> {
+  const pane = page.locator('div.pane').filter({
+    has: page.locator('.pane-heading', { hasText: headingText }),
+  });
+  await pane.waitFor({ timeout: 10000 });
+  const heading = (await pane.locator('.pane-heading').textContent())?.trim() ?? '';
 
   const tableRows = pane.locator('.table-row');
   const rowCount = await tableRows.count();
@@ -289,6 +296,15 @@ export async function readScoreboardPane(page: Page, paneIndex: number): Promise
   }
 
   return { heading, rows };
+}
+
+/**
+ * Get the 0-based column index for the current month (UTC).
+ * The scoreboard renders Jan=0, Feb=1, ..., Dec=11.
+ * Uses UTC because the Elm app derives currentDate via Time.utc.
+ */
+export function getCurrentMonthColumnIndex(): number {
+  return new Date().getUTCMonth();
 }
 
 /**
