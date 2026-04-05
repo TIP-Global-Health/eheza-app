@@ -123,6 +123,191 @@ export function ensurePrenatalMedicationsVariable() {
   console.log('hedley_prenatal_change_medications:', result);
 }
 
+/**
+ * Ensure the NCDA feature flag is enabled.
+ * Required before generating NCDA person data or running scoreboard tests.
+ * The input is hardcoded (no user-provided data), so shell injection
+ * is not a concern.
+ */
+export function ensureNCDAFeatureEnabled() {
+  const { drushCmd, cwd } = drushEnv();
+  console.log('Enabling NCDA feature flag...');
+  execSync(
+    `${drushCmd} vset hedley_admin_feature_ncda_enabled 1`,
+    { cwd, timeout: 15000, encoding: 'utf-8', stdio: 'pipe' },
+  );
+  console.log('NCDA feature flag enabled.');
+}
+
+/**
+ * Generate NCDA person data for all existing persons.
+ * This populates NCDA-specific report fields on person nodes.
+ * Pass excludeSet=true to add --exclude_set=1 flag.
+ *
+ * Note: execSync is used here following the same pattern as other E2E
+ * helpers for drush command execution. The input is hardcoded
+ * (no user-provided data), so shell injection is not a concern.
+ */
+export function generateNCDAPersonData(excludeSet = false) {
+  const { drushCmd, cwd } = drushEnv();
+  const flag = excludeSet ? ' --exclude_set=1' : '';
+  console.log('Generating NCDA person data (generate-data-for-all.php)...');
+  execSync(
+    `${drushCmd} scr profiles/hedley/modules/custom/hedley_ncda/scripts/generate-data-for-all.php${flag}`,
+    { cwd, timeout: 300000, encoding: 'utf-8', stdio: 'pipe' },
+  );
+  console.log('NCDA person data generated.');
+}
+
+/**
+ * Recalculate NCDA large datasets -- aggregates per-person NCDA data into
+ * scope-level report_data nodes, then clears Drupal caches.
+ */
+export function ncdaRecalculateLargeDatasets() {
+  const { drushCmd, cwd } = drushEnv();
+  console.log('Recalculating NCDA large datasets...');
+  execSync(
+    `${drushCmd} scr profiles/hedley/modules/custom/hedley_ncda/scripts/recalculate-large-datasets.php`,
+    { cwd, timeout: 300000, encoding: 'utf-8', stdio: 'pipe' },
+  );
+  // Clear Drupal caches so pages serve the fresh report_data.
+  execSync(`${drushCmd} cc all`, {
+    cwd, timeout: 30000, encoding: 'utf-8', stdio: 'pipe',
+  });
+  console.log('NCDA large datasets recalculated.');
+}
+
+/**
+ * Backdate E2E test persons' `created` timestamp to last month.
+ * The NCDA scoreboard's Elm view requires `record.created < targetDateForMonth`
+ * to count a child in a given month. Since test persons are created during the
+ * same test run (today), they would be excluded from the current month's column.
+ * Backdating to last month ensures they appear in the current month.
+ *
+ * Also regenerates field_ncda_data for affected persons (the `created` field
+ * is embedded in the JSON passed to the Elm app).
+ */
+export function backdateE2EPersonsForNCDA() {
+  const { drushCmd, cwd } = drushEnv();
+  console.log('Backdating E2E test persons for NCDA scoreboard...');
+  const php = `
+    \\$last_month = strtotime('-1 month');
+    \\$query = new EntityFieldQuery();
+    \\$result = \\$query->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', 'person')
+      ->propertyCondition('title', 'E2ETest%', 'LIKE')
+      ->execute();
+    if (!empty(\\$result['node'])) {
+      \\$count = 0;
+      foreach (array_keys(\\$result['node']) as \\$nid) {
+        db_update('node')
+          ->fields(array('created' => \\$last_month))
+          ->condition('nid', \\$nid)
+          ->execute();
+        \\$count++;
+      }
+      echo 'Backdated ' . \\$count . ' persons.';
+    } else {
+      echo 'No E2E persons found.';
+    }
+  `;
+  const result = execSync(
+    `${drushCmd} eval "${php}"`,
+    { cwd, timeout: 30000, encoding: 'utf-8', stdio: 'pipe' },
+  ).trim();
+  console.log(result);
+}
+
+// ---------------------------------------------------------------------------
+// NCDA Scoreboard navigation and table reading helpers
+// ---------------------------------------------------------------------------
+
+export interface ScoreboardRow {
+  label: string;
+  values: string[];
+}
+
+export interface ScoreboardPaneData {
+  heading: string;
+  rows: ScoreboardRow[];
+}
+
+/**
+ * Navigate to the aggregated NCDA scoreboard page for a given geo path.
+ * Retries up to 5 times if panes are not yet rendered (handles lazy data fetch).
+ *
+ * Pane indices: 0=entity info, 1=demographics, 2=acute malnutrition,
+ * 3=stunting, 4=ANC/newborn, 5=universal interventions,
+ * 6=nutrition behavior, 7=targeted interventions, 8=infrastructure/WASH.
+ */
+export async function navigateToNCDAScoreboard(page: Page, geoPath: string): Promise<void> {
+  // Append cache-busting query parameter to avoid Drupal serving stale pages.
+  const cacheBuster = Date.now();
+  const url = `${getDdevUrl()}/admin/reports/aggregated-ncda/${geoPath}?t=${cacheBuster}`;
+  console.log(`Navigating to NCDA scoreboard: ${url}`);
+  await page.goto(url);
+
+  let paneCount = 0;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    await page.waitForTimeout(2000);
+    paneCount = await page.locator('.pane').count();
+    if (paneCount >= 2) {
+      break;
+    }
+    await page.reload();
+  }
+
+  if (paneCount < 2) {
+    throw new Error(`NCDA scoreboard at ${url} did not render at least 2 panes after 5 retries (got ${paneCount})`);
+  }
+
+  await page.waitForTimeout(1000);
+}
+
+/**
+ * Read the content of a scoreboard pane by index.
+ * Returns the pane heading and all data rows.
+ */
+export async function readScoreboardPane(page: Page, paneIndex: number): Promise<ScoreboardPaneData> {
+  const pane = page.locator('.pane').nth(paneIndex);
+  const heading = await pane.locator('.pane-heading').innerText();
+
+  const tableRows = pane.locator('.table-row');
+  const rowCount = await tableRows.count();
+
+  const rows: ScoreboardRow[] = [];
+  for (let i = 0; i < rowCount; i++) {
+    const row = tableRows.nth(i);
+    const label = await row.locator('.cell.activity').innerText();
+    const valueCells = row.locator('.cell.value');
+    const valueCount = await valueCells.count();
+    const values: string[] = [];
+    for (let j = 0; j < valueCount; j++) {
+      values.push(await valueCells.nth(j).innerText());
+    }
+    rows.push({ label, values });
+  }
+
+  return { heading, rows };
+}
+
+/**
+ * Find a value in a scoreboard pane by row label substring and month index.
+ * Month index is 0-based (Jan=0). Returns 0 if not found, empty, or NaN.
+ */
+export function findScoreboardValue(pane: ScoreboardPaneData, rowLabel: string, monthIndex: number): number {
+  const row = pane.rows.find(r => r.label.includes(rowLabel));
+  if (!row) {
+    return 0;
+  }
+  const raw = row.values[monthIndex];
+  if (!raw || raw.trim() === '') {
+    return 0;
+  }
+  const parsed = parseInt(raw.trim(), 10);
+  return isNaN(parsed) ? 0 : parsed;
+}
+
 export function generateBaseReportsData() {
   const { drushCmd, cwd } = drushEnv();
   console.log('Generating base reports data (generate-data-for-all.php)...');
