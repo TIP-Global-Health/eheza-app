@@ -309,19 +309,39 @@ export function getCurrentMonthColumnIndex(): number {
 
 /**
  * Find a value in a scoreboard pane by row label substring and month index.
- * Month index is 0-based (Jan=0). Returns 0 if not found, empty, or NaN.
+ * Month index is 0-based (Jan=0). Throws if the row or cell is missing, or
+ * if the value is not a valid integer. Returns 0 only for an existing empty cell.
  */
 export function findScoreboardValue(pane: ScoreboardPaneData, rowLabel: string, monthIndex: number): number {
   const row = pane.rows.find(r => r.label.includes(rowLabel));
   if (!row) {
-    return 0;
+    throw new Error(
+      `Scoreboard row not found for label "${rowLabel}" in pane "${pane.heading}". Available rows: ${pane.rows
+        .map(r => `"${r.label}"`)
+        .join(', ')}`,
+    );
   }
+
   const raw = row.values[monthIndex];
-  if (!raw || raw.trim() === '') {
+  if (raw === undefined) {
+    throw new Error(
+      `Scoreboard value not found for row "${row.label}" at month index ${monthIndex} in pane "${pane.heading}".`,
+    );
+  }
+
+  const trimmed = raw.trim();
+  if (trimmed === '') {
     return 0;
   }
-  const parsed = parseInt(raw.trim(), 10);
-  return isNaN(parsed) ? 0 : parsed;
+
+  const parsed = parseInt(trimmed, 10);
+  if (isNaN(parsed)) {
+    throw new Error(
+      `Invalid scoreboard value "${raw}" for row "${row.label}" at month index ${monthIndex} in pane "${pane.heading}".`,
+    );
+  }
+
+  return parsed;
 }
 
 export function generateBaseReportsData() {

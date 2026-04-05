@@ -481,7 +481,7 @@ test.describe('Admin Reports', () => {
       await navigateToNCDAScoreboard(page, 'Amajyaruguru/Gakenke/Coko/Mbirima/Akanduga');
       const paneNames = [
         'Demographics', 'Acute Malnutrition', 'Stunting',
-        'Universal Intervention', 'Nutrition Behavior',
+        'ANC + Newborn', 'Universal Intervention', 'Nutrition Behavior',
         'Targeted Interventions', 'Infrastructure',
       ];
       baselineVillage = {};
