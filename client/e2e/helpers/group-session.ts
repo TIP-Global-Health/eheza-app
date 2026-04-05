@@ -48,17 +48,18 @@ async function setDate(page: Page, dob: Date) {
     .locator('.ui.active.modal.calendar-popup')
     .waitFor({ timeout: 5000 });
 
-  const year = dob.getFullYear().toString();
+  // Use UTC — Elm date pickers derive dates via Time.utc.
+  const year = dob.getUTCFullYear().toString();
   await page
     .locator('div.calendar > div.year > select')
     .selectOption(year);
 
-  const monthValue = (dob.getMonth() + 1).toString();
+  const monthValue = (dob.getUTCMonth() + 1).toString();
   await page
     .locator('div.calendar > div.month > select')
     .selectOption(monthValue);
 
-  const day = dob.getDate();
+  const day = dob.getUTCDate();
   const dayCell = page.locator(
     'div.calendar table tbody td:not(.date-selector--dimmed)',
     { hasText: new RegExp(`^${day}$`) },
@@ -679,14 +680,135 @@ export async function completeChildFbf(page: Page) {
   await saveActivity(page);
 }
 
+// ---------------------------------------------------------------------------
+// Private NCDA helpers for group-session step-by-step completion
+// ---------------------------------------------------------------------------
+
+/**
+ * Answer all visible Yes/No questions with "No" and fill empty number inputs.
+ * Used as the first pass before overriding specific answers to "Yes".
+ */
+async function answerAllNoAndFillNumbers(page: Page) {
+  await page.waitForTimeout(500);
+
+  // Click all visible "No" labels.
+  const noButtons = page.locator('.form-input label', { hasText: /^No$/ });
+  const noCount = await noButtons.count();
+  for (let i = 0; i < noCount; i++) {
+    const btn = noButtons.nth(i);
+    if (await btn.isVisible().catch(() => false)) {
+      await btn.scrollIntoViewIfNeeded();
+      await btn.click({ force: true });
+      await page.waitForTimeout(200);
+    }
+  }
+
+  // Fill all empty visible number inputs with "3000".
+  const numberInputs = page.locator('.form-input input[type="number"]');
+  const numCount = await numberInputs.count();
+  for (let i = 0; i < numCount; i++) {
+    const input = numberInputs.nth(i);
+    if (await input.isVisible() && (await input.inputValue()) === '') {
+      await input.fill('3000');
+      await page.waitForTimeout(200);
+    }
+  }
+}
+
+/**
+ * Override a specific NCDA question to "Yes" by finding its label text
+ * and clicking the "Yes" radio in the associated .form-input container.
+ * Silently returns if the question is not visible.
+ */
+async function overrideToYes(page: Page, questionSubstring: string) {
+  const questionLabel = page.locator('.ui.form .label', { hasText: questionSubstring }).first();
+  if (!(await questionLabel.isVisible({ timeout: 1000 }).catch(() => false))) {
+    return;
+  }
+
+  // Navigate to the sibling .form-input element via evaluate, same pattern
+  // as answerNCDAYesNo in child-scoreboard.ts.
+  const yesNoId = await questionLabel.evaluate((el) => {
+    function findFormInput(startEl: Element): Element | null {
+      let sibling = startEl.nextElementSibling;
+      while (sibling) {
+        if (sibling.classList.contains('form-input')) {
+          return sibling;
+        }
+        sibling = sibling.nextElementSibling;
+      }
+      return null;
+    }
+
+    let formInput = findFormInput(el);
+    if (!formInput && el.parentElement) {
+      formInput = findFormInput(el.parentElement);
+    }
+
+    if (formInput) {
+      const tmpId = 'ncda-yn-' + Math.random().toString(36).slice(2);
+      formInput.id = tmpId;
+      return tmpId;
+    }
+    return null;
+  });
+
+  if (!yesNoId) {
+    return; // Silently skip if form-input not found.
+  }
+
+  await click(page.locator(`#${yesNoId} label`, { hasText: 'Yes' }), page);
+  await page.waitForTimeout(300);
+}
+
+/**
+ * Click "Save" and dismiss any post-save overlay or modal dialog.
+ */
+async function clickGroupNCDASave(page: Page) {
+  const saveBtn = page.locator('button', { hasText: /^Save$/i });
+  await saveBtn.scrollIntoViewIfNeeded();
+  await saveBtn.click({ force: true });
+  await page.waitForTimeout(1000);
+
+  // Dismiss overlay if present.
+  const overlay = page.locator('div.overlay');
+  if (await overlay.isVisible().catch(() => false)) {
+    const skipBtn = overlay.locator('button', { hasText: 'No, skip' });
+    const proceedBtn = overlay.locator('button', { hasText: 'Yes, proceed' });
+    if (await skipBtn.isVisible().catch(() => false)) {
+      await skipBtn.click({ force: true });
+    } else if (await proceedBtn.isVisible().catch(() => false)) {
+      await proceedBtn.click({ force: true });
+    }
+    await overlay.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
+    await page.waitForTimeout(500);
+  }
+
+  // Dismiss modal if present.
+  const modal = page.locator('div.ui.tiny.active.modal');
+  if (await modal.isVisible().catch(() => false)) {
+    const skipModalBtn = modal.locator('button', { hasText: 'No, skip' });
+    const proceedModalBtn = modal.locator('button', { hasText: 'Yes, proceed' });
+    if (await skipModalBtn.isVisible().catch(() => false)) {
+      await skipModalBtn.click({ force: true });
+    } else if (await proceedModalBtn.isVisible().catch(() => false)) {
+      await proceedModalBtn.click({ force: true });
+    }
+    await modal.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
+    await page.waitForTimeout(500);
+  }
+}
+
 /**
  * Complete the NCDA (Child Scorecard) activity for a child.
- * The NCDA form has multiple steps, each with Yes/No questions.
- * This helper answers "No" to all questions on each step and saves.
+ * The NCDA form has 6 steps. Each step answers all questions "No" first,
+ * then overrides specific questions to "Yes" for scoreboard coverage.
  *
- * Steps shown for a new child at health center:
- *   AntenatalCare, UniversalInterventions, NutritionBehavior,
- *   TargetedInterventions, InfrastructureEnvironment.
+ * Steps: AntenatalCare, UniversalInterventions, NutritionBehavior,
+ *        NutritionAssessment, TargetedInterventions, InfrastructureEnvironment.
+ *
+ * The "Yes" answers here are complementary to the child-scoreboard NCDA's
+ * "No" answers, ensuring full scoreboard coverage across both encounter types.
  */
 export async function completeNCDA(page: Page) {
   await openActivity(page, 'Child Scorecard');
@@ -716,94 +838,64 @@ export async function completeNCDA(page: Page) {
     }
   }
 
-  // The NCDA form has multiple tabs (steps). For each step:
-  // 1. Answer all visible Yes/No questions with "No"
-  // 2. Click Save to advance to the next step (or complete)
-  // Repeat until the Save completes (activity moves to Completed tab).
+  // --- Step 1: Antenatal Care (no overrides) ---
+  await answerAllNoAndFillNumbers(page);
+  await clickGroupNCDASave(page);
 
-  for (let step = 0; step < 6; step++) {
+  // --- Step 2: Universal Interventions ---
+  await answerAllNoAndFillNumbers(page);
+  // ECD → Yes (complementary: child-scoreboard answers No).
+  await overrideToYes(page, 'sing lullabies');
+  await clickGroupNCDASave(page);
+
+  // --- Step 3: Nutrition Behavior ---
+  await answerAllNoAndFillNumbers(page);
+  // MealsAtRecommendedTimes → Yes (complementary: child-scoreboard answers No).
+  await overrideToYes(page, 'eat at the recommended times');
+  await clickGroupNCDASave(page);
+
+  // --- Step 4: Nutrition Assessment (may not be shown for group sessions) ---
+  const stillOnForm = await page
+    .locator('.link-section.active')
+    .isVisible()
+    .catch(() => false);
+
+  if (stillOnForm) {
+    await answerAllNoAndFillNumbers(page);
+    await clickGroupNCDASave(page);
+  }
+
+  // --- Step 5: Targeted Interventions ---
+  const onStep5 = await page
+    .locator('.link-section.active')
+    .isVisible()
+    .catch(() => false);
+
+  if (onStep5) {
+    await answerAllNoAndFillNumbers(page);
+    // BeneficiaryCashTransfer → Yes (complementary: child-scoreboard answers No).
+    await overrideToYes(page, 'beneficiary of cash transfer');
     await page.waitForTimeout(500);
+    // ReceivingCashTransfer → Yes (conditional, appears when above is Yes).
+    await overrideToYes(page, 'Are they receiving it');
+    // ConditionalFoodItems → Yes (complementary: child-scoreboard answers No).
+    await overrideToYes(page, 'other support');
+    await clickGroupNCDASave(page);
+  }
 
-    // Answer all visible Yes/No questions with "No".
-    const noButtons = page.locator('.form-input label', { hasText: /^No$/ });
-    const noCount = await noButtons.count();
+  // --- Step 6: Infrastructure & Environment ---
+  const onStep6 = await page
+    .locator('.link-section.active')
+    .isVisible()
+    .catch(() => false);
 
-    for (let i = 0; i < noCount; i++) {
-      const btn = noButtons.nth(i);
-      await btn.scrollIntoViewIfNeeded();
-      await btn.click({ force: true });
-      await page.waitForTimeout(200);
-    }
-
-    // Fill any visible number inputs (e.g., birthweight in grams).
-    const numberInputs = page.locator('.form-input input[type="number"]');
-    const numCount = await numberInputs.count();
-    for (let i = 0; i < numCount; i++) {
-      const input = numberInputs.nth(i);
-      if (await input.isVisible() && (await input.inputValue()) === '') {
-        await input.fill('3000');
-        await page.waitForTimeout(200);
-      }
-    }
-
-    if (noCount === 0 && numCount === 0) {
-      // No inputs found — might be done.
-      break;
-    }
-
-    // Click Save — the NCDA uses a different save button than #save-form.
-    const saveBtn = page.locator('button', { hasText: /^Save$/i });
-    await saveBtn.scrollIntoViewIfNeeded();
-    await saveBtn.click({ force: true });
-    await page.waitForTimeout(1000);
-
-    // After saving the last NCDA step, an overlay/dialog may appear
-    // ("The Child Scorecard activity requires entering information...").
-    // Dismiss it if present.
-    const overlay = page.locator('div.overlay');
-    const overlayVisible = await overlay
-      .isVisible()
-      .catch(() => false);
-
-    if (overlayVisible) {
-      // The overlay may have a close button or "No, skip" button.
-      const skipBtn = overlay.locator('button', { hasText: 'No, skip' });
-      const closeBtn = overlay.locator('button');
-      if (await skipBtn.isVisible().catch(() => false)) {
-        await skipBtn.click({ force: true });
-      } else if (await closeBtn.first().isVisible().catch(() => false)) {
-        await closeBtn.first().click({ force: true });
-      }
-      await overlay.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
-      await page.waitForTimeout(500);
-    }
-
-    // Also check for modal dialog version.
-    const modal = page.locator('div.ui.tiny.active.modal');
-    const modalVisible = await modal
-      .isVisible()
-      .catch(() => false);
-
-    if (modalVisible) {
-      const proceedBtn = modal.locator('button', { hasText: 'Yes, proceed' });
-      const skipModalBtn = modal.locator('button', { hasText: 'No, skip' });
-      if (await skipModalBtn.isVisible().catch(() => false)) {
-        await skipModalBtn.click({ force: true });
-      } else if (await proceedBtn.isVisible().catch(() => false)) {
-        await proceedBtn.click({ force: true });
-      }
-      await modal.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
-      await page.waitForTimeout(500);
-    }
-
-    // Check if we're still on the NCDA form (more steps remain).
-    // If the activity moved to Completed tab, the form disappears.
-    const stillOnNCDA = await page
-      .locator('.link-section.active')
-      .isVisible()
-      .catch(() => false);
-
-    if (!stillOnNCDA) break;
+  if (onStep6) {
+    await answerAllNoAndFillNumbers(page);
+    // InsecticideTreatedBednets → Yes (complementary: child-scoreboard answers No).
+    await overrideToYes(page, 'insecticide-treated bednets');
+    // HasKitchenGarden → Yes (complementary: child-scoreboard answers No).
+    await overrideToYes(page, 'kitchen garden');
+    await clickGroupNCDASave(page);
   }
 }
 

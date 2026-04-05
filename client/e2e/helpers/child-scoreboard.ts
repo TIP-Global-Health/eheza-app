@@ -44,17 +44,18 @@ async function setDate(page: Page, date: Date, triggerSelector = '.date-input') 
     .locator('.ui.active.modal.calendar-popup')
     .waitFor({ timeout: 5000 });
 
-  const year = date.getFullYear().toString();
+  // Use UTC — Elm date pickers derive dates via Time.utc.
+  const year = date.getUTCFullYear().toString();
   await page
     .locator('div.calendar > div.year > select')
     .selectOption(year);
 
-  const monthValue = (date.getMonth() + 1).toString();
+  const monthValue = (date.getUTCMonth() + 1).toString();
   await page
     .locator('div.calendar > div.month > select')
     .selectOption(monthValue);
 
-  const day = date.getDate();
+  const day = date.getUTCDate();
   const dayCell = page.locator(
     'div.calendar table tbody td:not(.date-selector--dimmed)',
     { hasText: new RegExp(`^${day}$`) },
@@ -352,8 +353,8 @@ export async function completeNCDA(page: Page) {
   await answerNCDAYesNo(page, 'Ongera-MNP being consumed', 'Yes');
   await page.waitForTimeout(300);
 
-  // ChildReceivesECD → Yes
-  await answerNCDAYesNo(page, 'sing lullabies', 'Yes');
+  // ChildReceivesECD → No (deliberately No for negative-path verification).
+  await answerNCDAYesNo(page, 'sing lullabies', 'No');
   await page.waitForTimeout(300);
 
   await clickSave(page);
@@ -379,8 +380,8 @@ export async function completeNCDA(page: Page) {
   await answerNCDAYesNo(page, 'appropriate complementary feeding', 'Yes');
   await page.waitForTimeout(300);
 
-  // MealsAtRecommendedTimes → Yes
-  await answerNCDAYesNo(page, 'eat at the recommended times', 'Yes');
+  // MealsAtRecommendedTimes → No (deliberately No for negative-path verification).
+  await answerNCDAYesNo(page, 'eat at the recommended times', 'No');
   await page.waitForTimeout(300);
 
   await clickSave(page);
@@ -398,10 +399,10 @@ export async function completeNCDA(page: Page) {
   await weightInput.fill('8.5');
   await page.waitForTimeout(300);
 
-  // MUAC: enter 14.0 cm (green range, >= 12.5 cm).
+  // MUAC: enter 12.0 cm (moderate range, < 12.5 cm. Triggers TreatedForAcuteMalnutrition question visibility).
   const muacInput = page.locator('.form-input.measurement.muac input[type="number"]');
   if (await muacInput.isVisible({ timeout: 1000 }).catch(() => false)) {
-    await muacInput.fill('14.0');
+    await muacInput.fill('12.0');
     await page.waitForTimeout(300);
   }
 
@@ -415,23 +416,37 @@ export async function completeNCDA(page: Page) {
   await clickNCDAStepTab(page, 'ncda-targeted-intervention');
   await page.waitForTimeout(500);
 
-  // ChildReceivesFBF → No
-  await answerNCDAYesNo(page, 'receive FBF', 'No');
+  // ChildReceivesFBF → Yes (pane4.row1)
+  await answerNCDAYesNo(page, 'receive FBF', 'Yes');
   await page.waitForTimeout(300);
 
-  // BeneficiaryCashTransfer → No
+  // ChildTakingFBF → Yes (conditional, shown when ChildReceivesFBF is Yes)
+  await answerNCDAYesNo(page, 'FBF being consumed', 'Yes');
+  await page.waitForTimeout(300);
+
+  // BeneficiaryCashTransfer → No (deliberately No for negative-path verification).
   await answerNCDAYesNo(page, 'beneficiary of cash transfer', 'No');
   await page.waitForTimeout(300);
 
-  // ConditionalFoodItems → No
+  // ConditionalFoodItems → No (deliberately No for negative-path verification).
   await answerNCDAYesNo(page, 'other support', 'No');
   await page.waitForTimeout(300);
 
-  // ChildWithDisability → No
-  await answerNCDAYesNo(page, 'have disability', 'No');
+  // TreatedForAcuteMalnutrition → Yes (pane4.row2, visible due to MUAC 12.0).
+  await answerNCDAYesNo(page, 'child being treated', 'Yes');
   await page.waitForTimeout(300);
 
-  // ChildGotDiarrhea → No
+  // ChildWithDisability → Yes (pane4.row4)
+  await answerNCDAYesNo(page, 'have disability', 'Yes');
+  await page.waitForTimeout(300);
+
+  // ReceivingSupport → Yes (conditional, shown when ChildWithDisability is Yes)
+  await answerNCDAYesNo(page, 'receive support', 'Yes');
+  await page.waitForTimeout(300);
+
+  // ChildGotDiarrhea → No (does not contribute to any scoreboard pane —
+  // pane4.row3 requires ORS/Zinc medication, not this sign. Answering Yes
+  // triggers a popup on end-encounter that breaks the standalone test).
   await answerNCDAYesNo(page, 'have diarrhea', 'No');
   await page.waitForTimeout(300);
 
@@ -453,12 +468,12 @@ export async function completeNCDA(page: Page) {
   await answerNCDAYesNo(page, 'have toilets', 'Yes');
   await page.waitForTimeout(300);
 
-  // HasKitchenGarden → Yes
-  await answerNCDAYesNo(page, 'kitchen garden', 'Yes');
+  // HasKitchenGarden → No (deliberately No for negative-path verification).
+  await answerNCDAYesNo(page, 'kitchen garden', 'No');
   await page.waitForTimeout(300);
 
-  // InsecticideTreatedBednets → Yes
-  await answerNCDAYesNo(page, 'insecticide-treated bednets', 'Yes');
+  // InsecticideTreatedBednets → No (deliberately No for negative-path verification).
+  await answerNCDAYesNo(page, 'insecticide-treated bednets', 'No');
   await page.waitForTimeout(300);
 
   // Final Save — all steps complete, this persists the data.

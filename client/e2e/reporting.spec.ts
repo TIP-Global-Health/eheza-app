@@ -46,6 +46,15 @@ import {
   readCompletionTable,
   findCompletionRow,
   CompletionTableData,
+  ensureNCDAFeatureEnabled,
+  generateNCDAPersonData,
+  ncdaRecalculateLargeDatasets,
+  backdatePersonCreated,
+  navigateToNCDAScoreboard,
+  readScoreboardPane,
+  findScoreboardValue,
+  getCurrentMonthColumnIndex,
+  ScoreboardPaneData,
 } from './helpers/reports';
 
 // Encounter creation helpers.
@@ -249,6 +258,12 @@ test.describe('Admin Reports', () => {
       generateBaseReportsData();
       clearAdvancedQueue();
       recalculateLargeDatasets();
+
+      // NCDA scoreboard baseline: generate per-person NCDA data and
+      // pre-compute district-level Report Data nodes.
+      ensureNCDAFeatureEnabled();
+      generateNCDAPersonData(false);
+      ncdaRecalculateLargeDatasets();
     });
 
     let baselineRegistered: PatientsTableData;
@@ -276,11 +291,19 @@ test.describe('Admin Reports', () => {
     let baselineTBCompletion: CompletionTableData;
     let baselineNutrIndCompletion: CompletionTableData;
     let baselineNutrGrpCompletion: CompletionTableData;
+
+    // NCDA Scoreboard baselines (keyed by pane heading).
+    let baselineVillage: Record<string, ScoreboardPaneData>;
+    let baselineDistrictDemographics: ScoreboardPaneData;
+
     let nutrChildName: string;
     let hvChildName: string;
     let aiNurseName: string;
     let prenatalMomName: string;
     let ncdAdultName: string;
+    let csChildName: string;
+    let fbfChildName: string;
+    let nbChildName: string;
 
     await step('Login to Drupal admin and record baseline values', async () => {
       await drupalLogin(page);
@@ -445,6 +468,32 @@ test.describe('Admin Reports', () => {
         baselineNutrGrpCompletion = { heading: '', rows: [] };
       }
       console.log('Baseline NutrGrp completion rows:', baselineNutrGrpCompletion.rows.length);
+    });
+
+    await step('Record NCDA Scoreboard baselines', async () => {
+      // Drupal admin login (if not already logged in from completion baselines).
+      const currentUrl = page.url();
+      if (!currentUrl.includes('/admin/')) {
+        await drupalLogin(page);
+      }
+
+      // Village-level baseline (Akanduga — only CSChild will land here).
+      await navigateToNCDAScoreboard(page, 'Amajyaruguru/Gakenke/Coko/Mbirima/Akanduga');
+      const paneNames = [
+        'Demographics', 'Acute Malnutrition', 'Stunting',
+        'ANC + Newborn', 'Universal Intervention', 'Nutrition Behavior',
+        'Targeted Interventions', 'Infrastructure',
+      ];
+      baselineVillage = {};
+      for (const name of paneNames) {
+        baselineVillage[name] = await readScoreboardPane(page, name);
+      }
+      console.log('Village scoreboard baseline panes:', Object.keys(baselineVillage).length);
+
+      // District-level baseline (Gakenke).
+      await navigateToNCDAScoreboard(page, 'Amajyaruguru/Gakenke');
+      baselineDistrictDemographics = await readScoreboardPane(page, 'Demographics');
+      console.log('District demographics baseline rows:', baselineDistrictDemographics.rows.length);
     });
 
     // ── Phase 1a: Nurse encounters ──
@@ -709,6 +758,7 @@ test.describe('Admin Reports', () => {
       await navigateToNurseGroupSession(page, 'FBF', 'Nyange I');
       const fbfMother = await createMotherOnAttendancePage(page);
       const fbfChild = await addChildToMother(page, { ageMonths: 12 });
+      fbfChildName = fbfChild.fullName;
 
       // After addChildToMother we may be on PersonPage or elsewhere.
       // Navigate back to attendance, then to participants.
@@ -929,6 +979,7 @@ test.describe('Admin Reports', () => {
       await page.goto(pwaBaseUrl);
       await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
       const csChild = await createChildScoreboardChild(page, { ageMonths: 10 });
+      csChildName = csChild.fullName;
       await completeNCDA(page);
       await completeVaccinationHistory(page);
       await goToDashboard(page);
@@ -999,6 +1050,7 @@ test.describe('Admin Reports', () => {
         ageMonths: 1,
         isChw: true,
       });
+      nbChildName = nbChild.fullName;
       await completePregnancySummary(page);
       await completeWCNutritionAssessment(page, {
         headCircumference: '35',
@@ -1081,6 +1133,10 @@ test.describe('Admin Reports', () => {
       generateCompletionData('nutrition-individual', true);
       generateCompletionData('nutrition-group', true);
       completionRecalculateLargeDatasets();
+
+      // Re-compute district-level NCDA Report Data nodes with new encounter data.
+      // Per-person field_ncda_data is already updated by AQ processing above.
+      ncdaRecalculateLargeDatasets();
     });
 
     // ── Phase 3: Verify Demographics deltas — HC scope ──
@@ -2325,6 +2381,146 @@ test.describe('Admin Reports', () => {
       assertDelta('Follow Up', 1, 1);
       assertDelta('Health Education', 1, 1);
       assertDelta('Referral', 1, 1);
+    });
+
+    // ── Phase 16: NCDA Scoreboard verification ──
+
+    await step('Regenerate NCDA data with new encounters', async () => {
+      // Backdate created timestamps so children pass the Elm scoreboard's
+      // existedDuringExaminationMonth check (strict LT against current date).
+      backdatePersonCreated(csChildName);
+      backdatePersonCreated(nutrChildName);
+      backdatePersonCreated(hvChildName);
+      backdatePersonCreated(fbfChildName);
+      backdatePersonCreated(nbChildName);
+
+      // Regenerate NCDA aggregated data and clear caches.
+      generateNCDAPersonData(true);
+      ncdaRecalculateLargeDatasets();
+    });
+
+    await step('Navigate to NCDA Scoreboard — village level (Akanduga)', async () => {
+      // Drupal admin login (if session expired during completion phases).
+      const currentUrl = page.url();
+      if (!currentUrl.includes('/admin/')) {
+        await drupalLogin(page);
+      }
+
+      await navigateToNCDAScoreboard(page, 'Amajyaruguru/Gakenke/Coko/Mbirima/Akanduga');
+    });
+
+    await step('Verify village scoreboard deltas', async () => {
+      const monthIdx = getCurrentMonthColumnIndex();
+
+      // Read panes by heading (robust against reordering).
+      const villageDemographics = await readScoreboardPane(page, 'Demographics');
+      const villageAcuteMalnutrition = await readScoreboardPane(page, 'Acute Malnutrition');
+      const villageStunting = await readScoreboardPane(page, 'Stunting');
+      const villageUniversal = await readScoreboardPane(page, 'Universal Intervention');
+      const villageNutritionBehavior = await readScoreboardPane(page, 'Nutrition Behavior');
+      const villageTargeted = await readScoreboardPane(page, 'Targeted Interventions');
+      const villageInfrastructure = await readScoreboardPane(page, 'Infrastructure');
+
+      // assertMinDelta: verify delta >= expected (multiple children may contribute).
+      const assertMinDelta = (
+        pane: ScoreboardPaneData, baseline: ScoreboardPaneData,
+        rowLabel: string, minDelta: number,
+      ) => {
+        const current = findScoreboardValue(pane, rowLabel, monthIdx);
+        const base = findScoreboardValue(baseline, rowLabel, monthIdx);
+        const delta = current - base;
+        console.log(`${rowLabel}: ${base} → ${current} (delta: ${delta}, expected: >=${minDelta})`);
+        expect(delta, `${rowLabel} delta >= ${minDelta}`).toBeGreaterThanOrEqual(minDelta);
+      };
+
+      // assertExactDelta: verify delta === expected (CSChild is the only child
+      // in Akanduga with NCDA data — CHW-created children skip NCDA).
+      const assertExactDelta = (
+        pane: ScoreboardPaneData, baseline: ScoreboardPaneData,
+        rowLabel: string, expectedDelta: number,
+      ) => {
+        const current = findScoreboardValue(pane, rowLabel, monthIdx);
+        const base = findScoreboardValue(baseline, rowLabel, monthIdx);
+        const delta = current - base;
+        console.log(`${rowLabel}: ${base} → ${current} (delta: ${delta}, expected: ${expectedDelta})`);
+        expect(delta, `${rowLabel} delta`).toBe(expectedDelta);
+      };
+
+      // Demographics: multiple CHW-created children under 2 in Akanduga.
+      assertMinDelta(villageDemographics, baselineVillage['Demographics'],
+        'Children under 2', 1);
+
+      // Nutrition severity panes.
+      assertMinDelta(villageAcuteMalnutrition, baselineVillage['Acute Malnutrition'],
+        'Moderate Acute Malnutrition', 1);
+      assertMinDelta(villageStunting, baselineVillage['Stunting'],
+        'No Stunting', 1);
+
+      // Universal Interventions — CSChild answered Yes to Vitamin A, Deworming,
+      // Ongera MNP; deliberately No to ECD.
+      assertExactDelta(villageUniversal, baselineVillage['Universal Intervention'],
+        'Vitamin A', 1);
+      assertExactDelta(villageUniversal, baselineVillage['Universal Intervention'],
+        'Deworming', 1);
+      assertExactDelta(villageUniversal, baselineVillage['Universal Intervention'],
+        'Ongera', 1);
+      assertExactDelta(villageUniversal, baselineVillage['Universal Intervention'],
+        'ECD', 0);
+
+      // Nutrition Behavior — CSChild answered Yes to complementary feeding and
+      // diverse diet; deliberately No to meals. Breastfed skipped (age gate < 6mo).
+      assertExactDelta(villageNutritionBehavior, baselineVillage['Nutrition Behavior'],
+        'complementary feeding', 1);
+      assertExactDelta(villageNutritionBehavior, baselineVillage['Nutrition Behavior'],
+        'Diverse diet', 1);
+      assertExactDelta(villageNutritionBehavior, baselineVillage['Nutrition Behavior'],
+        'frequency of meals', 0);
+
+      // Targeted Interventions — CSChild answered Yes to FBF, malnutrition
+      // treatment, support; deliberately No to cash transfer and food items.
+      assertExactDelta(villageTargeted, baselineVillage['Targeted Interventions'],
+        'FBF', 1);
+      assertMinDelta(villageTargeted, baselineVillage['Targeted Interventions'],
+        'Treatment for acute malnutrition', 1);
+      assertExactDelta(villageTargeted, baselineVillage['Targeted Interventions'],
+        'support to a child', 1);
+      assertExactDelta(villageTargeted, baselineVillage['Targeted Interventions'],
+        'conditional cash transfer', 0);
+      assertExactDelta(villageTargeted, baselineVillage['Targeted Interventions'],
+        'conditional food items', 0);
+
+      // Infrastructure/WASH — CSChild answered Yes to clean water, toilets,
+      // handwashing; deliberately No to bed nets and kitchen garden.
+      assertExactDelta(villageInfrastructure, baselineVillage['Infrastructure'],
+        'clean water', 1);
+      assertExactDelta(villageInfrastructure, baselineVillage['Infrastructure'],
+        'toilets', 1);
+      assertExactDelta(villageInfrastructure, baselineVillage['Infrastructure'],
+        'handwashing', 1);
+      assertExactDelta(villageInfrastructure, baselineVillage['Infrastructure'],
+        'bed nets', 0);
+      assertExactDelta(villageInfrastructure, baselineVillage['Infrastructure'],
+        'kitchen garden', 0);
+    });
+
+    await step('Verify NCDA Scoreboard — district level (Gakenke)', async () => {
+      await navigateToNCDAScoreboard(page, 'Amajyaruguru/Gakenke');
+
+      // Structural check: all 9 panes render.
+      const paneCount = await page.locator('.pane').count();
+      expect(paneCount, 'Should have 9 panes (entity info + 8 data panes)').toBe(9);
+
+      // Demographics: Children Under 2 should have increased.
+      const districtDemographics = await readScoreboardPane(page, 'Demographics');
+      const monthIdx = getCurrentMonthColumnIndex();
+      const districtBaseline = findScoreboardValue(baselineDistrictDemographics, 'Children under 2', monthIdx);
+      const districtCurrent = findScoreboardValue(districtDemographics, 'Children under 2', monthIdx);
+      console.log(`District Children under 2: ${districtBaseline} → ${districtCurrent}`);
+      expect(districtCurrent - districtBaseline, 'District children under 2 delta >= 2').toBeGreaterThanOrEqual(2);
+
+      // Verify entity name.
+      const entityPane = await readScoreboardPane(page, 'Aggregated Child Scoreboard');
+      expect(entityPane.heading).toContain('Aggregated Child Scoreboard');
     });
   });
 });

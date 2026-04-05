@@ -123,6 +123,227 @@ export function ensurePrenatalMedicationsVariable() {
   console.log('hedley_prenatal_change_medications:', result);
 }
 
+/**
+ * Ensure the NCDA feature flag is enabled.
+ * Required before generating NCDA person data or running scoreboard tests.
+ * The input is hardcoded (no user-provided data), so shell injection
+ * is not a concern.
+ */
+export function ensureNCDAFeatureEnabled() {
+  const { drushCmd, cwd } = drushEnv();
+  console.log('Enabling NCDA feature flag...');
+  execSync(
+    `${drushCmd} vset hedley_admin_feature_ncda_enabled 1`,
+    { cwd, timeout: 15000, encoding: 'utf-8', stdio: 'pipe' },
+  );
+  console.log('NCDA feature flag enabled.');
+}
+
+/**
+ * Generate NCDA person data for all existing persons.
+ * This populates NCDA-specific report fields on person nodes.
+ * Pass excludeSet=true to add --exclude_set=1 flag.
+ *
+ * Note: execSync is used here following the same pattern as other E2E
+ * helpers for drush command execution. The input is hardcoded
+ * (no user-provided data), so shell injection is not a concern.
+ */
+export function generateNCDAPersonData(excludeSet = false) {
+  const { drushCmd, cwd } = drushEnv();
+  const flag = excludeSet ? ' --exclude_set=1' : '';
+  console.log('Generating NCDA person data (generate-data-for-all.php)...');
+  execSync(
+    `${drushCmd} scr profiles/hedley/modules/custom/hedley_ncda/scripts/generate-data-for-all.php${flag}`,
+    { cwd, timeout: 300000, encoding: 'utf-8', stdio: 'pipe' },
+  );
+  console.log('NCDA person data generated.');
+}
+
+/**
+ * Recalculate NCDA large datasets -- aggregates per-person NCDA data into
+ * scope-level report_data nodes, then clears Drupal caches.
+ */
+export function ncdaRecalculateLargeDatasets() {
+  const { drushCmd, cwd } = drushEnv();
+  console.log('Recalculating NCDA large datasets...');
+  execSync(
+    `${drushCmd} scr profiles/hedley/modules/custom/hedley_ncda/scripts/recalculate-large-datasets.php`,
+    { cwd, timeout: 300000, encoding: 'utf-8', stdio: 'pipe' },
+  );
+  // Clear Drupal caches so pages serve the fresh report_data.
+  execSync(`${drushCmd} cc all`, {
+    cwd, timeout: 30000, encoding: 'utf-8', stdio: 'pipe',
+  });
+  console.log('NCDA large datasets recalculated.');
+}
+
+/**
+ * Backdate a person node's `created` timestamp.
+ *
+ * The NCDA scoreboard Elm view uses a strict less-than check
+ * (Date.compare record.created targetDateForMonth == LT) to determine
+ * whether a child existed during an examination month. Children created
+ * on the same day as the target date are excluded. This helper sets
+ * the created timestamp to `monthsAgo` months in the past so that
+ * test-created children appear in the scoreboard.
+ *
+ * Uses db_update (not node_save) to avoid triggering hooks.
+ *
+ * Note: execSync with base64-encoded person name — same pattern as
+ * backdateNutritionEncounter(). The name is base64-encoded to prevent
+ * shell metacharacter issues (not user-provided data).
+ */
+export function backdatePersonCreated(personName: string, monthsAgo = 2) {
+  const { drushCmd, cwd } = drushEnv();
+  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
+  const target = new Date();
+  target.setMonth(target.getMonth() - monthsAgo);
+  const timestamp = Math.floor(target.getTime() / 1000);
+
+  const php = `
+    \\$name = base64_decode('${personNameB64}');
+    \\$q = new EntityFieldQuery();
+    \\$r = \\$q->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'person')
+      ->propertyCondition('title', \\$name)
+      ->execute();
+    if (empty(\\$r['node'])) { echo 'NOT FOUND'; return; }
+    \\$nid = key(\\$r['node']);
+    db_update('node')
+      ->fields(['created' => ${timestamp}])
+      ->condition('nid', \\$nid)
+      ->execute();
+    echo \\$nid;
+  `;
+
+  const result = execSync(`${drushCmd} eval "${php}"`, {
+    cwd, timeout: 30000, encoding: 'utf-8', stdio: 'pipe',
+  }).trim();
+  console.log(`Backdated person "${personName}": nid=${result}`);
+}
+
+// ---------------------------------------------------------------------------
+// NCDA Scoreboard navigation and table reading helpers
+// ---------------------------------------------------------------------------
+
+export interface ScoreboardRow {
+  label: string;
+  values: string[];
+}
+
+export interface ScoreboardPaneData {
+  heading: string;
+  rows: ScoreboardRow[];
+}
+
+/**
+ * Navigate to the aggregated NCDA scoreboard page for a given geo path.
+ * Retries up to 5 times if panes are not yet rendered (handles lazy data fetch).
+ *
+ * Pane indices: 0=entity info, 1=demographics, 2=acute malnutrition,
+ * 3=stunting, 4=ANC/newborn, 5=universal interventions,
+ * 6=nutrition behavior, 7=targeted interventions, 8=infrastructure/WASH.
+ */
+export async function navigateToNCDAScoreboard(page: Page, geoPath: string): Promise<void> {
+  // Append cache-busting query parameter to avoid Drupal serving stale pages.
+  const cacheBuster = Date.now();
+  const url = `${getDdevUrl()}/admin/reports/aggregated-ncda/${geoPath}?t=${cacheBuster}`;
+  console.log(`Navigating to NCDA scoreboard: ${url}`);
+  await page.goto(url);
+
+  let paneCount = 0;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    await page.waitForTimeout(2000);
+    paneCount = await page.locator('.pane').count();
+    if (paneCount >= 2) {
+      break;
+    }
+    await page.reload();
+  }
+
+  if (paneCount < 2) {
+    throw new Error(`NCDA scoreboard at ${url} did not render at least 2 panes after 5 retries (got ${paneCount})`);
+  }
+
+  await page.waitForTimeout(1000);
+}
+
+/**
+ * Read the content of a scoreboard pane identified by heading text.
+ * More robust than index-based lookup — survives pane reordering.
+ */
+export async function readScoreboardPane(page: Page, headingText: string): Promise<ScoreboardPaneData> {
+  const pane = page.locator('div.pane').filter({
+    has: page.locator('.pane-heading', { hasText: headingText }),
+  });
+  await pane.waitFor({ timeout: 10000 });
+  const heading = (await pane.locator('.pane-heading').textContent())?.trim() ?? '';
+
+  const tableRows = pane.locator('.table-row');
+  const rowCount = await tableRows.count();
+
+  const rows: ScoreboardRow[] = [];
+  for (let i = 0; i < rowCount; i++) {
+    const row = tableRows.nth(i);
+    const label = await row.locator('.cell.activity').innerText();
+    const valueCells = row.locator('.cell.value');
+    const valueCount = await valueCells.count();
+    const values: string[] = [];
+    for (let j = 0; j < valueCount; j++) {
+      values.push(await valueCells.nth(j).innerText());
+    }
+    rows.push({ label, values });
+  }
+
+  return { heading, rows };
+}
+
+/**
+ * Get the 0-based column index for the current month (UTC).
+ * The scoreboard renders Jan=0, Feb=1, ..., Dec=11.
+ * Uses UTC because the Elm app derives currentDate via Time.utc.
+ */
+export function getCurrentMonthColumnIndex(): number {
+  return new Date().getUTCMonth();
+}
+
+/**
+ * Find a value in a scoreboard pane by row label substring and month index.
+ * Month index is 0-based (Jan=0). Throws if the row or cell is missing, or
+ * if the value is not a valid integer. Returns 0 only for an existing empty cell.
+ */
+export function findScoreboardValue(pane: ScoreboardPaneData, rowLabel: string, monthIndex: number): number {
+  const row = pane.rows.find(r => r.label.includes(rowLabel));
+  if (!row) {
+    throw new Error(
+      `Scoreboard row not found for label "${rowLabel}" in pane "${pane.heading}". Available rows: ${pane.rows
+        .map(r => `"${r.label}"`)
+        .join(', ')}`,
+    );
+  }
+
+  const raw = row.values[monthIndex];
+  if (raw === undefined) {
+    throw new Error(
+      `Scoreboard value not found for row "${row.label}" at month index ${monthIndex} in pane "${pane.heading}".`,
+    );
+  }
+
+  const trimmed = raw.trim();
+  if (trimmed === '') {
+    return 0;
+  }
+
+  const parsed = parseInt(trimmed, 10);
+  if (isNaN(parsed)) {
+    throw new Error(
+      `Invalid scoreboard value "${raw}" for row "${row.label}" at month index ${monthIndex} in pane "${pane.heading}".`,
+    );
+  }
+
+  return parsed;
+}
+
 export function generateBaseReportsData() {
   const { drushCmd, cwd } = drushEnv();
   console.log('Generating base reports data (generate-data-for-all.php)...');
@@ -269,18 +490,19 @@ async function selectDateInCalendar(page: Page, date: Date) {
   const popup = page.locator('.ui.active.modal.calendar-popup');
   await popup.waitFor({ timeout: 5000 });
 
+  // Use UTC — Elm date pickers derive dates via Time.utc.
   // Select year.
   await popup
     .locator('div.calendar > div.year > select')
-    .selectOption(date.getFullYear().toString());
+    .selectOption(date.getUTCFullYear().toString());
 
   // Select month (1-indexed).
   await popup
     .locator('div.calendar > div.month > select')
-    .selectOption((date.getMonth() + 1).toString());
+    .selectOption((date.getUTCMonth() + 1).toString());
 
   // Click day.
-  const day = date.getDate();
+  const day = date.getUTCDate();
   const dayCell = popup.locator(
     'div.calendar table tbody td:not(.date-selector--dimmed)',
     { hasText: new RegExp(`^${day}$`) },
