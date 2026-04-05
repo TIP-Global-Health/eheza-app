@@ -31,6 +31,7 @@ type alias PatientData =
     , gender : Gender
     , acuteIllnessData : Maybe (List (List AcuteIllnessEncounterData))
     , prenatalData : Maybe (List PrenatalParticipantData)
+    , familyNutritionData : Maybe (List (List FamilyNutritionEncounterData))
     , homeVisitData : Maybe (List (List HomeVisitEncounterData))
     , wellChildData : Maybe (List (List NutritionEncounterData))
     , childScorecardData : Maybe (List (List ChildScorecardEncounterData))
@@ -204,6 +205,8 @@ type alias NutritionData =
     , underweight : Maybe Float
     }
 
+type alias FamilyNutritionEncounterData =
+    NominalDate
 
 type alias HomeVisitEncounterData =
     NominalDate

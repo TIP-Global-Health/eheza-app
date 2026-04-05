@@ -117,6 +117,7 @@ type TranslationId
     | Encounters
     | EncounterType
     | Expected
+    | FamilyNutrition
     | FamilyPlanning
     | FBF
     | Feeding
@@ -817,6 +818,13 @@ translationSet transId =
 
         Expected ->
             { english = "Expected"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        FamilyNutrition ->
+            { english = "Family Nutrition"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing

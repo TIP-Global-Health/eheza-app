@@ -369,8 +369,13 @@ function hedley_reports_trigger_recalculation_by_new_content($node) {
   }
 
   if (in_array($node->type, $triggering_encounters)) {
-    // For encounters, resolving person ID through individual participant.
-    $participant_id = $node->field_individual_participant[LANGUAGE_NONE][0]['target_id'];
+    // For encounters, resolving person ID through participant.
+    // Family nutrition encounters use field_family_participant;
+    // all others use field_individual_participant.
+    $participant_field = $node->type == HEDLEY_ACTIVITY_FAMILY_NUTRITION_ENCOUNTER_CONTENT_TYPE
+      ? 'field_family_participant'
+      : 'field_individual_participant';
+    $participant_id = $node->{$participant_field}[LANGUAGE_NONE][0]['target_id'];
     if (empty($participant_id)) {
       // Can't resolve to which participant encounter belongs.
       return;
@@ -437,6 +442,7 @@ function hedley_reports_get_triggering_encounter_types() {
   return [
     HEDLEY_ACTIVITY_ACUTE_ILLNESS_ENCOUNTER_CONTENT_TYPE,
     HEDLEY_ACTIVITY_CHILD_SCOREBOARD_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_FAMILY_NUTRITION_ENCOUNTER_CONTENT_TYPE,
     HEDLEY_ACTIVITY_HIV_ENCOUNTER_CONTENT_TYPE,
     HEDLEY_ACTIVITY_HOME_VISIT_ENCOUNTER_CONTENT_TYPE,
     HEDLEY_ACTIVITY_NCD_ENCOUNTER_CONTENT_TYPE,
@@ -682,6 +688,34 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
       }
       $participant_data['encounters'] = $encounters_data[$participant_type][$individual_participant->nid];
       $encounters_data[$participant_type][$individual_participant->nid] = $participant_data;
+    }
+  }
+
+  // Family nutrition encounters: find family participants for this person.
+  $family_participants_query = hedley_general_create_entity_field_query_excluding_deleted();
+  $family_participants_result = $family_participants_query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', HEDLEY_ACTIVITY_FAMILY_PARTICIPANT_CONTENT_TYPE)
+    ->fieldCondition('field_person', 'target_id', $person->nid)
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->execute();
+
+  if (!empty($family_participants_result['node'])) {
+    $family_participants_ids = array_keys($family_participants_result['node']);
+    $family_encounters_query = hedley_general_create_entity_field_query_excluding_deleted();
+    $family_encounters_result = $family_encounters_query
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', HEDLEY_ACTIVITY_FAMILY_NUTRITION_ENCOUNTER_CONTENT_TYPE)
+      ->fieldCondition('field_family_participant', 'target_id', $family_participants_ids, 'IN')
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->execute();
+
+    if (!empty($family_encounters_result['node'])) {
+      $family_encounters = node_load_multiple(array_keys($family_encounters_result['node']));
+      foreach ($family_encounters as $family_encounter) {
+        $participant_id = $family_encounter->field_family_participant[LANGUAGE_NONE][0]['target_id'];
+        $encounters_data['family-nutrition'][$participant_id][] = date("Y-m-d", strtotime($family_encounter->field_scheduled_date[LANGUAGE_NONE][0]['value']));
+      }
     }
   }
 
@@ -1076,18 +1110,19 @@ function hedley_reports_generate_results_data($province, $district, $sector, $ce
  *   Health center ID.
  *
  * @return array
- *   Stored data.
+ *   A 2-element array: [results, additional_data].
+ *   On failure, returns [[], NULL].
  */
 function hedley_reports_load_results_data($report_variant, $scope, $province = NULL, $district = NULL, $health_center = NULL) {
   $node_id = hedley_reports_load_results_data_node($report_variant, $scope, $province, $district, $health_center);
   if (!$node_id) {
-    return [];
+    return [[], NULL];
   }
 
   $node = node_load($node_id);
   $file = file_load($node->field_data_file[LANGUAGE_NONE][0]['fid']);
   if (!$file) {
-    return [];
+    return [[], NULL];
   }
 
   // Get the real path of the file.
@@ -1095,7 +1130,7 @@ function hedley_reports_load_results_data($report_variant, $scope, $province = N
   // Open the gzipped file and read its contents.
   $gz_fp = gzopen($file_path, 'r');
   if (!$gz_fp) {
-    return [];
+    return [[], NULL];
   }
 
   $data = '';
