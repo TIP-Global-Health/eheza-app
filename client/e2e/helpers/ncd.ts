@@ -1,150 +1,18 @@
 import { Page } from '@playwright/test';
 import { click } from './auth';
-import { queryMeasurementNodes, backdateEncounter } from './common';
-
-// ---------------------------------------------------------------------------
-// Private form helpers
-// ---------------------------------------------------------------------------
-
-/**
- * Select an option in a form dropdown identified by its label text.
- * @param optionIndex - 1-based index (skips blank default).
- */
-async function selectByLabel(page: Page, labelText: string, optionIndex: number) {
-  const row = page.locator('.ui.grid').filter({ hasText: labelText });
-  const select = row.locator('select').first();
-  const options = select.locator('option');
-  const count = await options.count();
-  if (count > optionIndex) {
-    const value = await options.nth(optionIndex).getAttribute('value');
-    if (value !== null) {
-      await select.selectOption(value);
-    }
-  }
-}
-
-/**
- * Locate a form input by its label text (grid row pattern).
- */
-function formInput(page: Page, labelText: string) {
-  return page
-    .locator('.ui.grid')
-    .filter({ hasText: labelText })
-    .locator('input')
-    .first();
-}
-
-/**
- * Answer a Yes/No boolean field by its CSS class.
- * Radio inputs are CSS-hidden; click the label instead.
- */
-async function answerYesNo(
-  page: Page,
-  fieldClass: string,
-  answer: 'Yes' | 'No',
-) {
-  await click(
-    page.locator(`.form-input.yes-no.${fieldClass} label`, {
-      hasText: answer,
-    }),
-    page,
-  );
-}
-
-/**
- * Select a checkbox option by clicking its label (exact match).
- */
-async function selectCheckbox(page: Page, optionText: string) {
-  await click(
-    page.locator('.ui.checkbox label', {
-      hasText: new RegExp(`^${optionText}$`, 'i'),
-    }),
-    page,
-  );
-}
-
-/**
- * Select a checkbox inside a specific form container.
- */
-async function selectCheckboxInForm(page: Page, formSelector: string, optionText: string) {
-  await click(
-    page.locator(`${formSelector} .ui.checkbox`, {
-      hasText: new RegExp(`^${optionText}$`, 'i'),
-    }).locator('label'),
-    page,
-  );
-}
-
-/**
- * Click a sub-task tab icon and wait for it to become active.
- */
-async function clickSubTaskTab(page: Page, iconClass: string) {
-  const tab = page.locator(`.link-section:has(.icon-activity-task.icon-${iconClass})`);
-  const isActive = await tab.evaluate(el => el.classList.contains('active')).catch(() => false);
-  if (!isActive) {
-    await click(tab, page);
-    await page.waitForTimeout(500);
-  }
-}
-
-/**
- * Open an activity from the NCD encounter page by clicking its card icon.
- */
-async function openActivity(page: Page, activityIcon: string) {
-  await page.locator('div.page-encounter.ncd').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
-  const icon = page.locator(`.icon-task-${activityIcon}`);
-  await icon.waitFor({ timeout: 10000 });
-  await click(icon, page);
-  await page.locator('div.page-activity.ncd').waitFor({ timeout: 10000 });
-}
-
-/**
- * Fill a measurement number input identified by its CSS ID class.
- */
-async function fillMeasurement(page: Page, id: string, value: string) {
-  await page
-    .locator(`.form-input.measurement.${id} input[type="number"]`)
-    .fill(value);
-}
-
-/**
- * Open the calendar popup, select a date, and confirm.
- */
-async function setDate(page: Page, date: Date, triggerSelector = '.date-input') {
-  await click(page.locator(triggerSelector).first(), page);
-  await page
-    .locator('.ui.active.modal.calendar-popup')
-    .waitFor({ timeout: 5000 });
-
-  // Use UTC — Elm date pickers derive dates via Time.utc.
-  const year = date.getUTCFullYear().toString();
-  await page
-    .locator('div.calendar > div.year > select')
-    .selectOption(year);
-
-  const monthValue = (date.getUTCMonth() + 1).toString();
-  await page
-    .locator('div.calendar > div.month > select')
-    .selectOption(monthValue);
-
-  const day = date.getUTCDate();
-  const dayCell = page.locator(
-    'div.calendar table tbody td:not(.date-selector--dimmed)',
-    { hasText: new RegExp(`^${day}$`) },
-  );
-  await dayCell.first().click();
-
-  await click(
-    page.locator('.ui.active.modal.calendar-popup div.ui.button'),
-    page,
-  );
-
-  await page
-    .locator('.ui.active.modal.calendar-popup')
-    .waitFor({ state: 'hidden', timeout: 3000 })
-    .catch(() => {});
-}
+import {
+  queryMeasurementNodes,
+  backdateEncounter,
+  formInput,
+  selectByLabel,
+  answerYesNo,
+  selectCheckbox,
+  selectCheckboxInForm,
+  clickSubTaskTab,
+  fillMeasurement,
+  setDate,
+  openActivity,
+} from './common';
 
 /**
  * Click the Save button and wait to return to the encounter page.
@@ -296,7 +164,7 @@ export async function completeDangerSigns(
 ) {
   const signs = options?.signs ?? [];
 
-  await openActivity(page, 'danger-signs');
+  await openActivity(page, 'ncd', 'danger-signs');
 
   if (signs.length === 0) {
     await selectCheckboxInForm(page, '.ui.form.danger-signs', 'None of the Above');
@@ -327,7 +195,7 @@ export async function completeSymptomReview(
     group2?: string[];
   },
 ) {
-  await openActivity(page, 'symptoms');
+  await openActivity(page, 'ncd', 'symptoms');
 
   const form = page.locator('.ui.form.symptom-review');
 
@@ -393,7 +261,7 @@ export async function completeExamination(
     bodyTemp?: string;
   },
 ) {
-  await openActivity(page, 'examination');
+  await openActivity(page, 'ncd', 'examination');
 
   // --- Sub-task 1: Vitals (default active) ---
   await clickSubTaskTab(page, 'vitals');
@@ -457,7 +325,7 @@ export async function completeExamination(
  * Creates: ncd_family_planning
  */
 export async function completeFamilyPlanning(page: Page) {
-  await openActivity(page, 'planning');
+  await openActivity(page, 'ncd', 'planning');
 
   // Select "None of these" family planning sign.
   await selectCheckboxInForm(page, '.ui.form.family-planning', 'None of these');
@@ -478,7 +346,7 @@ export async function completeFamilyPlanning(page: Page) {
  *          ncd_family_history, ncd_outside_care
  */
 export async function completeMedicalHistory(page: Page) {
-  await openActivity(page, 'history');
+  await openActivity(page, 'ncd', 'history');
 
   // --- Sub-task 1: CoMorbidities ---
   await clickSubTaskTab(page, 'danger-signs');
@@ -555,7 +423,7 @@ export async function completeMedicalHistory(page: Page) {
  * Creates: ncd_outside_care
  */
 export async function completeOutsideCare(page: Page) {
-  await openActivity(page, 'outside-care');
+  await openActivity(page, 'ncd', 'outside-care');
 
   // Step 1: "Have you been seen at another health facility?"
   await answerYesNo(page, 'seen-at-another-facility', 'No');
@@ -585,7 +453,7 @@ export async function completeLaboratory(
 ) {
   const performTests = options?.performTests ?? false;
 
-  await openActivity(page, 'laboratory');
+  await openActivity(page, 'ncd', 'laboratory');
 
   // Iterate visible lab test tabs.
   const tabs = page.locator('.link-section:has(.icon-activity-task)');
@@ -747,7 +615,7 @@ export async function completeLaboratory(
  * Creates: ncd_health_education, ncd_medication_distribution, ncd_referral
  */
 export async function completeNextSteps(page: Page) {
-  await openActivity(page, 'next-steps');
+  await openActivity(page, 'ncd', 'next-steps');
 
   // Iterate visible sub-task tabs.
   const tabs = page.locator('.link-section:has(.icon-activity-task)');
@@ -932,7 +800,7 @@ export async function openNCDRecurrentEncounterFromCaseManagement(
  * Iterates visible lab result tabs and fills in result values.
  */
 export async function completeLabResults(page: Page) {
-  await openActivity(page, 'laboratory');
+  await openActivity(page, 'ncd', 'laboratory');
 
   const tabs = page.locator('.link-section:has(.icon-activity-task)');
   const tabCount = await tabs.count();
@@ -992,7 +860,7 @@ export async function completeLabResults(page: Page) {
  * Sub-tasks: MedicationDistribution and Referral.
  */
 export async function completeRecurrentNextSteps(page: Page) {
-  await openActivity(page, 'next-steps');
+  await openActivity(page, 'ncd', 'next-steps');
 
   const tabs = page.locator('.link-section:has(.icon-activity-task)');
   const tabCount = await tabs.count();

@@ -2,36 +2,7 @@ import { Page } from '@playwright/test';
 import { execSync } from 'child_process';
 import { click } from './auth';
 import { drushEnv } from './device';
-
-/**
- * Select an option in a form dropdown identified by its label text.
- * @param optionIndex - 1-based index of the option to select (skips the blank default).
- */
-async function selectByLabel(page: Page, labelText: string, optionIndex: number) {
-  const row = page.locator('.ui.grid').filter({ hasText: labelText });
-  const select = row.locator('select').first();
-  const options = select.locator('option');
-  const count = await options.count();
-  if (count > optionIndex) {
-    const value = await options.nth(optionIndex).getAttribute('value');
-    if (value !== null) {
-      await select.selectOption(value);
-    }
-  }
-}
-
-/**
- * Locate a form input by its label text. The Elm form library renders
- * inputs without name attributes, so we find them via the grid row
- * structure: <div class="ui grid"><div>Label:</div><div><input/></div></div>
- */
-function formInput(page: Page, labelText: string) {
-  return page
-    .locator('.ui.grid')
-    .filter({ hasText: labelText })
-    .locator('input')
-    .first();
-}
+import { formInput, selectByLabel, setDate } from './common';
 
 /**
  * Navigate from the dashboard to the nutrition encounter page
@@ -92,7 +63,7 @@ export async function createChildAndStartEncounter(
   // Set date of birth via the calendar popup.
   const dob = new Date();
   dob.setMonth(dob.getMonth() - ageMonths);
-  await setDateOfBirth(page, dob);
+  await setDate(page, dob);
 
   // Select gender = male.
   await page
@@ -148,53 +119,6 @@ export async function createChildAndStartEncounter(
 
   // Drupal stores the person title as "secondName firstName".
   return { firstName, secondName, fullName: `${secondName} ${firstName}` };
-}
-
-/**
- * Open the DOB calendar popup, select year, month, and day,
- * then confirm.
- */
-async function setDateOfBirth(page: Page, dob: Date) {
-  // Click the date input to open the calendar popup.
-  await click(page.locator('.date-input'), page);
-  await page
-    .locator('.ui.active.modal.calendar-popup')
-    .waitFor({ timeout: 5000 });
-
-  // Use UTC — Elm date pickers derive dates via Time.utc.
-  // Select year.
-  const year = dob.getUTCFullYear().toString();
-  await page
-    .locator('div.calendar > div.year > select')
-    .selectOption(year);
-
-  // Select month (JS Date is 0-indexed, Elm select uses 1-indexed string values).
-  const monthValue = (dob.getUTCMonth() + 1).toString();
-  await page
-    .locator('div.calendar > div.month > select')
-    .selectOption(monthValue);
-
-  // Click the correct day cell.
-  const day = dob.getUTCDate();
-  // Day cells contain the day number as text. Find the non-dimmed cell
-  // with the matching text.
-  const dayCell = page.locator(
-    'div.calendar table tbody td:not(.date-selector--dimmed)',
-    { hasText: new RegExp(`^${day}$`) },
-  );
-  await click(dayCell.first(), page);
-
-  // Confirm the date selection (Save is a div, not a button).
-  await click(
-    page.locator('.ui.active.modal.calendar-popup div.ui.button'),
-    page,
-  );
-
-  // Wait for the popup to close.
-  await page
-    .locator('.ui.active.modal.calendar-popup')
-    .waitFor({ state: 'hidden', timeout: 3000 })
-    .catch(() => {});
 }
 
 // ---------------------------------------------------------------------------

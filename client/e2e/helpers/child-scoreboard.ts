@@ -1,76 +1,13 @@
 import { Page } from '@playwright/test';
 import { click } from './auth';
-import { queryMeasurementNodes } from './common';
-
-// ---------------------------------------------------------------------------
-// Private form helpers
-// ---------------------------------------------------------------------------
-
-/**
- * Select an option in a form dropdown identified by its label text.
- * @param optionIndex - 1-based index (skips blank default).
- */
-async function selectByLabel(page: Page, labelText: string, optionIndex: number) {
-  const row = page.locator('.ui.grid').filter({ hasText: labelText });
-  const select = row.locator('select').first();
-  const options = select.locator('option');
-  const count = await options.count();
-  if (count > optionIndex) {
-    const value = await options.nth(optionIndex).getAttribute('value');
-    if (value !== null) {
-      await select.selectOption(value);
-    }
-  }
-}
-
-/**
- * Locate a form input by its label text (grid row pattern).
- */
-function formInput(page: Page, labelText: string) {
-  return page
-    .locator('.ui.grid')
-    .filter({ hasText: labelText })
-    .locator('input')
-    .first();
-}
-
-/**
- * Open the calendar popup, select a date, and confirm.
- */
-async function setDate(page: Page, date: Date, triggerSelector = '.date-input') {
-  await click(page.locator(triggerSelector).first(), page);
-  await page
-    .locator('.ui.active.modal.calendar-popup')
-    .waitFor({ timeout: 5000 });
-
-  // Use UTC — Elm date pickers derive dates via Time.utc.
-  const year = date.getUTCFullYear().toString();
-  await page
-    .locator('div.calendar > div.year > select')
-    .selectOption(year);
-
-  const monthValue = (date.getUTCMonth() + 1).toString();
-  await page
-    .locator('div.calendar > div.month > select')
-    .selectOption(monthValue);
-
-  const day = date.getUTCDate();
-  const dayCell = page.locator(
-    'div.calendar table tbody td:not(.date-selector--dimmed)',
-    { hasText: new RegExp(`^${day}$`) },
-  );
-  await dayCell.first().click();
-
-  await click(
-    page.locator('.ui.active.modal.calendar-popup div.ui.button'),
-    page,
-  );
-
-  await page
-    .locator('.ui.active.modal.calendar-popup')
-    .waitFor({ state: 'hidden', timeout: 3000 })
-    .catch(() => {});
-}
+import {
+  formInput,
+  openActivity,
+  queryMeasurementNodes,
+  selectByLabel,
+  selectCheckbox,
+  setDate,
+} from './common';
 
 /**
  * Answer an NCDA yes/no question by its question text.
@@ -126,18 +63,6 @@ async function answerNCDAYesNo(page: Page, questionSubstring: string, answer: 'Y
 }
 
 /**
- * Select a checkbox option by clicking its label (exact match).
- */
-async function selectCheckbox(page: Page, optionText: string) {
-  await click(
-    page.locator('.ui.checkbox label', {
-      hasText: new RegExp(`^${optionText}$`, 'i'),
-    }),
-    page,
-  );
-}
-
-/**
  * Click an NCDA step tab icon and wait for it to become active.
  */
 async function clickNCDAStepTab(page: Page, iconClass: string) {
@@ -147,18 +72,6 @@ async function clickNCDAStepTab(page: Page, iconClass: string) {
     await click(tab, page);
     await page.waitForTimeout(500);
   }
-}
-
-/**
- * Open an activity from the Child Scoreboard encounter page by its card icon.
- */
-async function openActivity(page: Page, activityIcon: string) {
-  await page.locator('div.page-encounter.child-scoreboard').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
-  const icon = page.locator(`.icon-task-${activityIcon}`);
-  await icon.waitFor({ timeout: 10000 });
-  await click(icon, page);
-  await page.locator('div.page-activity.child-scoreboard').waitFor({ timeout: 10000 });
 }
 
 /**
@@ -277,7 +190,7 @@ export async function createChildAndStartEncounter(
  * Creates: child_scoreboard_ncda
  */
 export async function completeNCDA(page: Page) {
-  await openActivity(page, 'history');
+  await openActivity(page, 'child-scoreboard', 'history');
 
   // --- Step 1: Antenatal Care ---
   await clickNCDAStepTab(page, 'ncda-antenatal');
@@ -512,7 +425,7 @@ export async function completeNCDA(page: Page) {
  * Creates: child_scoreboard_*_iz nodes for each vaccine tab completed.
  */
 export async function completeVaccinationHistory(page: Page) {
-  await openActivity(page, 'immunisation');
+  await openActivity(page, 'child-scoreboard', 'immunisation');
 
   const tabs = page.locator('.link-section:has(.icon-activity-task)');
   const tabCount = await tabs.count();

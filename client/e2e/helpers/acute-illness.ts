@@ -1,108 +1,22 @@
 import { Page } from '@playwright/test';
 import { click } from './auth';
-import { queryMeasurementNodes, backdateEncounter } from './common';
+import {
+  answerYesNo,
+  backdateEncounter,
+  clickSubTaskTab,
+  fillMeasurement,
+  formInput,
+  openActivity,
+  queryMeasurementNodes,
+  selectByLabel,
+  selectCheckbox,
+  selectCheckboxInForm,
+  setDate,
+} from './common';
 
 // ---------------------------------------------------------------------------
 // Private form helpers
 // ---------------------------------------------------------------------------
-
-/**
- * Select an option in a form dropdown identified by its label text.
- * @param optionIndex - 1-based index (skips blank default).
- */
-async function selectByLabel(page: Page, labelText: string, optionIndex: number) {
-  const row = page.locator('.ui.grid').filter({ hasText: labelText });
-  const select = row.locator('select').first();
-  const options = select.locator('option');
-  const count = await options.count();
-  if (count > optionIndex) {
-    const value = await options.nth(optionIndex).getAttribute('value');
-    if (value !== null) {
-      await select.selectOption(value);
-    }
-  }
-}
-
-/**
- * Locate a form input by its label text (grid row pattern).
- */
-function formInput(page: Page, labelText: string) {
-  return page
-    .locator('.ui.grid')
-    .filter({ hasText: labelText })
-    .locator('input')
-    .first();
-}
-
-/**
- * Answer a Yes/No boolean field by its CSS class.
- * Radio inputs are CSS-hidden; click the label instead.
- */
-async function answerYesNo(
-  page: Page,
-  fieldClass: string,
-  answer: 'Yes' | 'No',
-) {
-  await click(
-    page.locator(`.form-input.yes-no.${fieldClass} label`, {
-      hasText: answer,
-    }),
-    page,
-  );
-}
-
-/**
- * Select a checkbox option by clicking its label (exact match).
- */
-async function selectCheckbox(page: Page, optionText: string) {
-  await click(
-    page.locator('.ui.checkbox label', {
-      hasText: new RegExp(`^${optionText}$`, 'i'),
-    }),
-    page,
-  );
-}
-
-/**
- * Select a checkbox inside a specific form container.
- */
-async function selectCheckboxInForm(page: Page, formSelector: string, optionText: string) {
-  await click(
-    page.locator(`${formSelector} .ui.checkbox`, {
-      hasText: new RegExp(`^${optionText}$`, 'i'),
-    }).locator('label'),
-    page,
-  );
-}
-
-/**
- * Click a sub-task tab icon and wait for it to become active.
- */
-async function clickSubTaskTab(page: Page, iconClass: string) {
-  const tab = page.locator(`.link-section:has(.icon-activity-task.icon-${iconClass})`);
-  const isActive = await tab.evaluate(el => el.classList.contains('active')).catch(() => false);
-  if (!isActive) {
-    await click(tab, page);
-    await page.waitForTimeout(500);
-  }
-}
-
-/**
- * Open an activity from the encounter page by clicking its card icon.
- * Dismisses any alert/diagnosis popup that may be blocking the page.
- */
-async function openActivity(page: Page, activityIcon: string) {
-  await page.locator('div.page-encounter.acute-illness').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
-
-  // Dismiss any alert or diagnosis popup that may overlay the encounter page.
-  await dismissDiagnosisPopup(page);
-
-  const icon = page.locator(`.icon-task-${activityIcon}`);
-  await icon.waitFor({ timeout: 10000 });
-  await click(icon, page);
-  await page.locator('div.page-activity.acute-illness').waitFor({ timeout: 10000 });
-}
 
 /**
  * Dismiss the diagnosis assessment popup if it appears.
@@ -152,53 +66,6 @@ async function saveNextStepsSubTask(page: Page) {
   await saveBtn.waitFor({ timeout: 5000 });
   await click(saveBtn, page);
   await page.waitForTimeout(1000);
-}
-
-/**
- * Fill a measurement number input identified by its CSS ID class.
- */
-async function fillMeasurement(page: Page, id: string, value: string) {
-  await page
-    .locator(`.form-input.measurement.${id} input[type="number"]`)
-    .fill(value);
-}
-
-/**
- * Open the calendar popup, select a date, and confirm.
- */
-async function setDate(page: Page, date: Date, triggerSelector = '.date-input') {
-  await click(page.locator(triggerSelector).first(), page);
-  await page
-    .locator('.ui.active.modal.calendar-popup')
-    .waitFor({ timeout: 5000 });
-
-  // Use UTC — Elm date pickers derive dates via Time.utc.
-  const year = date.getUTCFullYear().toString();
-  await page
-    .locator('div.calendar > div.year > select')
-    .selectOption(year);
-
-  const monthValue = (date.getUTCMonth() + 1).toString();
-  await page
-    .locator('div.calendar > div.month > select')
-    .selectOption(monthValue);
-
-  const day = date.getUTCDate();
-  const dayCell = page.locator(
-    'div.calendar table tbody td:not(.date-selector--dimmed)',
-    { hasText: new RegExp(`^${day}$`) },
-  );
-  await dayCell.first().click();
-
-  await click(
-    page.locator('.ui.active.modal.calendar-popup div.ui.button'),
-    page,
-  );
-
-  await page
-    .locator('.ui.active.modal.calendar-popup')
-    .waitFor({ state: 'hidden', timeout: 3000 })
-    .catch(() => {});
 }
 
 // ---------------------------------------------------------------------------
@@ -512,7 +379,7 @@ export async function completeDangerSigns(
   const improving = options?.conditionImproving ?? true;
   const signs = options?.dangerSigns ?? [];
 
-  await openActivity(page, 'danger-signs');
+  await openActivity(page, 'acute-illness', 'danger-signs');
 
   // "Is the condition improving?" → Yes/No
   await answerYesNo(page, 'conditionImproving', improving ? 'Yes' : 'No');
@@ -555,7 +422,7 @@ export async function completeOngoingTreatment(
   const sideEffects = options?.sideEffects ?? false;
   const feelingBetter = options?.feelingBetter ?? true;
 
-  await openActivity(page, 'ongoing-treatment');
+  await openActivity(page, 'acute-illness', 'ongoing-treatment');
 
   // "Is the patient taking the medication as prescribed?" → Yes
   await answerYesNo(page, 'taken-as-prescribed', takenAsPrescribed ? 'Yes' : 'No');
@@ -612,7 +479,7 @@ export async function completeSymptoms(
   const respiratorySigns = options?.respiratory ?? [];
   const giSigns = options?.gi ?? [];
 
-  await openActivity(page, 'symptoms');
+  await openActivity(page, 'acute-illness', 'symptoms');
 
   // --- SymptomsGeneral tab (first tab, should be active by default) ---
   await clickSubTaskTab(page, 'symptoms-general');
@@ -705,7 +572,7 @@ export async function completePhysicalExam(
   const bodyTemp = options?.bodyTemp ?? '38.5';
   const muac = options?.muac ?? '25';
 
-  await openActivity(page, 'physical-exam');
+  await openActivity(page, 'acute-illness', 'physical-exam');
 
   // --- Vitals tab ---
   await clickSubTaskTab(page, 'physical-exam-vitals');
@@ -852,7 +719,7 @@ export async function completePhysicalExam(
  * Creates: treatment_history
  */
 export async function completePriorTreatment(page: Page) {
-  await openActivity(page, 'prior-treatment');
+  await openActivity(page, 'acute-illness', 'prior-treatment');
 
   // Treatment review form: 3 yes/no questions.
   // "Took fever medication in past 6 hours?" → No
@@ -890,7 +757,7 @@ export async function completeLaboratory(
   const covidResult = options?.covidResult ?? 'Positive';
   const isPregnant = options?.isPregnant ?? false;
 
-  await openActivity(page, 'laboratory');
+  await openActivity(page, 'acute-illness', 'laboratory');
 
   // --- Malaria Testing tab ---
   await clickSubTaskTab(page, 'laboratory-malaria-testing');
@@ -1017,7 +884,7 @@ export async function completeNextSteps(
     .isVisible()
     .catch(() => false);
   if (!alreadyOnNextSteps) {
-    await openActivity(page, 'next-steps');
+    await openActivity(page, 'acute-illness', 'next-steps');
   }
 
   // --- Medication Distribution ---

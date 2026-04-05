@@ -1,40 +1,6 @@
 import { Page } from '@playwright/test';
 import { click } from './auth';
-import { queryMeasurementNodes } from './common';
-
-// ---------------------------------------------------------------------------
-// Form interaction helpers
-// ---------------------------------------------------------------------------
-
-/**
- * Answer a Yes/No field identified by its CSS class.
- * Radio inputs are CSS-hidden; click the label instead.
- */
-async function answerYesNo(
-  page: Page,
-  fieldClass: string,
-  answer: 'Yes' | 'No',
-) {
-  await click(
-    page.locator(`.form-input.yes-no.${fieldClass} label`, {
-      hasText: answer,
-    }),
-    page,
-  );
-}
-
-/**
- * Select a checkbox option by clicking its label (exact match).
- * Targets the label inside the checkbox to avoid partial text collisions.
- */
-async function selectCheckbox(page: Page, optionText: string) {
-  await click(
-    page.locator('.ui.checkbox.activity label', {
-      hasText: new RegExp(`^${optionText}$`),
-    }),
-    page,
-  );
-}
+import { answerYesNo, queryMeasurementNodes, selectCheckbox } from './common';
 
 // ---------------------------------------------------------------------------
 // Navigation
@@ -112,7 +78,7 @@ export async function completeFeedingWithSupplement(page: Page) {
   await answerYesNo(page, 'receive-supplement', 'Yes');
 
   // Select supplement type.
-  await selectCheckbox(page, 'Fortified Porridge');
+  await selectCheckbox(page, 'Fortified Porridge', '.ui.checkbox.activity label');
 
   // Conditional fields (only shown when supplement = Yes).
   await answerYesNo(page, 'ration-present-at-home', 'Yes');
@@ -142,7 +108,7 @@ export async function completeCaring(page: Page) {
   await openActivity(page, 'icon-task-caring', '.form-input.yes-no.parents-health');
 
   await answerYesNo(page, 'parents-health', 'Yes');
-  await selectCheckbox(page, 'Parent');
+  await selectCheckbox(page, 'Parent', '.ui.checkbox.activity label');
   await answerYesNo(page, 'child-clean', 'Yes');
 
   await saveActivity(page);
@@ -156,8 +122,8 @@ export async function completeCaring(page: Page) {
 export async function completeHygiene(page: Page) {
   await openActivity(page, 'icon-task-hygiene', '.form-input.yes-no.soap-in-the-house');
 
-  await selectCheckbox(page, 'Piped Water to Home');
-  await selectCheckbox(page, 'Boiled');
+  await selectCheckbox(page, 'Piped Water to Home', '.ui.checkbox.activity label');
+  await selectCheckbox(page, 'Boiled', '.ui.checkbox.activity label');
   await answerYesNo(page, 'soap-in-the-house', 'Yes');
   await answerYesNo(page, 'wash-hands-before-feeding', 'Yes');
   await answerYesNo(page, 'food-covered', 'Yes');
@@ -172,7 +138,7 @@ export async function completeHygiene(page: Page) {
 export async function completeFoodSecurity(page: Page) {
   await openActivity(page, 'icon-task-food-security', '.form-input.yes-no.household-got-fFood');
 
-  await selectCheckbox(page, 'Homebased Agriculture / Livestock');
+  await selectCheckbox(page, 'Homebased Agriculture / Livestock', '.ui.checkbox.activity label');
   // Note: typo in Elm source — class is "household-got-fFood" (capital F).
   await answerYesNo(page, 'household-got-fFood', 'Yes');
 

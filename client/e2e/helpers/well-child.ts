@@ -1,84 +1,21 @@
 import { Page } from '@playwright/test';
 import { click } from './auth';
-import { queryMeasurementNodes } from './common';
+import {
+  answerYesNo,
+  clickSubTaskTab,
+  fillMeasurement,
+  formInput,
+  openActivity,
+  queryMeasurementNodes,
+  selectByLabel,
+  selectCheckbox,
+  selectCheckboxInForm,
+  setDate,
+} from './common';
 
 // ---------------------------------------------------------------------------
 // Private form helpers
 // ---------------------------------------------------------------------------
-
-async function selectByLabel(page: Page, labelText: string, optionIndex: number) {
-  const row = page.locator('.ui.grid').filter({ hasText: labelText });
-  const select = row.locator('select').first();
-  const options = select.locator('option');
-  const count = await options.count();
-  if (count > optionIndex) {
-    const value = await options.nth(optionIndex).getAttribute('value');
-    if (value !== null) {
-      await select.selectOption(value);
-    }
-  }
-}
-
-function formInput(page: Page, labelText: string) {
-  return page
-    .locator('.ui.grid')
-    .filter({ hasText: labelText })
-    .locator('input')
-    .first();
-}
-
-async function answerYesNo(
-  page: Page,
-  fieldClass: string,
-  answer: 'Yes' | 'No',
-) {
-  await click(
-    page.locator(`.form-input.yes-no.${fieldClass} label`, {
-      hasText: answer,
-    }),
-    page,
-  );
-}
-
-async function selectCheckbox(page: Page, optionText: string) {
-  await click(
-    page.locator('.ui.checkbox label', {
-      hasText: new RegExp(`^${optionText}$`, 'i'),
-    }),
-    page,
-  );
-}
-
-async function selectCheckboxInForm(page: Page, formSelector: string, optionText: string) {
-  await click(
-    page.locator(`${formSelector} .ui.checkbox`, {
-      hasText: new RegExp(`^${optionText}$`, 'i'),
-    }).locator('label'),
-    page,
-  );
-}
-
-async function clickSubTaskTab(page: Page, iconClass: string) {
-  const tab = page.locator(`.link-section:has(.icon-activity-task.icon-${iconClass})`);
-  const isActive = await tab.evaluate(el => el.classList.contains('active')).catch(() => false);
-  if (!isActive) {
-    await click(tab, page);
-    await page.waitForTimeout(500);
-  }
-}
-
-async function openActivity(page: Page, activityIcon: string) {
-  await page.locator('div.page-encounter.well-child').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
-
-  // Dismiss any popup that may overlay the encounter page.
-  await dismissPopup(page);
-
-  const icon = page.locator(`.icon-task-${activityIcon}`);
-  await icon.waitFor({ timeout: 10000 });
-  await click(icon, page);
-  await page.locator('div.page-activity.well-child').waitFor({ timeout: 10000 });
-}
 
 async function saveActivityAndReturn(page: Page) {
   const saveBtn = page.locator('.actions button.ui.fluid.primary.button.active');
@@ -134,81 +71,6 @@ async function dismissPopup(page: Page) {
   }
 }
 
-async function fillMeasurement(page: Page, id: string, value: string) {
-  await page
-    .locator(`.form-input.measurement.${id} input[type="number"]`)
-    .fill(value);
-}
-
-async function setDate(page: Page, date: Date, triggerSelector = '.form-input.date') {
-  await click(page.locator(triggerSelector).first(), page);
-  await page
-    .locator('.ui.active.modal.calendar-popup')
-    .waitFor({ timeout: 5000 });
-
-  // Use UTC — Elm date pickers derive dates via Time.utc.
-  const year = date.getUTCFullYear().toString();
-  await page
-    .locator('div.calendar > div.year > select')
-    .selectOption(year);
-
-  const monthValue = (date.getUTCMonth() + 1).toString();
-  await page
-    .locator('div.calendar > div.month > select')
-    .selectOption(monthValue);
-
-  const day = date.getUTCDate();
-  const dayCell = page.locator(
-    'div.calendar table tbody td:not(.date-selector--dimmed)',
-    { hasText: new RegExp(`^${day}$`) },
-  );
-  await dayCell.first().click();
-
-  await click(
-    page.locator('.ui.active.modal.calendar-popup div.ui.button'),
-    page,
-  );
-
-  await page
-    .locator('.ui.active.modal.calendar-popup')
-    .waitFor({ state: 'hidden', timeout: 3000 })
-    .catch(() => {});
-}
-
-async function setDateOfBirth(page: Page, dob: Date) {
-  await click(page.locator('.date-input'), page);
-  await page
-    .locator('.ui.active.modal.calendar-popup')
-    .waitFor({ timeout: 5000 });
-
-  // Use UTC — Elm date pickers derive dates via Time.utc.
-  const year = dob.getUTCFullYear().toString();
-  await page
-    .locator('div.calendar > div.year > select')
-    .selectOption(year);
-
-  const monthValue = (dob.getUTCMonth() + 1).toString();
-  await page
-    .locator('div.calendar > div.month > select')
-    .selectOption(monthValue);
-
-  const day = dob.getUTCDate();
-  const dayCell = page.locator(
-    'div.calendar table tbody td:not(.date-selector--dimmed)',
-    { hasText: new RegExp(`^${day}$`) },
-  );
-  await dayCell.first().click();
-
-  await click(
-    page.locator('.ui.active.modal.calendar-popup div.ui.button'),
-    page,
-  );
-  await page
-    .locator('.ui.active.modal.calendar-popup')
-    .waitFor({ state: 'hidden', timeout: 3000 })
-    .catch(() => {});
-}
-
 // ---------------------------------------------------------------------------
 // Participant registration
 // ---------------------------------------------------------------------------
@@ -262,7 +124,7 @@ export async function createChildAndStartWellChildEncounter(
   // Set date of birth.
   const dob = new Date();
   dob.setMonth(dob.getMonth() - ageMonths);
-  await setDateOfBirth(page, dob);
+  await setDate(page, dob, '.date-input');
 
   // Select gender.
   const genderRadios = page
@@ -349,7 +211,7 @@ export async function completeDangerSigns(
   const respiratoryRate = options?.respiratoryRate ?? '20';
   const bodyTemp = options?.bodyTemp ?? '36.5';
 
-  await openActivity(page, 'danger-signs');
+  await openActivity(page, 'well-child', 'danger-signs');
 
   // --- SymptomsReview tab ---
   await clickSubTaskTab(page, 'symptoms');
@@ -389,7 +251,7 @@ export async function completeNutritionAssessment(
 ) {
   const nutritionSigns = options?.nutritionSigns ?? [];
 
-  await openActivity(page, 'nutrition-assessment');
+  await openActivity(page, 'well-child', 'nutrition-assessment');
 
   // --- Height tab (if visible) ---
   const heightTab = page.locator('.link-section:has(.icon-activity-task.icon-height)');
@@ -457,7 +319,7 @@ export async function completeNutritionAssessment(
 // ---------------------------------------------------------------------------
 
 export async function completeECD(page: Page) {
-  await openActivity(page, 'ecd');
+  await openActivity(page, 'well-child', 'ecd');
 
   // The ECD form shows boolean Yes/No questions for age-appropriate milestones.
   // Answer "Yes" to all by clicking each "Yes" label in the form.
@@ -486,7 +348,7 @@ export async function completeECD(page: Page) {
 // ---------------------------------------------------------------------------
 
 export async function completeMedication(page: Page) {
-  await openActivity(page, 'medication');
+  await openActivity(page, 'well-child', 'medication');
 
   // Iterate through visible medication sub-task tabs.
   // Tab icons from Elm: albendazole, mebendezole, treatment-review (Vitamin A)
@@ -522,7 +384,7 @@ export async function completeImmunisation(
 ) {
   const isChw = options?.isChw ?? false;
 
-  await openActivity(page, 'immunisation');
+  await openActivity(page, 'well-child', 'immunisation');
 
   // Get all visible vaccine tabs (non-Overview).
   const allTabs = page.locator('#tasks-bar .link-section');
@@ -587,7 +449,7 @@ export async function completeImmunisation(
 // ---------------------------------------------------------------------------
 
 export async function completePregnancySummary(page: Page) {
-  await openActivity(page, 'history');
+  await openActivity(page, 'well-child', 'history');
 
   const form = page.locator('.ui.form.pregnancy-summary');
   await form.waitFor({ timeout: 5000 });
@@ -595,7 +457,7 @@ export async function completePregnancySummary(page: Page) {
   // Expected Date Concluded — click the date input to open calendar.
   const expectedDate = new Date();
   expectedDate.setMonth(expectedDate.getMonth() - 1);
-  await setDate(page, expectedDate);
+  await setDate(page, expectedDate, '.form-input.date');
 
   // APGAR Scores Available → Yes
   const boolInputs = form.locator('.form-input.yes-no');
@@ -635,7 +497,7 @@ export async function completePregnancySummary(page: Page) {
 // ---------------------------------------------------------------------------
 
 export async function completeHomeVisit(page: Page) {
-  await openActivity(page, 'home-visit');
+  await openActivity(page, 'well-child', 'home-visit');
 
   // --- Feeding tab ---
   await clickSubTaskTab(page, 'feeding');
@@ -701,7 +563,7 @@ export async function completeNextSteps(
     .isVisible()
     .catch(() => false);
   if (!alreadyOnActivity) {
-    await openActivity(page, 'next-steps');
+    await openActivity(page, 'well-child', 'next-steps');
   }
 
   // Dismiss any popup that may be overlaying the activity page.

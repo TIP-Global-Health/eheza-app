@@ -1,103 +1,17 @@
 import { Page } from '@playwright/test';
 import { click } from './auth';
-import { queryMeasurementNodes, backdateEncounter } from './common';
-
-// ---------------------------------------------------------------------------
-// Private form helpers
-// ---------------------------------------------------------------------------
-
-/**
- * Select an option in a form dropdown identified by its label text.
- * @param optionIndex - 1-based index (skips blank default).
- */
-async function selectByLabel(page: Page, labelText: string, optionIndex: number) {
-  const row = page.locator('.ui.grid').filter({ hasText: labelText });
-  const select = row.locator('select').first();
-  const options = select.locator('option');
-  const count = await options.count();
-  if (count > optionIndex) {
-    const value = await options.nth(optionIndex).getAttribute('value');
-    if (value !== null) {
-      await select.selectOption(value);
-    }
-  }
-}
-
-/**
- * Locate a form input by its label text (grid row pattern).
- */
-function formInput(page: Page, labelText: string) {
-  return page
-    .locator('.ui.grid')
-    .filter({ hasText: labelText })
-    .locator('input')
-    .first();
-}
-
-/**
- * Answer a Yes/No boolean field by its CSS class.
- * Radio inputs are CSS-hidden; click the label instead.
- */
-async function answerYesNo(
-  page: Page,
-  fieldClass: string,
-  answer: 'Yes' | 'No',
-) {
-  await click(
-    page.locator(`.form-input.yes-no.${fieldClass} label`, {
-      hasText: answer,
-    }),
-    page,
-  );
-}
-
-/**
- * Select a checkbox option by clicking its label (exact match).
- */
-async function selectCheckbox(page: Page, optionText: string) {
-  await click(
-    page.locator('.ui.checkbox label', {
-      hasText: new RegExp(`^${optionText}$`, 'i'),
-    }),
-    page,
-  );
-}
-
-/**
- * Select a checkbox inside a specific form container.
- */
-async function selectCheckboxInForm(page: Page, formSelector: string, optionText: string) {
-  await click(
-    page.locator(`${formSelector} .ui.checkbox`, {
-      hasText: new RegExp(`^${optionText}$`, 'i'),
-    }).locator('label'),
-    page,
-  );
-}
-
-/**
- * Click a sub-task tab icon and wait for it to become active.
- */
-async function clickSubTaskTab(page: Page, iconClass: string) {
-  const tab = page.locator(`.link-section:has(.icon-activity-task.icon-${iconClass})`);
-  const isActive = await tab.evaluate(el => el.classList.contains('active')).catch(() => false);
-  if (!isActive) {
-    await click(tab, page);
-    await page.waitForTimeout(500);
-  }
-}
-
-/**
- * Open an activity from the HIV encounter page by clicking its card icon.
- */
-async function openActivity(page: Page, activityIcon: string) {
-  await page.locator('div.page-encounter.hiv').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
-  const icon = page.locator(`.icon-task-${activityIcon}`);
-  await icon.waitFor({ timeout: 10000 });
-  await click(icon, page);
-  await page.locator('div.page-activity.hiv').waitFor({ timeout: 10000 });
-}
+import {
+  queryMeasurementNodes,
+  backdateEncounter,
+  formInput,
+  selectByLabel,
+  answerYesNo,
+  selectCheckbox,
+  selectCheckboxInForm,
+  clickSubTaskTab,
+  setDate,
+  openActivity,
+} from './common';
 
 /**
  * Click the Save button and wait to return to the encounter page.
@@ -118,44 +32,6 @@ async function saveSubTask(page: Page) {
   await saveBtn.waitFor({ timeout: 5000 });
   await click(saveBtn, page);
   await page.waitForTimeout(1000);
-}
-
-/**
- * Open the calendar popup, select a date, and confirm.
- */
-async function setDate(page: Page, date: Date, triggerSelector = '.date-input') {
-  await click(page.locator(triggerSelector).first(), page);
-  await page
-    .locator('.ui.active.modal.calendar-popup')
-    .waitFor({ timeout: 5000 });
-
-  // Use UTC — Elm date pickers derive dates via Time.utc.
-  const year = date.getUTCFullYear().toString();
-  await page
-    .locator('div.calendar > div.year > select')
-    .selectOption(year);
-
-  const monthValue = (date.getUTCMonth() + 1).toString();
-  await page
-    .locator('div.calendar > div.month > select')
-    .selectOption(monthValue);
-
-  const day = date.getUTCDate();
-  const dayCell = page.locator(
-    'div.calendar table tbody td:not(.date-selector--dimmed)',
-    { hasText: new RegExp(`^${day}$`) },
-  );
-  await click(dayCell.first(), page);
-
-  await click(
-    page.locator('.ui.active.modal.calendar-popup div.ui.button'),
-    page,
-  );
-
-  await page
-    .locator('.ui.active.modal.calendar-popup')
-    .waitFor({ state: 'hidden', timeout: 3000 })
-    .catch(() => {});
 }
 
 // ---------------------------------------------------------------------------
@@ -270,7 +146,7 @@ export async function completeDiagnostics(
 ) {
   const path = options?.path ?? 'positive-reported';
 
-  await openActivity(page, 'diagnostics');
+  await openActivity(page, 'hiv', 'diagnostics');
 
   if (path === 'positive-reported') {
     // "Have you been diagnosed with HIV?" → Yes
@@ -337,7 +213,7 @@ export async function completeMedication(
   const isSubsequent = options?.isSubsequent ?? false;
   const sideEffects = options?.sideEffects ?? false;
 
-  await openActivity(page, 'medication');
+  await openActivity(page, 'hiv', 'medication');
 
   // --- Sub-task 1: PrescribedMedication ---
   await clickSubTaskTab(page, 'medication');
@@ -408,7 +284,7 @@ export async function completeSymptomReview(
 ) {
   const symptoms = options?.symptoms ?? [];
 
-  await openActivity(page, 'symptoms');
+  await openActivity(page, 'hiv', 'symptoms');
 
   const form = page.locator('.ui.form.symptom-review');
 
@@ -439,7 +315,7 @@ export async function completeSymptomReview(
  * Creates: hiv_health_education, hiv_follow_up, hiv_referral (conditional)
  */
 export async function completeNextSteps(page: Page) {
-  await openActivity(page, 'next-steps');
+  await openActivity(page, 'hiv', 'next-steps');
 
   // Iterate visible sub-task tabs.
   const tabs = page.locator('.link-section:has(.icon-activity-task)');

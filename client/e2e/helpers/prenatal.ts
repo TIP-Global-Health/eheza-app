@@ -1,159 +1,21 @@
 import { Page, Locator } from '@playwright/test';
 import { click } from './auth';
-import { backdateEncounter, queryMeasurementNodes } from './common';
+import {
+  answerYesNo,
+  backdateEncounter,
+  clickSubTaskTab,
+  fillMeasurement,
+  formInput,
+  openActivity,
+  queryMeasurementNodes,
+  selectByLabel,
+  selectCheckbox,
+  setDate,
+} from './common';
 
 // ---------------------------------------------------------------------------
 // Private form helpers
 // ---------------------------------------------------------------------------
-
-/**
- * Select an option in a form dropdown identified by its label text.
- * @param optionIndex - 1-based index (skips blank default).
- */
-async function selectByLabel(page: Page, labelText: string, optionIndex: number) {
-  const row = page.locator('.ui.grid').filter({ hasText: labelText });
-  const select = row.locator('select').first();
-  const options = select.locator('option');
-  const count = await options.count();
-  if (count > optionIndex) {
-    const value = await options.nth(optionIndex).getAttribute('value');
-    if (value !== null) {
-      await select.selectOption(value);
-    }
-  }
-}
-
-/**
- * Locate a form input by its label text (grid row pattern).
- */
-function formInput(page: Page, labelText: string) {
-  return page
-    .locator('.ui.grid')
-    .filter({ hasText: labelText })
-    .locator('input')
-    .first();
-}
-
-/**
- * Answer a Yes/No boolean field by its CSS class.
- * Radio inputs are CSS-hidden; click the label instead.
- */
-async function answerYesNo(
-  page: Page,
-  fieldClass: string,
-  answer: 'Yes' | 'No',
-) {
-  await click(
-    page.locator(`.form-input.yes-no.${fieldClass} label`, {
-      hasText: answer,
-    }),
-    page,
-  );
-}
-
-/**
- * Select a checkbox option by clicking its label (exact match).
- */
-async function selectCheckbox(page: Page, optionText: string) {
-  await click(
-    page.locator('.ui.checkbox label', {
-      hasText: new RegExp(`^${optionText}$`, 'i'),
-    }),
-    page,
-  );
-}
-
-/**
- * Open the calendar popup, select a date, and confirm.
- * @param triggerSelector - CSS selector for the date input that opens the popup.
- */
-async function setDate(page: Page, date: Date, triggerSelector = '.date-input') {
-  await click(page.locator(triggerSelector).first(), page);
-  await page
-    .locator('.ui.active.modal.calendar-popup')
-    .waitFor({ timeout: 5000 });
-
-  // Use UTC — Elm date pickers derive dates via Time.utc.
-  const year = date.getUTCFullYear().toString();
-  await page
-    .locator('div.calendar > div.year > select')
-    .selectOption(year);
-
-  const monthValue = (date.getUTCMonth() + 1).toString();
-  await page
-    .locator('div.calendar > div.month > select')
-    .selectOption(monthValue);
-
-  const day = date.getUTCDate();
-  const dayCell = page.locator(
-    'div.calendar table tbody td:not(.date-selector--dimmed)',
-    { hasText: new RegExp(`^${day}$`) },
-  );
-  await dayCell.first().click();
-
-  await click(
-    page.locator('.ui.active.modal.calendar-popup div.ui.button'),
-    page,
-  );
-
-  await page
-    .locator('.ui.active.modal.calendar-popup')
-    .waitFor({ state: 'hidden', timeout: 3000 })
-    .catch(() => {});
-}
-
-/**
- * Click a sub-task tab icon and wait for the tab to become active.
- * Sub-tasks are rendered as clickable columns in the task bar.
- */
-async function clickSubTaskTab(page: Page, iconClass: string) {
-  const tab = page.locator(`.link-section:has(.icon-activity-task.icon-${iconClass})`);
-  // Only click if not already active.
-  const isActive = await tab.evaluate(el => el.classList.contains('active')).catch(() => false);
-  if (!isActive) {
-    await click(tab, page);
-    await page.waitForTimeout(500);
-  }
-}
-
-/**
- * Open an activity from the encounter page by clicking its card icon.
- * Waits for the activity page to load.
- */
-async function openActivity(page: Page, activityIcon: string) {
-  // Ensure encounter page is fully rendered before clicking an activity card.
-  await page.locator('div.page-encounter.prenatal').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
-  const icon = page.locator(`.icon-task-${activityIcon}`);
-  await icon.waitFor({ timeout: 10000 });
-  await click(icon, page);
-  await page.locator('div.page-activity.prenatal').waitFor({ timeout: 10000 });
-}
-
-/**
- * Save current activity and return to encounter page.
- * Clicks the active save button, waits for encounter page.
- */
-async function savePrenatalActivity(page: Page) {
-  await click(
-    page.locator('button.ui.fluid.primary.button', { hasText: 'Save' }),
-    page,
-  );
-  await page
-    .locator('div.page-encounter.prenatal')
-    .waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
-}
-
-/**
- * Fill a measurement number input identified by its CSS ID class.
- * Measurement inputs render as: .form-input.measurement.{id} input[type="number"]
- */
-async function fillMeasurement(page: Page, id: string, value: string) {
-  await page
-    .locator(`.form-input.measurement.${id} input[type="number"]`)
-    .fill(value);
-}
 
 /**
  * Fill a number input identified by its CSS ID class.
@@ -402,7 +264,7 @@ export async function navigateToParticipantPage(
  * Creates: last_menstrual_period
  */
 export async function completePregnancyDating(page: Page, lmpDate: Date) {
-  await openActivity(page, 'pregnancy-dating');
+  await openActivity(page, 'prenatal', 'pregnancy-dating');
 
   // Click the LMP date input to open calendar.
   await setDate(page, lmpDate, '.form-input.date');
@@ -427,7 +289,7 @@ export async function completePregnancyDating(page: Page, lmpDate: Date) {
  * Creates: danger_signs
  */
 export async function completeDangerSigns(page: Page) {
-  await openActivity(page, 'danger-signs');
+  await openActivity(page, 'prenatal', 'danger-signs');
 
   await selectCheckbox(page, 'None of These');
 
@@ -439,7 +301,7 @@ export async function completeDangerSigns(page: Page) {
  * Creates: prenatal_family_planning
  */
 export async function completeFamilyPlanning(page: Page) {
-  await openActivity(page, 'planning');
+  await openActivity(page, 'prenatal', 'planning');
 
   // Select "Auto-observation" as the family planning method.
   await selectCheckbox(page, 'Auto-observation');
@@ -452,7 +314,7 @@ export async function completeFamilyPlanning(page: Page) {
  * Creates: malaria prevention node
  */
 export async function completeMalariaPrevention(page: Page) {
-  await openActivity(page, 'malaria');
+  await openActivity(page, 'prenatal', 'malaria');
 
   await answerYesNo(page, 'mosquito-net', 'Yes');
 
@@ -464,7 +326,7 @@ export async function completeMalariaPrevention(page: Page) {
  * Creates: pregnancy_testing
  */
 export async function completeLaboratoryChw(page: Page) {
-  await openActivity(page, 'laboratory');
+  await openActivity(page, 'prenatal', 'laboratory');
 
   // The CHW lab form is a dropdown for pregnancy test result.
   // Select "Positive".
@@ -485,7 +347,7 @@ export async function completeHealthEducation(
   page: Page,
   encounterNum: number = 1,
 ) {
-  await openActivity(page, 'health-education');
+  await openActivity(page, 'prenatal', 'health-education');
 
   // First encounter always shows expectations, visits-review, warning-signs.
   // Subsequent encounters only show these if health education was NOT
@@ -515,7 +377,7 @@ export async function completeHealthEducation(
  * Creates: birth_plan
  */
 export async function completeBirthPlan(page: Page) {
-  await openActivity(page, 'birth-plan');
+  await openActivity(page, 'prenatal', 'birth-plan');
 
   await answerYesNo(page, 'insurance', 'Yes');
   await answerYesNo(page, 'clothes', 'Yes');
@@ -545,7 +407,7 @@ export async function completeHistory(
   page: Page,
   options?: { isSubsequent?: boolean; preeclampsiaPrevious?: boolean },
 ) {
-  await openActivity(page, 'history');
+  await openActivity(page, 'prenatal', 'history');
 
   if (!options?.isSubsequent) {
     // --- Obstetric History Step 1 (initial encounter only) ---
@@ -633,7 +495,7 @@ export async function completeExamination(
   page: Page,
   options?: { isPostpartum?: boolean; vitals?: { sys?: string; dia?: string } },
 ) {
-  await openActivity(page, 'examination');
+  await openActivity(page, 'prenatal', 'examination');
 
   // --- Vitals ---
   await clickSubTaskTab(page, 'vitals');
@@ -776,7 +638,7 @@ export async function completeExamination(
  * Creates: prenatal_symptom_review
  */
 export async function completeSymptomReview(page: Page) {
-  await openActivity(page, 'symptoms');
+  await openActivity(page, 'prenatal', 'symptoms');
 
   // Wait for the symptom checkboxes to render.
   const noneCheckbox = page.locator('.ui.checkbox.activity label', {
@@ -799,7 +661,7 @@ export async function completeSymptomReview(page: Page) {
  * Creates: prenatal_mental_health
  */
 export async function completeMentalHealth(page: Page) {
-  await openActivity(page, 'mental-health');
+  await openActivity(page, 'prenatal', 'mental-health');
 
   // Questions 1-10: Each shows one question with multiple answer options.
   // Click the best (score=0) answer for each question.
@@ -836,7 +698,7 @@ export async function completeMentalHealth(page: Page) {
  * This keeps the form in ViewModeInitial so the regular Save button works.
  */
 export async function completeImmunisation(page: Page) {
-  await openActivity(page, 'immunisation');
+  await openActivity(page, 'prenatal', 'immunisation');
 
   // The Tetanus tab should be available.
   const tetanusTab = page.locator('.link-section:has(.icon-activity-task.icon-tetanus-vaccine)');
@@ -875,7 +737,7 @@ export async function completeMedication(
   page: Page,
   options?: { preferIronFolate?: boolean },
 ): Promise<string[]> {
-  await openActivity(page, 'medication');
+  await openActivity(page, 'prenatal', 'medication');
 
   const completedMeds: string[] = [];
   // Default order: fefol before iron/folate (fefol blocks both).
@@ -932,7 +794,7 @@ export async function completeLaboratoryNurse(
   options?: { hivPositive?: boolean },
 ): Promise<string[]> {
   const hivPositive = options?.hivPositive ?? false;
-  await openActivity(page, 'laboratory');
+  await openActivity(page, 'prenatal', 'laboratory');
 
   const completedTests: string[] = [];
 
@@ -1057,7 +919,7 @@ export async function completeLaboratoryNurse(
  * Creates: prenatal_hiv_test, prenatal_syphilis_test, etc. with executionNote=RunToday.
  */
 export async function completeLaboratoryNurseForLab(page: Page): Promise<string[]> {
-  await openActivity(page, 'laboratory');
+  await openActivity(page, 'prenatal', 'laboratory');
 
   const completedTests: string[] = [];
   const allTabs = page.locator('.link-section');
@@ -1248,9 +1110,9 @@ export async function completeNextSteps(page: Page): Promise<string[]> {
   const nextStepsIcon = page.locator('.icon-task-next-steps');
   const appointmentIcon = page.locator('.icon-task-appointment-confirmation');
   if (await nextStepsIcon.isVisible({ timeout: 1000 }).catch(() => false)) {
-    await openActivity(page, 'next-steps');
+    await openActivity(page, 'prenatal', 'next-steps');
   } else if (await appointmentIcon.isVisible({ timeout: 1000 }).catch(() => false)) {
-    await openActivity(page, 'appointment-confirmation');
+    await openActivity(page, 'prenatal', 'appointment-confirmation');
   } else {
     // NextSteps not available for this encounter type/state.
     return [];
@@ -1390,7 +1252,7 @@ export async function completeNextSteps(page: Page): Promise<string[]> {
  * Creates: medication
  */
 export async function completeTreatmentReview(page: Page) {
-  await openActivity(page, 'prior-treatment');
+  await openActivity(page, 'prenatal', 'prior-treatment');
 
   // Treatment review has tabs for each medication type being reviewed.
   // All tabs use icon-medication class.
@@ -1431,7 +1293,7 @@ export async function completeTreatmentReview(page: Page) {
  * Creates: prenatal_breastfeeding
  */
 export async function completeBreastfeeding(page: Page) {
-  await openActivity(page, 'breastfeeding');
+  await openActivity(page, 'prenatal', 'breastfeeding');
 
   // "Are you breastfeeding?" → Yes (triggers 4 more questions).
   await answerYesNo(page, 'is-breastfeeding', 'Yes');
@@ -1457,7 +1319,7 @@ export async function completeSpecialityCare(page: Page): Promise<boolean> {
     return false;
   }
 
-  await openActivity(page, 'speciality-care');
+  await openActivity(page, 'prenatal', 'speciality-care');
 
   // Fill the form — answer Yes/No fields.
   const yesLabels = page.locator('.form-input.yes-no label', { hasText: 'Yes' });
@@ -1475,7 +1337,7 @@ export async function completeSpecialityCare(page: Page): Promise<boolean> {
  * Creates: medication
  */
 export async function completePostpartumTreatmentReview(page: Page) {
-  await openActivity(page, 'postpartum-treatment-review');
+  await openActivity(page, 'prenatal', 'postpartum-treatment-review');
 
   // Answer medication questions.
   const yesLabels = page.locator('.form-input.yes-no label', { hasText: 'Yes' });
@@ -1603,7 +1465,7 @@ export async function completeRecurrentExamination(
   page: Page,
   options?: { sys?: string; dia?: string },
 ) {
-  await openActivity(page, 'examination');
+  await openActivity(page, 'prenatal', 'examination');
 
   // Wait for form to fully render before filling inputs.
   const sysInput = page.locator(
