@@ -1,7 +1,6 @@
 import { Page } from '@playwright/test';
-import { execSync } from 'child_process';
 import { click } from './auth';
-import { drushEnv } from './device';
+import { queryMeasurementNodes } from './common';
 
 // ---------------------------------------------------------------------------
 // Private form helpers
@@ -1005,8 +1004,7 @@ export function queryWellChildNodes(
   personName: string,
   expectedTypes?: string[],
 ): Record<string, boolean> {
-  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
-  const typesToQuery = expectedTypes ?? [
+  return queryMeasurementNodes(personName, [
     'well_child_symptoms_review',
     'well_child_vitals',
     'well_child_height',
@@ -1039,67 +1037,5 @@ export function queryWellChildNodes(
     'well_child_food_security',
     'well_child_pregnancy_summary',
     'well_child_ncda',
-  ];
-
-  const typesPhp = typesToQuery.map(t => `'${t}'`).join(', ');
-  const php = `
-    \\$person_name = base64_decode('${personNameB64}');
-    \\$query = new EntityFieldQuery();
-    \\$result = \\$query->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'person')
-      ->propertyCondition('title', \\$person_name)
-      ->execute();
-    if (empty(\\$result['node'])) {
-      echo json_encode(['error' => 'Person not found']);
-      return;
-    }
-    \\$person_nid = key(\\$result['node']);
-
-    \\$measurements = [];
-    \\$types = [${typesPhp}];
-
-    foreach (\\$types as \\$node_type) {
-      \\$q = new EntityFieldQuery();
-      \\$r = \\$q->entityCondition('entity_type', 'node')
-        ->propertyCondition('type', \\$node_type)
-        ->fieldCondition('field_person', 'target_id', \\$person_nid)
-        ->execute();
-      if (!empty(\\$r['node'])) {
-        \\$measurements[\\$node_type] = true;
-      }
-    }
-
-    echo json_encode(\\$measurements);
-  `;
-
-  const { drushCmd, cwd } = drushEnv();
-
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const output = execSync(`${drushCmd} eval "${php}"`, {
-      cwd,
-      timeout: 30000,
-      encoding: 'utf-8',
-    }).trim();
-
-    try {
-      const parsed = JSON.parse(output);
-      if (parsed.error) {
-        console.log(`queryWellChildNodes attempt ${attempt + 1}: ${parsed.error}`);
-      } else if (expectedTypes && expectedTypes.length > 0) {
-        const missing = expectedTypes.filter(t => !parsed[t]);
-        if (missing.length === 0) {
-          return parsed;
-        }
-        console.log(`queryWellChildNodes attempt ${attempt + 1}: missing [${missing.join(', ')}]`);
-      } else {
-        return parsed;
-      }
-    } catch {
-      console.error('queryWellChildNodes: failed to parse drush output:', output);
-    }
-    if (attempt < 4) {
-      execSync('sleep 10');
-    }
-  }
-  return {};
+  ], expectedTypes);
 }

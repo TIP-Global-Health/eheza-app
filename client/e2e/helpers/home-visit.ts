@@ -1,7 +1,6 @@
 import { Page } from '@playwright/test';
-import { execSync } from 'child_process';
 import { click } from './auth';
-import { drushEnv } from './device';
+import { queryMeasurementNodes } from './common';
 
 // ---------------------------------------------------------------------------
 // Form interaction helpers
@@ -217,82 +216,24 @@ export function queryHomeVisitNodes(
   hygiene?: boolean;
   foodSecurity?: boolean;
 } {
-  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
-  const php = `
-    \\$person_name = base64_decode('${personNameB64}');
-    \\$query = new EntityFieldQuery();
-    \\$result = \\$query->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'person')
-      ->propertyCondition('title', \\$person_name)
-      ->execute();
-    if (empty(\\$result['node'])) {
-      echo json_encode(['error' => 'Person not found']);
-      return;
-    }
-    \\$person_nid = key(\\$result['node']);
+  const keyMap: Record<string, string> = {
+    nutrition_feeding: 'feeding',
+    nutrition_caring: 'caring',
+    nutrition_hygiene: 'hygiene',
+    nutrition_food_security: 'foodSecurity',
+  };
+  const nodeTypes = Object.keys(keyMap);
+  const expectedNodeTypes = expectedKeys
+    ? nodeTypes.filter(t => expectedKeys.includes(keyMap[t]))
+    : undefined;
 
-    \\$measurements = [];
-    \\$types = [
-      'nutrition_feeding' => 'feeding',
-      'nutrition_caring' => 'caring',
-      'nutrition_hygiene' => 'hygiene',
-      'nutrition_food_security' => 'foodSecurity',
-    ];
+  const raw = queryMeasurementNodes(personName, nodeTypes, expectedNodeTypes);
 
-    foreach (\\$types as \\$node_type => \\$key) {
-      \\$q = new EntityFieldQuery();
-      \\$r = \\$q->entityCondition('entity_type', 'node')
-        ->propertyCondition('type', \\$node_type)
-        ->fieldCondition('field_person', 'target_id', \\$person_nid)
-        ->execute();
-      if (!empty(\\$r['node'])) {
-        \\$measurements[\\$key] = true;
-      }
-    }
-
-    echo json_encode(\\$measurements);
-  `;
-
-  const { drushCmd, cwd } = drushEnv();
-
-  for (let attempt = 0; attempt < 10; attempt++) {
-    try {
-      const output = execSync(`${drushCmd} eval "${php}"`, {
-        cwd,
-        timeout: 30000,
-        encoding: 'utf-8',
-      }).trim();
-
-      const parsed = JSON.parse(output);
-      if (parsed.error) {
-        console.log(`queryHomeVisitNodes attempt ${attempt + 1}: ${parsed.error}`);
-        if (attempt < 9) {
-          execSync('sleep 5');
-          continue;
-        }
-        return parsed;
-      }
-
-      if (expectedKeys) {
-        const missing = expectedKeys.filter(k => !(k in parsed));
-        if (missing.length === 0) {
-          return parsed;
-        }
-        console.log(`queryHomeVisitNodes attempt ${attempt + 1}: missing [${missing.join(', ')}]`);
-        if (attempt < 9) {
-          execSync('sleep 5');
-          continue;
-        }
-      }
-
-      return parsed;
-    } catch (err) {
-      console.log(`queryHomeVisitNodes attempt ${attempt + 1}: error`, err);
-      if (attempt < 9) {
-        execSync('sleep 5');
-      }
+  const result: Record<string, boolean> = {};
+  for (const [nodeType, alias] of Object.entries(keyMap)) {
+    if (raw[nodeType] !== undefined) {
+      result[alias] = raw[nodeType];
     }
   }
-
-  return {};
+  return result;
 }

@@ -1,7 +1,6 @@
 import { Page, Locator } from '@playwright/test';
-import { execSync } from 'child_process';
 import { click } from './auth';
-import { drushEnv } from './device';
+import { backdateEncounter, queryMeasurementNodes } from './common';
 
 // ---------------------------------------------------------------------------
 // Private form helpers
@@ -1675,194 +1674,59 @@ export async function endRecurrentEncounter(page: Page) {
  * the same day the previous encounter was completed.
  */
 export function backdatePrenatalEncounter(personName: string, daysAgo: number = 1) {
-  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
-  // Note: execSync is used here following the same pattern as other E2E
-  // helpers for drush command execution. The input is base64-encoded
-  // (no user-provided data in the shell command).
-  const php = `
-    \\$person_name = base64_decode('${personNameB64}');
-    \\$target_date = date('Y-m-d H:i:s', strtotime('-${daysAgo} days'));
-
-    // 1. Find person by name.
-    \\$query = new EntityFieldQuery();
-    \\$result = \\$query->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'person')
-      ->propertyCondition('title', \\$person_name)
-      ->execute();
-    if (empty(\\$result['node'])) {
-      echo 'Person not found';
-      return;
-    }
-    \\$person_nid = key(\\$result['node']);
-
-    // 2. Find individual_participant for this person.
-    \\$q = new EntityFieldQuery();
-    \\$r = \\$q->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'individual_participant')
-      ->fieldCondition('field_person', 'target_id', \\$person_nid)
-      ->execute();
-    if (empty(\\$r['node'])) {
-      echo 'No participant found';
-      return;
-    }
-
-    // 3. Find prenatal encounters for this person's participants.
-    \\$participant_nids = array_keys(\\$r['node']);
-    \\$eq = new EntityFieldQuery();
-    \\$er = \\$eq->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'prenatal_encounter')
-      ->fieldCondition('field_individual_participant', 'target_id', \\$participant_nids, 'IN')
-      ->propertyOrderBy('nid', 'DESC')
-      ->execute();
-    if (empty(\\$er['node'])) {
-      echo 'No encounter found';
-      return;
-    }
-
-    // 4. Backdate the most recent encounter (highest nid = first in DESC order).
-    \\$enc_nid = key(\\$er['node']);
-    \\$enc = node_load(\\$enc_nid);
-    \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value'] = \\$target_date;
-    \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value2'] = \\$target_date;
-    node_save(\\$enc);
-    echo 'Backdated encounter ' . \\$enc_nid;
-  `;
-
-  const { drushCmd, cwd } = drushEnv();
-
-  // Retry: the person/encounter may not yet be uploaded after the first sync cycle.
-  // Use 10 attempts with 10s delay (100s total) to handle slow CI environments.
-  for (let attempt = 0; attempt < 10; attempt++) {
-    const output = execSync(`${drushCmd} eval "${php}"`, {
-      cwd,
-      timeout: 30000,
-      encoding: 'utf-8',
-    }).trim();
-    console.log(`backdatePrenatalEncounter attempt ${attempt + 1}:`, output);
-    if (output.startsWith('Backdated')) {
-      return;
-    }
-    if (attempt < 9) {
-      execSync('sleep 10');
-    }
-  }
-  console.error('backdatePrenatalEncounter: failed after 10 attempts');
+  backdateEncounter(personName, 'prenatal_encounter', daysAgo);
 }
 
 export function queryPrenatalNodes(
   personName: string,
   expectedTypes?: string[],
 ): Record<string, boolean> {
-  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
-  const php = `
-    \\$person_name = base64_decode('${personNameB64}');
-    \\$query = new EntityFieldQuery();
-    \\$result = \\$query->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'person')
-      ->propertyCondition('title', \\$person_name)
-      ->execute();
-    if (empty(\\$result['node'])) {
-      echo json_encode(['error' => 'Person not found']);
-      return;
-    }
-    \\$person_nid = key(\\$result['node']);
-
-    \\$measurements = [];
-    \\$types = [
-      'last_menstrual_period',
-      'obstetric_history',
-      'obstetric_history_step2',
-      'medical_history',
-      'social_history',
-      'prenatal_outside_care',
-      'vitals',
-      'prenatal_nutrition',
-      'core_physical_exam',
-      'obstetrical_exam',
-      'breast_exam',
-      'prenatal_gu_exam',
-      'prenatal_family_planning',
-      'danger_signs',
-      'prenatal_symptom_review',
-      'prenatal_mental_health',
-      'prenatal_tetanus_immunisation',
-      'prenatal_iron',
-      'prenatal_folate',
-      'prenatal_fefol',
-      'prenatal_calcium',
-      'prenatal_aspirin',
-      'prenatal_mms',
-      'prenatal_mebendazole',
-      'prenatal_hiv_test',
-      'prenatal_syphilis_test',
-      'prenatal_hepatitis_b_test',
-      'prenatal_malaria_test',
-      'prenatal_blood_gprs_test',
-      'prenatal_urine_dipstick_test',
-      'prenatal_hemoglobin_test',
-      'prenatal_random_blood_sugar_test',
-      'prenatal_hiv_pcr_test',
-      'prenatal_partner_hiv_test',
-      'prenatal_labs_results',
-      'pregnancy_testing',
-      'prenatal_health_education',
-      'prenatal_follow_up',
-      'prenatal_send_to_hc',
-      'appointment_confirmation',
-      'prenatal_medication_distribution',
-      'medication',
-      'birth_plan',
-      'prenatal_breastfeeding',
-      'prenatal_speciality_care',
-      'prenatal_photo',
-    ];
-
-    foreach (\\$types as \\$node_type) {
-      \\$q = new EntityFieldQuery();
-      \\$r = \\$q->entityCondition('entity_type', 'node')
-        ->propertyCondition('type', \\$node_type)
-        ->fieldCondition('field_person', 'target_id', \\$person_nid)
-        ->execute();
-      if (!empty(\\$r['node'])) {
-        \\$measurements[\\$node_type] = true;
-      }
-    }
-
-    echo json_encode(\\$measurements);
-  `;
-
-  const { drushCmd, cwd } = drushEnv();
-
-  // Retry up to 5 times with 10s delay.  The person node may not yet be
-  // uploaded when the first sync cycle only completed downloads.
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const output = execSync(`${drushCmd} eval "${php}"`, {
-      cwd,
-      timeout: 30000,
-      encoding: 'utf-8',
-    });
-    try {
-      const parsed = JSON.parse(output.trim());
-      if (parsed.error) {
-        console.log(`queryPrenatalNodes attempt ${attempt + 1}: ${parsed.error}`);
-      } else if (expectedTypes && expectedTypes.length > 0) {
-        const missing = expectedTypes.filter(t => !parsed[t]);
-        if (missing.length === 0) {
-          return parsed;
-        }
-        console.log(`queryPrenatalNodes attempt ${attempt + 1}: missing [${missing.join(', ')}]`);
-      } else {
-        return parsed;
-      }
-    } catch (e) {
-      if (e instanceof Error && e.message.startsWith('Backend error:')) {
-        throw e;
-      }
-      console.error('Failed to parse drush output:', output);
-    }
-    if (attempt < 4) {
-      execSync('sleep 10');
-    }
-  }
-  return {};
+  return queryMeasurementNodes(personName, [
+    'last_menstrual_period',
+    'obstetric_history',
+    'obstetric_history_step2',
+    'medical_history',
+    'social_history',
+    'prenatal_outside_care',
+    'vitals',
+    'prenatal_nutrition',
+    'core_physical_exam',
+    'obstetrical_exam',
+    'breast_exam',
+    'prenatal_gu_exam',
+    'prenatal_family_planning',
+    'danger_signs',
+    'prenatal_symptom_review',
+    'prenatal_mental_health',
+    'prenatal_tetanus_immunisation',
+    'prenatal_iron',
+    'prenatal_folate',
+    'prenatal_fefol',
+    'prenatal_calcium',
+    'prenatal_aspirin',
+    'prenatal_mms',
+    'prenatal_mebendazole',
+    'prenatal_hiv_test',
+    'prenatal_syphilis_test',
+    'prenatal_hepatitis_b_test',
+    'prenatal_malaria_test',
+    'prenatal_blood_gprs_test',
+    'prenatal_urine_dipstick_test',
+    'prenatal_hemoglobin_test',
+    'prenatal_random_blood_sugar_test',
+    'prenatal_hiv_pcr_test',
+    'prenatal_partner_hiv_test',
+    'prenatal_labs_results',
+    'pregnancy_testing',
+    'prenatal_health_education',
+    'prenatal_follow_up',
+    'prenatal_send_to_hc',
+    'appointment_confirmation',
+    'prenatal_medication_distribution',
+    'medication',
+    'birth_plan',
+    'prenatal_breastfeeding',
+    'prenatal_speciality_care',
+    'prenatal_photo',
+  ], expectedTypes);
 }

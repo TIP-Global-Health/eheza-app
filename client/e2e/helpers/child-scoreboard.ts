@@ -1,7 +1,6 @@
 import { Page } from '@playwright/test';
-import { execSync } from 'child_process';
 import { click } from './auth';
-import { drushEnv } from './device';
+import { queryMeasurementNodes } from './common';
 
 // ---------------------------------------------------------------------------
 // Private form helpers
@@ -586,16 +585,12 @@ export async function endChildScoreboardEncounter(page: Page) {
 /**
  * Query the backend for Child Scoreboard measurement nodes associated with a person.
  * Returns an object mapping node type → boolean (exists).
- *
- * Uses base64-encoded person name to prevent shell injection.
- * Retries up to 10 times with 5s delay for eventual consistency.
  */
 export function queryChildScoreboardNodes(
   personName: string,
   expectedTypes?: string[],
 ): Record<string, boolean> {
-  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
-  const nodeTypes = [
+  return queryMeasurementNodes(personName, [
     'child_scoreboard_ncda',
     'child_scoreboard_bcg_iz',
     'child_scoreboard_dtp_iz',
@@ -605,77 +600,5 @@ export function queryChildScoreboardNodes(
     'child_scoreboard_opv_iz',
     'child_scoreboard_pcv13_iz',
     'child_scoreboard_rotarix_iz',
-  ];
-
-  const typesStr = nodeTypes.map(t => `'${t}'`).join(', ');
-
-  const php = `
-    \\$person_name = base64_decode('${personNameB64}');
-    \\$query = new EntityFieldQuery();
-    \\$result = \\$query->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'person')
-      ->propertyCondition('title', \\$person_name)
-      ->execute();
-    if (empty(\\$result['node'])) {
-      echo json_encode(['error' => 'Person not found']);
-      return;
-    }
-    \\$person_nid = key(\\$result['node']);
-
-    \\$types = array(${typesStr});
-    \\$found = array();
-    foreach (\\$types as \\$type) {
-      \\$q = new EntityFieldQuery();
-      \\$r = \\$q->entityCondition('entity_type', 'node')
-        ->propertyCondition('type', \\$type)
-        ->fieldCondition('field_person', 'target_id', \\$person_nid)
-        ->range(0, 1)
-        ->execute();
-      \\$found[\\$type] = !empty(\\$r['node']);
-    }
-    echo json_encode(\\$found);
-  `;
-
-  const { drushCmd, cwd } = drushEnv();
-
-  for (let attempt = 0; attempt < 10; attempt++) {
-    try {
-      const output = execSync(`${drushCmd} eval "${php}"`, {
-        cwd,
-        timeout: 30000,
-        encoding: 'utf-8',
-      }).trim();
-
-      const parsed = JSON.parse(output);
-      if (parsed.error) {
-        console.log(`queryChildScoreboardNodes attempt ${attempt + 1}: ${parsed.error}`);
-        if (attempt < 9) {
-          execSync('sleep 5');
-          continue;
-        }
-        return parsed;
-      }
-
-      if (expectedTypes) {
-        const missing = expectedTypes.filter(t => !parsed[t]);
-        if (missing.length === 0) {
-          return parsed;
-        }
-        console.log(`queryChildScoreboardNodes attempt ${attempt + 1}: missing [${missing.join(', ')}]`);
-        if (attempt < 9) {
-          execSync('sleep 5');
-          continue;
-        }
-      }
-
-      return parsed;
-    } catch (err) {
-      console.log(`queryChildScoreboardNodes attempt ${attempt + 1}: error`, err);
-      if (attempt < 9) {
-        execSync('sleep 5');
-      }
-    }
-  }
-
-  return {};
+  ], expectedTypes);
 }
