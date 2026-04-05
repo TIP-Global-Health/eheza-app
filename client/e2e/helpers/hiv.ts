@@ -1,7 +1,6 @@
 import { Page } from '@playwright/test';
-import { execSync } from 'child_process';
 import { click } from './auth';
-import { drushEnv } from './device';
+import { queryMeasurementNodes, backdateEncounter } from './common';
 
 // ---------------------------------------------------------------------------
 // Private form helpers
@@ -590,7 +589,6 @@ export function queryHIVNodes(
   personName: string,
   expectedTypes?: string[],
 ): Record<string, boolean> {
-  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
   const hivTypes = [
     'hiv_diagnostics',
     'hiv_medication',
@@ -600,79 +598,7 @@ export function queryHIVNodes(
     'hiv_referral',
     'hiv_follow_up',
   ];
-
-  const typesStr = hivTypes.map(t => `'${t}'`).join(', ');
-
-  const php = `
-    \\$person_name = base64_decode('${personNameB64}');
-    \\$query = new EntityFieldQuery();
-    \\$result = \\$query->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'person')
-      ->propertyCondition('title', \\$person_name)
-      ->execute();
-    if (empty(\\$result['node'])) {
-      echo json_encode(['error' => 'Person not found']);
-      return;
-    }
-    \\$person_nid = key(\\$result['node']);
-
-    \\$types = array(${typesStr});
-    \\$found = array();
-    foreach (\\$types as \\$type) {
-      \\$q = new EntityFieldQuery();
-      \\$r = \\$q->entityCondition('entity_type', 'node')
-        ->propertyCondition('type', \\$type)
-        ->fieldCondition('field_person', 'target_id', \\$person_nid)
-        ->range(0, 1)
-        ->execute();
-      \\$found[\\$type] = !empty(\\$r['node']);
-    }
-    echo json_encode(\\$found);
-  `;
-
-  const { drushCmd, cwd } = drushEnv();
-
-  for (let attempt = 0; attempt < 10; attempt++) {
-    try {
-      const output = execSync(`${drushCmd} eval "${php}"`, {
-        cwd,
-        timeout: 30000,
-        encoding: 'utf-8',
-      }).trim();
-
-      const parsed = JSON.parse(output);
-      if (parsed.error) {
-        console.log(`queryHIVNodes attempt ${attempt + 1}: ${parsed.error}`);
-        if (attempt < 9) {
-          execSync('sleep 5');
-          continue;
-        }
-        return parsed;
-      }
-
-      // Check if all expected types are found.
-      if (expectedTypes) {
-        const missing = expectedTypes.filter(t => !parsed[t]);
-        if (missing.length === 0) {
-          return parsed;
-        }
-        console.log(`queryHIVNodes attempt ${attempt + 1}: missing [${missing.join(', ')}]`);
-        if (attempt < 9) {
-          execSync('sleep 5');
-          continue;
-        }
-      }
-
-      return parsed;
-    } catch (err) {
-      console.log(`queryHIVNodes attempt ${attempt + 1}: error`, err);
-      if (attempt < 9) {
-        execSync('sleep 5');
-      }
-    }
-  }
-
-  return {};
+  return queryMeasurementNodes(personName, hivTypes, expectedTypes);
 }
 
 /**
@@ -680,69 +606,5 @@ export function queryHIVNodes(
  * Retries up to 5 times with 10s delay for eventual consistency.
  */
 export function backdateHIVEncounter(personName: string) {
-  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
-  const php = `
-    \\$person_name = base64_decode('${personNameB64}');
-    \\$query = new EntityFieldQuery();
-    \\$result = \\$query->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'person')
-      ->propertyCondition('title', \\$person_name)
-      ->execute();
-    if (empty(\\$result['node'])) {
-      echo 'Person not found';
-      return;
-    }
-    \\$person_nid = key(\\$result['node']);
-
-    // Find individual_participant for this person.
-    \\$q = new EntityFieldQuery();
-    \\$r = \\$q->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'individual_participant')
-      ->fieldCondition('field_person', 'target_id', \\$person_nid)
-      ->execute();
-    if (empty(\\$r['node'])) {
-      echo 'No participant found';
-      return;
-    }
-
-    // Find hiv_encounter for this person's participants.
-    \\$participant_nids = array_keys(\\$r['node']);
-    \\$eq = new EntityFieldQuery();
-    \\$er = \\$eq->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'hiv_encounter')
-      ->fieldCondition('field_individual_participant', 'target_id', \\$participant_nids, 'IN')
-      ->propertyOrderBy('nid', 'DESC')
-      ->execute();
-    if (empty(\\$er['node'])) {
-      echo 'No encounter found';
-      return;
-    }
-
-    // Backdate the most recent encounter.
-    \\$target_date = date('Y-m-d H:i:s', strtotime('-7 days'));
-    \\$enc_nid = key(\\$er['node']);
-    \\$enc = node_load(\\$enc_nid);
-    \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value'] = \\$target_date;
-    \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value2'] = \\$target_date;
-    node_save(\\$enc);
-    echo 'Backdated encounter ' . \\$enc_nid;
-  `;
-
-  const { drushCmd, cwd } = drushEnv();
-
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const output = execSync(`${drushCmd} eval "${php}"`, {
-      cwd,
-      timeout: 30000,
-      encoding: 'utf-8',
-    }).trim();
-    console.log(`backdateHIVEncounter attempt ${attempt + 1}:`, output);
-    if (output.startsWith('Backdated')) {
-      return;
-    }
-    if (attempt < 4) {
-      execSync('sleep 10');
-    }
-  }
-  console.error('backdateHIVEncounter: failed after 5 attempts');
+  backdateEncounter(personName, 'hiv_encounter', 7);
 }

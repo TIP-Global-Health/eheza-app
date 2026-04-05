@@ -1,7 +1,6 @@
 import { Page } from '@playwright/test';
-import { execSync } from 'child_process';
 import { click } from './auth';
-import { drushEnv } from './device';
+import { queryMeasurementNodes, backdateEncounter } from './common';
 
 // ---------------------------------------------------------------------------
 // Private form helpers
@@ -490,71 +489,7 @@ export async function startSubsequentEncounter(page: Page) {
  * Retries up to 5 times with 10s delay for eventual consistency.
  */
 export function backdateAcuteIllnessEncounter(personName: string) {
-  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
-  const php = `
-    \\$person_name = base64_decode('${personNameB64}');
-    \\$query = new EntityFieldQuery();
-    \\$result = \\$query->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'person')
-      ->propertyCondition('title', \\$person_name)
-      ->execute();
-    if (empty(\\$result['node'])) {
-      echo 'Person not found';
-      return;
-    }
-    \\$person_nid = key(\\$result['node']);
-
-    // Find individual_participant for this person.
-    \\$q = new EntityFieldQuery();
-    \\$r = \\$q->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'individual_participant')
-      ->fieldCondition('field_person', 'target_id', \\$person_nid)
-      ->execute();
-    if (empty(\\$r['node'])) {
-      echo 'No participant found';
-      return;
-    }
-
-    // Find acute_illness_encounter for this person's participants.
-    \\$participant_nids = array_keys(\\$r['node']);
-    \\$eq = new EntityFieldQuery();
-    \\$er = \\$eq->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'acute_illness_encounter')
-      ->fieldCondition('field_individual_participant', 'target_id', \\$participant_nids, 'IN')
-      ->propertyOrderBy('nid', 'DESC')
-      ->execute();
-    if (empty(\\$er['node'])) {
-      echo 'No encounter found';
-      return;
-    }
-
-    // Backdate the most recent encounter.
-    \\$target_date = date('Y-m-d H:i:s', strtotime('-7 days'));
-    \\$enc_nid = key(\\$er['node']);
-    \\$enc = node_load(\\$enc_nid);
-    \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value'] = \\$target_date;
-    \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value2'] = \\$target_date;
-    node_save(\\$enc);
-    echo 'Backdated encounter ' . \\$enc_nid;
-  `;
-
-  const { drushCmd, cwd } = drushEnv();
-
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const output = execSync(`${drushCmd} eval "${php}"`, {
-      cwd,
-      timeout: 30000,
-      encoding: 'utf-8',
-    }).trim();
-    console.log(`backdateAcuteIllnessEncounter attempt ${attempt + 1}:`, output);
-    if (output.startsWith('Backdated')) {
-      return;
-    }
-    if (attempt < 4) {
-      execSync('sleep 10');
-    }
-  }
-  console.error('backdateAcuteIllnessEncounter: failed after 5 attempts');
+  backdateEncounter(personName, 'acute_illness_encounter', 7);
 }
 
 // ---------------------------------------------------------------------------
@@ -1199,92 +1134,31 @@ export function queryAcuteIllnessNodes(
   personName: string,
   expectedTypes?: string[],
 ): Record<string, boolean> {
-  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
-  const php = `
-    \\$person_name = base64_decode('${personNameB64}');
-    \\$query = new EntityFieldQuery();
-    \\$result = \\$query->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'person')
-      ->propertyCondition('title', \\$person_name)
-      ->execute();
-    if (empty(\\$result['node'])) {
-      echo json_encode(['error' => 'Person not found']);
-      return;
-    }
-    \\$person_nid = key(\\$result['node']);
-
-    \\$measurements = [];
-    \\$types = [
-      'symptoms_general',
-      'symptoms_respiratory',
-      'symptoms_gi',
-      'acute_illness_vitals',
-      'acute_illness_core_exam',
-      'acute_illness_muac',
-      'acute_findings',
-      'acute_illness_nutrition',
-      'malaria_testing',
-      'covid_testing',
-      'treatment_history',
-      'treatment_ongoing',
-      'medication_distribution',
-      'send_to_hc',
-      'hc_contact',
-      'call_114',
-      'isolation',
-      'travel_history',
-      'exposure',
-      'acute_illness_follow_up',
-      'acute_illness_danger_signs',
-      'acute_illness_contacts_tracing',
-      'acute_illness_trace_contact',
-      'health_education',
-    ];
-
-    foreach (\\$types as \\$node_type) {
-      \\$q = new EntityFieldQuery();
-      \\$r = \\$q->entityCondition('entity_type', 'node')
-        ->propertyCondition('type', \\$node_type)
-        ->fieldCondition('field_person', 'target_id', \\$person_nid)
-        ->execute();
-      if (!empty(\\$r['node'])) {
-        \\$measurements[\\$node_type] = true;
-      }
-    }
-
-    echo json_encode(\\$measurements);
-  `;
-
-  const { drushCmd, cwd } = drushEnv();
-
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const output = execSync(`${drushCmd} eval "${php}"`, {
-      cwd,
-      timeout: 30000,
-      encoding: 'utf-8',
-    });
-    try {
-      const parsed = JSON.parse(output.trim());
-      if (parsed.error) {
-        console.log(`queryAcuteIllnessNodes attempt ${attempt + 1}: ${parsed.error}`);
-      } else if (expectedTypes && expectedTypes.length > 0) {
-        const missing = expectedTypes.filter(t => !parsed[t]);
-        if (missing.length === 0) {
-          return parsed;
-        }
-        console.log(`queryAcuteIllnessNodes attempt ${attempt + 1}: missing [${missing.join(', ')}]`);
-      } else {
-        return parsed;
-      }
-    } catch (e) {
-      if (e instanceof Error && e.message.startsWith('Backend error:')) {
-        throw e;
-      }
-      console.error('Failed to parse drush output:', output);
-    }
-    if (attempt < 4) {
-      execSync('sleep 10');
-    }
-  }
-  return {};
+  const acuteIllnessTypes = [
+    'symptoms_general',
+    'symptoms_respiratory',
+    'symptoms_gi',
+    'acute_illness_vitals',
+    'acute_illness_core_exam',
+    'acute_illness_muac',
+    'acute_findings',
+    'acute_illness_nutrition',
+    'malaria_testing',
+    'covid_testing',
+    'treatment_history',
+    'treatment_ongoing',
+    'medication_distribution',
+    'send_to_hc',
+    'hc_contact',
+    'call_114',
+    'isolation',
+    'travel_history',
+    'exposure',
+    'acute_illness_follow_up',
+    'acute_illness_danger_signs',
+    'acute_illness_contacts_tracing',
+    'acute_illness_trace_contact',
+    'health_education',
+  ];
+  return queryMeasurementNodes(personName, acuteIllnessTypes, expectedTypes);
 }
