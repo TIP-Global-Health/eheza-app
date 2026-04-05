@@ -223,3 +223,152 @@ export function backdateEncounter(personName: string, encounterType: string, day
   }
   console.error(`backdateEncounter(${encounterType}): failed after 5 attempts`);
 }
+
+// ---------------------------------------------------------------------------
+// Form interaction helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Locate a form input by its label text (grid row pattern).
+ * Elm's etaque/elm-form does NOT set HTML name attributes on inputs,
+ * so we locate by label text in the .ui.grid layout.
+ */
+export function formInput(page: Page, labelText: string) {
+  return page
+    .locator('.ui.grid')
+    .filter({ hasText: labelText })
+    .locator('input')
+    .first();
+}
+
+/**
+ * Select an option in a form dropdown identified by its label text.
+ * @param optionIndex - 1-based index (skips blank default).
+ */
+export async function selectByLabel(page: Page, labelText: string, optionIndex: number) {
+  const row = page.locator('.ui.grid').filter({ hasText: labelText });
+  const select = row.locator('select').first();
+  const options = select.locator('option');
+  const count = await options.count();
+  if (count > optionIndex) {
+    const value = await options.nth(optionIndex).getAttribute('value');
+    if (value !== null) {
+      await select.selectOption(value);
+    }
+  }
+}
+
+/**
+ * Answer a Yes/No boolean field by its CSS class.
+ * Radio inputs are CSS-hidden by Semantic UI; click the label instead.
+ */
+export async function answerYesNo(
+  page: Page,
+  fieldClass: string,
+  answer: 'Yes' | 'No',
+) {
+  await click(
+    page.locator(`.form-input.yes-no.${fieldClass} label`, {
+      hasText: answer,
+    }),
+    page,
+  );
+}
+
+/**
+ * Select a checkbox option by clicking its label (exact match).
+ * @param selector - CSS selector for the checkbox container (default: '.ui.checkbox label').
+ */
+export async function selectCheckbox(page: Page, optionText: string, selector = '.ui.checkbox label') {
+  await click(
+    page.locator(selector, {
+      hasText: new RegExp(`^${optionText}$`, 'i'),
+    }),
+    page,
+  );
+}
+
+/**
+ * Select a checkbox inside a specific form container.
+ */
+export async function selectCheckboxInForm(page: Page, formSelector: string, optionText: string) {
+  await click(
+    page.locator(`${formSelector} .ui.checkbox`, {
+      hasText: new RegExp(`^${optionText}$`, 'i'),
+    }).locator('label'),
+    page,
+  );
+}
+
+/**
+ * Click a sub-task tab icon and wait for it to become active.
+ */
+export async function clickSubTaskTab(page: Page, iconClass: string) {
+  const tab = page.locator(`.link-section:has(.icon-activity-task.icon-${iconClass})`);
+  const isActive = await tab.evaluate(el => el.classList.contains('active')).catch(() => false);
+  if (!isActive) {
+    await click(tab, page);
+    await page.waitForTimeout(500);
+  }
+}
+
+/**
+ * Fill a measurement number input identified by its CSS ID class.
+ */
+export async function fillMeasurement(page: Page, id: string, value: string) {
+  await page
+    .locator(`.form-input.measurement.${id} input[type="number"]`)
+    .fill(value);
+}
+
+/**
+ * Open the calendar popup, select a date (UTC), and confirm.
+ * Elm date pickers derive dates via Time.utc.
+ */
+export async function setDate(page: Page, date: Date, triggerSelector = '.date-input') {
+  await click(page.locator(triggerSelector).first(), page);
+  await page
+    .locator('.ui.active.modal.calendar-popup')
+    .waitFor({ timeout: 5000 });
+
+  const year = date.getUTCFullYear().toString();
+  await page
+    .locator('div.calendar > div.year > select')
+    .selectOption(year);
+
+  const monthValue = (date.getUTCMonth() + 1).toString();
+  await page
+    .locator('div.calendar > div.month > select')
+    .selectOption(monthValue);
+
+  const day = date.getUTCDate();
+  const dayCell = page.locator(
+    'div.calendar table tbody td:not(.date-selector--dimmed)',
+    { hasText: new RegExp(`^${day}$`) },
+  );
+  await dayCell.first().click();
+
+  await click(
+    page.locator('.ui.active.modal.calendar-popup div.ui.button'),
+    page,
+  );
+
+  await page
+    .locator('.ui.active.modal.calendar-popup')
+    .waitFor({ state: 'hidden', timeout: 3000 })
+    .catch(() => {});
+}
+
+/**
+ * Open an activity from the encounter page by clicking its card icon.
+ * @param encounterType - CSS class for the encounter page (e.g., 'ncd', 'prenatal').
+ * @param activityIcon - icon class suffix (e.g., 'danger-signs', 'history').
+ */
+export async function openActivity(page: Page, encounterType: string, activityIcon: string) {
+  await page.locator(`div.page-encounter.${encounterType}`).waitFor({ timeout: 10000 });
+  await page.waitForTimeout(500);
+  const icon = page.locator(`.icon-task-${activityIcon}`);
+  await icon.waitFor({ timeout: 10000 });
+  await click(icon, page);
+  await page.locator(`div.page-activity.${encounterType}`).waitFor({ timeout: 10000 });
+}
