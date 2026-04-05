@@ -161,20 +161,21 @@ async function setDateOfBirth(page: Page, dob: Date) {
     .locator('.ui.active.modal.calendar-popup')
     .waitFor({ timeout: 5000 });
 
+  // Use UTC — Elm date pickers derive dates via Time.utc.
   // Select year.
-  const year = dob.getFullYear().toString();
+  const year = dob.getUTCFullYear().toString();
   await page
     .locator('div.calendar > div.year > select')
     .selectOption(year);
 
   // Select month (JS Date is 0-indexed, Elm select uses 1-indexed string values).
-  const monthValue = (dob.getMonth() + 1).toString();
+  const monthValue = (dob.getUTCMonth() + 1).toString();
   await page
     .locator('div.calendar > div.month > select')
     .selectOption(monthValue);
 
   // Click the correct day cell.
-  const day = dob.getDate();
+  const day = dob.getUTCDate();
   // Day cells contain the day number as text. Find the non-dimmed cell
   // with the matching text.
   const dayCell = page.locator(

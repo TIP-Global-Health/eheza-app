@@ -147,17 +147,18 @@ async function setDate(page: Page, date: Date, triggerSelector = '.form-input.da
     .locator('.ui.active.modal.calendar-popup')
     .waitFor({ timeout: 5000 });
 
-  const year = date.getFullYear().toString();
+  // Use UTC — Elm date pickers derive dates via Time.utc.
+  const year = date.getUTCFullYear().toString();
   await page
     .locator('div.calendar > div.year > select')
     .selectOption(year);
 
-  const monthValue = (date.getMonth() + 1).toString();
+  const monthValue = (date.getUTCMonth() + 1).toString();
   await page
     .locator('div.calendar > div.month > select')
     .selectOption(monthValue);
 
-  const day = date.getDate();
+  const day = date.getUTCDate();
   const dayCell = page.locator(
     'div.calendar table tbody td:not(.date-selector--dimmed)',
     { hasText: new RegExp(`^${day}$`) },
@@ -181,17 +182,18 @@ async function setDateOfBirth(page: Page, dob: Date) {
     .locator('.ui.active.modal.calendar-popup')
     .waitFor({ timeout: 5000 });
 
-  const year = dob.getFullYear().toString();
+  // Use UTC — Elm date pickers derive dates via Time.utc.
+  const year = dob.getUTCFullYear().toString();
   await page
     .locator('div.calendar > div.year > select')
     .selectOption(year);
 
-  const monthValue = (dob.getMonth() + 1).toString();
+  const monthValue = (dob.getUTCMonth() + 1).toString();
   await page
     .locator('div.calendar > div.month > select')
     .selectOption(monthValue);
 
-  const day = dob.getDate();
+  const day = dob.getUTCDate();
   const dayCell = page.locator(
     'div.calendar table tbody td:not(.date-selector--dimmed)',
     { hasText: new RegExp(`^${day}$`) },

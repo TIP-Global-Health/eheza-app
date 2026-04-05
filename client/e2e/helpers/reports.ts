@@ -470,18 +470,19 @@ async function selectDateInCalendar(page: Page, date: Date) {
   const popup = page.locator('.ui.active.modal.calendar-popup');
   await popup.waitFor({ timeout: 5000 });
 
+  // Use UTC — Elm date pickers derive dates via Time.utc.
   // Select year.
   await popup
     .locator('div.calendar > div.year > select')
-    .selectOption(date.getFullYear().toString());
+    .selectOption(date.getUTCFullYear().toString());
 
   // Select month (1-indexed).
   await popup
     .locator('div.calendar > div.month > select')
-    .selectOption((date.getMonth() + 1).toString());
+    .selectOption((date.getUTCMonth() + 1).toString());
 
   // Click day.
-  const day = date.getDate();
+  const day = date.getUTCDate();
   const dayCell = popup.locator(
     'div.calendar table tbody td:not(.date-selector--dimmed)',
     { hasText: new RegExp(`^${day}$`) },
