@@ -5,7 +5,7 @@ import {
   clickSubTaskTab,
   fillMeasurement,
   formInput,
-  openActivity,
+  openActivity as openActivityBase,
   queryMeasurementNodes,
   selectByLabel,
   selectCheckbox,
@@ -69,6 +69,15 @@ async function dismissPopup(page: Page) {
     await click(hcPopup, page);
     await page.waitForTimeout(500);
   }
+}
+
+/**
+ * Open an activity, dismissing any popup first.
+ * Well-child may show diagnosis or danger signs popups after activities.
+ */
+async function openActivity(page: Page, activityIcon: string) {
+  await dismissPopup(page);
+  await openActivityBase(page, 'well-child', activityIcon);
 }
 
 // ---------------------------------------------------------------------------
@@ -211,7 +220,7 @@ export async function completeDangerSigns(
   const respiratoryRate = options?.respiratoryRate ?? '20';
   const bodyTemp = options?.bodyTemp ?? '36.5';
 
-  await openActivity(page, 'well-child', 'danger-signs');
+  await openActivity(page, 'danger-signs');
 
   // --- SymptomsReview tab ---
   await clickSubTaskTab(page, 'symptoms');
@@ -251,7 +260,7 @@ export async function completeNutritionAssessment(
 ) {
   const nutritionSigns = options?.nutritionSigns ?? [];
 
-  await openActivity(page, 'well-child', 'nutrition-assessment');
+  await openActivity(page, 'nutrition-assessment');
 
   // --- Height tab (if visible) ---
   const heightTab = page.locator('.link-section:has(.icon-activity-task.icon-height)');
@@ -319,7 +328,7 @@ export async function completeNutritionAssessment(
 // ---------------------------------------------------------------------------
 
 export async function completeECD(page: Page) {
-  await openActivity(page, 'well-child', 'ecd');
+  await openActivity(page, 'ecd');
 
   // The ECD form shows boolean Yes/No questions for age-appropriate milestones.
   // Answer "Yes" to all by clicking each "Yes" label in the form.
@@ -348,7 +357,7 @@ export async function completeECD(page: Page) {
 // ---------------------------------------------------------------------------
 
 export async function completeMedication(page: Page) {
-  await openActivity(page, 'well-child', 'medication');
+  await openActivity(page, 'medication');
 
   // Iterate through visible medication sub-task tabs.
   // Tab icons from Elm: albendazole, mebendezole, treatment-review (Vitamin A)
@@ -384,7 +393,7 @@ export async function completeImmunisation(
 ) {
   const isChw = options?.isChw ?? false;
 
-  await openActivity(page, 'well-child', 'immunisation');
+  await openActivity(page, 'immunisation');
 
   // Get all visible vaccine tabs (non-Overview).
   const allTabs = page.locator('#tasks-bar .link-section');
@@ -449,7 +458,7 @@ export async function completeImmunisation(
 // ---------------------------------------------------------------------------
 
 export async function completePregnancySummary(page: Page) {
-  await openActivity(page, 'well-child', 'history');
+  await openActivity(page, 'history');
 
   const form = page.locator('.ui.form.pregnancy-summary');
   await form.waitFor({ timeout: 5000 });
@@ -497,7 +506,7 @@ export async function completePregnancySummary(page: Page) {
 // ---------------------------------------------------------------------------
 
 export async function completeHomeVisit(page: Page) {
-  await openActivity(page, 'well-child', 'home-visit');
+  await openActivity(page, 'home-visit');
 
   // --- Feeding tab ---
   await clickSubTaskTab(page, 'feeding');
@@ -563,7 +572,7 @@ export async function completeNextSteps(
     .isVisible()
     .catch(() => false);
   if (!alreadyOnActivity) {
-    await openActivity(page, 'well-child', 'next-steps');
+    await openActivity(page, 'next-steps');
   }
 
   // Dismiss any popup that may be overlaying the activity page.

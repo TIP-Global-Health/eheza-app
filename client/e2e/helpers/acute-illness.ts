@@ -6,7 +6,7 @@ import {
   clickSubTaskTab,
   fillMeasurement,
   formInput,
-  openActivity,
+  openActivity as openActivityBase,
   queryMeasurementNodes,
   selectByLabel,
   selectCheckbox,
@@ -39,6 +39,15 @@ async function dismissDiagnosisPopup(page: Page) {
     await click(overlayContinue, page);
     await page.waitForTimeout(1000);
   }
+}
+
+/**
+ * Open an activity, dismissing any diagnosis popup first.
+ * Acute illness may show a diagnosis popup after completing mandatory activities.
+ */
+async function openActivity(page: Page, activityIcon: string) {
+  await dismissDiagnosisPopup(page);
+  await openActivityBase(page, 'acute-illness', activityIcon);
 }
 
 /**
@@ -379,7 +388,7 @@ export async function completeDangerSigns(
   const improving = options?.conditionImproving ?? true;
   const signs = options?.dangerSigns ?? [];
 
-  await openActivity(page, 'acute-illness', 'danger-signs');
+  await openActivity(page, 'danger-signs');
 
   // "Is the condition improving?" → Yes/No
   await answerYesNo(page, 'conditionImproving', improving ? 'Yes' : 'No');
@@ -422,7 +431,7 @@ export async function completeOngoingTreatment(
   const sideEffects = options?.sideEffects ?? false;
   const feelingBetter = options?.feelingBetter ?? true;
 
-  await openActivity(page, 'acute-illness', 'ongoing-treatment');
+  await openActivity(page, 'ongoing-treatment');
 
   // "Is the patient taking the medication as prescribed?" → Yes
   await answerYesNo(page, 'taken-as-prescribed', takenAsPrescribed ? 'Yes' : 'No');
@@ -479,7 +488,7 @@ export async function completeSymptoms(
   const respiratorySigns = options?.respiratory ?? [];
   const giSigns = options?.gi ?? [];
 
-  await openActivity(page, 'acute-illness', 'symptoms');
+  await openActivity(page, 'symptoms');
 
   // --- SymptomsGeneral tab (first tab, should be active by default) ---
   await clickSubTaskTab(page, 'symptoms-general');
@@ -572,7 +581,7 @@ export async function completePhysicalExam(
   const bodyTemp = options?.bodyTemp ?? '38.5';
   const muac = options?.muac ?? '25';
 
-  await openActivity(page, 'acute-illness', 'physical-exam');
+  await openActivity(page, 'physical-exam');
 
   // --- Vitals tab ---
   await clickSubTaskTab(page, 'physical-exam-vitals');
@@ -719,7 +728,7 @@ export async function completePhysicalExam(
  * Creates: treatment_history
  */
 export async function completePriorTreatment(page: Page) {
-  await openActivity(page, 'acute-illness', 'prior-treatment');
+  await openActivity(page, 'prior-treatment');
 
   // Treatment review form: 3 yes/no questions.
   // "Took fever medication in past 6 hours?" → No
@@ -757,7 +766,7 @@ export async function completeLaboratory(
   const covidResult = options?.covidResult ?? 'Positive';
   const isPregnant = options?.isPregnant ?? false;
 
-  await openActivity(page, 'acute-illness', 'laboratory');
+  await openActivity(page, 'laboratory');
 
   // --- Malaria Testing tab ---
   await clickSubTaskTab(page, 'laboratory-malaria-testing');
@@ -884,7 +893,7 @@ export async function completeNextSteps(
     .isVisible()
     .catch(() => false);
   if (!alreadyOnNextSteps) {
-    await openActivity(page, 'acute-illness', 'next-steps');
+    await openActivity(page, 'next-steps');
   }
 
   // --- Medication Distribution ---
