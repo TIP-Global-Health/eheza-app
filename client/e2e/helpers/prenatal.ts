@@ -27,6 +27,20 @@ async function fillNumber(page: Page, id: string, value: string) {
     .fill(value);
 }
 
+/**
+ * Click the Save button and wait to return to the prenatal encounter page.
+ */
+async function savePrenatalActivity(page: Page) {
+  await click(
+    page.locator('button.ui.fluid.primary.button', { hasText: 'Save' }),
+    page,
+  );
+  await page
+    .locator('div.page-encounter.prenatal')
+    .waitFor({ timeout: 10000 });
+  await page.waitForTimeout(500);
+}
+
 // ---------------------------------------------------------------------------
 // Participant registration
 // ---------------------------------------------------------------------------
