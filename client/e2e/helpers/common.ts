@@ -128,7 +128,7 @@ export function queryMeasurementNodes(
         ->fieldCondition('field_person', 'target_id', \\$nid)
         ->range(0, 1)
         ->execute();
-      \\$found[\\$type] = !empty(\\$tr['node']);
+      if (!empty(\\$tr['node'])) { \\$found[\\$type] = true; }
     }
     echo json_encode(\\$found);
   `;
