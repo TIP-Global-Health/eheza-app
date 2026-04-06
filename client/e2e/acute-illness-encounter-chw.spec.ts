@@ -95,8 +95,8 @@ test.describe('CHW: Acute Illness Initial Encounter — Uncomplicated Pneumonia'
     expect(nodes['treatment_history']).toBe(true);
 
     // CHW should NOT have core_exam or malaria_testing.
-    expect(nodes['acute_illness_core_exam']).toBeUndefined();
-    expect(nodes['malaria_testing']).toBeUndefined();
+    expect(nodes['acute_illness_core_exam']).toBe(false);
+    expect(nodes['malaria_testing']).toBe(false);
   });
 });
 
