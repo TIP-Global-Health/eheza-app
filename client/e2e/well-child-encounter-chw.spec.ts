@@ -83,13 +83,13 @@ test.describe('CHW: Well Child NewbornExam Encounter', () => {
     ];
     const nodes = queryWellChildNodes(fullName, expectedTypes);
 
-    expect(nodes['well_child_pregnancy_summary']).toBe(true);
-    expect(nodes['well_child_head_circumference']).toBe(true);
-    expect(nodes['well_child_nutrition']).toBe(true);
-    expect(nodes['well_child_weight']).toBe(true);
-    expect(nodes['well_child_health_education']).toBe(true);
-    expect(nodes['well_child_send_to_hc']).toBe(true);
-    expect(nodes['well_child_next_visit']).toBe(true);
+    expect(nodes['well_child_pregnancy_summary'], 'well_child_pregnancy_summary should exist').toBe(true);
+    expect(nodes['well_child_head_circumference'], 'well_child_head_circumference should exist').toBe(true);
+    expect(nodes['well_child_nutrition'], 'well_child_nutrition should exist').toBe(true);
+    expect(nodes['well_child_weight'], 'well_child_weight should exist').toBe(true);
+    expect(nodes['well_child_health_education'], 'well_child_health_education should exist').toBe(true);
+    expect(nodes['well_child_send_to_hc'], 'well_child_send_to_hc should exist').toBe(true);
+    expect(nodes['well_child_next_visit'], 'well_child_next_visit should exist').toBe(true);
   });
 });
 
@@ -169,19 +169,19 @@ test.describe('CHW: Well Child PediatricCareChw Encounter with HomeVisit', () =>
     ];
     const nodes = queryWellChildNodes(fullName, expectedTypes);
 
-    expect(nodes['well_child_symptoms_review']).toBe(true);
-    expect(nodes['well_child_vitals']).toBe(true);
-    expect(nodes['well_child_height']).toBe(true);
-    expect(nodes['well_child_head_circumference']).toBe(true);
-    expect(nodes['well_child_muac']).toBe(true);
-    expect(nodes['well_child_nutrition']).toBe(true);
-    expect(nodes['well_child_weight']).toBe(true);
-    expect(nodes['well_child_feeding']).toBe(true);
-    expect(nodes['well_child_caring']).toBe(true);
-    expect(nodes['well_child_hygiene']).toBe(true);
-    expect(nodes['well_child_food_security']).toBe(true);
-    expect(nodes['well_child_health_education']).toBe(true);
-    expect(nodes['well_child_send_to_hc']).toBe(true);
-    expect(nodes['well_child_next_visit']).toBe(true);
+    expect(nodes['well_child_symptoms_review'], 'well_child_symptoms_review should exist').toBe(true);
+    expect(nodes['well_child_vitals'], 'well_child_vitals should exist').toBe(true);
+    expect(nodes['well_child_height'], 'well_child_height should exist').toBe(true);
+    expect(nodes['well_child_head_circumference'], 'well_child_head_circumference should exist').toBe(true);
+    expect(nodes['well_child_muac'], 'well_child_muac should exist').toBe(true);
+    expect(nodes['well_child_nutrition'], 'well_child_nutrition should exist').toBe(true);
+    expect(nodes['well_child_weight'], 'well_child_weight should exist').toBe(true);
+    expect(nodes['well_child_feeding'], 'well_child_feeding should exist').toBe(true);
+    expect(nodes['well_child_caring'], 'well_child_caring should exist').toBe(true);
+    expect(nodes['well_child_hygiene'], 'well_child_hygiene should exist').toBe(true);
+    expect(nodes['well_child_food_security'], 'well_child_food_security should exist').toBe(true);
+    expect(nodes['well_child_health_education'], 'well_child_health_education should exist').toBe(true);
+    expect(nodes['well_child_send_to_hc'], 'well_child_send_to_hc should exist').toBe(true);
+    expect(nodes['well_child_next_visit'], 'well_child_next_visit should exist').toBe(true);
   });
 });

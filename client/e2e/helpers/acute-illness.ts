@@ -1,109 +1,22 @@
 import { Page } from '@playwright/test';
-import { execSync } from 'child_process';
 import { click } from './auth';
-import { drushEnv } from './device';
+import {
+  WAIT,
+  answerYesNo,
+  backdateEncounter,
+  clickSubTaskTab,
+  fillMeasurement,
+  openActivity as openActivityBase,
+  queryMeasurementNodes,
+  registerAdult,
+  registerChild,
+  selectCheckbox,
+  selectCheckboxInForm,
+} from './common';
 
 // ---------------------------------------------------------------------------
 // Private form helpers
 // ---------------------------------------------------------------------------
-
-/**
- * Select an option in a form dropdown identified by its label text.
- * @param optionIndex - 1-based index (skips blank default).
- */
-async function selectByLabel(page: Page, labelText: string, optionIndex: number) {
-  const row = page.locator('.ui.grid').filter({ hasText: labelText });
-  const select = row.locator('select').first();
-  const options = select.locator('option');
-  const count = await options.count();
-  if (count > optionIndex) {
-    const value = await options.nth(optionIndex).getAttribute('value');
-    if (value !== null) {
-      await select.selectOption(value);
-    }
-  }
-}
-
-/**
- * Locate a form input by its label text (grid row pattern).
- */
-function formInput(page: Page, labelText: string) {
-  return page
-    .locator('.ui.grid')
-    .filter({ hasText: labelText })
-    .locator('input')
-    .first();
-}
-
-/**
- * Answer a Yes/No boolean field by its CSS class.
- * Radio inputs are CSS-hidden; click the label instead.
- */
-async function answerYesNo(
-  page: Page,
-  fieldClass: string,
-  answer: 'Yes' | 'No',
-) {
-  await click(
-    page.locator(`.form-input.yes-no.${fieldClass} label`, {
-      hasText: answer,
-    }),
-    page,
-  );
-}
-
-/**
- * Select a checkbox option by clicking its label (exact match).
- */
-async function selectCheckbox(page: Page, optionText: string) {
-  await click(
-    page.locator('.ui.checkbox label', {
-      hasText: new RegExp(`^${optionText}$`, 'i'),
-    }),
-    page,
-  );
-}
-
-/**
- * Select a checkbox inside a specific form container.
- */
-async function selectCheckboxInForm(page: Page, formSelector: string, optionText: string) {
-  await click(
-    page.locator(`${formSelector} .ui.checkbox`, {
-      hasText: new RegExp(`^${optionText}$`, 'i'),
-    }).locator('label'),
-    page,
-  );
-}
-
-/**
- * Click a sub-task tab icon and wait for it to become active.
- */
-async function clickSubTaskTab(page: Page, iconClass: string) {
-  const tab = page.locator(`.link-section:has(.icon-activity-task.icon-${iconClass})`);
-  const isActive = await tab.evaluate(el => el.classList.contains('active')).catch(() => false);
-  if (!isActive) {
-    await click(tab, page);
-    await page.waitForTimeout(500);
-  }
-}
-
-/**
- * Open an activity from the encounter page by clicking its card icon.
- * Dismisses any alert/diagnosis popup that may be blocking the page.
- */
-async function openActivity(page: Page, activityIcon: string) {
-  await page.locator('div.page-encounter.acute-illness').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
-
-  // Dismiss any alert or diagnosis popup that may overlay the encounter page.
-  await dismissDiagnosisPopup(page);
-
-  const icon = page.locator(`.icon-task-${activityIcon}`);
-  await icon.waitFor({ timeout: 10000 });
-  await click(icon, page);
-  await page.locator('div.page-activity.acute-illness').waitFor({ timeout: 10000 });
-}
 
 /**
  * Dismiss the diagnosis assessment popup if it appears.
@@ -117,15 +30,24 @@ async function dismissDiagnosisPopup(page: Page) {
   const modalContinue = page.locator('.ui.active.modal button', { hasText: 'Continue' });
   if (await modalContinue.isVisible({ timeout: 3000 }).catch(() => false)) {
     await click(modalContinue, page);
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(WAIT.sectionTransition);
     return;
   }
   // Try the overlay popup (alert with "Continue" button).
   const overlayContinue = page.locator('.overlay button', { hasText: 'Continue' });
   if (await overlayContinue.isVisible({ timeout: 1000 }).catch(() => false)) {
     await click(overlayContinue, page);
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(WAIT.sectionTransition);
   }
+}
+
+/**
+ * Open an activity, dismissing any diagnosis popup first.
+ * Acute illness may show a diagnosis popup after completing mandatory activities.
+ */
+async function openActivity(page: Page, activityIcon: string) {
+  await dismissDiagnosisPopup(page);
+  await openActivityBase(page, 'acute-illness', activityIcon);
 }
 
 /**
@@ -141,7 +63,7 @@ async function saveActivity(page: Page, actionsClass: string) {
   await page
     .locator('div.page-encounter.acute-illness')
     .waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 /**
@@ -152,54 +74,7 @@ async function saveNextStepsSubTask(page: Page) {
   const saveBtn = page.locator('.actions.next-steps button.ui.fluid.primary.button');
   await saveBtn.waitFor({ timeout: 5000 });
   await click(saveBtn, page);
-  await page.waitForTimeout(1000);
-}
-
-/**
- * Fill a measurement number input identified by its CSS ID class.
- */
-async function fillMeasurement(page: Page, id: string, value: string) {
-  await page
-    .locator(`.form-input.measurement.${id} input[type="number"]`)
-    .fill(value);
-}
-
-/**
- * Open the calendar popup, select a date, and confirm.
- */
-async function setDate(page: Page, date: Date, triggerSelector = '.date-input') {
-  await click(page.locator(triggerSelector).first(), page);
-  await page
-    .locator('.ui.active.modal.calendar-popup')
-    .waitFor({ timeout: 5000 });
-
-  // Use UTC — Elm date pickers derive dates via Time.utc.
-  const year = date.getUTCFullYear().toString();
-  await page
-    .locator('div.calendar > div.year > select')
-    .selectOption(year);
-
-  const monthValue = (date.getUTCMonth() + 1).toString();
-  await page
-    .locator('div.calendar > div.month > select')
-    .selectOption(monthValue);
-
-  const day = date.getUTCDate();
-  const dayCell = page.locator(
-    'div.calendar table tbody td:not(.date-selector--dimmed)',
-    { hasText: new RegExp(`^${day}$`) },
-  );
-  await dayCell.first().click();
-
-  await click(
-    page.locator('.ui.active.modal.calendar-popup div.ui.button'),
-    page,
-  );
-
-  await page
-    .locator('.ui.active.modal.calendar-popup')
-    .waitFor({ state: 'hidden', timeout: 3000 })
-    .catch(() => {});
+  await page.waitForTimeout(WAIT.sectionTransition);
 }
 
 // ---------------------------------------------------------------------------
@@ -223,93 +98,16 @@ export async function createAdultAndStartEncounter(
     gender?: 'male' | 'female';
   },
 ) {
-  const ageYears = options?.ageYears ?? 25;
-  const firstName = options?.firstName ?? `TestPatient${Date.now()}`;
-  const secondName = 'E2ETest';
-  const isChw = options?.isChw ?? false;
-  const gender = options?.gender ?? 'female';
+  const result = await registerAdult(page, 'Acute Illness', 'acute-illness', {
+    ageYears: options?.ageYears,
+    firstName: options?.firstName ?? `TestPatient${Date.now()}`,
+    isFemale: options?.gender === 'female' || (options?.gender === undefined),
+    isChw: options?.isChw,
+  });
 
-  // Navigate: Dashboard → Clinical
-  await click(page.locator('.icon-task-clinical'), page);
-  await page.locator('div.page-clinical').waitFor({ timeout: 10000 });
-
-  // Clinical → Individual Encounter
-  await click(page.locator('button.individual-assessment'), page);
-  await page.locator('div.page-encounter-types').waitFor({ timeout: 10000 });
-
-  // Individual Encounter → Acute Illness
-  await click(
-    page.locator('button.encounter-type', { hasText: 'Acute Illness' }),
-    page,
-  );
-  await page.locator('div.page-participants').waitFor({ timeout: 10000 });
-
-  // Click "Register a new participant"
-  await click(
-    page.locator('button.ui.primary.button.fluid', {
-      hasText: 'Register a new participant',
-    }),
-    page,
-  );
-  await page
-    .locator('.ui.grid .column', { hasText: 'First Name:' })
-    .waitFor({ timeout: 10000 });
-
-  // Fill the registration form.
-  await formInput(page, 'First Name:').fill(firstName);
-  await formInput(page, 'Second Name:').fill(secondName);
-
-  // Set date of birth.
-  const dob = new Date();
-  dob.setFullYear(dob.getFullYear() - ageYears);
-  await setDate(page, dob);
-
-  // Select gender.
-  const genderRadios = page
-    .locator('.ui.grid')
-    .filter({ hasText: 'Gender:' })
-    .locator('input[type="radio"]');
-  if (gender === 'male') {
-    await genderRadios.first().check();
-  } else {
-    await genderRadios.last().check();
-  }
-
-  // Adult-only required fields.
-  await selectByLabel(page, 'Level of Education:', 1);
-  await selectByLabel(page, 'Marital Status:', 1);
-
-  if (!isChw) {
-    // Nurse: fill address (cascading dropdowns) and health center.
-    await selectByLabel(page, 'Province:', 1);
-    await page.waitForTimeout(500);
-    await selectByLabel(page, 'District:', 1);
-    await page.waitForTimeout(500);
-    await selectByLabel(page, 'Sector:', 1);
-    await page.waitForTimeout(500);
-    await selectByLabel(page, 'Cell:', 1);
-    await page.waitForTimeout(500);
-    await selectByLabel(page, 'Village:', 1);
-
-    const hcSelect = page
-      .locator('.ui.grid')
-      .filter({ hasText: 'Health Center:' })
-      .locator('select');
-    await hcSelect.selectOption({ label: 'Nyange Health Center' });
-  }
-
-  // Submit the form.
-  await click(page.locator('button[type="submit"]'), page);
-
-  // Wait for the participant page.
-  await page
-    .locator('div.page-participant.individual.acute-illness')
-    .waitFor({ timeout: 30000 });
-
-  // Start a new acute illness encounter.
   await startNewAcuteIllness(page);
 
-  return { firstName, secondName, fullName: `${secondName} ${firstName}` };
+  return result;
 }
 
 /**
@@ -319,47 +117,14 @@ export async function createChildAndStartEncounter(
   page: Page,
   options?: { ageMonths?: number; firstName?: string },
 ) {
-  const ageMonths = options?.ageMonths ?? 24;
-  const firstName = options?.firstName ?? `TestChild${Date.now()}`;
-  const secondName = 'E2ETest';
+  const result = await registerChild(page, 'Acute Illness', 'acute-illness', {
+    ageMonths: options?.ageMonths,
+    firstName: options?.firstName ?? `TestChild${Date.now()}`,
+  });
 
-  await click(page.locator('.icon-task-clinical'), page);
-  await page.locator('div.page-clinical').waitFor({ timeout: 10000 });
-  await click(page.locator('button.individual-assessment'), page);
-  await page.locator('div.page-encounter-types').waitFor({ timeout: 10000 });
-  await click(page.locator('button.encounter-type', { hasText: 'Acute Illness' }), page);
-  await page.locator('div.page-participants').waitFor({ timeout: 10000 });
-  await click(page.locator('button.ui.primary.button.fluid', { hasText: 'Register a new participant' }), page);
-  await page.locator('.ui.grid .column', { hasText: 'First Name:' }).waitFor({ timeout: 10000 });
-
-  await formInput(page, 'First Name:').fill(firstName);
-  await formInput(page, 'Second Name:').fill(secondName);
-
-  const dob = new Date();
-  dob.setMonth(dob.getMonth() - ageMonths);
-  await setDate(page, dob);
-
-  await page.locator('.ui.grid').filter({ hasText: 'Gender:' }).locator('input[type="radio"]').first().check();
-  await selectByLabel(page, 'Mode of delivery:', 1);
-
-  // Nurse: address + health center.
-  await selectByLabel(page, 'Province:', 1);
-  await page.waitForTimeout(500);
-  await selectByLabel(page, 'District:', 1);
-  await page.waitForTimeout(500);
-  await selectByLabel(page, 'Sector:', 1);
-  await page.waitForTimeout(500);
-  await selectByLabel(page, 'Cell:', 1);
-  await page.waitForTimeout(500);
-  await selectByLabel(page, 'Village:', 1);
-  const hcSelect = page.locator('.ui.grid').filter({ hasText: 'Health Center:' }).locator('select');
-  await hcSelect.selectOption({ label: 'Nyange Health Center' });
-
-  await click(page.locator('button[type="submit"]'), page);
-  await page.locator('div.page-participant.individual.acute-illness').waitFor({ timeout: 30000 });
   await startNewAcuteIllness(page);
 
-  return { firstName, secondName, fullName: `${secondName} ${firstName}` };
+  return result;
 }
 
 // ---------------------------------------------------------------------------
@@ -378,7 +143,7 @@ export async function startNewAcuteIllness(page: Page) {
   await page
     .locator('div.page-encounter.acute-illness')
     .waitFor({ timeout: 30000 });
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 }
 
 /**
@@ -386,7 +151,7 @@ export async function startNewAcuteIllness(page: Page) {
  * confirm in the dialog, wait for navigation away.
  */
 export async function endEncounter(page: Page) {
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(WAIT.pageNavigation);
 
   const endBtn = page.locator('button', { hasText: 'End Encounter' }).first();
   await endBtn.waitFor({ timeout: 10000 });
@@ -479,7 +244,7 @@ export async function startSubsequentEncounter(page: Page) {
   await page
     .locator('div.page-encounter.acute-illness')
     .waitFor({ timeout: 30000 });
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 }
 
 /**
@@ -490,71 +255,7 @@ export async function startSubsequentEncounter(page: Page) {
  * Retries up to 5 times with 10s delay for eventual consistency.
  */
 export function backdateAcuteIllnessEncounter(personName: string) {
-  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
-  const php = `
-    \\$person_name = base64_decode('${personNameB64}');
-    \\$query = new EntityFieldQuery();
-    \\$result = \\$query->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'person')
-      ->propertyCondition('title', \\$person_name)
-      ->execute();
-    if (empty(\\$result['node'])) {
-      echo 'Person not found';
-      return;
-    }
-    \\$person_nid = key(\\$result['node']);
-
-    // Find individual_participant for this person.
-    \\$q = new EntityFieldQuery();
-    \\$r = \\$q->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'individual_participant')
-      ->fieldCondition('field_person', 'target_id', \\$person_nid)
-      ->execute();
-    if (empty(\\$r['node'])) {
-      echo 'No participant found';
-      return;
-    }
-
-    // Find acute_illness_encounter for this person's participants.
-    \\$participant_nids = array_keys(\\$r['node']);
-    \\$eq = new EntityFieldQuery();
-    \\$er = \\$eq->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'acute_illness_encounter')
-      ->fieldCondition('field_individual_participant', 'target_id', \\$participant_nids, 'IN')
-      ->propertyOrderBy('nid', 'DESC')
-      ->execute();
-    if (empty(\\$er['node'])) {
-      echo 'No encounter found';
-      return;
-    }
-
-    // Backdate the most recent encounter.
-    \\$target_date = date('Y-m-d H:i:s', strtotime('-7 days'));
-    \\$enc_nid = key(\\$er['node']);
-    \\$enc = node_load(\\$enc_nid);
-    \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value'] = \\$target_date;
-    \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value2'] = \\$target_date;
-    node_save(\\$enc);
-    echo 'Backdated encounter ' . \\$enc_nid;
-  `;
-
-  const { drushCmd, cwd } = drushEnv();
-
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const output = execSync(`${drushCmd} eval "${php}"`, {
-      cwd,
-      timeout: 30000,
-      encoding: 'utf-8',
-    }).trim();
-    console.log(`backdateAcuteIllnessEncounter attempt ${attempt + 1}:`, output);
-    if (output.startsWith('Backdated')) {
-      return;
-    }
-    if (attempt < 4) {
-      execSync('sleep 10');
-    }
-  }
-  console.error('backdateAcuteIllnessEncounter: failed after 5 attempts');
+  backdateEncounter(personName, 'acute_illness_encounter', 7);
 }
 
 // ---------------------------------------------------------------------------
@@ -642,11 +343,11 @@ export async function completeOngoingTreatment(
     page.locator('.actions.treatment-ongoing button.ui.fluid.primary.button', { hasText: 'Save' }),
     page,
   );
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 
   // Dismiss diagnosis popup if it appears.
   await dismissDiagnosisPopup(page);
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 // ---------------------------------------------------------------------------
@@ -693,7 +394,7 @@ export async function completeSymptoms(
     page.locator('.actions.symptoms button.ui.fluid.primary.button'),
     page,
   );
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   // --- SymptomsRespiratory tab ---
   await clickSubTaskTab(page, 'symptoms-respiratory');
@@ -709,7 +410,7 @@ export async function completeSymptoms(
         ? 'More than 2 weeks'
         : '2 weeks or less';
       await page.locator('label', { hasText: durationLabel }).click();
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(WAIT.formInteraction);
     }
   }
   // Save respiratory — advances to GI tab.
@@ -717,7 +418,7 @@ export async function completeSymptoms(
     page.locator('.actions.symptoms button.ui.fluid.primary.button'),
     page,
   );
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   // --- SymptomsGI tab ---
   await clickSubTaskTab(page, 'symptoms-gi');
@@ -795,7 +496,7 @@ export async function completePhysicalExam(
     page.locator('.actions.symptoms button.ui.fluid.primary.button'),
     page,
   );
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   // Dismiss any alert popup triggered by vitals (e.g., elevated RR → Suspected Pneumonia).
   await dismissDiagnosisPopup(page);
@@ -815,7 +516,7 @@ export async function completePhysicalExam(
       page.locator('.actions.symptoms button.ui.fluid.primary.button'),
       page,
     );
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
   }
 
   // --- MUAC tab (children only — may not appear for adults) ---
@@ -828,7 +529,7 @@ export async function completePhysicalExam(
       page.locator('.actions.symptoms button.ui.fluid.primary.button'),
       page,
     );
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
   }
 
   // --- Nutrition tab (children only — may not appear for adults) ---
@@ -843,7 +544,7 @@ export async function completePhysicalExam(
       page.locator('.actions.symptoms button.ui.fluid.primary.button'),
       page,
     );
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
   }
 
   // --- Acute Findings tab (may not appear on subsequent encounters) ---
@@ -980,7 +681,7 @@ export async function completeLaboratory(
     page.locator('.actions.malaria-testing button.ui.fluid.primary.button'),
     page,
   );
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 
   // --- COVID Testing tab (if visible) ---
   const covidTab = page.locator('.link-section:has(.icon-activity-task.icon-laboratory-covid-testing)');
@@ -991,7 +692,7 @@ export async function completeLaboratory(
     const covidWarning = page.locator('.overlay button', { hasText: /continue/i });
     if (await covidWarning.isVisible({ timeout: 2000 }).catch(() => false)) {
       await covidWarning.click({ force: true });
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
     }
 
     const covidForm = page.locator('.ui.form.laboratory.covid-testing');
@@ -1000,7 +701,7 @@ export async function completeLaboratory(
     if (covidTestPerformed) {
       // "Test performed?" → Yes
       await answerYesNo(page, 'test-performed', 'Yes');
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
 
       // Select the test result (may be dropdown or radio buttons).
       const covidResultSelect = covidForm.locator('select').first();
@@ -1034,7 +735,7 @@ export async function completeLaboratory(
       page.locator('.actions.malaria-testing button.ui.fluid.primary.button'),
       page,
     );
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(WAIT.sectionTransition);
   }
 
   // After the last mandatory activity (malaria testing), the app may
@@ -1043,7 +744,7 @@ export async function completeLaboratory(
 
   // We may now be on the encounter page or on the next-steps activity page.
   // Wait for either.
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 // ---------------------------------------------------------------------------
@@ -1151,7 +852,7 @@ export async function completeNextSteps(
     const reliefTab = page.locator('.link-section:has(.icon-activity-task.icon-next-steps-medication-distribution)');
     if (await reliefTab.isVisible({ timeout: 2000 }).catch(() => false)) {
       await click(reliefTab, page);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
       await page.locator('.ui.form.symptoms-relief').waitFor({ timeout: 5000 });
       await answerYesNo(page, 'education-for-diagnosis', 'Yes');
       await saveNextStepsSubTask(page);
@@ -1182,7 +883,7 @@ export async function completeNextSteps(
 
   // After completing all next steps, the app may show the progress report
   // page (with "End Encounter" button) or return to the encounter page.
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 }
 
 // ---------------------------------------------------------------------------
@@ -1199,92 +900,31 @@ export function queryAcuteIllnessNodes(
   personName: string,
   expectedTypes?: string[],
 ): Record<string, boolean> {
-  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
-  const php = `
-    \\$person_name = base64_decode('${personNameB64}');
-    \\$query = new EntityFieldQuery();
-    \\$result = \\$query->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'person')
-      ->propertyCondition('title', \\$person_name)
-      ->execute();
-    if (empty(\\$result['node'])) {
-      echo json_encode(['error' => 'Person not found']);
-      return;
-    }
-    \\$person_nid = key(\\$result['node']);
-
-    \\$measurements = [];
-    \\$types = [
-      'symptoms_general',
-      'symptoms_respiratory',
-      'symptoms_gi',
-      'acute_illness_vitals',
-      'acute_illness_core_exam',
-      'acute_illness_muac',
-      'acute_findings',
-      'acute_illness_nutrition',
-      'malaria_testing',
-      'covid_testing',
-      'treatment_history',
-      'treatment_ongoing',
-      'medication_distribution',
-      'send_to_hc',
-      'hc_contact',
-      'call_114',
-      'isolation',
-      'travel_history',
-      'exposure',
-      'acute_illness_follow_up',
-      'acute_illness_danger_signs',
-      'acute_illness_contacts_tracing',
-      'acute_illness_trace_contact',
-      'health_education',
-    ];
-
-    foreach (\\$types as \\$node_type) {
-      \\$q = new EntityFieldQuery();
-      \\$r = \\$q->entityCondition('entity_type', 'node')
-        ->propertyCondition('type', \\$node_type)
-        ->fieldCondition('field_person', 'target_id', \\$person_nid)
-        ->execute();
-      if (!empty(\\$r['node'])) {
-        \\$measurements[\\$node_type] = true;
-      }
-    }
-
-    echo json_encode(\\$measurements);
-  `;
-
-  const { drushCmd, cwd } = drushEnv();
-
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const output = execSync(`${drushCmd} eval "${php}"`, {
-      cwd,
-      timeout: 30000,
-      encoding: 'utf-8',
-    });
-    try {
-      const parsed = JSON.parse(output.trim());
-      if (parsed.error) {
-        console.log(`queryAcuteIllnessNodes attempt ${attempt + 1}: ${parsed.error}`);
-      } else if (expectedTypes && expectedTypes.length > 0) {
-        const missing = expectedTypes.filter(t => !parsed[t]);
-        if (missing.length === 0) {
-          return parsed;
-        }
-        console.log(`queryAcuteIllnessNodes attempt ${attempt + 1}: missing [${missing.join(', ')}]`);
-      } else {
-        return parsed;
-      }
-    } catch (e) {
-      if (e instanceof Error && e.message.startsWith('Backend error:')) {
-        throw e;
-      }
-      console.error('Failed to parse drush output:', output);
-    }
-    if (attempt < 4) {
-      execSync('sleep 10');
-    }
-  }
-  return {};
+  const acuteIllnessTypes = [
+    'symptoms_general',
+    'symptoms_respiratory',
+    'symptoms_gi',
+    'acute_illness_vitals',
+    'acute_illness_core_exam',
+    'acute_illness_muac',
+    'acute_findings',
+    'acute_illness_nutrition',
+    'malaria_testing',
+    'covid_testing',
+    'treatment_history',
+    'treatment_ongoing',
+    'medication_distribution',
+    'send_to_hc',
+    'hc_contact',
+    'call_114',
+    'isolation',
+    'travel_history',
+    'exposure',
+    'acute_illness_follow_up',
+    'acute_illness_danger_signs',
+    'acute_illness_contacts_tracing',
+    'acute_illness_trace_contact',
+    'health_education',
+  ];
+  return queryMeasurementNodes(personName, acuteIllnessTypes, expectedTypes);
 }

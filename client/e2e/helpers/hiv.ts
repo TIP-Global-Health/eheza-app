@@ -1,163 +1,19 @@
 import { Page } from '@playwright/test';
-import { execSync } from 'child_process';
 import { click } from './auth';
-import { drushEnv } from './device';
-
-// ---------------------------------------------------------------------------
-// Private form helpers
-// ---------------------------------------------------------------------------
-
-/**
- * Select an option in a form dropdown identified by its label text.
- * @param optionIndex - 1-based index (skips blank default).
- */
-async function selectByLabel(page: Page, labelText: string, optionIndex: number) {
-  const row = page.locator('.ui.grid').filter({ hasText: labelText });
-  const select = row.locator('select').first();
-  const options = select.locator('option');
-  const count = await options.count();
-  if (count > optionIndex) {
-    const value = await options.nth(optionIndex).getAttribute('value');
-    if (value !== null) {
-      await select.selectOption(value);
-    }
-  }
-}
-
-/**
- * Locate a form input by its label text (grid row pattern).
- */
-function formInput(page: Page, labelText: string) {
-  return page
-    .locator('.ui.grid')
-    .filter({ hasText: labelText })
-    .locator('input')
-    .first();
-}
-
-/**
- * Answer a Yes/No boolean field by its CSS class.
- * Radio inputs are CSS-hidden; click the label instead.
- */
-async function answerYesNo(
-  page: Page,
-  fieldClass: string,
-  answer: 'Yes' | 'No',
-) {
-  await click(
-    page.locator(`.form-input.yes-no.${fieldClass} label`, {
-      hasText: answer,
-    }),
-    page,
-  );
-}
-
-/**
- * Select a checkbox option by clicking its label (exact match).
- */
-async function selectCheckbox(page: Page, optionText: string) {
-  await click(
-    page.locator('.ui.checkbox label', {
-      hasText: new RegExp(`^${optionText}$`, 'i'),
-    }),
-    page,
-  );
-}
-
-/**
- * Select a checkbox inside a specific form container.
- */
-async function selectCheckboxInForm(page: Page, formSelector: string, optionText: string) {
-  await click(
-    page.locator(`${formSelector} .ui.checkbox`, {
-      hasText: new RegExp(`^${optionText}$`, 'i'),
-    }).locator('label'),
-    page,
-  );
-}
-
-/**
- * Click a sub-task tab icon and wait for it to become active.
- */
-async function clickSubTaskTab(page: Page, iconClass: string) {
-  const tab = page.locator(`.link-section:has(.icon-activity-task.icon-${iconClass})`);
-  const isActive = await tab.evaluate(el => el.classList.contains('active')).catch(() => false);
-  if (!isActive) {
-    await click(tab, page);
-    await page.waitForTimeout(500);
-  }
-}
-
-/**
- * Open an activity from the HIV encounter page by clicking its card icon.
- */
-async function openActivity(page: Page, activityIcon: string) {
-  await page.locator('div.page-encounter.hiv').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
-  const icon = page.locator(`.icon-task-${activityIcon}`);
-  await icon.waitFor({ timeout: 10000 });
-  await click(icon, page);
-  await page.locator('div.page-activity.hiv').waitFor({ timeout: 10000 });
-}
-
-/**
- * Click the Save button and wait to return to the encounter page.
- */
-async function saveAndReturn(page: Page) {
-  const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
-  await saveBtn.waitFor({ timeout: 5000 });
-  await click(saveBtn, page);
-  await page.locator('div.page-encounter.hiv').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
-}
-
-/**
- * Click the Save button for a sub-task (doesn't wait for encounter page).
- */
-async function saveSubTask(page: Page) {
-  const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
-  await saveBtn.waitFor({ timeout: 5000 });
-  await click(saveBtn, page);
-  await page.waitForTimeout(1000);
-}
-
-/**
- * Open the calendar popup, select a date, and confirm.
- */
-async function setDate(page: Page, date: Date, triggerSelector = '.date-input') {
-  await click(page.locator(triggerSelector).first(), page);
-  await page
-    .locator('.ui.active.modal.calendar-popup')
-    .waitFor({ timeout: 5000 });
-
-  // Use UTC — Elm date pickers derive dates via Time.utc.
-  const year = date.getUTCFullYear().toString();
-  await page
-    .locator('div.calendar > div.year > select')
-    .selectOption(year);
-
-  const monthValue = (date.getUTCMonth() + 1).toString();
-  await page
-    .locator('div.calendar > div.month > select')
-    .selectOption(monthValue);
-
-  const day = date.getUTCDate();
-  const dayCell = page.locator(
-    'div.calendar table tbody td:not(.date-selector--dimmed)',
-    { hasText: new RegExp(`^${day}$`) },
-  );
-  await click(dayCell.first(), page);
-
-  await click(
-    page.locator('.ui.active.modal.calendar-popup div.ui.button'),
-    page,
-  );
-
-  await page
-    .locator('.ui.active.modal.calendar-popup')
-    .waitFor({ state: 'hidden', timeout: 3000 })
-    .catch(() => {});
-}
+import {
+  WAIT,
+  queryMeasurementNodes,
+  backdateEncounter,
+  answerYesNo,
+  selectCheckbox,
+  selectCheckboxInForm,
+  clickSubTaskTab,
+  setDate,
+  openActivity,
+  saveActivity,
+  saveSubTask,
+  registerAdult,
+} from './common';
 
 // ---------------------------------------------------------------------------
 // Participant registration
@@ -179,75 +35,16 @@ export async function createAdultAndStartHIVEncounter(
     isFemale?: boolean;
   },
 ) {
-  const ageYears = options?.ageYears ?? 30;
-  const firstName = options?.firstName ?? `TestHIV${Date.now()}`;
-  const secondName = 'E2ETest';
-  const isFemale = options?.isFemale ?? false;
+  const result = await registerAdult(page, 'HIV Management', 'hiv', {
+    ageYears: options?.ageYears,
+    firstName: options?.firstName ?? `TestHIV${Date.now()}`,
+    isFemale: options?.isFemale,
+    isChw: true,
+  });
 
-  // Navigate: Dashboard → Clinical
-  await click(page.locator('.icon-task-clinical'), page);
-  await page.locator('div.page-clinical').waitFor({ timeout: 10000 });
-
-  // Clinical → Individual Encounter
-  await click(page.locator('button.individual-assessment'), page);
-  await page.locator('div.page-encounter-types').waitFor({ timeout: 10000 });
-
-  // Individual Encounter → HIV Management
-  await click(
-    page.locator('button.encounter-type', { hasText: 'HIV Management' }),
-    page,
-  );
-  await page.locator('div.page-participants').waitFor({ timeout: 10000 });
-
-  // Click "Register a new participant"
-  await click(
-    page.locator('button.ui.primary.button.fluid', {
-      hasText: 'Register a new participant',
-    }),
-    page,
-  );
-  await page
-    .locator('.ui.grid .column', { hasText: 'First Name:' })
-    .waitFor({ timeout: 10000 });
-
-  // Fill the registration form.
-  await formInput(page, 'First Name:').fill(firstName);
-  await formInput(page, 'Second Name:').fill(secondName);
-
-  // Set date of birth.
-  const dob = new Date();
-  dob.setFullYear(dob.getFullYear() - ageYears);
-  await setDate(page, dob);
-
-  // Select gender.
-  const genderRadios = page
-    .locator('.ui.grid')
-    .filter({ hasText: 'Gender:' })
-    .locator('input[type="radio"]');
-  if (isFemale) {
-    await genderRadios.last().check();
-  } else {
-    await genderRadios.first().check();
-  }
-
-  // Adult required fields.
-  await selectByLabel(page, 'Level of Education:', 1);
-  await selectByLabel(page, 'Marital Status:', 1);
-
-  // CHW: address fields are auto-filled from assigned village, skip them.
-
-  // Submit the form.
-  await click(page.locator('button[type="submit"]'), page);
-
-  // Wait for the participant page.
-  await page
-    .locator('div.page-participant.individual.hiv')
-    .waitFor({ timeout: 30000 });
-
-  // Start HIV encounter.
   await startHIVEncounter(page);
 
-  return { firstName, secondName, fullName: `${secondName} ${firstName}` };
+  return result;
 }
 
 // ---------------------------------------------------------------------------
@@ -271,28 +68,28 @@ export async function completeDiagnostics(
 ) {
   const path = options?.path ?? 'positive-reported';
 
-  await openActivity(page, 'diagnostics');
+  await openActivity(page, 'hiv', 'diagnostics');
 
   if (path === 'positive-reported') {
     // "Have you been diagnosed with HIV?" → Yes
     await answerYesNo(page, 'result-positive', 'Yes');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
 
     // Set positive result date (1 year ago).
     const resultDate = new Date();
     resultDate.setFullYear(resultDate.getFullYear() - 1);
     await setDate(page, resultDate, '.form-input.date');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
 
-    await saveAndReturn(page);
+    await saveActivity(page, 'hiv');
   } else if (path === 'no-diagnosis-refuse-test') {
     // "Have you been diagnosed with HIV?" → No
     await answerYesNo(page, 'result-positive', 'No');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
 
     // "Would you like to take an HIV test?" → No
     await answerYesNo(page, 'run-hiv-test', 'No');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
 
     // Click Save — triggers end encounter confirmation dialog.
     const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
@@ -309,7 +106,7 @@ export async function completeDiagnostics(
       .locator('div.page-encounter.hiv')
       .waitFor({ state: 'hidden', timeout: 30000 })
       .catch(() => {});
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(WAIT.sectionTransition);
   }
 }
 
@@ -338,11 +135,11 @@ export async function completeMedication(
   const isSubsequent = options?.isSubsequent ?? false;
   const sideEffects = options?.sideEffects ?? false;
 
-  await openActivity(page, 'medication');
+  await openActivity(page, 'hiv', 'medication');
 
   // --- Sub-task 1: PrescribedMedication ---
   await clickSubTaskTab(page, 'medication');
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   if (isSubsequent) {
     // Subsequent: "Have the medications changed?" → "Yes" means NOT changed.
@@ -357,38 +154,38 @@ export async function completeMedication(
   }
 
   await saveSubTask(page);
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   // --- Sub-task 2: TreatmentReview ---
   // In initial encounters, this tab appears after PrescribedMedication is saved.
   await clickSubTaskTab(page, 'treatment-review');
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   // "Has the patient been taking the medication as prescribed?" → Yes
   await answerYesNo(page, 'taken-as-prescribed', 'Yes');
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
 
   // "Is the patient feeling better?" → Yes
   await answerYesNo(page, 'feeling-better', 'Yes');
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
 
   // "Has the patient missed any doses?" → No (reverted bool input)
   await answerYesNo(page, 'missed-doses', 'No');
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
 
   // "Has the medication caused any side effects?" → answer based on option
   if (sideEffects) {
     await answerYesNo(page, 'side-effects', 'Yes');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
 
     // Select adverse events: "Rash or Itching"
     await selectCheckbox(page, 'Rash or Itching');
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(WAIT.formInteraction);
   } else {
     await answerYesNo(page, 'side-effects', 'No');
   }
 
-  await saveAndReturn(page);
+  await saveActivity(page, 'hiv');
 }
 
 // ---------------------------------------------------------------------------
@@ -409,7 +206,7 @@ export async function completeSymptomReview(
 ) {
   const symptoms = options?.symptoms ?? [];
 
-  await openActivity(page, 'symptoms');
+  await openActivity(page, 'hiv', 'symptoms');
 
   const form = page.locator('.ui.form.symptom-review');
 
@@ -421,11 +218,11 @@ export async function completeSymptomReview(
         hasText: new RegExp(`^${symptom}$`, 'i'),
       }).locator('label');
       await click(checkbox, page);
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(WAIT.formInteraction);
     }
   }
 
-  await saveAndReturn(page);
+  await saveActivity(page, 'hiv');
 }
 
 // ---------------------------------------------------------------------------
@@ -440,7 +237,7 @@ export async function completeSymptomReview(
  * Creates: hiv_health_education, hiv_follow_up, hiv_referral (conditional)
  */
 export async function completeNextSteps(page: Page) {
-  await openActivity(page, 'next-steps');
+  await openActivity(page, 'hiv', 'next-steps');
 
   // Iterate visible sub-task tabs.
   const tabs = page.locator('.link-section:has(.icon-activity-task)');
@@ -448,7 +245,7 @@ export async function completeNextSteps(page: Page) {
 
   for (let i = 0; i < tabCount; i++) {
     await click(tabs.nth(i), page);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
 
     // Determine which sub-task by checking the active icon.
     const activeTab = page.locator('.link-section.active .icon-activity-task');
@@ -457,11 +254,11 @@ export async function completeNextSteps(page: Page) {
     if (classAttr?.includes('next-steps-health-education')) {
       // HealthEducation: 4 yes/no questions.
       await answerYesNo(page, 'positive-result', 'Yes');
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(WAIT.formInteraction);
       await answerYesNo(page, 'safer-sex-practices', 'Yes');
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(WAIT.formInteraction);
       await answerYesNo(page, 'encouraged-partner-testing', 'Yes');
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(WAIT.formInteraction);
       await answerYesNo(page, 'family-planning-options', 'Yes');
     } else if (classAttr?.includes('next-steps-follow-up')) {
       // FollowUp: select a follow-up option.
@@ -469,7 +266,7 @@ export async function completeNextSteps(page: Page) {
     } else if (classAttr?.includes('next-steps-send-to-hc')) {
       // Referral: refer to health center.
       await answerYesNo(page, 'refer-to-hc', 'Yes');
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
       // "Hand referral form?" → Yes
       const handForm = page.locator('.form-input.yes-no.hand-referral-form label', { hasText: 'Yes' });
       if (await handForm.isVisible({ timeout: 2000 }).catch(() => false)) {
@@ -481,12 +278,12 @@ export async function completeNextSteps(page: Page) {
     const saveBtn = page.locator('button.ui.fluid.primary.button:not(.disabled)', { hasText: 'Save' });
     await saveBtn.waitFor({ timeout: 10000 });
     await saveBtn.click({ force: true });
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(WAIT.sectionTransition);
   }
 
   // Wait for encounter page.
   await page.locator('div.page-encounter.hiv').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 // ---------------------------------------------------------------------------
@@ -497,7 +294,7 @@ export async function completeNextSteps(page: Page) {
  * End the HIV encounter: click "End Encounter", confirm in the dialog.
  */
 export async function endHIVEncounter(page: Page) {
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(WAIT.pageNavigation);
 
   const endBtn = page.locator('button', { hasText: 'End Encounter' }).first();
   await endBtn.waitFor({ timeout: 10000 });
@@ -573,7 +370,7 @@ export async function startHIVEncounter(page: Page) {
   await page
     .locator('div.page-encounter.hiv')
     .waitFor({ timeout: 30000 });
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 }
 
 // ---------------------------------------------------------------------------
@@ -590,7 +387,6 @@ export function queryHIVNodes(
   personName: string,
   expectedTypes?: string[],
 ): Record<string, boolean> {
-  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
   const hivTypes = [
     'hiv_diagnostics',
     'hiv_medication',
@@ -600,79 +396,7 @@ export function queryHIVNodes(
     'hiv_referral',
     'hiv_follow_up',
   ];
-
-  const typesStr = hivTypes.map(t => `'${t}'`).join(', ');
-
-  const php = `
-    \\$person_name = base64_decode('${personNameB64}');
-    \\$query = new EntityFieldQuery();
-    \\$result = \\$query->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'person')
-      ->propertyCondition('title', \\$person_name)
-      ->execute();
-    if (empty(\\$result['node'])) {
-      echo json_encode(['error' => 'Person not found']);
-      return;
-    }
-    \\$person_nid = key(\\$result['node']);
-
-    \\$types = array(${typesStr});
-    \\$found = array();
-    foreach (\\$types as \\$type) {
-      \\$q = new EntityFieldQuery();
-      \\$r = \\$q->entityCondition('entity_type', 'node')
-        ->propertyCondition('type', \\$type)
-        ->fieldCondition('field_person', 'target_id', \\$person_nid)
-        ->range(0, 1)
-        ->execute();
-      \\$found[\\$type] = !empty(\\$r['node']);
-    }
-    echo json_encode(\\$found);
-  `;
-
-  const { drushCmd, cwd } = drushEnv();
-
-  for (let attempt = 0; attempt < 10; attempt++) {
-    try {
-      const output = execSync(`${drushCmd} eval "${php}"`, {
-        cwd,
-        timeout: 30000,
-        encoding: 'utf-8',
-      }).trim();
-
-      const parsed = JSON.parse(output);
-      if (parsed.error) {
-        console.log(`queryHIVNodes attempt ${attempt + 1}: ${parsed.error}`);
-        if (attempt < 9) {
-          execSync('sleep 5');
-          continue;
-        }
-        return parsed;
-      }
-
-      // Check if all expected types are found.
-      if (expectedTypes) {
-        const missing = expectedTypes.filter(t => !parsed[t]);
-        if (missing.length === 0) {
-          return parsed;
-        }
-        console.log(`queryHIVNodes attempt ${attempt + 1}: missing [${missing.join(', ')}]`);
-        if (attempt < 9) {
-          execSync('sleep 5');
-          continue;
-        }
-      }
-
-      return parsed;
-    } catch (err) {
-      console.log(`queryHIVNodes attempt ${attempt + 1}: error`, err);
-      if (attempt < 9) {
-        execSync('sleep 5');
-      }
-    }
-  }
-
-  return {};
+  return queryMeasurementNodes(personName, hivTypes, expectedTypes);
 }
 
 /**
@@ -680,69 +404,5 @@ export function queryHIVNodes(
  * Retries up to 5 times with 10s delay for eventual consistency.
  */
 export function backdateHIVEncounter(personName: string) {
-  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
-  const php = `
-    \\$person_name = base64_decode('${personNameB64}');
-    \\$query = new EntityFieldQuery();
-    \\$result = \\$query->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'person')
-      ->propertyCondition('title', \\$person_name)
-      ->execute();
-    if (empty(\\$result['node'])) {
-      echo 'Person not found';
-      return;
-    }
-    \\$person_nid = key(\\$result['node']);
-
-    // Find individual_participant for this person.
-    \\$q = new EntityFieldQuery();
-    \\$r = \\$q->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'individual_participant')
-      ->fieldCondition('field_person', 'target_id', \\$person_nid)
-      ->execute();
-    if (empty(\\$r['node'])) {
-      echo 'No participant found';
-      return;
-    }
-
-    // Find hiv_encounter for this person's participants.
-    \\$participant_nids = array_keys(\\$r['node']);
-    \\$eq = new EntityFieldQuery();
-    \\$er = \\$eq->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'hiv_encounter')
-      ->fieldCondition('field_individual_participant', 'target_id', \\$participant_nids, 'IN')
-      ->propertyOrderBy('nid', 'DESC')
-      ->execute();
-    if (empty(\\$er['node'])) {
-      echo 'No encounter found';
-      return;
-    }
-
-    // Backdate the most recent encounter.
-    \\$target_date = date('Y-m-d H:i:s', strtotime('-7 days'));
-    \\$enc_nid = key(\\$er['node']);
-    \\$enc = node_load(\\$enc_nid);
-    \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value'] = \\$target_date;
-    \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value2'] = \\$target_date;
-    node_save(\\$enc);
-    echo 'Backdated encounter ' . \\$enc_nid;
-  `;
-
-  const { drushCmd, cwd } = drushEnv();
-
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const output = execSync(`${drushCmd} eval "${php}"`, {
-      cwd,
-      timeout: 30000,
-      encoding: 'utf-8',
-    }).trim();
-    console.log(`backdateHIVEncounter attempt ${attempt + 1}:`, output);
-    if (output.startsWith('Backdated')) {
-      return;
-    }
-    if (attempt < 4) {
-      execSync('sleep 10');
-    }
-  }
-  console.error('backdateHIVEncounter: failed after 5 attempts');
+  backdateEncounter(personName, 'hiv_encounter', 7);
 }

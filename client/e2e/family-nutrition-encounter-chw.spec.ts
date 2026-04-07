@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
-import { syncAndWait } from './helpers/common';
+import { WAIT, syncAndWait } from './helpers/common';
 import {
   createMotherAndNavigateToPersonPage,
   addChild,
@@ -62,13 +62,13 @@ test.describe('CHW: Family Nutrition Encounter', () => {
 
     // 7. Verify backend nodes.
     const nodes = queryFamilyNutritionNodes(mother.fullName);
-    expect(nodes.ahezaMother).toBe(true);
-    expect(nodes.muacMother).toBe(true);
-    expect(nodes.encounter).toBe(true);
+    expect(nodes.ahezaMother, 'ahezaMother should exist').toBe(true);
+    expect(nodes.muacMother, 'muacMother should exist').toBe(true);
+    expect(nodes.encounter, 'encounter should exist').toBe(true);
     // No children → child measurements should not exist.
-    expect(nodes.ahezaChild).toBe(false);
-    expect(nodes.muacChild).toBe(false);
-    expect(nodes.photo).toBe(false);
+    expect(nodes.ahezaChild, 'ahezaChild should not exist').toBe(false);
+    expect(nodes.muacChild, 'muacChild should not exist').toBe(false);
+    expect(nodes.photo, 'photo should not exist').toBe(false);
   });
 
   test('Case 2: Mother with 2 children — one <6mo, one >=6mo', async ({
@@ -129,17 +129,17 @@ test.describe('CHW: Family Nutrition Encounter', () => {
       await completeAhezaChild(page, { amount: '2' });
       await completeMuac(page, { value: '14.0' });
       // Switch to the <6mo child at index 2 — complete Aheza only.
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(WAIT.sectionTransition);
       await selectFamilyMember(page, 2);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
       await completeAhezaChild(page, { amount: '1' });
     } else {
       // Index 1 is the <6mo child — complete Aheza only.
       await completeAhezaChild(page, { amount: '1' });
       // Switch to the >=6mo child at index 2 — complete Aheza + MUAC.
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(WAIT.sectionTransition);
       await selectFamilyMember(page, 2);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
       await completeAhezaChild(page, { amount: '2' });
       await completeMuac(page, { value: '14.0' });
     }
@@ -155,11 +155,11 @@ test.describe('CHW: Family Nutrition Encounter', () => {
       child1.fullName,
       child2.fullName,
     ]);
-    expect(nodes.ahezaMother).toBe(true);
-    expect(nodes.muacMother).toBe(true);
-    expect(nodes.encounter).toBe(true);
-    expect(nodes.ahezaChild).toBe(true);
-    expect(nodes.muacChild).toBe(true);
+    expect(nodes.ahezaMother, 'ahezaMother should exist').toBe(true);
+    expect(nodes.muacMother, 'muacMother should exist').toBe(true);
+    expect(nodes.encounter, 'encounter should exist').toBe(true);
+    expect(nodes.ahezaChild, 'ahezaChild should exist').toBe(true);
+    expect(nodes.muacChild, 'muacChild should exist').toBe(true);
     // Photo skipped — Dropzone file upload not supported in headless tests.
   });
 });

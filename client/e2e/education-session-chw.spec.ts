@@ -70,9 +70,9 @@ test.describe('CHW: Group Education Session', () => {
       'family-planning',
     ]);
 
-    expect(result.found).toBe(true);
-    expect(result.participantFound).toBe(true);
-    expect(result.hasEndDate).toBe(true);
-    expect(result.allTopicsFound).toBe(true);
+    expect(result.found, 'education_session node should exist').toBe(true);
+    expect(result.participantFound, 'participant should be found in education_session').toBe(true);
+    expect(result.hasEndDate, 'education_session should have an end date').toBe(true);
+    expect(result.allTopicsFound, 'all selected topics should be found in education_session').toBe(true);
   });
 });

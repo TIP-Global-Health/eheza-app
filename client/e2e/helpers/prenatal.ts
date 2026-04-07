@@ -1,160 +1,25 @@
 import { Page, Locator } from '@playwright/test';
-import { execSync } from 'child_process';
 import { click } from './auth';
-import { drushEnv } from './device';
+import {
+  WAIT,
+  answerYesNo,
+  backdateEncounter,
+  clickSubTaskTab,
+  fillMeasurement,
+  formInput,
+  openActivity,
+  queryMeasurementNodes,
+  registerAdult,
+  saveActivity,
+  saveSubTask,
+  selectByLabel,
+  selectCheckbox,
+  setDate,
+} from './common';
 
 // ---------------------------------------------------------------------------
 // Private form helpers
 // ---------------------------------------------------------------------------
-
-/**
- * Select an option in a form dropdown identified by its label text.
- * @param optionIndex - 1-based index (skips blank default).
- */
-async function selectByLabel(page: Page, labelText: string, optionIndex: number) {
-  const row = page.locator('.ui.grid').filter({ hasText: labelText });
-  const select = row.locator('select').first();
-  const options = select.locator('option');
-  const count = await options.count();
-  if (count > optionIndex) {
-    const value = await options.nth(optionIndex).getAttribute('value');
-    if (value !== null) {
-      await select.selectOption(value);
-    }
-  }
-}
-
-/**
- * Locate a form input by its label text (grid row pattern).
- */
-function formInput(page: Page, labelText: string) {
-  return page
-    .locator('.ui.grid')
-    .filter({ hasText: labelText })
-    .locator('input')
-    .first();
-}
-
-/**
- * Answer a Yes/No boolean field by its CSS class.
- * Radio inputs are CSS-hidden; click the label instead.
- */
-async function answerYesNo(
-  page: Page,
-  fieldClass: string,
-  answer: 'Yes' | 'No',
-) {
-  await click(
-    page.locator(`.form-input.yes-no.${fieldClass} label`, {
-      hasText: answer,
-    }),
-    page,
-  );
-}
-
-/**
- * Select a checkbox option by clicking its label (exact match).
- */
-async function selectCheckbox(page: Page, optionText: string) {
-  await click(
-    page.locator('.ui.checkbox label', {
-      hasText: new RegExp(`^${optionText}$`, 'i'),
-    }),
-    page,
-  );
-}
-
-/**
- * Open the calendar popup, select a date, and confirm.
- * @param triggerSelector - CSS selector for the date input that opens the popup.
- */
-async function setDate(page: Page, date: Date, triggerSelector = '.date-input') {
-  await click(page.locator(triggerSelector).first(), page);
-  await page
-    .locator('.ui.active.modal.calendar-popup')
-    .waitFor({ timeout: 5000 });
-
-  // Use UTC — Elm date pickers derive dates via Time.utc.
-  const year = date.getUTCFullYear().toString();
-  await page
-    .locator('div.calendar > div.year > select')
-    .selectOption(year);
-
-  const monthValue = (date.getUTCMonth() + 1).toString();
-  await page
-    .locator('div.calendar > div.month > select')
-    .selectOption(monthValue);
-
-  const day = date.getUTCDate();
-  const dayCell = page.locator(
-    'div.calendar table tbody td:not(.date-selector--dimmed)',
-    { hasText: new RegExp(`^${day}$`) },
-  );
-  await dayCell.first().click();
-
-  await click(
-    page.locator('.ui.active.modal.calendar-popup div.ui.button'),
-    page,
-  );
-
-  await page
-    .locator('.ui.active.modal.calendar-popup')
-    .waitFor({ state: 'hidden', timeout: 3000 })
-    .catch(() => {});
-}
-
-/**
- * Click a sub-task tab icon and wait for the tab to become active.
- * Sub-tasks are rendered as clickable columns in the task bar.
- */
-async function clickSubTaskTab(page: Page, iconClass: string) {
-  const tab = page.locator(`.link-section:has(.icon-activity-task.icon-${iconClass})`);
-  // Only click if not already active.
-  const isActive = await tab.evaluate(el => el.classList.contains('active')).catch(() => false);
-  if (!isActive) {
-    await click(tab, page);
-    await page.waitForTimeout(500);
-  }
-}
-
-/**
- * Open an activity from the encounter page by clicking its card icon.
- * Waits for the activity page to load.
- */
-async function openActivity(page: Page, activityIcon: string) {
-  // Ensure encounter page is fully rendered before clicking an activity card.
-  await page.locator('div.page-encounter.prenatal').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
-  const icon = page.locator(`.icon-task-${activityIcon}`);
-  await icon.waitFor({ timeout: 10000 });
-  await click(icon, page);
-  await page.locator('div.page-activity.prenatal').waitFor({ timeout: 10000 });
-}
-
-/**
- * Save current activity and return to encounter page.
- * Clicks the active save button, waits for encounter page.
- */
-async function savePrenatalActivity(page: Page) {
-  await click(
-    page.locator('button.ui.fluid.primary.button', { hasText: 'Save' }),
-    page,
-  );
-  await page
-    .locator('div.page-encounter.prenatal')
-    .waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
-}
-
-/**
- * Fill a measurement number input identified by its CSS ID class.
- * Measurement inputs render as: .form-input.measurement.{id} input[type="number"]
- */
-async function fillMeasurement(page: Page, id: string, value: string) {
-  await page
-    .locator(`.form-input.measurement.${id} input[type="number"]`)
-    .fill(value);
-}
 
 /**
  * Fill a number input identified by its CSS ID class.
@@ -187,90 +52,19 @@ export async function createAdultFemaleAndStartEncounter(
     encounterType?: 'first' | 'subsequent' | 'postpartum';
   },
 ) {
-  const ageYears = options?.ageYears ?? 25;
-  const firstName = options?.firstName ?? `TestMother${Date.now()}`;
-  const secondName = 'E2ETest';
-  const isChw = options?.isChw ?? false;
   const encounterType = options?.encounterType ?? 'first';
 
-  // Navigate: Dashboard → Clinical
-  await click(page.locator('.icon-task-clinical'), page);
-  await page.locator('div.page-clinical').waitFor({ timeout: 10000 });
-
-  // Clinical → Individual Encounter
-  await click(page.locator('button.individual-assessment'), page);
-  await page.locator('div.page-encounter-types').waitFor({ timeout: 10000 });
-
-  // Individual Encounter → Antenatal Care
-  await click(
-    page.locator('button.encounter-type', { hasText: 'Antenatal Care' }),
-    page,
-  );
-  await page.locator('div.page-participants').waitFor({ timeout: 10000 });
-
-  // Click "Register a new participant"
-  await click(
-    page.locator('button.ui.primary.button.fluid', {
-      hasText: 'Register a new participant',
-    }),
-    page,
-  );
-  await page
-    .locator('.ui.grid .column', { hasText: 'First Name:' })
-    .waitFor({ timeout: 10000 });
-
-  // Fill the registration form.
-  await formInput(page, 'First Name:').fill(firstName);
-  await formInput(page, 'Second Name:').fill(secondName);
-
-  // Set date of birth.
-  const dob = new Date();
-  dob.setFullYear(dob.getFullYear() - ageYears);
-  await setDate(page, dob);
-
-  // Select gender = Female (only option shown for prenatal / ExpectFemale).
-  await page
-    .locator('.ui.grid')
-    .filter({ hasText: 'Gender:' })
-    .locator('input[type="radio"]')
-    .first()
-    .check();
-
-  // Adult-only required fields.
-  await selectByLabel(page, 'Level of Education:', 1);
-  await selectByLabel(page, 'Marital Status:', 1);
-
-  if (!isChw) {
-    // Nurse: fill address (cascading dropdowns) and health center.
-    await selectByLabel(page, 'Province:', 1);
-    await page.waitForTimeout(500);
-    await selectByLabel(page, 'District:', 1);
-    await page.waitForTimeout(500);
-    await selectByLabel(page, 'Sector:', 1);
-    await page.waitForTimeout(500);
-    await selectByLabel(page, 'Cell:', 1);
-    await page.waitForTimeout(500);
-    await selectByLabel(page, 'Village:', 1);
-
-    const hcSelect = page
-      .locator('.ui.grid')
-      .filter({ hasText: 'Health Center:' })
-      .locator('select');
-    await hcSelect.selectOption({ label: 'Nyange Health Center' });
-  }
-
-  // Submit the form.
-  await click(page.locator('button[type="submit"]'), page);
-
-  // Wait for the participant page.
-  await page
-    .locator('div.page-participant.individual.prenatal')
-    .waitFor({ timeout: 30000 });
+  const result = await registerAdult(page, 'Antenatal Care', 'prenatal', {
+    ageYears: options?.ageYears ?? 25,
+    firstName: options?.firstName ?? `TestMother${Date.now()}`,
+    isFemale: true,
+    isChw: options?.isChw,
+  });
 
   // Start the encounter.
   await startPrenatalEncounter(page, encounterType);
 
-  return { firstName, secondName, fullName: `${secondName} ${firstName}` };
+  return result;
 }
 
 // ---------------------------------------------------------------------------
@@ -308,14 +102,14 @@ export async function startPrenatalEncounter(
   await page
     .locator('div.page-encounter.prenatal')
     .waitFor({ timeout: 30000 });
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 
   // Dismiss any informational popup (e.g. "has not yet been seen at the
   // health center for this pregnancy").
   const okBtn = page.locator('button', { hasText: 'OK' });
   if (await okBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
     await okBtn.click({ force: true });
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
   }
 }
 
@@ -324,7 +118,7 @@ export async function startPrenatalEncounter(
  * confirm in the dialog, wait for navigation away.
  */
 export async function endPrenatalEncounter(page: Page) {
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(WAIT.pageNavigation);
 
   // "End Encounter" may be on the encounter page or the progress report.
   const endBtn = page.locator('button', { hasText: 'End Encounter' }).first();
@@ -339,7 +133,7 @@ export async function endPrenatalEncounter(page: Page) {
   }
 
   // Wait for navigation away (may go to participant page or dashboard).
-  await page.waitForTimeout(5000);
+  await page.waitForTimeout(WAIT.heavyOperation);
 }
 
 /**
@@ -403,7 +197,7 @@ export async function navigateToParticipantPage(
  * Creates: last_menstrual_period
  */
 export async function completePregnancyDating(page: Page, lmpDate: Date) {
-  await openActivity(page, 'pregnancy-dating');
+  await openActivity(page, 'prenatal', 'pregnancy-dating');
 
   // Click the LMP date input to open calendar.
   await setDate(page, lmpDate, '.form-input.date');
@@ -420,7 +214,7 @@ export async function completePregnancyDating(page: Page, lmpDate: Date) {
     await click(lateAncCheckbox, page);
   }
 
-  await savePrenatalActivity(page);
+  await saveActivity(page, 'prenatal');
 }
 
 /**
@@ -428,11 +222,11 @@ export async function completePregnancyDating(page: Page, lmpDate: Date) {
  * Creates: danger_signs
  */
 export async function completeDangerSigns(page: Page) {
-  await openActivity(page, 'danger-signs');
+  await openActivity(page, 'prenatal', 'danger-signs');
 
   await selectCheckbox(page, 'None of These');
 
-  await savePrenatalActivity(page);
+  await saveActivity(page, 'prenatal');
 }
 
 /**
@@ -440,12 +234,12 @@ export async function completeDangerSigns(page: Page) {
  * Creates: prenatal_family_planning
  */
 export async function completeFamilyPlanning(page: Page) {
-  await openActivity(page, 'planning');
+  await openActivity(page, 'prenatal', 'planning');
 
   // Select "Auto-observation" as the family planning method.
   await selectCheckbox(page, 'Auto-observation');
 
-  await savePrenatalActivity(page);
+  await saveActivity(page, 'prenatal');
 }
 
 /**
@@ -453,11 +247,11 @@ export async function completeFamilyPlanning(page: Page) {
  * Creates: malaria prevention node
  */
 export async function completeMalariaPrevention(page: Page) {
-  await openActivity(page, 'malaria');
+  await openActivity(page, 'prenatal', 'malaria');
 
   await answerYesNo(page, 'mosquito-net', 'Yes');
 
-  await savePrenatalActivity(page);
+  await saveActivity(page, 'prenatal');
 }
 
 /**
@@ -465,7 +259,7 @@ export async function completeMalariaPrevention(page: Page) {
  * Creates: pregnancy_testing
  */
 export async function completeLaboratoryChw(page: Page) {
-  await openActivity(page, 'laboratory');
+  await openActivity(page, 'prenatal', 'laboratory');
 
   // The CHW lab form is a dropdown for pregnancy test result.
   // Select "Positive".
@@ -473,7 +267,7 @@ export async function completeLaboratoryChw(page: Page) {
   await selectEl.waitFor({ timeout: 5000 });
   await selectEl.selectOption({ index: 1 });
 
-  await savePrenatalActivity(page);
+  await saveActivity(page, 'prenatal');
 }
 
 /**
@@ -486,7 +280,7 @@ export async function completeHealthEducation(
   page: Page,
   encounterNum: number = 1,
 ) {
-  await openActivity(page, 'health-education');
+  await openActivity(page, 'prenatal', 'health-education');
 
   // First encounter always shows expectations, visits-review, warning-signs.
   // Subsequent encounters only show these if health education was NOT
@@ -508,7 +302,7 @@ export async function completeHealthEducation(
     await answerYesNo(page, 'breastfeeding', 'Yes');
   }
 
-  await savePrenatalActivity(page);
+  await saveActivity(page, 'prenatal');
 }
 
 /**
@@ -516,7 +310,7 @@ export async function completeHealthEducation(
  * Creates: birth_plan
  */
 export async function completeBirthPlan(page: Page) {
-  await openActivity(page, 'birth-plan');
+  await openActivity(page, 'prenatal', 'birth-plan');
 
   await answerYesNo(page, 'insurance', 'Yes');
   await answerYesNo(page, 'clothes', 'Yes');
@@ -530,7 +324,7 @@ export async function completeBirthPlan(page: Page) {
   // Family planning selection — select "Auto-observation".
   await selectCheckbox(page, 'Auto-observation');
 
-  await savePrenatalActivity(page);
+  await saveActivity(page, 'prenatal');
 }
 
 // ---------------------------------------------------------------------------
@@ -546,7 +340,7 @@ export async function completeHistory(
   page: Page,
   options?: { isSubsequent?: boolean; preeclampsiaPrevious?: boolean },
 ) {
-  await openActivity(page, 'history');
+  await openActivity(page, 'prenatal', 'history');
 
   if (!options?.isSubsequent) {
     // --- Obstetric History Step 1 (initial encounter only) ---
@@ -561,8 +355,7 @@ export async function completeHistory(
     await fillNumber(page, 'abortions', '0');
     await fillNumber(page, 'live-children', '2');
 
-    await click(page.locator('button.ui.fluid.primary.button', { hasText: 'Save' }), page);
-    await page.waitForTimeout(1000);
+    await saveSubTask(page);
 
     // --- Obstetric History Step 2 ---
     await page.locator('.form.history.obstetric.second').waitFor({ timeout: 5000 });
@@ -576,11 +369,7 @@ export async function completeHistory(
       await selectCheckbox(page, 'None of the above');
     }
 
-    await click(
-      page.locator('div.actions button.ui.fluid.primary.button').filter({ hasText: /Save/ }),
-      page,
-    );
-    await page.waitForTimeout(1000);
+    await saveSubTask(page);
 
     // --- Medical History ---
     await clickSubTaskTab(page, 'medical');
@@ -601,9 +390,7 @@ export async function completeHistory(
       await click(noPreeclampsia, page);
     }
 
-    const medSaveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
-    await click(medSaveBtn, page);
-    await page.waitForTimeout(1000);
+    await saveSubTask(page);
   }
 
   // --- OutsideCare (subsequent encounters only) ---
@@ -611,11 +398,7 @@ export async function completeHistory(
     // "Have you been seen at another facility since your last visit?" → No
     await answerYesNo(page, 'seen-at-another-facility', 'No');
 
-    await click(
-      page.locator('button.ui.fluid.primary.button', { hasText: 'Save' }),
-      page,
-    );
-    await page.waitForTimeout(500);
+    await saveSubTask(page);
   }
 
   // Wait for return to encounter page.
@@ -634,11 +417,11 @@ export async function completeExamination(
   page: Page,
   options?: { isPostpartum?: boolean; vitals?: { sys?: string; dia?: string } },
 ) {
-  await openActivity(page, 'examination');
+  await openActivity(page, 'prenatal', 'examination');
 
   // --- Vitals ---
   await clickSubTaskTab(page, 'vitals');
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   await fillMeasurement(page, 'sys-blood-pressure', options?.vitals?.sys ?? '120');
   await fillMeasurement(page, 'dia-blood-pressure', options?.vitals?.dia ?? '80');
@@ -646,12 +429,11 @@ export async function completeExamination(
   await fillMeasurement(page, 'respiratory-rate', '18');
   await fillMeasurement(page, 'body-temperature', '36.5');
 
-  await click(page.locator('button.ui.fluid.primary.button', { hasText: 'Save' }), page);
-  await page.waitForTimeout(1000);
+  await saveSubTask(page);
 
   // --- Nutrition Assessment ---
   await clickSubTaskTab(page, 'nutrition-assessment');
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   // Height might be hidden if previously measured; fill if visible.
   const heightInput = page.locator('.form-input.measurement.height input[type="number"]');
@@ -661,12 +443,11 @@ export async function completeExamination(
   await fillMeasurement(page, 'weight', '60');
   await fillMeasurement(page, 'muac', '25');
 
-  await click(page.locator('button.ui.fluid.primary.button', { hasText: 'Save' }), page);
-  await page.waitForTimeout(1000);
+  await saveSubTask(page);
 
   // --- Core Physical Exam ---
   await clickSubTaskTab(page, 'core-physical-exam');
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   // Head/Hair: bool input (BrittleHair/Normal) — select "Normal".
   await answerYesNo(page, 'head-hair', 'Normal');
@@ -685,17 +466,16 @@ export async function completeExamination(
     await click(normalCheckboxes.nth(i), page);
   }
 
-  await click(page.locator('button.ui.fluid.primary.button', { hasText: 'Save' }), page);
-  await page.waitForTimeout(1000);
+  await saveSubTask(page);
 
   // --- Obstetrical Exam (not shown for postpartum) ---
   if (!options?.isPostpartum) {
     await clickSubTaskTab(page, 'obstetrical-exam');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
 
     // Is fundal palpable? → Yes
     await answerYesNo(page, 'fundal-palpable', 'Yes');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
 
     // Fundal height measurement (appears after answering Yes above).
     const fundalInput = page.locator(
@@ -704,15 +484,15 @@ export async function completeExamination(
     if (await fundalInput.isVisible({ timeout: 3000 }).catch(() => false)) {
       await fundalInput.fill('30');
     }
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(WAIT.formInteraction);
 
     // Fetal presentation — select "Cephalic".
     await selectCheckbox(page, 'Cephalic');
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(WAIT.formInteraction);
 
     // Fetal movement → Yes
     await answerYesNo(page, 'fetal-movement', 'Yes');
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(WAIT.formInteraction);
 
     // Fetal heart rate.
     const heartRateInput = page.locator(
@@ -721,18 +501,17 @@ export async function completeExamination(
     if (await heartRateInput.isVisible({ timeout: 3000 }).catch(() => false)) {
       await heartRateInput.fill('140');
     }
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(WAIT.formInteraction);
 
     // Previous c-section scar → None
     await selectCheckbox(page, 'None');
 
-    await click(page.locator('button.ui.fluid.primary.button', { hasText: 'Save' }), page);
-    await page.waitForTimeout(1000);
+    await saveSubTask(page);
   }
 
   // --- Breast Exam ---
   await clickSubTaskTab(page, 'breast-exam');
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   // Breast exam — select "Normal".
   await selectCheckbox(page, 'Normal');
@@ -743,26 +522,24 @@ export async function completeExamination(
     await click(selfExamYes, page);
   }
 
-  await click(page.locator('button.ui.fluid.primary.button', { hasText: 'Save' }), page);
-  await page.waitForTimeout(1000);
+  await saveSubTask(page);
 
   // --- GU Exam (postpartum only) ---
   if (options?.isPostpartum) {
     await clickSubTaskTab(page, 'gu-exam');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
 
     // Vaginal Examination: select "Normal".
     await selectCheckbox(page, 'Normal');
 
     // Episiotomy/perineal tear: select "No".
     await answerYesNo(page, 'episiotomy', 'No');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
 
     // Rectal Hemorrhoids? (appears after answering episiotomy): select "No".
     await answerYesNo(page, 'rectal-hemorrhoids', 'No');
 
-    await click(page.locator('button.ui.fluid.primary.button', { hasText: 'Save' }), page);
-    await page.waitForTimeout(1000);
+    await saveSubTask(page);
   }
 
   // Wait for return to encounter page.
@@ -777,7 +554,7 @@ export async function completeExamination(
  * Creates: prenatal_symptom_review
  */
 export async function completeSymptomReview(page: Page) {
-  await openActivity(page, 'symptoms');
+  await openActivity(page, 'prenatal', 'symptoms');
 
   // Wait for the symptom checkboxes to render.
   const noneCheckbox = page.locator('.ui.checkbox.activity label', {
@@ -791,7 +568,7 @@ export async function completeSymptomReview(page: Page) {
   // Wait for Save button to become active (Elm only attaches onClick when active).
   await page.locator('button.ui.fluid.primary.button.active').waitFor({ timeout: 10000 });
 
-  await savePrenatalActivity(page);
+  await saveActivity(page, 'prenatal');
 }
 
 /**
@@ -800,7 +577,7 @@ export async function completeSymptomReview(page: Page) {
  * Creates: prenatal_mental_health
  */
 export async function completeMentalHealth(page: Page) {
-  await openActivity(page, 'mental-health');
+  await openActivity(page, 'prenatal', 'mental-health');
 
   // Questions 1-10: Each shows one question with multiple answer options.
   // Click the best (score=0) answer for each question.
@@ -818,7 +595,7 @@ export async function completeMentalHealth(page: Page) {
     // Click the forward/next button to advance.
     const nextBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
     await click(nextBtn, page);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
   }
 
   // Question 11: Specialist at HC → Yes
@@ -826,7 +603,7 @@ export async function completeMentalHealth(page: Page) {
 
   // With Option0 selected for all questions (including Q10), no suicide
   // risk is diagnosed, so Save navigates directly back to encounter page.
-  await savePrenatalActivity(page);
+  await saveActivity(page, 'prenatal');
 }
 
 /**
@@ -837,34 +614,34 @@ export async function completeMentalHealth(page: Page) {
  * This keeps the form in ViewModeInitial so the regular Save button works.
  */
 export async function completeImmunisation(page: Page) {
-  await openActivity(page, 'immunisation');
+  await openActivity(page, 'prenatal', 'immunisation');
 
   // The Tetanus tab should be available.
   const tetanusTab = page.locator('.link-section:has(.icon-activity-task.icon-tetanus-vaccine)');
   if (await tetanusTab.isVisible()) {
     await click(tetanusTab, page);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
   }
 
   // Question 1: "Was Tetanus Dose 1 previously administered?" → No
   const yesNoInputs = page.locator('.form-input.yes-no');
   await yesNoInputs.first().waitFor({ timeout: 5000 });
   await click(yesNoInputs.first().locator('label', { hasText: 'No' }), page);
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   // Question 2: "Will patient receive Tetanus Dose 1 today?" → Yes
   // This second question appears after answering "No" to the first.
   await yesNoInputs.nth(1).waitFor({ timeout: 5000 });
   await click(yesNoInputs.nth(1).locator('label', { hasText: 'Yes' }), page);
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   // Save Tetanus tab → auto-switches to Overview tab.
   const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
   await click(saveBtn, page);
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 
   // Save Overview tab → navigates back to encounter page.
-  await savePrenatalActivity(page);
+  await saveActivity(page, 'prenatal');
 }
 
 /**
@@ -876,7 +653,7 @@ export async function completeMedication(
   page: Page,
   options?: { preferIronFolate?: boolean },
 ): Promise<string[]> {
-  await openActivity(page, 'medication');
+  await openActivity(page, 'prenatal', 'medication');
 
   const completedMeds: string[] = [];
   // Default order: fefol before iron/folate (fefol blocks both).
@@ -889,7 +666,7 @@ export async function completeMedication(
     const tab = page.locator(`.link-section:has(.icon-activity-task.icon-${med})`);
     if (await tab.isVisible()) {
       await click(tab, page);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
 
       // Each medication form has a "Not Administered" note selection or
       // administration toggle. For simplicity, try to save with default values.
@@ -910,7 +687,7 @@ export async function completeMedication(
       if (await saveBtn.isVisible()) {
         await click(saveBtn, page);
         completedMeds.push(med);
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(WAIT.elmRerender);
       }
     }
   }
@@ -933,7 +710,7 @@ export async function completeLaboratoryNurse(
   options?: { hivPositive?: boolean },
 ): Promise<string[]> {
   const hivPositive = options?.hivPositive ?? false;
-  await openActivity(page, 'laboratory');
+  await openActivity(page, 'prenatal', 'laboratory');
 
   const completedTests: string[] = [];
 
@@ -958,7 +735,7 @@ export async function completeLaboratoryNurse(
     ).catch(() => false);
     if (!isActive) {
       await click(tab, page);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
     }
 
     const tabLabel = (await tab.textContent()) || `tab-${i}`;
@@ -976,7 +753,7 @@ export async function completeLaboratoryNurse(
     const knownPositive = page.locator('.form-input.yes-no.known-as-positive');
     if (await knownPositive.isVisible().catch(() => false)) {
       await click(knownPositive.locator('label', { hasText: 'No' }), page);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
     }
 
     // 2. "Will this test be performed today?"
@@ -985,13 +762,13 @@ export async function completeLaboratoryNurse(
       if (isHivTab) {
         // HIV tab: perform the test with positive result.
         await click(testPerformed.locator('label', { hasText: 'Yes' }), page);
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(WAIT.elmRerender);
 
         // "Immediate result?" → Yes (Point of Care) to satisfy immediateResult check.
         const immediateResult = page.locator('.form-input.yes-no.immediate-result');
         if (await immediateResult.isVisible({ timeout: 2000 }).catch(() => false)) {
           await click(immediateResult.locator('label').first(), page);
-          await page.waitForTimeout(500);
+          await page.waitForTimeout(WAIT.elmRerender);
         }
 
         // Select result: "Positive"
@@ -1002,19 +779,19 @@ export async function completeLaboratoryNurse(
             const val = await posOption.getAttribute('value');
             if (val) await resultSelect.selectOption(val);
           }
-          await page.waitForTimeout(300);
+          await page.waitForTimeout(WAIT.formInteraction);
         }
 
         // "Does the health center have an ARV services program?" → Yes
         const hivProgram = page.locator('.form-input.yes-no.hiv-program');
         if (await hivProgram.isVisible({ timeout: 2000 }).catch(() => false)) {
           await click(hivProgram.locator('label', { hasText: 'Yes' }), page);
-          await page.waitForTimeout(300);
+          await page.waitForTimeout(WAIT.formInteraction);
         }
       } else {
         // All other tabs: test not performed.
         await click(testPerformed.locator('label', { hasText: 'No' }), page);
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(WAIT.elmRerender);
       }
     }
 
@@ -1022,14 +799,14 @@ export async function completeLaboratoryNurse(
     const whyNot = page.locator('.why-not .ui.checkbox label').first();
     if (await whyNot.isVisible().catch(() => false)) {
       await click(whyNot, page);
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(WAIT.formInteraction);
     }
 
     // 4. "Did you perform a blood smear?" (Malaria only) → No
     const bloodSmear = page.locator('.form-input.yes-no.got-results-previously');
     if (await bloodSmear.isVisible().catch(() => false)) {
       await click(bloodSmear.locator('label', { hasText: 'No' }), page);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
     }
 
     // Save this lab test tab.
@@ -1037,7 +814,7 @@ export async function completeLaboratoryNurse(
     if (await saveBtn.isVisible()) {
       await click(saveBtn, page);
       completedTests.push(tabLabel);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
     }
   }
 
@@ -1058,7 +835,7 @@ export async function completeLaboratoryNurse(
  * Creates: prenatal_hiv_test, prenatal_syphilis_test, etc. with executionNote=RunToday.
  */
 export async function completeLaboratoryNurseForLab(page: Page): Promise<string[]> {
-  await openActivity(page, 'laboratory');
+  await openActivity(page, 'prenatal', 'laboratory');
 
   const completedTests: string[] = [];
   const allTabs = page.locator('.link-section');
@@ -1078,7 +855,7 @@ export async function completeLaboratoryNurseForLab(page: Page): Promise<string[
     ).catch(() => false);
     if (!isActive) {
       await click(tab, page);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
     }
 
     const tabLabel = (await tab.textContent()) || `tab-${i}`;
@@ -1087,35 +864,35 @@ export async function completeLaboratoryNurseForLab(page: Page): Promise<string[
     const knownPositive = page.locator('.form-input.yes-no.known-as-positive');
     if (await knownPositive.isVisible().catch(() => false)) {
       await click(knownPositive.locator('label', { hasText: 'No' }), page);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
     }
 
     // 2. "Will this test be performed today?" → Yes
     const testPerformed = page.locator('.form-input.yes-no.test-performed');
     if (await testPerformed.isVisible().catch(() => false)) {
       await click(testPerformed.locator('label', { hasText: 'Yes' }), page);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
     }
 
     // 3. "Immediate result?" → Lab (the "No" side of the bool input)
     const immediateResult = page.locator('.form-input.yes-no.immediate-result');
     if (await immediateResult.isVisible().catch(() => false)) {
       await click(immediateResult.locator('label', { hasText: 'Lab' }), page);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
     }
 
     // 4. "Urine Dipstick variant?" → Short Dip (checkbox, appears for Urine Dipstick)
     const shortDip = page.locator('.ui.checkbox label', { hasText: /^Short Dip$/i });
     if (await shortDip.isVisible().catch(() => false)) {
       await click(shortDip, page);
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(WAIT.formInteraction);
     }
 
     // 5. "Was this test performed before a meal?" → No (Random Blood Sugar only)
     const patientFasted = page.locator('.form-input.yes-no.patient-fasted');
     if (await patientFasted.isVisible().catch(() => false)) {
       await click(patientFasted.locator('label', { hasText: 'No' }), page);
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(WAIT.formInteraction);
     }
 
     // Save this lab test tab.
@@ -1123,7 +900,7 @@ export async function completeLaboratoryNurseForLab(page: Page): Promise<string[
     if (await saveBtn.isVisible()) {
       await click(saveBtn, page);
       completedTests.push(tabLabel);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
     }
   }
 
@@ -1162,7 +939,7 @@ export async function completeLabResultsAsLabTech(page: Page): Promise<string[]>
     ).catch(() => false);
     if (!isActive) {
       await click(tab, page);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
     }
 
     const tabLabel = (await tab.textContent()) || `tab-${i}`;
@@ -1171,7 +948,7 @@ export async function completeLabResultsAsLabTech(page: Page): Promise<string[]>
     const testPerformed = page.locator('.form-input.yes-no.test-performed');
     if (await testPerformed.isVisible().catch(() => false)) {
       await click(testPerformed.locator('label', { hasText: 'Yes' }), page);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
     }
 
     // 2. Enter result — fill all visible select dropdowns and numeric inputs.
@@ -1189,7 +966,7 @@ export async function completeLabResultsAsLabTech(page: Page): Promise<string[]>
             const val = await opts.nth(1).getAttribute('value');
             if (val !== null) {
               await sel.selectOption(val);
-              await page.waitForTimeout(300);
+              await page.waitForTimeout(WAIT.formInteraction);
             }
           }
         }
@@ -1206,7 +983,7 @@ export async function completeLabResultsAsLabTech(page: Page): Promise<string[]>
         const currentVal = await numInput.inputValue();
         if (!currentVal) {
           await numInput.fill('12');
-          await page.waitForTimeout(300);
+          await page.waitForTimeout(WAIT.formInteraction);
         }
       }
     }
@@ -1215,7 +992,7 @@ export async function completeLabResultsAsLabTech(page: Page): Promise<string[]>
     const hivProgram = page.locator('.form-input.yes-no.hiv-program');
     if (await hivProgram.isVisible({ timeout: 1000 }).catch(() => false)) {
       await click(hivProgram.locator('label', { hasText: 'Yes' }), page);
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(WAIT.formInteraction);
     }
 
     // Conditional symptom/sign checkboxes (e.g., Syphilis positive → symptoms).
@@ -1223,7 +1000,7 @@ export async function completeLabResultsAsLabTech(page: Page): Promise<string[]>
     const noneCheckbox = page.locator('.ui.checkbox label', { hasText: /^None of these$/i });
     if (await noneCheckbox.isVisible({ timeout: 1000 }).catch(() => false)) {
       await click(noneCheckbox, page);
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(WAIT.formInteraction);
     }
 
     // Save this lab test tab.
@@ -1231,7 +1008,7 @@ export async function completeLabResultsAsLabTech(page: Page): Promise<string[]>
     if (await saveBtn.isVisible()) {
       await click(saveBtn, page);
       completedTests.push(tabLabel);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
     }
   }
 
@@ -1249,9 +1026,9 @@ export async function completeNextSteps(page: Page): Promise<string[]> {
   const nextStepsIcon = page.locator('.icon-task-next-steps');
   const appointmentIcon = page.locator('.icon-task-appointment-confirmation');
   if (await nextStepsIcon.isVisible({ timeout: 1000 }).catch(() => false)) {
-    await openActivity(page, 'next-steps');
+    await openActivity(page, 'prenatal', 'next-steps');
   } else if (await appointmentIcon.isVisible({ timeout: 1000 }).catch(() => false)) {
-    await openActivity(page, 'appointment-confirmation');
+    await openActivity(page, 'prenatal', 'appointment-confirmation');
   } else {
     // NextSteps not available for this encounter type/state.
     return [];
@@ -1261,7 +1038,7 @@ export async function completeNextSteps(page: Page): Promise<string[]> {
   const warningContinue = page.locator('button', { hasText: 'Continue' });
   if (await warningContinue.isVisible({ timeout: 2000 }).catch(() => false)) {
     await warningContinue.click({ force: true });
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
   }
 
   const completedSteps: string[] = [];
@@ -1282,7 +1059,7 @@ export async function completeNextSteps(page: Page): Promise<string[]> {
       if (isCompleted) continue;
 
       await click(tab, page);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
 
       // Handle each NextSteps sub-task type.
       if (step.name === 'appointmentConfirmation') {
@@ -1314,7 +1091,7 @@ export async function completeNextSteps(page: Page): Promise<string[]> {
             if (!isChecked) {
               await click(label, page);
               clicked = true;
-              await page.waitForTimeout(500);
+              await page.waitForTimeout(WAIT.elmRerender);
             }
           }
           if (!clicked) break;
@@ -1355,7 +1132,7 @@ export async function completeNextSteps(page: Page): Promise<string[]> {
           await click(pauseBtn, page);
           completedSteps.push(step.name);
           // App navigates to PinCodePage after pause — return immediately.
-          await page.waitForTimeout(2000);
+          await page.waitForTimeout(WAIT.pageNavigation);
           return completedSteps;
         }
       }
@@ -1365,7 +1142,7 @@ export async function completeNextSteps(page: Page): Promise<string[]> {
       if (await saveBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
         await click(saveBtn, page);
         completedSteps.push(step.name);
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(WAIT.elmRerender);
       }
     }
   }
@@ -1377,7 +1154,7 @@ export async function completeNextSteps(page: Page): Promise<string[]> {
     page.locator('div.page-encounter.prenatal').waitFor({ timeout: 15000 }),
     page.locator('div.page-activity.prenatal').waitFor({ state: 'hidden', timeout: 15000 }),
   ]).catch(() => {});
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   return completedSteps;
 }
@@ -1391,7 +1168,7 @@ export async function completeNextSteps(page: Page): Promise<string[]> {
  * Creates: medication
  */
 export async function completeTreatmentReview(page: Page) {
-  await openActivity(page, 'prior-treatment');
+  await openActivity(page, 'prenatal', 'prior-treatment');
 
   // Treatment review has tabs for each medication type being reviewed.
   // All tabs use icon-medication class.
@@ -1405,20 +1182,20 @@ export async function completeTreatmentReview(page: Page) {
     if (isCompleted) continue;
 
     await click(tab, page);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
 
     // Answer all Yes/No questions on this tab with "Yes".
     const yesLabels = page.locator('.form-input.yes-no label', { hasText: 'Yes' });
     const yesCount = await yesLabels.count();
     for (let j = 0; j < yesCount; j++) {
       await click(yesLabels.nth(j), page);
-      await page.waitForTimeout(200);
+      await page.waitForTimeout(WAIT.quickInput);
     }
 
     const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
     if (await saveBtn.isVisible()) {
       await click(saveBtn, page);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
     }
   }
 
@@ -1432,11 +1209,11 @@ export async function completeTreatmentReview(page: Page) {
  * Creates: prenatal_breastfeeding
  */
 export async function completeBreastfeeding(page: Page) {
-  await openActivity(page, 'breastfeeding');
+  await openActivity(page, 'prenatal', 'breastfeeding');
 
   // "Are you breastfeeding?" → Yes (triggers 4 more questions).
   await answerYesNo(page, 'is-breastfeeding', 'Yes');
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   // Answer the follow-up questions.
   await answerYesNo(page, 'breast-pain', 'No');
@@ -1444,7 +1221,7 @@ export async function completeBreastfeeding(page: Page) {
   await answerYesNo(page, 'enough-milk', 'Yes');
   await answerYesNo(page, 'latching-well', 'Yes');
 
-  await savePrenatalActivity(page);
+  await saveActivity(page, 'prenatal');
 }
 
 /**
@@ -1458,7 +1235,7 @@ export async function completeSpecialityCare(page: Page): Promise<boolean> {
     return false;
   }
 
-  await openActivity(page, 'speciality-care');
+  await openActivity(page, 'prenatal', 'speciality-care');
 
   // Fill the form — answer Yes/No fields.
   const yesLabels = page.locator('.form-input.yes-no label', { hasText: 'Yes' });
@@ -1467,7 +1244,7 @@ export async function completeSpecialityCare(page: Page): Promise<boolean> {
     await click(yesLabels.nth(i), page);
   }
 
-  await savePrenatalActivity(page);
+  await saveActivity(page, 'prenatal');
   return true;
 }
 
@@ -1476,7 +1253,7 @@ export async function completeSpecialityCare(page: Page): Promise<boolean> {
  * Creates: medication
  */
 export async function completePostpartumTreatmentReview(page: Page) {
-  await openActivity(page, 'postpartum-treatment-review');
+  await openActivity(page, 'prenatal', 'postpartum-treatment-review');
 
   // Answer medication questions.
   const yesLabels = page.locator('.form-input.yes-no label', { hasText: 'Yes' });
@@ -1485,7 +1262,7 @@ export async function completePostpartumTreatmentReview(page: Page) {
     await click(yesLabels.nth(i), page);
   }
 
-  await savePrenatalActivity(page);
+  await saveActivity(page, 'prenatal');
 }
 
 /**
@@ -1497,7 +1274,7 @@ export async function completePregnancyOutcome(page: Page) {
   // not the standard activity page.
   await click(page.locator('.icon-task-pregnancy-outcome'), page);
   await page.locator('div.page-outcome.pregnancy').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   // 1. Date Pregnancy Concluded — calendar popup via .form-input.date.
   await setDate(page, new Date(), '.form-input.date');
@@ -1505,7 +1282,7 @@ export async function completePregnancyOutcome(page: Page) {
   // 2. Pregnancy Outcome — dropdown, select "Live Birth at Term".
   const outcomeSelect = page.locator('select').first();
   await outcomeSelect.selectOption({ index: 1 });
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
 
   // 3. Delivery Location — bool input (Facility/Home).
   await click(
@@ -1537,7 +1314,7 @@ export async function recordPregnancyOutcome(page: Page) {
     page,
   );
   await page.locator('div.page-outcome.pregnancy').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   // 1. Date Pregnancy Concluded — calendar popup via .form-input.date.
   await setDate(page, new Date(), '.form-input.date');
@@ -1545,7 +1322,7 @@ export async function recordPregnancyOutcome(page: Page) {
   // 2. Pregnancy Outcome — dropdown, select "Live Birth at Term".
   const outcomeSelect = page.locator('select').first();
   await outcomeSelect.selectOption({ index: 1 });
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
 
   // 3. Delivery Location — bool input (Facility/Home).
   await click(
@@ -1558,7 +1335,7 @@ export async function recordPregnancyOutcome(page: Page) {
     page.locator('button.ui.fluid.primary.button', { hasText: 'Save' }),
     page,
   );
-  await page.waitForTimeout(3000);
+  await page.waitForTimeout(WAIT.heavyOperation);
 }
 
 // ---------------------------------------------------------------------------
@@ -1572,7 +1349,7 @@ export async function navigateToCaseManagement(page: Page) {
   // Menu card icons use class "icon-task icon-task-{name}".
   await click(page.locator('.icon-task-case-management'), page);
   await page.locator('.page-case-management').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 /**
@@ -1590,7 +1367,7 @@ export async function openRecurrentEncounterFromCaseManagement(
   await click(entry.locator('.icon-forward'), page);
   // Recurrent encounter page has same CSS as initial: div.page-encounter.prenatal.
   await page.locator('div.page-encounter.prenatal').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 /**
@@ -1604,21 +1381,21 @@ export async function completeRecurrentExamination(
   page: Page,
   options?: { sys?: string; dia?: string },
 ) {
-  await openActivity(page, 'examination');
+  await openActivity(page, 'prenatal', 'examination');
 
   // Wait for form to fully render before filling inputs.
   const sysInput = page.locator(
     '.form-input.measurement.sys-blood-pressure input[type="number"]',
   );
   await sysInput.waitFor({ timeout: 5000 });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   // VitalsFormRepeated: only BP fields shown.
   // Use click + fill to ensure the input is focused and the value registers.
   await sysInput.click();
   await sysInput.fill(options?.sys ?? '120');
   // Wait for Elm to process the input event before filling the next field.
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   const diaInput = page.locator(
     '.form-input.measurement.dia-blood-pressure input[type="number"]',
@@ -1636,7 +1413,7 @@ export async function completeRecurrentExamination(
     page.locator('button.ui.fluid.primary.button', { hasText: 'Save' }),
     page,
   );
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(WAIT.pageNavigation);
 
   // For nurses, the app navigates back to the recurrent encounter page
   // (where "End Encounter" button appears since all activities are done).
@@ -1645,7 +1422,7 @@ export async function completeRecurrentExamination(
     .locator('div.page-encounter.prenatal')
     .or(page.locator('div.page-report.clinical'))
     .waitFor({ timeout: 15000 });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 /**
@@ -1657,7 +1434,7 @@ export async function endRecurrentEncounter(page: Page) {
   const endBtn = page.locator('button', { hasText: 'End Encounter' });
   await endBtn.waitFor({ timeout: 10000 });
   await click(endBtn, page);
-  await page.waitForTimeout(3000);
+  await page.waitForTimeout(WAIT.heavyOperation);
 }
 
 // ---------------------------------------------------------------------------
@@ -1675,194 +1452,59 @@ export async function endRecurrentEncounter(page: Page) {
  * the same day the previous encounter was completed.
  */
 export function backdatePrenatalEncounter(personName: string, daysAgo: number = 1) {
-  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
-  // Note: execSync is used here following the same pattern as other E2E
-  // helpers for drush command execution. The input is base64-encoded
-  // (no user-provided data in the shell command).
-  const php = `
-    \\$person_name = base64_decode('${personNameB64}');
-    \\$target_date = date('Y-m-d H:i:s', strtotime('-${daysAgo} days'));
-
-    // 1. Find person by name.
-    \\$query = new EntityFieldQuery();
-    \\$result = \\$query->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'person')
-      ->propertyCondition('title', \\$person_name)
-      ->execute();
-    if (empty(\\$result['node'])) {
-      echo 'Person not found';
-      return;
-    }
-    \\$person_nid = key(\\$result['node']);
-
-    // 2. Find individual_participant for this person.
-    \\$q = new EntityFieldQuery();
-    \\$r = \\$q->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'individual_participant')
-      ->fieldCondition('field_person', 'target_id', \\$person_nid)
-      ->execute();
-    if (empty(\\$r['node'])) {
-      echo 'No participant found';
-      return;
-    }
-
-    // 3. Find prenatal encounters for this person's participants.
-    \\$participant_nids = array_keys(\\$r['node']);
-    \\$eq = new EntityFieldQuery();
-    \\$er = \\$eq->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'prenatal_encounter')
-      ->fieldCondition('field_individual_participant', 'target_id', \\$participant_nids, 'IN')
-      ->propertyOrderBy('nid', 'DESC')
-      ->execute();
-    if (empty(\\$er['node'])) {
-      echo 'No encounter found';
-      return;
-    }
-
-    // 4. Backdate the most recent encounter (highest nid = first in DESC order).
-    \\$enc_nid = key(\\$er['node']);
-    \\$enc = node_load(\\$enc_nid);
-    \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value'] = \\$target_date;
-    \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value2'] = \\$target_date;
-    node_save(\\$enc);
-    echo 'Backdated encounter ' . \\$enc_nid;
-  `;
-
-  const { drushCmd, cwd } = drushEnv();
-
-  // Retry: the person/encounter may not yet be uploaded after the first sync cycle.
-  // Use 10 attempts with 10s delay (100s total) to handle slow CI environments.
-  for (let attempt = 0; attempt < 10; attempt++) {
-    const output = execSync(`${drushCmd} eval "${php}"`, {
-      cwd,
-      timeout: 30000,
-      encoding: 'utf-8',
-    }).trim();
-    console.log(`backdatePrenatalEncounter attempt ${attempt + 1}:`, output);
-    if (output.startsWith('Backdated')) {
-      return;
-    }
-    if (attempt < 9) {
-      execSync('sleep 10');
-    }
-  }
-  console.error('backdatePrenatalEncounter: failed after 10 attempts');
+  backdateEncounter(personName, 'prenatal_encounter', daysAgo);
 }
 
 export function queryPrenatalNodes(
   personName: string,
   expectedTypes?: string[],
 ): Record<string, boolean> {
-  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
-  const php = `
-    \\$person_name = base64_decode('${personNameB64}');
-    \\$query = new EntityFieldQuery();
-    \\$result = \\$query->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'person')
-      ->propertyCondition('title', \\$person_name)
-      ->execute();
-    if (empty(\\$result['node'])) {
-      echo json_encode(['error' => 'Person not found']);
-      return;
-    }
-    \\$person_nid = key(\\$result['node']);
-
-    \\$measurements = [];
-    \\$types = [
-      'last_menstrual_period',
-      'obstetric_history',
-      'obstetric_history_step2',
-      'medical_history',
-      'social_history',
-      'prenatal_outside_care',
-      'vitals',
-      'prenatal_nutrition',
-      'core_physical_exam',
-      'obstetrical_exam',
-      'breast_exam',
-      'prenatal_gu_exam',
-      'prenatal_family_planning',
-      'danger_signs',
-      'prenatal_symptom_review',
-      'prenatal_mental_health',
-      'prenatal_tetanus_immunisation',
-      'prenatal_iron',
-      'prenatal_folate',
-      'prenatal_fefol',
-      'prenatal_calcium',
-      'prenatal_aspirin',
-      'prenatal_mms',
-      'prenatal_mebendazole',
-      'prenatal_hiv_test',
-      'prenatal_syphilis_test',
-      'prenatal_hepatitis_b_test',
-      'prenatal_malaria_test',
-      'prenatal_blood_gprs_test',
-      'prenatal_urine_dipstick_test',
-      'prenatal_hemoglobin_test',
-      'prenatal_random_blood_sugar_test',
-      'prenatal_hiv_pcr_test',
-      'prenatal_partner_hiv_test',
-      'prenatal_labs_results',
-      'pregnancy_testing',
-      'prenatal_health_education',
-      'prenatal_follow_up',
-      'prenatal_send_to_hc',
-      'appointment_confirmation',
-      'prenatal_medication_distribution',
-      'medication',
-      'birth_plan',
-      'prenatal_breastfeeding',
-      'prenatal_speciality_care',
-      'prenatal_photo',
-    ];
-
-    foreach (\\$types as \\$node_type) {
-      \\$q = new EntityFieldQuery();
-      \\$r = \\$q->entityCondition('entity_type', 'node')
-        ->propertyCondition('type', \\$node_type)
-        ->fieldCondition('field_person', 'target_id', \\$person_nid)
-        ->execute();
-      if (!empty(\\$r['node'])) {
-        \\$measurements[\\$node_type] = true;
-      }
-    }
-
-    echo json_encode(\\$measurements);
-  `;
-
-  const { drushCmd, cwd } = drushEnv();
-
-  // Retry up to 5 times with 10s delay.  The person node may not yet be
-  // uploaded when the first sync cycle only completed downloads.
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const output = execSync(`${drushCmd} eval "${php}"`, {
-      cwd,
-      timeout: 30000,
-      encoding: 'utf-8',
-    });
-    try {
-      const parsed = JSON.parse(output.trim());
-      if (parsed.error) {
-        console.log(`queryPrenatalNodes attempt ${attempt + 1}: ${parsed.error}`);
-      } else if (expectedTypes && expectedTypes.length > 0) {
-        const missing = expectedTypes.filter(t => !parsed[t]);
-        if (missing.length === 0) {
-          return parsed;
-        }
-        console.log(`queryPrenatalNodes attempt ${attempt + 1}: missing [${missing.join(', ')}]`);
-      } else {
-        return parsed;
-      }
-    } catch (e) {
-      if (e instanceof Error && e.message.startsWith('Backend error:')) {
-        throw e;
-      }
-      console.error('Failed to parse drush output:', output);
-    }
-    if (attempt < 4) {
-      execSync('sleep 10');
-    }
-  }
-  return {};
+  return queryMeasurementNodes(personName, [
+    'last_menstrual_period',
+    'obstetric_history',
+    'obstetric_history_step2',
+    'medical_history',
+    'social_history',
+    'prenatal_outside_care',
+    'vitals',
+    'prenatal_nutrition',
+    'core_physical_exam',
+    'obstetrical_exam',
+    'breast_exam',
+    'prenatal_gu_exam',
+    'prenatal_family_planning',
+    'danger_signs',
+    'prenatal_symptom_review',
+    'prenatal_mental_health',
+    'prenatal_tetanus_immunisation',
+    'prenatal_iron',
+    'prenatal_folate',
+    'prenatal_fefol',
+    'prenatal_calcium',
+    'prenatal_aspirin',
+    'prenatal_mms',
+    'prenatal_mebendazole',
+    'prenatal_hiv_test',
+    'prenatal_syphilis_test',
+    'prenatal_hepatitis_b_test',
+    'prenatal_malaria_test',
+    'prenatal_blood_gprs_test',
+    'prenatal_urine_dipstick_test',
+    'prenatal_hemoglobin_test',
+    'prenatal_random_blood_sugar_test',
+    'prenatal_hiv_pcr_test',
+    'prenatal_partner_hiv_test',
+    'prenatal_labs_results',
+    'pregnancy_testing',
+    'prenatal_health_education',
+    'prenatal_follow_up',
+    'prenatal_send_to_hc',
+    'appointment_confirmation',
+    'prenatal_medication_distribution',
+    'medication',
+    'birth_plan',
+    'prenatal_breastfeeding',
+    'prenatal_speciality_care',
+    'prenatal_photo',
+  ], expectedTypes);
 }

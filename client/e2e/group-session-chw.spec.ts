@@ -106,22 +106,22 @@ test.describe('CHW: Group Nutrition Session', () => {
     const nodes = queryGroupSessionNodes(mother.fullName, child.fullName);
 
     // Mother measurements.
-    expect(nodes.attendance).toBe(true);
-    expect(nodes.familyPlanning).toBe(true);
+    expect(nodes.attendance, 'attendance should exist').toBe(true);
+    expect(nodes.familyPlanning, 'familyPlanning should exist').toBe(true);
 
     // Child measurements.
-    expect(nodes.height).toBe(true);
-    expect(nodes.weight).toBe(true);
-    expect(nodes.muac).toBe(true);
-    expect(nodes.nutrition).toBe(true);
+    expect(nodes.height, 'height should exist').toBe(true);
+    expect(nodes.weight, 'weight should exist').toBe(true);
+    expect(nodes.muac, 'muac should exist').toBe(true);
+    expect(nodes.nutrition, 'nutrition should exist').toBe(true);
 
     // FBF-only activities should be absent for Chw clinic type.
-    expect(nodes.childFbf).toBe(false);
-    expect(nodes.lactation).toBe(false);
-    expect(nodes.motherFbf).toBe(false);
+    expect(nodes.childFbf, 'childFbf should not exist').toBe(false);
+    expect(nodes.lactation, 'lactation should not exist').toBe(false);
+    expect(nodes.motherFbf, 'motherFbf should not exist').toBe(false);
 
     // NextSteps NOT triggered (normal values).
-    expect(nodes.groupHealthEducation).toBe(false);
-    expect(nodes.groupSendToHC).toBe(false);
+    expect(nodes.groupHealthEducation, 'groupHealthEducation should not exist').toBe(false);
+    expect(nodes.groupSendToHC, 'groupSendToHC should not exist').toBe(false);
   });
 });

@@ -99,50 +99,50 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
     const nodes = queryPrenatalNodes(fullName, expectedTypes);
 
     // PregnancyDating
-    expect(nodes['last_menstrual_period']).toBe(true);
+    expect(nodes['last_menstrual_period'], 'last_menstrual_period should exist').toBe(true);
 
     // History
-    expect(nodes['obstetric_history']).toBe(true);
-    expect(nodes['obstetric_history_step2']).toBe(true);
-    expect(nodes['medical_history']).toBe(true);
+    expect(nodes['obstetric_history'], 'obstetric_history should exist').toBe(true);
+    expect(nodes['obstetric_history_step2'], 'obstetric_history_step2 should exist').toBe(true);
+    expect(nodes['medical_history'], 'medical_history should exist').toBe(true);
 
     // Examination
-    expect(nodes['vitals']).toBe(true);
-    expect(nodes['prenatal_nutrition']).toBe(true);
-    expect(nodes['core_physical_exam']).toBe(true);
-    expect(nodes['obstetrical_exam']).toBe(true);
-    expect(nodes['breast_exam']).toBe(true);
+    expect(nodes['vitals'], 'vitals should exist').toBe(true);
+    expect(nodes['prenatal_nutrition'], 'prenatal_nutrition should exist').toBe(true);
+    expect(nodes['core_physical_exam'], 'core_physical_exam should exist').toBe(true);
+    expect(nodes['obstetrical_exam'], 'obstetrical_exam should exist').toBe(true);
+    expect(nodes['breast_exam'], 'breast_exam should exist').toBe(true);
 
     // Simple activities
-    expect(nodes['prenatal_family_planning']).toBe(true);
-    expect(nodes['danger_signs']).toBe(true);
-    expect(nodes['prenatal_symptom_review']).toBe(true);
-    expect(nodes['prenatal_mental_health']).toBe(true);
-    expect(nodes['prenatal_tetanus_immunisation']).toBe(true);
+    expect(nodes['prenatal_family_planning'], 'prenatal_family_planning should exist').toBe(true);
+    expect(nodes['danger_signs'], 'danger_signs should exist').toBe(true);
+    expect(nodes['prenatal_symptom_review'], 'prenatal_symptom_review should exist').toBe(true);
+    expect(nodes['prenatal_mental_health'], 'prenatal_mental_health should exist').toBe(true);
+    expect(nodes['prenatal_tetanus_immunisation'], 'prenatal_tetanus_immunisation should exist').toBe(true);
 
     // Medication (EGA ~30w, first encounter, preferIronFolate):
     // Calcium (>= 14w), Iron+Folate (blocks Fefol), MMS, Mebendazole (>= 24w).
-    expect(nodes['prenatal_calcium']).toBe(true);
-    expect(nodes['prenatal_iron']).toBe(true);
-    expect(nodes['prenatal_folate']).toBe(true);
-    expect(nodes['prenatal_mms']).toBe(true);
-    expect(nodes['prenatal_mebendazole']).toBe(true);
+    expect(nodes['prenatal_calcium'], 'prenatal_calcium should exist').toBe(true);
+    expect(nodes['prenatal_iron'], 'prenatal_iron should exist').toBe(true);
+    expect(nodes['prenatal_folate'], 'prenatal_folate should exist').toBe(true);
+    expect(nodes['prenatal_mms'], 'prenatal_mms should exist').toBe(true);
+    expect(nodes['prenatal_mebendazole'], 'prenatal_mebendazole should exist').toBe(true);
 
     // Laboratory (8 standard tests).
-    expect(nodes['prenatal_hiv_test']).toBe(true);
-    expect(nodes['prenatal_syphilis_test']).toBe(true);
-    expect(nodes['prenatal_hepatitis_b_test']).toBe(true);
-    expect(nodes['prenatal_malaria_test']).toBe(true);
-    expect(nodes['prenatal_blood_gprs_test']).toBe(true);
-    expect(nodes['prenatal_urine_dipstick_test']).toBe(true);
-    expect(nodes['prenatal_hemoglobin_test']).toBe(true);
-    expect(nodes['prenatal_random_blood_sugar_test']).toBe(true);
-    expect(nodes['prenatal_partner_hiv_test']).toBe(true);
+    expect(nodes['prenatal_hiv_test'], 'prenatal_hiv_test should exist').toBe(true);
+    expect(nodes['prenatal_syphilis_test'], 'prenatal_syphilis_test should exist').toBe(true);
+    expect(nodes['prenatal_hepatitis_b_test'], 'prenatal_hepatitis_b_test should exist').toBe(true);
+    expect(nodes['prenatal_malaria_test'], 'prenatal_malaria_test should exist').toBe(true);
+    expect(nodes['prenatal_blood_gprs_test'], 'prenatal_blood_gprs_test should exist').toBe(true);
+    expect(nodes['prenatal_urine_dipstick_test'], 'prenatal_urine_dipstick_test should exist').toBe(true);
+    expect(nodes['prenatal_hemoglobin_test'], 'prenatal_hemoglobin_test should exist').toBe(true);
+    expect(nodes['prenatal_random_blood_sugar_test'], 'prenatal_random_blood_sugar_test should exist').toBe(true);
+    expect(nodes['prenatal_partner_hiv_test'], 'prenatal_partner_hiv_test should exist').toBe(true);
 
     // NextSteps (HIV diagnosis → referral + education; hypertension → medication).
-    expect(nodes['prenatal_health_education']).toBe(true);
-    expect(nodes['prenatal_send_to_hc']).toBe(true);
-    expect(nodes['prenatal_medication_distribution']).toBe(true);
+    expect(nodes['prenatal_health_education'], 'prenatal_health_education should exist').toBe(true);
+    expect(nodes['prenatal_send_to_hc'], 'prenatal_send_to_hc should exist').toBe(true);
+    expect(nodes['prenatal_medication_distribution'], 'prenatal_medication_distribution should exist').toBe(true);
   });
 });
 
@@ -294,15 +294,15 @@ test.describe('Nurse: Prenatal Initial → Subsequent → Postpartum', () => {
     const nodes = queryPrenatalNodes(fullName, expectedTypes);
 
     // Subsequent encounter CTs.
-    expect(nodes['medication']).toBe(true);
-    expect(nodes['prenatal_outside_care']).toBe(true);
+    expect(nodes['medication'], 'medication should exist').toBe(true);
+    expect(nodes['prenatal_outside_care'], 'prenatal_outside_care should exist').toBe(true);
     // HIV PCR (subsequent — triggered by HIV known positive in initial).
-    expect(nodes['prenatal_hiv_pcr_test']).toBe(true);
+    expect(nodes['prenatal_hiv_pcr_test'], 'prenatal_hiv_pcr_test should exist').toBe(true);
     // Postpartum encounter CTs.
-    expect(nodes['prenatal_breastfeeding']).toBe(true);
-    expect(nodes['prenatal_gu_exam']).toBe(true);
+    expect(nodes['prenatal_breastfeeding'], 'prenatal_breastfeeding should exist').toBe(true);
+    expect(nodes['prenatal_gu_exam'], 'prenatal_gu_exam should exist').toBe(true);
     // SpecialityCare (postpartum — triggered by HIV known positive in initial).
-    expect(nodes['prenatal_speciality_care']).toBe(true);
+    expect(nodes['prenatal_speciality_care'], 'prenatal_speciality_care should exist').toBe(true);
   });
 });
 
@@ -353,7 +353,7 @@ test.describe('Nurse: Prenatal Recurrent Encounter (BP Recheck)', () => {
     // NextSteps will show the Wait sub-task due to marginal BP.
     // completeNextSteps handles Wait → clicks "Pause Encounter" → PinCodePage.
     const completedSteps = await completeNextSteps(page);
-    expect(completedSteps).toContain('wait');
+    expect(completedSteps, 'completedSteps should contain wait sub-task for marginal BP').toContain('wait');
 
     // --- Phase 2: Sync and navigate to recurrent encounter via Case Management ---
     // After pause, nurse is on PinCodePage (still logged in).
@@ -381,6 +381,6 @@ test.describe('Nurse: Prenatal Recurrent Encounter (BP Recheck)', () => {
 
     const expectedTypes = ['prenatal_labs_results'];
     const nodes = queryPrenatalNodes(fullName, expectedTypes);
-    expect(nodes['prenatal_labs_results']).toBe(true);
+    expect(nodes['prenatal_labs_results'], 'prenatal_labs_results should exist').toBe(true);
   });
 });

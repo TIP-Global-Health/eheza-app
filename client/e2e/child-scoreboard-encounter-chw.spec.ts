@@ -72,15 +72,15 @@ test.describe('CHW: Child Scoreboard Encounter — First NCDA + Vaccination Hist
     ];
     const nodes = queryChildScoreboardNodes(fullName, expectedTypes);
 
-    expect(nodes['child_scoreboard_ncda']).toBe(true);
-    expect(nodes['child_scoreboard_bcg_iz']).toBe(true);
-    expect(nodes['child_scoreboard_opv_iz']).toBe(true);
-    expect(nodes['child_scoreboard_dtp_iz']).toBe(true);
-    expect(nodes['child_scoreboard_pcv13_iz']).toBe(true);
-    expect(nodes['child_scoreboard_rotarix_iz']).toBe(true);
-    expect(nodes['child_scoreboard_ipv_iz']).toBe(true);
-    expect(nodes['child_scoreboard_mr_iz']).toBe(true);
+    expect(nodes['child_scoreboard_ncda'], 'child_scoreboard_ncda should exist').toBe(true);
+    expect(nodes['child_scoreboard_bcg_iz'], 'child_scoreboard_bcg_iz should exist').toBe(true);
+    expect(nodes['child_scoreboard_opv_iz'], 'child_scoreboard_opv_iz should exist').toBe(true);
+    expect(nodes['child_scoreboard_dtp_iz'], 'child_scoreboard_dtp_iz should exist').toBe(true);
+    expect(nodes['child_scoreboard_pcv13_iz'], 'child_scoreboard_pcv13_iz should exist').toBe(true);
+    expect(nodes['child_scoreboard_rotarix_iz'], 'child_scoreboard_rotarix_iz should exist').toBe(true);
+    expect(nodes['child_scoreboard_ipv_iz'], 'child_scoreboard_ipv_iz should exist').toBe(true);
+    expect(nodes['child_scoreboard_mr_iz'], 'child_scoreboard_mr_iz should exist').toBe(true);
     // DTPStandalone is Burundi-only, not present on Rwanda site.
-    expect(nodes['child_scoreboard_dtp_sa_iz']).toBe(false);
+    expect(nodes['child_scoreboard_dtp_sa_iz'], 'child_scoreboard_dtp_sa_iz should not exist').toBe(false);
   });
 });

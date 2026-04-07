@@ -50,7 +50,7 @@ test.describe('Nurse: Stock Management — Full Flow', () => {
     await navigateToStockManagement(page);
 
     // Verify ModeMain dashboard is displayed.
-    await expect(page.locator('.navigation-buttons')).toBeVisible();
+    await expect(page.locator('.navigation-buttons'), 'ModeMain navigation buttons should be visible after navigating to Stock Management').toBeVisible();
 
     // 2. Receive Stock: MOH supplier, batch BATCH-E2E-001, qty 100.
     await completeReceiveStock(page, {
@@ -61,7 +61,7 @@ test.describe('Nurse: Stock Management — Full Flow', () => {
     });
 
     // After save, should return to ModeMain.
-    await expect(page.locator('.navigation-buttons')).toBeVisible();
+    await expect(page.locator('.navigation-buttons'), 'ModeMain navigation buttons should be visible after Receive Stock save').toBeVisible();
 
     // 3. Correct Entry — Subtraction (Error in input, qty 5).
     await completeCorrectEntry(page, {
@@ -71,7 +71,7 @@ test.describe('Nurse: Stock Management — Full Flow', () => {
     });
 
     // After save, should return to ModeMain.
-    await expect(page.locator('.navigation-buttons')).toBeVisible();
+    await expect(page.locator('.navigation-buttons'), 'ModeMain navigation buttons should be visible after Correct Entry (subtraction) save').toBeVisible();
 
     // 4. Correct Entry — Addition (Error in input, qty 3).
     await completeCorrectEntry(page, {
@@ -81,7 +81,7 @@ test.describe('Nurse: Stock Management — Full Flow', () => {
     });
 
     // After save, should return to ModeMain.
-    await expect(page.locator('.navigation-buttons')).toBeVisible();
+    await expect(page.locator('.navigation-buttons'), 'ModeMain navigation buttons should be visible after Correct Entry (addition) save').toBeVisible();
 
     // 5. View Month Details — verify the table renders.
     await click(
@@ -90,8 +90,8 @@ test.describe('Nurse: Stock Management — Full Flow', () => {
       }),
       page,
     );
-    await expect(page.locator('.pane.month-details')).toBeVisible();
-    await expect(page.locator('.pane.month-details .row.header')).toBeVisible();
+    await expect(page.locator('.pane.month-details'), 'Month details pane should be visible').toBeVisible();
+    await expect(page.locator('.pane.month-details .row.header'), 'Month details table header row should be visible').toBeVisible();
 
     // Navigate back to ModeMain.
     await click(page.locator('.link-back'), page);
@@ -104,10 +104,10 @@ test.describe('Nurse: Stock Management — Full Flow', () => {
     const result = queryStockUpdateNodes('Nyange Health Center', initialCount + 3);
 
     // Verify total count increased by 3.
-    expect(result.count).toBeGreaterThanOrEqual(initialCount + 3);
+    expect(result.count, 'stock_update node count should increase by at least 3').toBeGreaterThanOrEqual(initialCount + 3);
 
     // Verify type breakdown: +1 receive-supply, +2 correction.
-    expect(result.types['receive-supply']).toBeGreaterThanOrEqual(initialReceiveSupply + 1);
-    expect(result.types['correction']).toBeGreaterThanOrEqual(initialCorrection + 2);
+    expect(result.types['receive-supply'], 'receive-supply count should increase by at least 1').toBeGreaterThanOrEqual(initialReceiveSupply + 1);
+    expect(result.types['correction'], 'correction count should increase by at least 2').toBeGreaterThanOrEqual(initialCorrection + 2);
   });
 });

@@ -6,7 +6,7 @@ import {
 } from './helpers/case-management';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
-import { syncAndWait } from './helpers/common';
+import { WAIT, syncAndWait } from './helpers/common';
 import {
   createAdultAndStartEncounter,
   completeSymptoms,
@@ -87,16 +87,16 @@ test.describe('CHW: Acute Illness Initial Encounter — Uncomplicated Pneumonia'
     ];
     const nodes = queryAcuteIllnessNodes(fullName, expectedTypes);
 
-    expect(nodes['symptoms_general']).toBe(true);
-    expect(nodes['symptoms_respiratory']).toBe(true);
-    expect(nodes['symptoms_gi']).toBe(true);
-    expect(nodes['acute_illness_vitals']).toBe(true);
-    expect(nodes['acute_findings']).toBe(true);
-    expect(nodes['treatment_history']).toBe(true);
+    expect(nodes['symptoms_general'], 'symptoms_general should exist').toBe(true);
+    expect(nodes['symptoms_respiratory'], 'symptoms_respiratory should exist').toBe(true);
+    expect(nodes['symptoms_gi'], 'symptoms_gi should exist').toBe(true);
+    expect(nodes['acute_illness_vitals'], 'acute_illness_vitals should exist').toBe(true);
+    expect(nodes['acute_findings'], 'acute_findings should exist').toBe(true);
+    expect(nodes['treatment_history'], 'treatment_history should exist').toBe(true);
 
     // CHW should NOT have core_exam or malaria_testing.
-    expect(nodes['acute_illness_core_exam']).toBeUndefined();
-    expect(nodes['malaria_testing']).toBeUndefined();
+    expect(nodes['acute_illness_core_exam'], 'acute_illness_core_exam should not exist').toBe(false);
+    expect(nodes['malaria_testing'], 'malaria_testing should not exist').toBe(false);
   });
 });
 
@@ -177,9 +177,9 @@ test.describe('CHW: Acute Illness Initial + Subsequent Encounter', () => {
     ];
     const initialNodes = queryAcuteIllnessNodes(fullName, initialTypes);
 
-    expect(initialNodes['symptoms_general']).toBe(true);
-    expect(initialNodes['acute_illness_vitals']).toBe(true);
-    expect(initialNodes['malaria_testing']).toBe(true);
+    expect(initialNodes['symptoms_general'], 'symptoms_general should exist').toBe(true);
+    expect(initialNodes['acute_illness_vitals'], 'acute_illness_vitals should exist').toBe(true);
+    expect(initialNodes['malaria_testing'], 'malaria_testing should exist').toBe(true);
 
     // --- Case Management verification ---
     // After initial encounter, the follow-up should appear in CM.
@@ -236,7 +236,7 @@ test.describe('CHW: Acute Illness Initial + Subsequent Encounter', () => {
       await outcomeSelect.waitFor({ timeout: 5000 });
       await outcomeSelect.selectOption({ label: 'Referred to Health Center' });
       await page.locator('button', { hasText: 'Save' }).click();
-      await page.waitForTimeout(3000);
+      await page.waitForTimeout(WAIT.heavyOperation);
     } else {
       await endEncounter(page);
     }
@@ -251,7 +251,7 @@ test.describe('CHW: Acute Illness Initial + Subsequent Encounter', () => {
     ];
     const subsequentNodes = queryAcuteIllnessNodes(fullName, subsequentTypes);
 
-    expect(subsequentNodes['acute_illness_danger_signs']).toBe(true);
-    expect(subsequentNodes['treatment_ongoing']).toBe(true);
+    expect(subsequentNodes['acute_illness_danger_signs'], 'acute_illness_danger_signs should exist').toBe(true);
+    expect(subsequentNodes['treatment_ongoing'], 'treatment_ongoing should exist').toBe(true);
   });
 });

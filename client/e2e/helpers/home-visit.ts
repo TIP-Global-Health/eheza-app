@@ -1,41 +1,6 @@
 import { Page } from '@playwright/test';
-import { execSync } from 'child_process';
 import { click } from './auth';
-import { drushEnv } from './device';
-
-// ---------------------------------------------------------------------------
-// Form interaction helpers
-// ---------------------------------------------------------------------------
-
-/**
- * Answer a Yes/No field identified by its CSS class.
- * Radio inputs are CSS-hidden; click the label instead.
- */
-async function answerYesNo(
-  page: Page,
-  fieldClass: string,
-  answer: 'Yes' | 'No',
-) {
-  await click(
-    page.locator(`.form-input.yes-no.${fieldClass} label`, {
-      hasText: answer,
-    }),
-    page,
-  );
-}
-
-/**
- * Select a checkbox option by clicking its label (exact match).
- * Targets the label inside the checkbox to avoid partial text collisions.
- */
-async function selectCheckbox(page: Page, optionText: string) {
-  await click(
-    page.locator('.ui.checkbox.activity label', {
-      hasText: new RegExp(`^${optionText}$`),
-    }),
-    page,
-  );
-}
+import { WAIT, answerYesNo, queryMeasurementNodes, saveActivity, selectCheckbox } from './common';
 
 // ---------------------------------------------------------------------------
 // Navigation
@@ -74,18 +39,6 @@ async function openActivity(
 }
 
 /**
- * Save the current activity and return to the encounter page.
- */
-async function saveActivity(page: Page) {
-  await click(page.locator('button.ui.fluid.primary.button.active'), page);
-  await page
-    .locator('div.page-encounter.home-visit')
-    .waitFor({ timeout: 10000 });
-  // Brief wait for Elm re-render to stabilize card layout.
-  await page.waitForTimeout(500);
-}
-
-/**
  * Complete Feeding activity — "No" to supplement (simplest path).
  * Fields: receive-supplement, encouraged-to-eat, refusing-to-eat,
  *         breastfeeding, clean-water-available.
@@ -99,7 +52,7 @@ export async function completeFeeding(page: Page) {
   await answerYesNo(page, 'breastfeeding', 'Yes');
   await answerYesNo(page, 'clean-water-available', 'Yes');
 
-  await saveActivity(page);
+  await saveActivity(page, 'home-visit');
 }
 
 /**
@@ -113,7 +66,7 @@ export async function completeFeedingWithSupplement(page: Page) {
   await answerYesNo(page, 'receive-supplement', 'Yes');
 
   // Select supplement type.
-  await selectCheckbox(page, 'Fortified Porridge');
+  await selectCheckbox(page, 'Fortified Porridge', '.ui.checkbox.activity label');
 
   // Conditional fields (only shown when supplement = Yes).
   await answerYesNo(page, 'ration-present-at-home', 'Yes');
@@ -132,7 +85,7 @@ export async function completeFeedingWithSupplement(page: Page) {
   await answerYesNo(page, 'breastfeeding', 'Yes');
   await answerYesNo(page, 'clean-water-available', 'Yes');
 
-  await saveActivity(page);
+  await saveActivity(page, 'home-visit');
 }
 
 /**
@@ -143,10 +96,10 @@ export async function completeCaring(page: Page) {
   await openActivity(page, 'icon-task-caring', '.form-input.yes-no.parents-health');
 
   await answerYesNo(page, 'parents-health', 'Yes');
-  await selectCheckbox(page, 'Parent');
+  await selectCheckbox(page, 'Parent', '.ui.checkbox.activity label');
   await answerYesNo(page, 'child-clean', 'Yes');
 
-  await saveActivity(page);
+  await saveActivity(page, 'home-visit');
 }
 
 /**
@@ -157,13 +110,13 @@ export async function completeCaring(page: Page) {
 export async function completeHygiene(page: Page) {
   await openActivity(page, 'icon-task-hygiene', '.form-input.yes-no.soap-in-the-house');
 
-  await selectCheckbox(page, 'Piped Water to Home');
-  await selectCheckbox(page, 'Boiled');
+  await selectCheckbox(page, 'Piped Water to Home', '.ui.checkbox.activity label');
+  await selectCheckbox(page, 'Boiled', '.ui.checkbox.activity label');
   await answerYesNo(page, 'soap-in-the-house', 'Yes');
   await answerYesNo(page, 'wash-hands-before-feeding', 'Yes');
   await answerYesNo(page, 'food-covered', 'Yes');
 
-  await saveActivity(page);
+  await saveActivity(page, 'home-visit');
 }
 
 /**
@@ -173,11 +126,11 @@ export async function completeHygiene(page: Page) {
 export async function completeFoodSecurity(page: Page) {
   await openActivity(page, 'icon-task-food-security', '.form-input.yes-no.household-got-fFood');
 
-  await selectCheckbox(page, 'Homebased Agriculture / Livestock');
+  await selectCheckbox(page, 'Homebased Agriculture / Livestock', '.ui.checkbox.activity label');
   // Note: typo in Elm source — class is "household-got-fFood" (capital F).
   await answerYesNo(page, 'household-got-fFood', 'Yes');
 
-  await saveActivity(page);
+  await saveActivity(page, 'home-visit');
 }
 
 /**
@@ -186,7 +139,7 @@ export async function completeFoodSecurity(page: Page) {
  * clicking End Encounter directly closes the encounter.
  */
 export async function endHomeVisit(page: Page) {
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(WAIT.pageNavigation);
 
   const endBtn = page.locator('div.actions button.ui.fluid.primary.button', {
     hasText: 'End Encounter',
@@ -217,82 +170,24 @@ export function queryHomeVisitNodes(
   hygiene?: boolean;
   foodSecurity?: boolean;
 } {
-  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
-  const php = `
-    \\$person_name = base64_decode('${personNameB64}');
-    \\$query = new EntityFieldQuery();
-    \\$result = \\$query->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'person')
-      ->propertyCondition('title', \\$person_name)
-      ->execute();
-    if (empty(\\$result['node'])) {
-      echo json_encode(['error' => 'Person not found']);
-      return;
-    }
-    \\$person_nid = key(\\$result['node']);
+  const keyMap: Record<string, string> = {
+    nutrition_feeding: 'feeding',
+    nutrition_caring: 'caring',
+    nutrition_hygiene: 'hygiene',
+    nutrition_food_security: 'foodSecurity',
+  };
+  const nodeTypes = Object.keys(keyMap);
+  const expectedNodeTypes = expectedKeys
+    ? nodeTypes.filter(t => expectedKeys.includes(keyMap[t]))
+    : undefined;
 
-    \\$measurements = [];
-    \\$types = [
-      'nutrition_feeding' => 'feeding',
-      'nutrition_caring' => 'caring',
-      'nutrition_hygiene' => 'hygiene',
-      'nutrition_food_security' => 'foodSecurity',
-    ];
+  const raw = queryMeasurementNodes(personName, nodeTypes, expectedNodeTypes);
 
-    foreach (\\$types as \\$node_type => \\$key) {
-      \\$q = new EntityFieldQuery();
-      \\$r = \\$q->entityCondition('entity_type', 'node')
-        ->propertyCondition('type', \\$node_type)
-        ->fieldCondition('field_person', 'target_id', \\$person_nid)
-        ->execute();
-      if (!empty(\\$r['node'])) {
-        \\$measurements[\\$key] = true;
-      }
-    }
-
-    echo json_encode(\\$measurements);
-  `;
-
-  const { drushCmd, cwd } = drushEnv();
-
-  for (let attempt = 0; attempt < 10; attempt++) {
-    try {
-      const output = execSync(`${drushCmd} eval "${php}"`, {
-        cwd,
-        timeout: 30000,
-        encoding: 'utf-8',
-      }).trim();
-
-      const parsed = JSON.parse(output);
-      if (parsed.error) {
-        console.log(`queryHomeVisitNodes attempt ${attempt + 1}: ${parsed.error}`);
-        if (attempt < 9) {
-          execSync('sleep 5');
-          continue;
-        }
-        return parsed;
-      }
-
-      if (expectedKeys) {
-        const missing = expectedKeys.filter(k => !(k in parsed));
-        if (missing.length === 0) {
-          return parsed;
-        }
-        console.log(`queryHomeVisitNodes attempt ${attempt + 1}: missing [${missing.join(', ')}]`);
-        if (attempt < 9) {
-          execSync('sleep 5');
-          continue;
-        }
-      }
-
-      return parsed;
-    } catch (err) {
-      console.log(`queryHomeVisitNodes attempt ${attempt + 1}: error`, err);
-      if (attempt < 9) {
-        execSync('sleep 5');
-      }
+  const result: Record<string, boolean> = {};
+  for (const [nodeType, alias] of Object.entries(keyMap)) {
+    if (raw[nodeType] !== undefined) {
+      result[alias] = raw[nodeType];
     }
   }
-
-  return {};
+  return result;
 }

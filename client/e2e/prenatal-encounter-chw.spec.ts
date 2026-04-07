@@ -60,14 +60,14 @@ test.describe('CHW: Prenatal First Encounter', () => {
 
     // Verify CTs exist in Drupal.
     const nodes = queryPrenatalNodes(fullName);
-    expect(nodes['last_menstrual_period']).toBe(true);
-    expect(nodes['pregnancy_testing']).toBe(true);
-    expect(nodes['danger_signs']).toBe(true);
-    expect(nodes['prenatal_health_education']).toBe(true);
+    expect(nodes['last_menstrual_period'], 'last_menstrual_period should exist').toBe(true);
+    expect(nodes['pregnancy_testing'], 'pregnancy_testing should exist').toBe(true);
+    expect(nodes['danger_signs'], 'danger_signs should exist').toBe(true);
+    expect(nodes['prenatal_health_education'], 'prenatal_health_education should exist').toBe(true);
     // NextSteps CTs (conditional — at minimum appointment_confirmation
     // and prenatal_follow_up should exist with no danger signs).
-    expect(nodes['appointment_confirmation']).toBe(true);
-    expect(nodes['prenatal_follow_up']).toBe(true);
+    expect(nodes['appointment_confirmation'], 'appointment_confirmation should exist').toBe(true);
+    expect(nodes['prenatal_follow_up'], 'prenatal_follow_up should exist').toBe(true);
 
     // --- Case Management verification ---
     // The prenatal follow-up should appear in the Antenatal Care pane.
@@ -155,6 +155,6 @@ test.describe('CHW: Prenatal Second Encounter', () => {
 
     // Verify the unique CT: birth_plan.
     const nodes = queryPrenatalNodes(fullName);
-    expect(nodes['birth_plan']).toBe(true);
+    expect(nodes['birth_plan'], 'birth_plan should exist').toBe(true);
   });
 });

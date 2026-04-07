@@ -1,172 +1,19 @@
 import { Page } from '@playwright/test';
-import { execSync } from 'child_process';
 import { click } from './auth';
-import { drushEnv } from './device';
-
-// ---------------------------------------------------------------------------
-// Private form helpers
-// ---------------------------------------------------------------------------
-
-/**
- * Select an option in a form dropdown identified by its label text.
- * @param optionIndex - 1-based index (skips blank default).
- */
-async function selectByLabel(page: Page, labelText: string, optionIndex: number) {
-  const row = page.locator('.ui.grid').filter({ hasText: labelText });
-  const select = row.locator('select').first();
-  const options = select.locator('option');
-  const count = await options.count();
-  if (count > optionIndex) {
-    const value = await options.nth(optionIndex).getAttribute('value');
-    if (value !== null) {
-      await select.selectOption(value);
-    }
-  }
-}
-
-/**
- * Locate a form input by its label text (grid row pattern).
- */
-function formInput(page: Page, labelText: string) {
-  return page
-    .locator('.ui.grid')
-    .filter({ hasText: labelText })
-    .locator('input')
-    .first();
-}
-
-/**
- * Answer a Yes/No boolean field by its CSS class.
- * Radio inputs are CSS-hidden; click the label instead.
- */
-async function answerYesNo(
-  page: Page,
-  fieldClass: string,
-  answer: 'Yes' | 'No',
-) {
-  await click(
-    page.locator(`.form-input.yes-no.${fieldClass} label`, {
-      hasText: answer,
-    }),
-    page,
-  );
-}
-
-/**
- * Select a checkbox option by clicking its label (exact match).
- */
-async function selectCheckbox(page: Page, optionText: string) {
-  await click(
-    page.locator('.ui.checkbox label', {
-      hasText: new RegExp(`^${optionText}$`, 'i'),
-    }),
-    page,
-  );
-}
-
-/**
- * Select a checkbox inside a specific form container.
- */
-async function selectCheckboxInForm(page: Page, formSelector: string, optionText: string) {
-  await click(
-    page.locator(`${formSelector} .ui.checkbox`, {
-      hasText: new RegExp(`^${optionText}$`, 'i'),
-    }).locator('label'),
-    page,
-  );
-}
-
-/**
- * Click a sub-task tab icon and wait for it to become active.
- */
-async function clickSubTaskTab(page: Page, iconClass: string) {
-  const tab = page.locator(`.link-section:has(.icon-activity-task.icon-${iconClass})`);
-  const isActive = await tab.evaluate(el => el.classList.contains('active')).catch(() => false);
-  if (!isActive) {
-    await click(tab, page);
-    await page.waitForTimeout(500);
-  }
-}
-
-/**
- * Open an activity from the NCD encounter page by clicking its card icon.
- */
-async function openActivity(page: Page, activityIcon: string) {
-  await page.locator('div.page-encounter.ncd').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
-  const icon = page.locator(`.icon-task-${activityIcon}`);
-  await icon.waitFor({ timeout: 10000 });
-  await click(icon, page);
-  await page.locator('div.page-activity.ncd').waitFor({ timeout: 10000 });
-}
-
-/**
- * Fill a measurement number input identified by its CSS ID class.
- */
-async function fillMeasurement(page: Page, id: string, value: string) {
-  await page
-    .locator(`.form-input.measurement.${id} input[type="number"]`)
-    .fill(value);
-}
-
-/**
- * Open the calendar popup, select a date, and confirm.
- */
-async function setDate(page: Page, date: Date, triggerSelector = '.date-input') {
-  await click(page.locator(triggerSelector).first(), page);
-  await page
-    .locator('.ui.active.modal.calendar-popup')
-    .waitFor({ timeout: 5000 });
-
-  // Use UTC — Elm date pickers derive dates via Time.utc.
-  const year = date.getUTCFullYear().toString();
-  await page
-    .locator('div.calendar > div.year > select')
-    .selectOption(year);
-
-  const monthValue = (date.getUTCMonth() + 1).toString();
-  await page
-    .locator('div.calendar > div.month > select')
-    .selectOption(monthValue);
-
-  const day = date.getUTCDate();
-  const dayCell = page.locator(
-    'div.calendar table tbody td:not(.date-selector--dimmed)',
-    { hasText: new RegExp(`^${day}$`) },
-  );
-  await dayCell.first().click();
-
-  await click(
-    page.locator('.ui.active.modal.calendar-popup div.ui.button'),
-    page,
-  );
-
-  await page
-    .locator('.ui.active.modal.calendar-popup')
-    .waitFor({ state: 'hidden', timeout: 3000 })
-    .catch(() => {});
-}
-
-/**
- * Click the Save button and wait to return to the encounter page.
- */
-async function saveAndReturn(page: Page) {
-  const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
-  await saveBtn.waitFor({ timeout: 5000 });
-  await click(saveBtn, page);
-  await page.locator('div.page-encounter.ncd').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
-}
-
-/**
- * Click the Save button for a sub-task (doesn't wait for encounter page).
- */
-async function saveSubTask(page: Page) {
-  const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
-  await saveBtn.waitFor({ timeout: 5000 });
-  await click(saveBtn, page);
-  await page.waitForTimeout(1000);
-}
+import {
+  WAIT,
+  queryMeasurementNodes,
+  backdateEncounter,
+  answerYesNo,
+  selectCheckbox,
+  selectCheckboxInForm,
+  clickSubTaskTab,
+  fillMeasurement,
+  openActivity,
+  saveActivity,
+  saveSubTask,
+  registerAdult,
+} from './common';
 
 // ---------------------------------------------------------------------------
 // Participant registration
@@ -188,97 +35,18 @@ export async function createAdultAndStartNCDEncounter(
     isFemale?: boolean;
   },
 ) {
-  const ageYears = options?.ageYears ?? 30;
-  const firstName = options?.firstName ?? `TestNCD${Date.now()}`;
-  const secondName = 'E2ETest';
-  const isFemale = options?.isFemale ?? false;
-
-  // Navigate: Dashboard → Clinical
-  await click(page.locator('.icon-task-clinical'), page);
-  await page.locator('div.page-clinical').waitFor({ timeout: 10000 });
-
-  // Clinical → Individual Encounter
-  await click(page.locator('button.individual-assessment'), page);
-  await page.locator('div.page-encounter-types').waitFor({ timeout: 10000 });
-
-  // Individual Encounter → NCD
-  await click(
-    page.locator('button.encounter-type', { hasText: 'Noncommunicable Diseases' }),
-    page,
-  );
-  await page.locator('div.page-participants').waitFor({ timeout: 10000 });
-
-  // Click "Register a new participant"
-  await click(
-    page.locator('button.ui.primary.button.fluid', {
-      hasText: 'Register a new participant',
-    }),
-    page,
-  );
-  await page
-    .locator('.ui.grid .column', { hasText: 'First Name:' })
-    .waitFor({ timeout: 10000 });
-
-  // Fill the registration form.
-  await formInput(page, 'First Name:').fill(firstName);
-  await formInput(page, 'Second Name:').fill(secondName);
-
-  // Set date of birth.
-  const dob = new Date();
-  dob.setFullYear(dob.getFullYear() - ageYears);
-  await setDate(page, dob);
-
-  // Select gender.
-  const genderRadios = page
-    .locator('.ui.grid')
-    .filter({ hasText: 'Gender:' })
-    .locator('input[type="radio"]');
-  if (isFemale) {
-    await genderRadios.last().check();
-  } else {
-    await genderRadios.first().check();
-  }
-
-  // Adult required fields.
-  await selectByLabel(page, 'Level of Education:', 1);
-  await selectByLabel(page, 'Marital Status:', 1);
-
-  // Nurse: fill address (cascading dropdowns) and health center.
-  await selectByLabel(page, 'Province:', 1);
-  await page.waitForTimeout(500);
-  await selectByLabel(page, 'District:', 1);
-  await page.waitForTimeout(500);
-  await selectByLabel(page, 'Sector:', 1);
-  await page.waitForTimeout(500);
-  await selectByLabel(page, 'Cell:', 1);
-  await page.waitForTimeout(500);
-  await selectByLabel(page, 'Village:', 1);
-
-  const hcSelect = page
-    .locator('.ui.grid')
-    .filter({ hasText: 'Health Center:' })
-    .locator('select');
-  await hcSelect.selectOption({ label: 'Nyange Health Center' });
-
-  // Submit the form.
-  await click(page.locator('button[type="submit"]'), page);
-
-  // Wait for the participant page.
-  await page
-    .locator('div.page-participant.individual.ncd')
-    .waitFor({ timeout: 30000 });
+  const result = await registerAdult(page, 'Noncommunicable Diseases', 'ncd', {
+    ageYears: options?.ageYears,
+    firstName: options?.firstName ?? `TestNCD${Date.now()}`,
+    isFemale: options?.isFemale,
+  });
 
   // Start NCD encounter.
-  await click(
-    page.locator('div.ui.primary.button', { hasText: 'NCD Encounter' }),
-    page,
-  );
-  await page
-    .locator('div.page-encounter.ncd')
-    .waitFor({ timeout: 30000 });
-  await page.waitForTimeout(1000);
+  await click(page.locator('div.ui.primary.button', { hasText: 'NCD Encounter' }), page);
+  await page.locator('div.page-encounter.ncd').waitFor({ timeout: 30000 });
+  await page.waitForTimeout(WAIT.sectionTransition);
 
-  return { firstName, secondName, fullName: `${secondName} ${firstName}` };
+  return result;
 }
 
 // ---------------------------------------------------------------------------
@@ -297,7 +65,7 @@ export async function completeDangerSigns(
 ) {
   const signs = options?.signs ?? [];
 
-  await openActivity(page, 'danger-signs');
+  await openActivity(page, 'ncd', 'danger-signs');
 
   if (signs.length === 0) {
     await selectCheckboxInForm(page, '.ui.form.danger-signs', 'None of the Above');
@@ -307,7 +75,7 @@ export async function completeDangerSigns(
     }
   }
 
-  await saveAndReturn(page);
+  await saveActivity(page, 'ncd');
 }
 
 // ---------------------------------------------------------------------------
@@ -328,7 +96,7 @@ export async function completeSymptomReview(
     group2?: string[];
   },
 ) {
-  await openActivity(page, 'symptoms');
+  await openActivity(page, 'ncd', 'symptoms');
 
   const form = page.locator('.ui.form.symptom-review');
 
@@ -372,7 +140,7 @@ export async function completeSymptomReview(
     }
   }
 
-  await saveAndReturn(page);
+  await saveActivity(page, 'ncd');
 }
 
 // ---------------------------------------------------------------------------
@@ -394,7 +162,7 @@ export async function completeExamination(
     bodyTemp?: string;
   },
 ) {
-  await openActivity(page, 'examination');
+  await openActivity(page, 'ncd', 'examination');
 
   // --- Sub-task 1: Vitals (default active) ---
   await clickSubTaskTab(page, 'vitals');
@@ -404,11 +172,11 @@ export async function completeExamination(
   await fillMeasurement(page, 'respiratory-rate', options?.respiratoryRate ?? '16');
   await fillMeasurement(page, 'body-temperature', options?.bodyTemp ?? '36.6');
   await saveSubTask(page);
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   // --- Sub-task 2: CoreExam ---
   await clickSubTaskTab(page, 'core-physical-exam');
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   const coreExamForm = page.locator('.ui.form.core-physical-exam');
 
@@ -444,7 +212,7 @@ export async function completeExamination(
   // Legs: Normal (index 4)
   await click(normalCheckboxes.nth(4), page);
 
-  await saveAndReturn(page);
+  await saveActivity(page, 'ncd');
 }
 
 // ---------------------------------------------------------------------------
@@ -458,12 +226,12 @@ export async function completeExamination(
  * Creates: ncd_family_planning
  */
 export async function completeFamilyPlanning(page: Page) {
-  await openActivity(page, 'planning');
+  await openActivity(page, 'ncd', 'planning');
 
   // Select "None of these" family planning sign.
   await selectCheckboxInForm(page, '.ui.form.family-planning', 'None of these');
 
-  await saveAndReturn(page);
+  await saveActivity(page, 'ncd');
 }
 
 // ---------------------------------------------------------------------------
@@ -479,18 +247,18 @@ export async function completeFamilyPlanning(page: Page) {
  *          ncd_family_history, ncd_outside_care
  */
 export async function completeMedicalHistory(page: Page) {
-  await openActivity(page, 'history');
+  await openActivity(page, 'ncd', 'history');
 
   // --- Sub-task 1: CoMorbidities ---
   await clickSubTaskTab(page, 'danger-signs');
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
   await selectCheckboxInForm(page, '.ui.form.co-morbidities', 'None of the Above');
   await saveSubTask(page);
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   // --- Sub-task 2: MedicationHistory ---
   await clickSubTaskTab(page, 'medical');
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
   // 3 checkbox groups: medications causing hypertension, treating hypertension, treating diabetes.
   // Select "None of the Above" for each group.
   const medForm = page.locator('.ui.form.medication-history');
@@ -502,11 +270,11 @@ export async function completeMedicalHistory(page: Page) {
     await click(noneLabels.nth(i), page);
   }
   await saveSubTask(page);
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   // --- Sub-task 3: SocialHistory ---
   await clickSubTaskTab(page, 'social');
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
   // Bool inputs: alcohol, cigarettes, salt, difficult4Times, helpAtHome.
   await answerYesNo(page, 'alcohol', 'No');
   await answerYesNo(page, 'cigarettes', 'No');
@@ -521,28 +289,28 @@ export async function completeMedicalHistory(page: Page) {
     await click(foodCheckboxes.first(), page);
   }
   await saveSubTask(page);
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   // --- Sub-task 4: FamilyHistory ---
   await clickSubTaskTab(page, 'family');
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
   // Bool inputs: hypertension in family, heart problem, diabetes.
   await answerYesNo(page, 'hypertension-in-family', 'No');
   await answerYesNo(page, 'heartProblem-in-family', 'No');
   await answerYesNo(page, 'diabetes-in-family', 'No');
   await saveSubTask(page);
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   // --- Sub-task 5: OutsideCare ---
   await clickSubTaskTab(page, 'outside-care');
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
   // Step 1: Diagnoses — answer "No" to "seen at another facility".
   const outsideCareForm = page.locator('.ui.form.history.outside-care');
   if (await outsideCareForm.isVisible({ timeout: 2000 }).catch(() => false)) {
     await answerYesNo(page, 'seen-at-another-facility', 'No');
   }
   // Save — this returns to the encounter page since it's the last sub-task.
-  await saveAndReturn(page);
+  await saveActivity(page, 'ncd');
 }
 
 // ---------------------------------------------------------------------------
@@ -556,12 +324,12 @@ export async function completeMedicalHistory(page: Page) {
  * Creates: ncd_outside_care
  */
 export async function completeOutsideCare(page: Page) {
-  await openActivity(page, 'outside-care');
+  await openActivity(page, 'ncd', 'outside-care');
 
   // Step 1: "Have you been seen at another health facility?"
   await answerYesNo(page, 'seen-at-another-facility', 'No');
 
-  await saveAndReturn(page);
+  await saveActivity(page, 'ncd');
 }
 
 // ---------------------------------------------------------------------------
@@ -586,7 +354,7 @@ export async function completeLaboratory(
 ) {
   const performTests = options?.performTests ?? false;
 
-  await openActivity(page, 'laboratory');
+  await openActivity(page, 'ncd', 'laboratory');
 
   // Iterate visible lab test tabs.
   const tabs = page.locator('.link-section:has(.icon-activity-task)');
@@ -611,7 +379,7 @@ export async function completeLaboratory(
         .locator('.form-input.yes-no')
         .first()
         .waitFor({ timeout: 5000 });
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(WAIT.formInteraction);
     }
 
     // Helper: click a label with force:true (safe for radios/checkboxes,
@@ -624,14 +392,14 @@ export async function completeLaboratory(
     const knownPositive = page.locator('.form-input.yes-no.known-as-positive');
     if (await knownPositive.isVisible().catch(() => false)) {
       await forceClick(knownPositive.locator('label', { hasText: 'No' }));
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
     }
 
     // 2. "Got results previously?" (HBA1C) → No
     const gotResults = page.locator('.form-input.yes-no.got-results-previously');
     if (await gotResults.isVisible().catch(() => false)) {
       await forceClick(gotResults.locator('label', { hasText: 'No' }));
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
     }
 
     // 3. "Were you able to perform the test?" → Yes (perform) or No (skip)
@@ -639,14 +407,14 @@ export async function completeLaboratory(
     if (await testPerformed.isVisible().catch(() => false)) {
       if (performTests) {
         await forceClick(testPerformed.locator('label', { hasText: 'Yes' }));
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(WAIT.elmRerender);
       } else {
         await forceClick(testPerformed.locator('label', { hasText: 'No' }));
         // Wait for "Why not?" section and select first reason.
         const whyNot = page.locator('.why-not .ui.checkbox label').first();
         await whyNot.waitFor({ timeout: 5000 });
         await forceClick(whyNot);
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(WAIT.formInteraction);
       }
     }
 
@@ -655,28 +423,28 @@ export async function completeLaboratory(
       const immediateResult = page.locator('.form-input.yes-no.immediate-result');
       if (await immediateResult.isVisible().catch(() => false)) {
         await forceClick(immediateResult.locator('label', { hasText: 'Lab' }));
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(WAIT.elmRerender);
       }
 
       // 5. "Urine Dipstick variant?" → Short Dip
       const shortDip = page.locator('.ui.checkbox label', { hasText: /^Short Dip$/i });
       if (await shortDip.isVisible().catch(() => false)) {
         await forceClick(shortDip);
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(WAIT.formInteraction);
       }
 
       // 6. "Was this test performed before a meal?" → No (Random Blood Sugar)
       const patientFasted = page.locator('.form-input.yes-no.patient-fasted');
       if (await patientFasted.isVisible().catch(() => false)) {
         await forceClick(patientFasted.locator('label', { hasText: 'No' }));
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(WAIT.formInteraction);
       }
 
       // 7. "Did you perform this test today?" → Yes
       const testPerformedToday = page.locator('.form-input.yes-no.test-performed-today');
       if (await testPerformedToday.isVisible().catch(() => false)) {
         await forceClick(testPerformedToday.locator('label', { hasText: 'Yes' }));
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(WAIT.formInteraction);
       }
 
       // 8. Test result dropdown (HIV, Pregnancy: Positive/Negative/Indeterminate)
@@ -696,7 +464,7 @@ export async function completeLaboratory(
               const val = await sel.locator('option').nth(1).getAttribute('value');
               if (val) await sel.selectOption(val);
             }
-            await page.waitForTimeout(300);
+            await page.waitForTimeout(WAIT.formInteraction);
           }
         }
       }
@@ -710,7 +478,7 @@ export async function completeLaboratory(
           const currentVal = await input.inputValue();
           if (!currentVal) {
             await input.fill('5');
-            await page.waitForTimeout(200);
+            await page.waitForTimeout(WAIT.quickInput);
           }
         }
       }
@@ -719,7 +487,7 @@ export async function completeLaboratory(
       const partnerHIV = page.locator('.form-input.yes-no.partner-hiv-positive');
       if (await partnerHIV.isVisible().catch(() => false)) {
         await forceClick(partnerHIV.locator('label', { hasText: 'No' }));
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(WAIT.formInteraction);
       }
     }
 
@@ -729,12 +497,12 @@ export async function completeLaboratory(
     const saveBtn = page.locator('button.ui.fluid.primary.button:not(.disabled)', { hasText: 'Save' });
     await saveBtn.waitFor({ timeout: 10000 });
     await saveBtn.click({ force: true });
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
   }
 
   // After all tabs, we should be back on the encounter page.
   await page.locator('div.page-encounter.ncd').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 // ---------------------------------------------------------------------------
@@ -748,7 +516,7 @@ export async function completeLaboratory(
  * Creates: ncd_health_education, ncd_medication_distribution, ncd_referral
  */
 export async function completeNextSteps(page: Page) {
-  await openActivity(page, 'next-steps');
+  await openActivity(page, 'ncd', 'next-steps');
 
   // Iterate visible sub-task tabs.
   const tabs = page.locator('.link-section:has(.icon-activity-task)');
@@ -756,7 +524,7 @@ export async function completeNextSteps(page: Page) {
 
   for (let i = 0; i < tabCount; i++) {
     await click(tabs.nth(i), page);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
 
     // Determine which sub-task we're on by checking the active icon.
     const activeTab = page.locator('.link-section.active .icon-activity-task');
@@ -772,7 +540,7 @@ export async function completeNextSteps(page: Page) {
       const checkboxCount = await treatmentCheckboxes.count();
       for (let c = 0; c < Math.min(checkboxCount, 2); c++) {
         await treatmentCheckboxes.nth(c).click({ force: true });
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(WAIT.formInteraction);
       }
       // "Guided to return in one month?" → Yes
       const guidedReturn = page.locator('.form-input.yes-no.return-in-one-month label', { hasText: 'Yes' });
@@ -782,7 +550,7 @@ export async function completeNextSteps(page: Page) {
     } else if (classAttr?.includes('next-steps-referral')) {
       // Referral: refer to hospital.
       await answerYesNo(page, 'referral', 'Yes');
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
       // "Hand referral form?" → Yes
       const handForm = page.locator('.form-input.yes-no.hand-referral-form label', { hasText: 'Yes' });
       if (await handForm.isVisible({ timeout: 2000 }).catch(() => false)) {
@@ -794,12 +562,12 @@ export async function completeNextSteps(page: Page) {
     const saveBtn = page.locator('button.ui.fluid.primary.button:not(.disabled)', { hasText: 'Save' });
     await saveBtn.waitFor({ timeout: 10000 });
     await saveBtn.click({ force: true });
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(WAIT.sectionTransition);
   }
 
   // Wait for encounter page.
   await page.locator('div.page-encounter.ncd').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 // ---------------------------------------------------------------------------
@@ -810,7 +578,7 @@ export async function completeNextSteps(page: Page) {
  * End the NCD encounter: click "End Encounter", confirm in the dialog.
  */
 export async function endNCDEncounter(page: Page) {
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(WAIT.pageNavigation);
 
   const endBtn = page.locator('button', { hasText: 'End Encounter' }).first();
   await endBtn.waitFor({ timeout: 10000 });
@@ -886,7 +654,7 @@ export async function startNCDEncounter(page: Page) {
   await page
     .locator('div.page-encounter.ncd')
     .waitFor({ timeout: 30000 });
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 }
 
 /**
@@ -894,71 +662,7 @@ export async function startNCDEncounter(page: Page) {
  * Retries up to 5 times with 10s delay for eventual consistency.
  */
 export function backdateNCDEncounter(personName: string) {
-  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
-  const php = `
-    \\$person_name = base64_decode('${personNameB64}');
-    \\$query = new EntityFieldQuery();
-    \\$result = \\$query->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'person')
-      ->propertyCondition('title', \\$person_name)
-      ->execute();
-    if (empty(\\$result['node'])) {
-      echo 'Person not found';
-      return;
-    }
-    \\$person_nid = key(\\$result['node']);
-
-    // Find individual_participant for this person.
-    \\$q = new EntityFieldQuery();
-    \\$r = \\$q->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'individual_participant')
-      ->fieldCondition('field_person', 'target_id', \\$person_nid)
-      ->execute();
-    if (empty(\\$r['node'])) {
-      echo 'No participant found';
-      return;
-    }
-
-    // Find ncd_encounter for this person's participants.
-    \\$participant_nids = array_keys(\\$r['node']);
-    \\$eq = new EntityFieldQuery();
-    \\$er = \\$eq->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'ncd_encounter')
-      ->fieldCondition('field_individual_participant', 'target_id', \\$participant_nids, 'IN')
-      ->propertyOrderBy('nid', 'DESC')
-      ->execute();
-    if (empty(\\$er['node'])) {
-      echo 'No encounter found';
-      return;
-    }
-
-    // Backdate the most recent encounter.
-    \\$target_date = date('Y-m-d H:i:s', strtotime('-7 days'));
-    \\$enc_nid = key(\\$er['node']);
-    \\$enc = node_load(\\$enc_nid);
-    \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value'] = \\$target_date;
-    \\$enc->field_scheduled_date[LANGUAGE_NONE][0]['value2'] = \\$target_date;
-    node_save(\\$enc);
-    echo 'Backdated encounter ' . \\$enc_nid;
-  `;
-
-  const { drushCmd, cwd } = drushEnv();
-
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const output = execSync(`${drushCmd} eval "${php}"`, {
-      cwd,
-      timeout: 30000,
-      encoding: 'utf-8',
-    }).trim();
-    console.log(`backdateNCDEncounter attempt ${attempt + 1}:`, output);
-    if (output.startsWith('Backdated')) {
-      return;
-    }
-    if (attempt < 4) {
-      execSync('sleep 10');
-    }
-  }
-  console.error('backdateNCDEncounter: failed after 5 attempts');
+  backdateEncounter(personName, 'ncd_encounter', 7);
 }
 
 // ---------------------------------------------------------------------------
@@ -971,7 +675,7 @@ export function backdateNCDEncounter(personName: string) {
 export async function navigateToCaseManagement(page: Page) {
   await click(page.locator('.icon-task-case-management'), page);
   await page.locator('.page-case-management').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 /**
@@ -989,7 +693,7 @@ export async function openNCDRecurrentEncounterFromCaseManagement(
   await click(entry.locator('.icon-forward'), page);
   // Recurrent encounter page has same CSS: div.page-encounter.ncd.
   await page.locator('div.page-encounter.ncd').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 /**
@@ -997,14 +701,14 @@ export async function openNCDRecurrentEncounterFromCaseManagement(
  * Iterates visible lab result tabs and fills in result values.
  */
 export async function completeLabResults(page: Page) {
-  await openActivity(page, 'laboratory');
+  await openActivity(page, 'ncd', 'laboratory');
 
   const tabs = page.locator('.link-section:has(.icon-activity-task)');
   const tabCount = await tabs.count();
 
   for (let i = 0; i < tabCount; i++) {
     await click(tabs.nth(i), page);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
 
     // Fill select dropdowns first (e.g., unit of measurement — may reveal more inputs).
     const selects = page.locator('select.form-input');
@@ -1022,7 +726,7 @@ export async function completeLabResults(page: Page) {
             const val = await sel.locator('option').nth(1).getAttribute('value');
             if (val) await sel.selectOption(val);
           }
-          await page.waitForTimeout(500);
+          await page.waitForTimeout(WAIT.elmRerender);
         }
       }
     }
@@ -1044,12 +748,12 @@ export async function completeLabResults(page: Page) {
     const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
     if (await saveBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
       await click(saveBtn, page);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
     }
   }
 
   await page.locator('div.page-encounter.ncd').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 /**
@@ -1057,14 +761,14 @@ export async function completeLabResults(page: Page) {
  * Sub-tasks: MedicationDistribution and Referral.
  */
 export async function completeRecurrentNextSteps(page: Page) {
-  await openActivity(page, 'next-steps');
+  await openActivity(page, 'ncd', 'next-steps');
 
   const tabs = page.locator('.link-section:has(.icon-activity-task)');
   const tabCount = await tabs.count();
 
   for (let i = 0; i < tabCount; i++) {
     await click(tabs.nth(i), page);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
 
     const activeTab = page.locator('.link-section.active .icon-activity-task');
     const classAttr = await activeTab.getAttribute('class').catch(() => '');
@@ -1075,7 +779,7 @@ export async function completeRecurrentNextSteps(page: Page) {
       const checkboxCount = await treatmentCheckboxes.count();
       if (checkboxCount > 0) {
         await click(treatmentCheckboxes.first(), page);
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(WAIT.elmRerender);
       }
       const guidedReturn = page.locator('.form-input.yes-no.return-in-one-month label', { hasText: 'Yes' });
       if (await guidedReturn.isVisible({ timeout: 2000 }).catch(() => false)) {
@@ -1084,7 +788,7 @@ export async function completeRecurrentNextSteps(page: Page) {
     } else if (classAttr?.includes('next-steps-referral')) {
       // Referral: refer to hospital.
       await answerYesNo(page, 'referral', 'Yes');
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
       const handForm = page.locator('.form-input.yes-no.hand-referral-form label', { hasText: 'Yes' });
       if (await handForm.isVisible({ timeout: 2000 }).catch(() => false)) {
         await click(handForm, page);
@@ -1094,12 +798,12 @@ export async function completeRecurrentNextSteps(page: Page) {
     const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
     if (await saveBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
       await click(saveBtn, page);
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(WAIT.sectionTransition);
     }
   }
 
   await page.locator('div.page-encounter.ncd').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 /**
@@ -1127,7 +831,6 @@ export function queryNCDNodes(
   personName: string,
   expectedTypes?: string[],
 ): Record<string, boolean> {
-  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
   const ncdTypes = [
     'ncd_danger_signs',
     'ncd_symptom_review',
@@ -1152,77 +855,5 @@ export function queryNCDNodes(
     'ncd_medication_distribution',
     'ncd_referral',
   ];
-
-  const typesStr = ncdTypes.map(t => `'${t}'`).join(', ');
-
-  const php = `
-    \\$person_name = base64_decode('${personNameB64}');
-    \\$query = new EntityFieldQuery();
-    \\$result = \\$query->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'person')
-      ->propertyCondition('title', \\$person_name)
-      ->execute();
-    if (empty(\\$result['node'])) {
-      echo json_encode(['error' => 'Person not found']);
-      return;
-    }
-    \\$person_nid = key(\\$result['node']);
-
-    \\$types = array(${typesStr});
-    \\$found = array();
-    foreach (\\$types as \\$type) {
-      \\$q = new EntityFieldQuery();
-      \\$r = \\$q->entityCondition('entity_type', 'node')
-        ->propertyCondition('type', \\$type)
-        ->fieldCondition('field_person', 'target_id', \\$person_nid)
-        ->range(0, 1)
-        ->execute();
-      \\$found[\\$type] = !empty(\\$r['node']);
-    }
-    echo json_encode(\\$found);
-  `;
-
-  const { drushCmd, cwd } = drushEnv();
-
-  for (let attempt = 0; attempt < 10; attempt++) {
-    try {
-      const output = execSync(`${drushCmd} eval "${php}"`, {
-        cwd,
-        timeout: 30000,
-        encoding: 'utf-8',
-      }).trim();
-
-      const parsed = JSON.parse(output);
-      if (parsed.error) {
-        console.log(`queryNCDNodes attempt ${attempt + 1}: ${parsed.error}`);
-        if (attempt < 9) {
-          execSync('sleep 5');
-          continue;
-        }
-        return parsed;
-      }
-
-      // Check if all expected types are found.
-      if (expectedTypes) {
-        const missing = expectedTypes.filter(t => !parsed[t]);
-        if (missing.length === 0) {
-          return parsed;
-        }
-        console.log(`queryNCDNodes attempt ${attempt + 1}: missing [${missing.join(', ')}]`);
-        if (attempt < 9) {
-          execSync('sleep 5');
-          continue;
-        }
-      }
-
-      return parsed;
-    } catch (err) {
-      console.log(`queryNCDNodes attempt ${attempt + 1}: error`, err);
-      if (attempt < 9) {
-        execSync('sleep 5');
-      }
-    }
-  }
-
-  return {};
+  return queryMeasurementNodes(personName, ncdTypes, expectedTypes);
 }

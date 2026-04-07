@@ -47,7 +47,7 @@ test.describe('CHW: Home Visit Encounter', () => {
     const endBtn = page.locator('div.actions button.ui.fluid.button', {
       hasText: 'End Encounter',
     });
-    await expect(endBtn).not.toHaveClass(/disabled/);
+    await expect(endBtn, 'End Encounter button should not be disabled after completing all activities').not.toHaveClass(/disabled/);
 
     await endHomeVisit(page);
 
@@ -56,10 +56,10 @@ test.describe('CHW: Home Visit Encounter', () => {
 
     // Verify all 4 measurement nodes exist in backend.
     const nodes = queryHomeVisitNodes(fullName);
-    expect(nodes.feeding).toBe(true);
-    expect(nodes.caring).toBe(true);
-    expect(nodes.hygiene).toBe(true);
-    expect(nodes.foodSecurity).toBe(true);
+    expect(nodes.feeding, 'feeding should exist').toBe(true);
+    expect(nodes.caring, 'caring should exist').toBe(true);
+    expect(nodes.hygiene, 'hygiene should exist').toBe(true);
+    expect(nodes.foodSecurity, 'foodSecurity should exist').toBe(true);
   });
 
   test('feeding with supplement reveals conditional fields', async ({
@@ -88,9 +88,9 @@ test.describe('CHW: Home Visit Encounter', () => {
 
     // Verify all nodes exist.
     const nodes = queryHomeVisitNodes(fullName);
-    expect(nodes.feeding).toBe(true);
-    expect(nodes.caring).toBe(true);
-    expect(nodes.hygiene).toBe(true);
-    expect(nodes.foodSecurity).toBe(true);
+    expect(nodes.feeding, 'feeding should exist').toBe(true);
+    expect(nodes.caring, 'caring should exist').toBe(true);
+    expect(nodes.hygiene, 'hygiene should exist').toBe(true);
+    expect(nodes.foodSecurity, 'foodSecurity should exist').toBe(true);
   });
 });

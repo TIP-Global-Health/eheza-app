@@ -3,7 +3,7 @@ import { click, setupDevice } from './helpers/auth';
 import { getClientPort } from './helpers/client-port';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
-import { syncAndWait } from './helpers/common';
+import { WAIT, syncAndWait } from './helpers/common';
 import {
   createAdultFemaleAndStartEncounter,
   completePregnancyDating,
@@ -60,7 +60,7 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     await completeLaboratoryNurseForLab(page);
     // NextSteps: the "Wait" sub-task should appear because labs were ordered for lab.
     const completedSteps = await completeNextSteps(page);
-    expect(completedSteps).toContain('wait');
+    expect(completedSteps, 'completedSteps should contain wait sub-task').toContain('wait');
 
     // Sync nurse encounter to backend.
     await syncAndWait(page);
@@ -82,17 +82,18 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     await page.locator('.icon-task-case-management').waitFor({ timeout: 10000 });
     await page.locator('.icon-task-device-status').waitFor({ timeout: 5000 });
     // Clinical menu should NOT be visible for lab tech.
-    expect(await page.locator('.icon-task-clinical').isVisible().catch(() => false)).toBe(false);
+    expect(await page.locator('.icon-task-clinical').isVisible().catch(() => false), 'clinical menu should not be visible for lab tech').toBe(false);
 
     // Navigate to Case Management.
     await navigateToCaseManagement(page);
 
     // Verify Lab Tech Case Management structure: only 2 filter buttons (All + ANC Labs).
     const filterButtons = page.locator('div.ui.segment.filters button');
-    await expect(filterButtons).toHaveCount(2);
+    await expect(filterButtons, 'Lab Tech Case Management should have exactly 2 filter buttons (All + ANC Labs)').toHaveCount(2);
     // Verify ANC Labs pane heading is visible.
     await expect(
       page.locator('div.pane-heading', { hasText: 'ANC Labs' }),
+      'ANC Labs pane heading should be visible',
     ).toBeVisible({ timeout: 5000 });
 
     // Find the patient in the Prenatal Labs pane.
@@ -104,29 +105,29 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     // Click forward icon → navigates directly to LabResults activity page.
     await click(entry.locator('.icon-forward'), page);
     await page.locator('div.page-activity.prenatal').waitFor({ timeout: 15000 });
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
 
     // Complete lab results for all visible tests.
     const completedResults = await completeLabResultsAsLabTech(page);
-    expect(completedResults.length).toBeGreaterThan(0);
+    expect(completedResults.length, 'at least one lab result should have been completed').toBeGreaterThan(0);
 
     // After completing all tabs, the app should navigate to encounter page
     // or stay on the activity page. Navigate back if needed.
     // For lab tech, after completing all results the encounter auto-completes.
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(WAIT.pageNavigation);
 
     // Navigate back to Case Management to verify entry is gone.
     // First go back to main menu.
     const backBtn = page.locator('.icon-back');
     if (await backBtn.isVisible().catch(() => false)) {
       await click(backBtn, page);
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(WAIT.sectionTransition);
     }
     // If we're on encounter page, go back to main menu.
     const backBtn2 = page.locator('.icon-back');
     if (await backBtn2.isVisible().catch(() => false)) {
       await click(backBtn2, page);
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(WAIT.sectionTransition);
     }
 
     // --- Phase 3: Sync and verify backend ---
@@ -135,6 +136,6 @@ test.describe('Lab Tech: Enter Lab Results via Case Management', () => {
     // Verify lab test measurement nodes exist in backend.
     const expectedTypes = ['prenatal_labs_results'];
     const nodes = queryPrenatalNodes(fullName, expectedTypes);
-    expect(nodes['prenatal_labs_results']).toBe(true);
+    expect(nodes['prenatal_labs_results'], 'prenatal_labs_results should exist').toBe(true);
   });
 });
