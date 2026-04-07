@@ -2,7 +2,7 @@ import { Page } from '@playwright/test';
 import { execSync } from 'child_process';
 import { click } from './auth';
 import { drushEnv } from './device';
-import { formInput, selectByLabel, setDate } from './common';
+import { WAIT, formInput, selectByLabel, setDate } from './common';
 
 // ---------------------------------------------------------------------------
 // Navigation
@@ -43,7 +43,7 @@ export async function navigateToNurseGroupSession(
     }
 
     await page.reload();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(WAIT.sectionTransition);
   }
 
   await click(programBtn, page);
@@ -121,7 +121,7 @@ export async function navigateToChwGroupSession(page: Page) {
     await click(page.locator('.link-back'), page);
     await page.locator('div.page-clinical').waitFor({ timeout: 10000 });
     await page.reload();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(WAIT.sectionTransition);
     await page.locator('div.page-clinical').waitFor({ timeout: 10000 });
   }
 }
@@ -145,7 +145,7 @@ export async function goToActivitiesPage(page: Page) {
     page.locator('ul.links-head li').filter({ has: page.locator('.icon-measurements') }),
     page,
   );
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 }
 
 /**
@@ -156,7 +156,7 @@ export async function clickMotherCard(page: Page, motherName: string) {
     has: page.locator('p.mother', { hasText: motherName }),
   });
   await click(card, page);
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 }
 
 /**
@@ -171,7 +171,7 @@ export async function navigateToChild(page: Page, childIndex: number = 0) {
   // The first non-active child icon is the one we want to click.
   const childLinks = page.locator('ul.links-body li:has(.icon-baby)');
   await childLinks.nth(childIndex).click();
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 }
 
 /**
@@ -184,7 +184,7 @@ export async function navigateToMother(page: Page) {
 
   const motherLink = page.locator('ul.links-body li:has(.icon-mother)');
   await motherLink.click();
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 }
 
 /**
@@ -208,7 +208,7 @@ async function dismissOverlay(page: Page) {
       }
     }
     await overlay.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(WAIT.formInteraction);
   }
 
   // Check for modal dialog.
@@ -221,7 +221,7 @@ async function dismissOverlay(page: Page) {
       await modal.locator('button').last().click({ force: true });
     }
     await modal.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(WAIT.formInteraction);
   }
 }
 
@@ -294,13 +294,13 @@ export async function createMotherOnAttendancePage(
   if (!isChw) {
     // Nurse: fill cascading address dropdowns.
     await selectByLabel(page, 'Province:', 1);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
     await selectByLabel(page, 'District:', 1);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
     await selectByLabel(page, 'Sector:', 1);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
     await selectByLabel(page, 'Cell:', 1);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
     await selectByLabel(page, 'Village:', 1);
 
     // Select health center.
@@ -385,13 +385,13 @@ export async function addChildToMother(
   if (!isChw) {
     // Nurse: fill cascading address dropdowns.
     await selectByLabel(page, 'Province:', 1);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
     await selectByLabel(page, 'District:', 1);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
     await selectByLabel(page, 'Sector:', 1);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
     await selectByLabel(page, 'Cell:', 1);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
     await selectByLabel(page, 'Village:', 1);
 
     // Select health center.
@@ -418,7 +418,7 @@ export async function addChildToMother(
   // Retry with reloads if form didn't appear.
   if (!formVisible) {
     for (let attempt = 0; attempt < 3; attempt++) {
-      await page.waitForTimeout(3000);
+      await page.waitForTimeout(WAIT.heavyOperation);
       await page.reload();
       await page
         .locator('div.page-relationship')
@@ -447,7 +447,7 @@ export async function addChildToMother(
     '.ui.radio.checkbox label.relationship-selection',
   ).first();
   await click(relationRadio, page);
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   // For GroupEncounterOrigin, the group is auto-selected (only the session's clinic).
   // No need to manually select a group.
@@ -471,7 +471,7 @@ export async function addChildToMother(
     attendancePage.waitFor({ timeout: 30000 }),
   ]);
 
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 
   return { firstName, secondName, fullName: `${secondName} ${firstName}` };
 }
@@ -500,7 +500,7 @@ export async function navigateBackToAttendance(page: Page) {
     await attendancePage.waitFor({ timeout: 10000 });
   }
 
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 }
 
 // ---------------------------------------------------------------------------
@@ -533,7 +533,7 @@ async function openActivity(page: Page, activityName: string) {
     await click(tab.first(), page);
   }
 
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 /**
@@ -544,7 +544,7 @@ async function saveActivity(page: Page) {
   const saveBtn = page.locator('#save-form');
   await saveBtn.waitFor({ timeout: 5000 });
   await click(saveBtn, page);
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 }
 
 /**
@@ -553,7 +553,7 @@ async function saveActivity(page: Page) {
 export async function completeHeight(page: Page, value: string) {
   await openActivity(page, 'Height');
   await page.locator('input[type="number"][name="height"]').fill(value);
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
   await saveActivity(page);
 }
 
@@ -563,7 +563,7 @@ export async function completeHeight(page: Page, value: string) {
 export async function completeWeight(page: Page, value: string) {
   await openActivity(page, 'Weight');
   await page.locator('input[type="number"][name="weight"]').fill(value);
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
   await saveActivity(page);
 }
 
@@ -575,7 +575,7 @@ export async function completeMuac(page: Page, value: string) {
   // MUAC uses a number input (spinbutton) — find it near the Save button.
   const muacInput = page.locator('input[type="number"]').first();
   await muacInput.fill(value);
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
   await saveActivity(page);
 }
 
@@ -590,7 +590,7 @@ export async function completeNutritionSigns(page: Page) {
   const label = page.getByText('None of these', { exact: true });
   await label.scrollIntoViewIfNeeded();
   await label.click({ force: true });
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
   await saveActivity(page);
 }
 
@@ -603,7 +603,7 @@ export async function completeChildFbf(page: Page) {
   // Select quantity from the FBF distribution dropdown.
   const fbfSelect = page.locator('select').first();
   await fbfSelect.selectOption('1');
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
   await saveActivity(page);
 }
 
@@ -616,7 +616,7 @@ export async function completeChildFbf(page: Page) {
  * Used as the first pass before overriding specific answers to "Yes".
  */
 async function answerAllNoAndFillNumbers(page: Page) {
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   // Click all visible "No" labels.
   const noButtons = page.locator('.form-input label', { hasText: /^No$/ });
@@ -626,7 +626,7 @@ async function answerAllNoAndFillNumbers(page: Page) {
     if (await btn.isVisible().catch(() => false)) {
       await btn.scrollIntoViewIfNeeded();
       await btn.click({ force: true });
-      await page.waitForTimeout(200);
+      await page.waitForTimeout(WAIT.quickInput);
     }
   }
 
@@ -637,7 +637,7 @@ async function answerAllNoAndFillNumbers(page: Page) {
     const input = numberInputs.nth(i);
     if (await input.isVisible() && (await input.inputValue()) === '') {
       await input.fill('3000');
-      await page.waitForTimeout(200);
+      await page.waitForTimeout(WAIT.quickInput);
     }
   }
 }
@@ -685,7 +685,7 @@ async function overrideToYes(page: Page, questionSubstring: string) {
   }
 
   await click(page.locator(`#${yesNoId} label`, { hasText: 'Yes' }), page);
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
 }
 
 /**
@@ -695,7 +695,7 @@ async function clickGroupNCDASave(page: Page) {
   const saveBtn = page.locator('button', { hasText: /^Save$/i });
   await saveBtn.scrollIntoViewIfNeeded();
   await saveBtn.click({ force: true });
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 
   // Dismiss overlay if present.
   const overlay = page.locator('div.overlay');
@@ -708,7 +708,7 @@ async function clickGroupNCDASave(page: Page) {
       await proceedBtn.click({ force: true });
     }
     await overlay.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
   }
 
   // Dismiss modal if present.
@@ -722,7 +722,7 @@ async function clickGroupNCDASave(page: Page) {
       await proceedModalBtn.click({ force: true });
     }
     await modal.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
   }
 }
 
@@ -743,14 +743,14 @@ export async function completeNCDA(page: Page) {
   // The NCDA "Child Scorecard" triggers a skip dialog overlay:
   // "Would you like to proceed?" with "Yes, proceed" / "No, skip".
   // Click "Yes, proceed" to enter the actual NCDA form.
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
   const overlay = page.locator('div.overlay');
   if (await overlay.isVisible().catch(() => false)) {
     const proceedBtn = overlay.locator('button', { hasText: 'Yes, proceed' });
     if (await proceedBtn.isVisible().catch(() => false)) {
       await proceedBtn.click({ force: true });
       await overlay.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
     }
   }
 
@@ -761,7 +761,7 @@ export async function completeNCDA(page: Page) {
     if (await proceedBtn.isVisible().catch(() => false)) {
       await proceedBtn.click({ force: true });
       await modal.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
     }
   }
 
@@ -802,7 +802,7 @@ export async function completeNCDA(page: Page) {
     await answerAllNoAndFillNumbers(page);
     // BeneficiaryCashTransfer → Yes (complementary: child-scoreboard answers No).
     await overrideToYes(page, 'beneficiary of cash transfer');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
     // ReceivingCashTransfer → Yes (conditional, appears when above is Yes).
     await overrideToYes(page, 'Are they receiving it');
     // ConditionalFoodItems → Yes (complementary: child-scoreboard answers No).
@@ -835,7 +835,7 @@ export async function completeNutritionSignsAbnormal(page: Page) {
   const edemaLabel = page.getByText('Edema', { exact: true });
   await edemaLabel.scrollIntoViewIfNeeded();
   await edemaLabel.click({ force: true });
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
   await saveActivity(page);
 }
 
@@ -852,7 +852,7 @@ export async function completeContributingFactors(page: Page) {
   const noneLabel = page.getByText('None of these', { exact: true });
   await noneLabel.scrollIntoViewIfNeeded();
   await noneLabel.click({ force: true });
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
   await saveActivity(page);
 }
 
@@ -864,7 +864,7 @@ export async function completeHealthEducation(page: Page) {
   await openActivity(page, 'Health Education');
   const yesLabel = page.getByText('Yes', { exact: true }).first();
   await yesLabel.click({ force: true });
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
   await saveActivity(page);
 }
 
@@ -879,7 +879,7 @@ export async function completeSendToHC(page: Page) {
   const count = await yesLabels.count();
   for (let i = 0; i < count; i++) {
     await yesLabels.nth(i).click({ force: true });
-    await page.waitForTimeout(200);
+    await page.waitForTimeout(WAIT.quickInput);
   }
   await saveActivity(page);
 }
@@ -894,7 +894,7 @@ export async function completeFollowUp(page: Page) {
   const option = page.getByText('1 Day', { exact: true });
   await option.scrollIntoViewIfNeeded();
   await option.click({ force: true });
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
   await saveActivity(page);
 }
 
@@ -912,7 +912,7 @@ export async function completeFamilyPlanning(page: Page) {
   const condoms = page.getByText('Condoms', { exact: true });
   await condoms.scrollIntoViewIfNeeded();
   await condoms.click({ force: true });
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
   await saveActivity(page);
 }
 
@@ -925,7 +925,7 @@ export async function completeLactation(page: Page) {
   // Click "Yes" for breastfeeding. Use getByText to find the label.
   const yesLabel = page.getByText('Yes', { exact: true });
   await yesLabel.click({ force: true });
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
   await saveActivity(page);
 }
 
@@ -938,7 +938,7 @@ export async function completeMotherFbf(page: Page) {
   // The FBF select uses class .fbf-distirbution (note typo in original code).
   const fbfSelect = page.locator('select').first();
   await fbfSelect.selectOption('1');
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
   await saveActivity(page);
 }
 
@@ -951,7 +951,7 @@ export async function completeMotherFbf(page: Page) {
  * Navigates to ActivitiesPage, clicks "End Group Encounter", confirms dialog.
  */
 export async function endGroupSession(page: Page) {
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(WAIT.pageNavigation);
 
   // Click "End Group Encounter" button.
   const endBtn = page.locator('button.ui.fluid.button', {
@@ -977,7 +977,7 @@ export async function endGroupSession(page: Page) {
     await dialog.waitFor({ state: 'hidden', timeout: 10000 });
   }
 
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 }
 
 // ---------------------------------------------------------------------------

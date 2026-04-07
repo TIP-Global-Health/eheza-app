@@ -102,33 +102,33 @@ test.describe('Nurse: NCD First Encounter — Male, Stage 1 Hypertension', () =>
     ];
     const nodes = queryNCDNodes(fullName, expectedTypes);
 
-    expect(nodes['ncd_danger_signs']).toBe(true);
-    expect(nodes['ncd_symptom_review']).toBe(true);
-    expect(nodes['ncd_vitals']).toBe(true);
-    expect(nodes['ncd_core_exam']).toBe(true);
-    expect(nodes['ncd_co_morbidities']).toBe(true);
-    expect(nodes['ncd_medication_history']).toBe(true);
-    expect(nodes['ncd_social_history']).toBe(true);
-    expect(nodes['ncd_family_history']).toBe(true);
-    expect(nodes['ncd_outside_care']).toBe(true);
+    expect(nodes['ncd_danger_signs'], 'ncd_danger_signs should exist').toBe(true);
+    expect(nodes['ncd_symptom_review'], 'ncd_symptom_review should exist').toBe(true);
+    expect(nodes['ncd_vitals'], 'ncd_vitals should exist').toBe(true);
+    expect(nodes['ncd_core_exam'], 'ncd_core_exam should exist').toBe(true);
+    expect(nodes['ncd_co_morbidities'], 'ncd_co_morbidities should exist').toBe(true);
+    expect(nodes['ncd_medication_history'], 'ncd_medication_history should exist').toBe(true);
+    expect(nodes['ncd_social_history'], 'ncd_social_history should exist').toBe(true);
+    expect(nodes['ncd_family_history'], 'ncd_family_history should exist').toBe(true);
+    expect(nodes['ncd_outside_care'], 'ncd_outside_care should exist').toBe(true);
     // Stage 1 hypertension triggers HealthEducation.
-    expect(nodes['ncd_health_education']).toBe(true);
+    expect(nodes['ncd_health_education'], 'ncd_health_education should exist').toBe(true);
     // Lab test nodes.
-    expect(nodes['ncd_hiv_test']).toBe(true);
-    expect(nodes['ncd_random_blood_sugar_test']).toBe(true);
-    expect(nodes['ncd_urine_dipstick_test']).toBe(true);
-    expect(nodes['ncd_creatinine_test']).toBe(true);
-    expect(nodes['ncd_liver_function_test']).toBe(true);
-    expect(nodes['ncd_lipid_panel_test']).toBe(true);
-    expect(nodes['ncd_hba1c_test']).toBe(true);
+    expect(nodes['ncd_hiv_test'], 'ncd_hiv_test should exist').toBe(true);
+    expect(nodes['ncd_random_blood_sugar_test'], 'ncd_random_blood_sugar_test should exist').toBe(true);
+    expect(nodes['ncd_urine_dipstick_test'], 'ncd_urine_dipstick_test should exist').toBe(true);
+    expect(nodes['ncd_creatinine_test'], 'ncd_creatinine_test should exist').toBe(true);
+    expect(nodes['ncd_liver_function_test'], 'ncd_liver_function_test should exist').toBe(true);
+    expect(nodes['ncd_lipid_panel_test'], 'ncd_lipid_panel_test should exist').toBe(true);
+    expect(nodes['ncd_hba1c_test'], 'ncd_hba1c_test should exist').toBe(true);
     // FamilyPlanning not created (male patient).
-    expect(nodes['ncd_family_planning']).toBe(false);
+    expect(nodes['ncd_family_planning'], 'ncd_family_planning should not exist').toBe(false);
     // PregnancyTest not created (male patient).
-    expect(nodes['ncd_pregnancy_test']).toBe(false);
+    expect(nodes['ncd_pregnancy_test'], 'ncd_pregnancy_test should not exist').toBe(false);
     // No MedicationDistribution (Stage 1, first encounter, no complications).
-    expect(nodes['ncd_medication_distribution']).toBe(false);
+    expect(nodes['ncd_medication_distribution'], 'ncd_medication_distribution should not exist').toBe(false);
     // No Referral (Stage 1, not pregnant).
-    expect(nodes['ncd_referral']).toBe(false);
+    expect(nodes['ncd_referral'], 'ncd_referral should not exist').toBe(false);
   });
 });
 
@@ -213,28 +213,28 @@ test.describe('Nurse: NCD First Encounter — Female, Stage 3 Hypertension', () 
     ];
     const nodes = queryNCDNodes(fullName, expectedTypes);
 
-    expect(nodes['ncd_danger_signs']).toBe(true);
-    expect(nodes['ncd_symptom_review']).toBe(true);
-    expect(nodes['ncd_vitals']).toBe(true);
-    expect(nodes['ncd_core_exam']).toBe(true);
-    expect(nodes['ncd_family_planning']).toBe(true);
-    expect(nodes['ncd_co_morbidities']).toBe(true);
-    expect(nodes['ncd_medication_history']).toBe(true);
-    expect(nodes['ncd_social_history']).toBe(true);
-    expect(nodes['ncd_family_history']).toBe(true);
-    expect(nodes['ncd_outside_care']).toBe(true);
-    expect(nodes['ncd_medication_distribution']).toBe(true);
+    expect(nodes['ncd_danger_signs'], 'ncd_danger_signs should exist').toBe(true);
+    expect(nodes['ncd_symptom_review'], 'ncd_symptom_review should exist').toBe(true);
+    expect(nodes['ncd_vitals'], 'ncd_vitals should exist').toBe(true);
+    expect(nodes['ncd_core_exam'], 'ncd_core_exam should exist').toBe(true);
+    expect(nodes['ncd_family_planning'], 'ncd_family_planning should exist').toBe(true);
+    expect(nodes['ncd_co_morbidities'], 'ncd_co_morbidities should exist').toBe(true);
+    expect(nodes['ncd_medication_history'], 'ncd_medication_history should exist').toBe(true);
+    expect(nodes['ncd_social_history'], 'ncd_social_history should exist').toBe(true);
+    expect(nodes['ncd_family_history'], 'ncd_family_history should exist').toBe(true);
+    expect(nodes['ncd_outside_care'], 'ncd_outside_care should exist').toBe(true);
+    expect(nodes['ncd_medication_distribution'], 'ncd_medication_distribution should exist').toBe(true);
     // Lab test nodes (female → pregnancy test also created).
-    expect(nodes['ncd_hiv_test']).toBe(true);
-    expect(nodes['ncd_random_blood_sugar_test']).toBe(true);
-    expect(nodes['ncd_urine_dipstick_test']).toBe(true);
-    expect(nodes['ncd_pregnancy_test']).toBe(true);
-    expect(nodes['ncd_creatinine_test']).toBe(true);
-    expect(nodes['ncd_liver_function_test']).toBe(true);
-    expect(nodes['ncd_lipid_panel_test']).toBe(true);
-    expect(nodes['ncd_hba1c_test']).toBe(true);
+    expect(nodes['ncd_hiv_test'], 'ncd_hiv_test should exist').toBe(true);
+    expect(nodes['ncd_random_blood_sugar_test'], 'ncd_random_blood_sugar_test should exist').toBe(true);
+    expect(nodes['ncd_urine_dipstick_test'], 'ncd_urine_dipstick_test should exist').toBe(true);
+    expect(nodes['ncd_pregnancy_test'], 'ncd_pregnancy_test should exist').toBe(true);
+    expect(nodes['ncd_creatinine_test'], 'ncd_creatinine_test should exist').toBe(true);
+    expect(nodes['ncd_liver_function_test'], 'ncd_liver_function_test should exist').toBe(true);
+    expect(nodes['ncd_lipid_panel_test'], 'ncd_lipid_panel_test should exist').toBe(true);
+    expect(nodes['ncd_hba1c_test'], 'ncd_hba1c_test should exist').toBe(true);
     // Referral created (Stage 3 hypertension).
-    expect(nodes['ncd_referral']).toBe(true);
+    expect(nodes['ncd_referral'], 'ncd_referral should exist').toBe(true);
   });
 });
 
@@ -315,11 +315,11 @@ test.describe('Nurse: NCD Subsequent Encounter — OutsideCare', () => {
     ];
     const nodes = queryNCDNodes(fullName, expectedTypes);
 
-    expect(nodes['ncd_danger_signs']).toBe(true);
-    expect(nodes['ncd_symptom_review']).toBe(true);
-    expect(nodes['ncd_vitals']).toBe(true);
-    expect(nodes['ncd_core_exam']).toBe(true);
-    expect(nodes['ncd_outside_care']).toBe(true);
+    expect(nodes['ncd_danger_signs'], 'ncd_danger_signs should exist').toBe(true);
+    expect(nodes['ncd_symptom_review'], 'ncd_symptom_review should exist').toBe(true);
+    expect(nodes['ncd_vitals'], 'ncd_vitals should exist').toBe(true);
+    expect(nodes['ncd_core_exam'], 'ncd_core_exam should exist').toBe(true);
+    expect(nodes['ncd_outside_care'], 'ncd_outside_care should exist').toBe(true);
   });
 });
 
@@ -408,14 +408,14 @@ test.describe('Nurse: NCD Recurrent Encounter — Lab Results', () => {
     ];
     const nodes = queryNCDNodes(fullName, expectedTypes);
 
-    expect(nodes['ncd_danger_signs']).toBe(true);
-    expect(nodes['ncd_symptom_review']).toBe(true);
-    expect(nodes['ncd_vitals']).toBe(true);
-    expect(nodes['ncd_core_exam']).toBe(true);
-    expect(nodes['ncd_co_morbidities']).toBe(true);
-    expect(nodes['ncd_medication_history']).toBe(true);
-    expect(nodes['ncd_social_history']).toBe(true);
-    expect(nodes['ncd_family_history']).toBe(true);
-    expect(nodes['ncd_outside_care']).toBe(true);
+    expect(nodes['ncd_danger_signs'], 'ncd_danger_signs should exist').toBe(true);
+    expect(nodes['ncd_symptom_review'], 'ncd_symptom_review should exist').toBe(true);
+    expect(nodes['ncd_vitals'], 'ncd_vitals should exist').toBe(true);
+    expect(nodes['ncd_core_exam'], 'ncd_core_exam should exist').toBe(true);
+    expect(nodes['ncd_co_morbidities'], 'ncd_co_morbidities should exist').toBe(true);
+    expect(nodes['ncd_medication_history'], 'ncd_medication_history should exist').toBe(true);
+    expect(nodes['ncd_social_history'], 'ncd_social_history should exist').toBe(true);
+    expect(nodes['ncd_family_history'], 'ncd_family_history should exist').toBe(true);
+    expect(nodes['ncd_outside_care'], 'ncd_outside_care should exist').toBe(true);
   });
 });

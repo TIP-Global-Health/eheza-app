@@ -2,7 +2,7 @@ import { Page } from '@playwright/test';
 import { execSync } from 'child_process';
 import { click } from './auth';
 import { drushEnv } from './device';
-import { setDate } from './common';
+import { WAIT, setDate } from './common';
 
 /**
  * Click "Yes" on the identity confirmation bool input.
@@ -32,7 +32,7 @@ async function drawAndAcceptSignature(page: Page) {
 
   // Scroll canvas into viewport — mouse events won't register if it's off-screen.
   await canvas.scrollIntoViewIfNeeded();
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 
   const box = await canvas.boundingBox();
   if (!box) throw new Error('Signature pad canvas has no bounding box');
@@ -50,12 +50,12 @@ async function drawAndAcceptSignature(page: Page) {
   await page.mouse.move(midX, midY, { steps: 15 });
   await page.mouse.move(endX, endY, { steps: 15 });
   await page.mouse.up();
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   // Click the Accept button.
   const acceptBtn = page.locator('.signature-pad--footer button.primary');
   await acceptBtn.scrollIntoViewIfNeeded();
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
   await click(acceptBtn, page);
 
   // Wait for the signature to be stored and the image to appear.
@@ -63,7 +63,7 @@ async function drawAndAcceptSignature(page: Page) {
   // then fires a "signaturecomplete" custom event. Elm receives the URL and
   // replaces the canvas with <div class="signature"><img></div>.
   await page.locator('.signature img').waitFor({ timeout: 15000 });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 /**
@@ -77,7 +77,7 @@ async function clickSave(page: Page) {
 
   // After save, Elm resets to ModeMain — wait for navigation buttons.
   await page.locator('.navigation-buttons').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 }
 
 // ---------------------------------------------------------------------------
@@ -97,7 +97,7 @@ export async function navigateToStockManagement(page: Page) {
 
   // Wait for the stock management page to render.
   await page.locator('div.page-activity.stock-management').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 }
 
 /**
@@ -127,7 +127,7 @@ export async function completeReceiveStock(
     page.locator('.navigation-buttons button.ui.primary.button', { hasText: 'Receive Stock' }),
     page,
   );
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 
   // Confirm identity.
   await confirmIdentity(page);
@@ -186,7 +186,7 @@ export async function completeCorrectEntry(
     page.locator('.navigation-buttons button.ui.primary.button', { hasText: 'Correct entry' }),
     page,
   );
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 
   // Confirm identity.
   await confirmIdentity(page);
@@ -199,7 +199,7 @@ export async function completeCorrectEntry(
 
   // Select correction type.
   await formContent.locator('select.form-input.correction-type').selectOption(entryType);
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 
   // Select correction reason (checkbox select, visible after type is chosen).
   const reasonSection = page.locator('.correction-reason:not(.hidden)');

@@ -1,5 +1,6 @@
 import { expect, Page } from '@playwright/test';
 import { click } from './auth';
+import { WAIT } from './common';
 
 /**
  * Navigate to Case Management from the main menu (PinCodePage when logged in).
@@ -8,7 +9,7 @@ import { click } from './auth';
 export async function navigateToCaseManagement(page: Page) {
   await click(page.locator('.icon-task-case-management'), page);
   await page.locator('.page-case-management').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 /**
@@ -32,7 +33,7 @@ export async function verifyCaseManagementEntry(
     hasText: new RegExp(escaped, 'i'),
   });
   await click(filterBtn, page);
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   // Verify pane heading is visible.
   const paneHeading = page.locator('div.pane-heading', {

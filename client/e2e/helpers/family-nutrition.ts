@@ -2,7 +2,7 @@ import { Page } from '@playwright/test';
 import { execSync } from 'child_process';
 import { click } from './auth';
 import { drushEnv } from './device';
-import { formInput, selectByLabel, setDate } from './common';
+import { WAIT, formInput, selectByLabel, setDate } from './common';
 
 // ---------------------------------------------------------------------------
 // Participant registration
@@ -180,7 +180,7 @@ export async function addChild(
   // If form didn't appear, retry with page reloads.
   if (!formVisible) {
     for (let attempt = 0; attempt < 3; attempt++) {
-      await page.waitForTimeout(3000);
+      await page.waitForTimeout(WAIT.heavyOperation);
       await page.reload();
       await page
         .locator('div.page-relationship')
@@ -209,7 +209,7 @@ export async function addChild(
     '.ui.radio.checkbox label.relationship-selection',
   ).first();
   await click(relationRadio, page);
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   // Click Save.
   await click(
@@ -223,7 +223,7 @@ export async function addChild(
   await page
     .locator('div.page-person')
     .waitFor({ timeout: 30000 });
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 
   return { firstName, secondName, fullName: `${secondName} ${firstName}` };
 }
@@ -371,7 +371,7 @@ export async function startFamilyNutritionEncounter(page: Page) {
   await page
     .locator('div.page-encounter.family-nutrition')
     .waitFor({ timeout: 30000 });
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 }
 
 // ---------------------------------------------------------------------------
@@ -389,7 +389,7 @@ export async function selectFamilyMember(page: Page, memberIndex: number) {
   // intercept pointer events if we don't scroll up first.
   await target.scrollIntoViewIfNeeded();
   await target.click({ force: true });
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 }
 
 // ---------------------------------------------------------------------------
@@ -416,7 +416,7 @@ async function saveActivity(page: Page) {
     page,
   );
   // Wait for re-render after save.
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 }
 
 /**
@@ -452,7 +452,7 @@ export async function completeAhezaMother(
   await page
     .locator('.form-input.measurement.aheza input[type="number"]')
     .fill(amount);
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   await saveActivity(page);
 }
@@ -493,7 +493,7 @@ export async function completeMuac(
   await page
     .locator('div.ui.full.segment.muac input[type="number"]')
     .fill(value);
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   await saveActivity(page);
 }
@@ -522,7 +522,7 @@ export async function completePhoto(page: Page) {
   });
 
   // Wait for the dropzone to process the upload.
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(WAIT.pageNavigation);
 
   await saveActivity(page);
 }
@@ -536,7 +536,7 @@ export async function completePhoto(page: Page) {
  * Clicks "End Encounter" and confirms the dialog.
  */
 export async function endFamilyNutritionEncounter(page: Page) {
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(WAIT.pageNavigation);
 
   // Click End Encounter button.
   const endBtn = page.locator(

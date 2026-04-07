@@ -1,6 +1,6 @@
 import { Page } from '@playwright/test';
 import { click } from './auth';
-import { answerYesNo, queryMeasurementNodes, selectCheckbox } from './common';
+import { WAIT, answerYesNo, queryMeasurementNodes, saveActivity, selectCheckbox } from './common';
 
 // ---------------------------------------------------------------------------
 // Navigation
@@ -39,18 +39,6 @@ async function openActivity(
 }
 
 /**
- * Save the current activity and return to the encounter page.
- */
-async function saveActivity(page: Page) {
-  await click(page.locator('button.ui.fluid.primary.button.active'), page);
-  await page
-    .locator('div.page-encounter.home-visit')
-    .waitFor({ timeout: 10000 });
-  // Brief wait for Elm re-render to stabilize card layout.
-  await page.waitForTimeout(500);
-}
-
-/**
  * Complete Feeding activity — "No" to supplement (simplest path).
  * Fields: receive-supplement, encouraged-to-eat, refusing-to-eat,
  *         breastfeeding, clean-water-available.
@@ -64,7 +52,7 @@ export async function completeFeeding(page: Page) {
   await answerYesNo(page, 'breastfeeding', 'Yes');
   await answerYesNo(page, 'clean-water-available', 'Yes');
 
-  await saveActivity(page);
+  await saveActivity(page, 'home-visit');
 }
 
 /**
@@ -97,7 +85,7 @@ export async function completeFeedingWithSupplement(page: Page) {
   await answerYesNo(page, 'breastfeeding', 'Yes');
   await answerYesNo(page, 'clean-water-available', 'Yes');
 
-  await saveActivity(page);
+  await saveActivity(page, 'home-visit');
 }
 
 /**
@@ -111,7 +99,7 @@ export async function completeCaring(page: Page) {
   await selectCheckbox(page, 'Parent', '.ui.checkbox.activity label');
   await answerYesNo(page, 'child-clean', 'Yes');
 
-  await saveActivity(page);
+  await saveActivity(page, 'home-visit');
 }
 
 /**
@@ -128,7 +116,7 @@ export async function completeHygiene(page: Page) {
   await answerYesNo(page, 'wash-hands-before-feeding', 'Yes');
   await answerYesNo(page, 'food-covered', 'Yes');
 
-  await saveActivity(page);
+  await saveActivity(page, 'home-visit');
 }
 
 /**
@@ -142,7 +130,7 @@ export async function completeFoodSecurity(page: Page) {
   // Note: typo in Elm source — class is "household-got-fFood" (capital F).
   await answerYesNo(page, 'household-got-fFood', 'Yes');
 
-  await saveActivity(page);
+  await saveActivity(page, 'home-visit');
 }
 
 /**
@@ -151,7 +139,7 @@ export async function completeFoodSecurity(page: Page) {
  * clicking End Encounter directly closes the encounter.
  */
 export async function endHomeVisit(page: Page) {
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(WAIT.pageNavigation);
 
   const endBtn = page.locator('div.actions button.ui.fluid.primary.button', {
     hasText: 'End Encounter',

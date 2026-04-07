@@ -2,7 +2,7 @@ import { Page } from '@playwright/test';
 import { execSync } from 'child_process';
 import { click } from './auth';
 import { drushEnv } from './device';
-import { formInput, selectByLabel, setDate } from './common';
+import { WAIT, registerChild } from './common';
 
 /**
  * Navigate from the dashboard to the nutrition encounter page
@@ -21,90 +21,13 @@ export async function createChildAndStartEncounter(
     startEncounter?: boolean;
   },
 ) {
-  const ageMonths = options?.ageMonths ?? 24;
-  const firstName = options?.firstName ?? `TestChild${Date.now()}`;
-  const secondName = 'E2ETest';
-  const isChw = options?.isChw ?? false;
   const startEncounter = options?.startEncounter ?? true;
 
-  // Navigate: Dashboard → Clinical
-  await click(page.locator('.icon-task-clinical'), page);
-  await page.locator('div.page-clinical').waitFor({ timeout: 10000 });
-
-  // Clinical → Individual Encounter
-  await click(page.locator('button.individual-assessment'), page);
-  await page.locator('div.page-encounter-types').waitFor({ timeout: 10000 });
-
-  // Individual Encounter → Child Nutrition
-  await click(
-    page.locator('button.encounter-type', { hasText: 'Child Nutrition' }),
-    page,
-  );
-  await page.locator('div.page-participants').waitFor({ timeout: 10000 });
-
-  // Click "Register a new participant"
-  await click(
-    page.locator('button.ui.primary.button.fluid', {
-      hasText: 'Register a new participant',
-    }),
-    page,
-  );
-  // Wait for the form to load — look for the "First Name:" label.
-  await page
-    .locator('.ui.grid .column', { hasText: 'First Name:' })
-    .waitFor({ timeout: 10000 });
-
-  // Fill the registration form.
-  // Elm's form library doesn't set name attributes on inputs, so we
-  // locate them via their label row in the grid layout.
-  await formInput(page, 'First Name:').fill(firstName);
-  await formInput(page, 'Second Name:').fill(secondName);
-
-  // Set date of birth via the calendar popup.
-  const dob = new Date();
-  dob.setMonth(dob.getMonth() - ageMonths);
-  await setDate(page, dob);
-
-  // Select gender = male.
-  await page
-    .locator('.ui.grid')
-    .filter({ hasText: 'Gender:' })
-    .locator('input[type="radio"]')
-    .first()
-    .check();
-
-  // Select mode of delivery (required field).
-  await selectByLabel(page, 'Mode of delivery:', 1);
-
-  if (!isChw) {
-    // Nurse: fill address (cascading dropdowns) and health center.
-    await selectByLabel(page, 'Province:', 1);
-    await page.waitForTimeout(500);
-    await selectByLabel(page, 'District:', 1);
-    await page.waitForTimeout(500);
-    await selectByLabel(page, 'Sector:', 1);
-    await page.waitForTimeout(500);
-    await selectByLabel(page, 'Cell:', 1);
-    await page.waitForTimeout(500);
-    await selectByLabel(page, 'Village:', 1);
-
-    // Select health center.
-    const hcSelect = page
-      .locator('.ui.grid')
-      .filter({ hasText: 'Health Center:' })
-      .locator('select');
-    await hcSelect.selectOption({ label: 'Nyange Health Center' });
-  }
-  // CHW: address fields are auto-filled from the assigned village;
-  // the form does not render address or health center sections.
-
-  // Submit the form.
-  await click(page.locator('button[type="submit"]'), page);
-
-  // Wait for the participant page to load.
-  await page
-    .locator('div.page-participant.individual.nutrition')
-    .waitFor({ timeout: 30000 });
+  const result = await registerChild(page, 'Child Nutrition', 'nutrition', {
+    ageMonths: options?.ageMonths,
+    firstName: options?.firstName ?? `TestChild${Date.now()}`,
+    isChw: options?.isChw,
+  });
 
   if (startEncounter) {
     // Start a new nutrition encounter.
@@ -117,8 +40,7 @@ export async function createChildAndStartEncounter(
       .waitFor({ timeout: 10000 });
   }
 
-  // Drupal stores the person title as "secondName firstName".
-  return { firstName, secondName, fullName: `${secondName} ${firstName}` };
+  return result;
 }
 
 // ---------------------------------------------------------------------------
@@ -163,7 +85,7 @@ async function answerNCDAYesNo(page: Page, questionSubstring: string, answer: 'Y
   }
 
   await click(page.locator(`#${yesNoId} label`, { hasText: answer }), page);
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
 }
 
 /**
@@ -174,7 +96,7 @@ async function clickNCDAStepTab(page: Page, iconClass: string) {
   const isActive = await tab.evaluate(el => el.classList.contains('active')).catch(() => false);
   if (!isActive) {
     await click(tab, page);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
   }
 }
 
@@ -185,7 +107,7 @@ async function clickNCDASave(page: Page) {
   const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
   await saveBtn.waitFor({ timeout: 5000 });
   await click(saveBtn, page);
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 }
 
 /**
@@ -204,7 +126,7 @@ async function clickNCDASave(page: Page) {
 export async function completeNCDA(page: Page) {
   // Open NCDA activity.
   await page.locator('div.page-encounter.nutrition').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
   await click(page.locator('.icon-task-history'), page);
 
   // Handle the NCDA confirmation popup: "Would you like to proceed?"
@@ -222,27 +144,27 @@ export async function completeNCDA(page: Page) {
   const antenatalTab = page.locator('.link-section:has(.icon-activity-task.icon-ncda-antenatal)');
   if (await antenatalTab.isVisible({ timeout: 1000 }).catch(() => false)) {
     await clickNCDAStepTab(page, 'ncda-antenatal');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
 
     await answerNCDAYesNo(page, 'ANC encounters that are not recorded', 'No');
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(WAIT.formInteraction);
 
     await answerNCDAYesNo(page, 'receive Iron, Folic Acid', 'Yes');
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(WAIT.formInteraction);
 
     await answerNCDAYesNo(page, 'taken it as per guidance', 'Yes');
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(WAIT.formInteraction);
 
     // Birth weight + birth defect (conditional).
     const birthWeightInput = page.locator('.form-input.measurement.birth-weight input[type="number"]');
     if (await birthWeightInput.isVisible({ timeout: 1000 }).catch(() => false)) {
       await birthWeightInput.fill('3200');
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(WAIT.formInteraction);
     }
     const birthDefectQuestion = page.locator('.ui.form.ncda .label', { hasText: 'born with a birth defect' });
     if (await birthDefectQuestion.isVisible({ timeout: 1000 }).catch(() => false)) {
       await answerNCDAYesNo(page, 'born with a birth defect', 'No');
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(WAIT.formInteraction);
     }
 
     await clickNCDASave(page);
@@ -250,10 +172,10 @@ export async function completeNCDA(page: Page) {
 
   // --- Step 2: Universal Interventions (atHealthCenter: only OngeraMNP) ---
   await clickNCDAStepTab(page, 'ncda-universal-intervention');
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   await answerNCDAYesNo(page, 'receive Ongera-MNP', 'Yes');
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
 
   await clickNCDASave(page);
 
@@ -261,22 +183,22 @@ export async function completeNCDA(page: Page) {
   const nutritionBehaviorTab = page.locator('.link-section:has(.icon-activity-task.icon-ncda-nutrition-behavior)');
   if (await nutritionBehaviorTab.isVisible({ timeout: 1000 }).catch(() => false)) {
     await clickNCDAStepTab(page, 'ncda-nutrition-behavior');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
 
     await answerNCDAYesNo(page, '5 food groups', 'Yes');
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(WAIT.formInteraction);
 
     const breastfedQuestion = page.locator('.ui.form.ncda .label', { hasText: 'breastfed for 6 months' });
     if (await breastfedQuestion.isVisible({ timeout: 1000 }).catch(() => false)) {
       await answerNCDAYesNo(page, 'breastfed for 6 months', 'Yes');
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(WAIT.formInteraction);
     }
 
     await answerNCDAYesNo(page, 'appropriate complementary feeding', 'Yes');
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(WAIT.formInteraction);
 
     await answerNCDAYesNo(page, 'eat at the recommended times', 'Yes');
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(WAIT.formInteraction);
 
     await clickNCDASave(page);
   }
@@ -285,37 +207,37 @@ export async function completeNCDA(page: Page) {
 
   // --- Step 5: Targeted Interventions (atHealthCenter: no FBF, no diarrhea) ---
   await clickNCDAStepTab(page, 'ncda-targeted-intervention');
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   await answerNCDAYesNo(page, 'beneficiary of cash transfer', 'No');
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
 
   await answerNCDAYesNo(page, 'other support', 'No');
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
 
   await answerNCDAYesNo(page, 'have disability', 'No');
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
 
   await clickNCDASave(page);
 
   // --- Step 6: Infrastructure & Environment ---
   await clickNCDAStepTab(page, 'ncda-infrastructure-environment');
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   await answerNCDAYesNo(page, 'clean water', 'Yes');
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
 
   await answerNCDAYesNo(page, 'handwashing facility', 'Yes');
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
 
   await answerNCDAYesNo(page, 'have toilets', 'Yes');
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
 
   await answerNCDAYesNo(page, 'kitchen garden', 'Yes');
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
 
   await answerNCDAYesNo(page, 'insecticide-treated bednets', 'Yes');
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
 
   // Final Save.
   await clickNCDASave(page);
@@ -334,7 +256,7 @@ export async function completeNCDA(page: Page) {
     await encounterPage.waitFor({ timeout: 10000 });
   }
 
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 // ---------------------------------------------------------------------------
@@ -441,7 +363,7 @@ export async function saveActivity(page: Page): Promise<boolean> {
  */
 export async function endEncounter(page: Page) {
   // Wait for the page to stabilize (Elm re-renders can detach DOM elements).
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(WAIT.pageNavigation);
 
   const endBtn = page.locator('div.actions button.ui.fluid.button', {
     hasText: 'End Encounter',

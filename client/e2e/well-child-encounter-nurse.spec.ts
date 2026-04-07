@@ -112,29 +112,29 @@ test.describe('Nurse: Well Child PediatricCare — Normal Encounter', () => {
     ];
     const nodes = queryWellChildNodes(fullName, expectedTypes);
 
-    expect(nodes['well_child_symptoms_review']).toBe(true);
-    expect(nodes['well_child_vitals']).toBe(true);
-    expect(nodes['well_child_height']).toBe(true);
-    expect(nodes['well_child_head_circumference']).toBe(true);
-    expect(nodes['well_child_muac']).toBe(true);
-    expect(nodes['well_child_nutrition']).toBe(true);
-    expect(nodes['well_child_weight']).toBe(true);
-    expect(nodes['well_child_ecd']).toBe(true);
-    expect(nodes['well_child_mebendezole']).toBe(true);
-    expect(nodes['well_child_vitamin_a']).toBe(true);
-    expect(nodes['well_child_ncda']).toBe(true);
-    expect(nodes['well_child_next_visit']).toBe(true);
+    expect(nodes['well_child_symptoms_review'], 'well_child_symptoms_review should exist').toBe(true);
+    expect(nodes['well_child_vitals'], 'well_child_vitals should exist').toBe(true);
+    expect(nodes['well_child_height'], 'well_child_height should exist').toBe(true);
+    expect(nodes['well_child_head_circumference'], 'well_child_head_circumference should exist').toBe(true);
+    expect(nodes['well_child_muac'], 'well_child_muac should exist').toBe(true);
+    expect(nodes['well_child_nutrition'], 'well_child_nutrition should exist').toBe(true);
+    expect(nodes['well_child_weight'], 'well_child_weight should exist').toBe(true);
+    expect(nodes['well_child_ecd'], 'well_child_ecd should exist').toBe(true);
+    expect(nodes['well_child_mebendezole'], 'well_child_mebendezole should exist').toBe(true);
+    expect(nodes['well_child_vitamin_a'], 'well_child_vitamin_a should exist').toBe(true);
+    expect(nodes['well_child_ncda'], 'well_child_ncda should exist').toBe(true);
+    expect(nodes['well_child_next_visit'], 'well_child_next_visit should exist').toBe(true);
     // Immunisation nodes.
-    expect(nodes['well_child_bcg_immunisation']).toBe(true);
-    expect(nodes['well_child_opv_immunisation']).toBe(true);
-    expect(nodes['well_child_dtp_immunisation']).toBe(true);
-    expect(nodes['well_child_pcv13_immunisation']).toBe(true);
-    expect(nodes['well_child_rotarix_immunisation']).toBe(true);
-    expect(nodes['well_child_ipv_immunisation']).toBe(true);
-    expect(nodes['well_child_mr_immunisation']).toBe(true);
+    expect(nodes['well_child_bcg_immunisation'], 'well_child_bcg_immunisation should exist').toBe(true);
+    expect(nodes['well_child_opv_immunisation'], 'well_child_opv_immunisation should exist').toBe(true);
+    expect(nodes['well_child_dtp_immunisation'], 'well_child_dtp_immunisation should exist').toBe(true);
+    expect(nodes['well_child_pcv13_immunisation'], 'well_child_pcv13_immunisation should exist').toBe(true);
+    expect(nodes['well_child_rotarix_immunisation'], 'well_child_rotarix_immunisation should exist').toBe(true);
+    expect(nodes['well_child_ipv_immunisation'], 'well_child_ipv_immunisation should exist').toBe(true);
+    expect(nodes['well_child_mr_immunisation'], 'well_child_mr_immunisation should exist').toBe(true);
     // DTPStandalone is Burundi-only, HPV is female-only — not queried/created.
-    expect(nodes['well_child_dtp_sa_immunisation']).toBeFalsy();
-    expect(nodes['well_child_hpv_immunisation']).toBeFalsy();
+    expect(nodes['well_child_dtp_sa_immunisation'], 'well_child_dtp_sa_immunisation should not exist (Burundi-only)').toBeFalsy();
+    expect(nodes['well_child_hpv_immunisation'], 'well_child_hpv_immunisation should not exist (female-only)').toBeFalsy();
   });
 });
 
@@ -233,26 +233,26 @@ test.describe('Nurse: Well Child PediatricCare — Abnormal Nutrition with NextS
     ];
     const nodes = queryWellChildNodes(fullName, expectedTypes);
 
-    expect(nodes['well_child_symptoms_review']).toBe(true);
-    expect(nodes['well_child_vitals']).toBe(true);
-    expect(nodes['well_child_height']).toBe(true);
-    expect(nodes['well_child_head_circumference']).toBe(true);
-    expect(nodes['well_child_muac']).toBe(true);
-    expect(nodes['well_child_nutrition']).toBe(true);
-    expect(nodes['well_child_weight']).toBe(true);
-    expect(nodes['well_child_contributing_factors']).toBe(true);
-    expect(nodes['well_child_health_education']).toBe(true);
-    expect(nodes['well_child_send_to_hc']).toBe(true);
-    expect(nodes['well_child_follow_up']).toBe(true);
-    expect(nodes['well_child_next_visit']).toBe(true);
+    expect(nodes['well_child_symptoms_review'], 'well_child_symptoms_review should exist').toBe(true);
+    expect(nodes['well_child_vitals'], 'well_child_vitals should exist').toBe(true);
+    expect(nodes['well_child_height'], 'well_child_height should exist').toBe(true);
+    expect(nodes['well_child_head_circumference'], 'well_child_head_circumference should exist').toBe(true);
+    expect(nodes['well_child_muac'], 'well_child_muac should exist').toBe(true);
+    expect(nodes['well_child_nutrition'], 'well_child_nutrition should exist').toBe(true);
+    expect(nodes['well_child_weight'], 'well_child_weight should exist').toBe(true);
+    expect(nodes['well_child_contributing_factors'], 'well_child_contributing_factors should exist').toBe(true);
+    expect(nodes['well_child_health_education'], 'well_child_health_education should exist').toBe(true);
+    expect(nodes['well_child_send_to_hc'], 'well_child_send_to_hc should exist').toBe(true);
+    expect(nodes['well_child_follow_up'], 'well_child_follow_up should exist').toBe(true);
+    expect(nodes['well_child_next_visit'], 'well_child_next_visit should exist').toBe(true);
     // Immunisation nodes.
-    expect(nodes['well_child_bcg_immunisation']).toBe(true);
-    expect(nodes['well_child_opv_immunisation']).toBe(true);
-    expect(nodes['well_child_dtp_immunisation']).toBe(true);
-    expect(nodes['well_child_pcv13_immunisation']).toBe(true);
-    expect(nodes['well_child_rotarix_immunisation']).toBe(true);
-    expect(nodes['well_child_ipv_immunisation']).toBe(true);
-    expect(nodes['well_child_mr_immunisation']).toBe(true);
+    expect(nodes['well_child_bcg_immunisation'], 'well_child_bcg_immunisation should exist').toBe(true);
+    expect(nodes['well_child_opv_immunisation'], 'well_child_opv_immunisation should exist').toBe(true);
+    expect(nodes['well_child_dtp_immunisation'], 'well_child_dtp_immunisation should exist').toBe(true);
+    expect(nodes['well_child_pcv13_immunisation'], 'well_child_pcv13_immunisation should exist').toBe(true);
+    expect(nodes['well_child_rotarix_immunisation'], 'well_child_rotarix_immunisation should exist').toBe(true);
+    expect(nodes['well_child_ipv_immunisation'], 'well_child_ipv_immunisation should exist').toBe(true);
+    expect(nodes['well_child_mr_immunisation'], 'well_child_mr_immunisation should exist').toBe(true);
   });
 });
 
@@ -337,18 +337,18 @@ test.describe('Nurse: Well Child PediatricCare — 7yr Female, Albendazole', () 
     ];
     const nodes = queryWellChildNodes(fullName, expectedTypes);
 
-    expect(nodes['well_child_symptoms_review']).toBe(true);
-    expect(nodes['well_child_vitals']).toBe(true);
-    expect(nodes['well_child_height']).toBe(true);
-    expect(nodes['well_child_muac']).toBe(true);
-    expect(nodes['well_child_nutrition']).toBe(true);
-    expect(nodes['well_child_weight']).toBe(true);
+    expect(nodes['well_child_symptoms_review'], 'well_child_symptoms_review should exist').toBe(true);
+    expect(nodes['well_child_vitals'], 'well_child_vitals should exist').toBe(true);
+    expect(nodes['well_child_height'], 'well_child_height should exist').toBe(true);
+    expect(nodes['well_child_muac'], 'well_child_muac should exist').toBe(true);
+    expect(nodes['well_child_nutrition'], 'well_child_nutrition should exist').toBe(true);
+    expect(nodes['well_child_weight'], 'well_child_weight should exist').toBe(true);
     // Albendazole (6-12yr on Rwanda).
-    expect(nodes['well_child_albendazole']).toBe(true);
+    expect(nodes['well_child_albendazole'], 'well_child_albendazole should exist').toBe(true);
     // No Mebendezole (1-6yr) or VitaminA (6mo-6yr) at age 7.
-    expect(nodes['well_child_mebendezole']).toBeFalsy();
-    expect(nodes['well_child_vitamin_a']).toBeFalsy();
-    expect(nodes['well_child_next_visit']).toBe(true);
+    expect(nodes['well_child_mebendezole'], 'well_child_mebendezole should not exist (1-6yr only)').toBeFalsy();
+    expect(nodes['well_child_vitamin_a'], 'well_child_vitamin_a should not exist (6mo-6yr only)').toBeFalsy();
+    expect(nodes['well_child_next_visit'], 'well_child_next_visit should exist').toBe(true);
   });
 });
 
@@ -430,14 +430,14 @@ test.describe('Nurse: Well Child PediatricCare — 12.5yr Female, HPV', () => {
     ];
     const nodes = queryWellChildNodes(fullName, expectedTypes);
 
-    expect(nodes['well_child_symptoms_review']).toBe(true);
-    expect(nodes['well_child_vitals']).toBe(true);
-    expect(nodes['well_child_height']).toBe(true);
-    expect(nodes['well_child_muac']).toBe(true);
-    expect(nodes['well_child_nutrition']).toBe(true);
-    expect(nodes['well_child_weight']).toBe(true);
-    expect(nodes['well_child_next_visit']).toBe(true);
+    expect(nodes['well_child_symptoms_review'], 'well_child_symptoms_review should exist').toBe(true);
+    expect(nodes['well_child_vitals'], 'well_child_vitals should exist').toBe(true);
+    expect(nodes['well_child_height'], 'well_child_height should exist').toBe(true);
+    expect(nodes['well_child_muac'], 'well_child_muac should exist').toBe(true);
+    expect(nodes['well_child_nutrition'], 'well_child_nutrition should exist').toBe(true);
+    expect(nodes['well_child_weight'], 'well_child_weight should exist').toBe(true);
+    expect(nodes['well_child_next_visit'], 'well_child_next_visit should exist').toBe(true);
     // HPV (female, 12yr+, Rwanda).
-    expect(nodes['well_child_hpv_immunisation']).toBe(true);
+    expect(nodes['well_child_hpv_immunisation'], 'well_child_hpv_immunisation should exist').toBe(true);
   });
 });

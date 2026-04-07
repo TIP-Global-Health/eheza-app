@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { click, setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
-import { syncAndWait } from './helpers/common';
+import { WAIT, syncAndWait } from './helpers/common';
 import {
   createChildAndStartEncounter,
   completeNCDA,
@@ -55,7 +55,7 @@ test.describe('Nurse: Individual Nutrition Encounter', () => {
     // Nutrition signs: None
     await enterNutritionSigns(page, ['None']);
     const diagnosisAppeared = await saveActivity(page);
-    expect(diagnosisAppeared).toBe(false);
+    expect(diagnosisAppeared, 'diagnosis popup should not appear for normal signs').toBe(false);
 
     // Complete NCDA activity (Nurse, atHealthCenter).
     await completeNCDA(page);
@@ -64,7 +64,7 @@ test.describe('Nurse: Individual Nutrition Encounter', () => {
     const endBtn = page.locator('div.actions button.ui.fluid.button', {
       hasText: 'End Encounter',
     });
-    await expect(endBtn).not.toHaveClass(/disabled/);
+    await expect(endBtn, 'End Encounter button should be enabled').not.toHaveClass(/disabled/);
     await endEncounter(page);
 
     // Sync to backend.
@@ -72,11 +72,11 @@ test.describe('Nurse: Individual Nutrition Encounter', () => {
 
     // Verify measurements in backend.
     const nodes = queryBackendNodes(fullName);
-    expect(nodes.height).toBe(70);
-    expect(nodes.weight).toBe(8.5);
-    expect(nodes.muac).toBe(14);
-    expect(nodes.nutrition).toBe(true);
-    expect(nodes.ncda).toBe(true);
+    expect(nodes.height, 'height should be 70 cm').toBe(70);
+    expect(nodes.weight, 'weight should be 8.5 kg').toBe(8.5);
+    expect(nodes.muac, 'muac should be 14 cm').toBe(14);
+    expect(nodes.nutrition, 'nutrition node should exist').toBe(true);
+    expect(nodes.ncda, 'ncda node should exist').toBe(true);
   });
 
   test('measurement validation rejects out-of-range values', async ({
@@ -88,47 +88,47 @@ test.describe('Nurse: Individual Nutrition Encounter', () => {
 
     // --- Height validation ---
     await enterHeight(page, '10');
-    await expect(saveBtn).toHaveClass(/disabled/);
+    await expect(saveBtn, 'save should be disabled for height 10 cm (too low)').toHaveClass(/disabled/);
 
     await page
       .locator('.form-input.measurement.height input[type="number"]')
       .fill('260');
-    await expect(saveBtn).toHaveClass(/disabled/);
+    await expect(saveBtn, 'save should be disabled for height 260 cm (too high)').toHaveClass(/disabled/);
 
     await page
       .locator('.form-input.measurement.height input[type="number"]')
       .fill('85');
-    await expect(saveBtn).toHaveClass(/active/);
+    await expect(saveBtn, 'save should be enabled for valid height 85 cm').toHaveClass(/active/);
     await saveActivity(page);
 
     // --- Weight validation ---
     await enterWeight(page, '0.1');
-    await expect(saveBtn).toHaveClass(/disabled/);
+    await expect(saveBtn, 'save should be disabled for weight 0.1 kg (too low)').toHaveClass(/disabled/);
 
     await page
       .locator('.form-input.measurement.weight input[type="number"]')
       .fill('250');
-    await expect(saveBtn).toHaveClass(/disabled/);
+    await expect(saveBtn, 'save should be disabled for weight 250 kg (too high)').toHaveClass(/disabled/);
 
     await page
       .locator('.form-input.measurement.weight input[type="number"]')
       .fill('12');
-    await expect(saveBtn).toHaveClass(/active/);
+    await expect(saveBtn, 'save should be enabled for valid weight 12 kg').toHaveClass(/active/);
     await saveActivity(page);
 
     // --- MUAC validation ---
     await enterMuac(page, '3');
-    await expect(saveBtn).toHaveClass(/disabled/);
+    await expect(saveBtn, 'save should be disabled for MUAC 3 cm (too low)').toHaveClass(/disabled/);
 
     await page
       .locator('.form-input.measurement.muac input[type="number"]')
       .fill('100');
-    await expect(saveBtn).toHaveClass(/disabled/);
+    await expect(saveBtn, 'save should be disabled for MUAC 100 cm (too high)').toHaveClass(/disabled/);
 
     await page
       .locator('.form-input.measurement.muac input[type="number"]')
       .fill('14');
-    await expect(saveBtn).toHaveClass(/active/);
+    await expect(saveBtn, 'save should be enabled for valid MUAC 14 cm').toHaveClass(/active/);
     await saveActivity(page);
   });
 
@@ -172,7 +172,7 @@ test.describe('Nurse: Individual Nutrition Encounter', () => {
 
     // After completing all sub-tasks, wait for navigation to settle
     // then ensure we're on the encounter page.
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(WAIT.pageNavigation);
     await page
       .locator('div.page-encounter.nutrition')
       .waitFor({ timeout: 10000 });
@@ -185,13 +185,13 @@ test.describe('Nurse: Individual Nutrition Encounter', () => {
 
     // Verify all measurement nodes in backend.
     const nodes = queryBackendNodes(fullName);
-    expect(nodes.height).toBe(80);
-    expect(nodes.weight).toBe(8);
-    expect(nodes.muac).toBe(11);
-    expect(nodes.nutrition).toBe(true);
-    expect(nodes.sendToHc).toBe(true);
-    expect(nodes.healthEducation).toBe(true);
-    expect(nodes.contributingFactors).toBe(true);
-    expect(nodes.followUp).toBe(true);
+    expect(nodes.height, 'height should be 80 cm').toBe(80);
+    expect(nodes.weight, 'weight should be 8 kg').toBe(8);
+    expect(nodes.muac, 'muac should be 11 cm').toBe(11);
+    expect(nodes.nutrition, 'nutrition node should exist').toBe(true);
+    expect(nodes.sendToHc, 'sendToHc node should exist').toBe(true);
+    expect(nodes.healthEducation, 'healthEducation node should exist').toBe(true);
+    expect(nodes.contributingFactors, 'contributingFactors node should exist').toBe(true);
+    expect(nodes.followUp, 'followUp node should exist').toBe(true);
   });
 });

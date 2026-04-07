@@ -1,12 +1,15 @@
 import { Page } from '@playwright/test';
 import { click } from './auth';
 import {
+  WAIT,
   answerYesNo,
   clickSubTaskTab,
   fillMeasurement,
   formInput,
   openActivity as openActivityBase,
   queryMeasurementNodes,
+  saveActivity,
+  saveSubTask,
   selectByLabel,
   selectCheckbox,
   selectCheckboxInForm,
@@ -17,20 +20,6 @@ import {
 // Private form helpers
 // ---------------------------------------------------------------------------
 
-async function saveActivityAndReturn(page: Page) {
-  const saveBtn = page.locator('.actions button.ui.fluid.primary.button.active');
-  await saveBtn.waitFor({ timeout: 5000 });
-  await click(saveBtn, page);
-  await page.waitForTimeout(500);
-}
-
-async function saveSubTaskAndContinue(page: Page) {
-  const saveBtn = page.locator('.actions button.ui.fluid.primary.button.active');
-  await saveBtn.waitFor({ timeout: 5000 });
-  await click(saveBtn, page);
-  await page.waitForTimeout(500);
-}
-
 async function dismissPopup(page: Page) {
   // Nutrition assessment diagnosis popup.
   const diagnosisPopup = page.locator('div.ui.active.modal.diagnosis-popup');
@@ -39,7 +28,7 @@ async function dismissPopup(page: Page) {
     await btn.waitFor({ timeout: 3000 }).catch(() => {});
     if (await btn.isVisible().catch(() => false)) {
       await btn.click({ force: true });
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(WAIT.sectionTransition);
       // Verify popup is gone.
       await diagnosisPopup.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
       return;
@@ -52,14 +41,14 @@ async function dismissPopup(page: Page) {
     const cancelBtn = dangerSignsPopup.locator('button.ui.fluid.button', { hasText: 'Cancel' });
     if (await cancelBtn.isVisible({ timeout: 500 }).catch(() => false)) {
       await click(cancelBtn, page);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
       return;
     }
     // ECD popup only has "Continue".
     const continueBtn = dangerSignsPopup.locator('button.ui.fluid.button', { hasText: 'Continue' });
     if (await continueBtn.isVisible({ timeout: 500 }).catch(() => false)) {
       await click(continueBtn, page);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
       return;
     }
   }
@@ -67,7 +56,7 @@ async function dismissPopup(page: Page) {
   const hcPopup = page.locator('div.ui.active.modal.danger-signs-popup button', { hasText: 'Continue' });
   if (await hcPopup.isVisible({ timeout: 1000 }).catch(() => false)) {
     await click(hcPopup, page);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
   }
 }
 
@@ -147,7 +136,7 @@ export async function createChildAndStartWellChildEncounter(
   }
 
   // Wait for form to re-render after DOB (fields change based on age).
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 
   // Fill all visible required fields — older children (> 12yr) show both
   // child fields (Mode of delivery) and adult fields (Education, Marital Status).
@@ -158,7 +147,7 @@ export async function createChildAndStartWellChildEncounter(
   const educationField = page.locator('.ui.grid').filter({ hasText: 'Level of Education:' });
   if (await educationField.isVisible({ timeout: 500 }).catch(() => false)) {
     await educationField.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(WAIT.formInteraction);
     await selectByLabel(page, 'Level of Education:', 1);
     await selectByLabel(page, 'Marital Status:', 1);
   }
@@ -166,13 +155,13 @@ export async function createChildAndStartWellChildEncounter(
   if (!isChw) {
     // Nurse: fill address (cascading dropdowns) and health center.
     await selectByLabel(page, 'Province:', 1);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
     await selectByLabel(page, 'District:', 1);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
     await selectByLabel(page, 'Sector:', 1);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
     await selectByLabel(page, 'Cell:', 1);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
     await selectByLabel(page, 'Village:', 1);
 
     const hcSelect = page
@@ -199,7 +188,7 @@ export async function createChildAndStartWellChildEncounter(
   await page
     .locator('div.page-encounter.well-child')
     .waitFor({ timeout: 30000 });
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 
   return { firstName, secondName, fullName: `${secondName} ${firstName}` };
 }
@@ -231,17 +220,17 @@ export async function completeDangerSigns(
       await selectCheckbox(page, symptom);
     }
   }
-  await saveSubTaskAndContinue(page);
+  await saveSubTask(page);
 
   // --- Vitals tab ---
   await clickSubTaskTab(page, 'vitals');
   await fillMeasurement(page, 'respiratory-rate', respiratoryRate);
   await fillMeasurement(page, 'body-temperature', bodyTemp);
-  await saveSubTaskAndContinue(page);
+  await saveSubTask(page);
 
   // Wait for return to encounter page.
   await page.locator('div.page-encounter.well-child').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 // ---------------------------------------------------------------------------
@@ -267,7 +256,7 @@ export async function completeNutritionAssessment(
   if (options?.height && await heightTab.isVisible({ timeout: 2000 }).catch(() => false)) {
     await clickSubTaskTab(page, 'height');
     await fillMeasurement(page, 'height', options.height);
-    await saveSubTaskAndContinue(page);
+    await saveSubTask(page);
   }
 
   // --- Head Circumference tab (if visible) ---
@@ -275,7 +264,7 @@ export async function completeNutritionAssessment(
   if (options?.headCircumference && await hcTab.isVisible({ timeout: 2000 }).catch(() => false)) {
     await clickSubTaskTab(page, 'head-circumference');
     await fillMeasurement(page, 'head-circumference', options.headCircumference);
-    await saveSubTaskAndContinue(page);
+    await saveSubTask(page);
 
     // Handle macro/microcephaly popup.
     await dismissPopup(page);
@@ -286,7 +275,7 @@ export async function completeNutritionAssessment(
   if (options?.muac && await muacTab.isVisible({ timeout: 2000 }).catch(() => false)) {
     await clickSubTaskTab(page, 'muac');
     await fillMeasurement(page, 'muac', options.muac);
-    await saveSubTaskAndContinue(page);
+    await saveSubTask(page);
   }
 
   // --- Nutrition tab ---
@@ -300,7 +289,7 @@ export async function completeNutritionAssessment(
         await selectCheckbox(page, sign);
       }
     }
-    await saveSubTaskAndContinue(page);
+    await saveSubTask(page);
 
     // Nutrition assessment may trigger a diagnosis popup.
     await dismissPopup(page);
@@ -311,14 +300,14 @@ export async function completeNutritionAssessment(
   if (options?.weight && await weightTab.isVisible({ timeout: 2000 }).catch(() => false)) {
     await clickSubTaskTab(page, 'weight');
     await fillMeasurement(page, 'weight', options.weight);
-    await saveSubTaskAndContinue(page);
+    await saveSubTask(page);
   }
 
   // Wait for return to encounter page (or NextSteps if diagnosis triggered).
   // The diagnosis popup may take a moment to appear after the last save.
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(WAIT.pageNavigation);
   await dismissPopup(page);
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
   // Double-check — the popup may appear after a re-render.
   await dismissPopup(page);
 }
@@ -344,11 +333,9 @@ export async function completeECD(page: Page) {
     }
   }
 
-  await saveActivityAndReturn(page);
+  await saveActivity(page, 'well-child');
 
   // May trigger ECD warning popup on encounter page.
-  await page.locator('div.page-encounter.well-child').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
   await dismissPopup(page);
 }
 
@@ -374,13 +361,13 @@ export async function completeMedication(page: Page) {
         await click(adminField.locator('label', { hasText: 'Yes' }).first(), page);
       }
 
-      await saveSubTaskAndContinue(page);
+      await saveSubTask(page);
     }
   }
 
   // Wait for return to encounter page.
   await page.locator('div.page-encounter.well-child').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 // ---------------------------------------------------------------------------
@@ -410,7 +397,7 @@ export async function completeImmunisation(
 
     // Click the tab.
     await click(tab, page);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
 
     // Wait for the vaccination form.
     await page.locator('.ui.form.vaccination').waitFor({ timeout: 5000 });
@@ -421,26 +408,26 @@ export async function completeImmunisation(
     const firstBoolInput = boolInputs.first();
     await firstBoolInput.waitFor({ timeout: 3000 });
     await click(firstBoolInput.locator('label', { hasText: 'No' }), page);
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(WAIT.formInteraction);
 
     if (!isChw) {
       // Nurse: "Will receive vaccine today?" → Yes (second bool input).
       const secondBoolInput = boolInputs.nth(1);
       if (await secondBoolInput.isVisible({ timeout: 2000 }).catch(() => false)) {
         await click(secondBoolInput.locator('label', { hasText: 'Yes' }), page);
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(WAIT.formInteraction);
       }
     }
 
     // Save this vaccine tab.
-    await saveSubTaskAndContinue(page);
+    await saveSubTask(page);
   }
 
   // Click Overview tab and save to return to encounter page.
   const overviewTab = page.locator('.link-section:has(.icon-vaccination-overview)');
   if (await overviewTab.isVisible({ timeout: 2000 }).catch(() => false)) {
     await click(overviewTab, page);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
 
     // Overview save returns to encounter page.
     const saveBtn = page.locator('.actions button.ui.fluid.primary.button.active');
@@ -450,7 +437,7 @@ export async function completeImmunisation(
   }
 
   await page.locator('div.page-encounter.well-child').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 // ---------------------------------------------------------------------------
@@ -471,7 +458,7 @@ export async function completePregnancySummary(page: Page) {
   // APGAR Scores Available → Yes
   const boolInputs = form.locator('.form-input.yes-no');
   await click(boolInputs.first().locator('label', { hasText: 'Yes' }), page);
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
 
   // Fill APGAR 1 minute and 5 minute scores.
   await fillMeasurement(page, 'apgar.one-min', '8');
@@ -483,22 +470,19 @@ export async function completePregnancySummary(page: Page) {
   // Birth Length Available → No (second bool input after APGAR).
   const birthLengthBoolInput = boolInputs.nth(1);
   await click(birthLengthBoolInput.locator('label', { hasText: 'No' }), page);
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
 
   // Delivery Complications Present → No
   const complicationsBoolInput = boolInputs.nth(2);
   await click(complicationsBoolInput.locator('label', { hasText: 'No' }), page);
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
 
   // Birth Defects Present → No
   const defectsBoolInput = boolInputs.nth(3);
   await click(defectsBoolInput.locator('label', { hasText: 'No' }), page);
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
 
-  await saveActivityAndReturn(page);
-
-  await page.locator('div.page-encounter.well-child').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
+  await saveActivity(page, 'well-child');
 }
 
 // ---------------------------------------------------------------------------
@@ -515,14 +499,14 @@ export async function completeHomeVisit(page: Page) {
   await answerYesNo(page, 'refusing-to-eat', 'No');
   await answerYesNo(page, 'breastfeeding', 'Yes');
   await answerYesNo(page, 'clean-water-available', 'Yes');
-  await saveSubTaskAndContinue(page);
+  await saveSubTask(page);
 
   // --- Caring tab ---
   await clickSubTaskTab(page, 'caring');
   await answerYesNo(page, 'parents-health', 'Yes');
   await selectCheckbox(page, 'Parent');
   await answerYesNo(page, 'child-clean', 'Yes');
-  await saveSubTaskAndContinue(page);
+  await saveSubTask(page);
 
   // --- Hygiene tab ---
   await clickSubTaskTab(page, 'hygiene');
@@ -531,18 +515,18 @@ export async function completeHomeVisit(page: Page) {
   await answerYesNo(page, 'soap-in-the-house', 'Yes');
   await answerYesNo(page, 'wash-hands-before-feeding', 'Yes');
   await answerYesNo(page, 'food-covered', 'Yes');
-  await saveSubTaskAndContinue(page);
+  await saveSubTask(page);
 
   // --- Food Security tab ---
   await clickSubTaskTab(page, 'food-security');
   await selectCheckbox(page, 'Homebased Agriculture / Livestock');
   // Note: typo in Elm source — class is "household-got-fFood" (capital F).
   await answerYesNo(page, 'household-got-fFood', 'Yes');
-  await saveSubTaskAndContinue(page);
+  await saveSubTask(page);
 
   // Wait for return to encounter page.
   await page.locator('div.page-encounter.well-child').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 // ---------------------------------------------------------------------------
@@ -588,7 +572,7 @@ export async function completeNextSteps(
       if (await factorCheckbox.isVisible({ timeout: 2000 }).catch(() => false)) {
         await click(factorCheckbox.locator('label'), page);
       }
-      await saveSubTaskAndContinue(page);
+      await saveSubTask(page);
     }
   }
 
@@ -599,7 +583,7 @@ export async function completeNextSteps(
       await clickSubTaskTab(page, 'next-steps-health-education');
       await page.locator('.ui.form.health-education').waitFor({ timeout: 5000 });
       await answerYesNo(page, 'education-for-diagnosis', 'Yes');
-      await saveSubTaskAndContinue(page);
+      await saveSubTask(page);
     }
   }
 
@@ -628,7 +612,7 @@ export async function completeNextSteps(
           }
         }
       }
-      await saveSubTaskAndContinue(page);
+      await saveSubTask(page);
     }
   }
 
@@ -639,7 +623,7 @@ export async function completeNextSteps(
       await clickSubTaskTab(page, 'next-steps-follow-up');
       await page.locator('.ui.form.follow-up').waitFor({ timeout: 5000 });
       await selectCheckboxInForm(page, '.ui.form.follow-up', '3 Days');
-      await saveSubTaskAndContinue(page);
+      await saveSubTask(page);
     }
   }
 
@@ -650,14 +634,14 @@ export async function completeNextSteps(
     const saveBtn = page.locator('.actions button.ui.fluid.primary.button.active');
     if (await saveBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
       await click(saveBtn, page);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
     }
   }
 
   // After completing all Next Steps tasks, the app auto-navigates to
   // the Progress Report page (not back to the encounter page).
   // Navigate back to the encounter page by clicking back arrows.
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
   for (let i = 0; i < 5; i++) {
     const onEncounterPage = await page
       .locator('div.page-encounter.well-child')
@@ -665,10 +649,10 @@ export async function completeNextSteps(
       .catch(() => false);
     if (onEncounterPage) break;
     await page.goBack();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(WAIT.sectionTransition);
   }
   await page.locator('div.page-encounter.well-child').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 // ---------------------------------------------------------------------------
@@ -708,7 +692,7 @@ async function answerNCDAYesNo(page: Page, questionSubstring: string, answer: 'Y
 
   if (!yesNoId) throw new Error(`Could not find yes/no input after question: "${questionSubstring}"`);
   await click(page.locator(`#${yesNoId} label`, { hasText: answer }), page);
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
 }
 
 /**
@@ -719,7 +703,7 @@ async function clickNCDAStepTab(page: Page, iconClass: string) {
   const isActive = await tab.evaluate(el => el.classList.contains('active')).catch(() => false);
   if (!isActive) {
     await click(tab, page);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
   }
 }
 
@@ -730,7 +714,7 @@ async function clickNCDASave(page: Page) {
   const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
   await saveBtn.waitFor({ timeout: 5000 });
   await click(saveBtn, page);
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 }
 
 /**
@@ -741,7 +725,7 @@ async function clickNCDASave(page: Page) {
  */
 export async function completeNCDA(page: Page) {
   await page.locator('div.page-encounter.well-child').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
   await click(page.locator('.icon-task-history'), page);
 
   // Handle NCDA confirmation popup.
@@ -759,7 +743,7 @@ export async function completeNCDA(page: Page) {
   const antenatalTab = page.locator('.link-section:has(.icon-activity-task.icon-ncda-antenatal)');
   if (await antenatalTab.isVisible({ timeout: 1000 }).catch(() => false)) {
     await clickNCDAStepTab(page, 'ncda-antenatal');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
     await answerNCDAYesNo(page, 'ANC encounters that are not recorded', 'No');
     await answerNCDAYesNo(page, 'receive Iron, Folic Acid', 'Yes');
     await answerNCDAYesNo(page, 'taken it as per guidance', 'Yes');
@@ -767,7 +751,7 @@ export async function completeNCDA(page: Page) {
     const birthWeightInput = page.locator('.form-input.measurement.birth-weight input[type="number"]');
     if (await birthWeightInput.isVisible({ timeout: 1000 }).catch(() => false)) {
       await birthWeightInput.fill('3200');
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(WAIT.formInteraction);
     }
     const birthDefectQ = page.locator('.ui.form.ncda .label', { hasText: 'born with a birth defect' });
     if (await birthDefectQ.isVisible({ timeout: 1000 }).catch(() => false)) {
@@ -778,7 +762,7 @@ export async function completeNCDA(page: Page) {
 
   // --- Step 2: Universal Interventions (atHealthCenter: only OngeraMNP) ---
   await clickNCDAStepTab(page, 'ncda-universal-intervention');
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
   await answerNCDAYesNo(page, 'receive Ongera-MNP', 'Yes');
   await clickNCDASave(page);
 
@@ -786,7 +770,7 @@ export async function completeNCDA(page: Page) {
   const nutritionBehaviorTab = page.locator('.link-section:has(.icon-activity-task.icon-ncda-nutrition-behavior)');
   if (await nutritionBehaviorTab.isVisible({ timeout: 1000 }).catch(() => false)) {
     await clickNCDAStepTab(page, 'ncda-nutrition-behavior');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
     await answerNCDAYesNo(page, '5 food groups', 'Yes');
     const breastfedQ = page.locator('.ui.form.ncda .label', { hasText: 'breastfed for 6 months' });
     if (await breastfedQ.isVisible({ timeout: 1000 }).catch(() => false)) {
@@ -801,7 +785,7 @@ export async function completeNCDA(page: Page) {
 
   // --- Step 5: Targeted Interventions (atHealthCenter: no FBF, no diarrhea) ---
   await clickNCDAStepTab(page, 'ncda-targeted-intervention');
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
   await answerNCDAYesNo(page, 'beneficiary of cash transfer', 'No');
   await answerNCDAYesNo(page, 'other support', 'No');
   await answerNCDAYesNo(page, 'have disability', 'No');
@@ -809,7 +793,7 @@ export async function completeNCDA(page: Page) {
 
   // --- Step 6: Infrastructure & Environment ---
   await clickNCDAStepTab(page, 'ncda-infrastructure-environment');
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
   await answerNCDAYesNo(page, 'clean water', 'Yes');
   await answerNCDAYesNo(page, 'handwashing facility', 'Yes');
   await answerNCDAYesNo(page, 'have toilets', 'Yes');
@@ -828,12 +812,12 @@ export async function completeNCDA(page: Page) {
     await click(page.locator('span.icon-back').first(), page);
     await encounterPage.waitFor({ timeout: 10000 });
   }
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 export async function endWellChildEncounter(page: Page) {
   await page.locator('div.page-encounter.well-child').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(WAIT.pageNavigation);
 
   // Dismiss any popup first.
   await dismissPopup(page);
@@ -851,7 +835,7 @@ export async function endWellChildEncounter(page: Page) {
     const skipBtn = skipDialog.locator('button', { hasText: /Skip|Continue/i });
     if (await skipBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
       await skipBtn.click({ force: true });
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(WAIT.sectionTransition);
     }
   }
 

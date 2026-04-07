@@ -111,23 +111,23 @@ test.describe('Nurse: FBF Group Nutrition Session', () => {
     const nodes = queryGroupSessionNodes(mother.fullName, child.fullName);
 
     // Mother measurements.
-    expect(nodes.attendance).toBe(true);
-    expect(nodes.familyPlanning).toBe(true);
-    expect(nodes.lactation).toBe(true);
-    expect(nodes.motherFbf).toBe(true);
+    expect(nodes.attendance, 'attendance should exist').toBe(true);
+    expect(nodes.familyPlanning, 'familyPlanning should exist').toBe(true);
+    expect(nodes.lactation, 'lactation should exist').toBe(true);
+    expect(nodes.motherFbf, 'motherFbf should exist').toBe(true);
 
     // Child measurements.
-    expect(nodes.height).toBe(true);
-    expect(nodes.weight).toBe(true);
-    expect(nodes.muac).toBe(true);
-    expect(nodes.nutrition).toBe(true);
-    expect(nodes.childFbf).toBe(true);
-    expect(nodes.groupNcda).toBe(true);
+    expect(nodes.height, 'height should exist').toBe(true);
+    expect(nodes.weight, 'weight should exist').toBe(true);
+    expect(nodes.muac, 'muac should exist').toBe(true);
+    expect(nodes.nutrition, 'nutrition should exist').toBe(true);
+    expect(nodes.childFbf, 'childFbf should exist').toBe(true);
+    expect(nodes.groupNcda, 'groupNcda should exist').toBe(true);
 
     // NextSteps triggered by abnormal values.
-    expect(nodes.contributingFactors).toBe(true);
-    expect(nodes.groupHealthEducation).toBe(true);
-    expect(nodes.groupSendToHC).toBe(true);
-    expect(nodes.followUp).toBe(true);
+    expect(nodes.contributingFactors, 'contributingFactors should exist').toBe(true);
+    expect(nodes.groupHealthEducation, 'groupHealthEducation should exist').toBe(true);
+    expect(nodes.groupSendToHC, 'groupSendToHC should exist').toBe(true);
+    expect(nodes.followUp, 'followUp should exist').toBe(true);
   });
 });

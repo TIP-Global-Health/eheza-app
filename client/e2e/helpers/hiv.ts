@@ -1,38 +1,19 @@
 import { Page } from '@playwright/test';
 import { click } from './auth';
 import {
+  WAIT,
   queryMeasurementNodes,
   backdateEncounter,
-  formInput,
-  selectByLabel,
   answerYesNo,
   selectCheckbox,
   selectCheckboxInForm,
   clickSubTaskTab,
   setDate,
   openActivity,
+  saveActivity,
+  saveSubTask,
+  registerAdult,
 } from './common';
-
-/**
- * Click the Save button and wait to return to the encounter page.
- */
-async function saveAndReturn(page: Page) {
-  const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
-  await saveBtn.waitFor({ timeout: 5000 });
-  await click(saveBtn, page);
-  await page.locator('div.page-encounter.hiv').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
-}
-
-/**
- * Click the Save button for a sub-task (doesn't wait for encounter page).
- */
-async function saveSubTask(page: Page) {
-  const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
-  await saveBtn.waitFor({ timeout: 5000 });
-  await click(saveBtn, page);
-  await page.waitForTimeout(1000);
-}
 
 // ---------------------------------------------------------------------------
 // Participant registration
@@ -54,75 +35,16 @@ export async function createAdultAndStartHIVEncounter(
     isFemale?: boolean;
   },
 ) {
-  const ageYears = options?.ageYears ?? 30;
-  const firstName = options?.firstName ?? `TestHIV${Date.now()}`;
-  const secondName = 'E2ETest';
-  const isFemale = options?.isFemale ?? false;
+  const result = await registerAdult(page, 'HIV Management', 'hiv', {
+    ageYears: options?.ageYears,
+    firstName: options?.firstName ?? `TestHIV${Date.now()}`,
+    isFemale: options?.isFemale,
+    isChw: true,
+  });
 
-  // Navigate: Dashboard → Clinical
-  await click(page.locator('.icon-task-clinical'), page);
-  await page.locator('div.page-clinical').waitFor({ timeout: 10000 });
-
-  // Clinical → Individual Encounter
-  await click(page.locator('button.individual-assessment'), page);
-  await page.locator('div.page-encounter-types').waitFor({ timeout: 10000 });
-
-  // Individual Encounter → HIV Management
-  await click(
-    page.locator('button.encounter-type', { hasText: 'HIV Management' }),
-    page,
-  );
-  await page.locator('div.page-participants').waitFor({ timeout: 10000 });
-
-  // Click "Register a new participant"
-  await click(
-    page.locator('button.ui.primary.button.fluid', {
-      hasText: 'Register a new participant',
-    }),
-    page,
-  );
-  await page
-    .locator('.ui.grid .column', { hasText: 'First Name:' })
-    .waitFor({ timeout: 10000 });
-
-  // Fill the registration form.
-  await formInput(page, 'First Name:').fill(firstName);
-  await formInput(page, 'Second Name:').fill(secondName);
-
-  // Set date of birth.
-  const dob = new Date();
-  dob.setFullYear(dob.getFullYear() - ageYears);
-  await setDate(page, dob);
-
-  // Select gender.
-  const genderRadios = page
-    .locator('.ui.grid')
-    .filter({ hasText: 'Gender:' })
-    .locator('input[type="radio"]');
-  if (isFemale) {
-    await genderRadios.last().check();
-  } else {
-    await genderRadios.first().check();
-  }
-
-  // Adult required fields.
-  await selectByLabel(page, 'Level of Education:', 1);
-  await selectByLabel(page, 'Marital Status:', 1);
-
-  // CHW: address fields are auto-filled from assigned village, skip them.
-
-  // Submit the form.
-  await click(page.locator('button[type="submit"]'), page);
-
-  // Wait for the participant page.
-  await page
-    .locator('div.page-participant.individual.hiv')
-    .waitFor({ timeout: 30000 });
-
-  // Start HIV encounter.
   await startHIVEncounter(page);
 
-  return { firstName, secondName, fullName: `${secondName} ${firstName}` };
+  return result;
 }
 
 // ---------------------------------------------------------------------------
@@ -151,23 +73,23 @@ export async function completeDiagnostics(
   if (path === 'positive-reported') {
     // "Have you been diagnosed with HIV?" → Yes
     await answerYesNo(page, 'result-positive', 'Yes');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
 
     // Set positive result date (1 year ago).
     const resultDate = new Date();
     resultDate.setFullYear(resultDate.getFullYear() - 1);
     await setDate(page, resultDate, '.form-input.date');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
 
-    await saveAndReturn(page);
+    await saveActivity(page, 'hiv');
   } else if (path === 'no-diagnosis-refuse-test') {
     // "Have you been diagnosed with HIV?" → No
     await answerYesNo(page, 'result-positive', 'No');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
 
     // "Would you like to take an HIV test?" → No
     await answerYesNo(page, 'run-hiv-test', 'No');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
 
     // Click Save — triggers end encounter confirmation dialog.
     const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
@@ -184,7 +106,7 @@ export async function completeDiagnostics(
       .locator('div.page-encounter.hiv')
       .waitFor({ state: 'hidden', timeout: 30000 })
       .catch(() => {});
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(WAIT.sectionTransition);
   }
 }
 
@@ -217,7 +139,7 @@ export async function completeMedication(
 
   // --- Sub-task 1: PrescribedMedication ---
   await clickSubTaskTab(page, 'medication');
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   if (isSubsequent) {
     // Subsequent: "Have the medications changed?" → "Yes" means NOT changed.
@@ -232,38 +154,38 @@ export async function completeMedication(
   }
 
   await saveSubTask(page);
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   // --- Sub-task 2: TreatmentReview ---
   // In initial encounters, this tab appears after PrescribedMedication is saved.
   await clickSubTaskTab(page, 'treatment-review');
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   // "Has the patient been taking the medication as prescribed?" → Yes
   await answerYesNo(page, 'taken-as-prescribed', 'Yes');
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
 
   // "Is the patient feeling better?" → Yes
   await answerYesNo(page, 'feeling-better', 'Yes');
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
 
   // "Has the patient missed any doses?" → No (reverted bool input)
   await answerYesNo(page, 'missed-doses', 'No');
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(WAIT.formInteraction);
 
   // "Has the medication caused any side effects?" → answer based on option
   if (sideEffects) {
     await answerYesNo(page, 'side-effects', 'Yes');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
 
     // Select adverse events: "Rash or Itching"
     await selectCheckbox(page, 'Rash or Itching');
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(WAIT.formInteraction);
   } else {
     await answerYesNo(page, 'side-effects', 'No');
   }
 
-  await saveAndReturn(page);
+  await saveActivity(page, 'hiv');
 }
 
 // ---------------------------------------------------------------------------
@@ -296,11 +218,11 @@ export async function completeSymptomReview(
         hasText: new RegExp(`^${symptom}$`, 'i'),
       }).locator('label');
       await click(checkbox, page);
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(WAIT.formInteraction);
     }
   }
 
-  await saveAndReturn(page);
+  await saveActivity(page, 'hiv');
 }
 
 // ---------------------------------------------------------------------------
@@ -323,7 +245,7 @@ export async function completeNextSteps(page: Page) {
 
   for (let i = 0; i < tabCount; i++) {
     await click(tabs.nth(i), page);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
 
     // Determine which sub-task by checking the active icon.
     const activeTab = page.locator('.link-section.active .icon-activity-task');
@@ -332,11 +254,11 @@ export async function completeNextSteps(page: Page) {
     if (classAttr?.includes('next-steps-health-education')) {
       // HealthEducation: 4 yes/no questions.
       await answerYesNo(page, 'positive-result', 'Yes');
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(WAIT.formInteraction);
       await answerYesNo(page, 'safer-sex-practices', 'Yes');
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(WAIT.formInteraction);
       await answerYesNo(page, 'encouraged-partner-testing', 'Yes');
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(WAIT.formInteraction);
       await answerYesNo(page, 'family-planning-options', 'Yes');
     } else if (classAttr?.includes('next-steps-follow-up')) {
       // FollowUp: select a follow-up option.
@@ -344,7 +266,7 @@ export async function completeNextSteps(page: Page) {
     } else if (classAttr?.includes('next-steps-send-to-hc')) {
       // Referral: refer to health center.
       await answerYesNo(page, 'refer-to-hc', 'Yes');
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
       // "Hand referral form?" → Yes
       const handForm = page.locator('.form-input.yes-no.hand-referral-form label', { hasText: 'Yes' });
       if (await handForm.isVisible({ timeout: 2000 }).catch(() => false)) {
@@ -356,12 +278,12 @@ export async function completeNextSteps(page: Page) {
     const saveBtn = page.locator('button.ui.fluid.primary.button:not(.disabled)', { hasText: 'Save' });
     await saveBtn.waitFor({ timeout: 10000 });
     await saveBtn.click({ force: true });
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(WAIT.sectionTransition);
   }
 
   // Wait for encounter page.
   await page.locator('div.page-encounter.hiv').waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 // ---------------------------------------------------------------------------
@@ -372,7 +294,7 @@ export async function completeNextSteps(page: Page) {
  * End the HIV encounter: click "End Encounter", confirm in the dialog.
  */
 export async function endHIVEncounter(page: Page) {
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(WAIT.pageNavigation);
 
   const endBtn = page.locator('button', { hasText: 'End Encounter' }).first();
   await endBtn.waitFor({ timeout: 10000 });
@@ -448,7 +370,7 @@ export async function startHIVEncounter(page: Page) {
   await page
     .locator('div.page-encounter.hiv')
     .waitFor({ timeout: 30000 });
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 }
 
 // ---------------------------------------------------------------------------

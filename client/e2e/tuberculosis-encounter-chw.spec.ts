@@ -76,16 +76,16 @@ test.describe('CHW: Tuberculosis Initial Encounter — Positive Diagnosis', () =
     ];
     const nodes = queryTBNodes(fullName, expectedTypes);
 
-    expect(nodes['tuberculosis_diagnostics']).toBe(true);
-    expect(nodes['tuberculosis_medication']).toBe(true);
-    expect(nodes['tuberculosis_dot']).toBe(true);
-    expect(nodes['tuberculosis_treatment_review']).toBe(true);
-    expect(nodes['tuberculosis_health_education']).toBe(true);
-    expect(nodes['tuberculosis_follow_up']).toBe(true);
+    expect(nodes['tuberculosis_diagnostics'], 'tuberculosis_diagnostics should exist').toBe(true);
+    expect(nodes['tuberculosis_medication'], 'tuberculosis_medication should exist').toBe(true);
+    expect(nodes['tuberculosis_dot'], 'tuberculosis_dot should exist').toBe(true);
+    expect(nodes['tuberculosis_treatment_review'], 'tuberculosis_treatment_review should exist').toBe(true);
+    expect(nodes['tuberculosis_health_education'], 'tuberculosis_health_education should exist').toBe(true);
+    expect(nodes['tuberculosis_follow_up'], 'tuberculosis_follow_up should exist').toBe(true);
     // No symptoms or adverse events -> no referral.
-    expect(nodes['tuberculosis_referral']).toBe(false);
+    expect(nodes['tuberculosis_referral'], 'tuberculosis_referral should not exist').toBe(false);
     // No symptom review in initial encounter.
-    expect(nodes['tuberculosis_symptom_review']).toBe(false);
+    expect(nodes['tuberculosis_symptom_review'], 'tuberculosis_symptom_review should not exist').toBe(false);
 
     // --- Case Management verification ---
     // The TB follow-up should appear in the Tuberculosis pane (feature-flag gated).
@@ -190,14 +190,14 @@ test.describe('CHW: Tuberculosis Subsequent Encounter — Symptoms + Referral', 
     ];
     const nodes = queryTBNodes(fullName, expectedTypes);
 
-    expect(nodes['tuberculosis_diagnostics']).toBe(true);
-    expect(nodes['tuberculosis_medication']).toBe(true);
-    expect(nodes['tuberculosis_dot']).toBe(true);
-    expect(nodes['tuberculosis_treatment_review']).toBe(true);
-    expect(nodes['tuberculosis_symptom_review']).toBe(true);
-    expect(nodes['tuberculosis_health_education']).toBe(true);
-    expect(nodes['tuberculosis_follow_up']).toBe(true);
-    expect(nodes['tuberculosis_referral']).toBe(true);
+    expect(nodes['tuberculosis_diagnostics'], 'tuberculosis_diagnostics should exist').toBe(true);
+    expect(nodes['tuberculosis_medication'], 'tuberculosis_medication should exist').toBe(true);
+    expect(nodes['tuberculosis_dot'], 'tuberculosis_dot should exist').toBe(true);
+    expect(nodes['tuberculosis_treatment_review'], 'tuberculosis_treatment_review should exist').toBe(true);
+    expect(nodes['tuberculosis_symptom_review'], 'tuberculosis_symptom_review should exist').toBe(true);
+    expect(nodes['tuberculosis_health_education'], 'tuberculosis_health_education should exist').toBe(true);
+    expect(nodes['tuberculosis_follow_up'], 'tuberculosis_follow_up should exist').toBe(true);
+    expect(nodes['tuberculosis_referral'], 'tuberculosis_referral should exist').toBe(true);
   });
 });
 
@@ -241,14 +241,14 @@ test.describe('CHW: Tuberculosis Initial Encounter — No Diagnosis', () => {
     ];
     const nodes = queryTBNodes(fullName, expectedTypes);
 
-    expect(nodes['tuberculosis_diagnostics']).toBe(true);
+    expect(nodes['tuberculosis_diagnostics'], 'tuberculosis_diagnostics should exist').toBe(true);
     // No other activities should have been completed.
-    expect(nodes['tuberculosis_medication']).toBe(false);
-    expect(nodes['tuberculosis_dot']).toBe(false);
-    expect(nodes['tuberculosis_treatment_review']).toBe(false);
-    expect(nodes['tuberculosis_symptom_review']).toBe(false);
-    expect(nodes['tuberculosis_health_education']).toBe(false);
-    expect(nodes['tuberculosis_follow_up']).toBe(false);
-    expect(nodes['tuberculosis_referral']).toBe(false);
+    expect(nodes['tuberculosis_medication'], 'tuberculosis_medication should not exist').toBe(false);
+    expect(nodes['tuberculosis_dot'], 'tuberculosis_dot should not exist').toBe(false);
+    expect(nodes['tuberculosis_treatment_review'], 'tuberculosis_treatment_review should not exist').toBe(false);
+    expect(nodes['tuberculosis_symptom_review'], 'tuberculosis_symptom_review should not exist').toBe(false);
+    expect(nodes['tuberculosis_health_education'], 'tuberculosis_health_education should not exist').toBe(false);
+    expect(nodes['tuberculosis_follow_up'], 'tuberculosis_follow_up should not exist').toBe(false);
+    expect(nodes['tuberculosis_referral'], 'tuberculosis_referral should not exist').toBe(false);
   });
 });

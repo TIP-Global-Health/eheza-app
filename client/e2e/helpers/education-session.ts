@@ -1,6 +1,7 @@
 import { Page } from '@playwright/test';
 import { execSync } from 'child_process';
 import { click } from './auth';
+import { WAIT } from './common';
 import { drushEnv } from './device';
 
 // ---------------------------------------------------------------------------
@@ -42,7 +43,7 @@ export async function navigateToEducationSession(page: Page) {
     }
 
     await page.reload();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(WAIT.sectionTransition);
     await page.locator('div.page-clinical').waitFor({ timeout: 10000 });
     await click(page.locator('button.group-assessment'), page);
   }
@@ -84,7 +85,7 @@ export async function selectTopics(page: Page, topics: string[]) {
     );
     await checkbox.waitFor({ timeout: 5000 });
     await click(checkbox, page);
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(WAIT.formInteraction);
   }
 
   // Click Save button.
@@ -113,7 +114,7 @@ export async function toggleAllParticipants(page: Page) {
   });
   await toggleText.waitFor({ timeout: 5000 });
   await click(toggleText, page);
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 /**
@@ -138,7 +139,7 @@ export async function selectParticipant(
   // Click the check-in button.
   const checkInBtn = card.locator('.button-check-in');
   await click(checkInBtn, page);
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   return name;
 }
@@ -152,7 +153,7 @@ export async function selectParticipant(
  * After this, the app navigates back to the Dashboard.
  */
 export async function endEducationSession(page: Page) {
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(WAIT.pageNavigation);
 
   const recordBtn = page.locator('div.actions button.ui.fluid.button', {
     hasText: 'Record Group Education',

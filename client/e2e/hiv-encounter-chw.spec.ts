@@ -73,15 +73,15 @@ test.describe('CHW: HIV Initial Encounter — Positive Diagnosis', () => {
     ];
     const nodes = queryHIVNodes(fullName, expectedTypes);
 
-    expect(nodes['hiv_diagnostics']).toBe(true);
-    expect(nodes['hiv_medication']).toBe(true);
-    expect(nodes['hiv_treatment_review']).toBe(true);
-    expect(nodes['hiv_health_education']).toBe(true);
-    expect(nodes['hiv_follow_up']).toBe(true);
+    expect(nodes['hiv_diagnostics'], 'hiv_diagnostics should exist').toBe(true);
+    expect(nodes['hiv_medication'], 'hiv_medication should exist').toBe(true);
+    expect(nodes['hiv_treatment_review'], 'hiv_treatment_review should exist').toBe(true);
+    expect(nodes['hiv_health_education'], 'hiv_health_education should exist').toBe(true);
+    expect(nodes['hiv_follow_up'], 'hiv_follow_up should exist').toBe(true);
     // No symptoms or adverse events → no referral.
-    expect(nodes['hiv_referral']).toBe(false);
+    expect(nodes['hiv_referral'], 'hiv_referral should not exist').toBe(false);
     // No symptom review in initial encounter.
-    expect(nodes['hiv_symptom_review']).toBe(false);
+    expect(nodes['hiv_symptom_review'], 'hiv_symptom_review should not exist').toBe(false);
 
     // --- Case Management verification ---
     // The HIV follow-up should appear in the HIV pane (feature-flag gated).
@@ -176,12 +176,12 @@ test.describe('CHW: HIV Subsequent Encounter — Symptoms + Referral', () => {
     ];
     const nodes = queryHIVNodes(fullName, expectedTypes);
 
-    expect(nodes['hiv_medication']).toBe(true);
-    expect(nodes['hiv_treatment_review']).toBe(true);
-    expect(nodes['hiv_symptom_review']).toBe(true);
-    expect(nodes['hiv_health_education']).toBe(true);
-    expect(nodes['hiv_follow_up']).toBe(true);
-    expect(nodes['hiv_referral']).toBe(true);
+    expect(nodes['hiv_medication'], 'hiv_medication should exist').toBe(true);
+    expect(nodes['hiv_treatment_review'], 'hiv_treatment_review should exist').toBe(true);
+    expect(nodes['hiv_symptom_review'], 'hiv_symptom_review should exist').toBe(true);
+    expect(nodes['hiv_health_education'], 'hiv_health_education should exist').toBe(true);
+    expect(nodes['hiv_follow_up'], 'hiv_follow_up should exist').toBe(true);
+    expect(nodes['hiv_referral'], 'hiv_referral should exist').toBe(true);
   });
 });
 
@@ -225,13 +225,13 @@ test.describe('CHW: HIV Initial Encounter — No Diagnosis', () => {
     ];
     const nodes = queryHIVNodes(fullName, expectedTypes);
 
-    expect(nodes['hiv_diagnostics']).toBe(true);
+    expect(nodes['hiv_diagnostics'], 'hiv_diagnostics should exist').toBe(true);
     // No other activities should have been completed.
-    expect(nodes['hiv_medication']).toBe(false);
-    expect(nodes['hiv_treatment_review']).toBe(false);
-    expect(nodes['hiv_symptom_review']).toBe(false);
-    expect(nodes['hiv_health_education']).toBe(false);
-    expect(nodes['hiv_follow_up']).toBe(false);
-    expect(nodes['hiv_referral']).toBe(false);
+    expect(nodes['hiv_medication'], 'hiv_medication should not exist').toBe(false);
+    expect(nodes['hiv_treatment_review'], 'hiv_treatment_review should not exist').toBe(false);
+    expect(nodes['hiv_symptom_review'], 'hiv_symptom_review should not exist').toBe(false);
+    expect(nodes['hiv_health_education'], 'hiv_health_education should not exist').toBe(false);
+    expect(nodes['hiv_follow_up'], 'hiv_follow_up should not exist').toBe(false);
+    expect(nodes['hiv_referral'], 'hiv_referral should not exist').toBe(false);
   });
 });

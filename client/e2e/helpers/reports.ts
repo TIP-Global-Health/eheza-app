@@ -3,6 +3,7 @@ import { execSync } from 'child_process';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import { getClientPort } from './client-port';
+import { WAIT } from './common';
 import { drushEnv } from './device';
 
 // ---------------------------------------------------------------------------
@@ -253,7 +254,7 @@ export async function navigateToNCDAScoreboard(page: Page, geoPath: string): Pro
 
   let paneCount = 0;
   for (let attempt = 0; attempt < 5; attempt++) {
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(WAIT.pageNavigation);
     paneCount = await page.locator('.pane').count();
     if (paneCount >= 2) {
       break;
@@ -265,7 +266,7 @@ export async function navigateToNCDAScoreboard(page: Page, geoPath: string): Pro
     throw new Error(`NCDA scoreboard at ${url} did not render at least 2 panes after 5 retries (got ${paneCount})`);
   }
 
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 }
 
 /**
@@ -454,7 +455,7 @@ export async function selectReportType(page: Page, reportType: string) {
     .locator('select.select-input');
   await select.selectOption(reportType);
   // Wait for the report to render.
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 }
 
 /**
@@ -473,14 +474,14 @@ export async function setDateRange(
   await selectDateInCalendar(page, startDate);
 
   // Wait for limit date input to appear.
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   // Click second date input (Limit Date).
   await dateInputs.nth(1).click();
   await selectDateInCalendar(page, limitDate);
 
   // Wait for report content to render with the filtered data.
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(WAIT.pageNavigation);
 }
 
 /**
@@ -1127,7 +1128,7 @@ export async function selectCompletionReportType(page: Page, reportType: string)
     .first()
     .locator('select.select-input');
   await select.selectOption(reportType);
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 }
 
 /**
@@ -1141,7 +1142,7 @@ export async function selectCompletionTakenBy(page: Page, takenBy: string) {
     .nth(1)
     .locator('select.select-input');
   await select.selectOption(takenBy);
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 }
 
 /**
@@ -1156,12 +1157,12 @@ export async function setCompletionDateRange(
   await dateInputs.nth(0).click();
   await selectDateInCalendar(page, startDate);
 
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   await dateInputs.nth(1).click();
   await selectDateInCalendar(page, limitDate);
 
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(WAIT.pageNavigation);
 }
 
 // ---------------------------------------------------------------------------

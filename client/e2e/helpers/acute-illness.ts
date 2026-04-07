@@ -1,17 +1,17 @@
 import { Page } from '@playwright/test';
 import { click } from './auth';
 import {
+  WAIT,
   answerYesNo,
   backdateEncounter,
   clickSubTaskTab,
   fillMeasurement,
-  formInput,
   openActivity as openActivityBase,
   queryMeasurementNodes,
-  selectByLabel,
+  registerAdult,
+  registerChild,
   selectCheckbox,
   selectCheckboxInForm,
-  setDate,
 } from './common';
 
 // ---------------------------------------------------------------------------
@@ -30,14 +30,14 @@ async function dismissDiagnosisPopup(page: Page) {
   const modalContinue = page.locator('.ui.active.modal button', { hasText: 'Continue' });
   if (await modalContinue.isVisible({ timeout: 3000 }).catch(() => false)) {
     await click(modalContinue, page);
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(WAIT.sectionTransition);
     return;
   }
   // Try the overlay popup (alert with "Continue" button).
   const overlayContinue = page.locator('.overlay button', { hasText: 'Continue' });
   if (await overlayContinue.isVisible({ timeout: 1000 }).catch(() => false)) {
     await click(overlayContinue, page);
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(WAIT.sectionTransition);
   }
 }
 
@@ -63,7 +63,7 @@ async function saveActivity(page: Page, actionsClass: string) {
   await page
     .locator('div.page-encounter.acute-illness')
     .waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 /**
@@ -74,7 +74,7 @@ async function saveNextStepsSubTask(page: Page) {
   const saveBtn = page.locator('.actions.next-steps button.ui.fluid.primary.button');
   await saveBtn.waitFor({ timeout: 5000 });
   await click(saveBtn, page);
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 }
 
 // ---------------------------------------------------------------------------
@@ -98,93 +98,16 @@ export async function createAdultAndStartEncounter(
     gender?: 'male' | 'female';
   },
 ) {
-  const ageYears = options?.ageYears ?? 25;
-  const firstName = options?.firstName ?? `TestPatient${Date.now()}`;
-  const secondName = 'E2ETest';
-  const isChw = options?.isChw ?? false;
-  const gender = options?.gender ?? 'female';
+  const result = await registerAdult(page, 'Acute Illness', 'acute-illness', {
+    ageYears: options?.ageYears,
+    firstName: options?.firstName ?? `TestPatient${Date.now()}`,
+    isFemale: options?.gender === 'female' || (options?.gender === undefined),
+    isChw: options?.isChw,
+  });
 
-  // Navigate: Dashboard → Clinical
-  await click(page.locator('.icon-task-clinical'), page);
-  await page.locator('div.page-clinical').waitFor({ timeout: 10000 });
-
-  // Clinical → Individual Encounter
-  await click(page.locator('button.individual-assessment'), page);
-  await page.locator('div.page-encounter-types').waitFor({ timeout: 10000 });
-
-  // Individual Encounter → Acute Illness
-  await click(
-    page.locator('button.encounter-type', { hasText: 'Acute Illness' }),
-    page,
-  );
-  await page.locator('div.page-participants').waitFor({ timeout: 10000 });
-
-  // Click "Register a new participant"
-  await click(
-    page.locator('button.ui.primary.button.fluid', {
-      hasText: 'Register a new participant',
-    }),
-    page,
-  );
-  await page
-    .locator('.ui.grid .column', { hasText: 'First Name:' })
-    .waitFor({ timeout: 10000 });
-
-  // Fill the registration form.
-  await formInput(page, 'First Name:').fill(firstName);
-  await formInput(page, 'Second Name:').fill(secondName);
-
-  // Set date of birth.
-  const dob = new Date();
-  dob.setFullYear(dob.getFullYear() - ageYears);
-  await setDate(page, dob);
-
-  // Select gender.
-  const genderRadios = page
-    .locator('.ui.grid')
-    .filter({ hasText: 'Gender:' })
-    .locator('input[type="radio"]');
-  if (gender === 'male') {
-    await genderRadios.first().check();
-  } else {
-    await genderRadios.last().check();
-  }
-
-  // Adult-only required fields.
-  await selectByLabel(page, 'Level of Education:', 1);
-  await selectByLabel(page, 'Marital Status:', 1);
-
-  if (!isChw) {
-    // Nurse: fill address (cascading dropdowns) and health center.
-    await selectByLabel(page, 'Province:', 1);
-    await page.waitForTimeout(500);
-    await selectByLabel(page, 'District:', 1);
-    await page.waitForTimeout(500);
-    await selectByLabel(page, 'Sector:', 1);
-    await page.waitForTimeout(500);
-    await selectByLabel(page, 'Cell:', 1);
-    await page.waitForTimeout(500);
-    await selectByLabel(page, 'Village:', 1);
-
-    const hcSelect = page
-      .locator('.ui.grid')
-      .filter({ hasText: 'Health Center:' })
-      .locator('select');
-    await hcSelect.selectOption({ label: 'Nyange Health Center' });
-  }
-
-  // Submit the form.
-  await click(page.locator('button[type="submit"]'), page);
-
-  // Wait for the participant page.
-  await page
-    .locator('div.page-participant.individual.acute-illness')
-    .waitFor({ timeout: 30000 });
-
-  // Start a new acute illness encounter.
   await startNewAcuteIllness(page);
 
-  return { firstName, secondName, fullName: `${secondName} ${firstName}` };
+  return result;
 }
 
 /**
@@ -194,47 +117,14 @@ export async function createChildAndStartEncounter(
   page: Page,
   options?: { ageMonths?: number; firstName?: string },
 ) {
-  const ageMonths = options?.ageMonths ?? 24;
-  const firstName = options?.firstName ?? `TestChild${Date.now()}`;
-  const secondName = 'E2ETest';
+  const result = await registerChild(page, 'Acute Illness', 'acute-illness', {
+    ageMonths: options?.ageMonths,
+    firstName: options?.firstName ?? `TestChild${Date.now()}`,
+  });
 
-  await click(page.locator('.icon-task-clinical'), page);
-  await page.locator('div.page-clinical').waitFor({ timeout: 10000 });
-  await click(page.locator('button.individual-assessment'), page);
-  await page.locator('div.page-encounter-types').waitFor({ timeout: 10000 });
-  await click(page.locator('button.encounter-type', { hasText: 'Acute Illness' }), page);
-  await page.locator('div.page-participants').waitFor({ timeout: 10000 });
-  await click(page.locator('button.ui.primary.button.fluid', { hasText: 'Register a new participant' }), page);
-  await page.locator('.ui.grid .column', { hasText: 'First Name:' }).waitFor({ timeout: 10000 });
-
-  await formInput(page, 'First Name:').fill(firstName);
-  await formInput(page, 'Second Name:').fill(secondName);
-
-  const dob = new Date();
-  dob.setMonth(dob.getMonth() - ageMonths);
-  await setDate(page, dob);
-
-  await page.locator('.ui.grid').filter({ hasText: 'Gender:' }).locator('input[type="radio"]').first().check();
-  await selectByLabel(page, 'Mode of delivery:', 1);
-
-  // Nurse: address + health center.
-  await selectByLabel(page, 'Province:', 1);
-  await page.waitForTimeout(500);
-  await selectByLabel(page, 'District:', 1);
-  await page.waitForTimeout(500);
-  await selectByLabel(page, 'Sector:', 1);
-  await page.waitForTimeout(500);
-  await selectByLabel(page, 'Cell:', 1);
-  await page.waitForTimeout(500);
-  await selectByLabel(page, 'Village:', 1);
-  const hcSelect = page.locator('.ui.grid').filter({ hasText: 'Health Center:' }).locator('select');
-  await hcSelect.selectOption({ label: 'Nyange Health Center' });
-
-  await click(page.locator('button[type="submit"]'), page);
-  await page.locator('div.page-participant.individual.acute-illness').waitFor({ timeout: 30000 });
   await startNewAcuteIllness(page);
 
-  return { firstName, secondName, fullName: `${secondName} ${firstName}` };
+  return result;
 }
 
 // ---------------------------------------------------------------------------
@@ -253,7 +143,7 @@ export async function startNewAcuteIllness(page: Page) {
   await page
     .locator('div.page-encounter.acute-illness')
     .waitFor({ timeout: 30000 });
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 }
 
 /**
@@ -261,7 +151,7 @@ export async function startNewAcuteIllness(page: Page) {
  * confirm in the dialog, wait for navigation away.
  */
 export async function endEncounter(page: Page) {
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(WAIT.pageNavigation);
 
   const endBtn = page.locator('button', { hasText: 'End Encounter' }).first();
   await endBtn.waitFor({ timeout: 10000 });
@@ -354,7 +244,7 @@ export async function startSubsequentEncounter(page: Page) {
   await page
     .locator('div.page-encounter.acute-illness')
     .waitFor({ timeout: 30000 });
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 }
 
 /**
@@ -453,11 +343,11 @@ export async function completeOngoingTreatment(
     page.locator('.actions.treatment-ongoing button.ui.fluid.primary.button', { hasText: 'Save' }),
     page,
   );
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 
   // Dismiss diagnosis popup if it appears.
   await dismissDiagnosisPopup(page);
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 // ---------------------------------------------------------------------------
@@ -504,7 +394,7 @@ export async function completeSymptoms(
     page.locator('.actions.symptoms button.ui.fluid.primary.button'),
     page,
   );
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   // --- SymptomsRespiratory tab ---
   await clickSubTaskTab(page, 'symptoms-respiratory');
@@ -520,7 +410,7 @@ export async function completeSymptoms(
         ? 'More than 2 weeks'
         : '2 weeks or less';
       await page.locator('label', { hasText: durationLabel }).click();
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(WAIT.formInteraction);
     }
   }
   // Save respiratory — advances to GI tab.
@@ -528,7 +418,7 @@ export async function completeSymptoms(
     page.locator('.actions.symptoms button.ui.fluid.primary.button'),
     page,
   );
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   // --- SymptomsGI tab ---
   await clickSubTaskTab(page, 'symptoms-gi');
@@ -606,7 +496,7 @@ export async function completePhysicalExam(
     page.locator('.actions.symptoms button.ui.fluid.primary.button'),
     page,
   );
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   // Dismiss any alert popup triggered by vitals (e.g., elevated RR → Suspected Pneumonia).
   await dismissDiagnosisPopup(page);
@@ -626,7 +516,7 @@ export async function completePhysicalExam(
       page.locator('.actions.symptoms button.ui.fluid.primary.button'),
       page,
     );
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
   }
 
   // --- MUAC tab (children only — may not appear for adults) ---
@@ -639,7 +529,7 @@ export async function completePhysicalExam(
       page.locator('.actions.symptoms button.ui.fluid.primary.button'),
       page,
     );
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
   }
 
   // --- Nutrition tab (children only — may not appear for adults) ---
@@ -654,7 +544,7 @@ export async function completePhysicalExam(
       page.locator('.actions.symptoms button.ui.fluid.primary.button'),
       page,
     );
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
   }
 
   // --- Acute Findings tab (may not appear on subsequent encounters) ---
@@ -791,7 +681,7 @@ export async function completeLaboratory(
     page.locator('.actions.malaria-testing button.ui.fluid.primary.button'),
     page,
   );
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 
   // --- COVID Testing tab (if visible) ---
   const covidTab = page.locator('.link-section:has(.icon-activity-task.icon-laboratory-covid-testing)');
@@ -802,7 +692,7 @@ export async function completeLaboratory(
     const covidWarning = page.locator('.overlay button', { hasText: /continue/i });
     if (await covidWarning.isVisible({ timeout: 2000 }).catch(() => false)) {
       await covidWarning.click({ force: true });
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
     }
 
     const covidForm = page.locator('.ui.form.laboratory.covid-testing');
@@ -811,7 +701,7 @@ export async function completeLaboratory(
     if (covidTestPerformed) {
       // "Test performed?" → Yes
       await answerYesNo(page, 'test-performed', 'Yes');
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
 
       // Select the test result (may be dropdown or radio buttons).
       const covidResultSelect = covidForm.locator('select').first();
@@ -845,7 +735,7 @@ export async function completeLaboratory(
       page.locator('.actions.malaria-testing button.ui.fluid.primary.button'),
       page,
     );
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(WAIT.sectionTransition);
   }
 
   // After the last mandatory activity (malaria testing), the app may
@@ -854,7 +744,7 @@ export async function completeLaboratory(
 
   // We may now be on the encounter page or on the next-steps activity page.
   // Wait for either.
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
 }
 
 // ---------------------------------------------------------------------------
@@ -962,7 +852,7 @@ export async function completeNextSteps(
     const reliefTab = page.locator('.link-section:has(.icon-activity-task.icon-next-steps-medication-distribution)');
     if (await reliefTab.isVisible({ timeout: 2000 }).catch(() => false)) {
       await click(reliefTab, page);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
       await page.locator('.ui.form.symptoms-relief').waitFor({ timeout: 5000 });
       await answerYesNo(page, 'education-for-diagnosis', 'Yes');
       await saveNextStepsSubTask(page);
@@ -993,7 +883,7 @@ export async function completeNextSteps(
 
   // After completing all next steps, the app may show the progress report
   // page (with "End Encounter" button) or return to the encounter page.
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
 }
 
 // ---------------------------------------------------------------------------

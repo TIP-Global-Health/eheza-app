@@ -7,7 +7,7 @@ import {
 } from './helpers/case-management';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
-import { syncAndWait } from './helpers/common';
+import { WAIT, syncAndWait } from './helpers/common';
 import {
   createChildAndStartEncounter,
   enterWeight,
@@ -54,14 +54,14 @@ test.describe('CHW: Individual Nutrition Encounter', () => {
     // Nutrition signs: None
     await enterNutritionSigns(page, ['None']);
     const diagnosisAppeared = await saveActivity(page);
-    expect(diagnosisAppeared).toBe(false);
+    expect(diagnosisAppeared, 'diagnosis popup should not appear for normal signs').toBe(false);
 
     // Height is optional for CHW — skip it entirely.
     // End Encounter should be enabled without height.
     const endBtn = page.locator('div.actions button.ui.fluid.button', {
       hasText: 'End Encounter',
     });
-    await expect(endBtn).not.toHaveClass(/disabled/);
+    await expect(endBtn, 'End Encounter button should be enabled without height for CHW').not.toHaveClass(/disabled/);
     await endEncounter(page);
 
     // Sync to backend.
@@ -69,10 +69,10 @@ test.describe('CHW: Individual Nutrition Encounter', () => {
 
     // Verify measurements in backend — no height node expected.
     const nodes = queryBackendNodes(fullName);
-    expect(nodes.weight).toBe(12);
-    expect(nodes.muac).toBe(14);
-    expect(nodes.nutrition).toBe(true);
-    expect(nodes.height).toBeUndefined();
+    expect(nodes.weight, 'weight should be 12 kg').toBe(12);
+    expect(nodes.muac, 'muac should be 14 cm').toBe(14);
+    expect(nodes.nutrition, 'nutrition node should exist').toBe(true);
+    expect(nodes.height, 'height should not exist for CHW encounter').toBeUndefined();
   });
 
   test('abnormal MUAC triggers NextSteps with backend sync', async ({
@@ -110,7 +110,7 @@ test.describe('CHW: Individual Nutrition Encounter', () => {
     await completeFollowUp(page);
 
     // Wait for navigation to settle, then ensure we're on the encounter page.
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(WAIT.pageNavigation);
     await page
       .locator('div.page-encounter.nutrition')
       .waitFor({ timeout: 10000 });
@@ -123,14 +123,14 @@ test.describe('CHW: Individual Nutrition Encounter', () => {
 
     // Verify all measurement nodes in backend (no height for CHW).
     const nodes = queryBackendNodes(fullName);
-    expect(nodes.weight).toBe(8);
-    expect(nodes.muac).toBe(11);
-    expect(nodes.nutrition).toBe(true);
-    expect(nodes.height).toBeUndefined();
-    expect(nodes.sendToHc).toBe(true);
-    expect(nodes.healthEducation).toBe(true);
-    expect(nodes.contributingFactors).toBe(true);
-    expect(nodes.followUp).toBe(true);
+    expect(nodes.weight, 'weight should be 8 kg').toBe(8);
+    expect(nodes.muac, 'muac should be 11 cm').toBe(11);
+    expect(nodes.nutrition, 'nutrition node should exist').toBe(true);
+    expect(nodes.height, 'height should not exist for CHW encounter').toBeUndefined();
+    expect(nodes.sendToHc, 'sendToHc node should exist').toBe(true);
+    expect(nodes.healthEducation, 'healthEducation node should exist').toBe(true);
+    expect(nodes.contributingFactors, 'contributingFactors node should exist').toBe(true);
+    expect(nodes.followUp, 'followUp node should exist').toBe(true);
 
     // --- Case Management verification ---
     // Navigate to Case Management and verify the nutrition follow-up entry appears.

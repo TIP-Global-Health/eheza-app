@@ -4,6 +4,25 @@ import { Page } from '@playwright/test';
 import { click } from './auth';
 import { drushEnv } from './device';
 
+// ---------------------------------------------------------------------------
+// Timeout constants — named waits for common Elm/Playwright timing patterns
+// ---------------------------------------------------------------------------
+
+export const WAIT = {
+  /** Brief pause between rapid form inputs (e.g., clicking multiple checkboxes in a loop). */
+  quickInput: 200,
+  /** Between individual form field interactions (single checkbox, radio click). */
+  formInteraction: 300,
+  /** Elm framework re-render after state changes (tab switch, dropdown cascade, form toggle). */
+  elmRerender: 500,
+  /** Between form sections, after search input, or after sub-task save. */
+  sectionTransition: 1000,
+  /** Page-level navigation after completing multiple activities or before End Encounter. */
+  pageNavigation: 2000,
+  /** Backend sync, device pairing, PIN retry loops, or data availability retries. */
+  heavyOperation: 3000,
+} as const;
+
 /**
  * Click the sync icon, wait for sync to complete on a health center,
  * then navigate back.
@@ -36,7 +55,7 @@ export async function syncAndWait(
     .waitFor({ timeout });
 
   // Verify status is stable (not a transient state between phases).
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(WAIT.sectionTransition);
   await hcSection
     .locator('.sync-status', { hasText: 'Status: Success' })
     .waitFor({ timeout });
@@ -225,6 +244,32 @@ export function backdateEncounter(personName: string, encounterType: string, day
 }
 
 // ---------------------------------------------------------------------------
+// Save helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Click the Save button and wait for return to the encounter page.
+ * @param encounterType - CSS class for the encounter page (e.g., 'ncd', 'prenatal').
+ */
+export async function saveActivity(page: Page, encounterType: string): Promise<void> {
+  const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+  await saveBtn.waitFor({ timeout: 5000 });
+  await click(saveBtn, page);
+  await page.locator(`div.page-encounter.${encounterType}`).waitFor({ timeout: 10000 });
+  await page.waitForTimeout(WAIT.elmRerender);
+}
+
+/**
+ * Click the Save button for a sub-task (stays on the activity page).
+ */
+export async function saveSubTask(page: Page): Promise<void> {
+  const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
+  await saveBtn.waitFor({ timeout: 5000 });
+  await click(saveBtn, page);
+  await page.waitForTimeout(WAIT.sectionTransition);
+}
+
+// ---------------------------------------------------------------------------
 // Form interaction helpers
 // ---------------------------------------------------------------------------
 
@@ -308,7 +353,7 @@ export async function clickSubTaskTab(page: Page, iconClass: string) {
   const isActive = await tab.evaluate(el => el.classList.contains('active')).catch(() => false);
   if (!isActive) {
     await click(tab, page);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.elmRerender);
   }
 }
 
@@ -366,9 +411,223 @@ export async function setDate(page: Page, date: Date, triggerSelector = '.date-i
  */
 export async function openActivity(page: Page, encounterType: string, activityIcon: string) {
   await page.locator(`div.page-encounter.${encounterType}`).waitFor({ timeout: 10000 });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(WAIT.elmRerender);
   const icon = page.locator(`.icon-task-${activityIcon}`);
   await icon.waitFor({ timeout: 10000 });
   await click(icon, page);
   await page.locator(`div.page-activity.${encounterType}`).waitFor({ timeout: 10000 });
+}
+
+// ---------------------------------------------------------------------------
+// Participant registration helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Navigate from dashboard to individual encounter type and register a new adult.
+ *
+ * Handles the common flow: Dashboard → Clinical → Individual Assessment →
+ * encounter type selection → "Register a new participant" → fill form → submit.
+ *
+ * @param encounterTypeText - Button text for the encounter type (e.g., 'Noncommunicable Diseases')
+ * @param participantClass  - CSS class for the participant page (e.g., 'ncd', 'hiv')
+ * @returns Patient name info for backend verification
+ */
+export async function registerAdult(
+  page: Page,
+  encounterTypeText: string,
+  participantClass: string,
+  options?: {
+    ageYears?: number;
+    firstName?: string;
+    isFemale?: boolean;
+    isChw?: boolean;
+  },
+): Promise<{ firstName: string; secondName: string; fullName: string }> {
+  const ageYears = options?.ageYears ?? 30;
+  const firstName = options?.firstName ?? `TestAdult${Date.now()}`;
+  const secondName = 'E2ETest';
+  const isFemale = options?.isFemale ?? false;
+  const isChw = options?.isChw ?? false;
+
+  // Navigate: Dashboard → Clinical
+  await click(page.locator('.icon-task-clinical'), page);
+  await page.locator('div.page-clinical').waitFor({ timeout: 10000 });
+
+  // Clinical → Individual Encounter
+  await click(page.locator('button.individual-assessment'), page);
+  await page.locator('div.page-encounter-types').waitFor({ timeout: 10000 });
+
+  // Individual Encounter → specific encounter type
+  await click(
+    page.locator('button.encounter-type', { hasText: encounterTypeText }),
+    page,
+  );
+  await page.locator('div.page-participants').waitFor({ timeout: 10000 });
+
+  // Click "Register a new participant"
+  await click(
+    page.locator('button.ui.primary.button.fluid', {
+      hasText: 'Register a new participant',
+    }),
+    page,
+  );
+  await page
+    .locator('.ui.grid .column', { hasText: 'First Name:' })
+    .waitFor({ timeout: 10000 });
+
+  // Fill the registration form.
+  await formInput(page, 'First Name:').fill(firstName);
+  await formInput(page, 'Second Name:').fill(secondName);
+
+  // Set date of birth.
+  const dob = new Date();
+  dob.setFullYear(dob.getFullYear() - ageYears);
+  await setDate(page, dob);
+
+  // Select gender.
+  const genderRadios = page
+    .locator('.ui.grid')
+    .filter({ hasText: 'Gender:' })
+    .locator('input[type="radio"]');
+  if (isFemale) {
+    await genderRadios.last().check();
+  } else {
+    await genderRadios.first().check();
+  }
+
+  // Adult required fields.
+  await selectByLabel(page, 'Level of Education:', 1);
+  await selectByLabel(page, 'Marital Status:', 1);
+
+  if (!isChw) {
+    // Nurse: fill address (cascading dropdowns) and health center.
+    await selectByLabel(page, 'Province:', 1);
+    await page.waitForTimeout(WAIT.elmRerender);
+    await selectByLabel(page, 'District:', 1);
+    await page.waitForTimeout(WAIT.elmRerender);
+    await selectByLabel(page, 'Sector:', 1);
+    await page.waitForTimeout(WAIT.elmRerender);
+    await selectByLabel(page, 'Cell:', 1);
+    await page.waitForTimeout(WAIT.elmRerender);
+    await selectByLabel(page, 'Village:', 1);
+
+    const hcSelect = page
+      .locator('.ui.grid')
+      .filter({ hasText: 'Health Center:' })
+      .locator('select');
+    await hcSelect.selectOption({ label: 'Nyange Health Center' });
+  }
+
+  // Submit the form.
+  await click(page.locator('button[type="submit"]'), page);
+
+  // Wait for the participant page.
+  await page
+    .locator(`div.page-participant.individual.${participantClass}`)
+    .waitFor({ timeout: 30000 });
+
+  return { firstName, secondName, fullName: `${secondName} ${firstName}` };
+}
+
+/**
+ * Navigate from dashboard to individual encounter type and register a new child.
+ *
+ * @param encounterTypeText - Button text for the encounter type
+ * @param participantClass  - CSS class for the participant page
+ * @returns Patient name info for backend verification
+ */
+export async function registerChild(
+  page: Page,
+  encounterTypeText: string,
+  participantClass: string,
+  options?: {
+    ageMonths?: number;
+    firstName?: string;
+    isFemale?: boolean;
+    isChw?: boolean;
+  },
+): Promise<{ firstName: string; secondName: string; fullName: string }> {
+  const ageMonths = options?.ageMonths ?? 24;
+  const firstName = options?.firstName ?? `TestChild${Date.now()}`;
+  const secondName = 'E2ETest';
+  const isFemale = options?.isFemale ?? false;
+  const isChw = options?.isChw ?? false;
+
+  // Navigate: Dashboard → Clinical
+  await click(page.locator('.icon-task-clinical'), page);
+  await page.locator('div.page-clinical').waitFor({ timeout: 10000 });
+
+  // Clinical → Individual Encounter
+  await click(page.locator('button.individual-assessment'), page);
+  await page.locator('div.page-encounter-types').waitFor({ timeout: 10000 });
+
+  // Individual Encounter → specific encounter type
+  await click(
+    page.locator('button.encounter-type', { hasText: encounterTypeText }),
+    page,
+  );
+  await page.locator('div.page-participants').waitFor({ timeout: 10000 });
+
+  // Click "Register a new participant"
+  await click(
+    page.locator('button.ui.primary.button.fluid', {
+      hasText: 'Register a new participant',
+    }),
+    page,
+  );
+  await page
+    .locator('.ui.grid .column', { hasText: 'First Name:' })
+    .waitFor({ timeout: 10000 });
+
+  // Fill the registration form.
+  await formInput(page, 'First Name:').fill(firstName);
+  await formInput(page, 'Second Name:').fill(secondName);
+
+  // Set date of birth.
+  const dob = new Date();
+  dob.setMonth(dob.getMonth() - ageMonths);
+  await setDate(page, dob);
+
+  // Select gender.
+  const genderRadios = page
+    .locator('.ui.grid')
+    .filter({ hasText: 'Gender:' })
+    .locator('input[type="radio"]');
+  if (isFemale) {
+    await genderRadios.last().check();
+  } else {
+    await genderRadios.first().check();
+  }
+
+  // Child required field.
+  await selectByLabel(page, 'Mode of delivery:', 1);
+
+  if (!isChw) {
+    // Nurse: fill address (cascading dropdowns) and health center.
+    await selectByLabel(page, 'Province:', 1);
+    await page.waitForTimeout(WAIT.elmRerender);
+    await selectByLabel(page, 'District:', 1);
+    await page.waitForTimeout(WAIT.elmRerender);
+    await selectByLabel(page, 'Sector:', 1);
+    await page.waitForTimeout(WAIT.elmRerender);
+    await selectByLabel(page, 'Cell:', 1);
+    await page.waitForTimeout(WAIT.elmRerender);
+    await selectByLabel(page, 'Village:', 1);
+
+    const hcSelect = page
+      .locator('.ui.grid')
+      .filter({ hasText: 'Health Center:' })
+      .locator('select');
+    await hcSelect.selectOption({ label: 'Nyange Health Center' });
+  }
+
+  // Submit the form.
+  await click(page.locator('button[type="submit"]'), page);
+
+  // Wait for the participant page.
+  await page
+    .locator(`div.page-participant.individual.${participantClass}`)
+    .waitFor({ timeout: 30000 });
+
+  return { firstName, secondName, fullName: `${secondName} ${firstName}` };
 }

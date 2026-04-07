@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
-import { syncAndWait } from './helpers/common';
+import { WAIT, syncAndWait } from './helpers/common';
 import {
   createAdultAndStartEncounter,
   createChildAndStartEncounter,
@@ -102,16 +102,16 @@ test.describe('Nurse: Acute Illness Initial + Subsequent Encounter — Malaria U
     ];
     const initialNodes = queryAcuteIllnessNodes(fullName, initialTypes);
 
-    expect(initialNodes['symptoms_general']).toBe(true);
-    expect(initialNodes['symptoms_respiratory']).toBe(true);
-    expect(initialNodes['symptoms_gi']).toBe(true);
-    expect(initialNodes['acute_illness_vitals']).toBe(true);
-    expect(initialNodes['acute_illness_core_exam']).toBe(true);
-    expect(initialNodes['acute_findings']).toBe(true);
-    expect(initialNodes['treatment_history']).toBe(true);
-    expect(initialNodes['malaria_testing']).toBe(true);
-    expect(initialNodes['medication_distribution']).toBe(true);
-    expect(initialNodes['acute_illness_follow_up']).toBe(true);
+    expect(initialNodes['symptoms_general'], 'symptoms_general should exist').toBe(true);
+    expect(initialNodes['symptoms_respiratory'], 'symptoms_respiratory should exist').toBe(true);
+    expect(initialNodes['symptoms_gi'], 'symptoms_gi should exist').toBe(true);
+    expect(initialNodes['acute_illness_vitals'], 'acute_illness_vitals should exist').toBe(true);
+    expect(initialNodes['acute_illness_core_exam'], 'acute_illness_core_exam should exist').toBe(true);
+    expect(initialNodes['acute_findings'], 'acute_findings should exist').toBe(true);
+    expect(initialNodes['treatment_history'], 'treatment_history should exist').toBe(true);
+    expect(initialNodes['malaria_testing'], 'malaria_testing should exist').toBe(true);
+    expect(initialNodes['medication_distribution'], 'medication_distribution should exist').toBe(true);
+    expect(initialNodes['acute_illness_follow_up'], 'acute_illness_follow_up should exist').toBe(true);
 
     // =====================================================================
     // PART 2: Nurse Subsequent Encounter
@@ -164,7 +164,7 @@ test.describe('Nurse: Acute Illness Initial + Subsequent Encounter — Malaria U
     await outcomeSelect.waitFor({ timeout: 5000 });
     await outcomeSelect.selectOption({ label: 'Illness Resolved' });
     await page.locator('button', { hasText: 'Save' }).click();
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(WAIT.heavyOperation);
 
     // Sync subsequent encounter to backend.
     await syncAndWait(page);
@@ -178,9 +178,9 @@ test.describe('Nurse: Acute Illness Initial + Subsequent Encounter — Malaria U
     ];
     const subsequentNodes = queryAcuteIllnessNodes(fullName, subsequentTypes);
 
-    expect(subsequentNodes['acute_illness_danger_signs']).toBe(true);
-    expect(subsequentNodes['treatment_ongoing']).toBe(true);
-    expect(subsequentNodes['health_education']).toBe(true);
+    expect(subsequentNodes['acute_illness_danger_signs'], 'acute_illness_danger_signs should exist').toBe(true);
+    expect(subsequentNodes['treatment_ongoing'], 'treatment_ongoing should exist').toBe(true);
+    expect(subsequentNodes['health_education'], 'health_education should exist').toBe(true);
   });
 });
 
@@ -275,20 +275,20 @@ test.describe('Nurse: Acute Illness Initial Encounter — GI Infection', () => {
     ];
     const nodes = queryAcuteIllnessNodes(fullName, expectedTypes);
 
-    expect(nodes['symptoms_general']).toBe(true);
-    expect(nodes['symptoms_respiratory']).toBe(true);
-    expect(nodes['symptoms_gi']).toBe(true);
-    expect(nodes['acute_illness_vitals']).toBe(true);
-    expect(nodes['acute_illness_core_exam']).toBe(true);
-    expect(nodes['acute_findings']).toBe(true);
+    expect(nodes['symptoms_general'], 'symptoms_general should exist').toBe(true);
+    expect(nodes['symptoms_respiratory'], 'symptoms_respiratory should exist').toBe(true);
+    expect(nodes['symptoms_gi'], 'symptoms_gi should exist').toBe(true);
+    expect(nodes['acute_illness_vitals'], 'acute_illness_vitals should exist').toBe(true);
+    expect(nodes['acute_illness_core_exam'], 'acute_illness_core_exam should exist').toBe(true);
+    expect(nodes['acute_findings'], 'acute_findings should exist').toBe(true);
     // Child-specific nodes.
-    expect(nodes['acute_illness_muac']).toBe(true);
-    expect(nodes['acute_illness_nutrition']).toBe(true);
+    expect(nodes['acute_illness_muac'], 'acute_illness_muac should exist').toBe(true);
+    expect(nodes['acute_illness_nutrition'], 'acute_illness_nutrition should exist').toBe(true);
     // Lab nodes.
-    expect(nodes['treatment_history']).toBe(true);
-    expect(nodes['malaria_testing']).toBe(true);
+    expect(nodes['treatment_history'], 'treatment_history should exist').toBe(true);
+    expect(nodes['malaria_testing'], 'malaria_testing should exist').toBe(true);
     // NextSteps.
-    expect(nodes['send_to_hc']).toBe(true);
-    expect(nodes['acute_illness_follow_up']).toBe(true);
+    expect(nodes['send_to_hc'], 'send_to_hc should exist').toBe(true);
+    expect(nodes['acute_illness_follow_up'], 'acute_illness_follow_up should exist').toBe(true);
   });
 });

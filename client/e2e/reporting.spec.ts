@@ -58,7 +58,7 @@ import {
 } from './helpers/reports';
 
 // Encounter creation helpers.
-import { syncAndWait } from './helpers/common';
+import { WAIT, syncAndWait } from './helpers/common';
 import {
   createChildAndStartEncounter as createNutritionChild,
   enterHeight,
@@ -340,7 +340,7 @@ test.describe('Admin Reports', () => {
       // The nutrition report only shows completed months, so test encounters
       // will be backdated to the previous month after syncing.
       await selectReportType(page, 'nutrition');
-      await page.waitForTimeout(2000);
+      await page.waitForTimeout(WAIT.pageNavigation);
       baselineNutrition = new Map();
       for (const { index } of NUTRITION_ONE_VISIT_TABLES) {
         baselineNutrition.set(index, await readNutritionTable(page, index));
@@ -523,7 +523,7 @@ test.describe('Admin Reports', () => {
         await nursePopup.waitFor({ timeout: 3000 });
         await click(nursePopup.locator('button.ui.primary.fluid.button'), page);
       } catch { /* no popup */ }
-      await page.waitForTimeout(2000);
+      await page.waitForTimeout(WAIT.pageNavigation);
       // Complete NextSteps activities triggered by abnormal nutrition signs.
       await completeContributingFactors(page);
       await completeNutritionFollowUp(page);
@@ -552,7 +552,7 @@ test.describe('Admin Reports', () => {
       const spvSearchInput = page.getByPlaceholder('Enter participant name here');
       await spvSearchInput.waitFor({ timeout: 5000 });
       await spvSearchInput.fill(nutrChild.firstName);
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(WAIT.sectionTransition);
 
       // Click the child in the search results.
       const spvResult = page.locator('.item.participant-view', {
@@ -634,7 +634,7 @@ test.describe('Admin Reports', () => {
       const warningContinue = page.locator('button', { hasText: 'Continue' });
       if (await warningContinue.isVisible({ timeout: 2000 }).catch(() => false)) {
         await warningContinue.click({ force: true });
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(WAIT.elmRerender);
       }
       // Complete each NextSteps tab on the recurrent encounter.
       // Tabs: Health Education (HIV counseling), Medication Distribution, Referral.
@@ -642,7 +642,7 @@ test.describe('Admin Reports', () => {
         const tab = page.locator('.link-section:not(.completed)').first();
         if (!(await tab.isVisible({ timeout: 2000 }).catch(() => false))) break;
         await click(tab, page);
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(WAIT.elmRerender);
         // Answer all visible Yes/No questions with "Yes".
         // Run multiple rounds: answering "Yes" can reveal new questions.
         for (let round = 0; round < 5; round++) {
@@ -657,7 +657,7 @@ test.describe('Admin Reports', () => {
             if (!isChecked) {
               await click(lbl, page);
               clicked = true;
-              await page.waitForTimeout(300);
+              await page.waitForTimeout(WAIT.formInteraction);
             }
           }
           if (!clicked) break;
@@ -671,14 +671,14 @@ test.describe('Admin Reports', () => {
           const label = page.locator('label', { hasText: med }).first();
           if (await label.isVisible({ timeout: 500 }).catch(() => false)) {
             await click(label, page);
-            await page.waitForTimeout(300);
+            await page.waitForTimeout(WAIT.formInteraction);
           }
         }
         // Save this tab.
         const saveBtn = page.locator('button.ui.fluid.primary.button', { hasText: 'Save' });
         if (await saveBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
           await click(saveBtn, page);
-          await page.waitForTimeout(500);
+          await page.waitForTimeout(WAIT.elmRerender);
         }
       }
       // After completing all tabs, the app may show the encounter page
@@ -697,7 +697,7 @@ test.describe('Admin Reports', () => {
       } else if (await backArrow.isVisible({ timeout: 2000 }).catch(() => false)) {
         await click(backArrow, page);
       }
-      await page.waitForTimeout(2000);
+      await page.waitForTimeout(WAIT.pageNavigation);
       console.log('Created PrenatalMom (HIV diagnosis + lab results):', prenatalMom.fullName);
 
       // --- AINurse (female, 30 years): Acute Illness with malaria diagnosis ---
@@ -897,7 +897,7 @@ test.describe('Admin Reports', () => {
       const pinInput = page.locator('input[name="pincode"]');
       await pinInput.fill('2345');
       await click(page.getByRole('button', { name: 'Sign In' }), page);
-      await page.waitForTimeout(3000);
+      await page.waitForTimeout(WAIT.heavyOperation);
 
       // Select village.
       const selectLocation = await page.locator('p.select-location').isVisible().catch(() => false);
@@ -1010,7 +1010,7 @@ test.describe('Admin Reports', () => {
         await chwPopup.waitFor({ timeout: 3000 });
         await click(chwPopup.locator('button.ui.primary.fluid.button'), page);
       } catch { /* no popup */ }
-      await page.waitForTimeout(2000);
+      await page.waitForTimeout(WAIT.pageNavigation);
       // Navigate back to participant page for HVChild to start home visit.
       // From NextSteps or encounter page, go to dashboard then re-navigate.
       await goToDashboard(page);
@@ -1027,7 +1027,7 @@ test.describe('Admin Reports', () => {
       const hvSearch = page.getByPlaceholder('Enter participant name here');
       await hvSearch.waitFor({ timeout: 5000 });
       await hvSearch.fill(hvChild.firstName);
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(WAIT.sectionTransition);
       const hvResult = page.locator('.item.participant-view', {
         hasText: hvChild.firstName,
       }).first();
@@ -1273,7 +1273,7 @@ test.describe('Admin Reports', () => {
     });
 
     await step('Verify CSV download button is visible', async () => {
-      await expect(page.locator('button.download-csv')).toBeVisible();
+      await expect(page.locator('button.download-csv'), 'Demographics CSV download button should be visible').toBeVisible();
     });
 
     // ── Acute Illness report verification ──
@@ -1311,7 +1311,7 @@ test.describe('Admin Reports', () => {
       );
 
       // CSV download button.
-      await expect(page.locator('button.download-csv')).toBeVisible();
+      await expect(page.locator('button.download-csv'), 'Acute Illness CSV download button should be visible').toBeVisible();
     });
 
     // ── Prenatal (ANC) report verification ──
@@ -1354,7 +1354,7 @@ test.describe('Admin Reports', () => {
       expect(newActiveTotal.chw, 'Active Pregnancies Total CHW +1').toBe(baseActiveTotal2.chw + 1);
 
       // CSV download button.
-      await expect(page.locator('button.download-csv')).toBeVisible();
+      await expect(page.locator('button.download-csv'), 'Prenatal ANC CSV download button should be visible').toBeVisible();
     });
 
     // ── Prenatal Diagnoses report verification ──
@@ -1387,7 +1387,7 @@ test.describe('Admin Reports', () => {
       expect(newPrenatalTotal, 'Prenatal Total +8').toBe(baselinePrenatalTotal + 8);
 
       // CSV download button.
-      await expect(page.locator('button.download-csv')).toBeVisible();
+      await expect(page.locator('button.download-csv'), 'Prenatal Diagnoses CSV download button should be visible').toBeVisible();
     });
 
     // ── Nutrition report verification ──
@@ -1395,9 +1395,9 @@ test.describe('Admin Reports', () => {
     await step('Verify Nutrition report deltas', async () => {
       await selectReportType(page, 'nutrition');
       // No date range — nutrition report always shows last 12 months.
-      await page.waitForTimeout(2000);
+      await page.waitForTimeout(WAIT.pageNavigation);
 
-      await expect(page.locator('div.report.nutrition')).toBeVisible();
+      await expect(page.locator('div.report.nutrition'), 'Nutrition report container should be visible').toBeVisible();
 
       console.log('\n=== NUTRITION ===');
 
@@ -1426,7 +1426,7 @@ test.describe('Admin Reports', () => {
       expect(newUnderweight, 'Prevalence: Underweight Severe % should be > 0').toBeGreaterThan(0);
 
       // CSV download button.
-      await expect(page.locator('button.download-csv')).toBeVisible();
+      await expect(page.locator('button.download-csv'), 'Nutrition CSV download button should be visible').toBeVisible();
     });
 
     // ── Phase 4: Demographics scope (Province) ──
@@ -1440,7 +1440,7 @@ test.describe('Admin Reports', () => {
         .first()
         .locator('select.select-input');
       await scopeSelect.selectOption('demographics');
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
 
       // Select province (first option after blank).
       const provinceSelect = page
@@ -1459,7 +1459,7 @@ test.describe('Admin Reports', () => {
           break;
         }
       }
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.elmRerender);
 
       // Click "Load Data" button.
       const loadBtn = page.locator('.page-content.reports-menu div.actions a button');
@@ -1470,14 +1470,14 @@ test.describe('Admin Reports', () => {
 
       // Verify scope label contains province name.
       const scopeLabel = await page.locator('div.scope').textContent();
-      expect(scopeLabel).toBeTruthy();
+      expect(scopeLabel, 'Province scope label should be present').toBeTruthy();
 
       // Select Demographics report type and date range.
       await selectReportType(page, 'demographics');
       await setDateRange(page, REPORT_START_DATE, reportLimitDate);
 
       // Verify report renders with data.
-      await expect(page.locator('div.report.demographics')).toBeVisible();
+      await expect(page.locator('div.report.demographics'), 'Demographics report container should be visible').toBeVisible();
       const provinceRegistered = await readRegisteredPatientsTable(page);
       expect(provinceRegistered.total, 'Province registered total should be > 0').toBeGreaterThan(0);
     });
@@ -1507,7 +1507,7 @@ test.describe('Admin Reports', () => {
         );
       }
 
-      expect(completion.heading).toContain('Acute Illness');
+      expect(completion.heading, 'AI completion heading should contain Acute Illness').toContain('Acute Illness');
       expect(completion.rows.length, 'Should have 23 activity rows').toBe(23);
     });
 
@@ -1638,7 +1638,7 @@ test.describe('Admin Reports', () => {
         }
       }
 
-      expect(prenatalCompletion.heading).toContain('Antenatal');
+      expect(prenatalCompletion.heading, 'Prenatal completion heading should contain Antenatal').toContain('Antenatal');
       expect(prenatalCompletion.rows.length, 'Should have 59 activity rows').toBe(59);
     });
 
@@ -1797,7 +1797,7 @@ test.describe('Admin Reports', () => {
         );
       }
 
-      expect(csCompletion.heading).toContain('Child Scorecard');
+      expect(csCompletion.heading, 'Child Scoreboard completion heading should contain Child Scorecard').toContain('Child Scorecard');
       expect(csCompletion.rows.length, 'Should have 8 activity rows (Rwanda)').toBe(8);
     });
 
@@ -1853,7 +1853,7 @@ test.describe('Admin Reports', () => {
         );
       }
 
-      expect(hivCompletion.heading).toContain('HIV');
+      expect(hivCompletion.heading, 'HIV completion heading should contain HIV').toContain('HIV');
       expect(hivCompletion.rows.length, 'Should have 7 activity rows').toBe(7);
     });
 
@@ -1908,7 +1908,7 @@ test.describe('Admin Reports', () => {
         );
       }
 
-      expect(hvCompletion.heading).toContain('Home Visit');
+      expect(hvCompletion.heading, 'Home Visit completion heading should contain Home Visit').toContain('Home Visit');
       expect(hvCompletion.rows.length, 'Should have 4 activity rows').toBe(4);
     });
 
@@ -1958,7 +1958,7 @@ test.describe('Admin Reports', () => {
         }
       }
 
-      expect(ncdCompletion.heading).toContain('NCD');
+      expect(ncdCompletion.heading, 'NCD completion heading should contain NCD').toContain('NCD');
       expect(ncdCompletion.rows.length, 'Should have 26 activity rows').toBe(26);
     });
 
@@ -2039,7 +2039,7 @@ test.describe('Admin Reports', () => {
         );
       }
 
-      expect(nbCompletion.heading).toContain('Newborn Exam');
+      expect(nbCompletion.heading, 'Newborn Exam completion heading should contain Newborn Exam').toContain('Newborn Exam');
       expect(nbCompletion.rows.length, 'Should have 11 activity rows').toBe(11);
     });
 
@@ -2199,7 +2199,7 @@ test.describe('Admin Reports', () => {
         );
       }
 
-      expect(tbCompletion.heading).toContain('Tuberculosis');
+      expect(tbCompletion.heading, 'Tuberculosis completion heading should contain Tuberculosis').toContain('Tuberculosis');
       expect(tbCompletion.rows.length, 'Should have 8 activity rows').toBe(8);
     });
 
@@ -2520,7 +2520,7 @@ test.describe('Admin Reports', () => {
 
       // Verify entity name.
       const entityPane = await readScoreboardPane(page, 'Aggregated Child Scoreboard');
-      expect(entityPane.heading).toContain('Aggregated Child Scoreboard');
+      expect(entityPane.heading, 'NCDA Scoreboard entity heading should contain Aggregated Child Scoreboard').toContain('Aggregated Child Scoreboard');
     });
   });
 });
