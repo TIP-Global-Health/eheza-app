@@ -607,6 +607,8 @@ decodeBackendGeneratedNutritionReportTableDate =
         |> required "wasting_severe" (list string)
         |> required "underweight_moderate" (list string)
         |> required "underweight_severe" (list string)
+        |> required "acute_malnutrition_mam" (list string)
+        |> required "acute_malnutrition_sam" (list string)
 
 
 decodeNutritionReportTableType : Decoder NutritionReportTableType

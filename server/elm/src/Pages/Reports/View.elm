@@ -1193,6 +1193,8 @@ backendGeneratedNutritionReportTableDateToMetricsResultsTableData language backe
         , translate language Translate.WastingSevere :: backendTableData.wastingSevere
         , translate language Translate.UnderweightModerate :: backendTableData.underweightModerate
         , translate language Translate.UnderweightSevere :: backendTableData.underweightSevere
+        , translate language Translate.AcuteMalnutritionMam :: backendTableData.acuteMalnutritionMam
+        , translate language Translate.AcuteMalnutritionSam :: backendTableData.acuteMalnutritionSam
         ]
     }
 

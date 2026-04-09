@@ -243,6 +243,8 @@ type alias BackendGeneratedNutritionReportTableDate =
     , wastingSevere : List String
     , underweightModerate : List String
     , underweightSevere : List String
+    , acuteMalnutritionMam : List String
+    , acuteMalnutritionSam : List String
     }
 
 
