@@ -636,6 +636,15 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
         $muac_edema_by_encounter[$encounter_id]['e'] = in_array('edema', $signs);
         break;
 
+      case HEDLEY_ACTIVITY_FAMILY_NUTRITION_MUAC_CHILD_CONTENT_TYPE:
+        // This bundle is fetched because it is present in the triggering
+        // measurement types list (so that saving one enqueues an AQ
+        // recalc), but its data is collected out-of-band further down in
+        // this function via a dedicated query. Skip it here so the default
+        // branch does not try to read field_session, which does not exist
+        // on this content type.
+        break;
+
       default:
         $encounter_id = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
         $sessions_ids[] = $encounter_id;
@@ -910,23 +919,30 @@ function hedley_reports_pregnancy_outcome_mapping() {
  *
  * This function takes an associative array of nutrition metrics and
  * converts it into a string where the values are separated by commas.
- * The keys of the array should be 's' for stunting, 'w' for wasting,
- * 'u' for underweight, 'm' for MUAC, and 'e' for the edema flag. If a
- * key is missing or its value is empty, an empty string is used in its
- * place.
+ *
+ * Key naming note: the 'w' and 'u' keys are historically named after
+ * the nutrition *measurement* fields (weight-for-age and weight-for-
+ * length), not the clinical indicator they feed. Callers populate them
+ * as ['w' => $zscore_age, 'u' => $zscore_length]; weight-for-age is the
+ * underweight indicator and weight-for-length is the wasting indicator.
+ * The emitted wire positions are therefore stunting, underweight,
+ * wasting, MUAC, edema -- which is what both this module's own PHP
+ * decoder (hedley_reports_generate_nutrition_report_data) and the Elm
+ * decoder (Backend.Reports.Decoder.parseNutritionEncounterPayload)
+ * expect. Do not reorder the output without updating both decoders.
  *
  * @param array|null $values
  *   An associative array of nutrition metrics with the following possible keys:
- *   - 's': The stunting metric.
- *   - 'w': The wasting metric.
- *   - 'u': The underweight metric.
+ *   - 's': Stunting z-score (height/length-for-age).
+ *   - 'w': Weight-for-age z-score -- the underweight indicator.
+ *   - 'u': Weight-for-length z-score -- the wasting indicator.
  *   - 'm': The MUAC measurement in cm.
  *   - 'e': The edema flag (TRUE/FALSE emitted as '1'/'0').
  *
  * @return string
- *   A string with the stunting, wasting, underweight, MUAC, and edema
- *   metrics separated by commas. If the input array is empty, returns
- *   ',,,,'.
+ *   A string with the stunting, underweight, wasting, MUAC, and edema
+ *   metrics separated by commas (in that wire order). If the input
+ *   array is empty, returns ',,,,'.
  */
 function hedley_reports_nutrition_metrics_to_string($values) {
   if (empty($values)) {
@@ -1746,7 +1762,13 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
 
     $nutrition_data[] = $data_for_patient;
 
-    if (count($data_for_patient['encounters']) > 1) {
+    // Family-nutrition MUAC measurements are a legitimate nutrition
+    // "visit" for the impacted filter -- the Elm small-scope path
+    // (Pages/Reports/Utils.elm: countTotalNutritionEncounters) counts
+    // them, so the large-scope path has to as well. Otherwise a child
+    // whose second visit is a family-nutrition MUAC would be excluded
+    // from the two-visits-or-more tables here but included there.
+    if (count($data_for_patient['encounters']) + count($data_for_patient['family_encounters']) > 1) {
       $impacted[] = $data_for_patient['id'];
     }
   }
