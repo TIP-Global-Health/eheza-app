@@ -6168,7 +6168,7 @@ var $author$project$Pages$Reports$Utils$countTotalNutritionEncounters = function
 		$elm$core$Basics$composeR,
 		$elm$core$Maybe$map($elm$core$List$length),
 		$elm$core$Maybe$withDefault(0));
-	return (((((($author$project$Pages$Reports$Utils$countIndividualDataEncounters(data.wellChildData) + $author$project$Pages$Reports$Utils$countIndividualDataEncounters(data.individualNutritionData)) + $author$project$Pages$Reports$Utils$countIndividualDataEncounters(data.familyNutritionData)) + countGroupDataEncounters(data.groupNutritionPmtctData)) + countGroupDataEncounters(data.groupNutritionFbfData)) + countGroupDataEncounters(data.groupNutritionSorwatheData)) + countGroupDataEncounters(data.groupNutritionChwData)) + countGroupDataEncounters(data.groupNutritionAchiData);
+	return ((((((($author$project$Pages$Reports$Utils$countIndividualDataEncounters(data.wellChildData) + $author$project$Pages$Reports$Utils$countIndividualDataEncounters(data.individualNutritionData)) + $author$project$Pages$Reports$Utils$countIndividualDataEncounters(data.familyNutritionData)) + $author$project$Pages$Reports$Utils$countIndividualDataEncounters(data.familyNutritionMuacData)) + countGroupDataEncounters(data.groupNutritionPmtctData)) + countGroupDataEncounters(data.groupNutritionFbfData)) + countGroupDataEncounters(data.groupNutritionSorwatheData)) + countGroupDataEncounters(data.groupNutritionChwData)) + countGroupDataEncounters(data.groupNutritionAchiData);
 };
 var $justinmimbs$date$Date$monthToNumber = function (m) {
 	switch (m.$) {
@@ -6597,7 +6597,7 @@ var $author$project$Pages$Reports$Update$calculateNutritionReportDataTask = F2(
 										$elm$core$List$filter(filterByYear),
 										$elm$core$List$map(
 											$elm$core$Tuple$pair(record.id)))),
-								record.familyNutritionData));
+								record.familyNutritionMuacData));
 					},
 					records);
 				var allEncounters = A2(
@@ -8938,19 +8938,21 @@ var $author$project$Backend$Reports$Model$PatientData = function (id) {
 				return function (acuteIllnessData) {
 					return function (prenatalData) {
 						return function (familyNutritionData) {
-							return function (homeVisitData) {
-								return function (wellChildData) {
-									return function (childScorecardData) {
-										return function (ncdData) {
-											return function (hivData) {
-												return function (tuberculosisData) {
-													return function (individualNutritionData) {
-														return function (groupNutritionPmtctData) {
-															return function (groupNutritionFbfData) {
-																return function (groupNutritionSorwatheData) {
-																	return function (groupNutritionChwData) {
-																		return function (groupNutritionAchiData) {
-																			return {acuteIllnessData: acuteIllnessData, birthDate: birthDate, childScorecardData: childScorecardData, created: created, familyNutritionData: familyNutritionData, gender: gender, groupNutritionAchiData: groupNutritionAchiData, groupNutritionChwData: groupNutritionChwData, groupNutritionFbfData: groupNutritionFbfData, groupNutritionPmtctData: groupNutritionPmtctData, groupNutritionSorwatheData: groupNutritionSorwatheData, hivData: hivData, homeVisitData: homeVisitData, id: id, individualNutritionData: individualNutritionData, ncdData: ncdData, prenatalData: prenatalData, tuberculosisData: tuberculosisData, wellChildData: wellChildData};
+							return function (familyNutritionMuacData) {
+								return function (homeVisitData) {
+									return function (wellChildData) {
+										return function (childScorecardData) {
+											return function (ncdData) {
+												return function (hivData) {
+													return function (tuberculosisData) {
+														return function (individualNutritionData) {
+															return function (groupNutritionPmtctData) {
+																return function (groupNutritionFbfData) {
+																	return function (groupNutritionSorwatheData) {
+																		return function (groupNutritionChwData) {
+																			return function (groupNutritionAchiData) {
+																				return {acuteIllnessData: acuteIllnessData, birthDate: birthDate, childScorecardData: childScorecardData, created: created, familyNutritionData: familyNutritionData, familyNutritionMuacData: familyNutritionMuacData, gender: gender, groupNutritionAchiData: groupNutritionAchiData, groupNutritionChwData: groupNutritionChwData, groupNutritionFbfData: groupNutritionFbfData, groupNutritionPmtctData: groupNutritionPmtctData, groupNutritionSorwatheData: groupNutritionSorwatheData, hivData: hivData, homeVisitData: homeVisitData, id: id, individualNutritionData: individualNutritionData, ncdData: ncdData, prenatalData: prenatalData, tuberculosisData: tuberculosisData, wellChildData: wellChildData};
+																			};
 																		};
 																	};
 																};
@@ -9717,7 +9719,7 @@ var $author$project$Backend$Reports$Decoder$decodePatientData = A4(
 												A4(
 													$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 													_List_fromArray(
-														['individual', 'family-nutrition']),
+														['individual', 'family-nutrition-muac']),
 													$elm$json$Json$Decode$nullable(
 														$elm$json$Json$Decode$list(
 															$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeFamilyNutritionEncounterData))),
@@ -9725,35 +9727,43 @@ var $author$project$Backend$Reports$Decoder$decodePatientData = A4(
 													A4(
 														$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 														_List_fromArray(
-															['individual', 'antenatal']),
+															['individual', 'family-nutrition']),
 														$elm$json$Json$Decode$nullable(
-															$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodePrenatalParticipantData)),
+															$elm$json$Json$Decode$list(
+																$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeFamilyNutritionEncounterData))),
 														$elm$core$Maybe$Nothing,
 														A4(
 															$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 															_List_fromArray(
-																['individual', 'acute-illness']),
+																['individual', 'antenatal']),
 															$elm$json$Json$Decode$nullable(
-																$elm$json$Json$Decode$list(
-																	$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeAcuteIllnessEncounterData))),
+																$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodePrenatalParticipantData)),
 															$elm$core$Maybe$Nothing,
-															A3(
-																$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-																'gender',
-																A2($author$project$Backend$Decoder$decodeWithFallback, $author$project$Backend$Reports$Model$Female, $author$project$Backend$Reports$Decoder$decodeGender),
+															A4(
+																$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
+																_List_fromArray(
+																	['individual', 'acute-illness']),
+																$elm$json$Json$Decode$nullable(
+																	$elm$json$Json$Decode$list(
+																		$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeAcuteIllnessEncounterData))),
+																$elm$core$Maybe$Nothing,
 																A3(
 																	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-																	'birth_date',
-																	$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+																	'gender',
+																	A2($author$project$Backend$Decoder$decodeWithFallback, $author$project$Backend$Reports$Model$Female, $author$project$Backend$Reports$Decoder$decodeGender),
 																	A3(
 																		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-																		'created',
+																		'birth_date',
 																		$author$project$Gizra$NominalDate$decodeYYYYMMDD,
 																		A3(
 																			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-																			'id',
-																			$author$project$Gizra$Json$decodeInt,
-																			$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$PatientData))))))))))))))))))));
+																			'created',
+																			$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+																			A3(
+																				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+																				'id',
+																				$author$project$Gizra$Json$decodeInt,
+																				$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$PatientData)))))))))))))))))))));
 var $author$project$Backend$Reports$Model$EntityCell = {$: 'EntityCell'};
 var $author$project$Backend$Reports$Model$EntitySector = {$: 'EntitySector'};
 var $author$project$Backend$Reports$Model$EntityVillage = {$: 'EntityVillage'};
