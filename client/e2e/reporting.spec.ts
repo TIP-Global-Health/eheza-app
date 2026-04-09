@@ -210,7 +210,11 @@ const pwaBaseUrl = `http://localhost:${getClientPort()}`;
 const NYANGE_HC_ID = 4;
 
 // Start date for report filtering — early enough to include all data.
-const REPORT_START_DATE = new Date(2018, 0, 1);
+// Constructed in UTC because the calendar helper reads via getUTC*; using
+// `new Date(2018, 0, 1)` (local time) in a positive-offset timezone yields
+// 2017-12-31 in UTC, which is outside the Elm date picker's launchDate
+// range and causes setDateRange to fail.
+const REPORT_START_DATE = new Date(Date.UTC(2018, 0, 1));
 
 test.describe('Admin Reports', () => {
   test.describe.configure({ timeout: 1080000 }); // 18 minutes
