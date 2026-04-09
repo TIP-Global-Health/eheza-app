@@ -1692,6 +1692,16 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
       }
     }
 
+    $family_encounters = [];
+    if (isset($patient_data->individual)) {
+      if (isset($patient_data->individual->{"family-nutrition"})) {
+        foreach ($patient_data->individual->{"family-nutrition"} as $items) {
+          $family_encounters = array_merge($family_encounters, $items);
+        }
+      }
+    }
+    $data_for_patient['family_encounters'] = $family_encounters;
+
     $nutrition_data[] = $data_for_patient;
 
     if (count($data_for_patient['encounters']) > 1) {
@@ -1727,14 +1737,47 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
       }
 
       $start_date_month = $start_date->format('m');
-      $encounter_zscores = explode(',', $parts[1]);
+      $encounter_fields = explode(',', $parts[1]);
       $nutrition_data = [
-        'stunting' => ($encounter_zscores[0] === '') ? NULL : (float) $encounter_zscores[0],
-        'underweight' => ($encounter_zscores[1] === '') ? NULL : (float) $encounter_zscores[1],
-        'wasting' => ($encounter_zscores[2] === '') ? NULL : (float) $encounter_zscores[2],
+        'stunting' => (!isset($encounter_fields[0]) || $encounter_fields[0] === '') ? NULL : (float) $encounter_fields[0],
+        'underweight' => (!isset($encounter_fields[1]) || $encounter_fields[1] === '') ? NULL : (float) $encounter_fields[1],
+        'wasting' => (!isset($encounter_fields[2]) || $encounter_fields[2] === '') ? NULL : (float) $encounter_fields[2],
+        'muac' => (!isset($encounter_fields[3]) || $encounter_fields[3] === '') ? NULL : (float) $encounter_fields[3],
+        'edema' => (isset($encounter_fields[4]) && $encounter_fields[4] === '1'),
       ];
 
       $encounter_metrics = hedley_reports_nutrition_encounter_data_to_nutrition_metrics($nutrition_data_item['id'], $nutrition_data);
+      $key = "$start_date_year-$start_date_month";
+      if (isset($encounters_by_month[$key])) {
+        $encounters_by_month[$key] = hedley_reports_sum_nutrition_metrics([$encounters_by_month[$key], $encounter_metrics]);
+      }
+      else {
+        $encounters_by_month[$key] = $encounter_metrics;
+      }
+    }
+
+    foreach ($nutrition_data_item['family_encounters'] as $family_encounter_data) {
+      $parts = explode(' ', $family_encounter_data);
+      $start_date_as_string = $parts[0];
+      $start_date = DateTime::createFromFormat('Y-m-d', $start_date_as_string);
+      if ($start_date === FALSE) {
+        continue;
+      }
+      $start_date_year = $start_date->format('Y');
+      if ($start_date_year < $starting_year) {
+        continue;
+      }
+
+      $start_date_month = $start_date->format('m');
+      $muac_value = isset($parts[1]) && $parts[1] !== '' ? (float) $parts[1] : NULL;
+      $family_data = [
+        'stunting' => NULL,
+        'underweight' => NULL,
+        'wasting' => NULL,
+        'muac' => $muac_value,
+        'edema' => FALSE,
+      ];
+      $encounter_metrics = hedley_reports_nutrition_encounter_data_to_nutrition_metrics($nutrition_data_item['id'], $family_data);
       $key = "$start_date_year-$start_date_month";
       if (isset($encounters_by_month[$key])) {
         $encounters_by_month[$key] = hedley_reports_sum_nutrition_metrics([$encounters_by_month[$key], $encounter_metrics]);
@@ -1757,6 +1800,9 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
       'underweight_normal' => hedley_reports_filter_impacted_ids($encounter['underweight_normal'], $impacted),
       'underweight_moderate' => hedley_reports_filter_impacted_ids($encounter['underweight_moderate'], $impacted),
       'underweight_severe' => hedley_reports_filter_impacted_ids($encounter['underweight_severe'], $impacted),
+      'acute_malnutrition_normal' => hedley_reports_filter_impacted_ids($encounter['acute_malnutrition_normal'], $impacted),
+      'acute_malnutrition_mam' => hedley_reports_filter_impacted_ids($encounter['acute_malnutrition_mam'], $impacted),
+      'acute_malnutrition_sam' => hedley_reports_filter_impacted_ids($encounter['acute_malnutrition_sam'], $impacted),
     ];
   }
 
@@ -1802,6 +1848,8 @@ function hedley_reports_nutrition_metrics_to_table_data($type, array $metrics) {
     'wasting_severe' => [],
     'underweight_moderate' => [],
     'underweight_severe' => [],
+    'acute_malnutrition_mam' => [],
+    'acute_malnutrition_sam' => [],
   ];
 
   foreach ($metrics as $key => $values) {
@@ -1812,6 +1860,8 @@ function hedley_reports_nutrition_metrics_to_table_data($type, array $metrics) {
     $result['wasting_severe'][] = $values['wasting_severe'];
     $result['underweight_moderate'][] = $values['underweight_moderate'];
     $result['underweight_severe'][] = $values['underweight_severe'];
+    $result['acute_malnutrition_mam'][] = $values['acute_malnutrition_mam'];
+    $result['acute_malnutrition_sam'][] = $values['acute_malnutrition_sam'];
   }
 
   return $result;
@@ -1967,6 +2017,7 @@ function hedley_reports_generate_prevalence_nutrition_metrics_results(array $met
   $stunting_total = array_unique(array_merge($metrics['stunting_moderate'], $metrics['stunting_severe'], $metrics['stunting_normal']));
   $wasting_total = array_unique(array_merge($metrics['wasting_moderate'], $metrics['wasting_severe'], $metrics['wasting_normal']));
   $underweight_total = array_unique(array_merge($metrics['underweight_moderate'], $metrics['underweight_severe'], $metrics['underweight_normal']));
+  $acute_malnutrition_total = array_unique(array_merge($metrics['acute_malnutrition_mam'], $metrics['acute_malnutrition_sam'], $metrics['acute_malnutrition_normal']));
 
   return [
     'stunting_moderate' => hedley_reports_calculate_percentage($metrics['stunting_moderate'], $stunting_total),
@@ -1975,6 +2026,8 @@ function hedley_reports_generate_prevalence_nutrition_metrics_results(array $met
     'wasting_severe' => hedley_reports_calculate_percentage($metrics['wasting_severe'], $wasting_total),
     'underweight_moderate' => hedley_reports_calculate_percentage($metrics['underweight_moderate'], $underweight_total),
     'underweight_severe' => hedley_reports_calculate_percentage($metrics['underweight_severe'], $underweight_total),
+    'acute_malnutrition_mam' => hedley_reports_calculate_percentage($metrics['acute_malnutrition_mam'], $acute_malnutrition_total),
+    'acute_malnutrition_sam' => hedley_reports_calculate_percentage($metrics['acute_malnutrition_sam'], $acute_malnutrition_total),
   ];
 }
 
@@ -2020,6 +2073,16 @@ function hedley_reports_generate_incidence_nutrition_metrics_results(array $curr
   $underweight_severe_tested_in_previous_period = array_intersect(array_unique($current_period_metric['underweight_severe']), $previous_period_underweight_total);
   $underweight_severe_not_identified_in_previous_period = array_diff(array_unique($current_period_metric['underweight_severe']), array_unique($previous_period_metric['underweight_severe']));
 
+  // ACUTE MALNUTRITION.
+  $previous_period_acute_malnutrition_mam_sam = array_unique(array_merge($previous_period_metric['acute_malnutrition_mam'], $previous_period_metric['acute_malnutrition_sam']));
+  $previous_period_acute_malnutrition_total = array_unique(array_merge($previous_period_acute_malnutrition_mam_sam, $previous_period_metric['acute_malnutrition_normal']));
+
+  $acute_malnutrition_mam_tested_in_previous_period = array_intersect(array_unique($current_period_metric['acute_malnutrition_mam']), $previous_period_acute_malnutrition_total);
+  $acute_malnutrition_mam_not_identified_in_previous_period = array_diff(array_unique($current_period_metric['acute_malnutrition_mam']), $previous_period_acute_malnutrition_mam_sam);
+
+  $acute_malnutrition_sam_tested_in_previous_period = array_intersect(array_unique($current_period_metric['acute_malnutrition_sam']), $previous_period_acute_malnutrition_total);
+  $acute_malnutrition_sam_not_identified_in_previous_period = array_diff(array_unique($current_period_metric['acute_malnutrition_sam']), array_unique($previous_period_metric['acute_malnutrition_sam']));
+
   return [
     'stunting_moderate' => hedley_reports_calculate_percentage(array_intersect($stunting_moderate_tested_in_previous_period, $stunting_moderate_not_identified_in_previous_period), $previous_period_stunting_total),
     'stunting_severe' => hedley_reports_calculate_percentage(array_intersect($stunting_severe_tested_in_previous_period, $stunting_severe_not_identified_in_previous_period), $previous_period_stunting_total),
@@ -2027,6 +2090,8 @@ function hedley_reports_generate_incidence_nutrition_metrics_results(array $curr
     'wasting_severe' => hedley_reports_calculate_percentage(array_intersect($wasting_severe_tested_in_previous_period, $wasting_severe_not_identified_in_previous_period), $previous_period_wasting_total),
     'underweight_moderate' => hedley_reports_calculate_percentage(array_intersect($underweight_moderate_tested_in_previous_period, $underweight_moderate_not_identified_in_previous_period), $previous_period_underweight_total),
     'underweight_severe' => hedley_reports_calculate_percentage(array_intersect($underweight_severe_tested_in_previous_period, $underweight_severe_not_identified_in_previous_period), $previous_period_underweight_total),
+    'acute_malnutrition_mam' => hedley_reports_calculate_percentage(array_intersect($acute_malnutrition_mam_tested_in_previous_period, $acute_malnutrition_mam_not_identified_in_previous_period), $previous_period_acute_malnutrition_total),
+    'acute_malnutrition_sam' => hedley_reports_calculate_percentage(array_intersect($acute_malnutrition_sam_tested_in_previous_period, $acute_malnutrition_sam_not_identified_in_previous_period), $previous_period_acute_malnutrition_total),
   ];
 }
 
@@ -2219,6 +2284,10 @@ function hedley_reports_nutrition_encounter_data_to_nutrition_metrics($person_id
   [$wasting_normal, $wasting_moderate, $wasting_severe] = hedley_reports_categorize_z_score($data['wasting'], $person_id);
   [$underweight_normal, $underweight_moderate, $underweight_severe] = hedley_reports_categorize_z_score($data['underweight'], $person_id);
 
+  $muac_cm = isset($data['muac']) ? $data['muac'] : NULL;
+  $has_edema = !empty($data['edema']);
+  [$acute_malnutrition_normal, $acute_malnutrition_mam, $acute_malnutrition_sam] = hedley_reports_categorize_acute_malnutrition($muac_cm, $has_edema, $person_id);
+
   return [
     'stunting_normal' => $stunting_normal,
     'stunting_moderate' => $stunting_moderate,
@@ -2229,6 +2298,9 @@ function hedley_reports_nutrition_encounter_data_to_nutrition_metrics($person_id
     'underweight_normal' => $underweight_normal,
     'underweight_moderate' => $underweight_moderate,
     'underweight_severe' => $underweight_severe,
+    'acute_malnutrition_normal' => $acute_malnutrition_normal,
+    'acute_malnutrition_mam' => $acute_malnutrition_mam,
+    'acute_malnutrition_sam' => $acute_malnutrition_sam,
   ];
 }
 
@@ -2256,6 +2328,9 @@ function hedley_reports_sum_nutrition_metrics(array $metrics_list) {
     $result['underweight_normal'] = array_merge($result['underweight_normal'], $metrics['underweight_normal']);
     $result['underweight_moderate'] = array_merge($result['underweight_moderate'], $metrics['underweight_moderate']);
     $result['underweight_severe'] = array_merge($result['underweight_severe'], $metrics['underweight_severe']);
+    $result['acute_malnutrition_normal'] = array_merge($result['acute_malnutrition_normal'], $metrics['acute_malnutrition_normal']);
+    $result['acute_malnutrition_mam'] = array_merge($result['acute_malnutrition_mam'], $metrics['acute_malnutrition_mam']);
+    $result['acute_malnutrition_sam'] = array_merge($result['acute_malnutrition_sam'], $metrics['acute_malnutrition_sam']);
   }
 
   return $result;
@@ -2293,6 +2368,39 @@ function hedley_reports_categorize_z_score($score, $person_id) {
 }
 
 /**
+ * Categorizes a MUAC measurement (with optional edema) into MAM/SAM/normal.
+ *
+ * @param float|null $muac_cm
+ *   The MUAC value in centimeters, or NULL if no MUAC was recorded.
+ * @param bool $has_edema
+ *   TRUE if edema is present.
+ * @param int $person_id
+ *   The ID of the person whose measurement is being categorized.
+ *
+ * @return array
+ *   A three-element array of [normal, mam, sam] sub-arrays. When MUAC is
+ *   missing, all three are empty (the encounter does not enter the AM
+ *   denominator at all).
+ */
+function hedley_reports_categorize_acute_malnutrition($muac_cm, $has_edema, $person_id) {
+  if ($muac_cm === NULL || $muac_cm === '') {
+    return [[], [], []];
+  }
+
+  $muac_mm = (float) $muac_cm * 10;
+
+  if ($muac_mm < 115 || $has_edema) {
+    return [[], [], [$person_id]];
+  }
+
+  if ($muac_mm < 125) {
+    return [[], [$person_id], []];
+  }
+
+  return [[$person_id], [], []];
+}
+
+/**
  * Creates an empty set of nutrition metrics.
  *
  * This function generates an empty array structure for nutrition metrics,
@@ -2313,6 +2421,9 @@ function hedley_reports_empty_nutrition_metrics() {
     'underweight_normal' => [],
     'underweight_moderate' => [],
     'underweight_severe' => [],
+    'acute_malnutrition_normal' => [],
+    'acute_malnutrition_mam' => [],
+    'acute_malnutrition_sam' => [],
   ];
 }
 
