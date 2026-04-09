@@ -463,6 +463,8 @@ function hedley_reports_get_triggering_measurement_types() {
   return array_unique(array_merge(
     HEDLEY_ACTIVITY_HEIGHT_BUNDLES,
     HEDLEY_ACTIVITY_WEIGHT_BUNDLES,
+    HEDLEY_ACTIVITY_MUAC_BUNDLES,
+    HEDLEY_ACTIVITY_NUTRITION_BUNDLES,
     HEDLEY_ACTIVITY_REPORTS_GROUP_MEASUREMENT_BUNDLES,
   ));
 }
@@ -491,7 +493,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
     'gender' => $person->field_gender[LANGUAGE_NONE][0]['value'],
   ];
 
-  $sessions_ids = $zscores_by_encounter = [];
+  $sessions_ids = $zscores_by_encounter = $muac_edema_by_encounter = [];
   $measurements_bundles = hedley_reports_get_triggering_measurement_types();
   $measurements_ids = hedley_general_get_person_measurements($person->nid, $measurements_bundles);
   $measurements = node_load_multiple($measurements_ids);
@@ -583,6 +585,56 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
         }
         break;
 
+      case HEDLEY_ACTIVITY_NUTRITION_MUAC_CONTENT_TYPE:
+        $encounter_id = $measurement->field_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
+        $muac_value = $measurement->field_muac[LANGUAGE_NONE][0]['value'];
+        if (!is_null($muac_value) && $muac_value !== '') {
+          $muac_edema_by_encounter[$encounter_id]['m'] = $muac_value;
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_WELL_CHILD_MUAC_CONTENT_TYPE:
+        $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
+        $muac_value = $measurement->field_muac[LANGUAGE_NONE][0]['value'];
+        if (!is_null($muac_value) && $muac_value !== '') {
+          $muac_edema_by_encounter[$encounter_id]['m'] = $muac_value;
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_MUAC_CONTENT_TYPE:
+        $encounter_id = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
+        $sessions_ids[] = $encounter_id;
+        $muac_value = $measurement->field_muac[LANGUAGE_NONE][0]['value'];
+        if (!is_null($muac_value) && $muac_value !== '') {
+          $muac_edema_by_encounter[$encounter_id]['m'] = $muac_value;
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_NUTRITION_NUTRITION_CONTENT_TYPE:
+        $encounter_id = $measurement->field_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
+        $signs = !empty($measurement->field_nutrition_signs[LANGUAGE_NONE])
+          ? array_column($measurement->field_nutrition_signs[LANGUAGE_NONE], 'value')
+          : [];
+        $muac_edema_by_encounter[$encounter_id]['e'] = in_array('edema', $signs);
+        break;
+
+      case HEDLEY_ACTIVITY_WELL_CHILD_NUTRITION_CONTENT_TYPE:
+        $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
+        $signs = !empty($measurement->field_nutrition_signs[LANGUAGE_NONE])
+          ? array_column($measurement->field_nutrition_signs[LANGUAGE_NONE], 'value')
+          : [];
+        $muac_edema_by_encounter[$encounter_id]['e'] = in_array('edema', $signs);
+        break;
+
+      case HEDLEY_ACTIVITY_NUTRITION_CONTENT_TYPE:
+        $encounter_id = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
+        $sessions_ids[] = $encounter_id;
+        $signs = !empty($measurement->field_nutrition_signs[LANGUAGE_NONE])
+          ? array_column($measurement->field_nutrition_signs[LANGUAGE_NONE], 'value')
+          : [];
+        $muac_edema_by_encounter[$encounter_id]['e'] = in_array('edema', $signs);
+        break;
+
       default:
         $encounter_id = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
         $sessions_ids[] = $encounter_id;
@@ -645,7 +697,9 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
 
         case HEDLEY_STATS_NUTRITION_ENCOUNTER_TYPE:
         case HEDLEY_STATS_SPV_ENCOUNTER_TYPE:
-          $nutrition = hedley_reports_nutrition_metrics_to_string($zscores_by_encounter[$encounter->nid]);
+          $zscores = isset($zscores_by_encounter[$encounter->nid]) ? $zscores_by_encounter[$encounter->nid] : [];
+          $muac_edema = isset($muac_edema_by_encounter[$encounter->nid]) ? $muac_edema_by_encounter[$encounter->nid] : [];
+          $nutrition = hedley_reports_nutrition_metrics_to_string($zscores + $muac_edema);
           $encounter_data = "$encounter_date $nutrition";
           break;
 
@@ -691,6 +745,28 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
     }
   }
 
+  // Build per-encounter MUAC map for family nutrition.
+  $family_muac_by_encounter = [];
+  $family_muac_query = hedley_general_create_entity_field_query_excluding_deleted();
+  $family_muac_result = $family_muac_query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'family_nutrition_muac_child')
+    ->fieldCondition('field_person', 'target_id', $person->nid)
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->execute();
+
+  if (!empty($family_muac_result['node'])) {
+    $family_muac_ids = array_keys($family_muac_result['node']);
+    $family_muac_measurements = node_load_multiple($family_muac_ids);
+    foreach ($family_muac_measurements as $family_muac) {
+      $encounter_id = $family_muac->field_family_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
+      $muac_value = $family_muac->field_muac[LANGUAGE_NONE][0]['value'];
+      if (!is_null($muac_value) && $muac_value !== '') {
+        $family_muac_by_encounter[$encounter_id] = $muac_value;
+      }
+    }
+  }
+
   // Family nutrition encounters: find family participants for this person.
   $family_participants_query = hedley_general_create_entity_field_query_excluding_deleted();
   $family_participants_result = $family_participants_query
@@ -714,7 +790,11 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
       $family_encounters = node_load_multiple(array_keys($family_encounters_result['node']));
       foreach ($family_encounters as $family_encounter) {
         $participant_id = $family_encounter->field_family_participant[LANGUAGE_NONE][0]['target_id'];
-        $encounters_data['family-nutrition'][$participant_id][] = date("Y-m-d", strtotime($family_encounter->field_scheduled_date[LANGUAGE_NONE][0]['value']));
+        $encounter_date = date("Y-m-d", strtotime($family_encounter->field_scheduled_date[LANGUAGE_NONE][0]['value']));
+        $muac_str = hedley_reports_family_nutrition_metrics_to_string(
+          isset($family_muac_by_encounter[$family_encounter->nid]) ? ['m' => $family_muac_by_encounter[$family_encounter->nid]] : NULL
+        );
+        $encounters_data['family-nutrition'][$participant_id][] = $muac_str === '' ? $encounter_date : "$encounter_date $muac_str";
       }
     }
   }
@@ -745,7 +825,9 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
     $clinic_id = $session->field_clinic[LANGUAGE_NONE][0]['target_id'];
     $group_type = $group_type_by_clinic[$clinic_id];
     $encounter_date = date("Y-m-d", strtotime($session->field_scheduled_date[LANGUAGE_NONE][0]['value']));
-    $nutrition = hedley_reports_nutrition_metrics_to_string($zscores_by_encounter[$session->nid]);
+    $zscores = isset($zscores_by_encounter[$session->nid]) ? $zscores_by_encounter[$session->nid] : [];
+    $muac_edema = isset($muac_edema_by_encounter[$session->nid]) ? $muac_edema_by_encounter[$session->nid] : [];
+    $nutrition = hedley_reports_nutrition_metrics_to_string($zscores + $muac_edema);
     $session_data = "$encounter_date $nutrition";
 
     if (empty($sessions_data[$group_type])) {
@@ -792,29 +874,56 @@ function hedley_reports_pregnancy_outcome_mapping() {
  * This function takes an associative array of nutrition metrics and
  * converts it into a string where the values are separated by commas.
  * The keys of the array should be 's' for stunting, 'w' for wasting,
- * and 'u' for underweight. If a key is missing or its value is empty,
- * an empty string is used in its place.
+ * 'u' for underweight, 'm' for MUAC, and 'e' for the edema flag. If a
+ * key is missing or its value is empty, an empty string is used in its
+ * place.
  *
  * @param array|null $values
  *   An associative array of nutrition metrics with the following possible keys:
  *   - 's': The stunting metric.
  *   - 'w': The wasting metric.
  *   - 'u': The underweight metric.
+ *   - 'm': The MUAC measurement in cm.
+ *   - 'e': The edema flag (TRUE/FALSE emitted as '1'/'0').
  *
  * @return string
- *   A string with the stunting, wasting, and underweight metrics separated
- *   by commas. If the input array is empty, returns ',,'.
+ *   A string with the stunting, wasting, underweight, MUAC, and edema
+ *   metrics separated by commas. If the input array is empty, returns
+ *   ',,,,'.
  */
 function hedley_reports_nutrition_metrics_to_string($values) {
   if (empty($values)) {
-    return ',,';
+    return ',,,,';
   }
 
-  $stunting = !empty($values['s']) ? $values['s'] : '';
-  $wasting = !empty($values['w']) ? $values['w'] : '';
-  $underweight = !empty($values['u']) ? $values['u'] : '';
+  $stunting = isset($values['s']) && $values['s'] !== '' ? $values['s'] : '';
+  $wasting = isset($values['w']) && $values['w'] !== '' ? $values['w'] : '';
+  $underweight = isset($values['u']) && $values['u'] !== '' ? $values['u'] : '';
+  $muac = isset($values['m']) && $values['m'] !== '' ? $values['m'] : '';
+  $edema = isset($values['e']) ? ($values['e'] ? '1' : '0') : '';
 
-  return "$stunting,$wasting,$underweight";
+  return "$stunting,$wasting,$underweight,$muac,$edema";
+}
+
+/**
+ * Converts family-nutrition encounter metrics to a wire-format string fragment.
+ *
+ * Family nutrition has only MUAC (no z-scores, no edema). When MUAC is
+ * absent, returns the empty string so the caller emits a date-only encounter
+ * (matching the legacy date-only family nutrition wire format).
+ *
+ * @param array|null $values
+ *   Optional 'm' key with the MUAC value in cm.
+ *
+ * @return string
+ *   The MUAC value as a string, or an empty string if absent.
+ */
+function hedley_reports_family_nutrition_metrics_to_string($values) {
+  if (empty($values) || !isset($values['m']) || $values['m'] === '') {
+    return '';
+  }
+
+  return (string) $values['m'];
 }
 
 /**
