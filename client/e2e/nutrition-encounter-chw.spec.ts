@@ -1,0 +1,148 @@
+import { test, expect } from '@playwright/test';
+import { click, setupDevice } from './helpers/auth';
+import {
+  navigateToCaseManagement,
+  verifyCaseManagementEntry,
+  verifyFollowUpDialog,
+} from './helpers/case-management';
+import { installCursorScript } from './helpers/cursor';
+import { resetDevice } from './helpers/device';
+import { WAIT, syncAndWait } from './helpers/common';
+import {
+  createChildAndStartEncounter,
+  enterWeight,
+  enterMuac,
+  enterNutritionSigns,
+  saveActivity,
+  endEncounter,
+  completeSendToHC,
+  completeHealthEducation,
+  completeContributingFactors,
+  completeFollowUp,
+  queryBackendNodes,
+} from './helpers/nutrition';
+
+test.describe('CHW: Individual Nutrition Encounter', () => {
+  if (process.env.RECORD) {
+    test.beforeEach(async ({ page }) => {
+      await page.addInitScript(installCursorScript());
+    });
+  }
+
+  // Login as CHW Jojo (PIN 2345), select Akanduga village.
+  test.beforeEach(async ({ page }) => {
+    resetDevice();
+    await setupDevice(page, '2345', 'Akanduga');
+  });
+
+  test('normal encounter without height (optional for CHW) and backend sync', async ({
+    page,
+  }) => {
+    const { fullName } = await createChildAndStartEncounter(page, {
+      ageMonths: 24,
+      isChw: true,
+    });
+
+    // Weight: 12 kg
+    await enterWeight(page, '12');
+    await saveActivity(page);
+
+    // MUAC: 14 cm
+    await enterMuac(page, '14');
+    await saveActivity(page);
+
+    // Nutrition signs: None
+    await enterNutritionSigns(page, ['None']);
+    const diagnosisAppeared = await saveActivity(page);
+    expect(diagnosisAppeared, 'diagnosis popup should not appear for normal signs').toBe(false);
+
+    // Height is optional for CHW — skip it entirely.
+    // End Encounter should be enabled without height.
+    const endBtn = page.locator('div.actions button.ui.fluid.button', {
+      hasText: 'End Encounter',
+    });
+    await expect(endBtn, 'End Encounter button should be enabled without height for CHW').not.toHaveClass(/disabled/);
+    await endEncounter(page);
+
+    // Sync to backend.
+    await syncAndWait(page);
+
+    // Verify measurements in backend — no height node expected.
+    const nodes = queryBackendNodes(fullName);
+    expect(nodes.weight, 'weight should be 12 kg').toBe(12);
+    expect(nodes.muac, 'muac should be 14 cm').toBe(14);
+    expect(nodes.nutrition, 'nutrition node should exist').toBe(true);
+    expect(nodes.height, 'height should not exist for CHW encounter').toBeUndefined();
+  });
+
+  test('abnormal MUAC triggers NextSteps with backend sync', async ({
+    page,
+  }) => {
+    const { fullName } = await createChildAndStartEncounter(page, {
+      ageMonths: 24,
+      isChw: true,
+    });
+
+    // Weight: 8 kg (underweight)
+    await enterWeight(page, '8');
+    await saveActivity(page);
+
+    // MUAC: 11 cm (severe acute malnutrition — red zone)
+    await enterMuac(page, '11');
+    await saveActivity(page);
+
+    // Nutrition signs: Edema — triggers diagnosis popup.
+    await enterNutritionSigns(page, ['Edema']);
+    await click(page.locator('button.ui.fluid.primary.button.active'), page);
+
+    // Diagnosis popup should appear.
+    const popup = page.locator('div.ui.active.modal.diagnosis-popup');
+    await popup.waitFor({ timeout: 5000 });
+    await click(popup.locator('button.ui.primary.fluid.button'), page);
+
+    // App auto-navigates to NextSteps after diagnosis.
+    await page.locator('div.page-activity.nutrition').waitFor({ timeout: 10000 });
+
+    // Complete all sub-tasks.
+    await completeSendToHC(page);
+    await completeHealthEducation(page);
+    await completeContributingFactors(page);
+    await completeFollowUp(page);
+
+    // Wait for navigation to settle, then ensure we're on the encounter page.
+    await page.waitForTimeout(WAIT.pageNavigation);
+    await page
+      .locator('div.page-encounter.nutrition')
+      .waitFor({ timeout: 10000 });
+
+    // End encounter.
+    await endEncounter(page);
+
+    // Sync to backend.
+    await syncAndWait(page);
+
+    // Verify all measurement nodes in backend (no height for CHW).
+    const nodes = queryBackendNodes(fullName);
+    expect(nodes.weight, 'weight should be 8 kg').toBe(8);
+    expect(nodes.muac, 'muac should be 11 cm').toBe(11);
+    expect(nodes.nutrition, 'nutrition node should exist').toBe(true);
+    expect(nodes.height, 'height should not exist for CHW encounter').toBeUndefined();
+    expect(nodes.sendToHc, 'sendToHc node should exist').toBe(true);
+    expect(nodes.healthEducation, 'healthEducation node should exist').toBe(true);
+    expect(nodes.contributingFactors, 'contributingFactors node should exist').toBe(true);
+    expect(nodes.followUp, 'followUp node should exist').toBe(true);
+
+    // --- Case Management verification ---
+    // Navigate to Case Management and verify the nutrition follow-up entry appears.
+    await navigateToCaseManagement(page);
+    await verifyCaseManagementEntry(
+      page,
+      'Home Visit',
+      'Child Nutrition Follow Up',
+      fullName,
+    );
+
+    // Verify follow-up dialog: click forward icon, assert modal with name, dismiss.
+    await verifyFollowUpDialog(page, fullName);
+  });
+});

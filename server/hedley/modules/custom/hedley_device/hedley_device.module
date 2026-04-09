@@ -77,18 +77,22 @@ function hedley_device_assign_pairing_code($node, $wrapper) {
       throw new Exception('The provided pairing code was not unique.');
     }
 
-    // And we make a robot user to authenticate for syncing.
-    $role = user_role_load_by_name('sync');
+    // Reuse existing robot user if one exists, otherwise create one.
+    $robot_name = $node->title . ' Robot';
+    $account = user_load_by_name($robot_name);
+    if (!$account) {
+      $role = user_role_load_by_name('sync');
 
-    $account = entity_create('user', [
-      'name' => $node->title . ' Robot',
-      'mail' => 'robot@no-reply.com',
-      'roles' => [$role->rid => $role->name],
-      'status' => TRUE,
-    ]);
+      $account = entity_create('user', [
+        'name' => $robot_name,
+        'mail' => 'robot@no-reply.com',
+        'roles' => [$role->rid => $role->name],
+        'status' => TRUE,
+      ]);
 
-    $wrapper = entity_metadata_wrapper('user', $account);
-    $wrapper->save();
+      $wrapper = entity_metadata_wrapper('user', $account);
+      $wrapper->save();
+    }
 
     // Set the author.
     $node->uid = $account->uid;
