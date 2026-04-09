@@ -52,6 +52,9 @@ type alias NutritionMetrics =
     , underweightNormal : List PersonId
     , underweightModerate : List PersonId
     , underweightSevere : List PersonId
+    , acuteMalnutritionNormal : List PersonId
+    , acuteMalnutritionMam : List PersonId
+    , acuteMalnutritionSam : List PersonId
     }
 
 
@@ -66,6 +69,9 @@ emptyNutritionMetrics =
     , underweightNormal = []
     , underweightModerate = []
     , underweightSevere = []
+    , acuteMalnutritionNormal = []
+    , acuteMalnutritionMam = []
+    , acuteMalnutritionSam = []
     }
 
 

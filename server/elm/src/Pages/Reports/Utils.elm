@@ -120,52 +120,96 @@ sumNutritionMetrics =
                 , underweightNormal = accum.underweightNormal ++ metrics.underweightNormal
                 , underweightModerate = accum.underweightModerate ++ metrics.underweightModerate
                 , underweightSevere = accum.underweightSevere ++ metrics.underweightSevere
+                , acuteMalnutritionNormal = accum.acuteMalnutritionNormal ++ metrics.acuteMalnutritionNormal
+                , acuteMalnutritionMam = accum.acuteMalnutritionMam ++ metrics.acuteMalnutritionMam
+                , acuteMalnutritionSam = accum.acuteMalnutritionSam ++ metrics.acuteMalnutritionSam
             }
         )
         emptyNutritionMetrics
 
 
+categorizeAcuteMalnutrition : PersonId -> Maybe Float -> Bool -> ( List PersonId, List PersonId, List PersonId )
+categorizeAcuteMalnutrition personId mMuacCm hasEdema =
+    case mMuacCm of
+        Nothing ->
+            ( [], [], [] )
+
+        Just muacCm ->
+            let
+                muacMm =
+                    muacCm * 10
+            in
+            if muacMm < 115 || hasEdema then
+                ( [], [], [ personId ] )
+
+            else if muacMm < 125 then
+                ( [], [ personId ], [] )
+
+            else
+                ( [ personId ], [], [] )
+
+
 nutritionEncounterDataToNutritionMetrics : PersonId -> NutritionEncounterData -> NutritionMetrics
-nutritionEncounterDataToNutritionMetrics personId =
-    .nutritionData
-        >> Maybe.map
-            (\data ->
-                let
-                    categorizeZScore =
-                        Maybe.map
-                            (\score ->
-                                if score <= -3 then
-                                    ( [], [], [ personId ] )
+nutritionEncounterDataToNutritionMetrics personId encounter =
+    let
+        categorizeZScore =
+            Maybe.map
+                (\score ->
+                    if score <= -3 then
+                        ( [], [], [ personId ] )
 
-                                else if score <= -2 then
-                                    ( [], [ personId ], [] )
+                    else if score <= -2 then
+                        ( [], [ personId ], [] )
 
-                                else
-                                    ( [ personId ], [], [] )
-                            )
-                            >> Maybe.withDefault ( [], [], [] )
+                    else
+                        ( [ personId ], [], [] )
+                )
+                >> Maybe.withDefault ( [], [], [] )
 
-                    ( stuntingNormal, stuntingModerate, stuntingSevere ) =
-                        categorizeZScore data.stunting
+        ( stuntingNormal, stuntingModerate, stuntingSevere ) =
+            encounter.nutritionData
+                |> Maybe.map (.stunting >> categorizeZScore)
+                |> Maybe.withDefault ( [], [], [] )
 
-                    ( wastingNormal, wastingModerate, wastingSevere ) =
-                        categorizeZScore data.wasting
+        ( wastingNormal, wastingModerate, wastingSevere ) =
+            encounter.nutritionData
+                |> Maybe.map (.wasting >> categorizeZScore)
+                |> Maybe.withDefault ( [], [], [] )
 
-                    ( underweightNormal, underweightModerate, underweightSevere ) =
-                        categorizeZScore data.underweight
-                in
-                { stuntingNormal = stuntingNormal
-                , stuntingModerate = stuntingModerate
-                , stuntingSevere = stuntingSevere
-                , wastingNormal = wastingNormal
-                , wastingModerate = wastingModerate
-                , wastingSevere = wastingSevere
-                , underweightNormal = underweightNormal
-                , underweightModerate = underweightModerate
-                , underweightSevere = underweightSevere
-                }
-            )
-        >> Maybe.withDefault emptyNutritionMetrics
+        ( underweightNormal, underweightModerate, underweightSevere ) =
+            encounter.nutritionData
+                |> Maybe.map (.underweight >> categorizeZScore)
+                |> Maybe.withDefault ( [], [], [] )
+
+        ( acuteMalnutritionNormal, acuteMalnutritionMam, acuteMalnutritionSam ) =
+            categorizeAcuteMalnutrition personId encounter.muacCm encounter.hasEdema
+    in
+    { stuntingNormal = stuntingNormal
+    , stuntingModerate = stuntingModerate
+    , stuntingSevere = stuntingSevere
+    , wastingNormal = wastingNormal
+    , wastingModerate = wastingModerate
+    , wastingSevere = wastingSevere
+    , underweightNormal = underweightNormal
+    , underweightModerate = underweightModerate
+    , underweightSevere = underweightSevere
+    , acuteMalnutritionNormal = acuteMalnutritionNormal
+    , acuteMalnutritionMam = acuteMalnutritionMam
+    , acuteMalnutritionSam = acuteMalnutritionSam
+    }
+
+
+familyNutritionEncounterToMetrics : PersonId -> FamilyNutritionEncounterData -> NutritionMetrics
+familyNutritionEncounterToMetrics personId encounter =
+    let
+        ( acuteMalnutritionNormal, acuteMalnutritionMam, acuteMalnutritionSam ) =
+            categorizeAcuteMalnutrition personId encounter.muacCm False
+    in
+    { emptyNutritionMetrics
+        | acuteMalnutritionNormal = acuteMalnutritionNormal
+        , acuteMalnutritionMam = acuteMalnutritionMam
+        , acuteMalnutritionSam = acuteMalnutritionSam
+    }
 
 
 generatePrevalenceNutritionMetricsResults : NutritionMetrics -> NutritionMetricsResults
