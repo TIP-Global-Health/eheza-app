@@ -750,7 +750,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
   $family_muac_query = hedley_general_create_entity_field_query_excluding_deleted();
   $family_muac_result = $family_muac_query
     ->entityCondition('entity_type', 'node')
-    ->entityCondition('bundle', 'family_nutrition_muac_child')
+    ->entityCondition('bundle', HEDLEY_ACTIVITY_FAMILY_NUTRITION_MUAC_CHILD_CONTENT_TYPE)
     ->fieldCondition('field_person', 'target_id', $person->nid)
     ->propertyCondition('status', NODE_PUBLISHED)
     ->execute();
@@ -896,6 +896,14 @@ function hedley_reports_nutrition_metrics_to_string($values) {
     return ',,,,';
   }
 
+  // All five fields use isset() && !== '' rather than !empty() so that a
+  // legitimate zero value (e.g. a stunting z-score of exactly 0.0, or a
+  // MUAC reading of 0.0) is preserved on the wire. The 'e' (edema) field
+  // additionally uses bare isset() below so the wire format can distinguish
+  // three states: key absent (no nutrition-signs measurement) -> empty
+  // string; key present and FALSE (measurement exists, no edema) -> '0';
+  // key present and TRUE -> '1'. Do not change to !empty() — that would
+  // collapse the tri-state.
   $stunting = isset($values['s']) && $values['s'] !== '' ? $values['s'] : '';
   $wasting = isset($values['w']) && $values['w'] !== '' ? $values['w'] : '';
   $underweight = isset($values['u']) && $values['u'] !== '' ? $values['u'] : '';
