@@ -1077,6 +1077,18 @@ export const NUTRITION_ONE_VISIT_TABLES = [
 ] as const;
 
 /**
+ * "Two Visits Or More" tables are at odd indices: 1, 3, 5, 7. They use
+ * `encountersByMonthForImpacted` and only count children with more than
+ * one nutrition encounter.
+ */
+export const NUTRITION_TWO_VISIT_TABLES = [
+  { index: 1, name: 'Prevalence By Month (Two Visits Or More)' },
+  { index: 3, name: 'Incidence By Month (Two Visits Or More)' },
+  { index: 5, name: 'Incidence By Quarter (Two Visits Or More)' },
+  { index: 7, name: 'Incidence By Year (Two Visits Or More)' },
+] as const;
+
+/**
  * Read a nutrition table by its 0-based index.
  * Each data row has: [metric label, value1%, value2%, ...].
  * Columns are reverse chronological (newest first).

@@ -33,6 +33,7 @@ import {
   backdateNutritionEncounter,
   backdateFamilyNutritionEncounter,
   NUTRITION_ONE_VISIT_TABLES,
+  NUTRITION_TWO_VISIT_TABLES,
   NutritionMetricRow,
   PatientsTableData,
   EncountersTableData,
@@ -1469,10 +1470,19 @@ test.describe('Admin Reports', () => {
       const columnHeaders = await readNutritionColumnHeaders(page, 0);
       console.log(`Columns (${columnHeaders.length}): ${columnHeaders.join(' | ')}`);
 
-      // Verify all 4 "One Visit Or More" tables have data.
-      // 8 metric rows: 6 z-score-based (stunting/wasting/underweight ×
-      // moderate/severe) + 2 MUAC-based (MAM, SAM) added in issue #1718.
-      for (const { index, name } of NUTRITION_ONE_VISIT_TABLES) {
+      // Verify all 8 nutrition tables have the new structure.
+      // 8 metric rows per table: 6 z-score-based (stunting/wasting/
+      // underweight × moderate/severe) + 2 MUAC-based (MAM, SAM) added
+      // in issue #1718. Both the "One Visit Or More" tables (the one-
+      // visit prevalence/incidence path) and the "Two Visits Or More"
+      // tables (the encountersByMonthForImpacted path) must have the
+      // new rows present so the precomputed `report_data` JSON is
+      // consistent across both paths.
+      const allNutritionTables = [
+        ...NUTRITION_ONE_VISIT_TABLES,
+        ...NUTRITION_TWO_VISIT_TABLES,
+      ];
+      for (const { index, name } of allNutritionTables) {
         const current = await readNutritionTable(page, index);
         expect(current.length, `${name}: should have 8 metric rows`).toBe(8);
 
