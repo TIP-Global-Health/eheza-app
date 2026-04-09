@@ -196,6 +196,8 @@ type PrenatalDiagnosis
 type alias NutritionEncounterData =
     { startDate : NominalDate
     , nutritionData : Maybe NutritionData
+    , muacCm : Maybe Float
+    , hasEdema : Bool
     }
 
 
@@ -205,8 +207,12 @@ type alias NutritionData =
     , underweight : Maybe Float
     }
 
+
 type alias FamilyNutritionEncounterData =
-    NominalDate
+    { startDate : NominalDate
+    , muacCm : Maybe Float
+    }
+
 
 type alias HomeVisitEncounterData =
     NominalDate
