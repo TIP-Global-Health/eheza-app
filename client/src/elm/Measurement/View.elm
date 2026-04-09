@@ -3899,13 +3899,13 @@ nutritionFeedingInputsAndTasks language currentDate personId setBoolInputMsg set
                           , viewBoolInput language
                                 form.enoughTillNextSession
                                 (setBoolInputMsg enoughTillNextSessionUpdateFunc)
-                                "enough-till-next-section"
+                                "enough-till-next-session"
                                 Nothing
                           , viewQuestionLabel language <| Translate.NutritionFeedingSignQuestion SupplementShared
                           , viewBoolInput language
                                 form.supplementShared
                                 (setBoolInputMsg supplementSharedUpdateFunc)
-                                "enough-till-next-section"
+                                "supplement-shared"
                                 (Just ( Translate.Shared, Translate.OnlySickChild ))
                           ]
                         , [ if form.supplementType == Just NoNutritionSupplementType then
@@ -4003,7 +4003,7 @@ nutritionFeedingInputsAndTasks language currentDate personId setBoolInputMsg set
                     , viewBoolInput language
                         form.eatenWithWater
                         (setBoolInputMsg eatenWithWaterUpdateFunc)
-                        "enough-till-next-section"
+                        "eaten-with-water"
                         Nothing
                     ]
                   , [ form.eatenWithWater ]
@@ -4022,7 +4022,7 @@ nutritionFeedingInputsAndTasks language currentDate personId setBoolInputMsg set
             , viewBoolInput language
                 form.encouragedToEat
                 (setBoolInputMsg encouragedToEatUpdateFunc)
-                "enough-till-next-section"
+                "encouraged-to-eat"
                 Nothing
             ]
 
@@ -4035,7 +4035,7 @@ nutritionFeedingInputsAndTasks language currentDate personId setBoolInputMsg set
             , viewBoolInput language
                 form.refusingToEat
                 (setBoolInputMsg refusingToEatUpdateFunc)
-                "enough-till-next-section"
+                "refusing-to-eat"
                 Nothing
             ]
 
@@ -4048,7 +4048,7 @@ nutritionFeedingInputsAndTasks language currentDate personId setBoolInputMsg set
             , viewBoolInput language
                 form.breastfeeding
                 (setBoolInputMsg breastfeedingUpdateFunc)
-                "enough-till-next-section"
+                "breastfeeding"
                 Nothing
             ]
 
@@ -4061,7 +4061,7 @@ nutritionFeedingInputsAndTasks language currentDate personId setBoolInputMsg set
             , viewBoolInput language
                 form.cleanWaterAvailable
                 (setBoolInputMsg cleanWaterAvailableUpdateFunc)
-                "enough-till-next-section"
+                "clean-water-available"
                 Nothing
             ]
     in
