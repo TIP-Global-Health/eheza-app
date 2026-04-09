@@ -190,10 +190,19 @@ calculateNutritionReportDataTask currentDate data =
                     )
                     records
 
+            -- Per-child family-nutrition MUAC measurements live under
+            -- familyNutritionMuacData on each child record. The bucket
+            -- entry uses record.id (the child's id), giving correct
+            -- per-child denominators in the AM stats. The mother-side
+            -- familyNutritionData (date-only entries used by the
+            -- Demographics encounter row) is intentionally not consumed
+            -- here -- mothers are filtered out by the records age filter
+            -- above, and the Demographics row already counts them
+            -- elsewhere.
             familyNutritionEncounters =
                 List.concatMap
                     (\record ->
-                        record.familyNutritionData
+                        record.familyNutritionMuacData
                             |> Maybe.map
                                 (List.concat
                                     >> List.filter filterByYear

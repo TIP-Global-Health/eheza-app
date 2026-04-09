@@ -746,29 +746,17 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
     }
   }
 
-  // Build per-encounter MUAC map for family nutrition.
-  $family_muac_by_encounter = [];
-  $family_muac_query = hedley_general_create_entity_field_query_excluding_deleted();
-  $family_muac_result = $family_muac_query
-    ->entityCondition('entity_type', 'node')
-    ->entityCondition('bundle', HEDLEY_ACTIVITY_FAMILY_NUTRITION_MUAC_CHILD_CONTENT_TYPE)
-    ->fieldCondition('field_person', 'target_id', $person->nid)
-    ->propertyCondition('status', NODE_PUBLISHED)
-    ->execute();
-
-  if (!empty($family_muac_result['node'])) {
-    $family_muac_ids = array_keys($family_muac_result['node']);
-    $family_muac_measurements = node_load_multiple($family_muac_ids);
-    foreach ($family_muac_measurements as $family_muac) {
-      $encounter_id = $family_muac->field_family_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
-      $muac_value = $family_muac->field_muac[LANGUAGE_NONE][0]['value'];
-      if (!is_null($muac_value) && $muac_value !== '') {
-        $family_muac_by_encounter[$encounter_id] = $muac_value;
-      }
-    }
-  }
-
-  // Family nutrition encounters: find family participants for this person.
+  // Family nutrition encounters: walk family_participant nodes whose
+  // field_person points at $person. field_person on family_participant is
+  // the mother (the registering adult), so this block only contributes data
+  // when $person is a mother. Each family encounter is recorded as a
+  // date-only wire entry under the 'family-nutrition' key. These entries
+  // drive the Demographics report's "Family Nutrition" encounter row, which
+  // counts mothers and their family encounters across all ages (no child
+  // age filter). Per-child MUAC measurements are emitted separately under
+  // 'family-nutrition-muac' on each child's reports data; that path is
+  // what feeds the MAM/SAM stats and lives where the nutrition stats
+  // pipelines (which filter to children under 6) can actually find it.
   $family_participants_query = hedley_general_create_entity_field_query_excluding_deleted();
   $family_participants_result = $family_participants_query
     ->entityCondition('entity_type', 'node')
@@ -792,11 +780,59 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
       foreach ($family_encounters as $family_encounter) {
         $participant_id = $family_encounter->field_family_participant[LANGUAGE_NONE][0]['target_id'];
         $encounter_date = date("Y-m-d", strtotime($family_encounter->field_scheduled_date[LANGUAGE_NONE][0]['value']));
-        $muac_str = hedley_reports_family_nutrition_metrics_to_string(
-          isset($family_muac_by_encounter[$family_encounter->nid]) ? ['m' => $family_muac_by_encounter[$family_encounter->nid]] : NULL
-        );
-        $encounters_data['family-nutrition'][$participant_id][] = $muac_str === '' ? $encounter_date : "$encounter_date $muac_str";
+        $encounters_data['family-nutrition'][$participant_id][] = $encounter_date;
       }
+    }
+  }
+
+  // Per-child family-nutrition MUAC measurements. Walk child MUAC measurement
+  // nodes whose field_person is THIS person; these only match when $person
+  // is a child (the measurement records the child's arm circumference).
+  // Each measurement contributes one wire entry to the child's
+  // 'family-nutrition-muac' data, in the same "YYYY-MM-DD muac" format that
+  // hedley_reports_generate_nutrition_report_data parses for AM stats.
+  // Storing per-child measurements on the child rather than the mother is
+  // what gives the AM stats correct per-child denominators -- the nutrition
+  // pipelines downstream filter records to children under 6 before the
+  // computation runs, so mother-side data would be invisible to them.
+  $family_muac_query = hedley_general_create_entity_field_query_excluding_deleted();
+  $family_muac_result = $family_muac_query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', HEDLEY_ACTIVITY_FAMILY_NUTRITION_MUAC_CHILD_CONTENT_TYPE)
+    ->fieldCondition('field_person', 'target_id', $person->nid)
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->execute();
+
+  if (!empty($family_muac_result['node'])) {
+    $family_muac_measurements = node_load_multiple(array_keys($family_muac_result['node']));
+
+    // Batch-load parent encounters to read each measurement's scheduled
+    // date. We need the encounter's date, not the measurement's
+    // field_date_measured, for consistency with the way the rest of this
+    // function dates encounters.
+    $parent_encounter_ids = [];
+    foreach ($family_muac_measurements as $family_muac) {
+      $parent_id = $family_muac->field_family_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
+      if (!empty($parent_id)) {
+        $parent_encounter_ids[] = $parent_id;
+      }
+    }
+    $parent_encounters = !empty($parent_encounter_ids)
+      ? node_load_multiple(array_unique($parent_encounter_ids))
+      : [];
+
+    foreach ($family_muac_measurements as $family_muac) {
+      $parent_id = $family_muac->field_family_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
+      if (empty($parent_encounters[$parent_id])) {
+        continue;
+      }
+      $muac_value = $family_muac->field_muac[LANGUAGE_NONE][0]['value'];
+      if (is_null($muac_value) || $muac_value === '') {
+        continue;
+      }
+      $parent = $parent_encounters[$parent_id];
+      $encounter_date = date("Y-m-d", strtotime($parent->field_scheduled_date[LANGUAGE_NONE][0]['value']));
+      $encounters_data['family-nutrition-muac'][$person->nid][] = "$encounter_date $muac_value";
     }
   }
 
@@ -1693,10 +1729,15 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
       }
     }
 
+    // Per-child family-nutrition MUAC measurements live under
+    // 'family-nutrition-muac' on the child's reports data (see
+    // hedley_reports_calculate_aggregated_data_for_person). The
+    // 'family-nutrition' key (date-only entries on the mother) is for
+    // the Demographics encounter count and is not consumed here.
     $family_encounters = [];
     if (isset($patient_data->individual)) {
-      if (isset($patient_data->individual->{"family-nutrition"})) {
-        foreach ($patient_data->individual->{"family-nutrition"} as $items) {
+      if (isset($patient_data->individual->{"family-nutrition-muac"})) {
+        foreach ($patient_data->individual->{"family-nutrition-muac"} as $items) {
           $family_encounters = array_merge($family_encounters, $items);
         }
       }

@@ -94,6 +94,7 @@ countTotalNutritionEncounters data =
     countIndividualDataEncounters data.wellChildData
         + countIndividualDataEncounters data.individualNutritionData
         + countIndividualDataEncounters data.familyNutritionData
+        + countIndividualDataEncounters data.familyNutritionMuacData
         + countGroupDataEncounters data.groupNutritionPmtctData
         + countGroupDataEncounters data.groupNutritionFbfData
         + countGroupDataEncounters data.groupNutritionSorwatheData
