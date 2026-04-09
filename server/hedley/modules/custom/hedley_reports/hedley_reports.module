@@ -466,6 +466,7 @@ function hedley_reports_get_triggering_measurement_types() {
     HEDLEY_ACTIVITY_MUAC_BUNDLES,
     HEDLEY_ACTIVITY_NUTRITION_BUNDLES,
     HEDLEY_ACTIVITY_REPORTS_GROUP_MEASUREMENT_BUNDLES,
+    [HEDLEY_ACTIVITY_FAMILY_NUTRITION_MUAC_CHILD_CONTENT_TYPE],
   ));
 }
 
@@ -2269,15 +2270,20 @@ function hedley_reports_calculate_year_difference($fromDateString, $toDateString
  * Converts nutrition encounter data to nutrition metrics.
  *
  * This function processes encounter data to categorize nutritional status
- * (normal, moderate, severe) for stunting, wasting, and underweight.
+ * (normal, moderate, severe) for stunting, wasting, and underweight, and
+ * acute malnutrition status (normal, MAM, SAM) from MUAC and edema.
  *
  * @param int $person_id
  *   The ID of the person whose data is being processed.
  * @param array $data
- *   The nutritional data with keys 'stunting', 'wasting', and 'underweight'.
+ *   The nutritional data with keys 'stunting', 'wasting', 'underweight'
+ *   (z-scores or NULL), 'muac' (MUAC value in cm or NULL), and 'edema'
+ *   (boolean indicating edema presence).
  *
  * @return array
- *   An array containing categorized nutritional metrics.
+ *   An array containing categorized nutritional metrics with twelve keys
+ *   (stunting/wasting/underweight × normal/moderate/severe plus
+ *   acute_malnutrition × normal/mam/sam).
  */
 function hedley_reports_nutrition_encounter_data_to_nutrition_metrics($person_id, array $data) {
   [$stunting_normal, $stunting_moderate, $stunting_severe] = hedley_reports_categorize_z_score($data['stunting'], $person_id);
