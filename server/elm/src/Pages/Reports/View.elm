@@ -1071,6 +1071,9 @@ generareNutritionReportDataFromRawData language currentDate reportData =
                                 , underweightNormal = List.filter (\id -> List.member id data.impacted) encounter.underweightNormal
                                 , underweightModerate = List.filter (\id -> List.member id data.impacted) encounter.underweightModerate
                                 , underweightSevere = List.filter (\id -> List.member id data.impacted) encounter.underweightSevere
+                                , acuteMalnutritionNormal = List.filter (\id -> List.member id data.impacted) encounter.acuteMalnutritionNormal
+                                , acuteMalnutritionMam = List.filter (\id -> List.member id data.impacted) encounter.acuteMalnutritionMam
+                                , acuteMalnutritionSam = List.filter (\id -> List.member id data.impacted) encounter.acuteMalnutritionSam
                             }
                         )
                         data.encountersByMonth
@@ -1382,6 +1385,10 @@ toMetricsResultsTableData language heading data =
             |> generateRow Translate.UnderweightModerate
         , List.map (Tuple.second >> .underweightSevere) data
             |> generateRow Translate.UnderweightSevere
+        , List.map (Tuple.second >> .acuteMalnutritionMam) data
+            |> generateRow Translate.AcuteMalnutritionMam
+        , List.map (Tuple.second >> .acuteMalnutritionSam) data
+            |> generateRow Translate.AcuteMalnutritionSam
         ]
     }
 

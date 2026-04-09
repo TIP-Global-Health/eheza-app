@@ -135,17 +135,16 @@ calculateNutritionReportDataTask currentDate data =
                     )
                     records
 
+            currentYear =
+                Date.year currentDate
+
+            startingYear =
+                currentYear - 3
+
+            filterByYear encounter =
+                Date.year encounter.startDate >= startingYear
+
             allEncounters =
-                let
-                    currentYear =
-                        Date.year currentDate
-
-                    filterByYear encounter =
-                        Date.year encounter.startDate >= startingYear
-
-                    startingYear =
-                        currentYear - 3
-                in
                 List.concatMap
                     (\record ->
                         [ Maybe.map
@@ -191,7 +190,32 @@ calculateNutritionReportDataTask currentDate data =
                     )
                     records
 
-            encountersByMonth =
+            familyNutritionEncounters =
+                List.concatMap
+                    (\record ->
+                        record.familyNutritionData
+                            |> Maybe.map
+                                (List.concat
+                                    >> List.filter filterByYear
+                                    >> List.map (Tuple.pair record.id)
+                                )
+                            |> Maybe.withDefault []
+                    )
+                    records
+
+            insertMetricsForMonth ( year, month ) encounterMetrics accum =
+                let
+                    updatedMetrics =
+                        Dict.get ( year, month ) accum
+                            |> Maybe.map
+                                (\metricsSoFar ->
+                                    sumNutritionMetrics [ metricsSoFar, encounterMetrics ]
+                                )
+                            |> Maybe.withDefault encounterMetrics
+                in
+                Dict.insert ( year, month ) updatedMetrics accum
+
+            encountersByMonthFromNutrition =
                 List.foldl
                     (\( personId, encounter ) accum ->
                         let
@@ -203,19 +227,29 @@ calculateNutritionReportDataTask currentDate data =
 
                             encounterMetrics =
                                 nutritionEncounterDataToNutritionMetrics personId encounter
-
-                            updatedMetrics =
-                                Dict.get ( year, month ) accum
-                                    |> Maybe.map
-                                        (\metricsSoFar ->
-                                            sumNutritionMetrics [ metricsSoFar, encounterMetrics ]
-                                        )
-                                    |> Maybe.withDefault encounterMetrics
                         in
-                        Dict.insert ( year, month ) updatedMetrics accum
+                        insertMetricsForMonth ( year, month ) encounterMetrics accum
                     )
                     Dict.empty
                     allEncounters
+
+            encountersByMonth =
+                List.foldl
+                    (\( personId, encounter ) accum ->
+                        let
+                            year =
+                                Date.year encounter.startDate
+
+                            month =
+                                Date.monthNumber encounter.startDate
+
+                            encounterMetrics =
+                                familyNutritionEncounterToMetrics personId encounter
+                        in
+                        insertMetricsForMonth ( year, month ) encounterMetrics accum
+                    )
+                    encountersByMonthFromNutrition
+                    familyNutritionEncounters
          in
          { impacted = impacted
          , encountersByMonth = encountersByMonth

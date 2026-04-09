@@ -85,6 +85,8 @@ type TranslationId
     | AcuteIllnessDiagnosis AcuteIllnessDiagnosis
     | AcuteIllnessTotal
     | AcuteMalnutrition
+    | AcuteMalnutritionMam
+    | AcuteMalnutritionSam
     | AggregatedChildScoreboard
     | Antenatal
     | All
@@ -535,6 +537,20 @@ translationSet transId =
 
         AcuteMalnutrition ->
             { english = "Acute Malnutrition"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        AcuteMalnutritionMam ->
+            { english = "MAM (Moderate Acute Malnutrition)"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        AcuteMalnutritionSam ->
+            { english = "SAM (Severe Acute Malnutrition)"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing

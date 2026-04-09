@@ -93,6 +93,7 @@ countTotalNutritionEncounters data =
     in
     countIndividualDataEncounters data.wellChildData
         + countIndividualDataEncounters data.individualNutritionData
+        + countIndividualDataEncounters data.familyNutritionData
         + countGroupDataEncounters data.groupNutritionPmtctData
         + countGroupDataEncounters data.groupNutritionFbfData
         + countGroupDataEncounters data.groupNutritionSorwatheData
@@ -239,6 +240,12 @@ generatePrevalenceNutritionMetricsResults metrics =
                 ++ metrics.underweightSevere
                 ++ metrics.underweightNormal
                 |> unique
+
+        acuteMalnutritionTotal =
+            metrics.acuteMalnutritionMam
+                ++ metrics.acuteMalnutritionSam
+                ++ metrics.acuteMalnutritionNormal
+                |> unique
     in
     { stuntingModerate = calculatePercentage metrics.stuntingModerate stuntingTotal
     , stuntingSevere = calculatePercentage metrics.stuntingSevere stuntingTotal
@@ -246,6 +253,8 @@ generatePrevalenceNutritionMetricsResults metrics =
     , wastingSevere = calculatePercentage metrics.wastingSevere wastingTotal
     , underweightModerate = calculatePercentage metrics.underweightModerate underweightTotal
     , underweightSevere = calculatePercentage metrics.underweightSevere underweightTotal
+    , acuteMalnutritionMam = calculatePercentage metrics.acuteMalnutritionMam acuteMalnutritionTotal
+    , acuteMalnutritionSam = calculatePercentage metrics.acuteMalnutritionSam acuteMalnutritionTotal
     }
 
 
@@ -327,6 +336,29 @@ generateIncidenceNutritionMetricsResults currentPeriodMetric previousPeriodMetri
 
         underweightSevereNotIdentifiedInPreviousPeriod =
             Set.diff (Set.fromList currentPeriodMetric.underweightSevere) (Set.fromList previousPeriodMetric.underweightSevere)
+
+        -- ACUTE MALNUTRITION
+        previousPeriodAcuteMalnutritionMamSam =
+            previousPeriodMetric.acuteMalnutritionMam
+                ++ previousPeriodMetric.acuteMalnutritionSam
+                |> unique
+
+        previousPeriodAcuteMalnutritionTotal =
+            previousPeriodAcuteMalnutritionMamSam
+                ++ previousPeriodMetric.acuteMalnutritionNormal
+                |> Set.fromList
+
+        acuteMalnutritionMamTestedInPreviousPeriod =
+            Set.intersect (Set.fromList currentPeriodMetric.acuteMalnutritionMam) previousPeriodAcuteMalnutritionTotal
+
+        acuteMalnutritionMamNotIdentifiedInPreviousPeriod =
+            Set.diff (Set.fromList currentPeriodMetric.acuteMalnutritionMam) (Set.fromList previousPeriodAcuteMalnutritionMamSam)
+
+        acuteMalnutritionSamTestedInPreviousPeriod =
+            Set.intersect (Set.fromList currentPeriodMetric.acuteMalnutritionSam) previousPeriodAcuteMalnutritionTotal
+
+        acuteMalnutritionSamNotIdentifiedInPreviousPeriod =
+            Set.diff (Set.fromList currentPeriodMetric.acuteMalnutritionSam) (Set.fromList previousPeriodMetric.acuteMalnutritionSam)
     in
     { stuntingModerate =
         calculatePercentage
@@ -352,6 +384,14 @@ generateIncidenceNutritionMetricsResults currentPeriodMetric previousPeriodMetri
         calculatePercentage
             (Set.intersect underweightSevereTestedInPreviousPeriod underweightSevereNotIdentifiedInPreviousPeriod)
             previousPeriodUnderweightTotal
+    , acuteMalnutritionMam =
+        calculatePercentage
+            (Set.intersect acuteMalnutritionMamTestedInPreviousPeriod acuteMalnutritionMamNotIdentifiedInPreviousPeriod)
+            previousPeriodAcuteMalnutritionTotal
+    , acuteMalnutritionSam =
+        calculatePercentage
+            (Set.intersect acuteMalnutritionSamTestedInPreviousPeriod acuteMalnutritionSamNotIdentifiedInPreviousPeriod)
+            previousPeriodAcuteMalnutritionTotal
     }
 
 

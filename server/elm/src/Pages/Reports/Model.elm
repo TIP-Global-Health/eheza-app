@@ -82,6 +82,8 @@ type alias NutritionMetricsResults =
     , wastingSevere : Float
     , underweightModerate : Float
     , underweightSevere : Float
+    , acuteMalnutritionMam : Float
+    , acuteMalnutritionSam : Float
     }
 
 
@@ -93,6 +95,8 @@ emptyNutritionMetricsResults =
     , wastingSevere = 0
     , underweightModerate = 0
     , underweightSevere = 0
+    , acuteMalnutritionMam = 0
+    , acuteMalnutritionSam = 0
     }
 
 
