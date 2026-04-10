@@ -2454,13 +2454,11 @@ function hedley_reports_categorize_acute_malnutrition($muac_cm, $has_edema, $per
     return [[], [], []];
   }
 
-  $muac_mm = (float) $muac_cm * 10;
-
-  if ($muac_mm < 115 || $has_edema) {
+  if ($muac_cm < 11.5 || $has_edema) {
     return [[], [], [$person_id]];
   }
 
-  if ($muac_mm < 125) {
+  if ($muac_cm < 12.5) {
     return [[], [$person_id], []];
   }
 

@@ -93,6 +93,10 @@ countTotalNutritionEncounters data =
     in
     countIndividualDataEncounters data.wellChildData
         + countIndividualDataEncounters data.individualNutritionData
+        -- familyNutritionData (date-only, mother-side) is always 0 for
+        -- children (the nutrition report filters to under-6), but this
+        -- function is also called via countTotalEncounters for the
+        -- Demographics impacted filter, which iterates mothers.
         + countIndividualDataEncounters data.familyNutritionData
         + countIndividualDataEncounters data.familyNutritionMuacData
         + countGroupDataEncounters data.groupNutritionPmtctData
@@ -137,14 +141,10 @@ categorizeAcuteMalnutrition personId mMuacCm hasEdema =
             ( [], [], [] )
 
         Just muacCm ->
-            let
-                muacMm =
-                    muacCm * 10
-            in
-            if muacMm < 115 || hasEdema then
+            if muacCm < 11.5 || hasEdema then
                 ( [], [], [ personId ] )
 
-            else if muacMm < 125 then
+            else if muacCm < 12.5 then
                 ( [], [ personId ], [] )
 
             else

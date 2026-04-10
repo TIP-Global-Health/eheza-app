@@ -6316,12 +6316,11 @@ var $author$project$Pages$Reports$Utils$categorizeAcuteMalnutrition = F3(
 			return _Utils_Tuple3(_List_Nil, _List_Nil, _List_Nil);
 		} else {
 			var muacCm = mMuacCm.a;
-			var muacMm = muacCm * 10;
-			return ((muacMm < 115) || hasEdema) ? _Utils_Tuple3(
+			return ((muacCm < 11.5) || hasEdema) ? _Utils_Tuple3(
 				_List_Nil,
 				_List_Nil,
 				_List_fromArray(
-					[personId])) : ((muacMm < 125) ? _Utils_Tuple3(
+					[personId])) : ((muacCm < 12.5) ? _Utils_Tuple3(
 				_List_Nil,
 				_List_fromArray(
 					[personId]),
@@ -11312,9 +11311,19 @@ var $author$project$Translate$translationSet = function (transId) {
 			case 'AcuteMalnutrition':
 				return {english: 'Acute Malnutrition', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'AcuteMalnutritionMam':
-				return {english: 'MAM (Moderate Acute Malnutrition)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+				return {
+					english: 'MAM (Moderate Acute Malnutrition)',
+					kinyarwanda: $elm$core$Maybe$Just('MAM (Imirire  mibi yoroheje ije vuba)'),
+					kirundi: $elm$core$Maybe$Just('MAM (Ingwara yo gufungura nabi yoroheje)'),
+					somali: $elm$core$Maybe$Just('MAM (Nafaqo darrda Dhexe)')
+				};
 			case 'AcuteMalnutritionSam':
-				return {english: 'SAM (Severe Acute Malnutrition)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+				return {
+					english: 'SAM (Severe Acute Malnutrition)',
+					kinyarwanda: $elm$core$Maybe$Just('SAM (Imirire  mibi ikabije ije vuba)'),
+					kirundi: $elm$core$Maybe$Just('SAM (Ingwara yo gufungura nabi ikaze)'),
+					somali: $elm$core$Maybe$Just('SAM (Nafaqo yari aad u daran)')
+				};
 			case 'AggregatedChildScoreboard':
 				return {english: 'Aggregated Child Scoreboard', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Antenatal':
