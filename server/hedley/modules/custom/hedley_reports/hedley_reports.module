@@ -495,7 +495,14 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
   ];
 
   $sessions_ids = $zscores_by_encounter = $muac_edema_by_encounter = [];
-  $measurements_bundles = hedley_reports_get_triggering_measurement_types();
+  // Exclude family_nutrition_muac_child from the query: it is in the
+  // triggering list so that node saves enqueue an AQ recalc, but this
+  // loop has no use for those nodes -- the per-child MUAC data is
+  // collected via a dedicated query further down in this function.
+  $measurements_bundles = array_diff(
+    hedley_reports_get_triggering_measurement_types(),
+    [HEDLEY_ACTIVITY_FAMILY_NUTRITION_MUAC_CHILD_CONTENT_TYPE]
+  );
   $measurements_ids = hedley_general_get_person_measurements($person->nid, $measurements_bundles);
   $measurements = node_load_multiple($measurements_ids);
   foreach ($measurements as $measurement) {
@@ -634,15 +641,6 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
           ? array_column($measurement->field_nutrition_signs[LANGUAGE_NONE], 'value')
           : [];
         $muac_edema_by_encounter[$encounter_id]['e'] = in_array('edema', $signs);
-        break;
-
-      case HEDLEY_ACTIVITY_FAMILY_NUTRITION_MUAC_CHILD_CONTENT_TYPE:
-        // This bundle is fetched because it is present in the triggering
-        // measurement types list (so that saving one enqueues an AQ
-        // recalc), but its data is collected out-of-band further down in
-        // this function via a dedicated query. Skip it here so the default
-        // branch does not try to read field_session, which does not exist
-        // on this content type.
         break;
 
       default:
