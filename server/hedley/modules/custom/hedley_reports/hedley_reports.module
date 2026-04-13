@@ -482,11 +482,11 @@ function hedley_reports_get_triggering_measurement_types() {
  * @throws EntityMetadataWrapperException
  */
 function hedley_reports_calculate_aggregated_data_for_person($person) {
-  $birth_date = strtotime($person->field_birth_date[LANGUAGE_NONE][0]['value']);
-  if (empty($birth_date)) {
+  if (empty($person->field_birth_date[LANGUAGE_NONE][0]['value'])) {
     // We must know the birthdate to be able to present reports data.
     return FALSE;
   }
+  $birth_date = strtotime($person->field_birth_date[LANGUAGE_NONE][0]['value']);
   $data = [
     'id' => $person->nid,
     'created' => date("Y-m-d", $person->created),
@@ -536,7 +536,9 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
       case HEDLEY_ACTIVITY_NUTRITION_WEIGHT_CONTENT_TYPE:
         $encounter_id = $measurement->field_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
         $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
-        $zscore_length = $measurement->field_zscore_length[LANGUAGE_NONE][0]['value'];
+        $zscore_length = !empty($measurement->field_zscore_length[LANGUAGE_NONE][0]['value'])
+          ? $measurement->field_zscore_length[LANGUAGE_NONE][0]['value']
+          : NULL;
         if (!empty($zscore_age)) {
           if (empty($zscores_by_encounter[$encounter_id])) {
             $zscores_by_encounter[$encounter_id] = ['w' => $zscore_age, 'u' => $zscore_length];
@@ -551,7 +553,9 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
       case HEDLEY_ACTIVITY_WELL_CHILD_WEIGHT_CONTENT_TYPE:
         $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
         $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
-        $zscore_length = $measurement->field_zscore_length[LANGUAGE_NONE][0]['value'];
+        $zscore_length = !empty($measurement->field_zscore_length[LANGUAGE_NONE][0]['value'])
+          ? $measurement->field_zscore_length[LANGUAGE_NONE][0]['value']
+          : NULL;
         if (!empty($zscore_age)) {
           if (empty($zscores_by_encounter[$encounter_id])) {
             $zscores_by_encounter[$encounter_id] = ['w' => $zscore_age, 'u' => $zscore_length];
@@ -581,7 +585,9 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
         $encounter_id = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
         $sessions_ids[] = $encounter_id;
         $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
-        $zscore_length = $measurement->field_zscore_length[LANGUAGE_NONE][0]['value'];
+        $zscore_length = !empty($measurement->field_zscore_length[LANGUAGE_NONE][0]['value'])
+          ? $measurement->field_zscore_length[LANGUAGE_NONE][0]['value']
+          : NULL;
         if (!empty($zscore_age)) {
           if (empty($zscores_by_encounter[$encounter_id])) {
             $zscores_by_encounter[$encounter_id] = ['w' => $zscore_age, 'u' => $zscore_length];
@@ -683,7 +689,9 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
           break;
 
         case HEDLEY_STATS_PRENATAL_ENCOUNTER_TYPE:
-          $encounter_type = $encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value'];
+          $encounter_type = !empty($encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value'])
+            ? $encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value']
+            : '';
           $mapped_diagnoses = [];
           if (!empty($encounter->field_prenatal_diagnoses) && !empty($encounter->field_prenatal_diagnoses[LANGUAGE_NONE])) {
             foreach ($encounter->field_prenatal_diagnoses[LANGUAGE_NONE] as $diagnosis) {
@@ -729,23 +737,23 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
       $participant_data = [
         'created' => date("Y-m-d", $individual_participant->created),
       ];
-      $edd_date = $individual_participant->field_expected_date_concluded[LANGUAGE_NONE][0]['value'];
-      if (!empty($edd_date)) {
+      if (!empty($individual_participant->field_expected_date_concluded[LANGUAGE_NONE][0]['value'])) {
+        $edd_date = $individual_participant->field_expected_date_concluded[LANGUAGE_NONE][0]['value'];
         $participant_data['edd'] = date("Y-m-d", strtotime($edd_date));
       }
-      $date_concluded = $individual_participant->field_date_concluded[LANGUAGE_NONE][0]['value'];
-      if (!empty($date_concluded)) {
+      if (!empty($individual_participant->field_date_concluded[LANGUAGE_NONE][0]['value'])) {
+        $date_concluded = $individual_participant->field_date_concluded[LANGUAGE_NONE][0]['value'];
         $participant_data['dc'] = date("Y-m-d", strtotime($date_concluded));
       }
-      $outcome = $individual_participant->field_outcome[LANGUAGE_NONE][0]['value'];
-      if (!empty($outcome)) {
+      if (!empty($individual_participant->field_outcome[LANGUAGE_NONE][0]['value'])) {
+        $outcome = $individual_participant->field_outcome[LANGUAGE_NONE][0]['value'];
         $mapping = hedley_reports_pregnancy_outcome_mapping();
         if (in_array($outcome, array_keys($mapping))) {
           $participant_data['o'] = $mapping[$outcome];
         }
       }
-      $outcome_location = $individual_participant->field_outcome_location[LANGUAGE_NONE][0]['value'];
-      if (!empty($outcome_location)) {
+      if (!empty($individual_participant->field_outcome_location[LANGUAGE_NONE][0]['value'])) {
+        $outcome_location = $individual_participant->field_outcome_location[LANGUAGE_NONE][0]['value'];
         $participant_data['ol'] = ($outcome_location == 'home') ? 'h' : 'f';
       }
       $participant_data['encounters'] = $encounters_data[$participant_type][$individual_participant->nid];
