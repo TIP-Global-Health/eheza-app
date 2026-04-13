@@ -645,6 +645,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             currentDate
                             model.zscores
                             site
+                            features
                             id
                             isChw
                             activity

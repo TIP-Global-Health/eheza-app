@@ -575,7 +575,7 @@ type IndexDbQueryType
     | IndexDbQueryUploadWhatsApp
       -- Query one authority at a time, to make sure
       -- content is being uploaded in correct order,
-      -- and we present correct 'remianing for upload'
+      -- and we present correct 'remaining for upload'
       -- on sync screen.
     | IndexDbQueryUploadAuthority String
       -- Get a single deferred photo.
@@ -737,6 +737,7 @@ type SiteFeature
     = FeatureFamilyNutrition
     | FeatureGPSCoordinates
     | FeatureGroupEducation
+    | FeatureHealthyStart -- defines few slightly different behaviors at Prenatal flows.
     | FeatureHIVManagement
     | FeatureNCDA
     | FeatureReportToWhatsApp
