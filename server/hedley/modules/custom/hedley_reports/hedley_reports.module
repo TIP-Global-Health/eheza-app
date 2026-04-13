@@ -491,7 +491,9 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
     'id' => $person->nid,
     'created' => date("Y-m-d", $person->created),
     'birth_date' => date("Y-m-d", $birth_date),
-    'gender' => $person->field_gender[LANGUAGE_NONE][0]['value'],
+    'gender' => !empty($person->field_gender[LANGUAGE_NONE][0]['value'])
+    ? $person->field_gender[LANGUAGE_NONE][0]['value']
+    : '',
   ];
 
   $sessions_ids = $zscores_by_encounter = $muac_edema_by_encounter = [];
@@ -509,7 +511,9 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
     switch ($measurement->type) {
       case HEDLEY_ACTIVITY_NUTRITION_HEIGHT_CONTENT_TYPE:
         $encounter_id = $measurement->field_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
-        $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
+        $zscore_age = !empty($measurement->field_zscore_age[LANGUAGE_NONE][0]['value'])
+          ? $measurement->field_zscore_age[LANGUAGE_NONE][0]['value']
+          : NULL;
         if (!empty($zscore_age)) {
           if (empty($zscores_by_encounter[$encounter_id])) {
             $zscores_by_encounter[$encounter_id] = ['s' => $zscore_age];
@@ -522,7 +526,9 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
 
       case HEDLEY_ACTIVITY_WELL_CHILD_HEIGHT_CONTENT_TYPE:
         $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
-        $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
+        $zscore_age = !empty($measurement->field_zscore_age[LANGUAGE_NONE][0]['value'])
+          ? $measurement->field_zscore_age[LANGUAGE_NONE][0]['value']
+          : NULL;
         if (!empty($zscore_age)) {
           if (empty($zscores_by_encounter[$encounter_id])) {
             $zscores_by_encounter[$encounter_id] = ['s' => $zscore_age];
@@ -535,7 +541,9 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
 
       case HEDLEY_ACTIVITY_NUTRITION_WEIGHT_CONTENT_TYPE:
         $encounter_id = $measurement->field_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
-        $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
+        $zscore_age = !empty($measurement->field_zscore_age[LANGUAGE_NONE][0]['value'])
+          ? $measurement->field_zscore_age[LANGUAGE_NONE][0]['value']
+          : NULL;
         $zscore_length = !empty($measurement->field_zscore_length[LANGUAGE_NONE][0]['value'])
           ? $measurement->field_zscore_length[LANGUAGE_NONE][0]['value']
           : NULL;
@@ -552,7 +560,9 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
 
       case HEDLEY_ACTIVITY_WELL_CHILD_WEIGHT_CONTENT_TYPE:
         $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
-        $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
+        $zscore_age = !empty($measurement->field_zscore_age[LANGUAGE_NONE][0]['value'])
+          ? $measurement->field_zscore_age[LANGUAGE_NONE][0]['value']
+          : NULL;
         $zscore_length = !empty($measurement->field_zscore_length[LANGUAGE_NONE][0]['value'])
           ? $measurement->field_zscore_length[LANGUAGE_NONE][0]['value']
           : NULL;
@@ -570,7 +580,9 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
       case HEDLEY_ACTIVITY_HEIGHT_CONTENT_TYPE:
         $encounter_id = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
         $sessions_ids[] = $encounter_id;
-        $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
+        $zscore_age = !empty($measurement->field_zscore_age[LANGUAGE_NONE][0]['value'])
+          ? $measurement->field_zscore_age[LANGUAGE_NONE][0]['value']
+          : NULL;
         if (!empty($zscore_age)) {
           if (empty($zscores_by_encounter[$encounter_id])) {
             $zscores_by_encounter[$encounter_id] = ['s' => $zscore_age];
@@ -584,7 +596,9 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
       case HEDLEY_ACTIVITY_WEIGHT_CONTENT_TYPE:
         $encounter_id = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
         $sessions_ids[] = $encounter_id;
-        $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
+        $zscore_age = !empty($measurement->field_zscore_age[LANGUAGE_NONE][0]['value'])
+          ? $measurement->field_zscore_age[LANGUAGE_NONE][0]['value']
+          : NULL;
         $zscore_length = !empty($measurement->field_zscore_length[LANGUAGE_NONE][0]['value'])
           ? $measurement->field_zscore_length[LANGUAGE_NONE][0]['value']
           : NULL;
@@ -601,7 +615,9 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
 
       case HEDLEY_ACTIVITY_NUTRITION_MUAC_CONTENT_TYPE:
         $encounter_id = $measurement->field_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
-        $muac_value = $measurement->field_muac[LANGUAGE_NONE][0]['value'];
+        $muac_value = !empty($measurement->field_muac[LANGUAGE_NONE][0]['value'])
+          ? $measurement->field_muac[LANGUAGE_NONE][0]['value']
+          : NULL;
         if (!is_null($muac_value) && $muac_value !== '') {
           $muac_edema_by_encounter[$encounter_id]['m'] = $muac_value;
         }
@@ -609,7 +625,9 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
 
       case HEDLEY_ACTIVITY_WELL_CHILD_MUAC_CONTENT_TYPE:
         $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
-        $muac_value = $measurement->field_muac[LANGUAGE_NONE][0]['value'];
+        $muac_value = !empty($measurement->field_muac[LANGUAGE_NONE][0]['value'])
+          ? $measurement->field_muac[LANGUAGE_NONE][0]['value']
+          : NULL;
         if (!is_null($muac_value) && $muac_value !== '') {
           $muac_edema_by_encounter[$encounter_id]['m'] = $muac_value;
         }
@@ -618,7 +636,9 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
       case HEDLEY_ACTIVITY_MUAC_CONTENT_TYPE:
         $encounter_id = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
         $sessions_ids[] = $encounter_id;
-        $muac_value = $measurement->field_muac[LANGUAGE_NONE][0]['value'];
+        $muac_value = !empty($measurement->field_muac[LANGUAGE_NONE][0]['value'])
+          ? $measurement->field_muac[LANGUAGE_NONE][0]['value']
+          : NULL;
         if (!is_null($muac_value) && $muac_value !== '') {
           $muac_edema_by_encounter[$encounter_id]['m'] = $muac_value;
         }
@@ -676,14 +696,20 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
     if (empty($encounters_ids)) {
       continue;
     }
-    $participant_type = $individual_participant->field_encounter_type[LANGUAGE_NONE][0]['value'];
+    $participant_type = !empty($individual_participant->field_encounter_type[LANGUAGE_NONE][0]['value'])
+      ? $individual_participant->field_encounter_type[LANGUAGE_NONE][0]['value']
+      : '';
     $encounters = node_load_multiple($encounters_ids);
     foreach ($encounters as $encounter) {
       $encounter_date = date("Y-m-d", strtotime($encounter->field_scheduled_date[LANGUAGE_NONE][0]['value']));
       switch ($participant_type) {
         case HEDLEY_STATS_ACUTE_ILLNESS_ENCOUNTER_TYPE:
-          $encounter_type = $encounter->field_ai_encounter_type[LANGUAGE_NONE][0]['value'];
-          $diagnosis = $encounter->field_acute_illness_diagnosis[LANGUAGE_NONE][0]['value'];
+          $encounter_type = !empty($encounter->field_ai_encounter_type[LANGUAGE_NONE][0]['value'])
+            ? $encounter->field_ai_encounter_type[LANGUAGE_NONE][0]['value']
+            : '';
+          $diagnosis = !empty($encounter->field_acute_illness_diagnosis[LANGUAGE_NONE][0]['value'])
+            ? $encounter->field_acute_illness_diagnosis[LANGUAGE_NONE][0]['value']
+            : '';
           $mapped_diagnosis = !empty($ai_diagnosis_mapping[$diagnosis]) ? $ai_diagnosis_mapping[$diagnosis] : '';
           $encounter_data = "$encounter_date|$encounter_type|$mapped_diagnosis";
           break;
@@ -841,7 +867,9 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
       if (empty($parent_encounters[$parent_id])) {
         continue;
       }
-      $muac_value = $family_muac->field_muac[LANGUAGE_NONE][0]['value'];
+      $muac_value = !empty($family_muac->field_muac[LANGUAGE_NONE][0]['value'])
+        ? $family_muac->field_muac[LANGUAGE_NONE][0]['value']
+        : NULL;
       if (is_null($muac_value) || $muac_value === '') {
         continue;
       }
@@ -869,7 +897,9 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
   $clinics = node_load_multiple($clinics_ids);
   $group_type_by_clinic = [];
   foreach ($clinics as $clinic) {
-    $group_type_by_clinic[$clinic->nid] = $clinic->field_group_type[LANGUAGE_NONE][0]['value'];
+    $group_type_by_clinic[$clinic->nid] = !empty($clinic->field_group_type[LANGUAGE_NONE][0]['value'])
+      ? $clinic->field_group_type[LANGUAGE_NONE][0]['value']
+      : '';
   }
 
   $sessions_data = [];
