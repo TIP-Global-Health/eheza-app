@@ -628,6 +628,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                         Pages.Prenatal.Encounter.View.view model.language
                             currentDate
                             site
+                            features
                             id
                             isChw
                             model.indexedDb

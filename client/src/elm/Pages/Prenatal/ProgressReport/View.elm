@@ -482,9 +482,9 @@ viewContent language currentDate zscores site features isChw isLabTech isResults
                                 InitiatorEncounterPage id ->
                                     let
                                         ( completedActivities, pendingActivities ) =
-                                            getAllActivities assembled
-                                                |> List.filter (Pages.Prenatal.Activity.Utils.expectActivity currentDate site assembled)
-                                                |> List.partition (Pages.Prenatal.Activity.Utils.activityCompleted currentDate site assembled)
+                                            getAllActivities features assembled
+                                                |> List.filter (Pages.Prenatal.Activity.Utils.expectActivity currentDate site features assembled)
+                                                |> List.partition (Pages.Prenatal.Activity.Utils.activityCompleted currentDate site features assembled)
 
                                         ( actionsClass, actionButtonColor, reportToWhatsAppButton ) =
                                             if reportToWhatsAppEnabled features then
