@@ -48,7 +48,16 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    * @inheritdoc
    */
   public function setUp() {
-    parent::setUp(['hedley_device']);
+    parent::setUp([
+      'hedley_activity',
+      'hedley_acute_illness',
+      'hedley_device',
+      'hedley_ncd',
+      'hedley_nutrition',
+      'hedley_patient',
+      'hedley_person',
+      'hedley_schedule',
+    ]);
 
     // Create the base data for the test.
     $this->healthCenterId = $this->createHealthCenter();
@@ -110,9 +119,9 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
         $measurements_state = $measurements_state == HEDLEY_STATS_MODERATE ? HEDLEY_STATS_SEVERE : HEDLEY_STATS_MODERATE;
 
         // Create measurements.
-        $this->createWeight($session_nid, $child_nid, $measurements[$measurements_state]['weight'], $session['date']);
-        $this->createHeight($session_nid, $child_nid, $measurements[$measurements_state]['height'], $session['date']);
-        $this->createMuac($session_nid, $child_nid, $measurements[$measurements_state]['muac'], $session['date']);;
+        $this->createWeight('weight', $session_nid, $child_nid, $measurements[$measurements_state]['weight'], $session['date']);
+        $this->createHeight('height', $session_nid, $child_nid, $measurements[$measurements_state]['height'], $session['date']);
+        $this->createMuac('muac', $session_nid, $child_nid, $measurements[$measurements_state]['muac'], $session['date']);;
       }
 
       $patients_details = [];
@@ -136,7 +145,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     ];
     $fbf_clinics = hedley_health_center_get_clinics_of_health_center($this->healthCenterId, 'fbf');
     $patients_details = [];
-    list($completed_programs, $missed_sessions) = hedley_stats_get_session_attendance_stats_by_health_center($this->healthCenterId, $fbf_clinics, $patients_details);
+    [$completed_programs, $missed_sessions] = hedley_stats_get_session_attendance_stats_by_health_center($this->healthCenterId, $fbf_clinics, $patients_details);
 
     // Filter missed sessions.
     $count_missed_sessions = 0;
@@ -161,45 +170,13 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    * Testing the syncing and caching.
    */
   public function testSyncAndCache() {
-    // Define needed measurements for the test.
-    $measurements = [
-      HEDLEY_STATS_MODERATE => [
-        'weight' => 8,
-        'height' => 75,
-        'muac' => 12,
-        'nutrition' => 'none',
-      ],
-      HEDLEY_STATS_SEVERE => [
-        'weight' => 5,
-        'height' => 72,
-        'muac' => 11,
-        'nutrition' => 'edema',
-      ],
-    ];
-
-    $attendance = 40;
-    $sessions = $this->createSessionsWithAttendance($attendance, $attendance);
-
-    foreach ($sessions as $session) {
-      if (!isset($session['session_data'])) {
-        continue;
-      }
-
-      $session_data = $session['session_data'];
-      $session_nid = $session_data['session_nid'];
-
-      foreach ($session_data['children'] as $child_nid) {
-        // We want to reach the amount of severe and moderate distribution that
-        // has been set above the loop.
-        $measurements_state = HEDLEY_STATS_MODERATE ? HEDLEY_STATS_SEVERE : HEDLEY_STATS_MODERATE;
-
-        // Create measurements.
-        $this->createWeight($session_nid, $child_nid, $measurements[$measurements_state]['weight'], $session['date']);
-        $this->createHeight($session_nid, $child_nid, $measurements[$measurements_state]['height'], $session['date']);
-        $this->createMuac($session_nid, $child_nid, $measurements[$measurements_state]['muac'], $session['date']);;
-        $this->createNutrition($session_nid, $child_nid, $measurements[$measurements_state]['nutrition'], $session['date']);;
-      }
-    }
+    $this->createGroupNutritionData();
+    $this->createIndividualNutritionEncounterData();
+    $this->createNcdEncounterData();
+    $this->createPrenatalEncounterData();
+    $this->createAcuteIllnessEncounterData();
+    $this->createChildScorecardEncounterData();
+    $this->createWellChildEncounterData();
 
     $health_center_wrapper = entity_metadata_wrapper('node', $this->healthCenterId);
 
@@ -236,8 +213,16 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     // Check that the stats are not empty.
     $this->assertEqual($stats['uuid'], $health_center_wrapper->field_uuid->value());
     $this->assertFalse(empty($stats['case_management']));
+    $this->assertFalse(empty($stats['children_beneficiaries']));
     $this->assertFalse(empty($stats['good_nutrition']));
     $this->assertFalse(empty($stats['total_encounters']));
+    $this->assertFalse(empty($stats['nutrition_group_data']));
+    $this->assertFalse(empty($stats['nutrition_individual_data']));
+    $this->assertFalse(empty($stats['ncd_data']));
+    $this->assertFalse(empty($stats['prenatal_data']));
+    $this->assertFalse(empty($stats['acute_illness_data']));
+    $this->assertFalse(empty($stats['child_scoreboard_data']));
+    $this->assertFalse(empty($stats['spv_data']));
 
     // Call again with cache hash to make sure we don't get the results this
     // time.
@@ -400,6 +385,276 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $queue = DrupalQueue::get($queue_name);
 
     advancedqueue_process_item($queue, $queue_name, $queue_info, $aq_item);
+  }
+
+  /**
+   * Create an individual Nutrition encounter with related measurements.
+   *
+   * @param int $timestamp
+   *   The date of the encounter.
+   * @param float $muac_value
+   *   MUAC value to record.
+   * @param string $nutrition_sign
+   *   Nutrition sign value to record.
+   * @param float $weight_value
+   *   Weight value to record.
+   */
+  protected function createIndividualNutritionEncounterData($timestamp = '-7 days', $muac_value = 11, $nutrition_sign = 'edema', $weight_value = 9) {
+    $date = strtotime($timestamp);
+    $mother_id = $this->createMother($this->clinicId);
+    $child_id = $this->createChild($mother_id, $this->healthCenterId);
+    $participant = $this->createIndividualParticipant($child_id, $date, 'nutrition');
+
+    $encounter = (object) [
+      'type' => 'nutrition_encounter',
+      'field_individual_participant' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $participant->nid],
+        ],
+      ],
+      'field_nutrition_encounter_type' => [
+        LANGUAGE_NONE => [
+          ['value' => 'nurse'],
+        ],
+      ],
+      'field_scheduled_date' => [
+        LANGUAGE_NONE => [
+          [
+            'value' => date('Y-m-d', $date),
+            'value2' => date('Y-m-d', $date),
+          ],
+        ],
+      ],
+      'field_shards' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $this->healthCenterId],
+        ],
+      ],
+    ];
+    node_save($encounter);
+
+    $this->createMuac('nutrition_muac', $encounter->nid, $child_id, $muac_value, $date);
+    $this->createHeight('nutrition_height', $encounter->nid, $child_id, 68, $date);
+    $this->createWeight('nutrition_weight', $encounter->nid, $child_id, $weight_value, $date);
+    $this->createNutrition('nutrition_nutrition', $encounter->nid, $child_id, $nutrition_sign, $date);
+  }
+
+  /**
+   * Create group nutrition data (sessions, attendance, and measurements).
+   */
+  protected function createGroupNutritionData() {
+    $measurements = [
+      HEDLEY_STATS_MODERATE => [
+        'weight' => 8,
+        'height' => 75,
+        'muac' => 12,
+        'nutrition' => 'none',
+      ],
+      HEDLEY_STATS_SEVERE => [
+        'weight' => 5,
+        'height' => 72,
+        'muac' => 11,
+        'nutrition' => 'edema',
+      ],
+    ];
+
+    $attendance = 40;
+    $sessions = $this->createSessionsWithAttendance($attendance, $attendance);
+
+    foreach ($sessions as $session) {
+      if (empty($session['session_data'])) {
+        continue;
+      }
+
+      $session_data = $session['session_data'];
+      $session_nid = $session_data['session_nid'];
+      $measurements_state = HEDLEY_STATS_MODERATE;
+
+      foreach ($session_data['children'] as $child_nid) {
+        $measurements_state = $measurements_state == HEDLEY_STATS_MODERATE ? HEDLEY_STATS_SEVERE : HEDLEY_STATS_MODERATE;
+        $this->createWeight('weight', $session_nid, $child_nid, $measurements[$measurements_state]['weight'], $session['date']);
+        $this->createHeight('height', $session_nid, $child_nid, $measurements[$measurements_state]['height'], $session['date']);
+        $this->createMuac('muac', $session_nid, $child_nid, $measurements[$measurements_state]['muac'], $session['date']);
+        $this->createNutrition('nutrition', $session_nid, $child_nid, $measurements[$measurements_state]['nutrition'], $session['date']);
+      }
+    }
+  }
+
+  /**
+   * Create NCD encounter data to assert ncd_data stats.
+   */
+  protected function createNcdEncounterData() {
+    $date = strtotime('-1 month');
+    $mother_id = $this->createMother($this->clinicId);
+    $participant = $this->createIndividualParticipant($mother_id, $date, 'ncd');
+
+    $encounter = (object) [
+      'type' => 'ncd_encounter',
+      'title' => 'NCD encounter',
+      'field_individual_participant' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $participant->nid],
+        ],
+      ],
+      'field_scheduled_date' => [
+        LANGUAGE_NONE => [
+          [
+            'value' => date('Y-m-d', $date),
+            'value2' => date('Y-m-d', $date),
+          ],
+        ],
+      ],
+      'field_shards' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $this->healthCenterId],
+        ],
+      ],
+    ];
+    node_save($encounter);
+
+    // Add NCD-related measurements/fields to ensure data presence.
+    $this->createDangerSigns('ncd_danger_signs', $encounter->nid, $mother_id, $date);
+    $this->createNcdSymptomReview($encounter->nid, $mother_id, $date);
+    $this->createCoreExam('ncd_core_exam', $encounter->nid, $mother_id, $date);
+    $this->createNcdVitals($encounter->nid, $mother_id, $date);
+    $this->createNcdFamilyPlanning($encounter->nid, $mother_id, $date);
+  }
+
+  /**
+   * Create acute illness encounter data to assert acute_illness_data stats.
+   */
+  protected function createAcuteIllnessEncounterData() {
+    $date = strtotime('-2 weeks');
+    $child_id = $this->createChild($this->clinicId);
+    $participant = $this->createIndividualParticipant($child_id, $date, 'acute-illness');
+
+    $encounter = (object) [
+      'type' => 'acute_illness_encounter',
+      'title' => 'Acute illness encounter',
+      'field_individual_participant' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $participant->nid],
+        ],
+      ],
+      'field_scheduled_date' => [
+        LANGUAGE_NONE => [
+          [
+            'value' => date('Y-m-d', $date),
+            'value2' => date('Y-m-d', $date),
+          ],
+        ],
+      ],
+    ];
+    node_save($encounter);
+
+    $this->createAcuteIllnessSymptoms('symptoms_gi', $encounter->nid, $child_id, $date);
+    $this->createAcuteIllnessSymptoms('symptoms_general', $encounter->nid, $child_id, $date);
+    $this->createAcuteIllnessSymptoms('symptoms_respiratory', $encounter->nid, $child_id, $date);
+    $this->createAcuteIllnessVitals($encounter->nid, $child_id, $date);
+    $this->createAcuteIllnessCoreExam($encounter->nid, $child_id, $date);
+    $this->createAcuteFindings($encounter->nid, $child_id, $date);
+  }
+
+  /**
+   * Create prenatal encounter data to assert it's stats.
+   */
+  protected function createPrenatalEncounterData() {
+    $date = strtotime('-1 week');
+    $mother_id = $this->createMother($this->clinicId);
+    $participant = $this->createIndividualParticipant($mother_id, $date, 'antenatal');
+
+    $encounter = (object) [
+      'type' => 'prenatal_encounter',
+      'title' => 'Prenatal encounter',
+      'field_individual_participant' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $participant->nid],
+        ],
+      ],
+      'field_scheduled_date' => [
+        LANGUAGE_NONE => [
+          [
+            'value' => date('Y-m-d', $date),
+            'value2' => date('Y-m-d', $date),
+          ],
+        ],
+      ],
+    ];
+    node_save($encounter);
+
+    $this->createPrenatalBreastfeeding($encounter->nid, $mother_id, $date);
+    $this->createBreastExam($encounter->nid, $mother_id, $date);
+    $this->createCoreExam('core_physical_exam', $encounter->nid, $mother_id, $date);
+    $this->createDangerSigns('danger_signs', $encounter->nid, $mother_id, $date);
+    $this->createPrenatalGuExam($encounter->nid, $mother_id, $date);
+  }
+
+  /**
+   * Create child scoreboard encounter data to assert it's data stats.
+   */
+  protected function createChildScorecardEncounterData() {
+    $date = strtotime('-3 weeks');
+    $mother_id = $this->createMother($this->clinicId);
+    $child_id = $this->createChild($mother_id, $this->healthCenterId);
+    $participant = $this->createIndividualParticipant($child_id, $date, 'child-scoreboard');
+
+    $encounter = (object) [
+      'type' => 'child_scoreboard_encounter',
+      'title' => 'Child scoreboard encounter',
+      'field_individual_participant' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $participant->nid],
+        ],
+      ],
+      'field_scheduled_date' => [
+        LANGUAGE_NONE => [
+          [
+            'value' => date('Y-m-d', $date),
+            'value2' => date('Y-m-d', $date),
+          ],
+        ],
+      ],
+    ];
+    node_save($encounter);
+
+    $this->createChildScoreboardImmunization('child_scoreboard_bcg_iz', $encounter->nid, $child_id, $date);
+    $this->createChildScoreboardImmunization('child_scoreboard_dtp_iz', $encounter->nid, $child_id, $date);
+    $this->createNcda('child_scoreboard_ncda', $encounter->nid, $child_id, $date);
+  }
+
+  /**
+   * Create well child encounter data to assert it's data stats.
+   */
+  protected function createWellChildEncounterData() {
+    $date = strtotime('-4 weeks');
+    $mother_id = $this->createMother($this->clinicId);
+    $child_id = $this->createChild($mother_id, $this->healthCenterId);
+    $participant = $this->createIndividualParticipant($child_id, $date, 'well-child');
+
+    $encounter = (object) [
+      'type' => 'well_child_encounter',
+      'title' => 'Well child encounter',
+      'field_individual_participant' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $participant->nid],
+        ],
+      ],
+      'field_scheduled_date' => [
+        LANGUAGE_NONE => [
+          [
+            'value' => date('Y-m-d', $date),
+            'value2' => date('Y-m-d', $date),
+          ],
+        ],
+      ],
+    ];
+    node_save($encounter);
+
+    $this->createHeight('well_child_height', $encounter->nid, $child_id, 80, $date);
+    $this->createMuac('well_child_muac', $encounter->nid, $child_id, 13.5, $date);
+    $this->createNutrition('well_child_nutrition', $encounter->nid, $child_id, 'none', $date);
+    $this->createWeight('well_child_weight', $encounter->nid, $child_id, 12.1, $date);
+    $this->createNcda('well_child_ncda', $encounter->nid, $child_id, $date);
   }
 
 }
