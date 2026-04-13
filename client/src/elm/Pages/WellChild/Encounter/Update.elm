@@ -76,6 +76,7 @@ update currentDate zscores site db msg model =
                                         mandatoryActivitiesCompleted =
                                             Pages.WellChild.Activity.Utils.mandatoryNutritionAssessmentTasksCompleted
                                                 currentDate
+                                                site
                                                 assembled
                                     in
                                     if not mandatoryActivitiesCompleted then

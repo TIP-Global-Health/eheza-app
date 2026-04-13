@@ -177,8 +177,10 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
     // Generate list of enabled features.
     $available_features = [
+      'family_nutrition',
       'gps_coordinates',
       'group_education',
+      'healthy_start',
       'hiv_management',
       'ncda',
       'report_to_whatsapp',

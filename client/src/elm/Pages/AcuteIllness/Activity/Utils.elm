@@ -6,7 +6,7 @@ import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (PersonId)
 import Backend.Measurement.Encoder exposing (malariaRapidTestResultAsString)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndicationForChild)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths, ageInYears, isChildUnderAgeOf5, isPersonAFertileWoman)
 import Backend.Utils exposing (tuberculosisManagementEnabled)
@@ -353,7 +353,7 @@ physicalExamTasksCompletedFromTotal currentDate isChw person assembled data task
                 PhysicalExamMuac ->
                     getMeasurementValueFunc measurements.muac
                         |> muacFormWithDefault data.muacForm
-                        |> Measurement.View.muacFormInputsAndTasks English currentDate SiteRwanda assembled.person Nothing SetMuac
+                        |> Measurement.View.muacFormInputsAndTasks English currentDate SiteRwanda assembled.person Nothing SetMuac True
 
                 PhysicalExamAcuteFindings ->
                     getMeasurementValueFunc measurements.acuteFindings
@@ -2691,7 +2691,9 @@ muacRedOnSubsequentVisit measurements =
         |> Maybe.map
             (Tuple.second
                 >> .value
-                >> muacIndication
+                >> -- MUAC task is presented for children up until
+                   -- age of 5 years.
+                   muacIndicationForChild
                 >> (==) ColorAlertRed
             )
         |> Maybe.withDefault False

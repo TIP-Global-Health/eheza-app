@@ -321,6 +321,10 @@ dbSync.version(31).upgrade(function (tx) {
   return tx.dbErrors.clear();
 });
 
+dbSync.version(32).stores({
+    shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter,acute_illness_encounter,home_visit_encounter,well_child_encounter,ncd_encounter,child_scoreboard_encounter,tuberculosis_encounter,hiv_encounter,family_nutrition_encounter,*name_search,[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+family_participant],[type+adult],[type+province+district+sector+cell+village],newborn,*participating_patients,*national_id_number',
+});
+
 /**
  * --- !!! IMPORTANT !!! ---
  *
@@ -379,7 +383,7 @@ function gatherWords (text) {
  *
  * @type {number}
  */
-const dbVersion = 31;
+const dbVersion = 32;
 
 /**
  * Return saved info for General sync.
@@ -911,7 +915,6 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
       })();
       break;
 
-
     case 'IndexDbQueryUploadWhatsApp':
       (async () => {
         const batchSize = 50;
@@ -1105,7 +1108,14 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         // participant it refers to.
         if (entities[0].type.endsWith('_encounter')) {
           // Encounter was resolved. Now resolving participant.
-          let uuid = entities[0].individual_participant;
+          if (entities[0].type.startsWith('family_')) {
+            // Family encounters usecase.
+            let uuid = entities[0].family_participant;
+          }
+          else {
+            // Individual encounters usecase.
+            let uuid = entities[0].individual_participant;
+          }
           result = await dbSync
               .shards
               .where('uuid')
@@ -1132,7 +1142,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             }
           }
         }
-        else if (entities[0].type == 'individual_participant') {
+        else if (entities[0].type == 'individual_participant' || entities[0].type == 'family_participant') {
           // Participant was resolved. Now resolving person.
           let uuid = entities[0].person;
           result = await dbSync

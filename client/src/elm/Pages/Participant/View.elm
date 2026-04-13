@@ -520,7 +520,7 @@ viewActivityListItem config language clinicType selectedActivity activityItem =
 
         activityTitle =
             if activity == ChildActivity ChildFbf && clinicType == Achi then
-                Translate.ActivitityTitleAchi
+                Translate.AhezaChild
 
             else
                 Translate.ActivitiesTitle activity

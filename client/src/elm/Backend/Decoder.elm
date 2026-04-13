@@ -6,6 +6,8 @@ import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Counseling.Decoder exposing (decodeCounselingSchedule, decodeCounselingTopic)
 import Backend.Dashboard.Decoder exposing (decodeDashboardStatsRaw)
 import Backend.EducationSession.Decoder exposing (decodeEducationSession)
+import Backend.FamilyEncounterParticipant.Decoder exposing (decodeFamilyEncounterParticipant)
+import Backend.FamilyNutritionEncounter.Decoder exposing (decodeFamilyNutritionEncounter)
 import Backend.HIVEncounter.Decoder exposing (decodeHIVEncounter)
 import Backend.HealthCenter.Decoder exposing (decodeCatchmentArea, decodeHealthCenter)
 import Backend.HomeVisitEncounter.Decoder exposing (decodeHomeVisitEncounter)
@@ -67,6 +69,12 @@ decodeRevision =
 
                     "acute_illness_vitals" ->
                         decodeWithUuid AcuteIllnessVitalsRevision decodeAcuteIllnessVitals
+
+                    "aheza_child" ->
+                        decodeWithUuid AhezaChildRevision decodeAhezaChild
+
+                    "aheza_mother" ->
+                        decodeWithUuid AhezaMotherRevision decodeAhezaMother
 
                     "appointment_confirmation" ->
                         decodeWithUuid AppointmentConfirmationRevision decodeAppointmentConfirmation
@@ -148,6 +156,21 @@ decodeRevision =
 
                     "exposure" ->
                         decodeWithUuid ExposureRevision decodeExposure
+
+                    "family_participant" ->
+                        decodeWithUuid FamilyEncounterParticipantRevision decodeFamilyEncounterParticipant
+
+                    "family_nutrition_encounter" ->
+                        decodeWithUuid FamilyNutritionEncounterRevision decodeFamilyNutritionEncounter
+
+                    "family_nutrition_muac_child" ->
+                        decodeWithUuid FamilyNutritionMuacChildRevision decodeFamilyNutritionMuacChild
+
+                    "family_nutrition_muac_mother" ->
+                        decodeWithUuid FamilyNutritionMuacMotherRevision decodeFamilyNutritionMuacMother
+
+                    "family_nutrition_photo" ->
+                        decodeWithUuid FamilyNutritionPhotoRevision decodeFamilyNutritionPhoto
 
                     "family_planning" ->
                         decodeWithUuid FamilyPlanningRevision decodeFamilyPlanning

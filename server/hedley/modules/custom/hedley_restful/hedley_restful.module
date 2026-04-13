@@ -5,7 +5,7 @@
  * Code for the RESTful integration.
  */
 
-define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 31);
+define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 32);
 define('HEDLEY_RESTFUL_INCIDENT_TYPE_CONTENT_UPLOAD', 'content-upload');
 
 /**
@@ -43,6 +43,8 @@ const HEDLEY_RESTFUL_SHARDED = [
   'child_scoreboard_encounter' => 'child-scoreboard-encounter',
   'clinic' => 'clinics',
   'education_session' => 'education-session',
+  'family_nutrition_encounter' => 'family-nutrition-encounter',
+  'family_participant' => 'family-participant',
   'hiv_encounter' => 'hiv-encounter',
   'home_visit_encounter' => 'home-visit-encounter',
   'individual_participant' => 'individual-participants',
@@ -65,6 +67,8 @@ const HEDLEY_RESTFUL_SHARDED = [
   'acute_illness_nutrition' => 'acute-illness-nutritions',
   'acute_illness_trace_contact' => 'acute-illness-trace-contact',
   'acute_illness_vitals' => 'acute-illness-vitals',
+  'aheza_child' => 'aheza-child',
+  'aheza_mother' => 'aheza-mother',
   'appointment_confirmation' => 'appointment-confirmation',
   'attendance' => 'attendances',
   'breast_exam' => 'breast-exams',
@@ -86,6 +90,9 @@ const HEDLEY_RESTFUL_SHARDED = [
   'covid_testing' => 'covid-testing',
   'danger_signs' => 'danger-signs',
   'exposure' => 'exposures',
+  'family_nutrition_muac_child' => 'family-nutrition-muac-child',
+  'family_nutrition_muac_mother' => 'family-nutrition-muac-mother',
+  'family_nutrition_photo' => 'family-nutrition-photo',
   'family_planning' => 'family-plannings',
   'follow_up' => 'follow-up',
   'group_health_education' => 'group-health-education',

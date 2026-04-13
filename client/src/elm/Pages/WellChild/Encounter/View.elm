@@ -238,7 +238,7 @@ viewMainPageContent language currentDate zscores site features id isChw db assem
                 action
 
         allowEndEncounter =
-            allowEndingEncounter currentDate pendingActivities assembled
+            allowEndingEncounter currentDate site pendingActivities assembled
 
         content =
             div [ class "ui full segment" ]

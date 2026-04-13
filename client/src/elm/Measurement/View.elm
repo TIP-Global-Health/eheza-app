@@ -16,7 +16,8 @@ import Backend.Measurement.Utils
         ( currentValues
         , getMeasurementValueFunc
         , mapMeasurementData
-        , muacIndication
+        , muacIndicationForChild
+        , muacIndicationForPerson
         , nutritionSignToString
         )
 import Backend.Model exposing (ModelIndexedDb)
@@ -204,7 +205,7 @@ muacFormConfig site =
     , inputValue = .muac
     , toBackendValue = toBackendValue
     , dateMeasured = .dateMeasured
-    , viewIndication = Just <| \language val -> viewColorAlertIndication language (muacIndication (MuacInCm val))
+    , viewIndication = Just <| \language val -> viewColorAlertIndication language (muacIndicationForChild (MuacInCm val))
     , updateMsg = UpdateMuac
     , saveMsg = \id value -> SendOutMsgChild <| SaveMuac id (MuacInCm value)
     }
@@ -3403,7 +3404,7 @@ ncdaFormInputsAndTasks language currentDate zscores site personId person config 
                                                     , div
                                                         [ class "five wide column" ]
                                                         [ showMaybe <|
-                                                            Maybe.map (muacIndication >> viewColorAlertIndication language) form.muac
+                                                            Maybe.map (muacIndicationForChild >> viewColorAlertIndication language) form.muac
                                                         ]
                                                     ]
                                                 ]
@@ -3898,13 +3899,13 @@ nutritionFeedingInputsAndTasks language currentDate personId setBoolInputMsg set
                           , viewBoolInput language
                                 form.enoughTillNextSession
                                 (setBoolInputMsg enoughTillNextSessionUpdateFunc)
-                                "enough-till-next-section"
+                                "enough-till-next-session"
                                 Nothing
                           , viewQuestionLabel language <| Translate.NutritionFeedingSignQuestion SupplementShared
                           , viewBoolInput language
                                 form.supplementShared
                                 (setBoolInputMsg supplementSharedUpdateFunc)
-                                "enough-till-next-section"
+                                "supplement-shared"
                                 (Just ( Translate.Shared, Translate.OnlySickChild ))
                           ]
                         , [ if form.supplementType == Just NoNutritionSupplementType then
@@ -4002,7 +4003,7 @@ nutritionFeedingInputsAndTasks language currentDate personId setBoolInputMsg set
                     , viewBoolInput language
                         form.eatenWithWater
                         (setBoolInputMsg eatenWithWaterUpdateFunc)
-                        "enough-till-next-section"
+                        "eaten-with-water"
                         Nothing
                     ]
                   , [ form.eatenWithWater ]
@@ -4021,7 +4022,7 @@ nutritionFeedingInputsAndTasks language currentDate personId setBoolInputMsg set
             , viewBoolInput language
                 form.encouragedToEat
                 (setBoolInputMsg encouragedToEatUpdateFunc)
-                "enough-till-next-section"
+                "encouraged-to-eat"
                 Nothing
             ]
 
@@ -4034,7 +4035,7 @@ nutritionFeedingInputsAndTasks language currentDate personId setBoolInputMsg set
             , viewBoolInput language
                 form.refusingToEat
                 (setBoolInputMsg refusingToEatUpdateFunc)
-                "enough-till-next-section"
+                "refusing-to-eat"
                 Nothing
             ]
 
@@ -4047,7 +4048,7 @@ nutritionFeedingInputsAndTasks language currentDate personId setBoolInputMsg set
             , viewBoolInput language
                 form.breastfeeding
                 (setBoolInputMsg breastfeedingUpdateFunc)
-                "enough-till-next-section"
+                "breastfeeding"
                 Nothing
             ]
 
@@ -4060,7 +4061,7 @@ nutritionFeedingInputsAndTasks language currentDate personId setBoolInputMsg set
             , viewBoolInput language
                 form.cleanWaterAvailable
                 (setBoolInputMsg cleanWaterAvailableUpdateFunc)
-                "enough-till-next-section"
+                "clean-water-available"
                 Nothing
             ]
     in
@@ -4323,7 +4324,7 @@ viewMuacForm :
 viewMuacForm language currentDate site person previousValue setMuacMsg form =
     let
         ( inputs, _ ) =
-            muacFormInputsAndTasks language currentDate site person previousValue setMuacMsg form
+            muacFormInputsAndTasks language currentDate site person previousValue setMuacMsg True form
     in
     [ div [ class "ui form muac" ]
         inputs
@@ -4337,9 +4338,10 @@ muacFormInputsAndTasks :
     -> Person
     -> Maybe Float
     -> (String -> msg)
+    -> Bool
     -> MuacForm
     -> ( List (Html msg), List (Maybe Bool) )
-muacFormInputsAndTasks language currentDate site person previousValue setMuacMsg form =
+muacFormInputsAndTasks language currentDate site person previousValue setMuacMsg showRangeHelper form =
     let
         activity =
             Backend.NutritionActivity.Model.Muac
@@ -4358,10 +4360,17 @@ muacFormInputsAndTasks language currentDate site person previousValue setMuacMsg
 
                 _ ->
                     ( form.muac, Translate.UnitCentimeter )
+
+        rangeHelper =
+            if showRangeHelper then
+                p [ class "range-helper" ] [ text <| translate language (Translate.AllowedValuesRangeHelper constraints) ]
+
+            else
+                emptyNode
     in
     ( [ viewLabel language <| Translate.NutritionActivityTitle activity
       , p [ class "activity-helper" ] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
-      , p [ class "range-helper" ] [ text <| translate language (Translate.AllowedValuesRangeHelper constraints) ]
+      , rangeHelper
       , div [ class "ui grid" ]
             [ div [ class "eleven wide column" ]
                 [ viewMeasurementInput
@@ -4374,7 +4383,7 @@ muacFormInputsAndTasks language currentDate site person previousValue setMuacMsg
             , div
                 [ class "five wide column" ]
                 [ showMaybe <|
-                    Maybe.map (MuacInCm >> muacIndication >> viewColorAlertIndication language) form.muac
+                    Maybe.map (MuacInCm >> muacIndicationForPerson currentDate person >> viewColorAlertIndication language) form.muac
                 ]
             ]
       , Pages.Utils.viewPreviousMeasurement language previousValue unitTransId

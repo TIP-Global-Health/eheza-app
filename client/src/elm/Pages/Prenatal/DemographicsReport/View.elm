@@ -97,7 +97,7 @@ viewContent language currentDate site db personId person =
         [ viewPatientInformationPane language currentDate person
         , viewFamilyInformationPane language currentDate site db personId person
         , viewAddressInformationPane language currentDate site person
-        , viewContactInformationPane language currentDate db person
+        , viewContactInformationPane language currentDate site db person
         ]
 
 
@@ -238,25 +238,32 @@ viewAddressInformationPane language currentDate site person =
         ]
 
 
-viewContactInformationPane : Language -> NominalDate -> ModelIndexedDb -> Person -> Html Msg
-viewContactInformationPane language currentDate db person =
+viewContactInformationPane : Language -> NominalDate -> Site -> ModelIndexedDb -> Person -> Html Msg
+viewContactInformationPane language currentDate site db person =
     let
         healthCenterName =
             getHealthCenterName person.healthCenterId db
                 |> Maybe.withDefault ""
+
+        partnerAndNextOfKinInfo =
+            if site == SiteRwanda then
+                [ div [ class "heading" ] [ text <| (translate language <| Translate.SpousePartner) ++ ":" ]
+                , viewLineItem language Translate.Name (Maybe.withDefault "" person.spouseName)
+                , viewLineItem language Translate.TelephoneNumber (Maybe.withDefault "" person.spousePhoneNumber)
+                , div [ class "heading" ] [ text <| (translate language <| Translate.NextOfKin) ++ ":" ]
+                , viewLineItem language Translate.Name (Maybe.withDefault "" person.nextOfKinName)
+                , viewLineItem language Translate.TelephoneNumber (Maybe.withDefault "" person.nextOfKinPhoneNumber)
+                ]
+
+            else
+                []
     in
     div [ class "contact-information" ]
         [ viewItemHeading language Translate.ContactInformation "blue"
-        , div [ class "pane-content" ]
-            [ viewLineItem language Translate.TelephoneNumber (Maybe.withDefault "" person.telephoneNumber)
-            , viewLineItem language Translate.HealthCenter healthCenterName
-            , div [ class "heading" ] [ text <| (translate language <| Translate.SpousePartner) ++ ":" ]
-            , viewLineItem language Translate.Name (Maybe.withDefault "" person.spouseName)
-            , viewLineItem language Translate.TelephoneNumber (Maybe.withDefault "" person.spousePhoneNumber)
-            , div [ class "heading" ] [ text <| (translate language <| Translate.NextOfKin) ++ ":" ]
-            , viewLineItem language Translate.Name (Maybe.withDefault "" person.nextOfKinName)
-            , viewLineItem language Translate.TelephoneNumber (Maybe.withDefault "" person.nextOfKinPhoneNumber)
-            ]
+        , div [ class "pane-content" ] <|
+            viewLineItem language Translate.TelephoneNumber (Maybe.withDefault "" person.telephoneNumber)
+                :: viewLineItem language Translate.HealthCenter healthCenterName
+                :: partnerAndNextOfKinInfo
         ]
 
 

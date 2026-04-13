@@ -64,7 +64,7 @@ view language isChw ( sessionId, session ) model =
             let
                 activityTitle =
                     if activity == ChildActivity ChildFbf && session.offlineSession.session.clinicType == Achi then
-                        Trans.ActivitityTitleAchi
+                        Trans.AhezaChild
 
                     else
                         Trans.ActivitiesTitle activity

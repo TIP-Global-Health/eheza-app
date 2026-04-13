@@ -31,6 +31,8 @@ import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic, E
 import Backend.Dashboard.Model exposing (DashboardStatsRaw)
 import Backend.EducationSession.Model exposing (EducationSession)
 import Backend.Entities exposing (..)
+import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterParticipant, FamilyEncounterType(..))
+import Backend.FamilyNutritionEncounter.Model exposing (FamilyNutritionEncounter)
 import Backend.HIVEncounter.Model exposing (HIVEncounter)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
 import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
@@ -106,6 +108,7 @@ type alias ModelIndexedDb =
     , resilienceSurveyRequests : Dict NurseId Backend.ResilienceSurvey.Model.Model
     , stockUpdateRequests : Dict NurseId Backend.StockUpdate.Model.Model
     , educationSessionRequests : Dict EducationSessionId Backend.EducationSession.Model.Model
+    , familyNutritionEncounterRequests : Dict FamilyNutritionEncounterId Backend.FamilyNutritionEncounter.Model.Model
 
     -- We provide a mechanism for loading the children and mothers expected
     -- at a particular session.
@@ -138,11 +141,14 @@ type alias ModelIndexedDb =
     , tuberculosisEncounters : Dict TuberculosisEncounterId (WebData TuberculosisEncounter)
     , hivEncounters : Dict HIVEncounterId (WebData HIVEncounter)
     , individualParticipants : Dict IndividualEncounterParticipantId (WebData IndividualEncounterParticipant)
+    , familyParticipants : Dict FamilyEncounterParticipantId (WebData FamilyEncounterParticipant)
     , traceContacts : Dict AcuteIllnessTraceContactId (WebData AcuteIllnessTraceContact)
     , educationSessions : Dict EducationSessionId (WebData EducationSession)
+    , familyNutritionEncounters : Dict FamilyNutritionEncounterId (WebData FamilyNutritionEncounter)
 
     -- Cache things organized in certain ways.
     , individualParticipantsByPerson : Dict PersonId (WebData (Dict IndividualEncounterParticipantId IndividualEncounterParticipant))
+    , familyParticipantsByPerson : Dict PersonId (WebData (Dict FamilyEncounterParticipantId FamilyEncounterParticipant))
     , prenatalEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict PrenatalEncounterId PrenatalEncounter))
     , nutritionEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict NutritionEncounterId NutritionEncounter))
     , acuteIllnessEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict AcuteIllnessEncounterId AcuteIllnessEncounter))
@@ -152,6 +158,7 @@ type alias ModelIndexedDb =
     , childScoreboardEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict ChildScoreboardEncounterId ChildScoreboardEncounter))
     , tuberculosisEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict TuberculosisEncounterId TuberculosisEncounter))
     , hivEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict HIVEncounterId HIVEncounter))
+    , familyNutritionEncountersByParticipant : Dict FamilyEncounterParticipantId (WebData (Dict FamilyNutritionEncounterId FamilyNutritionEncounter))
     , prenatalMeasurements : Dict PrenatalEncounterId (WebData PrenatalMeasurements)
     , nutritionMeasurements : Dict NutritionEncounterId (WebData NutritionMeasurements)
     , acuteIllnessMeasurements : Dict AcuteIllnessEncounterId (WebData AcuteIllnessMeasurements)
@@ -162,6 +169,7 @@ type alias ModelIndexedDb =
     , childScoreboardMeasurements : Dict ChildScoreboardEncounterId (WebData ChildScoreboardMeasurements)
     , tuberculosisMeasurements : Dict TuberculosisEncounterId (WebData TuberculosisMeasurements)
     , hivMeasurements : Dict HIVEncounterId (WebData HIVMeasurements)
+    , familyNutritionMeasurements : Dict FamilyNutritionEncounterId (WebData FamilyNutritionMeasurements)
     , stockManagementMeasurements : Dict HealthCenterId (WebData StockManagementMeasurements)
     , stockManagementData : Dict HealthCenterId (WebData StockManagementData)
     , pregnancyByNewborn : Dict PersonId (WebData (Maybe ( IndividualEncounterParticipantId, IndividualEncounterParticipant )))
@@ -202,6 +210,8 @@ type alias ModelIndexedDb =
     , postTuberculosisEncounter : Dict IndividualEncounterParticipantId (WebData ( TuberculosisEncounterId, TuberculosisEncounter ))
     , postHIVEncounter : Dict IndividualEncounterParticipantId (WebData ( HIVEncounterId, HIVEncounter ))
     , postEducationSession : WebData ( EducationSessionId, EducationSession )
+    , postFamilyEncounterParticipant : Dict PersonId (WebData ( FamilyEncounterParticipantId, FamilyEncounterParticipant ))
+    , postFamilyNutritionEncounter : Dict FamilyEncounterParticipantId (WebData ( FamilyNutritionEncounterId, FamilyNutritionEncounter ))
     }
 
 
@@ -237,6 +247,7 @@ emptyModelIndexedDb =
     , childScoreboardMeasurements = Dict.empty
     , tuberculosisMeasurements = Dict.empty
     , hivMeasurements = Dict.empty
+    , familyNutritionMeasurements = Dict.empty
     , stockManagementMeasurements = Dict.empty
     , stockManagementData = Dict.empty
     , pregnancyByNewborn = Dict.empty
@@ -246,6 +257,8 @@ emptyModelIndexedDb =
     , tuberculosisEncountersByParticipant = Dict.empty
     , hivEncounters = Dict.empty
     , hivEncountersByParticipant = Dict.empty
+    , familyNutritionEncounters = Dict.empty
+    , familyNutritionEncountersByParticipant = Dict.empty
     , educationSessions = Dict.empty
     , participantForms = NotAsked
     , participantsByPerson = Dict.empty
@@ -264,6 +277,7 @@ emptyModelIndexedDb =
     , tuberculosisEncounterRequests = Dict.empty
     , hivEncounterRequests = Dict.empty
     , educationSessionRequests = Dict.empty
+    , familyNutritionEncounterRequests = Dict.empty
     , traceContactRequests = Dict.empty
     , individualEncounterParticipantRequests = Dict.empty
     , nurseRequests = Dict.empty
@@ -271,6 +285,8 @@ emptyModelIndexedDb =
     , stockUpdateRequests = Dict.empty
     , individualParticipants = Dict.empty
     , individualParticipantsByPerson = Dict.empty
+    , familyParticipants = Dict.empty
+    , familyParticipantsByPerson = Dict.empty
     , relationshipsByPerson = Dict.empty
     , sessionRequests = Dict.empty
     , sessions = Dict.empty
@@ -296,6 +312,8 @@ emptyModelIndexedDb =
     , postTuberculosisEncounter = Dict.empty
     , postHIVEncounter = Dict.empty
     , postEducationSession = NotAsked
+    , postFamilyEncounterParticipant = Dict.empty
+    , postFamilyNutritionEncounter = Dict.empty
     }
 
 
@@ -357,6 +375,10 @@ type MsgIndexedDb
     | FetchIndividualEncounterParticipants (List IndividualEncounterParticipantId)
     | FetchIndividualEncounterParticipantsForPerson PersonId
     | FetchIndividualEncounterParticipantsForPeople (List PersonId)
+    | FetchFamilyEncounterParticipant FamilyEncounterParticipantId
+    | FetchFamilyEncounterParticipants (List FamilyEncounterParticipantId)
+    | FetchFamilyEncounterParticipantsForPerson PersonId
+    | FetchFamilyEncounterParticipantsForPeople (List PersonId)
     | FetchMotherMeasurements PersonId
     | FetchMothersMeasurements (List PersonId)
     | FetchNutritionEncounter NutritionEncounterId
@@ -406,6 +428,9 @@ type MsgIndexedDb
     | FetchVillages
     | FetchTraceContact AcuteIllnessTraceContactId
     | FetchPregnancyByNewborn PersonId
+    | FetchFamilyNutritionEncounter FamilyNutritionEncounterId
+    | FetchFamilyNutritionEncountersForParticipant FamilyEncounterParticipantId
+    | FetchFamilyNutritionMeasurements FamilyNutritionEncounterId
       -- Messages which handle responses to data
     | HandleFetchedAcuteIllnessEncounter AcuteIllnessEncounterId (WebData AcuteIllnessEncounter)
     | HandleFetchedAcuteIllnessEncounters (WebData (Dict AcuteIllnessEncounterId AcuteIllnessEncounter))
@@ -431,6 +456,10 @@ type MsgIndexedDb
     | HandleFetchedIndividualEncounterParticipants (WebData (Dict IndividualEncounterParticipantId IndividualEncounterParticipant))
     | HandleFetchedIndividualEncounterParticipantsForPerson PersonId (WebData (Dict IndividualEncounterParticipantId IndividualEncounterParticipant))
     | HandleFetchedIndividualEncounterParticipantsForPeople (WebData (Dict PersonId (Dict IndividualEncounterParticipantId IndividualEncounterParticipant)))
+    | HandleFetchedFamilyEncounterParticipant FamilyEncounterParticipantId (WebData FamilyEncounterParticipant)
+    | HandleFetchedFamilyEncounterParticipants (WebData (Dict FamilyEncounterParticipantId FamilyEncounterParticipant))
+    | HandleFetchedFamilyEncounterParticipantsForPerson PersonId (WebData (Dict FamilyEncounterParticipantId FamilyEncounterParticipant))
+    | HandleFetchedFamilyEncounterParticipantsForPeople (WebData (Dict PersonId (Dict FamilyEncounterParticipantId FamilyEncounterParticipant)))
     | HandleFetchedMotherMeasurements PersonId (WebData MotherMeasurementList)
     | HandleFetchedMothersMeasurements (WebData (Dict PersonId MotherMeasurementList))
     | HandleFetchedNutritionEncounter NutritionEncounterId (WebData NutritionEncounter)
@@ -478,6 +507,9 @@ type MsgIndexedDb
     | HandleFetchedVillages (WebData (Dict VillageId Village))
     | HandleFetchedTraceContact AcuteIllnessTraceContactId (WebData AcuteIllnessTraceContact)
     | HandleFetchedPregnancyByNewborn PersonId (WebData (Maybe ( IndividualEncounterParticipantId, IndividualEncounterParticipant )))
+    | HandleFetchedFamilyNutritionEncounter FamilyNutritionEncounterId (WebData FamilyNutritionEncounter)
+    | HandleFetchedFamilyNutritionEncountersForParticipant FamilyEncounterParticipantId (WebData (Dict FamilyNutritionEncounterId FamilyNutritionEncounter))
+    | HandleFetchedFamilyNutritionMeasurements FamilyNutritionEncounterId (WebData FamilyNutritionMeasurements)
       -- Messages which mutate data
     | PostPerson (Maybe PersonId) Initiator Person -- The first person is a person we ought to offer setting a relationship to.
     | PatchPerson PatchPersonInitator PersonId Person
@@ -495,6 +527,8 @@ type MsgIndexedDb
     | PostTuberculosisEncounter TuberculosisEncounter
     | PostHIVEncounter HIVEncounter
     | PostEducationSession EducationSession
+    | PostFamilyEncounterParticipant FamilyEncounterParticipant
+    | PostFamilyNutritionEncounter FamilyNutritionEncounter
       -- Messages which handle responses to mutating data
     | HandlePostedPerson (Maybe PersonId) Initiator (WebData PersonId)
     | HandlePatchedPerson PatchPersonInitator PersonId (WebData Person)
@@ -512,6 +546,8 @@ type MsgIndexedDb
     | HandlePostedTuberculosisEncounter IndividualEncounterParticipantId (WebData ( TuberculosisEncounterId, TuberculosisEncounter ))
     | HandlePostedHIVEncounter IndividualEncounterParticipantId (WebData ( HIVEncounterId, HIVEncounter ))
     | HandlePostedEducationSession (WebData ( EducationSessionId, EducationSession ))
+    | HandlePostedFamilyEncounterParticipant PersonId FamilyEncounterType (WebData ( FamilyEncounterParticipantId, FamilyEncounterParticipant ))
+    | HandlePostedFamilyNutritionEncounter FamilyEncounterParticipantId (WebData ( FamilyNutritionEncounterId, FamilyNutritionEncounter ))
       -- Operations we may want to perform when logout is clicked.
     | HandleLogout
       -- Process some revisions we've received from the backend. In some cases,
@@ -530,6 +566,7 @@ type MsgIndexedDb
     | MsgTuberculosisEncounter TuberculosisEncounterId Backend.TuberculosisEncounter.Model.Msg
     | MsgHIVEncounter HIVEncounterId Backend.HIVEncounter.Model.Msg
     | MsgEducationSession EducationSessionId Backend.EducationSession.Model.Msg
+    | MsgFamilyNutritionEncounter FamilyNutritionEncounterId Backend.FamilyNutritionEncounter.Model.Msg
     | MsgTraceContact AcuteIllnessTraceContactId Backend.TraceContact.Model.Msg
     | MsgIndividualEncounterParticipant IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Msg
     | MsgNurse NurseId Backend.Nurse.Model.Msg
@@ -551,6 +588,8 @@ type Revision
     | AcuteIllnessEncounterRevision AcuteIllnessEncounterId AcuteIllnessEncounter
     | AcuteIllnessTraceContactRevision AcuteIllnessTraceContactId AcuteIllnessTraceContact
     | AcuteIllnessVitalsRevision AcuteIllnessVitalsId AcuteIllnessVitals
+    | AhezaChildRevision AhezaChildId AhezaChild
+    | AhezaMotherRevision AhezaMotherId AhezaMother
     | AppointmentConfirmationRevision PrenatalAppointmentConfirmationId PrenatalAppointmentConfirmation
     | AttendanceRevision AttendanceId Attendance
     | BreastExamRevision BreastExamId BreastExam
@@ -580,6 +619,11 @@ type Revision
     | DashboardStatsRevision HealthCenterId DashboardStatsRaw
     | EducationSessionRevision EducationSessionId EducationSession
     | ExposureRevision ExposureId Exposure
+    | FamilyEncounterParticipantRevision FamilyEncounterParticipantId FamilyEncounterParticipant
+    | FamilyNutritionEncounterRevision FamilyNutritionEncounterId FamilyNutritionEncounter
+    | FamilyNutritionMuacChildRevision FamilyNutritionMuacChildId FamilyNutritionMuacChild
+    | FamilyNutritionMuacMotherRevision FamilyNutritionMuacMotherId FamilyNutritionMuacMother
+    | FamilyNutritionPhotoRevision FamilyNutritionPhotoId FamilyNutritionPhoto
     | FamilyPlanningRevision FamilyPlanningId FamilyPlanning
     | FollowUpRevision FollowUpId FollowUp
     | GroupHealthEducationRevision GroupHealthEducationId GroupHealthEducation
