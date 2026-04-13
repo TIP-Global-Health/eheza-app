@@ -1,0 +1,21 @@
+resource_type,owner,owner_type,source,from_concept_url,map_type,to_source_url,to_concept_code,to_concept_name,confidence
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-001/,SAME-AS,/orgs/PIH/sources/PIH/,5089,Weight (kg),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-002/,SAME-AS,/orgs/PIH/sources/PIH/,6019,Abdominal swelling,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-003/,SAME-AS,/orgs/PIH/sources/PIH/,10116,Asteatosis cutis,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-004/,SAME-AS,/orgs/PIH/sources/PIH/,460,Oedema,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-005/,SAME-AS,/orgs/PIH/sources/PIH/,6031,Decreased appetite,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-006/,SAME-AS,/orgs/PIH/sources/PIH/,1312,Moderate malnutrition,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-007/,SAME-AS,/orgs/PIH/sources/PIH/,11340,Severe uncomplicated malnutrition,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-008/,SAME-AS,/orgs/PIH/sources/PIH/,16,Diarrhea,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-009/,SAME-AS,/orgs/PIH/sources/PIH/,190,Condoms,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-010/,SAME-AS,/orgs/PIH/sources/PIH/,5275,Intra uterine device (IUD),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-011/,SAME-AS,/orgs/PIH/sources/PIH/,12106,Jadelle (implantable contraceptive),medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-012/,SAME-AS,/orgs/PIH/sources/PIH/,5279,Injectable contraceptives,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-013/,SAME-AS,/orgs/PIH/sources/PIH/,13249,Combined oral contraceptive pills,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-014/,SAME-AS,/orgs/PIH/sources/PIH/,1719,Tubal ligation,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-015/,SAME-AS,/orgs/PIH/sources/PIH/,1721,Vasectomy,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-016/,SAME-AS,/orgs/PIH/sources/PIH/,13158,Lactational amenorrhea,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-017/,SAME-AS,/orgs/PIH/sources/PIH/,5632,Breastfeeding child,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-018/,SAME-AS,/orgs/PIH/sources/PIH/,11805,Disability,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-019/,SAME-AS,/orgs/PIH/sources/PIH/,13534,Birth defects,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-020/,SAME-AS,/orgs/PIH/sources/PIH/,10570,Deworming,high

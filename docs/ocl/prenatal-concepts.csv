@@ -1,0 +1,66 @@
+resource_type,owner,owner_type,source,id,concept_class,datatype,name,description,eheza_category,eheza_field_path,confidence
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-001,Finding,Numeric,Systolic blood pressure,Systolic blood pressure in mmHg,Vitals,VitalsValue.sys,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-002,Finding,Numeric,Diastolic blood pressure,Diastolic blood pressure in mmHg,Vitals,VitalsValue.dia,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-003,Finding,Numeric,Heart rate,Heart rate / pulse in beats per minute,Vitals,VitalsValue.heartRate,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-004,Finding,Numeric,Respiratory rate,Respiratory rate in breaths per minute,Vitals,VitalsValue.respiratoryRate,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-005,Finding,Numeric,Body temperature,Body temperature in degrees Celsius,Vitals,VitalsValue.bodyTemperature,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-006,Finding,Numeric,Height (cm),Maternal height in centimetres,Anthropometry,PrenatalNutritionValue.height,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-008,Finding,Numeric,Mid-upper arm circumference (cm),MUAC in centimetres,Anthropometry,PrenatalNutritionValue.muac,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-009,Finding,Numeric,Fundal height,Height of fundus in centimetres during pregnancy examination,Obstetrical exam,ObstetricalExamValue.fundalHeight,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-010,Finding,Numeric,Fetal heart rate,Fetal heart rate in beats per minute,Obstetrical exam,ObstetricalExamValue.fetalHeartRate,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-011,Finding,N/A,Fetal movements present,Presence of fetal movement,Obstetrical exam,ObstetricalExamValue.fetalMovement,medium
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-012,Finding,Coded,Fetal presentation,Position of the fetus (cephalic/breech/transverse/twins),Obstetrical exam,ObstetricalExamValue.fetalPresentation,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-013,Finding,Coded,Caesarean section scar,Abdominal scar indicative of prior caesarean section,Obstetrical exam,ObstetricalExamValue.cSectionScar,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-014,Finding,Boolean,Currently pregnant,Patient is currently pregnant,Obstetric history,ObstetricHistoryValue.currentlyPregnant,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-015,Question,Numeric,Gravida,Total number of pregnancies,Obstetric history,(derived),high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-016,Question,Numeric,Parity (term pregnancies),Number of prior term pregnancies,Obstetric history,ObstetricHistoryValue.termPregnancy,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-017,Question,Numeric,Number of prior stillbirths,Total prior stillbirths (term + preterm),Obstetric history,ObstetricHistoryValue.stillbirthsAtTerm/PreTerm,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-018,Finding,Numeric,Number of abortions or miscarriages,Number of prior abortions or miscarriages,Obstetric history,ObstetricHistoryValue.abortions,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-019,Question,Numeric,Total number of living children,Number of living children,Obstetric history,ObstetricHistoryValue.liveChildren,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-020,Finding,Date,Date of last menstrual period,Date of last menstrual period,Obstetric history,LastMenstrualPeriodValue.date,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-021,Diagnosis,Coded,Vaginal bleeding,Vaginal bleeding during pregnancy,Danger signs,DangerSign.VaginalBleeding,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-023,Diagnosis,Coded,Seizure,Convulsions / seizure,Danger signs,DangerSign.Convulsions,medium
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-024,Symptom,N/A,Abdominal pain,Abdominal pain,Danger signs,DangerSign.AbdominalPain,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-025,Diagnosis,N/A,Difficulty breathing,Difficulty breathing,Danger signs,DangerSign.DifficultyBreathing,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-026,Symptom,N/A,Fever,Fever,Danger signs,DangerSign.Fever,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-027,Symptom,N/A,Weakness,Weakness (used for extreme weakness danger sign),Danger signs,DangerSign.ExtremeWeakness,medium
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-028,Finding,N/A,Imminent vaginal delivery,Delivery is imminent,Danger signs,DangerSign.ImminentDelivery,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-030,Diagnosis,N/A,Persistent vomiting,Severe or persistent vomiting,Danger signs,DangerSign.SevereVomiting,medium
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-031,Finding,Coded,Unconscious,Loss of consciousness,Danger signs,DangerSign.Unconscious,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-032,Diagnosis,Coded,Spontaneous rupture of membranes,Leaking amniotic fluid / gush of vaginal fluid,Danger signs,DangerSign.GushLeakingVaginalFluid,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-033,Diagnosis,N/A,Premature uterine contractions,Premature onset of contractions,Danger signs,DangerSign.PrematureOnsetContractions,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-034,Diagnosis,N/A,Breast lump,Breast mass / lump on breast exam,Physical exam,BreastExamSign.Mass,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-035,Diagnosis,N/A,Postpartum mastitis,Breast infection / mastitis,Physical exam,BreastExamSign.Infection,medium
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-036,Finding,N/A,Pale conjunctiva,Pale conjunctiva on eye exam,Physical exam,EyesCPESign.PaleConjuctiva,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-037,Diagnosis,N/A,Irregular heartbeat,Irregular heart rhythm on cardiac exam,Physical exam,HeartCPESign.IrregularRhythm,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-039,Diagnosis,N/A,Goiter,Enlarged thyroid on neck exam,Physical exam,NeckCPESign.EnlargedThyroid,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-040,Diagnosis,N/A,Lymphadenopathy,Enlarged lymph nodes,Physical exam,NeckCPESign.EnlargedLymphNodes,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-041,Question,Coded,Wheezing during clinical exam,Wheezes on lung auscultation,Physical exam,LungsCPESign.Wheezes,medium
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-042,Diagnosis,N/A,Crackles,Crackles / rales on lung auscultation,Physical exam,LungsCPESign.Crackles,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-043,Finding,N/A,Hepatomegaly,Enlarged liver on abdominal exam,Physical exam,AbdomenCPESign.Hepatomegaly,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-044,Diagnosis,N/A,Splenomegaly,Enlarged spleen on abdominal exam,Physical exam,AbdomenCPESign.Splenomegaly,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-045,Finding,Coded,Pallor,Pallor (used for pallor of hands),Physical exam,HandsCPESign.PallorHands,medium
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-046,Diagnosis,N/A,Peripheral edema,Edema of hands,Physical exam,HandsCPESign.EdemaHands,medium
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-047,Diagnosis,N/A,Lower extremity edema,Edema of legs,Physical exam,LegsCPESign.EdemaLegs,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-048,Drug,N/A,Ferrous sulphate + Folic acid,Iron and folic acid supplement,Medications,MedicationSign.IronAndFolicAcidSupplement,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-049,Drug,N/A,Mebendazole,Deworming (mebendazole),Medications,MedicationSign.Mebendazole,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-050,Drug,N/A,Folic acid,Postpartum folic acid,Medications,MedicationSign.PostpartumFolicAcid,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-051,Drug,N/A,Vitamin A,Postpartum vitamin A,Medications,MedicationSign.PostpartumVitaminA,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-052,Drug,N/A,Acetylsalicylic acid,Aspirin (low-dose in pregnancy),Medications,(MedicationDistribution - aspirin),high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-053,Drug,N/A,Calcium carbonate,Calcium supplement,Medications,(MedicationDistribution - calcium),medium
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-054,Test,Coded,HIV test result,Result of HIV rapid test,Labs,HIVTestValue.executionNote/testResult,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-055,Test,Coded,Rapid syphilis test,Rapid syphilis test (RPR/treponemal),Labs,SyphilisTestValue,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-056,Test,Coded,Hepatitis B surface antigen test,Hepatitis B surface antigen (HBsAg) result,Labs,HepatitisBTestValue,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-057,Test,Coded,Malaria RDT,Malaria rapid diagnostic test,Labs,MalariaTestValue,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-058,Test,Numeric,Hemoglobin,Hemoglobin in g/dL,Labs,HemoglobinTestValue,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-059,Test,Numeric,Serum glucose,Random blood sugar / serum glucose,Labs,RandomBloodSugarTestValue,medium
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-060,Test,Coded,Urine protein (dipstick),Qualitative urine protein on dipstick,Labs,UrineDipstickTestValue.protein,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-061,Test,Coded,"Glucose measurement, qualitative, urine",Qualitative urine glucose on dipstick,Labs,UrineDipstickTestValue.glucose,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-062,Test,Coded,White blood cells in urine,Leukocytes on urine dipstick,Labs,UrineDipstickTestValue.leukocytes,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-063,Test,Coded,Urine nitrite test,Nitrites on urine dipstick,Labs,UrineDipstickTestValue.nitrite,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-065,Test,Coded,Blood group,ABO blood group,Labs,BloodGpRsTestValue.bloodGroup,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-066,Test,Coded,Rh factor,Rhesus factor,Labs,BloodGpRsTestValue.rhesus,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-067,Question,Coded,Contraceptive use,Current family planning method,Family planning,FamilyPlanningSign,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-068,Drug,N/A,Td booster,Tetanus-diphtheria booster (pregnancy),Immunisation,TetanusImmunisationValue,medium
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-069,Question,Coded,Received insecticide treated bednet,Patient received / sleeps under ITN,Prevention,MalariaPreventionSign.MosquitoNet,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PRE-070,Test,Coded,Urine pregnancy test,Urine pregnancy test result,Labs,PregnancyTestValue,high

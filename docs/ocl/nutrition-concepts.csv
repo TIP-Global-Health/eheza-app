@@ -1,0 +1,21 @@
+resource_type,owner,owner_type,source,id,concept_class,datatype,name,description,eheza_category,eheza_field_path,confidence
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NUT-001,Finding,Numeric,Weight (kg),Body weight in kilograms (child / patient),Anthropometry,"WeightInKg; Weight (group); NutritionWeight; NCDAValue.weight",high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NUT-002,Finding,N/A,Abdominal swelling,Abdominal distension observed on exam,Nutrition signs,ChildNutritionSign.AbdominalDistension,medium
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NUT-003,Diagnosis,N/A,Dry skin,Dry skin / xerosis,Nutrition signs,ChildNutritionSign.DrySkin,medium
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NUT-004,Finding,N/A,Edema,Generalised / nutritional edema,Nutrition signs,"ChildNutritionSign.Edema; NCDASign.ShowsEdemaSigns",high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NUT-005,Finding,N/A,Decreased appetite,Poor or decreased appetite,Nutrition signs,ChildNutritionSign.PoorAppetite,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NUT-006,Finding,N/A,Moderate malnutrition,Moderate acute malnutrition (MAM),Nutrition assessment,NutritionAssessment.AssesmentAcuteMalnutritionModerate,medium
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NUT-007,Diagnosis,N/A,Severe uncomplicated malnutrition,Severe acute malnutrition (SAM),Nutrition assessment,NutritionAssessment.AssesmentAcuteMalnutritionSevere,medium
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NUT-008,Diagnosis,N/A,Diarrhea,Diarrhea (as observation / risk factor),Clinical,"ContributingFactorsSign.FactorDiarrheaOrVomiting; NCDASign.ChildGotDiarrhea",high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NUT-009,Drug,N/A,Condoms,Condoms (contraceptive method),Family planning,FamilyPlanningSign.Condoms,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NUT-010,Misc,N/A,Intrauterine device (IUD),IUD contraceptive method,Family planning,FamilyPlanningSign.IUD,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NUT-011,Drug,N/A,Contraceptive implant,Contraceptive implant (mapped via Jadelle as PIH has no generic implant concept),Family planning,FamilyPlanningSign.Implants,medium
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NUT-012,Misc,N/A,Injectable contraceptives,Injectable hormonal contraceptive,Family planning,FamilyPlanningSign.Injectables,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NUT-013,Drug,N/A,Combined oral contraceptive pills,Combined oral contraceptive pills (COCP),Family planning,FamilyPlanningSign.OralContraceptives,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NUT-014,Procedure,N/A,Tubal ligation,Tubal ligation (permanent female sterilisation),Family planning,FamilyPlanningSign.TubalLigatures,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NUT-015,Procedure,N/A,Vasectomy,Vasectomy (permanent male sterilisation),Family planning,FamilyPlanningSign.Vasectomy,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NUT-016,Diagnosis,N/A,Lactational amenorrhea,Lactational amenorrhea method (LAM),Family planning,FamilyPlanningSign.LactationAmenorrhea,medium
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NUT-017,Question,Coded,Breastfeeding child,Child is currently breastfeeding,Lactation / feeding,"LactationSign.Breastfeeding; NutritionFeedingSign.FeedingSignBreastfeeding",high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NUT-018,Finding,Coded,Disability,Child has a disability,NCDA,NCDASign.ChildWithDisability,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NUT-019,Finding,N/A,Birth defects,Child born with a birth defect,NCDA,NCDASign.BornWithBirthDefect,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NUT-020,Procedure,Coded,Deworming,Child received deworming medication,NCDA,NCDASign.ChildReceivesDewormer,high

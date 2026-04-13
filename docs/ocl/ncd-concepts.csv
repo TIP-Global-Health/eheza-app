@@ -1,0 +1,51 @@
+resource_type,owner,owner_type,source,id,concept_class,datatype,name,description,eheza_category,eheza_field_path,confidence
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-001,Test,Numeric,Creatinine (mg/dL),Serum creatinine,Labs,CreatinineTestValue.creatinineResult,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-002,Test,Numeric,Blood urea nitrogen (mg/dL),BUN,Labs,CreatinineTestValue.bunResult,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-003,Test,Numeric,Serum Glutamic-Pyruvic Transaminase,Alanine aminotransferase (ALT / SGPT),Labs,LiverFunctionTestValue.altResult,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-004,Test,Numeric,Serum Glutamic-Oxaloacetic Transaminase,Aspartate aminotransferase (AST / SGOT),Labs,LiverFunctionTestValue.astResult,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-005,Test,Numeric,Total cholesterol (mg/dL),Total cholesterol,Labs,LipidPanelTestValue.totalCholesterolResult,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-006,Test,Numeric,HDL (mg/dL),HDL cholesterol,Labs,LipidPanelTestValue.hdlResult,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-007,Test,Numeric,LDL (mg/dL),LDL cholesterol,Labs,LipidPanelTestValue.ldlResult,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-008,Test,Numeric,Triglycerides (mg/dL),Triglycerides,Labs,LipidPanelTestValue.triglyceridesResult,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-009,Test,Numeric,HbA1c,Glycated hemoglobin (%),Labs,HbA1cTestValue.hba1cResult,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-010,Diagnosis,Coded,HIV infected,HIV infection,Medical condition,MedicalCondition.MedicalConditionHIV,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-011,Diagnosis,N/A,Diabetes,Diabetes mellitus,Medical condition,MedicalCondition.MedicalConditionDiabetes,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-012,Diagnosis,N/A,Chronic kidney disease,Chronic kidney disease,Medical condition,MedicalCondition.MedicalConditionKidneyDisease,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-013,Diagnosis,N/A,Hypertension,Hypertension,Medical condition,MedicalCondition.MedicalConditionHypertension,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-014,Diagnosis,N/A,Gestational diabetes,Gestational diabetes,Medical condition,MedicalCondition.MedicalConditionGestationalDiabetes,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-015,Diagnosis,N/A,Preeclampsia,Pregnancy-related hypertension / preeclampsia,Medical condition,MedicalCondition.MedicalConditionPregnancyRelatedHypertension,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-016,Diagnosis,N/A,Diabetic neuropathy,Diabetic neuropathy,Medical condition,MedicalCondition.MedicalConditionNeuropathy,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-017,Diagnosis,N/A,Renal failure,Renal complications / failure,Medical condition,MedicalCondition.MedicalConditionRentalComplications,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-018,Diagnosis,N/A,Malaria,Malaria diagnosis,Medical condition,MedicalCondition.MedicalConditionMalaria,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-019,Diagnosis,Boolean,Tuberculosis,Tuberculosis diagnosis (co-morbidity),Medical condition,MedicalCondition.MedicalConditionTuberculosis,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-020,Diagnosis,N/A,Chronic viral Hepatitis B,Hepatitis B (co-morbidity),Medical condition,MedicalCondition.MedicalConditionHepatitisB,medium
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-021,Diagnosis,N/A,Syphilis,Syphilis (co-morbidity),Medical condition,MedicalCondition.MedicalConditionSyphilis,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-022,Diagnosis,N/A,Diabetic retinopathy,Diabetic eye complications,Medical condition,MedicalCondition.MedicalConditionEyeComplications,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-023,Diagnosis,N/A,Anemia,Anemia,Medical condition,MedicalCondition.MedicalConditionAnemia,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-024,Diagnosis,N/A,Vision problem,Vision changes,Danger signs,NCDDangerSign.VisionChanges,medium
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-025,Diagnosis,N/A,Severe headache,Severe headache,Danger signs,NCDDangerSign.SevereHeadaches,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-026,Diagnosis,Coded,Loss of consciousness,Loss of consciousness / syncope,Danger signs,NCDDangerSign.LossOfConciousness,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-027,Diagnosis,N/A,Polyuria,Urinary frequency / polyuria,Symptoms,NCDGroup1Symptom.UrinaryFrequency,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-028,Diagnosis,Coded,Anxiety,Anxiety,Symptoms,NCDGroup1Symptom.Anxiety,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-029,Diagnosis,N/A,Weight loss,Weight loss,Symptoms,"NCDGroup1Symptom.WeightLoss; TuberculosisSymptom.TuberculosisSymptomWeightLoss; HIVSymptom.HIVSymptomWeightLoss",high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-030,Diagnosis,N/A,Ascites,Swelling in abdomen / ascites,Symptoms,NCDGroup1Symptom.SwellingInAbdomen,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-031,Diagnosis,N/A,Hemiparesis,Weakness of one side of the body,Symptoms,NCDGroup2Symptom.WeaknessOfOneSideOfTheBody,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-032,Finding,N/A,Abnormal gait,Problems with walking,Symptoms,NCDGroup2Symptom.ProblemsWithWalking,medium
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-033,Diagnosis,N/A,Dysarthria,Problems with talking / dysarthria,Symptoms,NCDGroup2Symptom.ProblemsWithTalking,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-034,Diagnosis,N/A,Vision Loss,Decreased vision,Symptoms,NCDGroup2Symptom.DecreasedVision,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-035,Diagnosis,N/A,Blurred vision,Blurry vision,Symptoms,NCDGroup2Symptom.BlurryVision,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-036,Diagnosis,Coded,Orthopnea,Short of breath when lying down,Symptoms,NCDGroup2Symptom.ShortOfBreathWhenLayingDown,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-037,Diagnosis,N/A,Paroxysmal nocturnal dyspnea,Short of breath at night,Symptoms,NCDGroup2Symptom.ShortOfBreathAtNight,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-038,Diagnosis,N/A,Low back pain,Lower back pain,Pain,NCDPainSymptom.PainLowerBack,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-039,Diagnosis,N/A,Neck pain,Neck pain,Pain,NCDPainSymptom.PainNeck,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-040,Drug,N/A,Ibuprofen,Ibuprofen,Medications,MedicationCausingHypertension.MedicationIbuprofen,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-041,Pharmacologic Drug Class,N/A,ACE inhibitors,ACE inhibitor class,Medications,MedicationTreatingHypertension.MedicationAceInhibitors,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-042,Pharmacologic Drug Class,N/A,ARBs (angiotensin II receptor blockers),Angiotensin receptor blockers,Medications,MedicationTreatingHypertension.MedicationARBs,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-043,Drug,N/A,Hydrochlorothiazide,HCTZ,Medications,MedicationTreatingHypertension.MedicationHCTZ,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-044,Drug,N/A,Methyldopa,Methyldopa,Medications,MedicationTreatingHypertension.MedicationMethyldopa,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-045,Drug,N/A,Hydralazine,Hydralazine,Medications,MedicationTreatingHypertension.MedicationHydralazine,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-046,Drug,N/A,Metformin,Metformin,Medications,MedicationTreatingDiabetes.MedicationMetformin,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-047,Drug,N/A,Glibenclamide,Glibenclamide / glyburide,Medications,MedicationTreatingDiabetes.MedicationGlibenclamide,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-048,Drug,N/A,Insulin,Insulin,Medications,MedicationTreatingDiabetes.MedicationInsulin,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-049,Question,Coded,History of alcohol use,Alcohol consumption (social history),Social history,NCDSocialHistorySign.SignDrinkAlcohol,medium
+Concept,TIP-Global-Health,Organization,EHEZA,EH-NCD-050,Question,Coded,History of tobacco use,Cigarette smoking (social history),Social history,NCDSocialHistorySign.SignSmokeCigarettes,medium

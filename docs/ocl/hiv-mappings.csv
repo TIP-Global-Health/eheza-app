@@ -1,0 +1,25 @@
+resource_type,owner,owner_type,source,from_concept_url,map_type,to_source_url,to_concept_code,to_concept_name,confidence
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-001/,SAME-AS,/orgs/PIH/sources/PIH/,11551,DTG,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-002/,SAME-AS,/orgs/PIH/sources/PIH/,628,3TC,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-003/,SAME-AS,/orgs/PIH/sources/PIH/,802,Tenofovir,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-004/,SAME-AS,/orgs/PIH/sources/PIH/,11552,TDF + 3TC + DTG,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-005/,SAME-AS,/orgs/PIH/sources/PIH/,10920,ATV/r,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-006/,SAME-AS,/orgs/PIH/sources/PIH/,12361,ABC + 3TC,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-007/,SAME-AS,/orgs/PIH/sources/PIH/,12360,TDF + 3TC,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-008/,SAME-AS,/orgs/PIH/sources/PIH/,797,AZT,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-009/,SAME-AS,/orgs/PIH/sources/PIH/,1610,AZT + 3TC + NVP,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-010/,SAME-AS,/orgs/PIH/sources/PIH/,2985,TDF + 3TC + EFV,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-011/,SAME-AS,/orgs/PIH/sources/PIH/,630,3TC + AZT,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-012/,SAME-AS,/orgs/PIH/sources/PIH/,10873,LPV/r,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-013/,SAME-AS,/orgs/PIH/sources/PIH/,13116,DVR/r,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-014/,SAME-AS,/orgs/PIH/sources/PIH/,13784,RAL,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-015/,SAME-AS,/orgs/PIH/sources/PIH/,633,EFV,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-016/,SAME-AS,/orgs/PIH/sources/PIH/,631,NVP,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-017/,SAME-AS,/orgs/PIH/sources/PIH/,13107,ETV,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-018/,SAME-AS,/orgs/PIH/sources/PIH/,814,Abacavir,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-019/,SAME-AS,/orgs/PIH/sources/PIH/,916,Cotrimoxazole,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-020/,SAME-AS,/orgs/PIH/sources/PIH/,512,Rash,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-021/,SAME-AS,/orgs/PIH/sources/PIH/,20026,Severe abdominal pain,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-022/,SAME-AS,/orgs/PIH/sources/PIH/,3781,Mouth ulceration,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-023/,SAME-AS,/orgs/PIH/sources/PIH/,856,"HIV viral load, quantitative",high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HIV-024/,SAME-AS,/orgs/PIH/sources/PIH/,5497,CD4,high
