@@ -3312,7 +3312,8 @@ type StockUpdateType
 
 
 type StockSupplier
-    = SupplierMOH
+    = SupplierAheza
+    | SupplierMOH
     | SupplierRBC
     | SupplierUNICEF
     | SupplierRMSCentral
