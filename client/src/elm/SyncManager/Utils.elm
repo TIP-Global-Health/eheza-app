@@ -900,6 +900,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityPrenatalTetanusImmunisation identifier ->
             getIdentifier identifier "prenatal_tetanus_immunisation"
 
+        BackendAuthorityPrenatalUltrasound identifier ->
+            getIdentifier identifier "prenatal_ultrasound"
+
         BackendAuthorityPrenatalUrineDipstickTest identifier ->
             getIdentifier identifier "prenatal_urine_dipstick_test"
 
@@ -1710,6 +1713,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityPrenatalTetanusImmunisation identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalTetanusImmunisation identifier
 
+        BackendAuthorityPrenatalUltrasound identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalUltrasound identifier
+
         BackendAuthorityPrenatalUrineDipstickTest identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalUrineDipstickTest identifier
 
@@ -2021,6 +2027,9 @@ siteFeatureFromString str =
         "family_nutrition" ->
             Just FeatureFamilyNutrition
 
+        "healthy_start" ->
+            Just FeatureHealthyStart
+
         _ ->
             Nothing
 
@@ -2051,6 +2060,9 @@ siteFeatureToString feature =
 
         FeatureFamilyNutrition ->
             "family_nutrition"
+
+        FeatureHealthyStart ->
+            "healthy_start"
 
 
 siteFeaturesFromString : String -> EverySet SiteFeature
@@ -2594,6 +2606,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityPrenatalTetanusImmunisation identifier ->
             PrenatalTetanusImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalUltrasound identifier ->
+            PrenatalUltrasoundRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityPrenatalUrineDipstickTest identifier ->
             PrenatalUrineDipstickTestRevision (toEntityUuid identifier.uuid) identifier.entity

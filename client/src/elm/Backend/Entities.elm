@@ -1785,3 +1785,11 @@ type alias FamilyNutritionPhotoId =
 
 type FamilyNutritionPhotoUuidType
     = FamilyNutritionPhotoUuidType
+
+
+type alias PrenatalUltrasoundId =
+    EntityUuid PrenatalUltrasoundUuidType
+
+
+type PrenatalUltrasoundUuidType
+    = PrenatalUltrasoundUuidType
