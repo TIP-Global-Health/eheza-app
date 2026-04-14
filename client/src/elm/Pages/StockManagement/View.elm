@@ -50,7 +50,7 @@ import Pages.Utils
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Round
-import SyncManager.Model exposing (SyncInfoAuthorityZipper)
+import SyncManager.Model exposing (Site(..), SyncInfoAuthorityZipper)
 import Time
 import Translate exposing (Language, translate)
 import Utils.Html exposing (viewModal)
@@ -61,6 +61,7 @@ import Utils.WebData exposing (viewWebData)
 view :
     Language
     -> NominalDate
+    -> Site
     -> Maybe HealthCenterId
     -> NurseId
     -> Nurse
@@ -68,7 +69,7 @@ view :
     -> ModelIndexedDb
     -> Model
     -> Html Msg
-view language currentDate maybeHealthCenterId nurseId nurse syncInfoAuthorities db model =
+view language currentDate site maybeHealthCenterId nurseId nurse syncInfoAuthorities db model =
     Maybe.andThen
         (\healthCenterId ->
             Dict.get healthCenterId db.stockManagementData
@@ -76,13 +77,14 @@ view language currentDate maybeHealthCenterId nurseId nurse syncInfoAuthorities 
         maybeHealthCenterId
         |> Maybe.withDefault NotAsked
         |> viewWebData language
-            (viewHeaderAndContent language currentDate maybeHealthCenterId nurseId nurse syncInfoAuthorities model)
+            (viewHeaderAndContent language currentDate site maybeHealthCenterId nurseId nurse syncInfoAuthorities model)
             identity
 
 
 viewHeaderAndContent :
     Language
     -> NominalDate
+    -> Site
     -> Maybe HealthCenterId
     -> NurseId
     -> Nurse
@@ -90,7 +92,7 @@ viewHeaderAndContent :
     -> Model
     -> StockManagementData
     -> Html Msg
-viewHeaderAndContent language currentDate maybeHealthCenterId nurseId nurse syncInfoAuthorities model data =
+viewHeaderAndContent language currentDate site maybeHealthCenterId nurseId nurse syncInfoAuthorities model data =
     let
         header =
             let
@@ -136,7 +138,7 @@ viewHeaderAndContent language currentDate maybeHealthCenterId nurseId nurse sync
                             Dict.get (dateToMonthYear currentDate) data
                                 |> Maybe.map .consumptionAverage
                     in
-                    viewModeReceiveStock language currentDate nurseId nurse consumptionAverage model.receiveStockForm
+                    viewModeReceiveStock language currentDate site nurseId nurse consumptionAverage model.receiveStockForm
 
                 ModeCorrectEntry ->
                     viewModeCorrectEntry language currentDate nurseId nurse model.correctEntryForm
@@ -495,9 +497,27 @@ viewModeMonthDetails language currentDate monthGap lastUpdated data =
     ]
 
 
-viewModeReceiveStock : Language -> NominalDate -> NurseId -> Nurse -> Maybe Float -> ReceiveStockForm -> List (Html Msg)
-viewModeReceiveStock language currentDate nurseId nurse consumptionAverage form =
+viewModeReceiveStock : Language -> NominalDate -> Site -> NurseId -> Nurse -> Maybe Float -> ReceiveStockForm -> List (Html Msg)
+viewModeReceiveStock language currentDate site nurseId nurse consumptionAverage form =
     let
+        supplierOptions =
+            if site == SiteRwanda then
+                [ SupplierAheza
+                , SupplierMOH
+                , SupplierRBC
+                , SupplierUNICEF
+                , SupplierRMSCentral
+                , SupplierRMSDistrict
+                , SupplierBUFMAR
+                ]
+
+            else
+                [ SupplierAheza
+                , SupplierMOH
+                , SupplierUNICEF
+                , SupplierBUFMAR
+                ]
+
         ( inputs, tasks ) =
             let
                 ( derivedInputs, derivedTasks ) =
@@ -560,13 +580,7 @@ viewModeReceiveStock language currentDate nurseId nurse consumptionAverage form 
                           , viewQuestionLabel language Translate.StockManagementSupplierQuestion
                           , viewSelectListInput language
                                 form.supplier
-                                [ SupplierMOH
-                                , SupplierRBC
-                                , SupplierUNICEF
-                                , SupplierRMSCentral
-                                , SupplierRMSDistrict
-                                , SupplierBUFMAR
-                                ]
+                                supplierOptions
                                 stockSupplierToString
                                 SetStockSupplier
                                 Translate.StockSupplier

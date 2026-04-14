@@ -3909,17 +3909,17 @@ translationSet trans =
             }
 
         BaselineWeight value ->
-            { english = "Pre-pregnancy baseline weight: " ++ String.fromFloat value
-            , kinyarwanda = Just <| "Ibiro yarafite mbere yo gutwita: " ++ String.fromFloat value
-            , kirundi = Nothing
-            , somali = Nothing
+            { english = "Baseline weight: " ++ String.fromFloat value
+            , kinyarwanda = Just <| "Ibiro bya mbere: " ++ String.fromFloat value
+            , kirundi = Just <| "Ibiro vya mbere: " ++ String.fromFloat value
+            , somali = Just <| "Miisaanka aasaasiga ah: " ++ String.fromFloat value
             }
 
         BaselineWeightNotFound ->
-            { english = "No pre-pregnancy baseline weight on record"
-            , kinyarwanda = Just "Nta biro bya mbere yo kubyara byafashwe"
-            , kirundi = Nothing
-            , somali = Nothing
+            { english = "No baseline weight on record"
+            , kinyarwanda = Just "Nta biro bya mbere byafashwe"
+            , kirundi = Just "Nta biro vya mbere biriho"
+            , somali = Just "Ma jiro miisaan aasaasi ah oo diiwaangashan"
             }
 
         BatchNumberAbbrev ->
@@ -26444,6 +26444,13 @@ translationSet trans =
 
         StockSupplier value ->
             case value of
+                SupplierAheza ->
+                    { english = "AHEZA"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
                 SupplierMOH ->
                     { english = "MOH (Ministry of Health)"
                     , kinyarwanda = Just "Minisiteri y'ubuzima"
@@ -26488,6 +26495,13 @@ translationSet trans =
 
         StockSupplierAbbrev value ->
             case value of
+                SupplierAheza ->
+                    { english = "AHEZA"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
                 SupplierMOH ->
                     { english = "MOH"
                     , kinyarwanda = Nothing
