@@ -529,7 +529,6 @@ viewModeReceiveStock language currentDate site nurseId nurse consumptionAverage 
                 [ SupplierAheza
                 , SupplierMOH
                 , SupplierUNICEF
-                , SupplierBUFMAR
                 ]
 
         ( inputs, tasks ) =
