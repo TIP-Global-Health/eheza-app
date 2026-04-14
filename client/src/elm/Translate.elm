@@ -3910,16 +3910,16 @@ translationSet trans =
 
         BaselineWeight value ->
             { english = "Baseline weight: " ++ String.fromFloat value
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
-            , somali = Nothing
+            , kinyarwanda = Just <| "Ibiro bya mbere: " ++ String.fromFloat value
+            , kirundi = Just <| "Ibiro vya mbere: " ++ String.fromFloat value
+            , somali = Just <| "Miisaanka aasaasiga ah: " ++ String.fromFloat value
             }
 
         BaselineWeightNotFound ->
             { english = "No baseline weight on record"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
-            , somali = Nothing
+            , kinyarwanda = Just "Nta biro bya mbere byafashwe"
+            , kirundi = Just "Nta biro vya mbere biriho"
+            , somali = Just "Ma jiro miisaan aasaasi ah oo diiwaangashan"
             }
 
         BatchNumberAbbrev ->
