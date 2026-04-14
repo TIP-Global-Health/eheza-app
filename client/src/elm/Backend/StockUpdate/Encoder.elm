@@ -30,6 +30,7 @@ encodeStockUpdate stockUpdate =
         ++ encodeNullable "stock_supplier" stockUpdate.supplier encodeStockSupplier
         ++ encodeNullable "notes" stockUpdate.notes string
         ++ encodeNullable "stock_correction_reason" stockUpdate.correctionReason encodeStockCorrectionReason
+        ++ encodeNullable "village_ref" stockUpdate.village encodeEntityUuid
 
 
 encodeStockUpdateType : StockUpdateType -> Value

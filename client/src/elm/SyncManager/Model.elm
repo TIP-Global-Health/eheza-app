@@ -742,7 +742,8 @@ type SiteFeature
     | FeatureHIVManagement
     | FeatureNCDA
     | FeatureReportToWhatsApp
-    | FeatureStockManagement
+    | FeatureStockManagementHC
+    | FeatureStockManagementVillage
     | FeatureTuberculosisManagement
 
 

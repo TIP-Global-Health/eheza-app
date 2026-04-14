@@ -1,8 +1,11 @@
 module Backend.StockUpdate.Utils exposing (..)
 
 import AssocList as Dict
-import Backend.Measurement.Model exposing (StockCorrectionReason(..), StockManagementMeasurements, StockSupplier(..), StockUpdateType(..))
+import Backend.Entities exposing (..)
+import Backend.Measurement.Model exposing (StockCorrectionReason(..), StockManagementMeasurements, StockSupplier(..), StockUpdate, StockUpdateType(..), VillageStockManagementMeasurements)
+import Backend.Model exposing (ModelIndexedDb)
 import Backend.StockUpdate.Model exposing (..)
+import Backend.Village.Utils exposing (resolveVillageResidents)
 import Date
 import Gizra.NominalDate exposing (NominalDate)
 import List.Extra
@@ -15,6 +18,75 @@ generateStockManagementData :
     -> StockManagementData
 generateStockManagementData currentDate measurements =
     let
+        allDistributions =
+            (Dict.values measurements.childFbf
+                |> List.map
+                    (\fbf ->
+                        { dateMeasured = fbf.dateMeasured
+                        , distributedAmount = fbf.value.distributedAmount
+                        }
+                    )
+            )
+                ++ (Dict.values measurements.motherFbf
+                        |> List.map
+                            (\fbf ->
+                                { dateMeasured = fbf.dateMeasured
+                                , distributedAmount = fbf.value.distributedAmount
+                                }
+                            )
+                   )
+
+        allStockUpdates =
+            Dict.values measurements.stockUpdate
+    in
+    generateStockManagementDataFromDistributions currentDate allDistributions allStockUpdates
+
+
+generateVillageStockManagementData :
+    NominalDate
+    -> VillageId
+    -> ModelIndexedDb
+    -> VillageStockManagementMeasurements
+    -> StockManagementData
+generateVillageStockManagementData currentDate villageId db measurements =
+    let
+        villageResidents =
+            resolveVillageResidents villageId db
+
+        allDistributions =
+            (Dict.values measurements.ahezaChild
+                |> List.filter (\aheza -> List.member aheza.participantId villageResidents)
+                |> List.map
+                    (\aheza ->
+                        { dateMeasured = aheza.dateMeasured
+                        , distributedAmount = aheza.value
+                        }
+                    )
+            )
+                ++ (Dict.values measurements.ahezaMother
+                        |> List.filter (\aheza -> List.member aheza.participantId villageResidents)
+                        |> List.map
+                            (\aheza ->
+                                { dateMeasured = aheza.dateMeasured
+                                , distributedAmount = aheza.value.distributedAmount
+                                }
+                            )
+                   )
+
+        allStockUpdates =
+            Dict.values measurements.stockUpdate
+                |> List.filter (\stockUpdate -> stockUpdate.village == Just villageId)
+    in
+    generateStockManagementDataFromDistributions currentDate allDistributions allStockUpdates
+
+
+generateStockManagementDataFromDistributions :
+    NominalDate
+    -> List DistributionEntry
+    -> List StockUpdate
+    -> StockManagementData
+generateStockManagementDataFromDistributions currentDate allDistributions allStockUpdates =
+    let
         firstMonthForDisplay =
             Date.add Date.Months -12 currentDate
                 |> dateToMonthYear
@@ -24,7 +96,7 @@ generateStockManagementData currentDate measurements =
         -- Nurses should count current stock and enter it as
         -- stock update entry.
         firstStockUpdateMonthYear =
-            Dict.values measurements.stockUpdate
+            allStockUpdates
                 |> List.sortWith (sortByDate .dateRecorded)
                 |> List.head
                 |> Maybe.map .dateRecorded
@@ -37,13 +109,9 @@ generateStockManagementData currentDate measurements =
                     (Date.add Date.Months 1 currentDate)
                 |> dateToMonthYear
 
-        allFbfs =
-            Dict.values measurements.childFbf
-                ++ Dict.values measurements.motherFbf
-
-        -- Average month consumption is calculated by number of fbfs issued
+        -- Average month consumption is calculated by number of distributions issued
         -- during past 6 months, so we use this data structure to calculate it.
-        fbfsByMonth =
+        distributionsByMonth =
             List.range 1 18
                 |> List.map
                     (\monthGap ->
@@ -54,33 +122,33 @@ generateStockManagementData currentDate measurements =
 
                             quantityForMonthYear =
                                 List.filterMap
-                                    (\fbf ->
-                                        if compareMonthYear monthYear (dateToMonthYear fbf.dateMeasured) == EQ then
-                                            Just fbf.value.distributedAmount
+                                    (\entry ->
+                                        if compareMonthYear monthYear (dateToMonthYear entry.dateMeasured) == EQ then
+                                            Just entry.distributedAmount
 
                                         else
                                             Nothing
                                     )
-                                    allFbfs
+                                    allDistributions
                                     |> List.sum
                         in
                         ( monthYear, quantityForMonthYear )
                     )
                 |> List.reverse
 
-        fbfForDisplay =
+        distributionsForDisplay =
             List.filter
-                (\fbf ->
+                (\entry ->
                     let
-                        fbfMonthYear =
-                            dateToMonthYear fbf.dateMeasured
+                        entryMonthYear =
+                            dateToMonthYear entry.dateMeasured
                     in
-                    compareMonthYear fbfMonthYear firstMonthForDisplay /= LT
+                    compareMonthYear entryMonthYear firstMonthForDisplay /= LT
                 )
-                allFbfs
+                allDistributions
 
         stockUpdateForDisplay =
-            Dict.values measurements.stockUpdate
+            allStockUpdates
                 |> List.filter
                     (\stockUpdate ->
                         let
@@ -94,12 +162,12 @@ generateStockManagementData currentDate measurements =
         -- starting stock.
         -- There are 2 options for this:
         --   1. Initial setup was performed during display period:
-        --     Here, we simply look at that month quantities by Fbf and
+        --     Here, we simply look at that month quantities by distribution and
         --     Stock update entries.
         --   2. Initial setup was performed before display period:
-        --     In this case, we need to count quantities by Fbf and
+        --     In this case, we need to count quantities by distribution and
         --     Stock update entries from initial setup month (included),
-        --     up yntil first display month (not included).
+        --     up until first display month (not included).
         startingStockFilteringCondition processedMonthYear =
             if compareMonthYear firstStockUpdateMonthYear firstMonthForDisplay == GT then
                 compareMonthYear processedMonthYear firstStockUpdateMonthYear == EQ
@@ -109,7 +177,7 @@ generateStockManagementData currentDate measurements =
                     && (compareMonthYear processedMonthYear firstMonthForDisplay == LT)
 
         initialStockByStockUpdate =
-            Dict.values measurements.stockUpdate
+            allStockUpdates
                 |> List.filterMap
                     (\stockUpdate ->
                         if startingStockFilteringCondition <| dateToMonthYear stockUpdate.dateRecorded then
@@ -120,20 +188,20 @@ generateStockManagementData currentDate measurements =
                     )
                 |> List.sum
 
-        initialStockByFbf =
+        initialStockByDistributions =
             List.filterMap
-                (\fbf ->
-                    if startingStockFilteringCondition <| dateToMonthYear fbf.dateMeasured then
-                        Just fbf.value.distributedAmount
+                (\entry ->
+                    if startingStockFilteringCondition <| dateToMonthYear entry.dateMeasured then
+                        Just entry.distributedAmount
 
                     else
                         Nothing
                 )
-                allFbfs
+                allDistributions
                 |> List.sum
 
         initialStartingStock =
-            toFloat initialStockByStockUpdate - initialStockByFbf
+            toFloat initialStockByStockUpdate - initialStockByDistributions
 
         receivedIssuedByMonthYear =
             List.range 0 12
@@ -155,22 +223,22 @@ generateStockManagementData currentDate measurements =
                                     )
                                     stockUpdateForDisplay
 
-                            fbfs =
+                            distributions =
                                 List.filter
-                                    (\fbf ->
+                                    (\entry ->
                                         let
-                                            fbfMonthYear =
-                                                dateToMonthYear fbf.dateMeasured
+                                            entryMonthYear =
+                                                dateToMonthYear entry.dateMeasured
                                         in
-                                        compareMonthYear fbfMonthYear monthYear == EQ
+                                        compareMonthYear entryMonthYear monthYear == EQ
                                     )
-                                    fbfForDisplay
+                                    distributionsForDisplay
                         in
-                        ( monthYear, ( stockUpdates, fbfs ) )
+                        ( monthYear, ( stockUpdates, distributions ) )
                     )
     in
     List.foldr
-        (\( monthYear, ( stockUpdates, fbfs ) ) accum ->
+        (\( monthYear, ( stockUpdates, distributions ) ) accum ->
             let
                 received =
                     List.map .quantity stockUpdates
@@ -178,7 +246,7 @@ generateStockManagementData currentDate measurements =
                         |> toFloat
 
                 issued =
-                    List.map (.value >> .distributedAmount) fbfs
+                    List.map .distributedAmount distributions
                         |> List.sum
 
                 prevMonthYear =
@@ -200,17 +268,17 @@ generateStockManagementData currentDate measurements =
                                 Nothing
                             )
 
-                -- Total fbf consumption during previous 6 months.
-                -- Used to calculate monthly average consumptiion.
+                -- Total distribution consumption during previous 6 months.
+                -- Used to calculate monthly average consumption.
                 consumptionSixPastMonths =
                     List.Extra.findIndex
                         (\( key, _ ) ->
                             compareMonthYear key monthYear == EQ
                         )
-                        fbfsByMonth
+                        distributionsByMonth
                         |> Maybe.map
                             (\index ->
-                                List.Extra.splitAt (index - 6) fbfsByMonth
+                                List.Extra.splitAt (index - 6) distributionsByMonth
                                     |> Tuple.second
                                     |> List.map Tuple.second
                                     |> List.take 6
@@ -237,7 +305,7 @@ generateStockManagementData currentDate measurements =
                             )
                 , consumptionAverage = consumptionSixPastMonths / 6
                 , stockUpdates = stockUpdates
-                , fbfs = fbfs
+                , distributions = distributions
                 }
                 accum
         )

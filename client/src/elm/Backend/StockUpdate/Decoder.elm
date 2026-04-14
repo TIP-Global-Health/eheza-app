@@ -26,6 +26,7 @@ decodeStockUpdate =
         |> required "health_center" decodeEntityUuid
         |> required "deleted" (decodeWithFallback False bool)
         |> optional "shard" (nullable decodeEntityUuid) Nothing
+        |> optional "village_ref" (nullable decodeEntityUuid) Nothing
         |> optional "signature" (map ImageUrl (decodeStringWithDefault "")) (ImageUrl "")
 
 

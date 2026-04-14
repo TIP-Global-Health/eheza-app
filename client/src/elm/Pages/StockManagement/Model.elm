@@ -9,6 +9,21 @@ import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (Page)
 
 
+type StockManagementContext
+    = ContextHealthCenter HealthCenterId
+    | ContextVillage HealthCenterId VillageId
+
+
+resolveStockManagementContext : HealthCenterId -> Maybe VillageId -> StockManagementContext
+resolveStockManagementContext healthCenterId maybeVillageId =
+    case maybeVillageId of
+        Just villageId ->
+            ContextVillage healthCenterId villageId
+
+        Nothing ->
+            ContextHealthCenter healthCenterId
+
+
 type alias Model =
     { displayMode : DisplayMode
     , receiveStockForm : ReceiveStockForm

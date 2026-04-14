@@ -220,12 +220,51 @@ export async function completeCorrectEntry(
 }
 
 // ---------------------------------------------------------------------------
+// Feature flag helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Ensure the HC-level stock management feature flag is enabled.
+ * Required before a nurse can see the "Stock Management" card on the
+ * dashboard. Mirrors `ensureNCDAFeatureEnabled` in `reports.ts`.
+ *
+ * Note: execSync with a hardcoded command — no user input involved.
+ */
+export function ensureStockManagementHCFeatureEnabled() {
+  const { drushCmd, cwd } = drushEnv();
+  execSync(
+    `${drushCmd} vset hedley_admin_feature_stock_management_hc_enabled 1`,
+    { cwd, timeout: 15000, encoding: 'utf-8', stdio: 'pipe' },
+  );
+}
+
+/**
+ * Ensure the village-level stock management feature flag is enabled.
+ * Required before a CHW can see the "Stock Management" card on the
+ * dashboard. Mirrors `ensureNCDAFeatureEnabled` in `reports.ts`.
+ *
+ * Note: execSync with a hardcoded command — no user input involved.
+ */
+export function ensureStockManagementVillageFeatureEnabled() {
+  const { drushCmd, cwd } = drushEnv();
+  execSync(
+    `${drushCmd} vset hedley_admin_feature_stock_management_village_enabled 1`,
+    { cwd, timeout: 15000, encoding: 'utf-8', stdio: 'pipe' },
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Backend verification via drush
 // ---------------------------------------------------------------------------
 
 /**
  * Query the backend for stock_update nodes associated with a health center.
  * Returns an object with count and types breakdown.
+ *
+ * When `villageName` is supplied, results are further filtered to stock
+ * updates whose `field_village_ref` points to the village node with that
+ * title. This is required for CHW village-level stock tests so that the
+ * assertion only counts village-scoped stock updates (not HC ones).
  *
  * Uses delta-based verification: compare against an initial count to avoid
  * interference from existing demo data.
@@ -238,8 +277,13 @@ export async function completeCorrectEntry(
 export function queryStockUpdateNodes(
   healthCenterName: string,
   expectedCount?: number,
+  villageName?: string,
 ): { count: number; types: Record<string, number> } {
   const hcNameB64 = Buffer.from(healthCenterName, 'utf8').toString('base64');
+  const villageNameB64 = villageName
+    ? Buffer.from(villageName, 'utf8').toString('base64')
+    : '';
+  const filterByVillage = villageName ? 'true' : 'false';
 
   const php = `
     \\$hc_name = base64_decode('${hcNameB64}');
@@ -254,11 +298,30 @@ export function queryStockUpdateNodes(
     }
     \\$hc_nid = key(\\$result['node']);
 
+    \\$filter_by_village = ${filterByVillage};
+    \\$village_nid = NULL;
+    if (\\$filter_by_village) {
+      \\$village_name = base64_decode('${villageNameB64}');
+      \\$vq = new EntityFieldQuery();
+      \\$vr = \\$vq->entityCondition('entity_type', 'node')
+        ->propertyCondition('type', 'village')
+        ->fieldCondition('field_village', 'value', \\$village_name)
+        ->execute();
+      if (empty(\\$vr['node'])) {
+        echo json_encode(['error' => 'Village not found']);
+        return;
+      }
+      \\$village_nid = key(\\$vr['node']);
+    }
+
     \\$q = new EntityFieldQuery();
-    \\$r = \\$q->entityCondition('entity_type', 'node')
+    \\$q->entityCondition('entity_type', 'node')
       ->propertyCondition('type', 'stock_update')
-      ->fieldCondition('field_health_center', 'target_id', \\$hc_nid)
-      ->execute();
+      ->fieldCondition('field_health_center', 'target_id', \\$hc_nid);
+    if (\\$filter_by_village) {
+      \\$q->fieldCondition('field_village_ref', 'target_id', \\$village_nid);
+    }
+    \\$r = \\$q->execute();
 
     \\$types = array('receive-supply' => 0, 'correction' => 0);
     \\$count = 0;

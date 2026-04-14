@@ -182,12 +182,14 @@ update currentDate currentTime activePage dbVersion device msg model =
                                             []
                                         |> List.reverse
 
-                                -- When authority completes download, we mark stock managemend data of that
+                                -- When authority completes download, we mark stock management data of that
                                 -- health center as obsolete, as there may have been Fbf/Stock update
-                                -- entries downloaded.
+                                -- or Aheza entries downloaded.
                                 stockManagementDataMsg =
                                     if data.revisionCount == 0 then
                                         [ Backend.Model.MarkForRecalculationStockManagementData (toEntityUuid currentZipper.uuid)
+                                            |> App.Model.MsgIndexedDb
+                                        , Backend.Model.MarkForRecalculationVillageStockManagementData (toEntityUuid currentZipper.uuid)
                                             |> App.Model.MsgIndexedDb
                                         ]
 
