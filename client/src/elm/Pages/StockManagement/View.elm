@@ -62,22 +62,36 @@ view :
     Language
     -> NominalDate
     -> Site
-    -> Maybe HealthCenterId
+    -> StockManagementContext
     -> NurseId
     -> Nurse
     -> SyncInfoAuthorityZipper
     -> ModelIndexedDb
     -> Model
     -> Html Msg
-view language currentDate site maybeHealthCenterId nurseId nurse syncInfoAuthorities db model =
-    Maybe.andThen
-        (\healthCenterId ->
-            Dict.get healthCenterId db.stockManagementData
-        )
-        maybeHealthCenterId
-        |> Maybe.withDefault NotAsked
+view language currentDate site context nurseId nurse syncInfoAuthorities db model =
+    let
+        healthCenterId =
+            case context of
+                ContextHealthCenter id ->
+                    id
+
+                ContextVillage id _ ->
+                    id
+
+        stockData =
+            case context of
+                ContextHealthCenter id ->
+                    Dict.get id db.stockManagementData
+                        |> Maybe.withDefault NotAsked
+
+                ContextVillage id _ ->
+                    Dict.get id db.villageStockManagementData
+                        |> Maybe.withDefault NotAsked
+    in
+    stockData
         |> viewWebData language
-            (viewHeaderAndContent language currentDate site maybeHealthCenterId nurseId nurse syncInfoAuthorities model)
+            (viewHeaderAndContent language currentDate site (Just healthCenterId) nurseId nurse syncInfoAuthorities model)
             identity
 
 
@@ -359,22 +373,22 @@ viewModeMonthDetails language currentDate monthGap lastUpdated data =
                                     )
                                     dataForMonth.stockUpdates
 
-                            fbfs =
+                            distributions =
                                 List.map
-                                    (\fbf ->
-                                        { date = fbf.dateMeasured
+                                    (\entry ->
+                                        { date = entry.dateMeasured
                                         , fromTo = translate language Translate.Patients
                                         , batch = ""
                                         , expirity = Nothing
                                         , received = Nothing
-                                        , issued = Just fbf.value.distributedAmount
+                                        , issued = Just entry.distributedAmount
 
-                                        -- Fbf distribution does not have signature.
+                                        -- Distribution does not have signature.
                                         , signature = Nothing
                                         , balance = Nothing
                                         }
                                     )
-                                    dataForMonth.fbfs
+                                    dataForMonth.distributions
                                     |> List.foldl
                                         (\new accum ->
                                             Dict.get new.date accum
@@ -404,7 +418,7 @@ viewModeMonthDetails language currentDate monthGap lastUpdated data =
 
                             all =
                                 stockUpdates
-                                    ++ fbfs
+                                    ++ distributions
                                     |> List.sortWith (sortByDateDesc .date)
 
                             allWithBalance =
@@ -515,7 +529,6 @@ viewModeReceiveStock language currentDate site nurseId nurse consumptionAverage 
                 [ SupplierAheza
                 , SupplierMOH
                 , SupplierUNICEF
-                , SupplierBUFMAR
                 ]
 
         ( inputs, tasks ) =

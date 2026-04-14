@@ -63,6 +63,7 @@ import Pages.Prenatal.RecurrentEncounter.Fetch
 import Pages.Relationship.Fetch
 import Pages.Session.Fetch
 import Pages.StockManagement.Fetch
+import Pages.StockManagement.Model
 import Pages.TraceContact.Fetch
 import Pages.Tuberculosis.Activity.Fetch
 import Pages.Tuberculosis.Encounter.Fetch
@@ -514,7 +515,8 @@ fetch model =
                 getLoggedInData model
                     |> Maybe.map
                         (\( healthCenterId, _ ) ->
-                            Pages.StockManagement.Fetch.fetch currentDate healthCenterId model.indexedDb
+                            Pages.StockManagement.Model.resolveStockManagementContext healthCenterId model.villageId
+                                |> (\context -> Pages.StockManagement.Fetch.fetch currentDate context model.indexedDb)
                                 |> List.map MsgIndexedDb
                         )
                     |> Maybe.withDefault []

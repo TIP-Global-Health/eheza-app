@@ -142,6 +142,9 @@
                 else if (type === 'stock-management-measurements') {
                     return viewStockManagementMeasurements(uuid);
                 }
+                else if (type === 'village-stock-management-measurements') {
+                    return viewVillageStockManagementMeasurements(uuid);
+                }
                 else if (type === 'pregnancy-by-newborn') {
                     return viewMeasurements('newborn', uuid);
                 }
@@ -778,6 +781,57 @@
         // if no measurements were ever taken.
         var data = {};
         data = {};
+        // Decoder is expecting to have the health center UUID.
+        data.uuid = shard;
+
+        return query.toArray().catch(databaseError).then(function (nodes) {
+            if (nodes) {
+                nodes.forEach(function (node) {
+                    if (data[node.type]) {
+                        data[node.type].push(node);
+                    } else {
+                        data[node.type] = [node];
+                    }
+                });
+
+                var body = JSON.stringify({
+                    // Decoder is expecting a list.
+                    data: [data]
+                });
+
+                var response = new Response(body, {
+                    status: 200,
+                    statusText: 'OK',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                return Promise.resolve(response);
+            } else {
+                response = new Response('', {
+                    status: 404,
+                    statusText: 'Not found'
+                });
+
+                return Promise.reject(response);
+            }
+        }).catch(sendErrorResponses);
+    }
+
+    var villageStockManagementMeasurementsTypes = [
+      'aheza_child',
+      'aheza_mother',
+      'stock_update'
+    ];
+
+    function viewVillageStockManagementMeasurements (shard) {
+        // Load all types of village stock management measurements that belong to provided health center.
+        var query = dbSync.shards.where('type').anyOf(villageStockManagementMeasurementsTypes).and(function (item) {
+          return (item.deleted !== true && item.shard === shard);
+        });
+
+        var data = {};
         // Decoder is expecting to have the health center UUID.
         data.uuid = shard;
 
