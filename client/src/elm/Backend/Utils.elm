@@ -348,6 +348,11 @@ hivManagementEnabled =
     EverySet.member FeatureHIVManagement
 
 
+healthyStartEnabled : EverySet SiteFeature -> Bool
+healthyStartEnabled =
+    EverySet.member FeatureHealthyStart
+
+
 familyNutritionEnabled : EverySet SiteFeature -> Bool
 familyNutritionEnabled =
     EverySet.member FeatureFamilyNutrition

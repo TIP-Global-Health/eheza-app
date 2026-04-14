@@ -204,7 +204,7 @@ expectActivity currentDate zscores site features isChw assembled db activity =
             True
 
         WellChildNCDA ->
-            -- For nurses only, show if child is bellow age of 24 months.
+            -- For nurses only, show if child is below age of 24 months.
             (assembled.encounter.encounterType == PediatricCare)
                 && expectNCDAActivity currentDate features isChw assembled.person
 

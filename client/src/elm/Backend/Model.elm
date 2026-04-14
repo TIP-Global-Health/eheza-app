@@ -741,6 +741,7 @@ type Revision
     | PrenatalSymptomReviewRevision PrenatalSymptomReviewId PrenatalSymptomReview
     | PrenatalSyphilisTestRevision PrenatalSyphilisTestId PrenatalSyphilisTest
     | PrenatalTetanusImmunisationRevision PrenatalTetanusImmunisationId PrenatalTetanusImmunisation
+    | PrenatalUltrasoundRevision PrenatalUltrasoundId PrenatalUltrasound
     | PrenatalUrineDipstickTestRevision PrenatalUrineDipstickTestId PrenatalUrineDipstickTest
     | RelationshipRevision RelationshipId Relationship
     | ResilienceSurveyRevision ResilienceSurveyId ResilienceSurvey

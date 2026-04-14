@@ -17,7 +17,7 @@ import Backend.PrenatalEncounter.Model
         , PrenatalProgressReportInitiator(..)
         , RecordPreganancyInitiator(..)
         )
-import EverySet
+import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -32,29 +32,29 @@ import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.Utils exposing (undeterminedPostpartumDiagnoses)
 import Pages.Prenatal.View exposing (customWarningPopup, viewPauseEncounterButton)
 import Pages.Utils exposing (viewConfirmationDialog, viewEndEncounterButtonCustomColor, viewPersonDetails, viewReportLink)
-import SyncManager.Model exposing (Site)
+import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (activityCard, tabItem, viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> Site -> PrenatalEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate site id isChw db model =
+view : Language -> NominalDate -> Site -> EverySet SiteFeature -> PrenatalEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate site features id isChw db model =
     let
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate site id isChw model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate site features id isChw model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> Site -> PrenatalEncounterId -> Bool -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate site id isChw model assembled =
+viewHeaderAndContent : Language -> NominalDate -> Site -> EverySet SiteFeature -> PrenatalEncounterId -> Bool -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate site features id isChw model assembled =
     let
         header =
             viewHeader language isChw assembled
 
         content =
-            viewContent language currentDate site isChw assembled model
+            viewContent language currentDate site features isChw assembled model
 
         endEncounterDialog =
             if model.showEndEncounterDialog then
@@ -75,7 +75,7 @@ viewHeaderAndContent language currentDate site id isChw model assembled =
             viewChwWarningPopup language assembled model
         , viewModal endEncounterDialog
         , viewModal <|
-            viewUndeterminedDiagnosesWarningPopup language currentDate site assembled model
+            viewUndeterminedDiagnosesWarningPopup language currentDate site features assembled model
         ]
 
 
@@ -95,11 +95,11 @@ viewHeader language isChw assembled =
         ]
 
 
-viewContent : Language -> NominalDate -> Site -> Bool -> AssembledData -> Model -> Html Msg
-viewContent language currentDate site isChw assembled model =
+viewContent : Language -> NominalDate -> Site -> EverySet SiteFeature -> Bool -> AssembledData -> Model -> Html Msg
+viewContent language currentDate site features isChw assembled model =
     div [ class "ui unstackable items" ] <|
         viewMotherAndMeasurements language currentDate isChw assembled (Just ( model.showAlertsDialog, SetAlertsDialogState ))
-            ++ viewMainPageContent language currentDate site assembled model
+            ++ viewMainPageContent language currentDate site features assembled model
 
 
 viewChwWarningPopup : Language -> AssembledData -> Model -> Maybe (Html Msg)
@@ -128,17 +128,17 @@ viewChwWarningPopup language assembled model =
         Nothing
 
 
-viewUndeterminedDiagnosesWarningPopup : Language -> NominalDate -> Site -> AssembledData -> Model -> Maybe (Html Msg)
-viewUndeterminedDiagnosesWarningPopup language currentDate site assembled model =
+viewUndeterminedDiagnosesWarningPopup : Language -> NominalDate -> Site -> EverySet SiteFeature -> AssembledData -> Model -> Maybe (Html Msg)
+viewUndeterminedDiagnosesWarningPopup language currentDate site features assembled model =
     if assembled.encounter.encounterType /= NursePostpartumEncounter || model.undeterminedDiagnosesWarningAcknowledged then
         Nothing
 
     else
         let
             ( completedActivities, pendingActivities ) =
-                getAllActivities assembled
-                    |> List.filter (expectActivity currentDate site assembled)
-                    |> List.partition (activityCompleted currentDate site assembled)
+                getAllActivities features assembled
+                    |> List.filter (expectActivity currentDate site features assembled)
+                    |> List.partition (activityCompleted currentDate site features assembled)
         in
         if List.length pendingActivities > 0 || List.member NextSteps completedActivities then
             Nothing
@@ -363,13 +363,13 @@ viewIndicators language currentDate lmpDate obstetricHistory =
         ]
 
 
-viewMainPageContent : Language -> NominalDate -> Site -> AssembledData -> Model -> List (Html Msg)
-viewMainPageContent language currentDate site assembled model =
+viewMainPageContent : Language -> NominalDate -> Site -> EverySet SiteFeature -> AssembledData -> Model -> List (Html Msg)
+viewMainPageContent language currentDate site features assembled model =
     let
         ( completedActivities, pendingActivities ) =
-            getAllActivities assembled
-                |> List.filter (expectActivity currentDate site assembled)
-                |> List.partition (activityCompleted currentDate site assembled)
+            getAllActivities features assembled
+                |> List.filter (expectActivity currentDate site features assembled)
+                |> List.partition (activityCompleted currentDate site features assembled)
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities

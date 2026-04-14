@@ -2157,7 +2157,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
-                            Maybe.map (generatePrenatalAssessmentMsgs currentDate language site isChw isLabTech activePage updateAssesment originData newModel)
+                            Maybe.map (generatePrenatalAssessmentMsgs currentDate language site features isChw isLabTech activePage updateAssesment originData newModel)
                                 encounterId
                                 |> Maybe.withDefault []
                     in
@@ -2203,7 +2203,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                                 generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech newModel encounterId_
 
                                             else if atPrenatalInitialPhase activePage then
-                                                generatePrenatalInitialPhaseCompletedMsgs currentDate site newModel encounterId_
+                                                generatePrenatalInitialPhaseCompletedMsgs currentDate site features newModel encounterId_
 
                                             else
                                                 []
@@ -2273,7 +2273,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                                         generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech newModel encounterId_
 
                                                     else if atPrenatalInitialPhase activePage then
-                                                        generatePrenatalInitialPhaseCompletedMsgs currentDate site newModel encounterId_
+                                                        generatePrenatalInitialPhaseCompletedMsgs currentDate site features newModel encounterId_
 
                                                     else
                                                         []
@@ -3033,7 +3033,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         let
                             -- We do not catch changes done to model, because
                             -- it's handled by `processRevisionAndAssessPrenatal`
-                            -- activation that comes bellow.
+                            -- activation that comes below.
                             ( _, extraMsgsForLabsResults ) =
                                 processVitalsRevisionAndUpdatePrenatalLabsResults
                                     data.participantId
@@ -3092,7 +3092,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         let
                             -- We do not catch changes done to model, because
                             -- it's handled by `processRevisionAndAssessPrenatal`
-                            -- activation that comes bellow.
+                            -- activation that comes below.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdatePrenatalLabsResults
                                     data.participantId
@@ -3130,7 +3130,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         let
                             -- We do not catch changes done to model, because
                             -- it's handled by `processRevisionAndAssessPrenatal`
-                            -- activation that comes bellow.
+                            -- activation that comes below.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdatePrenatalLabsResults
                                     data.participantId
@@ -3152,7 +3152,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         let
                             -- We do not catch changes done to model, because
                             -- it's handled by `processRevisionAndAssessPrenatal`
-                            -- activation that comes bellow.
+                            -- activation that comes below.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdatePrenatalLabsResults
                                     data.participantId
@@ -3181,7 +3181,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         let
                             -- We do not catch changes done to model, because
                             -- it's handled by `processRevisionAndAssessPrenatal`
-                            -- activation that comes bellow.
+                            -- activation that comes below.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdatePrenatalLabsResults
                                     data.participantId
@@ -3206,7 +3206,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         let
                             -- We do not catch changes done to model, because
                             -- it's handled by `processRevisionAndAssessPrenatal`
-                            -- activation that comes bellow.
+                            -- activation that comes below.
                             ( _, extraMsgsForLabsResults ) =
                                 let
                                     executionNote =
@@ -3240,7 +3240,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         let
                             -- We do not catch changes done to model, because
                             -- it's handled by `processRevisionAndAssessPrenatal`
-                            -- activation that comes bellow.
+                            -- activation that comes below.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdatePrenatalLabsResults
                                     data.participantId
@@ -3262,7 +3262,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         let
                             -- We do not catch changes done to the model, because
                             -- it's handled by `processRevisionAndAssessPrenatal`
-                            -- activation that comes bellow.
+                            -- activation that comes below.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdatePrenatalLabsResults
                                     data.participantId
@@ -3287,7 +3287,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         let
                             -- We do not catch changes done to model, because
                             -- it's handled by `processRevisionAndAssessPrenatal`
-                            -- activation that comes bellow.
+                            -- activation that comes below.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdatePrenatalLabsResults
                                     data.participantId
@@ -3309,7 +3309,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         let
                             -- We do not catch changes done to model, because
                             -- it's handled by `processRevisionAndAssessPrenatal`
-                            -- activation that comes bellow.
+                            -- activation that comes below.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdatePrenatalLabsResults
                                     data.participantId
@@ -3580,7 +3580,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         let
                             -- We do not catch changes done to model, because
                             -- it's handled by `processRevisionAndAssessNCD`
-                            -- activation that comes bellow.
+                            -- activation that comes below.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdateNCDLabsResults
                                     data.participantId
@@ -3601,7 +3601,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         let
                             -- We do not catch changes done to model, because
                             -- it's handled by `processRevisionAndAssessNCD`
-                            -- activation that comes bellow.
+                            -- activation that comes below.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdateNCDLabsResults
                                     data.participantId
@@ -3622,7 +3622,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         let
                             -- We do not catch changes done to model, because
                             -- it's handled by `processRevisionAndAssessNCD`
-                            -- activation that comes bellow.
+                            -- activation that comes below.
                             ( _, extraMsgsForLabsResults ) =
                                 processRevisionAndUpdateNCDLabsResults
                                     data.participantId
@@ -7623,6 +7623,23 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        PrenatalUltrasoundRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements ->
+                    { measurements
+                        | ultrasound =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
+                model
+            , recalc
+            )
+
         PrenatalUrineDipstickTestRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
@@ -8647,6 +8664,7 @@ generatePrenatalAssessmentMsgs :
     NominalDate
     -> Language
     -> Site
+    -> EverySet SiteFeature
     -> Bool
     -> Bool
     -> Page
@@ -8655,7 +8673,7 @@ generatePrenatalAssessmentMsgs :
     -> ModelIndexedDb
     -> PrenatalEncounterId
     -> List App.Model.Msg
-generatePrenatalAssessmentMsgs currentDate language site isChw isLabTech activePage updateAssesment originData after id =
+generatePrenatalAssessmentMsgs currentDate language site features isChw isLabTech activePage updateAssesment originData after id =
     Maybe.map
         (\assembledAfter ->
             let
@@ -8663,6 +8681,7 @@ generatePrenatalAssessmentMsgs currentDate language site isChw isLabTech activeP
                     Pages.Prenatal.Activity.Utils.mandatoryActivitiesForAssessmentCompleted
                         currentDate
                         site
+                        features
                         assembledAfter
 
                 initialEncounterNextStepsMsg =
@@ -9068,10 +9087,11 @@ generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test testPrereq
 generatePrenatalInitialPhaseCompletedMsgs :
     NominalDate
     -> Site
+    -> EverySet SiteFeature
     -> ModelIndexedDb
     -> PrenatalEncounterId
     -> List App.Model.Msg
-generatePrenatalInitialPhaseCompletedMsgs currentDate site after id =
+generatePrenatalInitialPhaseCompletedMsgs currentDate site features after id =
     Pages.Prenatal.Encounter.Utils.generateAssembledData id after
         |> RemoteData.toMaybe
         |> Maybe.map
@@ -9093,9 +9113,9 @@ generatePrenatalInitialPhaseCompletedMsgs currentDate site after id =
                         { assembled_ | encounter = encounterWithDiagnoses }
 
                     ( _, pendingActivities ) =
-                        Pages.Prenatal.Encounter.Utils.getAllActivities assembled
-                            |> List.filter (Pages.Prenatal.Activity.Utils.expectActivity currentDate site assembled)
-                            |> List.partition (Pages.Prenatal.Activity.Utils.activityCompleted currentDate site assembled)
+                        Pages.Prenatal.Encounter.Utils.getAllActivities features assembled
+                            |> List.filter (Pages.Prenatal.Activity.Utils.expectActivity currentDate site features assembled)
+                            |> List.partition (Pages.Prenatal.Activity.Utils.activityCompleted currentDate site features assembled)
                 in
                 if List.isEmpty pendingActivities then
                     [ App.Model.SetActivePage <|
