@@ -3909,15 +3909,15 @@ translationSet trans =
             }
 
         BaselineWeight value ->
-            { english = "Pre-pregnancy baseline weight: " ++ String.fromFloat value
-            , kinyarwanda = Just <| "Ibiro yarafite mbere yo gutwita: " ++ String.fromFloat value
+            { english = "Baseline weight: " ++ String.fromFloat value
+            , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing
             }
 
         BaselineWeightNotFound ->
-            { english = "No pre-pregnancy baseline weight on record"
-            , kinyarwanda = Just "Nta biro bya mbere yo kubyara byafashwe"
+            { english = "No baseline weight on record"
+            , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing
             }
