@@ -169,6 +169,7 @@ function hedley_stock_management_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
+        'aheza' => 'AHEZA',
         'moh' => 'MOH (Ministry of Health)',
         'rbc' => 'RBC (Rwanda Biomedical Center)',
         'unicef' => 'UNICEF',

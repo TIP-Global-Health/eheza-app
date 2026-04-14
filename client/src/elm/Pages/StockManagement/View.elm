@@ -560,7 +560,8 @@ viewModeReceiveStock language currentDate nurseId nurse consumptionAverage form 
                           , viewQuestionLabel language Translate.StockManagementSupplierQuestion
                           , viewSelectListInput language
                                 form.supplier
-                                [ SupplierMOH
+                                [ SupplierAheza
+                                , SupplierMOH
                                 , SupplierRBC
                                 , SupplierUNICEF
                                 , SupplierRMSCentral

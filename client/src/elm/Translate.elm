@@ -26444,6 +26444,13 @@ translationSet trans =
 
         StockSupplier value ->
             case value of
+                SupplierAheza ->
+                    { english = "AHEZA"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
                 SupplierMOH ->
                     { english = "MOH (Ministry of Health)"
                     , kinyarwanda = Just "Minisiteri y'ubuzima"
@@ -26488,6 +26495,13 @@ translationSet trans =
 
         StockSupplierAbbrev value ->
             case value of
+                SupplierAheza ->
+                    { english = "AHEZA"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
                 SupplierMOH ->
                     { english = "MOH"
                     , kinyarwanda = Nothing
