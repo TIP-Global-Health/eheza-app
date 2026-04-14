@@ -386,6 +386,9 @@ stockUpdateTypeFromString value =
 stockSupplierToString : StockSupplier -> String
 stockSupplierToString value =
     case value of
+        SupplierAheza ->
+            "aheza"
+
         SupplierMOH ->
             "moh"
 
@@ -408,6 +411,9 @@ stockSupplierToString value =
 stockSupplierFromString : String -> Maybe StockSupplier
 stockSupplierFromString value =
     case value of
+        "aheza" ->
+            Just SupplierAheza
+
         "moh" ->
             Just SupplierMOH
 

@@ -1189,6 +1189,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                         in
                         Pages.StockManagement.View.view model.language
                             currentDate
+                            model.syncManager.syncInfoGeneral.site
                             context
                             nurseId
                             nurse
