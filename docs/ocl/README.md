@@ -28,7 +28,8 @@ Plus shared artefacts:
 | File | Purpose |
 |---|---|
 | `translations.jsonl` | Locale strings (en/rw/rn/so) extracted from `Translate.elm` for the published concepts — reviewer reference, not yet folded into the per-encounter CSVs |
-| `csv_to_ocl_json.py` | Local converter that emits OCL bulk-import JSON-lines from the CSV pairs (no upload) |
+| `csv_to_ocl_json.py` | Local converter that emits OCL bulk-import JSON-lines from *all* CSV pairs (no upload) |
+| `delta_upload.py` | Same shape, but emits only the delta against `TIP-Global-Health/EHEZA` HEAD — the workflow to use for additions / edits (see *Uploading changes* below). Requires `OCL_API_TOKEN`. |
 | `remaining-modules-gaps.md` | Consolidated gaps doc for Well-Child, Acute Illness, NCD, HIV, Tuberculosis, and Family Nutrition (which has no per-encounter CSV — see below) |
 
 ### Encounter types not (yet) covered
@@ -163,6 +164,47 @@ python -m ocldev.oclcsvtojsonconverter \
   --csv docs/ocl/prenatal-mappings.csv \
   --out prenatal.jsonl
 ```
+
+## Uploading changes
+
+**Always upload the delta, not the full set.** Re-submitting unchanged rows
+makes OCL mint a fresh concept-version for each one, which clutters source-wide
+search with duplicate snapshot rows (one per release cut). `delta_upload.py`
+fetches HEAD state from OCL and emits JSON-lines only for concepts / mappings
+that are new or whose content differs.
+
+```bash
+export OCL_API_TOKEN=<your-token>
+
+# 1. compute the delta (writes JSONL to stdout, summary to stderr)
+python3 docs/ocl/delta_upload.py > /tmp/eheza-delta.jsonl
+
+# 2. upload (skip if stdout was empty)
+curl -X POST "https://api.openconceptlab.org/importers/bulk-import/?update_if_exists=true" \
+     -H "Authorization: Token $OCL_API_TOKEN" \
+     -F "file=@/tmp/eheza-delta.jsonl"
+# → returns {"id": "<task-id>", "state": "PENDING", ...}
+
+# 3. poll task until state=SUCCESS (normally 5–25s)
+curl -s -H "Authorization: Token $OCL_API_TOKEN" \
+     "https://api.openconceptlab.org/importers/bulk-import/?task_id=<task-id>" \
+  | python3 -m json.tool | grep -E '"(state|message|summary)"'
+
+# 4. cut a released source version so search sees the new content
+curl -X POST "https://api.openconceptlab.org/orgs/TIP-Global-Health/sources/EHEZA/versions/" \
+     -H "Authorization: Token $OCL_API_TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"id":"vX.Y-<short-slug>","description":"<what changed>","released":true}'
+```
+
+Step 4 is not optional — the bulk-import endpoint writes to HEAD only; search
+and version-pinned URLs surface content only from released versions. Omit it
+and new concepts appear invisible.
+
+`delta_upload.py` also reports any **orphans** (concepts on OCL that are not in
+the local CSVs). It deliberately does not delete them — retire or purge them
+by hand if you really want them gone, so nothing accidentally disappears from
+a release history.
 
 ## Not done in this phase
 
