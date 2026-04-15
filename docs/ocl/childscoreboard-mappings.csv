@@ -1,0 +1,3 @@
+resource_type,owner,owner_type,source,from_concept_url,map_type,to_source_url,to_concept_code,to_concept_name,confidence
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-CS-001/,SAME-AS,/orgs/PIH/sources/PIH/,11067,Birth weight (kg),high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-CS-002/,SAME-AS,/orgs/PIH/sources/PIH/,13321,Number of antenatal visits for current pregnancy,medium

@@ -1,0 +1,3 @@
+resource_type,owner,owner_type,source,id,concept_class,datatype,name,description,eheza_category,eheza_field_path,confidence
+Concept,TIP-Global-Health,Organization,EHEZA,EH-CS-001,Finding,Numeric,Birth weight (kg),Child birth weight (E-Heza captures grams; PIH stores kilograms — unit conversion at presentation),Anthropometry,NCDAValue.birthWeight,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-CS-002,Question,Numeric,Number of antenatal visits for current pregnancy,Count of antenatal care visits attended (E-Heza stores set of visit dates; PIH concept is the derived count),NCDA,NCDAValue.ancVisitsDates,medium
