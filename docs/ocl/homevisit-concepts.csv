@@ -1,0 +1,2 @@
+resource_type,owner,owner_type,source,id,concept_class,datatype,name,description,eheza_category,eheza_field_path,confidence
+Concept,TIP-Global-Health,Organization,EHEZA,EH-HV-001,Question,Coded,Supplement received,Question recording whether a nutritional supplement was received by the patient/child at this visit,Feeding,NutritionFeedingSign.ReceiveSupplement,high

@@ -21,7 +21,8 @@ concept pointing at the matched `PIH/PIH` code:
 | HIV | `EH-HIV` | 24 | 24 | `remaining-modules-gaps.md` |
 | Tuberculosis | `EH-TB` | 9 | 9 | `remaining-modules-gaps.md` |
 | Child Scoreboard | `EH-CS` | 2 | 2 | `childscoreboard-gaps.md` |
-| **Totals** | | **206** | **206** | |
+| Home Visit | `EH-HV` | 1 | 1 | `homevisit-gaps.md` |
+| **Totals** | | **207** | **207** | |
 
 Plus shared artefacts:
 
@@ -37,7 +38,7 @@ Plus shared artefacts:
 E-Heza has nine `IndividualEncounterType` constructors plus a separate
 `FamilyEncounterParticipant` flow. Coverage status:
 
-- **Home Visit** (`HomeVisitEncounter`) — no CSV. Its measurements (feeding, hygiene, food security, caring signs) overlap heavily with the Nutrition home-visit signs already classified as out-of-scope in `nutrition-gaps.md`. Skipped pending a clinical-vs-programmatic call.
+- **Home Visit** (`HomeVisitEncounter`) — `EH-HV` (1 concept). Its measurements are reused `Nutrition*` types; most are WASH / social-determinant / programme-structural facts without PIH equivalents. See `homevisit-gaps.md` for the full coverage map.
 - **Family Nutrition** (`FamilyEncounterParticipant`, feature-flagged `family_nutrition`) — no CSV. MUAC and Photo measurements reuse `EH-PRE-008` and the existing photo concept; the Aheza distribution measurements are program-specific and need a reviewer call (see notes in `remaining-modules-gaps.md` and the RUTF/FBF discussion in `nutrition-gaps.md`).
 - **Group flows** (Group Nutrition / Education sessions / Stock Management) — out of scope for the dictionary publishing pass; these are encounter-structural rather than clinical-fact records.
 - **`InmmunizationEncounter`** — marked `@todo can be removed?` in `Backend/IndividualEncounterParticipant/Model.elm`; intentionally skipped.
@@ -53,7 +54,7 @@ E-Heza has nine `IndividualEncounterType` constructors plus a separate
 
 ## Scope of this pass
 
-- **Encounter types**: 8 of the 9 `IndividualEncounterType` constructors — Prenatal, Nutrition, Well-Child, Acute Illness, NCD, HIV, Tuberculosis, Child Scoreboard. Home Visit, Family Nutrition (`FamilyEncounterParticipant`), and the deprecated `InmmunizationEncounter` are not covered by per-encounter CSVs in this pass — see *Encounter types not (yet) covered* above.
+- **Encounter types**: 9 of the 9 `IndividualEncounterType` constructors — Prenatal, Nutrition, Well-Child, Acute Illness, NCD, HIV, Tuberculosis, Child Scoreboard, Home Visit. Family Nutrition (`FamilyEncounterParticipant`) and the deprecated `InmmunizationEncounter` remain without per-encounter CSVs — see *Encounter types not (yet) covered* above.
 - **Match rule**: only concepts with a resolvable PIH equivalent are included in the per-encounter CSVs; everything else lands in the corresponding `*-gaps.md` (or in `remaining-modules-gaps.md` for Well-Child / Acute Illness / NCD / HIV / Tuberculosis / Family Nutrition).
 - **Granularity**: one concept per measurable fact — numeric fields (vitals, anthropometry, labs), coded single-value findings, and drug concepts for medications.
 - **Reuse over duplication**: when an enum constructor in a later encounter pass already corresponds to a concept published from an earlier one (e.g., `NCDASign.ChildGotDiarrhea` reusing `EH-NUT-008` Diarrhea), the existing concept's `eheza_field_path` is extended rather than minting a new `EH-` id. The gaps files document each such reuse so reviewers can trace it.
