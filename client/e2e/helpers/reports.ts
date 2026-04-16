@@ -957,6 +957,94 @@ export function backdateNutritionEncounter(
   console.log('Backdated successfully.');
 }
 
+/**
+ * Backdate a family-nutrition encounter and its child MUAC measurements
+ * for a specific child.
+ *
+ * Family-nutrition data is stored on the child side under the
+ * 'family-nutrition-muac' key in field_reports_data. The query walks
+ * family_nutrition_muac_child measurements where field_person == child,
+ * then walks each measurement to its parent family_nutrition_encounter.
+ * Both the encounter's field_scheduled_date and the measurement's
+ * field_date_measured are updated -- the encounter date is what the
+ * reports pipeline reads; the measurement date is updated for
+ * consistency.
+ *
+ * Same drush eval pattern as backdateNutritionEncounter; child name is
+ * base64-encoded into the PHP body to avoid any shell metacharacter
+ * issues with the patient's actual name.
+ */
+export function backdateFamilyNutritionEncounter(
+  childName: string,
+  targetDate: Date,
+) {
+  const { drushCmd, cwd } = drushEnv();
+  const childNameB64 = Buffer.from(childName, 'utf8').toString('base64');
+  const dateStr = targetDate.toISOString().split('T')[0];
+
+  const php = `
+    \\$child_name = base64_decode('${childNameB64}');
+    \\$date_str = '${dateStr}';
+
+    // Find child person.
+    \\$query = new EntityFieldQuery();
+    \\$result = \\$query->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'person')
+      ->propertyCondition('title', \\$child_name)
+      ->execute();
+    if (empty(\\$result['node'])) {
+      echo json_encode(['error' => 'Child not found: ' . \\$child_name]);
+      return;
+    }
+    \\$child_nid = key(\\$result['node']);
+    \\$updated = [];
+
+    // Find family_nutrition_muac_child measurements for this child.
+    \\$mq = new EntityFieldQuery();
+    \\$mr = \\$mq->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'family_nutrition_muac_child')
+      ->fieldCondition('field_person', 'target_id', \\$child_nid)
+      ->execute();
+    if (empty(\\$mr['node'])) {
+      echo json_encode(['error' => 'No family-nutrition MUAC measurements for child: ' . \\$child_name]);
+      return;
+    }
+
+    // Update each measurement's field_date_measured AND collect the
+    // distinct parent encounter ids to update their field_scheduled_date.
+    \\$encounter_ids = [];
+    foreach (array_keys(\\$mr['node']) as \\$mid) {
+      \\$muac_node = node_load(\\$mid);
+      \\$muac_node->field_date_measured[LANGUAGE_NONE][0]['value'] = \\$date_str;
+      node_save(\\$muac_node);
+      \\$updated[] = 'family_nutrition_muac_child:' . \\$mid;
+      \\$eid = \\$muac_node->field_family_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
+      if (!empty(\\$eid)) {
+        \\$encounter_ids[\\$eid] = TRUE;
+      }
+    }
+
+    foreach (array_keys(\\$encounter_ids) as \\$eid) {
+      \\$enc_node = node_load(\\$eid);
+      \\$enc_node->field_scheduled_date[LANGUAGE_NONE][0]['value'] = \\$date_str;
+      node_save(\\$enc_node);
+      \\$updated[] = 'family_nutrition_encounter:' . \\$eid;
+    }
+
+    echo json_encode(['updated' => \\$updated]);
+  `;
+
+  const command = `${drushCmd} eval "${php}"`;
+  console.log(`Backdating family nutrition data for "${childName}" to ${dateStr}...`);
+  execSync(command, {
+    cwd,
+    timeout: 30000,
+    encoding: 'utf-8',
+    stdio: 'pipe',
+  });
+  console.log('Backdated successfully.');
+}
+
 // ---------------------------------------------------------------------------
 // Nutrition report table
 // ---------------------------------------------------------------------------
@@ -986,6 +1074,18 @@ export const NUTRITION_ONE_VISIT_TABLES = [
   { index: 2, name: 'Incidence By Month' },
   { index: 4, name: 'Incidence By Quarter' },
   { index: 6, name: 'Incidence By Year' },
+] as const;
+
+/**
+ * "Two Visits Or More" tables are at odd indices: 1, 3, 5, 7. They use
+ * `encountersByMonthForImpacted` and only count children with more than
+ * one nutrition encounter.
+ */
+export const NUTRITION_TWO_VISIT_TABLES = [
+  { index: 1, name: 'Prevalence By Month (Two Visits Or More)' },
+  { index: 3, name: 'Incidence By Month (Two Visits Or More)' },
+  { index: 5, name: 'Incidence By Quarter (Two Visits Or More)' },
+  { index: 7, name: 'Incidence By Year (Two Visits Or More)' },
 ] as const;
 
 /**
