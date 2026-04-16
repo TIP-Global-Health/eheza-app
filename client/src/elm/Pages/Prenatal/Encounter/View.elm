@@ -500,17 +500,14 @@ viewActionButton language buttonColor pendingActivities completedActivities paus
                 List.member NextSteps completedActivities
 
             else
-                case pendingActivities of
-                    -- Either all activities are completed
-                    [] ->
-                        True
+                let
+                    optionalActivities =
+                        [ PrenatalPhoto, Ultrasound ]
 
-                    -- Or only one non mandatory activity remains
-                    [ PrenatalPhoto ] ->
-                        True
-
-                    _ ->
-                        False
+                    mandatoryPending =
+                        List.filter (\activity -> not (List.member activity optionalActivities)) pendingActivities
+                in
+                List.isEmpty mandatoryPending
     in
     if secondPhaseRequired assembled then
         viewPauseEncounterButton language buttonColor enabled pauseMsg
