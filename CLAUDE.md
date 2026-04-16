@@ -57,6 +57,11 @@ ddev simpletest
 
 # Shell scripts
 ci-scripts/test_shell.sh
+
+# E2E tests (Playwright, from client/)
+./node_modules/.bin/playwright test              # Headless, fast
+RECORD=1 ./node_modules/.bin/playwright test     # Headed, with video recording and visual cursor
+# Video saved to client/test-results/*/video.webm
 ```
 
 ### Deployment
@@ -137,6 +142,10 @@ Default credentials (created by migration): pairing code `12345678`, nurse PIN `
 
 Union type variants, case branches, and pattern matches must be in **alphabetical order**. This applies throughout the codebase, including `Backend/Model.elm` (Revision type), `SyncManager/Model.elm` (BackendAuthorityEntity type), and all corresponding decoders, encoders, update handlers, and view functions.
 
+### Commit Messages
+
+Always append `[ci skip]` at the very end of commit messages (after the Co-Authored-By line) to avoid triggering CI, unless the user explicitly asks to run CI.
+
 ### Files to Never Commit
 
 Do not commit `.ddev/.gitignore` or other DDEV-generated config files. These are local environment files and should not be included in commits.
@@ -148,3 +157,7 @@ Translations in `Translate.elm` use a record with `english`, `kinyarwanda`, `kir
 ### Debug Code in Elm
 
 When committing Elm files, do not include `Debug.log` calls. Remove any `Debug.log` lines before staging.
+
+### Code Duplication
+
+Avoid code duplication. Extract shared logic into common functions rather than copying similar code blocks.

@@ -85,6 +85,8 @@ type TranslationId
     | AcuteIllnessDiagnosis AcuteIllnessDiagnosis
     | AcuteIllnessTotal
     | AcuteMalnutrition
+    | AcuteMalnutritionMam
+    | AcuteMalnutritionSam
     | AggregatedChildScoreboard
     | Antenatal
     | All
@@ -538,6 +540,20 @@ translationSet transId =
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing
+            }
+
+        AcuteMalnutritionMam ->
+            { english = "MAM (Moderate Acute Malnutrition)"
+            , kinyarwanda = Just "MAM (Imirire  mibi yoroheje ije vuba)"
+            , kirundi = Just "MAM (Ingwara yo gufungura nabi yoroheje)"
+            , somali = Just "MAM (Nafaqo darrda Dhexe)"
+            }
+
+        AcuteMalnutritionSam ->
+            { english = "SAM (Severe Acute Malnutrition)"
+            , kinyarwanda = Just "SAM (Imirire  mibi ikabije ije vuba)"
+            , kirundi = Just "SAM (Ingwara yo gufungura nabi ikaze)"
+            , somali = Just "SAM (Nafaqo yari aad u daran)"
             }
 
         AggregatedChildScoreboard ->

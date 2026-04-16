@@ -662,7 +662,8 @@ type alias LastMenstrualPeriodValue =
       prePregnancyWeight : Maybe WeightInKg
     , confident : Bool
     , notConfidentReason : Maybe LmpDateNotConfidentReason
-    , lateFirstVisitReason : Maybe LateFirstANCVisitReason
+    , -- Deprecated, but kept for backward compatibility.
+      lateFirstVisitReason : Maybe LateFirstANCVisitReason
     , confirmation : Bool
     }
 
@@ -1805,6 +1806,26 @@ type alias PrenatalMMS =
 
 type alias PrenatalMebendazole =
     PrenatalMeasurement AdministrationNote
+
+
+type alias PrenatalUltrasound =
+    PrenatalMeasurement UltrasoundValue
+
+
+type alias UltrasoundValue =
+    { signs : EverySet PregnancySign
+    , executionDate : NominalDate
+    , eddWeeks : Int
+    , eddDays : Int
+    , eddDate : NominalDate
+    }
+
+
+type PregnancySign
+    = PregnancyNotViable
+    | PregnancyEctopic
+    | PregnancyMultipleFetuses
+    | NoPregnancySigns
 
 
 
@@ -3281,6 +3302,7 @@ type alias StockUpdate =
     , healthCenter : HealthCenterId
     , deleted : Bool
     , shard : Maybe HealthCenterId
+    , village : Maybe VillageId
     , signature : ImageUrl
     }
 
@@ -3291,7 +3313,8 @@ type StockUpdateType
 
 
 type StockSupplier
-    = SupplierMOH
+    = SupplierAheza
+    | SupplierMOH
     | SupplierRBC
     | SupplierUNICEF
     | SupplierRMSCentral
@@ -3440,6 +3463,7 @@ type alias PrenatalMeasurements =
     , iron : Maybe ( PrenatalIronId, PrenatalIron )
     , mms : Maybe ( PrenatalMMSId, PrenatalMMS )
     , mebendazole : Maybe ( PrenatalMebendazoleId, PrenatalMebendazole )
+    , ultrasound : Maybe ( PrenatalUltrasoundId, PrenatalUltrasound )
     }
 
 
@@ -3492,6 +3516,7 @@ emptyPrenatalMeasurements =
     , iron = Nothing
     , mms = Nothing
     , mebendazole = Nothing
+    , ultrasound = Nothing
     }
 
 
@@ -3684,6 +3709,13 @@ Stock management data presentation.
 type alias StockManagementMeasurements =
     { childFbf : Dict ChildFbfId Fbf
     , motherFbf : Dict MotherFbfId Fbf
+    , stockUpdate : Dict StockUpdateId StockUpdate
+    }
+
+
+type alias VillageStockManagementMeasurements =
+    { ahezaChild : Dict AhezaChildId AhezaChild
+    , ahezaMother : Dict AhezaMotherId AhezaMother
     , stockUpdate : Dict StockUpdateId StockUpdate
     }
 

@@ -14,8 +14,25 @@ import Pages.StockManagement.Model exposing (..)
 import Pages.StockManagement.Utils exposing (..)
 
 
-update : NominalDate -> Maybe HealthCenterId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate maybeHealthCenterId msg model =
+update : NominalDate -> StockManagementContext -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate context msg model =
+    let
+        maybeHealthCenterId =
+            case context of
+                ContextHealthCenter id ->
+                    Just id
+
+                ContextVillage id _ ->
+                    Just id
+
+        maybeVillageId =
+            case context of
+                ContextVillage _ villageId ->
+                    Just villageId
+
+                ContextHealthCenter _ ->
+                    Nothing
+    in
     case msg of
         SetActivePage page ->
             ( model
@@ -74,7 +91,7 @@ update currentDate maybeHealthCenterId msg model =
                     , Cmd.none
                     , []
                     )
-                        |> sequenceExtra (update currentDate maybeHealthCenterId)
+                        |> sequenceExtra (update currentDate context)
                             [ SetDisplayMode (ModeMonthDetails (monthGap + value)) ]
 
                 _ ->
@@ -265,6 +282,7 @@ update currentDate maybeHealthCenterId msg model =
                                     , healthCenter = healthCenterId
                                     , deleted = False
                                     , shard = Just healthCenterId
+                                    , village = maybeVillageId
                                     , signature = signature
                                     }
                             in
@@ -429,6 +447,7 @@ update currentDate maybeHealthCenterId msg model =
                                     , healthCenter = healthCenterId
                                     , deleted = False
                                     , shard = Just healthCenterId
+                                    , village = maybeVillageId
                                     , signature = signature
                                     }
                             in

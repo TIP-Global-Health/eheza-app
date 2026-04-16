@@ -7,7 +7,7 @@ import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (assignedToHealthCenter, assignedToVillage, isCommunityHealthWorker, isLabTechnician)
 import Backend.Person.Model exposing (Initiator(..))
 import Backend.Person.Utils exposing (getHealthCenterName)
-import Backend.Utils exposing (stockManagementEnabled)
+import Backend.Utils exposing (stockManagementHCEnabled, stockManagementVillageEnabled)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
@@ -306,8 +306,8 @@ viewLoggedInContent language currentTime features nurseId nurse ( healthCenterId
                                 []
                            )
                         ++ (if
-                                stockManagementEnabled features
-                                    && not isChw
+                                (stockManagementHCEnabled features && not isChw)
+                                    || (stockManagementVillageEnabled features && isChw)
                             then
                                 [ MenuStockManagement ]
 

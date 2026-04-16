@@ -17,3 +17,5 @@ package-lock.json
 # Ignore the local config file.
 wdio.local.conf.js
 vendor
+test-results/
+playwright-report/

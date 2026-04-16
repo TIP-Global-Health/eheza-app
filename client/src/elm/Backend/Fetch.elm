@@ -427,6 +427,16 @@ shouldFetch currentTime model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchVillageStockManagementMeasurements id ->
+            Dict.get id model.villageStockManagementMeasurements
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchVillageStockManagementData id _ ->
+            Dict.get id model.villageStockManagementData
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
         FetchIndividualEncounterParticipant id ->
             Dict.get id model.individualParticipants
                 |> Maybe.withDefault NotAsked
@@ -676,6 +686,12 @@ forget msg model =
 
         FetchStockManagementData id ->
             { model | stockManagementData = Dict.remove id model.stockManagementData }
+
+        FetchVillageStockManagementMeasurements id ->
+            { model | villageStockManagementMeasurements = Dict.remove id model.villageStockManagementMeasurements }
+
+        FetchVillageStockManagementData id _ ->
+            { model | villageStockManagementData = Dict.remove id model.villageStockManagementData }
 
         FetchIndividualEncounterParticipant id ->
             { model | individualParticipants = Dict.remove id model.individualParticipants }
