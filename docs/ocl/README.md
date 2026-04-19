@@ -62,6 +62,29 @@ not currently uploaded to OCL.
 See `eheza-concepts-master.md` for schema, walk methodology, and the process
 discipline for keeping the file in sync with future Elm changes.
 
+## Labels inventory — `eheza-concepts-translate.csv`
+
+A second inventory complementing `eheza-concepts-master.csv`, built from
+`client/src/elm/Translate.elm` (the `type TranslationId` block, lines
+329–2192 of source). Catalogues user-facing labels that survive a refined
+heuristic filter — including derived clinical concepts (Gravida, BMI,
+ApgarScore, etc.) that the structural master can't surface because they
+exist only as UI labels, not as Elm record fields or union constructors.
+
+Each row gets an `EHEZA-T-NNNN` id; the file has no relationship to the
+structural master or to the per-encounter PIH-mapped CSVs (separate ID
+spaces, separate purposes). Both masters can be consumed independently
+or compared by future cross-organisation mapping passes.
+
+Schema: 6 columns (`id`, `translation_id`, `english`, `kinyarwanda`,
+`kirundi`, `somali`). Header rows for union-arg constructors carry only
+the prettified english label; their value-level translations live on
+leaf rows with `<UnionType>.<Value>` translation_ids.
+
+See `eheza-concepts-translate.md` for schema, walk methodology, the
+heuristic ruleset, and the process discipline for keeping the file in
+sync with future Translate.elm changes.
+
 ## Target OCL source
 
 - **Organization**: `TIP` (TIP Global Health, created 2026-04-06 by `adamhstewart`)
