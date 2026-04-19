@@ -318,9 +318,14 @@ reportToWhatsAppEnabled =
     EverySet.member FeatureReportToWhatsApp
 
 
-stockManagementEnabled : EverySet SiteFeature -> Bool
-stockManagementEnabled =
-    EverySet.member FeatureStockManagement
+stockManagementHCEnabled : EverySet SiteFeature -> Bool
+stockManagementHCEnabled =
+    EverySet.member FeatureStockManagementHC
+
+
+stockManagementVillageEnabled : EverySet SiteFeature -> Bool
+stockManagementVillageEnabled =
+    EverySet.member FeatureStockManagementVillage
 
 
 tuberculosisManagementEnabled : EverySet SiteFeature -> Bool
@@ -341,6 +346,11 @@ gpsCoordinatesEnabled =
 hivManagementEnabled : EverySet SiteFeature -> Bool
 hivManagementEnabled =
     EverySet.member FeatureHIVManagement
+
+
+healthyStartEnabled : EverySet SiteFeature -> Bool
+healthyStartEnabled =
+    EverySet.member FeatureHealthyStart
 
 
 familyNutritionEnabled : EverySet SiteFeature -> Bool

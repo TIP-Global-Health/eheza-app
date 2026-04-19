@@ -64,6 +64,7 @@ decodePatientData =
         |> optionalAt [ "individual", "acute-illness" ] (nullable (list (list decodeAcuteIllnessEncounterData))) Nothing
         |> optionalAt [ "individual", "antenatal" ] (nullable (list decodePrenatalParticipantData)) Nothing
         |> optionalAt [ "individual", "family-nutrition" ] (nullable (list (list decodeFamilyNutritionEncounterData))) Nothing
+        |> optionalAt [ "individual", "family-nutrition-muac" ] (nullable (list (list decodeFamilyNutritionEncounterData))) Nothing
         |> optionalAt [ "individual", "home-visit" ] (nullable (list (list decodeYYYYMMDD))) Nothing
         |> optionalAt [ "individual", "well-child" ] (nullable (list (list decodeNutritionEncounterData))) Nothing
         |> optionalAt [ "individual", "child-scoreboard" ] (nullable (list (list decodeYYYYMMDD))) Nothing
@@ -507,7 +508,31 @@ prenatalDiagnosisFromMapping s =
 
 decodeFamilyNutritionEncounterData : Decoder FamilyNutritionEncounterData
 decodeFamilyNutritionEncounterData =
-    decodeYYYYMMDD
+    string
+        |> andThen
+            (\s ->
+                case String.split " " (String.trim s) of
+                    [ first ] ->
+                        Date.fromIsoString first
+                            |> Result.toMaybe
+                            |> Maybe.map
+                                (\startDate ->
+                                    succeed { startDate = startDate, muacCm = Nothing }
+                                )
+                            |> Maybe.withDefault (fail "Failed to decode FamilyNutritionEncounterData")
+
+                    [ first, second ] ->
+                        Date.fromIsoString first
+                            |> Result.toMaybe
+                            |> Maybe.map
+                                (\startDate ->
+                                    succeed { startDate = startDate, muacCm = String.toFloat second }
+                                )
+                            |> Maybe.withDefault (fail "Failed to decode FamilyNutritionEncounterData")
+
+                    _ ->
+                        fail "Failed to decode FamilyNutritionEncounterData"
+            )
 
 
 decodeNutritionEncounterData : Decoder NutritionEncounterData
@@ -521,15 +546,30 @@ decodeNutritionEncounterData =
                             |> Result.toMaybe
                             |> Maybe.map
                                 (\startDate ->
-                                    succeed (NutritionEncounterData startDate Nothing)
+                                    succeed
+                                        { startDate = startDate
+                                        , nutritionData = Nothing
+                                        , muacCm = Nothing
+                                        , hasEdema = False
+                                        }
                                 )
                             |> Maybe.withDefault (fail "Failed to decode NutritionEncounterData")
 
                     [ first, second ] ->
-                        (Date.fromIsoString first |> Result.toMaybe)
+                        Date.fromIsoString first
+                            |> Result.toMaybe
                             |> Maybe.map
                                 (\startDate ->
-                                    succeed (NutritionEncounterData startDate (nutritionDataFromString second))
+                                    let
+                                        ( nutritionData, muacCm, hasEdema ) =
+                                            parseNutritionEncounterPayload second
+                                    in
+                                    succeed
+                                        { startDate = startDate
+                                        , nutritionData = nutritionData
+                                        , muacCm = muacCm
+                                        , hasEdema = hasEdema
+                                        }
                                 )
                             |> Maybe.withDefault (fail "Failed to decode NutritionEncounterData")
 
@@ -538,14 +578,23 @@ decodeNutritionEncounterData =
             )
 
 
-nutritionDataFromString : String -> Maybe NutritionData
-nutritionDataFromString s =
-    case String.split "," s of
+parseNutritionEncounterPayload : String -> ( Maybe NutritionData, Maybe Float, Bool )
+parseNutritionEncounterPayload payload =
+    case String.split "," payload of
         [ stunting, underweight, wasting ] ->
-            Just <| NutritionData (String.toFloat stunting) (String.toFloat wasting) (String.toFloat underweight)
+            ( Just (NutritionData (String.toFloat stunting) (String.toFloat wasting) (String.toFloat underweight))
+            , Nothing
+            , False
+            )
+
+        [ stunting, underweight, wasting, muac, edema ] ->
+            ( Just (NutritionData (String.toFloat stunting) (String.toFloat wasting) (String.toFloat underweight))
+            , String.toFloat muac
+            , edema == "1"
+            )
 
         _ ->
-            Nothing
+            ( Nothing, Nothing, False )
 
 
 decodeBackendGeneratedNutritionReportTableDate : Decoder BackendGeneratedNutritionReportTableDate
@@ -559,6 +608,8 @@ decodeBackendGeneratedNutritionReportTableDate =
         |> required "wasting_severe" (list string)
         |> required "underweight_moderate" (list string)
         |> required "underweight_severe" (list string)
+        |> required "acute_malnutrition_mam" (list string)
+        |> required "acute_malnutrition_sam" (list string)
 
 
 decodeNutritionReportTableType : Decoder NutritionReportTableType

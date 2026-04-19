@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { setupDevice } from './helpers/auth';
+import { setupDevice, click } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { syncAndWait } from './helpers/common';
@@ -8,29 +8,30 @@ import {
   completeReceiveStock,
   completeCorrectEntry,
   queryStockUpdateNodes,
-  ensureStockManagementHCFeatureEnabled,
+  ensureStockManagementVillageFeatureEnabled,
 } from './helpers/stock-management';
-import { click } from './helpers/auth';
 
 // =========================================================================
-// Test: Nurse Stock Management — Receive Stock, Correct Entries, View Details
+// Test: CHW Stock Management — Receive Stock, Correct Entries, View Details
 // =========================================================================
 
-// Scenario: Nurse performs all stock management operations at Nyange Health Center.
+// Scenario: CHW Jojo performs all village-level stock operations in Akanduga.
 // Steps:
 //   1. Navigate to Stock Management from main menu
-//   2. Receive Stock: supplier=MOH, batch=BATCH-E2E-001, qty=100, with signature
+//   2. Receive Stock: supplier=MOH, batch=BATCH-E2E-CHW-001, qty=100, with signature
 //   3. Correct Entry (Subtraction): reason=Error in input, qty=5, with signature
 //   4. Correct Entry (Addition): reason=Error in input, qty=3, with signature
 //   5. View Month Details: verify table renders
 //   6. Sync to backend
-// Backend: Verifies 3 new stock_update nodes (1 receive-supply, 2 correction).
+// Backend: Verifies 3 new stock_update nodes (1 receive-supply, 2 correction),
+//          all filtered by field_village_ref = Akanduga so the assertion only
+//          counts village-scoped updates (not HC ones).
 
-test.describe('Nurse: Stock Management — Full Flow', () => {
+test.describe('CHW: Stock Management — Full Flow', () => {
   test.describe.configure({ timeout: 300000 });
 
   test.beforeAll(() => {
-    ensureStockManagementHCFeatureEnabled();
+    ensureStockManagementVillageFeatureEnabled();
   });
 
   if (process.env.RECORD) {
@@ -41,12 +42,16 @@ test.describe('Nurse: Stock Management — Full Flow', () => {
 
   test.beforeEach(async ({ page }) => {
     resetDevice();
-    await setupDevice(page, '1234', 'Nyange Health Center');
+    await setupDevice(page, '2345', 'Akanduga', 'Nyange Health Center');
   });
 
-  test('receive stock, correct entry (subtraction + addition), view details, verify backend', async ({ page }) => {
-    // Get baseline count of stock_update nodes before test.
-    const baseline = queryStockUpdateNodes('Nyange Health Center');
+  test('receive stock, correct entries, view details, verify backend (village-filtered)', async ({ page }) => {
+    // Get baseline count of village-scoped stock_update nodes before test.
+    const baseline = queryStockUpdateNodes(
+      'Nyange Health Center',
+      undefined,
+      'Akanduga',
+    );
     const initialCount = baseline.count;
     const initialReceiveSupply = baseline.types['receive-supply'] ?? 0;
     const initialCorrection = baseline.types['correction'] ?? 0;
@@ -57,12 +62,12 @@ test.describe('Nurse: Stock Management — Full Flow', () => {
     // Verify ModeMain dashboard is displayed.
     await expect(page.locator('.navigation-buttons'), 'ModeMain navigation buttons should be visible after navigating to Stock Management').toBeVisible();
 
-    // 2. Receive Stock: MOH supplier, batch BATCH-E2E-001, qty 100.
+    // 2. Receive Stock: MOH supplier, batch BATCH-E2E-CHW-001, qty 100.
     await completeReceiveStock(page, {
       supplierValue: 'moh',
-      batchNumber: 'BATCH-E2E-001',
+      batchNumber: 'BATCH-E2E-CHW-001',
       quantity: '100',
-      notes: 'E2E test stock receipt',
+      notes: 'E2E CHW village test stock receipt',
     });
 
     // After save, should return to ModeMain.
@@ -105,11 +110,15 @@ test.describe('Nurse: Stock Management — Full Flow', () => {
     // 6. Sync to backend.
     await syncAndWait(page);
 
-    // 7. Backend verification: 3 new stock_update nodes created.
-    const result = queryStockUpdateNodes('Nyange Health Center', initialCount + 3);
+    // 7. Backend verification: 3 new village-scoped stock_update nodes created.
+    const result = queryStockUpdateNodes(
+      'Nyange Health Center',
+      initialCount + 3,
+      'Akanduga',
+    );
 
     // Verify total count increased by 3.
-    expect(result.count, 'stock_update node count should increase by at least 3').toBeGreaterThanOrEqual(initialCount + 3);
+    expect(result.count, 'village-scoped stock_update node count should increase by at least 3').toBeGreaterThanOrEqual(initialCount + 3);
 
     // Verify type breakdown: +1 receive-supply, +2 correction.
     expect(result.types['receive-supply'], 'receive-supply count should increase by at least 1').toBeGreaterThanOrEqual(initialReceiveSupply + 1);

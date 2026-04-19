@@ -463,7 +463,10 @@ function hedley_reports_get_triggering_measurement_types() {
   return array_unique(array_merge(
     HEDLEY_ACTIVITY_HEIGHT_BUNDLES,
     HEDLEY_ACTIVITY_WEIGHT_BUNDLES,
+    HEDLEY_ACTIVITY_MUAC_BUNDLES,
+    HEDLEY_ACTIVITY_NUTRITION_BUNDLES,
     HEDLEY_ACTIVITY_REPORTS_GROUP_MEASUREMENT_BUNDLES,
+    [HEDLEY_ACTIVITY_FAMILY_NUTRITION_MUAC_CHILD_CONTENT_TYPE],
   ));
 }
 
@@ -479,27 +482,38 @@ function hedley_reports_get_triggering_measurement_types() {
  * @throws EntityMetadataWrapperException
  */
 function hedley_reports_calculate_aggregated_data_for_person($person) {
-  $birth_date = strtotime($person->field_birth_date[LANGUAGE_NONE][0]['value']);
-  if (empty($birth_date)) {
+  if (empty($person->field_birth_date[LANGUAGE_NONE][0]['value'])) {
     // We must know the birthdate to be able to present reports data.
     return FALSE;
   }
+  $birth_date = strtotime($person->field_birth_date[LANGUAGE_NONE][0]['value']);
   $data = [
     'id' => $person->nid,
     'created' => date("Y-m-d", $person->created),
     'birth_date' => date("Y-m-d", $birth_date),
-    'gender' => $person->field_gender[LANGUAGE_NONE][0]['value'],
+    'gender' => !empty($person->field_gender[LANGUAGE_NONE][0]['value'])
+    ? $person->field_gender[LANGUAGE_NONE][0]['value']
+    : '',
   ];
 
-  $sessions_ids = $zscores_by_encounter = [];
-  $measurements_bundles = hedley_reports_get_triggering_measurement_types();
+  $sessions_ids = $zscores_by_encounter = $muac_edema_by_encounter = [];
+  // Exclude family_nutrition_muac_child from the query: it is in the
+  // triggering list so that node saves enqueue an AQ recalc, but this
+  // loop has no use for those nodes -- the per-child MUAC data is
+  // collected via a dedicated query further down in this function.
+  $measurements_bundles = array_diff(
+    hedley_reports_get_triggering_measurement_types(),
+    [HEDLEY_ACTIVITY_FAMILY_NUTRITION_MUAC_CHILD_CONTENT_TYPE]
+  );
   $measurements_ids = hedley_general_get_person_measurements($person->nid, $measurements_bundles);
   $measurements = node_load_multiple($measurements_ids);
   foreach ($measurements as $measurement) {
     switch ($measurement->type) {
       case HEDLEY_ACTIVITY_NUTRITION_HEIGHT_CONTENT_TYPE:
         $encounter_id = $measurement->field_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
-        $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
+        $zscore_age = !empty($measurement->field_zscore_age[LANGUAGE_NONE][0]['value'])
+          ? $measurement->field_zscore_age[LANGUAGE_NONE][0]['value']
+          : NULL;
         if (!empty($zscore_age)) {
           if (empty($zscores_by_encounter[$encounter_id])) {
             $zscores_by_encounter[$encounter_id] = ['s' => $zscore_age];
@@ -512,7 +526,9 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
 
       case HEDLEY_ACTIVITY_WELL_CHILD_HEIGHT_CONTENT_TYPE:
         $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
-        $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
+        $zscore_age = !empty($measurement->field_zscore_age[LANGUAGE_NONE][0]['value'])
+          ? $measurement->field_zscore_age[LANGUAGE_NONE][0]['value']
+          : NULL;
         if (!empty($zscore_age)) {
           if (empty($zscores_by_encounter[$encounter_id])) {
             $zscores_by_encounter[$encounter_id] = ['s' => $zscore_age];
@@ -525,8 +541,12 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
 
       case HEDLEY_ACTIVITY_NUTRITION_WEIGHT_CONTENT_TYPE:
         $encounter_id = $measurement->field_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
-        $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
-        $zscore_length = $measurement->field_zscore_length[LANGUAGE_NONE][0]['value'];
+        $zscore_age = !empty($measurement->field_zscore_age[LANGUAGE_NONE][0]['value'])
+          ? $measurement->field_zscore_age[LANGUAGE_NONE][0]['value']
+          : NULL;
+        $zscore_length = !empty($measurement->field_zscore_length[LANGUAGE_NONE][0]['value'])
+          ? $measurement->field_zscore_length[LANGUAGE_NONE][0]['value']
+          : NULL;
         if (!empty($zscore_age)) {
           if (empty($zscores_by_encounter[$encounter_id])) {
             $zscores_by_encounter[$encounter_id] = ['w' => $zscore_age, 'u' => $zscore_length];
@@ -540,8 +560,12 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
 
       case HEDLEY_ACTIVITY_WELL_CHILD_WEIGHT_CONTENT_TYPE:
         $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
-        $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
-        $zscore_length = $measurement->field_zscore_length[LANGUAGE_NONE][0]['value'];
+        $zscore_age = !empty($measurement->field_zscore_age[LANGUAGE_NONE][0]['value'])
+          ? $measurement->field_zscore_age[LANGUAGE_NONE][0]['value']
+          : NULL;
+        $zscore_length = !empty($measurement->field_zscore_length[LANGUAGE_NONE][0]['value'])
+          ? $measurement->field_zscore_length[LANGUAGE_NONE][0]['value']
+          : NULL;
         if (!empty($zscore_age)) {
           if (empty($zscores_by_encounter[$encounter_id])) {
             $zscores_by_encounter[$encounter_id] = ['w' => $zscore_age, 'u' => $zscore_length];
@@ -556,7 +580,9 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
       case HEDLEY_ACTIVITY_HEIGHT_CONTENT_TYPE:
         $encounter_id = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
         $sessions_ids[] = $encounter_id;
-        $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
+        $zscore_age = !empty($measurement->field_zscore_age[LANGUAGE_NONE][0]['value'])
+          ? $measurement->field_zscore_age[LANGUAGE_NONE][0]['value']
+          : NULL;
         if (!empty($zscore_age)) {
           if (empty($zscores_by_encounter[$encounter_id])) {
             $zscores_by_encounter[$encounter_id] = ['s' => $zscore_age];
@@ -570,8 +596,12 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
       case HEDLEY_ACTIVITY_WEIGHT_CONTENT_TYPE:
         $encounter_id = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
         $sessions_ids[] = $encounter_id;
-        $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
-        $zscore_length = $measurement->field_zscore_length[LANGUAGE_NONE][0]['value'];
+        $zscore_age = !empty($measurement->field_zscore_age[LANGUAGE_NONE][0]['value'])
+          ? $measurement->field_zscore_age[LANGUAGE_NONE][0]['value']
+          : NULL;
+        $zscore_length = !empty($measurement->field_zscore_length[LANGUAGE_NONE][0]['value'])
+          ? $measurement->field_zscore_length[LANGUAGE_NONE][0]['value']
+          : NULL;
         if (!empty($zscore_age)) {
           if (empty($zscores_by_encounter[$encounter_id])) {
             $zscores_by_encounter[$encounter_id] = ['w' => $zscore_age, 'u' => $zscore_length];
@@ -581,6 +611,62 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
             $zscores_by_encounter[$encounter_id]['u'] = $zscore_length;
           }
         }
+        break;
+
+      case HEDLEY_ACTIVITY_NUTRITION_MUAC_CONTENT_TYPE:
+        $encounter_id = $measurement->field_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
+        $muac_value = !empty($measurement->field_muac[LANGUAGE_NONE][0]['value'])
+          ? $measurement->field_muac[LANGUAGE_NONE][0]['value']
+          : NULL;
+        if (!is_null($muac_value) && $muac_value !== '') {
+          $muac_edema_by_encounter[$encounter_id]['m'] = $muac_value;
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_WELL_CHILD_MUAC_CONTENT_TYPE:
+        $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
+        $muac_value = !empty($measurement->field_muac[LANGUAGE_NONE][0]['value'])
+          ? $measurement->field_muac[LANGUAGE_NONE][0]['value']
+          : NULL;
+        if (!is_null($muac_value) && $muac_value !== '') {
+          $muac_edema_by_encounter[$encounter_id]['m'] = $muac_value;
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_MUAC_CONTENT_TYPE:
+        $encounter_id = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
+        $sessions_ids[] = $encounter_id;
+        $muac_value = !empty($measurement->field_muac[LANGUAGE_NONE][0]['value'])
+          ? $measurement->field_muac[LANGUAGE_NONE][0]['value']
+          : NULL;
+        if (!is_null($muac_value) && $muac_value !== '') {
+          $muac_edema_by_encounter[$encounter_id]['m'] = $muac_value;
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_NUTRITION_NUTRITION_CONTENT_TYPE:
+        $encounter_id = $measurement->field_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
+        $signs = !empty($measurement->field_nutrition_signs[LANGUAGE_NONE])
+          ? array_column($measurement->field_nutrition_signs[LANGUAGE_NONE], 'value')
+          : [];
+        $muac_edema_by_encounter[$encounter_id]['e'] = in_array('edema', $signs);
+        break;
+
+      case HEDLEY_ACTIVITY_WELL_CHILD_NUTRITION_CONTENT_TYPE:
+        $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
+        $signs = !empty($measurement->field_nutrition_signs[LANGUAGE_NONE])
+          ? array_column($measurement->field_nutrition_signs[LANGUAGE_NONE], 'value')
+          : [];
+        $muac_edema_by_encounter[$encounter_id]['e'] = in_array('edema', $signs);
+        break;
+
+      case HEDLEY_ACTIVITY_NUTRITION_CONTENT_TYPE:
+        $encounter_id = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
+        $sessions_ids[] = $encounter_id;
+        $signs = !empty($measurement->field_nutrition_signs[LANGUAGE_NONE])
+          ? array_column($measurement->field_nutrition_signs[LANGUAGE_NONE], 'value')
+          : [];
+        $muac_edema_by_encounter[$encounter_id]['e'] = in_array('edema', $signs);
         break;
 
       default:
@@ -610,20 +696,28 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
     if (empty($encounters_ids)) {
       continue;
     }
-    $participant_type = $individual_participant->field_encounter_type[LANGUAGE_NONE][0]['value'];
+    $participant_type = !empty($individual_participant->field_encounter_type[LANGUAGE_NONE][0]['value'])
+      ? $individual_participant->field_encounter_type[LANGUAGE_NONE][0]['value']
+      : '';
     $encounters = node_load_multiple($encounters_ids);
     foreach ($encounters as $encounter) {
       $encounter_date = date("Y-m-d", strtotime($encounter->field_scheduled_date[LANGUAGE_NONE][0]['value']));
       switch ($participant_type) {
         case HEDLEY_STATS_ACUTE_ILLNESS_ENCOUNTER_TYPE:
-          $encounter_type = $encounter->field_ai_encounter_type[LANGUAGE_NONE][0]['value'];
-          $diagnosis = $encounter->field_acute_illness_diagnosis[LANGUAGE_NONE][0]['value'];
+          $encounter_type = !empty($encounter->field_ai_encounter_type[LANGUAGE_NONE][0]['value'])
+            ? $encounter->field_ai_encounter_type[LANGUAGE_NONE][0]['value']
+            : '';
+          $diagnosis = !empty($encounter->field_acute_illness_diagnosis[LANGUAGE_NONE][0]['value'])
+            ? $encounter->field_acute_illness_diagnosis[LANGUAGE_NONE][0]['value']
+            : '';
           $mapped_diagnosis = !empty($ai_diagnosis_mapping[$diagnosis]) ? $ai_diagnosis_mapping[$diagnosis] : '';
           $encounter_data = "$encounter_date|$encounter_type|$mapped_diagnosis";
           break;
 
         case HEDLEY_STATS_PRENATAL_ENCOUNTER_TYPE:
-          $encounter_type = $encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value'];
+          $encounter_type = !empty($encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value'])
+            ? $encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value']
+            : '';
           $mapped_diagnoses = [];
           if (!empty($encounter->field_prenatal_diagnoses) && !empty($encounter->field_prenatal_diagnoses[LANGUAGE_NONE])) {
             foreach ($encounter->field_prenatal_diagnoses[LANGUAGE_NONE] as $diagnosis) {
@@ -645,7 +739,9 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
 
         case HEDLEY_STATS_NUTRITION_ENCOUNTER_TYPE:
         case HEDLEY_STATS_SPV_ENCOUNTER_TYPE:
-          $nutrition = hedley_reports_nutrition_metrics_to_string($zscores_by_encounter[$encounter->nid]);
+          $zscores = isset($zscores_by_encounter[$encounter->nid]) ? $zscores_by_encounter[$encounter->nid] : [];
+          $muac_edema = isset($muac_edema_by_encounter[$encounter->nid]) ? $muac_edema_by_encounter[$encounter->nid] : [];
+          $nutrition = hedley_reports_nutrition_metrics_to_string($zscores + $muac_edema);
           $encounter_data = "$encounter_date $nutrition";
           break;
 
@@ -667,23 +763,23 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
       $participant_data = [
         'created' => date("Y-m-d", $individual_participant->created),
       ];
-      $edd_date = $individual_participant->field_expected_date_concluded[LANGUAGE_NONE][0]['value'];
-      if (!empty($edd_date)) {
+      if (!empty($individual_participant->field_expected_date_concluded[LANGUAGE_NONE][0]['value'])) {
+        $edd_date = $individual_participant->field_expected_date_concluded[LANGUAGE_NONE][0]['value'];
         $participant_data['edd'] = date("Y-m-d", strtotime($edd_date));
       }
-      $date_concluded = $individual_participant->field_date_concluded[LANGUAGE_NONE][0]['value'];
-      if (!empty($date_concluded)) {
+      if (!empty($individual_participant->field_date_concluded[LANGUAGE_NONE][0]['value'])) {
+        $date_concluded = $individual_participant->field_date_concluded[LANGUAGE_NONE][0]['value'];
         $participant_data['dc'] = date("Y-m-d", strtotime($date_concluded));
       }
-      $outcome = $individual_participant->field_outcome[LANGUAGE_NONE][0]['value'];
-      if (!empty($outcome)) {
+      if (!empty($individual_participant->field_outcome[LANGUAGE_NONE][0]['value'])) {
+        $outcome = $individual_participant->field_outcome[LANGUAGE_NONE][0]['value'];
         $mapping = hedley_reports_pregnancy_outcome_mapping();
         if (in_array($outcome, array_keys($mapping))) {
           $participant_data['o'] = $mapping[$outcome];
         }
       }
-      $outcome_location = $individual_participant->field_outcome_location[LANGUAGE_NONE][0]['value'];
-      if (!empty($outcome_location)) {
+      if (!empty($individual_participant->field_outcome_location[LANGUAGE_NONE][0]['value'])) {
+        $outcome_location = $individual_participant->field_outcome_location[LANGUAGE_NONE][0]['value'];
         $participant_data['ol'] = ($outcome_location == 'home') ? 'h' : 'f';
       }
       $participant_data['encounters'] = $encounters_data[$participant_type][$individual_participant->nid];
@@ -691,7 +787,17 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
     }
   }
 
-  // Family nutrition encounters: find family participants for this person.
+  // Family nutrition encounters: walk family_participant nodes whose
+  // field_person points at $person. field_person on family_participant is
+  // the mother (the registering adult), so this block only contributes data
+  // when $person is a mother. Each family encounter is recorded as a
+  // date-only wire entry under the 'family-nutrition' key. These entries
+  // drive the Demographics report's "Family Nutrition" encounter row, which
+  // counts mothers and their family encounters across all ages (no child
+  // age filter). Per-child MUAC measurements are emitted separately under
+  // 'family-nutrition-muac' on each child's reports data; that path is
+  // what feeds the MAM/SAM stats and lives where the nutrition stats
+  // pipelines (which filter to children under 6) can actually find it.
   $family_participants_query = hedley_general_create_entity_field_query_excluding_deleted();
   $family_participants_result = $family_participants_query
     ->entityCondition('entity_type', 'node')
@@ -714,8 +820,62 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
       $family_encounters = node_load_multiple(array_keys($family_encounters_result['node']));
       foreach ($family_encounters as $family_encounter) {
         $participant_id = $family_encounter->field_family_participant[LANGUAGE_NONE][0]['target_id'];
-        $encounters_data['family-nutrition'][$participant_id][] = date("Y-m-d", strtotime($family_encounter->field_scheduled_date[LANGUAGE_NONE][0]['value']));
+        $encounter_date = date("Y-m-d", strtotime($family_encounter->field_scheduled_date[LANGUAGE_NONE][0]['value']));
+        $encounters_data['family-nutrition'][$participant_id][] = $encounter_date;
       }
+    }
+  }
+
+  // Per-child family-nutrition MUAC measurements. Walk child MUAC measurement
+  // nodes whose field_person is THIS person; these only match when $person
+  // is a child (the measurement records the child's arm circumference).
+  // Each measurement contributes one wire entry to the child's
+  // 'family-nutrition-muac' data, in the same "YYYY-MM-DD muac" format that
+  // hedley_reports_generate_nutrition_report_data parses for AM stats.
+  // Storing per-child measurements on the child rather than the mother is
+  // what gives the AM stats correct per-child denominators -- the nutrition
+  // pipelines downstream filter records to children under 6 before the
+  // computation runs, so mother-side data would be invisible to them.
+  $family_muac_query = hedley_general_create_entity_field_query_excluding_deleted();
+  $family_muac_result = $family_muac_query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', HEDLEY_ACTIVITY_FAMILY_NUTRITION_MUAC_CHILD_CONTENT_TYPE)
+    ->fieldCondition('field_person', 'target_id', $person->nid)
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->execute();
+
+  if (!empty($family_muac_result['node'])) {
+    $family_muac_measurements = node_load_multiple(array_keys($family_muac_result['node']));
+
+    // Batch-load parent encounters to read each measurement's scheduled
+    // date. We need the encounter's date, not the measurement's
+    // field_date_measured, for consistency with the way the rest of this
+    // function dates encounters.
+    $parent_encounter_ids = [];
+    foreach ($family_muac_measurements as $family_muac) {
+      $parent_id = $family_muac->field_family_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
+      if (!empty($parent_id)) {
+        $parent_encounter_ids[] = $parent_id;
+      }
+    }
+    $parent_encounters = !empty($parent_encounter_ids)
+      ? node_load_multiple(array_unique($parent_encounter_ids))
+      : [];
+
+    foreach ($family_muac_measurements as $family_muac) {
+      $parent_id = $family_muac->field_family_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
+      if (empty($parent_encounters[$parent_id])) {
+        continue;
+      }
+      $muac_value = !empty($family_muac->field_muac[LANGUAGE_NONE][0]['value'])
+        ? $family_muac->field_muac[LANGUAGE_NONE][0]['value']
+        : NULL;
+      if (is_null($muac_value) || $muac_value === '') {
+        continue;
+      }
+      $parent = $parent_encounters[$parent_id];
+      $encounter_date = date("Y-m-d", strtotime($parent->field_scheduled_date[LANGUAGE_NONE][0]['value']));
+      $encounters_data['family-nutrition-muac'][$person->nid][] = "$encounter_date $muac_value";
     }
   }
 
@@ -737,7 +897,9 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
   $clinics = node_load_multiple($clinics_ids);
   $group_type_by_clinic = [];
   foreach ($clinics as $clinic) {
-    $group_type_by_clinic[$clinic->nid] = $clinic->field_group_type[LANGUAGE_NONE][0]['value'];
+    $group_type_by_clinic[$clinic->nid] = !empty($clinic->field_group_type[LANGUAGE_NONE][0]['value'])
+      ? $clinic->field_group_type[LANGUAGE_NONE][0]['value']
+      : '';
   }
 
   $sessions_data = [];
@@ -745,7 +907,9 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
     $clinic_id = $session->field_clinic[LANGUAGE_NONE][0]['target_id'];
     $group_type = $group_type_by_clinic[$clinic_id];
     $encounter_date = date("Y-m-d", strtotime($session->field_scheduled_date[LANGUAGE_NONE][0]['value']));
-    $nutrition = hedley_reports_nutrition_metrics_to_string($zscores_by_encounter[$session->nid]);
+    $zscores = isset($zscores_by_encounter[$session->nid]) ? $zscores_by_encounter[$session->nid] : [];
+    $muac_edema = isset($muac_edema_by_encounter[$session->nid]) ? $muac_edema_by_encounter[$session->nid] : [];
+    $nutrition = hedley_reports_nutrition_metrics_to_string($zscores + $muac_edema);
     $session_data = "$encounter_date $nutrition";
 
     if (empty($sessions_data[$group_type])) {
@@ -791,30 +955,72 @@ function hedley_reports_pregnancy_outcome_mapping() {
  *
  * This function takes an associative array of nutrition metrics and
  * converts it into a string where the values are separated by commas.
- * The keys of the array should be 's' for stunting, 'w' for wasting,
- * and 'u' for underweight. If a key is missing or its value is empty,
- * an empty string is used in its place.
+ *
+ * Key naming note: the 'w' and 'u' keys are historically named after
+ * the nutrition *measurement* fields (weight-for-age and weight-for-
+ * length), not the clinical indicator they feed. Callers populate them
+ * as ['w' => $zscore_age, 'u' => $zscore_length]; weight-for-age is the
+ * underweight indicator and weight-for-length is the wasting indicator.
+ * The emitted wire positions are therefore stunting, underweight,
+ * wasting, MUAC, edema -- which is what both this module's own PHP
+ * decoder (hedley_reports_generate_nutrition_report_data) and the Elm
+ * decoder (Backend.Reports.Decoder.parseNutritionEncounterPayload)
+ * expect. Do not reorder the output without updating both decoders.
  *
  * @param array|null $values
  *   An associative array of nutrition metrics with the following possible keys:
- *   - 's': The stunting metric.
- *   - 'w': The wasting metric.
- *   - 'u': The underweight metric.
+ *   - 's': Stunting z-score (height/length-for-age).
+ *   - 'w': Weight-for-age z-score -- the underweight indicator.
+ *   - 'u': Weight-for-length z-score -- the wasting indicator.
+ *   - 'm': The MUAC measurement in cm.
+ *   - 'e': The edema flag (TRUE/FALSE emitted as '1'/'0').
  *
  * @return string
- *   A string with the stunting, wasting, and underweight metrics separated
- *   by commas. If the input array is empty, returns ',,'.
+ *   A string with the stunting, underweight, wasting, MUAC, and edema
+ *   metrics separated by commas (in that wire order). If the input
+ *   array is empty, returns ',,,,'.
  */
 function hedley_reports_nutrition_metrics_to_string($values) {
   if (empty($values)) {
-    return ',,';
+    return ',,,,';
   }
 
-  $stunting = !empty($values['s']) ? $values['s'] : '';
-  $wasting = !empty($values['w']) ? $values['w'] : '';
-  $underweight = !empty($values['u']) ? $values['u'] : '';
+  // All five fields use isset() && !== '' rather than !empty() so that a
+  // legitimate zero value (e.g. a stunting z-score of exactly 0.0, or a
+  // MUAC reading of 0.0) is preserved on the wire. The 'e' (edema) field
+  // additionally uses bare isset() below so the wire format can distinguish
+  // three states: key absent (no nutrition-signs measurement) -> empty
+  // string; key present and FALSE (measurement exists, no edema) -> '0';
+  // key present and TRUE -> '1'. Do not change to !empty() — that would
+  // collapse the tri-state.
+  $stunting = isset($values['s']) && $values['s'] !== '' ? $values['s'] : '';
+  $wasting = isset($values['w']) && $values['w'] !== '' ? $values['w'] : '';
+  $underweight = isset($values['u']) && $values['u'] !== '' ? $values['u'] : '';
+  $muac = isset($values['m']) && $values['m'] !== '' ? $values['m'] : '';
+  $edema = isset($values['e']) ? ($values['e'] ? '1' : '0') : '';
 
-  return "$stunting,$wasting,$underweight";
+  return "$stunting,$wasting,$underweight,$muac,$edema";
+}
+
+/**
+ * Converts family-nutrition encounter metrics to a wire-format string fragment.
+ *
+ * Family nutrition has only MUAC (no z-scores, no edema). When MUAC is
+ * absent, returns the empty string so the caller emits a date-only encounter
+ * (matching the legacy date-only family nutrition wire format).
+ *
+ * @param array|null $values
+ *   Optional 'm' key with the MUAC value in cm.
+ *
+ * @return string
+ *   The MUAC value as a string, or an empty string if absent.
+ */
+function hedley_reports_family_nutrition_metrics_to_string($values) {
+  if (empty($values) || !isset($values['m']) || $values['m'] === '') {
+    return '';
+  }
+
+  return (string) $values['m'];
 }
 
 /**
@@ -1575,9 +1781,30 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
       }
     }
 
+    // Per-child family-nutrition MUAC measurements live under
+    // 'family-nutrition-muac' on the child's reports data (see
+    // hedley_reports_calculate_aggregated_data_for_person). The
+    // 'family-nutrition' key (date-only entries on the mother) is for
+    // the Demographics encounter count and is not consumed here.
+    $family_encounters = [];
+    if (isset($patient_data->individual)) {
+      if (isset($patient_data->individual->{"family-nutrition-muac"})) {
+        foreach ($patient_data->individual->{"family-nutrition-muac"} as $items) {
+          $family_encounters = array_merge($family_encounters, $items);
+        }
+      }
+    }
+    $data_for_patient['family_encounters'] = $family_encounters;
+
     $nutrition_data[] = $data_for_patient;
 
-    if (count($data_for_patient['encounters']) > 1) {
+    // Family-nutrition MUAC measurements are a legitimate nutrition
+    // "visit" for the impacted filter -- the Elm small-scope path
+    // (Pages/Reports/Utils.elm: countTotalNutritionEncounters) counts
+    // them, so the large-scope path has to as well. Otherwise a child
+    // whose second visit is a family-nutrition MUAC would be excluded
+    // from the two-visits-or-more tables here but included there.
+    if (count($data_for_patient['encounters']) + count($data_for_patient['family_encounters']) > 1) {
       $impacted[] = $data_for_patient['id'];
     }
   }
@@ -1610,14 +1837,47 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
       }
 
       $start_date_month = $start_date->format('m');
-      $encounter_zscores = explode(',', $parts[1]);
+      $encounter_fields = explode(',', $parts[1]);
       $nutrition_data = [
-        'stunting' => ($encounter_zscores[0] === '') ? NULL : (float) $encounter_zscores[0],
-        'underweight' => ($encounter_zscores[1] === '') ? NULL : (float) $encounter_zscores[1],
-        'wasting' => ($encounter_zscores[2] === '') ? NULL : (float) $encounter_zscores[2],
+        'stunting' => (!isset($encounter_fields[0]) || $encounter_fields[0] === '') ? NULL : (float) $encounter_fields[0],
+        'underweight' => (!isset($encounter_fields[1]) || $encounter_fields[1] === '') ? NULL : (float) $encounter_fields[1],
+        'wasting' => (!isset($encounter_fields[2]) || $encounter_fields[2] === '') ? NULL : (float) $encounter_fields[2],
+        'muac' => (!isset($encounter_fields[3]) || $encounter_fields[3] === '') ? NULL : (float) $encounter_fields[3],
+        'edema' => (isset($encounter_fields[4]) && $encounter_fields[4] === '1'),
       ];
 
       $encounter_metrics = hedley_reports_nutrition_encounter_data_to_nutrition_metrics($nutrition_data_item['id'], $nutrition_data);
+      $key = "$start_date_year-$start_date_month";
+      if (isset($encounters_by_month[$key])) {
+        $encounters_by_month[$key] = hedley_reports_sum_nutrition_metrics([$encounters_by_month[$key], $encounter_metrics]);
+      }
+      else {
+        $encounters_by_month[$key] = $encounter_metrics;
+      }
+    }
+
+    foreach ($nutrition_data_item['family_encounters'] as $family_encounter_data) {
+      $parts = explode(' ', $family_encounter_data);
+      $start_date_as_string = $parts[0];
+      $start_date = DateTime::createFromFormat('Y-m-d', $start_date_as_string);
+      if ($start_date === FALSE) {
+        continue;
+      }
+      $start_date_year = $start_date->format('Y');
+      if ($start_date_year < $starting_year) {
+        continue;
+      }
+
+      $start_date_month = $start_date->format('m');
+      $muac_value = isset($parts[1]) && $parts[1] !== '' ? (float) $parts[1] : NULL;
+      $family_data = [
+        'stunting' => NULL,
+        'underweight' => NULL,
+        'wasting' => NULL,
+        'muac' => $muac_value,
+        'edema' => FALSE,
+      ];
+      $encounter_metrics = hedley_reports_nutrition_encounter_data_to_nutrition_metrics($nutrition_data_item['id'], $family_data);
       $key = "$start_date_year-$start_date_month";
       if (isset($encounters_by_month[$key])) {
         $encounters_by_month[$key] = hedley_reports_sum_nutrition_metrics([$encounters_by_month[$key], $encounter_metrics]);
@@ -1640,6 +1900,9 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
       'underweight_normal' => hedley_reports_filter_impacted_ids($encounter['underweight_normal'], $impacted),
       'underweight_moderate' => hedley_reports_filter_impacted_ids($encounter['underweight_moderate'], $impacted),
       'underweight_severe' => hedley_reports_filter_impacted_ids($encounter['underweight_severe'], $impacted),
+      'acute_malnutrition_normal' => hedley_reports_filter_impacted_ids($encounter['acute_malnutrition_normal'], $impacted),
+      'acute_malnutrition_mam' => hedley_reports_filter_impacted_ids($encounter['acute_malnutrition_mam'], $impacted),
+      'acute_malnutrition_sam' => hedley_reports_filter_impacted_ids($encounter['acute_malnutrition_sam'], $impacted),
     ];
   }
 
@@ -1685,6 +1948,8 @@ function hedley_reports_nutrition_metrics_to_table_data($type, array $metrics) {
     'wasting_severe' => [],
     'underweight_moderate' => [],
     'underweight_severe' => [],
+    'acute_malnutrition_mam' => [],
+    'acute_malnutrition_sam' => [],
   ];
 
   foreach ($metrics as $key => $values) {
@@ -1695,6 +1960,8 @@ function hedley_reports_nutrition_metrics_to_table_data($type, array $metrics) {
     $result['wasting_severe'][] = $values['wasting_severe'];
     $result['underweight_moderate'][] = $values['underweight_moderate'];
     $result['underweight_severe'][] = $values['underweight_severe'];
+    $result['acute_malnutrition_mam'][] = $values['acute_malnutrition_mam'];
+    $result['acute_malnutrition_sam'][] = $values['acute_malnutrition_sam'];
   }
 
   return $result;
@@ -1850,6 +2117,7 @@ function hedley_reports_generate_prevalence_nutrition_metrics_results(array $met
   $stunting_total = array_unique(array_merge($metrics['stunting_moderate'], $metrics['stunting_severe'], $metrics['stunting_normal']));
   $wasting_total = array_unique(array_merge($metrics['wasting_moderate'], $metrics['wasting_severe'], $metrics['wasting_normal']));
   $underweight_total = array_unique(array_merge($metrics['underweight_moderate'], $metrics['underweight_severe'], $metrics['underweight_normal']));
+  $acute_malnutrition_total = array_unique(array_merge($metrics['acute_malnutrition_mam'], $metrics['acute_malnutrition_sam'], $metrics['acute_malnutrition_normal']));
 
   return [
     'stunting_moderate' => hedley_reports_calculate_percentage($metrics['stunting_moderate'], $stunting_total),
@@ -1858,6 +2126,8 @@ function hedley_reports_generate_prevalence_nutrition_metrics_results(array $met
     'wasting_severe' => hedley_reports_calculate_percentage($metrics['wasting_severe'], $wasting_total),
     'underweight_moderate' => hedley_reports_calculate_percentage($metrics['underweight_moderate'], $underweight_total),
     'underweight_severe' => hedley_reports_calculate_percentage($metrics['underweight_severe'], $underweight_total),
+    'acute_malnutrition_mam' => hedley_reports_calculate_percentage($metrics['acute_malnutrition_mam'], $acute_malnutrition_total),
+    'acute_malnutrition_sam' => hedley_reports_calculate_percentage($metrics['acute_malnutrition_sam'], $acute_malnutrition_total),
   ];
 }
 
@@ -1903,6 +2173,16 @@ function hedley_reports_generate_incidence_nutrition_metrics_results(array $curr
   $underweight_severe_tested_in_previous_period = array_intersect(array_unique($current_period_metric['underweight_severe']), $previous_period_underweight_total);
   $underweight_severe_not_identified_in_previous_period = array_diff(array_unique($current_period_metric['underweight_severe']), array_unique($previous_period_metric['underweight_severe']));
 
+  // ACUTE MALNUTRITION.
+  $previous_period_acute_malnutrition_mam_sam = array_unique(array_merge($previous_period_metric['acute_malnutrition_mam'], $previous_period_metric['acute_malnutrition_sam']));
+  $previous_period_acute_malnutrition_total = array_unique(array_merge($previous_period_acute_malnutrition_mam_sam, $previous_period_metric['acute_malnutrition_normal']));
+
+  $acute_malnutrition_mam_tested_in_previous_period = array_intersect(array_unique($current_period_metric['acute_malnutrition_mam']), $previous_period_acute_malnutrition_total);
+  $acute_malnutrition_mam_not_identified_in_previous_period = array_diff(array_unique($current_period_metric['acute_malnutrition_mam']), $previous_period_acute_malnutrition_mam_sam);
+
+  $acute_malnutrition_sam_tested_in_previous_period = array_intersect(array_unique($current_period_metric['acute_malnutrition_sam']), $previous_period_acute_malnutrition_total);
+  $acute_malnutrition_sam_not_identified_in_previous_period = array_diff(array_unique($current_period_metric['acute_malnutrition_sam']), array_unique($previous_period_metric['acute_malnutrition_sam']));
+
   return [
     'stunting_moderate' => hedley_reports_calculate_percentage(array_intersect($stunting_moderate_tested_in_previous_period, $stunting_moderate_not_identified_in_previous_period), $previous_period_stunting_total),
     'stunting_severe' => hedley_reports_calculate_percentage(array_intersect($stunting_severe_tested_in_previous_period, $stunting_severe_not_identified_in_previous_period), $previous_period_stunting_total),
@@ -1910,6 +2190,8 @@ function hedley_reports_generate_incidence_nutrition_metrics_results(array $curr
     'wasting_severe' => hedley_reports_calculate_percentage(array_intersect($wasting_severe_tested_in_previous_period, $wasting_severe_not_identified_in_previous_period), $previous_period_wasting_total),
     'underweight_moderate' => hedley_reports_calculate_percentage(array_intersect($underweight_moderate_tested_in_previous_period, $underweight_moderate_not_identified_in_previous_period), $previous_period_underweight_total),
     'underweight_severe' => hedley_reports_calculate_percentage(array_intersect($underweight_severe_tested_in_previous_period, $underweight_severe_not_identified_in_previous_period), $previous_period_underweight_total),
+    'acute_malnutrition_mam' => hedley_reports_calculate_percentage(array_intersect($acute_malnutrition_mam_tested_in_previous_period, $acute_malnutrition_mam_not_identified_in_previous_period), $previous_period_acute_malnutrition_total),
+    'acute_malnutrition_sam' => hedley_reports_calculate_percentage(array_intersect($acute_malnutrition_sam_tested_in_previous_period, $acute_malnutrition_sam_not_identified_in_previous_period), $previous_period_acute_malnutrition_total),
   ];
 }
 
@@ -2087,20 +2369,29 @@ function hedley_reports_calculate_year_difference($fromDateString, $toDateString
  * Converts nutrition encounter data to nutrition metrics.
  *
  * This function processes encounter data to categorize nutritional status
- * (normal, moderate, severe) for stunting, wasting, and underweight.
+ * (normal, moderate, severe) for stunting, wasting, and underweight, and
+ * acute malnutrition status (normal, MAM, SAM) from MUAC and edema.
  *
  * @param int $person_id
  *   The ID of the person whose data is being processed.
  * @param array $data
- *   The nutritional data with keys 'stunting', 'wasting', and 'underweight'.
+ *   The nutritional data with keys 'stunting', 'wasting', 'underweight'
+ *   (z-scores or NULL), 'muac' (MUAC value in cm or NULL), and 'edema'
+ *   (boolean indicating edema presence).
  *
  * @return array
- *   An array containing categorized nutritional metrics.
+ *   An array containing categorized nutritional metrics with twelve keys
+ *   (stunting/wasting/underweight × normal/moderate/severe plus
+ *   acute_malnutrition × normal/mam/sam).
  */
 function hedley_reports_nutrition_encounter_data_to_nutrition_metrics($person_id, array $data) {
   [$stunting_normal, $stunting_moderate, $stunting_severe] = hedley_reports_categorize_z_score($data['stunting'], $person_id);
   [$wasting_normal, $wasting_moderate, $wasting_severe] = hedley_reports_categorize_z_score($data['wasting'], $person_id);
   [$underweight_normal, $underweight_moderate, $underweight_severe] = hedley_reports_categorize_z_score($data['underweight'], $person_id);
+
+  $muac_cm = isset($data['muac']) ? $data['muac'] : NULL;
+  $has_edema = !empty($data['edema']);
+  [$acute_malnutrition_normal, $acute_malnutrition_mam, $acute_malnutrition_sam] = hedley_reports_categorize_acute_malnutrition($muac_cm, $has_edema, $person_id);
 
   return [
     'stunting_normal' => $stunting_normal,
@@ -2112,6 +2403,9 @@ function hedley_reports_nutrition_encounter_data_to_nutrition_metrics($person_id
     'underweight_normal' => $underweight_normal,
     'underweight_moderate' => $underweight_moderate,
     'underweight_severe' => $underweight_severe,
+    'acute_malnutrition_normal' => $acute_malnutrition_normal,
+    'acute_malnutrition_mam' => $acute_malnutrition_mam,
+    'acute_malnutrition_sam' => $acute_malnutrition_sam,
   ];
 }
 
@@ -2139,6 +2433,9 @@ function hedley_reports_sum_nutrition_metrics(array $metrics_list) {
     $result['underweight_normal'] = array_merge($result['underweight_normal'], $metrics['underweight_normal']);
     $result['underweight_moderate'] = array_merge($result['underweight_moderate'], $metrics['underweight_moderate']);
     $result['underweight_severe'] = array_merge($result['underweight_severe'], $metrics['underweight_severe']);
+    $result['acute_malnutrition_normal'] = array_merge($result['acute_malnutrition_normal'], $metrics['acute_malnutrition_normal']);
+    $result['acute_malnutrition_mam'] = array_merge($result['acute_malnutrition_mam'], $metrics['acute_malnutrition_mam']);
+    $result['acute_malnutrition_sam'] = array_merge($result['acute_malnutrition_sam'], $metrics['acute_malnutrition_sam']);
   }
 
   return $result;
@@ -2176,6 +2473,37 @@ function hedley_reports_categorize_z_score($score, $person_id) {
 }
 
 /**
+ * Categorizes a MUAC measurement (with optional edema) into MAM/SAM/normal.
+ *
+ * @param float|null $muac_cm
+ *   The MUAC value in centimeters, or NULL if no MUAC was recorded.
+ * @param bool $has_edema
+ *   TRUE if edema is present.
+ * @param int $person_id
+ *   The ID of the person whose measurement is being categorized.
+ *
+ * @return array
+ *   A three-element array of [normal, mam, sam] sub-arrays. When MUAC is
+ *   missing, all three are empty (the encounter does not enter the AM
+ *   denominator at all).
+ */
+function hedley_reports_categorize_acute_malnutrition($muac_cm, $has_edema, $person_id) {
+  if ($muac_cm === NULL || $muac_cm === '') {
+    return [[], [], []];
+  }
+
+  if ($muac_cm < 11.5 || $has_edema) {
+    return [[], [], [$person_id]];
+  }
+
+  if ($muac_cm < 12.5) {
+    return [[], [$person_id], []];
+  }
+
+  return [[$person_id], [], []];
+}
+
+/**
  * Creates an empty set of nutrition metrics.
  *
  * This function generates an empty array structure for nutrition metrics,
@@ -2196,6 +2524,9 @@ function hedley_reports_empty_nutrition_metrics() {
     'underweight_normal' => [],
     'underweight_moderate' => [],
     'underweight_severe' => [],
+    'acute_malnutrition_normal' => [],
+    'acute_malnutrition_mam' => [],
+    'acute_malnutrition_sam' => [],
   ];
 }
 

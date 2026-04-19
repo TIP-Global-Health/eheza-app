@@ -681,6 +681,7 @@ type TranslationId
     | ErrorCheckLocalConfig
     | ErrorConfigurationError
     | Estimated
+    | EstimatedDeliveryDate
     | ExaminationTask ExaminationTask
     | ExaminationTaskRecurrent Pages.Prenatal.RecurrentActivity.Types.ExaminationTask
     | ExpiryDate
@@ -938,8 +939,6 @@ type TranslationId
     | LabResultsHistoryModeLabel LabResultsHistoryMode
     | LabResultsNormalRange LabResultsHistoryMode
     | LabResultsPaneHeader LabResultsCurrentMode
-    | LateFirstANCVisitQuestion
-    | LateFirstANCVisitReason LateFirstANCVisitReason
     | LastChecked
     | LastContacted
     | LastSuccessfulContactLabel
@@ -1280,6 +1279,9 @@ type TranslationId
     | Preeclampsia
     | Pregnancy
     | PregnancyConclusion
+    | PregnancySignAnswerNegative PregnancySign
+    | PregnancySignAnswerPositive PregnancySign
+    | PregnancySignQuestion PregnancySign
     | PregnancyStart
     | PregnancySummarySignQuestion PregnancySummarySign
     | PregnancyTestResult PregnancyTestResult
@@ -2098,6 +2100,8 @@ type TranslationId
     | Type
     | UbudeheLabel
     | UbudeheNumber Ubudehe
+    | UltrasoundEDDQuestion
+    | UltrasoundExecutionDateLabel
     | Underweight
     | UndeterminedDiagnoses
     | UndeterminedDiagnosisMessage
@@ -2147,6 +2151,7 @@ type TranslationId
     | WeightGain
     | WeightLossLabel
     | WeightLossQuestion
+    | WeeksAbbrev
     | WelcomeUser String
     | Wellbeing
     | WellChildActivityTitle WellChildActivity
@@ -3904,17 +3909,17 @@ translationSet trans =
             }
 
         BaselineWeight value ->
-            { english = "Pre-pregnancy baseline weight: " ++ String.fromFloat value
-            , kinyarwanda = Just <| "Ibiro yarafite mbere yo gutwita: " ++ String.fromFloat value
-            , kirundi = Nothing
-            , somali = Nothing
+            { english = "Baseline weight: " ++ String.fromFloat value
+            , kinyarwanda = Just <| "Ibiro bya mbere: " ++ String.fromFloat value
+            , kirundi = Just <| "Ibiro vya mbere: " ++ String.fromFloat value
+            , somali = Just <| "Miisaanka aasaasiga ah: " ++ String.fromFloat value
             }
 
         BaselineWeightNotFound ->
-            { english = "No pre-pregnancy baseline weight on record"
-            , kinyarwanda = Just "Nta biro bya mbere yo kubyara byafashwe"
-            , kirundi = Nothing
-            , somali = Nothing
+            { english = "No baseline weight on record"
+            , kinyarwanda = Just "Nta biro bya mbere byafashwe"
+            , kirundi = Just "Nta biro vya mbere biriho"
+            , somali = Just "Ma jiro miisaan aasaasi ah oo diiwaangashan"
             }
 
         BatchNumberAbbrev ->
@@ -6802,6 +6807,13 @@ translationSet trans =
             , kinyarwanda = Just "Itariki y'amavuko igenekerejwe"
             , kirundi = Just "Bigereranijwe"
             , somali = Just "La qiyaasay"
+            }
+
+        EstimatedDeliveryDate ->
+            { english = "Estimated Delivery Date"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Taariikhda la qiyaasay ee umulidda"
             }
 
         ExaminationTask task ->
@@ -11194,85 +11206,6 @@ translationSet trans =
             , kirundi = Just "Kurabwa ubwanyuma"
             , somali = Just "Markii ugu dambeesay ee la hubiyay"
             }
-
-        LateFirstANCVisitQuestion ->
-            { english = "Why has the patient NOT had an ANC visit in her first trimester"
-            , kinyarwanda = Just "Kubera iki umubyeyi atitabiriye isuzuma ku mugore utwite mu gihembwe cyambere"
-            , kirundi = Nothing
-            , somali = Nothing
-            }
-
-        LateFirstANCVisitReason reason ->
-            case reason of
-                ReasonLackOfFunds ->
-                    { english = "Poverty/lack of funds for transport or services"
-                    , kinyarwanda = Just "Ubukene/kubura amafaranga y'itike cyangwa kwishyura serivise"
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
-
-                ReasonLackOfHealthInsurance ->
-                    { english = "Lack of health insurance"
-                    , kinyarwanda = Just "Kubura ubwishingizi mu kwivuza"
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
-
-                ReasonPartnerAccompanimentRequirement ->
-                    { english = "Partner accompaniment requirement for 1st visit"
-                    , kinyarwanda = Just "Gusabwa ko umubyeyi aherekezwa n’uwo bashakanye cg n’uwo babana ku nshuro ya mbere yo kwipimisha inda"
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
-
-                ReasonUndetectedPregnancy ->
-                    { english = "Unplanned or undetected pregnancies"
-                    , kinyarwanda = Just "Inda itateganyijwe cyangwa kutamenya ko atwite"
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
-
-                ReasonLongDistancesToHealthFacilities ->
-                    { english = "Long distances to health facilities"
-                    , kinyarwanda = Just "Ikigo nderabuzima kiri kure"
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
-
-                ReasonNegativePastExperiences ->
-                    { english = "Negative past experiences with providers/ facility"
-                    , kinyarwanda = Just "Kudahabwa serivise nziza ubushize"
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
-
-                ReasonTraditionalBeliefs ->
-                    { english = "Traditional beliefs about hiding early pregnancy"
-                    , kinyarwanda = Just "Imyemerere ya gakondo yo guhisha inda ikiri nto"
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
-
-                ReasonLackOfAwarenessToANC ->
-                    { english = "Lack of awareness about the importance of early ANC"
-                    , kinyarwanda = Just "Kutagira ubumenyi ku kamaro ko gutangira isuzuma k'umugore utwite hakiri kare"
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
-
-                ReasonDelayedRecognitionOfSymptoms ->
-                    { english = "Delayed recognition of pregnancy symptoms"
-                    , kinyarwanda = Just "Gutinda kumenya ibimenyetso by’inda"
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
-
-                ReasonOtherReasons ->
-                    { english = "Other reasons"
-                    , kinyarwanda = Just "Izindi mpamvu"
-                    , kirundi = Nothing
-                    , somali = Nothing
-                    }
 
         LastContacted ->
             { english = "Last Contacted"
@@ -16598,6 +16531,76 @@ translationSet trans =
             , somali = Just "Dhamaadka Uurka"
             }
 
+        PregnancySignAnswerNegative sign ->
+            case sign of
+                PregnancyNotViable ->
+                    translationSet Yes
+
+                PregnancyEctopic ->
+                    { english = "Normal (intrauterine)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Just "Caadi (uurka gudihiisa)"
+                    }
+
+                PregnancyMultipleFetuses ->
+                    { english = "Single"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Just "Hal ilmo"
+                    }
+
+                NoPregnancySigns ->
+                    translationSet EmptyString
+
+        PregnancySignAnswerPositive sign ->
+            case sign of
+                PregnancyNotViable ->
+                    translationSet No
+
+                PregnancyEctopic ->
+                    { english = "Ectopic (extrauterine)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Just "Uur meel ka baxsan (uurka dibitiisa)"
+                    }
+
+                PregnancyMultipleFetuses ->
+                    { english = "Multiple"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Just "Dhowr ilmo"
+                    }
+
+                _ ->
+                    translationSet EmptyString
+
+        PregnancySignQuestion sign ->
+            case sign of
+                PregnancyNotViable ->
+                    { english = "Is the pregnancy viable"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Just "Uurku ma nool yahay"
+                    }
+
+                PregnancyEctopic ->
+                    { english = "Where is the pregnancy located"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Just "Meesha uurku ku yaal"
+                    }
+
+                PregnancyMultipleFetuses ->
+                    { english = "How many fetuses are present"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Just "Imisa ilmo ayaa jira"
+                    }
+
+                NoPregnancySigns ->
+                    translationSet EmptyString
+
         PregnancyStart ->
             { english = "Pregnancy Start"
             , kinyarwanda = Just "Itangira ryo Gutwita"
@@ -16798,6 +16801,13 @@ translationSet trans =
                     , kinyarwanda = Just "Ubuvuzi bw'inzobere"
                     , kirundi = Just "Ubuvuzi bw'ubuhinga"
                     , somali = Just "Daryeel sare"
+                    }
+
+                Ultrasound ->
+                    { english = "Ultrasound"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Just "Baaritaanka Uur ku jirta"
                     }
 
                 PostpartumTreatmentReview ->
@@ -26434,6 +26444,13 @@ translationSet trans =
 
         StockSupplier value ->
             case value of
+                SupplierAheza ->
+                    { english = "AHEZA"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
                 SupplierMOH ->
                     { english = "MOH (Ministry of Health)"
                     , kinyarwanda = Just "Minisiteri y'ubuzima"
@@ -26478,6 +26495,13 @@ translationSet trans =
 
         StockSupplierAbbrev value ->
             case value of
+                SupplierAheza ->
+                    { english = "AHEZA"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
                 SupplierMOH ->
                     { english = "MOH"
                     , kinyarwanda = Nothing
@@ -27933,6 +27957,20 @@ translationSet trans =
                 NoUbudehe ->
                     translationSet EmptyString
 
+        UltrasoundEDDQuestion ->
+            { english = "How far along the pregnancy is (weeks + days) based on the ultrasound"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Uurka intee le gaaray (toddobaad + maalmood) oo ku saleysan baaritaanka"
+            }
+
+        UltrasoundExecutionDateLabel ->
+            { english = "Date Ultrasound was performed"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "Taariikhda baaritaanka uurka lagu sameeyay"
+            }
+
         Underweight ->
             { english = "Underweight"
             , kinyarwanda = Just "Ibiro bidahagije"
@@ -28413,6 +28451,13 @@ translationSet trans =
             , kinyarwanda = Just "Waba waratakaje ibiro"
             , kirundi = Just "Mbega urata ibiro"
             , somali = Just "Ma leedahay miisaan go`"
+            }
+
+        WeeksAbbrev ->
+            { english = "weeks"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Just "toddobaad"
             }
 
         WelcomeUser name ->

@@ -180,10 +180,12 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       'family_nutrition',
       'gps_coordinates',
       'group_education',
+      'healthy_start',
       'hiv_management',
       'ncda',
       'report_to_whatsapp',
-      'stock_management',
+      'stock_management_hc',
+      'stock_management_village',
       'tuberculosis_management',
     ];
     $enabled_features = array_filter(

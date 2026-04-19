@@ -31,7 +31,9 @@ import {
   readNutritionColumnHeaders,
   findNutritionMetric,
   backdateNutritionEncounter,
+  backdateFamilyNutritionEncounter,
   NUTRITION_ONE_VISIT_TABLES,
+  NUTRITION_TWO_VISIT_TABLES,
   NutritionMetricRow,
   PatientsTableData,
   EncountersTableData,
@@ -169,6 +171,17 @@ import {
   completeFoodSecurity,
 } from './helpers/home-visit';
 import {
+  createMotherAndNavigateToPersonPage as createFamilyNutritionMother,
+  addChild as addFamilyNutritionChild,
+  continueToParticipantPage as continueToFamilyNutritionParticipant,
+  startFamilyNutritionEncounter,
+  selectFamilyMember,
+  completeAhezaMother,
+  completeAhezaChild,
+  completeMuac as completeFamilyNutritionMuac,
+  endFamilyNutritionEncounter,
+} from './helpers/family-nutrition';
+import {
   navigateToNurseGroupSession,
   createMotherOnAttendancePage,
   addChildToMother,
@@ -198,7 +211,11 @@ const pwaBaseUrl = `http://localhost:${getClientPort()}`;
 const NYANGE_HC_ID = 4;
 
 // Start date for report filtering — early enough to include all data.
-const REPORT_START_DATE = new Date(2018, 0, 1);
+// Constructed in UTC because the calendar helper reads via getUTC*; using
+// `new Date(2018, 0, 1)` (local time) in a positive-offset timezone yields
+// 2017-12-31 in UTC, which is outside the Elm date picker's launchDate
+// range and causes setDateRange to fail.
+const REPORT_START_DATE = new Date(Date.UTC(2018, 0, 1));
 
 test.describe('Admin Reports', () => {
   test.describe.configure({ timeout: 1080000 }); // 18 minutes
@@ -226,22 +243,21 @@ test.describe('Admin Reports', () => {
   //          TBAdult (M 45y) — Tuberculosis
   //          CSChild (M 10mo) — Child Scoreboard
   //          NBChild (M 1mo) — Newborn Exam
+  //          FamilyNutritionMother (F 25y) + FamilyMuacChild (M 12mo) —
+  //            Family Nutrition encounter with child MUAC = 12 cm (MAM band)
   //
   // Expected Registered Patients deltas:
-  //   1M-2Y: male +5 (NutrChild, CSChild, HVChild, FBFChild, NBChild)
+  //   1M-2Y: male +6 (incl. family-nutrition child); +1 may land in 0-1M
+  //     for NBChild (boundary), so test asserts the sum across both buckets
   //   2Y-5Y: male +1 (AIChild 30mo)
-  //   20Y-50Y: male +1 (TBAdult), female +7 (PrenatalMom, AINurse, FBFMother, NCDAdult, PrenatalCHW, AICHW, HIVAdult)
-  //   Total: +13
+  //   20Y-50Y: male +1 (TBAdult), female +8 (incl. family-nutrition mother)
+  //   Total: +17
   //
-  // Expected Impacted Patients deltas:
-  //   1M-2Y: male +2 (NutrChild: Nutrition+SPV, HVChild: Nutrition+HomeVisit)
-  //   20Y-50Y: female +2 (AINurse: AI initial + subsequent, PrenatalMom: initial + postpartum)
-  //   Total: +4
-  //
-  // Expected Encounters deltas (All column, +1 each unless noted):
-  //   ANC Total +3 (HC initial +1, HC postpartum +1, CHW +1), AI Total +4 (nurse initial +1, child +1, subsequent +1, CHW +1),
-  //   SPV +1, Home Visit +1, Child Scoreboard +1, NCD +1, HIV +1, TB +1,
-  //   Nutrition Total +3 (Individual +2, FBF +1)
+  // Expected Nutrition report deltas (issue #1718):
+  //   - All 8 nutrition tables grow from 6 to 8 metric rows: stunting/wasting/
+  //     underweight × moderate/severe + new MAM and SAM rows.
+  //   - Prevalence (column 0, last completed month): SAM > 0 (NutrChild MUAC 11
+  //     + Edema, HVChild MUAC 11) and MAM > 0 (family child MUAC 12 cm).
   test('Reports reflect new patients, encounters, and completion data', async ({ page }) => {
     const reportLimitDate = new Date();
 
@@ -304,6 +320,7 @@ test.describe('Admin Reports', () => {
     let csChildName: string;
     let fbfChildName: string;
     let nbChildName: string;
+    let familyMuacChildName: string;
 
     await step('Login to Drupal admin and record baseline values', async () => {
       await drupalLogin(page);
@@ -1094,6 +1111,45 @@ test.describe('Admin Reports', () => {
       });
       await goToDashboard(page);
       console.log('Created SPVChild (CHW Well Child):', spvChwChild.fullName);
+
+      // --- Family Nutrition encounter (CHW): mother + 1 child (12mo) ---
+      // Mother MUAC = 25 cm (Normal — required to enable End Encounter for
+      // the mother's activities). Child MUAC = 12 cm (= 120 mm = MAM range,
+      // ≥115 and <125). Family-nutrition encounters are CHW-only and the
+      // child MUAC measurements live on the child's reports data under
+      // 'family-nutrition-muac', which is what feeds the MAM/SAM stats
+      // rows in the nutrition report. The family encounter creation also
+      // contributes +1 to the Demographics "Family Nutrition" encounter
+      // row (counted on the mother's reports data under the legacy
+      // date-only 'family-nutrition' key).
+      await page.goto(pwaBaseUrl);
+      await page.locator('.wrap-cards').waitFor({ timeout: 10000 });
+      const familyMother = await createFamilyNutritionMother(page, { ageYears: 25 });
+      const familyChild = await addFamilyNutritionChild(page, { ageMonths: 12 });
+      familyMuacChildName = familyChild.fullName;
+      await continueToFamilyNutritionParticipant(page);
+      await startFamilyNutritionEncounter(page);
+      // Mother is selected by default — complete her activities so the
+      // encounter can be ended.
+      await completeAhezaMother(page, { amount: '3', reasonIndex: 1 });
+      await completeFamilyNutritionMuac(page, { value: '25.0' });
+      // Switch to the child (index 1; mother is index 0). Wait for the
+      // activity grid to render before clicking activities.
+      await selectFamilyMember(page, 1);
+      await page
+        .locator('.link-section:has(.icon-activity-task.icon-fbf)')
+        .waitFor({ timeout: 10000 });
+      await completeAhezaChild(page, { amount: '2' });
+      // Child MUAC = 12.0 cm = 120 mm = MAM band (>=115 mm and <125 mm).
+      // This is the value the test asserts on in the nutrition report.
+      await completeFamilyNutritionMuac(page, { value: '12.0' });
+      await endFamilyNutritionEncounter(page);
+      console.log(
+        'Created Family Nutrition encounter:',
+        familyMother.fullName,
+        '+ child',
+        familyChild.fullName,
+      );
     });
 
     await step('Sync CHW data to backend', async () => {
@@ -1111,6 +1167,10 @@ test.describe('Admin Reports', () => {
       lastMonth.setMonth(lastMonth.getMonth() - 1);
       backdateNutritionEncounter(nutrChildName, lastMonth);
       backdateNutritionEncounter(hvChildName, lastMonth);
+      // Family-nutrition: backdate the encounter and child MUAC measurement
+      // so the MAM data lands in the same prevalence-by-month column 0 as
+      // the nutrition encounters above.
+      backdateFamilyNutritionEncounter(familyMuacChildName, lastMonth);
     });
 
     // ── Phase 2: Process AQ + re-aggregate ──
@@ -1163,15 +1223,16 @@ test.describe('Admin Reports', () => {
       }
       console.log(`Total: baseline=${baselineRegistered.total}, new=${newRegistered.total}, delta=+${newRegistered.total - baselineRegistered.total}`);
 
-      // Row "1M - 2Y": male +4 or +5 depending on whether NBChild (1mo) lands
-      // in 0-1M or 1M-2Y (date math boundary). Check both buckets sum to +5.
+      // Row "1M - 2Y": male +5 or +6 depending on whether NBChild (1mo) lands
+      // in 0-1M or 1M-2Y (date math boundary). Check both buckets sum to +7
+      // (the existing 6 male children + the family-nutrition child at 12mo).
       const row0to1M = findRow(newRegistered, '0 - 1M')!;
       const base0to1M = findRow(baselineRegistered, '0 - 1M')!;
       const row1M2Y = findRow(newRegistered, '1M - 2Y')!;
       const base1M2Y = findRow(baselineRegistered, '1M - 2Y')!;
       const nbDelta0to1M = row0to1M.male - base0to1M.male;
       const nbDelta1M2Y = row1M2Y.male - base1M2Y.male;
-      expect(nbDelta0to1M + nbDelta1M2Y, '0-1M + 1M-2Y male should increase by 6 total').toBe(6);
+      expect(nbDelta0to1M + nbDelta1M2Y, '0-1M + 1M-2Y male should increase by 7 total').toBe(7);
       expect(row1M2Y.female, '1M-2Y female should be unchanged').toBe(base1M2Y.female);
 
       // Row "2Y - 5Y": male +1 (AIChild 30mo falls into this bucket)
@@ -1179,15 +1240,16 @@ test.describe('Admin Reports', () => {
       const base2Y5Y = findRow(baselineRegistered, '2Y - 5Y')!;
       expect(row2Y5Y.male, '2Y-5Y male should increase by 1').toBe(base2Y5Y.male + 1);
 
-      // Row "20Y - 50Y": male +1 (TBAdult), female +7 (PrenatalMom, AINurse, FBFMother, NCDAdult, PrenatalCHW, AICHW, HIVAdult)
+      // Row "20Y - 50Y": male +1 (TBAdult), female +8 (PrenatalMom, AINurse,
+      // FBFMother, NCDAdult, PrenatalCHW, AICHW, HIVAdult, family-nutrition mother)
       const row20Y50Y = findRow(newRegistered, '20Y - 50Y')!;
       const base20Y50Y = findRow(baselineRegistered, '20Y - 50Y')!;
       expect(row20Y50Y.male, '20Y-50Y male should increase by 1').toBe(base20Y50Y.male + 1);
-      expect(row20Y50Y.female, '20Y-50Y female should increase by 7').toBe(base20Y50Y.female + 7);
+      expect(row20Y50Y.female, '20Y-50Y female should increase by 8').toBe(base20Y50Y.female + 8);
 
-      // Total: +15 (8 nurse patients + 8 CHW patients including NBChild + SPVChild)
-      expect(newRegistered.total, 'Registered total should increase by 15').toBe(
-        baselineRegistered.total + 15,
+      // Total: +17 (previous +15 + family-nutrition mother + child)
+      expect(newRegistered.total, 'Registered total should increase by 17').toBe(
+        baselineRegistered.total + 17,
       );
 
       // Other rows should be unchanged.
@@ -1270,6 +1332,7 @@ test.describe('Admin Reports', () => {
       assertDelta('Nutrition (total)', 4);   // Individual +2 (NutrChild + HVChild) + FBF +2 (mother + child)
       assertDelta('FBF', 2);                // FBF mother + child both have measurements
       assertDelta('Individual', 2);         // NutrChild + HVChild each have a nutrition encounter
+      assertDelta('Family Nutrition', 1);   // 1 family-nutrition encounter created above
     });
 
     await step('Verify CSV download button is visible', async () => {
@@ -1407,13 +1470,34 @@ test.describe('Admin Reports', () => {
       const columnHeaders = await readNutritionColumnHeaders(page, 0);
       console.log(`Columns (${columnHeaders.length}): ${columnHeaders.join(' | ')}`);
 
-      // Verify all 4 "One Visit Or More" tables have data.
-      for (const { index, name } of NUTRITION_ONE_VISIT_TABLES) {
+      // Verify all 8 nutrition tables have the new structure.
+      // 8 metric rows per table: 6 z-score-based (stunting/wasting/
+      // underweight × moderate/severe) + 2 MUAC-based (MAM, SAM) added
+      // in issue #1718. Both the "One Visit Or More" tables (the one-
+      // visit prevalence/incidence path) and the "Two Visits Or More"
+      // tables (the encountersByMonthForImpacted path) must have the
+      // new rows present so the precomputed `report_data` JSON is
+      // consistent across both paths.
+      const allNutritionTables = [
+        ...NUTRITION_ONE_VISIT_TABLES,
+        ...NUTRITION_TWO_VISIT_TABLES,
+      ];
+      for (const { index, name } of allNutritionTables) {
         const current = await readNutritionTable(page, index);
-        expect(current.length, `${name}: should have 6 metric rows`).toBe(6);
+        expect(current.length, `${name}: should have 8 metric rows`).toBe(8);
 
         const colCount = current[0]?.values.length ?? 0;
         expect(colCount, `${name}: should have data columns`).toBeGreaterThan(0);
+
+        // Confirm the new MAM and SAM rows are present in every table.
+        expect(
+          findNutritionMetric(current, 'MAM'),
+          `${name}: MAM row should be present`,
+        ).toBeDefined();
+        expect(
+          findNutritionMetric(current, 'SAM'),
+          `${name}: SAM row should be present`,
+        ).toBeDefined();
       }
 
       // Prevalence table (index 0): verify abnormal measurements produce non-zero %.
@@ -1424,6 +1508,18 @@ test.describe('Admin Reports', () => {
       console.log(`Prevalence — Stunting Severe: ${newStunting}%, Underweight Severe: ${newUnderweight}%`);
       expect(newStunting, 'Prevalence: Stunting Severe % should be > 0').toBeGreaterThan(0);
       expect(newUnderweight, 'Prevalence: Underweight Severe % should be > 0').toBeGreaterThan(0);
+
+      // SAM and MAM rows. The test data produces:
+      //   - SAM: NutrChild's nutrition encounter (MUAC 11.0 cm + Edema) and
+      //     HVChild's CHW nutrition encounter (MUAC 11.0 cm). Both backdated.
+      //   - MAM: family-nutrition child's MUAC = 12.0 cm (= 120 mm, in the
+      //     ≥115 / <125 range). Backdated via backdateFamilyNutritionEncounter.
+      // Both are expected to be > 0 in the first prevalence column.
+      const newSam = findNutritionMetric(prevalence, 'SAM')?.values[0] ?? 0;
+      const newMam = findNutritionMetric(prevalence, 'MAM')?.values[0] ?? 0;
+      console.log(`Prevalence — MAM: ${newMam}%, SAM: ${newSam}%`);
+      expect(newSam, 'Prevalence: SAM % should be > 0').toBeGreaterThan(0);
+      expect(newMam, 'Prevalence: MAM % should be > 0').toBeGreaterThan(0);
 
       // CSV download button.
       await expect(page.locator('button.download-csv'), 'Nutrition CSV download button should be visible').toBeVisible();

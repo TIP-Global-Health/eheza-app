@@ -32,6 +32,7 @@ type alias PatientData =
     , acuteIllnessData : Maybe (List (List AcuteIllnessEncounterData))
     , prenatalData : Maybe (List PrenatalParticipantData)
     , familyNutritionData : Maybe (List (List FamilyNutritionEncounterData))
+    , familyNutritionMuacData : Maybe (List (List FamilyNutritionEncounterData))
     , homeVisitData : Maybe (List (List HomeVisitEncounterData))
     , wellChildData : Maybe (List (List NutritionEncounterData))
     , childScorecardData : Maybe (List (List ChildScorecardEncounterData))
@@ -196,6 +197,8 @@ type PrenatalDiagnosis
 type alias NutritionEncounterData =
     { startDate : NominalDate
     , nutritionData : Maybe NutritionData
+    , muacCm : Maybe Float
+    , hasEdema : Bool
     }
 
 
@@ -205,8 +208,12 @@ type alias NutritionData =
     , underweight : Maybe Float
     }
 
+
 type alias FamilyNutritionEncounterData =
-    NominalDate
+    { startDate : NominalDate
+    , muacCm : Maybe Float
+    }
+
 
 type alias HomeVisitEncounterData =
     NominalDate
@@ -237,6 +244,8 @@ type alias BackendGeneratedNutritionReportTableDate =
     , wastingSevere : List String
     , underweightModerate : List String
     , underweightSevere : List String
+    , acuteMalnutritionMam : List String
+    , acuteMalnutritionSam : List String
     }
 
 
