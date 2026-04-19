@@ -22,7 +22,8 @@ concept pointing at the matched `PIH/PIH` code:
 | Tuberculosis | `EH-TB` | 9 | 9 | `remaining-modules-gaps.md` |
 | Child Scoreboard | `EH-CS` | 2 | 2 | `childscoreboard-gaps.md` |
 | Home Visit | `EH-HV` | 1 | 1 | `homevisit-gaps.md` |
-| **Totals** | | **207** | **207** | |
+| Patient Registration | `EH-PER` | 10 | 10 | `patient-registration-gaps.md` |
+| **Totals** | | **217** | **217** | |
 
 Plus shared artefacts:
 
@@ -54,7 +55,7 @@ E-Heza has nine `IndividualEncounterType` constructors plus a separate
 
 ## Scope of this pass
 
-- **Encounter types**: 9 of the 9 `IndividualEncounterType` constructors — Prenatal, Nutrition, Well-Child, Acute Illness, NCD, HIV, Tuberculosis, Child Scoreboard, Home Visit. Family Nutrition (`FamilyEncounterParticipant`) and the deprecated `InmmunizationEncounter` remain without per-encounter CSVs — see *Encounter types not (yet) covered* above.
+- **Encounter types**: 9 of the 9 `IndividualEncounterType` constructors — Prenatal, Nutrition, Well-Child, Acute Illness, NCD, HIV, Tuberculosis, Child Scoreboard, Home Visit. Family Nutrition (`FamilyEncounterParticipant`) and the deprecated `InmmunizationEncounter` remain without per-encounter CSVs — see *Encounter types not (yet) covered* above. Plus a Patient Registration mapping group (`EH-PER`) sourced from the `Person` record — not an encounter type, but the demographic / contact / socioeconomic field set captured at first contact and reused by every subsequent encounter.
 - **Match rule**: only concepts with a resolvable PIH equivalent are included in the per-encounter CSVs; everything else lands in the corresponding `*-gaps.md` (or in `remaining-modules-gaps.md` for Well-Child / Acute Illness / NCD / HIV / Tuberculosis / Family Nutrition).
 - **Granularity**: one concept per measurable fact — numeric fields (vitals, anthropometry, labs), coded single-value findings, and drug concepts for medications.
 - **Reuse over duplication**: when an enum constructor in a later encounter pass already corresponds to a concept published from an earlier one (e.g., `NCDASign.ChildGotDiarrhea` reusing `EH-NUT-008` Diarrhea), the existing concept's `eheza_field_path` is extended rather than minting a new `EH-` id. The gaps files document each such reuse so reviewers can trace it.
@@ -80,7 +81,7 @@ JSON-lines bulk-import format.
 | `name` | Canonical English name |
 | `description` | Short clinical description |
 | `eheza_category` | Informal grouping (Vitals / Anthropometry / Labs / …) — retained for reviewer context |
-| `eheza_field_path` | Back-reference to the Elm type/field in `client/src/elm/Backend/Measurement/Model.elm` |
+| `eheza_field_path` | Back-reference to the Elm type/field in `client/src/elm/Backend/Measurement/Model.elm`. For patient-registration rows (`EH-PER-*`), this column points at the field in `client/src/elm/Backend/Person/Model.elm` instead. |
 | `confidence` | `high` / `medium` / `low` — the matcher's confidence in the PIH alignment |
 
 Non-English locale names are **not** filled in this pass. Extracting them
@@ -99,7 +100,7 @@ reviewer, pulling from `Translate.elm` where the value is `Just _`.
 | `resource_type` | Literal `Mapping` |
 | `owner` / `owner_type` / `source` | `TIP` / `Organization` / `EHEZA` |
 | `from_concept_url` | `/orgs/TIP-Global-Health/sources/EHEZA/concepts/<EH-…-NNN>/` |
-| `map_type` | `SAME-AS` (every row in this file) |
+| `map_type` | `SAME-AS` for the great majority of rows. Use `NARROWER-THAN` when the E-Heza concept is a more specific subtype of the PIH target (e.g., `EH-PER-003` "National ID number" → `PIH:13173` "Identification number"), or `BROADER-THAN` for the inverse. PIH's own dictionary uses these hierarchical relations heavily; OCL preserves the directionality at import. |
 | `to_source_url` | `/orgs/PIH/sources/PIH/` |
 | `to_concept_code` | PIH numeric id |
 | `to_concept_name` | PIH display name — kept in the CSV for reviewer readability (OCL ignores it at import time) |
@@ -110,6 +111,8 @@ reviewer, pulling from `Translate.elm` where the value is `Just _`.
 The same four-step recipe was applied per encounter type:
 
 1. **Inventory**: every measurement type alias for the encounter in `client/src/elm/Backend/Measurement/Model.elm` was enumerated, including the constituent fields of each record and the constructors of each coded enum (`DangerSign`, `BreastExamSign`, `MedicationSign`, CPE signs, NCDA signs, vaccine types, …). For Child Scoreboard, the `IndividualEncounterType` enum was also walked to confirm encounter-vs-shared-data scope.
+
+   *Variant for the Patient Registration pass:* inventory walks the `Person` record fields in `client/src/elm/Backend/Person/Model.elm` rather than encounter measurement aliases. Steps 2–4 below are unchanged.
 
 2. **Naming**: canonical English labels were taken from `client/src/elm/Translate.elm` where an existing `TranslationId` matched the concept — either a top-level `TranslationId` constructor or a case branch inside a domain-specific translate function (`translateBreastExamSign`, `translateCorePhysicalExamSign`, `translateNCDASign`, …). No new `Translate.elm` entries were needed.
 
@@ -219,6 +222,7 @@ a release history.
 If you need to trace a concept back to the source of truth:
 
 - `client/src/elm/Backend/Measurement/Model.elm` — every measurement type alias and coded enum across all encounter types (the `eheza_field_path` column points here)
+- `client/src/elm/Backend/Person/Model.elm` — the `Person` record (demographic / contact / socioeconomic fields captured at registration; the `eheza_field_path` source for `EH-PER-*` concepts)
 - `client/src/elm/Backend/<Encounter>Activity/Model.elm` — per-encounter activity catalogues (e.g., `ChildScoreboardActivity`, `WellChildActivity`, `NutritionActivity`)
 - `client/src/elm/Backend/Measurement/Encoder.elm` — the field keys used on the wire (match the Drupal field machine names)
 - `server/hedley/modules/custom/hedley_<encounter>/hedley_<encounter>.features.field_instance.inc` — per-encounter Drupal field definitions
