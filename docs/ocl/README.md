@@ -44,6 +44,24 @@ E-Heza has nine `IndividualEncounterType` constructors plus a separate
 - **Group flows** (Group Nutrition / Education sessions / Stock Management) — out of scope for the dictionary publishing pass; these are encounter-structural rather than clinical-fact records.
 - **`InmmunizationEncounter`** — marked `@todo can be removed?` in `Backend/IndividualEncounterParticipant/Model.elm`; intentionally skipped.
 
+## Master inventory — `eheza-concepts-master.csv`
+
+Separate from the per-encounter PIH-mapped pairs above, `eheza-concepts-master.csv`
+is a canonical inventory of every concept E-Heza captures, drawn from a deterministic
+walk of 36 of the 40 `client/src/elm/Backend/*/Model.elm` files (excluded:
+`Dashboard`, `ResilienceMessage`, `ResilienceSurvey`, `PatientRecord`). Each row
+gets a fresh `EHEZA-NNNN` id; the file has no relationship to the per-encounter
+`<x>-concepts.csv` / `<x>-mappings.csv` files (separate ID space, separate purpose).
+
+The master exists as the search baseline for future cross-organisation mapping
+passes (UVL-Burundi is a known upcoming consumer). The per-encounter PIH-mapped
+pairs continue to be the authoritative artefacts for PIH mappings; the master is
+not an OCL-import-ready file (no `concept_class` / `description` columns) and is
+not currently uploaded to OCL.
+
+See `eheza-concepts-master.md` for schema, walk methodology, and the process
+discipline for keeping the file in sync with future Elm changes.
+
 ## Target OCL source
 
 - **Organization**: `TIP` (TIP Global Health, created 2026-04-06 by `adamhstewart`)
