@@ -1,5 +1,5 @@
 This file documents `docs/ocl/eheza-concepts-master.csv` — a canonical inventory
-of every concept E-Heza captures, drawn from a deterministic walk of 37 of the
+of every concept E-Heza captures, drawn from a deterministic walk of 36 of the
 40 `client/src/elm/Backend/*/Model.elm` files. The 4 excluded modules are
 `Dashboard`, `ResilienceMessage`, `ResilienceSurvey`, and `PatientRecord` — UI
 rendering models, staff-resilience HR data, and the PatientRecord composite
@@ -59,7 +59,7 @@ clinical metadata layer it on at mapping time.
 
 ### Walk order
 
-1. Files: 37 in-scope source files, alphabetical by repo-relative path.
+1. Files: 36 in-scope source files, alphabetical by repo-relative path.
 2. Within a file: top-level type declarations in source order (top of file → bottom).
 3. Within a declaration:
    - Record type `type alias Foo = { ... }`: mint `Foo` as `record_type`, then each field in source order as `record_field` with `eheza_field_path = Foo.fieldName`.
@@ -75,7 +75,7 @@ walk order — the walk-order rule only governs the initial inventory pass.
 
 ### External references
 
-- When a record field has a type defined outside the 37 in-scope modules (e.g., `Gizra.NominalDate.NominalDate`, `EntityId X`, `Json.Decode.Value`): apply the datatype derivation rule from above; do not follow the reference; field gets one row but the foreign type does not.
+- When a record field has a type defined outside the 36 in-scope modules (e.g., `Gizra.NominalDate.NominalDate`, `EntityId X`, `Json.Decode.Value`): apply the datatype derivation rule from above; do not follow the reference; field gets one row but the foreign type does not.
 - When a record field references an in-scope-but-excluded module (e.g., `Backend.Dashboard.Model.SomeType`): field gets a row with `datatype = N/A`; the excluded type does not get a row.
 
 ### Edge cases
@@ -90,10 +90,11 @@ walk order — the walk-order rule only governs the initial inventory pass.
 
 ## Inventory pass metadata
 
-- **Walk date**: `<YYYY-MM-DD>`
-- **Source tree SHA**: `<git rev-parse HEAD output>`
+- **Walk date**: `2026-04-19`
+- **Source tree SHA**: `5c60de0f796025bc78f23504b25286f7ec8f92c1`
 - **Walker tool**: scratch Python script at `/tmp/eheza-walker.py` (not committed; see *Build process* note below)
-- **Initial row count**: `<filled in at CSV commit>`
+- **Initial row count**: 2788
+- **Post-walk filter**: 635 rows belonging to Elm Architecture `Msg` / `Model` framework types were dropped from the raw walk (3423 → 2788). The walker treats every in-scope Elm construct uniformly; the filter removes UI-state and message-handler scaffolding that lives alongside the clinical types in the per-encounter `Backend/<Encounter>/Model.elm` files. Re-running the walk reproduces the filtered output if the same drop rule (`eheza_field_path == 'Msg' | 'Model'` or starts with `Msg.` / `Model.`) is applied.
 
 *Build process is hand-driven and one-shot per the spec; no walker script
 lives in the repo. The scratch tool used for the initial pass is documented
@@ -102,7 +103,7 @@ in the implementation plan but not preserved.*
 ## Process discipline for future Elm changes
 
 > If you add a new measurement type alias, new record field, or new union
-> constructor to an in-scope module (any of the 37 listed in *Scope*), append
+> constructor to an in-scope module (any of the 36 listed in *Scope*), append
 > a row to `eheza-concepts-master.csv` with the next available `EHEZA-NNNN`
 > id as part of the same PR. The walk order is only used to assign IDs during
 > the *initial* inventory pass; net-new entries after that get the next free
@@ -110,7 +111,7 @@ in the implementation plan but not preserved.*
 
 ## Scope
 
-**In scope** — 37 `Backend/*/Model.elm` files, grouped by category for
+**In scope** — 36 `Backend/*/Model.elm` files, grouped by category for
 readability:
 
 - *Clinical core*: `Measurement` plus the 10 `<Encounter>Activity` directories — `AcuteIllnessActivity`, `ChildScoreboardActivity`, `FamilyNutritionActivity`, `HIVActivity`, `HomeVisitActivity`, `NCDActivity`, `NutritionActivity`, `PrenatalActivity`, `TuberculosisActivity`, `WellChildActivity`.
