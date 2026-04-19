@@ -1,0 +1,11 @@
+resource_type,owner,owner_type,source,id,concept_class,datatype,name,description,eheza_category,eheza_field_path,confidence
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PER-001,Question,Text,First name,Patient's first / given name,Names,Person.firstName,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PER-002,Question,Text,Second name,Patient's second / family name,Names,Person.secondName,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PER-003,Question,Text,National ID number,Patient's national identification number,Identifiers,Person.nationalIdNumber,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PER-004,Question,Coded,Gender,Patient's gender,Demographics,Person.gender,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PER-005,Question,Coded,HIV status,Patient's HIV serostatus,Coded clinical / socioeconomic,Person.hivStatus,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PER-006,Question,Coded,Mode of delivery,Mode by which the patient was delivered,Coded clinical / socioeconomic,Person.modeOfDelivery,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PER-007,Question,Coded,Highest level of education,Highest level of formal education completed by the patient,Coded clinical / socioeconomic,Person.educationLevel,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PER-008,Question,Coded,Marital status,Patient's marital / civil status,Coded clinical / socioeconomic,Person.maritalStatus,high
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PER-009,Question,Text,Telephone number,Patient's primary telephone number,Contact,Person.telephoneNumber,medium
+Concept,TIP-Global-Health,Organization,EHEZA,EH-PER-010,Question,Text,Next of kin name,Name of the patient's nominated next of kin,Relationships,Person.nextOfKinName,high

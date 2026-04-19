@@ -1,0 +1,11 @@
+resource_type,owner,owner_type,source,from_concept_url,map_type,to_source_url,to_concept_code,to_concept_name,confidence
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PER-001/,SAME-AS,/orgs/PIH/sources/PIH/,2725,First name,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PER-002/,SAME-AS,/orgs/PIH/sources/PIH/,2724,Last name,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PER-003/,NARROWER-THAN,/orgs/PIH/sources/PIH/,13173,Identification number,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PER-004/,SAME-AS,/orgs/PIH/sources/PIH/,2845,Gender,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PER-005/,SAME-AS,/orgs/PIH/sources/PIH/,3753,HIV status,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PER-006/,SAME-AS,/orgs/PIH/sources/PIH/,5630,Method of delivery,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PER-007/,SAME-AS,/orgs/PIH/sources/PIH/,1688,Highest education level,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PER-008/,SAME-AS,/orgs/PIH/sources/PIH/,1054,Civil status,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PER-009/,SAME-AS,/orgs/PIH/sources/PIH/,2614,Mobile phone number,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PER-010/,SAME-AS,/orgs/PIH/sources/PIH/,13517,Next of kin name (text),high
