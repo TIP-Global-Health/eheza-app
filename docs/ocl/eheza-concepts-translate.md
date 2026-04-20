@@ -133,6 +133,15 @@ a concept label. The filter triggers on three signals:
    `NoParticipantsPending`, `NoParticipantsPendingForThisActivity`,
    `PageNotFoundMsg`, `AdoptionSurveyProgressImproving`.
 
+5. **Curated drop list** — `docs/ocl/labels-master-drop-tids.txt` contains
+   369 additional `translation_id`s removed by hand-review on 2026-04-20.
+   These cover generic UI atoms (`Yes`, `No`, `OK`, `Save`, `Cancel`, etc.),
+   lab-range / value enums (`LaboratoryPHValue.*`, `LabResultsNormalRange.*`,
+   etc.), workflow / system / state messages (`BeginNewEncounter`,
+   `ResultsPending`, `BackendError`, etc.), and Z-score scaffolding rows.
+   Future rewalks **must** consult this file and drop any matching tid even
+   when it would otherwise survive the heuristics.
+
 Surviving rows are renumbered `EHEZA-T-NNNN` contiguously after the filter
 pass.
 
@@ -161,7 +170,9 @@ After the walker runs, a deterministic post-processing pass rewrites a fixed lis
 - **Empty-english drops**: 2 (`EmptyString`, `EncounterTypePageLabel.PageMain` — both literal empty strings)
 - **Translation-id prefix / suffix / exact drops**: 907 (staff-coaching messages, treatment dosing strings, system prompts, etc. — see *Post-walk phrase / question / instruction filter* above)
 - **English starter / shape drops**: 355 (questions, imperatives, sentence narratives, multi-sentence paragraphs)
-- **Final row count**: 1706
+- **Curated hand-review drops** (`labels-master-drop-tids.txt`): 369 (generic UI atoms, lab-range enums, workflow/system messages, Z-score scaffolding — see point 5 of *Heuristic filter rules* above)
+- **Manual content corrections during the review pass**: 2 rows (`ActivitiesTitle.MotherActivity` had its english "Forms" replaced with "FBF Mother" plus locale fills; `RecommendedTreatmentSignLabel.TreatmentWrittenProtocols` got a trailing-space fix in its somali column).
+- **Final row count**: 1336
 
 *Build process is hand-driven and one-shot per the spec; the walker is
 scratch tooling and is not preserved in the repo. Re-running the walk
