@@ -8,15 +8,25 @@ For context: the dedup refactor PR collapsed 252 duplicate-translation
 sites across 126 safe groups into `translationSet <Anchor>` dispatches.
 This doc lists the items it could NOT touch safely.
 
+## Resolved follow-ups
+
+Items that have since been fixed in subsequent commits on the same
+branch (`refactor/translate-elm-dedup`):
+
+| english | resolution | commit |
+|---|---|---|
+| Other | Added top-level `OtherLabel` anchor with canonical translations (en="Other", rw="Ibindi", rn="Ibindi", so="Kale") and refactored all 23 `*Other` case branches to dispatch via it. | `b41595799` |
+
 ## 1. Diverging duplicate-english groups (need native-speaker review)
 
-These **126 groups** have the same English label but different
+These **125 remaining groups** (126 originally; 1 resolved — see
+*Resolved follow-ups* above) have the same English label but different
 translations in at least one of rw/rn/so across their duplicate
 constructors. They were NOT refactored to `translationSet` because
 doing so would change the UI translation for some users. A
 native-speaker reviewer should pick the canonical per-locale
-translation for each group, then a follow-up PR can dedup them the
-same way as the safe groups.
+translation for each group, then a follow-up commit can dedup them
+the same way as `Other` was resolved.
 
 | english | constructors | divergence |
 |---|---|---|
@@ -29,7 +39,6 @@ same way as the safe groups.
 | Acute Illness History | `AcuteIllnessHistory`, `ComponentWellChildActiveDiagnoses` | rw differs (2 variants), so differs (2 variants) |
 | Active Diagnosis | `ActiveDiagnosis`, `ComponentNCDActiveDiagnosis` | rw differs (2 variants), rn differs (2 variants) |
 | Referred to Health Center | `OutcomePatientDied`, `ActionReferredToHealthCenter` | rw differs (2 variants) |
-| Other | `OutcomeOther`, `AdverseEventOther`, `AhezaDistributionReasonOther` + 20 more | rw differs (3 variants) |
 | Family Planning | `ActivitiesTitle`, `NCDActivityTitle`, `FilterFamilyPlanning` + 1 more | rw differs (2 variants) |
 | Physical Exam | `AcuteIllnessPhysicalExam`, `PhysicalExam` | rw differs (2 variants) |
 | Laboratory | `AcuteIllnessLaboratory`, `NCDActivityTitle`, `PrenatalPhoto` | rn differs (2 variants) |
@@ -37,7 +46,6 @@ same way as the safe groups.
 
 Notable rows worth pulling out:
 
-- **"Other" (×23 occurrences, 3 rw variants)** is the highest-volume divergence. Resolving it would dedupe 22+ literal blocks. Real reviewer payoff.
 - **"Simple Cold and Cough"** has the same constructor name `DiagnosisSimpleColdAndCough` appearing twice — once in `AcuteIllnessDiagnosis option ->` and once in `AcuteIllnessDiagnosisWarning option ->`. These are not unreachable code (different parent dispatches), but having different `rw` translations across two parallel contexts is suspicious — likely one of the two is the "newer/canonical" version and they should agree.
 - **Vaccine names** (`BCG`, `HPV`, `IPV`, `Measles-Rubella`, `OPV`, `PCV 13`, `Rotarix`, `Pentavalent`) all diverge between `SiteBurundi` and `Vaccine*` constructors on `rn` (Kirundi). Could be intentional (Burundi-specific Kirundi spellings vs general Kinyarwanda-leaning forms) but worth reviewer confirmation.
 
