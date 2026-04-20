@@ -132,6 +132,17 @@ and `source_module` are *not* preserved — consumers that need full
 provenance should grep the codebase. This is the trade-off chosen to keep
 the master a clean name dictionary.
 
+### Cross-master mirror drop
+
+After dedup, the walker reads `docs/ocl/master-drop-names.txt` and removes
+any row whose `name` (case+whitespace-insensitive) matches an entry in that
+file. The list is derived from the labels-master hand-review
+(`labels-master-drop-tids.txt`): for each labels-dropped tid whose original
+english is no longer present in the current labels master, the english is
+recorded as a struct-master drop name. This keeps the two artefacts aligned
+— if the curator decided a name isn't a real concept on the labels side, it
+shouldn't reappear on the struct side.
+
 ### ID assignment
 
 Sequential, starting at `EHEZA-0001`, incrementing by 1 per row. **Once the
@@ -165,7 +176,8 @@ walk order — the walk-order rule only governs the initial inventory pass.
 - **Translation matches**: 738 rows have `name_source = translation` (English + 0–3 non-English locales sourced from `Translate.elm`).
 - **Fallback names**: 1139 rows used identifier-split fallback (English-only).
 - **Duplicates collapsed**: 774 rows dropped during dedup (case+whitespace-insensitive `name` collision; first occurrence wins). The dedup count is higher than a single-pass walk because dispatch chains in `Translate.elm` (e.g., `DiagnosisChronicHypertensionAfterRecheck → DiagnosisChronicHypertensionImmediate`) cause clinically-equivalent variants to resolve to the same English label and collapse together.
-- **Final row count**: 1877
+- **Cross-master mirror drops** (`master-drop-names.txt`): 116 rows dropped because their `name` matched an english value that was hand-removed from the labels master (mirrors the labels curation so the two artefacts stay aligned at the concept-name level).
+- **Final row count**: 1761
 
 *Build process is hand-driven and one-shot per the spec; no walker script
 lives in the repo. The scratch tool used for the initial pass is documented
