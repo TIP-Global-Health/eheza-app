@@ -1057,6 +1057,7 @@ type TranslationId
     | NCDLabs
     | NoDiagnosis
     | OralPolioVaccineOPV
+    | OtherLabel
     | Paralysis
     | PatientDeclined
     | PatientShowsSignsOfHighRiskForPreclampsia
@@ -2877,11 +2878,7 @@ translationSet trans =
                     }
 
                 OutcomeOther ->
-                    { english = "Other"
-                    , kinyarwanda = Just "Ibindi"
-                    , kirundi = Just "Ibindi"
-                    , somali = Just "Kale"
-                    }
+                    translationSet OtherLabel
 
         AddChild ->
             { english = "Add Child"
@@ -3511,11 +3508,7 @@ translationSet trans =
                     translationSet Fatigue
 
                 AdverseEventOther ->
-                    { english = "Other"
-                    , kinyarwanda = Just "Ibindi"
-                    , kirundi = Just "Ibindi"
-                    , somali = Just "Kale"
-                    }
+                    translationSet OtherLabel
 
                 NoAdverseEvent ->
                     translationSet NoneOfTheAbove
@@ -3622,11 +3615,7 @@ translationSet trans =
                     }
 
                 AhezaDistributionReasonOther ->
-                    { english = "Other"
-                    , kinyarwanda = Just "Ibindi"
-                    , kirundi = Just "Ibindi"
-                    , somali = Just "Kale"
-                    }
+                    translationSet OtherLabel
 
                 AhezaDistributionReasonPregnant ->
                     { english = "Patient is pregnant"
@@ -3883,11 +3872,7 @@ translationSet trans =
                     }
 
                 AvoidingGuidanceHypertensionOther ->
-                    { english = "Other"
-                    , kinyarwanda = Just "Ibindi"
-                    , kirundi = Just "Ibindi"
-                    , somali = Just "Kale"
-                    }
+                    translationSet OtherLabel
 
         Azithromycin2g ->
             { english = "Azithromycin (2g)"
@@ -5465,11 +5450,7 @@ translationSet trans =
                     }
 
                 ComplicationOther ->
-                    { english = "Other"
-                    , kinyarwanda = Just "Ibindi"
-                    , kirundi = Just "Ibindi"
-                    , somali = Just "Kale"
-                    }
+                    translationSet OtherLabel
 
                 NoDeliveryComplications ->
                     translationSet NoneOfThese
@@ -5607,11 +5588,7 @@ translationSet trans =
                     translationSet None
 
                 Other ->
-                    { english = "Other"
-                    , kinyarwanda = Just "Ibindi"
-                    , kirundi = Just "Ibindi"
-                    , somali = Just "Kale"
-                    }
+                    translationSet OtherLabel
 
                 PreviousCSection ->
                     { english = "Previous c-section"
@@ -6070,11 +6047,7 @@ translationSet trans =
                     }
 
                 DistributedPartiallyOther ->
-                    { english = "Other"
-                    , kinyarwanda = Just "Izindi mpamvu"
-                    , kirundi = Just "Ibindi"
-                    , somali = Just "Kale"
-                    }
+                    translationSet OtherLabel
 
         District ->
             { english = "District"
@@ -7240,6 +7213,13 @@ translationSet trans =
             , kinyarwanda = Just "Urukingo rw'imbasa rutangwa mu kanwa"
             , kirundi = Just "Urucanco rw'ubukangwe (amama)"
             , somali = Just "Tallaalka Afka ee Dabeysha (OPV)"
+            }
+
+        OtherLabel ->
+            { english = "Other"
+            , kinyarwanda = Just "Ibindi"
+            , kirundi = Just "Ibindi"
+            , somali = Just "Kale"
             }
 
         Paralysis ->
@@ -9173,11 +9153,7 @@ translationSet trans =
                     translationSet PatientRefused
 
                 HIVTreatmentNoMedicineOther ->
-                    { english = "Other"
-                    , kinyarwanda = Just "Ibindi"
-                    , kirundi = Just "Ibindi"
-                    , somali = Just "Kale"
-                    }
+                    translationSet OtherLabel
 
                 -- We do not require translation for other signs.
                 _ ->
@@ -12534,11 +12510,7 @@ translationSet trans =
                     }
 
                 MedicalConditionOther ->
-                    { english = "Other"
-                    , kinyarwanda = Just "Ibindi"
-                    , kirundi = Just "Ibindi"
-                    , somali = Just "Kale"
-                    }
+                    translationSet OtherLabel
 
                 NoMedicalConditions ->
                     { english = "None of the Above"
@@ -15124,11 +15096,7 @@ translationSet trans =
                     translationSet NotIndicated
 
                 ReasonForNonReferralOther ->
-                    { english = "Other"
-                    , kinyarwanda = Just "Ibindi"
-                    , kirundi = Just "Ibindi"
-                    , somali = Just "Kale"
-                    }
+                    translationSet OtherLabel
 
                 NoReasonForNonReferral ->
                     { english = "No Reason"
@@ -15166,11 +15134,7 @@ translationSet trans =
                     translationSet TooSick
 
                 NonAdministrationOther ->
-                    { english = "Other"
-                    , kinyarwanda = Just "Ibindi"
-                    , kirundi = Just "Ibindi"
-                    , somali = Just "Kale"
-                    }
+                    translationSet OtherLabel
 
                 AdministeredToday ->
                     { english = "Administered Today"
@@ -15208,11 +15172,7 @@ translationSet trans =
                     translationSet TooSick
 
                 NonAdministrationOther ->
-                    { english = "Other"
-                    , kinyarwanda = Just "Ibindi"
-                    , kirundi = Just "Ibindi"
-                    , somali = Just "Kale"
-                    }
+                    translationSet OtherLabel
 
                 -- Other options are not relevant for Immunisation.
                 _ ->
@@ -15244,11 +15204,7 @@ translationSet trans =
                     translationSet TooSick
 
                 NonAdministrationOther ->
-                    { english = "Other"
-                    , kinyarwanda = Just "Ibindi"
-                    , kirundi = Just "Ibindi"
-                    , somali = Just "Kale"
-                    }
+                    translationSet OtherLabel
 
                 -- Other options are not relevant for Immunisation.
                 _ ->
@@ -17594,11 +17550,7 @@ translationSet trans =
                     translationSet ModerateRiskOfPreeclampsia
 
                 DiagnosisOther ->
-                    { english = "Other"
-                    , kinyarwanda = Just "Ibindi"
-                    , kirundi = Just "Ibindi"
-                    , somali = Just "Kale"
-                    }
+                    translationSet OtherLabel
 
                 DiagnosisPostpartumAbdominalPain ->
                     translationSet AbdominalPainLabel
@@ -18515,11 +18467,7 @@ translationSet trans =
                     }
 
                 DiagnosisOther ->
-                    { english = "Other"
-                    , kinyarwanda = Just "Ibindi"
-                    , kirundi = Just "Ibindi"
-                    , somali = Just "Kale"
-                    }
+                    translationSet OtherLabel
 
                 -- Non Not Urgent diagnoses.
                 _ ->
@@ -20626,11 +20574,7 @@ translationSet trans =
                     }
 
                 NotBreastfeedingOther ->
-                    { english = "Other"
-                    , kinyarwanda = Just "Ibindi"
-                    , kirundi = Just "Ibindi"
-                    , somali = Just "Kale"
-                    }
+                    translationSet OtherLabel
 
                 _ ->
                     translationSet EmptyString
@@ -20659,11 +20603,7 @@ translationSet trans =
                     }
 
                 OtherReason ->
-                    { english = "Other"
-                    , kinyarwanda = Just "Ikindi"
-                    , kirundi = Just "Ibindi"
-                    , somali = Just "Kale"
-                    }
+                    translationSet OtherLabel
 
                 IsolationReasonNotApplicable ->
                     translationSet NotApplicable
@@ -20739,11 +20679,7 @@ translationSet trans =
                     }
 
                 NotTakingOther ->
-                    { english = "Other"
-                    , kinyarwanda = Just "Ibindi"
-                    , kirundi = Just "Ibindi"
-                    , somali = Just "Kale"
-                    }
+                    translationSet OtherLabel
 
                 NoReasonForNotTakingSign ->
                     translationSet EmptyString
@@ -20832,11 +20768,7 @@ translationSet trans =
                     }
 
                 OtherRecommendation114 ->
-                    { english = "Other"
-                    , kinyarwanda = Just "Ibindi"
-                    , kirundi = Just "Ibindi"
-                    , somali = Just "Kale"
-                    }
+                    translationSet OtherLabel
 
                 NoneNoAnswer ->
                     { english = "No answer"
@@ -20853,11 +20785,7 @@ translationSet trans =
                     }
 
                 NoneOtherRecommendation114 ->
-                    { english = "Other"
-                    , kinyarwanda = Just "Ibindi"
-                    , kirundi = Just "Ibindi"
-                    , somali = Just "Kale"
-                    }
+                    translationSet OtherLabel
 
         RecommendationSite recommendation ->
             case recommendation of
@@ -20876,11 +20804,7 @@ translationSet trans =
                     }
 
                 OtherRecommendationSite ->
-                    { english = "Other"
-                    , kinyarwanda = Just "Ibindi"
-                    , kirundi = Just "Ibindi"
-                    , somali = Just "Kale"
-                    }
+                    translationSet OtherLabel
 
                 NoneSentWithForm ->
                     { english = "No response. Sent patient with referral form."
@@ -20893,11 +20817,7 @@ translationSet trans =
                     translationSet PatientRefused
 
                 NoneOtherRecommendationSite ->
-                    { english = "Other"
-                    , kinyarwanda = Just "Ibindi"
-                    , kirundi = Just "Ibindi"
-                    , somali = Just "Kale"
-                    }
+                    translationSet OtherLabel
 
                 RecommendationSiteNotApplicable ->
                     translationSet NotApplicable
@@ -26184,11 +26104,7 @@ translationSet trans =
                     }
 
                 ReasonOther ->
-                    { english = "Other"
-                    , kinyarwanda = Just "Ibindi"
-                    , kirundi = Just "Ibindi"
-                    , somali = Just "Kale"
-                    }
+                    translationSet OtherLabel
 
         StockManagement ->
             { english = "Stock Management"
