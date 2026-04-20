@@ -172,7 +172,8 @@ After the walker runs, a deterministic post-processing pass rewrites a fixed lis
 - **English starter / shape drops**: 355 (questions, imperatives, sentence narratives, multi-sentence paragraphs)
 - **Curated hand-review drops** (`labels-master-drop-tids.txt`): 369 (generic UI atoms, lab-range enums, workflow/system messages, Z-score scaffolding — see point 5 of *Heuristic filter rules* above)
 - **Manual content corrections during the review pass**: 2 rows (`ActivitiesTitle.MotherActivity` had its english "Forms" replaced with "FBF Mother" plus locale fills; `RecommendedTreatmentSignLabel.TreatmentWrittenProtocols` got a trailing-space fix in its somali column).
-- **Final row count**: 1336
+- **English-value dedup pass**: 106 rows dropped because their `english` (case+whitespace-insensitive) duplicated another row. For each duplicate group the row with the most populated locales (kinyarwanda + kirundi + somali) was kept; ties broken by lowest `EHEZA-T-NNNN` (= earliest walk-order position).
+- **Final row count**: 1230
 
 *Build process is hand-driven and one-shot per the spec; the walker is
 scratch tooling and is not preserved in the repo. Re-running the walk
