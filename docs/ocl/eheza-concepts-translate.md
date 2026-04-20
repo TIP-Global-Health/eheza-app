@@ -54,23 +54,87 @@ empty; per-value translations live on the leaf rows.
 
 ### Walk order
 
-1. Read `client/src/elm/Translate.elm` in full.
-2. Locate the `type TranslationId` block — match by regex `^type TranslationId\s*\n` and consume up to the first top-level binding (`^[a-z]\w*\s*[:=]`). In the current source the block runs from line 329 to line 2192.
-3. Walk top-level constructors in source order, top → bottom. The walker emits rows in this order, then assigns `EHEZA-T-NNNN` ids contiguously.
+1. Read `client/src/elm/Translate.elm` in full and strip comments.
+2. Locate the `translationSet` function body (matches `^translationSet\s+\w+\s*=\s*\n\s*case\s+\w+\s+of\s*\n` and consumes up to the next top-level binding).
+3. Emit one row per `{ english = ..., kinyarwanda = ..., kirundi = ..., somali = ... }` record literal that appears under a top-level case branch (or under an inner case branch one level deep). Rows are assigned `EHEZA-T-NNNN` ids contiguously in source order after the post-walk filter passes.
 
-### Per-constructor emit decision
+The walker is **independent of the structural master** — it does not read
+`eheza-concepts-master.csv` and its output is determined purely by what
+record literals exist in `Translate.elm`. Branches that dispatch (e.g.,
+`translationSet OtherLabel` or `translationSet <| OuterCtor InnerCtor`)
+carry no record literal and are skipped — no row is emitted.
 
-- **Zero-argument label** (`Abdomen`, `Gravida`, …) → 1 row. The walker locates the matching `Ctor ->` branch in the inline `translationSet` body and lifts the `english`, `kinyarwanda`, `kirundi`, `somali` field values verbatim (with `Just` unwrapped, `Nothing` rendered as empty cell).
-- **Special-arg constructor** wrapping a non-union argument that the walker cannot expand (`Int`, `Maybe NominalDate`, records — there are 5 in the current source: `FormError`, `MemoryQuota`, `NCDANumberImmunizationAppointmentLabel`, `ReportCompleted`, `StorageQuota`) → 1 row, english = prettified constructor name, locale columns empty.
-- **Union-arg constructor** whose argument type appears as a `union_type` row in `eheza-concepts-master.csv` (e.g., `AbdomenCPESign AbdomenCPESign`) → 1 header row + N leaf rows. The walker locates the inline `case option of` block under the constructor's branch and lifts each `Value -> { english = ... }` per branch. Branches that dispatch to another `TranslationId` (e.g., `NormalAbdomen -> translationSet Normal`) carry no inline english and are skipped with a `WARN` to stderr.
+### Per-record-literal emit decision
 
-### Heuristic filter rules
+- **Top-level zero-arg branch** (`        SomeCtor ->\n            { ... }`) → 1 row with `translation_id = SomeCtor`.
+- **Inner case branch under arg-taking outer wrapper**
+  (`        OuterCtor x ->\n            case x of\n                InnerCtor ->\n                    { ... }`) → 1 row with `translation_id = OuterCtor.InnerCtor`. Inner branches that themselves take args are recursed one level deeper.
+- **Branches without a record literal** (dispatches like `translationSet OtherCtor` or `translationSet <| OuterCtor X`, or arg-taking outers whose body is a complex expression rather than a `case`) — no row emitted.
 
-- *Drop by suffix:* `*Title`, `*Helper`, `*Help`, `*Page`, `*Button`, `*Tab`
-- *Drop by prefix:* `Add*`, `Click*`, `Save*`, `Submit*`, `Cancel*`, `Edit*`, `Delete*`, `Loading*`, `Show*`, `Hide*`, `Remove*`
-- *Drop by exact name:* `Accept`, `Actions`, `Activities`, `ActionsTaken`, `ActionsToTake`, `Yes`, `No`, `OK`, `Done`, `Continue`, `Back`, `Next`, `Previous`, `Close`, `Open`, `Send`, `Receive`, `Loading`, `Saving`, `Error`, `Success`, `EmptyString`
-- *Drop union-arg constructors wrapping UI-only union types:* if the arg type is a UnionType not present in `eheza-concepts-master.csv` as a `union_type` row, drop. Examples: `Page`, `Activity`, `LoginPhrase`, `Dashboard`, `Site`, `WarningPopupType`.
-- *Explicit KEEP exceptions* (override suffix drops): `*Label` (clinical field labels like `GenderLabel`, `HIVStatusLabel`); `*Question` (clinical questions); `*Warning` (clinical warnings).
+#### Post-walk phrase / question / instruction filter
+
+After the walker emits rows, a second pass drops entries whose `english`
+reads as a UI question, sentence/phrase, or instructional step rather than
+a concept label. The filter triggers on three signals:
+
+1. **`translation_id` prefix** — full-tid prefix match against:
+   `ResilienceMessage*`, `ResilienceGuideSection*` (staff-coaching message
+   bodies), `RecommendedTreatmentSign.Treatment*`,
+   `OutsideCareMedication.OutsideCareMedication*`, `MedicationDistributionNotice*`
+   (treatment dosing strings), `Recommendation114*` (114-call recommendation
+   text), `ErrorCheck*`, `ServiceWorker*`, `ReportToWhatsApp*`
+   (system / error / flow message bodies).
+2. **`translation_id` suffix** — outer or leaf ends in any of:
+   `Inform`, `HelperWellChild`, `Message`, `Instructions`, `Instruction`,
+   `Notice`, `Paragraph`, `Paragraph1`, `Paragraph2`, `Question`, `Action`,
+   `Phrase`, `Reason`.
+3. **English string starter / shape** — sentence-leading word patterns:
+   - *Question starters*: `Can`, `Could`, `Do`, `Does`, `Did`, `Are`, `Is`,
+     `Has`, `Have`, `Was`, `Were`, `Will`, `Would`, `Should`, `What`,
+     `When`, `Where`, `Why`, `How`, `Who`, `Which`, `On which`, `By which`.
+   - *Imperative / instructional verbs*: `Give`, `Send`, `Provide`,
+     `Advise`, `Advised`, `advised`, `agreed`, `Instruct`, `Inform`,
+     `Counsel`, `Refer`, `Encourage`, `Remind`, `Tell`, `Ask`, `Educate`,
+     `Reassure`, `Continue`, `Stop`, `Please`, `Use`, `Apply`, `Take`,
+     `Avoid`, `Not dispensing`, `Not`, `Choose`, `Enroll`, `Update`,
+     `Indicate`, `Check`, `Search`, `Enter`, `Alert`, `Click`, `Select`,
+     `Add`, `Remove`, `Submit`, `Save`, `Cancel`, `Confirm`, `Edit`,
+     `Review`.
+   - *First / second person*: `I`, `My`, `We`, `You`, `Your`,
+     `Things have`.
+   - *Third-person sentence narratives*: `The thought`, `There are`,
+     `The Tetanus`, `The patient`, `The child`, `Prevents`, `Protects`,
+     `OPV`, `BCG`, `HPV`, `MR`, `Patient experienced`, `This patient`,
+     `This child`, `Patient`, `According to`, `Site recommendation`,
+     `A child`, `An adult`, `Children`, `Adults`, `Patients`,
+     `All activities`, `All participants`, `No activities`,
+     `No participants`, `There is`, `There are`, `This village`,
+     `Stabilize`.
+   - *Coaching openers*: `If you`, `If`, `Spending`, `Feeling`, `Healthy`,
+     `People`, `Research`, `Think`, `Learning`, `At the end`, `In our`,
+     `Ever`, `It can`, `Ever been`, `Try`, `Make`.
+   - *Confirmation / system prompts*: `Once`, `To proceed`, `To continue`,
+     `To enable`, `Before`, `After`, `When you`, `Note that`, `Note:`,
+     `At the previous`, `At your previous`.
+   - *Dosing instructions*: `1 tablet`, `2 tablet`, `2 capsule`,
+     `3 tablet`, `4 tabs`, `4 tablets`, `2 tablets`, `by mouth`,
+     `By mouth`, `IM`.
+   - *Severity / response*: `Severe Malaria`, `No response`.
+   - *Numeric-led recommendations*: `114 ` (114-call recommendation text).
+   - *Leading whitespace*: any english starting with a literal space (these
+     are sentence-fragment labels designed to be concatenated with another
+     value, not standalone concepts).
+   - *Multi-sentence text body*: english containing `. ` followed by an
+     uppercase letter (sentence boundary inside the string indicates a
+     paragraph, not a label).
+4. **Explicit tid drop list** — a small hand-curated set of `translation_id`s
+   whose english reads as a status sentence but doesn't trigger any of the
+   above heuristics: `ThisGroupHasNoMothers`, `FundalPalpableWarning`,
+   `NoParticipantsPending`, `NoParticipantsPendingForThisActivity`,
+   `PageNotFoundMsg`, `AdoptionSurveyProgressImproving`.
+
+Surviving rows are renumbered `EHEZA-T-NNNN` contiguously after the filter
+pass.
 
 ### ID assignment
 
@@ -91,11 +155,13 @@ After the walker runs, a deterministic post-processing pass rewrites a fixed lis
 
 ## Inventory pass metadata
 
-- **Walk date**: `2026-04-19`
-- **Source tree SHA**: `f0765c429c8d3acd39aaa1a4e2b89488d8c704e4`
-- **Walker tool**: scratch Python script at `/tmp/eheza-translate-walker.py` (not committed; see *Build process* below)
-- **Initial row count**: 2552 (1507 headers + zero-arg labels, 1045 union-value leaves)
-- **Heuristic ruleset version**: tuned-from-initial — `EmptyString` was added to the *Drop by exact name* list during the build (its `english` is the literal empty string and the row carries no clinical content); the walker's body parser was also extended to handle Elm `"""..."""` triple-quoted strings so multi-line english labels are extracted rather than dropped.
+- **Walk date**: `2026-04-20` (independent rewalk; previous version filtered by struct master and missed inner-leaf concepts like `BirthDefect.DefectInguinalHernia`)
+- **Walker tool**: scratch Python script at `/tmp/labels-master-rewalk.py` (not committed — see *Build process* below)
+- **Walked record literals**: 2970 (every `{ english = ... }` literal under `translationSet`, including inner-case branches one level deep)
+- **Empty-english drops**: 2 (`EmptyString`, `EncounterTypePageLabel.PageMain` — both literal empty strings)
+- **Translation-id prefix / suffix / exact drops**: 907 (staff-coaching messages, treatment dosing strings, system prompts, etc. — see *Post-walk phrase / question / instruction filter* above)
+- **English starter / shape drops**: 355 (questions, imperatives, sentence narratives, multi-sentence paragraphs)
+- **Final row count**: 1706
 
 *Build process is hand-driven and one-shot per the spec; the walker is
 scratch tooling and is not preserved in the repo. Re-running the walk

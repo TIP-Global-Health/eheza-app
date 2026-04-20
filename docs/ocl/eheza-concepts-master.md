@@ -1,21 +1,28 @@
-This file documents `docs/ocl/eheza-concepts-master.csv` — a canonical inventory
-of every concept E-Heza captures, drawn from a deterministic walk of 36 of the
-40 `client/src/elm/Backend/*/Model.elm` files. The 4 excluded modules are
-`Dashboard`, `ResilienceMessage`, `ResilienceSurvey`, and `PatientRecord` — UI
-rendering models, staff-resilience HR data, and the PatientRecord composite
-view. The master's purpose is to be a search baseline for future
-cross-organisation mapping passes (UVL-Burundi is a known upcoming consumer;
-the architecture is generic for any further org). It has its own `EHEZA-NNNN`
-ID space and is intentionally separate from the existing per-encounter
-`<x>-concepts.csv` / `<x>-mappings.csv` files — the two artefacts are not
-cross-referenced.
+This file documents `docs/ocl/eheza-concepts-master.csv` — a canonical
+inventory of every concept E-Heza captures, drawn from a deterministic walk
+of 36 of the 40 `client/src/elm/Backend/*/Model.elm` files plus the 3
+`Backend/*/Types.elm` files (`AcuteIllnessEncounter`, `NCDEncounter`,
+`PrenatalEncounter`) that hold program-specific diagnosis enums. The 4
+excluded Model.elm modules are `Dashboard`, `ResilienceMessage`,
+`ResilienceSurvey`, and `PatientRecord` — UI rendering models, staff-
+resilience HR data, and the PatientRecord composite view. The master's purpose is to be a search
+baseline for future cross-organisation mapping passes (UVL-Burundi is a
+known upcoming consumer; the architecture is generic for any further org).
+It has its own `EHEZA-NNNN` ID space and is intentionally separate from the
+existing per-encounter `<x>-concepts.csv` / `<x>-mappings.csv` files — the
+two artefacts are not cross-referenced.
 
 ## Schema
 
 | Column | Description | Example values |
 |---|---|---|
 | `id` | `EHEZA-NNNN`, zero-padded to 4 digits, sequentially assigned in walk order | `EHEZA-0001`, `EHEZA-1247` |
-| `name` | The Elm identifier, lightly prettified (CamelCase split on case boundaries, lowercased except first letter). Pure mechanical transform — no clinical interpretation | `Basic vitals value`, `Breastfeeding sign breastfeeding exclusively`, `Sys` |
+| `name` | English concept name. Sourced from `Translate.elm` when the Elm construct's name matches a `TranslationId`; otherwise a mechanical CamelCase/camelCase split of the identifier | `Symptom Review`, `Heart Rate`, `Sequence Number` |
+| `kinyarwanda` | Kinyarwanda translation from `Translate.elm`, blank when there is no match or the locale is `Nothing` | `Kureba ibimenyetso by'uburwayi` |
+| `kirundi` | Kirundi translation, same rule | `Kuraba ibimenyetso` |
+| `somali` | Somali translation, same rule | `Eegis Calaamadaha ah` |
+| `name_source` | `translation` if `name` came from `Translate.elm`; `fallback` if it came from the identifier split | `translation`, `fallback` |
+| `translation_id` | The matched `TranslationId` constructor (e.g., `Heartburn` or `HeartburnLabel`); blank for fallback rows | `AcuteIllnessSymptoms`, `HeartburnLabel` |
 | `eheza_field_path` | Full Elm reference: `<TypeName>` for types, `<TypeName>.<fieldName>` for record fields, `<UnionType>.<Constructor>` for union constructors | `BasicVitalsValue`, `BasicVitalsValue.sys`, `BreastfeedingSign.BreastfeedingExclusively` |
 | `source_module` | Path to the Elm file the concept was found in, repo-relative | `client/src/elm/Backend/Measurement/Model.elm` |
 | `elm_construct` | One of `record_type` / `record_field` / `union_type` / `union_constructor` | `record_field` |
@@ -59,12 +66,71 @@ clinical metadata layer it on at mapping time.
 
 ### Walk order
 
-1. Files: 36 in-scope source files, alphabetical by repo-relative path.
+1. Files: 39 in-scope source files (36 `Backend/*/Model.elm` + 3 `Backend/*/Types.elm`), alphabetical by repo-relative path. For directories that have both `Model.elm` and `Types.elm` (AcuteIllnessEncounter, NCDEncounter, PrenatalEncounter), Model.elm is walked first.
 2. Within a file: top-level type declarations in source order (top of file → bottom).
 3. Within a declaration:
    - Record type `type alias Foo = { ... }`: mint `Foo` as `record_type`, then each field in source order as `record_field` with `eheza_field_path = Foo.fieldName`.
    - Union type `type Foo = A | B C | D ...`: mint `Foo` as `union_type`, then each constructor in source order as `union_constructor` with `eheza_field_path = Foo.A` (constructor argument types are implicit — not enumerated separately).
    - Non-record type alias `type alias FooId = EntityId Foo` or `type alias BarMap = Dict X Y`: mint `Foo` as `record_type` with `datatype = N/A`. No member rows.
+
+### Name resolution (English + locales)
+
+For each row, the walker looks up the bare identifier (`<TypeName>` for type
+rows, `<fieldName>` for record fields, `<ConstructorName>` for union
+constructors) in a resolution map built from `Translate.elm`'s
+`translationSet` function:
+
+1. **Exact match** — try `<name>` against the resolution map.
+2. **Label fallback** — if step 1 misses, try `<name>Label` (matches the
+   convention used to escape namespace clashes, e.g., `Heartburn` →
+   `HeartburnLabel`).
+3. **Identifier split** — if both miss, derive English mechanically:
+   `heartRate` → `Heart Rate`, `BreathsPerMinute` → `Breaths Per Minute`.
+   `kinyarwanda` / `kirundi` / `somali` are blank for fallback rows.
+
+The resolution map covers both top-level zero-arg `translationSet` case
+branches and zero-arg inner case branches inside arg-taking outer wrappers
+(`OuterCtor x -> case x of`). Single-redirect bodies of the form
+`translationSet OtherCtor` are followed transitively. First-write-wins on
+inner-name collisions across different outer wrappers.
+
+`translation_id` records which `TranslationId` was matched (the bare
+constructor name, including any `Label` suffix). Empty when the row used the
+identifier-split fallback.
+
+### Phrase / question filter
+
+Translation matches whose English reads as a UI question or sentence
+fragment are dropped — the matching `TranslationId` exists but the string
+itself is a dialog prompt, not a concept name. The filter triggers on
+sentence-leading word patterns:
+
+- *Question starters*: `Can`, `Could`, `Do`, `Does`, `Did`, `Are`, `Is`,
+  `Has`, `Have`, `Was`, `Were`, `Will`, `Would`, `Should`, `What`, `When`,
+  `Where`, `Why`, `How`, `Who`, `Which`, `On which`, `By which`.
+- *Imperative / instructional*: `Give`, `Send`, `Provide`, `Advise`,
+  `Advised`, `advised`, `agreed`, `Not dispensing`, `Not`.
+- *First-person Likert / narrative*: `I`, `My`, `We`, `Things have`.
+- *Third-person sentence narratives*: `The thought`, `There are`,
+  `The Tetanus`, `Prevents`, `Protects`, `OPV`, `BCG`, `HPV`, `MR`,
+  `Patient experienced`.
+- *Dosing instructions*: `1 tablet`, `2 tablet`, `2 capsule`, `3 tablet`,
+  `4 tabs`, `by mouth`, `IM`.
+- *Severity / response*: `Severe Malaria`, `No response`.
+
+The filter applies **only to translation rows**. Fallback rows (those whose
+name was derived by identifier split) are exempt — a struct field name like
+`HasCleanWater` produces `"Has Clean Water"`, which is a Boolean concept
+even though it reads as a phrase.
+
+### Deduplication
+
+After name resolution and the phrase/question filter, rows whose `name`
+collides under `name.strip().lower()` are collapsed to the first occurrence
+(deterministic walk-order tiebreak). The dropped rows' `eheza_field_path`
+and `source_module` are *not* preserved — consumers that need full
+provenance should grep the codebase. This is the trade-off chosen to keep
+the master a clean name dictionary.
 
 ### ID assignment
 
@@ -90,11 +156,16 @@ walk order — the walk-order rule only governs the initial inventory pass.
 
 ## Inventory pass metadata
 
-- **Walk date**: `2026-04-19`
-- **Source tree SHA**: `5c60de0f796025bc78f23504b25286f7ec8f92c1`
-- **Walker tool**: scratch Python script at `/tmp/eheza-walker.py` (not committed; see *Build process* note below)
-- **Initial row count**: 2788
-- **Post-walk filter**: 635 rows belonging to Elm Architecture `Msg` / `Model` framework types were dropped from the raw walk (3423 → 2788). The walker treats every in-scope Elm construct uniformly; the filter removes UI-state and message-handler scaffolding that lives alongside the clinical types in the per-encounter `Backend/<Encounter>/Model.elm` files. Re-running the walk reproduces the filtered output if the same drop rule (`eheza_field_path == 'Msg' | 'Model'` or starts with `Msg.` / `Model.`) is applied.
+- **Walk date**: `2026-04-20`
+- **Source tree SHA**: latest commit on `docs/eheza-concepts-master`
+- **Walker tool**: scratch Python script at `/tmp/eheza-master-rebuild.py` (not committed)
+- **Raw walker rows**: 3566 (39 files; +143 vs the 3423 from the Model.elm-only walk)
+- **Post-walk filter**: 635 Elm-Architecture `Msg` / `Model` framework rows dropped (`eheza_field_path == 'Msg' | 'Model'` or starts with `Msg.` / `Model.`). Net 2931 rows after filter.
+- **Phrase/question drops**: 246 translation rows dropped because the matched English read as a UI question, sentence fragment, or instructional step (see *Phrase / question filter* above).
+- **Translation matches**: 738 rows have `name_source = translation` (English + 0–3 non-English locales sourced from `Translate.elm`).
+- **Fallback names**: 1139 rows used identifier-split fallback (English-only).
+- **Duplicates collapsed**: 774 rows dropped during dedup (case+whitespace-insensitive `name` collision; first occurrence wins). The dedup count is higher than a single-pass walk because dispatch chains in `Translate.elm` (e.g., `DiagnosisChronicHypertensionAfterRecheck → DiagnosisChronicHypertensionImmediate`) cause clinically-equivalent variants to resolve to the same English label and collapse together.
+- **Final row count**: 1877
 
 *Build process is hand-driven and one-shot per the spec; no walker script
 lives in the repo. The scratch tool used for the initial pass is documented
@@ -108,6 +179,10 @@ in the implementation plan but not preserved.*
 > id as part of the same PR. The walk order is only used to assign IDs during
 > the *initial* inventory pass; net-new entries after that get the next free
 > id regardless of where they fall in walk order.
+>
+> If the new entry would collide with an existing row's `name` (case +
+> whitespace-insensitive), do **not** append a duplicate; treat the existing
+> row as authoritative.
 
 ## Scope
 
