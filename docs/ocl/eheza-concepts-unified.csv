@@ -189,10 +189,10 @@ EHEZA-U-0178,Group,Group,Itsinda,Umurwi,Koox,Misc,N/A,
 EHEZA-U-0179,ContactInformation,Contact Information,Uburyo bwakwifashishwa mu kugera ku mugenerwabikorwa,Amakuru y'uwo mwavuganye,Xogta Qofka,Misc,N/A,
 EHEZA-U-0180,CovidContactTracing,Covid Contact Tracing,Gushakisha abahuye n'uwanduye Covid-19,Kurondera uwo babonanye afise Korona,Raad raaca xiriirka Covid,Misc,N/A,
 EHEZA-U-0181,CounselorSignature,Entry Counselor Signature,,,,Symptom,Coded,Signature of the counselor recording an entry counseling session.
-EHEZA-U-0182,CSectionReasons.Breech,Breech,Abanje ikibuno(umwana yaje yicaye),Ikirasi,,Coded answer,Coded,Reason for caesarean section: fetus in breech presentation.
-EHEZA-U-0183,CSectionReasons.Emergency,Emergency,Ibyihutirwa,Igihe co kwihuta,Deg-Deg,Coded answer,Coded,Reason for caesarean section: emergency obstetric situation.
-EHEZA-U-0184,CSectionReasons.FailureToProgress,Failure to Progress,Ntibyiyongera,Kunanirwa gutera imbere,Fashil Hor u socod,Coded answer,Coded,Reason for caesarean section: labor not progressing despite adequate contractions.
-EHEZA-U-0185,CSectionReasons.PreviousCSection,Previous c-section,Kubagwa guheruka,Ugukorwa guheruka,Qalliin hore,Coded answer,Coded,Reason for caesarean section: history of previous caesarean delivery.
+EHEZA-U-0182,CSectionReasons.Breech,Breech,Abanje ikibuno(umwana yaje yicaye),Ikirasi,,Misc,Coded,Reason for caesarean section: fetus in breech presentation.
+EHEZA-U-0183,CSectionReasons.Emergency,Emergency,Ibyihutirwa,Igihe co kwihuta,Deg-Deg,Misc,Coded,Reason for caesarean section: emergency obstetric situation.
+EHEZA-U-0184,CSectionReasons.FailureToProgress,Failure to Progress,Ntibyiyongera,Kunanirwa gutera imbere,Fashil Hor u socod,Misc,Coded,Reason for caesarean section: labor not progressing despite adequate contractions.
+EHEZA-U-0185,CSectionReasons.PreviousCSection,Previous c-section,Kubagwa guheruka,Ugukorwa guheruka,Qalliin hore,Misc,Coded,Reason for caesarean section: history of previous caesarean delivery.
 EHEZA-U-0186,CreateRelationship,Create Relationship,Ibijyanye no guhuza amasano,Shiraho umubonano,Abuur Xiriir,Misc,N/A,
 EHEZA-U-0187,ChwDashboardLabel,CHW Snapshot,Ishusho y'ibyagezweho,Igicapo c'Abaremeshakiyago,Goob qabadka SHCB,Test,Coded,Community Health Worker dashboard summary view.
 EH-PRE-014,CurrentlyPregnant,Currently pregnant,Umurwayi aratwite,Mbega ubu umugwayi arafise imbanyi,Bukaanka uur miyay leedahay hadda,Finding,Boolean,Patient is currently pregnant
@@ -236,7 +236,7 @@ EHEZA-U-0219,DistributedAmount,Distributed Amount,Ingano yahawe,Igitigiri catanz
 EHEZA-U-0220,District,District,Akarere,Akarere,Degmo,Misc,Text,
 EHEZA-U-0221,DOB,DOB,,DDN,TDH,Misc,N/A,
 EHEZA-U-0222,DueDate,Due Date,Itariki azabyariraho,Itarike ntarengwa,Taariikhda la Filayo,Misc,N/A,
-EHEZA-U-0223,EarlyMastitisOrEngorgmentReliefMethod.ReliefMethodIncreaseFluid,Increase fluid,Ongera ibyo kunywa,Kongereza amazi,Badi dareeraha,Coded answer,Coded,Mastitis or engorgement relief method: increase fluid intake.
+EHEZA-U-0223,EarlyMastitisOrEngorgmentReliefMethod.ReliefMethodIncreaseFluid,Increase fluid,Ongera ibyo kunywa,Kongereza amazi,Badi dareeraha,Misc,Coded,Mastitis or engorgement relief method: increase fluid intake.
 EHEZA-U-0224,EarlyChildhoodDevelopment,Early Childhood Development,Gahunda ikomatanije y'imikurire,Gukurikirana igikuriro c'umwana,,Misc,N/A,
 EHEZA-U-0225,Eclampsia,Eclampsia,Ekalampusi,Éclampsie,Ekalaamsiyo,Misc,N/A,
 EHEZA-U-0226,ECDStatus.StatusOffTrack,Off Track,Ntibyakozwe,Ntivyakozwe,Aan ku jirin,Misc,N/A,
@@ -310,9 +310,9 @@ EHEZA-U-0285,FoodGroup.FoodGroupProtein,Protein,Ibyubakumubiri,Indemamubiri,,Mis
 EHEZA-U-0286,FoodSecurity,Food Security,Kwihaza ku biribwa,Umutekano mu mfunguro,Sugnaanta Cunnada,Misc,N/A,
 EHEZA-U-0287,FollowPostpartumProtocols,Follow Postpartum Protocols,Kurikiza amabwiriza yo kwita ku mubyeyi wabyaye,Gukurikiza Inyandiko Ntumberezo zerekeye inyuma yo kwibaruka,Raac Hababka Dhalmada kadib,Misc,N/A,
 EHEZA-U-0288,FollowUp,Follow Up,Gukurikirana umurwayi,Kurikirana,Ka Warqab,Misc,N/A,
-EHEZA-U-0289,FollowUpOption.FollowUpNotNeeded,No follow up,,Kutagendera umugwayi,Lama raacin,Coded answer,Coded,Follow-up option: no further follow-up is required for the patient.
-EHEZA-U-0290,FollowUpDueOption.OverDue,Past Due,Itariki yarenze,Igihe carenze,Waqti hore,Coded answer,Coded,Follow-up status: appointment is past due.
-EHEZA-U-0291,FollowUpDueOption.DueToday,Due Today,Itariki yageze uyu munsi,Bitarenze uno munsi,Maanta oo kale,Coded answer,Coded,Follow-up status: appointment is due today.
+EHEZA-U-0289,FollowUpOption.FollowUpNotNeeded,No follow up,,Kutagendera umugwayi,Lama raacin,Misc,Coded,Follow-up option: no further follow-up is required for the patient.
+EHEZA-U-0290,FollowUpDueOption.OverDue,Past Due,Itariki yarenze,Igihe carenze,Waqti hore,Misc,Coded,Follow-up status: appointment is past due.
+EHEZA-U-0291,FollowUpDueOption.DueToday,Due Today,Itariki yageze uyu munsi,Bitarenze uno munsi,Maanta oo kale,Misc,Coded,Follow-up status: appointment is due today.
 EH-PRE-009,FundalHeight,Fundal height,Uburebure bwa Nyababyeyi,Uburebure bw'igitereko,Dhererka Ilma-galeenka,Finding,Numeric,Height of fundus in centimetres during pregnancy examination
 EHEZA-U-0292,Gender.Male,Male,Gabo,Gabo,Lab,Misc,N/A,
 EHEZA-U-0293,Gender.Female,Female,Gore,Gore,Dhadig,Misc,N/A,
@@ -353,8 +353,8 @@ EHEZA-U-0322,HealthEducationProvided,Health education provided,Hatanzwe inyigish
 EHEZA-U-0323,HealthTopics,Health Topics,,Imitwe y'ivyigwa vy'amagara meza,Cinwaanada caafimaadka,Misc,N/A,
 EHEZA-U-0324,Heart,Heart,Umutima,Umutima,Wadne,Misc,Coded,
 EHEZA-U-0325,HeartburnLabel,Heartburn,Ikirungurira,Ugusha k'umutima,,Test,Coded,Burning sensation behind the breastbone caused by acid reflux.
-EHEZA-U-0326,HeartburnReliefMethod.ReliefMethodCeaseSmoking,Cease smoking ,Hagarika kunywa itabi,Guhagarika kunywa itabi,,Coded answer,Coded,Heartburn relief method: cessation of smoking.
-EHEZA-U-0327,HeartburnReliefMethod.ReliefMethodSleepWithHeadRaised,Sleep with their head raised in the bed,Gerageza kuryama umutwe wegutse/useguye,Kuryama umutwe usangamuye mu gitanda,Madaxa kor u yara taag xilliga jiifka,Coded answer,Coded,Heartburn relief method: sleeping with the head of the bed elevated.
+EHEZA-U-0326,HeartburnReliefMethod.ReliefMethodCeaseSmoking,Cease smoking ,Hagarika kunywa itabi,Guhagarika kunywa itabi,,Misc,Coded,Heartburn relief method: cessation of smoking.
+EHEZA-U-0327,HeartburnReliefMethod.ReliefMethodSleepWithHeadRaised,Sleep with their head raised in the bed,Gerageza kuryama umutwe wegutse/useguye,Kuryama umutwe usangamuye mu gitanda,Madaxa kor u yara taag xilliga jiifka,Misc,Coded,Heartburn relief method: sleeping with the head of the bed elevated.
 EHEZA-U-0328,HeartMurmur,Heart Murmur,Ijwi ry'umutima igihe utera,Kongorera k'umutima,Rucleynta Wadnaha,Misc,Boolean,
 EHEZA-U-0329,HeartCPESign.IrregularRhythm,Irregular Rhythm,Injyana ihindagurika,Ingendo ihindagurika,Rucleyn aan nidaamsanayn,Symptom,Coded,Irregular cardiac rhythm detected on auscultation.
 EHEZA-U-0330,HeartCPESign.NormalRateAndRhythm,Normal Rate And Rhythm,Bimeze neza/Injyana imeze neza,Igipimo hamwe n'umudundo bisazwe,Heerka Caadiga ah iyo Dhawaqa,Symptom,Coded,Cardiac auscultation finding: normal heart rate and rhythm.
@@ -554,12 +554,12 @@ EHEZA-U-0518,LastContacted,Last Contacted,Igihe baheruka guhurira,Uwo bavuganye 
 EHEZA-U-0519,LastSuccessfulContactLabel,Last Successful Contact,Itariki n'isaha yanyuma igikoresho giheruka gukoresherezaho interineti bikagenda neza,Kuvugana kwa genze neza ubwanyuma,Qofkii ugu Dambeeyay,Test,Coded,Date of the most recent successful contact with the patient.
 EHEZA-U-0520,LeaveEncounter,Leave Encounter,Reka iki Gikorwa,Reka umubonano,Ka bax Ognaashaha,Misc,N/A,
 EHEZA-U-0521,LegCrampsLabel,Leg Cramps,Ibinya mu maguru,Ibinyanya vy'amaguru,Kabaabyo Lugaha ah,Test,Coded,"Painful muscle cramps in the legs, common in pregnancy."
-EHEZA-U-0522,LegCrampsReliefMethod.ReliefMethodMuscleStretching,Muscle stretching,Kurambura imitsi,Ukugorora imitsi,Murqo Jiidad,Coded answer,Coded,Leg cramp relief method: stretching of the affected muscle group.
-EHEZA-U-0523,LegCrampsReliefMethod.ReliefMethodDorsiflexion,Dorsiflexion,Imyitozo ngororamubiri inanura amaguru & ibirenge,Ukugonda ikirenge ujana hejuru,,Coded answer,Coded,Leg cramp relief method: dorsiflexion (pulling toes upward) to stretch the calf.
-EHEZA-U-0524,LegCrampsReliefMethod.ReliefMethodRelaxation,Relaxation,Kuruhuka,Kuruhuka,Nasasho,Coded answer,Coded,Leg cramp relief method: relaxation techniques.
-EHEZA-U-0525,LegCrampsReliefMethod.ReliefMethodSleepWithPillowBetweenLegs,Sleep with a pillow between the legs,Ryama ushyize umusego hagati y'amaguru,kuryama ufise umusego hagati y'amaguru,Barkin dhex geli lugaha xilliga jiifka,Coded answer,Coded,Leg cramp relief method: sleeping with a pillow placed between the knees.
-EHEZA-U-0526,LegCrampsReliefMethod.ReliefMethodHeatTherapy,Heat therapy,Kuvura hakoreshejwe ubushyuhe,Kuvura ubushuhe,,Coded answer,Coded,Leg cramp relief method: application of heat to the affected muscle.
-EHEZA-U-0527,LegCrampsReliefMethod.ReliefMethodMassage,Massage,Ubugororangingo,,,Coded answer,Coded,Leg cramp relief method: massage of the affected muscle.
+EHEZA-U-0522,LegCrampsReliefMethod.ReliefMethodMuscleStretching,Muscle stretching,Kurambura imitsi,Ukugorora imitsi,Murqo Jiidad,Misc,Coded,Leg cramp relief method: stretching of the affected muscle group.
+EHEZA-U-0523,LegCrampsReliefMethod.ReliefMethodDorsiflexion,Dorsiflexion,Imyitozo ngororamubiri inanura amaguru & ibirenge,Ukugonda ikirenge ujana hejuru,,Misc,Coded,Leg cramp relief method: dorsiflexion (pulling toes upward) to stretch the calf.
+EHEZA-U-0524,LegCrampsReliefMethod.ReliefMethodRelaxation,Relaxation,Kuruhuka,Kuruhuka,Nasasho,Misc,Coded,Leg cramp relief method: relaxation techniques.
+EHEZA-U-0525,LegCrampsReliefMethod.ReliefMethodSleepWithPillowBetweenLegs,Sleep with a pillow between the legs,Ryama ushyize umusego hagati y'amaguru,kuryama ufise umusego hagati y'amaguru,Barkin dhex geli lugaha xilliga jiifka,Misc,Coded,Leg cramp relief method: sleeping with a pillow placed between the knees.
+EHEZA-U-0526,LegCrampsReliefMethod.ReliefMethodHeatTherapy,Heat therapy,Kuvura hakoreshejwe ubushyuhe,Kuvura ubushuhe,,Misc,Coded,Leg cramp relief method: application of heat to the affected muscle.
+EHEZA-U-0527,LegCrampsReliefMethod.ReliefMethodMassage,Massage,Ubugororangingo,,,Misc,Coded,Leg cramp relief method: massage of the affected muscle.
 EHEZA-U-0528,LegLeft,Left leg,Ukuguru kw'ibumoso,Ukuguru kw'ibubamfu,Lugta bidix,Misc,N/A,
 EHEZA-U-0529,LegRight,Right leg,Ukuguru kw'iburyo,Ukuguru kw'iburyo,Lugta midig,Misc,N/A,
 EHEZA-U-0530,Legs,Legs,Amaguru,Amaguru,Lugo,Misc,Coded,
@@ -592,10 +592,10 @@ EHEZA-U-0555,MainWaterSource.RainWaterCollectionSystem,Rain Water Collection Sys
 EHEZA-U-0556,MainWaterSource.NaturalSourceFlowingWater,Natural Source - Flowing Water,Umugezi utemba,Amazi ya Rusengo,"Il Dabiici ah - Biyo socda (webi, haro)",Misc,N/A,
 EHEZA-U-0557,MainWaterSource.NaturalSourceStandingWater,Natural Source - Standing Water,Amazi y'ibiyaga,Amazi y’inzuzi,"Il Dabiici ah - Biyo fadhiya (barkad, tog)",Misc,N/A,
 EHEZA-U-0558,MainWaterSource.BottledWater,Bottled Water,Amazi akorwa mu nganda (aza mu macupa),Amazi ari mw'icupa,Biyaha Quraarada,Misc,N/A,
-EHEZA-U-0559,MainWaterPreparationOption.Boiled,Boiled,Barayateka,Ukubiza Amazi,Karkarsan,Coded answer,Coded,Water preparation method: water has been boiled before consumption.
-EHEZA-U-0560,MainWaterPreparationOption.PurificationSolution,Purification solution,Bakoresha umuti usukura amazi,umuti wo wo gukurako ubucafu,Maareynta biyo Nadiifinta,Coded answer,Coded,Water preparation method: water purification solution used.
-EHEZA-U-0561,MainWaterPreparationOption.Filtered,Filtered,Barayayungurura,Barayayungurura,La kala saaray,Coded answer,Coded,Water preparation method: water has been filtered before consumption.
-EHEZA-U-0562,MainWaterPreparationOption.Bottled,Bottled,Amazi yo mu nganda (afunze mu macupa),Amazi ari mw'icupa,Quraarad,Coded answer,Coded,Water preparation method: bottled drinking water is consumed.
+EHEZA-U-0559,MainWaterPreparationOption.Boiled,Boiled,Barayateka,Ukubiza Amazi,Karkarsan,Misc,Coded,Water preparation method: water has been boiled before consumption.
+EHEZA-U-0560,MainWaterPreparationOption.PurificationSolution,Purification solution,Bakoresha umuti usukura amazi,umuti wo wo gukurako ubucafu,Maareynta biyo Nadiifinta,Misc,Coded,Water preparation method: water purification solution used.
+EHEZA-U-0561,MainWaterPreparationOption.Filtered,Filtered,Barayayungurura,Barayayungurura,La kala saaray,Misc,Coded,Water preparation method: water has been filtered before consumption.
+EHEZA-U-0562,MainWaterPreparationOption.Bottled,Bottled,Amazi yo mu nganda (afunze mu macupa),Amazi ari mw'icupa,Quraarad,Misc,Coded,Water preparation method: bottled drinking water is consumed.
 EH-NCD-018,Malaria,Malaria,Malariya,Malariya,Duumo,Diagnosis,Coded,Malaria diagnosis
 EHEZA-U-0563,MalariaRapidDiagnosticTest,Malaria Rapid Diagnostic Test,Igikoresho gipima Malariya ku buryo bwihuse,Igipimo ca Malariya kinyaruka,Baaritaanka Deg-dega ah ee Duumada,Test,Coded,Rapid antigen test for malaria diagnosis at point of care.
 EHEZA-U-0564,MalariaWithAnemia,Malaria with Anemia,Malariya n'Amaraso Macye,Malariya hamwe n'igabanuka ry'amaraso m'umubiri,,Misc,N/A,
@@ -766,9 +766,9 @@ EHEZA-U-0711,NextVisit,Next Visit,Isura rikurikira,Isango rikurikira,,Misc,N/A,
 EH-AI-004,NightSweatsLabel,Night sweats,Kubira ibyuya nijoro,Kubira ivyuya mw'ijoro,Habeen Dhidid,Diagnosis,Boolean,Night sweats
 EHEZA-U-0712,NormalRange,Normal Range,Ibimeze neza,Icanya gisanzwe,Sida Caadiga ah,Misc,N/A,
 EHEZA-U-0713,NutritionSigns,Nutrition Signs,Ibimenyetso by'imirire,Ibimenyetso vyo gufungura,Calaamadaha Nafaqada,Symptom,Coded,Visible nutrition-related signs assessed in a child.
-EHEZA-U-0714,ReasonForNonReferral.ClientRefused,Client refused,Umurwayi yabyanze,Umurwayi yaranse,Bukaanka ayaa diiday,Coded answer,Coded,Reason for non-referral: client refused referral.
-EHEZA-U-0715,ReasonForNonReferral.ClientUnableToAffordFees,Client unable to afford fees,Nta bushobozi bwo kwishyura afite,Umurwayi adashobora kwishura amafaranga,Bukaanka ma awoodo qarashka,Coded answer,Coded,Reason for non-referral: client cannot afford the referral fees.
-EHEZA-U-0716,ReasonForNonReferral.ClientAlreadyInCare,Client already in care,Umukiriya ari kwitabwaho,Umurwayi asanzwe yitahweho,Bukaanka waxaa u socda daryeel,Coded answer,Coded,Reason for non-referral: client is already receiving care for the condition.
+EHEZA-U-0714,ReasonForNonReferral.ClientRefused,Client refused,Umurwayi yabyanze,Umurwayi yaranse,Bukaanka ayaa diiday,Misc,Coded,Reason for non-referral: client refused referral.
+EHEZA-U-0715,ReasonForNonReferral.ClientUnableToAffordFees,Client unable to afford fees,Nta bushobozi bwo kwishyura afite,Umurwayi adashobora kwishura amafaranga,Bukaanka ma awoodo qarashka,Misc,Coded,Reason for non-referral: client cannot afford the referral fees.
+EHEZA-U-0716,ReasonForNonReferral.ClientAlreadyInCare,Client already in care,Umukiriya ari kwitabwaho,Umurwayi asanzwe yitahweho,Bukaanka waxaa u socda daryeel,Misc,Coded,Reason for non-referral: client is already receiving care for the condition.
 EHEZA-U-0717,AdministrationNote.NonAdministrationLackOfStock,Out of Stock,Nta miti iri mu bubiko,Ntabiriyo m'ububiko,Keydka ka Go`an,Misc,N/A,
 EHEZA-U-0718,AdministrationNote.NonAdministrationHomeBirth,Home Birth,Yabyariye mu rugo,Kuvyarira muhira,Ku dhalashada Guriga,Misc,N/A,
 EHEZA-U-0719,AdministrationNote.AdministeredToday,Administered Today,Yahawe umuti uyu munsi,,,Misc,N/A,
@@ -794,11 +794,11 @@ EHEZA-U-0738,NutritionAssessment.AssesmentConsecutiveWeightLoss,Consecutive Weig
 EHEZA-U-0739,NutritionAssessmentLabel,Nutrition Assessment,Gusuzuma imirire,Isuzuma ryo gufungura,Qiimeynta Nafaqada,Test,Coded,Nutritional status assessment performed for the patient.
 EHEZA-U-0740,NutritionAssessmentTask.TaskHeadCircumference,Head Circumference,Umuzenguruko w'umutwe,Intikuro y'umutwe,,Misc,Coded,
 EHEZA-U-0741,NutritionBehavior,Nutrition Behavior,Imyumvire ku bijyanye n’imirire,Imitwarire yo gufungura neza,Dabeecada Nafaqeed,Misc,N/A,
-EHEZA-U-0742,NutritionCaringOption.CaredByParent,Parent,Umubyeyi,Umuvyeyi,Waalid,Coded answer,Coded,Caregiver type: child is primarily cared for by a parent.
-EHEZA-U-0743,NutritionCaringOption.CaredByGrandparent,Grandparent,Nyirakuru/Sekuru,Sogokuru/Nyogokuru,Abkow/Abooto,Coded answer,Coded,Caregiver type: child is primarily cared for by a grandparent.
-EHEZA-U-0744,NutritionCaringOption.CaredBySibling,Sibling,Umuvandimwe,umuvukanyi,Walaalo,Coded answer,Coded,Caregiver type: child is primarily cared for by an older sibling.
-EHEZA-U-0745,NutritionCaringOption.CaredByNeighbor,Neighbor,Umuturanyi,Umubanyi,Deris,Coded answer,Coded,Caregiver type: child is primarily cared for by a neighbor.
-EHEZA-U-0746,NutritionCaringOption.CaredByDaycare,Daycare,Irerero,Irerero ry'abana,Xanaano,Coded answer,Coded,Caregiver type: child is cared for at a daycare facility.
+EHEZA-U-0742,NutritionCaringOption.CaredByParent,Parent,Umubyeyi,Umuvyeyi,Waalid,Misc,Coded,Caregiver type: child is primarily cared for by a parent.
+EHEZA-U-0743,NutritionCaringOption.CaredByGrandparent,Grandparent,Nyirakuru/Sekuru,Sogokuru/Nyogokuru,Abkow/Abooto,Misc,Coded,Caregiver type: child is primarily cared for by a grandparent.
+EHEZA-U-0744,NutritionCaringOption.CaredBySibling,Sibling,Umuvandimwe,umuvukanyi,Walaalo,Misc,Coded,Caregiver type: child is primarily cared for by an older sibling.
+EHEZA-U-0745,NutritionCaringOption.CaredByNeighbor,Neighbor,Umuturanyi,Umubanyi,Deris,Misc,Coded,Caregiver type: child is primarily cared for by a neighbor.
+EHEZA-U-0746,NutritionCaringOption.CaredByDaycare,Daycare,Irerero,Irerero ry'abana,Xanaano,Misc,Coded,Caregiver type: child is cared for at a daycare facility.
 EHEZA-U-0747,NutritionEncounterLabel,Nutrition Encounter,Isuzuma ry’imirire,Isuzumwa ry’ingaburo,Ogaanshaha Nafaqada,Test,Coded,Encounter for nutrition assessment and counseling.
 EHEZA-U-0748,NutritionSupplementType.FortifiedPorridge,Fortified Porridge,Igikoma kirimo Imyunyu ngugu na Vitamin,Ubuyi bukomejwe,Mushaarida Nafaqeysan,Misc,N/A,
 EHEZA-U-0749,NutritionSupplementType.Rutf,RUTF,RUTUFU,ATPE: Aliment Thérapeutique prêt à l'Emploi,,Misc,N/A,
@@ -999,22 +999,22 @@ EHEZA-U-0938,ProphylaxisMedications,Prophylaxis Medications,,Imiti ikinga,Dawada
 EHEZA-U-0939,PriorDiagnosis,Prior Diagnosis,Uburwayi yagize/yigeze kurwara,Imbere y'isuzuma,Baaritaanka Ka hor,Diagnosis,Coded,A diagnosis previously assigned to the patient prior to the current encounter.
 EHEZA-U-0940,Province,Province,Intara,Intara,Gobal,Misc,Text,
 EHEZA-U-0941,ReadyForReview,Ready for Review,,,,Misc,N/A,
-EHEZA-U-0942,ReasonForDistribution,Reason for distribution,Impamvu yo gutanga,Inkomoko yo gutanga,Sababta qaybinta,Coded answer,Coded,Question or coded answer indicating why an item is being distributed.
-EHEZA-U-0943,ReasonForNotBreastfeeding.NotBreastfeedingBreastPain,Breast pain,Ububabare bw'amabere,Kubabara amabere,,Coded answer,Coded,Reason for not breastfeeding: mother experiencing breast pain.
-EHEZA-U-0944,ReasonForNotBreastfeeding.NotBreastfeedingBreastRedness,Breast redness,Amabere aratukuye,Amabere atukura,,Coded answer,Coded,Reason for not breastfeeding: redness of the breast suggesting infection or inflammation.
-EHEZA-U-0945,ReasonForNotBreastfeeding.NotBreastfeedingLowMilkProduction,Low milk production,Amashereka adahagije,Umwimbu w'amata uri hasi,Caano yar soo saaraya,Coded answer,Coded,Reason for not breastfeeding: insufficient milk production by the mother.
-EHEZA-U-0946,ReasonForNotBreastfeeding.NotBreastfeedingProblemsLatching,Problems latching,Ibibazo byo konka,Ingorane zo kugara,Dhibaatooyinka weli taagan yihiin,Coded answer,Coded,Reason for not breastfeeding: difficulty latching at the breast.
-EHEZA-U-0947,ReasonForNotBreastfeeding.NotBreastfeedingMedicalProblems,Medical Problems,Ibibazo by'uburwayi,Ingorane ziri m'ubuvuzi,Dhibaato caafimaad,Coded answer,Coded,Reason for not breastfeeding: maternal medical problems.
-EHEZA-U-0948,ReasonForNotBreastfeeding.NotBreastfeedingPersonalChoice,Personal Choice,Amahitamo ye bwite,Ihitamwo ry'umuntu,Dooqa Qofka,Coded answer,Coded,Reason for not breastfeeding: personal choice not to breastfeed.
-EHEZA-U-0949,ReasonForNotIsolating.NoSpace,No space available at home or clinic,Nta mwanya uboneka mu rugo cyangwa mu ivuriro,Nta kibanza na kimwe kihari haba muhira canke kw'ivuriro/ku bitaro,Meel banaan lagama heli karo guriga ama rugta caafimaad,Coded answer,Coded,Reason for not isolating: no isolation space available at home or in the clinic.
-EHEZA-U-0950,ReasonForNotIsolating.TooIll,Too ill to leave alone,Umurwayi ararembye ntagomba gusigara wenyine,Ararwaye cane kuburyo atogenda wenyene,,Coded answer,Coded,Reason for not isolating: patient is too ill to be left alone.
-EHEZA-U-0951,ReasonForNotIsolating.CanNotSeparateFromFamily,Unable to separate from family,Ntibishoboka kumutandukanya n'umuryango,Ntibishoboka kwitandukanya n'umuryango,Kama go`I karo qoyska,Coded answer,Coded,Reason for not isolating: patient cannot be separated from family members.
-EHEZA-U-0952,ReasonForNotTaking.NotTakingAdverseEvent,Adverse event,Ibintu bidasanzwe (bitewe n'imiti wafashe),Icyabaye bibabaje,Waxyeelo,Coded answer,Coded,Reason for non-adherence: patient experienced an adverse event from medication.
-EHEZA-U-0953,ReasonForNotTaking.NotTakingNoMoney,No money for medication,Nta mafaranga yo kwishyura imiti afite,Nta mafaranga yo kugura imiti,Lacag uma heysto dawada,Coded answer,Coded,Reason for non-adherence: patient cannot afford the cost of medication.
-EHEZA-U-0954,ReasonForNotTaking.NotTakingMemoryProblems,Memory problems,Ibibazo byo kwibagirwa,Ingorane zo kwibuka,Dhibaato la xiriirta Keydka Xasuusta,Coded answer,Coded,Reason for non-adherence: patient forgot to take medication due to memory problems.
+EHEZA-U-0942,ReasonForDistribution,Reason for distribution,Impamvu yo gutanga,Inkomoko yo gutanga,Sababta qaybinta,Misc,Coded,Question or coded answer indicating why an item is being distributed.
+EHEZA-U-0943,ReasonForNotBreastfeeding.NotBreastfeedingBreastPain,Breast pain,Ububabare bw'amabere,Kubabara amabere,,Misc,Coded,Reason for not breastfeeding: mother experiencing breast pain.
+EHEZA-U-0944,ReasonForNotBreastfeeding.NotBreastfeedingBreastRedness,Breast redness,Amabere aratukuye,Amabere atukura,,Misc,Coded,Reason for not breastfeeding: redness of the breast suggesting infection or inflammation.
+EHEZA-U-0945,ReasonForNotBreastfeeding.NotBreastfeedingLowMilkProduction,Low milk production,Amashereka adahagije,Umwimbu w'amata uri hasi,Caano yar soo saaraya,Misc,Coded,Reason for not breastfeeding: insufficient milk production by the mother.
+EHEZA-U-0946,ReasonForNotBreastfeeding.NotBreastfeedingProblemsLatching,Problems latching,Ibibazo byo konka,Ingorane zo kugara,Dhibaatooyinka weli taagan yihiin,Misc,Coded,Reason for not breastfeeding: difficulty latching at the breast.
+EHEZA-U-0947,ReasonForNotBreastfeeding.NotBreastfeedingMedicalProblems,Medical Problems,Ibibazo by'uburwayi,Ingorane ziri m'ubuvuzi,Dhibaato caafimaad,Misc,Coded,Reason for not breastfeeding: maternal medical problems.
+EHEZA-U-0948,ReasonForNotBreastfeeding.NotBreastfeedingPersonalChoice,Personal Choice,Amahitamo ye bwite,Ihitamwo ry'umuntu,Dooqa Qofka,Misc,Coded,Reason for not breastfeeding: personal choice not to breastfeed.
+EHEZA-U-0949,ReasonForNotIsolating.NoSpace,No space available at home or clinic,Nta mwanya uboneka mu rugo cyangwa mu ivuriro,Nta kibanza na kimwe kihari haba muhira canke kw'ivuriro/ku bitaro,Meel banaan lagama heli karo guriga ama rugta caafimaad,Misc,Coded,Reason for not isolating: no isolation space available at home or in the clinic.
+EHEZA-U-0950,ReasonForNotIsolating.TooIll,Too ill to leave alone,Umurwayi ararembye ntagomba gusigara wenyine,Ararwaye cane kuburyo atogenda wenyene,,Misc,Coded,Reason for not isolating: patient is too ill to be left alone.
+EHEZA-U-0951,ReasonForNotIsolating.CanNotSeparateFromFamily,Unable to separate from family,Ntibishoboka kumutandukanya n'umuryango,Ntibishoboka kwitandukanya n'umuryango,Kama go`I karo qoyska,Misc,Coded,Reason for not isolating: patient cannot be separated from family members.
+EHEZA-U-0952,ReasonForNotTaking.NotTakingAdverseEvent,Adverse event,Ibintu bidasanzwe (bitewe n'imiti wafashe),Icyabaye bibabaje,Waxyeelo,Misc,Coded,Reason for non-adherence: patient experienced an adverse event from medication.
+EHEZA-U-0953,ReasonForNotTaking.NotTakingNoMoney,No money for medication,Nta mafaranga yo kwishyura imiti afite,Nta mafaranga yo kugura imiti,Lacag uma heysto dawada,Misc,Coded,Reason for non-adherence: patient cannot afford the cost of medication.
+EHEZA-U-0954,ReasonForNotTaking.NotTakingMemoryProblems,Memory problems,Ibibazo byo kwibagirwa,Ingorane zo kwibuka,Dhibaato la xiriirta Keydka Xasuusta,Misc,Coded,Reason for non-adherence: patient forgot to take medication due to memory problems.
 EHEZA-U-0955,ReasonForNotTaking.NotTakingTreatmentNotStarted,Treatment not started,,,,Drug,Coded,Reason for non-adherence: treatment was not yet started.
-EHEZA-U-0956,ReasonForNotProvidingHealthEducation.LackOfAppropriateEducationUserGuide,Lack of appropriate education user guide,Nta mfashanyigisho yabugenewe ihari,Ukubura ry'indongozo nziza yo gukoresha ivyo wize,Aan lahayn hagaha waxbarashada ku haboon,Coded answer,Coded,Reason for not providing health education: lack of an appropriate user guide.
-EHEZA-U-0957,ReasonForNotProvidingHealthEducation.NoReasonForNotProvidingHealthEducation,No reason,Nta mpamvu,Nta citwazo,Sabab la`aan,Coded answer,Coded,Reason for not providing health education: no specific reason recorded.
+EHEZA-U-0956,ReasonForNotProvidingHealthEducation.LackOfAppropriateEducationUserGuide,Lack of appropriate education user guide,Nta mfashanyigisho yabugenewe ihari,Ukubura ry'indongozo nziza yo gukoresha ivyo wize,Aan lahayn hagaha waxbarashada ku haboon,Misc,Coded,Reason for not providing health education: lack of an appropriate user guide.
+EHEZA-U-0957,ReasonForNotProvidingHealthEducation.NoReasonForNotProvidingHealthEducation,No reason,Nta mpamvu,Nta citwazo,Sabab la`aan,Misc,Coded,Reason for not providing health education: no specific reason recorded.
 EHEZA-U-0958,Received,Received,Ibyakiriwe,yaronse,Helay,Misc,Numeric,
 EHEZA-U-0959,RecommendationSite.TeamComeToVillage,Team will come to village,Itsinda rizaza mu mudugudu,Umurwi uzoza ku musozi,,Misc,N/A,
 EHEZA-U-0960,Recommended,Recommended,Imiti yemewe,Bitegerezwa,Lagula taliyay,Misc,N/A,
@@ -1253,7 +1253,7 @@ EHEZA-U-1178,HairHeadCPESign.NormalHairHead,Normal Hair Head,,,,Symptom,Coded,In
 EHEZA-U-1179,EyesCPESign.NormalEyes,Normal Eyes,,,,Symptom,Coded,Indicator that the eyes appeared normal on physical examination.
 EHEZA-U-1180,PostpartumMotherDangerSign,Postpartum Mother Danger Sign,,,,Symptom,Coded,Category for danger signs assessed in postpartum mothers.
 EHEZA-U-1181,PostpartumChildDangerSign,Postpartum Child Danger Sign,,,,Symptom,Coded,Category for danger signs assessed in postpartum children.
-EHEZA-U-1182,ReasonIrregularMenses,Irregular Menses,,Ukuja mu kwezi bihindagurika,Caado aan waqti lahayn,Coded answer,Coded,Reason for unreliable last menstrual period date: irregular menstrual cycles.
+EHEZA-U-1182,ReasonIrregularMenses,Irregular Menses,,Ukuja mu kwezi bihindagurika,Caado aan waqti lahayn,Misc,Coded,Reason for unreliable last menstrual period date: irregular menstrual cycles.
 EHEZA-U-1183,MedicalHistorySign.AutoimmuneDisease,Autoimmune Disease,,,,Symptom,Coded,Patient history of an autoimmune disorder.
 EHEZA-U-1184,MedicalHistoryValue.preeclampsiaInFamily,Preeclampsia In Family,,,,Misc,Coded,
 EHEZA-U-1185,MedicationSign.IronAndFolicAcidSupplement,Iron And Folic Acid Supplement,,,,Drug,Coded,Combined iron and folic acid supplement standard in antenatal care.
@@ -1266,7 +1266,7 @@ EHEZA-U-1191,ObstetricHistoryValue.preTermPregnancy,Pre Term Pregnancy,,,,Misc,N
 EHEZA-U-1192,ObstetricHistoryValue.stillbirthsAtTerm,Stillbirths At Term,,,,Misc,Numeric,
 EHEZA-U-1193,ObstetricHistoryValue.stillbirthsPreTerm,Stillbirths Pre Term,,,,Misc,Numeric,
 EHEZA-U-1194,ObstetricHistoryStep2Value.cSections,C Sections,,,,Misc,Numeric,
-EHEZA-U-1195,CSectionReason,Reason for C-section,Impamvu yo kubagwa,Impamvu yo gukorwa,Sababta Qalliinka Dhalmada,Coded answer,Coded,Question or coded answer indicating why a caesarean section was performed.
+EHEZA-U-1195,CSectionReason,Reason for C-section,Impamvu yo kubagwa,Impamvu yo gukorwa,Sababta Qalliinka Dhalmada,Misc,Coded,Question or coded answer indicating why a caesarean section was performed.
 EHEZA-U-1196,PreviousDeliverySign.CSectionInPreviousDelivery,C Section In Previous Delivery,,,,Symptom,Coded,Obstetric history: previous delivery was by caesarean section.
 EHEZA-U-1197,PreviousDeliverySign.StillbornPreviousDelivery,Stillborn Previous Delivery,,,,Symptom,Coded,Obstetric history: stillbirth in a previous delivery.
 EHEZA-U-1198,PreviousDeliverySign.BabyDiedOnDayOfBirthPreviousDelivery,Baby Died On Day Of Birth Previous Delivery,,,,Symptom,Coded,Obstetric history: a baby died on the day of birth in a previous delivery.
@@ -1341,7 +1341,7 @@ EHEZA-U-1266,SendToHCSign.ReferToHealthCenter,Refer To Health Center,,,,Symptom,
 EHEZA-U-1267,SendToHCSign.EnrollToNutritionProgram,Enroll To Nutrition Program,,,,Symptom,Coded,Action: enroll patient in a nutrition support program.
 EHEZA-U-1268,SendToHCSign.ReferToNutritionProgram,Refer To Nutrition Program,,,,Symptom,Coded,Action: refer the patient to a nutrition support program.
 EHEZA-U-1269,TreatmentOngoingSign.SideEffects,Side Effects,,,,Drug,Coded,Adverse effects experienced by the patient from medication.
-EHEZA-U-1270,ReasonForNotTaking,Reason For Not Taking,,,,Coded answer,Coded,Question category capturing reasons a patient is not taking prescribed medication.
+EHEZA-U-1270,ReasonForNotTaking,Reason For Not Taking,,,,Misc,Coded,Question category capturing reasons a patient is not taking prescribed medication.
 EHEZA-U-1271,TreatmentOngoing,Treatment Ongoing,,,,Drug,Coded,Indicator that the patient is currently undergoing treatment.
 EHEZA-U-1272,CovidTesting,Covid Testing,,,,Test,Coded,Testing for COVID-19 infection.
 EHEZA-U-1273,ContactTraceItem.phoneNumber,Phone Number,,,,Misc,Text,
@@ -1375,8 +1375,8 @@ EHEZA-U-1299,LipidPanelTestValue.triglyceridesResult,Triglycerides Result,,,,Tes
 EHEZA-U-1300,TuberculosisDiagnosis,Tuberculosis Diagnosis,,,,Diagnosis,Coded,Diagnosis category for tuberculosis (pulmonary or extrapulmonary).
 EHEZA-U-1301,TuberculosisMedication,Tuberculosis Medication,,,,Drug,Coded,Generic category for medications used in tuberculosis treatment.
 EHEZA-U-1302,HIVHealthEducation,HIV Health Education,,,,Misc,N/A,
-EHEZA-U-1303,AhezaDistributionReason,Aheza Distribution Reason,,,,Coded answer,Coded,Reason for distribution of Aheza fortified flour to a beneficiary.
-EHEZA-U-1304,AhezaMotherValue.distributionReason,Distribution Reason,,,,Coded answer,Coded,Reason recorded for distribution of Aheza fortified flour to a beneficiary mother.
+EHEZA-U-1303,AhezaDistributionReason,Aheza Distribution Reason,,,,Misc,Coded,Reason for distribution of Aheza fortified flour to a beneficiary.
+EHEZA-U-1304,AhezaMotherValue.distributionReason,Distribution Reason,,,,Misc,Coded,Reason recorded for distribution of Aheza fortified flour to a beneficiary mother.
 EHEZA-U-1305,StockUpdate,Stock Update,,,,Misc,N/A,
 EHEZA-U-1306,StockUpdate.dateRecorded,Date Recorded,,,,Misc,Date,
 EHEZA-U-1307,StockUpdate.dateExpires,Date Expires,,,,Misc,Date,
