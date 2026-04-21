@@ -7,7 +7,7 @@ EHEZA-U-0003,AbdomenCPESign.TPRightLower,Tender to Palpation right lower,Igice c
 EHEZA-U-0004,AbdomenCPESign.TPLeftUpper,Tender to Palpation left upper,Igice cyo hejuru ibumoso kirababara  iyo ugikanze,Bitera bija mu kudidagizwa mu kubamfu amasubiza hejuru,
 EHEZA-U-0005,AbdomenCPESign.TPLeftLower,Tender to Palpation left lower,Igice cyo hasi ibumoso kirababara  iyo ugikanze,Bitera bija mu kudidagizwa mu kubamfu amasubiza hasi,
 EHEZA-U-0006,AbdomenCPESign.Hernia,Hernia,Urugingo ruyobera cg rwinjira mu rundi,Isoho ry'agace k'umubiri w'indani hama kakavyimbira hanze,
-EH-PRE-024,AbdominalPainLabel,Abdominal Pain,Kubabara mu nda,Ukubabara mu nda,Calool Xanuun
+EH-PRE-024,AbdominalPainLabel,Abdominal pain,Kuribwa mu nda bikabije,Kurimba cane mu bwena,Calool xanuun aad u daran
 EHEZA-U-0007,Abnormal,Abnormal,,Bidasanzwe,Aan caadi ahayn
 EHEZA-U-0008,Abortions,Abortions,Inda yavuyemo,Ugukoroka kw'imbanyi,Dhicis
 EHEZA-U-0009,Accept,Accept,,Emeza,Aqbal
@@ -16,7 +16,7 @@ EHEZA-U-0011,ActionsTaken,Actions Taken,Ibyakozwe,Ibikorwa vyakozwe,Tallaabooyin
 EHEZA-U-0012,ActionsToTake,Actions To Take,Ibigomba gukorwa,Ibitegekanijwe gukorwa,Talaabooyinka la qaadayo
 EHEZA-U-0013,AcuteFindingsGeneralSign.LethargicOrUnconscious,Lethargic Or Unconscious,Yahwereye cyangwa yataye ubwenge,Itiro rirenze canke ukuraba canke uguta ubwenge,Tabaalac ama Miyirdaboolan
 EHEZA-U-0014,AcuteFindingsGeneralSign.AcuteFindingsPoorSuck,Poor Suck,Yonka nta mbaraga,Ugukwega kutakwiye,Nuugida ku Yar
-EH-AI-020,AcuteFindingsGeneralSign.SunkenEyes,Sunken Eyes,Amaso yahenengeye,Amaso yacokeye,Indhaha oo God ku jira
+EH-AI-020,AcuteFindingsGeneralSign.SunkenEyes,Sunken eyes,Amaso yahenengeye,Amaso yacokeye,Indhaha oo God ku jira
 EHEZA-U-0015,AcuteFindingsGeneralSign.PoorSkinTurgor,Poor Skin Turgor,Uruhu rwumye,Uruhu rukene,Maqaar Dilan
 EH-AI-022,AcuteFindingsGeneralSign.Jaundice,Jaundice,Umuhondo/umubiri wahindutse umuhondo,Ingwara y'umuhondo,Cagaarshow
 EHEZA-U-0016,AcuteFindingsRespiratorySign.Stridor,Stridor,Guhumeka ajwigira,Uguhema ujwigira mu gihe uri maso,Dhuun qabad
@@ -28,7 +28,7 @@ EHEZA-U-0021,AcuteIllnessDangerSign.DangerSignConditionNotImproving,Condition no
 EHEZA-U-0022,AcuteIllnessDangerSign.DangerSignUnableDrinkSuck,Unable to Drink/Suck,Ntashoboye kunywa/konka,Ntibishoboka kunywa/konka,Ma Cabi/Nuugi karo
 EHEZA-U-0023,AcuteIllnessDangerSign.DangerSignLethargyUnconsciousness,Lethargy or Unconsciousness,Yahwereye cyangwa ntiyumva,Itiro rirenze canke ukuraba/uguta ubwenge,Tabaalac ama Miyirdabool
 EHEZA-U-0024,AcuteIllnessDangerSign.DangerSignRespiratoryDistress,Respiratory Distress,Ahumeka bimugoye,Ingorane yo guhema,Howlgab Neefsashada ah
-EH-AI-018,AcuteIllnessDangerSign.DangerSignBloodyDiarrhea,Bloody Diarrhea,Arituma amaraso,Ugucibwamwo/uguhitwa bivanze n'amaraso,Shuban Dhiig
+EH-AI-018,AcuteIllnessDangerSign.DangerSignBloodyDiarrhea,Bloody diarrhea,Arituma amaraso,Gucibwamwo bivanze n'amaraso,Shuban Dhiig
 EHEZA-U-0025,AcuteIllnessDangerSign.DangerSignNewSkinRash,New Skin Rash,Yasheshe uduheri dushya,Uduherehere dushasha k'uruhu/urukoba,Nabar Maqaarka Cusub
 EHEZA-U-0026,AcuteIllnessDiagnosis.DiagnosisCovid19Suspect,Suspected COVID-19,Aracyekwaho indwara ya COVID-19,Hiketswe umugera wa COVID-19,Looga shakisan yahay COVID-19
 EHEZA-U-0027,AcuteIllnessDiagnosis.DiagnosisMalariaComplicated,Complicated Malaria,Malariya y'igikatu,Malariya ikomeye,Duumo Liidata
@@ -84,7 +84,7 @@ EHEZA-U-0076,Azithromycin2g,Azithromycin (2g),Azithromycine (2g),azithromycine(2
 EHEZA-U-0077,Baby,Baby,Umwana,Uruyoya,Cunuga
 EHEZA-U-0078,Balance,Balance,Ibisigaye,,Haraaga
 EHEZA-U-0079,BatchNumberAbbrev,Batch #,Nomero #,,
-EH-PRE-065,BloodGroup,Blood Group,Ubwoko bw'Amaraso,Umurwi wa'amaraso,
+EH-PRE-065,BloodGroup,Blood group,Ubwoko bw'Amaraso,Umurwi wa'amaraso,
 EHEZA-U-0080,BeatsPerMinuteUnitLabel,Beats per minute,Inshuro umutima utera ku munota,Ugukubita k'umunota,Garaaca daqiiqadiiba
 EHEZA-U-0081,BirthDefect.DefectBirthInjury,Birth Injury,Impanuka zo mu kuvuka,Igikomere yavukanye,Dhaawac Dhalasho
 EHEZA-U-0082,BirthDefect.DefectCleftLipWithCleftPalate,Cleft Lip with Cleft Palate,Ibibari k'umunwa n'urusenge rw'akanwa,Umunwa wapasutse hamwe n'ubujana,
@@ -112,7 +112,7 @@ EHEZA-U-0103,BloodSmearTestResult,Malaria Blood Smear Result,,,
 EHEZA-U-0104,BloodInSputumLabel,Blood in Sputum,Amaraso mu gikororwa,Amaraso mu bikororwa,Dhiig la socda Xaakada
 EHEZA-U-0105,BMI,BMI,,IMC,
 EHEZA-U-0106,BMIUnit,kg/m²,,,
-EH-PRE-005,BodyTemperature,Body Temperature,Ubushyuhe bw'umubiri,Ubushuhe bw'umubiri,Heer kulka Jirka
+EH-PRE-005,BodyTemperature,Body temperature,Ubushyuhe bw'umubiri,Ubushuhe bw'umubiri,Heer kulka Jirka
 EHEZA-U-0107,BornUnderweight,Born Underweight,Yavukanye ibiro bidashyitse,Yavutse afise ibiro bikeya,Ku Dhashay Miisaan Yar
 EHEZA-U-0108,BowedLegs,Bowed Legs,Amaguru atameze neza (yagize imitego),Amaguru yigonze,
 EHEZA-U-0109,BreathsPerMinuteUnitLabel,Breaths per minute,Inshuro ahumeka ku munota,Uguhema k'umunota,Neefsiga daqiiqadii
@@ -141,7 +141,7 @@ EHEZA-U-0131,ChildHmisNumber,Child HMIS Number,Numero y'umwana muri HMIS,Inomero
 EHEZA-U-0132,ChildIdentification,Child Identification,Umwirondoro w'Umwana,Umwirondoro w'umwana,Aqoonsiga Canuga
 EHEZA-U-0133,ChildNutritionSignLabel.AbdominalDistension,Abdominal Distension,Kubyimba inda,Kuvyimba inda,Calool fuur
 EHEZA-U-0134,ChildNutritionSignLabel.Apathy,Apathy,Kwigunga,Kwigunga,Daal
-EH-NUT-003,ChildNutritionSignLabel.DrySkin,Dry Skin,Uruhu ryumye,Uruhu runyankabiranye,Maqaar Qallalan
+EH-NUT-003,ChildNutritionSignLabel.DrySkin,Dry skin,Uruhu ryumye,Uruhu runyankabiranye,Maqaar Qallalan
 EHEZA-U-0135,ChildNutritionSignLabel.PoorAppetite,Poor Appetite,Kubura apeti /kunanirwa kurya,Akayabagu gake,Cunno Xumo
 EHEZA-U-0136,ChildNutrition,Child Nutrition,Imirire y'Umwana,Ingaburo y’umwana,Nafaqada Canuga
 EHEZA-U-0137,Children,Children,Abana,Abana,Carruur
@@ -200,7 +200,7 @@ EHEZA-U-0189,CSectionReasons.FailureToProgress,Failure to Progress,Ntibyiyongera
 EHEZA-U-0190,CSectionReasons.PreviousCSection,Previous c-section,Kubagwa guheruka,Ugukorwa guheruka,Qalliin hore
 EHEZA-U-0191,CreateRelationship,Create Relationship,Ibijyanye no guhuza amasano,Shiraho umubonano,Abuur Xiriir
 EHEZA-U-0192,ChwDashboardLabel,CHW Snapshot,Ishusho y'ibyagezweho,Igicapo c'Abaremeshakiyago,Goob qabadka SHCB
-EH-PRE-014,CurrentlyPregnant,Currently Pregnant,Aratwite,Afise imbanyi ubu,
+EH-PRE-014,CurrentlyPregnant,Currently pregnant,Umurwayi aratwite,Mbega ubu umugwayi arafise imbanyi,Bukaanka uur miyay leedahay hadda
 EHEZA-U-0193,CurrentStock,Current Stock,Ibiri mu bubiko,,
 EH-PRE-021,DangerSign.VaginalBleeding,Vaginal bleeding,Kuva,Ukuva amaraso mu gitsina,Dhiigbax makaanka ah
 EHEZA-U-0194,DangerSign.HeadacheBlurredVision,Severe headaches with blurred vision,Kuribwa umutwe bidasanzwe ukareba ibikezikezi,Ukumeneka umutwe gukaze hamwe n'ukutabona neza,Madax xanuun leh arag wareer
@@ -236,7 +236,7 @@ EHEZA-U-0221,DiagnosedByOutsideCare,Diagnosed by outside care,Yasuzumiwe ku rind
 EHEZA-U-0222,Diagnosis,Diagnosis,Uburwayi bwabonetse,Isuzumwa,Baaritaan
 EHEZA-U-0223,DiagnosisDate,Diagnosis Date,Itariki y'Isuzuma,Itarike yo gusuzuma,Taariikhda Baaritaanka
 EHEZA-U-0224,Diagnostics,Diagnostics,Gusuzuma uburwayi,Gusuzuma uburwayi,Baaritaano
-EH-NUT-008,Diarrhea,Diarrhea,Impiswi,Gucibwamwo,Shuban
+EH-NUT-008,Diarrhea,Diarrhea,Impiswi cyangwa kuruka,Gucibwamwo hamwe n'ukudahwa,Shuban ama matag
 EHEZA-U-0225,DifferenceBetweenDueAndDeliveryDates,Difference between due date and delivery date,Ikinyuranyo kiri hagati y'amatariki,Itandukanirizo riri hagati y'itarike itegekanijwe kuvyara niy'umunsi avyariyeko,Farqiga u dhaxeeya taariikhda weli socota iyo taariikhda dhalmada
 EH-PRE-025,DifficultyBreathingLabel,Difficulty breathing,Guhumeka nabi,Guhema nabi,Neefsashada oo adag
 EHEZA-U-0226,DistributedAmount,Distributed Amount,Ingano yahawe,Igitigiri catanzwe,Qaddarka La Qaybiyay
@@ -300,9 +300,9 @@ EHEZA-U-0280,FatherOrChiefName,Fathers or Chief of Family Name,Amazina y'Umukuru
 EH-TB-003,Fatigue,Fatigue,umunaniro,Uburuhe,Daal
 EHEZA-U-0281,FbfDistribution.Achi,Aheza Distribution,Gutanga Aheza,Ugutanga kwa Aheza,
 EHEZA-U-0282,Feeding,Feeding,Kugaburira umwana,Kugaburira umwana,Quudin
-EH-PRE-010,FetalHeartRate,Fetal Heart Rate,Uko umutima w'umwana utera,Urugero rw'umwana ari mu nda,
+EH-PRE-010,FetalHeartRate,Fetal heart rate,Uko umutima w'umwana utera,Urugero rw'umwana ari mu nda,
 EHEZA-U-0283,FetalMovement,Fetal Movement,Uko umwana akina mu nda,Ukwikomanga k'umwana mu nda,
-EH-PRE-012,FetalPresentationLabel,Fetal Presentation,Uko umwana ameze mu nda,Ukugaragara kw'imbanyi iri mu nda,
+EH-PRE-012,FetalPresentationLabel,Fetal presentation,Uko umwana ameze mu nda,Ukugaragara kw'imbanyi iri mu nda,
 EHEZA-U-0284,FetalPresentation.Cephalic,Cephalic,Umwana abanje umutwe,Igihe umutwe n'izosi biri imbere,
 EHEZA-U-0285,FetalPresentation.Transverse,Transverse,Gitambitse (Umwana aritambitse),Umwana arakikamye,Banaanka usoo baxsan
 EHEZA-U-0286,FetalPresentation.Twins,Twins,Impanga,Amahasa,Mataano
@@ -310,7 +310,7 @@ EHEZA-U-0287,FetalPresentation.UnclearImprecise,Unclear / Imprecise,Ntibisobanut
 EH-PRE-026,Fever,Fever,Umuriro,Ubushuhe,Qandho
 EHEZA-U-0288,FillTheBlanks,Nutrition Information,Amakuru ku Mirire,,
 EHEZA-U-0289,Finish,Finish,Soza igikorwa,Guheza,Dhamee
-EH-PER-001,FirstName,First Name,Izina ry'idini,Izina ry’Iritazirano,Magaca Koowaad
+EH-PER-001,FirstName,First name,Izina ry'idini,Izina ry’Iritazirano,Magaca Koowaad
 EHEZA-U-0290,FiveVisits,Five visits,Inshuro eshanu,Ingendo zitanu,Shan Booqasho
 EHEZA-U-0291,FoodGroup.FoodGroupVegetables,Vegetables,Imboga,Ivyamwa n'imboga,Khudaar
 EHEZA-U-0292,FoodGroup.FoodGroupCarbohydrates,Carbohydrates,Ibinyamasukari,Ntanganguvu,Karboohaydaro
@@ -321,11 +321,11 @@ EHEZA-U-0296,FollowUp,Follow Up,Gukurikirana umurwayi,Kurikirana,Ka Warqab
 EHEZA-U-0297,FollowUpOption.FollowUpNotNeeded,No follow up,,Kutagendera umugwayi,Lama raacin
 EHEZA-U-0298,FollowUpDueOption.OverDue,Past Due,Itariki yarenze,Igihe carenze,Waqti hore
 EHEZA-U-0299,FollowUpDueOption.DueToday,Due Today,Itariki yageze uyu munsi,Bitarenze uno munsi,Maanta oo kale
-EH-PRE-009,FundalHeight,Fundal Height,Uburebure bwa Nyababyeyi,Uburebure bw'igitereko,Dhererka Ilma-galeenka
+EH-PRE-009,FundalHeight,Fundal height,Uburebure bwa Nyababyeyi,Uburebure bw'igitereko,Dhererka Ilma-galeenka
 EHEZA-U-0300,Gender.Male,Male,Gabo,Gabo,Lab
 EHEZA-U-0301,Gender.Female,Female,Gore,Gore,Dhadig
 EH-PER-004,GenderLabel,Gender,Igitsina,Igitsina,Jinsi
-EH-NCD-014,GestationalDiabetes,Gestational Diabetes,Diyabete iterwa no gutwita,Diyabete y'imbanyi,
+EH-NCD-014,GestationalDiabetes,Gestational diabetes,Diyabete iterwa no gutwita,Diyabete y'imbanyi,
 EHEZA-U-0302,GPSInfo,GPS Info,,,Macluumaadka GPS
 EHEZA-U-0303,GPSLocation,GPS Location,,Akarere (Localisation),Goobta GPS
 EHEZA-U-0304,GroupAssessment,Group Encounter,Gukorera itsinda,Inyigisho mukibano,Ogaanshiyo Koox
@@ -349,7 +349,7 @@ EHEZA-U-0320,GWGClassificationLabel,GWG Classification,Ibyiciro by'iyongera ry�
 EHEZA-U-0321,HandPallor,Hand Pallor,Ikiganza cyerurutse,Kweragurika mu ntoke,Gacmo Caddoow
 EHEZA-U-0322,Hands,Hands,Ibiganza,Ibiganza,Gacmo
 EHEZA-U-0323,HardlyEver,Hardly ever,Gake gashoboka,Biragoye bukebuke,Marnaba aan dhicin
-EH-NCD-009,HBA1C,HBA1C,Ikigereranyo cy'isukari mu maraso mu mezi atatu ashize,Igipimo co kuraba ingene isukari ingana mu maraso,
+EH-NCD-009,HBA1C,HbA1c,Ikigereranyo cy'isukari mu maraso mu mezi atatu ashize,Igipimo co kuraba ingene isukari ingana mu maraso,
 EHEZA-U-0324,HbA1cPercentage,Percentage (%),Ku ijana (%),Ivyo kw'ijana (%),Boqolkiiba (%)
 EHEZA-U-0325,HCRecommendation.ChwMonitoring,CHW should continue to monitor,cyemeza ko umujyanama w’ubuzima agomba gukomeza gukurikirana umurwayi,Abaremeshakiyago bategerezwa gukurikirana/kubandanya baraba,SHCB waa inuu sii wadaa la socodka
 EH-AI-005,HeadacheLabel,Headache,Kubabara umutwe,Kumeneka umutwe,Madax xanuun
@@ -367,7 +367,7 @@ EHEZA-U-0336,HeartMurmur,Heart Murmur,Ijwi ry'umutima igihe utera,Kongorera k'um
 EHEZA-U-0337,HeartCPESign.IrregularRhythm,Irregular Rhythm,Injyana ihindagurika,Ingendo ihindagurika,Rucleyn aan nidaamsanayn
 EHEZA-U-0338,HeartCPESign.NormalRateAndRhythm,Normal Rate And Rhythm,Bimeze neza/Injyana imeze neza,Igipimo hamwe n'umudundo bisazwe,Heerka Caadiga ah iyo Dhawaqa
 EHEZA-U-0339,HeartCPESign.SinusTachycardia,Sinus Tachycardia,Gutera k'umutima birenze cyane igipimo gisanzwe,Itera ry'umutima ridasanzwe,
-EH-PRE-003,HeartRate,Heart Rate,Gutera k'umutima (inshuro umutima utera),Ugutera k'umutima,Garaaca Wadnaha
+EH-PRE-003,HeartRate,Heart rate,Gutera k'umutima (inshuro umutima utera),Ugutera k'umutima,Garaaca Wadnaha
 EHEZA-U-0340,HeartRateNotAudible,Heart rate not audible,Umutima w'umwana ntago wumvikana,,
 EHEZA-U-0341,Height,Height,Uburebure,Uburebure,Dhirika
 EHEZA-U-0342,HemoglobinTestHistory,Hemoglobin Test History,Amakuru ku kizamini cy'ingano y'amaraso,,
@@ -409,7 +409,7 @@ EHEZA-U-0377,HIVPrescribedMedication.HIVMedicationsNotChanged,Medications not Ch
 EHEZA-U-0378,HIVStatus.HIVExposedInfant,HIV-exposed Infant,Umwana uvuka ku mubyeyi ubana n'ubwandu bwa virusi ya SIDA,Umwana ufite abavyeyi bafite umugera wa SIDA,Ilmaha la soo bandhigay HIV
 EHEZA-U-0379,HIVStatus.NegativeDiscordantCouple,Negative - discordant couple,Nta bwandu afite ariko abana n'ubufite,Umurwayi ata mugera wa Sida afise ariko mugenziwe ayifise,
 EHEZA-U-0380,HIVStatus.Positive,Positive,Afite ubwandu,Igipimo + ,Togan
-EH-PER-005,HIVStatusLabel,HIV Status,Uko ahagaze ku bijyanye n'ubwandu bwa virusi ya SIDA,Ivyerekeye umugera wa SIDA,Xaalada HIVga
+EH-PER-005,HIVStatusLabel,HIV status,Uko ahagaze ku bijyanye n'ubwandu bwa virusi ya SIDA,Ivyerekeye umugera wa SIDA,Xaalada HIVga
 EHEZA-U-0381,HIVSymptom.HIVSymptomSwollenLymphNodes,Swollen lymph nodes,,Udusumbi tw'amatembabuzi turavyimvye,Qanjiro bararan
 EH-HIV-020,HIVSymptom.HIVSymptomRash,Rash,,Ukwama uruherehere,Nabar
 EHEZA-U-0382,HIVSymptom.HIVSymptomMuscleJointPain,Muscle and joint pain,,Ububabare mu nyama no mu ngingo,Murqo iyo kala goysyo xanuun
@@ -634,7 +634,7 @@ EHEZA-U-0595,ProbableDepression,Probable Depression,Birashoboka ko afite indwara
 EHEZA-U-0596,RandomBloodSugarTestResult,Random Blood Sugar Test Result,Igisubizo ku kizamini gipima ingano y'isukari mu maraso,Inyishu y'igipimo c'Isukari mu Maraso umwanya uwariwo wose,
 EHEZA-U-0597,RapidTestResult.RapidTestUnableToRun,Unable to run,Ikizamini nticyakozwe,Ntivyashobotse ko igipimo gikorwa,Ma ordi karo
 EHEZA-U-0598,MalnutritionWithComplications,Malnutrition with complications,Imirire mibi n'indwara ziyikomokaho,Ingwara yo gufungura nabi hamwe n'ingorane zikomeye zayo,
-EH-PER-008,MaritalStatusLabel,Marital Status,Irangamimerere,Indangakamere y'ubuzima,Xaaladda guurka
+EH-PER-008,MaritalStatusLabel,Marital status,Irangamimerere,Indangakamere y'ubuzima,Xaaladda guurka
 EHEZA-U-0599,MaritalStatus.Divorced,Divorced,Yatandukanye n'uwo bashakanye,Ukwahukana,Garoob
 EHEZA-U-0600,MaritalStatus.Married,Married,Arubatse,Arubatse,Guursaday
 EHEZA-U-0601,MaritalStatus.Single,Single,Ingaragu,Umusore canke inkumi ,Doob
@@ -686,7 +686,7 @@ EHEZA-U-0638,MedicationDistributionSign.Lamivudine,Lamivudine,,,
 EHEZA-U-0639,MedicationDistributionSign.Dolutegravir,Dolutegravir,,,
 EH-HIV-007,MedicationDistributionSign.TDF3TC,TDF + 3TC,,,
 EHEZA-U-0640,MedicationDistributionSign.Iron,Iron,Fer,,
-EH-PRE-050,MedicationDistributionSign.FolicAcid,Folic Acid,,Acide Folique,
+EH-PRE-050,MedicationDistributionSign.FolicAcid,Folic acid,,Acide Folique,
 EHEZA-U-0641,MedicationDistributionSign.Ceftriaxone,Ceftriaxone,,,
 EHEZA-U-0642,MedicationDistributionSign.Azithromycin,Azithromycin,,,
 EHEZA-U-0643,MedicationDistributionSign.Metronidazole,Metronidazole,,,
@@ -714,17 +714,17 @@ EHEZA-U-0663,MTDOut,MTD out,,,
 EHEZA-U-0664,MUAC,MUAC,Ikizigira cy'akaboko,Igipimo c'inkikuro y'ukuboko,
 EHEZA-U-0665,Name,Name,Izina,Izina,Magaca
 EHEZA-U-0666,NationalId,National ID,,,Aqoonsiga Qaran
-EH-PER-003,NationalIdNumber,National ID Number,Numero y'irangamuntu,Inomero y'akarangamuntu,Lambarka Kaarka Aqoonsiga Qaranka
+EH-PER-003,NationalIdNumber,National ID number,Numero y'irangamuntu,Inomero y'akarangamuntu,Lambarka Kaarka Aqoonsiga Qaranka
 EHEZA-U-0667,NCDASignHelperHeader.FiveFoodGroups,Food groups,Amoko y'ibiribwa,,
 EHEZA-U-0668,NCDAANCNewbornItemLabel.RegularCheckups,Regular prenatal and postpartum checkups,Yisuzumishije uko bikwiye atwite na nyuma yo kubyara,Kwisuzumisha buri igihe imbere n'inyuma yo kuvyara,La socodka joogtada ah ee dhalmada kahor iyo kadib
 EHEZA-U-0669,NCDAANCNewbornItemLabel.IronDuringPregnancy,Iron during pregnancy,Yafashe umuti wongera amaraso atwite,Icunyunyu c'icuma mu gihe c'imbanyi,Macdanta Xilliga Uurka
 EHEZA-U-0670,NCDANutritionBehaviorItemLabel.MealsADay,Number of times a child eats a day,Inshuro umwana afata ifunguro ku munsi,Igitigiri c'incuro umwana afungurako k'umunsi,Tirada inta jeer uu canuga wax cuno maalinkii
 EHEZA-U-0671,NCDATargetedInterventionsItemLabel.TreatmentForAcuteMalnutrition,Treatment for acute malnutrition (severe or moderate),Kuvura imiritre mibi  ifatiyeho(Ikabije cg yoroheje),Ukuvura ingwara yo gufungura nabi ikaze (Ikaze canke igereranye),Daweynta nafaqo darada (dhexe iyo daran)
 EHEZA-U-0672,NCDATargetedInterventionsItemLabel.TreatmentForDiarrhea,Treatment of diarrhea (ORS & Zinc),Kuvura impiswi(Ukoresheje Zinc cg ORS),Kuvura guhitwa (ORS & Zinc),Daweynta shubanka (ORS & Zink)
-EH-NUT-020,NCDAUniversalInterventionsItemLabel.Deworming,Deworming,Imiti y'inzoka,vermifugation,Gooryaan Dilid
+EH-NUT-020,NCDAUniversalInterventionsItemLabel.Deworming,Deworming,"Mu mezi atandatu ashize, umwana yahawe ikinini cy'inzoka",Umwana yaronse imiti yo munda mu mezi atandatu ashize?,Gooryaan Dilid
 EHEZA-U-0673,NCDAUniversalInterventionsItemLabel.ECDServices,ECD services provided to child,Umwana yahawe servise n'ikigo mboneza mikurire,Ibikorwa vya IUM (DPE) bikorerwa umwana,
 EHEZA-U-0674,NCDDangerSign.Dyspnea,Acute Shortness of Breath (Dyspnea),Guhumeka nabi biziyeho,Urugero rukaze rwo kubura impwemu,
-EH-AI-017,NCDDangerSign.ChestPain,Chest Pain,Kubabara mu gatuza,Ububabare bw'igikiriza,Xabad Xanuun
+EH-AI-017,NCDDangerSign.ChestPain,Chest pain,Kubabara mu gatuza,Ububabare nk'umusonga mu gikiriza (umengo bagucumise imbugita),Xabad xanuun  aad u daran
 EHEZA-U-0675,NCDDangerSign.FlankPain,Flank Pain,Kubabara mu Ibondo,Ububabare bwo m'urubavu,Qaar Xanuun
 EHEZA-U-0676,NCDDangerSign.Hematuria,Blood in Urine (Hematuria),Amaraso mu nkari,Amaraso m'umukoyo (hématurie),
 EHEZA-U-0677,NCDDangerSign.SevereHeadaches,Severe Headaches,Kuribwa umutww bikabije,Ukumeneka umutwe gukaze,Madax xanuun aad u daran
@@ -817,7 +817,7 @@ EHEZA-U-0761,ObstetricalDiagnosis,Obstetric Diagnosis,Uburwayi bwemejwe n'inzobe
 EHEZA-U-0762,ObstetricalDiagnosisAlert.DiagnosisModerateUnderweight,Moderate underweight,Ibiro bike bidakabije ugendeye ku myaka,Ubuke bw'ibiro bisanzwe,Nafaqo yaro Dhexe
 EHEZA-U-0763,ObstetricalDiagnosisAlert.DiagnosisSevereUnderweight,Severe underweight,Afite ibiro bikie bikabije,Ibiro bike cane,Miisaan yari aad u daran
 EHEZA-U-0764,ObstetricalDiagnosisAlert.DiagnosisObese,Obese,Kubyibuha gukabije,Ubuvyibuhe burenzeko,Buuran
-EH-PRE-046,ObstetricalDiagnosisAlert.DisgnosisPeripheralEdema,Peripheral Edema,Kubyimba amaguru n'amaboko,Ukuvyimba kw'amaguru,Barar Addimaha ah
+EH-PRE-046,ObstetricalDiagnosisAlert.DisgnosisPeripheralEdema,Peripheral edema,Kubyimba,Ukuvyimba amaguru,Barar
 EHEZA-U-0765,ObstetricalDiagnosisAlert.DiagnosisFetusBreech,Fetus is in breech,Abanje ikibuno(umwana yaje yicaye),,
 EHEZA-U-0766,ObstetricalDiagnosisAlert.DiagnosisFetusTransverse,Fetus is transverse,Umwana aritambitse,Umwana arakikamye,
 EHEZA-U-0767,ObstetricalDiagnosisAlert.DiagnosisBreastExamination,Breast exam showed,Gusuzuma amabere byagaragaje,Ivyo igipimo c'amabere cerekanye,
@@ -836,7 +836,7 @@ EHEZA-U-0779,Overweight,Overweight,Aftie ibiro byinshi,Ubunini burenzeko,Buurnaa
 EHEZA-U-0780,Overview,Overview,Ishusho Rusange,Incamake,Guud-mar
 EHEZA-U-0781,PackagesPerMonth,packages / month,Amapaki ku kwezi,Amapaki ku kwezi,xirmooyin / bil
 EHEZA-U-0782,Page,Page,Paji,Urupapuro,Bog
-EH-PRE-036,PaleConjuctiva,Pale Conjunctiva,Ibihenehene byeruruka,Ihinduka ry'ibara ku maso,Indho Casaan
+EH-PRE-036,PaleConjuctiva,Pale conjunctiva,Ibihenehene byeruruka,Ihinduka ry'ibara ku maso,Indho Casaan
 EH-PRE-045,Pallor,Pallor,Kweruruka (k'urugingo rw'umubiri),Ibara ryahindutse (ku mubiri),Casaan
 EHEZA-U-0783,Para,Para,Imbyaro,Imbanyi zavutse,
 EHEZA-U-0784,Participants,Participants,Ubwitabire,Abitavye,Ka qeyb galayaal
@@ -880,7 +880,7 @@ EHEZA-U-0821,Predecessor.PredecessorFather,Father,Se,papa,Aabe
 EHEZA-U-0822,Predecessor.PredecessorMother,Mother,Nyina,Mama,Hooyo
 EHEZA-U-0823,Predecessor.PredecessorGrandFather,Grand-Father,Sekuru,Sogokuru,Awoowo
 EHEZA-U-0824,Predecessor.PredecessorGrandMother,Grand-Mother,Nyirakuru,Nyogokuru,Ayeeyo
-EH-NCD-015,Preeclampsia,Preeclampsia,Umuvuduko w'amaraso uza uje k'umugore twite (Preclampsia),Ivuduga ry'amaraso igihe c'imbanyi,Dhiig karka Uurka
+EH-NCD-015,Preeclampsia,Preeclampsia,Umuvuduko w'amaraso utewe no gutwita,Umuvuduko w'amaraso ujanye n'imbanyi,Dhhig karka la xiriira Uurka
 EHEZA-U-0825,PregnancyConclusion,Pregnancy Conclusion,Iherezo ry'Inda,Icemezo c'imbanyi n'igihe cayo,Dhamaadka Uurka
 EHEZA-U-0826,PregnancySignAnswerPositive.PregnancyEctopic,Ectopic (extrauterine),,,Uur meel ka baxsan (uurka dibitiisa)
 EHEZA-U-0827,PregnancySignAnswerPositive.PregnancyMultipleFetuses,Multiple,,,Dhowr ilmo
@@ -889,7 +889,7 @@ EHEZA-U-0829,PregnancyTestResult.PregnancyTestUnableToConduct,Unable to conduct 
 EHEZA-U-0830,PregnancyTrimester.FirstTrimester,First Trimester,Igihembwe cya mbere,Igice ca mbere,Saddex-biloodka Koowaad
 EHEZA-U-0831,PregnancyTrimester.SecondTrimester,Second Trimester,Igihembwe cya kabiri,Igice ca kabiri,Saddex-biloodka labaad
 EHEZA-U-0832,PregnancyTrimester.ThirdTrimester,Third Trimester,Igihembwe cya gatatu,Igice ca 3,Saddex-biloodka Saddexaad
-EH-PRE-070,PregnancyUrineTest,Urine Pregnancy Test,Ikizamini cy'inkari gisuzuma ko umugore atwite,Igipimo c'umukoyo w'imbanyi,Baaritaanka Kaadida ee Uurka
+EH-PRE-070,PregnancyUrineTest,Urine pregnancy test,Ikizamini cy'inkari gisuzuma ko umugore atwite,Igipimo c'umukoyo w'imbanyi,Baaritaanka Kaadida ee Uurka
 EHEZA-U-0833,PrenatalActivityTitle.PregnancyDating,Pregnancy Dating,Igihe inda imaze,Imibonano ijanye n'ivy'imbanyi,Waqtiyeynta Uurka
 EHEZA-U-0834,PrenatalActivityTitle.BirthPlan,Birth Plan,Gutegura gahunda yo kubyara,Umupango wo kuvyara,
 EHEZA-U-0835,PrenatalActivityTitle.MaternalMentalHealth,Maternal Mental Health,Ubuzima bwo mu mutwe ku mugore utwite,Ingwara yo mu mutwe ku muvyeyi ufise imbanyi,
@@ -1072,21 +1072,21 @@ EHEZA-U-1011,ResilienceRole.ResilienceRoleNurse,Health Care Worker (HC),,,
 EHEZA-U-1012,ResilienceRole.ResilienceRoleLineManager,Line Manager,,,
 EHEZA-U-1013,ResilienceRole.ResilienceRoleSupervisor,Supervisor,,,
 EHEZA-U-1014,ResilienceRole.ResilienceRoleDirector,Director General,,,
-EH-PRE-004,RespiratoryRate,Respiratory Rate,Inshuro ahumeka,Igipimo co guhema,Heerka Neefsashada
+EH-PRE-004,RespiratoryRate,Respiratory rate,Inshuro ahumeka,Igipimo co guhema,Heerka Neefsashada
 EHEZA-U-1015,Reviewed,Reviewed,Byarebwe,Vyasuzumwe,Dib loo eegay
 EHEZA-U-1016,RHFactorNegative,RH Factor Negative,Rezisi Negatifu,Rhesus negatif,
 EHEZA-U-1017,RHFactorUnknown,RH Factor Unknown,Rezisi ntago Izwi,Rhesus ntago izwi,Aan la garanayn RH factor
 EHEZA-U-1018,Right,Right,Iburyo,Iburyo,Midig
 EHEZA-U-1019,RiskFactors,Risk Factors,Abashobora kwibasirwa n'indwara runaka (kubera impamvu zitandukanye:kuba atwite..),Impamvu z'ingorane,Arrimaha Khatarta leh
 EHEZA-U-1020,ScheduleFollowUp,Schedule Follow Up,,Tegura ibikurikira,Jadwal u samee ka War qabka
-EH-PER-002,SecondName,Second Name,Izina ry'umuryango,Izina ry'ikirundi,Magaca Labaad
+EH-PER-002,SecondName,Second name,Izina ry'umuryango,Izina ry'ikirundi,Magaca Labaad
 EHEZA-U-1021,Sector,Sector,Umurenge,Umutumba,Waaxda
 EH-HIV-021,SevereAbdominalPainLabel,Severe abdominal pain,Kuribwa mu nda bikabije,Kurimba cane mu bwena,Calool xanuun aad u daran
 EHEZA-U-1022,SevereFatigue,Severe Fatigue,,,
 EHEZA-U-1023,SevereAnemia,Severe Anemia,Amaraso Macye Cyane,Ibura ry'amaraso rikaze,Dhiig yari aad u daran
 EHEZA-U-1024,Shared,Shared,Ayisangira n'abandi,Umwana asangira n’abandi,Lala wadaagay
 EHEZA-U-1025,Signature,Signature,Umukono,Umukono,Saxiix
-EH-AI-015,SoreThroatLabel,Sore Throat,Kubabara mu muhogo,Kubabara mu muhogo,Dhuun Xanuun
+EH-AI-015,SoreThroatLabel,Sore throat,Kubabara mu muhogo,Kubabara mu muhogo,Dhuun Xanuun
 EHEZA-U-1026,SpousePartner,Spouse / Partner,,,
 EHEZA-U-1027,StockManagement,Stock Management,Ububiko bw'imiti,Ugucunga ububiko,
 EHEZA-U-1028,StockManagementMenu.MenuReceiveStock,Receive Stock,Kwakira ibijya mu bubiko,Ukuronka ivyo gushira m'ububiko,Ku wareejin keyd
@@ -1103,7 +1103,7 @@ EHEZA-U-1038,SymptomRelief.SymptomReliefCoughMixture,"Cough mixtures such as Asc
 EHEZA-U-1039,Symptoms,Symptoms,Ibimenyetso,Ibimenyetso,Calaamadaha
 EHEZA-U-1040,SymptomsGeneralSign.BodyAches,Body Aches,Ububabare bw'umubiri wose,Ukuvunagurika,Jir Xanuun
 EH-AI-003,SymptomsGeneralSign.Chills,Chills,Gutengurwa,Gukanya,Qarqaryo
-EH-WC-009,SymptomsGeneralSign.Lethargy,Lethargy,Guhwera,Itiro rirenze,Tabaalac
+EH-WC-009,SymptomsGeneralSign.Lethargy,Lethargy,Guhwera,Itiro rirenze canke ukuraba/uguta ubwenge,Tabaryari iyo Dhaqaaq la`aan
 EHEZA-U-1041,SymptomsGeneralSign.UnableToDrink,Unable to Drink,Ntashobora kunywa,Ntibishoboka kunywa,Ma Cabi karo
 EHEZA-U-1042,SymptomsGeneralSign.UnableToEat,Unable to Eat,Ntashobora kurya,Ntibishoboka kurya,Ma Cuni karo
 EHEZA-U-1043,SymptomsGeneralSign.DryMouth,Dry/Sticky Mouth,Iminwa yumye,Umunwa wumye,Af Qallalan/dheg dhegaya
@@ -1125,7 +1125,7 @@ EH-NCD-021,Syphilis,Syphilis,Mburugu,Ingwara yo mu bihimba vy'irondoka,Waraabow
 EHEZA-U-1056,StartingStock,Starting Stock,Ububiko bwatangiranywe,Ugutangura ububiko,
 EHEZA-U-1057,TakenAsPrescribed,Taken as prescribed,,,
 EHEZA-U-1058,TargetedInterventions,Targeted Interventions,Ibikorwa bifasha umwana mu buryo bwihariye,Intabaro zerekejwe / ugutabara kwerekejwe,Tallaabooyinka la Hiigsanayo
-EH-PER-009,TelephoneNumber,Telephone Number,Numero ya telefoni,Inimero ya Terefone,Lambarka Taleefanka
+EH-PER-009,TelephoneNumber,Telephone number,Numero ya telefoni,Inimero ya Terefone,Lambarka Taleefanka
 EHEZA-U-1059,Term,Term,Inda igeze igihe,Ikiringo,Mudo
 EHEZA-U-1060,TermPregnancy,Number of Term Pregnancies (Live Birth),Umubare w'abavutse ari bazima bashyitse,Igitigiri c'imbanyi zashitse ku gihe (abana bakavuka bakomeye),Tirada Uurka Bilo Dhameystay (Ku Dhashay Nolol)
 EHEZA-U-1061,TestDate,Date of Test,Itariki y'Ikizamini,Itarike y'igipimo,
@@ -1175,7 +1175,7 @@ EHEZA-U-1104,VaccinationStatus.StatusUpToDate,Up To Date,Biri ku gihe,Kugeza kur
 EHEZA-U-1105,VaginalDeliveryLabel,Vaginal Delivery,Yabyaye neza,,
 EHEZA-U-1106,VaginalExamination,Vaginal Examination,Isuzuma ry'imyanya ndangagitsina,Igipimo c'igitsina,Baaritaan Makaanka ah
 EHEZA-U-1107,VaginalExamSign.FoulSmellingLochia,Foul Smelling Lochia,Ibisanza binuka,Uguhema nabi kwa Lochia,Dheecaanka Umusha
-EH-AI-010,VaginalExamSign.ExcessiveVaginalBleeding,Bleeding,Kuva,Ukuva amaraso,Dhiigbax
+EH-AI-010,VaginalExamSign.ExcessiveVaginalBleeding,Bleeding,Kuva amaraso bitunguranye,Ukuva amaraso aho nyene,Dhiigbax aan waqti lahayn
 EHEZA-U-1108,ValidationErrors,Validation Errors,,,
 EHEZA-U-1109,Version,Version,,,
 EHEZA-U-1110,View,View,,,
@@ -1369,7 +1369,7 @@ EHEZA-U-1294,VaccineDose,Vaccine Dose,,,
 EHEZA-U-1295,PregnancySummaryValue.apgarOneMin,Apgar One Min,,,
 EHEZA-U-1296,PregnancySummaryValue.apgarFiveMin,Apgar Five Min,,,
 EHEZA-U-1297,PregnancySummaryValue.birthLength,Birth Length,,,
-EH-NUT-019,PregnancySummaryValue.birthDefects,Birth Defects,,,
+EH-NUT-019,PregnancySummaryValue.birthDefects,Birth defects,Umwana yaba yaravukanye ubumuga,Mbega umwana yavukanye ubumuga,Canuga ma wuxuu ku dhashay naafanimo
 EHEZA-U-1298,DeliveryComplication,Delivery Complication,,,
 EHEZA-U-1299,NextVisitValue.immunisationDate,Immunisation Date,,,
 EHEZA-U-1300,VaccinationValue.administeredDoses,Administered Doses,,,
@@ -1439,7 +1439,7 @@ EHEZA-U-1363,Person.numberOfChildren,Number Of Children,,,
 EHEZA-U-1364,Person.educationLevel,Education Level,,,
 EHEZA-U-1365,Person.spouseName,Spouse Name,,,
 EHEZA-U-1366,Person.spousePhoneNumber,Spouse Phone Number,,,
-EH-PER-010,Person.nextOfKinName,Next Of Kin Name,,,
+EH-PER-010,Person.nextOfKinName,Next of kin name,Izina,Izina,Magaca
 EHEZA-U-1367,Person.nextOfKinPhoneNumber,Next Of Kin Phone Number,,,
 EHEZA-U-1368,PmtctParticipant.child,Child,,,
 EHEZA-U-1369,PmtctParticipant.adult,Adult,,,
@@ -1452,3 +1452,145 @@ EHEZA-U-1375,Relationship,Relationship,,,
 EHEZA-U-1376,ExpectedParticipants,Expected Participants,,,
 EHEZA-U-1377,WellChildEncounterType.NewbornExam,Newborn Exam,,,
 EHEZA-U-1378,PediatricCareMilestone,Pediatric Care Milestone,,,
+EH-NCD-001,CreatinineTestValue.creatinineResult,Creatinine (mg/dL),Keleyatinine,Créatinine,
+EH-NCD-002,CreatinineTestValue.bunResult,Blood urea nitrogen (mg/dL),Ikizamini cy'Impyiko,"Inyishu ya ""Urée"" (Ire)",
+EH-NCD-003,LiverFunctionTestValue.altResult,Serum Glutamic-Pyruvic Transaminase,,,
+EH-NCD-004,LiverFunctionTestValue.astResult,Serum Glutamic-Oxaloacetic Transaminase,Ikizamini cy'Umwijima,AST (Aspartate Aminotrasnférase),
+EH-NCD-005,LipidPanelTestValue.totalCholesterolResult,Total cholesterol (mg/dL),Igipimo cy'ibinure byose mu maraso (Total cholesterol),Icegeranyo c'amavuta m'umubiri,Wadarta Kolesteroolka
+EH-NCD-006,LipidPanelTestValue.hdlResult,HDL (mg/dL),Ingano y'ibinure byiza mu maraso (HDL),,
+EH-NCD-007,LipidPanelTestValue.ldlResult,LDL (mg/dL),Ingano y'ibinure bibi mu maraso (LDL),,
+EH-NCD-008,LipidPanelTestValue.triglyceridesResult,Triglycerides (mg/dL),Ingano y'ibinure bibitse mu mubiri (Triglycerides),,Dufanka Saddex lakabka 
+EH-NCD-010,MedicalCondition.MedicalConditionHIV,HIV infected,,,
+EH-NCD-012,MedicalCondition.MedicalConditionKidneyDisease,Chronic kidney disease,Indwara y'impyiko,Ingwara y'amafyigo,
+EH-NCD-016,MedicalCondition.MedicalConditionNeuropathy,Diabetic neuropathy,Indwara z'imyakura,Neuropathie,Caabuqa Dareen sidaha
+EH-NCD-017,MedicalCondition.MedicalConditionRentalComplications,Renal failure,Ibibazo bitewe no kwangirika kw'impyiko,Ingorane zo gukota,
+EH-NCD-020,MedicalCondition.MedicalConditionHepatitisB,Chronic viral Hepatitis B,,,
+EH-NCD-022,MedicalCondition.MedicalConditionEyeComplications,Diabetic retinopathy,Ibibazo by'amaso,Ingorane zirenze z'amaso,Waxyeelo Indhaha ah
+EH-NCD-024,NCDDangerSign.VisionChanges,Vision problem,Uko areba byahindutse,Impinduka y'icerekezo,
+EH-NCD-025,NCDDangerSign.SevereHeadaches,Severe headache,Kuribwa umutww bikabije,Ukumeneka umutwe gukaze,Madax xanuun aad u daran
+EH-NCD-026,NCDDangerSign.LossOfConciousness,Loss of consciousness,Yataye ubwenge kandi ntiyumva kuva isura riheruka,Yarataye ubwenge kuva k'urugendo rwanyuma,
+EH-NCD-027,NCDGroup1Symptom.UrinaryFrequency,Polyuria,Yihagarika inshuro nyinshi,Incuro z'ugusoba,
+EH-NCD-030,NCDGroup1Symptom.SwellingInAbdomen,Ascites,,Kuvyimba mu nda,Barar Caloosha ah
+EH-NCD-031,NCDGroup2Symptom.WeaknessOfOneSideOfTheBody,Hemiparesis,Kunanirwa igice kimwe cy'umubiri,Intege nke zuruhande rumwe rw'umubiri,
+EH-NCD-032,NCDGroup2Symptom.ProblemsWithWalking,Abnormal gait,Kunanirwa kugenda,Ingorane zo gutambuka,Dhibaato la xiriirta Socodka
+EH-NCD-033,NCDGroup2Symptom.ProblemsWithTalking,Dysarthria,Kunanirwa kuvuga,Ingorane zo kuvuga,Dhibaato la xiriirta Hadalka
+EH-NCD-034,NCDGroup2Symptom.DecreasedVision,Vision Loss,Kutareba neza,Ipunguka ryo kubona,
+EH-NCD-035,NCDGroup2Symptom.BlurryVision,Blurred vision,Kureba ibikezikezi,Ugukanura nabi,
+EH-NCD-036,NCDGroup2Symptom.ShortOfBreathWhenLayingDown,Orthopnea,Guhumeka nabi igihe aryamye,Ibura ry'impwemu mu gihe aryamye hasi,Neefsasho Cariiri ah markuu Jiifsado
+EH-NCD-037,NCDGroup2Symptom.ShortOfBreathAtNight,Paroxysmal nocturnal dyspnea,Guhumeka nabi nijoro,Ibura ry'impwemu mw'ijoro,Neefsasho Cariiri ah Habeenkii
+EH-NCD-038,NCDPainSymptom.PainLowerBack,Low back pain,Umugongo wo hasi,Lower Back,Dhinaca Dambe
+EH-NCD-039,NCDPainSymptom.PainNeck,Neck pain,Ijosi,Izosi,Qoorta
+EH-NCD-040,MedicationCausingHypertension.MedicationIbuprofen,Ibuprofen,Ibiporofene cg Dikolofenake,Ibuprofène (Diclofénac),
+EH-NCD-041,MedicationTreatingHypertension.MedicationAceInhibitors,ACE inhibitors,Caputopili,Imiti ibuza ECA (Enzyme de Conversion Angiotensine),
+EH-NCD-042,MedicationTreatingHypertension.MedicationARBs,ARBs (angiotensin II receptor blockers),Anjiyotensine,Ibihagarika ukwakira vya Angiotensine,
+EH-NCD-043,MedicationTreatingHypertension.MedicationHCTZ,Hydrochlorothiazide,Idolokotiyazide,Hydrochlorothiazide,
+EH-NCD-049,NCDSocialHistorySign.SignDrinkAlcohol,History of alcohol use,Ujya unywa ibikomoka kunzoga,Mbega uranywa inzoga/ibinyobwa biboreza,
+EH-NCD-050,NCDSocialHistorySign.SignSmokeCigarettes,History of tobacco use,Ujya unywa itabi,Mbega uranywa itabi,
+EH-CS-001,NCDAValue.birthWeight,Birth weight (kg),,,
+EH-CS-002,NCDAValue.ancVisitsDates,Number of antenatal visits for current pregnancy,,,
+EH-PER-007,Person.educationLevel,Highest level of education,Amashuri wize,Urugero rw'amashule yize,Heerka Waxbarashada
+EH-WC-001,HeadCircumferenceValue.headCircumference,Head circumference (cm),,Intikuro y'umutwe (cm),
+EH-WC-002,WellChildVaccineType.VaccineBCG,BCG vaccine,Urukingo rw'igituntu,Uracanco rw'igituntu,
+EH-WC-003,WellChildVaccineType.VaccineOPV,Oral polio vaccination,Urukingo rw'imbasa,Urucanco rw'ubukangwe (amama) rutanditswe aho hejuru,
+EH-WC-004,WellChildVaccineType.VaccineDTP; VaccineDTPStandalone,Diphtheria Tetanus and Pertussis vaccination,,,
+EH-WC-005,WellChildVaccineType.VaccinePCV13,Pneumococcal conjugate vaccine,Urukingo rw'umusonga,Urucanco rw'umusonga rutanditswe aho hejuru,
+EH-WC-006,WellChildVaccineType.VaccineRotarix,"Rotavirus vaccine, live",Urukingo rw'impiswi,Urucanco rwo gucibwamo rutanditswe aho hejuru,
+EH-WC-007,WellChildVaccineType.VaccineIPV,"Polio vaccination, inactivated",Urukingo rw'imbasa rutangwa mu rushinge,Urucanco rw'ubukangwe (Urushinge) rutanditswe aho hejuru,
+EH-WC-008,WellChildVaccineType.VaccineMR,Measles-Rubella vaccine,Urukingo rw'Iseru na Rubeyole,Urucanco rw'agasama na Rubeole rutanditswe aho hejuru,
+EH-WC-010,WellChildSymptom.SymptomUmbilicalCordRedness,Omphalitis of the newborn,Guhisha k'umukondo,Urusogi rutukura,Xudunta oo Gaduudan
+EH-WC-011,WellChildSymptom.SymptomStiffNeckOrBulgingFontanelle,Nuchal rigidity,Kugagara ibikanu cyangwa igihorihori kibyimbye,Kudadarara izosi canke kuvyimba uruhorihori,Qoor taag iyo
+EH-WC-012,WellChildSymptom.SymptomRigidMusclesOrJawClenchingPreventingFeeding,Neonatal tetanus,Imikaya ireze/amatama afunganye bikamubuza kurya,Kudadarara imisaya bibuza umwana gufungura,Murqo taag/Ilko ruugid
+EH-HIV-001,HIVPrescribedMedication.HIVMedicationDolutegravir,DTG,,,
+EH-HIV-002,HIVPrescribedMedication.HIVMedicationLamivudine,3TC,,,
+EH-HIV-004,HIVPrescribedMedication.HIVMedicationDolutegravirLamivudineTenofovir,TDF + 3TC + DTG,,,
+EH-HIV-005,HIVPrescribedMedication.HIVMedicationAtazanavirRitonavir,ATV/r,,,
+EH-HIV-006,HIVPrescribedMedication.HIVMedicationAbacavirLamivudine,ABC + 3TC,,,
+EH-HIV-008,HIVPrescribedMedication.HIVMedicationZidovudine,AZT,,,
+EH-HIV-009,HIVPrescribedMedication.HIVMedicationLamivudineZidovudineNevirapine,AZT + 3TC + NVP,,,
+EH-HIV-010,HIVPrescribedMedication.HIVMedicationEfavirenzLamivudineTenofovir,TDF + 3TC + EFV,,,
+EH-HIV-011,HIVPrescribedMedication.HIVMedicationLamivudineZidovudine,3TC + AZT,,,
+EH-HIV-012,HIVPrescribedMedication.HIVMedicationLopinavirRitonavir,LPV/r,,,
+EH-HIV-013,HIVPrescribedMedication.HIVMedicationDarunavirRitonavir,DVR/r,,,
+EH-HIV-014,HIVPrescribedMedication.HIVMedicationRaltegravir,RAL,,,
+EH-HIV-015,HIVPrescribedMedication.HIVMedicationEfavirenz,EFV,,,
+EH-HIV-016,HIVPrescribedMedication.HIVMedicationNevirapine,NVP,,,
+EH-HIV-017,HIVPrescribedMedication.HIVMedicationEtravirine,ETV,,,
+EH-HIV-018,HIVPrescribedMedication.HIVMedicationAbacavir,Abacavir,,,
+EH-HIV-019,HIVPrescribedMedication.HIVMedicationBactrim; HIVMedicationTrimethoprimSulfamethoxazole; HIVMedicationCoTrimoxazoleTablets; HIVMedicationCoTrimoxazoleOralSuspension,Cotrimoxazole,,,
+EH-HIV-022,HIVSymptom.HIVSymptomMouthUlcers,Mouth ulceration,,Ibikomere vyo mu kanwa,Boogo afka ah
+EH-HIV-023,(HIV viral-load test),"HIV viral load, quantitative",,,
+EH-HIV-024,(CD4 test),CD4,,,
+EH-TB-001,TuberculosisDiagnosis.TuberculosisPulmonary,Pulmonary tuberculosis,Igituntu cyo mu bihaha,Igituntu co mu mahaha,Saabley (ka baxsan sambabada)
+EH-TB-002,TuberculosisDiagnosis.TuberculosisExtrapulmonary,Extra-pulmonary tuberculosis,Igituntu gifata imyanya yo hanze y'ibihaha,Igituntu gifatira inyuma y'amahaha,Aan saabley ahayn (ka baxsan sambabada)
+EH-TB-004,(individual medication - TB first-line),Rifampicin,,,
+EH-TB-005,(individual medication - TB first-line),Isoniazid,,,
+EH-TB-006,(individual medication - TB first-line),Pyrazinamide,,,
+EH-TB-007,(individual medication - TB first-line),Ethambutol,,,
+EH-TB-008,TuberculosisPrescribedMedication.MedicationRHZE,Rifampicin + Isoniazid + Pyrazinamide + Ethambutol,Atangira afata imiti ya RHZE mu gihe cy'amezi abiri,Atangura afata RHZE mu kiringo c'amezi abiri,RHZE x 2 bil (Wejiga bilowga ah)
+EH-TB-009,TuberculosisPrescribedMedication.MedicationRH,Rifampicin + Isoniazid,Akomeza afata imiti ya RH mu gihe cy'amezi 4,Akomeza afata imiti ya RH mu kiringo c'amezi ane,RH x 4 bil (Wejiga dhameystirka)
+EH-AI-002,SymptomsGeneralSign.BodyAches; HIVSymptom.HIVSymptomMuscleJointPain,Myalgia,Ububabare bw'umubiri wose,Ukuvunagurika,Jir Xanuun
+EH-AI-006,SymptomsGeneralSign.UnableToDrink; DangerSignUnableDrinkSuck,Unable to drink or breastfeed,Ntashoboye kunywa/konka,Ntibishoboka kunywa/konka,Ma Cabi/Nuugi karo
+EH-AI-007,SymptomsGeneralSign.UnableToEat,Refuses to eat,Ntashobora kurya,Ntibishoboka kurya,Ma Cuni karo
+EH-AI-008,SymptomsGeneralSign.IncreasedThirst; NCDGroup2Symptom.NCDIncreasedThirst,Excessive thirst,Afite inyota cyane,Kongereza inyota,Oon sii badanaya
+EH-AI-009,SymptomsGeneralSign.YellowEyes,Icteric sclera,Amaso y'umuhondo,Amaso asa n'umutoto uhishiye,Indho Jaalle ah
+EH-AI-011,SymptomsRespiratorySign.BloodInSputum; TuberculosisSymptom.TuberculosisSymptomBloodInSputum; HIVSymptom.HIVSymptomCoughingUpBlood,Hemoptysis,Amaraso mu gikororwa,Amaraso mu bikororwa,Dhiig la socda Xaakada
+EH-AI-013,SymptomsRespiratorySign.NasalCongestion,Nasal discharge,Gufungana mu mazuru,Ugupfungana amazuru,San Xiran
+EH-AI-014,SymptomsRespiratorySign.ShortnessOfBreath; NCDDangerSign.Dyspnea,Dyspnea,,Ibura ry'impwemu,Neefsasho Cariiri ah
+EH-AI-016,SymptomsRespiratorySign.LossOfSmell,Loss of sense of smell,Kudahumurirwa,Ugutakaza kumoterwa,Aan Ur lahayn
+EH-AI-021,AcuteFindingsGeneralSign.PoorSkinTurgor,Slow skin turgor,Uruhu rwumye,Uruhu rukene,Maqaar Dilan
+EH-AI-023,AcuteFindingsRespiratorySign.Stridor,Laryngeal stridor,Guhumeka ajwigira,Uguhema ujwigira mu gihe uri maso,Dhuun qabad
+EH-AI-024,AcuteFindingsRespiratorySign.SubCostalRetractions,Intercostal recession,Icyena mu mbavu,Ugukuraho ibiri munsi y'imbavu,Dub uga soo noqonaya muruqa hoose
+EH-PRE-001,VitalsValue.sys,Systolic blood pressure,Umubare w'umuvuduko w'amaraso wo hejuru,Umuvuduko w'amaraso urenze mu gihe umutima uyarungitse,
+EH-PRE-002,VitalsValue.dia,Diastolic blood pressure,Umuvuduko w'amaraso wo hasi,,Garaaca Sare
+EH-PRE-006,PrenatalNutritionValue.height,Height (cm),Uburebure,Uburebure,Dhirika
+EH-PRE-008,PrenatalNutritionValue.muac,Mid-upper arm circumference (cm),Ikizigira cy'akaboko,Igipimo c'inkikuro y'ukuboko,
+EH-PRE-011,ObstetricalExamValue.fetalMovement,Fetal movements present,Uko umwana akina mu nda,Ukwikomanga k'umwana mu nda,
+EH-PRE-013,ObstetricalExamValue.cSectionScar,Caesarean section scar,Inkovu yaho babaze ubushize cyangwa indi nkovu ku nda,Igikomere c'ugukorwa guheruka canke ikindi gikomere ku nda,Qalliin hore ama nabar kale oo caloosha ah
+EH-PRE-016,ObstetricHistoryValue.termPregnancy,Parity (term pregnancies),Umubare w'abavutse ari bazima bashyitse,Igitigiri c'imbanyi zashitse ku gihe (abana bakavuka bakomeye),Tirada Uurka Bilo Dhameystay (Ku Dhashay Nolol)
+EH-PRE-017,ObstetricHistoryValue.stillbirthsAtTerm/PreTerm,Number of prior stillbirths,Umubare w'abapfiriye mu nda bashyitse,"Igitigiri c'abavutse kw'itarike/ku gihe, bamaze gupfa ",Tirada Uur-Meydka ee bilo dhameestay
+EH-PRE-018,ObstetricHistoryValue.abortions,Number of abortions or miscarriages,Umubare w'inda zavuyemo,Ugukoroka kw'imbanyi,Tirada Uurka Dhicisoobay
+EH-PRE-019,ObstetricHistoryValue.liveChildren,Total number of living children,Abana bariho,Abana bariho,
+EH-PRE-020,LastMenstrualPeriodValue.date,Date of last menstrual period,Itariki aherukira mu mihango,Itarike yanyuma y'igihe co kuja mu kwezi,Taariikhda Caadadii u Dambeesay
+EH-PRE-023,DangerSign.Convulsions,Seizure,Kugagara,Ibisahuzi,Gariir
+EH-PRE-027,DangerSign.ExtremeWeakness,Weakness,Gucika intege cyane,Gucika intege cane,Tabaryari aad u daran
+EH-PRE-028,DangerSign.ImminentDelivery,Imminent vaginal delivery,Kubyara biri hafi,Gutanga bigaragara,Dhalmada soo gaartay Kafka
+EH-PRE-030,DangerSign.SevereVomiting,Persistent vomiting,Araruka bikabije,Kugahwa birenze,Matag aad u daran
+EH-PRE-032,DangerSign.GushLeakingVaginalFluid,Spontaneous rupture of membranes,Ibintu biva mu gitsina by'uruzi,Kwivomera hataragera,Qoyaan ama dheecaan ka socda makaanka
+EH-PRE-033,DangerSign.PrematureOnsetContractions,Premature uterine contractions,,Ibise vyatanguye hataragera,Dhalmo isu diyaarinta aan bilo dhameesanin
+EH-PRE-034,BreastExamSign.Mass,Breast lump,Utubyimba mu Ibere,Imisa,
+EH-PRE-035,BreastExamSign.Infection,Postpartum mastitis,Indwara iterwa n'udukoko tutabonwa n'amaso (Microbes),Ivyanduza,Caabuq
+EH-PRE-037,HeartCPESign.IrregularRhythm,Irregular heartbeat,Injyana ihindagurika,Ingendo ihindagurika,Rucleyn aan nidaamsanayn
+EH-PRE-039,NeckCPESign.EnlargedThyroid,Goiter,Umwingo,Tiroyide yagutse,
+EH-PRE-040,NeckCPESign.EnlargedLymphNodes,Lymphadenopathy,Inturugunyu/Amatakara,Ganglions lymphatiques hypertrophiés,
+EH-PRE-041,LungsCPESign.Wheezes,Wheezing during clinical exam,Ijwi ryumvikana igihe umuntu ahumeka,Uguhema nabi nk'uwuzwigira,
+EH-PRE-047,LegsCPESign.EdemaLegs,Lower extremity edema,,,
+EH-PRE-048,MedicationSign.IronAndFolicAcidSupplement,Ferrous sulphate + Folic acid,,,
+EH-PRE-052,(MedicationDistribution - aspirin),Acetylsalicylic acid,,,
+EH-PRE-053,(MedicationDistribution - calcium),Calcium carbonate,Kalisiyumu,,
+EH-PRE-054,HIVTestValue.executionNote/testResult,HIV test result,Virusi itera SIDA,Umugera wa SIDA,
+EH-PRE-055,SyphilisTestValue,Rapid syphilis test,Mburugu,Ingwara yo mu bihimba vy'irondoka,Waraabow
+EH-PRE-056,HepatitisBTestValue,Hepatitis B surface antigen test,Umwijima wo mu bwoko bwa B,Ingwara y'igitigu,
+EH-PRE-057,MalariaTestValue,Malaria RDT,Malariya,Malariya,Duumo
+EH-PRE-059,RandomBloodSugarTestValue,Serum glucose,Ingano y'isukari mu Maraso,Isukari yo mu maraso,
+EH-PRE-060,UrineDipstickTestValue.protein,Urine protein (dipstick),Proteyine,Poroteyine,
+EH-PRE-061,UrineDipstickTestValue.glucose,"Glucose measurement, qualitative, urine",Isukari,Isukari ibitse m'umubiri,
+EH-PRE-062,UrineDipstickTestValue.leukocytes,White blood cells in urine,Uturemangingo twera,Leucocytes,
+EH-PRE-063,UrineDipstickTestValue.nitrite,Urine nitrite test,Umunyu wapimwe mu nkari,Nitrite,
+EH-PRE-066,BloodGpRsTestValue.rhesus,Rh factor,Rezisi,,
+EH-PRE-067,FamilyPlanningSign,Contraceptive use,,,
+EH-PRE-068,TetanusImmunisationValue,Td booster,Agakwega,Rudadaza,
+EH-PRE-069,MalariaPreventionSign.MosquitoNet,Received insecticide treated bednet,Umubyeyi yahawe inzitiramubu,Mbega umuvyeyi yararonse umusegetera,Hooyadu ma heshay maro kaneeco
+EH-NUT-001,WeightInKg; Weight (group); NutritionWeight; NCDAValue.weight,Weight (kg),Ibiro kg,Uburemere kg,Miisaan (kg)
+EH-NUT-002,ChildNutritionSign.AbdominalDistension,Abdominal swelling,Kubyimba inda,Kuvyimba inda,Calool fuur
+EH-NUT-005,ChildNutritionSign.PoorAppetite,Decreased appetite,Kubura apeti /kunanirwa kurya,Akayabagu gake,Cunno Xumo
+EH-NUT-006,NutritionAssessment.AssesmentAcuteMalnutritionModerate,Moderate malnutrition,Imirire  mibi yoroheje ije vuba,Ingwara yo gufungura nabi yoroheje,Nafaqo darrda Dhexe
+EH-NUT-007,NutritionAssessment.AssesmentAcuteMalnutritionSevere,Severe uncomplicated malnutrition,Imirire  mibi ikabije ije vuba,Ingwara yo gufungura nabi ikaze,Nafaqo yari aad u daran
+EH-NUT-010,FamilyPlanningSign.IUD,Intrauterine device (IUD),Akapira ko mu mura (agapira ko munda ibyara),Akanyuzi,IUD/Qalabka Minka la Geliyo
+EH-NUT-011,FamilyPlanningSign.Implants,Contraceptive implant,Akapira ko mu kaboko,Ibibandikano,Beerid
+EH-NUT-012,FamilyPlanningSign.Injectables,Injectable contraceptives,Urushinge,Agashinge,Durriin
+EH-NUT-013,FamilyPlanningSign.OralContraceptives,Combined oral contraceptive pills,Ibinini,Ibinini,Kaniinayada Uur Joojinta
+EH-NUT-014,FamilyPlanningSign.TubalLigatures,Tubal ligation,Gufunga umuyoborantanga ku bagore,Ugukata imiringoti izana amagi y'umugore mu gitereko,Min xirid
+EH-NUT-016,FamilyPlanningSign.LactationAmenorrhea,Lactational amenorrhea,Uburyo bwo konsa,Kutaja mu kwezi (mu gihe umuvyeyi wonsa),Caado go`a xilliga Naas nuujinta
+EH-NUT-017,LactationSign.Breastfeeding; NutritionFeedingSign.FeedingSignBreastfeeding,Breastfeeding child,"Muri iki gihe, umubyeyi yonsa umwana we?",,Hooyadu naas miyay nuujisaa ilmaheeda hadda
+EH-NUT-018,NCDASign.ChildWithDisability,Disability,Umwana afite ubumuga,Umwana afise ubumuga,
+EH-HV-001,NutritionFeedingSign.ReceiveSupplement,Supplement received,,,
