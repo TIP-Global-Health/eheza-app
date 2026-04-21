@@ -2,58 +2,58 @@ resource_type,owner,owner_type,source,from_concept_url,map_type,to_source_url,to
 Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-024/,NARROWER-THAN,/orgs/UVL-Burundi/sources/uvl/,642,Abdominal or pelvic pain,medium
 Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0007/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,23,Abnormal,high
 Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-022/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,632,Jaundice,high
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0034/,BROADER-THAN,/orgs/UVL-Burundi/sources/uvl/,199,Plasmodium falciparum malaria with cerebral complications,medium
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0062/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,1328,Albendazole,high
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0074/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,558,Asthma,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0031/,BROADER-THAN,/orgs/UVL-Burundi/sources/uvl/,199,Plasmodium falciparum malaria with cerebral complications,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0059/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,1328,Albendazole,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0070/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,558,Asthma,high
 Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-065/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,65,Blood group,high
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0081/,BROADER-THAN,/orgs/UVL-Burundi/sources/uvl/,879,Peripheral nerve injury due to birth trauma,medium
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0089/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,924,Hypospadias,high
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0090/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,591,Inguinal hernia,high
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0162/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,965,Convulsions,high
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0180/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,961,Fever of unknown origin,high
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0223/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,1123,Diagnosis date,high
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0232/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,793,Eclampsia,high
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0270/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,1226,Hysterectomy,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0077/,BROADER-THAN,/orgs/UVL-Burundi/sources/uvl/,879,Peripheral nerve injury due to birth trauma,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0085/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,924,Hypospadias,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0086/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,591,Inguinal hernia,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0157/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,965,Convulsions,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0175/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,961,Fever of unknown origin,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0216/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,1123,Diagnosis date,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0225/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,793,Eclampsia,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0262/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,1226,Hysterectomy,high
 Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NUT-015/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,1205,Vasectomy,high
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0349/,NARROWER-THAN,/orgs/UVL-Burundi/sources/uvl/,378,Mental Problems,medium
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0374/,NARROWER-THAN,/orgs/UVL-Burundi/sources/uvl/,1320,Sulfamethoxazole / trimethoprim,medium
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0380/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,52,Positive,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0341/,NARROWER-THAN,/orgs/UVL-Burundi/sources/uvl/,378,Mental Problems,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0366/,NARROWER-THAN,/orgs/UVL-Burundi/sources/uvl/,1320,Sulfamethoxazole / trimethoprim,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0372/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,52,Positive,high
 Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-013/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,788,Hypertension,high
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0588/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,30,Other,high
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0590/,NARROWER-THAN,/orgs/UVL-Burundi/sources/uvl/,642,Abdominal or pelvic pain,medium
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0593/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,789,Pregnancy-induced hypertension,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0579/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,30,Other,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0581/,NARROWER-THAN,/orgs/UVL-Burundi/sources/uvl/,642,Abdominal or pelvic pain,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0584/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,789,Pregnancy-induced hypertension,high
 Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-046/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,1326,Metformin,high
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0623/,BROADER-THAN,/orgs/UVL-Burundi/sources/uvl/,1122,Past medical history added (text),medium
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0631/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,1338,Amoxicillin,high
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0642/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,1353,Azithromycin,high
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0644/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,1391,Doxycycline,high
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0683/,BROADER-THAN,/orgs/UVL-Burundi/sources/uvl/,1204,Outside care sought,medium
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0714/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,51,Negative,high
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0751/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,842,Parent,high
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0752/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,838,Grandparent,high
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0753/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,833,Sibling,high
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0768/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,529,Hypotension,high
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0779/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,1111,Overweight,high
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0818/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,1292,Migraine,high
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0821/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,837,Father,high
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0822/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,832,Mother,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0614/,BROADER-THAN,/orgs/UVL-Burundi/sources/uvl/,1122,Past medical history added (text),medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0622/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,1338,Amoxicillin,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0633/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,1353,Azithromycin,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0635/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,1391,Doxycycline,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0674/,BROADER-THAN,/orgs/UVL-Burundi/sources/uvl/,1204,Outside care sought,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0705/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,51,Negative,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0742/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,842,Parent,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0743/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,838,Grandparent,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0744/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,833,Sibling,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0759/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,529,Hypotension,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0770/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,1111,Overweight,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0808/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,1292,Migraine,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0811/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,837,Father,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0812/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,832,Mother,high
 Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-070/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,58,Urine pregnancy test,high
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0854/,BROADER-THAN,/orgs/UVL-Burundi/sources/uvl/,1224,Ectopic pregnancy without intrauterine pregnancy,medium
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0855/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,808,Premature rupture of membranes,medium
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0856/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,808,Premature rupture of membranes,medium
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0883/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,952,Urinary incontinence,high
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0888/,BROADER-THAN,/orgs/UVL-Burundi/sources/uvl/,862,Varicose veins of legs complicating pregnancy and/or puerperium,medium
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0937/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,354,Obesity,high
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0986/,NARROWER-THAN,/orgs/UVL-Burundi/sources/uvl/,1400,Penicillin V,medium
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1003/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,740,Renal disease,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0844/,BROADER-THAN,/orgs/UVL-Burundi/sources/uvl/,1224,Ectopic pregnancy without intrauterine pregnancy,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0845/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,808,Premature rupture of membranes,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0846/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,808,Premature rupture of membranes,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0873/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,952,Urinary incontinence,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0878/,BROADER-THAN,/orgs/UVL-Burundi/sources/uvl/,862,Varicose veins of legs complicating pregnancy and/or puerperium,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0927/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,354,Obesity,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0976/,NARROWER-THAN,/orgs/UVL-Burundi/sources/uvl/,1400,Penicillin V,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0993/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,740,Renal disease,high
 Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-AI-019/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,942,Nausea,high
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1062/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,92,Total cholesterol (mmol/L),medium
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1205/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,556,Unknown,high
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1230/,BROADER-THAN,/orgs/UVL-Burundi/sources/uvl/,58,Urine pregnancy test,medium
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1332/,BROADER-THAN,/orgs/UVL-Burundi/sources/uvl/,101,Hepatitis B Surface Antigen Test,medium
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1333/,BROADER-THAN,/orgs/UVL-Burundi/sources/uvl/,57,Rapid test for HIV,medium
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1336/,BROADER-THAN,/orgs/UVL-Burundi/sources/uvl/,62,Rapid syphilis test,medium
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1368/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,843,Child,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1049/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,92,Total cholesterol (mmol/L),medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1189/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,556,Unknown,high
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1214/,BROADER-THAN,/orgs/UVL-Burundi/sources/uvl/,58,Urine pregnancy test,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1316/,BROADER-THAN,/orgs/UVL-Burundi/sources/uvl/,101,Hepatitis B Surface Antigen Test,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1317/,BROADER-THAN,/orgs/UVL-Burundi/sources/uvl/,57,Rapid test for HIV,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1320/,BROADER-THAN,/orgs/UVL-Burundi/sources/uvl/,62,Rapid syphilis test,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-1352/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,843,Child,high
 Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-002/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,19,Blood urea nitrogen,medium
 Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-003/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,18,Serum glutamic-pyruvic transaminase,high
 Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-NCD-004/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,17,Serum glutamic-oxaloacetic transaminase,high
