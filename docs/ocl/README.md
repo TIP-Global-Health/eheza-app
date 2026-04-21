@@ -1,270 +1,282 @@
-# E-Heza → OCL concept mapping
+# E-Heza → Open Concept Lab dictionary
 
-This directory holds the artefacts produced while mapping E-Heza's clinical
-measurements to the Open Concept Lab (OCL) dictionaries published by Partners
-In Health (`PIH/PIH`). These files are review input, not code consumed by the
-app — nothing here is compiled or loaded at runtime.
+This directory holds the source-of-truth artefacts for E-Heza's clinical
+concept dictionary published to Open Concept Lab (OCL) under
+[`TIP-Global-Health/EHEZA`](https://app.openconceptlab.org/#/orgs/TIP-Global-Health/sources/EHEZA/).
 
-## What's here
+The dictionary catalogues every concept E-Heza captures (signs, symptoms,
+diagnoses, medications, lab tests, vaccines, education topics,
+operational scaffolding) plus mappings into two reference dictionaries:
+PIH/PIH (217 SAME-AS / NARROWER-THAN mappings) and UVL-Burundi/uvl
+(75 SAME-AS / NARROWER-THAN / BROADER-THAN mappings).
 
-Per-encounter CSV pairs proposed for publication under `TIP/EHEZA`, each row
-keyed by a stable `EH-<PREFIX>-NNN` mnemonic, with one `SAME-AS` mapping per
-concept pointing at the matched `PIH/PIH` code:
+The dictionary is **not** loaded at runtime by the E-Heza app; it exists
+to give partner organisations a structured reference for E-Heza's data
+model.
 
-| Encounter | ID prefix | Concepts | Mappings | Gaps file |
-|---|---|---:|---:|---|
-| Prenatal | `EH-PRE` | 65 | 65 | `prenatal-gaps.md` |
-| Nutrition (individual + group sessions) | `EH-NUT` | 20 | 20 | `nutrition-gaps.md` |
-| Well-Child | `EH-WC` | 12 | 12 | `remaining-modules-gaps.md` |
-| Acute Illness | `EH-AI` | 24 | 24 | `remaining-modules-gaps.md` |
-| NCD (non-communicable disease) | `EH-NCD` | 50 | 50 | `remaining-modules-gaps.md` |
-| HIV | `EH-HIV` | 24 | 24 | `remaining-modules-gaps.md` |
-| Tuberculosis | `EH-TB` | 9 | 9 | `remaining-modules-gaps.md` |
-| Child Scoreboard | `EH-CS` | 2 | 2 | `childscoreboard-gaps.md` |
-| Home Visit | `EH-HV` | 1 | 1 | `homevisit-gaps.md` |
-| Patient Registration | `EH-PER` | 10 | 10 | `patient-registration-gaps.md` |
-| **Totals** | | **217** | **217** | |
-
-Plus shared artefacts:
+## Files
 
 | File | Purpose |
 |---|---|
-| `translations.jsonl` | Locale strings (en/rw/rn/so) extracted from `Translate.elm` for the published concepts — reviewer reference, not yet folded into the per-encounter CSVs |
-| `csv_to_ocl_json.py` | Local converter that emits OCL bulk-import JSON-lines from *all* CSV pairs (no upload) |
-| `delta_upload.py` | Same shape, but emits only the delta against `TIP-Global-Health/EHEZA` HEAD — the workflow to use for additions / edits (see *Uploading changes* below). Requires `OCL_API_TOKEN`. |
-| `remaining-modules-gaps.md` | Consolidated gaps doc for Well-Child, Acute Illness, NCD, HIV, Tuberculosis, and Family Nutrition (which has no per-encounter CSV — see below) |
+| `eheza-concepts.csv` | The single concept inventory (1579 rows). One row per concept; columns `id, translation_id, english, kinyarwanda, kirundi, somali, concept_class, datatype, description`. |
+| `pih-mappings.csv` | 217 SAME-AS / NARROWER-THAN mappings from EH-XX-NNN concepts to PIH dictionary entries. Originally curated per-encounter; consolidated here. |
+| `uvl-mappings.csv` | 75 SAME-AS / NARROWER-THAN / BROADER-THAN mappings to UVL-Burundi/uvl. |
+| `upload.py` | OCL bulk-import uploader. Reads the three CSVs, computes the delta against OCL HEAD, emits JSON-lines payloads to stdout, prints a counts summary to stderr. |
+| `labels-master-drop-tids.txt` | Hand-curation record from the v2.0 build: 369 `translation_id`s explicitly removed from `Translate.elm` walk because they were UI atoms, lab-range enums, or workflow scaffolding rather than clinical concepts. Required by any future rebuild from source. |
+| `master-drop-names.txt` | Hand-curation record: 116 concept names removed from the structural walk to mirror the labels curation. Required by any future rebuild from source. |
 
-### Encounter types not (yet) covered
+## ID conventions
 
-E-Heza has nine `IndividualEncounterType` constructors plus a separate
-`FamilyEncounterParticipant` flow. Coverage status:
+| Prefix | Meaning |
+|---|---|
+| `EH-AI-NNN`, `EH-CS-NNN`, `EH-HIV-NNN`, `EH-HV-NNN`, `EH-NCD-NNN`, `EH-NUT-NNN`, `EH-PER-NNN`, `EH-PRE-NNN`, `EH-TB-NNN`, `EH-WC-NNN` | Per-encounter PIH-mapped concepts curated in the v1 round. 217 total. |
+| `EHEZA-U-NNNN` | Concepts added in the v2.0 unified build from the structural and labels masters. 1362 total. |
 
-- **Home Visit** (`HomeVisitEncounter`) — `EH-HV` (1 concept). Its measurements are reused `Nutrition*` types; most are WASH / social-determinant / programme-structural facts without PIH equivalents. See `homevisit-gaps.md` for the full coverage map.
-- **Family Nutrition** (`FamilyEncounterParticipant`, feature-flagged `family_nutrition`) — no CSV. MUAC and Photo measurements reuse `EH-PRE-008` and the existing photo concept; the Aheza distribution measurements are program-specific and need a reviewer call (see notes in `remaining-modules-gaps.md` and the RUTF/FBF discussion in `nutrition-gaps.md`).
-- **Group flows** (Group Nutrition / Education sessions / Stock Management) — out of scope for the dictionary publishing pass; these are encounter-structural rather than clinical-fact records.
-- **`InmmunizationEncounter`** — marked `@todo can be removed?` in `Backend/IndividualEncounterParticipant/Model.elm`; intentionally skipped.
+IDs are immutable once published. New concepts get the next free number
+in their respective namespace.
 
-## Master inventory — `eheza-concepts-master.csv`
+## Concept CSV schema
 
-Separate from the per-encounter PIH-mapped pairs above, `eheza-concepts-master.csv`
-is a canonical inventory of every concept E-Heza captures, drawn from a deterministic
-walk of 36 of the 40 `client/src/elm/Backend/*/Model.elm` files (excluded:
-`Dashboard`, `ResilienceMessage`, `ResilienceSurvey`, `PatientRecord`). Each row
-gets a fresh `EHEZA-NNNN` id; the file has no relationship to the per-encounter
-`<x>-concepts.csv` / `<x>-mappings.csv` files (separate ID space, separate purpose).
-
-The master exists as the search baseline for future cross-organisation mapping
-passes (UVL-Burundi is a known upcoming consumer). The per-encounter PIH-mapped
-pairs continue to be the authoritative artefacts for PIH mappings; the master is
-not an OCL-import-ready file (no `concept_class` / `description` columns) and is
-not currently uploaded to OCL.
-
-See `eheza-concepts-master.md` for schema, walk methodology, and the process
-discipline for keeping the file in sync with future Elm changes.
-
-## Labels inventory — `eheza-concepts-translate.csv`
-
-A second inventory complementing `eheza-concepts-master.csv`, built from
-`client/src/elm/Translate.elm` (the `type TranslationId` block, lines
-329–2192 of source). Catalogues user-facing labels that survive a refined
-heuristic filter — including derived clinical concepts (Gravida, BMI,
-ApgarScore, etc.) that the structural master can't surface because they
-exist only as UI labels, not as Elm record fields or union constructors.
-
-Each row gets an `EHEZA-T-NNNN` id; the file has no relationship to the
-structural master or to the per-encounter PIH-mapped CSVs (separate ID
-spaces, separate purposes). Both masters can be consumed independently
-or compared by future cross-organisation mapping passes.
-
-Schema: 6 columns (`id`, `translation_id`, `english`, `kinyarwanda`,
-`kirundi`, `somali`). Header rows for union-arg constructors carry only
-the prettified english label; their value-level translations live on
-leaf rows with `<UnionType>.<Value>` translation_ids.
-
-See `eheza-concepts-translate.md` for schema, walk methodology, the
-heuristic ruleset, and the process discipline for keeping the file in
-sync with future Translate.elm changes.
-
-## Target OCL source
-
-- **Organization**: `TIP` (TIP Global Health, created 2026-04-06 by `adamhstewart`)
-- **Source mnemonic** (proposed): `EHEZA`
-- **Source type**: Dictionary
-- **Custom validation schema**: OpenMRS (same as PIH — required for class/datatype compatibility)
-- **Default locale**: `en`
-- **Supported locales**: `en`, `rw` (Kinyarwanda), `rn` (Kirundi), `so` (Somali) — matching the four languages `client/src/elm/Translate.elm` carries. PIH's own locales (en/es/fr/ht) are independent; `SAME-AS` mappings bind concepts by code, not by shared language, so the mismatch is expected
-
-## Scope of this pass
-
-- **Encounter types**: 9 of the 9 `IndividualEncounterType` constructors — Prenatal, Nutrition, Well-Child, Acute Illness, NCD, HIV, Tuberculosis, Child Scoreboard, Home Visit. Family Nutrition (`FamilyEncounterParticipant`) and the deprecated `InmmunizationEncounter` remain without per-encounter CSVs — see *Encounter types not (yet) covered* above. Plus a Patient Registration mapping group (`EH-PER`) sourced from the `Person` record — not an encounter type, but the demographic / contact / socioeconomic field set captured at first contact and reused by every subsequent encounter.
-- **Match rule**: only concepts with a resolvable PIH equivalent are included in the per-encounter CSVs; everything else lands in the corresponding `*-gaps.md` (or in `remaining-modules-gaps.md` for Well-Child / Acute Illness / NCD / HIV / Tuberculosis / Family Nutrition).
-- **Granularity**: one concept per measurable fact — numeric fields (vitals, anthropometry, labs), coded single-value findings, and drug concepts for medications.
-- **Reuse over duplication**: when an enum constructor in a later encounter pass already corresponds to a concept published from an earlier one (e.g., `NCDASign.ChildGotDiarrhea` reusing `EH-NUT-008` Diarrhea), the existing concept's `eheza_field_path` is extended rather than minting a new `EH-` id. The gaps files document each such reuse so reviewers can trace it.
-- **Deferred**: sub-record constructs (full symptom review trees, mental-health screening, breastfeeding qualitative fields, encounter-level diagnosis union) — listed at the bottom of the respective gaps files; programmatic / supply / social-determinant constructs (FBF, Ongera, NCDA program signs, water source, income source) are documented in `nutrition-gaps.md`.
-
-## CSV schema
-
-Both CSVs follow the column layout consumed by
-[`ocldev/ocl_csv_to_json_flex`](https://github.com/OpenConceptLab/ocldev), the
-de-facto tool OpenMRS/PIH implementers use to convert CSV into OCL's
-JSON-lines bulk-import format.
-
-### Concept CSV columns (`*-concepts.csv`)
+`eheza-concepts.csv` columns:
 
 | Column | Description |
 |---|---|
-| `resource_type` | Literal `Concept` |
-| `owner` / `owner_type` | `TIP` / `Organization` |
-| `source` | `EHEZA` |
-| `id` | Stable mnemonic `EH-<PREFIX>-NNN` (per-encounter prefix — see *What's here*) |
-| `concept_class` | OpenMRS class (Finding, Symptom, Diagnosis, Drug, Test, Question, …) |
-| `datatype` | OpenMRS datatype (Numeric, Coded, Boolean, Date, N/A, …) |
-| `name` | Canonical English name |
-| `description` | Short clinical description |
-| `eheza_category` | Informal grouping (Vitals / Anthropometry / Labs / …) — retained for reviewer context |
-| `eheza_field_path` | Back-reference to the Elm type/field in `client/src/elm/Backend/Measurement/Model.elm`. For patient-registration rows (`EH-PER-*`), this column points at the field in `client/src/elm/Backend/Person/Model.elm` instead. |
-| `confidence` | `high` / `medium` / `low` — the matcher's confidence in the PIH alignment |
+| `id` | The OCL concept id (see ID conventions above). |
+| `translation_id` | The Elm origin pointer — either a `Translate.elm` `TranslationId` constructor (e.g. `BirthDefect.DefectInguinalHernia`), or for fallback rows the Backend struct field-path (e.g. `AcuteIllnessEncounter.participant`). Used to trace a concept back to source. |
+| `english` | Primary concept name (English). Sourced from `Translate.elm` where available, otherwise a CamelCase split of the Elm identifier. |
+| `kinyarwanda` / `kirundi` / `somali` | Locale translations. Empty when the concept has no entry in that locale (the Elm `Translate.elm` value was `Nothing`). For EH-XX-NNN rows the translations are pulled from OCL itself, since some were curated post-upload. |
+| `concept_class` | OCL OpenMRS concept class. One of: `Symptom`, `Drug`, `Diagnosis`, `Finding`, `Test`, `Procedure`, `Question`, `Misc`, `Coded clinical / socioeconomic`, `Pharmacologic Drug Class`. **Only OCL-accepted values** — invented classes (e.g. "Coded answer") are rejected. |
+| `datatype` | OCL datatype. One of: `Coded`, `Numeric`, `Text`, `Boolean`, `Date`, `N/A`. Most clinical concepts are `Coded`; field-derived concepts use the type's natural datatype. |
+| `description` | One-sentence dictionary-style description. Populated for all 908 clinical concepts; intentionally blank for operational/Misc rows. |
 
-Non-English locale names are **not** filled in this pass. Extracting them
-from `Translate.elm` requires parsing the enum-constructor → TranslationId
-dispatch functions (e.g., `translateBreastExamSign`, `translateDangerSign`),
-and per CLAUDE.md any non-English field that is `Nothing` falls back to
-English at runtime — so auto-populating with the English string would
-pollute OCL with unverified translations. Kinyarwanda / Kirundi / Somali
-names should be filled in a dedicated follow-up by a native-speaker
-reviewer, pulling from `Translate.elm` where the value is `Just _`.
+## Mapping CSV schema
 
-### Mapping CSV columns (`*-mappings.csv`)
+Both `pih-mappings.csv` and `uvl-mappings.csv` share the OCL bulk-import
+mapping schema:
 
-| Column | Description |
+| Column | Notes |
 |---|---|
-| `resource_type` | Literal `Mapping` |
-| `owner` / `owner_type` / `source` | `TIP` / `Organization` / `EHEZA` |
-| `from_concept_url` | `/orgs/TIP-Global-Health/sources/EHEZA/concepts/<EH-…-NNN>/` |
-| `map_type` | `SAME-AS` for the great majority of rows. Use `NARROWER-THAN` when the E-Heza concept is a more specific subtype of the PIH target (e.g., `EH-PER-003` "National ID number" → `PIH:13173` "Identification number"), or `BROADER-THAN` for the inverse. PIH's own dictionary uses these hierarchical relations heavily; OCL preserves the directionality at import. |
-| `to_source_url` | `/orgs/PIH/sources/PIH/` |
-| `to_concept_code` | PIH numeric id |
-| `to_concept_name` | PIH display name — kept in the CSV for reviewer readability (OCL ignores it at import time) |
-| `confidence` | Same value as the corresponding concept row |
+| `resource_type` | Always `Mapping` |
+| `owner`, `owner_type`, `source` | `TIP-Global-Health` / `Organization` / `EHEZA` |
+| `from_concept_url` | `/orgs/TIP-Global-Health/sources/EHEZA/concepts/<id>/` — the EHEZA side |
+| `map_type` | `SAME-AS`, `NARROWER-THAN`, or `BROADER-THAN` |
+| `to_source_url` | `/orgs/PIH/sources/PIH/` or `/orgs/UVL-Burundi/sources/uvl/` |
+| `to_concept_code` | The target dictionary's concept id |
+| `to_concept_name` | Display name of the target concept (denormalised for readability) |
+| `confidence` | `high` (exact name match) or `medium` (token overlap / partial alignment) |
 
-## Methodology
+## Build pipeline (how `eheza-concepts.csv` was constructed)
 
-The same four-step recipe was applied per encounter type:
+The unified concept list was built from two parallel walks, then merged
+and curated by hand. This section documents the pipeline so the build
+can be repeated when the codebase evolves significantly enough to
+warrant a new release.
 
-1. **Inventory**: every measurement type alias for the encounter in `client/src/elm/Backend/Measurement/Model.elm` was enumerated, including the constituent fields of each record and the constructors of each coded enum (`DangerSign`, `BreastExamSign`, `MedicationSign`, CPE signs, NCDA signs, vaccine types, …). For Child Scoreboard, the `IndividualEncounterType` enum was also walked to confirm encounter-vs-shared-data scope.
+### 1. Structural walk
 
-   *Variant for the Patient Registration pass:* inventory walks the `Person` record fields in `client/src/elm/Backend/Person/Model.elm` rather than encounter measurement aliases. Steps 2–4 below are unchanged.
+Walks `client/src/elm/Backend/*/Model.elm` (36 files) plus
+`Backend/AcuteIllnessEncounter/Types.elm`,
+`Backend/NCDEncounter/Types.elm`, and
+`Backend/PrenatalEncounter/Types.elm` (3 files). Excluded: `Dashboard`,
+`ResilienceMessage`, `ResilienceSurvey`, `PatientRecord`.
 
-2. **Naming**: canonical English labels were taken from `client/src/elm/Translate.elm` where an existing `TranslationId` matched the concept — either a top-level `TranslationId` constructor or a case branch inside a domain-specific translate function (`translateBreastExamSign`, `translateCorePhysicalExamSign`, `translateNCDASign`, …). No new `Translate.elm` entries were needed.
+For each `type`, `type alias`, and union constructor, emits a row with
+the identifier, an Elm field-path, and a derived datatype. Drops rows
+under `Msg` / `Model` types (Elm Architecture scaffolding).
 
-3. **PIH matching**: for each concept, the OCL search API was queried:
-   ```
-   https://api.openconceptlab.org/orgs/PIH/sources/PIH/concepts/?q=<term>&limit=10
-   ```
-   Best match was selected by name proximity → concept class fit → datatype fit → description alignment. The concept's class/datatype in the per-encounter CSV is aligned to its PIH counterpart so the SAME-AS mapping is clean.
+For each row, looks up the bare identifier in `Translate.elm`'s
+`translationSet` to pull the English + locale strings; cascading
+lookup tries `<name>` then `<name>Label`. Falls back to a CamelCase
+split when no `Translate.elm` match is found.
 
-4. **Confidence scoring**:
-   - `high` — exact or near-exact name match with correct class and datatype
-   - `medium` — clinically equivalent but with minor naming, class, or representation drift (e.g., set-of-dates vs. derived count for `EH-CS-002`)
-   - `low` — plausible match but the reviewer should confirm (also surfaced in the encounter's gaps file)
+Deduplicates by `name.strip().lower()`. Drops rows whose translation
+matches the phrase / question / instruction filter (sentence-leading
+words like `Do`, `Is`, `Provide`, `If you`, etc.; multi-sentence
+bodies; specific tid patterns like `*Question`, `*Inform`,
+`ResilienceMessage*`).
 
-## Verification
+### 2. Labels walk
 
-Run any of these to sanity-check an entry before upload.
+Independent walk of every `{ english = ..., kinyarwanda = ...,
+kirundi = ..., somali = ... }` record literal under
+`translationSet` in `Translate.elm`. Emits one row per literal —
+both top-level zero-arg branches and inner case branches one level
+deep. Same phrase/question/instruction filter applied.
 
-```bash
-# Resolve a single PIH concept referenced in mappings.csv
-curl -s https://api.openconceptlab.org/orgs/PIH/sources/PIH/concepts/13028/ \
-  | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['display_name'], '|', d['concept_class'], '|', d['datatype'])"
-# -> Fundal height | Finding | Numeric
+The walker is deliberately independent of the structural walk so it
+captures concepts that exist only as UI labels (e.g.
+`BirthDefect.DefectInguinalHernia`, `Gravida`, `BMI`, `ApgarScore`).
 
-# Confirm every to_concept_code in any mappings CSV resolves (spot-check loop)
-awk -F, 'NR>1 {print $8}' docs/ocl/prenatal-mappings.csv | shuf -n 10 | \
-  while read id; do
-    echo -n "PIH:$id -> "
-    curl -s "https://api.openconceptlab.org/orgs/PIH/sources/PIH/concepts/$id/" \
-      | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('display_name','MISSING'))"
-  done
-```
+### 3. Hand curation
 
-Row counts (for coverage math) — every concept has exactly one SAME-AS mapping,
-so concept and mapping rows must match per encounter:
+After the two walks produced their CSVs, a manual review removed:
 
-```bash
-for f in docs/ocl/*-concepts.csv; do
-  base="${f%-concepts.csv}"
-  c=$(($(wc -l < "$base-concepts.csv") - 1))
-  m=$(($(wc -l < "$base-mappings.csv") - 1))
-  printf "%-30s %3d concepts / %3d mappings\n" "$(basename $base)" "$c" "$m"
-done
-```
+- 369 `translation_id`s from the labels output (recorded in
+  `labels-master-drop-tids.txt`) — generic UI atoms (`Yes`, `No`,
+  `Save`, `Cancel`, …), lab-range enums (`LaboratoryPHValue.*`,
+  `LabResultsNormalRange.*`, …), workflow / system messages
+  (`BeginNewEncounter`, `ResultsPending`, `BackendError`, …), Z-score
+  scaffolding rows.
+- 116 concept names from the structural output (recorded in
+  `master-drop-names.txt`) to mirror the labels curation.
 
-Optional: convert to OCL JSON-lines locally (no upload):
+Both lists are kept so a future rebuild can re-apply the curation
+deterministically.
 
-```bash
-# Outside this repo — https://github.com/OpenConceptLab/ocldev
-pip install ocldev
-python -m ocldev.oclcsvtojsonconverter \
-  --csv docs/ocl/prenatal-concepts.csv \
-  --csv docs/ocl/prenatal-mappings.csv \
-  --out prenatal.jsonl
-```
+### 4. Merge
 
-## Uploading changes
+The struct-only set (concepts whose `english` is unique to the
+structural walk — i.e. UI scaffolding without a `Translate.elm` entry)
+was further hand-curated down to a clinically-meaningful core. The
+final unified file is the labels-master content plus this curated
+struct-only subset, with EH-XX-NNN ids preserved for the 217
+already-uploaded concepts (matched by english).
 
-**Always upload the delta, not the full set.** Re-submitting unchanged rows
-makes OCL mint a fresh concept-version for each one, which clutters source-wide
-search with duplicate snapshot rows (one per release cut). `delta_upload.py`
-fetches HEAD state from OCL and emits JSON-lines only for concepts / mappings
-that are new or whose content differs.
+### 5. Locale enrichment
+
+For the 217 EH-XX-NNN rows, locale translations were re-pulled from
+OCL itself (not from `Translate.elm`) because OCL's stored versions
+include translations curated post-upload that don't appear in the Elm
+source.
+
+### 6. Description generation
+
+908 clinical-class concepts (`Diagnosis`, `Drug`, `Symptom`, `Finding`,
+`Test`, `Procedure`, `Coded answer` → folded into `Misc`,
+`Pharmacologic Drug Class`) received hand-written one-sentence
+descriptions. Operational rows (`Misc`, `Question`) intentionally left
+without descriptions — OCL accepts empty.
+
+## OCL upload process
+
+### Prerequisites
 
 ```bash
 export OCL_API_TOKEN=<your-token>
-
-# 1. compute the delta (writes JSONL to stdout, summary to stderr)
-python3 docs/ocl/delta_upload.py > /tmp/eheza-delta.jsonl
-
-# 2. upload (skip if stdout was empty)
-curl -X POST "https://api.openconceptlab.org/importers/bulk-import/?update_if_exists=true" \
-     -H "Authorization: Token $OCL_API_TOKEN" \
-     -F "file=@/tmp/eheza-delta.jsonl"
-# → returns {"id": "<task-id>", "state": "PENDING", ...}
-
-# 3. poll task until state=SUCCESS (normally 5–25s)
-curl -s -H "Authorization: Token $OCL_API_TOKEN" \
-     "https://api.openconceptlab.org/importers/bulk-import/?task_id=<task-id>" \
-  | python3 -m json.tool | grep -E '"(state|message|summary)"'
-
-# 4. cut a released source version so search sees the new content
-curl -X POST "https://api.openconceptlab.org/orgs/TIP-Global-Health/sources/EHEZA/versions/" \
-     -H "Authorization: Token $OCL_API_TOKEN" \
-     -H "Content-Type: application/json" \
-     -d '{"id":"vX.Y-<short-slug>","description":"<what changed>","released":true}'
 ```
 
-Step 4 is not optional — the bulk-import endpoint writes to HEAD only; search
-and version-pinned URLs surface content only from released versions. Omit it
-and new concepts appear invisible.
+The token belongs to a user with edit permission on the
+`TIP-Global-Health/EHEZA` source.
 
-`delta_upload.py` also reports any **orphans** (concepts on OCL that are not in
-the local CSVs). It deliberately does not delete them — retire or purge them
-by hand if you really want them gone, so nothing accidentally disappears from
-a release history.
+### Dry-run
 
-## Not done in this phase
+```bash
+python3 docs/ocl/upload.py > /tmp/delta.jsonl 2> /tmp/delta.log
+cat /tmp/delta.log
+```
 
-- No `TIP/EHEZA` source created on OCL (requires an OCL account with TIP org membership; deferred until CSVs are reviewed).
-- No concept codes referenced from E-Heza Elm or Drupal code — the mapping is external-only for now.
-- No Kinyarwanda / Kirundi / Somali name rows (see schema note above).
-- No coverage for Home Visit, Family Nutrition, group-session, education-session, or stock-management flows (see *Encounter types not (yet) covered* above for the rationale).
+Prints a delta summary to stderr (counts of new / updated / unchanged
+concepts and mappings, plus samples) and writes the import payload to
+stdout. Local-only; no writes to OCL.
 
-## Where the Elm code lives
+### Live upload
 
-If you need to trace a concept back to the source of truth:
+OCL's bulk-import endpoint expects multipart/form-data, not raw body:
 
-- `client/src/elm/Backend/Measurement/Model.elm` — every measurement type alias and coded enum across all encounter types (the `eheza_field_path` column points here)
-- `client/src/elm/Backend/Person/Model.elm` — the `Person` record (demographic / contact / socioeconomic fields captured at registration; the `eheza_field_path` source for `EH-PER-*` concepts)
-- `client/src/elm/Backend/<Encounter>Activity/Model.elm` — per-encounter activity catalogues (e.g., `ChildScoreboardActivity`, `WellChildActivity`, `NutritionActivity`)
-- `client/src/elm/Backend/Measurement/Encoder.elm` — the field keys used on the wire (match the Drupal field machine names)
-- `server/hedley/modules/custom/hedley_<encounter>/hedley_<encounter>.features.field_instance.inc` — per-encounter Drupal field definitions
-- `client/src/elm/Translate.elm` — canonical English (and other-locale) labels
+```python
+import os, urllib.request
+url = "https://api.openconceptlab.org/importers/bulk-import/?update_if_exists=true&parallel=1"
+body = open('/tmp/delta.jsonl', 'rb').read()
+boundary = "----eheza-bulk-import"
+mp = (f"--{boundary}\r\n"
+      f'Content-Disposition: form-data; name="file"; filename="delta.jsonl"\r\n'
+      f"Content-Type: application/octet-stream\r\n\r\n").encode() + body + f"\r\n--{boundary}--\r\n".encode()
+req = urllib.request.Request(url, data=mp, headers={
+    "Authorization": f"Token {os.environ['OCL_API_TOKEN']}",
+    "Content-Type": f"multipart/form-data; boundary={boundary}",
+})
+with urllib.request.urlopen(req) as r:
+    print(r.read().decode())  # returns task_id
+```
+
+Use `parallel=1` on first runs of a large delta to avoid intra-batch
+race conditions on locale-name uniqueness; `parallel=4` is safe for
+small delta runs.
+
+### Polling
+
+The bulk-import detail endpoint with task id returns `[]` (a known OCL
+quirk). Use the list endpoint and grep for the task:
+
+```python
+url = "https://api.openconceptlab.org/importers/bulk-import/"
+# paginate, find task by id, watch state until SUCCESS / FAILURE
+```
+
+Per-batch failure counts live in the child task summaries
+(`/tasks/<child_id>/`); the parent task message **omits failure counts**.
+After a job completes, always cross-check by re-fetching the source
+concept list and diffing against `eheza-concepts.csv` to verify nothing
+was silently dropped.
+
+### Cutting a released source version
+
+After the concept and mapping uploads complete cleanly, cut a released
+version so the new concepts become visible to dictionary search:
+
+```python
+import json, urllib.request
+url = "https://api.openconceptlab.org/orgs/TIP-Global-Health/sources/EHEZA/versions/"
+payload = json.dumps({"id": "v2.1", "description": "...", "released": True}).encode()
+req = urllib.request.Request(url, data=payload, headers={
+    "Authorization": f"Token {os.environ['OCL_API_TOKEN']}",
+    "Content-Type": "application/json",
+})
+with urllib.request.urlopen(req) as r:
+    print(r.status, r.read().decode())
+```
+
+Cutting a released version is **mandatory** — without it, newly
+imported concepts stay invisible to OCL dictionary search even though
+they exist on HEAD.
+
+## Known OCL constraints (handled by `upload.py`)
+
+1. **`(locale, FULLY_SPECIFIED-name)` uniqueness per source.** Different
+   English concepts often share the same Kinyarwanda / Kirundi /
+   Somali word in `Translate.elm`. The uploader tracks
+   `(locale, name.lower()) → concept_id` claims and demotes colliding
+   locale names from `FULLY_SPECIFIED` to `SHORT`. Comparison is
+   case-insensitive (OCL's uniqueness check ignores case).
+2. **Strictly-typed `concept_class`.** OCL accepts a fixed set of
+   OpenMRS classes. Invented values (e.g. "Coded answer") are
+   rejected. Keep `eheza-concepts.csv`'s `concept_class` to known-good
+   values from the list above.
+3. **Bulk-import doesn't surface per-row errors.** The job summary
+   reports created/updated counts but omits failures. Always verify by
+   diffing the local CSV against the post-import OCL state.
+
+## Release history
+
+| Version | Date | Changes |
+|---|---|---|
+| `v1.0` (per-encounter releases) | 2026-04-15 to 2026-04-19 | Initial 217 EH-XX-NNN concepts uploaded across 10 per-encounter rounds, each with PIH SAME-AS / NARROWER-THAN mappings. |
+| `v2.0` | 2026-04-21 | Unified release. 1362 new EHEZA-U-NNNN concepts from the combined structural + labels walk. 75 UVL mappings added. Locale translations refreshed across all 217 prior concepts. Final source counts: 1579 concepts, 292 mappings (217 PIH + 75 UVL). |
+
+## Future expansion
+
+Adding a new concept:
+
+1. Append a row to `eheza-concepts.csv` with the next free
+   `EHEZA-U-NNNN` id (or for a per-encounter PIH-mapped concept, the
+   next free id in the appropriate `EH-XX-` prefix).
+2. If it has a PIH or UVL mapping, append a row to the relevant
+   mapping file.
+3. Run the dry-run to confirm the delta is just your new row.
+4. Run the live upload.
+5. Cut a new released source version (e.g. `v2.1`) once the upload
+   completes.
+
+Rebuilding the unified file from a fresh codebase walk:
+
+1. Re-walk `client/src/elm/Backend/*/Model.elm` (36 files) +
+   `*/Types.elm` (3 files) per the *Structural walk* steps above.
+2. Re-walk `Translate.elm`'s `translationSet` per the *Labels walk*
+   steps.
+3. Apply the phrase/question/instruction filter (heuristic rules
+   documented in the v2.0 commit history).
+4. Apply `labels-master-drop-tids.txt` and `master-drop-names.txt`
+   to remove hand-curated drops.
+5. Merge into the unified shape, preserving EH-XX-NNN ids for
+   already-published concepts (matched by english).
+6. Run `upload.py` for the delta and a new released version.

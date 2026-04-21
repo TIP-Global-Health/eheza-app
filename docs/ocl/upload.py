@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
-"""Build OCL bulk-import JSON-lines from eheza-concepts-unified.csv +
-uvl-mappings.csv, with delta-against-HEAD diffing.
+"""Build OCL bulk-import JSON-lines from eheza-concepts.csv plus
+pih-mappings.csv and uvl-mappings.csv, with delta-against-HEAD diffing.
 
 Writes JSON-lines to stdout for rows that are new or changed; writes a
 counts summary to stderr.
 
 Usage:
     export OCL_API_TOKEN=...
-    python3 docs/ocl/upload_unified.py > /tmp/delta.jsonl
+    python3 docs/ocl/upload.py > /tmp/delta.jsonl
     # then POST /tmp/delta.jsonl to /importers/bulk-import/?update_if_exists=true
     # (use multipart/form-data with field name 'file', not raw body)
     # parallel=1 is recommended on first runs to avoid intra-batch races
     # on locale-name uniqueness; parallel=4 is safe for delta runs.
 
-The unified-master CSV schema (different from per-encounter files):
+The eheza-concepts.csv schema:
     id, translation_id, english, kinyarwanda, kirundi, somali,
     concept_class, datatype, description
 
@@ -45,7 +45,8 @@ import pathlib
 
 HERE = pathlib.Path(__file__).parent
 REPO_BASE = HERE.parent.parent
-UNIFIED_PATH = HERE / "eheza-concepts-unified.csv"
+CONCEPTS_PATH = HERE / "eheza-concepts.csv"
+PIH_MAPPINGS_PATH = HERE / "pih-mappings.csv"
 UVL_MAPPINGS_PATH = HERE / "uvl-mappings.csv"
 
 OCL_BASE = "https://api.openconceptlab.org"
@@ -268,7 +269,7 @@ def main():
     new_count = updated_count = unchanged_count = 0
     sample_updates = []
     sample_new = []
-    for row in csv.DictReader(open(UNIFIED_PATH)):
+    for row in csv.DictReader(open(CONCEPTS_PATH)):
         payload = concept_payload(row, taken_by_owner)
         my_sig = concept_signature(payload)
         ocl_detail = ocl_concept_by_id.get(row["id"])
@@ -298,19 +299,22 @@ def main():
     # ---- mappings ----
     new_map = unchanged_map = 0
     sample_new_map = []
-    for row in csv.DictReader(open(UVL_MAPPINGS_PATH)):
-        key = mapping_key(row)
-        if key in ocl_mapping_keys:
-            unchanged_map += 1
+    for path in (PIH_MAPPINGS_PATH, UVL_MAPPINGS_PATH):
+        if not path.exists():
             continue
-        print(json.dumps(mapping_payload(row)))
-        new_map += 1
-        if len(sample_new_map) < 5:
-            sample_new_map.append(key)
+        for row in csv.DictReader(open(path)):
+            key = mapping_key(row)
+            if key in ocl_mapping_keys:
+                unchanged_map += 1
+                continue
+            print(json.dumps(mapping_payload(row)))
+            new_map += 1
+            if len(sample_new_map) < 5:
+                sample_new_map.append(key)
 
     log(f"\nMappings:  new={new_map}  unchanged={unchanged_map}")
     for k in sample_new_map:
-        log(f"  + {k[0].split('/')[-2]} -> UVL:{k[3]}")
+        log(f"  + {k[0].split('/')[-2]} -> {k[2].split('/')[-3]}:{k[3]}")
 
 
 if __name__ == "__main__":

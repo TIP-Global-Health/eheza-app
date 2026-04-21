@@ -1,2 +1,0 @@
-resource_type,owner,owner_type,source,from_concept_url,map_type,to_source_url,to_concept_code,to_concept_name,confidence
-Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-HV-001/,SAME-AS,/orgs/PIH/sources/PIH/,10571,Supplement received,high
