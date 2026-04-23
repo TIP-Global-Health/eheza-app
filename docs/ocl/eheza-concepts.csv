@@ -54,7 +54,7 @@ EHEZA-U-0046,ActivitiesTitle.MotherActivity,FBF Mother,FBF y'umubyeyi,FBF y'umuv
 EHEZA-U-0047,ActivitiesTitle.ChildActivity,FBF Child,FBF y'umwana,FBF y'umwana,Canug FBF ah,Misc,N/A,
 EHEZA-U-0048,Activity,Activity,Igikorwa,,Howsha,Misc,N/A,
 EHEZA-U-0049,AcuteIllnessActivityTitle.AcuteIllnessPhysicalExam,Physical Exam,Gusuzuma,Igipimo c'umubiri,Baaritaan Jireed,Misc,N/A,
-EHEZA-U-0050,AcuteIllnessActivityTitle.AcuteIllnessPriorTreatment,Prior Treatment History,Amakuru ku miti yafashe,Imbere yo kuvura akahise,Ka hor Taariikhda Daaweynta,Drug,Coded,Patient's history of treatments received before the current encounter.
+EHEZA-U-0050,AcuteIllnessActivityTitle.AcuteIllnessPriorTreatment,Prior Treatment History,Amakuru ku miti yafashe,Imbere yo kuvura akahise,Ka hor Taariikhda Daaweynta,Misc,Coded,Patient's history of treatments received before the current encounter.
 EHEZA-U-0051,AcuteIllnessActivityTitle.AcuteIllnessLaboratory,Laboratory,Ibizamini,Icumba c'ipimiro,Sheybaar,Test,Coded,Laboratory tests ordered as part of an acute illness workup.
 EHEZA-U-0052,AddressInformation,Address Information,Aho atuye/Aho abarizwa,Amakuru ajanye n'aho aba,Macluumaadka Cinwaanka,Misc,N/A,
 EHEZA-U-0053,AdverseEvent.AdverseEventRashOrItching,Rash or Itching,Kwishima cyangwa gusesa uduheri (turyaryata),Amaherehere canke kwiyagaza,Nabar ama Cuncun,Misc,N/A,
@@ -172,7 +172,7 @@ EHEZA-U-0161,Creatinine,Creatinine,Keleyatinine,Créatinine,,Misc,N/A,
 EHEZA-U-0162,CSection,C-Section,Yarabazwe,,,Misc,N/A,
 EHEZA-U-0163,CSectionScar.Vertical,Vertical,Irahagaze,Irahagaze,,Misc,N/A,
 EHEZA-U-0164,CSectionScar.Horizontal,Horizontal,Iratambitse,Iraryamye,Jiif,Misc,N/A,
-EHEZA-U-0165,CurrentMedication,Current Medication,,Umuti ariko afata,,Drug,Coded,Generic category for medications the patient is currently taking.
+EHEZA-U-0165,CurrentMedication,Current Medication,,Umuti ariko afata,,Misc,Coded,Generic category for medications the patient is currently taking.
 EHEZA-U-0166,DepressionNotLikely,Depression not Likely,Birashoboka ko adafite indwara y'agahinda gakabije,Kwihebura ntibishoboka,,Misc,N/A,
 EHEZA-U-0167,DepressionPossible,Depression Possible,Birashoboka ko yagira indwara y'agahinda gakabije,Kwihebura birashoboka,,Misc,N/A,
 EHEZA-U-0168,DiplomaProgram2YearsOfUniversity,Diploma Program (2 years of University),Amashuri 2 ya Kaminuza,Umugambi wo kuronka urupapuro rw'umutsindo (Imyaka Ibiri (2) kuri Kaminuza),Barnaamijka Dibloomada (2 sano oo Jaamacad ah),Misc,N/A,
@@ -274,7 +274,7 @@ EHEZA-U-0256,FamilyHistoryOfPreeclampsia,Family history of pre-eclampsia,Amakuru
 EHEZA-U-0257,FamilyInformation,Family Information,Amakuru ku muryango,Amakuru y'umuryango,Xogta Qoyska,Misc,N/A,
 EHEZA-U-0258,FamilyMembers,Family Members,Abagize umuryango,Abagize umuryango,Xubnaha Qoyska,Misc,N/A,
 EHEZA-U-0259,FamilyPlanningSignLabel.AutoObservation,Auto-observation,Kwigenzura ururenda,Umwihwezo wo ku giti canje,Iska-warqab,Symptom,Coded,Family planning method based on observing physical signs of fertility.
-EH-NUT-009,FamilyPlanningSignLabel.Condoms,Condoms,Udukingirizo,udukingirizo,Cinjiro,Drug,Coded,Condoms (contraceptive method)
+EH-NUT-009,FamilyPlanningSignLabel.Condoms,Condoms,Udukingirizo,udukingirizo,Cinjiro,Medical supply,Coded,Condoms (contraceptive method)
 EHEZA-U-0260,FamilyPlanningSignLabel.CycleBeads,Cycle beads,Urunigi,Ubudede bwo guharura kuja mu kwezi,Caado Ogaansho,Symptom,Coded,Family planning method using cycle beads to track fertile and non-fertile days.
 EHEZA-U-0261,FamilyPlanningSignLabel.CycleCounting,Cycle counting,Kubara ,Uguharura kuja mu maraso,Caado Tiris,Symptom,Coded,Family planning method based on counting menstrual cycle days.
 EHEZA-U-0262,FamilyPlanningSignLabel.Hysterectomy,Hysterectomy,Bakuyemo nyababyeyi,Ugukuramwo igitereko,,Symptom,Coded,Family planning method: hysterectomy (surgical removal of uterus).
@@ -408,8 +408,8 @@ EHEZA-U-0374,HIVSymptom.HIVSymptomMuscleJointPain,Muscle and joint pain,,Ububaba
 EHEZA-U-0375,HIVSymptom.HIVSymptomCoughingUpBlood,Coughing up blood,,Ugukorora amaraso,Dhiig matagaya,Symptom,Coded,"Hemoptysis (coughing up blood), reported as an HIV-related symptom."
 EHEZA-U-0376,HIVSymptom.HIVSymptomHairLoss,Hair loss,,Ukumyoka umushatsi,Timo daadasho,Symptom,Coded,Hair loss reported as an HIV-related symptom.
 EHEZA-U-0377,HIVSymptom.HIVSymptomMouthUlcers,Mouth ulcers,,Ibikomere vyo mu kanwa,Boogo afka ah,Symptom,Coded,Mouth ulcers reported as an HIV-related symptom.
-EHEZA-U-0378,HIVTreatmentSign.HIVTreatmentNoMedicineNotSeenAtPMTCT,Never seen at PMTCT,Ntiyigeze agera muri PMTCT,Nta na rimwe araboneka mu nyigisho za PTME,Marnaba Laguma arag PMTCT,Drug,Coded,Indicator that the patient has never attended Prevention of Mother-to-Child Transmission services.
-EHEZA-U-0379,HIVTreatmentSign.HIVTreatmentNoMedicineOutOfStock,Stock Out,Nta miti iri mu bubiko,Ibiri mu bubiko vyaheze,Keydka aan ku Jirin,Drug,Coded,Reason for non-administration: medication unavailable due to stockout.
+EHEZA-U-0378,HIVTreatmentSign.HIVTreatmentNoMedicineNotSeenAtPMTCT,Never seen at PMTCT,Ntiyigeze agera muri PMTCT,Nta na rimwe araboneka mu nyigisho za PTME,Marnaba Laguma arag PMTCT,Misc,Coded,Indicator that the patient has never attended Prevention of Mother-to-Child Transmission services.
+EHEZA-U-0379,HIVTreatmentSign.HIVTreatmentNoMedicineOutOfStock,Stock Out,Nta miti iri mu bubiko,Ibiri mu bubiko vyaheze,Keydka aan ku Jirin,Misc,Coded,Reason for non-administration: medication unavailable due to stockout.
 EHEZA-U-0380,HomeVisit,Home Visit,Gusura Umurwayi,Ingwara yo gufungura nabi,Booqasho Guri,Misc,N/A,
 EHEZA-U-0381,Hygiene,Hygiene,Isuku,Isuku,Nadaafad,Misc,N/A,
 EHEZA-U-0382,HyperemesisGravidum,Hyperemesis Gravidum,Kuruka bikabije k'umugore utwite,Hyperémèse gravidique,,Misc,N/A,
@@ -418,8 +418,8 @@ EHEZA-U-0383,HypertensionBeforePregnancy,Hypertension before pregnancy,Umuvuduko
 EHEZA-U-0384,IllnessSymptom.IllnessSymptomRash,"Rash on body, feet or hands",Ari kwishimagura ku mubiri: ku birenge cg ibiganza,"Amaherehere k'umubiri, ku birenge canke mu ntoke","Nabar jirka ah, cagaha ama gacmaha",Symptom,Coded,"Skin rash on body, feet, or hands, suggestive of infection or allergy."
 EHEZA-U-0385,IllnessSymptom.IllnessSymptomPainlessUlcerMouth,Painless ulcer in mouth,Agasebe kataryana mu kanwa,Igikomere kitababaza mu kanwa,Boog aan xanuun lahayn oo afka ah,Symptom,Coded,"Painless ulcer in the mouth, possibly indicating syphilis or other infection."
 EHEZA-U-0386,IllnessSymptom.IllnessSymptomPainlessUlcerGenitals,Painless ulcer in genital area,Agasebe kataryana mu myanya ndangagitsina,Igikomere kitababaza mu bihimba vy'irondoka,Boog aan xanuun lahayn oo xubinta taranka ah,Symptom,Coded,"Painless ulcer in the genital area, suggestive of primary syphilis."
-EHEZA-U-0387,Immunisation,Immunization,Inkingo,Incanco,Tallaal,Drug,Coded,Generic category for vaccine administration records.
-EHEZA-U-0388,ImmunizationHistory,Immunization History,Amakuru ku nkingo yafashe,Akahise k'urucanco,Taariikhda Tallaalka,Drug,Coded,Patient's recorded history of vaccinations received.
+EHEZA-U-0387,Immunisation,Immunization,Inkingo,Incanco,Tallaal,Misc,Coded,Generic category for vaccine administration records.
+EHEZA-U-0388,ImmunizationHistory,Immunization History,Amakuru ku nkingo yafashe,Akahise k'urucanco,Taariikhda Tallaalka,Misc,Coded,Patient's recorded history of vaccinations received.
 EHEZA-U-0389,IndexPatient,Index Patient,Umubare w'umurwayi,Ironderero ry'umurwayi,Liiska Bukaanka,Misc,N/A,
 EHEZA-U-0390,IndividualEncounter,Individual Encounter,Gukorera umuntu umwe,Umubonano n'umuntu umwe,Ogaanshaha Qofka,Misc,N/A,
 EHEZA-U-0391,IndividualEncounterLabel.AcuteIllnessEncounter,Acute Illness Encounter,Igikorwa ku burwayi butunguranye,Guhura n'ingwara ibabaza cane/ikaze,Xanuunka soo Boodada ee lala kulmay,Test,Coded,Encounter for evaluating an acute illness episode.
@@ -563,7 +563,7 @@ EHEZA-U-0527,LegCrampsReliefMethod.ReliefMethodMassage,Massage,Ubugororangingo,,
 EHEZA-U-0528,LegLeft,Left leg,Ukuguru kw'ibumoso,Ukuguru kw'ibubamfu,Lugta bidix,Misc,N/A,
 EHEZA-U-0529,LegRight,Right leg,Ukuguru kw'iburyo,Ukuguru kw'iburyo,Lugta midig,Misc,N/A,
 EHEZA-U-0530,Legs,Legs,Amaguru,Amaguru,Lugo,Misc,Coded,
-EHEZA-U-0531,LessCommonAntiRetroviralMedications,Less Common Anti-Retroviral Medications,,Imiti Ikoreshwa gake igabanya imigera ya SIDA   ,Dawada ugu yar ee Anti-Retroviral ah,Drug,Coded,Category grouping less frequently prescribed antiretroviral medications.
+EHEZA-U-0531,LessCommonAntiRetroviralMedications,Less Common Anti-Retroviral Medications,,Imiti Ikoreshwa gake igabanya imigera ya SIDA   ,Dawada ugu yar ee Anti-Retroviral ah,Misc,Coded,Category grouping less frequently prescribed antiretroviral medications.
 EHEZA-U-0532,LevelOfEducationLabel,Level of Education,,Urugero rw'amashule yize,Heerka Waxbarashada,Test,Coded,Highest level of formal education completed by the patient.
 EHEZA-U-0533,LevelOfEducation.NoSchooling,No Schooling,Ntayo,Nta mashule,Iskuul ma aado,Misc,N/A,
 EHEZA-U-0534,LevelOfEducation.VocationalTrainingSchool,Vocational Training School,Imyuga,Inyigisho zo kwishule ry'imyuga,Dugsiga Tababarka Farsamada,Misc,N/A,
@@ -632,11 +632,10 @@ EHEZA-U-0592,MaritalStatus.Single,Single,Ingaragu,Umusore canke inkumi ,Doob,Mis
 EHEZA-U-0593,MaritalStatus.Widowed,Widowed,Umupfakazi,Umupfakazi,Carmal,Misc,N/A,
 EHEZA-U-0594,MaritalStatus.LivingWithPartner,Living with partner,,Kubana n'umufasha,,Misc,N/A,
 EHEZA-U-0595,MaritalStatus.Religious,Religious,,umunyedini,Diineed,Misc,N/A,
-EHEZA-U-0596,MedicationCausingHypertension.MedicationOestrogens,Oestrogens (Family Planning),Umusemburo wa Estrogene,Umusemburo wa Oestrogène,Istorojiin (Kala Korinta Carruurta),Drug,Coded,Estrogen-containing contraceptives noted for potential to elevate blood pressure.
-EHEZA-U-0597,MedicationCausingHypertension.MedicationSteroids,Steroids (Prednisolone),Umusemburo wa iteroyide,Umusemburo wa Stéroïdes (prednisolone),Xanuun baabi`iyaal,Drug,Coded,Corticosteroid medications noted for potential to elevate blood pressure.
+EHEZA-U-0596,MedicationCausingHypertension.MedicationOestrogens,Oestrogens (Family Planning),Umusemburo wa Estrogene,Umusemburo wa Oestrogène,Istorojiin (Kala Korinta Carruurta),Pharmacologic Drug Class,Coded,Estrogen-containing contraceptives noted for potential to elevate blood pressure.
+EHEZA-U-0597,MedicationCausingHypertension.MedicationSteroids,Steroids (Prednisolone),Umusemburo wa iteroyide,Umusemburo wa Stéroïdes (prednisolone),Xanuun baabi`iyaal,Pharmacologic Drug Class,Coded,Corticosteroid medications noted for potential to elevate blood pressure.
 EHEZA-U-0598,MedicationCausingHypertension.MedicationAmitriptyline,Amitriptyline,Amitiributiline,Amitriptyline,,Drug,Coded,Tricyclic antidepressant used to treat depression and certain chronic pain conditions.
 EHEZA-U-0599,MedicationCausingHypertension.MedicationIbuprofen,Ibuprofen (Diclofenac),Ibiporofene cg Dikolofenake,Ibuprofène (Diclofénac),,Drug,Coded,Non-steroidal anti-inflammatory drugs (NSAIDs) class noted for potential to elevate blood pressure.
-EHEZA-U-0600,MedicationCausingHypertension.NoMedicationCausingHypertension,None of the Above,Nta na kimwe,Nta nimwe muri izo ziri hejuru,Midna kor ku xusan,Drug,Coded,Indicator that the patient is not taking any of the listed medications causing hypertension.
 EHEZA-U-0601,MedicalCondition.MedicalConditionKidneyDisease,Kidney Disease,Indwara y'impyiko,Ingwara y'amafyigo,,Misc,N/A,
 EHEZA-U-0602,MedicalCondition.MedicalConditionPregnancyRelatedHypertension,Pregnancy Related Hypertension,Umuvuduko w'amaraso utewe no gutwita,Umuvuduko w'amaraso ujanye n'imbanyi,Dhhig karka la xiriira Uurka,Misc,N/A,
 EHEZA-U-0603,MedicalCondition.MedicalConditionNeuropathy,Neuropathy,Indwara z'imyakura,Neuropathie,Caabuqa Dareen sidaha,Misc,N/A,
@@ -648,11 +647,11 @@ EHEZA-U-0606,MedicationDistribution,Medication Distribution,Gutanga Imiti,Itangw
 EH-NCD-046,MedicationTreatingDiabetes.MedicationMetformin,Metformin,Metiforumine,Metformine,,Drug,Coded,Metformin
 EH-NCD-047,MedicationTreatingDiabetes.MedicationGlibenclamide,Glibenclamide,Girimbenkalamide,Glibenclamide,,Drug,Coded,Glibenclamide / glyburide
 EH-NCD-048,MedicationTreatingDiabetes.MedicationInsulin,Insulin,Insuline,Insuline,Insuliin,Drug,Coded,Insulin
-EHEZA-U-0607,MedicationTreatingHypertension.MedicationAceInhibitors,Ace-Inhibitors (Example: Captopril),Caputopili,Imiti ibuza ECA (Enzyme de Conversion Angiotensine),,Drug,Coded,Class of antihypertensive medications that inhibit the angiotensin-converting enzyme.
-EHEZA-U-0608,MedicationTreatingHypertension.MedicationARBs,Angiotensine Receptor Blockers (ARBs),Anjiyotensine,Ibihagarika ukwakira vya Angiotensine,,Drug,Coded,Class of antihypertensive medications that block angiotensin II receptors.
+EHEZA-U-0607,MedicationTreatingHypertension.MedicationAceInhibitors,Ace-Inhibitors (Example: Captopril),Caputopili,Imiti ibuza ECA (Enzyme de Conversion Angiotensine),,Pharmacologic Drug Class,Coded,Class of antihypertensive medications that inhibit the angiotensin-converting enzyme.
+EHEZA-U-0608,MedicationTreatingHypertension.MedicationARBs,Angiotensine Receptor Blockers (ARBs),Anjiyotensine,Ibihagarika ukwakira vya Angiotensine,,Pharmacologic Drug Class,Coded,Class of antihypertensive medications that block angiotensin II receptors.
 EHEZA-U-0609,MedicationTreatingHypertension.MedicationHCTZ,HCTZ,Idolokotiyazide,Hydrochlorothiazide,,Drug,Coded,Hydrochlorothiazide; thiazide diuretic used to treat hypertension and edema.
-EHEZA-U-0610,MedicationTreatingHypertension.MedicationCalciumChannelBlockers,Calcium Channel Blockers,Kalisiyumu,Ibibuza ukuyobora kwa Kalisiyumu,,Drug,Coded,Class of antihypertensive and antianginal medications that block calcium ion channels.
-EHEZA-U-0611,MedicationTreatingHypertension.MedicationBetaBlockers,Beta-Blockers,Beta boloka,Umurwi w'imiti ifasha umutima mu gihe utera nabi,,Drug,Coded,"Class of medications that block beta-adrenergic receptors, used for hypertension and heart conditions."
+EHEZA-U-0610,MedicationTreatingHypertension.MedicationCalciumChannelBlockers,Calcium Channel Blockers,Kalisiyumu,Ibibuza ukuyobora kwa Kalisiyumu,,Pharmacologic Drug Class,Coded,Class of antihypertensive and antianginal medications that block calcium ion channels.
+EHEZA-U-0611,MedicationTreatingHypertension.MedicationBetaBlockers,Beta-Blockers,Beta boloka,Umurwi w'imiti ifasha umutima mu gihe utera nabi,,Pharmacologic Drug Class,Coded,"Class of medications that block beta-adrenergic receptors, used for hypertension and heart conditions."
 EH-NCD-045,MedicationTreatingHypertension.MedicationHydralazine,Hydralazine,Idaralazine,Hydralazine,,Drug,Coded,Hydralazine
 EH-NCD-044,MedicationTreatingHypertension.MedicationMethyldopa,Methyldopa,,,,Drug,Coded,Methyldopa
 EHEZA-U-0612,MedicalConditions,Medical conditions,Ibibazo by’ubuzima,,,Misc,N/A,
@@ -697,7 +696,7 @@ EH-PER-006,ModeOfDeliveryLabel,Mode of delivery,Uburyo yabyayemo,Uburyo yibaruts
 EHEZA-U-0647,ModeratePreeclampsia,Moderate Preeclampsia,Preklampusi Yoroheje,Ingorane z'imbanyi kuva bisanzwe gushika hagati na hagati (izo ngorane ziba zivuye k'umuvuduko urenze w'amaraso),Dhiig Karka Dhexe ee Uurka,Misc,N/A,
 EHEZA-U-0648,Month,Month,Ukwezi,Ukwezi,Bil,Misc,N/A,
 EHEZA-U-0649,MonthsOfStock,Months of Stock,,,,Misc,N/A,
-EHEZA-U-0650,MostCommonAntiRetroviralMedications,Most Common Anti-Retroviral Medications,,Imiti ikoreshwa cane igabanya imigera ya SIDA,Dawada ugu badan ee Anti-Retroviral ah,Drug,Coded,Category grouping the most frequently prescribed antiretroviral medications.
+EHEZA-U-0650,MostCommonAntiRetroviralMedications,Most Common Anti-Retroviral Medications,,Imiti ikoreshwa cane igabanya imigera ya SIDA,Dawada ugu badan ee Anti-Retroviral ah,Misc,Coded,Category grouping the most frequently prescribed antiretroviral medications.
 EHEZA-U-0651,MotherId,Mother ID,,,,Misc,N/A,
 EHEZA-U-0652,MotherNameLabel,Mother's Name,Izina ry'umubyeyi,Izina rya mama,Magaca Hooyada,Test,Coded,Recorded name of the mother.
 EHEZA-U-0653,MTDIn,MTD in,,,,Misc,N/A,
@@ -710,8 +709,8 @@ EHEZA-U-0658,NCDASignHelperHeader.FiveFoodGroups,Food groups,Amoko y'ibiribwa,,,
 EHEZA-U-0659,NCDAANCNewbornItemLabel.RegularCheckups,Regular prenatal and postpartum checkups,Yisuzumishije uko bikwiye atwite na nyuma yo kubyara,Kwisuzumisha buri igihe imbere n'inyuma yo kuvyara,La socodka joogtada ah ee dhalmada kahor iyo kadib,Test,Coded,Indicator that regular prenatal and postpartum checkups were attended.
 EHEZA-U-0660,NCDAANCNewbornItemLabel.IronDuringPregnancy,Iron during pregnancy,Yafashe umuti wongera amaraso atwite,Icunyunyu c'icuma mu gihe c'imbanyi,Macdanta Xilliga Uurka,Test,Coded,Indicator that the mother received iron supplementation during pregnancy.
 EHEZA-U-0661,NCDANutritionBehaviorItemLabel.MealsADay,Number of times a child eats a day,Inshuro umwana afata ifunguro ku munsi,Igitigiri c'incuro umwana afungurako k'umunsi,Tirada inta jeer uu canuga wax cuno maalinkii,Test,Coded,Number of meals the child eats per day.
-EHEZA-U-0662,NCDATargetedInterventionsItemLabel.TreatmentForAcuteMalnutrition,Treatment for acute malnutrition (severe or moderate),Kuvura imiritre mibi  ifatiyeho(Ikabije cg yoroheje),Ukuvura ingwara yo gufungura nabi ikaze (Ikaze canke igereranye),Daweynta nafaqo darada (dhexe iyo daran),Drug,Coded,Therapeutic feeding intervention for severe or moderate acute malnutrition.
-EHEZA-U-0663,NCDATargetedInterventionsItemLabel.TreatmentForDiarrhea,Treatment of diarrhea (ORS & Zinc),Kuvura impiswi(Ukoresheje Zinc cg ORS),Kuvura guhitwa (ORS & Zinc),Daweynta shubanka (ORS & Zink),Drug,Coded,First-line treatment of childhood diarrhea using oral rehydration solution plus zinc supplementation.
+EHEZA-U-0662,NCDATargetedInterventionsItemLabel.TreatmentForAcuteMalnutrition,Treatment for acute malnutrition (severe or moderate),Kuvura imiritre mibi  ifatiyeho(Ikabije cg yoroheje),Ukuvura ingwara yo gufungura nabi ikaze (Ikaze canke igereranye),Daweynta nafaqo darada (dhexe iyo daran),Misc,Coded,Therapeutic feeding intervention for severe or moderate acute malnutrition.
+EHEZA-U-0663,NCDATargetedInterventionsItemLabel.TreatmentForDiarrhea,Treatment of diarrhea (ORS & Zinc),Kuvura impiswi(Ukoresheje Zinc cg ORS),Kuvura guhitwa (ORS & Zinc),Daweynta shubanka (ORS & Zink),Misc,Coded,First-line treatment of childhood diarrhea using oral rehydration solution plus zinc supplementation.
 EH-NUT-020,NCDAUniversalInterventionsItemLabel.Deworming,Deworming,"Mu mezi atandatu ashize, umwana yahawe ikinini cy'inzoka",Umwana yaronse imiti yo munda mu mezi atandatu ashize?,Gooryaan Dilid,Procedure,Coded,Child received deworming medication
 EHEZA-U-0664,NCDAUniversalInterventionsItemLabel.ECDServices,ECD services provided to child,Umwana yahawe servise n'ikigo mboneza mikurire,Ibikorwa vya IUM (DPE) bikorerwa umwana,,Test,Coded,Indicator that early-childhood-development services were provided to the child.
 EHEZA-U-0665,NCDDangerSign.Dyspnea,Acute Shortness of Breath (Dyspnea),Guhumeka nabi biziyeho,Urugero rukaze rwo kubura impwemu,,Symptom,Coded,Sudden onset of difficulty breathing or shortness of breath.
@@ -773,7 +772,7 @@ EHEZA-U-0717,AdministrationNote.NonAdministrationLackOfStock,Out of Stock,Nta mi
 EHEZA-U-0718,AdministrationNote.NonAdministrationHomeBirth,Home Birth,Yabyariye mu rugo,Kuvyarira muhira,Ku dhalashada Guriga,Misc,N/A,
 EHEZA-U-0719,AdministrationNote.AdministeredToday,Administered Today,Yahawe umuti uyu munsi,,,Misc,N/A,
 EHEZA-U-0720,AdministrationNote.AdministeredPreviously,Already Received,Byamaze kwakirwa,Vyamaze kwakirwa,Hore loo helay,Misc,N/A,
-EHEZA-U-0721,AdministrationNoteForWellChildImmunisation.NonAdministrationPatientDeclined,Mother / Caregiver Declined,Umubyeyi / Umurezi yanze,Mama / umurezi yaranse,Hooyada/ Daryeelaha ayaa Diiday,Drug,Coded,Reason for non-administration: mother or caregiver refused vaccination.
+EHEZA-U-0721,AdministrationNoteForWellChildImmunisation.NonAdministrationPatientDeclined,Mother / Caregiver Declined,Umubyeyi / Umurezi yanze,Mama / umurezi yaranse,Hooyada/ Daryeelaha ayaa Diiday,Misc,Coded,Reason for non-administration: mother or caregiver refused vaccination.
 EHEZA-U-0722,NoReferralRecorded,No referral recorded,Nta koherezwa kwagaragaye,Ntakurungika umugwayi ahandi (kubindi bitaro/kurindi vuriro) vyanditse,Tixraac lama diiwaan gelin,Misc,N/A,
 EHEZA-U-0723,NoChildrenRegisteredInTheSystem,No children registered in the system,Ntamwana wanditswe muriyi sisiteme,Nta bana biyandikishije muri ubu buryo bugezweho (muri sisiteme),Ma jiraan carruur ku diiwaan gashan habkan,Misc,N/A,
 EHEZA-U-0724,NumberOfAbortionsLabel,Number of Abortions,Umubare w'inda zavuyemo,Ugukoroka kw'imbanyi,Tirada Uurka Dhicisoobay,Test,Coded,Number of prior abortions or miscarriages recorded for the patient.
@@ -940,19 +939,19 @@ EHEZA-U-0879,PrenatalHealthEducationLabel.EducationLegPainRedness,Leg Pain or Re
 EHEZA-U-0880,PrenatalHealthEducationLabel.EducationSaferSex,Safer Sex Practices,Imibonano mpuzabitsina ikingiye,Imigirwa mpuzabitsina ikingiwe,Hababka bad qabka leh ee Galmada,Test,Coded,Health education topic: safer sex practices.
 EHEZA-U-0881,PrenatalHealthEducationLabel.EducationGrief,Grief,Intimba,,Niyadjab,Test,Coded,Health education topic: managing grief during pregnancy.
 EHEZA-U-0882,PrenatalHealthEducationLabel.EducationHIVPartnerPresence,Partner Presence,Guherekezwa n'umutware,,,Test,Coded,Health education topic: importance of partner presence at HIV counseling.
-EHEZA-U-0883,PrenatalImmunizationHistory.VaccineTetanus,Tetanus History,Amakuru ku ndwara y'Agakwega,Akahise ka Rudadaza,Taariikhda Teetanada,Drug,Coded,History of tetanus vaccine doses received by the patient.
+EHEZA-U-0883,PrenatalImmunizationHistory.VaccineTetanus,Tetanus History,Amakuru ku ndwara y'Agakwega,Akahise ka Rudadaza,Taariikhda Teetanada,Misc,Coded,History of tetanus vaccine doses received by the patient.
 EHEZA-U-0884,PrenatalLabsCaseManagementEntryTypeResults,ANC Lab Results,Ibisubizo by'Ibizamini Byafashwe ku mugore utwite,Inyishu z'ibipimo vyakozwe mu gusuzumisha imbanyi,,Test,Coded,Antenatal care laboratory test results panel.
 EHEZA-U-0885,PrenatalMedicationTask.TaskFefol,Fefol,Ibinini by'ubutare (Fefol),,,Drug,Coded,Brand-name iron and folic acid supplement used in prenatal care.
 EHEZA-U-0886,PrenatalMedicationTask.TaskFolate,Folate,Ibinini bya Acide Folic,,,Drug,Coded,"Folic acid (vitamin B9) supplement, particularly important during pregnancy to prevent neural tube defects."
-EHEZA-U-0887,PrescribedMedication,Prescribed Medication,Imiti yatanzwe,Imiti yandikiwe,Dawada la Qoray,Drug,Coded,Medication prescribed to the patient at this encounter.
+EHEZA-U-0887,PrescribedMedication,Prescribed Medication,Imiti yatanzwe,Imiti yandikiwe,Dawada la Qoray,Misc,Coded,Medication prescribed to the patient at this encounter.
 EHEZA-U-0888,OutsideCareMedicationLabel.OutsideCareMedicationQuinineSulphate,Quinine Sulphate per os (10 mg/kg/dose),,,,Drug,Coded,Oral quinine sulphate antimalarial dosed by weight at 10 mg/kg per dose.
 EHEZA-U-0889,OutsideCareMedicationLabel.OutsideCareMedicationPenecilin1,Penicillin (2.4 million units),Penisilini (Miliyoni 2.4),"Penisiline (udupimo tungana na miliyoni 2,4)",Penicillin (2.4 malayn qeyb),Drug,Coded,"Benzathine penicillin G at 2.4 million units, used for syphilis treatment."
 EHEZA-U-0890,OutsideCareMedicationLabel.OutsideCareMedicationDolutegravir,Dolutegravir (50mg),,,,Drug,Coded,Integrase inhibitor antiretroviral at standard 50mg dose for HIV treatment.
 EHEZA-U-0891,OutsideCareMedicationLabel.OutsideCareMedicationIron2,Iron (60mg),Fer (60mg),Fer (60mg),,Drug,Coded,"Iron supplement at 60mg elemental iron, commonly prescribed during pregnancy."
 EHEZA-U-0892,OutsideCareMedicationLabel.OutsideCareMedicationFolicAcid,Folic Acid (400IU),,Acide Folique (400IU),,Drug,Coded,"Folic acid supplement at 400 IU dose, commonly used preconception and during early pregnancy."
-EHEZA-U-0893,OutsideCareMedicationDosage.OutsideCareMedicationQuinineSulphate,3 x a day for 7 days,inshuri 3 ku munsi mu minsi 7,,,Drug,Coded,Dosing schedule indicating administration three times per day for seven days.
-EHEZA-U-0894,OutsideCareMedicationDosage.OutsideCareMedicationTDF3TC,one tab by mouth 1x a day,Kunywa ikinini kimwe inshuro imwe ku munsi,Kumira ikinini kimwe incuro 1 ku munsi,,Drug,Coded,Dosing schedule indicating one oral tablet once daily.
-EHEZA-U-0895,OutsideCareMedicationDosage.OutsideCareMedicationIron2,one tab by mouth 2x a day,Kunywa ikinini kimwe inshuro 2 ku munsi,Kumira ikinini kimwe incuro 2 ku munsi,,Drug,Coded,Dosing schedule indicating one oral tablet twice daily.
+EHEZA-U-0893,OutsideCareMedicationDosage.OutsideCareMedicationQuinineSulphate,3 x a day for 7 days,inshuri 3 ku munsi mu minsi 7,,,Frequency,Coded,Dosing schedule indicating administration three times per day for seven days.
+EHEZA-U-0894,OutsideCareMedicationDosage.OutsideCareMedicationTDF3TC,one tab by mouth 1x a day,Kunywa ikinini kimwe inshuro imwe ku munsi,Kumira ikinini kimwe incuro 1 ku munsi,,Frequency,Coded,Dosing schedule indicating one oral tablet once daily.
+EHEZA-U-0895,OutsideCareMedicationDosage.OutsideCareMedicationIron2,one tab by mouth 2x a day,Kunywa ikinini kimwe inshuro 2 ku munsi,Kumira ikinini kimwe incuro 2 ku munsi,,Frequency,Coded,Dosing schedule indicating one oral tablet twice daily.
 EHEZA-U-0896,PrenatalSymptom.BurningWithUrination,Burning with Urination,Kunyara Ukababara,Ugusha hamwe n'ugusoba,,Symptom,Coded,Burning sensation experienced during urination.
 EHEZA-U-0897,PrenatalSymptom.AbnormalVaginalDischarge,Abnormal Vaginal Discharge,Gusohora ibintu bidasanzwe mu gitsina,Isohoka ridasanzwe ry'amazi canke ibintu bimeze nk'amazi mu gihimba c'irondoka,,Symptom,Coded,"Vaginal discharge with abnormal color, amount, or odor during pregnancy."
 EHEZA-U-0898,PrenatalSymptom.CoughContinuous,Cough for >2 weeks,Inkorora irengeje ibyumweru 2,Ugukorora ikiringo kirenga indwi 2,Qufac ilaa >2 usbuuc,Symptom,Coded,Persistent cough lasting more than two weeks (a TB-suggestive symptom).
@@ -988,14 +987,14 @@ EHEZA-U-0927,PrePregnancyClassification.PrePregnancyObesity,Obesity,,,,Misc,N/A,
 EHEZA-U-0928,PreTermPregnancy,Number of Pre-term Pregnancies (Live Birth),Umubare w'abavutse ari bazima badashyitse,Igitigiri c'imbanyi zavutse zitageze kw'itarike (Ariko abana bakaba bariho),Tirada Carruurta aan bilo Dhameysan (Ku Dhashay Nolol),Misc,N/A,
 EHEZA-U-0929,PreviousCSectionScar,Previous c-section or other abdominal scar,Inkovu yaho babaze ubushize cyangwa indi nkovu ku nda,Igikomere c'ugukorwa guheruka canke ikindi gikomere ku nda,Qalliin hore ama nabar kale oo caloosha ah,Misc,N/A,
 EHEZA-U-0930,PreviousDelivery,Previous delivery,Kubyara guheruka,Ukwibaruka guheruka,Dhalmo Hore,Misc,Coded,
-EHEZA-U-0931,PreviousMedication,Previous Medication,,,,Drug,Coded,Medications the patient has taken in the past.
+EHEZA-U-0931,PreviousMedication,Previous Medication,,,,Misc,Coded,Medications the patient has taken in the past.
 EHEZA-U-0932,Programs,Programs,Porogaramu,Imigambi,Barnaamijyada,Misc,N/A,
 EHEZA-U-0933,ProgressPhotos,Progress Photos,Uko amafoto agenda ahinduka,Iterambere rya mafoto,Sawirada Hor u socodka,Misc,N/A,
 EHEZA-U-0934,ProgressReport,Progress Report,Raporo y’ibyakozwe,Iterambere ry'icegeranyo,Warbixinta Hor u socodka,Misc,N/A,
 EHEZA-U-0935,ProgressReports,Progress Reports,Raporo z’ibyakozwe,Icegeranyo c’ivyakozwe,Warbixinada Hor u socodka,Misc,N/A,
 EHEZA-U-0936,ProgressTimeline,Progress Timeline,Uko inda igenda ikura,Ikiringo c'iterambere,Waqtiga Hor u socodka,Misc,N/A,
 EHEZA-U-0937,ProgressTrends,Progress Trends,Uko ibipimo bigenda bizamuka,Amayira y'iterambere,Dhacdooyinka Hor u socodka,Misc,N/A,
-EHEZA-U-0938,ProphylaxisMedications,Prophylaxis Medications,,Imiti ikinga,Dawada ka Hortaga,Drug,Coded,Medications administered to prevent disease occurrence (prophylaxis).
+EHEZA-U-0938,ProphylaxisMedications,Prophylaxis Medications,,Imiti ikinga,Dawada ka Hortaga,Misc,Coded,Medications administered to prevent disease occurrence (prophylaxis).
 EHEZA-U-0939,PriorDiagnosis,Prior Diagnosis,Uburwayi yagize/yigeze kurwara,Imbere y'isuzuma,Baaritaanka Ka hor,Diagnosis,Coded,A diagnosis previously assigned to the patient prior to the current encounter.
 EHEZA-U-0940,Province,Province,Intara,Intara,Gobal,Misc,Text,
 EHEZA-U-0941,ReadyForReview,Ready for Review,,,,Misc,N/A,
@@ -1012,15 +1011,15 @@ EHEZA-U-0951,ReasonForNotIsolating.CanNotSeparateFromFamily,Unable to separate f
 EHEZA-U-0952,ReasonForNotTaking.NotTakingAdverseEvent,Adverse event,Ibintu bidasanzwe (bitewe n'imiti wafashe),Icyabaye bibabaje,Waxyeelo,Misc,Coded,Reason for non-adherence: patient experienced an adverse event from medication.
 EHEZA-U-0953,ReasonForNotTaking.NotTakingNoMoney,No money for medication,Nta mafaranga yo kwishyura imiti afite,Nta mafaranga yo kugura imiti,Lacag uma heysto dawada,Misc,Coded,Reason for non-adherence: patient cannot afford the cost of medication.
 EHEZA-U-0954,ReasonForNotTaking.NotTakingMemoryProblems,Memory problems,Ibibazo byo kwibagirwa,Ingorane zo kwibuka,Dhibaato la xiriirta Keydka Xasuusta,Misc,Coded,Reason for non-adherence: patient forgot to take medication due to memory problems.
-EHEZA-U-0955,ReasonForNotTaking.NotTakingTreatmentNotStarted,Treatment not started,,,,Drug,Coded,Reason for non-adherence: treatment was not yet started.
+EHEZA-U-0955,ReasonForNotTaking.NotTakingTreatmentNotStarted,Treatment not started,,,,Misc,Coded,Reason for non-adherence: treatment was not yet started.
 EHEZA-U-0956,ReasonForNotProvidingHealthEducation.LackOfAppropriateEducationUserGuide,Lack of appropriate education user guide,Nta mfashanyigisho yabugenewe ihari,Ukubura ry'indongozo nziza yo gukoresha ivyo wize,Aan lahayn hagaha waxbarashada ku haboon,Misc,Coded,Reason for not providing health education: lack of an appropriate user guide.
 EHEZA-U-0957,ReasonForNotProvidingHealthEducation.NoReasonForNotProvidingHealthEducation,No reason,Nta mpamvu,Nta citwazo,Sabab la`aan,Misc,Coded,Reason for not providing health education: no specific reason recorded.
 EHEZA-U-0958,Received,Received,Ibyakiriwe,yaronse,Helay,Misc,Numeric,
 EHEZA-U-0959,RecommendationSite.TeamComeToVillage,Team will come to village,Itsinda rizaza mu mudugudu,Umurwi uzoza ku musozi,,Misc,N/A,
 EHEZA-U-0960,Recommended,Recommended,Imiti yemewe,Bitegerezwa,Lagula taliyay,Misc,N/A,
 EHEZA-U-0961,RecommendedSymptomRelief,Recommended Symptom Relief,Imiti yemewe mukuvura ibimenyesto,Icofasha kugabanya ibimenyetso categetswe,Kula tali Qandho Jabiye,Symptom,Coded,Symptom relief measures recommended to the patient.
-EHEZA-U-0962,RecommendedTreatmentSignLabel.TreatmentWrittenProtocols,GI complications: followed Written Protocols,Afite ibibazo by'urwungano ngogozi: Kurikiza amabwiriza,Ingorane zijane na IG: Kurikiza Inyandiko Ntumberezo zivyerekeye,Waxyeelo Uur ku jirta ah:,Drug,Coded,Indicator that gastrointestinal complications were managed per written treatment protocols.
-EHEZA-U-0963,RecommendedTreatmentSignLabel.NoTreatmentForMalaria,No Treatment Administered,Nta muti watanzwe,Nta muti watanzwe,Daawo lama siinin,Drug,Coded,Indicator that no malaria treatment was given at this encounter.
+EHEZA-U-0962,RecommendedTreatmentSignLabel.TreatmentWrittenProtocols,GI complications: followed Written Protocols,Afite ibibazo by'urwungano ngogozi: Kurikiza amabwiriza,Ingorane zijane na IG: Kurikiza Inyandiko Ntumberezo zivyerekeye,Waxyeelo Uur ku jirta ah:,Misc,Coded,Indicator that gastrointestinal complications were managed per written treatment protocols.
+EHEZA-U-0963,RecommendedTreatmentSignLabel.NoTreatmentForMalaria,No Treatment Administered,Nta muti watanzwe,Nta muti watanzwe,Daawo lama siinin,Misc,Coded,Indicator that no malaria treatment was given at this encounter.
 EHEZA-U-0964,RecommendedTreatmentSignLabel.TreatmentHydrochlorothiazide,Hydrochlorothiazide (12.5mg),Idirokolotiyazide (12.5mg),,,Drug,Coded,Thiazide diuretic at 12.5mg dose used as antihypertensive therapy.
 EHEZA-U-0965,RecommendedTreatmentSignLabel.TreatmentNifedipine,Nifedipine (20mg),Nifedipine miligarama 20,,,Drug,Coded,"Calcium channel blocker antihypertensive at 20mg dose, also used in obstetric emergencies."
 EHEZA-U-0966,RecommendedTreatmentSignLabel.TreatmentCaptopril,Captopril (25mg),Kabutopulili miligaram 25,,,Drug,Coded,ACE inhibitor antihypertensive medication at 25mg dose for blood pressure control.
@@ -1110,7 +1109,7 @@ EHEZA-U-1041,SymptomsTask.SymptomsGI,GI,Urwungano ngogozi,Ingwara zo mu nda,Uur 
 EHEZA-U-1042,SymptomReview,Symptom Review,Kureba ibimenyetso by'uburwayi,Kuraba ibimenyetso,Eegis Calaamadaha ah,Symptom,Coded,Activity for systematically reviewing the patient's symptoms.
 EH-NCD-021,Syphilis,Syphilis,Mburugu,Ingwara yo mu bihimba vy'irondoka,Waraabow,Diagnosis,Coded,Syphilis (co-morbidity)
 EHEZA-U-1043,StartingStock,Starting Stock,Ububiko bwatangiranywe,Ugutangura ububiko,,Misc,Numeric,
-EHEZA-U-1044,TakenAsPrescribed,Taken as prescribed,,,,Drug,Coded,Indicator confirming the patient took the medication as prescribed.
+EHEZA-U-1044,TakenAsPrescribed,Taken as prescribed,,,,Misc,Coded,Indicator confirming the patient took the medication as prescribed.
 EHEZA-U-1045,TargetedInterventions,Targeted Interventions,Ibikorwa bifasha umwana mu buryo bwihariye,Intabaro zerekejwe / ugutabara kwerekejwe,Tallaabooyinka la Hiigsanayo,Misc,N/A,
 EH-PER-009,TelephoneNumber,Telephone number,Numero ya telefoni,Inimero ya Terefone,Lambarka Taleefanka,Question,Text,Patient's primary telephone number
 EHEZA-U-1046,Term,Term,Inda igeze igihe,Ikiringo,Mudo,Misc,N/A,
@@ -1119,14 +1118,14 @@ EHEZA-U-1048,TestDate,Date of Test,Itariki y'Ikizamini,Itarike y'igipimo,,Test,C
 EHEZA-U-1049,TotalCholesterol,Total Cholesterol,Igipimo cy'ibinure byose mu maraso (Total cholesterol),Icegeranyo c'amavuta m'umubiri,Wadarta Kolesteroolka,Misc,N/A,
 EHEZA-U-1050,TotalHighRiskPregnancies,Total Number of High Risk Pregnancies,Umubare w'abagore batwite bafite ibimenyetso mpuruza,,,Misc,N/A,
 EHEZA-U-1051,TreatedWith,Treated with,Bivurwa na,Yavuwe na,Laga daweeyay,Misc,N/A,
-EHEZA-U-1052,Treatment,Treatment,Ubuvuzi,Ubuvuzi,Daweyn,Drug,Coded,Generic category representing a treatment provided to the patient.
-EHEZA-U-1053,TreatmentReview,Treatment Review,Kureba imiti yahawe,Isubiramwo ry'imiti,Dib u eegida daweynta,Drug,Coded,Encounter or activity for reviewing the patient's ongoing treatment.
-EHEZA-U-1054,TreatmentReviewTask.TreatmentReviewPrenatalMedication,Prenatal Medication,Imiti yo gufata mu gihe utwite,Imiti yo gufat amu gihe cy'imbanyi,,Drug,Coded,Generic category for medications administered as part of antenatal care.
-EHEZA-U-1055,TreatmentReviewTask.TreatmentReviewHIV,HIV Medication,Imiti ya Virusi Itera SIDA,Imiti ya Umugera wa SIDA,,Drug,Coded,Generic category for medications administered as part of HIV treatment regimen.
-EHEZA-U-1056,TreatmentReviewTask.TreatmentReviewMalaria,Malaria Medication,Imiti ya Malariya,Imiti ya Malariya,Dawada Duumada,Drug,Coded,Generic category for medications administered as part of malaria treatment.
-EHEZA-U-1057,TreatmentReviewTask.TreatmentReviewAnemia,Anemia Medication,Imiti ivura indwara y'Amaraso make,Imiti ivura igabanuka ry'amaraso,,Drug,Coded,Generic category for medications administered as part of anemia treatment.
-EHEZA-U-1058,TreatmentReviewTask.TreatmentReviewSyphilis,Syphilis Medication,Imiti ya Mburugu,Imiti ya Syphilis,,Drug,Coded,Generic category for medications used in the treatment of syphilis.
-EHEZA-U-1059,TreatmentTimeline,Treatment Timeline,,Amezi agezeko mugufata umuti,,Drug,Coded,Timeline of medications and treatments administered to the patient.
+EHEZA-U-1052,Treatment,Treatment,Ubuvuzi,Ubuvuzi,Daweyn,Misc,Coded,Generic category representing a treatment provided to the patient.
+EHEZA-U-1053,TreatmentReview,Treatment Review,Kureba imiti yahawe,Isubiramwo ry'imiti,Dib u eegida daweynta,Misc,Coded,Encounter or activity for reviewing the patient's ongoing treatment.
+EHEZA-U-1054,TreatmentReviewTask.TreatmentReviewPrenatalMedication,Prenatal Medication,Imiti yo gufata mu gihe utwite,Imiti yo gufat amu gihe cy'imbanyi,,Misc,Coded,Generic category for medications administered as part of antenatal care.
+EHEZA-U-1055,TreatmentReviewTask.TreatmentReviewHIV,HIV Medication,Imiti ya Virusi Itera SIDA,Imiti ya Umugera wa SIDA,,Misc,Coded,Generic category for medications administered as part of HIV treatment regimen.
+EHEZA-U-1056,TreatmentReviewTask.TreatmentReviewMalaria,Malaria Medication,Imiti ya Malariya,Imiti ya Malariya,Dawada Duumada,Misc,Coded,Generic category for medications administered as part of malaria treatment.
+EHEZA-U-1057,TreatmentReviewTask.TreatmentReviewAnemia,Anemia Medication,Imiti ivura indwara y'Amaraso make,Imiti ivura igabanuka ry'amaraso,,Misc,Coded,Generic category for medications administered as part of anemia treatment.
+EHEZA-U-1058,TreatmentReviewTask.TreatmentReviewSyphilis,Syphilis Medication,Imiti ya Mburugu,Imiti ya Syphilis,,Misc,Coded,Generic category for medications used in the treatment of syphilis.
+EHEZA-U-1059,TreatmentTimeline,Treatment Timeline,,Amezi agezeko mugufata umuti,,Misc,Coded,Timeline of medications and treatments administered to the patient.
 EHEZA-U-1060,TrichomonasOrBacterialVaginosis,Trichomonas or Bacterial Vaginosis,Tirikomonasi cyangwa Mikorobe zo mu nda ibyara,Ingwara yo mu bihimba vy'irondoka igaragazwa kenshi no kuhiyagaza,Trichomonas ama Bakteeriyada Makaanka,Misc,N/A,
 EHEZA-U-1061,TuberculosisDiagnosis.TuberculosisPulmonary,Pulmonary (in the lungs),Igituntu cyo mu bihaha,Igituntu co mu mahaha,Saabley (ka baxsan sambabada),Diagnosis,Coded,"Tuberculosis affecting the lungs, the most common form of TB."
 EHEZA-U-1062,TuberculosisDiagnosis.TuberculosisExtrapulmonary,Extrapulmonary (outside the lungs),Igituntu gifata imyanya yo hanze y'ibihaha,Igituntu gifatira inyuma y'amahaha,Aan saabley ahayn (ka baxsan sambabada),Diagnosis,Coded,"Tuberculosis affecting tissues outside the lungs (e.g., lymph nodes, pleura, bones)."
@@ -1136,7 +1135,7 @@ EHEZA-U-1065,TuberculosisFollowUpTestingStageTest.FollowUpTestingEndMonth5,Smear
 EHEZA-U-1066,TuberculosisPast,Tuberculosis in the past,Yigeze kurwara igituntu,Akahise k'igituntu,Qaaxo xilli lasoo dhaafay ah,Misc,N/A,
 EHEZA-U-1067,TuberculosisPrescribedMedication.MedicationRHZE,RHZE x 2 months (Initiation phase),Atangira afata imiti ya RHZE mu gihe cy'amezi abiri,Atangura afata RHZE mu kiringo c'amezi abiri,RHZE x 2 bil (Wejiga bilowga ah),Drug,Coded,"Tuberculosis intensive-phase regimen of rifampicin, isoniazid, pyrazinamide, and ethambutol for two months."
 EHEZA-U-1068,TuberculosisPrescribedMedication.MedicationRH,RH x 4 months (Continuation phase),Akomeza afata imiti ya RH mu gihe cy'amezi 4,Akomeza afata imiti ya RH mu kiringo c'amezi ane,RH x 4 bil (Wejiga dhameystirka),Drug,Coded,Tuberculosis continuation-phase regimen of rifampicin and isoniazid for four months.
-EHEZA-U-1069,TuberculosisPrescribedMedication.MedicationOther,"Other - include HIV dosing, Pediatric dosing, etc","Indi miti - harimo Iya Virusi iteera SIDA, imiti y'abana,...","Iyindi miti harimwo iyipfupfahaza umugera wa SIDA, iy'abana,...","Kale  - ku dar dooska HIV, dooska carruurta, iwm",Drug,Coded,Category for other tuberculosis medications including HIV-co-infection or pediatric dosing variants.
+EHEZA-U-1069,TuberculosisPrescribedMedication.MedicationOther,"Other - include HIV dosing, Pediatric dosing, etc","Indi miti - harimo Iya Virusi iteera SIDA, imiti y'abana,...","Iyindi miti harimwo iyipfupfahaza umugera wa SIDA, iy'abana,...","Kale  - ku dar dooska HIV, dooska carruurta, iwm",Misc,Coded,Category for other tuberculosis medications including HIV-co-infection or pediatric dosing variants.
 EHEZA-U-1070,TuberculosisPresent,Tuberculosis in the present,Arwaye igituntu,Akubu k'igituntu,Qaaxo hadda ah,Misc,N/A,
 EHEZA-U-1071,TuberculosisSuspect,Tuberculosis Suspect,,,,Misc,N/A,
 EHEZA-U-1072,UltrasoundExecutionDateLabel,Date Ultrasound was performed,,,Taariikhda baaritaanka uurka lagu sameeyay,Test,Coded,Date on which an obstetric ultrasound examination was performed.
@@ -1186,10 +1185,10 @@ EHEZA-U-1111,WellChildImmunisationHeader.VaccineMR,Measles-Rubella (MR),Urukingo
 EHEZA-U-1112,WellChildImmunisationHeader.VaccinePCV13,Pneumococcal Vaccine (PCV 13),Urukingo rw'umusonga,Urucanco rw'umusonga (PCV 13),,Drug,Coded,13-valent pneumococcal conjugate vaccine for prevention of pneumococcal disease.
 EHEZA-U-1113,WellChildImmunisationHeader.VaccineRotarix,Rotavirus Vaccine (Rotarix),Urukingo rw'impiswi,Urucanco rwa rotavirus (Rotarix),,Drug,Coded,Live attenuated oral vaccine for prevention of rotaviral diarrhea in infants.
 EHEZA-U-1114,WellChildImmunizationHistory.VaccineDTPStandalone,DTP History,,,,Drug,Coded,History of diphtheria-tetanus-pertussis vaccine doses received by the patient.
-EHEZA-U-1115,WellChildImmunizationHistory.VaccineIPV,IPV History,Amakuru k' Urukingo rw'imbasa rutangwa mu rushinge,Urucanco rw'ubukangwe (urushinge)  umwana yaronse mu minsi iheze,Taariikhda IPV,Drug,Coded,History of inactivated polio vaccine doses received by the patient.
-EHEZA-U-1116,WellChildImmunizationHistory.VaccineMR,Measles-Rubella History,amakuru k'Urukingo rw'Iseru na Rubeyole,Urucanco rw'agasama na Rubeole umwana yaronse mu minsi iheze,,Drug,Coded,History of measles-rubella vaccine doses received by the patient.
-EHEZA-U-1117,WellChildImmunizationHistory.VaccinePCV13,PCV 13 History,Amakuru k'urukingo rw'umusonga,Urucanco rw'umusonga  umwana yaronse mu minsi iheze,Taariikhda PCV 13,Drug,Coded,History of pneumococcal conjugate vaccine (PCV13) doses received.
-EHEZA-U-1118,WellChildImmunizationHistory.VaccineRotarix,Rotarix History,Amakuru k'Urukingo rw'impiswi,Urucanco rwo gucibwamwo umwana yaronse mu minsi iheze,Taariikhda Rotarix,Drug,Coded,History of rotavirus vaccine (Rotarix) doses received.
+EHEZA-U-1115,WellChildImmunizationHistory.VaccineIPV,IPV History,Amakuru k' Urukingo rw'imbasa rutangwa mu rushinge,Urucanco rw'ubukangwe (urushinge)  umwana yaronse mu minsi iheze,Taariikhda IPV,Misc,Coded,History of inactivated polio vaccine doses received by the patient.
+EHEZA-U-1116,WellChildImmunizationHistory.VaccineMR,Measles-Rubella History,amakuru k'Urukingo rw'Iseru na Rubeyole,Urucanco rw'agasama na Rubeole umwana yaronse mu minsi iheze,,Misc,Coded,History of measles-rubella vaccine doses received by the patient.
+EHEZA-U-1117,WellChildImmunizationHistory.VaccinePCV13,PCV 13 History,Amakuru k'urukingo rw'umusonga,Urucanco rw'umusonga  umwana yaronse mu minsi iheze,Taariikhda PCV 13,Misc,Coded,History of pneumococcal conjugate vaccine (PCV13) doses received.
+EHEZA-U-1118,WellChildImmunizationHistory.VaccineRotarix,Rotarix History,Amakuru k'Urukingo rw'impiswi,Urucanco rwo gucibwamwo umwana yaronse mu minsi iheze,Taariikhda Rotarix,Misc,Coded,History of rotavirus vaccine (Rotarix) doses received.
 EHEZA-U-1119,WellChildSymptom.SymptomBreathingProblems,Breathing problems,Ibibazo bijyanye no guhumeka,Ingorane zo guhema nabi,Dhibaatooyinka Neefsashada,Symptom,Coded,Symptom: child showing difficulty or distress in breathing.
 EHEZA-U-1120,WellChildSymptom.SymptomLethargyOrUnresponsiveness,Lethargy or unresponsiveness,Gucika intege cyane,Itiro rirenze canke ukuraba/uguta ubwenge,Tabaryari iyo Dhaqaaq la`aan,Symptom,Coded,Symptom: child appears lethargic or unresponsive.
 EHEZA-U-1121,WellChildSymptom.SymptomUmbilicalCordRedness,Umbilical Cord Redness,Guhisha k'umukondo,Urusogi rutukura,Xudunta oo Gaduudan,Symptom,Coded,"Redness around the umbilical cord stump, suggestive of omphalitis."
@@ -1256,8 +1255,8 @@ EHEZA-U-1181,PostpartumChildDangerSign,Postpartum Child Danger Sign,,,,Symptom,C
 EHEZA-U-1182,ReasonIrregularMenses,Irregular Menses,,Ukuja mu kwezi bihindagurika,Caado aan waqti lahayn,Misc,Coded,Reason for unreliable last menstrual period date: irregular menstrual cycles.
 EHEZA-U-1183,MedicalHistorySign.AutoimmuneDisease,Autoimmune Disease,,,,Symptom,Coded,Patient history of an autoimmune disorder.
 EHEZA-U-1184,MedicalHistoryValue.preeclampsiaInFamily,Preeclampsia In Family,,,,Misc,Coded,
-EHEZA-U-1185,MedicationSign.IronAndFolicAcidSupplement,Iron And Folic Acid Supplement,,,,Drug,Coded,Combined iron and folic acid supplement standard in antenatal care.
-EHEZA-U-1186,MedicationSign.DewormingPill,Deworming Pill,,,,Drug,Coded,Anthelminthic medication used to treat intestinal parasitic worm infections.
+EHEZA-U-1185,MedicationSign.IronAndFolicAcidSupplement,Iron And Folic Acid Supplement,,,,Misc,Coded,Combined iron and folic acid supplement standard in antenatal care.
+EHEZA-U-1186,MedicationSign.DewormingPill,Deworming Pill,,,,Misc,Coded,Anthelminthic medication used to treat intestinal parasitic worm infections.
 EHEZA-U-1187,ObstetricalExamValue.fundalPalpable,Fundal Palpable,,,,Misc,Boolean,
 EHEZA-U-1188,ObstetricalExamValue.cSectionScar,C Section Scar,,,,Misc,Coded,
 EHEZA-U-1189,FetalPresentation.Unknown,Unknown,,,,Misc,N/A,
@@ -1332,7 +1331,7 @@ EHEZA-U-1257,SymptomsGeneralValue.dryMouth,Dry Mouth,,,,Symptom,Numeric,Sensatio
 EHEZA-U-1258,SymptomsGeneralValue.cokeColoredUrine,Coke Colored Urine,,,,Symptom,Numeric,Cola-colored urine indicating possible hematuria or hemoglobinuria.
 EHEZA-U-1259,SymptomsGIDerivedSign.IntractableVomiting,Intractable Vomiting,,,,Symptom,Coded,"Severe, unrelenting vomiting that cannot be controlled."
 EHEZA-U-1260,MalariaTesting,Malaria Testing,,,,Test,Coded,Diagnostic testing for malaria infection.
-EHEZA-U-1261,TreatmentReviewSign.FeverPast6Hours,Fever Past 6 Hours,,,,Drug,Coded,Indicator that medication for fever was administered within the past six hours.
+EHEZA-U-1261,TreatmentReviewSign.FeverPast6Hours,Fever Past 6 Hours,,,,Misc,Coded,Indicator that medication for fever was administered within the past six hours.
 EHEZA-U-1262,IsolationSign.PatientIsolated,Patient Isolated,,,,Symptom,Coded,Indicator that the patient is currently in isolation.
 EHEZA-U-1263,HCContactValue.recommendations,Recommendations,,,,Misc,Coded,
 EHEZA-U-1264,HCContactValue.responsePeriod,Response Period,,,,Misc,Coded,
@@ -1340,22 +1339,22 @@ EHEZA-U-1265,SendToHCSign.HandReferrerForm,Hand Referrer Form,,,,Symptom,Coded,A
 EHEZA-U-1266,SendToHCSign.ReferToHealthCenter,Refer To Health Center,,,,Symptom,Coded,Action: refer the patient to the local health center.
 EHEZA-U-1267,SendToHCSign.EnrollToNutritionProgram,Enroll To Nutrition Program,,,,Symptom,Coded,Action: enroll patient in a nutrition support program.
 EHEZA-U-1268,SendToHCSign.ReferToNutritionProgram,Refer To Nutrition Program,,,,Symptom,Coded,Action: refer the patient to a nutrition support program.
-EHEZA-U-1269,TreatmentOngoingSign.SideEffects,Side Effects,,,,Drug,Coded,Adverse effects experienced by the patient from medication.
+EHEZA-U-1269,TreatmentOngoingSign.SideEffects,Side Effects,,,,Misc,Coded,Adverse effects experienced by the patient from medication.
 EHEZA-U-1270,ReasonForNotTaking,Reason For Not Taking,,,,Misc,Coded,Question category capturing reasons a patient is not taking prescribed medication.
-EHEZA-U-1271,TreatmentOngoing,Treatment Ongoing,,,,Drug,Coded,Indicator that the patient is currently undergoing treatment.
+EHEZA-U-1271,TreatmentOngoing,Treatment Ongoing,,,,Misc,Coded,Indicator that the patient is currently undergoing treatment.
 EHEZA-U-1272,CovidTesting,Covid Testing,,,,Test,Coded,Testing for COVID-19 infection.
 EHEZA-U-1273,ContactTraceItem.phoneNumber,Phone Number,,,,Misc,Text,
 EHEZA-U-1274,ContactTraceItem.contactDate,Contact Date,,,,Misc,Date,
 EHEZA-U-1275,ContactTraceItem.lastFollowUpDate,Last Follow Up Date,,,,Misc,Date,
 EHEZA-U-1276,HeadCircumferenceInCm,Head Circumference In Cm,,,,Misc,Coded,
-EHEZA-U-1277,VaccineType,Vaccine Type,,,,Drug,Coded,Type or category of vaccine being administered.
-EHEZA-U-1278,VaccineDose,Vaccine Dose,,,,Drug,Coded,The dose number of a vaccine in a multi-dose immunization series.
+EHEZA-U-1277,VaccineType,Vaccine Type,,,,Misc,Coded,Type or category of vaccine being administered.
+EHEZA-U-1278,VaccineDose,Vaccine Dose,,,,Misc,Coded,The dose number of a vaccine in a multi-dose immunization series.
 EHEZA-U-1279,PregnancySummaryValue.apgarOneMin,Apgar One Min,,,,Misc,Numeric,
 EHEZA-U-1280,PregnancySummaryValue.apgarFiveMin,Apgar Five Min,,,,Misc,Numeric,
 EHEZA-U-1281,PregnancySummaryValue.birthLength,Birth Length,,,,Misc,Coded,
 EH-NUT-019,PregnancySummaryValue.birthDefects,Birth defects,Umwana yaba yaravukanye ubumuga,Mbega umwana yavukanye ubumuga,Canuga ma wuxuu ku dhashay naafanimo,Finding,Coded,Child born with a birth defect
 EHEZA-U-1282,DeliveryComplication,Delivery Complication,,,,Misc,Coded,
-EHEZA-U-1283,NextVisitValue.immunisationDate,Immunisation Date,,,,Drug,Date,Date on which an immunization was administered.
+EHEZA-U-1283,NextVisitValue.immunisationDate,Immunisation Date,,,,Misc,Date,Date on which an immunization was administered.
 EHEZA-U-1284,VaccinationValue.administeredDoses,Administered Doses,,,,Misc,Coded,
 EHEZA-U-1285,MedicalCondition,Medical Condition,,,,Misc,Coded,
 EHEZA-U-1286,NCDFamilyHistoryValue.hypertensionPredecessors,Hypertension Predecessors,,,,Misc,Coded,
@@ -1373,7 +1372,7 @@ EHEZA-U-1297,LipidPanelTestValue.ldlCholesterolResult,Ldl Cholesterol Result,,,,
 EHEZA-U-1298,LipidPanelTestValue.hdlCholesterolResult,Hdl Cholesterol Result,,,,Test,Numeric,Result of the HDL cholesterol component of a lipid panel test.
 EHEZA-U-1299,LipidPanelTestValue.triglyceridesResult,Triglycerides Result,,,,Test,Numeric,Triglycerides result from a lipid panel test.
 EHEZA-U-1300,TuberculosisDiagnosis,Tuberculosis Diagnosis,,,,Diagnosis,Coded,Diagnosis category for tuberculosis (pulmonary or extrapulmonary).
-EHEZA-U-1301,TuberculosisMedication,Tuberculosis Medication,,,,Drug,Coded,Generic category for medications used in tuberculosis treatment.
+EHEZA-U-1301,TuberculosisMedication,Tuberculosis Medication,,,,Misc,Coded,Generic category for medications used in tuberculosis treatment.
 EHEZA-U-1302,HIVHealthEducation,HIV Health Education,,,,Misc,N/A,
 EHEZA-U-1303,AhezaDistributionReason,Aheza Distribution Reason,,,,Misc,Coded,Reason for distribution of Aheza fortified flour to a beneficiary.
 EHEZA-U-1304,AhezaMotherValue.distributionReason,Distribution Reason,,,,Misc,Coded,Reason recorded for distribution of Aheza fortified flour to a beneficiary mother.
@@ -1396,21 +1395,21 @@ EHEZA-U-1320,PrenatalMeasurements.syphilisTest,Syphilis Test,,,,Test,Coded,Recor
 EHEZA-U-1321,PrenatalMeasurements.urineDipstickTest,Urine Dipstick Test,,,,Test,Coded,Record of a urine dipstick test performed prenatally.
 EHEZA-U-1322,PrenatalMeasurements.hivPCRTest,Hiv PCR Test,,,,Test,Coded,Record of an HIV PCR test performed prenatally.
 EHEZA-U-1323,PrenatalMeasurements.mentalHealth,Mental Health,,,,Test,Coded,Mental health screening or measurement performed prenatally.
-EHEZA-U-1324,PrenatalMeasurements.tetanusImmunisation,Tetanus Immunisation,,,,Drug,Coded,Record of administration of the tetanus toxoid vaccine.
+EHEZA-U-1324,PrenatalMeasurements.tetanusImmunisation,Tetanus Immunisation,,,,Misc,Coded,Record of administration of the tetanus toxoid vaccine.
 EHEZA-U-1325,PrenatalMeasurements.specialityCare,Speciality Care,,,,Test,Coded,Specialty care referral or consultation performed prenatally.
 EHEZA-U-1326,PrenatalMeasurements.partnerHIVTest,Partner HIV Test,,,,Test,Coded,Record of a partner HIV test performed prenatally.
 EHEZA-U-1327,AcuteIllnessMeasurements.contactsTracing,Contacts Tracing,,,,Test,Coded,Record of contacts traced for an acute illness case.
 EHEZA-U-1328,WellChildMeasurements.symptomsReview,Symptoms Review,,,,Symptom,Coded,Record of the symptoms-review activity in well-child measurements.
 EHEZA-U-1329,WellChildMeasurements.mebendezole,Mebendezole,,,,Test,Coded,Mebendazole anthelminthic deworming medication.
-EHEZA-U-1330,WellChildMeasurements.bcgImmunisation,Bcg Immunisation,,,,Drug,Coded,Record of administration of the BCG vaccine for tuberculosis prevention.
+EHEZA-U-1330,WellChildMeasurements.bcgImmunisation,Bcg Immunisation,,,,Misc,Coded,Record of administration of the BCG vaccine for tuberculosis prevention.
 EHEZA-U-1331,WellChildMeasurements.dtpImmunisation,Dtp Immunisation,,,,Drug,Coded,Record of administration of the DTP combination vaccine.
 EHEZA-U-1332,WellChildMeasurements.dtpStandaloneImmunisation,Dtp Standalone Immunisation,,,,Drug,Coded,Record of administration of the standalone DTP combination vaccine.
-EHEZA-U-1333,WellChildMeasurements.hpvImmunisation,Hpv Immunisation,,,,Drug,Coded,Record of administration of the human papillomavirus vaccine.
-EHEZA-U-1334,WellChildMeasurements.ipvImmunisation,Ipv Immunisation,,,,Drug,Coded,Record of administration of the inactivated polio vaccine.
-EHEZA-U-1335,WellChildMeasurements.mrImmunisation,Mr Immunisation,,,,Drug,Coded,Record of administration of the measles-rubella vaccine.
-EHEZA-U-1336,WellChildMeasurements.opvImmunisation,Opv Immunisation,,,,Drug,Coded,Record of administration of the oral polio vaccine.
-EHEZA-U-1337,WellChildMeasurements.pcv13Immunisation,Pcv13 Immunisation,,,,Drug,Coded,Record of administration of the pneumococcal conjugate vaccine (PCV13).
-EHEZA-U-1338,WellChildMeasurements.rotarixImmunisation,Rotarix Immunisation,,,,Drug,Coded,Record of administration of the Rotarix rotavirus vaccine.
+EHEZA-U-1333,WellChildMeasurements.hpvImmunisation,Hpv Immunisation,,,,Misc,Coded,Record of administration of the human papillomavirus vaccine.
+EHEZA-U-1334,WellChildMeasurements.ipvImmunisation,Ipv Immunisation,,,,Misc,Coded,Record of administration of the inactivated polio vaccine.
+EHEZA-U-1335,WellChildMeasurements.mrImmunisation,Mr Immunisation,,,,Misc,Coded,Record of administration of the measles-rubella vaccine.
+EHEZA-U-1336,WellChildMeasurements.opvImmunisation,Opv Immunisation,,,,Misc,Coded,Record of administration of the oral polio vaccine.
+EHEZA-U-1337,WellChildMeasurements.pcv13Immunisation,Pcv13 Immunisation,,,,Misc,Coded,Record of administration of the pneumococcal conjugate vaccine (PCV13).
+EHEZA-U-1338,WellChildMeasurements.rotarixImmunisation,Rotarix Immunisation,,,,Misc,Coded,Record of administration of the Rotarix rotavirus vaccine.
 EHEZA-U-1339,NCDMeasurements.hba1cTest,Hba1c Test,,,,Test,Coded,Glycated haemoglobin (HbA1c) blood test for long-term glycemic control.
 EHEZA-U-1340,NCDMeasurements.lipidPanelTest,Lipid Panel Test,,,,Test,Coded,"Lipid panel laboratory test (total cholesterol, HDL, LDL, triglycerides)."
 EHEZA-U-1341,NCDMeasurements.liverFunctionTest,Liver Function Test,,,,Test,Coded,"Liver function laboratory test panel (ALT, AST, etc.)."

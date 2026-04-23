@@ -74,3 +74,6 @@ Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHE
 Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-056/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,101,Hepatitis B Surface Antigen Test,high
 Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-059/,SAME-AS,/orgs/UVL-Burundi/sources/uvl/,10,Serum glucose,high
 Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EH-PRE-062/,NARROWER-THAN,/orgs/UVL-Burundi/sources/uvl/,40,White blood cells,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0974/,NARROWER-THAN,/orgs/UVL-Burundi/sources/uvl/,1376,Cloxacillin,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0965/,NARROWER-THAN,/orgs/UVL-Burundi/sources/uvl/,1344,Nifedipine,medium
+Mapping,TIP-Global-Health,Organization,EHEZA,/orgs/TIP-Global-Health/sources/EHEZA/concepts/EHEZA-U-0626/,BROADER-THAN,/orgs/UVL-Burundi/sources/uvl/,1397,Zinc sulfate,medium
