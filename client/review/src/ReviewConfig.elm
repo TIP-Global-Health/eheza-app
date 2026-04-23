@@ -11,26 +11,31 @@ when inside the directory containing this file.
 
 -}
 
+import Docs.NoMissing exposing (exposedModules, onlyExposed)
 import Docs.ReviewAtDocs
+import Docs.ReviewLinksAndSections
+import Docs.UpToDateReadmeLinks
 import NoConfusingPrefixOperator
 import NoDebug.Log
 import NoDebug.TodoOrToString
 import NoExposingEverything
 import NoImportingEverything
+import NoLeftPizza
+import NoMissingSubscriptionsCall
 import NoMissingTypeAnnotation
-import NoMissingTypeAnnotationInLetIn
 import NoMissingTypeExpose
 import NoPrematureLetComputation
+import NoRedundantlyQualifiedType
 import NoSimpleLetBody
-import NoUnused.CustomTypeConstructorArgs
-import NoUnused.CustomTypeConstructors
 import NoUnused.Dependencies
 import NoUnused.Exports
 import NoUnused.Parameters
 import NoUnused.Patterns
 import NoUnused.Variables
+import NoUselessSubscriptions
 import Review.Rule as Rule exposing (Rule)
 import Simplify
+import Validate.Regexes
 
 
 config : List Rule
@@ -44,23 +49,78 @@ config =
 
 rules : List Rule
 rules =
-    [ Docs.ReviewAtDocs.rule
+    [ NoRedundantlyQualifiedType.rule
+    , Docs.ReviewLinksAndSections.rule
+    , Docs.ReviewAtDocs.rule
+    , Docs.UpToDateReadmeLinks.rule
+    , Docs.NoMissing.rule { document = onlyExposed, from = exposedModules }
     , NoConfusingPrefixOperator.rule
+        |> Rule.ignoreErrorsForFiles
+            [ "src/elm/Pages/Prenatal/ProgressReport/View.elm"
+            , "src/elm/Pages/Prenatal/Activity/View.elm"
+            , "src/elm/Pages/Prenatal/Activity/Utils.elm"
+            , "src/elm/Measurement/View.elm"
+            ]
     , NoDebug.Log.rule
-
-    --, NoDebug.TodoOrToString.rule
+    , NoDebug.TodoOrToString.rule
+        |> Rule.ignoreErrorsForFiles
+            [ "src/elm/ZScore/Test.elm"
+            , "src/elm/SyncManager/View.elm"
+            , "src/elm/Pages/Dashboard/GraphUtils.elm"
+            , "src/elm/Pages/Dashboard/View.elm"
+            , "src/elm/Pages/Prenatal/Activity/View.elm"
+            ]
+    , NoExposingEverything.rule
     , NoMissingTypeAnnotation.rule
+        |> Rule.ignoreErrorsForFiles
+            [ "src/elm/SyncManager/Decoder.elm"
+            , "src/elm/Pages/WellChild/ProgressReport/View.elm"
+            , "src/elm/Pages/Report/Svg.elm"
+            , "src/elm/Measurement/Utils.elm"
+            , "src/elm/Main.elm"
+            , "src/elm/Pages/Prenatal/Utils.elm"
+            , "src/elm/Backend/Utils.elm"
+            ]
     , NoMissingTypeExpose.rule
     , NoSimpleLetBody.rule
     , NoPrematureLetComputation.rule
-    , NoUnused.CustomTypeConstructors.rule []
-    , NoUnused.CustomTypeConstructorArgs.rule
     , NoUnused.Dependencies.rule
     , NoUnused.Exports.rule
+        |> Rule.ignoreErrorsForFiles
+            [ "src/elm/LocalConfig.Example.elm"
+            , "src/elm/Config.Deploy.elm"
+            , "src/elm/App/Model.elm"
+            ]
     , NoUnused.Parameters.rule
     , NoUnused.Patterns.rule
     , NoUnused.Variables.rule
+        |> Rule.ignoreErrorsForFiles
+            [ "src/elm/Backend/Measurement/Model.elm"
+            , "src/elm/Backend/NutritionEncounter/Utils.elm"
+            , "src/elm/Backend/NutritionEncounter/Utils.elm"
+            , "src/elm/App/Model.elm"
+            ]
     , Simplify.rule Simplify.defaults
+        |> Rule.ignoreErrorsForFiles
+            [ "src/elm/GeoLocation/Utils.elm"
+            , "src/elm/Measurement/Utils.elm"
+            ]
+    , NoMissingSubscriptionsCall.rule
+    , NoUselessSubscriptions.rule
+    , NoLeftPizza.rule NoLeftPizza.Redundant
+    , Validate.Regexes.rule
+
+    -- Rules to comment out when working with --fix-all.
+    , NoImportingEverything.rule
+        [ "Backend.Entities"
+        , "Backend.Measurement.Model"
+        , "Html"
+        , "Html.Attributes"
+        , "Html.Events"
+        , "Svg"
+        , "Svg.Attributes"
+        , "SyncManager.Model"
+        ]
     ]
 
 
