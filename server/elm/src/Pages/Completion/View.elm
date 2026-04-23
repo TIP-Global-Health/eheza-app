@@ -1,54 +1,50 @@
 module Pages.Completion.View exposing (view)
 
 import App.Types exposing (Language, Site)
-import AssocList as Dict exposing (Dict)
 import Backend.Completion.Model
     exposing
-        ( AcuteIllnessActivity(..)
-        , ChildScoreboardActivity(..)
+        ( AcuteIllnessActivity
+        , ChildScoreboardActivity
         , CompletionData
         , EncounterData
-        , HIVActivity(..)
-        , HomeVisitActivity(..)
-        , NCDActivity(..)
-        , NutritionChildActivity(..)
+        , HIVActivity
+        , HomeVisitActivity
+        , NCDActivity
+        , NutritionChildActivity
         , NutritionGroupEncounterData
-        , NutritionMotherActivity(..)
-        , PrenatalActivity(..)
+        , NutritionMotherActivity
+        , PrenatalActivity
         , SelectedEntity(..)
         , TakenBy(..)
-        , TuberculosisActivity(..)
-        , WellChildActivity(..)
+        , TuberculosisActivity
+        , WellChildActivity
         , WellChildEncounterData
         , WellChildEncounterType(..)
         )
 import Backend.Completion.Utils exposing (takenByToString)
 import Backend.Model exposing (ModelBackend)
-import Date exposing (Interval(..), Unit(..))
+import Date exposing (Date)
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, customFormatDDMMYYYY, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
-import Pages.Completion.Model exposing (..)
-import Pages.Completion.Utils exposing (..)
+import Pages.Completion.Model exposing (Model, Msg(..), ReportType(..))
+import Pages.Completion.Utils exposing (allAcuteIllnessActivities, allHIVActivities, allHomeVisitActivities, allNCDActivities, allNutritionChildGroupActivities, allNutritionIndividualActivities, allNutritionMotherGroupActivities, allPrenatalActivities, allTuberculosisActivities, newbornExamActivities, reportTypeToString, resolveChildScoreboardActivities, resolveSPVActivities)
 import Pages.Components.View exposing (viewMetricsResultsTable)
 import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Utils exposing (calculatePercentage, launchDate, viewCustomSelectListInput, viewSelectListInput, wrapSelectListInput)
-import RemoteData exposing (RemoteData(..))
-import Time exposing (Month(..))
 import Translate exposing (TranslationId, translate)
 import Utils.Html exposing (viewModal)
 
 
-view : Language -> NominalDate -> String -> ModelBackend -> Model -> Html Msg
-view language currentDate themePath modelBackend model =
+view : Language -> NominalDate -> ModelBackend -> Model -> Html Msg
+view language currentDate modelBackend model =
     case modelBackend.completionData of
         Just (Ok data) ->
-            viewCompletionData language currentDate themePath data model
+            viewCompletionData language currentDate data model
 
         Just (Err err) ->
             text <| Debug.toString err
@@ -57,8 +53,8 @@ view language currentDate themePath modelBackend model =
             emptyNode
 
 
-viewCompletionData : Language -> NominalDate -> String -> CompletionData -> Model -> Html Msg
-viewCompletionData language currentDate themePath data model =
+viewCompletionData : Language -> NominalDate -> CompletionData -> Model -> Html Msg
+viewCompletionData language currentDate data model =
     let
         topBar =
             let
@@ -99,7 +95,7 @@ viewCompletionData language currentDate themePath data model =
                     then
                         emptyNode
 
-                    else
+                    else if isJust model.reportType then
                         let
                             options =
                                 List.map
@@ -108,25 +104,24 @@ viewCompletionData language currentDate themePath data model =
                                     )
                                     [ TakenByNurse, TakenByCHW ]
                         in
-                        if isJust model.reportType then
-                            viewCustomSelectListInput
-                                model.takenBy
-                                options
-                                takenByToString
-                                SetTakenBy
-                                "select-input"
-                                (Just <| translate language Translate.Any)
-                                |> wrapSelectListInput language Translate.TakenByLabel False
+                        viewCustomSelectListInput
+                            model.takenBy
+                            options
+                            takenByToString
+                            SetTakenBy
+                            "select-input"
+                            (Just <| translate language Translate.Any)
+                            |> wrapSelectListInput language Translate.TakenByLabel False
 
-                        else
-                            emptyNode
+                    else
+                        emptyNode
                 )
                 model.reportType
                 |> Maybe.withDefault emptyNode
 
         dateInputs =
             Maybe.map
-                (\reportType ->
+                (\_ ->
                     let
                         startDateInput =
                             let
@@ -399,8 +394,8 @@ applyFilters :
     NominalDate
     -> NominalDate
     -> Maybe TakenBy
-    -> List { a | startDate : Date.Date, takenBy : Maybe TakenBy }
-    -> List { a | startDate : Date.Date, takenBy : Maybe TakenBy }
+    -> List { a | startDate : Date, takenBy : Maybe TakenBy }
+    -> List { a | startDate : Date, takenBy : Maybe TakenBy }
 applyFilters startDate limitDate mTakenBy =
     List.filter
         (\encounter ->
@@ -422,10 +417,10 @@ applyFilters startDate limitDate mTakenBy =
 customApplyFilters :
     NominalDate
     -> NominalDate
-    -> ({ a | encounterType : WellChildEncounterType, startDate : Date.Date } -> TakenBy)
+    -> ({ a | encounterType : WellChildEncounterType, startDate : Date } -> TakenBy)
     -> Maybe TakenBy
-    -> List { a | encounterType : WellChildEncounterType, startDate : Date.Date }
-    -> List { a | encounterType : WellChildEncounterType, startDate : Date.Date }
+    -> List { a | encounterType : WellChildEncounterType, startDate : Date }
+    -> List { a | encounterType : WellChildEncounterType, startDate : Date }
 customApplyFilters startDate limitDate resolveTakenByFunc mTakenBy =
     List.filter
         (\encounter ->
@@ -481,8 +476,7 @@ generateNutritionGroupReportData language records =
             List.filterMap .motherData records
 
         childrenData =
-            List.map .childrenData records
-                |> List.concat
+            List.concatMap .childrenData records
 
         generateActivityRows activityTransId data =
             List.map

@@ -28,10 +28,10 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
-import Pages.Components.View exposing (viewCustomCells, viewMetricsResultsTable, viewStandardCells, viewStandardRow)
+import Pages.Components.View exposing (viewMetricsResultsTable, viewStandardCells, viewStandardRow)
 import Pages.Model exposing (MetricsResultsTableData)
-import Pages.Reports.Model exposing (..)
-import Pages.Reports.Utils exposing (..)
+import Pages.Reports.Model exposing (Model, Msg(..), NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), ReportType(..), emptyNutritionMetrics)
+import Pages.Reports.Utils exposing (countTotalEncounters, eddToLmpDate, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth)
 import Pages.Utils
     exposing
         ( calculatePercentage
@@ -43,7 +43,6 @@ import Pages.Utils
         )
 import RemoteData exposing (RemoteData(..))
 import Round
-import Time exposing (Month(..))
 import Translate exposing (TranslationId, translate)
 import Utils.Html exposing (viewModal)
 
@@ -153,15 +152,6 @@ viewReportsData language currentDate themePath data model =
                 model.reportType
                 |> Maybe.withDefault []
 
-        ( startDateByReportType, limitDateByReportType ) =
-            if model.reportType == Just ReportNutrition then
-                -- Nutrition report does not allow selecting limit date, so
-                -- we force it to be today.
-                ( Just launchDate, Just currentDate )
-
-            else
-                ( model.startDate, model.limitDate )
-
         content =
             if
                 isJust model.startDateSelectorPopupState
@@ -172,6 +162,16 @@ viewReportsData language currentDate themePath data model =
                 emptyNode
 
             else
+                let
+                    ( startDateByReportType, limitDateByReportType ) =
+                        if model.reportType == Just ReportNutrition then
+                            -- Nutrition report does not allow selecting limit date, so
+                            -- we force it to be today.
+                            ( Just launchDate, Just currentDate )
+
+                        else
+                            ( model.startDate, model.limitDate )
+                in
                 Maybe.map3
                     (\reportType startDate limitDate ->
                         let
@@ -1032,7 +1032,7 @@ viewNutritionReport : Language -> NominalDate -> String -> Maybe (List BackendGe
 viewNutritionReport language currentDate scopeLabel mBackendGeneratedData reportData =
     let
         generatedData =
-            Maybe.map (generareNutritionReportDataFromBackendGeneratedData language currentDate) mBackendGeneratedData
+            Maybe.map (generareNutritionReportDataFromBackendGeneratedData language) mBackendGeneratedData
                 |> Maybe.withDefault (generareNutritionReportDataFromRawData language currentDate reportData)
 
         csvFileName =
@@ -1119,10 +1119,9 @@ generareNutritionReportDataFromRawData language currentDate reportData =
 
 generareNutritionReportDataFromBackendGeneratedData :
     Language
-    -> NominalDate
     -> List BackendGeneratedNutritionReportTableDate
     -> List MetricsResultsTableData
-generareNutritionReportDataFromBackendGeneratedData language currentDate data =
+generareNutritionReportDataFromBackendGeneratedData language data =
     let
         nutritionTableTypeToNumber tableType =
             case tableType of
@@ -1622,9 +1621,6 @@ generatePrenatalReportData language limitDate records =
         completedChwVisits4 =
             resolveValueFromDict 4 partitionedVisitsForCompleted.chw
 
-        completedChwVisits5 =
-            resolveValueFromDict 5 partitionedVisitsForCompleted.chw
-
         completedChwVisits5AndMore =
             resolveValueFromDict -1 partitionedVisitsForCompleted.chw
 
@@ -1639,9 +1635,6 @@ generatePrenatalReportData language limitDate records =
 
         completedAllVisits4 =
             resolveValueFromDict 4 partitionedVisitsForCompleted.all
-
-        completedAllVisits5 =
-            resolveValueFromDict 5 partitionedVisitsForCompleted.all
 
         completedAllVisits5AndMore =
             resolveValueFromDict -1 partitionedVisitsForCompleted.all
@@ -1827,28 +1820,28 @@ generatePrenatalReportData language limitDate records =
                     ]
             }
 
-        -- Pregnancy delivery locations stats.
-        deliveryLocationsDict =
-            List.foldl
-                (\participantData accumDict ->
-                    Maybe.map
-                        (\location ->
-                            let
-                                updated =
-                                    Dict.get location accumDict
-                                        |> Maybe.map ((+) 1)
-                                        |> Maybe.withDefault 1
-                            in
-                            Dict.insert location updated accumDict
-                        )
-                        participantData.deliveryLocation
-                        |> Maybe.withDefault accumDict
-                )
-                Dict.empty
-                completed
-
         deliveryLocationsTable =
             let
+                -- Pregnancy delivery locations stats.
+                deliveryLocationsDict =
+                    List.foldl
+                        (\participantData accumDict ->
+                            Maybe.map
+                                (\location ->
+                                    let
+                                        updated =
+                                            Dict.get location accumDict
+                                                |> Maybe.map ((+) 1)
+                                                |> Maybe.withDefault 1
+                                    in
+                                    Dict.insert location updated accumDict
+                                )
+                                participantData.deliveryLocation
+                                |> Maybe.withDefault accumDict
+                        )
+                        Dict.empty
+                        completed
+
                 facilityDeliveries =
                     Dict.get FacilityDelivery deliveryLocationsDict
                         |> Maybe.withDefault 0
@@ -1872,10 +1865,10 @@ generatePrenatalReportData language limitDate records =
                 , [ translate language <| Translate.DeliveryLocation HomeDelivery
                   , String.fromInt homeDeliveries
                   ]
-                , [ translate language <| Translate.DeliveryLocationsTableTotals
+                , [ translate language Translate.DeliveryLocationsTableTotals
                   , String.fromInt totalDeliveries
                   ]
-                , [ translate language <| Translate.DeliveryLocationsTablePercentage
+                , [ translate language Translate.DeliveryLocationsTablePercentage
                   , calculatePercentage totalDeliveries totalCompletedPregnancies
                   ]
                 ]
@@ -2027,7 +2020,7 @@ viewAcuteIllnessReport language limitDate startDate scopeLabel records =
         csvContent =
             reportTableDataToCSV data
     in
-    div [ class "report acute-illness" ] <|
+    div [ class "report acute-illness" ]
         [ div [ class "table" ] <|
             captionsRow
                 :: dataRows
@@ -2357,7 +2350,7 @@ viewPrenatalDiagnosesReport : Language -> NominalDate -> String -> List PatientD
 viewPrenatalDiagnosesReport language limitDate scopeLabel records =
     let
         data =
-            generatePrenatalDiagnosesReportData language limitDate records
+            generatePrenatalDiagnosesReportData language records
 
         captionsRow =
             viewStandardCells data.captions
@@ -2387,7 +2380,7 @@ viewPrenatalDiagnosesReport language limitDate scopeLabel records =
                 prenatalDiagnosisClasses
                 data.rows
     in
-    div [ class "report prenatal-diagnoses" ] <|
+    div [ class "report prenatal-diagnoses" ]
         [ div [ class "table" ] <|
             captionsRow
                 :: dataRows
@@ -2397,10 +2390,9 @@ viewPrenatalDiagnosesReport language limitDate scopeLabel records =
 
 generatePrenatalDiagnosesReportData :
     Language
-    -> NominalDate
     -> List PatientData
     -> MetricsResultsTableData
-generatePrenatalDiagnosesReportData language limitDate records =
+generatePrenatalDiagnosesReportData language records =
     let
         allDiagnoses =
             List.map .prenatalData records
