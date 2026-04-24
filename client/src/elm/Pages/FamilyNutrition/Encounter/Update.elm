@@ -8,11 +8,10 @@ import Backend.FamilyNutritionEncounter.Model
 import Backend.Measurement.Model exposing (ImageUrl(..))
 import Backend.Measurement.Utils exposing (ahezaDistributionReasonFromString, getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import EverySet
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (unwrap)
 import Measurement.Utils exposing (toAhezaMotherValueWithDefault, toAhezaValueWithDefault, toMuacValueWithDefault)
-import Pages.FamilyNutrition.Encounter.Model exposing (..)
+import Pages.FamilyNutrition.Encounter.Model exposing (FamilyMember(..), Model, Msg(..), Tab(..), emptyAhezaData, emptyMuacData, emptyPhotoData)
 import Pages.FamilyNutrition.Encounter.Utils exposing (activitiesForFamilyMember, activityCompleted, generateAssembledData, nextFamilyMemberWithPendingActivities)
 import Pages.Page exposing (Page(..))
 import Pages.Utils exposing (setMuacValueForSite)
@@ -183,12 +182,13 @@ update site id db msg model =
 
         SavePhoto personId saved ->
             let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
                 appMsgs =
                     case model.photoData.form.url of
                         Just url ->
+                            let
+                                measurementId =
+                                    Maybe.map Tuple.first saved
+                            in
                             [ Backend.FamilyNutritionEncounter.Model.SavePhoto personId measurementId url
                                 |> Backend.Model.MsgFamilyNutritionEncounter id
                                 |> App.Model.MsgIndexedDb
@@ -249,11 +249,11 @@ update site id db msg model =
 
         SetAhezaDistributionReason value ->
             let
-                reason =
-                    ahezaDistributionReasonFromString value
-
                 updatedData =
                     let
+                        reason =
+                            ahezaDistributionReasonFromString value
+
                         updatedForm =
                             model.ahezaData.form
                                 |> (\form ->

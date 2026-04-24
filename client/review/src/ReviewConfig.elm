@@ -99,6 +99,7 @@ rules =
             , "src/elm/Backend/NutritionEncounter/Utils.elm"
             , "src/elm/Backend/NutritionEncounter/Utils.elm"
             , "src/elm/App/Model.elm"
+            , "src/elm/Pages/AcuteIllness/Activity/Utils.elm"
             ]
     , Simplify.rule Simplify.defaults
         |> Rule.ignoreErrorsForFiles

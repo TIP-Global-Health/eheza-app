@@ -24,8 +24,8 @@ import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData)
 import Pages.Prenatal.Encounter.View exposing (viewMotherAndMeasurements)
 import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, expectActivity)
-import Pages.Prenatal.RecurrentEncounter.Model exposing (..)
-import Pages.Prenatal.RecurrentEncounter.Utils exposing (..)
+import Pages.Prenatal.RecurrentEncounter.Model exposing (Model, Msg(..), Tab(..))
+import Pages.Prenatal.RecurrentEncounter.Utils exposing (getAllActivities)
 import Pages.Utils exposing (viewCustomAction, viewReportLink)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (activityCard, tabItem)
@@ -38,11 +38,11 @@ view language currentDate nurse id db model =
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate nurse id model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate nurse model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> Nurse -> PrenatalEncounterId -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate nurse id model assembled =
+viewHeaderAndContent : Language -> NominalDate -> Nurse -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate nurse model assembled =
     let
         header =
             viewHeader language
@@ -114,17 +114,6 @@ viewMainPageContent language currentDate nurse assembled model =
             in
             activityCard language label icon (SetActivePage <| UserPage <| PrenatalRecurrentActivityPage assembled.id activity)
 
-        ( selectedActivities, emptySectionMessage ) =
-            case model.selectedTab of
-                Pending ->
-                    ( pendingActivities, translate language Translate.NoActivitiesPending )
-
-                Completed ->
-                    ( completedActivities, translate language Translate.NoActivitiesCompleted )
-
-                Reports ->
-                    ( [], "" )
-
         content =
             let
                 innerContent =
@@ -145,6 +134,18 @@ viewMainPageContent language currentDate nurse assembled model =
                             ]
 
                     else
+                        let
+                            ( selectedActivities, emptySectionMessage ) =
+                                case model.selectedTab of
+                                    Pending ->
+                                        ( pendingActivities, translate language Translate.NoActivitiesPending )
+
+                                    Completed ->
+                                        ( completedActivities, translate language Translate.NoActivitiesCompleted )
+
+                                    Reports ->
+                                        ( [], "" )
+                        in
                         div [ class "full content" ]
                             [ div [ class "wrap-cards" ]
                                 [ div [ class "ui four cards" ] <|

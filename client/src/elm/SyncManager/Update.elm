@@ -11,9 +11,8 @@ import Device.Model exposing (Device)
 import Editable
 import Error.Utils exposing (decoderError, maybeHttpError, noError)
 import GeoLocation.Utils exposing (getGeoInfo, getReverseGeoInfo)
-import Gizra.NominalDate exposing (NominalDate)
 import Http exposing (Error)
-import HttpBuilder exposing (..)
+import HttpBuilder exposing (withExpectJson, withJsonBody, withQueryParams)
 import Json.Decode exposing (Value, decodeValue)
 import Json.Encode
 import List.Zipper as Zipper
@@ -39,8 +38,8 @@ import Utils.WebData
 import Version
 
 
-update : NominalDate -> Time.Posix -> Page -> Int -> Device -> Msg -> Model -> SubModelReturn Model Msg
-update currentDate currentTime activePage dbVersion device msg model =
+update : Time.Posix -> Page -> Int -> Device -> Msg -> Model -> SubModelReturn Model Msg
+update currentTime activePage dbVersion device msg model =
     let
         noChange =
             SubModelReturn model Cmd.none noError []
@@ -81,19 +80,19 @@ update currentDate currentTime activePage dbVersion device msg model =
                 (Cmd.map MsgDebouncer subCmd)
                 noError
                 []
-                |> sequenceSubModelReturn (update currentDate currentTime activePage dbVersion device) (Maybe.Extra.toList extraMsg)
+                |> sequenceSubModelReturn (update currentTime activePage dbVersion device) (Maybe.Extra.toList extraMsg)
 
         NoOp ->
             noChange
 
         SchedulePageRefresh ->
             noChange
-                |> sequenceSubModelReturn (update currentDate currentTime activePage dbVersion device)
+                |> sequenceSubModelReturn (update currentTime activePage dbVersion device)
                     [ MsgDebouncer <| provideInput RefreshPage ]
 
         SchedulePhotosDownload ->
             noChange
-                |> sequenceSubModelReturn (update currentDate currentTime activePage dbVersion device)
+                |> sequenceSubModelReturn (update currentTime activePage dbVersion device)
                     [ MsgDebouncer <| provideInput TryDownloadingPhotos ]
 
         RefreshPage ->
@@ -118,7 +117,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 -- We also, schdule photos download send devicestate report,
                                 -- so that version and synced authorities get updated on backend.
                                 determineSyncStatus
-                                    |> sequenceSubModelReturn (update currentDate currentTime activePage dbVersion device)
+                                    |> sequenceSubModelReturn (update currentTime activePage dbVersion device)
                                         [ SchedulePhotosDownload, QueryIndexDb IndexDbQueryGetTotalEntriesToUpload ]
 
                             Just zipper ->
@@ -482,18 +481,17 @@ update currentDate currentTime activePage dbVersion device msg model =
                 )
                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityDashboardStatsFetchHandle")
                 appMsgs
-                |> sequenceSubModelReturn (update currentDate currentTime activePage dbVersion device) extraMsgs
+                |> sequenceSubModelReturn (update currentTime activePage dbVersion device) extraMsgs
 
         BackendFetchMain ->
             case model.syncStatus of
                 SyncIdle ->
                     determineSyncStatus
                         -- We send state report when we begin the sync.
-                        |> sequenceSubModelReturn (update currentDate currentTime activePage dbVersion device) [ QueryIndexDb IndexDbQueryGetTotalEntriesToUpload ]
+                        |> sequenceSubModelReturn (update currentTime activePage dbVersion device) [ QueryIndexDb IndexDbQueryGetTotalEntriesToUpload ]
 
                 SyncUploadPhoto _ _ ->
                     update
-                        currentDate
                         currentTime
                         activePage
                         dbVersion
@@ -503,7 +501,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                 SyncUploadScreenshot _ _ ->
                     update
-                        currentDate
                         currentTime
                         activePage
                         dbVersion
@@ -513,7 +510,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                 SyncUploadGeneral _ ->
                     update
-                        currentDate
                         currentTime
                         activePage
                         dbVersion
@@ -523,7 +519,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                 SyncUploadWhatsApp _ ->
                     update
-                        currentDate
                         currentTime
                         activePage
                         dbVersion
@@ -533,7 +528,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                 SyncUploadAuthority _ ->
                     update
-                        currentDate
                         currentTime
                         activePage
                         dbVersion
@@ -543,7 +537,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                 SyncDownloadGeneral _ ->
                     update
-                        currentDate
                         currentTime
                         activePage
                         dbVersion
@@ -553,7 +546,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                 SyncDownloadAuthority _ ->
                     update
-                        currentDate
                         currentTime
                         activePage
                         dbVersion
@@ -563,7 +555,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                 SyncDownloadAuthorityDashboardStats _ ->
                     update
-                        currentDate
                         currentTime
                         activePage
                         dbVersion
@@ -573,7 +564,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                 SyncReportIncident incidentType ->
                     update
-                        currentDate
                         currentTime
                         activePage
                         dbVersion
@@ -592,7 +582,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                 DownloadPhotosInProcess _ ->
                     update
-                        currentDate
                         currentTime
                         activePage
                         dbVersion
@@ -634,7 +623,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                 cmd
                 noError
                 []
-                |> sequenceSubModelReturn (update currentDate currentTime activePage dbVersion device) [ TrySyncing ]
+                |> sequenceSubModelReturn (update currentTime activePage dbVersion device) [ TrySyncing ]
 
         RevisionIdAuthorityRemove uuid ->
             -- Remove authority from Local storage.
@@ -947,7 +936,6 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 }
                         in
                         update
-                            currentDate
                             currentTime
                             activePage
                             dbVersion
@@ -969,7 +957,6 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 }
                         in
                         update
-                            currentDate
                             currentTime
                             activePage
                             dbVersion
@@ -997,7 +984,6 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 }
                         in
                         update
-                            currentDate
                             currentTime
                             activePage
                             dbVersion
@@ -1028,7 +1014,6 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 }
                         in
                         update
-                            currentDate
                             currentTime
                             activePage
                             dbVersion
@@ -1067,7 +1052,6 @@ update currentDate currentTime activePage dbVersion device msg model =
                                         }
                                 in
                                 update
-                                    currentDate
                                     currentTime
                                     activePage
                                     dbVersion
@@ -1093,7 +1077,6 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 getGeoInfo model.syncInfoGeneral.site
                         in
                         update
-                            currentDate
                             currentTime
                             activePage
                             dbVersion
@@ -1133,7 +1116,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                     else
                         update
-                            currentDate
                             currentTime
                             activePage
                             dbVersion
@@ -1277,7 +1259,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendUploadAuthorityHandle")
                                 []
                                 |> sequenceSubModelReturn
-                                    (update currentDate currentTime activePage dbVersion device)
+                                    (update currentTime activePage dbVersion device)
                                     incidentDetailsMsg
 
                         RemoteData.Success _ ->
@@ -1343,7 +1325,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                             else
                                 subModelReturn
                                     |> sequenceSubModelReturn
-                                        (update currentDate currentTime activePage dbVersion device)
+                                        (update currentTime activePage dbVersion device)
                                         [ QueryIndexDb <| IndexDbQueryRemoveUploadPhotos uploadPhotosToDelete ]
 
                         _ ->
@@ -1453,7 +1435,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendUploadGeneralHandle")
                                 []
                                 |> sequenceSubModelReturn
-                                    (update currentDate currentTime activePage dbVersion device)
+                                    (update currentTime activePage dbVersion device)
                                     incidentDetailsMsg
 
                         RemoteData.Success _ ->
@@ -1606,7 +1588,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendUploadWhatsAppHandle")
                                 []
                                 |> sequenceSubModelReturn
-                                    (update currentDate currentTime activePage dbVersion device)
+                                    (update currentTime activePage dbVersion device)
                                     incidentDetailsMsg
 
                         RemoteData.Success _ ->
@@ -1719,7 +1701,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                         -- result with something like this:
                         -- image-1234.jpg?itok=[image-token]?access_token=[access-token]
                         -- Instead, we manually add the access token with a `&`.
-                        HttpBuilder.get (result.photo ++ "&" ++ "access_token=" ++ device.accessToken)
+                        HttpBuilder.get (result.photo ++ "&access_token=" ++ device.accessToken)
                             -- We don't need to decode anything, as we just want to have
                             -- the browser download it.
                             |> HttpBuilder.send (RemoteData.fromResult >> BackendDeferredPhotoFetchHandle result)
@@ -1763,7 +1745,6 @@ update currentDate currentTime activePage dbVersion device msg model =
                                         model.downloadPhotosStatus
                         in
                         update
-                            currentDate
                             currentTime
                             activePage
                             dbVersion
@@ -1799,7 +1780,6 @@ update currentDate currentTime activePage dbVersion device msg model =
                     -- We've fetched the image, so we can remove the record from
                     -- `deferredPhotos` table.
                     update
-                        currentDate
                         currentTime
                         activePage
                         dbVersion
@@ -1883,8 +1863,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 uuidsAsString =
                                     uuids
                                         |> List.map String.fromInt
-                                        |> List.intersperse ","
-                                        |> String.concat
+                                        |> String.join ","
                             in
                             { queryType = "IndexDbQueryRemoveUploadPhotos"
                             , data = Just uuidsAsString
@@ -1912,7 +1891,6 @@ update currentDate currentTime activePage dbVersion device msg model =
                     case indexDbQueryTypeResult of
                         IndexDbQueryUploadPhotoResult remoteData ->
                             update
-                                currentDate
                                 currentTime
                                 activePage
                                 dbVersion
@@ -1922,7 +1900,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                         IndexDbQueryUploadScreenshotResult remoteData ->
                             update
-                                currentDate
                                 currentTime
                                 activePage
                                 dbVersion
@@ -1932,7 +1909,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                         IndexDbQueryUploadAuthorityResult result ->
                             update
-                                currentDate
                                 currentTime
                                 activePage
                                 dbVersion
@@ -1942,7 +1918,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                         IndexDbQueryUploadGeneralResult result ->
                             update
-                                currentDate
                                 currentTime
                                 activePage
                                 dbVersion
@@ -1952,7 +1927,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                         IndexDbQueryUploadWhatsAppResult result ->
                             update
-                                currentDate
                                 currentTime
                                 activePage
                                 dbVersion
@@ -1962,7 +1936,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                         IndexDbQueryDeferredPhotoResult result ->
                             update
-                                currentDate
                                 currentTime
                                 activePage
                                 dbVersion
@@ -1972,7 +1945,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                         IndexDbQueryGetTotalEntriesToUploadResult result ->
                             update
-                                currentDate
                                 currentTime
                                 activePage
                                 dbVersion
@@ -1982,7 +1954,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                         IndexDbQueryGetShardsEntityByUuidResult result ->
                             update
-                                currentDate
                                 currentTime
                                 activePage
                                 dbVersion
@@ -2016,7 +1987,6 @@ update currentDate currentTime activePage dbVersion device msg model =
                             case indexDbSaveResult.table of
                                 IndexDbSaveResultTableAutority ->
                                     update
-                                        currentDate
                                         currentTime
                                         activePage
                                         dbVersion
@@ -2026,7 +1996,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                                 IndexDbSaveResultTableGeneral ->
                                     update
-                                        currentDate
                                         currentTime
                                         activePage
                                         dbVersion
@@ -2162,7 +2131,6 @@ update currentDate currentTime activePage dbVersion device msg model =
             case model.syncStatus of
                 SyncIdle ->
                     update
-                        currentDate
                         currentTime
                         activePage
                         dbVersion
@@ -2178,7 +2146,6 @@ update currentDate currentTime activePage dbVersion device msg model =
             case model.downloadPhotosStatus of
                 DownloadPhotosIdle ->
                     update
-                        currentDate
                         currentTime
                         activePage
                         dbVersion

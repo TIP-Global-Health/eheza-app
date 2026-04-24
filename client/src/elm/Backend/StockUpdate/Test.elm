@@ -1,9 +1,8 @@
 module Backend.StockUpdate.Test exposing (all)
 
 import AssocList as Dict
-import Backend.Measurement.Model exposing (ImageUrl(..), StockCorrectionReason(..), StockSupplier(..), StockUpdate, StockUpdateType(..))
-import Backend.StockUpdate.Model exposing (..)
-import Backend.StockUpdate.Utils exposing (..)
+import Backend.Measurement.Model exposing (ImageUrl(..), StockUpdate, StockUpdateType(..))
+import Backend.StockUpdate.Utils exposing (generateStockManagementDataFromDistributions)
 import Date
 import Expect exposing (FloatingPointTolerance(..))
 import Gizra.NominalDate exposing (NominalDate)

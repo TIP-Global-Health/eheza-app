@@ -27,7 +27,7 @@ import Measurement.Utils
         , vaccinationFormWithDefault
         , vaccineDoseToComparable
         )
-import Pages.ChildScoreboard.Activity.Model exposing (..)
+import Pages.ChildScoreboard.Activity.Model exposing (Model, Msg(..))
 import Pages.ChildScoreboard.Activity.Utils exposing (getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, updateVaccinationFormByVaccineType)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (insertIntoSet, setMuacValueForSite)

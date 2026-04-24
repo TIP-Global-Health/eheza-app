@@ -2,9 +2,9 @@ module Backend.HIVEncounter.Update exposing (update)
 
 import App.Model
 import App.Utils exposing (triggerRollbarOnFailure)
-import Backend.Endpoints exposing (..)
+import Backend.Endpoints exposing (hivDiagnosticsEndpoint, hivEncounterEndpoint, hivFollowUpEndpoint, hivHealthEducationEndpoint, hivMedicationEndpoint, hivReferralEndpoint, hivSymptomReviewEndpoint, hivTreatmentReviewEndpoint)
 import Backend.Entities exposing (..)
-import Backend.HIVEncounter.Model exposing (..)
+import Backend.HIVEncounter.Model exposing (HIVEncounter, Model, Msg(..))
 import Backend.Utils exposing (saveMeasurementCmd, sw)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (unwrap)

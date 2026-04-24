@@ -1,10 +1,10 @@
-module Backend.StockUpdate.Utils exposing (..)
+module Backend.StockUpdate.Utils exposing (dateToMonthYear, generateStockManagementData, generateStockManagementDataFromDistributions, generateVillageStockManagementData, monthYearDiff, stockCorrectionReasonFromString, stockCorrectionReasonToString, stockSupplierFromString, stockSupplierToString, stockUpdateTypeFromString, stockUpdateTypeToString)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (StockCorrectionReason(..), StockManagementMeasurements, StockSupplier(..), StockUpdate, StockUpdateType(..), VillageStockManagementMeasurements)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.StockUpdate.Model exposing (..)
+import Backend.StockUpdate.Model exposing (DistributionEntry, MonthYear, StockManagementData)
 import Backend.Village.Utils exposing (resolveVillageResidents)
 import Date
 import Gizra.NominalDate exposing (NominalDate)
@@ -280,8 +280,8 @@ generateStockManagementDataFromDistributions currentDate allDistributions allSto
                             (\index ->
                                 List.Extra.splitAt (index - 6) distributionsByMonth
                                     |> Tuple.second
-                                    |> List.map Tuple.second
                                     |> List.take 6
+                                    |> List.map Tuple.second
                                     |> List.sum
                             )
                         |> Maybe.withDefault 0

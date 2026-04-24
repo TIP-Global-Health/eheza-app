@@ -11,7 +11,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.Nutrition.Activity.Utils exposing (activityCompleted, allMandatoryActivities, expectActivity)
-import Pages.Nutrition.Encounter.Model exposing (..)
+import Pages.Nutrition.Encounter.Model exposing (AssembledData, DialogType(..), Model, Msg(..), Tab(..))
 import Pages.Nutrition.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewConfirmationDialog, viewEndEncounterButton, viewPersonDetails, viewReportLink, viewSkipNCDADialog)
@@ -159,17 +159,6 @@ viewMainPageContent language currentDate site zscores features id isChw db data 
                 , tabItem reportsTabTitle (model.selectedTab == Reports) "reports" (SetSelectedTab Reports)
                 ]
 
-        ( selectedActivities, emptySectionMessage ) =
-            case model.selectedTab of
-                Pending ->
-                    ( pendingActivities, translate language Translate.NoActivitiesPending )
-
-                Completed ->
-                    ( completedActivities, translate language Translate.NoActivitiesCompleted )
-
-                Reports ->
-                    ( [], "" )
-
         innerContent =
             if model.selectedTab == Reports then
                 div [ class "reports-wrapper" ]
@@ -182,6 +171,18 @@ viewMainPageContent language currentDate site zscores features id isChw db data 
                     ]
 
             else
+                let
+                    ( selectedActivities, emptySectionMessage ) =
+                        case model.selectedTab of
+                            Pending ->
+                                ( pendingActivities, translate language Translate.NoActivitiesPending )
+
+                            Completed ->
+                                ( completedActivities, translate language Translate.NoActivitiesCompleted )
+
+                            Reports ->
+                                ( [], "" )
+                in
                 div [ class "full content" ]
                     [ div [ class "wrap-cards" ]
                         [ div [ class "ui four cards" ] <|

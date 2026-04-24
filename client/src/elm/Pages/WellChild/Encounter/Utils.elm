@@ -1,4 +1,4 @@
-module Pages.WellChild.Encounter.Utils exposing (..)
+module Pages.WellChild.Encounter.Utils exposing (allowEndingEncounter, generateAssembledData, pediatricCareMilestoneToComparable, resolveDateForPediatricCareMilestone, resolvePediatricCareMilestoneOnDate)
 
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
@@ -6,10 +6,9 @@ import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (PediatricCareMilestone(..), WellChildEncounterType(..))
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
-import Maybe.Extra exposing (isJust)
 import Measurement.Utils
 import Pages.WellChild.Activity.Utils exposing (mandatoryDangerSignsTasksCompleted, mandatoryNutritionAssessmentTasksCompleted)
-import Pages.WellChild.Encounter.Model exposing (..)
+import Pages.WellChild.Encounter.Model exposing (AssembledData)
 import RemoteData exposing (WebData)
 import SyncManager.Model exposing (Site)
 
@@ -145,7 +144,7 @@ allowEndingEncounter currentDate site pendingActivities assembled =
                             False
 
                         else
-                            mandatoryDangerSignsTasksCompleted currentDate site assembled
+                            mandatoryDangerSignsTasksCompleted site assembled
 
                     [ WellChildNutritionAssessment ] ->
                         if assembled.encounter.encounterType == PediatricCare then
@@ -159,7 +158,7 @@ allowEndingEncounter currentDate site pendingActivities assembled =
                             False
 
                         else
-                            mandatoryDangerSignsTasksCompleted currentDate site assembled
+                            mandatoryDangerSignsTasksCompleted site assembled
                                 && mandatoryNutritionAssessmentTasksCompleted currentDate site assembled
 
                     [ WellChildNutritionAssessment, WellChildDangerSigns ] ->
@@ -167,7 +166,7 @@ allowEndingEncounter currentDate site pendingActivities assembled =
                             False
 
                         else
-                            mandatoryDangerSignsTasksCompleted currentDate site assembled
+                            mandatoryDangerSignsTasksCompleted site assembled
                                 && mandatoryNutritionAssessmentTasksCompleted currentDate site assembled
 
                     _ ->

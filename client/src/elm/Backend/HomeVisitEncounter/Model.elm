@@ -1,4 +1,4 @@
-module Backend.HomeVisitEncounter.Model exposing (..)
+module Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter, Model, Msg(..), emptyHomeVisitEncounter, emptyModel)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)

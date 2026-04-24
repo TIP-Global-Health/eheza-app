@@ -4,8 +4,7 @@ import App.Model
 import Backend.Entities exposing (..)
 import Backend.HomeVisitEncounter.Model
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
-import Backend.Model exposing (ModelIndexedDb)
-import Gizra.NominalDate exposing (NominalDate)
+import Backend.Model
 import Maybe.Extra exposing (unwrap)
 import Measurement.Utils
     exposing
@@ -14,12 +13,12 @@ import Measurement.Utils
         , toNutritionFoodSecurityValueWithDefault
         , toNutritionHygieneValueWithDefault
         )
-import Pages.HomeVisit.Activity.Model exposing (..)
+import Pages.HomeVisit.Activity.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..), UserPage(..))
 
 
-update : NominalDate -> HomeVisitEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate id db msg model =
+update : HomeVisitEncounterId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update id msg model =
     case msg of
         SetActivePage page ->
             ( model

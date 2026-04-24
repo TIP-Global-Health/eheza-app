@@ -1,8 +1,8 @@
 module Backend.HealthCenter.Decoder exposing (decodeCatchmentArea, decodeHealthCenter)
 
-import Backend.HealthCenter.Model exposing (..)
-import Json.Decode exposing (..)
-import Json.Decode.Pipeline exposing (..)
+import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
+import Json.Decode exposing (Decoder, bool, string, succeed)
+import Json.Decode.Pipeline exposing (required)
 import Restful.Endpoint exposing (decodeEntityUuid)
 
 

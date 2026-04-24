@@ -21,7 +21,7 @@ import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTopic)
 import Backend.EducationSession.Model exposing (EducationTopic(..))
 import Backend.Entities exposing (..)
-import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterType(..))
+import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterType)
 import Backend.HIVActivity.Model exposing (HIVActivity)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)
 import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), IndividualEncounterType(..), PregnancyOutcome(..))
@@ -111,7 +111,7 @@ import Pages.MessagingCenter.Model exposing (MessagingTab(..))
 import Pages.NCD.Activity.Types exposing (ExaminationTask(..), MedicalHistoryTask(..))
 import Pages.NCD.ProgressReport.Model exposing (NCDRiskFactor(..))
 import Pages.NCD.RecurrentActivity.Types
-import Pages.Page exposing (..)
+import Pages.Page exposing (AcuteIllnessSubPage(..), ChildWellnessSubPage(..), DashboardPage(..), NCDSubPage(..), Page(..), SessionPage(..), UserPage(..))
 import Pages.PatientRecord.Model exposing (PatientRecordFilter(..))
 import Pages.PinCode.Model exposing (MainMenuActivity(..), ResilienceReminderType(..))
 import Pages.Prenatal.Activity.Types
@@ -165,7 +165,7 @@ import Round
 import SyncManager.Model exposing (Site(..))
 import Time exposing (Month(..))
 import Translate.Model exposing (TranslationSet)
-import Translate.Utils exposing (..)
+import Translate.Utils exposing (selectLanguage)
 import ZScore.Model exposing (ChartAgeRange(..))
 
 
@@ -4422,7 +4422,7 @@ translationSet trans =
         ByMouthThreeTimesADayForXDays days ->
             { english = "by mouth three times per day x " ++ String.fromInt days ++ " days"
             , kinyarwanda = Just <| "inshuro ebyiri ku munsi/ mu minsi " ++ String.fromInt days
-            , kirundi = Just <| "Kumira incuro 3 k'umunsi mu kiringo (Igitigiri) iminsi"
+            , kirundi = Just "Kumira incuro 3 k'umunsi mu kiringo (Igitigiri) iminsi"
             , somali = Just <| "afka 3 jeer maalinki x " ++ String.fromInt days ++ " maalin"
             }
 
@@ -11447,7 +11447,7 @@ translationSet trans =
 
         LevelOfEducationLabel ->
             { english = "Level of Education"
-            , kinyarwanda = Just <| "Amashuri wize"
+            , kinyarwanda = Just "Amashuri wize"
             , kirundi = Just "Urugero rw'amashule yize"
             , somali = Just "Heerka Waxbarashada"
             }
@@ -31049,7 +31049,7 @@ translateValidationError id =
         DigitsOnly ->
             { english = "should contain only digit characters"
             , kinyarwanda = Nothing
-            , kirundi = Just <| "Itegerezwa kuba irimwo ibiharuro gusa"
+            , kirundi = Just "Itegerezwa kuba irimwo ibiharuro gusa"
             , somali = Just "waa inuu ku jiraa kaliya qoraalada aaladeysan"
             }
 

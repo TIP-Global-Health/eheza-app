@@ -1,11 +1,11 @@
 module Backend.StockUpdate.Decoder exposing (decodeStockUpdate)
 
 import Backend.Measurement.Model exposing (ImageUrl(..), StockCorrectionReason, StockSupplier, StockUpdate, StockUpdateType)
-import Backend.StockUpdate.Utils exposing (..)
+import Backend.StockUpdate.Utils exposing (stockCorrectionReasonFromString, stockSupplierFromString, stockUpdateTypeFromString)
 import Gizra.Json exposing (decodeInt, decodeStringWithDefault)
 import Gizra.NominalDate
-import Json.Decode exposing (..)
-import Json.Decode.Pipeline exposing (..)
+import Json.Decode exposing (Decoder, andThen, bool, fail, map, nullable, string, succeed)
+import Json.Decode.Pipeline exposing (optional, required)
 import Restful.Endpoint exposing (decodeEntityUuid)
 import Utils.Json exposing (decodeWithFallback)
 

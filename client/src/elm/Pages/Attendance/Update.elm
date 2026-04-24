@@ -2,7 +2,7 @@ module Pages.Attendance.Update exposing (update)
 
 import Backend.Session.Model
 import Measurement.Model
-import Pages.Attendance.Model exposing (..)
+import Pages.Attendance.Model exposing (InitialResultsDisplay(..), Model, Msg(..))
 import Pages.Session.Model
 
 
