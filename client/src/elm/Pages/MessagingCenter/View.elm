@@ -1,14 +1,14 @@
 module Pages.MessagingCenter.View exposing (view)
 
 import AssocList as Dict
-import Backend.Entities exposing (..)
+import Backend.Entities exposing (NurseId, ResilienceMessageId)
 import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse, ResilienceRole(..))
 import Backend.Nurse.Utils exposing (resilienceRoleToString)
 import Backend.Person.Model exposing (EducationLevel(..), MaritalStatus(..), allUbudehes)
 import Backend.Person.Utils exposing (educationLevelToInt, genderToString, maritalStatusToString, ubudeheToInt)
-import Backend.ResilienceMessage.Model exposing (ReasonForNotConsenting(..), ResilienceCategory(..), ResilienceMessage, ResilienceMessageOrder(..))
+import Backend.ResilienceMessage.Model exposing (ResilienceCategory(..), ResilienceMessage, ResilienceMessageOrder(..))
 import Backend.ResilienceSurvey.Model exposing (ResilienceSurveyQuestionOption(..), ResilienceSurveyType(..))
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
@@ -18,11 +18,10 @@ import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY, fromLocalDateTim
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Maybe
-import Pages.MessagingCenter.Model exposing (..)
-import Pages.MessagingCenter.Utils exposing (..)
+import Pages.MessagingCenter.Model exposing (KickOffForm, MessageOptionsDialogState(..), MessagingTab(..), Model, Msg(..), SurveyForm, SurveyScoreDialogState(..))
+import Pages.MessagingCenter.Utils exposing (adoptionSurveyQuestions, generateInboxMessages, quarterlySurveyQuestions, resolveNumberOfUnreadMessages)
 import Pages.MessagingConsent.View
-import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Page exposing (Page(..))
 import Pages.Utils
     exposing
         ( customPopup
@@ -43,26 +42,6 @@ import Utils.NominalDate exposing (renderDate, sortByDateDesc)
 
 view : Language -> Time.Posix -> NurseId -> Nurse -> ModelIndexedDb -> Model -> Html Msg
 view language currentTime nurseId nurse db model =
-    let
-        currentDate =
-            fromLocalDateTime currentTime
-
-        numberOfUnreadMessages =
-            resolveNumberOfUnreadMessages currentTime currentDate nurse
-
-        header =
-            div [ class "ui basic head segment" ]
-                [ h1 [ class "ui header" ]
-                    [ translateText language Translate.ResilienceMessage
-                    , span [ class "counter" ] [ text <| String.fromInt numberOfUnreadMessages ]
-                    ]
-                , span
-                    [ class "link-back"
-                    , onClick <| SetActivePage WellbeingPage
-                    ]
-                    [ span [ class "icon-back" ] [] ]
-                ]
-    in
     if not nurse.resilienceConsentGiven then
         Pages.MessagingConsent.View.view language
             currentTime
@@ -72,6 +51,25 @@ view language currentTime nurseId nurse db model =
 
     else
         let
+            currentDate =
+                fromLocalDateTime currentTime
+
+            numberOfUnreadMessages =
+                resolveNumberOfUnreadMessages currentTime currentDate nurse
+
+            header =
+                div [ class "ui basic head segment" ]
+                    [ h1 [ class "ui header" ]
+                        [ translateText language Translate.ResilienceMessage
+                        , span [ class "counter" ] [ text <| String.fromInt numberOfUnreadMessages ]
+                        ]
+                    , span
+                        [ class "link-back"
+                        , onClick <| SetActivePage WellbeingPage
+                        ]
+                        [ span [ class "icon-back" ] [] ]
+                    ]
+
             content =
                 Maybe.map
                     (\programStartDate ->
@@ -93,27 +91,28 @@ view language currentTime nurseId nurse db model =
                                     surveyCount =
                                         List.length filteredSurveys
 
-                                    filterCondition survey =
-                                        let
-                                            -- Calculate the days since the program started
-                                            daysSinceProgramStart =
-                                                Date.diff Days programStartDate currentDate
-                                        in
+                                    filterCondition _ =
                                         if surveyCount == 0 then
                                             -- First survey should always run at the start of the program
                                             True
 
-                                        else if surveyCount == 1 then
-                                            -- Second survey should run at 106 days
-                                            daysSinceProgramStart >= 105
-
-                                        else if surveyCount == 2 then
-                                            -- Final survey should run at 201 days
-                                            daysSinceProgramStart >= 200
-
                                         else
-                                            -- No more surveys after 3 have been completed
-                                            False
+                                            let
+                                                -- Calculate the days since the program started
+                                                daysSinceProgramStart =
+                                                    Date.diff Days programStartDate currentDate
+                                            in
+                                            if surveyCount == 1 then
+                                                -- Second survey should run at 106 days
+                                                daysSinceProgramStart >= 105
+
+                                            else if surveyCount == 2 then
+                                                -- Final survey should run at 201 days
+                                                daysSinceProgramStart >= 200
+
+                                            else
+                                                -- No more surveys after 3 have been completed
+                                                False
                                 in
                                 List.head filteredSurveys
                                     |> Maybe.map filterCondition
@@ -123,7 +122,7 @@ view language currentTime nurseId nurse db model =
                                 runSurvey ResilienceSurveyQuarterly
                         in
                         if runQuarterlySurvey then
-                            viewQuarterlySurvey language currentDate nurseId model.surveyForm
+                            viewQuarterlySurvey language nurseId model.surveyForm
 
                         else
                             let
@@ -131,10 +130,10 @@ view language currentTime nurseId nurse db model =
                                     runSurvey ResilienceSurveyAdoption
                             in
                             if runAdoptionSurvey then
-                                viewAdoptionSurvey language currentDate nurseId model.surveyForm
+                                viewAdoptionSurvey language nurseId model.surveyForm
 
                             else
-                                viewMessagingCenter language currentTime currentDate programStartDate nurseId nurse db model
+                                viewMessagingCenter language currentTime currentDate programStartDate nurseId nurse model
                     )
                     nurse.resilienceProgramStartDate
                     |> Maybe.withDefault (viewKickOffSurvey language currentDate nurseId nurse model.kickOffForm)
@@ -276,8 +275,8 @@ viewKickOffSurvey language currentDate nurseId nurse form =
         ]
 
 
-viewQuarterlySurvey : Language -> NominalDate -> NurseId -> SurveyForm -> Html Msg
-viewQuarterlySurvey language currentDate nurseId form =
+viewQuarterlySurvey : Language -> NurseId -> SurveyForm -> Html Msg
+viewQuarterlySurvey language nurseId form =
     let
         questionInput question =
             [ viewCustomLabel language (Translate.ResilienceQuarterlySurveyQuestion question) "." "label"
@@ -313,8 +312,8 @@ viewQuarterlySurvey language currentDate nurseId form =
         ]
 
 
-viewAdoptionSurvey : Language -> NominalDate -> NurseId -> SurveyForm -> Html Msg
-viewAdoptionSurvey language currentDate nurseId form =
+viewAdoptionSurvey : Language -> NurseId -> SurveyForm -> Html Msg
+viewAdoptionSurvey language nurseId form =
     let
         questionInput question =
             [ viewCustomLabel language (Translate.ResilienceSurveyAdoptionQuestion question) "." "label"
@@ -378,13 +377,13 @@ surveyScoreDialog language =
                                     let
                                         messageContent =
                                             if first < second then
-                                                [ text (translate language <| Translate.AdoptionSurveyProgressImproving), span [ class "icon-up" ] [] ]
+                                                [ text (translate language Translate.AdoptionSurveyProgressImproving), span [ class "icon-up" ] [] ]
 
                                             else if first > second then
-                                                [ text (translate language <| Translate.AdoptionSurveyProgressNotImproving), span [ class "icon-down" ] [] ]
+                                                [ text (translate language Translate.AdoptionSurveyProgressNotImproving), span [ class "icon-down" ] [] ]
 
                                             else
-                                                [ text (translate language <| Translate.AdoptionSurveyProgressSame) ]
+                                                [ text (translate language Translate.AdoptionSurveyProgressSame) ]
                                     in
                                     ( String.fromInt second ++ "/60"
                                     , Translate.AdoptionSurveyScoreInterpretation second
@@ -411,7 +410,7 @@ surveyScoreDialog language =
                 bottomMessage =
                     let
                         interpretation =
-                            p [ class "interpretation" ] [ text <| translate language <| interpretationFunction ]
+                            p [ class "interpretation" ] [ text <| translate language interpretationFunction ]
                     in
                     Maybe.map
                         (\message ->
@@ -433,8 +432,8 @@ surveyScoreDialog language =
         )
 
 
-viewMessagingCenter : Language -> Time.Posix -> NominalDate -> NominalDate -> NurseId -> Nurse -> ModelIndexedDb -> Model -> Html Msg
-viewMessagingCenter language currentTime currentDate programStartDate nurseId nurse_ db model =
+viewMessagingCenter : Language -> Time.Posix -> NominalDate -> NominalDate -> NurseId -> Nurse -> Model -> Html Msg
+viewMessagingCenter language currentTime currentDate programStartDate nurseId nurse_ model =
     let
         nurse =
             -- Genrate full list of messages that are supposed to
@@ -444,33 +443,33 @@ viewMessagingCenter language currentTime currentDate programStartDate nurseId nu
                     generateInboxMessages currentDate programStartDate nurse_.resilienceMessages
             }
 
-        ( unread, read ) =
-            Dict.toList nurse.resilienceMessages
-                |> List.partition
-                    (\( _, message ) ->
-                        case message.timeRead of
-                            Nothing ->
-                                True
-
-                            Just timeRead ->
-                                Maybe.map
-                                    (\nextReminder ->
-                                        let
-                                            nextReminderMillis =
-                                                posixToMillis nextReminder
-                                        in
-                                        -- Reminder was set to latter time than the
-                                        -- time at which message was read.
-                                        (nextReminderMillis > posixToMillis timeRead)
-                                            && -- Scheduled reminder time was reached.
-                                               (posixToMillis currentTime > nextReminderMillis)
-                                    )
-                                    message.nextReminder
-                                    |> Maybe.withDefault False
-                    )
-
         content =
             let
+                ( unread, read ) =
+                    Dict.toList nurse.resilienceMessages
+                        |> List.partition
+                            (\( _, message ) ->
+                                case message.timeRead of
+                                    Nothing ->
+                                        True
+
+                                    Just timeRead ->
+                                        Maybe.map
+                                            (\nextReminder ->
+                                                let
+                                                    nextReminderMillis =
+                                                        posixToMillis nextReminder
+                                                in
+                                                -- Reminder was set to latter time than the
+                                                -- time at which message was read.
+                                                (nextReminderMillis > posixToMillis timeRead)
+                                                    && -- Scheduled reminder time was reached.
+                                                       (posixToMillis currentTime > nextReminderMillis)
+                                            )
+                                            message.nextReminder
+                                            |> Maybe.withDefault False
+                            )
+
                 viewMessage =
                     viewResilienceMessage language nurseId nurse model
 
@@ -508,7 +507,7 @@ viewMessagingCenter language currentTime currentDate programStartDate nurseId nu
         , div [ class "ui report unstackable items" ]
             content
         , viewModal <|
-            Maybe.map (messageOptionsDialog language currentTime currentDate nurseId nurse model.activeTab)
+            Maybe.map (messageOptionsDialog language nurseId nurse model.activeTab)
                 model.messageOptionsDialogState
         ]
 
@@ -646,7 +645,7 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
                         |> Maybe.withDefault emptyNode
 
                 plainTitle =
-                    div [ class <| "header", onClick messageClickedAction ]
+                    div [ class "header", onClick messageClickedAction ]
                         [ i [ class <| "icon-" ++ extraClass ++ " " ++ titleWrapperClass ] []
                         , messageCategory
                         , dateSent
@@ -1514,14 +1513,12 @@ viewEndOfPeriodMessage language order =
 
 messageOptionsDialog :
     Language
-    -> Time.Posix
-    -> NominalDate
     -> NurseId
     -> Nurse
     -> MessagingTab
     -> MessageOptionsDialogState
     -> Html Msg
-messageOptionsDialog language currentTime currentDate nurseId nurse tab state =
+messageOptionsDialog language nurseId nurse tab state =
     case state of
         MessageOptionsStateMain ( messageId, message ) ->
             let

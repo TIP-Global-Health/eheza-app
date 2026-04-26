@@ -1,7 +1,7 @@
-module Backend.Person.Encoder exposing (..)
+module Backend.Person.Encoder exposing (encodeEducationLevel, encodeGender, encodeMaritalStatus, encodePerson, encodeUbudehe)
 
 import Backend.Measurement.Model exposing (Gender)
-import Backend.Person.Model exposing (..)
+import Backend.Person.Model exposing (EducationLevel, HIVStatus, MaritalStatus, ModeOfDelivery, Person, Ubudehe)
 import Backend.Person.Utils
     exposing
         ( educationLevelToInt
@@ -12,7 +12,7 @@ import Backend.Person.Utils
         , ubudeheToInt
         )
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
-import Json.Encode exposing (..)
+import Json.Encode exposing (Value, bool, int, string)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid)
 import Utils.Json exposing (encodeIfSet)

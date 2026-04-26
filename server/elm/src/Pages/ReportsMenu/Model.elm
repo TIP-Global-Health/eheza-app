@@ -1,4 +1,4 @@
-module Pages.ReportsMenu.Model exposing (..)
+module Pages.ReportsMenu.Model exposing (Model, Msg(..), emptyModel)
 
 import Backend.Components.Model exposing (HealthCenterId)
 import Pages.Components.Model exposing (DemographicsSelection, emptyDemographicsSelection)

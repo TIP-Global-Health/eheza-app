@@ -84,6 +84,7 @@ viewContent language currentDate features healthCenterId nurseId model =
                                                      , endDate = Nothing
                                                      , clinicId = clinicId
                                                      , clinicType = Chw
+                                                     , deleted = False
                                                      }
                                                         |> PostSession
                                                         |> MsgIndexedDb

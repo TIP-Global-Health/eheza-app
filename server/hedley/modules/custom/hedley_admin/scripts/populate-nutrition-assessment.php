@@ -86,10 +86,11 @@ foreach ($config as $type => $data) {
       }
 
       // Trace Nutrition measurement for the Follow up.
-      $trace_query = new EntityFieldQuery();
+      $trace_query = hedley_general_create_entity_field_query_excluding_deleted();
       $trace_query
         ->entityCondition('entity_type', 'node')
         ->propertyCondition('type', $target_type)
+        ->propertyCondition('status', NODE_PUBLISHED)
         ->fieldCondition('field_person', 'target_id', $person_id)
         ->fieldCondition($session_field, 'target_id', $session_id)
         ->range(0, $batch);
@@ -131,10 +132,11 @@ foreach ($config as $type => $data) {
  * Generate base query.
  */
 function base_query_for_bundle($bundle) {
-  $base_query = new EntityFieldQuery();
+  $base_query = hedley_general_create_entity_field_query_excluding_deleted();
   $base_query
     ->entityCondition('entity_type', 'node')
     ->propertyCondition('type', $bundle)
+    ->propertyCondition('status', NODE_PUBLISHED)
     ->propertyOrderBy('nid');
 
   return $base_query;

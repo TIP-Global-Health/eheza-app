@@ -1,4 +1,4 @@
-module Pages.Prenatal.RecurrentEncounter.Model exposing (..)
+module Pages.Prenatal.RecurrentEncounter.Model exposing (Model, Msg(..), Tab(..), emptyModel)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (LabsResultsValue)

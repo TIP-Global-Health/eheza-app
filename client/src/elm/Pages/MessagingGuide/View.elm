@@ -1,10 +1,10 @@
-module Pages.MessagingGuide.View exposing (..)
+module Pages.MessagingGuide.View exposing (view)
 
 import App.Model
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Page exposing (Page(..))
 import Translate exposing (Language, translate, translateText)
 
 

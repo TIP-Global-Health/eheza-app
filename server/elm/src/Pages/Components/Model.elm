@@ -1,4 +1,4 @@
-module Pages.Components.Model exposing (..)
+module Pages.Components.Model exposing (DemographicsSelection, emptyDemographicsSelection)
 
 import Utils.GeoLocation exposing (GeoLocationId)
 

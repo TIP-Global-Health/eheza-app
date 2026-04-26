@@ -129,6 +129,9 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     $handlers_by_types = $this->entitiesForAllDevices();
 
     // Start building up a query, which we'll use in a couple of ways.
+    // We don't use hedley_general_create_db_select_query_excluding_deleted(),
+    // because we want content marked as deleted to be synced to devices.
+    // Otherwise, devices will not be aware that content got deleted on server.
     $query = db_select('node', 'node');
 
     $query
@@ -176,15 +179,18 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     $available_features = [
       'acute_illness',
       'antenatal',
+      'family_nutrition',
       'gps_coordinates',
       'group_education',
+      'healthy_start',
       'hiv_management',
       'ncd',
       'ncda',
       'nutrition_group',
       'nutrition_individual',
       'report_to_whatsapp',
-      'stock_management',
+      'stock_management_hc',
+      'stock_management_village',
       'tuberculosis_management',
       'well_child',
     ];
@@ -253,6 +259,9 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
     $base = $request['base_revision'];
 
+    // We don't use hedley_general_create_db_select_query_excluding_deleted(),
+    // because we want content marked as deleted to be synced to devices.
+    // Otherwise, devices will not be aware that content got deleted on server.
     $query = db_select('node', 'node');
 
     $query

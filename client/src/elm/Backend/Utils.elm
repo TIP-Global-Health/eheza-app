@@ -1,13 +1,15 @@
-module Backend.Utils exposing (..)
+module Backend.Utils exposing (acuteIllnessEnabled, antenatalEnabled, anyOfCaseManagementFeaturesEnabled, anyOfDashboardFeaturesEnabled, anyOfEncounterTypesEnabled, authoritySelectionRequired, editMeasurementCmd, everySetsEqual, familyNutritionEnabled, gpsCoordinatesEnabled, groupEducationEnabled, groupEncountersEnabled, healthyStartEnabled, hivManagementEnabled, individualEncountersEnabled, mapAcuteIllnessMeasurements, mapChildMeasurements, mapChildScoreboardMeasurements, mapFamilyNutritionMeasurements, mapFollowUpMeasurements, mapHIVMeasurements, mapHomeVisitMeasurements, mapMotherMeasurements, mapNCDMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, mapStockManagementMeasurements, mapTuberculosisMeasurements, mapWellChildMeasurements, ncdEnabled, ncdaEnabled, nutritionEnabled, nutritionGroupEnabled, nutritionIndividualEnabled, reportToWhatsAppEnabled, resolveFamilyParticipantForPerson, resolveFamilyParticipantsForPerson, resolveIndividualParticipantForPerson, resolveIndividualParticipantsForPerson, saveMeasurementCmd, stockManagementHCEnabled, stockManagementVillageEnabled, sw, tuberculosisManagementEnabled, wellChildEnabled)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
+import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterType)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
 import Backend.Measurement.Model
     exposing
         ( AcuteIllnessMeasurements
         , ChildMeasurementList
         , ChildScoreboardMeasurements
+        , FamilyNutritionMeasurements
         , FollowUpMeasurements
         , HIVMeasurements
         , HomeVisitMeasurements
@@ -19,7 +21,7 @@ import Backend.Measurement.Model
         , TuberculosisMeasurements
         , WellChildMeasurements
         )
-import Backend.Model exposing (..)
+import Backend.Model exposing (ModelIndexedDb)
 import EverySet exposing (EverySet)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (applyBackendUrl, toCmd, withoutDecoder)
@@ -174,6 +176,16 @@ mapHIVMeasurements id func model =
             model
 
 
+mapFamilyNutritionMeasurements : Maybe FamilyNutritionEncounterId -> (FamilyNutritionMeasurements -> FamilyNutritionMeasurements) -> ModelIndexedDb -> ModelIndexedDb
+mapFamilyNutritionMeasurements id func model =
+    case id of
+        Just encounterId ->
+            { model | familyNutritionMeasurements = Dict.update encounterId (Maybe.map (RemoteData.map func)) model.familyNutritionMeasurements }
+
+        Nothing ->
+            model
+
+
 mapStockManagementMeasurements : Maybe HealthCenterId -> (StockManagementMeasurements -> StockManagementMeasurements) -> ModelIndexedDb -> ModelIndexedDb
 mapStockManagementMeasurements id func model =
     case id of
@@ -202,6 +214,7 @@ saveMeasurementCmd date encounter person nurse healthCenter savedValueId savedVa
             , encounterId = Just encounter
             , nurse = nurse
             , healthCenter = healthCenter
+            , deleted = False
             , value = savedValue
             }
 
@@ -251,6 +264,30 @@ resolveIndividualParticipantForPerson personId encounterType db =
         |> List.head
 
 
+resolveFamilyParticipantsForPerson : PersonId -> FamilyEncounterType -> ModelIndexedDb -> List FamilyEncounterParticipantId
+resolveFamilyParticipantsForPerson personId encounterType db =
+    Dict.get personId db.familyParticipantsByPerson
+        |> Maybe.andThen RemoteData.toMaybe
+        |> Maybe.map
+            (Dict.toList
+                >> List.filterMap
+                    (\( participantId, participant ) ->
+                        if participant.encounterType == encounterType then
+                            Just participantId
+
+                        else
+                            Nothing
+                    )
+            )
+        |> Maybe.withDefault []
+
+
+resolveFamilyParticipantForPerson : PersonId -> FamilyEncounterType -> ModelIndexedDb -> Maybe FamilyEncounterParticipantId
+resolveFamilyParticipantForPerson personId encounterType db =
+    resolveFamilyParticipantsForPerson personId encounterType db
+        |> List.head
+
+
 everySetsEqual : EverySet a -> EverySet a -> Bool
 everySetsEqual set1 set2 =
     let
@@ -274,7 +311,8 @@ everySetsEqual set1 set2 =
 authoritySelectionRequired : Bool -> EverySet SiteFeature -> Bool
 authoritySelectionRequired isChw features =
     anyOfEncounterTypesEnabled isChw features
-        || (stockManagementEnabled features && not isChw)
+        || (stockManagementHCEnabled features && not isChw)
+        || (stockManagementVillageEnabled features && isChw)
 
 
 anyOfEncounterTypesEnabled : Bool -> EverySet SiteFeature -> Bool
@@ -290,6 +328,16 @@ individualEncountersEnabled isChw features =
             (\feature ->
                 EverySet.member feature features
             )
+
+
+stockManagementHCEnabled : EverySet SiteFeature -> Bool
+stockManagementHCEnabled =
+    EverySet.member FeatureStockManagementHC
+
+
+stockManagementVillageEnabled : EverySet SiteFeature -> Bool
+stockManagementVillageEnabled =
+    EverySet.member FeatureStockManagementVillage
 
 
 groupEncountersEnabled : Bool -> EverySet SiteFeature -> Bool
@@ -424,9 +472,14 @@ wellChildEnabled =
     EverySet.member FeatureWellChild
 
 
-stockManagementEnabled : EverySet SiteFeature -> Bool
-stockManagementEnabled =
-    EverySet.member FeatureStockManagement
+healthyStartEnabled : EverySet SiteFeature -> Bool
+healthyStartEnabled =
+    EverySet.member FeatureHealthyStart
+
+
+familyNutritionEnabled : EverySet SiteFeature -> Bool
+familyNutritionEnabled =
+    EverySet.member FeatureFamilyNutrition
 
 
 individualEncounterFeatures : Bool -> List SiteFeature

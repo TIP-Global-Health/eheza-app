@@ -1,17 +1,16 @@
 module Pages.MessagingConsent.View exposing (view)
 
-import Backend.Entities exposing (..)
-import Backend.Nurse.Model exposing (Nurse, ResilienceRole(..))
-import Backend.ResilienceMessage.Model exposing (ReasonForNotConsenting(..), ResilienceCategory(..), ResilienceMessage, ResilienceMessageOrder(..))
+import Backend.Entities exposing (NurseId)
+import Backend.Nurse.Model exposing (Nurse)
+import Backend.ResilienceMessage.Model exposing (ReasonForNotConsenting(..))
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
+import Gizra.NominalDate exposing (fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Maybe
-import Pages.MessagingCenter.Model exposing (..)
-import Pages.MessagingCenter.Utils exposing (..)
-import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.MessagingCenter.Model exposing (ConsentForm, Model, Msg(..))
+import Pages.MessagingCenter.Utils exposing (resolveNumberOfUnreadMessages)
+import Pages.Page exposing (Page(..))
 import Pages.Utils exposing (viewBoolInput, viewCheckBoxSelectInput, viewQuestionLabel, viewSaveAction)
 import Time
 import Translate exposing (Language, translate, translateText)
@@ -34,7 +33,7 @@ view language currentTime nurseId nurse model =
                     ]
                 , span
                     [ class "link-back"
-                    , onClick <| SetActivePage <| WellbeingPage
+                    , onClick <| SetActivePage WellbeingPage
                     ]
                     [ span [ class "icon-back" ] [] ]
                 ]

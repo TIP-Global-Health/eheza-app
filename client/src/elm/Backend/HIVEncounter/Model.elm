@@ -1,4 +1,4 @@
-module Backend.HIVEncounter.Model exposing (..)
+module Backend.HIVEncounter.Model exposing (HIVEncounter, Model, Msg(..), emptyHIVEncounter, emptyModel)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -10,6 +10,7 @@ type alias HIVEncounter =
     { participant : IndividualEncounterParticipantId
     , startDate : NominalDate
     , endDate : Maybe NominalDate
+    , deleted : Bool
     , shard : Maybe HealthCenterId
     }
 
@@ -19,6 +20,7 @@ emptyHIVEncounter participant startDate shard =
     { participant = participant
     , startDate = startDate
     , endDate = Nothing
+    , deleted = False
     , shard = shard
     }
 

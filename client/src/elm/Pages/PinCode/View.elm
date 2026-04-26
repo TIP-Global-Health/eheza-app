@@ -1,20 +1,20 @@
 module Pages.PinCode.View exposing (view)
 
 import AssocList as Dict
-import Backend.Entities exposing (..)
+import Backend.Entities exposing (HealthCenterId, NurseId, VillageId)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (assignedToHealthCenter, assignedToVillage, isCommunityHealthWorker, isLabTechnician)
 import Backend.Person.Model exposing (Initiator(..))
 import Backend.Person.Utils exposing (getHealthCenterName)
-import Backend.ResilienceMessage.Model exposing (ResilienceCategory(..), ResilienceMessage, ResilienceMessageOrder(..))
 import Backend.Utils
     exposing
         ( anyOfCaseManagementFeaturesEnabled
         , anyOfDashboardFeaturesEnabled
         , anyOfEncounterTypesEnabled
         , authoritySelectionRequired
-        , stockManagementEnabled
+        , stockManagementHCEnabled
+        , stockManagementVillageEnabled
         )
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
@@ -26,7 +26,7 @@ import Html.Events exposing (onClick, onInput, onSubmit)
 import Maybe.Extra exposing (isJust)
 import Pages.MessagingCenter.Utils exposing (resolveNumberOfUnreadMessages)
 import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
-import Pages.PinCode.Model exposing (..)
+import Pages.PinCode.Model exposing (MainMenuActivity(..), Model, Msg(..), OutMsg(..), ResilienceReminderType(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import SyncManager.Model exposing (SiteFeature)
 import Time exposing (posixToMillis)
@@ -213,9 +213,6 @@ viewLoggedInContent language currentTime features nurseId nurse ( healthCenterId
             currentDate =
                 fromLocalDateTime currentTime
 
-            isLabTech =
-                isLabTechnician nurse
-
             deviceInfo =
                 deviceName
                     |> Maybe.map
@@ -296,6 +293,9 @@ viewLoggedInContent language currentTime features nurseId nurse ( healthCenterId
 
             activities =
                 let
+                    isLabTech =
+                        isLabTechnician nurse
+
                     encountersEnabled =
                         anyOfEncounterTypesEnabled isChw features
 
@@ -315,7 +315,10 @@ viewLoggedInContent language currentTime features nurseId nurse ( healthCenterId
                         ++ viewMenus [ MenuDashboards ] (anyOfDashboardFeaturesEnabled isChw features)
                         ++ viewMenus [ MenuCaseManagement ] (anyOfCaseManagementFeaturesEnabled isChw features)
                         ++ viewMenus [ MenuWellbeing ] nurse.resilienceProgramEnabled
-                        ++ viewMenus [ MenuStockManagement ] (stockManagementEnabled features && not isChw)
+                        ++ viewMenus [ MenuStockManagement ]
+                            ((stockManagementHCEnabled features && not isChw)
+                                || (stockManagementVillageEnabled features && isChw)
+                            )
                         ++ [ MenuDeviceStatus ]
 
             cards =
@@ -332,7 +335,7 @@ viewLoggedInContent language currentTime features nurseId nurse ( healthCenterId
             -- reminder is given a priority.
             Maybe.Extra.or
                 (resilienceReminderDialog language currentTime currentDate nurseId nurse)
-                (resilienceNotificationDialog language currentTime currentDate nurseId nurse db model)
+                (resilienceNotificationDialog language currentTime currentDate nurse model)
         ]
 
     else
@@ -431,12 +434,10 @@ resilienceNotificationDialog :
     Language
     -> Time.Posix
     -> NominalDate
-    -> NurseId
     -> Nurse
-    -> ModelIndexedDb
     -> Model
     -> Maybe (Html Msg)
-resilienceNotificationDialog language currentTime currentDate nurseId nurse db model =
+resilienceNotificationDialog language currentTime currentDate nurse model =
     let
         notificationTimeReached =
             Maybe.map
@@ -552,7 +553,7 @@ selectHeathCenterOptions language nurse db =
                 ]
                 [ text location.name ]
     in
-    p [ class "select-location" ] [ text <| (translate language Translate.SelectYourHealthCenter ++ ":") ]
+    p [ class "select-location" ] [ text (translate language Translate.SelectYourHealthCenter ++ ":") ]
         :: List.map selectButton filtered
 
 
@@ -575,5 +576,5 @@ selectVillageOptions language nurse db =
                 ]
                 [ text location.name ]
     in
-    p [ class "select-location" ] [ text <| (translate language Translate.SelectYourVillage ++ ":") ]
+    p [ class "select-location" ] [ text (translate language Translate.SelectYourVillage ++ ":") ]
         :: List.map selectButton filtered

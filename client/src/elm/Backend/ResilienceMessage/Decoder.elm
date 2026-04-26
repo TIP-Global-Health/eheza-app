@@ -1,22 +1,21 @@
-module Backend.ResilienceMessage.Decoder exposing (decodeReasonForNotConsenting, decodeResilienceMessage, decodeResilienceMessages)
+module Backend.ResilienceMessage.Decoder exposing (decodeReasonForNotConsenting, decodeResilienceMessages)
 
 import AssocList as Dict exposing (Dict)
-import Backend.ResilienceMessage.Model exposing (..)
-import Backend.ResilienceMessage.Utils exposing (..)
+import Backend.ResilienceMessage.Model exposing (ReasonForNotConsenting(..), ResilienceCategory, ResilienceMessage, ResilienceMessageOrder)
+import Backend.ResilienceMessage.Utils exposing (generateResilienceMessageId, resilienceCategoryFromString, resilienceMessageOrderFromString)
 import Gizra.Json exposing (decodeInt)
 import Gizra.TimePosix exposing (decodeSecondsAsPosix)
-import Json.Decode exposing (..)
-import Json.Decode.Pipeline exposing (..)
+import Json.Decode exposing (Decoder, andThen, bool, fail, list, map, nullable, string, succeed)
+import Json.Decode.Pipeline exposing (optional, required)
 
 
 decodeResilienceMessages : Decoder (Dict String ResilienceMessage)
 decodeResilienceMessages =
     list decodeResilienceMessage
-        |> andThen
+        |> map
             (\messages ->
                 List.map (\message -> ( generateResilienceMessageId message.category message.order, message )) messages
                     |> Dict.fromList
-                    |> succeed
             )
 
 

@@ -1,10 +1,10 @@
-module Backend.Nurse.Model exposing (..)
+module Backend.Nurse.Model exposing (Model, Msg(..), Nurse, ResilienceRole(..), Role(..), emptyModel)
 
 import AssocList exposing (Dict)
-import Backend.Entities exposing (..)
+import Backend.Entities exposing (HealthCenterId, NurseId, ResilienceMessageId, VillageId)
 import Backend.Measurement.Model exposing (Gender)
 import Backend.Person.Model exposing (EducationLevel, MaritalStatus, Ubudehe)
-import Backend.ResilienceMessage.Model exposing (ReasonForNotConsenting, ResilienceCategory, ResilienceMessage)
+import Backend.ResilienceMessage.Model exposing (ReasonForNotConsenting, ResilienceMessage)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)

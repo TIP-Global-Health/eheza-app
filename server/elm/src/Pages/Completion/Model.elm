@@ -1,4 +1,4 @@
-module Pages.Completion.Model exposing (..)
+module Pages.Completion.Model exposing (Model, Msg(..), ReportType(..), emptyModel)
 
 import Backend.Completion.Model exposing (TakenBy)
 import Date exposing (Date)

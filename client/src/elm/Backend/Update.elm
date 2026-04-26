@@ -17,8 +17,11 @@ import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Dashboard.Model exposing (DashboardStatsRaw)
 import Backend.EducationSession.Model
 import Backend.EducationSession.Update
-import Backend.Endpoints exposing (..)
+import Backend.Endpoints exposing (ComputedDashboardParams, PersonParams(..), PmtctParticipantParams(..), SessionParams(..), acuteIllnessEncounterEndpoint, acuteIllnessMeasurementsEndpoint, acuteIllnessTraceContactEndpoint, childMeasurementListEndpoint, childScoreboardEncounterEndpoint, childScoreboardMeasurementsEndpoint, clinicEndpoint, computedDashboardEndpoint, counselingScheduleEndpoint, counselingTopicEndpoint, educationSessionEndpoint, familyEncounterParticipantEndpoint, familyNutritionEncounterEndpoint, familyNutritionMeasurementsEndpoint, followUpMeasurementsEndpoint, healthCenterEndpoint, hivEncounterEndpoint, hivMeasurementsEndpoint, homeVisitEncounterEndpoint, homeVisitMeasurementsEndpoint, individualEncounterParticipantEndpoint, motherMeasurementListEndpoint, ncdEncounterEndpoint, ncdMeasurementsEndpoint, nutritionEncounterEndpoint, nutritionMeasurementsEndpoint, participantFormEndpoint, personEndpoint, pmtctParticipantEndpoint, pregnancyByNewbornEndpoint, prenatalEncounterEndpoint, prenatalMeasurementsEndpoint, relationshipEndpoint, resilienceSurveyEndpoint, sessionEndpoint, stockManagementMeasurementsEndpoint, tuberculosisEncounterEndpoint, tuberculosisMeasurementsEndpoint, villageEndpoint, villageStockManagementMeasurementsEndpoint, wellChildEncounterEndpoint, wellChildMeasurementsEndpoint)
 import Backend.Entities exposing (..)
+import Backend.FamilyEncounterParticipant.Model
+import Backend.FamilyNutritionEncounter.Model exposing (emptyFamilyNutritionEncounter)
+import Backend.FamilyNutritionEncounter.Update
 import Backend.HIVEncounter.Model
 import Backend.HIVEncounter.Update
 import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
@@ -34,7 +37,6 @@ import Backend.Measurement.Model
         , LabsResultsReviewState(..)
         , Measurements
         , TestExecutionNote(..)
-        , TestPrerequisite
         , WellChildSymptom(..)
         )
 import Backend.Measurement.Utils
@@ -46,7 +48,7 @@ import Backend.Measurement.Utils
         , splitChildMeasurements
         , splitMotherMeasurements
         )
-import Backend.Model exposing (..)
+import Backend.Model exposing (ComputedDashboard, ModelIndexedDb, MsgIndexedDb(..), Revision(..))
 import Backend.NCDActivity.Model
 import Backend.NCDEncounter.Model
 import Backend.NCDEncounter.Update
@@ -78,12 +80,12 @@ import Backend.Session.Update
 import Backend.Session.Utils exposing (getChildMeasurementData2, getMyMother)
 import Backend.StockUpdate.Model
 import Backend.StockUpdate.Update
-import Backend.StockUpdate.Utils exposing (generateStockManagementData)
+import Backend.StockUpdate.Utils exposing (generateStockManagementData, generateVillageStockManagementData)
 import Backend.TraceContact.Model
 import Backend.TraceContact.Update
 import Backend.TuberculosisEncounter.Model
 import Backend.TuberculosisEncounter.Update
-import Backend.Utils exposing (..)
+import Backend.Utils exposing (everySetsEqual, gpsCoordinatesEnabled, mapAcuteIllnessMeasurements, mapChildMeasurements, mapChildScoreboardMeasurements, mapFamilyNutritionMeasurements, mapFollowUpMeasurements, mapHIVMeasurements, mapHomeVisitMeasurements, mapMotherMeasurements, mapNCDMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, mapStockManagementMeasurements, mapTuberculosisMeasurements, mapWellChildMeasurements, sw)
 import Backend.Village.Utils exposing (getVillageById, getVillageClinicId)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), emptyWellChildEncounter)
 import Backend.WellChildEncounter.Update
@@ -264,7 +266,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                 { model
                                     | computedDashboards =
                                         Dict.insert healthCenterId_
-                                            (generateInitialComputedDashboard currentDate healthCenterId_ villageId statsRaw model)
+                                            (generateInitialComputedDashboard currentDate villageId statsRaw)
                                             model.computedDashboards
                                 }
                             )
@@ -288,7 +290,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                     let
                                         assembledPermutationsUpdated =
                                             Dict.insert ( programTypeFilter, selectedVillage )
-                                                (Pages.Dashboard.Utils.generateAssembledData currentDate healthCenterId_ computedDashboard.statsRaw model programTypeFilter selectedVillage)
+                                                (Pages.Dashboard.Utils.generateAssembledData currentDate computedDashboard.statsRaw programTypeFilter selectedVillage)
                                                 computedDashboard.assembledPermutations
 
                                         computedDashboardUpdated =
@@ -615,6 +617,109 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                             Dict.map (\_ v -> RemoteData.Success v) dict
                     in
                     ( { model | individualParticipantsByPerson = Dict.union dictUpdated model.individualParticipantsByPerson }
+                    , Cmd.none
+                    , []
+                    )
+
+        FetchFamilyEncounterParticipant id ->
+            ( { model | familyParticipants = Dict.insert id Loading model.familyParticipants }
+            , sw.get familyEncounterParticipantEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedFamilyEncounterParticipant id)
+            , []
+            )
+
+        HandleFetchedFamilyEncounterParticipant id data ->
+            ( { model | familyParticipants = Dict.insert id data model.familyParticipants }
+            , Cmd.none
+            , []
+            )
+
+        FetchFamilyEncounterParticipants ids ->
+            if List.isEmpty ids then
+                noChange
+
+            else
+                let
+                    familyParticipantsUpdated =
+                        List.foldl (\id accum -> Dict.insert id Loading accum) model.familyParticipants ids
+                in
+                ( { model | familyParticipants = familyParticipantsUpdated }
+                , sw.getMany familyEncounterParticipantEndpoint ids
+                    |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchedFamilyEncounterParticipants)
+                , []
+                )
+
+        HandleFetchedFamilyEncounterParticipants webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | familyParticipants = Dict.union dictUpdated model.familyParticipants }
+                    , Cmd.none
+                    , []
+                    )
+
+        FetchFamilyEncounterParticipantsForPerson id ->
+            ( { model | familyParticipantsByPerson = Dict.insert id Loading model.familyParticipantsByPerson }
+            , sw.select familyEncounterParticipantEndpoint [ id ]
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedFamilyEncounterParticipantsForPerson id)
+            , []
+            )
+
+        HandleFetchedFamilyEncounterParticipantsForPerson id data ->
+            ( { model | familyParticipantsByPerson = Dict.insert id data model.familyParticipantsByPerson }
+            , Cmd.none
+            , []
+            )
+
+        FetchFamilyEncounterParticipantsForPeople ids ->
+            if List.isEmpty ids then
+                noChange
+
+            else
+                let
+                    familyParticipantsByPersonUpdated =
+                        List.foldl (\id accum -> Dict.insert id Loading accum) model.familyParticipantsByPerson ids
+                in
+                ( { model | familyParticipantsByPerson = familyParticipantsByPersonUpdated }
+                , sw.select familyEncounterParticipantEndpoint ids
+                    |> toCmd
+                        (RemoteData.fromResult
+                            >> RemoteData.map
+                                (.items
+                                    >> List.foldl
+                                        (\( participantId, participant ) accum ->
+                                            let
+                                                dictPeopleUpdated =
+                                                    Dict.get participant.person accum
+                                                        |> Maybe.map (Dict.insert participantId participant)
+                                                        |> Maybe.withDefault (Dict.singleton participantId participant)
+                                            in
+                                            Dict.insert participant.person dictPeopleUpdated accum
+                                        )
+                                        Dict.empty
+                                )
+                            >> HandleFetchedFamilyEncounterParticipantsForPeople
+                        )
+                , []
+                )
+
+        HandleFetchedFamilyEncounterParticipantsForPeople webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | familyParticipantsByPerson = Dict.union dictUpdated model.familyParticipantsByPerson }
                     , Cmd.none
                     , []
                     )
@@ -1037,6 +1142,19 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     , []
                     )
 
+        FetchFamilyNutritionEncountersForParticipant id ->
+            ( { model | familyNutritionEncountersByParticipant = Dict.insert id Loading model.familyNutritionEncountersByParticipant }
+            , sw.select familyNutritionEncounterEndpoint [ id ]
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedFamilyNutritionEncountersForParticipant id)
+            , []
+            )
+
+        HandleFetchedFamilyNutritionEncountersForParticipant id data ->
+            ( { model | familyNutritionEncountersByParticipant = Dict.insert id data model.familyNutritionEncountersByParticipant }
+            , Cmd.none
+            , []
+            )
+
         FetchPrenatalMeasurements id ->
             ( { model | prenatalMeasurements = Dict.insert id Loading model.prenatalMeasurements }
             , sw.get prenatalMeasurementsEndpoint id
@@ -1131,6 +1249,48 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             , []
             )
 
+        FetchVillageStockManagementMeasurements id ->
+            ( { model | villageStockManagementMeasurements = Dict.insert id Loading model.villageStockManagementMeasurements }
+            , sw.get villageStockManagementMeasurementsEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedVillageStockManagementMeasurements id)
+            , []
+            )
+
+        HandleFetchedVillageStockManagementMeasurements id data ->
+            ( { model | villageStockManagementMeasurements = Dict.insert id data model.villageStockManagementMeasurements }
+            , Cmd.none
+            , []
+            )
+
+        FetchVillageStockManagementData fetchHealthCenterId fetchVillageId ->
+            let
+                updatedModel =
+                    case Dict.get fetchHealthCenterId model.villageStockManagementData of
+                        Just (Success _) ->
+                            -- Data already calculated, and there's no need to recalculate.
+                            model
+
+                        _ ->
+                            let
+                                data =
+                                    Dict.get fetchHealthCenterId model.villageStockManagementMeasurements
+                                        |> Maybe.andThen RemoteData.toMaybe
+                                        |> Maybe.map (generateVillageStockManagementData currentDate fetchVillageId model >> Success)
+                                        |> Maybe.withDefault NotAsked
+                            in
+                            { model | villageStockManagementData = Dict.insert fetchHealthCenterId data model.villageStockManagementData }
+            in
+            ( updatedModel
+            , Cmd.none
+            , []
+            )
+
+        MarkForRecalculationVillageStockManagementData id ->
+            ( { model | villageStockManagementData = Dict.insert id NotAsked model.villageStockManagementData }
+            , Cmd.none
+            , []
+            )
+
         FetchHomeVisitMeasurements id ->
             ( { model | homeVisitMeasurements = Dict.insert id Loading model.homeVisitMeasurements }
             , sw.get homeVisitMeasurementsEndpoint id
@@ -1205,6 +1365,19 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
 
         HandleFetchedHIVMeasurements id data ->
             ( { model | hivMeasurements = Dict.insert id data model.hivMeasurements }
+            , Cmd.none
+            , []
+            )
+
+        FetchFamilyNutritionMeasurements id ->
+            ( { model | familyNutritionMeasurements = Dict.insert id Loading model.familyNutritionMeasurements }
+            , sw.get familyNutritionMeasurementsEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedFamilyNutritionMeasurements id)
+            , []
+            )
+
+        HandleFetchedFamilyNutritionMeasurements id data ->
+            ( { model | familyNutritionMeasurements = Dict.insert id data model.familyNutritionMeasurements }
             , Cmd.none
             , []
             )
@@ -1758,6 +1931,19 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     , []
                     )
 
+        FetchFamilyNutritionEncounter id ->
+            ( { model | familyNutritionEncounters = Dict.insert id Loading model.familyNutritionEncounters }
+            , sw.get familyNutritionEncounterEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedFamilyNutritionEncounter id)
+            , []
+            )
+
+        HandleFetchedFamilyNutritionEncounter id data ->
+            ( { model | familyNutritionEncounters = Dict.insert id data model.familyNutritionEncounters }
+            , Cmd.none
+            , []
+            )
+
         FetchEducationSession id ->
             ( { model | educationSessions = Dict.insert id Loading model.educationSessions }
             , sw.get educationSessionEndpoint id
@@ -1876,1797 +2062,443 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                             False
 
                 processRevisionAndDiagnoseAcuteIllness participantId encounterId =
-                    if downloadingContent then
-                        ( model, [] )
+                    let
+                        person =
+                            Dict.get participantId model.people
+                                |> Maybe.withDefault NotAsked
+                                |> RemoteData.toMaybe
 
-                    else
-                        let
-                            person =
-                                Dict.get participantId model.people
-                                    |> Maybe.withDefault NotAsked
-                                    |> RemoteData.toMaybe
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
-                            ( newModel, _ ) =
-                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+                        extraMsgs =
+                            Maybe.map2 (generateSuspectedDiagnosisMsgs currentDate features isChw model newModel)
+                                encounterId
+                                person
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel, extraMsgs )
 
-                            extraMsgs =
-                                Maybe.map2 (generateSuspectedDiagnosisMsgs currentDate features isChw model newModel)
-                                    encounterId
-                                    person
-                                    |> Maybe.withDefault []
-                        in
-                        ( newModel, extraMsgs )
+                processRevisionAndAssessNutritionIndividual encounterId =
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
-                processRevisionAndAssessNutritionIndividual participantId encounterId =
-                    if downloadingContent then
-                        ( model, [] )
-
-                    else
-                        let
-                            ( newModel, _ ) =
-                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                            extraMsgs =
-                                Maybe.map (generateNutritionAssessmentIndividualMsgs currentDate zscores features isChw model newModel)
-                                    encounterId
-                                    |> Maybe.withDefault []
-                        in
-                        ( newModel, extraMsgs )
+                        extraMsgs =
+                            Maybe.map (generateNutritionAssessmentIndividualMsgs currentDate site zscores features isChw model newModel)
+                                encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel, extraMsgs )
 
                 processRevisionAndAssessNutritionGroup participantId sessionId updateFunc =
-                    if downloadingContent then
-                        ( model, [] )
-
-                    else
-                        let
-                            ( newModel, _ ) =
-                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, True ) revisions
-                        in
-                        Maybe.map
-                            (\sessionId_ ->
-                                let
-                                    editableSessions =
-                                        -- The `andThen` is so that we only recalculate
-                                        -- the editable session if we already have a
-                                        -- success.
-                                        Dict.map
-                                            (\id session ->
-                                                RemoteData.andThen (\_ -> makeEditableSession id newModel) session
-                                            )
-                                            newModel.editableSessions
-
-                                    withRecalc =
-                                        { newModel | editableSessions = editableSessions }
-
-                                    extraMsgs =
-                                        -- Important: we pass model here, because we want to be examining the state before
-                                        -- current editable session was set for recalculation with makeEditableSession.
-                                        -- The reason for this is that at makeEditableSession, all measuerements are set to
-                                        -- be refetched, and we are not able to determine if mandatory activities are completed
-                                        -- or not.
-                                        -- Therefore, we will be examining the 'before' state, taking into consideration
-                                        -- that triggering activity is completed.
-                                        generateNutritionAssessmentGroupMsgs currentDate
-                                            zscores
-                                            features
-                                            isChw
-                                            participantId
-                                            sessionId_
-                                            activePage
-                                            updateFunc
-                                            newModel
-                                in
-                                ( withRecalc, extraMsgs )
-                            )
-                            sessionId
-                            |> Maybe.withDefault ( newModel, [] )
-
-                processRevisionAndAssessWellChild participantId encounterId =
-                    if downloadingContent then
-                        ( model, [] )
-
-                    else
-                        let
-                            ( newModel, _ ) =
-                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                            extraMsgs =
-                                Maybe.map (generateNutritionAssessmentWellChildlMsgs currentDate zscores site isChw model newModel)
-                                    encounterId
-                                    |> Maybe.withDefault []
-                        in
-                        ( newModel, extraMsgs )
-
-                processRevisionAndAssessPrenatal participantId encounterId updateAssesment =
-                    processRevisionAndAssessPrenatalWithReportToOrigin participantId encounterId updateAssesment Nothing
-
-                processRevisionAndAssessPrenatalWithReportToOrigin participantId encounterId updateAssesment originData =
-                    if downloadingContent then
-                        ( model, [] )
-
-                    else
-                        let
-                            ( newModel, _ ) =
-                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                            extraMsgs =
-                                Maybe.map (generatePrenatalAssessmentMsgs currentDate language site isChw isLabTech activePage updateAssesment originData newModel)
-                                    encounterId
-                                    |> Maybe.withDefault []
-                        in
-                        ( newModel, extraMsgs )
-
-                processRevisionAndAssessNCD participantId encounterId =
-                    if downloadingContent then
-                        ( model, [] )
-
-                    else
-                        let
-                            ( newModel, _ ) =
-                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                            extraMsgs =
-                                Maybe.map (generateNCDAssessmentMsgs currentDate language activePage newModel)
-                                    encounterId
-                                    |> Maybe.withDefault []
-                        in
-                        ( newModel, extraMsgs )
-
-                processRevisionAndUpdatePrenatalLabsResults participantId encounterId test executionNote resultsAdded testPrerequisites =
-                    if downloadingContent then
-                        ( model, [] )
-
-                    else
-                        let
-                            ( newModel, _ ) =
-                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                            extraMsgs =
-                                Maybe.map
-                                    (\encounterId_ ->
-                                        let
-                                            labsResultsMsgs =
-                                                if
-                                                    resultsAdded
-                                                        || -- If user is lab tech, we know for sure
-                                                           -- the update is performed from recurrent phase of encounter,
-                                                           -- even if actual test results are not set (which can happen
-                                                           -- if lab tech indicates that test was not run).
-                                                           isLabTech
-                                                then
-                                                    generatePrenatalLabsResultsAddedMsgs currentDate isLabTech newModel test testPrerequisites encounterId_
-
-                                                else
-                                                    generatePrenatalLabsTestAddedMsgs currentDate newModel test executionNote encounterId_
-
-                                            possibleEndEncounterMsgs =
-                                                if atPrenatalRecurrentPhase activePage then
-                                                    generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech newModel encounterId_
-
-                                                else if atPrenatalInitialPhase activePage then
-                                                    generatePrenatalInitialPhaseCompletedMsgs currentDate site newModel encounterId_
-
-                                                else
-                                                    []
-                                        in
-                                        labsResultsMsgs ++ possibleEndEncounterMsgs
-                                    )
-                                    encounterId
-                                    |> Maybe.withDefault []
-                        in
-                        ( newModel, extraMsgs )
-
-                processVitalsRevisionAndUpdatePrenatalLabsResults participantId encounterId value =
-                    if downloadingContent then
-                        ( model, [] )
-
-                    else
-                        let
-                            ( newModel, _ ) =
-                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                            extraMsgs =
-                                Maybe.map2
-                                    (\dia sys ->
-                                        Maybe.map
-                                            (\encounterId_ ->
-                                                let
-                                                    resultsAdded =
-                                                        isJust value.diaRepeated
-
-                                                    labsResultsMsgs =
-                                                        if resultsAdded then
-                                                            generatePrenatalLabsResultsAddedMsgs
-                                                                currentDate
-                                                                isLabTech
-                                                                newModel
-                                                                Backend.Measurement.Model.TestVitalsRecheck
-                                                                Nothing
-                                                                encounterId_
-
-                                                        else
-                                                            let
-                                                                executionNote =
-                                                                    if Pages.Prenatal.Activity.Utils.highBloodPressureCondition dia sys then
-                                                                        -- When we have diagnosed Hypertension, we'll try to unschedule
-                                                                        -- vitals recheck (as we do not know if it was scheduled before).
-                                                                        -- generatePrenatalLabsTestAddedMsgs will unschedule only if needed.
-                                                                        Backend.Measurement.Model.TestNoteNotIndicated
-
-                                                                    else
-                                                                    -- When we suspect hypertension, we'll try to schedule vitals recheck.
-                                                                    -- generatePrenatalLabsTestAddedMsgs will schedule only if needed.
-                                                                    if
-                                                                        Pages.Prenatal.Utils.marginalBloodPressureCondition dia sys
-                                                                    then
-                                                                        Backend.Measurement.Model.TestNoteRunToday
-
-                                                                    else
-                                                                        -- Otherwise, we try to unschedule vitals recheck.
-                                                                        -- generatePrenatalLabsTestAddedMsgs will unschedule only if needed.
-                                                                        Backend.Measurement.Model.TestNoteNotIndicated
-                                                            in
-                                                            generatePrenatalLabsTestAddedMsgs
-                                                                currentDate
-                                                                newModel
-                                                                Backend.Measurement.Model.TestVitalsRecheck
-                                                                executionNote
-                                                                encounterId_
-
-                                                    possibleEndEncounterMsgs =
-                                                        if atPrenatalRecurrentPhase activePage then
-                                                            generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech newModel encounterId_
-
-                                                        else if atPrenatalInitialPhase activePage then
-                                                            generatePrenatalInitialPhaseCompletedMsgs currentDate site newModel encounterId_
-
-                                                        else
-                                                            []
-                                                in
-                                                labsResultsMsgs ++ possibleEndEncounterMsgs
-                                            )
-                                            encounterId
-                                            |> Maybe.withDefault []
-                                    )
-                                    value.dia
-                                    value.sys
-                                    |> Maybe.withDefault []
-                        in
-                        ( newModel, extraMsgs )
-
-                processPrenatalRevisionPossiblyCompletingRecurrentPhase participantId encounterId =
-                    if downloadingContent then
-                        ( model, [] )
-
-                    else
-                        let
-                            ( newModel, _ ) =
-                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-                        in
-                        if not <| atPrenatalRecurrentPhase activePage then
-                            ( newModel, [] )
-
-                        else
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, True ) revisions
+                    in
+                    Maybe.map
+                        (\sessionId_ ->
                             let
+                                editableSessions =
+                                    -- The `andThen` is so that we only recalculate
+                                    -- the editable session if we already have a
+                                    -- success.
+                                    Dict.map
+                                        (\id session ->
+                                            RemoteData.andThen (\_ -> makeEditableSession id newModel) session
+                                        )
+                                        newModel.editableSessions
+
+                                withRecalc =
+                                    { newModel | editableSessions = editableSessions }
+
                                 extraMsgs =
+                                    -- Important: we pass model here, because we want to be examining the state before
+                                    -- current editable session was set for recalculation with makeEditableSession.
+                                    -- The reason for this is that at makeEditableSession, all measuerements are set to
+                                    -- be refetched, and we are not able to determine if mandatory activities are completed
+                                    -- or not.
+                                    -- Therefore, we will be examining the 'before' state, taking into consideration
+                                    -- that triggering activity is completed.
+                                    generateNutritionAssessmentGroupMsgs currentDate
+                                        zscores
+                                        features
+                                        isChw
+                                        participantId
+                                        sessionId_
+                                        activePage
+                                        updateFunc
+                                        newModel
+                            in
+                            ( withRecalc, extraMsgs )
+                        )
+                        sessionId
+                        |> Maybe.withDefault ( newModel, [] )
+
+                processRevisionAndAssessWellChild encounterId =
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map (generateNutritionAssessmentWellChildlMsgs currentDate zscores site model newModel)
+                                encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel, extraMsgs )
+
+                processRevisionAndAssessPrenatal encounterId updateAssesment =
+                    processRevisionAndAssessPrenatalWithReportToOrigin encounterId updateAssesment Nothing
+
+                processRevisionAndAssessPrenatalWithReportToOrigin encounterId updateAssesment originData =
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map (generatePrenatalAssessmentMsgs currentDate language site features isChw isLabTech activePage updateAssesment originData newModel)
+                                encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel, extraMsgs )
+
+                processRevisionAndAssessNCD encounterId =
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map (generateNCDAssessmentMsgs newModel)
+                                encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel, extraMsgs )
+
+                processRevisionAndUpdatePrenatalLabsResults encounterId test executionNote resultsAdded =
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map
+                                (\encounterId_ ->
+                                    let
+                                        labsResultsMsgs =
+                                            if
+                                                resultsAdded
+                                                    || -- If user is lab tech, we know for sure
+                                                       -- the update is performed from recurrent phase of encounter,
+                                                       -- even if actual test results are not set (which can happen
+                                                       -- if lab tech indicates that test was not run).
+                                                       isLabTech
+                                            then
+                                                generatePrenatalLabsResultsAddedMsgs currentDate isLabTech newModel test encounterId_
+
+                                            else
+                                                generatePrenatalLabsTestAddedMsgs currentDate newModel test executionNote encounterId_
+
+                                        possibleEndEncounterMsgs =
+                                            if atPrenatalRecurrentPhase activePage then
+                                                generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech newModel encounterId_
+
+                                            else if atPrenatalInitialPhase activePage then
+                                                generatePrenatalInitialPhaseCompletedMsgs currentDate site features newModel encounterId_
+
+                                            else
+                                                []
+                                    in
+                                    labsResultsMsgs ++ possibleEndEncounterMsgs
+                                )
+                                encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel, extraMsgs )
+
+                processVitalsRevisionAndUpdatePrenatalLabsResults encounterId value =
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map2
+                                (\dia sys ->
                                     Maybe.map
                                         (\encounterId_ ->
-                                            generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech newModel encounterId_
+                                            let
+                                                resultsAdded =
+                                                    isJust value.diaRepeated
+
+                                                labsResultsMsgs =
+                                                    if resultsAdded then
+                                                        generatePrenatalLabsResultsAddedMsgs
+                                                            currentDate
+                                                            isLabTech
+                                                            newModel
+                                                            Backend.Measurement.Model.TestVitalsRecheck
+                                                            encounterId_
+
+                                                    else
+                                                        let
+                                                            executionNote =
+                                                                if Pages.Prenatal.Activity.Utils.highBloodPressureCondition dia sys then
+                                                                    -- When we have diagnosed Hypertension, we'll try to unschedule
+                                                                    -- vitals recheck (as we do not know if it was scheduled before).
+                                                                    -- generatePrenatalLabsTestAddedMsgs will unschedule only if needed.
+                                                                    Backend.Measurement.Model.TestNoteNotIndicated
+
+                                                                else
+                                                                -- When we suspect hypertension, we'll try to schedule vitals recheck.
+                                                                -- generatePrenatalLabsTestAddedMsgs will schedule only if needed.
+                                                                if
+                                                                    Pages.Prenatal.Utils.marginalBloodPressureCondition dia sys
+                                                                then
+                                                                    Backend.Measurement.Model.TestNoteRunToday
+
+                                                                else
+                                                                    -- Otherwise, we try to unschedule vitals recheck.
+                                                                    -- generatePrenatalLabsTestAddedMsgs will unschedule only if needed.
+                                                                    Backend.Measurement.Model.TestNoteNotIndicated
+                                                        in
+                                                        generatePrenatalLabsTestAddedMsgs
+                                                            currentDate
+                                                            newModel
+                                                            Backend.Measurement.Model.TestVitalsRecheck
+                                                            executionNote
+                                                            encounterId_
+
+                                                possibleEndEncounterMsgs =
+                                                    if atPrenatalRecurrentPhase activePage then
+                                                        generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech newModel encounterId_
+
+                                                    else if atPrenatalInitialPhase activePage then
+                                                        generatePrenatalInitialPhaseCompletedMsgs currentDate site features newModel encounterId_
+
+                                                    else
+                                                        []
+                                            in
+                                            labsResultsMsgs ++ possibleEndEncounterMsgs
                                         )
                                         encounterId
                                         |> Maybe.withDefault []
-                            in
-                            ( newModel, extraMsgs )
+                                )
+                                value.dia
+                                value.sys
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel, extraMsgs )
 
-                processRevisionAndUpdateNCDLabsResults participantId encounterId test executionNote resultsAdded =
-                    if downloadingContent then
-                        ( model, [] )
+                processPrenatalRevisionPossiblyCompletingRecurrentPhase encounterId =
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+                    in
+                    if not <| atPrenatalRecurrentPhase activePage then
+                        ( newModel, [] )
 
                     else
                         let
-                            ( newModel, _ ) =
-                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
                             extraMsgs =
                                 Maybe.map
                                     (\encounterId_ ->
-                                        if resultsAdded then
-                                            generateNCDLabsResultsAddedMsgs currentDate newModel test encounterId_
-
-                                        else
-                                            generateNCDLabsTestAddedMsgs currentDate newModel test executionNote encounterId_
+                                        generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech newModel encounterId_
                                     )
                                     encounterId
                                     |> Maybe.withDefault []
                         in
                         ( newModel, extraMsgs )
 
-                processWellChildSymptomsReviewRevision participantId encounterId value =
-                    if downloadingContent then
+                processRevisionAndUpdateNCDLabsResults encounterId test executionNote resultsAdded =
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map
+                                (\encounterId_ ->
+                                    if resultsAdded then
+                                        generateNCDLabsResultsAddedMsgs currentDate newModel test encounterId_
+
+                                    else
+                                        generateNCDLabsTestAddedMsgs currentDate newModel test executionNote encounterId_
+                                )
+                                encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel, extraMsgs )
+
+                processWellChildSymptomsReviewRevision encounterId value =
+                    let
+                        noSymptoms =
+                            EverySet.isEmpty value || value == EverySet.singleton NoWellChildSymptoms
+                    in
+                    if noSymptoms then
                         []
 
                     else
-                        let
-                            noSymptoms =
-                                EverySet.isEmpty value || value == EverySet.singleton NoWellChildSymptoms
-                        in
-                        if noSymptoms then
-                            []
-
-                        else
-                            generateWellChildDangerSignsAlertMsgs currentDate encounterId
+                        generateWellChildDangerSignsAlertMsgs encounterId
 
                 processWellChildVitalsRevision participantId encounterId value =
-                    if downloadingContent then
-                        []
+                    let
+                        bodyTemperatureAlert =
+                            value.bodyTemperature < 35 || value.bodyTemperature >= 37.5
+
+                        respiratoryRateAlert =
+                            Dict.get participantId model.people
+                                |> Maybe.withDefault NotAsked
+                                |> RemoteData.toMaybe
+                                |> Maybe.andThen (ageInMonths currentDate)
+                                |> (\ageMonths -> respiratoryRateAbnormalForAge ageMonths value.respiratoryRate)
+                    in
+                    if bodyTemperatureAlert || respiratoryRateAlert then
+                        generateWellChildDangerSignsAlertMsgs encounterId
 
                     else
-                        let
-                            bodyTemperatureAlert =
-                                value.bodyTemperature < 35 || value.bodyTemperature >= 37.5
-
-                            respiratoryRateAlert =
-                                Dict.get participantId model.people
-                                    |> Maybe.withDefault NotAsked
-                                    |> RemoteData.toMaybe
-                                    |> Maybe.andThen (ageInMonths currentDate)
-                                    |> (\ageMonths -> respiratoryRateAbnormalForAge ageMonths value.respiratoryRate)
-                        in
-                        if bodyTemperatureAlert || respiratoryRateAlert then
-                            generateWellChildDangerSignsAlertMsgs currentDate encounterId
-
-                        else
-                            []
-
-                processWellChildECDRevision participantId encounterId after =
-                    if downloadingContent then
                         []
 
-                    else
-                        encounterId
-                            |> Maybe.andThen
-                                (\id ->
-                                    Pages.WellChild.Encounter.Utils.generateAssembledData site id after
-                                        |> RemoteData.toMaybe
-                                        |> Maybe.map
-                                            (\assembledAfter ->
-                                                let
-                                                    warningsList =
-                                                        assembledAfter.person.birthDate
-                                                            |> Maybe.map
-                                                                (\birthDate ->
-                                                                    let
-                                                                        ageWeeks =
-                                                                            Date.diff Weeks birthDate currentDate
-
-                                                                        ageMonths =
-                                                                            Date.diff Months birthDate currentDate
-                                                                    in
-                                                                    Pages.WellChild.Activity.Utils.generateRemianingECDSignsAfterCurrentEncounter currentDate assembledAfter
-                                                                        |> List.filterMap
-                                                                            (\sign ->
-                                                                                if List.member sign Pages.WellChild.Activity.Utils.ecdSignsFrom5Weeks then
-                                                                                    if ageMonths >= 6 then
-                                                                                        Just Pages.WellChild.Encounter.Model.ReferToSpecialist
-
-                                                                                    else if ageWeeks >= 14 then
-                                                                                        Just Pages.WellChild.Encounter.Model.ChildBehind
-
-                                                                                    else
-                                                                                        Nothing
-
-                                                                                else if List.member sign Pages.WellChild.Activity.Utils.ecdSignsFrom13Weeks then
-                                                                                    if ageMonths >= 6 then
-                                                                                        Just Pages.WellChild.Encounter.Model.ReferToSpecialist
-
-                                                                                    else
-                                                                                        Nothing
-
-                                                                                else if List.member sign Pages.WellChild.Activity.Utils.ecdSigns6To12MonthsMajors then
-                                                                                    -- Signs will be displayed until child is 13 months old.
-                                                                                    if ageMonths == 12 then
-                                                                                        Just Pages.WellChild.Encounter.Model.ReferToSpecialist
-
-                                                                                    else if ageMonths >= 9 then
-                                                                                        Just Pages.WellChild.Encounter.Model.ChildBehind
-
-                                                                                    else
-                                                                                        Nothing
-
-                                                                                else
-                                                                                    Nothing
-                                                                            )
-                                                                )
-                                                            |> Maybe.withDefault []
-
-                                                    warning =
-                                                        if List.member Pages.WellChild.Encounter.Model.ReferToSpecialist warningsList then
-                                                            WarningECDMilestoneReferToSpecialist
-
-                                                        else if List.member Pages.WellChild.Encounter.Model.ChildBehind warningsList then
-                                                            WarningECDMilestoneBehind
-
-                                                        else
-                                                            NoECDMilstoneWarning
-
-                                                    setPopUpStateMsg popupType =
-                                                        Pages.WellChild.Encounter.Model.PopupECD popupType
-                                                            |> Pages.WellChild.Encounter.Model.DialogWarning
-                                                            |> Just
-                                                            |> Pages.WellChild.Encounter.Model.SetDialogState
-                                                            |> App.Model.MsgPageWellChildEncounter id
-                                                            |> App.Model.MsgLoggedIn
-
-                                                    popUpMsg =
-                                                        case warning of
-                                                            WarningECDMilestoneReferToSpecialist ->
-                                                                [ setPopUpStateMsg Pages.WellChild.Encounter.Model.ReferToSpecialist ]
-
-                                                            WarningECDMilestoneBehind ->
-                                                                [ setPopUpStateMsg Pages.WellChild.Encounter.Model.ChildBehind ]
-
-                                                            _ ->
-                                                                []
-
-                                                    setEncounterWarningMsg =
-                                                        Backend.WellChildEncounter.Model.SetWellChildEncounterWarning warning
-                                                            |> Backend.Model.MsgWellChildEncounter id
-                                                            |> App.Model.MsgIndexedDb
-                                                in
-                                                setEncounterWarningMsg :: popUpMsg
-                                            )
-                                )
-                            |> Maybe.withDefault []
-
-                processWellChildImmunisationRevision participantId encounterId after =
-                    if downloadingContent then
-                        []
-
-                    else
-                        Maybe.andThen
+                processWellChildECDRevision encounterId after =
+                    encounterId
+                        |> Maybe.andThen
                             (\id ->
                                 Pages.WellChild.Encounter.Utils.generateAssembledData site id after
                                     |> RemoteData.toMaybe
-                                    |> Maybe.andThen
+                                    |> Maybe.map
                                         (\assembledAfter ->
-                                            Maybe.map
-                                                (\( measurementId, measurement ) ->
-                                                    let
-                                                        immunisationDate =
-                                                            Pages.WellChild.Activity.Utils.generateNextDateForImmunisationVisit currentDate site assembledAfter
+                                            let
+                                                warningsList =
+                                                    assembledAfter.person.birthDate
+                                                        |> Maybe.map
+                                                            (\birthDate ->
+                                                                let
+                                                                    ageWeeks =
+                                                                        Date.diff Weeks birthDate currentDate
 
-                                                        asapImmunisationDate =
-                                                            Pages.WellChild.Activity.Utils.generateASAPImmunisationDate currentDate site assembledAfter
+                                                                    ageMonths =
+                                                                        Date.diff Months birthDate currentDate
+                                                                in
+                                                                Pages.WellChild.Activity.Utils.generateRemianingECDSignsAfterCurrentEncounter currentDate assembledAfter
+                                                                    |> List.filterMap
+                                                                        (\sign ->
+                                                                            if List.member sign Pages.WellChild.Activity.Utils.ecdSignsFrom5Weeks then
+                                                                                if ageMonths >= 6 then
+                                                                                    Just Pages.WellChild.Encounter.Model.ReferToSpecialist
 
-                                                        value =
-                                                            measurement.value
-                                                    in
-                                                    [ Backend.WellChildEncounter.Model.SaveNextVisit assembledAfter.participant.person
-                                                        (Just measurementId)
-                                                        { value | immunisationDate = immunisationDate, asapImmunisationDate = asapImmunisationDate }
+                                                                                else if ageWeeks >= 14 then
+                                                                                    Just Pages.WellChild.Encounter.Model.ChildBehind
+
+                                                                                else
+                                                                                    Nothing
+
+                                                                            else if List.member sign Pages.WellChild.Activity.Utils.ecdSignsFrom13Weeks then
+                                                                                if ageMonths >= 6 then
+                                                                                    Just Pages.WellChild.Encounter.Model.ReferToSpecialist
+
+                                                                                else
+                                                                                    Nothing
+
+                                                                            else if List.member sign Pages.WellChild.Activity.Utils.ecdSigns6To12MonthsMajors then
+                                                                                -- Signs will be displayed until child is 13 months old.
+                                                                                if ageMonths == 12 then
+                                                                                    Just Pages.WellChild.Encounter.Model.ReferToSpecialist
+
+                                                                                else if ageMonths >= 9 then
+                                                                                    Just Pages.WellChild.Encounter.Model.ChildBehind
+
+                                                                                else
+                                                                                    Nothing
+
+                                                                            else
+                                                                                Nothing
+                                                                        )
+                                                            )
+                                                        |> Maybe.withDefault []
+
+                                                warning =
+                                                    if List.member Pages.WellChild.Encounter.Model.ReferToSpecialist warningsList then
+                                                        WarningECDMilestoneReferToSpecialist
+
+                                                    else if List.member Pages.WellChild.Encounter.Model.ChildBehind warningsList then
+                                                        WarningECDMilestoneBehind
+
+                                                    else
+                                                        NoECDMilstoneWarning
+
+                                                setPopUpStateMsg popupType =
+                                                    Pages.WellChild.Encounter.Model.PopupECD popupType
+                                                        |> Pages.WellChild.Encounter.Model.DialogWarning
+                                                        |> Just
+                                                        |> Pages.WellChild.Encounter.Model.SetDialogState
+                                                        |> App.Model.MsgPageWellChildEncounter id
+                                                        |> App.Model.MsgLoggedIn
+
+                                                popUpMsg =
+                                                    case warning of
+                                                        WarningECDMilestoneReferToSpecialist ->
+                                                            [ setPopUpStateMsg Pages.WellChild.Encounter.Model.ReferToSpecialist ]
+
+                                                        WarningECDMilestoneBehind ->
+                                                            [ setPopUpStateMsg Pages.WellChild.Encounter.Model.ChildBehind ]
+
+                                                        _ ->
+                                                            []
+
+                                                setEncounterWarningMsg =
+                                                    Backend.WellChildEncounter.Model.SetWellChildEncounterWarning warning
                                                         |> Backend.Model.MsgWellChildEncounter id
                                                         |> App.Model.MsgIndexedDb
-                                                    ]
-                                                )
-                                                assembledAfter.measurements.nextVisit
+                                            in
+                                            setEncounterWarningMsg :: popUpMsg
                                         )
                             )
-                            encounterId
-                            |> Maybe.withDefault []
+                        |> Maybe.withDefault []
+
+                processWellChildImmunisationRevision encounterId after =
+                    Maybe.andThen
+                        (\id ->
+                            Pages.WellChild.Encounter.Utils.generateAssembledData site id after
+                                |> RemoteData.toMaybe
+                                |> Maybe.andThen
+                                    (\assembledAfter ->
+                                        Maybe.map
+                                            (\( measurementId, measurement ) ->
+                                                let
+                                                    immunisationDate =
+                                                        Pages.WellChild.Activity.Utils.generateNextDateForImmunisationVisit currentDate site assembledAfter
+
+                                                    asapImmunisationDate =
+                                                        Pages.WellChild.Activity.Utils.generateASAPImmunisationDate currentDate site assembledAfter
+
+                                                    value =
+                                                        measurement.value
+                                                in
+                                                [ Backend.WellChildEncounter.Model.SaveNextVisit assembledAfter.participant.person
+                                                    (Just measurementId)
+                                                    { value | immunisationDate = immunisationDate, asapImmunisationDate = asapImmunisationDate }
+                                                    |> Backend.Model.MsgWellChildEncounter id
+                                                    |> App.Model.MsgIndexedDb
+                                                ]
+                                            )
+                                            assembledAfter.measurements.nextVisit
+                                    )
+                        )
+                        encounterId
+                        |> Maybe.withDefault []
 
                 processTuberculosisRevisionAndNavigateToProgressReport encounterId =
-                    if downloadingContent then
-                        ( model, [] )
-
-                    else
-                        let
-                            ( newModel, _ ) =
-                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                            extraMsgs =
-                                Maybe.map
-                                    (\encounterId_ ->
-                                        generateTuberculosisEncounterCompletedMsgs currentDate newModel encounterId_
-                                    )
-                                    encounterId
-                                    |> Maybe.withDefault []
-                        in
-                        ( newModel, extraMsgs )
-            in
-            case revisions of
-                -- Special handling for a single attendance revision, which means
-                -- there was a check in / check out in Attendance page.
-                -- Here we don't want to rebuild all Editable sessions, but only
-                -- the relevant one, and only the things that are needed.
-                [ AttendanceRevision uuid data ] ->
-                    let
-                        newModel =
-                            mapMotherMeasurements
-                                data.participantId
-                                (\measurements -> { measurements | attendances = Dict.insert uuid data measurements.attendances })
-                                model
-
-                        withRecalc =
-                            data.encounterId
-                                |> Maybe.map
-                                    (\sessionId ->
-                                        Dict.get sessionId newModel.editableSessions
-                                            |> Maybe.andThen RemoteData.toMaybe
-                                            |> Maybe.map
-                                                (\editableSession ->
-                                                    let
-                                                        updatedOffline =
-                                                            editableSession.offlineSession
-                                                                |> (\offline -> { offline | measurements = LocalData.setRecalculate offline.measurements })
-
-                                                        updatedEditable =
-                                                            Success
-                                                                { editableSession
-                                                                    | update = NotAsked
-                                                                    , offlineSession = updatedOffline
-                                                                    , checkedIn = LocalData.setRecalculate editableSession.checkedIn
-                                                                    , summaryByParticipant = LocalData.setRecalculate editableSession.summaryByParticipant
-                                                                    , summaryByActivity = LocalData.setRecalculate editableSession.summaryByActivity
-                                                                }
-
-                                                        newEditableSessions =
-                                                            Dict.insert sessionId updatedEditable newModel.editableSessions
-                                                    in
-                                                    { newModel | editableSessions = newEditableSessions }
-                                                )
-                                            |> Maybe.withDefault newModel
-                                    )
-                                |> Maybe.withDefault newModel
-                    in
-                    ( withRecalc
-                    , Cmd.none
-                    , []
-                    )
-
-                [ SymptomsGeneralRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ SymptomsRespiratoryRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ SymptomsGIRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ TravelHistoryRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ ExposureRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ AcuteIllnessVitalsRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ AcuteIllnessCoreExamRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ AcuteFindingsRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ MalariaTestingRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ CovidTestingRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ AcuteIllnessDangerSignsRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ AcuteIllnessMuacRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ AcuteIllnessNutritionRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ TreatmentOngoingRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ IsolationRevision _ data ] ->
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
-                            data.encounterId
-                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate features isChw newModel)
-                                |> Maybe.withDefault []
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ Call114Revision _ data ] ->
-                    let
-                        ( newModel, _ ) =
-                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                        extraMsgs =
-                            data.encounterId
-                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate features isChw newModel)
-                                |> Maybe.withDefault []
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ HCContactRevision _ data ] ->
-                    let
-                        ( newModel, _ ) =
-                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                        extraMsgs =
-                            data.encounterId
-                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate features isChw newModel)
-                                |> Maybe.withDefault []
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ MedicationDistributionRevision _ data ] ->
-                    let
-                        ( newModel, _ ) =
-                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                        extraMsgs =
-                            data.encounterId
-                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate features isChw newModel)
-                                |> Maybe.withDefault []
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ SendToHCRevision _ data ] ->
-                    let
-                        ( newModel, _ ) =
-                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                        extraMsgs =
-                            data.encounterId
-                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate features isChw newModel)
-                                |> Maybe.withDefault []
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ HealthEducationRevision _ data ] ->
-                    let
-                        ( newModel, _ ) =
-                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                        extraMsgs =
-                            data.encounterId
-                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate features isChw newModel)
-                                |> Maybe.withDefault []
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ AcuteIllnessFollowUpRevision _ data ] ->
-                    let
-                        ( newModel, _ ) =
-                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                        extraMsgs =
-                            data.encounterId
-                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate features isChw newModel)
-                                |> Maybe.withDefault []
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ NutritionHeightRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndAssessNutritionIndividual data.participantId data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ NutritionMuacRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndAssessNutritionIndividual data.participantId data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ NutritionNutritionRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndAssessNutritionIndividual data.participantId data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ NutritionWeightRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndAssessNutritionIndividual data.participantId data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ HeightRevision uuid data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndAssessNutritionGroup data.participantId data.encounterId (\childMeasurements -> { childMeasurements | height = Just ( uuid, data ) })
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ MuacRevision uuid data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndAssessNutritionGroup data.participantId data.encounterId (\childMeasurements -> { childMeasurements | muac = Just ( uuid, data ) })
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ ChildNutritionRevision uuid data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndAssessNutritionGroup data.participantId data.encounterId (\childMeasurements -> { childMeasurements | nutrition = Just ( uuid, data ) })
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ WeightRevision uuid data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndAssessNutritionGroup data.participantId data.encounterId (\childMeasurements -> { childMeasurements | weight = Just ( uuid, data ) })
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ DangerSignsRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            -- This is the only place where we ask to update assessment for CHW, since
-                            -- only thing that affects it is the Danger signs measurement.
-                            processRevisionAndAssessPrenatal data.participantId data.encounterId True
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ PrenatalSymptomReviewRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ CorePhysicalExamRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ LastMenstrualPeriodRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ PregnancyTestRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ MedicationRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ VitalsRevision _ data ] ->
-                    let
-                        -- We do not catch changes done to model, because
-                        -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes bellow.
-                        ( _, extraMsgsForLabsResults ) =
-                            processVitalsRevisionAndUpdatePrenatalLabsResults
-                                data.participantId
-                                data.encounterId
-                                data.value
-
-                        ( newModel, extraMsgsForAssessment ) =
-                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
-                    )
-
-                [ MalariaPreventionRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processPrenatalRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ PrenatalHealthEducationRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processPrenatalRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ PrenatalSendToHCRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processPrenatalRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ PrenatalMedicationDistributionRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processPrenatalRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ PrenatalHIVTestRevision _ data ] ->
-                    let
-                        -- We do not catch changes done to model, because
-                        -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes bellow.
-                        ( _, extraMsgsForLabsResults ) =
-                            processRevisionAndUpdatePrenatalLabsResults
-                                data.participantId
-                                data.encounterId
-                                Backend.Measurement.Model.TestHIV
-                                data.value.executionNote
-                                (isJust data.value.testResult)
-                                data.value.testPrerequisites
-
-                        ( newModel, extraMsgsForAssessment ) =
-                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
-                    )
-
-                [ PrenatalPartnerHIVTestRevision _ data ] ->
-                    let
-                        ( newModel, extraMsg ) =
-                            processRevisionAndUpdatePrenatalLabsResults
-                                data.participantId
-                                data.encounterId
-                                Backend.Measurement.Model.TestPartnerHIV
-                                data.value.executionNote
-                                (isJust data.value.testResult)
-                                data.value.testPrerequisites
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsg
-                    )
-
-                [ PrenatalHIVPCRTestRevision _ data ] ->
-                    let
-                        -- We do not catch changes done to model, because
-                        -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes bellow.
-                        ( _, extraMsgsForLabsResults ) =
-                            processRevisionAndUpdatePrenatalLabsResults
-                                data.participantId
-                                data.encounterId
-                                Backend.Measurement.Model.TestHIVPCR
-                                data.value.executionNote
-                                (isJust data.value.hivViralLoadStatus)
-                                data.value.testPrerequisites
-
-                        ( newModel, extraMsgsForAssessment ) =
-                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
-                    )
-
-                [ PrenatalSyphilisTestRevision _ data ] ->
-                    let
-                        -- We do not catch changes done to model, because
-                        -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes bellow.
-                        ( _, extraMsgsForLabsResults ) =
-                            processRevisionAndUpdatePrenatalLabsResults
-                                data.participantId
-                                data.encounterId
-                                Backend.Measurement.Model.TestSyphilis
-                                data.value.executionNote
-                                (isJust data.value.testResult)
-                                data.value.testPrerequisites
-
-                        ( newModel, extraMsgsForAssessment ) =
                             Maybe.map
-                                (\originatingEncounterId ->
-                                    ( originatingEncounterId
-                                    , Pages.Prenatal.Utils.syphilisDiagnosesIncludingNeurosyphilisRecurrentPhase
-                                    )
+                                (\encounterId_ ->
+                                    generateTuberculosisEncounterCompletedMsgs currentDate newModel encounterId_
                                 )
-                                data.value.originatingEncounter
-                                |> processRevisionAndAssessPrenatalWithReportToOrigin data.participantId data.encounterId False
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
-                    )
-
-                [ PrenatalHepatitisBTestRevision _ data ] ->
-                    let
-                        -- We do not catch changes done to model, because
-                        -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes bellow.
-                        ( _, extraMsgsForLabsResults ) =
-                            processRevisionAndUpdatePrenatalLabsResults
-                                data.participantId
-                                data.encounterId
-                                Backend.Measurement.Model.TestHepatitisB
-                                data.value.executionNote
-                                (isJust data.value.testResult)
-                                data.value.testPrerequisites
-
-                        ( newModel, extraMsgsForAssessment ) =
-                            Maybe.map
-                                (\originatingEncounterId -> ( originatingEncounterId, [ DiagnosisHepatitisBRecurrentPhase ] ))
-                                data.value.originatingEncounter
-                                |> processRevisionAndAssessPrenatalWithReportToOrigin data.participantId data.encounterId False
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
-                    )
-
-                [ PrenatalMalariaTestRevision _ data ] ->
-                    let
-                        -- We do not catch changes done to model, because
-                        -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes bellow.
-                        ( _, extraMsgsForLabsResults ) =
-                            let
-                                executionNote =
-                                    if data.value.bloodSmearResult == BloodSmearPendingInput then
-                                        TestNoteRunToday
-
-                                    else
-                                        data.value.executionNote
-
-                                resultsAdded =
-                                    isJust data.value.testResult
-                                        || bloodSmearResultSet data.value.bloodSmearResult
-                            in
-                            processRevisionAndUpdatePrenatalLabsResults
-                                data.participantId
-                                data.encounterId
-                                Backend.Measurement.Model.TestMalaria
-                                executionNote
-                                resultsAdded
-                                data.value.testPrerequisites
-
-                        ( newModel, extraMsgsForAssessment ) =
-                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
-                    )
-
-                [ PrenatalUrineDipstickTestRevision _ data ] ->
-                    let
-                        -- We do not catch changes done to model, because
-                        -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes bellow.
-                        ( _, extraMsgsForLabsResults ) =
-                            processRevisionAndUpdatePrenatalLabsResults
-                                data.participantId
-                                data.encounterId
-                                Backend.Measurement.Model.TestUrineDipstick
-                                data.value.executionNote
-                                (isJust data.value.protein)
-                                data.value.testPrerequisites
-
-                        ( newModel, extraMsgsForAssessment ) =
-                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
-                    )
-
-                [ PrenatalBloodGpRsTestRevision _ data ] ->
-                    let
-                        -- We do not catch changes done to the model, because
-                        -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes bellow.
-                        ( _, extraMsgsForLabsResults ) =
-                            processRevisionAndUpdatePrenatalLabsResults
-                                data.participantId
-                                data.encounterId
-                                Backend.Measurement.Model.TestBloodGpRs
-                                data.value.executionNote
-                                (isJust data.value.bloodGroup)
-                                data.value.testPrerequisites
-
-                        ( newModel, extraMsgsForAssessment ) =
-                            Maybe.map
-                                (\originatingEncounterId -> ( originatingEncounterId, [ DiagnosisRhesusNegativeRecurrentPhase ] ))
-                                data.value.originatingEncounter
-                                |> processRevisionAndAssessPrenatalWithReportToOrigin data.participantId data.encounterId False
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
-                    )
-
-                [ PrenatalHemoglobinTestRevision _ data ] ->
-                    let
-                        -- We do not catch changes done to model, because
-                        -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes bellow.
-                        ( _, extraMsgsForLabsResults ) =
-                            processRevisionAndUpdatePrenatalLabsResults
-                                data.participantId
-                                data.encounterId
-                                Backend.Measurement.Model.TestHemoglobin
-                                data.value.executionNote
-                                (isJust data.value.hemoglobinCount)
-                                data.value.testPrerequisites
-
-                        ( newModel, extraMsgsForAssessment ) =
-                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
-                    )
-
-                [ PrenatalRandomBloodSugarTestRevision _ data ] ->
-                    let
-                        -- We do not catch changes done to model, because
-                        -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes bellow.
-                        ( _, extraMsgsForLabsResults ) =
-                            processRevisionAndUpdatePrenatalLabsResults
-                                data.participantId
-                                data.encounterId
-                                Backend.Measurement.Model.TestRandomBloodSugar
-                                data.value.executionNote
-                                (isJust data.value.sugarCount)
-                                data.value.testPrerequisites
-
-                        ( newModel, extraMsgsForAssessment ) =
-                            Maybe.map
-                                (\originatingEncounterId -> ( originatingEncounterId, Pages.Prenatal.Utils.diabetesDiagnosesRecurrentPhase ))
-                                data.value.originatingEncounter
-                                |> processRevisionAndAssessPrenatalWithReportToOrigin data.participantId data.encounterId False
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
-                    )
-
-                [ PrenatalMentalHealthRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ BreastExamRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ PrenatalBreastfeedingRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ PrenatalGUExamRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ WellChildHeightRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndAssessWellChild data.participantId data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ WellChildHeadCircumferenceRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndAssessWellChild data.participantId data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ WellChildMuacRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndAssessWellChild data.participantId data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ WellChildNutritionRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndAssessWellChild data.participantId data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ WellChildWeightRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndAssessWellChild data.participantId data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ WellChildSymptomsReviewRevision _ data ] ->
-                    let
-                        ( newModel, _ ) =
-                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                        extraMsgs =
-                            processWellChildSymptomsReviewRevision data.participantId data.encounterId data.value
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ WellChildVitalsRevision _ data ] ->
-                    let
-                        ( newModel, _ ) =
-                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                        extraMsgs =
-                            processWellChildVitalsRevision data.participantId data.encounterId data.value
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ WellChildECDRevision _ data ] ->
-                    let
-                        ( newModel, _ ) =
-                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                        extraMsgs =
-                            processWellChildECDRevision data.participantId data.encounterId newModel
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ WellChildBCGImmunisationRevision _ data ] ->
-                    let
-                        ( newModel, _ ) =
-                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                        extraMsgs =
-                            processWellChildImmunisationRevision data.participantId data.encounterId newModel
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ WellChildDTPImmunisationRevision _ data ] ->
-                    let
-                        ( newModel, _ ) =
-                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                        extraMsgs =
-                            processWellChildImmunisationRevision data.participantId data.encounterId newModel
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ WellChildDTPStandaloneImmunisationRevision _ data ] ->
-                    let
-                        ( newModel, _ ) =
-                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                        extraMsgs =
-                            processWellChildImmunisationRevision data.participantId data.encounterId newModel
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ WellChildHPVImmunisationRevision _ data ] ->
-                    let
-                        ( newModel, _ ) =
-                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                        extraMsgs =
-                            processWellChildImmunisationRevision data.participantId data.encounterId newModel
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ WellChildIPVImmunisationRevision _ data ] ->
-                    let
-                        ( newModel, _ ) =
-                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                        extraMsgs =
-                            processWellChildImmunisationRevision data.participantId data.encounterId newModel
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ WellChildMRImmunisationRevision _ data ] ->
-                    let
-                        ( newModel, _ ) =
-                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                        extraMsgs =
-                            processWellChildImmunisationRevision data.participantId data.encounterId newModel
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ WellChildOPVImmunisationRevision _ data ] ->
-                    let
-                        ( newModel, _ ) =
-                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                        extraMsgs =
-                            processWellChildImmunisationRevision data.participantId data.encounterId newModel
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ WellChildPCV13ImmunisationRevision _ data ] ->
-                    let
-                        ( newModel, _ ) =
-                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                        extraMsgs =
-                            processWellChildImmunisationRevision data.participantId data.encounterId newModel
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ WellChildRotarixImmunisationRevision _ data ] ->
-                    let
-                        ( newModel, _ ) =
-                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                        extraMsgs =
-                            processWellChildImmunisationRevision data.participantId data.encounterId newModel
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ NCDRandomBloodSugarTestRevision _ data ] ->
-                    let
-                        -- We do not catch changes done to model, because
-                        -- it's handled by `processRevisionAndAssessNCD`
-                        -- activation that comes bellow.
-                        ( _, extraMsgsForLabsResults ) =
-                            processRevisionAndUpdateNCDLabsResults
-                                data.participantId
-                                data.encounterId
-                                Backend.Measurement.Model.TestRandomBloodSugar
-                                data.value.executionNote
-                                (isJust data.value.sugarCount)
-
-                        ( newModel, extraMsgsForAssessment ) =
-                            processRevisionAndAssessNCD data.participantId data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
-                    )
-
-                [ NCDUrineDipstickTestRevision _ data ] ->
-                    let
-                        -- We do not catch changes done to model, because
-                        -- it's handled by `processRevisionAndAssessNCD`
-                        -- activation that comes bellow.
-                        ( _, extraMsgsForLabsResults ) =
-                            processRevisionAndUpdateNCDLabsResults
-                                data.participantId
-                                data.encounterId
-                                Backend.Measurement.Model.TestUrineDipstick
-                                data.value.executionNote
-                                (isJust data.value.protein)
-
-                        ( newModel, extraMsgsForAssessment ) =
-                            processRevisionAndAssessNCD data.participantId data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
-                    )
-
-                [ NCDCreatinineTestRevision _ data ] ->
-                    let
-                        -- We do not catch changes done to model, because
-                        -- it's handled by `processRevisionAndAssessNCD`
-                        -- activation that comes bellow.
-                        ( _, extraMsgsForLabsResults ) =
-                            processRevisionAndUpdateNCDLabsResults
-                                data.participantId
-                                data.encounterId
-                                Backend.Measurement.Model.TestCreatinine
-                                data.value.executionNote
-                                (isJust data.value.creatinineResult)
-
-                        ( newModel, extraMsgsForAssessment ) =
-                            processRevisionAndAssessNCD data.participantId data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
-                    )
-
-                [ NCDLiverFunctionTestRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgsForLabsResults ) =
-                            processRevisionAndUpdateNCDLabsResults
-                                data.participantId
-                                data.encounterId
-                                Backend.Measurement.Model.TestLiverFunction
-                                data.value.executionNote
-                                (isJust data.value.altResult)
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgsForLabsResults
-                    )
-
-                [ NCDCoMorbiditiesRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndAssessNCD data.participantId data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ NCDVitalsRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processRevisionAndAssessNCD data.participantId data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ NCDLipidPanelTestRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgsForLabsResults ) =
-                            processRevisionAndUpdateNCDLabsResults
-                                data.participantId
-                                data.encounterId
-                                Backend.Measurement.Model.TestLipidPanel
-                                data.value.executionNote
-                                (isJust data.value.totalCholesterolResult)
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgsForLabsResults
-                    )
-
-                [ ChildScoreboardNCDARevision _ data ] ->
-                    let
-                        ( newModel, _ ) =
-                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                        extraMsgs =
-                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
+                                encounterId
                                 |> Maybe.withDefault []
                     in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
+                    ( newModel, extraMsgs )
 
-                [ ChildScoreboardBCGImmunisationRevision _ data ] ->
-                    let
-                        ( newModel, _ ) =
-                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                        extraMsgs =
-                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
-                                |> Maybe.withDefault []
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ ChildScoreboardDTPImmunisationRevision _ data ] ->
-                    let
-                        ( newModel, _ ) =
-                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                        extraMsgs =
-                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
-                                |> Maybe.withDefault []
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ ChildScoreboardDTPStandaloneImmunisationRevision _ data ] ->
-                    let
-                        ( newModel, _ ) =
-                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                        extraMsgs =
-                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
-                                |> Maybe.withDefault []
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ ChildScoreboardIPVImmunisationRevision _ data ] ->
-                    let
-                        ( newModel, _ ) =
-                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                        extraMsgs =
-                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
-                                |> Maybe.withDefault []
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ ChildScoreboardMRImmunisationRevision _ data ] ->
-                    let
-                        ( newModel, _ ) =
-                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                        extraMsgs =
-                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
-                                |> Maybe.withDefault []
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ ChildScoreboardOPVImmunisationRevision _ data ] ->
-                    let
-                        ( newModel, _ ) =
-                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                        extraMsgs =
-                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
-                                |> Maybe.withDefault []
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ ChildScoreboardPCV13ImmunisationRevision _ data ] ->
-                    let
-                        ( newModel, _ ) =
-                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                        extraMsgs =
-                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
-                                |> Maybe.withDefault []
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ ChildScoreboardRotarixImmunisationRevision _ data ] ->
-                    let
-                        ( newModel, _ ) =
-                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                        extraMsgs =
-                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
-                                |> Maybe.withDefault []
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ TuberculosisDOTRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ TuberculosisFollowUpRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ TuberculosisHealthEducationRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ TuberculosisMedicationRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ TuberculosisReferralRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ TuberculosisSymptomReviewRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                [ TuberculosisTreatmentReviewRevision _ data ] ->
-                    let
-                        ( newModel, extraMsgs ) =
-                            processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
-                    in
-                    ( newModel
-                    , Cmd.none
-                    , extraMsgs
-                    )
-
-                _ ->
+                processRevisions =
                     let
                         ( newModel, recalculateEditableSessions ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
@@ -3695,6 +2527,1338 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     , Cmd.none
                     , []
                     )
+            in
+            if downloadingContent then
+                processRevisions
+
+            else
+                case revisions of
+                    -- Special handling for a single attendance revision, which means
+                    -- there was a check in / check out in Attendance page.
+                    -- Here we don't want to rebuild all Editable sessions, but only
+                    -- the relevant one, and only the things that are needed.
+                    [ AttendanceRevision uuid data ] ->
+                        let
+                            newModel =
+                                mapMotherMeasurements
+                                    data.participantId
+                                    (\measurements ->
+                                        { measurements
+                                            | attendances =
+                                                if data.deleted then
+                                                    Dict.remove uuid measurements.attendances
+
+                                                else
+                                                    Dict.insert uuid data measurements.attendances
+                                        }
+                                    )
+                                    model
+
+                            withRecalc =
+                                data.encounterId
+                                    |> Maybe.map
+                                        (\sessionId ->
+                                            Dict.get sessionId newModel.editableSessions
+                                                |> Maybe.andThen RemoteData.toMaybe
+                                                |> Maybe.map
+                                                    (\editableSession ->
+                                                        let
+                                                            newEditableSessions =
+                                                                if data.deleted then
+                                                                    Dict.remove sessionId newModel.editableSessions
+
+                                                                else
+                                                                    let
+                                                                        updatedOffline =
+                                                                            editableSession.offlineSession
+                                                                                |> (\offline -> { offline | measurements = LocalData.setRecalculate offline.measurements })
+
+                                                                        updatedEditable =
+                                                                            Success
+                                                                                { editableSession
+                                                                                    | update = NotAsked
+                                                                                    , offlineSession = updatedOffline
+                                                                                    , checkedIn = LocalData.setRecalculate editableSession.checkedIn
+                                                                                    , summaryByParticipant = LocalData.setRecalculate editableSession.summaryByParticipant
+                                                                                    , summaryByActivity = LocalData.setRecalculate editableSession.summaryByActivity
+                                                                                }
+                                                                    in
+                                                                    Dict.insert sessionId updatedEditable newModel.editableSessions
+                                                        in
+                                                        { newModel | editableSessions = newEditableSessions }
+                                                    )
+                                                |> Maybe.withDefault newModel
+                                        )
+                                    |> Maybe.withDefault newModel
+                        in
+                        ( withRecalc
+                        , Cmd.none
+                        , []
+                        )
+
+                    [ SymptomsGeneralRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ SymptomsRespiratoryRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ SymptomsGIRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ TravelHistoryRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ ExposureRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ AcuteIllnessVitalsRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ AcuteIllnessCoreExamRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ AcuteFindingsRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ MalariaTestingRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ CovidTestingRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ AcuteIllnessDangerSignsRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ AcuteIllnessMuacRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ AcuteIllnessNutritionRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ TreatmentOngoingRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ IsolationRevision _ data ] ->
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                data.encounterId
+                                    |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate features isChw newModel)
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ Call114Revision _ data ] ->
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                data.encounterId
+                                    |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate features isChw newModel)
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ HCContactRevision _ data ] ->
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                data.encounterId
+                                    |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate features isChw newModel)
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ MedicationDistributionRevision _ data ] ->
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                data.encounterId
+                                    |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate features isChw newModel)
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ SendToHCRevision _ data ] ->
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                data.encounterId
+                                    |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate features isChw newModel)
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ HealthEducationRevision _ data ] ->
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                data.encounterId
+                                    |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate features isChw newModel)
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ AcuteIllnessFollowUpRevision _ data ] ->
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                data.encounterId
+                                    |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate features isChw newModel)
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ NutritionHeightRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndAssessNutritionIndividual data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ NutritionMuacRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndAssessNutritionIndividual data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ NutritionNutritionRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndAssessNutritionIndividual data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ NutritionWeightRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndAssessNutritionIndividual data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ HeightRevision uuid data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndAssessNutritionGroup data.participantId
+                                    data.encounterId
+                                    (\childMeasurements ->
+                                        { childMeasurements
+                                            | height =
+                                                if data.deleted then
+                                                    Nothing
+
+                                                else
+                                                    Just ( uuid, data )
+                                        }
+                                    )
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ MuacRevision uuid data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndAssessNutritionGroup data.participantId
+                                    data.encounterId
+                                    (\childMeasurements ->
+                                        { childMeasurements
+                                            | muac =
+                                                if data.deleted then
+                                                    Nothing
+
+                                                else
+                                                    Just ( uuid, data )
+                                        }
+                                    )
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ ChildNutritionRevision uuid data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndAssessNutritionGroup data.participantId
+                                    data.encounterId
+                                    (\childMeasurements ->
+                                        { childMeasurements
+                                            | nutrition =
+                                                if data.deleted then
+                                                    Nothing
+
+                                                else
+                                                    Just ( uuid, data )
+                                        }
+                                    )
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ WeightRevision uuid data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndAssessNutritionGroup data.participantId
+                                    data.encounterId
+                                    (\childMeasurements ->
+                                        { childMeasurements
+                                            | weight =
+                                                if data.deleted then
+                                                    Nothing
+
+                                                else
+                                                    Just ( uuid, data )
+                                        }
+                                    )
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ DangerSignsRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                -- This is the only place where we ask to update assessment for CHW, since
+                                -- only thing that affects it is the Danger signs measurement.
+                                processRevisionAndAssessPrenatal data.encounterId True
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ PrenatalSymptomReviewRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndAssessPrenatal data.encounterId False
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ CorePhysicalExamRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndAssessPrenatal data.encounterId False
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ LastMenstrualPeriodRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndAssessPrenatal data.encounterId False
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ PregnancyTestRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndAssessPrenatal data.encounterId False
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ MedicationRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndAssessPrenatal data.encounterId False
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ VitalsRevision _ data ] ->
+                        let
+                            -- We do not catch changes done to model, because
+                            -- it's handled by `processRevisionAndAssessPrenatal`
+                            -- activation that comes below.
+                            ( _, extraMsgsForLabsResults ) =
+                                processVitalsRevisionAndUpdatePrenatalLabsResults
+                                    data.encounterId
+                                    data.value
+
+                            ( newModel, extraMsgsForAssessment ) =
+                                processRevisionAndAssessPrenatal data.encounterId False
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                        )
+
+                    [ MalariaPreventionRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processPrenatalRevisionPossiblyCompletingRecurrentPhase data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ PrenatalHealthEducationRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processPrenatalRevisionPossiblyCompletingRecurrentPhase data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ PrenatalSendToHCRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processPrenatalRevisionPossiblyCompletingRecurrentPhase data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ PrenatalMedicationDistributionRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processPrenatalRevisionPossiblyCompletingRecurrentPhase data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ PrenatalHIVTestRevision _ data ] ->
+                        let
+                            -- We do not catch changes done to model, because
+                            -- it's handled by `processRevisionAndAssessPrenatal`
+                            -- activation that comes below.
+                            ( _, extraMsgsForLabsResults ) =
+                                processRevisionAndUpdatePrenatalLabsResults
+                                    data.encounterId
+                                    Backend.Measurement.Model.TestHIV
+                                    data.value.executionNote
+                                    (isJust data.value.testResult)
+
+                            ( newModel, extraMsgsForAssessment ) =
+                                processRevisionAndAssessPrenatal data.encounterId False
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                        )
+
+                    [ PrenatalPartnerHIVTestRevision _ data ] ->
+                        let
+                            ( newModel, extraMsg ) =
+                                processRevisionAndUpdatePrenatalLabsResults
+                                    data.encounterId
+                                    Backend.Measurement.Model.TestPartnerHIV
+                                    data.value.executionNote
+                                    (isJust data.value.testResult)
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsg
+                        )
+
+                    [ PrenatalHIVPCRTestRevision _ data ] ->
+                        let
+                            -- We do not catch changes done to model, because
+                            -- it's handled by `processRevisionAndAssessPrenatal`
+                            -- activation that comes below.
+                            ( _, extraMsgsForLabsResults ) =
+                                processRevisionAndUpdatePrenatalLabsResults
+                                    data.encounterId
+                                    Backend.Measurement.Model.TestHIVPCR
+                                    data.value.executionNote
+                                    (isJust data.value.hivViralLoadStatus)
+
+                            ( newModel, extraMsgsForAssessment ) =
+                                processRevisionAndAssessPrenatal data.encounterId False
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                        )
+
+                    [ PrenatalSyphilisTestRevision _ data ] ->
+                        let
+                            -- We do not catch changes done to model, because
+                            -- it's handled by `processRevisionAndAssessPrenatal`
+                            -- activation that comes below.
+                            ( _, extraMsgsForLabsResults ) =
+                                processRevisionAndUpdatePrenatalLabsResults
+                                    data.encounterId
+                                    Backend.Measurement.Model.TestSyphilis
+                                    data.value.executionNote
+                                    (isJust data.value.testResult)
+
+                            ( newModel, extraMsgsForAssessment ) =
+                                Maybe.map
+                                    (\originatingEncounterId ->
+                                        ( originatingEncounterId
+                                        , Pages.Prenatal.Utils.syphilisDiagnosesIncludingNeurosyphilisRecurrentPhase
+                                        )
+                                    )
+                                    data.value.originatingEncounter
+                                    |> processRevisionAndAssessPrenatalWithReportToOrigin data.encounterId False
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                        )
+
+                    [ PrenatalHepatitisBTestRevision _ data ] ->
+                        let
+                            -- We do not catch changes done to model, because
+                            -- it's handled by `processRevisionAndAssessPrenatal`
+                            -- activation that comes below.
+                            ( _, extraMsgsForLabsResults ) =
+                                processRevisionAndUpdatePrenatalLabsResults
+                                    data.encounterId
+                                    Backend.Measurement.Model.TestHepatitisB
+                                    data.value.executionNote
+                                    (isJust data.value.testResult)
+
+                            ( newModel, extraMsgsForAssessment ) =
+                                Maybe.map
+                                    (\originatingEncounterId -> ( originatingEncounterId, [ DiagnosisHepatitisBRecurrentPhase ] ))
+                                    data.value.originatingEncounter
+                                    |> processRevisionAndAssessPrenatalWithReportToOrigin data.encounterId False
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                        )
+
+                    [ PrenatalMalariaTestRevision _ data ] ->
+                        let
+                            -- We do not catch changes done to model, because
+                            -- it's handled by `processRevisionAndAssessPrenatal`
+                            -- activation that comes below.
+                            ( _, extraMsgsForLabsResults ) =
+                                let
+                                    executionNote =
+                                        if data.value.bloodSmearResult == BloodSmearPendingInput then
+                                            TestNoteRunToday
+
+                                        else
+                                            data.value.executionNote
+
+                                    resultsAdded =
+                                        isJust data.value.testResult
+                                            || bloodSmearResultSet data.value.bloodSmearResult
+                                in
+                                processRevisionAndUpdatePrenatalLabsResults
+                                    data.encounterId
+                                    Backend.Measurement.Model.TestMalaria
+                                    executionNote
+                                    resultsAdded
+
+                            ( newModel, extraMsgsForAssessment ) =
+                                processRevisionAndAssessPrenatal data.encounterId False
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                        )
+
+                    [ PrenatalUrineDipstickTestRevision _ data ] ->
+                        let
+                            -- We do not catch changes done to model, because
+                            -- it's handled by `processRevisionAndAssessPrenatal`
+                            -- activation that comes below.
+                            ( _, extraMsgsForLabsResults ) =
+                                processRevisionAndUpdatePrenatalLabsResults
+                                    data.encounterId
+                                    Backend.Measurement.Model.TestUrineDipstick
+                                    data.value.executionNote
+                                    (isJust data.value.protein)
+
+                            ( newModel, extraMsgsForAssessment ) =
+                                processRevisionAndAssessPrenatal data.encounterId False
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                        )
+
+                    [ PrenatalBloodGpRsTestRevision _ data ] ->
+                        let
+                            -- We do not catch changes done to the model, because
+                            -- it's handled by `processRevisionAndAssessPrenatal`
+                            -- activation that comes below.
+                            ( _, extraMsgsForLabsResults ) =
+                                processRevisionAndUpdatePrenatalLabsResults
+                                    data.encounterId
+                                    Backend.Measurement.Model.TestBloodGpRs
+                                    data.value.executionNote
+                                    (isJust data.value.bloodGroup)
+
+                            ( newModel, extraMsgsForAssessment ) =
+                                Maybe.map
+                                    (\originatingEncounterId -> ( originatingEncounterId, [ DiagnosisRhesusNegativeRecurrentPhase ] ))
+                                    data.value.originatingEncounter
+                                    |> processRevisionAndAssessPrenatalWithReportToOrigin data.encounterId False
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                        )
+
+                    [ PrenatalHemoglobinTestRevision _ data ] ->
+                        let
+                            -- We do not catch changes done to model, because
+                            -- it's handled by `processRevisionAndAssessPrenatal`
+                            -- activation that comes below.
+                            ( _, extraMsgsForLabsResults ) =
+                                processRevisionAndUpdatePrenatalLabsResults
+                                    data.encounterId
+                                    Backend.Measurement.Model.TestHemoglobin
+                                    data.value.executionNote
+                                    (isJust data.value.hemoglobinCount)
+
+                            ( newModel, extraMsgsForAssessment ) =
+                                processRevisionAndAssessPrenatal data.encounterId False
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                        )
+
+                    [ PrenatalRandomBloodSugarTestRevision _ data ] ->
+                        let
+                            -- We do not catch changes done to model, because
+                            -- it's handled by `processRevisionAndAssessPrenatal`
+                            -- activation that comes below.
+                            ( _, extraMsgsForLabsResults ) =
+                                processRevisionAndUpdatePrenatalLabsResults
+                                    data.encounterId
+                                    Backend.Measurement.Model.TestRandomBloodSugar
+                                    data.value.executionNote
+                                    (isJust data.value.sugarCount)
+
+                            ( newModel, extraMsgsForAssessment ) =
+                                Maybe.map
+                                    (\originatingEncounterId -> ( originatingEncounterId, Pages.Prenatal.Utils.diabetesDiagnosesRecurrentPhase ))
+                                    data.value.originatingEncounter
+                                    |> processRevisionAndAssessPrenatalWithReportToOrigin data.encounterId False
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                        )
+
+                    [ PrenatalMentalHealthRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndAssessPrenatal data.encounterId False
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ BreastExamRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndAssessPrenatal data.encounterId False
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ PrenatalBreastfeedingRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndAssessPrenatal data.encounterId False
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ PrenatalGUExamRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndAssessPrenatal data.encounterId False
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ WellChildHeightRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndAssessWellChild data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ WellChildHeadCircumferenceRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndAssessWellChild data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ WellChildMuacRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndAssessWellChild data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ WellChildNutritionRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndAssessWellChild data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ WellChildWeightRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndAssessWellChild data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ WellChildSymptomsReviewRevision _ data ] ->
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                processWellChildSymptomsReviewRevision data.encounterId data.value
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ WellChildVitalsRevision _ data ] ->
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                processWellChildVitalsRevision data.participantId data.encounterId data.value
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ WellChildECDRevision _ data ] ->
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                processWellChildECDRevision data.encounterId newModel
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ WellChildBCGImmunisationRevision _ data ] ->
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                processWellChildImmunisationRevision data.encounterId newModel
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ WellChildDTPImmunisationRevision _ data ] ->
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                processWellChildImmunisationRevision data.encounterId newModel
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ WellChildDTPStandaloneImmunisationRevision _ data ] ->
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                processWellChildImmunisationRevision data.encounterId newModel
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ WellChildHPVImmunisationRevision _ data ] ->
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                processWellChildImmunisationRevision data.encounterId newModel
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ WellChildIPVImmunisationRevision _ data ] ->
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                processWellChildImmunisationRevision data.encounterId newModel
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ WellChildMRImmunisationRevision _ data ] ->
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                processWellChildImmunisationRevision data.encounterId newModel
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ WellChildOPVImmunisationRevision _ data ] ->
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                processWellChildImmunisationRevision data.encounterId newModel
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ WellChildPCV13ImmunisationRevision _ data ] ->
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                processWellChildImmunisationRevision data.encounterId newModel
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ WellChildRotarixImmunisationRevision _ data ] ->
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                processWellChildImmunisationRevision data.encounterId newModel
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ NCDRandomBloodSugarTestRevision _ data ] ->
+                        let
+                            -- We do not catch changes done to model, because
+                            -- it's handled by `processRevisionAndAssessNCD`
+                            -- activation that comes below.
+                            ( _, extraMsgsForLabsResults ) =
+                                processRevisionAndUpdateNCDLabsResults
+                                    data.encounterId
+                                    Backend.Measurement.Model.TestRandomBloodSugar
+                                    data.value.executionNote
+                                    (isJust data.value.sugarCount)
+
+                            ( newModel, extraMsgsForAssessment ) =
+                                processRevisionAndAssessNCD data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                        )
+
+                    [ NCDUrineDipstickTestRevision _ data ] ->
+                        let
+                            -- We do not catch changes done to model, because
+                            -- it's handled by `processRevisionAndAssessNCD`
+                            -- activation that comes below.
+                            ( _, extraMsgsForLabsResults ) =
+                                processRevisionAndUpdateNCDLabsResults
+                                    data.encounterId
+                                    Backend.Measurement.Model.TestUrineDipstick
+                                    data.value.executionNote
+                                    (isJust data.value.protein)
+
+                            ( newModel, extraMsgsForAssessment ) =
+                                processRevisionAndAssessNCD data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                        )
+
+                    [ NCDCreatinineTestRevision _ data ] ->
+                        let
+                            -- We do not catch changes done to model, because
+                            -- it's handled by `processRevisionAndAssessNCD`
+                            -- activation that comes below.
+                            ( _, extraMsgsForLabsResults ) =
+                                processRevisionAndUpdateNCDLabsResults
+                                    data.encounterId
+                                    Backend.Measurement.Model.TestCreatinine
+                                    data.value.executionNote
+                                    (isJust data.value.creatinineResult)
+
+                            ( newModel, extraMsgsForAssessment ) =
+                                processRevisionAndAssessNCD data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                        )
+
+                    [ NCDLiverFunctionTestRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgsForLabsResults ) =
+                                processRevisionAndUpdateNCDLabsResults
+                                    data.encounterId
+                                    Backend.Measurement.Model.TestLiverFunction
+                                    data.value.executionNote
+                                    (isJust data.value.altResult)
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgsForLabsResults
+                        )
+
+                    [ NCDCoMorbiditiesRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndAssessNCD data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ NCDVitalsRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processRevisionAndAssessNCD data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ NCDLipidPanelTestRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgsForLabsResults ) =
+                                processRevisionAndUpdateNCDLabsResults
+                                    data.encounterId
+                                    Backend.Measurement.Model.TestLipidPanel
+                                    data.value.executionNote
+                                    (isJust data.value.totalCholesterolResult)
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgsForLabsResults
+                        )
+
+                    [ ChildScoreboardNCDARevision _ data ] ->
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ ChildScoreboardBCGImmunisationRevision _ data ] ->
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ ChildScoreboardDTPImmunisationRevision _ data ] ->
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ ChildScoreboardDTPStandaloneImmunisationRevision _ data ] ->
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ ChildScoreboardIPVImmunisationRevision _ data ] ->
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ ChildScoreboardMRImmunisationRevision _ data ] ->
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ ChildScoreboardOPVImmunisationRevision _ data ] ->
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ ChildScoreboardPCV13ImmunisationRevision _ data ] ->
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ ChildScoreboardRotarixImmunisationRevision _ data ] ->
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ TuberculosisDOTRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ TuberculosisFollowUpRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ TuberculosisHealthEducationRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ TuberculosisMedicationRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ TuberculosisReferralRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ TuberculosisSymptomReviewRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    [ TuberculosisTreatmentReviewRevision _ data ] ->
+                        let
+                            ( newModel, extraMsgs ) =
+                                processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
+                        in
+                        ( newModel
+                        , Cmd.none
+                        , extraMsgs
+                        )
+
+                    _ ->
+                        processRevisions
 
         ResetFailedToFetchAuthorities ->
             let
@@ -3890,10 +4054,34 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         |> Maybe.withDefault Backend.EducationSession.Model.emptyModel
 
                 ( subModel, subCmd, appMsgs ) =
-                    Backend.EducationSession.Update.update currentDate sessionId encounter subMsg requests
+                    Backend.EducationSession.Update.update sessionId encounter subMsg requests
             in
             ( { model | educationSessionRequests = Dict.insert sessionId subModel model.educationSessionRequests }
             , Cmd.map (MsgEducationSession sessionId) subCmd
+            , appMsgs
+            )
+
+        MsgFamilyNutritionEncounter encounterId subMsg ->
+            let
+                encounter =
+                    Dict.get encounterId model.familyNutritionEncounters
+                        |> Maybe.andThen RemoteData.toMaybe
+
+                requests =
+                    Dict.get encounterId model.familyNutritionEncounterRequests
+                        |> Maybe.withDefault Backend.FamilyNutritionEncounter.Model.emptyModel
+
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.FamilyNutritionEncounter.Update.update currentDate
+                        nurseId
+                        healthCenterId
+                        encounterId
+                        encounter
+                        subMsg
+                        requests
+            in
+            ( { model | familyNutritionEncounterRequests = Dict.insert encounterId subModel model.familyNutritionEncounterRequests }
+            , Cmd.map (MsgFamilyNutritionEncounter encounterId) subCmd
             , appMsgs
             )
 
@@ -3960,7 +4148,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         |> Maybe.withDefault Backend.Nurse.Model.emptyModel
 
                 ( subModel, subCmd, appMsgs ) =
-                    Backend.Nurse.Update.update currentDate subMsg requests
+                    Backend.Nurse.Update.update subMsg requests
             in
             ( { model | nurseRequests = Dict.insert updatedNurseId subModel model.nurseRequests }
             , Cmd.map (MsgNurse updatedNurseId) subCmd
@@ -3974,7 +4162,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         |> Maybe.withDefault Backend.ResilienceSurvey.Model.emptyModel
 
                 ( subModel, subCmd, appMsgs ) =
-                    Backend.ResilienceSurvey.Update.update currentDate subMsg requests
+                    Backend.ResilienceSurvey.Update.update subMsg requests
             in
             ( { model | resilienceSurveyRequests = Dict.insert surveyNurseId subModel model.resilienceSurveyRequests }
             , Cmd.map (MsgResilienceSurvey surveyNurseId) subCmd
@@ -3988,7 +4176,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         |> Maybe.withDefault Backend.StockUpdate.Model.emptyModel
 
                 ( subModel, subCmd, appMsgs ) =
-                    Backend.StockUpdate.Update.update currentDate subMsg requests
+                    Backend.StockUpdate.Update.update subMsg requests
             in
             ( { model | stockUpdateRequests = Dict.insert updateNurseId subModel model.stockUpdateRequests }
             , Cmd.map (MsgStockUpdate updateNurseId) subCmd
@@ -4373,6 +4561,20 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                                     |> List.singleton
                                         in
                                         ( setContactsTracingFormStateMsg
+                                        , []
+                                        )
+
+                                    FamilyEncounterOrigin _ ->
+                                        let
+                                            nextPage =
+                                                case relation of
+                                                    Just id ->
+                                                        RelationshipPage id personId initiator
+
+                                                    Nothing ->
+                                                        PersonPage personId initiator
+                                        in
+                                        ( [ resetFormMsg, navigationMsg nextPage ]
                                         , []
                                         )
                             )
@@ -4876,6 +5078,65 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             , rollbarOnFailure ++ appMsgs
             )
 
+        PostFamilyEncounterParticipant session ->
+            ( { model | postFamilyEncounterParticipant = Dict.insert session.person Loading model.postFamilyEncounterParticipant }
+            , sw.post familyEncounterParticipantEndpoint session
+                |> toCmd (RemoteData.fromResult >> HandlePostedFamilyEncounterParticipant session.person session.encounterType)
+            , []
+            )
+
+        HandlePostedFamilyEncounterParticipant personId encounterType data ->
+            let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
+                -- We automatically create new encounter for newly created  session.
+                appMsgs =
+                    RemoteData.map
+                        (\( sessionId, _ ) ->
+                            case encounterType of
+                                Backend.FamilyEncounterParticipant.Model.NutritionEncounter ->
+                                    [ emptyFamilyNutritionEncounter sessionId currentDate healthCenterId
+                                        |> Backend.Model.PostFamilyNutritionEncounter
+                                        |> App.Model.MsgIndexedDb
+                                    ]
+                        )
+                        data
+                        |> RemoteData.withDefault []
+            in
+            ( { model | postFamilyEncounterParticipant = Dict.insert personId data model.postFamilyEncounterParticipant }
+            , Cmd.none
+            , rollbarOnFailure ++ appMsgs
+            )
+
+        PostFamilyNutritionEncounter familyNutritionEncounter ->
+            ( { model | postFamilyNutritionEncounter = Dict.insert familyNutritionEncounter.participant Loading model.postFamilyNutritionEncounter }
+            , sw.post familyNutritionEncounterEndpoint familyNutritionEncounter
+                |> toCmd (RemoteData.fromResult >> HandlePostedFamilyNutritionEncounter familyNutritionEncounter.participant)
+            , []
+            )
+
+        HandlePostedFamilyNutritionEncounter participantId data ->
+            let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
+                appMsgs =
+                    RemoteData.map
+                        (\( familyNutritionEncounterId, _ ) ->
+                            [ App.Model.SetActivePage <|
+                                UserPage <|
+                                    Pages.Page.FamilyNutritionEncounterPage familyNutritionEncounterId
+                            ]
+                        )
+                        data
+                        |> RemoteData.withDefault []
+            in
+            ( { model | postFamilyNutritionEncounter = Dict.insert participantId data model.postFamilyNutritionEncounter }
+            , Cmd.none
+            , rollbarOnFailure ++ appMsgs
+            )
+
 
 {-| The extra return value indicates whether we need to recalculate our
 successful EditableSessions. Ideally, we would handle this in a more
@@ -4889,11 +5150,42 @@ handleRevision :
     -> ( ModelIndexedDb, Bool )
     -> ( ModelIndexedDb, Bool )
 handleRevision currentDate healthCenterId villageId revision (( model, recalc ) as noChange) =
+    let
+        encounterActionConsideringDeletedField uuid data =
+            if data.deleted then
+                Dict.remove uuid
+
+            else
+                Dict.update uuid (Maybe.map (always (Success data)))
+
+        measurementActionConsideringDeletedField uuid data =
+            if data.deleted then
+                Dict.remove uuid
+
+            else
+                Dict.insert uuid data
+
+        familyMeasurementActionConsideringDeletedField uuid data =
+            if data.deleted then
+                Dict.remove data.participantId
+
+            else
+                Dict.insert data.participantId ( uuid, data )
+    in
     case revision of
         AcuteFindingsRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | acuteFindings = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | acuteFindings =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -4901,7 +5193,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         AcuteIllnessContactsTracingRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | contactsTracing = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | contactsTracing =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -4909,7 +5210,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         AcuteIllnessCoreExamRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | coreExam = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | coreExam =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -4917,7 +5227,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         AcuteIllnessDangerSignsRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | dangerSigns = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | dangerSigns =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -4925,7 +5244,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         AcuteIllnessEncounterRevision uuid data ->
             let
                 acuteIllnessEncounters =
-                    Dict.update uuid (Maybe.map (always (Success data))) model.acuteIllnessEncounters
+                    encounterActionConsideringDeletedField uuid data model.acuteIllnessEncounters
 
                 acuteIllnessEncountersByParticipant =
                     Dict.remove data.participant model.acuteIllnessEncountersByParticipant
@@ -4942,12 +5261,21 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 modelWithMappedFollowUp =
                     mapFollowUpMeasurements
                         healthCenterId
-                        (\measurements -> { measurements | acuteIllness = Dict.insert uuid data measurements.acuteIllness })
+                        (\measurements -> { measurements | acuteIllness = measurementActionConsideringDeletedField uuid data measurements.acuteIllness })
                         model
             in
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | followUp = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | followUp =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 modelWithMappedFollowUp
             , recalc
             )
@@ -4955,7 +5283,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         AcuteIllnessMuacRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | muac = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | muac =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -4963,7 +5300,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         AcuteIllnessNutritionRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | nutrition = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | nutrition =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -4973,11 +5319,11 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 modelWithMappedFollowUp =
                     mapFollowUpMeasurements
                         healthCenterId
-                        (\measurements -> { measurements | traceContacts = Dict.insert uuid data measurements.traceContacts })
+                        (\measurements -> { measurements | traceContacts = measurementActionConsideringDeletedField uuid data measurements.traceContacts })
                         model
 
                 traceContacts =
-                    Dict.update uuid (Maybe.map (always (Success data))) model.traceContacts
+                    encounterActionConsideringDeletedField uuid data model.traceContacts
             in
             ( { modelWithMappedFollowUp | traceContacts = traceContacts }
             , recalc
@@ -4986,7 +5332,41 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         AcuteIllnessVitalsRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | vitals = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | vitals =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
+                model
+            , recalc
+            )
+
+        AhezaChildRevision uuid data ->
+            ( mapFamilyNutritionMeasurements
+                data.encounterId
+                (\measurements -> { measurements | ahezaChild = familyMeasurementActionConsideringDeletedField uuid data measurements.ahezaChild })
+                model
+            , recalc
+            )
+
+        AhezaMotherRevision uuid data ->
+            ( mapFamilyNutritionMeasurements
+                data.encounterId
+                (\measurements ->
+                    { measurements
+                        | ahezaMother =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -4994,7 +5374,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         AppointmentConfirmationRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | appointmentConfirmation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | appointmentConfirmation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5002,7 +5391,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         AttendanceRevision uuid data ->
             ( mapMotherMeasurements
                 data.participantId
-                (\measurements -> { measurements | attendances = Dict.insert uuid data measurements.attendances })
+                (\measurements -> { measurements | attendances = measurementActionConsideringDeletedField uuid data measurements.attendances })
                 model
             , True
             )
@@ -5010,7 +5399,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         BreastExamRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | breastExam = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | breastExam =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5018,7 +5416,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         BirthPlanRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | birthPlan = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | birthPlan =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5026,7 +5433,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         Call114Revision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | call114 = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | call114 =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5039,7 +5455,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 modelWithMappedStockManagement =
                     mapStockManagementMeasurements
                         healthCenterId
-                        (\measurements -> { measurements | childFbf = Dict.insert uuid data measurements.childFbf })
+                        (\measurements -> { measurements | childFbf = measurementActionConsideringDeletedField uuid data measurements.childFbf })
                         modelWithStockUpdateRecalc
 
                 -- This revision may cause stock management data to become obsolete,
@@ -5054,7 +5470,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             in
             ( mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | fbfs = Dict.insert uuid data measurements.fbfs })
+                (\measurements -> { measurements | fbfs = measurementActionConsideringDeletedField uuid data measurements.fbfs })
                 modelWithMappedStockManagement
             , True
             )
@@ -5062,7 +5478,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ChildNutritionRevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | nutritions = Dict.insert uuid data measurements.nutritions })
+                (\measurements -> { measurements | nutritions = measurementActionConsideringDeletedField uuid data measurements.nutritions })
                 model
             , True
             )
@@ -5070,7 +5486,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ChildScoreboardEncounterRevision uuid data ->
             let
                 childScoreboardEncounters =
-                    Dict.update uuid (Maybe.map (always (Success data))) model.childScoreboardEncounters
+                    encounterActionConsideringDeletedField uuid data model.childScoreboardEncounters
 
                 childScoreboardEncountersByParticipant =
                     Dict.remove data.participant model.childScoreboardEncountersByParticipant
@@ -5085,7 +5501,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ChildScoreboardBCGImmunisationRevision uuid data ->
             ( mapChildScoreboardMeasurements
                 data.encounterId
-                (\measurements -> { measurements | bcgImmunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | bcgImmunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5093,7 +5518,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ChildScoreboardDTPImmunisationRevision uuid data ->
             ( mapChildScoreboardMeasurements
                 data.encounterId
-                (\measurements -> { measurements | dtpImmunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | dtpImmunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5101,7 +5535,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ChildScoreboardDTPStandaloneImmunisationRevision uuid data ->
             ( mapChildScoreboardMeasurements
                 data.encounterId
-                (\measurements -> { measurements | dtpStandaloneImmunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | dtpStandaloneImmunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5109,7 +5552,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ChildScoreboardIPVImmunisationRevision uuid data ->
             ( mapChildScoreboardMeasurements
                 data.encounterId
-                (\measurements -> { measurements | ipvImmunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | ipvImmunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5117,7 +5569,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ChildScoreboardMRImmunisationRevision uuid data ->
             ( mapChildScoreboardMeasurements
                 data.encounterId
-                (\measurements -> { measurements | mrImmunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | mrImmunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5125,7 +5586,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ChildScoreboardNCDARevision uuid data ->
             ( mapChildScoreboardMeasurements
                 data.encounterId
-                (\measurements -> { measurements | ncda = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | ncda =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5133,7 +5603,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ChildScoreboardOPVImmunisationRevision uuid data ->
             ( mapChildScoreboardMeasurements
                 data.encounterId
-                (\measurements -> { measurements | opvImmunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | opvImmunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5141,7 +5620,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ChildScoreboardPCV13ImmunisationRevision uuid data ->
             ( mapChildScoreboardMeasurements
                 data.encounterId
-                (\measurements -> { measurements | pcv13Immunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | pcv13Immunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5149,7 +5637,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ChildScoreboardRotarixImmunisationRevision uuid data ->
             ( mapChildScoreboardMeasurements
                 data.encounterId
-                (\measurements -> { measurements | rotarixImmunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | rotarixImmunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5166,7 +5663,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ContributingFactorsRevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | contributingFactors = Dict.insert uuid data measurements.contributingFactors })
+                (\measurements -> { measurements | contributingFactors = measurementActionConsideringDeletedField uuid data measurements.contributingFactors })
                 model
             , True
             )
@@ -5174,7 +5671,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         CorePhysicalExamRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | corePhysicalExam = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | corePhysicalExam =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5188,7 +5694,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         CounselingSessionRevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | counselingSessions = Dict.insert uuid data measurements.counselingSessions })
+                (\measurements -> { measurements | counselingSessions = measurementActionConsideringDeletedField uuid data measurements.counselingSessions })
                 model
             , True
             )
@@ -5201,7 +5707,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         CovidTestingRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | covidTesting = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | covidTesting =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5209,7 +5724,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         DangerSignsRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | dangerSigns = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | dangerSigns =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5224,19 +5748,19 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                                 , assembledPermutations =
                                     Dict.map
                                         (\( programTypeFilter, selectedVillage ) _ ->
-                                            Pages.Dashboard.Utils.generateAssembledData currentDate uuid statsRaw model programTypeFilter selectedVillage
+                                            Pages.Dashboard.Utils.generateAssembledData currentDate statsRaw programTypeFilter selectedVillage
                                         )
                                         computedDashboard.assembledPermutations
                                 }
                             )
-                        |> Maybe.withDefault (generateInitialComputedDashboard currentDate uuid villageId statsRaw model)
+                        |> Maybe.withDefault (generateInitialComputedDashboard currentDate villageId statsRaw)
             in
             ( { model | computedDashboards = Dict.insert uuid updatedComputedDashboard model.computedDashboards }, recalc )
 
         EducationSessionRevision uuid data ->
             let
                 educationSessions =
-                    Dict.update uuid (Maybe.map (always (Success data))) model.educationSessions
+                    encounterActionConsideringDeletedField uuid data model.educationSessions
 
                 -- For every session participant, we check if it has data at
                 -- educationSessionsByPerson dict. If so, we add the session to
@@ -5251,7 +5775,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                                         (\sessionsDict ->
                                             let
                                                 updatedSessionsDict =
-                                                    Dict.insert uuid data sessionsDict
+                                                    measurementActionConsideringDeletedField uuid data sessionsDict
                                             in
                                             Dict.insert personId (Success updatedSessionsDict) accum
                                         )
@@ -5266,7 +5790,79 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ExposureRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | exposure = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | exposure =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
+                model
+            , recalc
+            )
+
+        FamilyEncounterParticipantRevision uuid data ->
+            let
+                familyParticipants =
+                    encounterActionConsideringDeletedField uuid data model.familyParticipants
+
+                familyParticipantsByPerson =
+                    Dict.remove data.person model.familyParticipantsByPerson
+            in
+            ( { model
+                | familyParticipants = familyParticipants
+                , familyParticipantsByPerson = familyParticipantsByPerson
+              }
+            , recalc
+            )
+
+        FamilyNutritionEncounterRevision uuid data ->
+            let
+                familyNutritionEncounters =
+                    encounterActionConsideringDeletedField uuid data model.familyNutritionEncounters
+
+                familyNutritionEncountersByParticipant =
+                    Dict.remove data.participant model.familyNutritionEncountersByParticipant
+            in
+            ( { model
+                | familyNutritionEncounters = familyNutritionEncounters
+                , familyNutritionEncountersByParticipant = familyNutritionEncountersByParticipant
+              }
+            , recalc
+            )
+
+        FamilyNutritionMuacChildRevision uuid data ->
+            ( mapFamilyNutritionMeasurements
+                data.encounterId
+                (\measurements -> { measurements | muacChild = familyMeasurementActionConsideringDeletedField uuid data measurements.muacChild })
+                model
+            , recalc
+            )
+
+        FamilyNutritionMuacMotherRevision uuid data ->
+            ( mapFamilyNutritionMeasurements
+                data.encounterId
+                (\measurements ->
+                    { measurements
+                        | muacMother =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
+                model
+            , recalc
+            )
+
+        FamilyNutritionPhotoRevision uuid data ->
+            ( mapFamilyNutritionMeasurements
+                data.encounterId
+                (\measurements -> { measurements | photo = familyMeasurementActionConsideringDeletedField uuid data measurements.photo })
                 model
             , recalc
             )
@@ -5274,7 +5870,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         FamilyPlanningRevision uuid data ->
             ( mapMotherMeasurements
                 data.participantId
-                (\measurements -> { measurements | familyPlannings = Dict.insert uuid data measurements.familyPlannings })
+                (\measurements -> { measurements | familyPlannings = measurementActionConsideringDeletedField uuid data measurements.familyPlannings })
                 model
             , True
             )
@@ -5284,12 +5880,12 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 modelWithMappedFollowUp =
                     mapFollowUpMeasurements
                         healthCenterId
-                        (\measurements -> { measurements | nutritionGroup = Dict.insert uuid data measurements.nutritionGroup })
+                        (\measurements -> { measurements | nutritionGroup = measurementActionConsideringDeletedField uuid data measurements.nutritionGroup })
                         model
             in
             ( mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | followUp = Dict.insert uuid data measurements.followUp })
+                (\measurements -> { measurements | followUp = measurementActionConsideringDeletedField uuid data measurements.followUp })
                 modelWithMappedFollowUp
             , True
             )
@@ -5297,7 +5893,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         GroupHealthEducationRevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | healthEducation = Dict.insert uuid data measurements.healthEducation })
+                (\measurements -> { measurements | healthEducation = measurementActionConsideringDeletedField uuid data measurements.healthEducation })
                 model
             , True
             )
@@ -5305,7 +5901,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         GroupNCDARevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | ncda = Dict.insert uuid data measurements.ncda })
+                (\measurements -> { measurements | ncda = measurementActionConsideringDeletedField uuid data measurements.ncda })
                 model
             , True
             )
@@ -5313,7 +5909,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         GroupSendToHCRevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | sendToHC = Dict.insert uuid data measurements.sendToHC })
+                (\measurements -> { measurements | sendToHC = measurementActionConsideringDeletedField uuid data measurements.sendToHC })
                 model
             , True
             )
@@ -5321,7 +5917,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         HCContactRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | hcContact = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | hcContact =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5338,7 +5943,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         HealthEducationRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | healthEducation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | healthEducation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5346,7 +5960,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         HeightRevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | heights = Dict.insert uuid data measurements.heights })
+                (\measurements -> { measurements | heights = measurementActionConsideringDeletedField uuid data measurements.heights })
                 model
             , True
             )
@@ -5354,7 +5968,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         HIVDiagnosticsRevision uuid data ->
             ( mapHIVMeasurements
                 data.encounterId
-                (\measurements -> { measurements | diagnostics = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | diagnostics =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5362,7 +5985,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         HIVEncounterRevision uuid data ->
             let
                 hivEncounters =
-                    Dict.update uuid (Maybe.map (always (Success data))) model.hivEncounters
+                    encounterActionConsideringDeletedField uuid data model.hivEncounters
 
                 hivEncountersByParticipant =
                     Dict.remove data.participant model.hivEncountersByParticipant
@@ -5379,12 +6002,21 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 modelWithMappedFollowUp =
                     mapFollowUpMeasurements
                         healthCenterId
-                        (\measurements -> { measurements | hiv = Dict.insert uuid data measurements.hiv })
+                        (\measurements -> { measurements | hiv = measurementActionConsideringDeletedField uuid data measurements.hiv })
                         model
             in
             ( mapHIVMeasurements
                 data.encounterId
-                (\measurements -> { measurements | followUp = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | followUp =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 modelWithMappedFollowUp
             , recalc
             )
@@ -5392,7 +6024,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         HIVHealthEducationRevision uuid data ->
             ( mapHIVMeasurements
                 data.encounterId
-                (\measurements -> { measurements | healthEducation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | healthEducation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5400,7 +6041,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         HIVMedicationRevision uuid data ->
             ( mapHIVMeasurements
                 data.encounterId
-                (\measurements -> { measurements | medication = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | medication =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5408,7 +6058,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         HIVReferralRevision uuid data ->
             ( mapHIVMeasurements
                 data.encounterId
-                (\measurements -> { measurements | referral = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | referral =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5416,7 +6075,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         HIVSymptomReviewRevision uuid data ->
             ( mapHIVMeasurements
                 data.encounterId
-                (\measurements -> { measurements | symptomReview = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | symptomReview =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5424,7 +6092,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         HIVTreatmentReviewRevision uuid data ->
             ( mapHIVMeasurements
                 data.encounterId
-                (\measurements -> { measurements | treatmentReview = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | treatmentReview =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5432,7 +6109,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         HomeVisitEncounterRevision uuid data ->
             let
                 homeVisitEncounters =
-                    Dict.update uuid (Maybe.map (always (Success data))) model.homeVisitEncounters
+                    encounterActionConsideringDeletedField uuid data model.homeVisitEncounters
 
                 homeVisitEncountersByParticipant =
                     Dict.remove data.participant model.homeVisitEncountersByParticipant
@@ -5447,7 +6124,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         IsolationRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | isolation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | isolation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5455,7 +6141,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         IndividualEncounterParticipantRevision uuid data ->
             let
                 individualParticipants =
-                    Dict.update uuid (Maybe.map (always (Success data))) model.individualParticipants
+                    encounterActionConsideringDeletedField uuid data model.individualParticipants
 
                 individualParticipantsByPerson =
                     Dict.remove data.person model.individualParticipantsByPerson
@@ -5470,7 +6156,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         LactationRevision uuid data ->
             ( mapMotherMeasurements
                 data.participantId
-                (\measurements -> { measurements | lactations = Dict.insert uuid data measurements.lactations })
+                (\measurements -> { measurements | lactations = measurementActionConsideringDeletedField uuid data measurements.lactations })
                 model
             , True
             )
@@ -5478,7 +6164,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         LastMenstrualPeriodRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | lastMenstrualPeriod = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | lastMenstrualPeriod =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5486,7 +6181,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         MalariaTestingRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | malariaTesting = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | malariaTesting =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5494,7 +6198,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         MedicalHistoryRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | medicalHistory = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | medicalHistory =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5502,7 +6215,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         MedicationRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | medication = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | medication =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5510,7 +6232,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         MedicationDistributionRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | medicationDistribution = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | medicationDistribution =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5520,7 +6251,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 modelWithMappedStockManagement =
                     mapStockManagementMeasurements
                         healthCenterId
-                        (\measurements -> { measurements | motherFbf = Dict.insert uuid data measurements.motherFbf })
+                        (\measurements -> { measurements | motherFbf = measurementActionConsideringDeletedField uuid data measurements.motherFbf })
                         modelWithStockUpdateRecalc
 
                 -- This revision may cause stock management data to become obsolete,
@@ -5535,7 +6266,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             in
             ( mapMotherMeasurements
                 data.participantId
-                (\measurements -> { measurements | fbfs = Dict.insert uuid data measurements.fbfs })
+                (\measurements -> { measurements | fbfs = measurementActionConsideringDeletedField uuid data measurements.fbfs })
                 modelWithMappedStockManagement
             , True
             )
@@ -5543,7 +6274,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         MuacRevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | muacs = Dict.insert uuid data measurements.muacs })
+                (\measurements -> { measurements | muacs = measurementActionConsideringDeletedField uuid data measurements.muacs })
                 model
             , True
             )
@@ -5551,7 +6282,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDCoMorbiditiesRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | coMorbidities = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | coMorbidities =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5559,7 +6299,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDCoreExamRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | coreExam = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | coreExam =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5567,7 +6316,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDCreatinineTestRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | creatinineTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | creatinineTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5575,7 +6333,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDDangerSignsRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | dangerSigns = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | dangerSigns =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5583,7 +6350,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDEncounterRevision uuid data ->
             let
                 ncdEncounters =
-                    Dict.update uuid (Maybe.map (always (Success data))) model.ncdEncounters
+                    encounterActionConsideringDeletedField uuid data model.ncdEncounters
 
                 ncdEncountersByParticipant =
                     Dict.remove data.participant model.ncdEncountersByParticipant
@@ -5598,7 +6365,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDFamilyHistoryRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | familyHistory = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | familyHistory =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5606,7 +6382,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDFamilyPlanningRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | familyPlanning = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | familyPlanning =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5614,7 +6399,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDHbA1cTestRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | hba1cTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | hba1cTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5622,7 +6416,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDHealthEducationRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | healthEducation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | healthEducation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5630,7 +6433,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDHIVTestRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | hivTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | hivTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5640,12 +6452,21 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 modelWithMappedFollowUp =
                     mapFollowUpMeasurements
                         healthCenterId
-                        (\measurements -> { measurements | ncdLabs = Dict.insert uuid data measurements.ncdLabs })
+                        (\measurements -> { measurements | ncdLabs = measurementActionConsideringDeletedField uuid data measurements.ncdLabs })
                         model
             in
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | labsResults = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | labsResults =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 modelWithMappedFollowUp
             , recalc
             )
@@ -5653,7 +6474,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDLipidPanelTestRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | lipidPanelTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | lipidPanelTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5661,7 +6491,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDLiverFunctionTestRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | liverFunctionTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | liverFunctionTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5669,7 +6508,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDMedicationDistributionRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | medicationDistribution = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | medicationDistribution =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5677,7 +6525,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDMedicationHistoryRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | medicationHistory = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | medicationHistory =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5685,7 +6542,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDOutsideCareRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | outsideCare = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | outsideCare =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5693,7 +6559,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDPregnancyTestRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | pregnancyTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | pregnancyTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5701,7 +6576,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDRandomBloodSugarTestRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | randomBloodSugarTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | randomBloodSugarTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5709,7 +6593,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDReferralRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | referral = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | referral =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5717,7 +6610,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDSocialHistoryRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | socialHistory = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | socialHistory =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5725,7 +6627,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDSymptomReviewRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | symptomReview = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | symptomReview =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5733,7 +6644,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDUrineDipstickTestRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | urineDipstickTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | urineDipstickTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5741,7 +6661,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDVitalsRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | vitals = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | vitals =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5753,7 +6682,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NutritionCaringRevision uuid data ->
             ( mapHomeVisitMeasurements
                 data.encounterId
-                (\measurements -> { measurements | caring = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | caring =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5761,7 +6699,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NutritionContributingFactorsRevision uuid data ->
             ( mapNutritionMeasurements
                 data.encounterId
-                (\measurements -> { measurements | contributingFactors = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | contributingFactors =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5769,7 +6716,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NutritionEncounterRevision uuid data ->
             let
                 nutritionEncounters =
-                    Dict.update uuid (Maybe.map (always (Success data))) model.nutritionEncounters
+                    encounterActionConsideringDeletedField uuid data model.nutritionEncounters
 
                 nutritionEncountersByParticipant =
                     Dict.remove data.participant model.nutritionEncountersByParticipant
@@ -5784,7 +6731,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NutritionFeedingRevision uuid data ->
             ( mapHomeVisitMeasurements
                 data.encounterId
-                (\measurements -> { measurements | feeding = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | feeding =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5794,12 +6750,21 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 modelWithMappedFollowUp =
                     mapFollowUpMeasurements
                         healthCenterId
-                        (\measurements -> { measurements | nutritionIndividual = Dict.insert uuid data measurements.nutritionIndividual })
+                        (\measurements -> { measurements | nutritionIndividual = measurementActionConsideringDeletedField uuid data measurements.nutritionIndividual })
                         model
             in
             ( mapNutritionMeasurements
                 data.encounterId
-                (\measurements -> { measurements | followUp = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | followUp =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 modelWithMappedFollowUp
             , recalc
             )
@@ -5807,7 +6772,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NutritionFoodSecurityRevision uuid data ->
             ( mapHomeVisitMeasurements
                 data.encounterId
-                (\measurements -> { measurements | foodSecurity = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | foodSecurity =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5815,7 +6789,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NutritionHealthEducationRevision uuid data ->
             ( mapNutritionMeasurements
                 data.encounterId
-                (\measurements -> { measurements | healthEducation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | healthEducation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5823,7 +6806,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NutritionHeightRevision uuid data ->
             ( mapNutritionMeasurements
                 data.encounterId
-                (\measurements -> { measurements | height = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | height =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5831,7 +6823,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NutritionHygieneRevision uuid data ->
             ( mapHomeVisitMeasurements
                 data.encounterId
-                (\measurements -> { measurements | hygiene = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | hygiene =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5839,7 +6840,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NutritionMuacRevision uuid data ->
             ( mapNutritionMeasurements
                 data.encounterId
-                (\measurements -> { measurements | muac = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | muac =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5847,7 +6857,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NutritionNCDARevision uuid data ->
             ( mapNutritionMeasurements
                 data.encounterId
-                (\measurements -> { measurements | ncda = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | ncda =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5855,7 +6874,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NutritionNutritionRevision uuid data ->
             ( mapNutritionMeasurements
                 data.encounterId
-                (\measurements -> { measurements | nutrition = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | nutrition =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5863,7 +6891,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NutritionPhotoRevision uuid data ->
             ( mapNutritionMeasurements
                 data.encounterId
-                (\measurements -> { measurements | photo = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | photo =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5871,7 +6908,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NutritionSendToHCRevision uuid data ->
             ( mapNutritionMeasurements
                 data.encounterId
-                (\measurements -> { measurements | sendToHC = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | sendToHC =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5879,7 +6925,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NutritionWeightRevision uuid data ->
             ( mapNutritionMeasurements
                 data.encounterId
-                (\measurements -> { measurements | weight = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | weight =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5887,7 +6942,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ObstetricalExamRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | obstetricalExam = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | obstetricalExam =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5895,7 +6959,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ObstetricHistoryRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | obstetricHistory = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | obstetricHistory =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5903,7 +6976,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ObstetricHistoryStep2Revision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | obstetricHistoryStep2 = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | obstetricHistoryStep2 =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5911,7 +6993,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ParticipantConsentRevision uuid data ->
             ( mapMotherMeasurements
                 data.participantId
-                (\measurements -> { measurements | consents = Dict.insert uuid data measurements.consents })
+                (\measurements -> { measurements | consents = measurementActionConsideringDeletedField uuid data measurements.consents })
                 model
             , True
             )
@@ -5924,7 +7006,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PersonRevision uuid data ->
             let
                 people =
-                    Dict.update uuid (Maybe.map (always (Success data))) model.people
+                    encounterActionConsideringDeletedField uuid data model.people
             in
             ( { model
                 | personSearchesByName = Dict.empty
@@ -5937,7 +7019,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PhotoRevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | photos = Dict.insert uuid data measurements.photos })
+                (\measurements -> { measurements | photos = measurementActionConsideringDeletedField uuid data measurements.photos })
                 model
             , True
             )
@@ -5961,7 +7043,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PregnancyTestRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | pregnancyTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | pregnancyTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5977,7 +7068,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalBloodGpRsTestRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | bloodGpRsTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | bloodGpRsTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5985,7 +7085,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalBreastfeedingRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | breastfeeding = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | breastfeeding =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5993,7 +7102,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalCalciumRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | calcium = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | calcium =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6001,7 +7119,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalEncounterRevision uuid data ->
             let
                 prenatalEncounters =
-                    Dict.update uuid (Maybe.map (always (Success data))) model.prenatalEncounters
+                    encounterActionConsideringDeletedField uuid data model.prenatalEncounters
 
                 prenatalEncountersByParticipant =
                     Dict.remove data.participant model.prenatalEncountersByParticipant
@@ -6016,7 +7134,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalFamilyPlanningRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | familyPlanning = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | familyPlanning =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6032,7 +7159,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalFolateRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | folate = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | folate =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6042,12 +7178,21 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 modelWithMappedFollowUp =
                     mapFollowUpMeasurements
                         healthCenterId
-                        (\measurements -> { measurements | prenatal = Dict.insert uuid data measurements.prenatal })
+                        (\measurements -> { measurements | prenatal = measurementActionConsideringDeletedField uuid data measurements.prenatal })
                         model
             in
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | followUp = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | followUp =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 modelWithMappedFollowUp
             , recalc
             )
@@ -6055,7 +7200,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalGUExamRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | guExam = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | guExam =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6063,7 +7217,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalHealthEducationRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | healthEducation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | healthEducation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6071,7 +7234,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalHemoglobinTestRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | hemoglobinTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | hemoglobinTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6079,7 +7251,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalHepatitisBTestRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | hepatitisBTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | hepatitisBTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6087,7 +7268,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalHIVTestRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | hivTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | hivTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6095,7 +7285,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalHIVPCRTestRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | hivPCRTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | hivPCRTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6103,7 +7302,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalIronRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | iron = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | iron =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6113,12 +7321,21 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 modelWithMappedFollowUp =
                     mapFollowUpMeasurements
                         healthCenterId
-                        (\measurements -> { measurements | prenatalLabs = Dict.insert uuid data measurements.prenatalLabs })
+                        (\measurements -> { measurements | prenatalLabs = measurementActionConsideringDeletedField uuid data measurements.prenatalLabs })
                         model
             in
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | labsResults = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | labsResults =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 modelWithMappedFollowUp
             , recalc
             )
@@ -6126,7 +7343,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalMalariaTestRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | malariaTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | malariaTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6134,7 +7360,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalMebendazoleRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | mebendazole = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | mebendazole =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6142,7 +7377,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalMentalHealthRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | mentalHealth = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | mentalHealth =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6150,7 +7394,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalMedicationDistributionRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | medicationDistribution = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | medicationDistribution =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6158,7 +7411,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalMMSRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | mms = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | mms =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6166,7 +7428,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalNutritionRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | nutrition = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | nutrition =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6174,7 +7445,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalOutsideCareRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | outsideCare = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | outsideCare =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6182,7 +7462,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalPartnerHIVTestRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | partnerHIVTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | partnerHIVTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6190,7 +7479,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalPhotoRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | prenatalPhoto = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | prenatalPhoto =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6198,7 +7496,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalRandomBloodSugarTestRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | randomBloodSugarTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | randomBloodSugarTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6206,7 +7513,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalSendToHCRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | sendToHC = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | sendToHC =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6214,7 +7530,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalSpecialityCareRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | specialityCare = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | specialityCare =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6222,7 +7547,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalSymptomReviewRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | symptomReview = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | symptomReview =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6230,7 +7564,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalSyphilisTestRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | syphilisTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | syphilisTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6238,7 +7581,33 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalTetanusImmunisationRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | tetanusImmunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | tetanusImmunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
+                model
+            , recalc
+            )
+
+        PrenatalUltrasoundRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements ->
+                    { measurements
+                        | ultrasound =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6246,7 +7615,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalUrineDipstickTestRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | urineDipstickTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | urineDipstickTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6281,7 +7659,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         MalariaPreventionRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | malariaPrevention = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | malariaPrevention =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6289,7 +7676,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         SendToHCRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | sendToHC = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | sendToHC =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6297,18 +7693,28 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         SessionRevision uuid data ->
             let
                 -- First, remove the session from all clinics (it might
-                -- previously have been in any). Then, add it in the right
-                -- place.
+                -- previously have been in). Then, add it in the right place.
                 sessionsByClinic =
-                    model.sessionsByClinic
-                        |> Dict.map (always (RemoteData.map (Dict.remove uuid)))
-                        |> Dict.update data.clinicId (Maybe.map (RemoteData.map (Dict.insert uuid data)))
+                    let
+                        cleaned =
+                            Dict.map (always (RemoteData.map (Dict.remove uuid))) model.sessionsByClinic
+                    in
+                    if data.deleted then
+                        cleaned
+
+                    else
+                        Dict.update data.clinicId (Maybe.map (RemoteData.map (Dict.insert uuid data))) cleaned
             in
             ( { model
                 | sessionsByClinic = sessionsByClinic
                 , expectedParticipants = Dict.remove uuid model.expectedParticipants
                 , expectedSessions = Dict.empty
-                , sessions = Dict.insert uuid (Success data) model.sessions
+                , sessions =
+                    if data.deleted then
+                        Dict.remove uuid model.sessions
+
+                    else
+                        Dict.insert uuid (Success data) model.sessions
               }
             , True
             )
@@ -6316,7 +7722,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         SocialHistoryRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | socialHistory = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | socialHistory =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6326,7 +7741,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 modelWithMappedStockManagement =
                     mapStockManagementMeasurements
                         healthCenterId
-                        (\measurements -> { measurements | stockUpdate = Dict.insert uuid data measurements.stockUpdate })
+                        (\measurements -> { measurements | stockUpdate = measurementActionConsideringDeletedField uuid data measurements.stockUpdate })
                         modelWithStockUpdateRecalc
 
                 -- This revision may cause stock management data to become obsolete,
@@ -6350,7 +7765,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         SymptomsGeneralRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | symptomsGeneral = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | symptomsGeneral =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6358,7 +7782,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         SymptomsGIRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | symptomsGI = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | symptomsGI =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6366,7 +7799,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         SymptomsRespiratoryRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | symptomsRespiratory = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | symptomsRespiratory =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6374,7 +7816,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         TravelHistoryRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | travelHistory = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | travelHistory =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6382,7 +7833,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         TreatmentOngoingRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | treatmentOngoing = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | treatmentOngoing =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6390,7 +7850,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         TreatmentReviewRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | treatmentReview = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | treatmentReview =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6398,7 +7867,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         TuberculosisDiagnosticsRevision uuid data ->
             ( mapTuberculosisMeasurements
                 data.encounterId
-                (\measurements -> { measurements | diagnostics = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | diagnostics =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6406,7 +7884,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         TuberculosisDOTRevision uuid data ->
             ( mapTuberculosisMeasurements
                 data.encounterId
-                (\measurements -> { measurements | dot = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | dot =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6414,7 +7901,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         TuberculosisEncounterRevision uuid data ->
             let
                 tuberculosisEncounters =
-                    Dict.update uuid (Maybe.map (always (Success data))) model.tuberculosisEncounters
+                    encounterActionConsideringDeletedField uuid data model.tuberculosisEncounters
 
                 tuberculosisEncountersByParticipant =
                     Dict.remove data.participant model.tuberculosisEncountersByParticipant
@@ -6431,12 +7918,21 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 modelWithMappedFollowUp =
                     mapFollowUpMeasurements
                         healthCenterId
-                        (\measurements -> { measurements | tuberculosis = Dict.insert uuid data measurements.tuberculosis })
+                        (\measurements -> { measurements | tuberculosis = measurementActionConsideringDeletedField uuid data measurements.tuberculosis })
                         model
             in
             ( mapTuberculosisMeasurements
                 data.encounterId
-                (\measurements -> { measurements | followUp = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | followUp =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 modelWithMappedFollowUp
             , recalc
             )
@@ -6444,7 +7940,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         TuberculosisHealthEducationRevision uuid data ->
             ( mapTuberculosisMeasurements
                 data.encounterId
-                (\measurements -> { measurements | healthEducation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | healthEducation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6452,7 +7957,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         TuberculosisMedicationRevision uuid data ->
             ( mapTuberculosisMeasurements
                 data.encounterId
-                (\measurements -> { measurements | medication = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | medication =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6460,7 +7974,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         TuberculosisReferralRevision uuid data ->
             ( mapTuberculosisMeasurements
                 data.encounterId
-                (\measurements -> { measurements | referral = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | referral =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6468,7 +7991,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         TuberculosisSymptomReviewRevision uuid data ->
             ( mapTuberculosisMeasurements
                 data.encounterId
-                (\measurements -> { measurements | symptomReview = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | symptomReview =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6476,7 +8008,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         TuberculosisTreatmentReviewRevision uuid data ->
             ( mapTuberculosisMeasurements
                 data.encounterId
-                (\measurements -> { measurements | treatmentReview = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | treatmentReview =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6493,7 +8034,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         VitalsRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | vitals = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | vitals =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6501,7 +8051,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WeightRevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | weights = Dict.insert uuid data measurements.weights })
+                (\measurements -> { measurements | weights = measurementActionConsideringDeletedField uuid data measurements.weights })
                 model
             , True
             )
@@ -6509,7 +8059,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildAlbendazoleRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | albendazole = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | albendazole =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6517,7 +8076,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildBCGImmunisationRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | bcgImmunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | bcgImmunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6525,7 +8093,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildCaringRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | caring = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | caring =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6533,7 +8110,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildContributingFactorsRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | contributingFactors = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | contributingFactors =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6541,7 +8127,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildDTPImmunisationRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | dtpImmunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | dtpImmunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6549,7 +8144,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildDTPStandaloneImmunisationRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | dtpStandaloneImmunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | dtpStandaloneImmunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6557,7 +8161,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildECDRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | ecd = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | ecd =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6565,7 +8178,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildEncounterRevision uuid data ->
             let
                 wellChildEncounters =
-                    Dict.update uuid (Maybe.map (always (Success data))) model.wellChildEncounters
+                    encounterActionConsideringDeletedField uuid data model.wellChildEncounters
 
                 wellChildEncountersByParticipant =
                     Dict.remove data.participant model.wellChildEncountersByParticipant
@@ -6580,7 +8193,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildFeedingRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | feeding = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | feeding =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6590,12 +8212,21 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 modelWithMappedFollowUp =
                     mapFollowUpMeasurements
                         healthCenterId
-                        (\measurements -> { measurements | wellChild = Dict.insert uuid data measurements.wellChild })
+                        (\measurements -> { measurements | wellChild = measurementActionConsideringDeletedField uuid data measurements.wellChild })
                         model
             in
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | followUp = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | followUp =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 modelWithMappedFollowUp
             , recalc
             )
@@ -6603,7 +8234,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildFoodSecurityRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | foodSecurity = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | foodSecurity =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6611,7 +8251,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildHeadCircumferenceRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | headCircumference = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | headCircumference =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6619,7 +8268,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildHealthEducationRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | healthEducation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | healthEducation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6627,7 +8285,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildHeightRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | height = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | height =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6635,7 +8302,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildHygieneRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | hygiene = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | hygiene =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6643,7 +8319,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildHPVImmunisationRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | hpvImmunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | hpvImmunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6651,7 +8336,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildIPVImmunisationRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | ipvImmunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | ipvImmunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6659,7 +8353,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildMebendezoleRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | mebendezole = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | mebendezole =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6667,7 +8370,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildMRImmunisationRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | mrImmunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | mrImmunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6675,7 +8387,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildMuacRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | muac = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | muac =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6683,7 +8404,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildNCDARevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | ncda = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | ncda =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6693,12 +8423,23 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 modelWithMappedFollowUp =
                     mapFollowUpMeasurements
                         healthCenterId
-                        (\measurements -> { measurements | nextVisit = Dict.insert uuid data measurements.nextVisit })
+                        (\measurements ->
+                            { measurements | nextVisit = measurementActionConsideringDeletedField uuid data measurements.nextVisit }
+                        )
                         model
             in
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | nextVisit = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | nextVisit =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 modelWithMappedFollowUp
             , recalc
             )
@@ -6706,7 +8447,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildNutritionRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | nutrition = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | nutrition =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6714,7 +8464,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildOPVImmunisationRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | opvImmunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | opvImmunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6722,7 +8481,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildPCV13ImmunisationRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | pcv13Immunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | pcv13Immunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6730,7 +8498,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildPhotoRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | photo = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | photo =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6738,7 +8515,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildPregnancySummaryRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | pregnancySummary = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | pregnancySummary =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6746,7 +8532,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildRotarixImmunisationRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | rotarixImmunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | rotarixImmunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6754,7 +8549,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildSendToHCRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | sendToHC = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | sendToHC =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6762,7 +8566,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildSymptomsReviewRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | symptomsReview = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | symptomsReview =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6770,7 +8583,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildVitalsRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | vitals = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | vitals =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6778,7 +8600,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildVitaminARevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | vitaminA = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | vitaminA =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6786,7 +8617,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildWeightRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | weight = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | weight =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6796,6 +8636,7 @@ generatePrenatalAssessmentMsgs :
     NominalDate
     -> Language
     -> Site
+    -> EverySet SiteFeature
     -> Bool
     -> Bool
     -> Page
@@ -6804,7 +8645,7 @@ generatePrenatalAssessmentMsgs :
     -> ModelIndexedDb
     -> PrenatalEncounterId
     -> List App.Model.Msg
-generatePrenatalAssessmentMsgs currentDate language site isChw isLabTech activePage updateAssesment originData after id =
+generatePrenatalAssessmentMsgs currentDate language site features isChw isLabTech activePage updateAssesment originData after id =
     Maybe.map
         (\assembledAfter ->
             let
@@ -6812,6 +8653,7 @@ generatePrenatalAssessmentMsgs currentDate language site isChw isLabTech activeP
                     Pages.Prenatal.Activity.Utils.mandatoryActivitiesForAssessmentCompleted
                         currentDate
                         site
+                        features
                         assembledAfter
 
                 initialEncounterNextStepsMsg =
@@ -7136,10 +8978,9 @@ generatePrenatalLabsResultsAddedMsgs :
     -> Bool
     -> ModelIndexedDb
     -> Backend.Measurement.Model.LaboratoryTest
-    -> Maybe (EverySet TestPrerequisite)
     -> PrenatalEncounterId
     -> List App.Model.Msg
-generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test testPrerequisites id =
+generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test id =
     Pages.Prenatal.Encounter.Utils.generateAssembledData id after
         |> RemoteData.toMaybe
         |> Maybe.andThen
@@ -7217,10 +9058,11 @@ generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test testPrereq
 generatePrenatalInitialPhaseCompletedMsgs :
     NominalDate
     -> Site
+    -> EverySet SiteFeature
     -> ModelIndexedDb
     -> PrenatalEncounterId
     -> List App.Model.Msg
-generatePrenatalInitialPhaseCompletedMsgs currentDate site after id =
+generatePrenatalInitialPhaseCompletedMsgs currentDate site features after id =
     Pages.Prenatal.Encounter.Utils.generateAssembledData id after
         |> RemoteData.toMaybe
         |> Maybe.map
@@ -7242,9 +9084,9 @@ generatePrenatalInitialPhaseCompletedMsgs currentDate site after id =
                         { assembled_ | encounter = encounterWithDiagnoses }
 
                     ( _, pendingActivities ) =
-                        Pages.Prenatal.Encounter.Utils.getAllActivities assembled
-                            |> List.filter (Pages.Prenatal.Activity.Utils.expectActivity currentDate site assembled)
-                            |> List.partition (Pages.Prenatal.Activity.Utils.activityCompleted currentDate site assembled)
+                        Pages.Prenatal.Encounter.Utils.getAllActivities features assembled
+                            |> List.filter (Pages.Prenatal.Activity.Utils.expectActivity currentDate site features assembled)
+                            |> List.partition (Pages.Prenatal.Activity.Utils.activityCompleted currentDate site features assembled)
                 in
                 if List.isEmpty pendingActivities then
                     [ App.Model.SetActivePage <|
@@ -7361,13 +9203,10 @@ savePrenatalLabsResultsMsg encounterId personId labsResultsId labsResultsValue =
 
 
 generateNCDAssessmentMsgs :
-    NominalDate
-    -> Language
-    -> Page
-    -> ModelIndexedDb
+    ModelIndexedDb
     -> NCDEncounterId
     -> List App.Model.Msg
-generateNCDAssessmentMsgs currentDate language activePage after id =
+generateNCDAssessmentMsgs after id =
     Maybe.map
         (\assembledAfter ->
             let
@@ -7377,7 +9216,7 @@ generateNCDAssessmentMsgs currentDate language activePage after id =
                     assembledAfter.encounter.diagnoses
 
                 diagnosesAfter =
-                    Pages.NCD.Utils.generateNCDDiagnoses currentDate assembledAfter
+                    Pages.NCD.Utils.generateNCDDiagnoses assembledAfter
             in
             if everySetsEqual diagnosesBefore diagnosesAfter then
                 []
@@ -7499,7 +9338,6 @@ generateNCDLabsResultsAddedMsgs currentDate after test id =
                                                 if
                                                     (EverySet.size updatedCompletedTests == EverySet.size updatedPerformedTests)
                                                         && Pages.NCD.RecurrentActivity.Utils.activityCompleted
-                                                            currentDate
                                                             assembled
                                                             Backend.NCDActivity.Model.RecurrentNextSteps
                                                 then
@@ -7537,6 +9375,7 @@ saveNCDLabsResultsMsg encounterId personId labsResultsId labsResultsValue =
 
 generateNutritionAssessmentIndividualMsgs :
     NominalDate
+    -> Site
     -> ZScore.Model.Model
     -> EverySet SiteFeature
     -> Bool
@@ -7544,16 +9383,16 @@ generateNutritionAssessmentIndividualMsgs :
     -> ModelIndexedDb
     -> NutritionEncounterId
     -> List App.Model.Msg
-generateNutritionAssessmentIndividualMsgs currentDate zscores features isChw before after id =
+generateNutritionAssessmentIndividualMsgs currentDate site zscores features isChw before after id =
     Maybe.map2
         (\assembledBefore assembledAfter ->
             let
                 mandatoryActivitiesCompleted =
                     Pages.Nutrition.Activity.Utils.mandatoryActivitiesCompleted
                         currentDate
+                        site
                         zscores
                         features
-                        assembledAfter.person
                         isChw
                         assembledAfter
                         after
@@ -7820,18 +9659,18 @@ generateNutritionAssessmentWellChildlMsgs :
     NominalDate
     -> ZScore.Model.Model
     -> Site
-    -> Bool
     -> ModelIndexedDb
     -> ModelIndexedDb
     -> WellChildEncounterId
     -> List App.Model.Msg
-generateNutritionAssessmentWellChildlMsgs currentDate zscores site isChw before after id =
+generateNutritionAssessmentWellChildlMsgs currentDate zscores site before after id =
     Maybe.map2
         (\assembledBefore assembledAfter ->
             let
                 mandatoryActivitiesCompleted =
                     Pages.WellChild.Activity.Utils.mandatoryNutritionAssessmentTasksCompleted
                         currentDate
+                        site
                         assembledAfter
             in
             if not mandatoryActivitiesCompleted then
@@ -7906,11 +9745,11 @@ generateSuspectedDiagnosisMsgs :
     -> AcuteIllnessEncounterId
     -> Person
     -> List App.Model.Msg
-generateSuspectedDiagnosisMsgs currentDate features isChw before after id person =
+generateSuspectedDiagnosisMsgs currentDate features isChw before after id _ =
     Maybe.map2
         (\assembledBefore assembledAfter ->
             if assembledAfter.initialEncounter then
-                generateSuspectedDiagnosisMsgsFirstEncounter currentDate isChw id person assembledBefore assembledAfter
+                generateSuspectedDiagnosisMsgsFirstEncounter currentDate isChw id assembledBefore assembledAfter
 
             else
                 generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate features isChw assembledAfter
@@ -7924,11 +9763,10 @@ generateSuspectedDiagnosisMsgsFirstEncounter :
     NominalDate
     -> Bool
     -> AcuteIllnessEncounterId
-    -> Person
     -> Pages.AcuteIllness.Encounter.Model.AssembledData
     -> Pages.AcuteIllness.Encounter.Model.AssembledData
     -> List App.Model.Msg
-generateSuspectedDiagnosisMsgsFirstEncounter currentDate isChw id person assembledBefore assembledAfter =
+generateSuspectedDiagnosisMsgsFirstEncounter currentDate isChw id assembledBefore assembledAfter =
     let
         diagnosisBeforeChange =
             Maybe.map Tuple.second assembledBefore.diagnosis
@@ -7941,7 +9779,7 @@ generateSuspectedDiagnosisMsgsFirstEncounter currentDate isChw id person assembl
             Just newDiagnosis ->
                 updateAcuteIllnessDiagnosisMsg id newDiagnosis
                     :: (resolveNextStepFirstEncounter currentDate isChw assembledAfter
-                            |> generateMsgsForNewDiagnosis currentDate isChw id newDiagnosis
+                            |> generateMsgsForNewDiagnosis isChw id newDiagnosis
                        )
 
             Nothing ->
@@ -7952,27 +9790,25 @@ generateSuspectedDiagnosisMsgsFirstEncounter currentDate isChw id person assembl
 
 
 generateMsgsForNewDiagnosis :
-    NominalDate
-    -> Bool
+    Bool
     -> AcuteIllnessEncounterId
     -> AcuteIllnessDiagnosis
     -> Maybe Pages.AcuteIllness.Activity.Types.NextStepsTask
     -> List App.Model.Msg
-generateMsgsForNewDiagnosis currentDate isChw id diagnosis nextStep =
+generateMsgsForNewDiagnosis isChw id diagnosis nextStep =
     if isChw then
-        generateCustomMsgsForNewDiagnosis currentDate id diagnosis nextStep
+        generateCustomMsgsForNewDiagnosis id diagnosis nextStep
 
     else
-        generateMsgsForNewDiagnosisForNurse currentDate id diagnosis nextStep
+        generateMsgsForNewDiagnosisForNurse id diagnosis nextStep
 
 
 generateMsgsForNewDiagnosisForNurse :
-    NominalDate
-    -> AcuteIllnessEncounterId
+    AcuteIllnessEncounterId
     -> AcuteIllnessDiagnosis
     -> Maybe Pages.AcuteIllness.Activity.Types.NextStepsTask
     -> List App.Model.Msg
-generateMsgsForNewDiagnosisForNurse currentDate id diagnosis nextStep =
+generateMsgsForNewDiagnosisForNurse id diagnosis nextStep =
     case diagnosis of
         DiagnosisCovid19Suspect ->
             [ -- Navigate to Acute Ilness Laboratory activty page.
@@ -7989,16 +9825,15 @@ generateMsgsForNewDiagnosisForNurse currentDate id diagnosis nextStep =
             ]
 
         _ ->
-            generateCustomMsgsForNewDiagnosis currentDate id diagnosis nextStep
+            generateCustomMsgsForNewDiagnosis id diagnosis nextStep
 
 
 generateCustomMsgsForNewDiagnosis :
-    NominalDate
-    -> AcuteIllnessEncounterId
+    AcuteIllnessEncounterId
     -> AcuteIllnessDiagnosis
     -> Maybe Pages.AcuteIllness.Activity.Types.NextStepsTask
     -> List App.Model.Msg
-generateCustomMsgsForNewDiagnosis currentDate id diagnosis nextStep =
+generateCustomMsgsForNewDiagnosis id diagnosis nextStep =
     case nextStep of
         Just step ->
             [ -- Navigate to Acute Ilness NextSteps activty page.
@@ -8113,8 +9948,8 @@ generateAcuteIllnessAssesmentCompletedMsgs currentDate features isChw after id =
         |> Maybe.withDefault []
 
 
-generateWellChildDangerSignsAlertMsgs : NominalDate -> Maybe WellChildEncounterId -> List App.Model.Msg
-generateWellChildDangerSignsAlertMsgs currentDate maybeId =
+generateWellChildDangerSignsAlertMsgs : Maybe WellChildEncounterId -> List App.Model.Msg
+generateWellChildDangerSignsAlertMsgs maybeId =
     Maybe.map
         (\id ->
             [ -- Navigate to Well Child encounter page, because that's where we show alert popup.
@@ -8139,7 +9974,7 @@ generateChildScoreboardAssesmentCompletedMsgs currentDate site after id =
         |> Maybe.map
             (\assembled ->
                 if
-                    List.all (Pages.ChildScoreboard.Activity.Utils.activityCompleted currentDate site assembled after)
+                    List.all (Pages.ChildScoreboard.Activity.Utils.activityCompleted currentDate site assembled)
                         Backend.ChildScoreboardActivity.Utils.allActivities
                 then
                     [ App.Model.SetActivePage (UserPage (ChildScoreboardProgressReportPage id)) ]
@@ -8476,8 +10311,8 @@ calculateOfflineSessionMeasurements sessionId offlineSession db =
 generate a variation of assembled data needed to display Dashboar Main page.
 @see: ComputedDashboard definition.
 -}
-generateInitialComputedDashboard : NominalDate -> HealthCenterId -> Maybe VillageId -> DashboardStatsRaw -> ModelIndexedDb -> ComputedDashboard
-generateInitialComputedDashboard currentDate healthCenterId villageId statsRaw db =
+generateInitialComputedDashboard : NominalDate -> Maybe VillageId -> DashboardStatsRaw -> ComputedDashboard
+generateInitialComputedDashboard currentDate villageId statsRaw =
     let
         ( programTypeFilter, selectedVillage ) =
             if isJust villageId then
@@ -8495,7 +10330,7 @@ generateInitialComputedDashboard currentDate healthCenterId villageId statsRaw d
     , assembledPermutations =
         Dict.singleton
             ( programTypeFilter, selectedVillage )
-            (Pages.Dashboard.Utils.generateAssembledData currentDate healthCenterId statsRaw db programTypeFilter selectedVillage)
+            (Pages.Dashboard.Utils.generateAssembledData currentDate statsRaw programTypeFilter selectedVillage)
     }
 
 

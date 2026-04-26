@@ -1,10 +1,10 @@
 module Backend.NCDEncounter.Encoder exposing (encodeNCDDiagnosis, encodeNCDEncounter)
 
-import Backend.NCDEncounter.Model exposing (..)
-import Backend.NCDEncounter.Types exposing (..)
+import Backend.NCDEncounter.Model exposing (NCDEncounter)
+import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import EverySet
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
-import Json.Encode exposing (..)
+import Json.Encode exposing (Value, bool, list, object, string)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid)
 import Utils.Json exposing (encodeIfSet)
@@ -28,7 +28,7 @@ encodeNCDEncounter encounter =
       )
     , ( "individual_participant", encodeEntityUuid encounter.participant )
     , ( "ncd_diagnoses", list encodeNCDDiagnosis (diagnosesWithDefault encounter.diagnoses) )
-    , ( "deleted", bool False )
+    , ( "deleted", bool encounter.deleted )
     , ( "type", string "ncd_encounter" )
     ]
         ++ encodeIfSet "shard" encounter.shard encodeEntityUuid

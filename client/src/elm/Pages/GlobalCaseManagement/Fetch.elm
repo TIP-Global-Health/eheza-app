@@ -9,7 +9,7 @@ import Backend.Utils exposing (resolveIndividualParticipantsForPerson)
 import Backend.Village.Utils exposing (resolveVillageResidents)
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
-import Pages.GlobalCaseManagement.Utils exposing (..)
+import Pages.GlobalCaseManagement.Utils exposing (filterFollowUpsOfResidents, generateAcuteIllnessEncounters, generateAcuteIllnessParticipants, generateHIVParticipants, generatePrenatalEncounters, generatePrenatalParticipants, generateTuberculosisEncounters, generateTuberculosisParticipants, resolveUniquePatientsFromFollowUps)
 import Pages.Utils
 import RemoteData
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -28,7 +28,7 @@ fetch currentDate healthCenterId mVillageId db =
                                 fetchForCHWAtVillage currentDate villageId db followUps
                             )
                             mVillageId
-                            |> Maybe.withDefault (fetchForNurseAtHealthCenter currentDate db followUps)
+                            |> Maybe.withDefault (fetchForNurseAtHealthCenter followUps)
                     )
                 |> Maybe.withDefault []
     in
@@ -215,8 +215,8 @@ fetchForCHWAtVillage currentDate villageId db allFollowUps =
     ]
 
 
-fetchForNurseAtHealthCenter : NominalDate -> ModelIndexedDb -> FollowUpMeasurements -> List MsgIndexedDb
-fetchForNurseAtHealthCenter currentDate db followUps =
+fetchForNurseAtHealthCenter : FollowUpMeasurements -> List MsgIndexedDb
+fetchForNurseAtHealthCenter followUps =
     let
         --
         --  Trace Contacts calculations.

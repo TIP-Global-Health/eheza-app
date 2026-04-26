@@ -1,4 +1,4 @@
-module Pages.Page exposing (..)
+module Pages.Page exposing (AcuteIllnessSubPage(..), ChildWellnessSubPage(..), DashboardPage(..), NCDSubPage(..), NutritionSubPage(..), Page(..), SessionPage(..), UserPage(..))
 
 {-| A module that defines a type which controls what the user wishes
 to be shown at the moment.
@@ -45,6 +45,7 @@ import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity)
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessProgressReportInitiator)
 import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity)
 import Backend.Entities exposing (..)
+import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterType, FamilyParticipantInitiator)
 import Backend.HIVActivity.Model exposing (HIVActivity)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType, IndividualParticipantInitiator)
@@ -160,6 +161,7 @@ type UserPage
     | PersonsPage (Maybe PersonId) Initiator
     | PrenatalParticipantPage IndividualParticipantInitiator PersonId
     | IndividualEncounterParticipantsPage IndividualEncounterType
+    | FamilyEncounterParticipantsPage FamilyEncounterType
       -- Create or edit a relationship between adult and child.
       -- Initiator will help to determine which actions are allowed.
     | RelationshipPage PersonId PersonId Initiator
@@ -170,6 +172,7 @@ type UserPage
     | PrenatalLabsHistoryPage PrenatalEncounterId PrenatalEncounterId LaboratoryTest
     | IndividualEncounterTypesPage -- this is where we select the type of individual encounter we're interested in.
     | GroupEncounterTypesPage -- this is where we select the type of group encounter we're interested in.
+    | FamilyEncounterTypesPage -- this is where we select the type of family encounter we're interested in.
     | PregnancyOutcomePage RecordPreganancyInitiator IndividualEncounterParticipantId -- this is where pregnancy outcome is recorded.
     | NutritionParticipantPage IndividualParticipantInitiator PersonId
     | NutritionEncounterPage NutritionEncounterId -- nutrition activities index.
@@ -207,6 +210,9 @@ type UserPage
     | TraceContactPage AcuteIllnessTraceContactId
     | PatientRecordPage PatientRecordInitiator PersonId
     | StockManagementPage
+    | FamilyNutritionParticipantPage FamilyParticipantInitiator PersonId
+    | FamilyNutritionEncounterPage FamilyNutritionEncounterId
+    | FamilyNutritionProgressReportPage FamilyNutritionEncounterId
 
 
 type DashboardPage

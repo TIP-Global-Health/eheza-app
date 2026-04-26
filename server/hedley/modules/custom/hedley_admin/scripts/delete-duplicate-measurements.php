@@ -18,7 +18,7 @@
  */
 
 if (!drupal_is_cli()) {
-  // Prevent execution from browser.
+  // Prevent execution from the browser.
   return;
 }
 
@@ -72,14 +72,29 @@ foreach ($encounter_types as $encounter_type) {
       $result = $query->execute()->fetchAllAssoc('entity_id');
 
       $duplicates = array_keys($result);
-      // There are several nodes that are duplicates of each other. We want to
-      // delete all but one. So, we use array_shift() to pull first node from
-      // the array, and all others remain at $duplicates array,
-      // which is deleted.
-      array_shift($duplicates);
-      $total_for_deletion = count($duplicates);
+      $duplicate_nodes = node_load_multiple($duplicates);
+      $undeleted_found = FALSE;
+      $total_for_deletion = 0;
+      foreach ($duplicate_nodes as $duplicate_node) {
+        $wrapper = entity_metadata_wrapper('node', $duplicate_node);
+        // Skip nodes which are marked as deleted.
+        if ($wrapper->field_deleted->value() == TRUE) {
+          continue;
+        }
+
+        // The first undeleted node is skipped.
+        // Note that this is the 'most recent' node due to ordering in a query.
+        if (!$undeleted_found) {
+          $undeleted_found = TRUE;
+          continue;
+        }
+
+        // Remaining undeleted nodes are marked as deleted.
+        $wrapper->field_deleted->set(TRUE);
+        $wrapper->save();
+        $total_for_deletion++;
+      }
       $deleted_for_encounter += $total_for_deletion;
-      node_delete_multiple($duplicates);
     }
 
     if (round(memory_get_usage() / 1048576) >= $memory_limit) {

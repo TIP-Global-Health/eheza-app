@@ -1,6 +1,6 @@
 module Components.PatientsSearchForm.Update exposing (update)
 
-import Components.PatientsSearchForm.Model exposing (..)
+import Components.PatientsSearchForm.Model exposing (Model, Msg(..), PatientsSearchFormMode(..))
 import Debouncer.Basic as Debouncer exposing (provideInput)
 import Maybe.Extra exposing (isJust)
 import Update.Extra exposing (sequence)

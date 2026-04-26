@@ -26,12 +26,11 @@ $exclude_set = drush_get_option('exclude_set', FALSE);
 $memory_limit = drush_get_option('memory_limit', 800);
 
 $type = 'person';
-$base_query = new EntityFieldQuery();
+$base_query = hedley_general_create_entity_field_query_excluding_deleted();
 $base_query
   ->entityCondition('entity_type', 'node')
   ->entityCondition('bundle', $type)
-  ->propertyCondition('status', NODE_PUBLISHED)
-  ->addTag('exclude_deleted');
+  ->propertyCondition('status', NODE_PUBLISHED);
 
 if ($exclude_set) {
   $base_query->addTag('exclude_set_reports_data');
@@ -79,13 +78,13 @@ while (TRUE) {
     }
   }
 
+  $nid = end($ids);
+
   $memory = round(memory_get_usage() / 1048576);
-  drush_print("Calculated so far: $total, Memory: $memory");
+  drush_print("Calculated so far: $total, Last nid: $nid, Memory: $memory");
 
   // Free up memory.
   drupal_static_reset();
-
-  $nid = end($ids);
 }
 
 drush_print("Done! Reports data calculated for $total children.");

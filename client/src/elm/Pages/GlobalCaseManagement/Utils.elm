@@ -1,7 +1,7 @@
-module Pages.GlobalCaseManagement.Utils exposing (..)
+module Pages.GlobalCaseManagement.Utils exposing (calculateDueDate, chwFilters, fillPersonName, filterFollowUpsOfResidents, followUpDueOptionByDate, generateAcuteIllnessEncounters, generateAcuteIllnessFollowUps, generateAcuteIllnessParticipants, generateHIVFollowUps, generateHIVParticipants, generateImmunizationFollowUps, generateNutritionFollowUps, generatePrenatalEncounters, generatePrenatalFollowUps, generatePrenatalParticipants, generateTuberculosisEncounters, generateTuberculosisFollowUps, generateTuberculosisParticipants, labTechFilters, labsResultsTestData, nurseFilters, resolveUniquePatientsFromFollowUps)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Entities exposing (..)
+import Backend.Entities exposing (AcuteIllnessEncounterId, HIVEncounterId, IndividualEncounterParticipantId, PersonId, PrenatalEncounterId, TuberculosisEncounterId)
 import Backend.Measurement.Model
     exposing
         ( FollowUpMeasurements
@@ -23,7 +23,7 @@ import Backend.Utils
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays)
-import Pages.GlobalCaseManagement.Model exposing (..)
+import Pages.GlobalCaseManagement.Model exposing (AcuteIllnessFollowUpItem, CaseManagementFilter(..), FollowUpDueOption(..), FollowUpPatients, HIVFollowUpItem, ImmunizationFollowUpItem, NutritionFollowUpItem, PrenatalFollowUpItem, TuberculosisFollowUpItem)
 import Pages.Utils
 import RemoteData exposing (WebData)
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -52,6 +52,7 @@ labTechFilters features =
     viewFilterIfFeatureEnabled features antenatalEnabled FilterPrenatalLabs
 
 
+viewFilterIfFeatureEnabled : EverySet SiteFeature -> (EverySet SiteFeature -> Bool) -> CaseManagementFilter -> List CaseManagementFilter
 viewFilterIfFeatureEnabled features enabledFunc filter =
     if enabledFunc features then
         [ filter ]

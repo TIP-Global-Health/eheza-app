@@ -1,8 +1,8 @@
-module Backend.ResilienceMessage.Utils exposing (..)
+module Backend.ResilienceMessage.Utils exposing (emptyMessagesDict, generateEmptyMessagesByProgramStartDate, generateResilienceMessageId, resilienceCategoryFromString, resilienceCategoryToString, resilienceMessageOrderFromString, resilienceMessageOrderToString)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (ResilienceMessageId)
-import Backend.ResilienceMessage.Model exposing (..)
+import Backend.ResilienceMessage.Model exposing (ResilienceCategory(..), ResilienceMessage, ResilienceMessageOrder(..))
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
 
@@ -221,7 +221,7 @@ generateEmptyMessagesByProgramStartDate currentDate programStartDate =
 emptyMessagesDict : Dict ResilienceMessageId ResilienceMessage
 emptyMessagesDict =
     Dict.toList numberOfMessagesByCategory
-        |> List.map
+        |> List.concatMap
             (\( category, numberOfMessages ) ->
                 List.range 1 numberOfMessages
                     |> List.filterMap
@@ -245,7 +245,6 @@ emptyMessagesDict =
                                 )
                         )
             )
-        |> List.concat
         |> Dict.fromList
 
 

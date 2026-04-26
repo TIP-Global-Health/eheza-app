@@ -1,9 +1,9 @@
 module Backend.Session.Encoder exposing (encodeSession)
 
 import Backend.Clinic.Encoder exposing (encodeClinicType)
-import Backend.Session.Model exposing (..)
+import Backend.Session.Model exposing (Session)
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
-import Json.Encode exposing (..)
+import Json.Encode exposing (Value, bool, object, string)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid)
 
@@ -20,6 +20,6 @@ encodeSession session =
       )
     , ( "clinic", encodeEntityUuid session.clinicId )
     , ( "clinic_type", encodeClinicType session.clinicType )
-    , ( "deleted", bool False )
+    , ( "deleted", bool session.deleted )
     , ( "type", string "session" )
     ]

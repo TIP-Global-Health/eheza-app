@@ -1,6 +1,5 @@
-module Backend.ResilienceMessage.Model exposing (..)
+module Backend.ResilienceMessage.Model exposing (ReasonForNotConsenting(..), ResilienceCategory(..), ResilienceMessage, ResilienceMessageOrder(..))
 
-import RemoteData exposing (RemoteData(..), WebData)
 import Time
 
 
@@ -57,12 +56,3 @@ type ResilienceMessageOrder
     | ResilienceMessage21
     | ResilienceMessage22
     | ResilienceMessage23
-
-
-type alias Model =
-    { updateMessage : WebData () }
-
-
-emptyModel : Model
-emptyModel =
-    { updateMessage = NotAsked }
