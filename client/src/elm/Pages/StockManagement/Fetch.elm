@@ -1,13 +1,11 @@
 module Pages.StockManagement.Fetch exposing (fetch)
 
-import Backend.Entities exposing (..)
-import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
-import Gizra.NominalDate exposing (NominalDate)
+import Backend.Model exposing (MsgIndexedDb(..))
 import Pages.StockManagement.Model exposing (StockManagementContext(..))
 
 
-fetch : NominalDate -> StockManagementContext -> ModelIndexedDb -> List MsgIndexedDb
-fetch currentDate context db =
+fetch : StockManagementContext -> List MsgIndexedDb
+fetch context =
     case context of
         ContextHealthCenter healthCenterId ->
             [ FetchStockManagementMeasurements healthCenterId

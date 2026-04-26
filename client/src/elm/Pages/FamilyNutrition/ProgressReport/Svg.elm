@@ -1,7 +1,7 @@
 module Pages.FamilyNutrition.ProgressReport.Svg exposing (viewMuacChart)
 
 import Html exposing (Html)
-import Pages.Report.Svg exposing (..)
+import Pages.Report.Svg exposing (dimensionsPx, drawPoints, drawPolygon, drawPolyline, heightPx, referenceHorizontalLines, referenceVerticalLines, referenceVerticalNumbers, widthPx, withinRange)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import SyncManager.Model exposing (Site(..))

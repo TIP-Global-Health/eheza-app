@@ -1,13 +1,12 @@
 module Backend.FamilyNutritionEncounter.Fetch exposing (fetch)
 
 import AssocList as Dict
-import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterType(..))
 import Backend.FamilyNutritionEncounter.Utils exposing (getFamilyNutritionEncountersForParticipant)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
-import Backend.Utils exposing (resolveFamilyParticipantForPerson, resolveFamilyParticipantsForPerson)
+import Backend.Utils exposing (resolveFamilyParticipantForPerson)
 import EverySet
 import Maybe.Extra
 import RemoteData

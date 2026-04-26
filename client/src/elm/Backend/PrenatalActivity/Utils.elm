@@ -1,4 +1,4 @@
-module Backend.PrenatalActivity.Utils exposing (..)
+module Backend.PrenatalActivity.Utils exposing (activityFromString, activityToString, generateHighRiskAlertData, generateHighSeverityAlertData, getActivityIcon, getEncounterTrimesterData, getRecurrentActivityIcon, recurrentActivityFromString, recurrentActivityToString)
 
 {-| Various utilities that deal with "activities". An activity represents the
 need for a nurse to do something with respect to a person who is checked in.
@@ -15,7 +15,7 @@ import Backend.Measurement.Model
         ( PrenatalMeasurements
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
-import Backend.PrenatalActivity.Model exposing (..)
+import Backend.PrenatalActivity.Model exposing (HighRiskFactor(..), HighSeverityAlert(..), PregnancyTrimester(..), PrenatalActivity(..), PrenatalRecurrentActivity(..))
 import EverySet
 import Gizra.NominalDate exposing (NominalDate, diffDays)
 import Maybe.Extra exposing (isJust)

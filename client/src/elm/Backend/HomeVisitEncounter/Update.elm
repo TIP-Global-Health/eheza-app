@@ -2,9 +2,9 @@ module Backend.HomeVisitEncounter.Update exposing (update)
 
 import App.Model
 import App.Utils exposing (triggerRollbarOnFailure)
-import Backend.Endpoints exposing (..)
+import Backend.Endpoints exposing (homeVisitEncounterEndpoint, nutritionCaringEndpoint, nutritionFeedingEndpoint, nutritionFoodSecurityEndpoint, nutritionHygieneEndpoint)
 import Backend.Entities exposing (..)
-import Backend.HomeVisitEncounter.Model exposing (..)
+import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter, Model, Msg(..))
 import Backend.Utils exposing (saveMeasurementCmd, sw)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (unwrap)

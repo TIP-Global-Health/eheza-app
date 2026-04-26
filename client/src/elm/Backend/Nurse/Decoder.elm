@@ -1,7 +1,7 @@
 module Backend.Nurse.Decoder exposing (decodeNurse)
 
 import AssocList as Dict
-import Backend.Nurse.Model exposing (..)
+import Backend.Nurse.Model exposing (Nurse, ResilienceRole, Role(..))
 import Backend.Nurse.Utils exposing (resilienceRoleFromString)
 import Backend.Person.Decoder
     exposing
@@ -14,8 +14,8 @@ import Backend.ResilienceMessage.Decoder exposing (decodeResilienceMessages)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Gizra.TimePosix exposing (decodeSecondsAsPosix)
-import Json.Decode exposing (..)
-import Json.Decode.Pipeline exposing (..)
+import Json.Decode exposing (Decoder, andThen, bool, fail, list, map, nullable, oneOf, string, succeed)
+import Json.Decode.Pipeline exposing (optional, required)
 import Restful.Endpoint exposing (decodeEntityUuid)
 
 

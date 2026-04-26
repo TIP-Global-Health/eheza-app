@@ -4,13 +4,11 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.FamilyEncounterParticipant.Model exposing (FamilyParticipantInitiator(..))
 import Backend.FamilyNutritionActivity.Model exposing (FamilyNutritionActivity(..))
-import Backend.FamilyNutritionActivity.Utils exposing (allActivities, getActivityIcon)
+import Backend.FamilyNutritionActivity.Utils exposing (getActivityIcon)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (ahezaDistributionReasonToString, getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
-import EverySet exposing (EverySet)
+import Backend.Person.Utils exposing (isPersonAnAdult)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -18,57 +16,49 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Measurement.Utils exposing (ahezaFormWithDefault, ahezaMotherFormWithDefault, getInputConstraintsMuac, muacFormWithDefault, withinConstraints)
 import Measurement.View
-import Pages.FamilyNutrition.Encounter.Model exposing (..)
+import Pages.FamilyNutrition.Encounter.Model exposing (AssembledData, DialogType(..), FamilyMember(..), Model, Msg(..), Tab(..))
 import Pages.FamilyNutrition.Encounter.Utils exposing (activitiesForFamilyMember, activityCompleted, generateAssembledData)
 import Pages.Nutrition.Activity.View exposing (viewPhotoForm)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (isAboveAgeOf2Years, maybeToBoolTask, resolveTasksCompletedFromTotal, taskCompleted, viewConfirmationDialog, viewEndEncounterButtonCustomColor, viewLabel, viewMeasurementInput, viewSaveAction, viewSelectListInput, viewSkipNCDADialog, viewTasksCount)
-import SyncManager.Model exposing (Site, SiteFeature)
-import Translate exposing (Language, TranslationId, translate)
+import Pages.Utils exposing (isAboveAgeOf2Years, resolveTasksCompletedFromTotal, taskCompleted, viewConfirmationDialog, viewEndEncounterButtonCustomColor, viewLabel, viewMeasurementInput, viewSaveAction, viewSelectListInput, viewTasksCount)
+import SyncManager.Model exposing (Site)
+import Translate exposing (Language, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewModal)
 import Utils.NominalDate exposing (renderAgeMonthsDays, renderAgeYearsMonths, renderDate)
 import Utils.WebData exposing (viewWebData)
-import ZScore.Model
 
 
 view :
     Language
     -> NominalDate
     -> Site
-    -> ZScore.Model.Model
-    -> EverySet SiteFeature
     -> FamilyNutritionEncounterId
-    -> Bool
     -> ModelIndexedDb
     -> Model
     -> Html Msg
-view language currentDate site zscores features id isChw db model =
+view language currentDate site id db model =
     let
         data =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate site zscores features id isChw db model) identity data
+    viewWebData language (viewHeaderAndContent language currentDate site id model) identity data
 
 
 viewHeaderAndContent :
     Language
     -> NominalDate
     -> Site
-    -> ZScore.Model.Model
-    -> EverySet SiteFeature
     -> FamilyNutritionEncounterId
-    -> Bool
-    -> ModelIndexedDb
     -> Model
     -> AssembledData
     -> Html Msg
-viewHeaderAndContent language currentDate site zscores features id isChw db model data =
+viewHeaderAndContent language currentDate site id model data =
     let
         header =
-            viewHeader language isChw data
+            viewHeader language data
 
         content =
-            viewContent language currentDate site zscores features id isChw db model data
+            viewContent language currentDate site model data
 
         dialog =
             Maybe.map
@@ -90,8 +80,8 @@ viewHeaderAndContent language currentDate site zscores features id isChw db mode
         ]
 
 
-viewHeader : Language -> Bool -> AssembledData -> Html Msg
-viewHeader language isChw data =
+viewHeader : Language -> AssembledData -> Html Msg
+viewHeader language data =
     div
         [ class "ui basic segment head" ]
         [ h1
@@ -114,37 +104,27 @@ viewContent :
     Language
     -> NominalDate
     -> Site
-    -> ZScore.Model.Model
-    -> EverySet SiteFeature
-    -> FamilyNutritionEncounterId
-    -> Bool
-    -> ModelIndexedDb
     -> Model
     -> AssembledData
     -> Html Msg
-viewContent language currentDate site zscores features id isChw db model data =
+viewContent language currentDate site model data =
     case model.selectedFamilyMember of
         Just familyMember ->
-            viewContentForMember language currentDate site zscores features id isChw db model data familyMember
+            viewContentForMember language currentDate site model data familyMember
 
         Nothing ->
-            viewContentAllCompleted language id model data
+            viewContentAllCompleted language model data
 
 
 viewContentForMember :
     Language
     -> NominalDate
     -> Site
-    -> ZScore.Model.Model
-    -> EverySet SiteFeature
-    -> FamilyNutritionEncounterId
-    -> Bool
-    -> ModelIndexedDb
     -> Model
     -> AssembledData
     -> FamilyMember
     -> Html Msg
-viewContentForMember language currentDate site zscores features id isChw db model data familyMember =
+viewContentForMember language currentDate site model data familyMember =
     let
         displayPerson =
             case familyMember of
@@ -214,18 +194,17 @@ viewContentForMember language currentDate site zscores features id isChw db mode
                 ]
             ]
         ]
-        :: viewMainPageContent language currentDate site zscores features id isChw db data model familyMember
+        :: viewMainPageContent language currentDate site data model familyMember
     )
         |> div [ class "ui items" ]
 
 
 viewContentAllCompleted :
     Language
-    -> FamilyNutritionEncounterId
     -> Model
     -> AssembledData
     -> Html Msg
-viewContentAllCompleted language id model data =
+viewContentAllCompleted language model data =
     div [ class "ui items" ]
         [ div [ class "ui unstackable items participant-page mother" ]
             [ div [ class "item" ]
@@ -293,16 +272,11 @@ viewMainPageContent :
     Language
     -> NominalDate
     -> Site
-    -> ZScore.Model.Model
-    -> EverySet SiteFeature
-    -> FamilyNutritionEncounterId
-    -> Bool
-    -> ModelIndexedDb
     -> AssembledData
     -> Model
     -> FamilyMember
     -> List (Html Msg)
-viewMainPageContent language currentDate site zscores features id isChw db data model familyMember =
+viewMainPageContent language currentDate site data model familyMember =
     let
         applicableActivities =
             activitiesForFamilyMember currentDate familyMember data.children
@@ -350,17 +324,6 @@ viewMainPageContent language currentDate site zscores features id isChw db data 
 
                 Nothing ->
                     List.head displayedActivities
-
-        emptySectionMessage =
-            case model.selectedTab of
-                Completed ->
-                    translate language Translate.NoActivitiesCompleted
-
-                Pending ->
-                    translate language Translate.NoActivitiesPending
-
-                Reports ->
-                    ""
 
         viewActivityItem activity =
             let
@@ -413,6 +376,18 @@ viewMainPageContent language currentDate site zscores features id isChw db data 
             div [ class "ui task segment" ]
                 [ div [ class "ui five column grid" ] <|
                     if List.isEmpty displayedActivities then
+                        let
+                            emptySectionMessage =
+                                case model.selectedTab of
+                                    Completed ->
+                                        translate language Translate.NoActivitiesCompleted
+
+                                    Pending ->
+                                        translate language Translate.NoActivitiesPending
+
+                                    Reports ->
+                                        ""
+                        in
                         [ span [] [ text emptySectionMessage ] ]
 
                     else
@@ -450,7 +425,7 @@ viewActivityForm language currentDate site data model familyMember activity =
             viewMuacForm language currentDate site data model familyMember
 
         FamilyNutritionPhoto ->
-            viewPhotoActivity language currentDate data model familyMember
+            viewPhotoActivity language data model familyMember
 
 
 viewAhezaForm :
@@ -530,8 +505,7 @@ viewAhezaForm language data model familyMember =
                             "aheza"
                             Translate.KilogramsPerMonth
                         ]
-                   ]
-                ++ [ viewSaveAction language
+                   , viewSaveAction language
                         saveMsg
                         disabled
                    ]
@@ -613,12 +587,11 @@ viewMuacForm language currentDate site data model familyMember =
 
 viewPhotoActivity :
     Language
-    -> NominalDate
     -> AssembledData
     -> Model
     -> FamilyMember
     -> Html Msg
-viewPhotoActivity language currentDate data model familyMember =
+viewPhotoActivity language data model familyMember =
     case familyMember of
         FamilyMemberChild childId ->
             let
@@ -648,7 +621,7 @@ viewPhotoActivity language currentDate data model familyMember =
             div [ class "ui full segment photo" ]
                 [ viewTasksCount language tasksCompleted totalTasks
                 , div [ class "full content" ] <|
-                    viewPhotoForm language currentDate displayPhoto DropZoneComplete
+                    viewPhotoForm language displayPhoto DropZoneComplete
                 , viewSaveAction language saveMsg disabled
                 ]
 

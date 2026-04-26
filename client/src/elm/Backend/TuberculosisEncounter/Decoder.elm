@@ -1,6 +1,6 @@
 module Backend.TuberculosisEncounter.Decoder exposing (decodeTuberculosisEncounter)
 
-import Backend.TuberculosisEncounter.Model exposing (..)
+import Backend.TuberculosisEncounter.Model exposing (TuberculosisEncounter)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, bool, nullable, succeed)
 import Json.Decode.Pipeline exposing (optional, optionalAt, required, requiredAt)

@@ -4,7 +4,6 @@ import App.Model exposing (Msg(..))
 import Backend.Entities exposing (..)
 import Backend.Utils exposing (familyNutritionEnabled)
 import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
@@ -14,11 +13,11 @@ import SyncManager.Model exposing (SiteFeature)
 import Translate exposing (Language, translate)
 
 
-view : Language -> NominalDate -> EverySet SiteFeature -> HealthCenterId -> Bool -> App.Model.Model -> Html App.Model.Msg
-view language currentDate features healthCenterId isChw model =
+view : Language -> EverySet SiteFeature -> HealthCenterId -> Bool -> App.Model.Model -> Html App.Model.Msg
+view language features healthCenterId isChw model =
     div [ class "ui basic segment page-clinical" ]
         [ viewHeader language
-        , viewContent language currentDate features isChw model
+        , viewContent language features isChw
             |> viewBySyncStatus language healthCenterId model.syncManager.syncInfoAuthorities
         ]
 
@@ -36,8 +35,8 @@ viewHeader language =
         ]
 
 
-viewContent : Language -> NominalDate -> EverySet SiteFeature -> Bool -> App.Model.Model -> Html App.Model.Msg
-viewContent language currentDate features isChw model =
+viewContent : Language -> EverySet SiteFeature -> Bool -> Html App.Model.Msg
+viewContent language features isChw =
     let
         groupAssessmentButtonAction =
             if isChw then

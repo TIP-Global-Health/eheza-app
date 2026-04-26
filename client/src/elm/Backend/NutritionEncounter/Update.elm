@@ -2,9 +2,9 @@ module Backend.NutritionEncounter.Update exposing (update)
 
 import App.Model
 import App.Utils exposing (triggerRollbarOnFailure)
-import Backend.Endpoints exposing (..)
+import Backend.Endpoints exposing (nutritionContributingFactorsEndpoint, nutritionEncounterEndpoint, nutritionFollowUpEndpoint, nutritionHealthEducationEndpoint, nutritionHeightEndpoint, nutritionMuacEndpoint, nutritionNCDAEndpoint, nutritionNutritionEndpoint, nutritionPhotoEndpoint, nutritionSendToHCEndpoint, nutritionWeightEndpoint)
 import Backend.Entities exposing (..)
-import Backend.NutritionEncounter.Model exposing (..)
+import Backend.NutritionEncounter.Model exposing (Model, Msg(..), NutritionEncounter)
 import Backend.Utils exposing (saveMeasurementCmd, sw)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (unwrap)
