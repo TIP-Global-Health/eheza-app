@@ -4,7 +4,6 @@ import App.Model
 import App.Utils exposing (triggerRollbarOnFailure)
 import Backend.Endpoints exposing (nutritionContributingFactorsEndpoint, nutritionEncounterEndpoint, nutritionFollowUpEndpoint, nutritionHealthEducationEndpoint, nutritionHeightEndpoint, nutritionMuacEndpoint, nutritionNCDAEndpoint, nutritionNutritionEndpoint, nutritionPhotoEndpoint, nutritionSendToHCEndpoint, nutritionWeightEndpoint)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (..)
 import Backend.NutritionEncounter.Model exposing (Model, Msg(..), NutritionEncounter)
 import Backend.Utils exposing (saveMeasurementCmd, sw)
 import EverySet

@@ -1,6 +1,8 @@
 module Pages.WellChild.Activity.View exposing (view, viewVaccinationOverview)
 
 import AssocList as Dict
+import Backend.Entities exposing (..)
+import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
@@ -11,8 +13,6 @@ import Backend.NutritionEncounter.Utils
         , resolveNCDANotFilledAfterAgeOfSixMonths
         , resolvePreviousValuesSetForChild
         )
-import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (..)
 import Backend.Person.Model exposing (Person)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..))
