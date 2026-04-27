@@ -1,9 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { setupDevice } from './helpers/auth';
+import { click, setupDevice } from './helpers/auth';
 import { verifyCaseManagementEntry } from './helpers/case-management';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { syncAndWait } from './helpers/common';
+import { setFeatureFlag } from './helpers/feature-flags';
 import {
   createAdultFemaleAndStartEncounter,
   startPrenatalEncounter,
@@ -50,6 +51,46 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
   test('complete all activities and verify backend sync', async ({ page }) => {
     // Nurse initial encounter completes 12+ activities; needs more than the default 2m.
     test.setTimeout(600000);
+
+    // --- FeatureAntenatal toggle verification (pilot for feature-flag testing pattern) ---
+    // 1. Force feature OFF on backend, sync so device pulls the OFF state.
+    setFeatureFlag('antenatal', false);
+    await syncAndWait(page);
+
+    // 2. Navigate Dashboard -> Clinical -> Individual Assessment.
+    await click(page.locator('.icon-task-clinical'), page);
+    await page.locator('div.page-clinical').waitFor({ timeout: 10000 });
+    await click(page.locator('button.individual-assessment'), page);
+    await page.locator('div.page-encounter-types').waitFor({ timeout: 10000 });
+
+    // 3. Antenatal Care button must be absent when FeatureAntenatal is off.
+    const antenatalBtn = page.locator('button.encounter-type', {
+      hasText: 'Antenatal Care',
+    });
+    await expect(
+      antenatalBtn,
+      'Antenatal Care button must be hidden when FeatureAntenatal is off',
+    ).toBeHidden();
+
+    // 4. Re-enable feature and sync. After syncAndWait we land back on
+    //    the encounter-types page (page.goBack from device status).
+    setFeatureFlag('antenatal', true);
+    await syncAndWait(page);
+
+    // 5. Antenatal Care button must now appear.
+    await expect(
+      antenatalBtn,
+      'Antenatal Care button must be visible when FeatureAntenatal is on',
+    ).toBeVisible();
+
+    // 6. Navigate back to PinCode (dashboard) so the existing helper can
+    //    drive the full register-and-start flow from its expected starting point.
+    await click(page.locator('.link-back .icon-back'), page);
+    await page.locator('div.page-clinical').waitFor({ timeout: 10000 });
+    await click(page.locator('.link-back .icon-back'), page);
+    await page.locator('div.page-pincode').waitFor({ timeout: 10000 });
+    // --- end feature-toggle pilot ---
+
     // LMP date ~30 weeks ago — ensures EGA >= 28w for MentalHealth,
     // >= 13w for MalariaPrevention, and triggers all Medication tabs.
     const lmpDate = new Date();
