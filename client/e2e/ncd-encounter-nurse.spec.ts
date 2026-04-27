@@ -4,6 +4,7 @@ import { verifyCaseManagementEntry } from './helpers/case-management';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { syncAndWait } from './helpers/common';
+import { verifyFeatureGatesEncounterButton } from './helpers/feature-flags';
 import {
   createAdultAndStartNCDEncounter,
   completeDangerSigns,
@@ -43,6 +44,9 @@ test.describe('Nurse: NCD First Encounter — Male, Stage 1 Hypertension', () =>
   });
 
   test('complete first NCD encounter with Stage 1 hypertension, verify backend sync', async ({ page }) => {
+    // Verify FeatureNCD flag gates the "Noncommunicable Diseases" button.
+    await verifyFeatureGatesEncounterButton(page, 'ncd', 'Noncommunicable Diseases');
+
     const { fullName } = await createAdultAndStartNCDEncounter(page, {
       isFemale: false,
     });

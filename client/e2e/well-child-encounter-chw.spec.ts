@@ -3,6 +3,7 @@ import { setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { syncAndWait } from './helpers/common';
+import { verifyFeatureGatesEncounterButton } from './helpers/feature-flags';
 import {
   createChildAndStartWellChildEncounter,
   completePregnancySummary,
@@ -34,6 +35,8 @@ test.describe('CHW: Well Child NewbornExam Encounter', () => {
   });
 
   test('complete newborn exam with PregnancySummary, NutritionAssessment, Immunisation, verify backend sync', async ({ page }) => {
+    // Verify FeatureWellChild flag gates the "Well Child Visit" button (CHW-side).
+    await verifyFeatureGatesEncounterButton(page, 'well_child', 'Well Child Visit');
 
     const { fullName } = await createChildAndStartWellChildEncounter(page, {
       ageMonths: 1,

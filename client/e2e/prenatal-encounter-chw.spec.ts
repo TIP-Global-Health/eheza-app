@@ -7,6 +7,7 @@ import {
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { syncAndWait } from './helpers/common';
+import { verifyFeatureGatesEncounterButton } from './helpers/feature-flags';
 import {
   createAdultFemaleAndStartEncounter,
   startPrenatalEncounter,
@@ -36,6 +37,9 @@ test.describe('CHW: Prenatal First Encounter', () => {
   });
 
   test('complete all activities and verify backend sync', async ({ page }) => {
+    // Verify FeatureAntenatal flag gates the "Antenatal Care" button.
+    await verifyFeatureGatesEncounterButton(page, 'antenatal', 'Antenatal Care');
+
     // LMP date ~30 weeks ago.
     const lmpDate = new Date();
     lmpDate.setDate(lmpDate.getDate() - 30 * 7);

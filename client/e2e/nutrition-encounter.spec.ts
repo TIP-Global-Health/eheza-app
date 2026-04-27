@@ -3,6 +3,7 @@ import { click, setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { WAIT, syncAndWait } from './helpers/common';
+import { verifyFeatureGatesEncounterButton } from './helpers/feature-flags';
 import {
   createChildAndStartEncounter,
   completeNCDA,
@@ -35,6 +36,9 @@ test.describe('Nurse: Individual Nutrition Encounter', () => {
   test('complete normal encounter with NCDA and verify backend sync', async ({
     page,
   }) => {
+    // Verify FeatureNutritionIndividual flag gates the "Child Nutrition" button.
+    await verifyFeatureGatesEncounterButton(page, 'nutrition_individual', 'Child Nutrition');
+
     // Use age 10 months (< 24) so NCDA activity appears for nurse.
     const { fullName } = await createChildAndStartEncounter(page, {
       ageMonths: 10,
