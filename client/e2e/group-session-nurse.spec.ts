@@ -3,6 +3,7 @@ import { click, setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { syncAndWait } from './helpers/common';
+import { verifyFeatureGatesClinicalAssessmentButton } from './helpers/feature-flags';
 import {
   navigateToNurseGroupSession,
   createMotherOnAttendancePage,
@@ -56,6 +57,10 @@ test.describe('Nurse: FBF Group Nutrition Session', () => {
     //   SendToHC, FollowUp.
     // Mother activities: FamilyPlanning, Lactation, MotherFbf.
     // Backend: Verifies 14 node types (all group session content types).
+
+    // Verify FeatureNutritionGroup flag gates the "Group Assessment" button on Clinical (nurse only).
+    // (On nurse the gate is unambiguous: group_education isn't part of the compound for non-CHW.)
+    await verifyFeatureGatesClinicalAssessmentButton(page, 'nutrition_group', 'group-assessment');
 
     // 1. Navigate to FBF group session.
     await navigateToNurseGroupSession(page, 'FBF', 'Nyange I');

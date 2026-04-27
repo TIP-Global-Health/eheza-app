@@ -3,6 +3,7 @@ import { setupDevice, click } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { syncAndWait } from './helpers/common';
+import { verifyFeatureGatesPinCodeMenuIcon } from './helpers/feature-flags';
 import {
   navigateToStockManagement,
   completeReceiveStock,
@@ -46,6 +47,9 @@ test.describe('CHW: Stock Management — Full Flow', () => {
   });
 
   test('receive stock, correct entries, view details, verify backend (village-filtered)', async ({ page }) => {
+    // Verify FeatureStockManagementVillage flag gates the Stock Management menu icon on PinCode (CHW).
+    await verifyFeatureGatesPinCodeMenuIcon(page, 'stock_management_village', 'stock-management');
+
     // Get baseline count of village-scoped stock_update nodes before test.
     const baseline = queryStockUpdateNodes(
       'Nyange Health Center',

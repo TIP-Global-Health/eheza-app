@@ -98,3 +98,141 @@ export async function verifyFeatureGatesEncounterButton(
   await click(page.locator('.link-back .icon-back'), page);
   await page.locator('div.page-pincode').waitFor({ timeout: 10000 });
 }
+
+/**
+ * Verify that a SiteFeature flag gates one of the assessment buttons
+ * on the Clinical page (Individual / Group / Family Assessment).
+ *
+ * Used for:
+ *  - FeatureFamilyNutrition gates `button.family-assessment` (CHW only)
+ *  - FeatureNutritionGroup gates `button.group-assessment` (NURSE only —
+ *    on CHW the gate is compound with FeatureGroupEducation, so test
+ *    that one via verifyFeatureGatesGroupEncounterButton instead)
+ *
+ * Pre/Post: device is on PinCode dashboard.
+ *
+ * @param page        - Playwright page.
+ * @param flagName    - Feature flag short name.
+ * @param buttonClass - CSS class of the button on Clinical page,
+ *                      e.g. 'family-assessment', 'group-assessment'.
+ */
+export async function verifyFeatureGatesClinicalAssessmentButton(
+  page: Page,
+  flagName: string,
+  buttonClass: string,
+) {
+  setFeatureFlag(flagName, false);
+  await syncAndWait(page);
+
+  await click(page.locator('.icon-task-clinical'), page);
+  await page.locator('div.page-clinical').waitFor({ timeout: 10000 });
+
+  const button = page.locator(`button.${buttonClass}`);
+  await expect(
+    button,
+    `button.${buttonClass} must be hidden when feature ${flagName} is off`,
+  ).toBeHidden();
+
+  setFeatureFlag(flagName, true);
+  await syncAndWait(page);
+
+  await expect(
+    button,
+    `button.${buttonClass} must be visible when feature ${flagName} is on`,
+  ).toBeVisible();
+
+  await click(page.locator('.link-back .icon-back'), page);
+  await page.locator('div.page-pincode').waitFor({ timeout: 10000 });
+}
+
+/**
+ * Verify that a SiteFeature flag gates a button on the Group Encounter
+ * Types page. Used for CHW where the entry button on Clinical is
+ * compound-gated by FeatureNutritionGroup OR FeatureGroupEducation.
+ *
+ * The caller must specify `partnerFlag` — the OTHER group flag — which
+ * the helper sets to ON so the Group Assessment entry button on
+ * Clinical remains visible while we toggle the target flag.
+ *
+ * Pre/Post: device is on PinCode dashboard.
+ *
+ * @param page         - Playwright page.
+ * @param flagName     - Target feature flag (e.g. 'nutrition_group').
+ * @param buttonText   - Button label inside Group Encounter Types,
+ *                       e.g. 'Child Nutrition' or 'Health Education'.
+ * @param partnerFlag  - The other group flag to keep ON for navigation
+ *                       (e.g. 'group_education' when testing
+ *                       'nutrition_group').
+ */
+export async function verifyFeatureGatesGroupEncounterButton(
+  page: Page,
+  flagName: string,
+  buttonText: string,
+  partnerFlag: string,
+) {
+  setFeatureFlag(partnerFlag, true);
+  setFeatureFlag(flagName, false);
+  await syncAndWait(page);
+
+  // Navigate Clinical → Group Assessment → Group Encounter Types.
+  await click(page.locator('.icon-task-clinical'), page);
+  await page.locator('div.page-clinical').waitFor({ timeout: 10000 });
+  await click(page.locator('button.group-assessment'), page);
+  await page.locator('div.page-encounter-types').waitFor({ timeout: 10000 });
+
+  const button = page.locator('button.encounter-type', { hasText: buttonText });
+  await expect(
+    button,
+    `"${buttonText}" button must be hidden when feature ${flagName} is off`,
+  ).toBeHidden();
+
+  setFeatureFlag(flagName, true);
+  await syncAndWait(page);
+
+  await expect(
+    button,
+    `"${buttonText}" button must be visible when feature ${flagName} is on`,
+  ).toBeVisible();
+
+  // Back: Group Encounter Types → Clinical → PinCode.
+  await click(page.locator('.link-back .icon-back'), page);
+  await page.locator('div.page-clinical').waitFor({ timeout: 10000 });
+  await click(page.locator('.link-back .icon-back'), page);
+  await page.locator('div.page-pincode').waitFor({ timeout: 10000 });
+}
+
+/**
+ * Verify that a SiteFeature flag gates an activity-card icon on the
+ * PinCode dashboard. Used for FeatureStockManagementHC (nurse) and
+ * FeatureStockManagementVillage (CHW) — both gate `.icon-task-stock-
+ * management`.
+ *
+ * Pre/Post: device is on PinCode dashboard.
+ *
+ * @param page     - Playwright page.
+ * @param flagName - Feature flag short name.
+ * @param iconKey  - Icon class suffix, e.g. 'stock-management' for
+ *                   `.icon-task-stock-management`.
+ */
+export async function verifyFeatureGatesPinCodeMenuIcon(
+  page: Page,
+  flagName: string,
+  iconKey: string,
+) {
+  setFeatureFlag(flagName, false);
+  await syncAndWait(page);
+
+  const icon = page.locator(`.icon-task-${iconKey}`);
+  await expect(
+    icon,
+    `.icon-task-${iconKey} must be hidden when feature ${flagName} is off`,
+  ).toBeHidden();
+
+  setFeatureFlag(flagName, true);
+  await syncAndWait(page);
+
+  await expect(
+    icon,
+    `.icon-task-${iconKey} must be visible when feature ${flagName} is on`,
+  ).toBeVisible();
+}
