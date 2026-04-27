@@ -3,33 +3,23 @@ module Pages.Nutrition.Activity.Update exposing (update)
 import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model
-    exposing
-        ( ChildNutritionSign(..)
-        , ContributingFactorsSign(..)
-        , ImageUrl(..)
-        , MuacInCm(..)
-        , SkippedForm(..)
-        , WeightInGrm(..)
-        , WeightInKg(..)
-        )
+import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Model
 import EverySet
-import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (unwrap)
-import Measurement.Utils exposing (..)
-import Pages.Nutrition.Activity.Model exposing (..)
+import Measurement.Utils exposing (contributingFactorsFormWithDefault, ncdaFormWithDefault, nutritionFormWithDefault, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toHeightValueWithDefault, toMuacValueWithDefault, toNCDAValueWithDefault, toNutritionFollowUpValueWithDefault, toNutritionValueWithDefault, toSendToHCValueWithDefault, toWeightValueWithDefault)
+import Pages.Nutrition.Activity.Model exposing (Model, Msg(..), emptyPhotoData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (setMuacValueForSite, setMultiSelectInputValue)
 import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (Site)
 
 
-update : NominalDate -> Site -> NutritionEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate site id db msg model =
+update : Site -> NutritionEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update site id db msg model =
     let
         ncdaForm =
             Dict.get id db.nutritionMeasurements
@@ -99,12 +89,6 @@ update currentDate site id db msg model =
 
         SaveHeight skippedForms personId saved ->
             let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
                 form_ =
                     model.heightData.form
 
@@ -125,6 +109,13 @@ update currentDate site id db msg model =
                             ++ [ App.Model.SetActivePage <| UserPage <| NutritionEncounterPage id ]
 
                     else
+                        let
+                            measurementId =
+                                Maybe.map Tuple.first saved
+
+                            measurement =
+                                getMeasurementValueFunc saved
+                        in
                         toHeightValueWithDefault skippedForms measurement form_
                             |> unwrap
                                 []
@@ -306,12 +297,6 @@ update currentDate site id db msg model =
 
         SaveWeight skippedForms personId saved ->
             let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
                 form_ =
                     model.weightData.form
 
@@ -332,6 +317,13 @@ update currentDate site id db msg model =
                             ++ [ App.Model.SetActivePage <| UserPage <| NutritionEncounterPage id ]
 
                     else
+                        let
+                            measurementId =
+                                Maybe.map Tuple.first saved
+
+                            measurement =
+                                getMeasurementValueFunc saved
+                        in
                         toWeightValueWithDefault skippedForms measurement form_
                             |> unwrap
                                 []
@@ -637,7 +629,7 @@ update currentDate site id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate site id db) extraMsgs
+                |> sequenceExtra (update site id db) extraMsgs
 
         SetProvidedEducationForDiagnosis value ->
             let
@@ -698,7 +690,7 @@ update currentDate site id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate site id db) extraMsgs
+                |> sequenceExtra (update site id db) extraMsgs
 
         SetContributingFactorsSign sign ->
             let
@@ -754,7 +746,7 @@ update currentDate site id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate site id db) extraMsgs
+                |> sequenceExtra (update site id db) extraMsgs
 
         SetFollowUpOption option ->
             let
@@ -801,4 +793,4 @@ update currentDate site id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate site id db) extraMsgs
+                |> sequenceExtra (update site id db) extraMsgs

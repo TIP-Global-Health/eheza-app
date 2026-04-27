@@ -2,11 +2,12 @@ module Backend.NutritionEncounter.Update exposing (update)
 
 import App.Model
 import App.Utils exposing (triggerRollbarOnFailure)
-import Backend.Endpoints exposing (..)
+import Backend.Endpoints exposing (nutritionContributingFactorsEndpoint, nutritionEncounterEndpoint, nutritionFollowUpEndpoint, nutritionHealthEducationEndpoint, nutritionHeightEndpoint, nutritionMuacEndpoint, nutritionNCDAEndpoint, nutritionNutritionEndpoint, nutritionPhotoEndpoint, nutritionSendToHCEndpoint, nutritionWeightEndpoint)
 import Backend.Entities exposing (..)
-import Backend.NutritionEncounter.Model exposing (..)
+import Backend.Measurement.Model exposing (..)
+import Backend.NutritionEncounter.Model exposing (Model, Msg(..), NutritionEncounter)
 import Backend.Utils exposing (saveMeasurementCmd, sw)
-import EverySet exposing (EverySet)
+import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (unwrap)
 import RemoteData exposing (RemoteData(..))
@@ -25,10 +26,10 @@ update :
 update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
     case msg of
         CloseNutritionEncounter ->
-            updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | endDate = Just currentDate }) model
+            updateEncounter encounterId maybeEncounter (\encounter -> { encounter | endDate = Just currentDate }) model
 
         AddSkippedForm skippedForm ->
-            updateEncounter currentDate
+            updateEncounter
                 encounterId
                 maybeEncounter
                 (\encounter ->
@@ -37,7 +38,7 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
                 model
 
         RemoveSkippedForm skippedForm ->
-            updateEncounter currentDate
+            updateEncounter
                 encounterId
                 maybeEncounter
                 (\encounter ->
@@ -173,13 +174,12 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
 
 
 updateEncounter :
-    NominalDate
-    -> NutritionEncounterId
+    NutritionEncounterId
     -> Maybe NutritionEncounter
     -> (NutritionEncounter -> NutritionEncounter)
     -> Model
     -> ( Model, Cmd Msg, List App.Model.Msg )
-updateEncounter currentDate encounterId maybeEncounter updateFunc model =
+updateEncounter encounterId maybeEncounter updateFunc model =
     maybeEncounter
         |> unwrap ( model, Cmd.none, [] )
             (\encounter ->

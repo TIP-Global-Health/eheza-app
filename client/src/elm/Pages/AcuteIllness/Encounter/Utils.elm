@@ -1,4 +1,4 @@
-module Pages.AcuteIllness.Encounter.Utils exposing (..)
+module Pages.AcuteIllness.Encounter.Utils exposing (generateAssembledData, getAcuteIllnessDiagnosisForParticipant)
 
 import AssocList as Dict
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
@@ -8,7 +8,7 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
 import Pages.AcuteIllness.Activity.Utils exposing (resolveAcuteIllnessDiagnosis)
-import Pages.AcuteIllness.Encounter.Model exposing (..)
+import Pages.AcuteIllness.Encounter.Model exposing (AcuteIllnessEncounterData, AssembledData)
 import Pages.Report.Utils exposing (compareAcuteIllnessEncounters, getAcuteIllnessDiagnosisForEncounters, getAcuteIllnessEncountersForParticipant)
 import RemoteData exposing (RemoteData(..), WebData)
 import SyncManager.Model exposing (SiteFeature)
@@ -94,14 +94,6 @@ generateAssembledData currentDate features id isChw db =
 
                 ( firstInitialWithSubsequent, secondInitialWithSubsequent ) =
                     let
-                        currentEncounterData =
-                            AcuteIllnessEncounterData id
-                                data.encounter.encounterType
-                                data.encounter.startDate
-                                data.encounter.sequenceNumber
-                                data.encounter.diagnosis
-                                data.measurements
-
                         nurseEncounterIndex =
                             List.indexedMap (\index encounterData -> ( index, encounterData.encounterType ))
                                 data.previousEncountersData

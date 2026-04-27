@@ -4,6 +4,7 @@ import App.Model exposing (GPSCoordinates)
 import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (Clinic, ClinicType(..))
 import Backend.Entities exposing (..)
+import Backend.FamilyEncounterParticipant.Model
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Model exposing (ModelIndexedDb)
@@ -32,6 +33,7 @@ import Backend.Person.Utils
         , isAdult
         , isPersonAnAdult
         , maritalStatusToString
+        , maxChildrenAtFamilyEncounter
         , modeOfDeliveryToString
         , ubudeheToInt
         )
@@ -48,8 +50,8 @@ import Form exposing (Form)
 import Form.Field
 import Form.Input
 import GeoLocation.Model exposing (GeoInfo, ReverseGeoInfo)
-import GeoLocation.Utils exposing (..)
-import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
+import GeoLocation.Utils exposing (filterGeoLocationDictByParent, geoLocationDictToOptions, resolveGeoSructureLabelLevel1, resolveGeoSructureLabelLevel2, resolveGeoSructureLabelLevel3, resolveGeoSructureLabelLevel4, resolveGeoSructureLabelLevel5)
+import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffMonths, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -58,7 +60,7 @@ import Json.Decode
 import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Person.Model exposing (..)
+import Pages.Person.Model exposing (Model, Msg(..))
 import Pages.Utils exposing (viewConfirmationDialog)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -85,7 +87,7 @@ view language currentDate isChw initiator id db =
     in
     div
         [ class "page-person" ]
-        [ viewHeader language initiator headerName
+        [ viewHeader initiator headerName
         , div
             [ class "ui full segment blue" ]
             [ viewWebData language (viewParticipantDetailsForm language currentDate isChw initiator db id) identity person
@@ -93,11 +95,16 @@ view language currentDate isChw initiator id db =
         ]
 
 
-viewHeader : Language -> Initiator -> String -> Html App.Model.Msg
-viewHeader language initiator name =
+viewHeader : Initiator -> String -> Html App.Model.Msg
+viewHeader initiator name =
     let
         goBackPage =
-            UserPage (PersonsPage Nothing initiator)
+            case initiator of
+                FamilyEncounterOrigin Backend.FamilyEncounterParticipant.Model.NutritionEncounter ->
+                    UserPage (FamilyEncounterParticipantsPage Backend.FamilyEncounterParticipant.Model.NutritionEncounter)
+
+                _ ->
+                    UserPage (PersonsPage Nothing initiator)
     in
     div
         [ class "ui basic segment head" ]
@@ -241,6 +248,33 @@ viewParticipantDetailsForm language currentDate isChw initiator db id person =
                         ]
                     ]
                 ]
+
+        ( allowAddingFamilyMember, action ) =
+            case initiator of
+                FamilyEncounterOrigin Backend.FamilyEncounterParticipant.Model.NutritionEncounter ->
+                    ( RemoteData.toMaybe otherPeople
+                        |> Maybe.map
+                            (\people ->
+                                Dict.size people < maxChildrenAtFamilyEncounter
+                            )
+                        |> Maybe.withDefault False
+                    , div
+                        [ class "register-actions" ]
+                        [ button
+                            [ class "ui primary button fluid"
+                            , onClick <|
+                                App.Model.SetActivePage <|
+                                    UserPage <|
+                                        FamilyNutritionParticipantPage
+                                            Backend.FamilyEncounterParticipant.Model.InitiatorParticipantsPage
+                                            id
+                            ]
+                            [ text <| translate language Translate.Continue ]
+                        ]
+                    )
+
+                _ ->
+                    ( True, emptyNode )
     in
     div [ class "registration-page view" ]
         [ h3
@@ -248,18 +282,19 @@ viewParticipantDetailsForm language currentDate isChw initiator db id person =
             [ text <| translate language Translate.DemographicInformation ++ ": " ]
         , div
             [ class "ui unstackable items participants-list" ]
-            [ viewPerson language currentDate initiator db id person ]
+            [ viewPerson language currentDate initiator id person ]
         , h3
             [ class "ui header" ]
             [ text <| translate language Translate.FamilyMembers ++ ": " ]
         , viewWebData language viewOtherPeople identity otherPeople
         , p [] []
-        , addFamilyMember
+        , addFamilyMember |> showIf allowAddingFamilyMember
+        , action
         ]
 
 
-viewPerson : Language -> NominalDate -> Initiator -> ModelIndexedDb -> PersonId -> Person -> Html App.Model.Msg
-viewPerson language currentDate initiator db id person =
+viewPerson : Language -> NominalDate -> Initiator -> PersonId -> Person -> Html App.Model.Msg
+viewPerson language currentDate initiator id person =
     let
         typeForThumbnail =
             defaultIconForPerson currentDate person
@@ -417,6 +452,9 @@ viewOtherPerson language currentDate isChw initiator db relationMainId ( otherPe
                         -- Not in use, as at Acute Ilness patient is created
                         -- from a dedicated form.
                         emptyNode
+
+                    FamilyEncounterOrigin _ ->
+                        emptyNode
                 )
 
         content =
@@ -485,19 +523,19 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
         formBeforeDefaults =
             model.form
 
-        personId =
+        maybeRelatedPersonId =
             case operation of
                 CreatePerson maybePersonId ->
                     maybePersonId
 
-                EditPerson personId_ ->
-                    Just personId_
+                EditPerson personId ->
+                    Just personId
 
         -- When we create new person, this is a person that we want to associate
         -- new person with.
         -- When editing, this is the person that is being edited.
         maybeRelatedPerson =
-            Maybe.andThen (\id -> Dict.get id db.people) personId
+            Maybe.andThen (\id -> Dict.get id db.people) maybeRelatedPersonId
                 |> Maybe.andThen RemoteData.toMaybe
 
         maybeVillage =
@@ -530,14 +568,14 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                         goBackPage =
                             case operation of
                                 CreatePerson _ ->
-                                    UserPage <| PersonsPage personId initiator
+                                    UserPage <| PersonsPage maybeRelatedPersonId initiator
 
                                 EditPerson _ ->
-                                    personId
-                                        |> Maybe.map
-                                            (\personId_ ->
-                                                UserPage <| PersonPage personId_ initiator
-                                            )
+                                    Maybe.map
+                                        (\personId ->
+                                            UserPage <| PersonPage personId initiator
+                                        )
+                                        maybeRelatedPersonId
                                         |> Maybe.withDefault PinCodePage
 
                         expectedAge =
@@ -716,7 +754,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                                 _ ->
                                     ( Date.add Years -120 currentDate, currentDate )
                     in
-                    { goBackPage = UserPage (PersonsPage personId initiator)
+                    { goBackPage = UserPage (PersonsPage maybeRelatedPersonId initiator)
                     , expectedAge = expectedAge
                     , expectedGender = ExpectMaleOrFemale
                     , birthDateSelectorFrom = birthDateSelectorFrom
@@ -743,6 +781,29 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                     , birthDateSelectorTo = today
                     , title = Translate.People
                     }
+
+                FamilyEncounterOrigin encounterType ->
+                    case encounterType of
+                        Backend.FamilyEncounterParticipant.Model.NutritionEncounter ->
+                            if isJust maybeRelatedPersonId then
+                                -- Registering a child for existing adult.
+                                { goBackPage = UserPage (PersonsPage maybeRelatedPersonId initiator)
+                                , expectedAge = ExpectChild
+                                , expectedGender = ExpectMaleOrFemale
+                                , birthDateSelectorFrom = Date.add Years -13 today |> Date.add Days 1
+                                , birthDateSelectorTo = today
+                                , title = Translate.People
+                                }
+
+                            else
+                                -- Registering an adult, as there was no related person passed.
+                                { goBackPage = UserPage (FamilyEncounterParticipantsPage Backend.FamilyEncounterParticipant.Model.NutritionEncounter)
+                                , expectedAge = ExpectAdult
+                                , expectedGender = ExpectFemale
+                                , birthDateSelectorFrom = Date.add Years -120 today
+                                , birthDateSelectorTo = Date.add Years -13 today
+                                , title = Translate.People
+                                }
 
         header =
             div [ class "ui basic segment head" ]
@@ -875,8 +936,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                         ExpectMaleOrFemale ->
                             maleOption ++ femaleOption
             in
-            div [ class "ui grid" ] <|
-                (label :: options)
+            div [ class "ui grid" ] (label :: options)
 
         educationLevelOptions =
             allEducationLevels
@@ -915,25 +975,6 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                         ( hivStatusToString status
                         , translate language <| Translate.HIVStatus status
                         )
-                    )
-                |> (::) emptyOption
-
-        hmisNumberOptions =
-            List.repeat 15 ""
-                |> List.indexedMap
-                    (\index _ ->
-                        let
-                            order =
-                                index + 1
-
-                            orderAsString =
-                                if order < 10 then
-                                    "0" ++ String.fromInt order
-
-                                else
-                                    String.fromInt order
-                        in
-                        ( orderAsString, orderAsString )
                     )
                 |> (::) emptyOption
 
@@ -978,20 +1019,30 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
             viewSelectInput language Translate.HIVStatusLabel hivStatusOptions Backend.Person.Form.hivStatus "ten" "select-input" False personForm
 
         -- Not in use anymore - not displayed on form.
-        numberOfChildrenUnder5Input =
-            let
-                options =
-                    emptyOption
-                        :: (List.repeat 5 "."
-                                |> List.indexedMap (\index _ -> ( String.fromInt index, String.fromInt index ))
-                           )
-            in
-            viewSelectInput language Translate.NumberOfChildrenUnder5 options Backend.Person.Form.numberOfChildren "ten" "select-input" False personForm
-
         -- Used only on Rwanda site.
         hmisNumberInput =
             case site of
                 SiteRwanda ->
+                    let
+                        hmisNumberOptions =
+                            List.repeat 15 ""
+                                |> List.indexedMap
+                                    (\index _ ->
+                                        let
+                                            order =
+                                                index + 1
+
+                                            orderAsString =
+                                                if order < 10 then
+                                                    "0" ++ String.fromInt order
+
+                                                else
+                                                    String.fromInt order
+                                        in
+                                        ( orderAsString, orderAsString )
+                                    )
+                                |> (::) emptyOption
+                    in
                     viewSelectInput language Translate.ChildHmisNumber hmisNumberOptions Backend.Person.Form.hmisNumber "ten" "select-input" False personForm
 
                 _ ->
@@ -1006,6 +1057,10 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
         nationalIdNumberInput =
             case site of
                 SiteBurundi ->
+                    viewTextInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
+
+                -- @todo - change to number input, if validation is required?
+                SiteSomalia ->
                     viewTextInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
 
                 _ ->
@@ -1143,7 +1198,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                                 isFormFieldSet district
                         in
                         viewSelectInput language
-                            (resolveGeoSructureLabelLevel1 site)
+                            resolveGeoSructureLabelLevel1
                             options
                             Backend.Person.Form.province
                             "ten"

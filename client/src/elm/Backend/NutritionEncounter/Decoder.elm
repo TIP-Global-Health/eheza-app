@@ -1,8 +1,8 @@
 module Backend.NutritionEncounter.Decoder exposing (decodeNutritionEncounter, decodeNutritionEncounterType)
 
 import Backend.Measurement.Decoder exposing (decodeSkippedForm)
-import Backend.NutritionEncounter.Model exposing (..)
-import EverySet exposing (EverySet)
+import Backend.NutritionEncounter.Model exposing (NutritionEncounter, NutritionEncounterType(..))
+import EverySet
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, andThen, bool, fail, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (optional, optionalAt, required, requiredAt)

@@ -33,7 +33,7 @@ import Measurement.Model
         , NCDAData
         , NextStepsTask(..)
         )
-import Measurement.Utils exposing (..)
+import Measurement.Utils exposing (allNextStepsTasks, contributingFactorsFormWithDefault, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, healthEducationFormWithDefault, heightFormWithDefault, muacFormWithDefault, ncdaFormWithDefault, nutritionFollowUpFormWithDefault, nutritionFormWithDefault, sendToHCFormWithDefault, weightFormWithDefault, withinConstraints)
 import Measurement.View
     exposing
         ( heightFormAndTasks
@@ -43,10 +43,9 @@ import Measurement.View
         , viewNutritionForm
         , viewSendToHealthCenterForm
         , weightFormAndTasks
-        , zScoreForHeightOrLength
         )
-import Pages.Nutrition.Activity.Model exposing (..)
-import Pages.Nutrition.Activity.Utils exposing (..)
+import Pages.Nutrition.Activity.Model exposing (HeightData, Model, Msg(..), MuacData, NextStepsData, NutritionData, PhotoData, WeightData)
+import Pages.Nutrition.Activity.Utils exposing (generateNutritionAssessment, nextStepsTasksCompletedFromTotal)
 import Pages.Nutrition.Encounter.Model exposing (AssembledData)
 import Pages.Nutrition.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -106,14 +105,13 @@ viewHeaderAndContent language currentDate zscores site id activity isChw db mode
             viewHeader language id activity
 
         content =
-            viewContent language currentDate zscores site id activity isChw db model assembled
+            viewContent language currentDate zscores site activity isChw db model assembled
     in
     div [ class "page-activity nutrition" ]
         [ header
         , content
         , viewModal <|
             warningPopup language
-                currentDate
                 (SetWarningPopupState [])
                 model.warningPopupState
         ]
@@ -140,22 +138,21 @@ viewContent :
     -> NominalDate
     -> ZScore.Model.Model
     -> Site
-    -> NutritionEncounterId
     -> NutritionActivity
     -> Bool
     -> ModelIndexedDb
     -> Model
     -> AssembledData
     -> Html Msg
-viewContent language currentDate zscores site id activity isChw db model assembled =
+viewContent language currentDate zscores site activity isChw db model assembled =
     ((viewPersonDetails language currentDate assembled.person Nothing |> div [ class "item" ])
-        :: viewActivity language currentDate zscores site id activity isChw assembled db model
+        :: viewActivity language currentDate zscores site activity isChw assembled db model
     )
         |> div [ class "ui unstackable items" ]
 
 
-warningPopup : Language -> NominalDate -> msg -> List NutritionAssessment -> Maybe (Html msg)
-warningPopup language currentDate closePopupMsg state =
+warningPopup : Language -> msg -> List NutritionAssessment -> Maybe (Html msg)
+warningPopup language closePopupMsg state =
     if List.isEmpty state then
         Nothing
 
@@ -169,7 +166,7 @@ warningPopup language currentDate closePopupMsg state =
         in
         Just <|
             div [ class "ui active modal diagnosis-popup" ]
-                [ div [ class "content" ] <|
+                [ div [ class "content" ]
                     [ div [ class "popup-heading-wrapper" ] infoHeading
                     , div [ class "popup-title" ] assessments
                     ]
@@ -204,14 +201,13 @@ viewActivity :
     -> NominalDate
     -> ZScore.Model.Model
     -> Site
-    -> NutritionEncounterId
     -> NutritionActivity
     -> Bool
     -> AssembledData
     -> ModelIndexedDb
     -> Model
     -> List (Html Msg)
-viewActivity language currentDate zscores site id activity isChw assembled db model =
+viewActivity language currentDate zscores site activity isChw assembled db model =
     let
         previousValuesSet =
             resolvePreviousValuesSetForChild currentDate site assembled.participant.person db
@@ -227,16 +223,16 @@ viewActivity language currentDate zscores site id activity isChw assembled db mo
             viewNutritionContent language currentDate zscores assembled db model.nutritionData
 
         Photo ->
-            viewPhotoContent language currentDate ( assembled.participant.person, assembled.measurements ) model.photoData
+            viewPhotoContent language ( assembled.participant.person, assembled.measurements ) model.photoData
 
         Weight ->
             viewWeightContent language currentDate zscores site isChw assembled model.weightData previousValuesSet.weight
 
         NCDA ->
-            viewNCDAContent language currentDate zscores site id assembled model.ncdaData db
+            viewNCDAContent language currentDate site assembled model.ncdaData db
 
         NextSteps ->
-            viewNextStepsContent language currentDate zscores id assembled db model.nextStepsData
+            viewNextStepsContent language currentDate zscores assembled db model.nextStepsData
 
 
 viewHeightContent : Language -> NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> HeightData -> Maybe Float -> List (Html Msg)
@@ -286,7 +282,7 @@ viewMuacContent language currentDate site assembled data previousValue =
                 |> muacFormWithDefault data.form
 
         ( inputs, tasks ) =
-            Measurement.View.muacFormInputsAndTasks language currentDate site assembled.person previousValue SetMuac form
+            Measurement.View.muacFormInputsAndTasks language currentDate site assembled.person previousValue SetMuac True form
 
         ( tasksCompleted, tasksTotal ) =
             resolveTasksCompletedFromTotal tasks
@@ -343,7 +339,7 @@ viewNutritionContent language currentDate zscores assembled db data =
     [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
-            viewNutritionForm language currentDate SetNutritionSign form
+            viewNutritionForm language SetNutritionSign form
         , viewSaveAction language
             (SaveNutrition assembled.participant.person assembled.measurements.nutrition assessment)
             (tasksCompleted /= totalTasks)
@@ -351,8 +347,8 @@ viewNutritionContent language currentDate zscores assembled db data =
     ]
 
 
-viewPhotoContent : Language -> NominalDate -> ( PersonId, NutritionMeasurements ) -> PhotoData -> List (Html Msg)
-viewPhotoContent language currentDate ( personId, measurements ) data =
+viewPhotoContent : Language -> ( PersonId, NutritionMeasurements ) -> PhotoData -> List (Html Msg)
+viewPhotoContent language ( personId, measurements ) data =
     let
         -- If we have a photo that we've just taken, but not saved, that is in
         -- `data.url`. We show that if we have it. Otherwise, we'll show the saved
@@ -384,14 +380,14 @@ viewPhotoContent language currentDate ( personId, measurements ) data =
     [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
-            viewPhotoForm language currentDate displayPhoto DropZoneComplete
+            viewPhotoForm language displayPhoto DropZoneComplete
         , viewSaveAction language saveMsg disabled
         ]
     ]
 
 
-viewPhotoForm : Language -> NominalDate -> Maybe ImageUrl -> (DropZoneFile -> msg) -> List (Html msg)
-viewPhotoForm language currentDate displayPhoto dropZoneCompleteMsg =
+viewPhotoForm : Language -> Maybe ImageUrl -> (DropZoneFile -> msg) -> List (Html msg)
+viewPhotoForm language displayPhoto dropZoneCompleteMsg =
     let
         activity =
             Photo
@@ -491,14 +487,12 @@ viewWeightContent language currentDate zscores site isChw assembled data previou
 viewNCDAContent :
     Language
     -> NominalDate
-    -> ZScore.Model.Model
     -> Site
-    -> NutritionEncounterId
     -> AssembledData
     -> NCDAData
     -> ModelIndexedDb
     -> List (Html Msg)
-viewNCDAContent language currentDate zscores site id assembled data db =
+viewNCDAContent language currentDate site assembled data db =
     let
         form =
             getMeasurementValueFunc assembled.measurements.ncda
@@ -528,7 +522,6 @@ viewNCDAContent language currentDate zscores site id assembled data db =
     in
     Measurement.View.viewNCDAContent language
         currentDate
-        zscores
         site
         personId
         assembled.person
@@ -538,8 +531,8 @@ viewNCDAContent language currentDate zscores site id assembled data db =
         db
 
 
-viewNextStepsContent : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> AssembledData -> ModelIndexedDb -> NextStepsData -> List (Html Msg)
-viewNextStepsContent language currentDate zscores id assembled db data =
+viewNextStepsContent : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> ModelIndexedDb -> NextStepsData -> List (Html Msg)
+viewNextStepsContent language currentDate zscores assembled db data =
     let
         measurements =
             assembled.measurements
@@ -594,7 +587,7 @@ viewNextStepsContent language currentDate zscores id assembled db data =
                 ]
 
         tasksCompletedFromTotalDict =
-            List.map (\task -> ( task, nextStepsTasksCompletedFromTotal currentDate measurements data task )) tasks
+            List.map (\task -> ( task, nextStepsTasksCompletedFromTotal measurements data task )) tasks
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
@@ -617,19 +610,18 @@ viewNextStepsContent language currentDate zscores id assembled db data =
                     getMeasurementValueFunc measurements.healthEducation
                         |> healthEducationFormWithDefault data.healthEducationForm
                         |> viewHealthEducationForm language
-                            currentDate
                             SetProvidedEducationForDiagnosis
                             SetReasonForNotProvidingHealthEducation
 
                 Just NextStepContributingFactors ->
                     getMeasurementValueFunc measurements.contributingFactors
                         |> contributingFactorsFormWithDefault data.contributingFactorsForm
-                        |> viewContributingFactorsForm language currentDate SetContributingFactorsSign
+                        |> viewContributingFactorsForm language SetContributingFactorsSign
 
                 Just NextStepFollowUp ->
                     getMeasurementValueFunc measurements.followUp
                         |> nutritionFollowUpFormWithDefault data.followUpForm
-                        |> viewNutritionFollowUpForm language currentDate SetFollowUpOption
+                        |> viewNutritionFollowUpForm language SetFollowUpOption
 
                 Nothing ->
                     emptyNode

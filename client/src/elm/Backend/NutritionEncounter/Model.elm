@@ -1,4 +1,4 @@
-module Backend.NutritionEncounter.Model exposing (..)
+module Backend.NutritionEncounter.Model exposing (Model, Msg(..), NutritionEncounter, NutritionEncounterType(..), emptyModel, emptyNutritionEncounter)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)

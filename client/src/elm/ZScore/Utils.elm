@@ -19,7 +19,7 @@ import Maybe.Extra exposing (orElseLazy)
 import RemoteData
 import Round
 import Utils.AllDict as AllDict exposing (AllDict)
-import ZScore.Model exposing (..)
+import ZScore.Model exposing (BMI(..), ByDaysAndMonths, Centimetres(..), Days(..), Height, Kilograms(..), Length, MaleAndFemale, Model, Months(..), ZScore, ZScoreEntry)
 
 
 selectGender : Gender -> MaleAndFemale a -> a

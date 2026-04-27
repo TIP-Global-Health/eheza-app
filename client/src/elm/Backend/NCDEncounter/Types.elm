@@ -1,4 +1,4 @@
-module Backend.NCDEncounter.Types exposing (..)
+module Backend.NCDEncounter.Types exposing (NCDDiagnosis(..), NCDProgressReportInitiator(..))
 
 import Backend.Entities exposing (NCDEncounterId)
 

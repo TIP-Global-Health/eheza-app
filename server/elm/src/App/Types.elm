@@ -19,9 +19,11 @@ type Language
     = English
     | Kinyarwanda
     | Kirundi
+    | Somali
 
 
 type Site
     = SiteRwanda
     | SiteBurundi
+    | SiteSomalia
     | SiteUnknown

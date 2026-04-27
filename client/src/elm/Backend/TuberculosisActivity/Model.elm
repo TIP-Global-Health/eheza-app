@@ -1,4 +1,4 @@
-module Backend.TuberculosisActivity.Model exposing (..)
+module Backend.TuberculosisActivity.Model exposing (TuberculosisActivity(..))
 
 {-| This module provides types relating to the UI for presenting
 prenatal activities.

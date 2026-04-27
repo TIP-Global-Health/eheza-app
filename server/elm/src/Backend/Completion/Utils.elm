@@ -1,4 +1,4 @@
-module Backend.Completion.Utils exposing (..)
+module Backend.Completion.Utils exposing (acuteIllnessActivityFromMapping, childScoreboardActivityFromMapping, hivActivityFromMapping, homeVisitActivityFromMapping, ncdActivityFromMapping, nutritionChildActivityFromMapping, nutritionMotherActivityFromMapping, prenatalActivityFromMapping, takenByFromString, takenByToString, tuberculosisActivityFromMapping, wellChildActivityFromMapping)
 
 import Backend.Completion.Model exposing (..)
 

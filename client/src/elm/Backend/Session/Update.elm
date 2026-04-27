@@ -4,11 +4,11 @@ import App.Model
 import App.Ports exposing (bindDropZone)
 import App.Utils exposing (triggerRollbarOnFailure)
 import AssocList as Dict
-import Backend.Endpoints exposing (..)
+import Backend.Endpoints exposing (attendanceEndpoint, childFbfEndpoint, contributingFactorsEndpoint, counselingSessionEndpoint, familyPlanningEndpoint, followUpEndpoint, groupHealthEducationEndpoint, groupNCDAEndpoint, groupSendToHCEndpoint, heightEndpoint, lactationEndpoint, motherFbfEndpoint, muacEndpoint, nutritionEndpoint, participantConsentEndpoint, photoEndpoint, sessionEndpoint, weightEndpoint)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Fetch
-import Backend.Session.Model exposing (..)
+import Backend.Session.Model exposing (Model, Msg(..), Session)
 import Backend.Utils exposing (saveMeasurementCmd, sw)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (unwrap)

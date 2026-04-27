@@ -1,4 +1,4 @@
-module Backend.PatientRecord.Utils exposing (..)
+module Backend.PatientRecord.Utils exposing (progressReportInitiatorFromUrlFragment, progressReportInitiatorToUrlFragment)
 
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)

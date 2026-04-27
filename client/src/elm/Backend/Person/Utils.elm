@@ -1,12 +1,13 @@
-module Backend.Person.Utils exposing (..)
+module Backend.Person.Utils exposing (ageInMonths, ageInYears, defaultIconForPerson, educationLevelFromInt, educationLevelToInt, eligibleForPrenatalEncounter, expectedAgeByPerson, genderFromString, genderToString, generateFullName, getHealthCenterName, graduatingAgeInMonth, hivStatusToString, initiatorFromUrlFragment, initiatorToUrlFragment, isAdult, isChildUnderAgeOf2, isChildUnderAgeOf5, isNewborn, isPersonAFertileWoman, isPersonAnAdult, maritalStatusFromString, maritalStatusToString, maxChildrenAtFamilyEncounter, modeOfDeliveryToString, resolveExpectedAge, ubudeheFromInt, ubudeheToInt)
 
 import AssocList as Dict
 import Backend.Entities exposing (HealthCenterId)
+import Backend.FamilyEncounterParticipant.Utils exposing (familyEncounterTypeFromString, familyEncounterTypeToString)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.IndividualEncounterParticipant.Utils exposing (individualEncounterTypeToString)
 import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model exposing (..)
+import Backend.Person.Model exposing (EducationLevel(..), ExpectedAge(..), HIVStatus(..), Initiator(..), MaritalStatus(..), ModeOfDelivery(..), ParticipantDirectoryOperation(..), Person, Ubudehe(..), VaginalDelivery(..))
 import Date
 import Gizra.NominalDate exposing (NominalDate, diffMonths, diffYears, formatYYYYMMDD)
 import Maybe.Extra exposing (isJust)
@@ -173,6 +174,9 @@ initiatorToUrlFragment initiator =
             -- from a dedicated form.
             ""
 
+        FamilyEncounterOrigin encounterType ->
+            "family-" ++ familyEncounterTypeToString encounterType
+
 
 initiatorFromUrlFragment : String -> Maybe Initiator
 initiatorFromUrlFragment s =
@@ -247,6 +251,11 @@ initiatorFromUrlFragment s =
                     _ ->
                         Nothing
 
+            else if String.startsWith "family-" s then
+                String.dropLeft 7 s
+                    |> familyEncounterTypeFromString
+                    |> Maybe.map FamilyEncounterOrigin
+
             else
                 Nothing
 
@@ -254,6 +263,11 @@ initiatorFromUrlFragment s =
 graduatingAgeInMonth : Int
 graduatingAgeInMonth =
     26
+
+
+maxChildrenAtFamilyEncounter : Int
+maxChildrenAtFamilyEncounter =
+    5
 
 
 getHealthCenterName : Maybe HealthCenterId -> ModelIndexedDb -> Maybe String

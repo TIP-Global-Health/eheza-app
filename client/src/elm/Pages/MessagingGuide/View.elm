@@ -1,4 +1,4 @@
-module Pages.MessagingGuide.View exposing (..)
+module Pages.MessagingGuide.View exposing (view)
 
 import App.Model
 import Html exposing (..)

@@ -11,7 +11,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.Nutrition.Activity.Utils exposing (activityCompleted, allMandatoryActivities, expectActivity)
-import Pages.Nutrition.Encounter.Model exposing (..)
+import Pages.Nutrition.Encounter.Model exposing (AssembledData, DialogType(..), Model, Msg(..), Tab(..))
 import Pages.Nutrition.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewConfirmationDialog, viewEndEncounterButton, viewPersonDetails, viewReportLink, viewSkipNCDADialog)
@@ -155,17 +155,6 @@ viewMainPageContent language currentDate zscores features id isChw db data model
                 , tabItem reportsTabTitle (model.selectedTab == Reports) "reports" (SetSelectedTab Reports)
                 ]
 
-        ( selectedActivities, emptySectionMessage ) =
-            case model.selectedTab of
-                Pending ->
-                    ( pendingActivities, translate language Translate.NoActivitiesPending )
-
-                Completed ->
-                    ( completedActivities, translate language Translate.NoActivitiesCompleted )
-
-                Reports ->
-                    ( [], "" )
-
         innerContent =
             if model.selectedTab == Reports then
                 div [ class "reports-wrapper" ]
@@ -178,6 +167,18 @@ viewMainPageContent language currentDate zscores features id isChw db data model
                     ]
 
             else
+                let
+                    ( selectedActivities, emptySectionMessage ) =
+                        case model.selectedTab of
+                            Pending ->
+                                ( pendingActivities, translate language Translate.NoActivitiesPending )
+
+                            Completed ->
+                                ( completedActivities, translate language Translate.NoActivitiesCompleted )
+
+                            Reports ->
+                                ( [], "" )
+                in
                 div [ class "full content" ]
                     [ div [ class "wrap-cards" ]
                         [ div [ class "ui four cards" ] <|
@@ -205,7 +206,7 @@ viewMainPageContent language currentDate zscores features id isChw db data model
                 action
 
         allowEndEncounter =
-            allowEndingEncounter isChw pendingActivities
+            allowEndingEncounter pendingActivities
 
         content =
             div [ class "ui full segment" ]
@@ -245,11 +246,11 @@ partitionActivitiesConsideringSkipped currentDate zscores features isChw db asse
         |> List.partition (activityCompleted currentDate zscores features isChw assembled db)
 
 
-allowEndingEncounter : Bool -> List NutritionActivity -> Bool
-allowEndingEncounter isChw pendingActivities =
+allowEndingEncounter : List NutritionActivity -> Bool
+allowEndingEncounter pendingActivities =
     let
         mandatoryActivities =
-            allMandatoryActivities isChw
+            allMandatoryActivities
     in
     List.all
         (\activity ->

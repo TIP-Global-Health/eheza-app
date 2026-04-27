@@ -78,13 +78,13 @@ while (TRUE) {
     }
   }
 
+  $nid = end($ids);
+
   $memory = round(memory_get_usage() / 1048576);
-  drush_print("Calculated so far: $total, Memory: $memory");
+  drush_print("Calculated so far: $total, Last nid: $nid, Memory: $memory");
 
   // Free up memory.
   drupal_static_reset();
-
-  $nid = end($ids);
 }
 
 drush_print("Done! Reports data calculated for $total children.");
