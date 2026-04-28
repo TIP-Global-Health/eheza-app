@@ -457,4 +457,10 @@ class RoboFile extends Tasks {
     $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-nutrition-report.php --region=$region");
   }
 
+   /**
+   * Generates the ANC implementation report.
+   */
+  public function reportANCImplementation($mode = NULL, $start_date = NULL, $end_date = NULL, $readable = FALSE) {
+    $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-anc-implementation.php --mode=$mode --start_date=$start_date --end_date=$end_date --readable=$readable");
+  }
 }
