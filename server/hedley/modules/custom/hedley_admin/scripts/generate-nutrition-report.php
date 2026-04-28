@@ -272,7 +272,7 @@ function base_query_for_bundle($bundle): EntityFieldQuery {
  *   Examined patients.
  */
 function format_prevalence(array $cases, array $examined) {
-  return round(((count($cases) / count(array_unique($examined))) * 100), 3) . ' %';
+  return round(((count($cases) / count(array_unique($examined))) * 100), 3) . ' % (' . count(array_unique($examined)) . ')';
 }
 
 /**
@@ -391,7 +391,7 @@ function calculate_incidence(array $dataset, string $current_period, array $prev
     }
   }
 
-  return round((($new_cases / count(array_unique($dataset[$current_period]['any']))) * 100), 3) . ' %';
+  return round((($new_cases / count(array_unique($dataset[$current_period]['any']))) * 100), 3) . ' % (' . $new_cases . ')';
 }
 
 /**
