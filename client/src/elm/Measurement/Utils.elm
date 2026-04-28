@@ -693,9 +693,9 @@ vitalsFormWithDefault form saved =
                 , diaBloodPressureDirty = form.diaBloodPressureDirty
                 , heartRate = maybeValueConsideringIsDirtyField form.heartRateDirty form.heartRate value.heartRate
                 , heartRateDirty = form.heartRateDirty
-                , respiratoryRate = valueConsideringIsDirtyField form.respiratoryRateDirty form.respiratoryRate value.respiratoryRate
+                , respiratoryRate = maybeValueConsideringIsDirtyField form.respiratoryRateDirty form.respiratoryRate value.respiratoryRate
                 , respiratoryRateDirty = form.respiratoryRateDirty
-                , bodyTemperature = valueConsideringIsDirtyField form.bodyTemperatureDirty form.bodyTemperature value.bodyTemperature
+                , bodyTemperature = maybeValueConsideringIsDirtyField form.bodyTemperatureDirty form.bodyTemperature value.bodyTemperature
                 , bodyTemperatureDirty = form.bodyTemperatureDirty
                 , sysRepeated = maybeValueConsideringIsDirtyField form.sysRepeatedDirty form.sysRepeated value.sysRepeated
                 , sysRepeatedDirty = form.sysRepeatedDirty
@@ -713,18 +713,19 @@ toVitalsValueWithDefault saved form =
 
 toVitalsValue : VitalsForm -> Maybe VitalsValue
 toVitalsValue form =
-    Maybe.map2
-        (\respiratoryRate bodyTemperature ->
-            VitalsValue form.sysBloodPressure
+    if isJust form.respiratoryRate || isJust form.bodyTemperature then
+        Just
+            (VitalsValue form.sysBloodPressure
                 form.diaBloodPressure
                 form.heartRate
-                respiratoryRate
-                bodyTemperature
+                form.respiratoryRate
+                form.bodyTemperature
                 form.sysRepeated
                 form.diaRepeated
-        )
-        form.respiratoryRate
-        form.bodyTemperature
+            )
+
+    else
+        Nothing
 
 
 resolveMedicationsNonAdministrationReasons :

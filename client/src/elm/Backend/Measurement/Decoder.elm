@@ -2305,8 +2305,8 @@ decodeVitalsValue =
         |> optional "sys" (nullable decodeFloat) Nothing
         |> optional "dia" (nullable decodeFloat) Nothing
         |> optional "heart_rate" (nullable decodeInt) Nothing
-        |> required "respiratory_rate" decodeInt
-        |> required "body_temperature" decodeFloat
+        |> optional "respiratory_rate" (nullable decodeInt) Nothing
+        |> optional "body_temperature" (nullable decodeFloat) Nothing
         |> optional "sys_repeated" (nullable decodeFloat) Nothing
         |> optional "dia_repeated" (nullable decodeFloat) Nothing
 

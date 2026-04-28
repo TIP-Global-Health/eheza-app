@@ -779,8 +779,11 @@ generateVitalsFormConfig assembled =
     , heartRatePreviousValue = Nothing
     , respiratoryRatePreviousValue =
         resolvePreviousValue assembled .vitals .respiratoryRate
+            |> Maybe.andThen identity
             |> Maybe.map toFloat
-    , bodyTemperaturePreviousValue = resolvePreviousValue assembled .vitals .bodyTemperature
+    , bodyTemperaturePreviousValue =
+        resolvePreviousValue assembled .vitals .bodyTemperature
+            |> Maybe.andThen identity
     , birthDate = assembled.person.birthDate
     , formClass = "vitals"
     , mode = VitalsFormBasic
