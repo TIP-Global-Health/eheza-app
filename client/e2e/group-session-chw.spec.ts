@@ -3,6 +3,7 @@ import { click, setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { syncAndWait } from './helpers/common';
+import { verifyFeatureGatesGroupEncounterButton } from './helpers/feature-flags';
 import {
   navigateToChwGroupSession,
   createMotherOnAttendancePage,
@@ -51,6 +52,10 @@ test.describe('CHW: Group Nutrition Session', () => {
     // Backend: Verifies 6 node types created (attendance, height, weight,
     //   muac, nutrition, family_planning).
     //   Confirms child_fbf, mother_fbf, lactation absent.
+
+    // Verify FeatureNutritionGroup flag gates the "Child Nutrition" button on Group Encounter Types.
+    // (Keep group_education ON so the Group Assessment entry button on Clinical stays reachable.)
+    await verifyFeatureGatesGroupEncounterButton(page, 'nutrition_group', 'Child Nutrition', 'group_education');
 
     // 1. Navigate to CHW group session.
     await navigateToChwGroupSession(page);

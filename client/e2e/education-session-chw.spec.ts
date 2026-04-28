@@ -3,6 +3,7 @@ import { setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { syncAndWait } from './helpers/common';
+import { verifyFeatureGatesGroupEncounterButton } from './helpers/feature-flags';
 import {
   navigateToEducationSession,
   selectTopics,
@@ -36,6 +37,10 @@ test.describe('CHW: Group Education Session', () => {
     // Flow: GroupEncounterTypesPage → Topics → Attendance → Record → Sync.
     // Backend: Verifies education_session node exists with correct topics,
     //   participants, and end date set.
+
+    // Verify FeatureGroupEducation flag gates the "Health Education" button on Group Encounter Types.
+    // (Keep nutrition_group ON so the Group Assessment entry button on Clinical stays reachable.)
+    await verifyFeatureGatesGroupEncounterButton(page, 'group_education', 'Health Education', 'nutrition_group');
 
     // 1. Navigate to GroupEncounterTypesPage → click "Health Education".
     await navigateToEducationSession(page);

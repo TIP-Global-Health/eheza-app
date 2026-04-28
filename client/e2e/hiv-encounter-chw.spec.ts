@@ -7,6 +7,7 @@ import {
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { syncAndWait } from './helpers/common';
+import { verifyFeatureGatesEncounterButton } from './helpers/feature-flags';
 import {
   createAdultAndStartHIVEncounter,
   completeDiagnostics,
@@ -44,6 +45,9 @@ test.describe('CHW: HIV Initial Encounter — Positive Diagnosis', () => {
   // Backend: Verifies 5 node types created (diagnostics, medication, treatment_review, health_education, follow_up),
   //          confirms hiv_referral and hiv_symptom_review absent.
   test('complete initial HIV encounter with positive diagnosis, verify backend sync', async ({ page }) => {
+    // Verify FeatureHIVManagement flag gates the "HIV Management" button.
+    await verifyFeatureGatesEncounterButton(page, 'hiv_management', 'HIV Management');
+
     const { fullName } = await createAdultAndStartHIVEncounter(page, {
       isFemale: false,
     });

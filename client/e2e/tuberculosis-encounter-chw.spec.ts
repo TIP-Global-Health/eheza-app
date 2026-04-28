@@ -7,6 +7,7 @@ import {
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { syncAndWait } from './helpers/common';
+import { verifyFeatureGatesEncounterButton } from './helpers/feature-flags';
 import {
   createAdultAndStartTBEncounter,
   completeDiagnostics,
@@ -46,6 +47,9 @@ test.describe('CHW: Tuberculosis Initial Encounter — Positive Diagnosis', () =
   // Backend: Verifies 6 node types created (diagnostics, medication, dot, treatment_review,
   //          health_education, follow_up), confirms symptom_review and referral absent.
   test('complete initial TB encounter with positive pulmonary diagnosis, verify backend sync', async ({ page }) => {
+    // Verify FeatureTuberculosisManagement flag gates the "TB Management" button.
+    await verifyFeatureGatesEncounterButton(page, 'tuberculosis_management', 'TB Management');
+
     const { fullName } = await createAdultAndStartTBEncounter(page, {
       isFemale: false,
     });

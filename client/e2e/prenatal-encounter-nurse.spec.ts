@@ -4,6 +4,7 @@ import { verifyCaseManagementEntry } from './helpers/case-management';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { syncAndWait } from './helpers/common';
+import { verifyFeatureGatesEncounterButton } from './helpers/feature-flags';
 import {
   createAdultFemaleAndStartEncounter,
   startPrenatalEncounter,
@@ -50,6 +51,10 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
   test('complete all activities and verify backend sync', async ({ page }) => {
     // Nurse initial encounter completes 12+ activities; needs more than the default 2m.
     test.setTimeout(600000);
+
+    // Verify FeatureAntenatal flag gates the "Antenatal Care" button.
+    await verifyFeatureGatesEncounterButton(page, 'antenatal', 'Antenatal Care');
+
     // LMP date ~30 weeks ago — ensures EGA >= 28w for MentalHealth,
     // >= 13w for MalariaPrevention, and triggers all Medication tabs.
     const lmpDate = new Date();

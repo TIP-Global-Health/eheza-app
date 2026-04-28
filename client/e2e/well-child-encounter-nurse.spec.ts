@@ -3,6 +3,7 @@ import { setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { syncAndWait } from './helpers/common';
+import { verifyFeatureGatesEncounterButton } from './helpers/feature-flags';
 import {
   createChildAndStartWellChildEncounter,
   completeDangerSigns,
@@ -35,6 +36,8 @@ test.describe('Nurse: Well Child PediatricCare — Normal Encounter', () => {
   });
 
   test('complete normal encounter with all mandatory activities and verify backend sync', async ({ page }) => {
+    // Verify FeatureWellChild flag gates the "Standard Pediatric Visit" button (nurse-side).
+    await verifyFeatureGatesEncounterButton(page, 'well_child', 'Standard Pediatric Visit');
 
     // Use 23 months (< 24) so NCDA activity appears for nurse.
     const { fullName } = await createChildAndStartWellChildEncounter(page, {

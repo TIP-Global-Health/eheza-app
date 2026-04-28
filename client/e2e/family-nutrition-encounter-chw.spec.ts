@@ -3,6 +3,7 @@ import { setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { WAIT, syncAndWait } from './helpers/common';
+import { verifyFeatureGatesClinicalAssessmentButton } from './helpers/feature-flags';
 import {
   createMotherAndNavigateToPersonPage,
   addChild,
@@ -40,6 +41,9 @@ test.describe('CHW: Family Nutrition Encounter', () => {
     //   family_nutrition_encounter exist.
     //   Confirms aheza_child, family_nutrition_muac_child,
     //   family_nutrition_photo absent (no children).
+
+    // Verify FeatureFamilyNutrition flag gates the "Family Assessment" button on Clinical (CHW only).
+    await verifyFeatureGatesClinicalAssessmentButton(page, 'family_nutrition', 'family-assessment');
 
     // 1. Register mother, skip adding children, go straight to participant page.
     const mother = await createMotherAndNavigateToPersonPage(page);

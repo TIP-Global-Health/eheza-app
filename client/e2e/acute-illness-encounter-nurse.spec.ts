@@ -3,6 +3,7 @@ import { setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { WAIT, syncAndWait } from './helpers/common';
+import { verifyFeatureGatesEncounterButton } from './helpers/feature-flags';
 import {
   createAdultAndStartEncounter,
   createChildAndStartEncounter,
@@ -36,6 +37,8 @@ test.describe('Nurse: Acute Illness Initial + Subsequent Encounter — Malaria U
   });
 
   test('complete initial and subsequent encounters, verify backend sync', async ({ page }) => {
+    // Verify FeatureAcuteIllness flag gates the "Acute Illness" button.
+    await verifyFeatureGatesEncounterButton(page, 'acute_illness', 'Acute Illness');
 
     // =====================================================================
     // PART 1: Nurse Initial Encounter — Malaria Uncomplicated

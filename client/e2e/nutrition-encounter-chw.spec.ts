@@ -8,6 +8,7 @@ import {
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { WAIT, syncAndWait } from './helpers/common';
+import { verifyFeatureGatesEncounterButton } from './helpers/feature-flags';
 import {
   createChildAndStartEncounter,
   enterWeight,
@@ -38,6 +39,9 @@ test.describe('CHW: Individual Nutrition Encounter', () => {
   test('normal encounter without height (optional for CHW) and backend sync', async ({
     page,
   }) => {
+    // Verify FeatureNutritionIndividual flag gates the "Child Nutrition" button.
+    await verifyFeatureGatesEncounterButton(page, 'nutrition_individual', 'Child Nutrition');
+
     const { fullName } = await createChildAndStartEncounter(page, {
       ageMonths: 24,
       isChw: true,

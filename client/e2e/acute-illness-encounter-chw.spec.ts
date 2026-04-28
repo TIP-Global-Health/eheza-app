@@ -7,6 +7,7 @@ import {
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { WAIT, syncAndWait } from './helpers/common';
+import { verifyFeatureGatesEncounterButton } from './helpers/feature-flags';
 import {
   createAdultAndStartEncounter,
   completeSymptoms,
@@ -38,6 +39,8 @@ test.describe('CHW: Acute Illness Initial Encounter — Uncomplicated Pneumonia'
   });
 
   test('complete CHW initial encounter with respiratory symptoms, verify backend sync', async ({ page }) => {
+    // Verify FeatureAcuteIllness flag gates the "Acute Illness" button.
+    await verifyFeatureGatesEncounterButton(page, 'acute_illness', 'Acute Illness');
 
     const { fullName } = await createAdultAndStartEncounter(page, {
       isChw: true,

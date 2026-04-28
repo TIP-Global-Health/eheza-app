@@ -3,6 +3,7 @@ import { setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { syncAndWait } from './helpers/common';
+import { verifyFeatureGatesEncounterButton } from './helpers/feature-flags';
 import {
   createChildAndStartEncounter,
   completeNCDA,
@@ -38,6 +39,9 @@ test.describe('CHW: Child Scoreboard Encounter — First NCDA + Vaccination Hist
   // Backend: Verifies child_scoreboard_ncda + 7 vaccination nodes created,
   //          confirms child_scoreboard_dtp_sa_iz absent (Burundi-only).
   test('complete NCDA and vaccination history, verify backend sync', async ({ page }) => {
+    // Verify FeatureNCDA flag gates the "Child Scorecard" button.
+    await verifyFeatureGatesEncounterButton(page, 'ncda', 'Child Scorecard');
+
     // 1. Register a 10-month-old child and start the encounter.
     const { fullName } = await createChildAndStartEncounter(page, {
       ageMonths: 10,
