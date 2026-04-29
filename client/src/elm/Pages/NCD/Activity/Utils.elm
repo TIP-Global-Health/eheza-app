@@ -199,18 +199,6 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
         |> List.all (activityCompleted currentDate assembled)
 
 
-resolvePreviousValue : AssembledData -> (NCDMeasurements -> Maybe ( id, NCDMeasurement a )) -> (a -> b) -> Maybe b
-resolvePreviousValue assembled measurementFunc valueFunc =
-    assembled.previousEncountersData
-        |> List.filterMap
-            (.measurements
-                >> measurementFunc
-                >> Maybe.map (Tuple.second >> .value >> valueFunc)
-            )
-        |> List.reverse
-        |> List.head
-
-
 resolvePreviousMaybeValue : AssembledData -> (NCDMeasurements -> Maybe ( id, NCDMeasurement a )) -> (a -> Maybe b) -> Maybe b
 resolvePreviousMaybeValue assembled measurementFunc valueFunc =
     assembled.previousEncountersData

@@ -1405,12 +1405,6 @@ viewVitalsForm language currentDate config form =
 vitalsFormInputsAndTasks : Language -> NominalDate -> VitalsFormConfig msg -> VitalsForm -> ( List (Html msg), List (Maybe Bool) )
 vitalsFormInputsAndTasks language currentDate config form =
     let
-        respiratoryRateSkipped =
-            form.respiratoryRateNotTaken == Just True
-
-        bodyTemperatureSkipped =
-            form.bodyTemperatureNotTaken == Just True
-
         sysBloodPressureUpdateFunc value form_ =
             { form_ | sysBloodPressure = value, sysBloodPressureDirty = True }
 
@@ -1508,75 +1502,43 @@ vitalsFormInputsAndTasks language currentDate config form =
                 ageInYears
                 |> Maybe.withDefault ( [], [] )
 
-        respiratoryRateCheckbox =
-            if config.allowSkipping then
-                div
-                    [ class "ui checkbox activity"
-                    , onClick <| config.setRespiratoryRateNotTakenMsg <| not respiratoryRateSkipped
-                    ]
-                    [ input
-                        [ type_ "checkbox"
-                        , checked respiratoryRateSkipped
-                        , classList [ ( "checked", respiratoryRateSkipped ) ]
-                        ]
-                        []
-                    , label [] [ text <| translate language Translate.UnableToTakeMeasurement ]
-                    ]
-
-            else
-                emptyNode
-
-        bodyTemperatureCheckbox =
-            if config.allowSkipping then
-                div
-                    [ class "ui checkbox activity"
-                    , onClick <| config.setBodyTemperatureNotTakenMsg <| not bodyTemperatureSkipped
-                    ]
-                    [ input
-                        [ type_ "checkbox"
-                        , checked bodyTemperatureSkipped
-                        , classList [ ( "checked", bodyTemperatureSkipped ) ]
-                        ]
-                        []
-                    , label [] [ text <| translate language Translate.UnableToTakeMeasurement ]
-                    ]
-
-            else
-                emptyNode
-
         respiratoryRateSection =
             let
-                ( redAlerts, yellowAlerts ) =
-                    case config.invokationModule of
-                        InvokationModulePrenatal ->
-                            ( [ [ (>) 12 ], [ (<) 30 ] ]
-                            , [ [ (<=) 21, (>=) 30 ] ]
-                            )
-
-                        _ ->
-                            Maybe.map
-                                (\ageYears ->
-                                    let
-                                        ( redAlertMinValue, redAlertMaxValue ) =
-                                            if ageYears < 1 then
-                                                ( 30, 49 )
-
-                                            else if ageYears < 5 then
-                                                ( 24, 39 )
-
-                                            else
-                                                ( 18, 30 )
-                                    in
-                                    ( [ [ (>) redAlertMinValue ], [ (<) redAlertMaxValue ] ], [] )
-                                )
-                                ageInYears
-                                |> Maybe.withDefault ( [], [] )
+                respiratoryRateSkipped =
+                    form.respiratoryRateNotTaken == Just True
 
                 inputRows =
                     if respiratoryRateSkipped then
                         []
 
                     else
+                        let
+                            ( redAlerts, yellowAlerts ) =
+                                case config.invokationModule of
+                                    InvokationModulePrenatal ->
+                                        ( [ [ (>) 12 ], [ (<) 30 ] ]
+                                        , [ [ (<=) 21, (>=) 30 ] ]
+                                        )
+
+                                    _ ->
+                                        Maybe.map
+                                            (\ageYears ->
+                                                let
+                                                    ( redAlertMinValue, redAlertMaxValue ) =
+                                                        if ageYears < 1 then
+                                                            ( 30, 49 )
+
+                                                        else if ageYears < 5 then
+                                                            ( 24, 39 )
+
+                                                        else
+                                                            ( 18, 30 )
+                                                in
+                                                ( [ [ (>) redAlertMinValue ], [ (<) redAlertMaxValue ] ], [] )
+                                            )
+                                            ageInYears
+                                            |> Maybe.withDefault ( [], [] )
+                        in
                         [ div [ class "ui grid" ]
                             [ div [ class "twelve wide column" ]
                                 [ viewLabel language Translate.RespiratoryRate ]
@@ -1594,6 +1556,24 @@ vitalsFormInputsAndTasks language currentDate config form =
                             Translate.BreathsPerMinuteUnitLabel
                         , Pages.Utils.viewPreviousMeasurement language config.respiratoryRatePreviousValue Translate.BreathsPerMinuteUnitLabel
                         ]
+
+                respiratoryRateCheckbox =
+                    if config.allowSkipping then
+                        div
+                            [ class "ui checkbox activity"
+                            , onClick <| config.setRespiratoryRateNotTakenMsg <| not respiratoryRateSkipped
+                            ]
+                            [ input
+                                [ type_ "checkbox"
+                                , checked respiratoryRateSkipped
+                                , classList [ ( "checked", respiratoryRateSkipped ) ]
+                                ]
+                                []
+                            , label [] [ text <| translate language Translate.UnableToTakeMeasurement ]
+                            ]
+
+                    else
+                        emptyNode
             in
             ( inputRows ++ [ respiratoryRateCheckbox, separator ]
             , [ if respiratoryRateSkipped then
@@ -1606,6 +1586,9 @@ vitalsFormInputsAndTasks language currentDate config form =
 
         bodyTemperatureSection =
             let
+                bodyTemperatureSkipped =
+                    form.bodyTemperatureNotTaken == Just True
+
                 inputRows =
                     if bodyTemperatureSkipped then
                         []
@@ -1628,6 +1611,24 @@ vitalsFormInputsAndTasks language currentDate config form =
                             Translate.Celsius
                         , Pages.Utils.viewPreviousMeasurement language config.bodyTemperaturePreviousValue Translate.Celsius
                         ]
+
+                bodyTemperatureCheckbox =
+                    if config.allowSkipping then
+                        div
+                            [ class "ui checkbox activity"
+                            , onClick <| config.setBodyTemperatureNotTakenMsg <| not bodyTemperatureSkipped
+                            ]
+                            [ input
+                                [ type_ "checkbox"
+                                , checked bodyTemperatureSkipped
+                                , classList [ ( "checked", bodyTemperatureSkipped ) ]
+                                ]
+                                []
+                            , label [] [ text <| translate language Translate.UnableToTakeMeasurement ]
+                            ]
+
+                    else
+                        emptyNode
             in
             ( inputRows ++ [ bodyTemperatureCheckbox ]
             , [ if bodyTemperatureSkipped then
