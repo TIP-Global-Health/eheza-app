@@ -3985,6 +3985,7 @@ translationSet trans =
                     { english = "Was the baby breastfed within an hour of delivery"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
+                    , somali = Nothing
                     }
 
                 _ ->
