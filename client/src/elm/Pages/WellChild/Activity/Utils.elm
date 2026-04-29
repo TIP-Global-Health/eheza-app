@@ -720,18 +720,8 @@ dangerSignsTasksCompletedFromTotal currentDate isChw assembled data task =
 
 mandatoryDangerSignsTasksCompleted : AssembledData -> Bool
 mandatoryDangerSignsTasksCompleted assembled =
-    resolvedMandatoryDangerSignsTasksCompleted assembled
-        |> List.all (dangerSignsTaskCompleted assembled)
-
-
-resolvedMandatoryDangerSignsTasksCompleted : AssembledData -> List DangerSignsTask
-resolvedMandatoryDangerSignsTasksCompleted assembled =
-    case assembled.encounter.encounterType of
-        PediatricCare ->
-            [ TaskSymptomsReview, TaskVitals ]
-
-        _ ->
-            [ TaskSymptomsReview, TaskVitals ]
+    dangerSignsTaskCompleted assembled TaskSymptomsReview
+        && dangerSignsTaskCompleted assembled TaskVitals
 
 
 symptomsReviewFormInputsAndTasks : Language -> SymptomsReviewForm -> ( List (Html Msg), List (Maybe Bool) )

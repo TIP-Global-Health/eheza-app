@@ -736,27 +736,28 @@ toVitalsValueWithDefault saved form =
 toVitalsValue : VitalsForm -> Maybe VitalsValue
 toVitalsValue form =
     let
+        rrSkipped =
+            form.respiratoryRateNotTaken == Just True
+
+        tempSkipped =
+            form.bodyTemperatureNotTaken == Just True
+
         rrField =
-            if form.respiratoryRateNotTaken == Just True then
+            if rrSkipped then
                 Nothing
 
             else
                 form.respiratoryRate
 
         tempField =
-            if form.bodyTemperatureNotTaken == Just True then
+            if tempSkipped then
                 Nothing
 
             else
                 form.bodyTemperature
 
         anyContent =
-            isJust rrField
-                || isJust tempField
-                || form.respiratoryRateNotTaken
-                == Just True
-                || form.bodyTemperatureNotTaken
-                == Just True
+            isJust rrField || isJust tempField || rrSkipped || tempSkipped
     in
     if anyContent then
         Just
