@@ -1,4 +1,4 @@
-module Backend.EducationSession.Model exposing (..)
+module Backend.EducationSession.Model exposing (EducationSession, EducationTopic(..), Model, Msg(..), emptyEducationSession, emptyModel)
 
 import Backend.Entities exposing (..)
 import EverySet exposing (EverySet)

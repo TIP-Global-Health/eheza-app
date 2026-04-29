@@ -1,4 +1,4 @@
-module Backend.NutritionEncounter.Utils exposing (..)
+module Backend.NutritionEncounter.Utils exposing (calculateZScoreWeightForAge, generateIndividualChildScoreboardMeasurementsForChild, generateNutritionAssessment, getAcuteIllnessEncountersForParticipant, getChildScoreboardEncountersForParticipant, getHIVEncountersForParticipant, getHomeVisitEncountersForParticipant, getNCDEncountersForParticipant, getNewbornExamPregnancySummary, getNutritionEncountersForParticipant, getPrenatalEncountersForParticipant, getTuberculosisEncountersForParticipant, getWellChildEncountersForParticipant, nutritionAssessmentForBackend, resolveAllWeightMeasurementsForChild, resolveNCDANeverFilled, resolveNCDANotFilledAfterAgeOfSixMonths, resolvePreviousValuesSetForChild)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
@@ -13,7 +13,7 @@ import Backend.Measurement.Utils
         ( getHeightValue
         , getMeasurementValueFunc
         , headCircumferenceValueFunc
-        , muacIndication
+        , muacIndicationForChild
         , muacValueFunc
         , nutritionSignToString
         , weightValueFunc
@@ -45,7 +45,7 @@ generateNutritionAssessment :
     -> ZScore.Model.Model
     -> PersonId
     -> Maybe MuacInCm
-    -> Maybe (EverySet.EverySet ChildNutritionSign)
+    -> Maybe (EverySet ChildNutritionSign)
     -> Maybe Float
     -> Bool
     -> ModelIndexedDb
@@ -699,12 +699,12 @@ zScoreWeightForAgeSevere zScore =
 
 muacSevere : MuacInCm -> Bool
 muacSevere muac =
-    muacIndication muac == ColorAlertRed
+    muacIndicationForChild muac == ColorAlertRed
 
 
 muacModerate : MuacInCm -> Bool
 muacModerate muac =
-    muacIndication muac == ColorAlertYellow
+    muacIndicationForChild muac == ColorAlertYellow
 
 
 nutritionAssessmentForBackend : List NutritionAssessment -> EverySet NutritionAssessment

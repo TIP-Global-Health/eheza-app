@@ -1,4 +1,4 @@
-module Backend.Measurement.Encoder exposing (..)
+module Backend.Measurement.Encoder exposing (encodeAcuteFindings, encodeAcuteIllnessContactsTracing, encodeAcuteIllnessCoreExam, encodeAcuteIllnessDangerSigns, encodeAcuteIllnessFollowUp, encodeAcuteIllnessMuac, encodeAcuteIllnessNutrition, encodeAcuteIllnessTraceContact, encodeAcuteIllnessVitals, encodeAhezaChild, encodeAhezaMother, encodeAppointmentConfirmation, encodeAttendance, encodeBirthPlan, encodeBreastExam, encodeCall114, encodeCall114Sign, encodeChildFbf, encodeChildScoreboardBCGImmunisation, encodeChildScoreboardDTPImmunisation, encodeChildScoreboardDTPStandaloneImmunisation, encodeChildScoreboardIPVImmunisation, encodeChildScoreboardMRImmunisation, encodeChildScoreboardNCDA, encodeChildScoreboardOPVImmunisation, encodeChildScoreboardPCV13Immunisation, encodeChildScoreboardRotarixImmunisation, encodeContributingFactors, encodeCorePhysicalExam, encodeCounselingSession, encodeCovidTesting, encodeDangerSign, encodeDangerSigns, encodeExposure, encodeFamilyNutritionMuacChild, encodeFamilyNutritionMuacMother, encodeFamilyNutritionPhoto, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeFollowUp, encodeGroupHealthEducation, encodeGroupNCDA, encodeGroupSendToHC, encodeHCContact, encodeHCContactSign, encodeHCRecommendation, encodeHIVDiagnostics, encodeHIVFollowUp, encodeHIVHealthEducation, encodeHIVMedication, encodeHIVReferral, encodeHIVSymptomReview, encodeHIVTreatmentReview, encodeHealthEducation, encodeHeight, encodeIsolation, encodeIsolationSign, encodeLactation, encodeLastMenstrualPeriod, encodeMalariaPrevention, encodeMalariaTesting, encodeMedicalCondition, encodeMedicalHistory, encodeMedication, encodeMedicationDistribution, encodeMotherFbf, encodeMuac, encodeNCDCoMorbidities, encodeNCDCoreExam, encodeNCDCreatinineTest, encodeNCDDangerSigns, encodeNCDFamilyHistory, encodeNCDFamilyPlanning, encodeNCDHIVTest, encodeNCDHbA1cTest, encodeNCDHealthEducation, encodeNCDLabsResults, encodeNCDLipidPanelTest, encodeNCDLiverFunctionTest, encodeNCDMedicationDistribution, encodeNCDMedicationHistory, encodeNCDOutsideCare, encodeNCDPregnancyTest, encodeNCDRandomBloodSugarTest, encodeNCDReferral, encodeNCDSocialHistory, encodeNCDSymptomReview, encodeNCDUrineDipstickTest, encodeNCDVitals, encodeNutrition, encodeNutritionCaring, encodeNutritionContributingFactors, encodeNutritionFeeding, encodeNutritionFollowUp, encodeNutritionFoodSecurity, encodeNutritionHealthEducation, encodeNutritionHeight, encodeNutritionHygiene, encodeNutritionMuac, encodeNutritionNCDA, encodeNutritionNutrition, encodeNutritionPhoto, encodeNutritionSendToHC, encodeNutritionSign, encodeNutritionWeight, encodeObstetricHistory, encodeObstetricHistoryStep2, encodeObstetricalExam, encodeParticipantConsent, encodePhoto, encodePregnancyTest, encodePrenatalAspirin, encodePrenatalBloodGpRsTest, encodePrenatalBreastfeeding, encodePrenatalCalcium, encodePrenatalFamilyPlanning, encodePrenatalFefol, encodePrenatalFolate, encodePrenatalFollowUp, encodePrenatalGUExam, encodePrenatalHIVPCRTest, encodePrenatalHIVTest, encodePrenatalHealthEducation, encodePrenatalHemoglobinTest, encodePrenatalHepatitisBTest, encodePrenatalIron, encodePrenatalLabsResults, encodePrenatalMMS, encodePrenatalMalariaTest, encodePrenatalMebendazole, encodePrenatalMedicationDistribution, encodePrenatalMentalHealth, encodePrenatalNutrition, encodePrenatalOutsideCare, encodePrenatalPartnerHIVTest, encodePrenatalPhoto, encodePrenatalRandomBloodSugarTest, encodePrenatalSendToHC, encodePrenatalSpecialityCare, encodePrenatalSymptomReview, encodePrenatalSyphilisTest, encodePrenatalTetanusImmunisation, encodePrenatalUltrasound, encodePrenatalUrineDipstickTest, encodeRecommendation114, encodeSendToHC, encodeSendToHCSign, encodeSocialHistory, encodeSymptomsGI, encodeSymptomsGeneral, encodeSymptomsRespiratory, encodeTestExecutionNote, encodeTestResult, encodeTravelHistory, encodeTreatmentOngoing, encodeTreatmentReview, encodeTuberculosisDOT, encodeTuberculosisDiagnostics, encodeTuberculosisFollowUp, encodeTuberculosisHealthEducation, encodeTuberculosisMedication, encodeTuberculosisReferral, encodeTuberculosisSymptomReview, encodeTuberculosisTreatmentReview, encodeVitals, encodeWeight, encodeWellChildAlbendazole, encodeWellChildBCGImmunisation, encodeWellChildCaring, encodeWellChildContributingFactors, encodeWellChildDTPImmunisation, encodeWellChildDTPStandaloneImmunisation, encodeWellChildECD, encodeWellChildFeeding, encodeWellChildFollowUp, encodeWellChildFoodSecurity, encodeWellChildHPVImmunisation, encodeWellChildHeadCircumference, encodeWellChildHealthEducation, encodeWellChildHeight, encodeWellChildHygiene, encodeWellChildIPVImmunisation, encodeWellChildMRImmunisation, encodeWellChildMebendezole, encodeWellChildMuac, encodeWellChildNCDA, encodeWellChildNextVisit, encodeWellChildNutrition, encodeWellChildOPVImmunisation, encodeWellChildPCV13Immunisation, encodeWellChildPhoto, encodeWellChildPregnancySummary, encodeWellChildRotarixImmunisation, encodeWellChildSendToHC, encodeWellChildSymptomsReview, encodeWellChildVitals, encodeWellChildVitaminA, encodeWellChildWeight, malariaRapidTestResultAsString)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Encoder exposing (encodeAcuteIllnessDiagnosis)
@@ -6,7 +6,7 @@ import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
 import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (..)
+import Backend.Measurement.Utils exposing (administrationNoteToString, ahezaDistributionReasonToString, avoidingGuidanceReasonToString, bilirubinValueToString, bloodGroupToString, bloodSmearResultToString, breastfeedingSignToString, foodGroupToString, glucoseValueToString, guExamSignToString, haemoglobinValueToString, hivDiagnosisSignToString, hivHealthEducationSignToString, hivPrescribedMedicationToString, hivSymptomToString, illnessSymptomToString, ketoneValueToString, laboratoryTestToString, lateFirstANCVisitReasonToString, leukocytesValueToString, lmpDateNotConfidentReasonToString, medicalConditionToString, medicalHistoryInfectiousDiseaseToString, medicalHistoryMentalHealthIssueToString, medicalHistoryPhysicalConditionToString, medicalHistorySignToString, medicationCausingHypertensionToString, medicationTreatingDiabetesToString, medicationTreatingHypertensionToString, ncdDangerSignToString, ncdFamilyHistorySignToString, ncdGroup1SymptomToString, ncdGroup2SymptomToString, ncdPainSymptomToString, ncdSocialHistorySignToString, ncdaSignToString, nitriteValueToString, nutritionAssessmentToString, nutritionSignToString, obstetricHistoryStep2SignToString, outsideCareMedicationToString, outsideCareSignToString, phValueToString, postpartumChildDangerSignToString, postpartumHealingProblemToString, postpartumMotherDangerSignToString, predecessorToString, pregnancyTestResultToString, prenatalFlankPainSignToString, prenatalHIVSignToString, prenatalMentalHealthQuestionOptionToString, prenatalMentalHealthQuestionToString, prenatalSymptomQuestionToString, prenatalSymptomToString, proteinValueToString, reasonForNonReferralToString, receiveOptionToString, recommendedTreatmentSignToString, reinforceTreatmentSignToString, reviewStateToString, rhesusToString, stuntingLevelToString, symptomsGISignToString, symptomsGeneralSignToString, symptomsRespiratorySignToString, testResultToString, tuberculosisDOTSignToString, tuberculosisDiagnosisToString, tuberculosisHealthEducationSignToString, tuberculosisPrescribedMedicationToString, tuberculosisSymptomToString, unitOfMeasurementToString, urobilinogenValueToString, vaccineDoseToString, vaginalExamSignToString)
 import Backend.Person.Encoder exposing (encodeGender)
 import Backend.Person.Utils exposing (genderToString)
 import Backend.PrenatalEncounter.Encoder exposing (encodePrenatalDiagnosis)
@@ -865,6 +865,40 @@ encodePrenatalMedicationValue type_ note =
     ]
 
 
+encodePrenatalUltrasound : PrenatalUltrasound -> List ( String, Value )
+encodePrenatalUltrasound =
+    encodePrenatalMeasurement encodeUltrasoundValue
+
+
+encodeUltrasoundValue : UltrasoundValue -> List ( String, Value )
+encodeUltrasoundValue value =
+    [ ( "pregnancy_signs", encodeEverySet encodePregnancySign value.signs )
+    , ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD value.executionDate )
+    , ( "edd_weeks", int value.eddWeeks )
+    , ( "edd_days", int value.eddDays )
+    , ( "expected_date_concluded", Gizra.NominalDate.encodeYYYYMMDD value.eddDate )
+    , ( "deleted", bool False )
+    , ( "type", string "prenatal_ultrasound" )
+    ]
+
+
+encodePregnancySign : PregnancySign -> Value
+encodePregnancySign sign =
+    string <|
+        case sign of
+            PregnancyNotViable ->
+                "not-viable"
+
+            PregnancyEctopic ->
+                "ectopic"
+
+            PregnancyMultipleFetuses ->
+                "multiple-fetuses"
+
+            NoPregnancySigns ->
+                "none"
+
+
 encodeNutrition : ChildNutrition -> List ( String, Value )
 encodeNutrition =
     encodeGroupMeasurement (encodeNutritionValueWithType "nutrition")
@@ -1001,6 +1035,11 @@ encodeTuberculosisMeasurement =
 encodeHIVMeasurement : (value -> List ( String, Value )) -> HIVMeasurement value -> List ( String, Value )
 encodeHIVMeasurement =
     encodeMeasurement "hiv_encounter"
+
+
+encodeFamilyNutritionMeasurement : (value -> List ( String, Value )) -> FamilyNutritionMeasurement value -> List ( String, Value )
+encodeFamilyNutritionMeasurement =
+    encodeMeasurement "family_nutrition_encounter"
 
 
 encodeMeasurement : String -> (value -> List ( String, Value )) -> Measurement (EntityUuid a) value -> List ( String, Value )
@@ -1413,11 +1452,6 @@ encodeMedicalHistoryInfectiousDisease =
 encodeMedicalHistoryMentalHealthIssue : MedicalHistoryMentalHealthIssue -> Value
 encodeMedicalHistoryMentalHealthIssue =
     medicalHistoryMentalHealthIssueToString >> string
-
-
-encodeOccursInFamilySign : OccursInFamilySign -> Value
-encodeOccursInFamilySign =
-    occursInFamilySignToString >> string
 
 
 encodeMedicationSign : MedicationSign -> Value
@@ -2316,32 +2350,6 @@ encodeNonReferralSign sign =
 
             NoNonReferralSigns ->
                 "none"
-
-
-encodeReferralFacility : ReferralFacility -> Value
-encodeReferralFacility facility =
-    string <|
-        case facility of
-            FacilityHealthCenter ->
-                "hc"
-
-            FacilityHospital ->
-                "hospital"
-
-            FacilityMentalHealthSpecialist ->
-                "mhs"
-
-            FacilityARVProgram ->
-                "arv"
-
-            FacilityNCDProgram ->
-                "ncd"
-
-            FacilityANCServices ->
-                "anc"
-
-            FacilityUltrasound ->
-                "us"
 
 
 encodeContributingFactors : ContributingFactors -> List ( String, Value )
@@ -4623,3 +4631,44 @@ encodeHIVSymptom =
 encodeHIVTreatmentReview : HIVTreatmentReview -> List ( String, Value )
 encodeHIVTreatmentReview =
     encodeHIVMeasurement (encodeTreatmentOngoingValueWithType "hiv_treatment_review")
+
+
+encodeAhezaMother : AhezaMother -> List ( String, Value )
+encodeAhezaMother =
+    encodeFamilyNutritionMeasurement
+        (\value ->
+            [ ( "distributed_amount", float value.distributedAmount )
+            , ( "type", string "aheza_mother" )
+            ]
+                ++ encodeNullable "distribution_reason" value.distributionReason encodeAhezaDistributionReason
+        )
+
+
+encodeAhezaDistributionReason : AhezaDistributionReason -> Value
+encodeAhezaDistributionReason =
+    ahezaDistributionReasonToString >> string
+
+
+encodeAhezaChild : AhezaChild -> List ( String, Value )
+encodeAhezaChild =
+    encodeFamilyNutritionMeasurement
+        (\value ->
+            [ ( "distributed_amount", float value )
+            , ( "type", string "aheza_child" )
+            ]
+        )
+
+
+encodeFamilyNutritionMuacMother : FamilyNutritionMuacMother -> List ( String, Value )
+encodeFamilyNutritionMuacMother =
+    encodeFamilyNutritionMeasurement (encodeMuacValueWithType "family_nutrition_muac_mother")
+
+
+encodeFamilyNutritionMuacChild : FamilyNutritionMuacChild -> List ( String, Value )
+encodeFamilyNutritionMuacChild =
+    encodeFamilyNutritionMeasurement (encodeMuacValueWithType "family_nutrition_muac_child")
+
+
+encodeFamilyNutritionPhoto : FamilyNutritionPhoto -> List ( String, Value )
+encodeFamilyNutritionPhoto =
+    encodeFamilyNutritionMeasurement (encodeImageUrlWithType "family_nutrition_photo")

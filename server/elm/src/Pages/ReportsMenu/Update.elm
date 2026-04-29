@@ -3,7 +3,7 @@ module Pages.ReportsMenu.Update exposing (update)
 import App.Model exposing (PagesReturn)
 import Error.Utils exposing (noError)
 import Pages.Components.Utils exposing (populationSelectionOptionFromString)
-import Pages.ReportsMenu.Model exposing (..)
+import Pages.ReportsMenu.Model exposing (Model, Msg(..))
 
 
 update : Msg -> Model -> PagesReturn Model Msg

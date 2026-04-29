@@ -37,6 +37,7 @@ class HedleyRestfulStockUpdate extends HedleyRestfulSyncBase {
     'field_stock_correction_reason',
     'field_stock_supplier',
     'field_stock_update_type',
+    'field_village_ref',
     'field_notes',
     'field_signature',
     'field_deleted',
@@ -57,6 +58,7 @@ class HedleyRestfulStockUpdate extends HedleyRestfulSyncBase {
   protected $entityFields = [
     'field_nurse',
     'field_health_center',
+    'field_village_ref',
   ];
 
   /**

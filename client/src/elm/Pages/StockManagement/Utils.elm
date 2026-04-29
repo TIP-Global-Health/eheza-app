@@ -1,4 +1,4 @@
-module Pages.StockManagement.Utils exposing (..)
+module Pages.StockManagement.Utils exposing (correctionEntryTypeFromString, correctionEntryTypeToString)
 
 import Pages.StockManagement.Model exposing (CorrectionEntryType(..))
 

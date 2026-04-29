@@ -248,6 +248,38 @@ function hedley_prenatal_field_default_field_bases() {
     'type' => 'number_float',
   );
 
+  // Exported field_base: 'field_edd_days'.
+  $field_bases['field_edd_days'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_edd_days',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
+  );
+
+  // Exported field_base: 'field_edd_weeks'.
+  $field_bases['field_edd_weeks'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_edd_weeks',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
+  );
+
   // Exported field_base: 'field_execution_date'.
   $field_bases['field_execution_date'] = array(
     'active' => 1,
@@ -914,6 +946,34 @@ function hedley_prenatal_field_default_field_bases() {
         'release-of-sutures' => 'Release (lâchage) of sutures',
         'hematoma' => 'Hematoma',
         'bruising' => 'Bruising',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_pregnancy_signs'.
+  $field_bases['field_pregnancy_signs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_pregnancy_signs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'not-viable' => 'Not Viable',
+        'ectopic' => 'Ectopic',
+        'multiple-fetuses' => 'Multiple fetuses',
+        'none' => 'None',
       ),
       'allowed_values_function' => '',
     ),

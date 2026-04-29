@@ -1,4 +1,4 @@
-module Pages.MessagingCenter.Model exposing (..)
+module Pages.MessagingCenter.Model exposing (KickOffForm, MessageOptionsDialogState(..), MessagingTab(..), Model, Msg(..), SurveyForm, SurveyScoreDialogState(..), emptyModel, emptySurveyForm)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)

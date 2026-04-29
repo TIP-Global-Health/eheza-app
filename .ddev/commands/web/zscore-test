@@ -1,0 +1,7 @@
+#!/bin/bash
+
+## Description: Run standalone Z-Score calculation tests.
+## Usage: zscore-test
+## Example: "ddev zscore-test"
+#
+php profiles/hedley/modules/custom/hedley_zscore/tests/run_zscore_tests.php

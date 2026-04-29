@@ -1,10 +1,10 @@
 module Backend.Counseling.Decoder exposing (combineCounselingSchedules, decodeCounselingSchedule, decodeCounselingTiming, decodeCounselingTopic)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Counseling.Model exposing (..)
+import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTiming(..), CounselingTopic, EveryCounselingSchedule)
 import Backend.Entities exposing (..)
 import Json.Decode exposing (Decoder, andThen, fail, list, maybe, string, succeed)
-import Json.Decode.Pipeline exposing (..)
+import Json.Decode.Pipeline exposing (hardcoded, required)
 import Restful.Endpoint exposing (decodeEntityUuid)
 import Translate.Model exposing (TranslationSet)
 
@@ -14,6 +14,7 @@ decodeCounselingTopic =
     succeed TranslationSet
         |> required "label" string
         |> required "kinyarwanda_title" (maybe string)
+        |> hardcoded Nothing
         |> hardcoded Nothing
 
 

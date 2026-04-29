@@ -16,7 +16,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import LocalData
-import Pages.Attendance.Model exposing (..)
+import Pages.Attendance.Model exposing (InitialResultsDisplay(..), Model, Msg(..))
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Utils exposing (matchMotherAndHerChildren, normalizeFilter, viewNameFilter)
 import Translate exposing (Language, translate)

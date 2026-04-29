@@ -1,7 +1,7 @@
 module Backend.AcuteIllnessEncounter.Decoder exposing (decodeAcuteIllnessDiagnosis, decodeAcuteIllnessEncounter, decodeAcuteIllnessEncounterType)
 
-import Backend.AcuteIllnessEncounter.Model exposing (..)
-import Backend.AcuteIllnessEncounter.Types exposing (..)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis, AcuteIllnessEncounterType(..))
 import Backend.AcuteIllnessEncounter.Utils exposing (acuteIllnessDiagnosisFromString)
 import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)

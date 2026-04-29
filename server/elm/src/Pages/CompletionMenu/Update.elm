@@ -2,7 +2,7 @@ module Pages.CompletionMenu.Update exposing (update)
 
 import App.Model exposing (PagesReturn)
 import Error.Utils exposing (noError)
-import Pages.CompletionMenu.Model exposing (..)
+import Pages.CompletionMenu.Model exposing (Model, Msg(..))
 import Pages.Components.Utils exposing (populationSelectionOptionFromString)
 
 

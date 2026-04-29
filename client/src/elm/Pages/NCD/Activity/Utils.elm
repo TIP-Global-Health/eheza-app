@@ -1,19 +1,18 @@
-module Pages.NCD.Activity.Utils exposing (..)
+module Pages.NCD.Activity.Utils exposing (activityCompleted, coMorbiditiesFormInputsAndTasks, coMorbiditiesFormWithDefault, dangerSignsFormWithDefault, examinationTasksCompletedFromTotal, expectActivity, expectLaboratoryTask, familyHistoryFormInputsAndTasks, familyHistoryFormWithDefault, generatePreviousLaboratoryTestsDatesDict, generateVitalsFormConfig, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, laboratoryTaskCompleted, laboratoryTasks, medicalHistoryTasksCompletedFromTotal, medicationHistoryFormInputsAndTasks, medicationHistoryFormWithDefault, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, outsideCareDiagnosesLeftColumn, outsideCareDiagnosesRightColumn, resolveNextStepsTasks, socialHistoryFormInputsAndTasks, socialHistoryFormWithDefault, symptomReviewFormWithDefault, toCoMorbiditiesValueWithDefault, toDangerSignsValueWithDefault, toFamilyHistoryValueWithDefault, toHealthEducationValueWithDefault, toMedicationHistoryValueWithDefault, toSocialHistoryValueWithDefault, toSymptomReviewValueWithDefault)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.NCDActivity.Model exposing (NCDActivity(..))
 import Backend.NCDActivity.Utils exposing (allActivities)
-import Backend.NCDEncounter.Types exposing (..)
+import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.Person.Utils exposing (isPersonAFertileWoman)
 import Date
 import EverySet
 import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import Html exposing (..)
-import Html.Attributes exposing (..)
 import Maybe.Extra exposing (andMap, isJust, or, unwrap)
-import Measurement.Model exposing (..)
+import Measurement.Model exposing (InvokationModule(..), LaboratoryTask(..), VitalsFormConfig, VitalsFormMode(..))
 import Measurement.Utils
     exposing
         ( corePhysicalExamFormWithDefault
@@ -22,10 +21,10 @@ import Measurement.Utils
         , vitalsFormWithDefault
         )
 import Measurement.View exposing (vitalsFormInputsAndTasks)
-import Pages.NCD.Activity.Model exposing (..)
-import Pages.NCD.Activity.Types exposing (..)
-import Pages.NCD.Model exposing (..)
-import Pages.NCD.Utils exposing (..)
+import Pages.NCD.Activity.Model exposing (CoMorbiditiesForm, DangerSignsForm, ExaminationData, FamilyHistoryForm, MedicalHistoryData, MedicationHistoryForm, Msg(..), NextStepsData, SocialHistoryForm, SymptomReviewForm)
+import Pages.NCD.Activity.Types exposing (ExaminationTask(..), MedicalHistoryTask(..), NextStepsTask(..))
+import Pages.NCD.Model exposing (AssembledData, NCDEncounterPhase(..))
+import Pages.NCD.Utils exposing (diabetesDiagnoses, diagnosed, diagnosedAnyOf, diagnosedPreviouslyAnyOf, generateRecommendedTreatmentSignsForHypertension, hypertensionDiagnoses, medicateForDiabetes, medicateForHypertension, medicationDistributionFormWithDefault, patientIsPregnant, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForDiabetes, referForDiabetes, referForHypertension, referForRenalComplications, referralFormWithDefault, resolveMedicationDistributionInputsAndTasks, resolveReferralInputsAndTasks)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -75,7 +74,7 @@ expectActivity currentDate assembled activity =
 
         NextSteps ->
             mandatoryActivitiesForNextStepsCompleted currentDate assembled
-                && (resolveNextStepsTasks currentDate assembled
+                && (resolveNextStepsTasks assembled
                         |> List.isEmpty
                         |> not
                    )
@@ -124,18 +123,18 @@ activityCompleted currentDate assembled activity =
                 || isJust assembled.measurements.outsideCare
 
         NextSteps ->
-            resolveNextStepsTasks currentDate assembled
+            resolveNextStepsTasks assembled
                 |> List.all (nextStepsTaskCompleted assembled)
 
 
-resolveNextStepsTasks : NominalDate -> AssembledData -> List Pages.NCD.Activity.Types.NextStepsTask
-resolveNextStepsTasks currentDate assembled =
-    List.filter (expectNextStepsTask currentDate assembled)
+resolveNextStepsTasks : AssembledData -> List Pages.NCD.Activity.Types.NextStepsTask
+resolveNextStepsTasks assembled =
+    List.filter (expectNextStepsTask assembled)
         [ TaskHealthEducation, TaskMedicationDistribution, TaskReferral ]
 
 
-expectNextStepsTask : NominalDate -> AssembledData -> Pages.NCD.Activity.Types.NextStepsTask -> Bool
-expectNextStepsTask currentDate assembled task =
+expectNextStepsTask : AssembledData -> Pages.NCD.Activity.Types.NextStepsTask -> Bool
+expectNextStepsTask assembled task =
     case task of
         TaskHealthEducation ->
             -- Diagnosed Stage 1 at current encounter.
@@ -508,30 +507,30 @@ toSocialHistoryValue form =
         form.foodGroup
 
 
-medicalHistoryTasksCompletedFromTotal : NominalDate -> Site -> AssembledData -> MedicalHistoryData -> MedicalHistoryTask -> ( Int, Int )
-medicalHistoryTasksCompletedFromTotal currentDate site assembled data task =
+medicalHistoryTasksCompletedFromTotal : Site -> AssembledData -> MedicalHistoryData -> MedicalHistoryTask -> ( Int, Int )
+medicalHistoryTasksCompletedFromTotal site assembled data task =
     let
         ( _, tasks ) =
             case task of
                 TaskCoMorbidities ->
                     getMeasurementValueFunc assembled.measurements.coMorbidities
                         |> coMorbiditiesFormWithDefault data.coMorbiditiesForm
-                        |> coMorbiditiesFormInputsAndTasks English currentDate
+                        |> coMorbiditiesFormInputsAndTasks English
 
                 TaskMedicationHistory ->
                     getMeasurementValueFunc assembled.measurements.medicationHistory
                         |> medicationHistoryFormWithDefault data.medicationHistoryForm
-                        |> medicationHistoryFormInputsAndTasks English currentDate
+                        |> medicationHistoryFormInputsAndTasks English
 
                 TaskSocialHistory ->
                     getMeasurementValueFunc assembled.measurements.socialHistory
                         |> socialHistoryFormWithDefault data.socialHistoryForm
-                        |> socialHistoryFormInputsAndTasks English currentDate site
+                        |> socialHistoryFormInputsAndTasks English site
 
                 TaskFamilyHistory ->
                     getMeasurementValueFunc assembled.measurements.familyHistory
                         |> familyHistoryFormWithDefault data.familyHistoryForm
-                        |> familyHistoryFormInputsAndTasks English currentDate
+                        |> familyHistoryFormInputsAndTasks English
 
                 TaskOutsideCare ->
                     -- This is not in use, because OutsideCare task got
@@ -541,8 +540,8 @@ medicalHistoryTasksCompletedFromTotal currentDate site assembled data task =
     resolveTasksCompletedFromTotal tasks
 
 
-coMorbiditiesFormInputsAndTasks : Language -> NominalDate -> CoMorbiditiesForm -> ( List (Html Msg), List (Maybe Bool) )
-coMorbiditiesFormInputsAndTasks language currentDate form =
+coMorbiditiesFormInputsAndTasks : Language -> CoMorbiditiesForm -> ( List (Html Msg), List (Maybe Bool) )
+coMorbiditiesFormInputsAndTasks language form =
     ( [ viewQuestionLabel language Translate.MedicalConditionQuestion
       , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
       , viewCheckBoxMultipleSelectInput language
@@ -564,8 +563,8 @@ coMorbiditiesFormInputsAndTasks language currentDate form =
     )
 
 
-medicationHistoryFormInputsAndTasks : Language -> NominalDate -> MedicationHistoryForm -> ( List (Html Msg), List (Maybe Bool) )
-medicationHistoryFormInputsAndTasks language currentDate form =
+medicationHistoryFormInputsAndTasks : Language -> MedicationHistoryForm -> ( List (Html Msg), List (Maybe Bool) )
+medicationHistoryFormInputsAndTasks language form =
     ( [ viewQuestionLabel language Translate.MedicationCausingHypertensionQuestion
       , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
       , viewCheckBoxMultipleSelectInput language
@@ -616,15 +615,15 @@ medicationHistoryFormInputsAndTasks language currentDate form =
     )
 
 
-socialHistoryFormInputsAndTasks : Language -> NominalDate -> Site -> SocialHistoryForm -> ( List (Html Msg), List (Maybe Bool) )
-socialHistoryFormInputsAndTasks language currentDate site form =
+socialHistoryFormInputsAndTasks : Language -> Site -> SocialHistoryForm -> ( List (Html Msg), List (Maybe Bool) )
+socialHistoryFormInputsAndTasks language site form =
     let
         ( alcoholInputs, alcoholTasks ) =
             let
                 ( derivedInput, derivedTask ) =
                     if form.alcohol == Just True then
                         ( [ viewQuestionLabel language Translate.HowManyPerWeek
-                          , viewNumberInput language
+                          , viewNumberInput
                                 form.beveragesPerWeek
                                 (SetSocialHistoryIntInput
                                     (\value form_ ->
@@ -659,7 +658,7 @@ socialHistoryFormInputsAndTasks language currentDate site form =
                 ( derivedInput, derivedTask ) =
                     if form.cigarettes == Just True then
                         ( [ viewQuestionLabel language Translate.HowManyPerWeek
-                          , viewNumberInput language
+                          , viewNumberInput
                                 form.cigarettesPerWeek
                                 (SetSocialHistoryIntInput
                                     (\value form_ ->
@@ -736,8 +735,8 @@ socialHistoryFormInputsAndTasks language currentDate site form =
     )
 
 
-familyHistoryFormInputsAndTasks : Language -> NominalDate -> FamilyHistoryForm -> ( List (Html Msg), List (Maybe Bool) )
-familyHistoryFormInputsAndTasks language currentDate form =
+familyHistoryFormInputsAndTasks : Language -> FamilyHistoryForm -> ( List (Html Msg), List (Maybe Bool) )
+familyHistoryFormInputsAndTasks language form =
     let
         ( hypertensionInputs, hypertensionTasks ) =
             let
@@ -1002,7 +1001,7 @@ laboratoryTasks =
 toHealthEducationValueWithDefault : Maybe NCDHealthEducationValue -> Pages.NCD.Activity.Model.HealthEducationForm -> Maybe NCDHealthEducationValue
 toHealthEducationValueWithDefault saved form =
     healthEducationFormWithDefault form saved
-        |> toHealthEducationValue saved
+        |> toHealthEducationValue
 
 
 healthEducationFormWithDefault :
@@ -1018,27 +1017,26 @@ healthEducationFormWithDefault form saved =
             )
 
 
-toHealthEducationValue : Maybe NCDHealthEducationValue -> Pages.NCD.Activity.Model.HealthEducationForm -> Maybe NCDHealthEducationValue
-toHealthEducationValue saved form =
+toHealthEducationValue : Pages.NCD.Activity.Model.HealthEducationForm -> Maybe NCDHealthEducationValue
+toHealthEducationValue form =
     [ ifNullableTrue EducationHypertension form.hypertension ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoNCDHealthEducationSigns)
 
 
 nextStepsTasksCompletedFromTotal :
-    NominalDate
-    -> AssembledData
+    AssembledData
     -> NextStepsData
     -> Pages.NCD.Activity.Types.NextStepsTask
     -> ( Int, Int )
-nextStepsTasksCompletedFromTotal currentDate assembled data task =
+nextStepsTasksCompletedFromTotal assembled data task =
     case task of
         TaskHealthEducation ->
             let
                 ( _, tasks ) =
                     getMeasurementValueFunc assembled.measurements.healthEducation
                         |> healthEducationFormWithDefault data.healthEducationForm
-                        |> healthEducationFormInputsAndTasks English currentDate
+                        |> healthEducationFormInputsAndTasks English
             in
             resolveTasksCompletedFromTotal tasks
 
@@ -1048,7 +1046,6 @@ nextStepsTasksCompletedFromTotal currentDate assembled data task =
                     getMeasurementValueFunc assembled.measurements.medicationDistribution
                         |> medicationDistributionFormWithDefault data.medicationDistributionForm
                         |> resolveMedicationDistributionInputsAndTasks English
-                            currentDate
                             NCDEncounterPhaseInitial
                             assembled
                             SetRecommendedTreatmentSignSingle
@@ -1063,7 +1060,6 @@ nextStepsTasksCompletedFromTotal currentDate assembled data task =
                     getMeasurementValueFunc assembled.measurements.referral
                         |> referralFormWithDefault data.referralForm
                         |> resolveReferralInputsAndTasks English
-                            currentDate
                             NCDEncounterPhaseInitial
                             assembled
                             SetReferralBoolInput
@@ -1074,10 +1070,9 @@ nextStepsTasksCompletedFromTotal currentDate assembled data task =
 
 healthEducationFormInputsAndTasks :
     Language
-    -> NominalDate
     -> Pages.NCD.Activity.Model.HealthEducationForm
     -> ( List (Html Msg), List (Maybe Bool) )
-healthEducationFormInputsAndTasks language currentDate form =
+healthEducationFormInputsAndTasks language form =
     ( [ viewCustomLabel language Translate.NCDHealthEducationHeader "" "label header"
       , viewCustomLabel language Translate.NCDHealthEducationInstructions "." "label paragraph"
       , viewQuestionLabel language Translate.NCDHealthEducationQuestion

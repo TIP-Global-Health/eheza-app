@@ -1,4 +1,4 @@
-module Pages.Prenatal.ProgressReport.Utils exposing (..)
+module Pages.Prenatal.ProgressReport.Utils exposing (allCHWActions, chwActionToColor, diagnosisForProgressReportToString, thumbnailDimensions, updateChronicHypertensionDiagnoses, wrapWithLI)
 
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
 import Date
@@ -6,7 +6,7 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Pages.Prenatal.Model exposing (AssembledData, PreviousEncounterData)
-import Pages.Prenatal.ProgressReport.Model exposing (..)
+import Pages.Prenatal.ProgressReport.Model exposing (CHWAction(..))
 import Pages.Prenatal.Utils
     exposing
         ( applyHypertensionlikeDiagnosesHierarchy

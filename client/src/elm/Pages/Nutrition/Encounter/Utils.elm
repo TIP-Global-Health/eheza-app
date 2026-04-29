@@ -1,4 +1,4 @@
-module Pages.Nutrition.Encounter.Utils exposing (..)
+module Pages.Nutrition.Encounter.Utils exposing (generateAssembledData, generatePreviousMeasurements)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -7,7 +7,7 @@ import Backend.Measurement.Utils
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (getNutritionEncountersForParticipant)
 import Gizra.NominalDate exposing (NominalDate)
-import Pages.Nutrition.Encounter.Model exposing (..)
+import Pages.Nutrition.Encounter.Model exposing (AssembledData)
 import RemoteData exposing (RemoteData(..), WebData)
 
 

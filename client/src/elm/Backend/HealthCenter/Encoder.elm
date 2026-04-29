@@ -1,7 +1,7 @@
 module Backend.HealthCenter.Encoder exposing (encodeCatchmentArea, encodeHealthCenter)
 
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
-import Json.Encode exposing (..)
+import Json.Encode exposing (Value, bool, string)
 import Restful.Endpoint exposing (encodeEntityUuid)
 
 
