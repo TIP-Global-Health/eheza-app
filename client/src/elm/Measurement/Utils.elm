@@ -742,20 +742,6 @@ toVitalsValue form =
         tempSkipped =
             form.bodyTemperatureNotTaken == Just True
 
-        rrField =
-            if rrSkipped then
-                Nothing
-
-            else
-                form.respiratoryRate
-
-        tempField =
-            if tempSkipped then
-                Nothing
-
-            else
-                form.bodyTemperature
-
         -- Each field must be either explicitly skipped OR have a value.
         -- Refuses partial input regardless of whether the view's task
         -- tracker would have allowed save.
@@ -766,6 +752,21 @@ toVitalsValue form =
             tempSkipped || isJust form.bodyTemperature
     in
     if rrResolved && tempResolved then
+        let
+            rrField =
+                if rrSkipped then
+                    Nothing
+
+                else
+                    form.respiratoryRate
+
+            tempField =
+                if tempSkipped then
+                    Nothing
+
+                else
+                    form.bodyTemperature
+        in
         Just
             (VitalsValue form.sysBloodPressure
                 form.diaBloodPressure
