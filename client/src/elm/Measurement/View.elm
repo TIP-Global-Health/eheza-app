@@ -1509,48 +1509,52 @@ vitalsFormInputsAndTasks language currentDate config form =
                 respiratoryRateSkipped =
                     config.allowSkipping && (form.respiratoryRateNotTaken == Just True)
 
+                -- Label row is always shown so it's clear which measurement
+                -- a checked "Unable to take" checkbox refers to.
+                labelRow =
+                    let
+                        ( redAlerts, yellowAlerts ) =
+                            case config.invokationModule of
+                                InvokationModulePrenatal ->
+                                    ( [ [ (>) 12 ], [ (<) 30 ] ]
+                                    , [ [ (<=) 21, (>=) 30 ] ]
+                                    )
+
+                                _ ->
+                                    Maybe.map
+                                        (\ageYears ->
+                                            let
+                                                ( redAlertMinValue, redAlertMaxValue ) =
+                                                    if ageYears < 1 then
+                                                        ( 30, 49 )
+
+                                                    else if ageYears < 5 then
+                                                        ( 24, 39 )
+
+                                                    else
+                                                        ( 18, 30 )
+                                            in
+                                            ( [ [ (>) redAlertMinValue ], [ (<) redAlertMaxValue ] ], [] )
+                                        )
+                                        ageInYears
+                                        |> Maybe.withDefault ( [], [] )
+                    in
+                    div [ class "ui grid" ]
+                        [ div [ class "twelve wide column" ]
+                            [ viewLabel language Translate.RespiratoryRate ]
+                        , div [ class "four wide column" ]
+                            [ viewConditionalAlert form.respiratoryRate
+                                redAlerts
+                                yellowAlerts
+                            ]
+                        ]
+
                 inputRows =
                     if respiratoryRateSkipped then
                         []
 
                     else
-                        let
-                            ( redAlerts, yellowAlerts ) =
-                                case config.invokationModule of
-                                    InvokationModulePrenatal ->
-                                        ( [ [ (>) 12 ], [ (<) 30 ] ]
-                                        , [ [ (<=) 21, (>=) 30 ] ]
-                                        )
-
-                                    _ ->
-                                        Maybe.map
-                                            (\ageYears ->
-                                                let
-                                                    ( redAlertMinValue, redAlertMaxValue ) =
-                                                        if ageYears < 1 then
-                                                            ( 30, 49 )
-
-                                                        else if ageYears < 5 then
-                                                            ( 24, 39 )
-
-                                                        else
-                                                            ( 18, 30 )
-                                                in
-                                                ( [ [ (>) redAlertMinValue ], [ (<) redAlertMaxValue ] ], [] )
-                                            )
-                                            ageInYears
-                                            |> Maybe.withDefault ( [], [] )
-                        in
-                        [ div [ class "ui grid" ]
-                            [ div [ class "twelve wide column" ]
-                                [ viewLabel language Translate.RespiratoryRate ]
-                            , div [ class "four wide column" ]
-                                [ viewConditionalAlert form.respiratoryRate
-                                    redAlerts
-                                    yellowAlerts
-                                ]
-                            ]
-                        , viewMeasurementInput
+                        [ viewMeasurementInput
                             language
                             (Maybe.map toFloat form.respiratoryRate)
                             (config.setIntInputMsg respiratoryRateUpdateFunc)
@@ -1577,7 +1581,7 @@ vitalsFormInputsAndTasks language currentDate config form =
                     else
                         emptyNode
             in
-            ( inputRows ++ [ respiratoryRateCheckbox, separator ]
+            ( labelRow :: inputRows ++ [ respiratoryRateCheckbox, separator ]
             , [ if respiratoryRateSkipped then
                     maybeToBoolTask form.respiratoryRateNotTaken
 
@@ -1593,21 +1597,25 @@ vitalsFormInputsAndTasks language currentDate config form =
                 bodyTemperatureSkipped =
                     config.allowSkipping && (form.bodyTemperatureNotTaken == Just True)
 
+                -- Label row is always shown so it's clear which measurement
+                -- a checked "Unable to take" checkbox refers to.
+                labelRow =
+                    div [ class "ui grid" ]
+                        [ div [ class "twelve wide column" ]
+                            [ viewLabel language Translate.BodyTemperature ]
+                        , div [ class "four wide column" ]
+                            [ viewConditionalAlert form.bodyTemperature
+                                [ [ (>) 35 ], [ (<=) 37.5 ] ]
+                                []
+                            ]
+                        ]
+
                 inputRows =
                     if bodyTemperatureSkipped then
                         []
 
                     else
-                        [ div [ class "ui grid" ]
-                            [ div [ class "twelve wide column" ]
-                                [ viewLabel language Translate.BodyTemperature ]
-                            , div [ class "four wide column" ]
-                                [ viewConditionalAlert form.bodyTemperature
-                                    [ [ (>) 35 ], [ (<=) 37.5 ] ]
-                                    []
-                                ]
-                            ]
-                        , viewMeasurementInput
+                        [ viewMeasurementInput
                             language
                             form.bodyTemperature
                             (config.setFloatInputMsg bodyTemperatureUpdateFunc)
@@ -1634,7 +1642,7 @@ vitalsFormInputsAndTasks language currentDate config form =
                     else
                         emptyNode
             in
-            ( inputRows ++ [ bodyTemperatureCheckbox ]
+            ( labelRow :: inputRows ++ [ bodyTemperatureCheckbox ]
             , [ if bodyTemperatureSkipped then
                     maybeToBoolTask form.bodyTemperatureNotTaken
 
