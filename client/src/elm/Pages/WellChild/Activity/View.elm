@@ -231,7 +231,7 @@ viewActivity language currentDate zscores site features isChw activity assembled
             viewPregnancySummaryForm language currentDate assembled model.pregnancySummaryForm
 
         WellChildDangerSigns ->
-            viewDangerSignsContent language currentDate assembled model.dangerSignsData
+            viewDangerSignsContent language currentDate isChw assembled model.dangerSignsData
 
         WellChildNutritionAssessment ->
             viewNutritionAssessmenContent language currentDate site zscores isChw assembled db model.nutritionAssessmentData
@@ -581,10 +581,11 @@ viewPregnancySummaryForm language currentDate assembled form_ =
 viewDangerSignsContent :
     Language
     -> NominalDate
+    -> Bool
     -> AssembledData
     -> DangerSignsData
     -> List (Html Msg)
-viewDangerSignsContent language currentDate assembled data =
+viewDangerSignsContent language currentDate isChw assembled data =
     let
         measurements =
             assembled.measurements
@@ -630,7 +631,7 @@ viewDangerSignsContent language currentDate assembled data =
 
         tasksCompletedFromTotalDict =
             tasks
-                |> List.map (\task -> ( task, dangerSignsTasksCompletedFromTotal currentDate assembled data task ))
+                |> List.map (\task -> ( task, dangerSignsTasksCompletedFromTotal currentDate isChw assembled data task ))
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
@@ -652,6 +653,7 @@ viewDangerSignsContent language currentDate assembled data =
                         |> vitalsFormWithDefault data.vitalsForm
                         |> viewVitalsForm language
                             currentDate
+                            isChw
                             assembled
                         |> List.singleton
 
@@ -695,11 +697,11 @@ viewDangerSignsContent language currentDate assembled data =
     ]
 
 
-viewVitalsForm : Language -> NominalDate -> AssembledData -> VitalsForm -> Html Msg
-viewVitalsForm language currentDate assembled form =
+viewVitalsForm : Language -> NominalDate -> Bool -> AssembledData -> VitalsForm -> Html Msg
+viewVitalsForm language currentDate isChw assembled form =
     let
         formConfig =
-            generateVitalsFormConfig assembled
+            generateVitalsFormConfig isChw assembled
     in
     Measurement.View.viewVitalsForm language currentDate formConfig form
 

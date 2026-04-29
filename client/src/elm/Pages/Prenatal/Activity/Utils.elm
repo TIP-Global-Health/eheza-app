@@ -5239,6 +5239,8 @@ generateVitalsFormConfig : AssembledData -> VitalsFormConfig Msg
 generateVitalsFormConfig assembled =
     { setIntInputMsg = SetVitalsIntInput
     , setFloatInputMsg = SetVitalsFloatInput
+    , setRespiratoryRateNotTakenMsg = always NoOp
+    , setBodyTemperatureNotTakenMsg = always NoOp
     , sysBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .sys
     , diaBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .dia
     , heartRatePreviousValue =
@@ -5252,6 +5254,7 @@ generateVitalsFormConfig assembled =
     , formClass = "examination vitals"
     , mode = VitalsFormFull
     , invokationModule = InvokationModulePrenatal
+    , allowSkipping = False
     }
 
 

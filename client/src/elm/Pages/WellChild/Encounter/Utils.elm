@@ -131,8 +131,8 @@ pediatricCareMilestoneToComparable milestone =
             10
 
 
-allowEndingEncounter : NominalDate -> Site -> List WellChildActivity -> AssembledData -> Bool
-allowEndingEncounter currentDate site pendingActivities assembled =
+allowEndingEncounter : NominalDate -> List WellChildActivity -> AssembledData -> Bool
+allowEndingEncounter currentDate pendingActivities assembled =
     List.filter (\activity -> not <| List.member activity [ WellChildNCDA, WellChildPhoto ]) pendingActivities
         |> (\pending ->
                 case pending of
@@ -144,7 +144,7 @@ allowEndingEncounter currentDate site pendingActivities assembled =
                             False
 
                         else
-                            mandatoryDangerSignsTasksCompleted site assembled
+                            mandatoryDangerSignsTasksCompleted assembled
 
                     [ WellChildNutritionAssessment ] ->
                         if assembled.encounter.encounterType == PediatricCare then
@@ -158,7 +158,7 @@ allowEndingEncounter currentDate site pendingActivities assembled =
                             False
 
                         else
-                            mandatoryDangerSignsTasksCompleted site assembled
+                            mandatoryDangerSignsTasksCompleted assembled
                                 && mandatoryNutritionAssessmentTasksCompleted currentDate assembled
 
                     [ WellChildNutritionAssessment, WellChildDangerSigns ] ->
@@ -166,7 +166,7 @@ allowEndingEncounter currentDate site pendingActivities assembled =
                             False
 
                         else
-                            mandatoryDangerSignsTasksCompleted site assembled
+                            mandatoryDangerSignsTasksCompleted assembled
                                 && mandatoryNutritionAssessmentTasksCompleted currentDate assembled
 
                     _ ->

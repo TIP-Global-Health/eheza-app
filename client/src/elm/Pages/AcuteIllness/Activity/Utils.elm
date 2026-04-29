@@ -365,6 +365,8 @@ generateVitalsFormConfig : Bool -> AssembledData -> VitalsFormConfig Msg
 generateVitalsFormConfig isChw assembled =
     { setIntInputMsg = SetVitalsIntInput
     , setFloatInputMsg = SetVitalsFloatInput
+    , setRespiratoryRateNotTakenMsg = always NoOp
+    , setBodyTemperatureNotTakenMsg = always NoOp
     , sysBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .sys
     , diaBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .dia
     , heartRatePreviousValue =
@@ -383,6 +385,7 @@ generateVitalsFormConfig isChw assembled =
         else
             VitalsFormFull
     , invokationModule = InvokationModuleAcuteIllness
+    , allowSkipping = False
     }
 
 

@@ -1405,6 +1405,12 @@ viewVitalsForm language currentDate config form =
 vitalsFormInputsAndTasks : Language -> NominalDate -> VitalsFormConfig msg -> VitalsForm -> ( List (Html msg), List (Maybe Bool) )
 vitalsFormInputsAndTasks language currentDate config form =
     let
+        respiratoryRateSkipped =
+            form.respiratoryRateNotTaken == Just True
+
+        bodyTemperatureSkipped =
+            form.bodyTemperatureNotTaken == Just True
+
         sysBloodPressureUpdateFunc value form_ =
             { form_ | sysBloodPressure = value, sysBloodPressureDirty = True }
 
@@ -1502,6 +1508,42 @@ vitalsFormInputsAndTasks language currentDate config form =
                 ageInYears
                 |> Maybe.withDefault ( [], [] )
 
+        respiratoryRateCheckbox =
+            if config.allowSkipping then
+                div
+                    [ class "ui checkbox activity"
+                    , onClick <| config.setRespiratoryRateNotTakenMsg <| not respiratoryRateSkipped
+                    ]
+                    [ input
+                        [ type_ "checkbox"
+                        , checked respiratoryRateSkipped
+                        , classList [ ( "checked", respiratoryRateSkipped ) ]
+                        ]
+                        []
+                    , label [] [ text <| translate language Translate.UnableToTakeMeasurement ]
+                    ]
+
+            else
+                emptyNode
+
+        bodyTemperatureCheckbox =
+            if config.allowSkipping then
+                div
+                    [ class "ui checkbox activity"
+                    , onClick <| config.setBodyTemperatureNotTakenMsg <| not bodyTemperatureSkipped
+                    ]
+                    [ input
+                        [ type_ "checkbox"
+                        , checked bodyTemperatureSkipped
+                        , classList [ ( "checked", bodyTemperatureSkipped ) ]
+                        ]
+                        []
+                    , label [] [ text <| translate language Translate.UnableToTakeMeasurement ]
+                    ]
+
+            else
+                emptyNode
+
         respiratoryRateSection =
             let
                 ( redAlerts, yellowAlerts ) =
@@ -1529,47 +1571,71 @@ vitalsFormInputsAndTasks language currentDate config form =
                                 )
                                 ageInYears
                                 |> Maybe.withDefault ( [], [] )
-            in
-            ( [ div [ class "ui grid" ]
-                    [ div [ class "twelve wide column" ]
-                        [ viewLabel language Translate.RespiratoryRate ]
-                    , div [ class "four wide column" ]
-                        [ viewConditionalAlert form.respiratoryRate
-                            redAlerts
-                            yellowAlerts
+
+                inputRows =
+                    if respiratoryRateSkipped then
+                        []
+
+                    else
+                        [ div [ class "ui grid" ]
+                            [ div [ class "twelve wide column" ]
+                                [ viewLabel language Translate.RespiratoryRate ]
+                            , div [ class "four wide column" ]
+                                [ viewConditionalAlert form.respiratoryRate
+                                    redAlerts
+                                    yellowAlerts
+                                ]
+                            ]
+                        , viewMeasurementInput
+                            language
+                            (Maybe.map toFloat form.respiratoryRate)
+                            (config.setIntInputMsg respiratoryRateUpdateFunc)
+                            "respiratory-rate"
+                            Translate.BreathsPerMinuteUnitLabel
+                        , Pages.Utils.viewPreviousMeasurement language config.respiratoryRatePreviousValue Translate.BreathsPerMinuteUnitLabel
                         ]
-                    ]
-              , viewMeasurementInput
-                    language
-                    (Maybe.map toFloat form.respiratoryRate)
-                    (config.setIntInputMsg respiratoryRateUpdateFunc)
-                    "respiratory-rate"
-                    Translate.BreathsPerMinuteUnitLabel
-              , Pages.Utils.viewPreviousMeasurement language config.respiratoryRatePreviousValue Translate.BreathsPerMinuteUnitLabel
-              , separator
+            in
+            ( inputRows ++ [ respiratoryRateCheckbox, separator ]
+            , [ if respiratoryRateSkipped then
+                    maybeToBoolTask form.respiratoryRateNotTaken
+
+                else
+                    maybeToBoolTask form.respiratoryRate
               ]
-            , [ maybeToBoolTask form.respiratoryRate ]
             )
 
         bodyTemperatureSection =
-            ( [ div [ class "ui grid" ]
-                    [ div [ class "twelve wide column" ]
-                        [ viewLabel language Translate.BodyTemperature ]
-                    , div [ class "four wide column" ]
-                        [ viewConditionalAlert form.bodyTemperature
-                            [ [ (>) 35 ], [ (<=) 37.5 ] ]
-                            []
+            let
+                inputRows =
+                    if bodyTemperatureSkipped then
+                        []
+
+                    else
+                        [ div [ class "ui grid" ]
+                            [ div [ class "twelve wide column" ]
+                                [ viewLabel language Translate.BodyTemperature ]
+                            , div [ class "four wide column" ]
+                                [ viewConditionalAlert form.bodyTemperature
+                                    [ [ (>) 35 ], [ (<=) 37.5 ] ]
+                                    []
+                                ]
+                            ]
+                        , viewMeasurementInput
+                            language
+                            form.bodyTemperature
+                            (config.setFloatInputMsg bodyTemperatureUpdateFunc)
+                            "body-temperature"
+                            Translate.Celsius
+                        , Pages.Utils.viewPreviousMeasurement language config.bodyTemperaturePreviousValue Translate.Celsius
                         ]
-                    ]
-              , viewMeasurementInput
-                    language
-                    form.bodyTemperature
-                    (config.setFloatInputMsg bodyTemperatureUpdateFunc)
-                    "body-temperature"
-                    Translate.Celsius
-              , Pages.Utils.viewPreviousMeasurement language config.bodyTemperaturePreviousValue Translate.Celsius
+            in
+            ( inputRows ++ [ bodyTemperatureCheckbox ]
+            , [ if bodyTemperatureSkipped then
+                    maybeToBoolTask form.bodyTemperatureNotTaken
+
+                else
+                    maybeToBoolTask form.bodyTemperature
               ]
-            , [ maybeToBoolTask form.bodyTemperature ]
             )
 
         separator =

@@ -695,8 +695,30 @@ vitalsFormWithDefault form saved =
                 , heartRateDirty = form.heartRateDirty
                 , respiratoryRate = maybeValueConsideringIsDirtyField form.respiratoryRateDirty form.respiratoryRate value.respiratoryRate
                 , respiratoryRateDirty = form.respiratoryRateDirty
+                , respiratoryRateNotTaken =
+                    if form.respiratoryRateDirty then
+                        form.respiratoryRateNotTaken
+
+                    else
+                        case value.respiratoryRate of
+                            Just _ ->
+                                Just False
+
+                            Nothing ->
+                                Just True
                 , bodyTemperature = maybeValueConsideringIsDirtyField form.bodyTemperatureDirty form.bodyTemperature value.bodyTemperature
                 , bodyTemperatureDirty = form.bodyTemperatureDirty
+                , bodyTemperatureNotTaken =
+                    if form.bodyTemperatureDirty then
+                        form.bodyTemperatureNotTaken
+
+                    else
+                        case value.bodyTemperature of
+                            Just _ ->
+                                Just False
+
+                            Nothing ->
+                                Just True
                 , sysRepeated = maybeValueConsideringIsDirtyField form.sysRepeatedDirty form.sysRepeated value.sysRepeated
                 , sysRepeatedDirty = form.sysRepeatedDirty
                 , diaRepeated = maybeValueConsideringIsDirtyField form.diaRepeatedDirty form.diaRepeated value.diaRepeated
@@ -713,13 +735,36 @@ toVitalsValueWithDefault saved form =
 
 toVitalsValue : VitalsForm -> Maybe VitalsValue
 toVitalsValue form =
-    if isJust form.respiratoryRate || isJust form.bodyTemperature then
+    let
+        rrField =
+            if form.respiratoryRateNotTaken == Just True then
+                Nothing
+
+            else
+                form.respiratoryRate
+
+        tempField =
+            if form.bodyTemperatureNotTaken == Just True then
+                Nothing
+
+            else
+                form.bodyTemperature
+
+        anyContent =
+            isJust rrField
+                || isJust tempField
+                || form.respiratoryRateNotTaken
+                == Just True
+                || form.bodyTemperatureNotTaken
+                == Just True
+    in
+    if anyContent then
         Just
             (VitalsValue form.sysBloodPressure
                 form.diaBloodPressure
                 form.heartRate
-                form.respiratoryRate
-                form.bodyTemperature
+                rrField
+                tempField
                 form.sysRepeated
                 form.diaRepeated
             )

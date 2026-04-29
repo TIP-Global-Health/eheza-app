@@ -298,6 +298,50 @@ update currentDate site id db msg model =
             , []
             )
 
+        SetBodyTemperatureNotTaken value ->
+            let
+                updatedData =
+                    let
+                        updatedForm =
+                            model.dangerSignsData.vitalsForm
+                                |> (\form ->
+                                        { form
+                                            | bodyTemperature = Nothing
+                                            , bodyTemperatureDirty = True
+                                            , bodyTemperatureNotTaken = Just value
+                                        }
+                                   )
+                    in
+                    model.dangerSignsData
+                        |> (\data -> { data | vitalsForm = updatedForm })
+            in
+            ( { model | dangerSignsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetRespiratoryRateNotTaken value ->
+            let
+                updatedData =
+                    let
+                        updatedForm =
+                            model.dangerSignsData.vitalsForm
+                                |> (\form ->
+                                        { form
+                                            | respiratoryRate = Nothing
+                                            , respiratoryRateDirty = True
+                                            , respiratoryRateNotTaken = Just value
+                                        }
+                                   )
+                    in
+                    model.dangerSignsData
+                        |> (\data -> { data | vitalsForm = updatedForm })
+            in
+            ( { model | dangerSignsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveVitals personId saved nextTask ->
             let
                 measurementId =
