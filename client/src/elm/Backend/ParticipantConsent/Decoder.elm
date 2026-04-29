@@ -1,8 +1,8 @@
 module Backend.ParticipantConsent.Decoder exposing (decodeParticipantForm)
 
-import Backend.ParticipantConsent.Model exposing (..)
+import Backend.ParticipantConsent.Model exposing (FormBody, ParticipantForm)
 import Html.Parser as HtmlParser
-import Json.Decode exposing (..)
+import Json.Decode exposing (Decoder, field, map2, map4, nullable, string, succeed)
 import Translate.Model exposing (TranslationSet)
 
 
@@ -13,9 +13,10 @@ decodeParticipantForm =
 
 decodeTitle : Decoder (TranslationSet String)
 decodeTitle =
-    map3 TranslationSet
+    map4 TranslationSet
         (field "label" string)
         (field "kinyarwanda_title" (nullable string))
+        (succeed Nothing)
         (succeed Nothing)
 
 
@@ -31,6 +32,7 @@ decodeBody =
             { english = FormBody english (parse english)
             , kinyarwanda = Maybe.map (\k -> FormBody k (parse k)) kinyarwanda
             , kirundi = Nothing
+            , somali = Nothing
             }
     in
     map2 go

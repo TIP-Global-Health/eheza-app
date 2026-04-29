@@ -1,4 +1,4 @@
-module Pages.ChildScoreboard.ProgressReport.Model exposing (..)
+module Pages.ChildScoreboard.ProgressReport.Model exposing (Model, Msg(..), emptyModel)
 
 import Backend.Entities exposing (..)
 import Components.ReportToWhatsAppDialog.Model

@@ -1,4 +1,4 @@
-module Backend.TuberculosisEncounter.Model exposing (..)
+module Backend.TuberculosisEncounter.Model exposing (Model, Msg(..), TuberculosisEncounter, emptyModel, emptyTuberculosisEncounter)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)

@@ -1,9 +1,9 @@
 module Backend.EducationSession.Encoder exposing (encodeEducationSession, encodeEducationTopic)
 
-import Backend.EducationSession.Model exposing (..)
-import Backend.EducationSession.Utils exposing (..)
+import Backend.EducationSession.Model exposing (EducationSession, EducationTopic)
+import Backend.EducationSession.Utils exposing (educationTopicToString)
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
-import Json.Encode exposing (..)
+import Json.Encode exposing (Value, bool, object, string)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid)
 import Utils.Json exposing (encodeEverySet, encodeIfSet)

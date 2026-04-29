@@ -1,7 +1,7 @@
 module Backend.Fetch exposing (forget, shouldFetch)
 
 import AssocList as Dict
-import Backend.Model exposing (..)
+import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import LocalData exposing (isNotNeeded)
 import RemoteData exposing (RemoteData(..), isNotAsked, isSuccess)
 import Time
@@ -212,6 +212,21 @@ shouldFetch currentTime model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchFamilyNutritionEncounter id ->
+            Dict.get id model.familyNutritionEncounters
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchFamilyNutritionEncountersForParticipant id ->
+            Dict.get id model.familyNutritionEncountersByParticipant
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchFamilyNutritionMeasurements id ->
+            Dict.get id model.familyNutritionMeasurements
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
         FetchAcuteIllnessEncounter id ->
             Dict.get id model.acuteIllnessEncounters
                 |> Maybe.withDefault NotAsked
@@ -412,6 +427,16 @@ shouldFetch currentTime model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchVillageStockManagementMeasurements id ->
+            Dict.get id model.villageStockManagementMeasurements
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchVillageStockManagementData id _ ->
+            Dict.get id model.villageStockManagementData
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
         FetchIndividualEncounterParticipant id ->
             Dict.get id model.individualParticipants
                 |> Maybe.withDefault NotAsked
@@ -435,6 +460,30 @@ shouldFetch currentTime model msg =
 
             else
                 List.any (\id -> not (Dict.member id model.individualParticipantsByPerson)) ids
+
+        FetchFamilyEncounterParticipant id ->
+            Dict.get id model.familyParticipants
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchFamilyEncounterParticipants ids ->
+            if List.isEmpty ids then
+                False
+
+            else
+                List.any (\id -> not (Dict.member id model.familyParticipants)) ids
+
+        FetchFamilyEncounterParticipantsForPerson id ->
+            Dict.get id model.familyParticipantsByPerson
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchFamilyEncounterParticipantsForPeople ids ->
+            if List.isEmpty ids then
+                False
+
+            else
+                List.any (\id -> not (Dict.member id model.familyParticipantsByPerson)) ids
 
         FetchRelationshipsForPerson id ->
             Dict.get id model.relationshipsByPerson
@@ -527,6 +576,9 @@ forget msg model =
         FetchIndividualEncounterParticipantsForPerson id ->
             { model | individualParticipantsByPerson = Dict.remove id model.individualParticipantsByPerson }
 
+        FetchFamilyEncounterParticipantsForPerson id ->
+            { model | familyParticipantsByPerson = Dict.remove id model.familyParticipantsByPerson }
+
         FetchParticipantsForPerson id ->
             { model | participantsByPerson = Dict.remove id model.participantsByPerson }
 
@@ -547,6 +599,15 @@ forget msg model =
 
         FetchNutritionMeasurements id ->
             { model | nutritionMeasurements = Dict.remove id model.nutritionMeasurements }
+
+        FetchFamilyNutritionEncounter id ->
+            { model | familyNutritionEncounters = Dict.remove id model.familyNutritionEncounters }
+
+        FetchFamilyNutritionEncountersForParticipant id ->
+            { model | familyNutritionEncountersByParticipant = Dict.remove id model.familyNutritionEncountersByParticipant }
+
+        FetchFamilyNutritionMeasurements id ->
+            { model | familyNutritionMeasurements = Dict.remove id model.familyNutritionMeasurements }
 
         FetchAcuteIllnessEncounter id ->
             { model | acuteIllnessEncounters = Dict.remove id model.acuteIllnessEncounters }
@@ -626,8 +687,17 @@ forget msg model =
         FetchStockManagementData id ->
             { model | stockManagementData = Dict.remove id model.stockManagementData }
 
+        FetchVillageStockManagementMeasurements id ->
+            { model | villageStockManagementMeasurements = Dict.remove id model.villageStockManagementMeasurements }
+
+        FetchVillageStockManagementData id _ ->
+            { model | villageStockManagementData = Dict.remove id model.villageStockManagementData }
+
         FetchIndividualEncounterParticipant id ->
             { model | individualParticipants = Dict.remove id model.individualParticipants }
+
+        FetchFamilyEncounterParticipant id ->
+            { model | familyParticipants = Dict.remove id model.familyParticipants }
 
         FetchRelationshipsForPerson id ->
             { model | relationshipsByPerson = Dict.remove id model.relationshipsByPerson }

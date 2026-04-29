@@ -1,13 +1,13 @@
 module Backend.PrenatalEncounter.Encoder exposing (encodePrenatalDiagnosis, encodePrenatalEncounter, encodePrenatalEncounterType)
 
-import Backend.PrenatalEncounter.Model exposing (..)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..), PrenatalIndicator(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import EverySet
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
-import Json.Encode exposing (..)
+import Json.Encode exposing (Value, bool, list, object, string)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid)
-import Utils.Json exposing (encodeEverySet, encodeIfSet)
+import Utils.Json exposing (encodeEverySet, encodeIfSet, encodeNullable)
 
 
 {-| Encodes a `PrenatalEncounter`.
@@ -42,6 +42,7 @@ encodePrenatalEncounter encounter =
     , ( "deleted", bool encounter.deleted )
     , ( "type", string "prenatal_encounter" )
     ]
+        ++ encodeNullable "next_visit_date" encounter.nextVisitDate Gizra.NominalDate.encodeYYYYMMDD
         ++ prenatalIndicators
         ++ encodeIfSet "shard" encounter.shard encodeEntityUuid
 

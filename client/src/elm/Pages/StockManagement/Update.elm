@@ -2,7 +2,6 @@ module Pages.StockManagement.Update exposing (update)
 
 import App.Model
 import App.Ports exposing (bindSignaturePad, clearSignaturePad, storeSignature)
-import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ImageUrl(..), StockUpdateType(..))
 import Backend.Model
 import Backend.StockUpdate.Model
@@ -10,12 +9,29 @@ import Backend.StockUpdate.Utils exposing (stockSupplierFromString)
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra
-import Pages.StockManagement.Model exposing (..)
-import Pages.StockManagement.Utils exposing (..)
+import Pages.StockManagement.Model exposing (CorrectionEntryType(..), DisplayMode(..), Model, Msg(..), StockManagementContext(..), emptyModel)
+import Pages.StockManagement.Utils exposing (correctionEntryTypeFromString)
 
 
-update : NominalDate -> Maybe HealthCenterId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate maybeHealthCenterId msg model =
+update : NominalDate -> StockManagementContext -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate context msg model =
+    let
+        maybeHealthCenterId =
+            case context of
+                ContextHealthCenter id ->
+                    Just id
+
+                ContextVillage id _ ->
+                    Just id
+
+        maybeVillageId =
+            case context of
+                ContextVillage _ villageId ->
+                    Just villageId
+
+                ContextHealthCenter _ ->
+                    Nothing
+    in
     case msg of
         SetActivePage page ->
             ( model
@@ -74,7 +90,7 @@ update currentDate maybeHealthCenterId msg model =
                     , Cmd.none
                     , []
                     )
-                        |> sequenceExtra (update currentDate maybeHealthCenterId)
+                        |> sequenceExtra (update currentDate context)
                             [ SetDisplayMode (ModeMonthDetails (monthGap + value)) ]
 
                 _ ->
@@ -265,6 +281,7 @@ update currentDate maybeHealthCenterId msg model =
                                     , healthCenter = healthCenterId
                                     , deleted = False
                                     , shard = Just healthCenterId
+                                    , village = maybeVillageId
                                     , signature = signature
                                     }
                             in
@@ -429,6 +446,7 @@ update currentDate maybeHealthCenterId msg model =
                                     , healthCenter = healthCenterId
                                     , deleted = False
                                     , shard = Just healthCenterId
+                                    , village = maybeVillageId
                                     , signature = signature
                                     }
                             in

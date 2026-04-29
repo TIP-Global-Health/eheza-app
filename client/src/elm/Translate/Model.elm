@@ -11,10 +11,12 @@ type Language
     = English
     | Kinyarwanda
     | Kirundi
+    | Somali
 
 
 type alias TranslationSet a =
     { english : a
     , kinyarwanda : Maybe a
     , kirundi : Maybe a
+    , somali : Maybe a
     }

@@ -13,7 +13,6 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import List
 import LocalData
 import Maybe.Extra
 import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))
@@ -205,7 +204,7 @@ view config language currentDate zscores site features isChw selectedActivity ( 
 
         activityTitle =
             if activity == ChildActivity ChildFbf && session.offlineSession.session.clinicType == Achi then
-                Translate.ActivitityTitleAchi
+                Translate.AhezaChild
 
             else
                 Translate.ActivitiesTitle activity

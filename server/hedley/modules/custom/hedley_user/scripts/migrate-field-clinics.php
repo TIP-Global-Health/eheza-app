@@ -27,7 +27,7 @@ $base_query
   ->entityCondition('entity_type', 'node')
   ->propertyCondition('type', 'nurse')
   ->propertyCondition('status', NODE_PUBLISHED)
-  ->propertyOrderBy('nid', 'ASC');
+  ->propertyOrderBy('nid');
 
 if ($nid) {
   $base_query->propertyCondition('nid', $nid, '>');

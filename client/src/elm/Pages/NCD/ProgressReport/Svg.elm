@@ -1,8 +1,8 @@
-module Pages.NCD.ProgressReport.Svg exposing (..)
+module Pages.NCD.ProgressReport.Svg exposing (viewBloodGlucoseByTime, viewBloodPressureByTime, viewHbA1cByTime, viewMarkers)
 
 import Html exposing (Html)
 import Pages.Report.Model exposing (RandomBloodSugarResult(..))
-import Pages.Report.Svg exposing (..)
+import Pages.Report.Svg exposing (dimensionsPx, drawPoints, drawPolyline, heightPx, referenceHorizontalLines, referenceHorizontalNumbers, referenceVerticalLines, referenceVerticalNumbers, svgMarker, widthPx, withinRange)
 import Pages.Report.Utils exposing (getRandomBloodSugarResultValue)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -162,7 +162,7 @@ viewBloodGlucoseByTime language results =
                     in
                     text_
                         [ transform <| "matrix(1 0 0 1 " ++ left ++ " " ++ top ++ ")"
-                        , class <| "z-score-semibold chart-helper red"
+                        , class "z-score-semibold chart-helper red"
                         ]
                         [ text indicator ]
                 )
