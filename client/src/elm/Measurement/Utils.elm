@@ -10341,8 +10341,8 @@ renderDatePart language maybeDate =
         |> Maybe.withDefault []
 
 
-corePhysicalExamInputsAndTasks : Language -> NominalDate -> CorePhysicalExamFormConfig msg -> CorePhysicalExamForm -> ( List (Html msg), List (Maybe Bool) )
-corePhysicalExamInputsAndTasks language currentDate config form =
+corePhysicalExamInputsAndTasks : Language -> CorePhysicalExamFormConfig msg -> CorePhysicalExamForm -> ( List (Html msg), List (Maybe Bool) )
+corePhysicalExamInputsAndTasks language config form =
     let
         paleConjuctivaUpdateFunc value form_ =
             { form_ | paleConjuctiva = Just value }
@@ -10476,7 +10476,7 @@ corePhysicalExamInputsAndTasks language currentDate config form =
                 ]
            , div [ class "ui grid" ]
                 [ div [ class "twelve wide column" ]
-                    [ div [ class "title hands" ] [ text <| (translate language Translate.Hands ++ ":") ] ]
+                    [ div [ class "title hands" ] [ text (translate language Translate.Hands ++ ":") ] ]
                 , div [ class "four wide column" ]
                     [ viewRedAlertForSelect
                         (form.hands |> Maybe.withDefault [])
@@ -10492,7 +10492,7 @@ corePhysicalExamInputsAndTasks language currentDate config form =
                 Translate.HandsCPESign
            , div [ class "ui grid" ]
                 [ div [ class "twelve wide column" ]
-                    [ div [ class "title legs" ] [ text <| (translate language Translate.Legs ++ ":") ] ]
+                    [ div [ class "title legs" ] [ text (translate language Translate.Legs ++ ":") ] ]
                 , div [ class "four wide column" ]
                     [ viewRedAlertForSelect
                         (form.legs |> Maybe.withDefault [])

@@ -32,7 +32,6 @@ import Measurement.Model
     exposing
         ( ContentAndTasksForPerformedLaboratoryUniversalTestConfig
         , ContentAndTasksLaboratoryUniversalTestInitialConfig
-        , CorePhysicalExamForm
         , LaboratoryTask(..)
         , OutsideCareStep(..)
         , VaccinationFormViewMode(..)
@@ -977,7 +976,7 @@ viewExaminationContent language currentDate zscores features assembled data =
             in
             getMeasurementValueFunc assembled.measurements.corePhysicalExam
                 |> corePhysicalExamFormWithDefault data.corePhysicalExamForm
-                |> corePhysicalExamInputsAndTasks language currentDate config
+                |> corePhysicalExamInputsAndTasks language config
 
         viewForm =
             case activeTask of

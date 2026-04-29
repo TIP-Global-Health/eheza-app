@@ -16,7 +16,6 @@ import Measurement.Model
     exposing
         ( ContentAndTasksForPerformedLaboratoryTestConfig
         , ContentAndTasksLaboratoryTestInitialConfig
-        , CorePhysicalExamForm
         , LaboratoryTask(..)
         , OutsideCareForm
         , OutsideCareStep(..)
@@ -132,7 +131,7 @@ viewActivity language currentDate site activity assembled model =
             viewLaboratoryContent language currentDate assembled model.laboratoryData
 
         MedicalHistory ->
-            viewMedicalHistoryContent language currentDate site assembled model.medicalHistoryData
+            viewMedicalHistoryContent language site assembled model.medicalHistoryData
 
         SymptomReview ->
             viewSymptomReviewContent language assembled model.symptomReviewData
@@ -346,7 +345,7 @@ viewExaminationContent language currentDate assembled data =
             in
             getMeasurementValueFunc assembled.measurements.coreExam
                 |> corePhysicalExamFormWithDefault data.coreExamForm
-                |> corePhysicalExamInputsAndTasks language currentDate config
+                |> corePhysicalExamInputsAndTasks language config
 
         viewForm =
             case activeTask of
@@ -411,8 +410,8 @@ viewVitalsForm language currentDate assembled form =
     Measurement.View.viewVitalsForm language currentDate config form
 
 
-viewMedicalHistoryContent : Language -> NominalDate -> Site -> AssembledData -> MedicalHistoryData -> List (Html Msg)
-viewMedicalHistoryContent language currentDate site assembled data =
+viewMedicalHistoryContent : Language -> Site -> AssembledData -> MedicalHistoryData -> List (Html Msg)
+viewMedicalHistoryContent language site assembled data =
     let
         tasks =
             [ TaskCoMorbidities

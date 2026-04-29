@@ -15,8 +15,7 @@ import Maybe.Extra exposing (andMap, isJust, or, unwrap)
 import Measurement.Model exposing (InvokationModule(..), LaboratoryTask(..), VitalsFormConfig, VitalsFormMode(..))
 import Measurement.Utils
     exposing
-        ( corePhysicalExamFormWithDefault
-        , isTestResultValid
+        ( isTestResultValid
         , resolveLabTestDate
         , vitalsFormWithDefault
         )
@@ -33,7 +32,6 @@ import Pages.Utils
         , maybeToBoolTask
         , maybeValueConsideringIsDirtyField
         , resolveTasksCompletedFromTotal
-        , taskCompleted
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput

@@ -38,8 +38,7 @@ import Measurement.Model
         )
 import Measurement.Utils
     exposing
-        ( corePhysicalExamFormWithDefault
-        , getNextVaccineDose
+        ( getNextVaccineDose
         , isTestResultValid
         , medicationAdministrationFormInputsAndTasks
         , medicationAdministrationFormWithDefault
