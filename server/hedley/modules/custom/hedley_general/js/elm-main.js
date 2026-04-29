@@ -19392,7 +19392,6 @@ var $author$project$Pages$Reports$View$generatePrenatalContactsReportData = F3(
 		var pregnanciesWithDiagnosedAnemia = A2(
 			$elm$core$List$filter,
 			function (_v5) {
-				var lmpDate = _v5.a;
 				var pregnancy = _v5.b;
 				var anemiaDiagnoses = _List_fromArray(
 					[$author$project$Backend$Reports$Model$DiagnosisMalariaWithAnemia, $author$project$Backend$Reports$Model$DiagnosisMalariaWithSevereAnemia, $author$project$Backend$Reports$Model$DiagnosisModerateAnemia, $author$project$Backend$Reports$Model$DiagnosisSevereAnemia, $author$project$Backend$Reports$Model$DiagnosisSevereAnemiaWithComplications]);
@@ -19467,24 +19466,28 @@ var $author$project$Pages$Reports$View$generatePrenatalContactsReportData = F3(
 			function (_v2) {
 				var lmpDate = _v2.a;
 				var pregnancy = _v2.b;
-				var nonPostpartumEncounters = A2(
-					$elm$core$List$filter,
-					function (encounter) {
-						return !A2(
-							$elm$core$List$member,
-							encounter.encounterType,
-							_List_fromArray(
-								[$author$project$Backend$Reports$Model$NursePostpartumEncounter, $author$project$Backend$Reports$Model$ChwPostpartumEncounter]));
-					},
-					pregnancy.encounters);
 				var completed = function () {
 					var thirtyDaysAfterEDD = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, 310, lmpDate);
 					return $elm_community$maybe_extra$Maybe$Extra$isJust(pregnancy.dateConcluded) || (!_Utils_eq(
 						A2($justinmimbs$date$Date$compare, thirtyDaysAfterEDD, limitDate),
 						$elm$core$Basics$GT));
 				}();
-				return completed ? $elm$core$Maybe$Just(
-					$elm$core$List$length(nonPostpartumEncounters)) : $elm$core$Maybe$Nothing;
+				if (completed) {
+					var nonPostpartumEncounters = A2(
+						$elm$core$List$filter,
+						function (encounter) {
+							return !A2(
+								$elm$core$List$member,
+								encounter.encounterType,
+								_List_fromArray(
+									[$author$project$Backend$Reports$Model$NursePostpartumEncounter, $author$project$Backend$Reports$Model$ChwPostpartumEncounter]));
+						},
+						pregnancy.encounters);
+					return $elm$core$Maybe$Just(
+						$elm$core$List$length(nonPostpartumEncounters));
+				} else {
+					return $elm$core$Maybe$Nothing;
+				}
 			},
 			pregnanciesWithLMP);
 		var countPregnanciesByContacts = function (_v1) {

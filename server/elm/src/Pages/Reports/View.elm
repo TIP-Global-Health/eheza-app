@@ -2371,7 +2371,7 @@ viewPrenatalContactsReport language limitDate scopeLabel records =
         csvContent =
             reportTableDataToCSV data
     in
-    div [ class "report prenatal-contacts" ] <|
+    div [ class "report prenatal-contacts" ]
         [ div [ class "table" ] <|
             captionsRow
                 :: List.map viewStandardRow data.rows
@@ -2432,16 +2432,17 @@ generatePrenatalContactsReportData language limitDate records =
                             -- 30 days after estimated delivery date.
                             isJust pregnancy.dateConcluded
                                 || (not <| Date.compare thirtyDaysAfterEDD limitDate == GT)
-
-                        nonPostpartumEncounters =
-                            List.filter
-                                (\encounter ->
-                                    -- Encounter was started not after EGA date.
-                                    not <| List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ]
-                                )
-                                pregnancy.encounters
                     in
                     if completed then
+                        let
+                            nonPostpartumEncounters =
+                                List.filter
+                                    (\encounter ->
+                                        -- Encounter was started not after EGA date.
+                                        not <| List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ]
+                                    )
+                                    pregnancy.encounters
+                        in
                         Just <| List.length nonPostpartumEncounters
 
                     else
@@ -2503,7 +2504,7 @@ generatePrenatalContactsReportData language limitDate records =
 
         pregnanciesWithDiagnosedAnemia =
             List.filter
-                (\( lmpDate, pregnancy ) ->
+                (\( _, pregnancy ) ->
                     let
                         anemiaDiagnoses =
                             [ DiagnosisMalariaWithAnemia
