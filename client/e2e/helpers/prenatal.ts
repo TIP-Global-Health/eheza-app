@@ -449,8 +449,6 @@ export async function completeExamination(
   await clickSubTaskTab(page, 'core-physical-exam');
   await page.waitForTimeout(WAIT.elmRerender);
 
-  // Head/Hair: bool input (BrittleHair/Normal) — select "Normal".
-  await answerYesNo(page, 'head-hair', 'Normal');
   // Eyes: bool input (PaleConjuctiva/Normal) — select "Normal".
   await answerYesNo(page, 'eyes', 'Normal');
   // Heart Murmur: bool input (Yes/No) — select "No".

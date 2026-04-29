@@ -16,7 +16,6 @@ import Measurement.Model
     exposing
         ( ContentAndTasksForPerformedLaboratoryTestConfig
         , ContentAndTasksLaboratoryTestInitialConfig
-        , CorePhysicalExamForm
         , LaboratoryTask(..)
         , OutsideCareForm
         , OutsideCareStep(..)
@@ -26,6 +25,7 @@ import Measurement.Utils
     exposing
         ( OutsideCareConfig
         , corePhysicalExamFormWithDefault
+        , corePhysicalExamInputsAndTasks
         , emptyContentAndTasksForPerformedLaboratoryTestConfig
         , emptyContentAndTasksLaboratoryTestInitialConfig
         , familyPlanningFormWithDefault
@@ -58,6 +58,7 @@ import Pages.Utils
     exposing
         ( resolveActiveTask
         , resolveNextTask
+        , resolveTasksCompletedFromTotal
         , saveButton
         , taskCompleted
         , tasksBarId
@@ -313,7 +314,14 @@ viewExaminationContent language currentDate assembled data =
         tasksCompletedFromTotalDict =
             List.map
                 (\task ->
-                    ( task, examinationTasksCompletedFromTotal currentDate assembled data task )
+                    case task of
+                        TaskCoreExam ->
+                            ( TaskCoreExam
+                            , resolveTasksCompletedFromTotal coreExamTasks
+                            )
+
+                        _ ->
+                            ( task, examinationTasksCompletedFromTotal currentDate assembled data task )
                 )
                 tasks
                 |> Dict.fromList
@@ -321,6 +329,23 @@ viewExaminationContent language currentDate assembled data =
         ( tasksCompleted, totalTasks ) =
             Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
+
+        ( coreExamInputs, coreExamTasks ) =
+            let
+                config =
+                    { setBoolInputMsg = SetCoreExamBoolInput
+                    , setNeckMsg = SetCoreExamNeck
+                    , setHeartMsg = SetCoreExamHeart
+                    , setLungsMsg = SetCoreExamLungs
+                    , setAbdomenMsg = SetCoreExamAbdomen
+                    , setHandsMsg = SetCoreExamHands
+                    , setLegsMsg = SetCoreExamLegs
+                    , showHeadHairInput = True
+                    }
+            in
+            getMeasurementValueFunc assembled.measurements.coreExam
+                |> corePhysicalExamFormWithDefault data.coreExamForm
+                |> corePhysicalExamInputsAndTasks language config
 
         viewForm =
             case activeTask of
@@ -330,9 +355,8 @@ viewExaminationContent language currentDate assembled data =
                         |> viewVitalsForm language currentDate assembled
 
                 Just TaskCoreExam ->
-                    getMeasurementValueFunc assembled.measurements.coreExam
-                        |> corePhysicalExamFormWithDefault data.coreExamForm
-                        |> viewCoreExamForm language
+                    div [ class "ui form examination core-physical-exam" ]
+                        coreExamInputs
 
                 Nothing ->
                     emptyNode
@@ -384,22 +408,6 @@ viewVitalsForm language currentDate assembled form =
             generateVitalsFormConfig assembled
     in
     Measurement.View.viewVitalsForm language currentDate config form
-
-
-viewCoreExamForm : Language -> CorePhysicalExamForm -> Html Msg
-viewCoreExamForm language form =
-    let
-        config =
-            { setBoolInputMsg = SetCoreExamBoolInput
-            , setNeckMsg = SetCoreExamNeck
-            , setHeartMsg = SetCoreExamHeart
-            , setLungsMsg = SetCoreExamLungs
-            , setAbdomenMsg = SetCoreExamAbdomen
-            , setHandsMsg = SetCoreExamHands
-            , setLegsMsg = SetCoreExamLegs
-            }
-    in
-    Measurement.View.viewCorePhysicalExamForm language config form
 
 
 viewMedicalHistoryContent : Language -> Site -> AssembledData -> MedicalHistoryData -> List (Html Msg)
@@ -466,10 +474,7 @@ viewMedicalHistoryContent language site assembled data =
                     case task of
                         TaskOutsideCare ->
                             ( TaskOutsideCare
-                            , ( Maybe.Extra.values outsideCareTasks
-                                    |> List.length
-                              , List.length outsideCareTasks
-                              )
+                            , resolveTasksCompletedFromTotal outsideCareTasks
                             )
 
                         _ ->

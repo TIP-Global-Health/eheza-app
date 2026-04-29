@@ -1,4 +1,4 @@
-module Measurement.View exposing (FloatFormConfig, birthWeightInputsAndTasks, contributingFactorsFormInutsAndTasks, followUpFormInputsAndTasks, healthEducationFormInutsAndTasks, heightFormAndTasks, muacFormInputsAndTasks, nutritionCaringInputsAndTasks, nutritionFeedingInputsAndTasks, nutritionFoodSecurityInputsAndTasks, nutritionFormInputsAndTasks, nutritionHygieneInputsAndTasks, referToProgramFormInputsAndTasks, sendToFacilityInputsAndTasks, viewActionTakenLabel, viewChild, viewColorAlertIndication, viewContributingFactorsForm, viewCorePhysicalExamForm, viewFamilyPlanningForm, viewFamilyPlanningInput, viewFollowUpForm, viewHealthEducationForm, viewHeightForm, viewMeasurementFloatDiff, viewMedicationAdministrationForm, viewMother, viewMuacForm, viewMultipleTreatmentWithDosage, viewNCDAContent, viewNutritionFollowUpForm, viewNutritionForm, viewReferToProgramForm, viewSendToHealthCenterForm, viewSendToHospitalForm, viewTreatmentOptionWithDosage, viewVitalsForm, viewWeightForm, vitalsFormInputsAndTasks, weightFormAndTasks)
+module Measurement.View exposing (FloatFormConfig, birthWeightInputsAndTasks, contributingFactorsFormInutsAndTasks, followUpFormInputsAndTasks, healthEducationFormInutsAndTasks, heightFormAndTasks, muacFormInputsAndTasks, nutritionCaringInputsAndTasks, nutritionFeedingInputsAndTasks, nutritionFoodSecurityInputsAndTasks, nutritionFormInputsAndTasks, nutritionHygieneInputsAndTasks, referToProgramFormInputsAndTasks, sendToFacilityInputsAndTasks, viewActionTakenLabel, viewChild, viewColorAlertIndication, viewContributingFactorsForm, viewFamilyPlanningForm, viewFamilyPlanningInput, viewFollowUpForm, viewHealthEducationForm, viewHeightForm, viewMeasurementFloatDiff, viewMedicationAdministrationForm, viewMother, viewMuacForm, viewMultipleTreatmentWithDosage, viewNCDAContent, viewNutritionFollowUpForm, viewNutritionForm, viewReferToProgramForm, viewSendToHealthCenterForm, viewSendToHospitalForm, viewTreatmentOptionWithDosage, viewVitalsForm, viewWeightForm, vitalsFormInputsAndTasks, weightFormAndTasks)
 
 {-| This module provides a form for entering measurements.
 -}
@@ -46,7 +46,7 @@ import Json.Decode
 import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.Decoder exposing (decodeDropZoneFile)
-import Measurement.Model exposing (ContributingFactorsForm, CorePhysicalExamForm, CorePhysicalExamFormConfig, FamilyPlanningForm, FbfForm, FloatInputConstraints, GroupOfFoods(..), HealthEducationForm, HeightForm, InvokationModule(..), MedicationAdministrationForm, MedicationAdministrationFormConfig, ModelChild, ModelMother, MsgChild(..), MsgMother(..), MuacForm, NCDAContentConfig, NCDAData, NCDAForm, NCDAStep(..), NutritionCaringForm, NutritionFeedingForm, NutritionFollowUpForm, NutritionFoodSecurityForm, NutritionForm, NutritionHygieneForm, OutMsgChild(..), OutMsgMother(..), ParticipantFormUI, SendToHCForm, VitalsForm, VitalsFormConfig, VitalsFormMode(..), WeightForm, emptyParticipantFormProgress)
+import Measurement.Model exposing (ContributingFactorsForm, FamilyPlanningForm, FbfForm, FloatInputConstraints, GroupOfFoods(..), HealthEducationForm, HeightForm, InvokationModule(..), MedicationAdministrationForm, MedicationAdministrationFormConfig, ModelChild, ModelMother, MsgChild(..), MsgMother(..), MuacForm, NCDAContentConfig, NCDAData, NCDAForm, NCDAStep(..), NutritionCaringForm, NutritionFeedingForm, NutritionFollowUpForm, NutritionFoodSecurityForm, NutritionForm, NutritionHygieneForm, OutMsgChild(..), OutMsgMother(..), ParticipantFormUI, SendToHCForm, VitalsForm, VitalsFormConfig, VitalsFormMode(..), WeightForm, emptyParticipantFormProgress)
 import Measurement.Utils exposing (contributingFactorsFormWithDefault, fbfFormToValue, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, healthEducationFormWithDefault, isBehindOnVaccinationsByProgress, lactationFormToSigns, medicationAdministrationFormInputsAndTasks, muacMeasurementIsOff, ncdaFormWithDefault, nutritionFollowUpFormWithDefault, renderDatePart, resoloveLastScheduledImmunizationVisitDate, resolveChildANCPregnancyData, resolveNCDASteps, sendToHCFormWithDefault, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toNCDAValueWithDefault, toNutritionFollowUpValueWithDefault, toSendToHCValueWithDefault, withinConstraints)
 import Pages.Utils
     exposing
@@ -65,8 +65,6 @@ import Pages.Utils
         , viewMeasurementInput
         , viewPhotoThumbFromImageUrl
         , viewQuestionLabel
-        , viewRedAlertForBool
-        , viewRedAlertForSelect
         , viewTasksCount
         )
 import RemoteData exposing (RemoteData(..))
@@ -2193,164 +2191,6 @@ viewFamilyPlanningInput language setFamilyPlanningSignMsg currentValue =
         (Just NoFamilyPlanning)
         setFamilyPlanningSignMsg
         Translate.FamilyPlanningSignLabel
-
-
-viewCorePhysicalExamForm : Language -> CorePhysicalExamFormConfig msg -> CorePhysicalExamForm -> Html msg
-viewCorePhysicalExamForm language config form =
-    let
-        brittleHairUpdateFunc value form_ =
-            { form_ | brittleHair = Just value }
-
-        paleConjuctivaUpdateFunc value form_ =
-            { form_ | paleConjuctiva = Just value }
-
-        heartMurmurUpdateFunc value form_ =
-            { form_ | heartMurmur = Just value }
-    in
-    div [ class "ui form examination core-physical-exam" ]
-        [ div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.HeadHair ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.brittleHair False ]
-            ]
-        , viewBoolInput
-            language
-            form.brittleHair
-            (config.setBoolInputMsg brittleHairUpdateFunc)
-            "head-hair"
-            (Just ( Translate.BrittleHair, Translate.Normal ))
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.Eyes ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.paleConjuctiva False ]
-            ]
-        , viewBoolInput
-            language
-            form.paleConjuctiva
-            (config.setBoolInputMsg paleConjuctivaUpdateFunc)
-            "eyes"
-            (Just ( Translate.PaleConjuctiva, Translate.Normal ))
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.Neck ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.neck |> Maybe.withDefault [])
-                    [ NormalNeck ]
-                ]
-            ]
-        , viewCheckBoxMultipleSelectInput language
-            [ EnlargedThyroid, EnlargedLymphNodes ]
-            [ NormalNeck ]
-            (form.neck |> Maybe.withDefault [])
-            Nothing
-            config.setNeckMsg
-            Translate.NeckCPESign
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.Heart ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.heart |> Maybe.map List.singleton |> Maybe.withDefault [])
-                    [ NormalRateAndRhythm ]
-                ]
-            ]
-        , viewCheckBoxSelectInput language
-            [ IrregularRhythm, SinusTachycardia ]
-            [ NormalRateAndRhythm ]
-            form.heart
-            config.setHeartMsg
-            Translate.HeartCPESign
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.HeartMurmur ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.heartMurmur False ]
-            ]
-        , viewBoolInput
-            language
-            form.heartMurmur
-            (config.setBoolInputMsg heartMurmurUpdateFunc)
-            "heart-murmur"
-            Nothing
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.Lungs ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.lungs |> Maybe.withDefault [])
-                    [ NormalLungs ]
-                ]
-            ]
-        , viewCheckBoxMultipleSelectInput language
-            [ Wheezes, Crackles ]
-            [ NormalLungs ]
-            (form.lungs |> Maybe.withDefault [])
-            Nothing
-            config.setLungsMsg
-            Translate.LungsCPESign
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.Abdomen ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.abdomen |> Maybe.withDefault [])
-                    [ NormalAbdomen ]
-                ]
-            ]
-        , viewCheckBoxMultipleSelectInput language
-            [ Hepatomegaly, Splenomegaly, TPRightUpper, TPLeftUpper ]
-            [ NormalAbdomen, Hernia, TPRightLower, TPLeftLower ]
-            (form.abdomen |> Maybe.withDefault [])
-            Nothing
-            config.setAbdomenMsg
-            Translate.AbdomenCPESign
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "eleven wide column" ]
-                [ viewLabel language Translate.Extremities ]
-            ]
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ div [ class "title hands" ] [ text (translate language Translate.Hands ++ ":") ] ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.hands |> Maybe.withDefault [])
-                    [ NormalHands ]
-                ]
-            ]
-        , viewCheckBoxMultipleSelectInput language
-            [ PallorHands, EdemaHands ]
-            [ NormalHands ]
-            (form.hands |> Maybe.withDefault [])
-            Nothing
-            config.setHandsMsg
-            Translate.HandsCPESign
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ div [ class "title legs" ] [ text (translate language Translate.Legs ++ ":") ] ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.legs |> Maybe.withDefault [])
-                    [ NormalLegs ]
-                ]
-            ]
-        , viewCheckBoxMultipleSelectInput language
-            [ PallorLegs, EdemaLegs ]
-            [ NormalLegs ]
-            (form.legs |> Maybe.withDefault [])
-            Nothing
-            config.setLegsMsg
-            Translate.LegsCPESign
-        ]
 
 
 viewMultipleTreatmentWithDosage : Language -> List RecommendedTreatmentSign -> Html any
