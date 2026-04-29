@@ -756,10 +756,16 @@ toVitalsValue form =
             else
                 form.bodyTemperature
 
-        anyContent =
-            isJust rrField || isJust tempField || rrSkipped || tempSkipped
+        -- Each field must be either explicitly skipped OR have a value.
+        -- Refuses partial input regardless of whether the view's task
+        -- tracker would have allowed save.
+        rrResolved =
+            rrSkipped || isJust form.respiratoryRate
+
+        tempResolved =
+            tempSkipped || isJust form.bodyTemperature
     in
-    if anyContent then
+    if rrResolved && tempResolved then
         Just
             (VitalsValue form.sysBloodPressure
                 form.diaBloodPressure

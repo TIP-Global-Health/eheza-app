@@ -1504,8 +1504,10 @@ vitalsFormInputsAndTasks language currentDate config form =
 
         respiratoryRateSection =
             let
+                -- Gate on allowSkipping so non-skipping pages don't end up
+                -- with a hidden input + no checkbox when a saved row has null.
                 respiratoryRateSkipped =
-                    form.respiratoryRateNotTaken == Just True
+                    config.allowSkipping && (form.respiratoryRateNotTaken == Just True)
 
                 inputRows =
                     if respiratoryRateSkipped then
@@ -1586,8 +1588,10 @@ vitalsFormInputsAndTasks language currentDate config form =
 
         bodyTemperatureSection =
             let
+                -- Gate on allowSkipping so non-skipping pages don't end up
+                -- with a hidden input + no checkbox when a saved row has null.
                 bodyTemperatureSkipped =
-                    form.bodyTemperatureNotTaken == Just True
+                    config.allowSkipping && (form.bodyTemperatureNotTaken == Just True)
 
                 inputRows =
                     if bodyTemperatureSkipped then
