@@ -2,8 +2,8 @@ module Backend.Scoreboard.Decoder exposing (decodeScoreboardData)
 
 import AssocList as Dict
 import Backend.Decoder exposing (decodeSite)
-import Backend.Scoreboard.Model exposing (..)
-import Backend.Scoreboard.Utils exposing (..)
+import Backend.Scoreboard.Model exposing (ANCNewbornData, CriterionBySeverities, InfrastructureEnvironmentWashData, NCDAData, NutritionBehaviorData, NutritionCriterionsData, PatientData, RawVaccinationData, ScoreboardData, SelectedEntity(..), TargetedInterventionsData, UniversalInterventionData, VaccinationProgressDict, VaccineType(..), emptyANCNewbornData, emptyInfrastructureEnvironmentWashData, emptyNCDAData, emptyNutritionBehaviorData, emptyNutritionCriterionsData, emptyTargetedInterventionsData, emptyUniversalInterventionData)
+import Backend.Scoreboard.Utils exposing (vaccineDoseFromOrder)
 import Date
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffMonths)

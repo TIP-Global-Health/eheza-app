@@ -1,4 +1,4 @@
-module Backend.AcuteIllnessEncounter.Types exposing (..)
+module Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..), AcuteIllnessProgressReportInitiator(..))
 
 import Backend.Entities exposing (..)
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator)

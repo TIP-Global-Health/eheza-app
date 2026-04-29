@@ -1,7 +1,7 @@
 module Backend.Session.Decoder exposing (decodeSession)
 
 import Backend.Clinic.Decoder exposing (decodeClinicType)
-import Backend.Session.Model exposing (..)
+import Backend.Session.Model exposing (Session)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, bool, nullable, succeed)
 import Json.Decode.Pipeline exposing (optionalAt, required, requiredAt)

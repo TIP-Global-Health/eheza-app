@@ -8,11 +8,10 @@ import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Maybe.Extra exposing (isJust)
-import Pages.Components.Model exposing (DemographicsSelection)
 import Pages.Components.Types exposing (PopulationSelectionOption(..))
 import Pages.Components.Utils exposing (populationSelectionOptionToString)
 import Pages.Components.View exposing (viewDemographicsSelection, viewDemographicsSelectionActionButton)
-import Pages.ReportsMenu.Model exposing (..)
+import Pages.ReportsMenu.Model exposing (Model, Msg(..))
 import Pages.Utils
     exposing
         ( generateReportsHeaderImage

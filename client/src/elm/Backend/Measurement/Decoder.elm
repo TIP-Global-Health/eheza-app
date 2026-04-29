@@ -1,4 +1,4 @@
-module Backend.Measurement.Decoder exposing (..)
+module Backend.Measurement.Decoder exposing (decodeAcuteFindings, decodeAcuteIllnessContactsTracing, decodeAcuteIllnessCoreExam, decodeAcuteIllnessDangerSigns, decodeAcuteIllnessFollowUp, decodeAcuteIllnessMeasurements, decodeAcuteIllnessMuac, decodeAcuteIllnessNutrition, decodeAcuteIllnessTraceContact, decodeAcuteIllnessVitals, decodeAhezaChild, decodeAhezaMother, decodeAppointmentConfirmation, decodeAttendance, decodeBirthPlan, decodeBreastExam, decodeCall114, decodeCall114Sign, decodeChildMeasurementList, decodeChildNutritionSign, decodeChildScoreboardBCGImmunisation, decodeChildScoreboardDTPImmunisation, decodeChildScoreboardDTPStandaloneImmunisation, decodeChildScoreboardIPVImmunisation, decodeChildScoreboardMRImmunisation, decodeChildScoreboardMeasurements, decodeChildScoreboardNCDA, decodeChildScoreboardOPVImmunisation, decodeChildScoreboardPCV13Immunisation, decodeChildScoreboardRotarixImmunisation, decodeContributingFactors, decodeCorePhysicalExam, decodeCounselingSession, decodeCovidTesting, decodeDangerSign, decodeDangerSigns, decodeExposure, decodeFamilyNutritionMeasurements, decodeFamilyNutritionMuacChild, decodeFamilyNutritionMuacMother, decodeFamilyNutritionPhoto, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeFbf, decodeFollowUp, decodeFollowUpMeasurements, decodeGroupHealthEducation, decodeGroupNCDA, decodeGroupSendToHC, decodeHCContact, decodeHCContactSign, decodeHCRecommendation, decodeHIVDiagnostics, decodeHIVFollowUp, decodeHIVHealthEducation, decodeHIVMeasurements, decodeHIVMedication, decodeHIVReferral, decodeHIVSymptomReview, decodeHIVTreatmentReview, decodeHealthEducation, decodeHeight, decodeHomeVisitMeasurements, decodeIsolation, decodeIsolationSign, decodeLactation, decodeLastMenstrualPeriod, decodeMalariaPrevention, decodeMalariaTesting, decodeMedicalCondition, decodeMedicalHistory, decodeMedication, decodeMedicationDistribution, decodeMotherMeasurementList, decodeMuac, decodeNCDCoMorbidities, decodeNCDCoreExam, decodeNCDCreatinineTest, decodeNCDDangerSigns, decodeNCDFamilyHistory, decodeNCDFamilyPlanning, decodeNCDHIVTest, decodeNCDHbA1cTest, decodeNCDHealthEducation, decodeNCDLabsResults, decodeNCDLipidPanelTest, decodeNCDLiverFunctionTest, decodeNCDMeasurements, decodeNCDMedicationDistribution, decodeNCDMedicationHistory, decodeNCDOutsideCare, decodeNCDPregnancyTest, decodeNCDRandomBloodSugarTest, decodeNCDReferral, decodeNCDSocialHistory, decodeNCDSymptomReview, decodeNCDUrineDipstickTest, decodeNCDVitals, decodeNutrition, decodeNutritionCaring, decodeNutritionContributingFactors, decodeNutritionFeeding, decodeNutritionFollowUp, decodeNutritionFoodSecurity, decodeNutritionHealthEducation, decodeNutritionHeight, decodeNutritionHygiene, decodeNutritionMeasurements, decodeNutritionMuac, decodeNutritionNCDA, decodeNutritionNutrition, decodeNutritionPhoto, decodeNutritionSendToHC, decodeNutritionWeight, decodeObstetricHistory, decodeObstetricHistoryStep2, decodeObstetricalExam, decodeParticipantConsent, decodePhoto, decodePregnancyByNewborn, decodePregnancyTest, decodePrenatalAspirin, decodePrenatalBloodGpRsTest, decodePrenatalBreastfeeding, decodePrenatalCalcium, decodePrenatalFamilyPlanning, decodePrenatalFefol, decodePrenatalFolate, decodePrenatalFollowUp, decodePrenatalGUExam, decodePrenatalHIVPCRTest, decodePrenatalHIVTest, decodePrenatalHealthEducation, decodePrenatalHemoglobinTest, decodePrenatalHepatitisBTest, decodePrenatalIron, decodePrenatalLabsResults, decodePrenatalMMS, decodePrenatalMalariaTest, decodePrenatalMeasurements, decodePrenatalMebendazole, decodePrenatalMedicationDistribution, decodePrenatalMentalHealth, decodePrenatalNutrition, decodePrenatalOutsideCare, decodePrenatalPartnerHIVTest, decodePrenatalPhoto, decodePrenatalRandomBloodSugarTest, decodePrenatalSendToHc, decodePrenatalSpecialityCare, decodePrenatalSymptomReview, decodePrenatalSyphilisTest, decodePrenatalTetanusImmunisation, decodePrenatalUltrasound, decodePrenatalUrineDipstickTest, decodeRecommendation114, decodeSendToHC, decodeSendToHCSign, decodeSocialHistory, decodeStockManagementMeasurements, decodeSymptomsGI, decodeSymptomsGeneral, decodeSymptomsRespiratory, decodeTestExecutionNote, decodeTestResult, decodeTravelHistory, decodeTreatmentOngoing, decodeTreatmentReview, decodeTuberculosisDOT, decodeTuberculosisDiagnostics, decodeTuberculosisFollowUp, decodeTuberculosisHealthEducation, decodeTuberculosisMeasurements, decodeTuberculosisMedication, decodeTuberculosisReferral, decodeTuberculosisSymptomReview, decodeTuberculosisTreatmentReview, decodeVillageStockManagementMeasurements, decodeVitals, decodeWeight, decodeWellChildAlbendazole, decodeWellChildBCGImmunisation, decodeWellChildCaring, decodeWellChildContributingFactors, decodeWellChildDTPImmunisation, decodeWellChildDTPStandaloneImmunisation, decodeWellChildECD, decodeWellChildFeeding, decodeWellChildFollowUp, decodeWellChildFoodSecurity, decodeWellChildHPVImmunisation, decodeWellChildHeadCircumference, decodeWellChildHealthEducation, decodeWellChildHeight, decodeWellChildHygiene, decodeWellChildIPVImmunisation, decodeWellChildMRImmunisation, decodeWellChildMeasurements, decodeWellChildMebendezole, decodeWellChildMuac, decodeWellChildNCDA, decodeWellChildNextVisit, decodeWellChildNutrition, decodeWellChildOPVImmunisation, decodeWellChildPCV13Immunisation, decodeWellChildPhoto, decodeWellChildPregnancySummary, decodeWellChildRotarixImmunisation, decodeWellChildSendToHC, decodeWellChildSymptomsReview, decodeWellChildVitals, decodeWellChildVitaminA, decodeWellChildWeight, malariaRapidTestResultFromString)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Decoder exposing (decodeAcuteIllnessDiagnosis)
@@ -7,7 +7,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Decoder exposing (decodeIndividualEncounterParticipant)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (..)
+import Backend.Measurement.Utils exposing (administrationNoteFromString, ahezaDistributionReasonFromString, avoidingGuidanceReasonFromString, bilirubinValueFromString, bloodGroupFromString, bloodSmearResultFromString, breastfeedingSignFromString, covidIsolationPeriod, foodGroupFromString, glucoseValueFromString, guExamSignFromString, haemoglobinValueFromString, hivDiagnosisSignFromString, hivHealthEducationSignFromString, hivPrescribedMedicationFromString, hivSymptomFromString, illnessSymptomFromString, ketoneValueFromString, laboratoryTestFromString, lateFirstANCVisitReasonFromString, leukocytesValueFromString, lmpDateNotConfidentReasonFromString, medicalConditionFromString, medicalHistoryInfectiousDiseaseFromString, medicalHistoryMentalHealthIssueFromString, medicalHistoryPhysicalConditionFromString, medicalHistorySignFromString, medicationCausingHypertensionFromString, medicationTreatingDiabetesFromString, medicationTreatingHypertensionFromString, ncdDangerSignFromString, ncdFamilyHistorySignFromString, ncdGroup1SymptomFromString, ncdGroup2SymptomFromString, ncdPainSymptomFromString, ncdSocialHistorySignFromString, ncdaSignFromString, nitriteValueFromString, nutritionAssessmentFromString, obstetricHistoryStep2SignFromString, occursInFamilySignFromString, outsideCareMedicationFromString, outsideCareSignFromString, phValueFromString, postpartumChildDangerSignFromString, postpartumHealingProblemFromString, postpartumMotherDangerSignFromString, predecessorFromString, pregnancyTestResultFromString, prenatalFlankPainSignFromString, prenatalHIVSignFromString, prenatalMentalHealthQuestionFromString, prenatalMentalHealthQuestionOptionFromString, prenatalSymptomFromString, prenatalSymptomQuestionFromString, proteinValueFromString, reasonForNonReferralFromString, receiveOptionFromString, recommendedTreatmentSignFromString, reinforceTreatmentSignFromString, reviewStateFromString, rhesusFromString, stuntingLevelFromString, symptomsGISignFromString, symptomsGeneralSignFromString, symptomsRespiratorySignFromString, testResultFromString, tuberculosisDOTSignFromString, tuberculosisDiagnosisFromString, tuberculosisHealthEducationSignFromString, tuberculosisPrescribedMedicationFromString, tuberculosisSymptomFromString, unitOfMeasurementFromString, urobilinogenValueFromString, vaccineDoseFromString, vaginalExamSignFromString)
 import Backend.Person.Decoder exposing (decodeGender)
 import Backend.Person.Utils exposing (genderFromString)
 import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalDiagnosis)
@@ -16,7 +16,7 @@ import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeFloat, decodeInt, decodeStringWithDefault)
 import Gizra.NominalDate
-import Json.Decode exposing (..)
+import Json.Decode exposing (Decoder, andThen, at, bool, fail, field, list, map, map2, map5, map7, maybe, nullable, oneOf, string, succeed)
 import Json.Decode.Pipeline exposing (custom, optional, required)
 import Restful.Endpoint exposing (EntityUuid, decodeEntityUuid, toEntityUuid)
 import Translate.Utils exposing (decodeLanguage)
@@ -71,6 +71,11 @@ decodeTuberculosisMeasurement =
 decodeHIVMeasurement : Decoder value -> Decoder (Measurement HIVEncounterId value)
 decodeHIVMeasurement =
     decodeMeasurement "hiv_encounter"
+
+
+decodeFamilyNutritionMeasurement : Decoder value -> Decoder (Measurement FamilyNutritionEncounterId value)
+decodeFamilyNutritionMeasurement =
+    decodeMeasurement "family_nutrition_encounter"
 
 
 decodeMeasurement : String -> Decoder value -> Decoder (Measurement (EntityUuid a) value)
@@ -169,6 +174,7 @@ decodePrenatalMeasurements =
         |> optional "prenatal_iron" (decodeHead decodePrenatalIron) Nothing
         |> optional "prenatal_mms" (decodeHead decodePrenatalMMS) Nothing
         |> optional "prenatal_mebendazole" (decodeHead decodePrenatalMebendazole) Nothing
+        |> optional "prenatal_ultrasound" (decodeHead decodePrenatalUltrasound) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
@@ -342,6 +348,16 @@ decodeHIVMeasurements =
         |> optional "hiv_treatment_review" (decodeHead decodeHIVTreatmentReview) Nothing
 
 
+decodeFamilyNutritionMeasurements : Decoder FamilyNutritionMeasurements
+decodeFamilyNutritionMeasurements =
+    succeed FamilyNutritionMeasurements
+        |> optional "aheza_mother" (decodeHead decodeAhezaMother) Nothing
+        |> optional "aheza_child" (decodeChildDict decodeAhezaChild) Dict.empty
+        |> optional "family_nutrition_muac_mother" (decodeHead decodeFamilyNutritionMuacMother) Nothing
+        |> optional "family_nutrition_muac_child" (decodeChildDict decodeFamilyNutritionMuacChild) Dict.empty
+        |> optional "family_nutrition_photo" (decodeChildDict decodeFamilyNutritionPhoto) Dict.empty
+
+
 decodeStockManagementMeasurements : Decoder StockManagementMeasurements
 decodeStockManagementMeasurements =
     succeed StockManagementMeasurements
@@ -350,9 +366,24 @@ decodeStockManagementMeasurements =
         |> optional "stock_update" (map Dict.fromList <| list (decodeWithEntityUuid decodeStockUpdate)) Dict.empty
 
 
+decodeVillageStockManagementMeasurements : Decoder VillageStockManagementMeasurements
+decodeVillageStockManagementMeasurements =
+    succeed VillageStockManagementMeasurements
+        |> optional "aheza_child" (map Dict.fromList <| list (decodeWithEntityUuid decodeAhezaChild)) Dict.empty
+        |> optional "aheza_mother" (map Dict.fromList <| list (decodeWithEntityUuid decodeAhezaMother)) Dict.empty
+        |> optional "stock_update" (map Dict.fromList <| list (decodeWithEntityUuid decodeStockUpdate)) Dict.empty
+
+
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
 decodeHead =
     map List.head << list << decodeWithEntityUuid
+
+
+decodeChildDict : Decoder (Measurement e v) -> Decoder (Dict PersonId ( EntityUuid b, Measurement e v ))
+decodeChildDict decoder =
+    list (decodeWithEntityUuid decoder)
+        |> map (List.map (\( uuid, measurement ) -> ( measurement.participantId, ( uuid, measurement ) )))
+        |> map Dict.fromList
 
 
 decodePregnancyTest : Decoder PregnancyTest
@@ -1120,36 +1151,6 @@ decodePrenatalMentalHealthQuestionTuple =
 
                     _ ->
                         failure
-            )
-
-
-decodePrenatalMentalHealthQuestion : Decoder PrenatalMentalHealthQuestion
-decodePrenatalMentalHealthQuestion =
-    string
-        |> andThen
-            (\s ->
-                prenatalMentalHealthQuestionFromString s
-                    |> Maybe.map succeed
-                    |> Maybe.withDefault
-                        (fail <|
-                            s
-                                ++ " is not a recognized PrenatalMentalHealthQuestion"
-                        )
-            )
-
-
-decodePrenatalMentalHealthQuestionOption : Decoder PrenatalMentalHealthQuestionOption
-decodePrenatalMentalHealthQuestionOption =
-    string
-        |> andThen
-            (\s ->
-                prenatalMentalHealthQuestionOptionFromString s
-                    |> Maybe.map succeed
-                    |> Maybe.withDefault
-                        (fail <|
-                            s
-                                ++ " is not a recognized PrenatalMentalHealthQuestionOption"
-                        )
             )
 
 
@@ -3322,7 +3323,7 @@ decodeNonReferralSign =
                                 let
                                     reasonForNonReferral =
                                         List.tail parts
-                                            |> Maybe.map (List.intersperse "-" >> String.concat)
+                                            |> Maybe.map (String.join "-")
                                             |> Maybe.andThen reasonForNonReferralFromString
                                 in
                                 case prefix of
@@ -3357,40 +3358,6 @@ decodeNonReferralSign =
                                         failure
                             )
                         |> Maybe.withDefault failure
-            )
-
-
-decodeReferralFacility : Decoder ReferralFacility
-decodeReferralFacility =
-    string
-        |> andThen
-            (\facility ->
-                case facility of
-                    "hc" ->
-                        succeed FacilityHealthCenter
-
-                    "hospital" ->
-                        succeed FacilityHospital
-
-                    "mhs" ->
-                        succeed FacilityMentalHealthSpecialist
-
-                    "arv" ->
-                        succeed FacilityARVProgram
-
-                    "ncd" ->
-                        succeed FacilityNCDProgram
-
-                    "anc" ->
-                        succeed FacilityANCServices
-
-                    "us" ->
-                        succeed FacilityUltrasound
-
-                    _ ->
-                        fail <|
-                            facility
-                                ++ " is not a recognized ReferralFacility"
             )
 
 
@@ -3579,7 +3546,7 @@ decodeMedicationNonAdministrationSign =
                                 let
                                     administrationNote =
                                         List.tail parts
-                                            |> Maybe.map (List.intersperse "-" >> String.concat)
+                                            |> Maybe.map (String.join "-")
                                             |> Maybe.andThen administrationNoteFromString
                                 in
                                 case prefix of
@@ -5064,6 +5031,46 @@ decodePrenatalMebendazole =
     decodePrenatalMeasurement decodeAdministrationNoteField
 
 
+decodePrenatalUltrasound : Decoder PrenatalUltrasound
+decodePrenatalUltrasound =
+    decodePrenatalMeasurement decodeUltrasoundValue
+
+
+decodeUltrasoundValue : Decoder UltrasoundValue
+decodeUltrasoundValue =
+    succeed UltrasoundValue
+        |> required "pregnancy_signs" (decodeEverySet decodePregnancySign)
+        |> required "execution_date" Gizra.NominalDate.decodeYYYYMMDD
+        |> required "edd_weeks" decodeInt
+        |> required "edd_days" decodeInt
+        |> required "expected_date_concluded" Gizra.NominalDate.decodeYYYYMMDD
+
+
+decodePregnancySign : Decoder PregnancySign
+decodePregnancySign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "not-viable" ->
+                        succeed PregnancyNotViable
+
+                    "ectopic" ->
+                        succeed PregnancyEctopic
+
+                    "multiple-fetuses" ->
+                        succeed PregnancyMultipleFetuses
+
+                    "none" ->
+                        succeed NoPregnancySigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized PregnancySign"
+            )
+
+
 decodeNCDCoMorbidities : Decoder NCDCoMorbidities
 decodeNCDCoMorbidities =
     decodeNCDMeasurement decodeNCDCoMorbiditiesValue
@@ -5833,3 +5840,50 @@ decodeHIVSymptom =
 decodeHIVTreatmentReview : Decoder HIVTreatmentReview
 decodeHIVTreatmentReview =
     decodeHIVMeasurement decodeTreatmentOngoingValue
+
+
+decodeAhezaMother : Decoder AhezaMother
+decodeAhezaMother =
+    (succeed AhezaMotherValue
+        |> required "distributed_amount" decodeFloat
+        |> optional "distribution_reason" (nullable decodeAhezaDistributionReason) Nothing
+    )
+        |> decodeFamilyNutritionMeasurement
+
+
+decodeAhezaDistributionReason : Decoder AhezaDistributionReason
+decodeAhezaDistributionReason =
+    string
+        |> andThen
+            (\reason ->
+                ahezaDistributionReasonFromString reason
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail (reason ++ " is not a recognized AhezaDistributionReason."))
+            )
+
+
+decodeAhezaChild : Decoder AhezaChild
+decodeAhezaChild =
+    field "distributed_amount" decodeFloat
+        |> decodeFamilyNutritionMeasurement
+
+
+decodeFamilyNutritionMuacMother : Decoder FamilyNutritionMuacMother
+decodeFamilyNutritionMuacMother =
+    field "muac" decodeFloat
+        |> map MuacInCm
+        |> decodeFamilyNutritionMeasurement
+
+
+decodeFamilyNutritionMuacChild : Decoder FamilyNutritionMuacChild
+decodeFamilyNutritionMuacChild =
+    field "muac" decodeFloat
+        |> map MuacInCm
+        |> decodeFamilyNutritionMeasurement
+
+
+decodeFamilyNutritionPhoto : Decoder FamilyNutritionPhoto
+decodeFamilyNutritionPhoto =
+    field "photo" (decodeStringWithDefault "")
+        |> map ImageUrl
+        |> decodeFamilyNutritionMeasurement

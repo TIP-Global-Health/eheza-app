@@ -5,7 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
-import Backend.Session.Model exposing (..)
+import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
 import Date
 import Gizra.NominalDate exposing (NominalDate)
 import LocalData exposing (LocalData)

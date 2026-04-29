@@ -77,18 +77,22 @@ function hedley_device_assign_pairing_code($node, $wrapper) {
       throw new Exception('The provided pairing code was not unique.');
     }
 
-    // And we make a robot user to authenticate for syncing.
-    $role = user_role_load_by_name('sync');
+    // Reuse existing robot user if one exists, otherwise create one.
+    $robot_name = $node->title . ' Robot';
+    $account = user_load_by_name($robot_name);
+    if (!$account) {
+      $role = user_role_load_by_name('sync');
 
-    $account = entity_create('user', [
-      'name' => $node->title . ' Robot',
-      'mail' => 'robot@no-reply.com',
-      'roles' => [$role->rid => $role->name],
-      'status' => TRUE,
-    ]);
+      $account = entity_create('user', [
+        'name' => $robot_name,
+        'mail' => 'robot@no-reply.com',
+        'roles' => [$role->rid => $role->name],
+        'status' => TRUE,
+      ]);
 
-    $wrapper = entity_metadata_wrapper('user', $account);
-    $wrapper->save();
+      $wrapper = entity_metadata_wrapper('user', $account);
+      $wrapper->save();
+    }
 
     // Set the author.
     $node->uid = $account->uid;
@@ -226,10 +230,17 @@ function hedley_device_assign_shards($node, $wrapper) {
   }
 
   $individual_encounter_types = hedley_general_get_individual_encounter_types();
+  $family_encounter_types = hedley_general_get_family_encounter_types();
   if (in_array($node->type, $individual_encounter_types)) {
     // Assign shards based on Person of the individual participant,
     // to which encounter belongs.
     $person_id = $wrapper->field_individual_participant->field_person->getIdentifier();
+    $shards = hedley_general_shards_by_person($person_id);
+  }
+  elseif (in_array($node->type, $family_encounter_types)) {
+    // Assign shards based on Person of the family participant,
+    // to which encounter belongs.
+    $person_id = $wrapper->field_family_participant->field_person->getIdentifier();
     $shards = hedley_general_shards_by_person($person_id);
   }
   else {

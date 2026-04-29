@@ -1,12 +1,11 @@
 module Pages.EducationSession.Fetch exposing (fetch)
 
 import Backend.Entities exposing (..)
-import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
-import Pages.EducationSession.Model exposing (Model)
+import Backend.Model exposing (MsgIndexedDb(..))
 
 
-fetch : EducationSessionId -> Maybe VillageId -> ModelIndexedDb -> Model -> List MsgIndexedDb
-fetch id mVillageId db model =
+fetch : EducationSessionId -> Maybe VillageId -> List MsgIndexedDb
+fetch id mVillageId =
     Maybe.map
         (\villageId ->
             [ FetchVillages

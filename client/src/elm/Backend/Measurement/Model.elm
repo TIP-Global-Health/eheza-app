@@ -1,4 +1,4 @@
-module Backend.Measurement.Model exposing (..)
+module Backend.Measurement.Model exposing (AbdomenCPESign(..), AcuteFindings, AcuteFindingsGeneralSign(..), AcuteFindingsRespiratorySign(..), AcuteFindingsValue, AcuteIllnessContactsTracing, AcuteIllnessCoreExam, AcuteIllnessCoreExamValue, AcuteIllnessDangerSign(..), AcuteIllnessDangerSigns, AcuteIllnessFollowUp, AcuteIllnessFollowUpValue, AcuteIllnessMeasurement, AcuteIllnessMeasurements, AcuteIllnessMuac, AcuteIllnessNutrition, AcuteIllnessTraceContact, AcuteIllnessVitals, AdministrationNote(..), AdverseEvent(..), AhezaChild, AhezaDistributionReason(..), AhezaMother, AhezaMotherValue, Attendance, AvoidingGuidanceReason(..), BilirubinValue(..), BirthDefect(..), BirthPlan, BirthPlanSign(..), BirthPlanValue, BloodGpRsTestValue, BloodGroup(..), BloodSmearResult(..), BreastExam, BreastExamSign(..), BreastExamValue, BreastfeedingSign(..), BreastfeedingValue, CSectionReason(..), CSectionScar(..), Call114, Call114Sign(..), Call114Value, CaringOption(..), ChildMeasurementList, ChildMeasurements, ChildNutrition, ChildNutritionSign(..), ChildScoreboardBCGImmunisation, ChildScoreboardDTPImmunisation, ChildScoreboardDTPStandaloneImmunisation, ChildScoreboardIPVImmunisation, ChildScoreboardMRImmunisation, ChildScoreboardMeasurement, ChildScoreboardMeasurements, ChildScoreboardNCDA, ChildScoreboardOPVImmunisation, ChildScoreboardPCV13Immunisation, ChildScoreboardRotarixImmunisation, ColorAlertIndication(..), ContactTraceItem, ContributingFactors, ContributingFactorsSign(..), CorePhysicalExam, CorePhysicalExamValue, CounselingSession, CovidTesting, CovidTestingValue, CreatinineTestValue, DangerSign(..), DangerSigns, DangerSignsValue, DeliveryComplication(..), DischargeType(..), DistributionNotice(..), ECDSign(..), Exposure, ExposureSign(..), EyesCPESign(..), FamilyNutritionMeasurement, FamilyNutritionMeasurements, FamilyNutritionMuacChild, FamilyNutritionMuacMother, FamilyNutritionPhoto, FamilyPlanning, FamilyPlanningSign(..), Fbf, FbfValue, FetalPresentation(..), FollowUp, FollowUpMeasurements, FollowUpOption(..), FollowUpValue, FoodGroup(..), GUExamSign(..), GUExamValue, Gender(..), GlucoseValue(..), GroupHealthEducation, GroupMeasurement, GroupNCDA, GroupSendToHC, HCContact, HCContactSign(..), HCContactValue, HCRecommendation(..), HIVDiagnosisSign(..), HIVDiagnostics, HIVDiagnosticsValue, HIVFollowUp, HIVHealthEducation, HIVHealthEducationSign(..), HIVHealthEducationValue, HIVMeasurement, HIVMeasurements, HIVMedication, HIVMedicationValue, HIVPCRResult(..), HIVPCRTestValue, HIVPrescribedMedication(..), HIVReferral, HIVSymptom(..), HIVSymptomReview, HIVSymptomReviewValue, HIVTestValue, HIVTreatmentReview, HIVTreatmentSign(..), HaemoglobinValue(..), HairHeadCPESign(..), HandsCPESign(..), HbA1cTestValue, HeadCircumferenceInCm(..), HeadCircumferenceValue, HealthEducation, HealthEducationSign(..), HealthEducationValue, HeartCPESign(..), Height, HeightInCm(..), HemoglobinTestValue, HepatitisBTestValue, HistoricalMeasurements, HomeVisitMeasurement, HomeVisitMeasurements, IllnessSymptom(..), ImageUrl(..), Isolation, IsolationSign(..), IsolationValue, KetoneValue(..), LaboratoryTest(..), LabsResultsReviewState(..), LabsResultsValue, Lactation, LactationForm, LactationSign(..), LastMenstrualPeriod, LastMenstrualPeriodValue, LateFirstANCVisitReason(..), LegsCPESign(..), LeukocytesValue(..), LipidPanelTestValue, LiverFunctionTestValue, LmpDateNotConfidentReason(..), LungsCPESign(..), MainIncomeSource(..), MainWaterSource(..), MalariaPrevention, MalariaPreventionSign(..), MalariaPreventionValue, MalariaTestValue, MalariaTesting, Measurement, MeasurementData, MeasurementNote(..), Measurements, MedicalCondition(..), MedicalHistory, MedicalHistoryInfectiousDisease(..), MedicalHistoryMentalHealthIssue(..), MedicalHistoryPhysicalCondition(..), MedicalHistorySign(..), MedicalHistoryValue, Medication, MedicationCausingHypertension(..), MedicationDistribution, MedicationDistributionSign(..), MedicationDistributionValue, MedicationNonAdministrationSign(..), MedicationSign(..), MedicationTreatingDiabetes(..), MedicationTreatingHypertension(..), MedicationTreatmentSign(..), MedicationValue, MotherMeasurementList, MotherMeasurements, Muac, MuacInCm(..), NCDASign(..), NCDAValue, NCDCoMorbidities, NCDCoMorbiditiesValue, NCDCoreExam, NCDCreatinineTest, NCDDangerSign(..), NCDDangerSigns, NCDDangerSignsValue, NCDFamilyHistory, NCDFamilyHistorySign(..), NCDFamilyHistoryValue, NCDFamilyPlanning, NCDFamilyPlanningValue, NCDGroup1Symptom(..), NCDGroup2Symptom(..), NCDGuidanceSign(..), NCDHIVTest, NCDHbA1cTest, NCDHealthEducation, NCDHealthEducationSign(..), NCDHealthEducationValue, NCDLabsResults, NCDLipidPanelTest, NCDLiverFunctionTest, NCDMeasurement, NCDMeasurements, NCDMedicationDistribution, NCDMedicationDistributionValue, NCDMedicationHistory, NCDMedicationHistoryValue, NCDOutsideCare, NCDPainSymptom(..), NCDPregnancyTest, NCDRandomBloodSugarTest, NCDReferral, NCDSocialHistory, NCDSocialHistorySign(..), NCDSocialHistoryValue, NCDSymptomReview, NCDSymptomReviewValue, NCDUrineDipstickTest, NCDVitals, NeckCPESign(..), NextVisitValue, NitriteValue(..), NonReferralSign(..), NutritionAssessment(..), NutritionCaring, NutritionCaringSign(..), NutritionCaringValue, NutritionContributingFactors, NutritionFeeding, NutritionFeedingSign(..), NutritionFeedingValue, NutritionFollowUp, NutritionFollowUpValue, NutritionFoodSecurity, NutritionFoodSecuritySign(..), NutritionFoodSecurityValue, NutritionHealthEducation, NutritionHeight, NutritionHygiene, NutritionHygieneSign(..), NutritionHygieneValue, NutritionMeasurement, NutritionMeasurements, NutritionMuac, NutritionNCDA, NutritionNutrition, NutritionPhoto, NutritionSendToHC, NutritionSupplementType(..), NutritionValue, NutritionWeight, ObstetricHistory, ObstetricHistorySign(..), ObstetricHistoryStep2, ObstetricHistoryStep2Sign(..), ObstetricHistoryStep2Value, ObstetricHistoryValue, ObstetricalExam, ObstetricalExamValue, OccursInFamilySign(..), OutsideCareMedication(..), OutsideCareSign(..), OutsideCareValue, PHValue(..), ParticipantConsent, ParticipantConsentValue, PartnerHIVTestValue, PhaseRecorded(..), Photo, PostpartumChildDangerSign(..), PostpartumHealingProblem(..), PostpartumMotherDangerSign(..), Predecessor(..), PregnancySign(..), PregnancySummarySign(..), PregnancySummaryValue, PregnancyTest, PregnancyTestResult(..), PregnancyTestValue, PrenatalAppointmentConfirmation, PrenatalAppointmentConfirmationValue, PrenatalAspirin, PrenatalAssesment(..), PrenatalBloodGpRsTest, PrenatalBreastfeeding, PrenatalCalcium, PrenatalFamilyPlanning, PrenatalFefol, PrenatalFlankPainSign(..), PrenatalFolate, PrenatalFollowUp, PrenatalFollowUpValue, PrenatalGUExam, PrenatalHIVPCRTest, PrenatalHIVSign(..), PrenatalHIVTest, PrenatalHealthEducation, PrenatalHealthEducationSign(..), PrenatalHealthEducationValue, PrenatalHemoglobinTest, PrenatalHepatitisBTest, PrenatalIron, PrenatalLabsResults, PrenatalMMS, PrenatalMalariaTest, PrenatalMeasurement, PrenatalMeasurements, PrenatalMebendazole, PrenatalMedicationDistribution, PrenatalMedicationDistributionValue, PrenatalMentalHealth, PrenatalMentalHealthQuestion(..), PrenatalMentalHealthQuestionOption(..), PrenatalMentalHealthValue, PrenatalNutrition, PrenatalNutritionValue, PrenatalOutsideCare, PrenatalPartnerHIVTest, PrenatalPhoto, PrenatalRandomBloodSugarTest, PrenatalReferralValue, PrenatalSendToHC, PrenatalSpecialityCare, PrenatalSymptom(..), PrenatalSymptomQuestion(..), PrenatalSymptomReview, PrenatalSymptomReviewValue, PrenatalSyphilisTest, PrenatalTetanusImmunisation, PrenatalUltrasound, PrenatalUrineDipstickTest, PrenatalVaccineType(..), PreviousDeliveryPeriod(..), PreviousDeliverySign(..), PreviousMeasurementsSet, PreviousValuesSet, ProteinValue(..), RandomBloodSugarTestValue, RapidTestResult(..), ReasonForNonReferral(..), ReasonForNotIsolating(..), ReasonForNotProvidingHealthEducation(..), ReasonForNotTaking(..), ReceiveOption(..), Recommendation114(..), RecommendationSite(..), RecommendedTreatmentSign(..), ReferToFacilitySign(..), ReferralFacility(..), ReferralValue, ReinforceTreatmentSign(..), ResponsePeriod(..), Rhesus(..), SendToHC, SendToHCSign(..), SendToHCValue, SocialHistory, SocialHistorySign(..), SocialHistoryValue, SpecialityCareSign(..), SpecialityCareValue, StockCorrectionReason(..), StockManagementMeasurements, StockSupplier(..), StockUpdate, StockUpdateType(..), StuntingLevel(..), SymptomsGI, SymptomsGIDerivedSign(..), SymptomsGISign(..), SymptomsGIValue, SymptomsGeneral, SymptomsGeneralSign(..), SymptomsGeneralValue, SymptomsRespiratory, SymptomsRespiratorySign(..), SyphilisTestValue, TestExecutionNote(..), TestPrerequisite(..), TestResult(..), TestVariant(..), TraceOutcome(..), TravelHistory, TravelHistorySign(..), TreatmentOngoing, TreatmentOngoingSign(..), TreatmentOngoingValue, TreatmentReview, TreatmentReviewSign(..), TuberculosisDOT, TuberculosisDOTSign(..), TuberculosisDOTValue, TuberculosisDiagnosis(..), TuberculosisDiagnostics, TuberculosisDiagnosticsValue, TuberculosisFollowUp, TuberculosisHealthEducation, TuberculosisHealthEducationSign(..), TuberculosisHealthEducationValue, TuberculosisMeasurement, TuberculosisMeasurements, TuberculosisMedication, TuberculosisMedicationValue, TuberculosisPrescribedMedication(..), TuberculosisReferral, TuberculosisSymptom(..), TuberculosisSymptomReview, TuberculosisSymptomReviewValue, TuberculosisTreatmentReview, UltrasoundValue, UnitOfMeasurement(..), UrineDipstickTestValue, UrobilinogenValue(..), VaccinationValue, VaccineDose(..), VaccineType(..), VaginalExamSign(..), VillageStockManagementMeasurements, ViralLoadStatus(..), Vitals, VitalsValue, WaterPreparationOption(..), Weight, WeightInGrm(..), WeightInKg(..), WellChildAlbendazole, WellChildBCGImmunisation, WellChildCaring, WellChildContributingFactors, WellChildDTPImmunisation, WellChildDTPStandaloneImmunisation, WellChildECD, WellChildFeeding, WellChildFollowUp, WellChildFoodSecurity, WellChildHPVImmunisation, WellChildHeadCircumference, WellChildHealthEducation, WellChildHeight, WellChildHygiene, WellChildIPVImmunisation, WellChildMRImmunisation, WellChildMeasurement, WellChildMeasurements, WellChildMebendezole, WellChildMuac, WellChildNCDA, WellChildNextVisit, WellChildNutrition, WellChildOPVImmunisation, WellChildPCV13Immunisation, WellChildPhoto, WellChildPregnancySummary, WellChildRotarixImmunisation, WellChildSendToHC, WellChildSymptom(..), WellChildSymptomsReview, WellChildVaccineType(..), WellChildVitals, WellChildVitaminA, WellChildWeight, emptyChildMeasurementList, emptyChildMeasurements, emptyMotherMeasurementList, emptyMotherMeasurements, emptyNutritionValue, emptyPrenatalMeasurements)
 
 {-| This module represents various measurements to be stored on the backend,
 and cached in local storage.
@@ -76,6 +76,10 @@ type alias TuberculosisMeasurement value =
 
 type alias HIVMeasurement value =
     Measurement HIVEncounterId value
+
+
+type alias FamilyNutritionMeasurement value =
+    Measurement FamilyNutritionEncounterId value
 
 
 
@@ -654,10 +658,12 @@ type PostpartumChildDangerSign
 
 type alias LastMenstrualPeriodValue =
     { date : NominalDate
-    , prePregnancyWeight : Maybe WeightInKg
+    , -- Deprecated, but kept for backward compatibility.
+      prePregnancyWeight : Maybe WeightInKg
     , confident : Bool
     , notConfidentReason : Maybe LmpDateNotConfidentReason
-    , lateFirstVisitReason : Maybe LateFirstANCVisitReason
+    , -- Deprecated, but kept for backward compatibility.
+      lateFirstVisitReason : Maybe LateFirstANCVisitReason
     , confirmation : Bool
     }
 
@@ -1801,6 +1807,26 @@ type alias PrenatalMMS =
 
 type alias PrenatalMebendazole =
     PrenatalMeasurement AdministrationNote
+
+
+type alias PrenatalUltrasound =
+    PrenatalMeasurement UltrasoundValue
+
+
+type alias UltrasoundValue =
+    { signs : EverySet PregnancySign
+    , executionDate : NominalDate
+    , eddWeeks : Int
+    , eddDays : Int
+    , eddDate : NominalDate
+    }
+
+
+type PregnancySign
+    = PregnancyNotViable
+    | PregnancyEctopic
+    | PregnancyMultipleFetuses
+    | NoPregnancySigns
 
 
 
@@ -3224,6 +3250,42 @@ type alias HIVTreatmentReview =
 
 
 
+-- Family Nutrition:
+
+
+type AhezaDistributionReason
+    = AhezaDistributionReasonBreastfeeding
+    | AhezaDistributionReasonOther
+    | AhezaDistributionReasonPregnant
+
+
+type alias AhezaMotherValue =
+    { distributedAmount : Float
+    , distributionReason : Maybe AhezaDistributionReason
+    }
+
+
+type alias AhezaMother =
+    FamilyNutritionMeasurement AhezaMotherValue
+
+
+type alias AhezaChild =
+    FamilyNutritionMeasurement Float
+
+
+type alias FamilyNutritionMuacMother =
+    FamilyNutritionMeasurement MuacInCm
+
+
+type alias FamilyNutritionMuacChild =
+    FamilyNutritionMeasurement MuacInCm
+
+
+type alias FamilyNutritionPhoto =
+    FamilyNutritionMeasurement ImageUrl
+
+
+
 -- Stock Management:
 
 
@@ -3241,6 +3303,7 @@ type alias StockUpdate =
     , healthCenter : HealthCenterId
     , deleted : Bool
     , shard : Maybe HealthCenterId
+    , village : Maybe VillageId
     , signature : ImageUrl
     }
 
@@ -3251,7 +3314,8 @@ type StockUpdateType
 
 
 type StockSupplier
-    = SupplierMOH
+    = SupplierAheza
+    | SupplierMOH
     | SupplierRBC
     | SupplierUNICEF
     | SupplierRMSCentral
@@ -3400,6 +3464,7 @@ type alias PrenatalMeasurements =
     , iron : Maybe ( PrenatalIronId, PrenatalIron )
     , mms : Maybe ( PrenatalMMSId, PrenatalMMS )
     , mebendazole : Maybe ( PrenatalMebendazoleId, PrenatalMebendazole )
+    , ultrasound : Maybe ( PrenatalUltrasoundId, PrenatalUltrasound )
     }
 
 
@@ -3452,6 +3517,7 @@ emptyPrenatalMeasurements =
     , iron = Nothing
     , mms = Nothing
     , mebendazole = Nothing
+    , ultrasound = Nothing
     }
 
 
@@ -3629,12 +3695,28 @@ type alias HIVMeasurements =
     }
 
 
+type alias FamilyNutritionMeasurements =
+    { ahezaMother : Maybe ( AhezaMotherId, AhezaMother )
+    , ahezaChild : Dict PersonId ( AhezaChildId, AhezaChild )
+    , muacMother : Maybe ( FamilyNutritionMuacMotherId, FamilyNutritionMuacMother )
+    , muacChild : Dict PersonId ( FamilyNutritionMuacChildId, FamilyNutritionMuacChild )
+    , photo : Dict PersonId ( FamilyNutritionPhotoId, FamilyNutritionPhoto )
+    }
+
+
 {-| A set of measurements that includes all required data for
 Stock management data presentation.
 -}
 type alias StockManagementMeasurements =
     { childFbf : Dict ChildFbfId Fbf
     , motherFbf : Dict MotherFbfId Fbf
+    , stockUpdate : Dict StockUpdateId StockUpdate
+    }
+
+
+type alias VillageStockManagementMeasurements =
+    { ahezaChild : Dict AhezaChildId AhezaChild
+    , ahezaMother : Dict AhezaMotherId AhezaMother
     , stockUpdate : Dict StockUpdateId StockUpdate
     }
 

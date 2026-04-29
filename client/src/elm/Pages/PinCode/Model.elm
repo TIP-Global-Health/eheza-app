@@ -1,4 +1,4 @@
-module Pages.PinCode.Model exposing (..)
+module Pages.PinCode.Model exposing (MainMenuActivity(..), Model, Msg(..), OutMsg(..), ResilienceReminderType(..), emptyModel)
 
 {-| This models the PinCode entered by the user.
 -}

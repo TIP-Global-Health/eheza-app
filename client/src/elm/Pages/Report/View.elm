@@ -1,4 +1,4 @@
-module Pages.Report.View exposing (..)
+module Pages.Report.View exposing (viewAcuteIllnessDiagnosisEntry, viewEntries, viewItemHeading, viewLabResultsHistoryPane, viewLabResultsPane, viewLabsPane)
 
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessProgressReportInitiator)
 import Backend.Entities exposing (..)
@@ -14,15 +14,15 @@ import Html.Events exposing (..)
 import Measurement.Model exposing (LaboratoryTask(..))
 import Measurement.Utils exposing (bloodSmearResultNotSet, testPerformedByExecutionNote)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Report.Model exposing (..)
-import Pages.Report.Utils exposing (..)
+import Pages.Report.Model exposing (LabResultsCurrentMode(..), LabResultsHistoryMode(..), LabResultsMode(..), LabsResultsDisplayConfig, LabsResultsValues, PaneEntryStatus, TestReport(..))
+import Pages.Report.Utils exposing (altResultNormal, astResultNormal, bilirubinResultNormal, bloodSmearResultNormal, bunResultNormal, creatinineResultNormal, diagnosisEntryStatusToString, getAcuteIllnessDiagnosisForEncounters, getAcuteIllnessEncountersForParticipant, getRandomBloodSugarResultValue, glucoseResultNormal, hba1cResultNormal, hdlCholesterolResultNormal, hemoglobinResultNormal, hepatitisBResultNormal, hivPCRResultNormal, hivResultNormal, ketoneResultNormal, ldlCholesterolResultNormal, leukocytesResultNormal, malariaResultNormal, nitriteResultNormal, partnerHIVResultNormal, phResultNormal, pregnancyResultNormal, proteinResultNormal, randomBloodSugarResultFromValue, randomBloodSugarResultNormal, rhesusResultsNormal, syphilisResultNormal, totalCholesterolResultNormal, triglyceridesResultNormal, urineHaemoglobinValueResultNormal, urobilinogenResultNormal)
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.NominalDate exposing (sortTuplesByDateDesc)
 
 
-viewLabsPane : Language -> NominalDate -> (Maybe LabResultsMode -> msg) -> Html msg
-viewLabsPane language currentDate setLabResultsModeMsg =
-    div [ class "labs" ] <|
+viewLabsPane : Language -> (Maybe LabResultsMode -> msg) -> Html msg
+viewLabsPane language setLabResultsModeMsg =
+    div [ class "labs" ]
         [ viewItemHeading language Translate.LabResults "blue"
         , div [ class "pane-content" ]
             [ div
