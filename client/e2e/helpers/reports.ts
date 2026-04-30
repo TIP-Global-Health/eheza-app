@@ -707,6 +707,18 @@ export async function readAcuteIllnessTable(
 }
 
 /**
+ * Read the Peripartum report table.
+ * Container: div.report.peripartum div.table
+ * Each row has 2 cells: [outcome / indicator label, total count].
+ * Use findSimpleRow() to look up specific rows by label substring.
+ */
+export async function readPeripartumTable(
+  page: Page,
+): Promise<SimpleTableData> {
+  return readSimpleTable(page, 'div.report.peripartum div.table');
+}
+
+/**
  * Read a specific AI diagnosis row by its CSS class.
  * Returns the total count, or 0 if the row is not found.
  */
