@@ -6609,17 +6609,7 @@ var $author$project$Pages$Reports$Update$calculateNutritionReportDataTask = F2(
 													function (item) {
 														return _Utils_Tuple2(
 															record.id,
-															{
-																hasEdema: false,
-																muacCm: A2(
-																	$elm$core$Maybe$andThen,
-																	function ($) {
-																		return $.muac;
-																	},
-																	item.nutritionData),
-																nutritionData: item.nutritionData,
-																startDate: item.startDate
-															});
+															{hasEdema: false, muacCm: item.muacCm, nutritionData: item.nutritionData, startDate: item.startDate});
 													}))),
 										record.wellChildData),
 										A2(
@@ -9170,9 +9160,9 @@ var $author$project$Backend$Reports$Decoder$decodeGender = A2(
 				$author$project$Backend$Reports$Utils$genderFromString(gender)));
 	},
 	$elm$json$Json$Decode$string);
-var $author$project$Backend$Reports$Model$NutritionData = F4(
-	function (stunting, underweight, wasting, muac) {
-		return {muac: muac, stunting: stunting, underweight: underweight, wasting: wasting};
+var $author$project$Backend$Reports$Model$NutritionData = F3(
+	function (stunting, underweight, wasting) {
+		return {stunting: stunting, underweight: underweight, wasting: wasting};
 	});
 var $author$project$Backend$Reports$Decoder$parseNutritionEncounterPayload = function (payload) {
 	var _v0 = A2($elm$core$String$split, ',', payload);
@@ -9187,12 +9177,11 @@ var $author$project$Backend$Reports$Decoder$parseNutritionEncounterPayload = fun
 				var wasting = _v2.a;
 				return _Utils_Tuple3(
 					$elm$core$Maybe$Just(
-						A4(
+						A3(
 							$author$project$Backend$Reports$Model$NutritionData,
 							$elm$core$String$toFloat(stunting),
 							$elm$core$String$toFloat(underweight),
-							$elm$core$String$toFloat(wasting),
-							$elm$core$Maybe$Nothing)),
+							$elm$core$String$toFloat(wasting))),
 					$elm$core$Maybe$Nothing,
 					false);
 			} else {
@@ -9208,12 +9197,11 @@ var $author$project$Backend$Reports$Decoder$parseNutritionEncounterPayload = fun
 					var edema = _v6.a;
 					return _Utils_Tuple3(
 						$elm$core$Maybe$Just(
-							A4(
+							A3(
 								$author$project$Backend$Reports$Model$NutritionData,
 								$elm$core$String$toFloat(stunting),
 								$elm$core$String$toFloat(underweight),
-								$elm$core$String$toFloat(wasting),
-								$elm$core$Maybe$Nothing)),
+								$elm$core$String$toFloat(wasting))),
 						$elm$core$String$toFloat(muac),
 						edema === '1');
 				} else {
@@ -9677,9 +9665,9 @@ var $author$project$Backend$Reports$Decoder$decodePrenatalParticipantData = A3(
 						'created',
 						$author$project$Gizra$NominalDate$decodeYYYYMMDD,
 						$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$PrenatalParticipantData)))))));
-var $author$project$Backend$Reports$Model$WellChildEncounterData = F3(
-	function (startDate, nutritionData, immunisationData) {
-		return {immunisationData: immunisationData, nutritionData: nutritionData, startDate: startDate};
+var $author$project$Backend$Reports$Model$WellChildEncounterData = F4(
+	function (startDate, nutritionData, muacCm, immunisationData) {
+		return {immunisationData: immunisationData, muacCm: muacCm, nutritionData: nutritionData, startDate: startDate};
 	});
 var $pzp1997$assoc_list$AssocList$fromList = function (alist) {
 	return A3(
@@ -9789,15 +9777,16 @@ var $author$project$Backend$Reports$Decoder$nutritionDataFromString = function (
 		var _v3 = _v2.b;
 		var muac = _v3.a;
 		var _v4 = _v3.b;
-		return $elm$core$Maybe$Just(
-			A4(
-				$author$project$Backend$Reports$Model$NutritionData,
-				$elm$core$String$toFloat(stunting),
-				$elm$core$String$toFloat(underweight),
-				$elm$core$String$toFloat(wasting),
-				$elm$core$String$toFloat(muac)));
+		return _Utils_Tuple2(
+			$elm$core$Maybe$Just(
+				A3(
+					$author$project$Backend$Reports$Model$NutritionData,
+					$elm$core$String$toFloat(stunting),
+					$elm$core$String$toFloat(underweight),
+					$elm$core$String$toFloat(wasting))),
+			$elm$core$String$toFloat(muac));
 	} else {
-		return $elm$core$Maybe$Nothing;
+		return _Utils_Tuple2($elm$core$Maybe$Nothing, $elm$core$Maybe$Nothing);
 	}
 };
 var $author$project$Backend$Reports$Decoder$decodeWellChildEncounterData = A2(
@@ -9819,11 +9808,15 @@ var $author$project$Backend$Reports$Decoder$decodeWellChildEncounterData = A2(
 				A2(
 					$elm$core$Maybe$map,
 					function (startDate) {
+						var _v3 = $author$project$Backend$Reports$Decoder$nutritionDataFromString(second);
+						var nutritionData = _v3.a;
+						var muacCm = _v3.b;
 						return $elm$json$Json$Decode$succeed(
-							A3(
+							A4(
 								$author$project$Backend$Reports$Model$WellChildEncounterData,
 								startDate,
-								$author$project$Backend$Reports$Decoder$nutritionDataFromString(second),
+								nutritionData,
+								muacCm,
 								$author$project$Backend$Reports$Decoder$immunisationDataFromString(third)));
 					},
 					$elm$core$Result$toMaybe(

@@ -645,9 +645,14 @@ decodeWellChildEncounterData =
                         (Date.fromIsoString first |> Result.toMaybe)
                             |> Maybe.map
                                 (\startDate ->
+                                    let
+                                        ( nutritionData, muacCm ) =
+                                            nutritionDataFromString second
+                                    in
                                     succeed
                                         (WellChildEncounterData startDate
-                                            (nutritionDataFromString second)
+                                            nutritionData
+                                            muacCm
                                             (immunisationDataFromString third)
                                         )
                                 )
@@ -662,23 +667,23 @@ decodeWellChildEncounterData =
 -- Wire format from hedley_reports_nutrition_metrics_to_string is
 -- "<stunting>,<underweight>,<wasting>,<muac>,<edema>" (PRs #1479/#1481
 -- established this order to fix issue 3199; do not reorder without
--- updating the PHP encoder/decoder in lockstep). The edema token is
--- intentionally discarded because WellChildEncounterData doesn't carry
--- edema; if SPV reports start needing it, plumb it through.
+-- updating the PHP encoder/decoder in lockstep). NutritionData carries
+-- the three z-scores; MUAC is returned alongside as the tuple's second
+-- component so callers can store it on their encounter type (mirroring
+-- parseNutritionEncounterPayload below). The edema token is discarded
+-- because WellChildEncounterData doesn't carry edema today.
 
 
-nutritionDataFromString : String -> Maybe NutritionData
+nutritionDataFromString : String -> ( Maybe NutritionData, Maybe Float )
 nutritionDataFromString s =
     case String.split "," s of
         [ stunting, underweight, wasting, muac, _ ] ->
-            Just <|
-                NutritionData (String.toFloat stunting)
-                    (String.toFloat underweight)
-                    (String.toFloat wasting)
-                    (String.toFloat muac)
+            ( Just (NutritionData (String.toFloat stunting) (String.toFloat underweight) (String.toFloat wasting))
+            , String.toFloat muac
+            )
 
         _ ->
-            Nothing
+            ( Nothing, Nothing )
 
 
 immunisationDataFromString : String -> Maybe (Dict VaccineType (EverySet NominalDate))
@@ -755,24 +760,23 @@ vaccineTypeFromMapping s =
 
 -- Wire format from hedley_reports_nutrition_metrics_to_string is
 -- "<stunting>,<underweight>,<wasting>,<muac>,<edema>" (PRs #1479/#1481
--- established this order to fix issue 3199). NutritionData gained a
--- `muac` field on this branch but the per-encounter MUAC value is
--- still surfaced via the tuple's second component (NutritionEncounterData
--- already carries it as `muacCm`); NutritionData.muac stays Nothing
--- here so the wire payload doesn't need a second muac slot.
+-- established this order to fix issue 3199). NutritionData carries the
+-- three z-scores; MUAC and edema flow alongside in the tuple so they
+-- can be stored on NutritionEncounterData's top-level muacCm/hasEdema
+-- fields without duplicating data inside the nested NutritionData.
 
 
 parseNutritionEncounterPayload : String -> ( Maybe NutritionData, Maybe Float, Bool )
 parseNutritionEncounterPayload payload =
     case String.split "," payload of
         [ stunting, underweight, wasting ] ->
-            ( Just (NutritionData (String.toFloat stunting) (String.toFloat underweight) (String.toFloat wasting) Nothing)
+            ( Just (NutritionData (String.toFloat stunting) (String.toFloat underweight) (String.toFloat wasting))
             , Nothing
             , False
             )
 
         [ stunting, underweight, wasting, muac, edema ] ->
-            ( Just (NutritionData (String.toFloat stunting) (String.toFloat underweight) (String.toFloat wasting) Nothing)
+            ( Just (NutritionData (String.toFloat stunting) (String.toFloat underweight) (String.toFloat wasting))
             , String.toFloat muac
             , edema == "1"
             )

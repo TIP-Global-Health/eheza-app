@@ -231,13 +231,13 @@ type alias NutritionData =
     { stunting : Maybe Float
     , underweight : Maybe Float
     , wasting : Maybe Float
-    , muac : Maybe Float
     }
 
 
 type alias WellChildEncounterData =
     { startDate : NominalDate
     , nutritionData : Maybe NutritionData
+    , muacCm : Maybe Float
     , immunisationData : Maybe (Dict VaccineType (EverySet NominalDate))
     }
 

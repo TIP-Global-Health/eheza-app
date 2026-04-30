@@ -151,14 +151,13 @@ calculateNutritionReportDataTask currentDate data =
                                 >> List.filter filterByYear
                                 >> List.map
                                     (\item ->
-                                        -- WellChildEncounterData carries MUAC inside nutritionData.muac
-                                        -- (the wire format puts it as the 4th comma-separated field).
-                                        -- Lift it to muacCm so categorizeAcuteMalnutrition picks it up;
+                                        -- WellChildEncounterData mirrors NutritionEncounterData's
+                                        -- shape (date, nutritionData, muacCm) plus immunisationData;
                                         -- well-child wire doesn't carry edema today, so default to False.
                                         ( record.id
                                         , { startDate = item.startDate
                                           , nutritionData = item.nutritionData
-                                          , muacCm = Maybe.andThen .muac item.nutritionData
+                                          , muacCm = item.muacCm
                                           , hasEdema = False
                                           }
                                         )
