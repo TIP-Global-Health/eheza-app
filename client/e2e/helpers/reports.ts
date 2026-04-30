@@ -707,6 +707,18 @@ export async function readAcuteIllnessTable(
 }
 
 /**
+ * Read the Peripartum report table.
+ * Container: div.report.peripartum div.table
+ * Each row has 2 cells: [outcome / indicator label, total count].
+ * Use findSimpleRow() to look up specific rows by label substring.
+ */
+export async function readPeripartumTable(
+  page: Page,
+): Promise<SimpleTableData> {
+  return readSimpleTable(page, 'div.report.peripartum div.table');
+}
+
+/**
  * Read the Postnatal Care report table (PR #1556).
  * Container: div.report.postnatal-care div.table
  * Each row has 2 cells: [age-bucket / SPV-window label, total count].

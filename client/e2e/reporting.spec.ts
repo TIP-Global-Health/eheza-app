@@ -24,6 +24,7 @@ import {
   readAIDiagnosisRow,
   readPrenatalDiagnosisRow,
   readPrenatalVisitsTable,
+  readPeripartumTable,
   readPostnatalCareTable,
   findPrenatalRow,
   PrenatalVisitsRow,
@@ -295,6 +296,17 @@ test.describe('Admin Reports', () => {
     let baselineGestHypertension: number;
     let baselineDepression: number;
     let baselinePrenatalTotal: number;
+    // Peripartum (PR #1552) report baselines. PrenatalMom's flow is
+    // updated below to record a "Live Birth Pre-Term" outcome (rather
+    // than the default at-term) and select the "Premature Onset of
+    // Contractions" danger sign, so all five rows should grow by +1
+    // after sync. Breastfed-first-hour fires from the existing
+    // postpartum completeBreastfeeding flow.
+    let baselinePeripartumTotalDeliveries: number;
+    let baselinePeripartumTotalLiveBirths: number;
+    let baselinePeripartumPretermBirths: number;
+    let baselinePeripartumPrematureLabour: number;
+    let baselinePeripartumBreastfedFirstHour: number;
     // Postnatal Care report baselines (PR #1556). Among the existing test
     // patients, only NutrChild (M, 10mo, full nurse SPV with
     // completeWCImmunisation) contributes — they fall in the "10-19 months
@@ -367,6 +379,31 @@ test.describe('Admin Reports', () => {
       baselineGestHypertension = await readPrenatalDiagnosisRow(page, 'diagnosis-gestational-hypertension');
       baselineDepression = await readPrenatalDiagnosisRow(page, 'diagnosis-depression-not-likely');
       baselinePrenatalTotal = await readPrenatalDiagnosisRow(page, 'totals');
+
+      // Record Peripartum (PR #1552) report baselines.
+      await selectReportType(page, 'peripartum');
+      await setDateRange(page, REPORT_START_DATE, reportLimitDate);
+      const baselinePeripartumTable = await readPeripartumTable(page);
+      // Sanity: the report rendered with all 5 rows.
+      expect(baselinePeripartumTable.rows.length, 'Peripartum report should have at least 5 rows')
+        .toBeGreaterThanOrEqual(5);
+      baselinePeripartumTotalDeliveries =
+        findSimpleRow(baselinePeripartumTable, 'Total deliveries')?.total ?? 0;
+      baselinePeripartumTotalLiveBirths =
+        findSimpleRow(baselinePeripartumTable, 'Total live births')?.total ?? 0;
+      baselinePeripartumPretermBirths =
+        findSimpleRow(baselinePeripartumTable, 'Preterm birth newborns')?.total ?? 0;
+      baselinePeripartumPrematureLabour =
+        findSimpleRow(baselinePeripartumTable, 'premature labour')?.total ?? 0;
+      baselinePeripartumBreastfedFirstHour =
+        findSimpleRow(baselinePeripartumTable, 'breastfed within one hour')?.total ?? 0;
+      console.log(
+        `Baseline Peripartum: deliveries=${baselinePeripartumTotalDeliveries}, ` +
+        `liveBirths=${baselinePeripartumTotalLiveBirths}, ` +
+        `preterm=${baselinePeripartumPretermBirths}, ` +
+        `prematureLabour=${baselinePeripartumPrematureLabour}, ` +
+        `breastfedFirstHour=${baselinePeripartumBreastfedFirstHour}`,
+      );
 
       // Record Postnatal Care (PR #1556) report baselines.
       await selectReportType(page, 'postnatal-care');
@@ -661,7 +698,13 @@ test.describe('Admin Reports', () => {
       await completeHistory(page, { preeclampsiaPrevious: true });
       await completeExamination(page, { vitals: { sys: '160', dia: '100' } });
       await completeFamilyPlanning(page);
-      await completePrenatalDangerSigns(page);
+      // { premature: true } selects "Premature Onset of Contractions" on
+      // the danger-signs activity, which fires
+      // IndicatorPrematureOnsetContractions on the wire and contributes
+      // +1 to the Peripartum report's "Pregnant women with premature
+      // labour" row. The selection does not trigger any new prenatal
+      // diagnoses (verified against Pages/Prenatal/Activity/Utils.elm).
+      await completePrenatalDangerSigns(page, { premature: true });
       await completeSymptomReview(page);
       await completeMalariaPrevention(page);
       await completeMentalHealth(page);
@@ -915,7 +958,10 @@ test.describe('Admin Reports', () => {
 
       // Record pregnancy outcome from participant page first —
       // required before the Postpartum encounter button becomes active.
-      await recordPregnancyOutcome(page);
+      // { preTerm: true } picks "Live Birth Pre-Term" so the Peripartum
+      // report's "Preterm birth newborns" row gets +1. Total deliveries
+      // and total live births also +1 (LivePreTerm counts in both).
+      await recordPregnancyOutcome(page, { preTerm: true });
 
       // Re-navigate to participant page after outcome recording
       // (recordPregnancyOutcome lands on PinCodePage).
@@ -1492,6 +1538,48 @@ test.describe('Admin Reports', () => {
 
       // CSV download button.
       await expect(page.locator('button.download-csv'), 'Prenatal Diagnoses CSV download button should be visible').toBeVisible();
+    });
+
+    // ── Peripartum report verification (PR #1552) ──
+    //
+    // PrenatalMom's flow is wired to fire all five Peripartum rows by +1:
+    //   - Pre-term outcome (recordPregnancyOutcome { preTerm: true })
+    //     → Total deliveries + Total live births + Preterm birth newborns
+    //   - "Premature Onset of Contractions" danger sign
+    //     (completeDangerSigns { premature: true })
+    //     → Pregnant women with premature labour
+    //   - "breastfed-first-hour" answered Yes in postpartum Breastfeeding
+    //     (already done by completeBreastfeeding)
+    //     → Newborns breastfed within one hour of delivery
+    //
+    // PrenatalCHW does not record a pregnancy outcome and does not
+    // contribute to any of these rows.
+    await step('Verify Peripartum report deltas', async () => {
+      await selectReportType(page, 'peripartum');
+      await setDateRange(page, REPORT_START_DATE, reportLimitDate);
+
+      const peripartumTable = await readPeripartumTable(page);
+      const newDeliveries = findSimpleRow(peripartumTable, 'Total deliveries')?.total ?? 0;
+      const newLiveBirths = findSimpleRow(peripartumTable, 'Total live births')?.total ?? 0;
+      const newPreterm = findSimpleRow(peripartumTable, 'Preterm birth newborns')?.total ?? 0;
+      const newPrematureLabour = findSimpleRow(peripartumTable, 'premature labour')?.total ?? 0;
+      const newBreastfedFirstHour = findSimpleRow(peripartumTable, 'breastfed within one hour')?.total ?? 0;
+
+      console.log('\n=== PERIPARTUM ===');
+      console.log(`Total Deliveries:           baseline=${baselinePeripartumTotalDeliveries}, new=${newDeliveries}, delta=+${newDeliveries - baselinePeripartumTotalDeliveries}`);
+      console.log(`Total Live Births:          baseline=${baselinePeripartumTotalLiveBirths}, new=${newLiveBirths}, delta=+${newLiveBirths - baselinePeripartumTotalLiveBirths}`);
+      console.log(`Preterm Birth Newborns:     baseline=${baselinePeripartumPretermBirths}, new=${newPreterm}, delta=+${newPreterm - baselinePeripartumPretermBirths}`);
+      console.log(`Premature Labour:           baseline=${baselinePeripartumPrematureLabour}, new=${newPrematureLabour}, delta=+${newPrematureLabour - baselinePeripartumPrematureLabour}`);
+      console.log(`Breastfed Within One Hour:  baseline=${baselinePeripartumBreastfedFirstHour}, new=${newBreastfedFirstHour}, delta=+${newBreastfedFirstHour - baselinePeripartumBreastfedFirstHour}`);
+
+      expect(newDeliveries, '"Total deliveries" +1').toBe(baselinePeripartumTotalDeliveries + 1);
+      expect(newLiveBirths, '"Total live births" +1').toBe(baselinePeripartumTotalLiveBirths + 1);
+      expect(newPreterm, '"Preterm birth newborns" +1').toBe(baselinePeripartumPretermBirths + 1);
+      expect(newPrematureLabour, '"Pregnant women with premature labour" +1').toBe(baselinePeripartumPrematureLabour + 1);
+      expect(newBreastfedFirstHour, '"Newborns breastfed within one hour of delivery" +1').toBe(baselinePeripartumBreastfedFirstHour + 1);
+
+      // CSV download button.
+      await expect(page.locator('button.download-csv'), 'Peripartum CSV download button should be visible').toBeVisible();
     });
 
     // ── Postnatal Care report verification (PR #1556) ──
