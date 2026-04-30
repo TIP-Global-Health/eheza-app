@@ -151,13 +151,14 @@ calculateNutritionReportDataTask currentDate data =
                                 >> List.filter filterByYear
                                 >> List.map
                                     (\item ->
-                                        -- REVIEW: WellChildEncounterData has no MUAC/edema fields, so we
-                                        -- default them when projecting into the merged NutritionEncounterData
-                                        -- shape (which gained muacCm/hasEdema on the base branch).
+                                        -- WellChildEncounterData carries MUAC inside nutritionData.muac
+                                        -- (the wire format puts it as the 4th comma-separated field).
+                                        -- Lift it to muacCm so categorizeAcuteMalnutrition picks it up;
+                                        -- well-child wire doesn't carry edema today, so default to False.
                                         ( record.id
                                         , { startDate = item.startDate
                                           , nutritionData = item.nutritionData
-                                          , muacCm = Nothing
+                                          , muacCm = Maybe.andThen .muac item.nutritionData
                                           , hasEdema = False
                                           }
                                         )

@@ -6609,7 +6609,17 @@ var $author$project$Pages$Reports$Update$calculateNutritionReportDataTask = F2(
 													function (item) {
 														return _Utils_Tuple2(
 															record.id,
-															{hasEdema: false, muacCm: $elm$core$Maybe$Nothing, nutritionData: item.nutritionData, startDate: item.startDate});
+															{
+																hasEdema: false,
+																muacCm: A2(
+																	$elm$core$Maybe$andThen,
+																	function ($) {
+																		return $.muac;
+																	},
+																	item.nutritionData),
+																nutritionData: item.nutritionData,
+																startDate: item.startDate
+															});
 													}))),
 										record.wellChildData),
 										A2(
