@@ -707,6 +707,18 @@ export async function readAcuteIllnessTable(
 }
 
 /**
+ * Read the Postnatal Care report table (PR #1556).
+ * Container: div.report.postnatal-care div.table
+ * Each row has 2 cells: [age-bucket / SPV-window label, total count].
+ * Use findSimpleRow() to look up specific rows by label substring.
+ */
+export async function readPostnatalCareTable(
+  page: Page,
+): Promise<SimpleTableData> {
+  return readSimpleTable(page, 'div.report.postnatal-care div.table');
+}
+
+/**
  * Read a specific AI diagnosis row by its CSS class.
  * Returns the total count, or 0 if the row is not found.
  */
