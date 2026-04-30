@@ -2,8 +2,8 @@ module Backend.Reports.Decoder exposing (decodeReportsData)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Decoder exposing (decodeSite, decodeWithFallback)
-import Backend.Reports.Model exposing (..)
-import Backend.Reports.Utils exposing (..)
+import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, DeliveryLocation(..), FamilyNutritionEncounterData, Gender(..), NutritionData, NutritionEncounterData, NutritionReportTableType(..), PatientData, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalIndicator(..), PrenatalParticipantData, ReportsData, SelectedEntity(..), WellChildEncounterData)
+import Backend.Reports.Utils exposing (genderFromString)
 import Backend.Scoreboard.Model exposing (VaccineType(..))
 import Date
 import EverySet exposing (EverySet)

@@ -42,8 +42,8 @@ import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Components.View exposing (viewMetricsResultsTable, viewStandardCells, viewStandardRow)
 import Pages.Model exposing (MetricsResultsTableData)
-import Pages.Reports.Model exposing (..)
-import Pages.Reports.Utils exposing (..)
+import Pages.Reports.Model exposing (Model, Msg(..), NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), emptyNutritionMetrics)
+import Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, eddToLmpDate, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, prenatalContactTypeToEncountersAtWeek, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth)
 import Pages.Scoreboard.Utils exposing (generateFutureVaccinationsData)
 import Pages.Utils
     exposing
@@ -2809,7 +2809,7 @@ viewPostnatalCareReport language site limitDate scopeLabel records =
         csvContent =
             reportTableDataToCSV data
     in
-    div [ class "report postnatal-care" ] <|
+    div [ class "report postnatal-care" ]
         [ div [ class "table" ] <|
             captionsRow
                 :: List.map viewStandardRow data.rows
@@ -2913,9 +2913,6 @@ generatePostnatalCareReportData language site limitDate records =
                     let
                         diffInWeeks =
                             diffWeeks birthDate limitDate
-
-                        diffInMonths =
-                            diffMonths birthDate limitDate
                     in
                     if (diffInWeeks >= 7) && (diffInWeeks < 11) then
                         { accum | inRange7To11Weeks = accum.inRange7To11Weeks + 1 }
@@ -2923,14 +2920,22 @@ generatePostnatalCareReportData language site limitDate records =
                     else if (diffInWeeks >= 11) && (diffInWeeks < 15) then
                         { accum | inRange11To15Weeks = accum.inRange11To15Weeks + 1 }
 
-                    else if (diffInWeeks >= 15) && (diffInMonths < 10) then
-                        { accum | inRange15WeeksTo10Months = accum.inRange15WeeksTo10Months + 1 }
+                    else if diffInWeeks >= 15 then
+                        let
+                            diffInMonths =
+                                diffMonths birthDate limitDate
+                        in
+                        if diffInMonths < 10 then
+                            { accum | inRange15WeeksTo10Months = accum.inRange15WeeksTo10Months + 1 }
 
-                    else if (diffInMonths >= 10) && (diffInMonths < 19) then
-                        { accum | inRange10To19Months = accum.inRange10To19Months + 1 }
+                        else if diffInMonths < 19 then
+                            { accum | inRange10To19Months = accum.inRange10To19Months + 1 }
 
-                    else if (diffInMonths >= 19) && (diffInMonths < 24) then
-                        { accum | inRange19To24Months = accum.inRange19To24Months + 1 }
+                        else if diffInMonths < 24 then
+                            { accum | inRange19To24Months = accum.inRange19To24Months + 1 }
+
+                        else
+                            accum
 
                     else
                         accum

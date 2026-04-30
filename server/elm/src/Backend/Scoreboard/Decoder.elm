@@ -1,10 +1,9 @@
 module Backend.Scoreboard.Decoder exposing (decodeScoreboardData)
 
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.Decoder exposing (decodeSite)
 import Backend.Scoreboard.Model exposing (ANCNewbornData, CriterionBySeverities, InfrastructureEnvironmentWashData, NCDAData, NutritionBehaviorData, NutritionCriterionsData, PatientData, RawVaccinationData, ScoreboardData, SelectedEntity(..), TargetedInterventionsData, UniversalInterventionData, VaccinationProgressDict, VaccineType(..), emptyANCNewbornData, emptyInfrastructureEnvironmentWashData, emptyNCDAData, emptyNutritionBehaviorData, emptyNutritionCriterionsData, emptyTargetedInterventionsData, emptyUniversalInterventionData)
-import Backend.Scoreboard.Utils exposing (generateVaccinationProgressForVaccine, vaccineDoseFromOrder)
-import Date
+import Backend.Scoreboard.Utils exposing (generateVaccinationProgressForVaccine)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffMonths)
 import Json.Decode exposing (Decoder, andThen, bool, fail, list, map, maybe, string, succeed)

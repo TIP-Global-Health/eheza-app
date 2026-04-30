@@ -1,7 +1,7 @@
 module Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, ChildScorecardEncounterData, DeliveryLocation(..), FamilyNutritionEncounterData, Gender(..), HIVEncounterData, HomeVisitEncounterData, Msg(..), NCDEncounterData, NutritionData, NutritionEncounterData, NutritionReportTableType(..), PatientData, PersonId, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalIndicator(..), PrenatalParticipantData, ReportsData, SelectedEntity(..), TuberculosisEncounterData, WellChildEncounterData)
 
 import App.Types exposing (Site)
-import AssocList as Dict exposing (Dict)
+import AssocList exposing (Dict)
 import Backend.Scoreboard.Model exposing (VaccineType)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)

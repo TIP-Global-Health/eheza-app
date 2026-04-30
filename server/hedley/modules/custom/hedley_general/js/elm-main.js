@@ -20051,18 +20051,30 @@ var $author$project$Pages$Reports$View$generatePostnatalCareReportData = F4(
 			F2(
 				function (birthDate, accum) {
 					var diffInWeeks = A2($author$project$Gizra$NominalDate$diffWeeks, birthDate, limitDate);
-					var diffInMonths = A2($author$project$Gizra$NominalDate$diffMonths, birthDate, limitDate);
-					return ((diffInWeeks >= 7) && (diffInWeeks < 11)) ? _Utils_update(
-						accum,
-						{inRange7To11Weeks: accum.inRange7To11Weeks + 1}) : (((diffInWeeks >= 11) && (diffInWeeks < 15)) ? _Utils_update(
-						accum,
-						{inRange11To15Weeks: accum.inRange11To15Weeks + 1}) : (((diffInWeeks >= 15) && (diffInMonths < 10)) ? _Utils_update(
-						accum,
-						{inRange15WeeksTo10Months: accum.inRange15WeeksTo10Months + 1}) : (((diffInMonths >= 10) && (diffInMonths < 19)) ? _Utils_update(
-						accum,
-						{inRange10To19Months: accum.inRange10To19Months + 1}) : (((diffInMonths >= 19) && (diffInMonths < 24)) ? _Utils_update(
-						accum,
-						{inRange19To24Months: accum.inRange19To24Months + 1}) : accum))));
+					if ((diffInWeeks >= 7) && (diffInWeeks < 11)) {
+						return _Utils_update(
+							accum,
+							{inRange7To11Weeks: accum.inRange7To11Weeks + 1});
+					} else {
+						if ((diffInWeeks >= 11) && (diffInWeeks < 15)) {
+							return _Utils_update(
+								accum,
+								{inRange11To15Weeks: accum.inRange11To15Weeks + 1});
+						} else {
+							if (diffInWeeks >= 15) {
+								var diffInMonths = A2($author$project$Gizra$NominalDate$diffMonths, birthDate, limitDate);
+								return (diffInMonths < 10) ? _Utils_update(
+									accum,
+									{inRange15WeeksTo10Months: accum.inRange15WeeksTo10Months + 1}) : ((diffInMonths < 19) ? _Utils_update(
+									accum,
+									{inRange10To19Months: accum.inRange10To19Months + 1}) : ((diffInMonths < 24) ? _Utils_update(
+									accum,
+									{inRange19To24Months: accum.inRange19To24Months + 1}) : accum));
+							} else {
+								return accum;
+							}
+						}
+					}
 				}),
 			{inRange10To19Months: 0, inRange11To15Weeks: 0, inRange15WeeksTo10Months: 0, inRange19To24Months: 0, inRange7To11Weeks: 0},
 			birthDatesOfUpToDateWithImmunizationPatients);

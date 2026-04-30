@@ -1,4 +1,4 @@
-module Backend.Scoreboard.Utils exposing (generateVaccinationProgressForVaccine, vaccineDoseFromOrder, vaccineDoseToComparable)
+module Backend.Scoreboard.Utils exposing (generateVaccinationProgressForVaccine, vaccineDoseToComparable)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Scoreboard.Model exposing (VaccineDose(..))
