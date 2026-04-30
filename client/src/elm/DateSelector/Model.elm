@@ -1,4 +1,4 @@
-module DateSelector.Model exposing (..)
+module DateSelector.Model exposing (DateSelectorConfig)
 
 import Date exposing (Date)
 

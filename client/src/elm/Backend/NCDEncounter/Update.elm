@@ -2,9 +2,9 @@ module Backend.NCDEncounter.Update exposing (update)
 
 import App.Model
 import App.Utils exposing (triggerRollbarOnFailure)
-import Backend.Endpoints exposing (..)
+import Backend.Endpoints exposing (ncdCoMorbiditiesEndpoint, ncdCoreExamEndpoint, ncdCreatinineTestEndpoint, ncdDangerSignsEndpoint, ncdEncounterEndpoint, ncdFamilyHistoryEndpoint, ncdFamilyPlanningEndpoint, ncdHIVTestEndpoint, ncdHbA1cTestEndpoint, ncdHealthEducationEndpoint, ncdLabsResultsEndpoint, ncdLipidPanelTestEndpoint, ncdLiverFunctionTestEndpoint, ncdMedicationDistributionEndpoint, ncdMedicationHistoryEndpoint, ncdOutsideCareEndpoint, ncdPregnancyTestEndpoint, ncdRandomBloodSugarTestEndpoint, ncdReferralEndpoint, ncdSocialHistoryEndpoint, ncdSymptomReviewEndpoint, ncdUrineDipstickTestEndpoint, ncdVitalsEndpoint)
 import Backend.Entities exposing (..)
-import Backend.NCDEncounter.Model exposing (..)
+import Backend.NCDEncounter.Model exposing (Model, Msg(..), NCDEncounter)
 import Backend.Utils exposing (saveMeasurementCmd, sw)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (unwrap)
@@ -24,10 +24,10 @@ update :
 update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
     case msg of
         CloseNCDEncounter ->
-            updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | endDate = Just currentDate }) model
+            updateEncounter encounterId maybeEncounter (\encounter -> { encounter | endDate = Just currentDate }) model
 
         SetNCDDiagnoses diagnoses ->
-            updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | diagnoses = diagnoses }) model
+            updateEncounter encounterId maybeEncounter (\encounter -> { encounter | diagnoses = diagnoses }) model
 
         HandleUpdatedNCDEncounter data ->
             ( { model | updateNCDEncounter = data }
@@ -301,13 +301,12 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
 
 
 updateEncounter :
-    NominalDate
-    -> NCDEncounterId
+    NCDEncounterId
     -> Maybe NCDEncounter
     -> (NCDEncounter -> NCDEncounter)
     -> Model
     -> ( Model, Cmd Msg, List App.Model.Msg )
-updateEncounter currentDate encounterId maybeEncounter updateFunc model =
+updateEncounter encounterId maybeEncounter updateFunc model =
     maybeEncounter
         |> unwrap ( model, Cmd.none, [] )
             (\encounter ->

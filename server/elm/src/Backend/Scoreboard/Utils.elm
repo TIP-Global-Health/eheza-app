@@ -1,7 +1,7 @@
-module Backend.Scoreboard.Utils exposing (..)
+module Backend.Scoreboard.Utils exposing (generateVaccinationProgressForVaccine, vaccineDoseFromOrder, vaccineDoseToComparable)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Scoreboard.Model exposing (..)
+import Backend.Scoreboard.Model exposing (VaccineDose(..))
 import Date
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)

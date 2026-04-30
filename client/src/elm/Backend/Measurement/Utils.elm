@@ -1,11 +1,11 @@
-module Backend.Measurement.Utils exposing (..)
+module Backend.Measurement.Utils exposing (administrationNoteFromString, administrationNoteToString, ahezaDistributionReasonFromString, ahezaDistributionReasonToString, avoidingGuidanceReasonFromString, avoidingGuidanceReasonToString, bilirubinValueFromString, bilirubinValueToString, bloodGroupFromString, bloodGroupToString, bloodSmearResultFromString, bloodSmearResultToString, breastfeedingSignFromString, breastfeedingSignToString, covidIsolationPeriod, currentValue, currentValues, diabetesBySugarCount, diabetesByUrineGlucose, expectNCDAActivity, foodGroupFromString, foodGroupToString, generatePreviousMeasurements, getCurrentReasonForNonReferral, getHeightValue, getMeasurementDateMeasuredFunc, getMeasurementValueFunc, glucoseValueFromString, glucoseValueToString, guExamSignFromString, guExamSignToString, haemoglobinValueFromString, haemoglobinValueToString, headCircumferenceIndication, headCircumferenceValueFunc, hivDiagnosisSignFromString, hivDiagnosisSignToString, hivHealthEducationSignFromString, hivHealthEducationSignToString, hivPrescribedMedicationFromString, hivPrescribedMedicationToString, hivSymptomFromString, hivSymptomToString, illnessSymptomFromString, illnessSymptomToString, ketoneValueFromString, ketoneValueToString, labExpirationPeriod, laboratoryTestFromString, laboratoryTestToString, lateFirstANCVisitReasonFromString, lateFirstANCVisitReasonToString, leukocytesValueFromString, leukocytesValueToString, lmpDateNotConfidentReasonFromString, lmpDateNotConfidentReasonToString, mapChildMeasurementsAtOfflineSession, mapMeasurementData, medicalConditionFromString, medicalConditionToString, medicalHistoryInfectiousDiseaseFromString, medicalHistoryInfectiousDiseaseToString, medicalHistoryMentalHealthIssueFromString, medicalHistoryMentalHealthIssueToString, medicalHistoryPhysicalConditionFromString, medicalHistoryPhysicalConditionToString, medicalHistorySignFromString, medicalHistorySignToString, medicationCausingHypertensionFromString, medicationCausingHypertensionToString, medicationTreatingDiabetesFromString, medicationTreatingDiabetesToString, medicationTreatingHypertensionFromString, medicationTreatingHypertensionToString, muacIndicationForAdult, muacIndicationForChild, muacIndicationForPerson, muacValueFunc, ncdDangerSignFromString, ncdDangerSignToString, ncdFamilyHistorySignFromString, ncdFamilyHistorySignToString, ncdGroup1SymptomFromString, ncdGroup1SymptomToString, ncdGroup2SymptomFromString, ncdGroup2SymptomToString, ncdPainSymptomFromString, ncdPainSymptomToString, ncdSocialHistorySignFromString, ncdSocialHistorySignToString, ncdaSignFromString, ncdaSignToString, nitriteValueFromString, nitriteValueToString, nonReferralReasonToSign, nutritionAssessmentFromString, nutritionAssessmentToComparable, nutritionAssessmentToString, nutritionSignToString, obstetricHistoryStep2SignFromString, obstetricHistoryStep2SignToString, occursInFamilySignFromString, outsideCareMedicationFromString, outsideCareMedicationToString, outsideCareSignFromString, outsideCareSignToString, phValueFromString, phValueToString, postpartumChildDangerSignFromString, postpartumChildDangerSignToString, postpartumHealingProblemFromString, postpartumHealingProblemToString, postpartumMotherDangerSignFromString, postpartumMotherDangerSignToString, predecessorFromString, predecessorToString, pregnancyTestResultFromString, pregnancyTestResultToString, prenatalFlankPainSignFromString, prenatalFlankPainSignToString, prenatalHIVSignFromString, prenatalHIVSignToString, prenatalMentalHealthQuestionFromString, prenatalMentalHealthQuestionOptionFromString, prenatalMentalHealthQuestionOptionToString, prenatalMentalHealthQuestionToString, prenatalSymptomFromString, prenatalSymptomQuestionFromString, prenatalSymptomQuestionToString, prenatalSymptomToString, proteinValueFromString, proteinValueToString, reasonForNonReferralFromString, reasonForNonReferralToString, receiveOptionFromString, receiveOptionToString, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignFromString, recommendedTreatmentSignToString, referralToFacilityCompleted, reinforceTreatmentSignFromString, reinforceTreatmentSignToString, reviewStateFromString, reviewStateToString, rhesusFromString, rhesusToString, splitChildMeasurements, splitMotherMeasurements, stuntingLevelFromString, stuntingLevelToString, symptomsGISignFromString, symptomsGISignToString, symptomsGeneralSignFromString, symptomsGeneralSignToString, symptomsRespiratorySignFromString, symptomsRespiratorySignToString, testResultFromString, testResultToString, tuberculosisDOTSignFromString, tuberculosisDOTSignToString, tuberculosisDiagnosisFromString, tuberculosisDiagnosisToString, tuberculosisHealthEducationSignFromString, tuberculosisHealthEducationSignToString, tuberculosisPrescribedMedicationFromString, tuberculosisPrescribedMedicationToString, tuberculosisSymptomFromString, tuberculosisSymptomToString, unitOfMeasurementFromString, unitOfMeasurementToString, urobilinogenValueFromString, urobilinogenValueToString, vaccineDoseFromString, vaccineDoseToString, vaginalExamSignFromString, vaginalExamSignToString, weightValueFunc)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInMonths)
+import Backend.Person.Utils exposing (ageInMonths, isPersonAnAdult)
 import Backend.Session.Model exposing (OfflineSession)
 import Backend.Utils exposing (ncdaEnabled)
 import Date
@@ -49,12 +49,33 @@ generatePreviousMeasurements encountersByParticipantFunc measurementsByEncouterF
 {-| Given a MUAC in cm, classify according to the measurement tool shown
 at <https://github.com/Gizra/ihangane/issues/282>
 -}
-muacIndication : MuacInCm -> ColorAlertIndication
-muacIndication (MuacInCm value) =
+muacIndicationForChild : MuacInCm -> ColorAlertIndication
+muacIndicationForChild (MuacInCm value) =
     if value <= 11.5 then
         ColorAlertRed
 
     else if value <= 12.5 then
+        ColorAlertYellow
+
+    else
+        ColorAlertGreen
+
+
+muacIndicationForPerson : NominalDate -> Person -> MuacInCm -> ColorAlertIndication
+muacIndicationForPerson currentDate person muac =
+    if isPersonAnAdult currentDate person |> Maybe.withDefault False then
+        muacIndicationForAdult muac
+
+    else
+        muacIndicationForChild muac
+
+
+muacIndicationForAdult : MuacInCm -> ColorAlertIndication
+muacIndicationForAdult (MuacInCm value) =
+    if value < 18.5 then
+        ColorAlertRed
+
+    else if value < 22 then
         ColorAlertYellow
 
     else
@@ -4890,19 +4911,6 @@ medicalHistoryMentalHealthIssueFromString sign =
             Nothing
 
 
-occursInFamilySignToString : OccursInFamilySign -> String
-occursInFamilySignToString sign =
-    case sign of
-        DoesOccur ->
-            "yes"
-
-        DoesNotOccur ->
-            "no"
-
-        NotKnownIfOccurs ->
-            "do-not-know"
-
-
 occursInFamilySignFromString : String -> Maybe OccursInFamilySign
 occursInFamilySignFromString sign =
     case sign of
@@ -4914,6 +4922,35 @@ occursInFamilySignFromString sign =
 
         "do-not-know" ->
             Just NotKnownIfOccurs
+
+        _ ->
+            Nothing
+
+
+ahezaDistributionReasonToString : AhezaDistributionReason -> String
+ahezaDistributionReasonToString reason =
+    case reason of
+        AhezaDistributionReasonBreastfeeding ->
+            "breastfeeding"
+
+        AhezaDistributionReasonOther ->
+            "other"
+
+        AhezaDistributionReasonPregnant ->
+            "pregnant"
+
+
+ahezaDistributionReasonFromString : String -> Maybe AhezaDistributionReason
+ahezaDistributionReasonFromString reason =
+    case reason of
+        "breastfeeding" ->
+            Just AhezaDistributionReasonBreastfeeding
+
+        "other" ->
+            Just AhezaDistributionReasonOther
+
+        "pregnant" ->
+            Just AhezaDistributionReasonPregnant
 
         _ ->
             Nothing

@@ -1,4 +1,4 @@
-module Backend.ResilienceSurvey.Model exposing (..)
+module Backend.ResilienceSurvey.Model exposing (Model, Msg(..), ResilienceSurvey, ResilienceSurveyQuestion(..), ResilienceSurveyQuestionOption(..), ResilienceSurveyType(..), emptyModel)
 
 import AssocList exposing (Dict)
 import Backend.Entities exposing (..)

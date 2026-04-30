@@ -1,9 +1,9 @@
 module Backend.StockUpdate.Encoder exposing (encodeStockUpdate)
 
 import Backend.Measurement.Model exposing (ImageUrl(..), StockCorrectionReason, StockSupplier, StockUpdate, StockUpdateType)
-import Backend.StockUpdate.Utils exposing (..)
+import Backend.StockUpdate.Utils exposing (stockCorrectionReasonToString, stockSupplierToString, stockUpdateTypeToString)
 import Gizra.NominalDate
-import Json.Encode exposing (..)
+import Json.Encode exposing (Value, bool, int, string)
 import Restful.Endpoint exposing (encodeEntityUuid)
 import Utils.Json exposing (encodeNullable)
 
@@ -22,7 +22,7 @@ encodeStockUpdate stockUpdate =
     , ( "health_center", encodeEntityUuid stockUpdate.healthCenter )
     , ( "shard", encodeEntityUuid stockUpdate.healthCenter )
     , ( "signature", string url )
-    , ( "deleted", bool False )
+    , ( "deleted", bool stockUpdate.deleted )
     , ( "type", string "stock_update" )
     ]
         ++ encodeNullable "expiration_date" stockUpdate.dateExpires Gizra.NominalDate.encodeYYYYMMDD
@@ -30,6 +30,7 @@ encodeStockUpdate stockUpdate =
         ++ encodeNullable "stock_supplier" stockUpdate.supplier encodeStockSupplier
         ++ encodeNullable "notes" stockUpdate.notes string
         ++ encodeNullable "stock_correction_reason" stockUpdate.correctionReason encodeStockCorrectionReason
+        ++ encodeNullable "village_ref" stockUpdate.village encodeEntityUuid
 
 
 encodeStockUpdateType : StockUpdateType -> Value

@@ -107,6 +107,49 @@ function hedley_stock_management_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-stock_update-field_deleted'.
+  $field_instances['node-stock_update-field_deleted'] = array(
+    'bundle' => 'stock_update',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 15,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 0,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 16,
+    ),
+  );
+
   // Exported field_instance: 'node-stock_update-field_execution_date'.
   $field_instances['node-stock_update-field_execution_date'] = array(
     'bundle' => 'stock_update',
@@ -254,6 +297,7 @@ function hedley_stock_management_field_default_field_instances() {
       'active' => 1,
       'module' => 'entityreference',
       'settings' => array(
+        'hide_ids' => FALSE,
         'match_operator' => 'CONTAINS',
         'path' => '',
         'size' => 60,
@@ -338,6 +382,7 @@ function hedley_stock_management_field_default_field_instances() {
       'active' => 1,
       'module' => 'entityreference',
       'settings' => array(
+        'hide_ids' => FALSE,
         'match_operator' => 'CONTAINS',
         'path' => '',
         'size' => 60,
@@ -428,6 +473,7 @@ function hedley_stock_management_field_default_field_instances() {
       'active' => 1,
       'module' => 'entityreference',
       'settings' => array(
+        'hide_ids' => FALSE,
         'match_operator' => 'CONTAINS',
         'path' => '',
         'size' => 60,
@@ -484,6 +530,51 @@ function hedley_stock_management_field_default_field_instances() {
       ),
       'type' => 'image_image',
       'weight' => 14,
+    ),
+  );
+
+  // Exported field_instance: 'node-stock_update-field_village_ref'.
+  $field_instances['node-stock_update-field_village_ref'] = array(
+    'bundle' => 'stock_update',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 17,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_village_ref',
+    'label' => 'Village',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'hide_ids' => FALSE,
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 17,
     ),
   );
 
@@ -642,6 +733,7 @@ function hedley_stock_management_field_default_field_instances() {
   // Included for use with string extractors like potx.
   t('Batch number');
   t('Date Measured');
+  t('Deleted');
   t('Execution Date');
   t('Expiration Date');
   t('Health Center');
@@ -654,6 +746,7 @@ function hedley_stock_management_field_default_field_instances() {
   t('Stock Update Type');
   t('Stock correction reason');
   t('UUID');
+  t('Village');
 
   return $field_instances;
 }

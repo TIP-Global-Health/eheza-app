@@ -5,7 +5,7 @@ import Backend.Model
 import Backend.NutritionEncounter.Model
 import EverySet
 import Gizra.Update exposing (sequenceExtra)
-import Pages.Nutrition.Encounter.Model exposing (..)
+import Pages.Nutrition.Encounter.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..))
 
 

@@ -1,4 +1,4 @@
-module Backend.Model exposing (..)
+module Backend.Model exposing (ModelBackend, Msg(..), emptyModelBackend)
 
 {-| This model basically represents things we have locally which also belong
 on the backend. So, conceptually it is a kind of a local cache of some of the

@@ -23,7 +23,7 @@ import Measurement.View
         , nutritionFoodSecurityInputsAndTasks
         , nutritionHygieneInputsAndTasks
         )
-import Pages.HomeVisit.Activity.Model exposing (..)
+import Pages.HomeVisit.Activity.Model exposing (Model, Msg(..))
 import Pages.HomeVisit.Encounter.Model exposing (AssembledData)
 import Pages.HomeVisit.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -54,7 +54,7 @@ viewHeaderAndContent language currentDate id activity db model data =
             viewHeader language id activity
 
         content =
-            viewContent language currentDate id activity db model data
+            viewContent language currentDate activity db model data
     in
     div [ class "page-activity home-visit" ]
         [ header
@@ -78,32 +78,32 @@ viewHeader language id activity =
         ]
 
 
-viewContent : Language -> NominalDate -> HomeVisitEncounterId -> HomeVisitActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate id activity db model assembled =
+viewContent : Language -> NominalDate -> HomeVisitActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate activity db model assembled =
     ((viewPersonDetails language currentDate assembled.person Nothing |> div [ class "item" ])
-        :: viewActivity language currentDate id activity assembled db model
+        :: viewActivity language activity assembled db model
     )
         |> div [ class "ui unstackable items" ]
 
 
-viewActivity : Language -> NominalDate -> HomeVisitEncounterId -> HomeVisitActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewActivity language currentDate id activity assembled db model =
+viewActivity : Language -> HomeVisitActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewActivity language activity assembled db model =
     case activity of
         Feeding ->
-            viewFeedingContent language currentDate assembled db model.feedingForm
+            viewFeedingContent language assembled db model.feedingForm
 
         Caring ->
-            viewCaringContent language currentDate assembled db model.caringForm
+            viewCaringContent language assembled model.caringForm
 
         Hygiene ->
-            viewHygieneContent language currentDate assembled db model.hygieneForm
+            viewHygieneContent language assembled model.hygieneForm
 
         FoodSecurity ->
-            viewFoodSecurityContent language currentDate assembled db model.foodSecurityForm
+            viewFoodSecurityContent language assembled model.foodSecurityForm
 
 
-viewFeedingContent : Language -> NominalDate -> AssembledData -> ModelIndexedDb -> NutritionFeedingForm -> List (Html Msg)
-viewFeedingContent language currentDate assembled db feedingForm =
+viewFeedingContent : Language -> AssembledData -> ModelIndexedDb -> NutritionFeedingForm -> List (Html Msg)
+viewFeedingContent language assembled db feedingForm =
     let
         form =
             assembled.measurements.feeding
@@ -112,7 +112,6 @@ viewFeedingContent language currentDate assembled db feedingForm =
 
         ( inputs, tasks ) =
             nutritionFeedingInputsAndTasks language
-                currentDate
                 assembled.participant.person
                 SetFeedingBoolInput
                 SetNutritionSupplementType
@@ -138,8 +137,8 @@ viewFeedingContent language currentDate assembled db feedingForm =
     ]
 
 
-viewCaringContent : Language -> NominalDate -> AssembledData -> ModelIndexedDb -> NutritionCaringForm -> List (Html Msg)
-viewCaringContent language currentDate assembled db caringForm =
+viewCaringContent : Language -> AssembledData -> NutritionCaringForm -> List (Html Msg)
+viewCaringContent language assembled caringForm =
     let
         form =
             assembled.measurements.caring
@@ -148,7 +147,6 @@ viewCaringContent language currentDate assembled db caringForm =
 
         ( inputs, tasks ) =
             nutritionCaringInputsAndTasks language
-                currentDate
                 SetParentsAliveAndHealthy
                 SetNutritionCaringOption
                 SetChildClean
@@ -172,8 +170,8 @@ viewCaringContent language currentDate assembled db caringForm =
     ]
 
 
-viewHygieneContent : Language -> NominalDate -> AssembledData -> ModelIndexedDb -> NutritionHygieneForm -> List (Html Msg)
-viewHygieneContent language currentDate assembled db hygieneForm =
+viewHygieneContent : Language -> AssembledData -> NutritionHygieneForm -> List (Html Msg)
+viewHygieneContent language assembled hygieneForm =
     let
         form =
             assembled.measurements.hygiene
@@ -182,7 +180,6 @@ viewHygieneContent language currentDate assembled db hygieneForm =
 
         ( inputs, tasks ) =
             nutritionHygieneInputsAndTasks language
-                currentDate
                 SetHygieneBoolInput
                 SetMainWaterSource
                 SetWaterPreparationOption
@@ -206,8 +203,8 @@ viewHygieneContent language currentDate assembled db hygieneForm =
     ]
 
 
-viewFoodSecurityContent : Language -> NominalDate -> AssembledData -> ModelIndexedDb -> NutritionFoodSecurityForm -> List (Html Msg)
-viewFoodSecurityContent language currentDate assembled db foodSecurityForm =
+viewFoodSecurityContent : Language -> AssembledData -> NutritionFoodSecurityForm -> List (Html Msg)
+viewFoodSecurityContent language assembled foodSecurityForm =
     let
         form =
             assembled.measurements.foodSecurity
@@ -215,7 +212,7 @@ viewFoodSecurityContent language currentDate assembled db foodSecurityForm =
                 |> nutritionFoodSecurityFormWithDefault foodSecurityForm
 
         ( inputs, tasks ) =
-            nutritionFoodSecurityInputsAndTasks language currentDate SetFoodSecurityBoolInput SetMainIncomeSource form
+            nutritionFoodSecurityInputsAndTasks language SetFoodSecurityBoolInput SetMainIncomeSource form
 
         ( tasksCompleted, tasksTotal ) =
             resolveTasksCompletedFromTotal tasks

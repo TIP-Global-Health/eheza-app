@@ -16,7 +16,7 @@ import Pages.Page
 import RemoteData exposing (RemoteData(..))
 import ServiceWorker.Decoder exposing (decodeIncomingMsg)
 import ServiceWorker.Encoder exposing (encodeOutgoingMsg)
-import ServiceWorker.Model exposing (..)
+import ServiceWorker.Model exposing (IncomingMsg(..), Model, Msg(..), NewWorker(..), OutgoingMsg(..))
 import Time
 
 

@@ -3,8 +3,8 @@ module Backend.AcuteIllnessEncounter.Update exposing (update)
 import App.Model
 import App.Utils exposing (triggerRollbarOnFailure)
 import AssocList as Dict
-import Backend.AcuteIllnessEncounter.Model exposing (..)
-import Backend.Endpoints exposing (..)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter, Model, Msg(..))
+import Backend.Endpoints exposing (acuteFindingsEndpoint, acuteIllnessContactsTracingEndpoint, acuteIllnessCoreExamEndpoint, acuteIllnessDangerSignsEndpoint, acuteIllnessEncounterEndpoint, acuteIllnessFollowUpEndpoint, acuteIllnessMuacEndpoint, acuteIllnessNutritionEndpoint, acuteIllnessTraceContactEndpoint, acuteIllnessVitalsEndpoint, call114Endpoint, covidTestingEndpoint, exposureEndpoint, hcContactEndpoint, healthEducationEndpoint, isolationEndpoint, malariaTestingEndpoint, medicationDistributionEndpoint, sendToHCEndpoint, symptomsGIEndpoint, symptomsGeneralEndpoint, symptomsRespiratoryEndpoint, travelHistoryEndpoint, treatmentOngoingEndpoint, treatmentReviewEndpoint)
 import Backend.Entities exposing (..)
 import Backend.Utils exposing (saveMeasurementCmd, sw)
 import Gizra.NominalDate exposing (NominalDate)
@@ -26,10 +26,10 @@ update :
 update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
     case msg of
         CloseAcuteIllnessEncounter ->
-            updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | endDate = Just currentDate }) model
+            updateEncounter encounterId maybeEncounter (\encounter -> { encounter | endDate = Just currentDate }) model
 
         SetAcuteIllnessDiagnosis diagnosis ->
-            updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | diagnosis = diagnosis }) model
+            updateEncounter encounterId maybeEncounter (\encounter -> { encounter | diagnosis = diagnosis }) model
 
         HandleUpdatedAcuteIllnessEncounter data ->
             ( { model | updateAcuteIllnessEncounter = data }
@@ -353,13 +353,12 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
 
 
 updateEncounter :
-    NominalDate
-    -> AcuteIllnessEncounterId
+    AcuteIllnessEncounterId
     -> Maybe AcuteIllnessEncounter
     -> (AcuteIllnessEncounter -> AcuteIllnessEncounter)
     -> Model
     -> ( Model, Cmd Msg, List App.Model.Msg )
-updateEncounter currentDate encounterId maybeEncounter updateFunc model =
+updateEncounter encounterId maybeEncounter updateFunc model =
     maybeEncounter
         |> unwrap ( model, Cmd.none, [] )
             (\encounter ->

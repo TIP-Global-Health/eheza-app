@@ -9,8 +9,8 @@ import Date exposing (Unit(..))
 import Error.Utils exposing (noError)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra
-import Pages.Reports.Model exposing (..)
-import Pages.Reports.Utils exposing (..)
+import Pages.Reports.Model exposing (Model, Msg(..), NutritionReportData, ReportType(..))
+import Pages.Reports.Utils exposing (countTotalNutritionEncounters, familyNutritionEncounterToMetrics, isWideScope, nutritionEncounterDataToNutritionMetrics, reportTypeFromString, sumNutritionMetrics)
 import RemoteData exposing (RemoteData(..))
 import Task exposing (Task)
 
@@ -134,17 +134,16 @@ calculateNutritionReportDataTask currentDate data =
                     )
                     records
 
+            currentYear =
+                Date.year currentDate
+
+            startingYear =
+                currentYear - 3
+
+            filterByYear encounter =
+                Date.year encounter.startDate >= startingYear
+
             allEncounters =
-                let
-                    currentYear =
-                        Date.year currentDate
-
-                    filterByYear encounter =
-                        Date.year encounter.startDate >= startingYear
-
-                    startingYear =
-                        currentYear - 3
-                in
                 List.concatMap
                     (\record ->
                         [ Maybe.map
@@ -152,7 +151,16 @@ calculateNutritionReportDataTask currentDate data =
                                 >> List.filter filterByYear
                                 >> List.map
                                     (\item ->
-                                        ( record.id, { startDate = item.startDate, nutritionData = item.nutritionData } )
+                                        -- REVIEW: WellChildEncounterData has no MUAC/edema fields, so we
+                                        -- default them when projecting into the merged NutritionEncounterData
+                                        -- shape (which gained muacCm/hasEdema on the base branch).
+                                        ( record.id
+                                        , { startDate = item.startDate
+                                          , nutritionData = item.nutritionData
+                                          , muacCm = Nothing
+                                          , hasEdema = False
+                                          }
+                                        )
                                     )
                             )
                             record.wellChildData
@@ -193,7 +201,41 @@ calculateNutritionReportDataTask currentDate data =
                     )
                     records
 
-            encountersByMonth =
+            -- Per-child family-nutrition MUAC measurements live under
+            -- familyNutritionMuacData on each child record. The bucket
+            -- entry uses record.id (the child's id), giving correct
+            -- per-child denominators in the AM stats. The mother-side
+            -- familyNutritionData (date-only entries used by the
+            -- Demographics encounter row) is intentionally not consumed
+            -- here -- mothers are filtered out by the records age filter
+            -- above, and the Demographics row already counts them
+            -- elsewhere.
+            familyNutritionEncounters =
+                List.concatMap
+                    (\record ->
+                        record.familyNutritionMuacData
+                            |> Maybe.map
+                                (List.concat
+                                    >> List.filter filterByYear
+                                    >> List.map (Tuple.pair record.id)
+                                )
+                            |> Maybe.withDefault []
+                    )
+                    records
+
+            insertMetricsForMonth ( year, month ) encounterMetrics accum =
+                let
+                    updatedMetrics =
+                        Dict.get ( year, month ) accum
+                            |> Maybe.map
+                                (\metricsSoFar ->
+                                    sumNutritionMetrics [ metricsSoFar, encounterMetrics ]
+                                )
+                            |> Maybe.withDefault encounterMetrics
+                in
+                Dict.insert ( year, month ) updatedMetrics accum
+
+            encountersByMonthFromNutrition =
                 List.foldl
                     (\( personId, encounter ) accum ->
                         let
@@ -205,19 +247,29 @@ calculateNutritionReportDataTask currentDate data =
 
                             encounterMetrics =
                                 nutritionEncounterDataToNutritionMetrics personId encounter
-
-                            updatedMetrics =
-                                Dict.get ( year, month ) accum
-                                    |> Maybe.map
-                                        (\metricsSoFar ->
-                                            sumNutritionMetrics [ metricsSoFar, encounterMetrics ]
-                                        )
-                                    |> Maybe.withDefault encounterMetrics
                         in
-                        Dict.insert ( year, month ) updatedMetrics accum
+                        insertMetricsForMonth ( year, month ) encounterMetrics accum
                     )
                     Dict.empty
                     allEncounters
+
+            encountersByMonth =
+                List.foldl
+                    (\( personId, encounter ) accum ->
+                        let
+                            year =
+                                Date.year encounter.startDate
+
+                            month =
+                                Date.monthNumber encounter.startDate
+
+                            encounterMetrics =
+                                familyNutritionEncounterToMetrics personId encounter
+                        in
+                        insertMetricsForMonth ( year, month ) encounterMetrics accum
+                    )
+                    encountersByMonthFromNutrition
+                    familyNutritionEncounters
          in
          { impacted = impacted
          , encountersByMonth = encountersByMonth

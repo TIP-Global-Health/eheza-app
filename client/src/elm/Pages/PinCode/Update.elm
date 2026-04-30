@@ -1,7 +1,7 @@
 module Pages.PinCode.Update exposing (update)
 
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.PinCode.Model exposing (..)
+import Pages.PinCode.Model exposing (Model, Msg(..), OutMsg(..))
 import Time
 import Time.Extra
 

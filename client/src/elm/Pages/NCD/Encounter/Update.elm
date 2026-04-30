@@ -3,7 +3,7 @@ module Pages.NCD.Encounter.Update exposing (update)
 import App.Model
 import Backend.Model
 import Backend.NCDEncounter.Model
-import Pages.NCD.Encounter.Model exposing (..)
+import Pages.NCD.Encounter.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..))
 
 

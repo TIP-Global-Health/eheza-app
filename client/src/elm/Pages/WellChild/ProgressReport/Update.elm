@@ -7,7 +7,7 @@ import Components.ReportToWhatsAppDialog.Model
 import Components.ReportToWhatsAppDialog.Update
 import Gizra.Update exposing (sequenceExtra)
 import Pages.Page exposing (Page(..))
-import Pages.WellChild.ProgressReport.Model exposing (..)
+import Pages.WellChild.ProgressReport.Model exposing (Model, Msg(..))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )

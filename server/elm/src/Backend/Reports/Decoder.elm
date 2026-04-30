@@ -7,9 +7,9 @@ import Backend.Reports.Utils exposing (..)
 import Backend.Scoreboard.Model exposing (VaccineType(..))
 import Date
 import EverySet exposing (EverySet)
-import Gizra.Json exposing (decodeFloat, decodeInt)
-import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffMonths)
-import Json.Decode exposing (Decoder, andThen, bool, fail, list, map, nullable, oneOf, string, succeed)
+import Gizra.Json exposing (decodeInt)
+import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
+import Json.Decode exposing (Decoder, andThen, fail, list, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (optional, optionalAt, required)
 import Maybe.Extra
 
@@ -65,6 +65,8 @@ decodePatientData =
         |> required "gender" (decodeWithFallback Female decodeGender)
         |> optionalAt [ "individual", "acute-illness" ] (nullable (list (list decodeAcuteIllnessEncounterData))) Nothing
         |> optionalAt [ "individual", "antenatal" ] (nullable (list decodePrenatalParticipantData)) Nothing
+        |> optionalAt [ "individual", "family-nutrition" ] (nullable (list (list decodeFamilyNutritionEncounterData))) Nothing
+        |> optionalAt [ "individual", "family-nutrition-muac" ] (nullable (list (list decodeFamilyNutritionEncounterData))) Nothing
         |> optionalAt [ "individual", "home-visit" ] (nullable (list (list decodeYYYYMMDD))) Nothing
         |> optionalAt [ "individual", "well-child" ] (nullable (list (list decodeWellChildEncounterData))) Nothing
         |> optionalAt [ "individual", "child-scoreboard" ] (nullable (list (list decodeYYYYMMDD))) Nothing
@@ -561,6 +563,35 @@ prenatalIndicatorFromMapping s =
             Nothing
 
 
+decodeFamilyNutritionEncounterData : Decoder FamilyNutritionEncounterData
+decodeFamilyNutritionEncounterData =
+    string
+        |> andThen
+            (\s ->
+                case String.split " " (String.trim s) of
+                    [ first ] ->
+                        Date.fromIsoString first
+                            |> Result.toMaybe
+                            |> Maybe.map
+                                (\startDate ->
+                                    succeed { startDate = startDate, muacCm = Nothing }
+                                )
+                            |> Maybe.withDefault (fail "Failed to decode FamilyNutritionEncounterData")
+
+                    [ first, second ] ->
+                        Date.fromIsoString first
+                            |> Result.toMaybe
+                            |> Maybe.map
+                                (\startDate ->
+                                    succeed { startDate = startDate, muacCm = String.toFloat second }
+                                )
+                            |> Maybe.withDefault (fail "Failed to decode FamilyNutritionEncounterData")
+
+                    _ ->
+                        fail "Failed to decode FamilyNutritionEncounterData"
+            )
+
+
 decodeNutritionEncounterData : Decoder NutritionEncounterData
 decodeNutritionEncounterData =
     string
@@ -572,15 +603,30 @@ decodeNutritionEncounterData =
                             |> Result.toMaybe
                             |> Maybe.map
                                 (\startDate ->
-                                    succeed (NutritionEncounterData startDate Nothing)
+                                    succeed
+                                        { startDate = startDate
+                                        , nutritionData = Nothing
+                                        , muacCm = Nothing
+                                        , hasEdema = False
+                                        }
                                 )
                             |> Maybe.withDefault (fail "Failed to decode NutritionEncounterData")
 
                     [ first, second ] ->
-                        (Date.fromIsoString first |> Result.toMaybe)
+                        Date.fromIsoString first
+                            |> Result.toMaybe
                             |> Maybe.map
                                 (\startDate ->
-                                    succeed (NutritionEncounterData startDate (nutritionDataFromString second))
+                                    let
+                                        ( nutritionData, muacCm, hasEdema ) =
+                                            parseNutritionEncounterPayload second
+                                    in
+                                    succeed
+                                        { startDate = startDate
+                                        , nutritionData = nutritionData
+                                        , muacCm = muacCm
+                                        , hasEdema = hasEdema
+                                        }
                                 )
                             |> Maybe.withDefault (fail "Failed to decode NutritionEncounterData")
 
@@ -612,10 +658,17 @@ decodeWellChildEncounterData =
             )
 
 
+
+-- REVIEW: tokens here match the merged hedley_reports_nutrition_metrics_to_string
+-- wire order ("<stunting>,<wasting>,<underweight>,<muac>,<edema>"). The edema
+-- token is intentionally discarded because WellChildEncounterData doesn't
+-- carry edema; if SPV reports start needing it, plumb it through.
+
+
 nutritionDataFromString : String -> Maybe NutritionData
 nutritionDataFromString s =
     case String.split "," s of
-        [ stunting, underweight, wasting, muac ] ->
+        [ stunting, wasting, underweight, muac, _ ] ->
             Just <|
                 NutritionData (String.toFloat stunting)
                     (String.toFloat underweight)
@@ -697,6 +750,36 @@ vaccineTypeFromMapping s =
             Nothing
 
 
+
+-- REVIEW: NutritionData gained a `muac` field on this branch; base's
+-- parseNutritionEncounterPayload still treats muac/edema as separate
+-- tuple components. Filling NutritionData.muac with Nothing here so the
+-- merged code compiles, but you may want to consolidate the two designs.
+-- Wire format from hedley_reports_nutrition_metrics_to_string is
+-- "<stunting>,<wasting>,<underweight>,<muac>,<edema>"; tokens are named
+-- below to match that order, then placed into the NutritionData record
+-- in the order the alias declares its fields.
+
+
+parseNutritionEncounterPayload : String -> ( Maybe NutritionData, Maybe Float, Bool )
+parseNutritionEncounterPayload payload =
+    case String.split "," payload of
+        [ stunting, wasting, underweight ] ->
+            ( Just (NutritionData (String.toFloat stunting) (String.toFloat underweight) (String.toFloat wasting) Nothing)
+            , Nothing
+            , False
+            )
+
+        [ stunting, wasting, underweight, muac, edema ] ->
+            ( Just (NutritionData (String.toFloat stunting) (String.toFloat underweight) (String.toFloat wasting) Nothing)
+            , String.toFloat muac
+            , edema == "1"
+            )
+
+        _ ->
+            ( Nothing, Nothing, False )
+
+
 decodeBackendGeneratedNutritionReportTableDate : Decoder BackendGeneratedNutritionReportTableDate
 decodeBackendGeneratedNutritionReportTableDate =
     succeed BackendGeneratedNutritionReportTableDate
@@ -708,6 +791,8 @@ decodeBackendGeneratedNutritionReportTableDate =
         |> required "wasting_severe" (list string)
         |> required "underweight_moderate" (list string)
         |> required "underweight_severe" (list string)
+        |> required "acute_malnutrition_mam" (list string)
+        |> required "acute_malnutrition_sam" (list string)
 
 
 decodeNutritionReportTableType : Decoder NutritionReportTableType

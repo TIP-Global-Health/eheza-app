@@ -1,10 +1,10 @@
-module Backend.Village.Utils exposing (..)
+module Backend.Village.Utils exposing (getVillageById, getVillageClinicId, getVillageHealthCenterId, getVillageIdByGeoFields, personLivesInVillage, resolveVillageResidents)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
-import Backend.Village.Model exposing (..)
+import Backend.Village.Model exposing (Village)
 import RemoteData
 
 

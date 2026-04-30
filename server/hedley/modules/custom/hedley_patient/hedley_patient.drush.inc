@@ -422,7 +422,7 @@ function _consolidate_prenatal_encounter_content_execute(array $measurements, $o
   // encounters with ongoing pregnancy of original patient.
   // Afterwards, mark ongoing pregnancy of duplicate as deleted.
   if ($participant_duplicate_ongoing) {
-    $encounters = hedley_person_encounters_for_individual_participant($participant_duplicate_ongoing);
+    $encounters = hedley_person_load_individual_participant_encounters_ids($participant_duplicate_ongoing);
     _associate_content_by_field($encounters, 'field_individual_participant', $participant_original_ongoing);
 
     $wrapper_participant = entity_metadata_wrapper('node', $participant_duplicate_ongoing);
@@ -760,7 +760,7 @@ function _consolidate_single_participant_content_execute(array $measurements, $o
   // Associate all encounters of the duplicate with participant of
   // original patient. The participants of the duplicate are marked as deleted.
   foreach ($participants_duplicate as $participant) {
-    $encounters = hedley_person_encounters_for_individual_participant($participant);
+    $encounters = hedley_person_load_individual_participant_encounters_ids($participant);
     _associate_content_by_field($encounters, 'field_individual_participant', $original_participant);
 
     $wrapper_participant = entity_metadata_wrapper('node', $participant);
