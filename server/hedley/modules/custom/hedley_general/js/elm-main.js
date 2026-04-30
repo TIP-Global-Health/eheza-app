@@ -9172,9 +9172,9 @@ var $author$project$Backend$Reports$Decoder$parseNutritionEncounterPayload = fun
 			if (!_v0.b.b.b.b) {
 				var stunting = _v0.a;
 				var _v1 = _v0.b;
-				var wasting = _v1.a;
+				var underweight = _v1.a;
 				var _v2 = _v1.b;
-				var underweight = _v2.a;
+				var wasting = _v2.a;
 				return _Utils_Tuple3(
 					$elm$core$Maybe$Just(
 						A4(
@@ -9189,9 +9189,9 @@ var $author$project$Backend$Reports$Decoder$parseNutritionEncounterPayload = fun
 				if (_v0.b.b.b.b.b && (!_v0.b.b.b.b.b.b)) {
 					var stunting = _v0.a;
 					var _v3 = _v0.b;
-					var wasting = _v3.a;
+					var underweight = _v3.a;
 					var _v4 = _v3.b;
-					var underweight = _v4.a;
+					var wasting = _v4.a;
 					var _v5 = _v4.b;
 					var muac = _v5.a;
 					var _v6 = _v5.b;
@@ -9773,9 +9773,9 @@ var $author$project$Backend$Reports$Decoder$nutritionDataFromString = function (
 	if (((((_v0.b && _v0.b.b) && _v0.b.b.b) && _v0.b.b.b.b) && _v0.b.b.b.b.b) && (!_v0.b.b.b.b.b.b)) {
 		var stunting = _v0.a;
 		var _v1 = _v0.b;
-		var wasting = _v1.a;
+		var underweight = _v1.a;
 		var _v2 = _v1.b;
-		var underweight = _v2.a;
+		var wasting = _v2.a;
 		var _v3 = _v2.b;
 		var muac = _v3.a;
 		var _v4 = _v3.b;
@@ -19814,8 +19814,8 @@ var $author$project$Pages$Scoreboard$Utils$wasInitialOpvAdministeredByVaccinatio
 			false,
 			A2(
 				$elm$core$Maybe$map,
-				function (adminstrationDate) {
-					return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Days, birthDate, adminstrationDate) < 14;
+				function (administrationDate) {
+					return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Days, birthDate, administrationDate) < 14;
 				},
 				A2(
 					$elm$core$Maybe$andThen,

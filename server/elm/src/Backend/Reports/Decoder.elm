@@ -659,16 +659,18 @@ decodeWellChildEncounterData =
 
 
 
--- REVIEW: tokens here match the merged hedley_reports_nutrition_metrics_to_string
--- wire order ("<stunting>,<wasting>,<underweight>,<muac>,<edema>"). The edema
--- token is intentionally discarded because WellChildEncounterData doesn't
--- carry edema; if SPV reports start needing it, plumb it through.
+-- Wire format from hedley_reports_nutrition_metrics_to_string is
+-- "<stunting>,<underweight>,<wasting>,<muac>,<edema>" (PRs #1479/#1481
+-- established this order to fix issue 3199; do not reorder without
+-- updating the PHP encoder/decoder in lockstep). The edema token is
+-- intentionally discarded because WellChildEncounterData doesn't carry
+-- edema; if SPV reports start needing it, plumb it through.
 
 
 nutritionDataFromString : String -> Maybe NutritionData
 nutritionDataFromString s =
     case String.split "," s of
-        [ stunting, wasting, underweight, muac, _ ] ->
+        [ stunting, underweight, wasting, muac, _ ] ->
             Just <|
                 NutritionData (String.toFloat stunting)
                     (String.toFloat underweight)
@@ -751,26 +753,25 @@ vaccineTypeFromMapping s =
 
 
 
--- REVIEW: NutritionData gained a `muac` field on this branch; base's
--- parseNutritionEncounterPayload still treats muac/edema as separate
--- tuple components. Filling NutritionData.muac with Nothing here so the
--- merged code compiles, but you may want to consolidate the two designs.
 -- Wire format from hedley_reports_nutrition_metrics_to_string is
--- "<stunting>,<wasting>,<underweight>,<muac>,<edema>"; tokens are named
--- below to match that order, then placed into the NutritionData record
--- in the order the alias declares its fields.
+-- "<stunting>,<underweight>,<wasting>,<muac>,<edema>" (PRs #1479/#1481
+-- established this order to fix issue 3199). NutritionData gained a
+-- `muac` field on this branch but the per-encounter MUAC value is
+-- still surfaced via the tuple's second component (NutritionEncounterData
+-- already carries it as `muacCm`); NutritionData.muac stays Nothing
+-- here so the wire payload doesn't need a second muac slot.
 
 
 parseNutritionEncounterPayload : String -> ( Maybe NutritionData, Maybe Float, Bool )
 parseNutritionEncounterPayload payload =
     case String.split "," payload of
-        [ stunting, wasting, underweight ] ->
+        [ stunting, underweight, wasting ] ->
             ( Just (NutritionData (String.toFloat stunting) (String.toFloat underweight) (String.toFloat wasting) Nothing)
             , Nothing
             , False
             )
 
-        [ stunting, wasting, underweight, muac, edema ] ->
+        [ stunting, underweight, wasting, muac, edema ] ->
             ( Just (NutritionData (String.toFloat stunting) (String.toFloat underweight) (String.toFloat wasting) Nothing)
             , String.toFloat muac
             , edema == "1"

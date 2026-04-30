@@ -54,8 +54,8 @@ wasInitialOpvAdministeredByVaccinationProgress birthDate vaccinationProgress =
     Dict.get VaccineOPV vaccinationProgress
         |> Maybe.andThen (Dict.get VaccineDoseFirst)
         |> Maybe.map
-            (\adminstrationDate ->
-                Date.diff Days birthDate adminstrationDate < 14
+            (\administrationDate ->
+                Date.diff Days birthDate administrationDate < 14
             )
         |> Maybe.withDefault False
 

@@ -2838,6 +2838,15 @@ generatePostnatalCareReportData language site limitDate records =
                         patientData.wellChildData
                 )
                 records
+                -- "Within 24 hours of birth" is approximated as "same calendar
+                -- day as birth, or the next calendar day". A true 24-hour
+                -- window can't be checked here -- encounter.startDate and
+                -- birthDate are NominalDate values (no time-of-day on the
+                -- wire), so day-level granularity is the strictest filter
+                -- this layer can apply. The two-day window deliberately
+                -- accepts births late in day N with an encounter early on
+                -- day N+1 (which would be within 24h) at the cost of also
+                -- accepting an encounter up to ~48h after a midnight birth.
                 |> List.filter
                     (\( birthDate, encounter ) ->
                         (Date.compare birthDate encounter.startDate == EQ)
