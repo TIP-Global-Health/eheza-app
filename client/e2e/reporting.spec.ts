@@ -296,12 +296,13 @@ test.describe('Admin Reports', () => {
     let baselineDepression: number;
     let baselinePrenatalTotal: number;
     // ANC Contact (Prenatal Contacts) report baselines. The PrenatalMom
-    // encounter created later in this test runs completeMedication which
-    // marks MMS, Calcium, and (if visible) Aspirin as administered today,
-    // so these three indicator rows should each grow by +1 after sync.
+    // encounter created later in this test runs completeMedication, which
+    // iterates calcium / fefol / folate / iron / mms / mebendezole and
+    // marks each visible tab as administered today. Of those, MMS and
+    // Calcium have matching PrenatalIndicator codes on the wire, so those
+    // two rows should each grow by +1 after sync.
     let baselineANCContactMMS: number;
     let baselineANCContactCalcium: number;
-    let baselineANCContactAspirin: number;
     let baselineNutrition: Map<number, NutritionMetricRow[]>;
     let baselineCompletion: CompletionTableData;
     let baselinePrenatalCompletion: CompletionTableData;
@@ -361,10 +362,11 @@ test.describe('Admin Reports', () => {
       baselineDepression = await readPrenatalDiagnosisRow(page, 'diagnosis-depression-not-likely');
       baselinePrenatalTotal = await readPrenatalDiagnosisRow(page, 'totals');
 
-      // Record ANC Contact (Prenatal Contacts) report baseline. Three rows
-      // we expect PrenatalMom's completeMedication to move by +1: MMS,
-      // Calcium, Aspirin (each set when the corresponding medication tab
-      // saves with administration-note = "administered today").
+      // Record ANC Contact (Prenatal Contacts) report baseline. Two rows
+      // we expect PrenatalMom's completeMedication to move by +1: MMS and
+      // Calcium (each set when the corresponding medication tab saves
+      // with administration-note = "administered today"). Aspirin is not
+      // in completeMedication's icon list, so the aspirin row stays flat.
       await selectReportType(page, 'prenatal-contacts');
       await setDateRange(page, REPORT_START_DATE, reportLimitDate);
       const baselineANCContactTable = await readPrenatalContactsTable(page);
@@ -373,8 +375,7 @@ test.describe('Admin Reports', () => {
         .toBeGreaterThanOrEqual(22);
       baselineANCContactMMS = findSimpleRow(baselineANCContactTable, 'received MMS')?.total ?? 0;
       baselineANCContactCalcium = findSimpleRow(baselineANCContactTable, 'received low-dose antenatal calcium')?.total ?? 0;
-      baselineANCContactAspirin = findSimpleRow(baselineANCContactTable, 'received low-dose aspirin')?.total ?? 0;
-      console.log(`Baseline ANC Contact: MMS=${baselineANCContactMMS}, Calcium=${baselineANCContactCalcium}, Aspirin=${baselineANCContactAspirin}`);
+      console.log(`Baseline ANC Contact: MMS=${baselineANCContactMMS}, Calcium=${baselineANCContactCalcium}`);
 
       // Record Nutrition report baseline (first column = newest completed month).
       // The nutrition report only shows completed months, so test encounters
@@ -1479,8 +1480,8 @@ test.describe('Admin Reports', () => {
     // ── ANC Contact (Prenatal Contacts) report verification ──
     //
     // PrenatalMom's nurse encounter (above) ran completeMedication, which
-    // marks the MMS / Calcium / Aspirin medication tabs as "administered
-    // today". Each of those measurements causes
+    // marks the MMS and Calcium medication tabs as "administered today".
+    // Each of those measurements causes
     // hedley_reports_calculate_aggregated_data_for_person to attach the
     // corresponding PrenatalIndicator code to the encounter on the wire,
     // and the Elm decoder + report aggregation surface a +1 on the
@@ -1499,16 +1500,13 @@ test.describe('Admin Reports', () => {
       const ancContactTable = await readPrenatalContactsTable(page);
       const newMMS = findSimpleRow(ancContactTable, 'received MMS')?.total ?? 0;
       const newCalcium = findSimpleRow(ancContactTable, 'received low-dose antenatal calcium')?.total ?? 0;
-      const newAspirin = findSimpleRow(ancContactTable, 'received low-dose aspirin')?.total ?? 0;
 
       console.log('\n=== ANC CONTACT (indicator rows) ===');
       console.log(`Received MMS:     baseline=${baselineANCContactMMS}, new=${newMMS}, delta=+${newMMS - baselineANCContactMMS}`);
       console.log(`Received Calcium: baseline=${baselineANCContactCalcium}, new=${newCalcium}, delta=+${newCalcium - baselineANCContactCalcium}`);
-      console.log(`Received Aspirin: baseline=${baselineANCContactAspirin}, new=${newAspirin}, delta=+${newAspirin - baselineANCContactAspirin}`);
 
       expect(newMMS, '"Pregnant women who received MMS" +1').toBe(baselineANCContactMMS + 1);
       expect(newCalcium, '"Pregnant women who received low-dose antenatal calcium" +1').toBe(baselineANCContactCalcium + 1);
-      expect(newAspirin, '"Pregnant women who received low-dose aspirin" +1').toBe(baselineANCContactAspirin + 1);
 
       // CSV download button.
       await expect(page.locator('button.download-csv'), 'ANC Contact CSV download button should be visible').toBeVisible();
