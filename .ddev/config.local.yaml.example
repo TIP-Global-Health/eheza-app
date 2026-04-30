@@ -26,8 +26,6 @@ hooks:
     - exec: drush fra -y
     - exec: drush uli
   post-start:
-    - exec-host: ddev nvm install 10.16.0
-    - exec-host: ddev nvm alias default 10.16.0
     - exec-host: ddev client-install
     - exec: "cd .. && chmod +x ./scripts/build && ./scripts/build"
     - exec: "cd .. && cp hedley/modules/custom/hedley_migrate/csv/health_center_$EHEZA_SITE.csv hedley/modules/custom/hedley_migrate/csv/health_center.csv"
@@ -55,10 +53,12 @@ hooks:
     - exec: "cd .. && rm -f hedley/modules/custom/hedley_migrate/csv/village.csv"
     # Enabling features:
     - exec: drush vset hedley_admin_feature_ncda_enabled 1
-    - exec: drush vset hedley_admin_feature_stock_management_enabled 1
+    - exec: drush vset hedley_admin_feature_stock_management_hc_enabled 1
+    - exec: drush vset hedley_admin_feature_stock_management_village_enabled 1
     - exec: drush vset hedley_admin_feature_tuberculosis_management_enabled 1
     - exec: drush vset hedley_admin_feature_group_education_enabled 1
     - exec: drush vset hedley_admin_feature_report_to_whatsapp_enabled 1
     - exec: drush vset hedley_admin_feature_hiv_management_enabled 1
     - exec: drush vset hedley_admin_feature_gps_coordinates_enabled 1
+    - exec: drush vset hedley_admin_feature_family_nutrition_enabled 1
     - exec: drush uli

@@ -106,11 +106,12 @@ function hedley_migrate_nurses_to_content_type() {
 
     $user_wrapper = entity_metadata_wrapper('user', $account);
 
-    $query = new EntityFieldQuery();
+    $query = hedley_general_create_entity_field_query_excluding_deleted();
     $result = $query
       ->entityCondition('entity_type', 'node')
       ->entityCondition('bundle', 'nurse')
       ->propertyCondition('title', $account->name)
+      ->propertyCondition('status', NODE_PUBLISHED)
       ->execute();
 
     if (empty($result['node'])) {

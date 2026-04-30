@@ -1,4 +1,4 @@
-module Pages.GroupEncounterTypes.Model exposing (..)
+module Pages.GroupEncounterTypes.Model exposing (GroupEncounterType(..))
 
 
 type GroupEncounterType

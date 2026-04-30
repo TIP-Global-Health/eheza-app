@@ -1,4 +1,4 @@
-module Backend.PrenatalEncounter.Model exposing (..)
+module Backend.PrenatalEncounter.Model exposing (Model, Msg(..), PrenatalEncounter, PrenatalEncounterPostCreateDestination(..), PrenatalEncounterType(..), PrenatalIndicator(..), PrenatalProgressReportInitiator(..), RecordPreganancyInitiator(..), emptyModel, emptyPrenatalEncounter)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -17,6 +17,7 @@ type alias PrenatalEncounter =
     , pastDiagnoses : EverySet PrenatalDiagnosis
     , indicators : EverySet PrenatalIndicator
     , nextVisitDate : Maybe NominalDate
+    , deleted : Bool
     , shard : Maybe HealthCenterId
     }
 
@@ -31,6 +32,7 @@ emptyPrenatalEncounter participant startDate encounterType shard =
     , pastDiagnoses = EverySet.empty
     , indicators = EverySet.empty
     , nextVisitDate = Nothing
+    , deleted = False
     , shard = shard
     }
 
@@ -116,6 +118,7 @@ type alias Model =
     , saveBreastfeeding : WebData ()
     , saveGUExam : WebData ()
     , saveSpecialityCare : WebData ()
+    , saveUltrasound : WebData ()
     , saveAspirin : WebData ()
     , saveCalcium : WebData ()
     , saveFefol : WebData ()
@@ -169,6 +172,7 @@ emptyModel =
     , saveBreastfeeding = NotAsked
     , saveGUExam = NotAsked
     , saveSpecialityCare = NotAsked
+    , saveUltrasound = NotAsked
     , saveAspirin = NotAsked
     , saveCalcium = NotAsked
     , saveFefol = NotAsked
@@ -281,4 +285,6 @@ type Msg
     | HandleSavedGUExam (WebData ())
     | SaveSpecialityCare PersonId (Maybe PrenatalSpecialityCareId) SpecialityCareValue
     | HandleSavedSpecialityCare (WebData ())
+    | SaveUltrasound PersonId (Maybe PrenatalUltrasoundId) UltrasoundValue
+    | HandleSavedUltrasound (WebData ())
     | NoOp

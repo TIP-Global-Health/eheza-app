@@ -1,12 +1,26 @@
-module Pages.StockManagement.Model exposing (..)
+module Pages.StockManagement.Model exposing (CorrectEntryForm, CorrectionEntryType(..), DisplayMode(..), Model, Msg(..), ReceiveStockForm, StockManagementContext(..), StockManagementMenu(..), emptyModel, maxMonthGap, resolveStockManagementContext)
 
-import AssocList exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ImageUrl, StockCorrectionReason, StockSupplier)
 import Date exposing (Date)
 import DateSelector.Model exposing (DateSelectorConfig)
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (Page)
+
+
+type StockManagementContext
+    = ContextHealthCenter HealthCenterId
+    | ContextVillage HealthCenterId VillageId
+
+
+resolveStockManagementContext : HealthCenterId -> Maybe VillageId -> StockManagementContext
+resolveStockManagementContext healthCenterId maybeVillageId =
+    case maybeVillageId of
+        Just villageId ->
+            ContextVillage healthCenterId villageId
+
+        Nothing ->
+            ContextHealthCenter healthCenterId
 
 
 type alias Model =
@@ -30,26 +44,9 @@ emptyModel =
     }
 
 
-type alias AssembledData =
-    Dict MonthYear DataForMonth
-
-
-type alias DataForMonth =
-    { startingStock : Maybe Float
-    , received : Float
-    , issued : Float
-    , currentBalance : Maybe Float
-    , consumptionAverage : Float
-    }
-
-
 maxMonthGap : Int
 maxMonthGap =
     11
-
-
-type alias MonthYear =
-    ( Int, Int )
 
 
 type DisplayMode

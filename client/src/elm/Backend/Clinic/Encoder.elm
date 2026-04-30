@@ -1,7 +1,7 @@
 module Backend.Clinic.Encoder exposing (encodeClinic, encodeClinicType)
 
-import Backend.Clinic.Model exposing (..)
-import Json.Encode exposing (..)
+import Backend.Clinic.Model exposing (Clinic, ClinicType(..))
+import Json.Encode exposing (Value, bool, string)
 import Restful.Endpoint exposing (encodeEntityUuid)
 
 

@@ -1,8 +1,8 @@
 module Backend.HomeVisitEncounter.Encoder exposing (encodeHomeVisitEncounter)
 
-import Backend.HomeVisitEncounter.Model exposing (..)
+import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
-import Json.Encode exposing (..)
+import Json.Encode exposing (Value, bool, object, string)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid)
 import Utils.Json exposing (encodeIfSet)
@@ -11,15 +11,15 @@ import Utils.Json exposing (encodeIfSet)
 {-| Encodes a `HomeVisitEncounter`.
 -}
 encodeHomeVisitEncounter : HomeVisitEncounter -> List ( String, Value )
-encodeHomeVisitEncounter session =
+encodeHomeVisitEncounter encounter =
     [ ( "scheduled_date"
       , object
-            [ ( "value", encodeYYYYMMDD session.startDate )
-            , ( "value2", maybe encodeYYYYMMDD session.endDate )
+            [ ( "value", encodeYYYYMMDD encounter.startDate )
+            , ( "value2", maybe encodeYYYYMMDD encounter.endDate )
             ]
       )
-    , ( "individual_participant", encodeEntityUuid session.participant )
-    , ( "deleted", bool False )
+    , ( "individual_participant", encodeEntityUuid encounter.participant )
+    , ( "deleted", bool encounter.deleted )
     , ( "type", string "home_visit_encounter" )
     ]
-        ++ encodeIfSet "shard" session.shard encodeEntityUuid
+        ++ encodeIfSet "shard" encounter.shard encodeEntityUuid

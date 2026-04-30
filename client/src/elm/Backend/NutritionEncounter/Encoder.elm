@@ -1,8 +1,8 @@
 module Backend.NutritionEncounter.Encoder exposing (encodeNutritionEncounter, encodeNutritionEncounterType)
 
-import Backend.NutritionEncounter.Model exposing (..)
+import Backend.NutritionEncounter.Model exposing (NutritionEncounter, NutritionEncounterType(..))
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
-import Json.Encode exposing (..)
+import Json.Encode exposing (Value, bool, object, string)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid)
 import Utils.Json exposing (encodeIfSet)
@@ -20,7 +20,7 @@ encodeNutritionEncounter encounter =
       )
     , ( "individual_participant", encodeEntityUuid encounter.participant )
     , ( "nutrition_encounter_type", encodeNutritionEncounterType encounter.encounterType )
-    , ( "deleted", bool False )
+    , ( "deleted", bool encounter.deleted )
     , ( "type", string "nutrition_encounter" )
     ]
         ++ encodeIfSet "shard" encounter.shard encodeEntityUuid

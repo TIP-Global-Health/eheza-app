@@ -1,4 +1,4 @@
-module Components.ReportToWhatsAppDialog.Model exposing (..)
+module Components.ReportToWhatsAppDialog.Model exposing (CountryCode(..), DialogState(..), Model, Msg(..), PhoneData, ReportComponentAntenatal(..), ReportComponentNCD(..), ReportComponentWellChild(..), ReportComponentsConfig, ReportComponentsList(..), ReportType(..), emptyModel, emptyPhoneData)
 
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
@@ -50,6 +50,7 @@ type CountryCode
       -- We have this for testing only.
       -- Israel will not appear in available options.
     | CountryCodeIsrael
+    | CountryCodeSomalia
 
 
 type alias ReportComponentsConfig msg =

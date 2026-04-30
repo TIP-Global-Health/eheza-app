@@ -1,4 +1,4 @@
-module Backend.TraceContact.Model exposing (..)
+module Backend.TraceContact.Model exposing (Model, Msg(..), emptyModel)
 
 import Backend.Measurement.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)

@@ -20,7 +20,7 @@ $batch = drush_get_option('batch', 500);
 $memory_limit = drush_get_option('memory_limit', 800);
 
 // Resolve all Health Centers (associate ID to name).
-$query = db_select('node', 'n');
+$query = hedley_general_create_db_select_query_excluding_deleted();
 $query->fields('n', ['nid', 'title']);
 $query->condition('type', 'health_center');
 $result = $query->execute()->fetchAll();
@@ -39,7 +39,7 @@ $encounter_types = [
   'well_child_muac' => 'SPV',
 ];
 
-$query = db_select('node', 'node');
+$query = hedley_general_create_db_select_query_excluding_deleted('node');
 $query->fields('node', ['nid', 'type']);
 $query->condition('type', array_keys($encounter_types), 'IN');
 $query->condition('status', NODE_PUBLISHED);

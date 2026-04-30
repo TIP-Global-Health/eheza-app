@@ -1,4 +1,4 @@
-module Backend.Reports.Model exposing (..)
+module Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, ChildScorecardEncounterData, DeliveryLocation(..), FamilyNutritionEncounterData, Gender(..), HIVEncounterData, HomeVisitEncounterData, Msg(..), NCDEncounterData, NutritionData, NutritionEncounterData, NutritionReportTableType(..), PatientData, PersonId, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalIndicator(..), PrenatalParticipantData, ReportsData, SelectedEntity(..), TuberculosisEncounterData)
 
 import App.Types exposing (Site)
 import Gizra.NominalDate exposing (NominalDate)
@@ -31,6 +31,8 @@ type alias PatientData =
     , gender : Gender
     , acuteIllnessData : Maybe (List (List AcuteIllnessEncounterData))
     , prenatalData : Maybe (List PrenatalParticipantData)
+    , familyNutritionData : Maybe (List (List FamilyNutritionEncounterData))
+    , familyNutritionMuacData : Maybe (List (List FamilyNutritionEncounterData))
     , homeVisitData : Maybe (List (List HomeVisitEncounterData))
     , wellChildData : Maybe (List (List NutritionEncounterData))
     , childScorecardData : Maybe (List (List ChildScorecardEncounterData))
@@ -217,6 +219,8 @@ type PrenatalIndicator
 type alias NutritionEncounterData =
     { startDate : NominalDate
     , nutritionData : Maybe NutritionData
+    , muacCm : Maybe Float
+    , hasEdema : Bool
     }
 
 
@@ -224,6 +228,12 @@ type alias NutritionData =
     { stunting : Maybe Float
     , wasting : Maybe Float
     , underweight : Maybe Float
+    }
+
+
+type alias FamilyNutritionEncounterData =
+    { startDate : NominalDate
+    , muacCm : Maybe Float
     }
 
 
@@ -256,6 +266,8 @@ type alias BackendGeneratedNutritionReportTableDate =
     , wastingSevere : List String
     , underweightModerate : List String
     , underweightSevere : List String
+    , acuteMalnutritionMam : List String
+    , acuteMalnutritionSam : List String
     }
 
 

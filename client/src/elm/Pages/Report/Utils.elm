@@ -1,4 +1,4 @@
-module Pages.Report.Utils exposing (..)
+module Pages.Report.Utils exposing (altResultNormal, astResultNormal, bilirubinResultNormal, bloodSmearResultNormal, bunResultNormal, compareAcuteIllnessEncounters, compareAcuteIllnessEncountersDesc, creatinineResultNormal, diagnosisEntryStatusToString, getAcuteIllnessDiagnosisForEncounters, getAcuteIllnessEncountersForParticipant, getRandomBloodSugarResultValue, glucoseResultNormal, hba1cResultNormal, hdlCholesterolResultNormal, hemoglobinResultNormal, hepatitisBResultNormal, hivPCRResultNormal, hivResultNormal, ketoneResultNormal, ldlCholesterolResultNormal, leukocytesResultNormal, malariaResultNormal, nitriteResultNormal, partnerHIVResultNormal, phResultNormal, pregnancyResultNormal, proteinResultNormal, randomBloodSugarResultFromValue, randomBloodSugarResultNormal, rhesusResultsNormal, syphilisResultNormal, totalCholesterolResultNormal, triglyceridesResultNormal, urineHaemoglobinValueResultNormal, urobilinogenResultNormal)
 
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..))
@@ -10,7 +10,7 @@ import Date
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Utils exposing (bloodSmearResultNotSet, testPerformedByExecutionNote)
-import Pages.Report.Model exposing (..)
+import Pages.Report.Model exposing (PaneEntryStatus(..), RandomBloodSugarResult(..), TestReport(..))
 
 
 hivResultNormal : TestReport -> Bool

@@ -84,6 +84,9 @@ define('HEDLEY_ACTIVITY_GROUP_PARTICIPANT_CONTENT_TYPE', 'pmtct_participant');
 define('HEDLEY_ACTIVITY_GROUP_ENCOUNTER_CONTENT_TYPE', 'session');
 define('HEDLEY_ACTIVITY_GROUP_EDUCATION_CONTENT_TYPE', 'education_session');
 define('HEDLEY_ACTIVITY_CHILD_SCOREBOARD_ENCOUNTER_CONTENT_TYPE', 'child_scoreboard_encounter');
+define('HEDLEY_ACTIVITY_FAMILY_NUTRITION_ENCOUNTER_CONTENT_TYPE', 'family_nutrition_encounter');
+define('HEDLEY_ACTIVITY_FAMILY_NUTRITION_MUAC_CHILD_CONTENT_TYPE', 'family_nutrition_muac_child');
+define('HEDLEY_ACTIVITY_FAMILY_PARTICIPANT_CONTENT_TYPE', 'family_participant');
 define('HEDLEY_ACTIVITY_TUBERCULOSIS_ENCOUNTER_CONTENT_TYPE', 'tuberculosis_encounter');
 define('HEDLEY_ACTIVITY_HIV_ENCOUNTER_CONTENT_TYPE', 'hiv_encounter');
 
@@ -241,7 +244,7 @@ function hedley_activity_handle_child_zscores($nid) {
   $bundles = array_merge(HEDLEY_ACTIVITY_HEIGHT_BUNDLES, HEDLEY_ACTIVITY_WEIGHT_BUNDLES);
   $bundles[] = HEDLEY_ACTIVITY_WELL_CHILD_HEAD_CIRCUMFERENCE_CONTENT_TYPE;
 
-  $base_query = new EntityFieldQuery();
+  $base_query = hedley_general_create_entity_field_query_excluding_deleted();
   $base_query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', $bundles, 'IN')
@@ -430,7 +433,7 @@ function hedley_activity_node_by_peer_in_session(\EntityMetadataWrapper $wrapper
     return NULL;
   }
 
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
   $result = $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', $target_bundle)
@@ -455,7 +458,7 @@ function hedley_activity_node_by_peer_in_session(\EntityMetadataWrapper $wrapper
  *   Number of measurements.
  */
 function hedley_activity_count_person_measurements_taken_during_sessions($person_id, array $sessions_ids) {
-  $query = db_select('node', 'node');
+  $query = hedley_general_create_db_select_query_excluding_deleted('node');
   $query->fields('node', ['nid']);
   $query->condition('status', NODE_PUBLISHED);
 

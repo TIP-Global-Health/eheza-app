@@ -155,6 +155,12 @@ encodeIndexDbQueryUploadAuthorityResultRecord dbVersion record =
                                 identifier_
                                 "signature"
 
+                        BackendAuthorityFamilyNutritionPhoto identifier_ ->
+                            doEncode
+                                Backend.Measurement.Encoder.encodeFamilyNutritionPhoto
+                                identifier_
+                                "photo"
+
                         _ ->
                             SyncManager.Utils.encodeBackendAuthorityEntity entity
             in

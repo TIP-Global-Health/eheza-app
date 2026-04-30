@@ -1,4 +1,4 @@
-module Backend.Components.Decoder exposing (..)
+module Backend.Components.Decoder exposing (decodeHealthCenterData, decodeMenuScope)
 
 import Backend.Components.Model exposing (HealthCenterData, MenuScope(..))
 import Gizra.Json exposing (decodeInt)

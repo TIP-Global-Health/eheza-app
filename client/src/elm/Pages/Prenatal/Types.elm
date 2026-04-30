@@ -1,4 +1,4 @@
-module Pages.Prenatal.Types exposing (..)
+module Pages.Prenatal.Types exposing (EarlyMastitisOrEngorgmentReliefMethod(..), HeartburnReliefMethod(..), LegCrampsReliefMethod(..))
 
 
 type LegCrampsReliefMethod

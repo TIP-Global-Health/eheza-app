@@ -5,7 +5,8 @@ import AssocList as Dict exposing (Dict)
 import Backend.Model exposing (ModelBackend)
 import Backend.Reports.Model
     exposing
-        ( AcuteIllnessEncounterType(..)
+        ( AcuteIllnessDiagnosis(..)
+        , AcuteIllnessEncounterType(..)
         , BackendGeneratedNutritionReportTableDate
         , DeliveryLocation(..)
         , Gender(..)
@@ -28,10 +29,10 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
-import Pages.Components.View exposing (viewCustomCells, viewMetricsResultsTable, viewStandardCells, viewStandardRow)
+import Pages.Components.View exposing (viewMetricsResultsTable, viewStandardCells, viewStandardRow)
 import Pages.Model exposing (MetricsResultsTableData)
-import Pages.Reports.Model exposing (..)
-import Pages.Reports.Utils exposing (..)
+import Pages.Reports.Model exposing (Model, Msg(..), NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), emptyNutritionMetrics)
+import Pages.Reports.Utils exposing (countTotalEncounters, eddToLmpDate, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, prenatalContactTypeToEncountersAtWeek, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth)
 import Pages.Utils
     exposing
         ( calculatePercentage
@@ -43,7 +44,6 @@ import Pages.Utils
         )
 import RemoteData exposing (RemoteData(..))
 import Round
-import Time exposing (Month(..))
 import Translate exposing (TranslationId, translate)
 import Utils.Html exposing (viewModal)
 
@@ -153,15 +153,6 @@ viewReportsData language currentDate themePath data model =
                 model.reportType
                 |> Maybe.withDefault []
 
-        ( startDateByReportType, limitDateByReportType ) =
-            if model.reportType == Just ReportNutrition then
-                -- Nutrition report does not allow selecting limit date, so
-                -- we force it to be today.
-                ( Just launchDate, Just currentDate )
-
-            else
-                ( model.startDate, model.limitDate )
-
         content =
             if
                 isJust model.startDateSelectorPopupState
@@ -172,6 +163,16 @@ viewReportsData language currentDate themePath data model =
                 emptyNode
 
             else
+                let
+                    ( startDateByReportType, limitDateByReportType ) =
+                        if model.reportType == Just ReportNutrition then
+                            -- Nutrition report does not allow selecting limit date, so
+                            -- we force it to be today.
+                            ( Just launchDate, Just currentDate )
+
+                        else
+                            ( model.startDate, model.limitDate )
+                in
                 Maybe.map3
                     (\reportType startDate limitDate ->
                         let
@@ -879,6 +880,17 @@ generateDemographicsReportEncountersData language records =
         nutritionGroupAchiEncountersUnique =
             countUnique nutritionGroupAchiEncountersData
 
+        familyNutritionEncountersData =
+            List.filterMap
+                (.familyNutritionData >> Maybe.map List.concat)
+                records
+
+        familyNutritionEncountersTotal =
+            countTotal familyNutritionEncountersData
+
+        familyNutritionEncountersUnique =
+            countUnique familyNutritionEncountersData
+
         overallNutritionTotal =
             nutritionIndividualEncountersTotal
                 + nutritionGroupPmtctEncountersTotal
@@ -907,6 +919,7 @@ generateDemographicsReportEncountersData language records =
                 + hivDataEncountersTotal
                 + tuberculosisDataEncountersTotal
                 + overallNutritionTotal
+                + familyNutritionEncountersTotal
 
         overallUnique =
             prenatalDataNurseEncountersUnique
@@ -920,6 +933,7 @@ generateDemographicsReportEncountersData language records =
                 + hivDataEncountersUnique
                 + tuberculosisDataEncountersUnique
                 + overallNutritionUnique
+                + familyNutritionEncountersUnique
 
         countTotal =
             List.map List.length >> List.sum
@@ -958,6 +972,7 @@ generateDemographicsReportEncountersData language records =
         , generateRow Translate.CBNP nutritionGroupChwEncountersTotal nutritionGroupChwEncountersUnique True
         , generateRow Translate.ACHI nutritionGroupAchiEncountersTotal nutritionGroupAchiEncountersUnique True
         , generateRow Translate.Individual nutritionIndividualEncountersTotal nutritionIndividualEncountersUnique True
+        , generateRow Translate.FamilyNutrition familyNutritionEncountersTotal familyNutritionEncountersUnique False
         ]
     , totals =
         { label = translate language Translate.Total
@@ -1026,7 +1041,7 @@ viewNutritionReport : Language -> NominalDate -> String -> Maybe (List BackendGe
 viewNutritionReport language currentDate scopeLabel mBackendGeneratedData reportData =
     let
         generatedData =
-            Maybe.map (generareNutritionReportDataFromBackendGeneratedData language currentDate) mBackendGeneratedData
+            Maybe.map (generareNutritionReportDataFromBackendGeneratedData language) mBackendGeneratedData
                 |> Maybe.withDefault (generareNutritionReportDataFromRawData language currentDate reportData)
 
         csvFileName =
@@ -1066,6 +1081,9 @@ generareNutritionReportDataFromRawData language currentDate reportData =
                                 , underweightNormal = List.filter (\id -> List.member id data.impacted) encounter.underweightNormal
                                 , underweightModerate = List.filter (\id -> List.member id data.impacted) encounter.underweightModerate
                                 , underweightSevere = List.filter (\id -> List.member id data.impacted) encounter.underweightSevere
+                                , acuteMalnutritionNormal = List.filter (\id -> List.member id data.impacted) encounter.acuteMalnutritionNormal
+                                , acuteMalnutritionMam = List.filter (\id -> List.member id data.impacted) encounter.acuteMalnutritionMam
+                                , acuteMalnutritionSam = List.filter (\id -> List.member id data.impacted) encounter.acuteMalnutritionSam
                             }
                         )
                         data.encountersByMonth
@@ -1110,10 +1128,9 @@ generareNutritionReportDataFromRawData language currentDate reportData =
 
 generareNutritionReportDataFromBackendGeneratedData :
     Language
-    -> NominalDate
     -> List BackendGeneratedNutritionReportTableDate
     -> List MetricsResultsTableData
-generareNutritionReportDataFromBackendGeneratedData language currentDate data =
+generareNutritionReportDataFromBackendGeneratedData language data =
     let
         nutritionTableTypeToNumber tableType =
             case tableType of
@@ -1185,6 +1202,8 @@ backendGeneratedNutritionReportTableDateToMetricsResultsTableData language backe
         , translate language Translate.WastingSevere :: backendTableData.wastingSevere
         , translate language Translate.UnderweightModerate :: backendTableData.underweightModerate
         , translate language Translate.UnderweightSevere :: backendTableData.underweightSevere
+        , translate language Translate.AcuteMalnutritionMam :: backendTableData.acuteMalnutritionMam
+        , translate language Translate.AcuteMalnutritionSam :: backendTableData.acuteMalnutritionSam
         ]
     }
 
@@ -1377,6 +1396,10 @@ toMetricsResultsTableData language heading data =
             |> generateRow Translate.UnderweightModerate
         , List.map (Tuple.second >> .underweightSevere) data
             |> generateRow Translate.UnderweightSevere
+        , List.map (Tuple.second >> .acuteMalnutritionMam) data
+            |> generateRow Translate.AcuteMalnutritionMam
+        , List.map (Tuple.second >> .acuteMalnutritionSam) data
+            |> generateRow Translate.AcuteMalnutritionSam
         ]
     }
 
@@ -1387,9 +1410,19 @@ viewPrenatalReport language limitDate scopeLabel records =
         data =
             generatePrenatalReportData language limitDate records
 
-        viewTable tableData =
+        -- CSS class per table for E2E test targeting.
+        tableClasses =
+            [ "all-pregnancies"
+            , "active-pregnancies"
+            , "completed-pregnancies"
+            , "first-visit"
+            , "outcomes"
+            , "delivery-locations"
+            ]
+
+        viewTableWithClass cssClass tableData =
             [ div [ class "section heading" ] [ text tableData.heading ]
-            , div [ class "table anc" ] <|
+            , div [ class <| "table anc " ++ cssClass ] <|
                 (div [ class "row captions" ] <|
                     viewStandardCells tableData.captions
                 )
@@ -1407,7 +1440,7 @@ viewPrenatalReport language limitDate scopeLabel records =
             reportTablesDataToCSV data
     in
     div [ class "report prenatal" ] <|
-        List.concatMap viewTable data
+        List.concat (List.map2 viewTableWithClass tableClasses data)
             ++ [ viewDownloadCSVButton language csvFileName csvContent ]
 
 
@@ -1597,9 +1630,6 @@ generatePrenatalReportData language limitDate records =
         completedChwVisits4 =
             resolveValueFromDict 4 partitionedVisitsForCompleted.chw
 
-        completedChwVisits5 =
-            resolveValueFromDict 5 partitionedVisitsForCompleted.chw
-
         completedChwVisits5AndMore =
             resolveValueFromDict -1 partitionedVisitsForCompleted.chw
 
@@ -1614,9 +1644,6 @@ generatePrenatalReportData language limitDate records =
 
         completedAllVisits4 =
             resolveValueFromDict 4 partitionedVisitsForCompleted.all
-
-        completedAllVisits5 =
-            resolveValueFromDict 5 partitionedVisitsForCompleted.all
 
         completedAllVisits5AndMore =
             resolveValueFromDict -1 partitionedVisitsForCompleted.all
@@ -1802,28 +1829,28 @@ generatePrenatalReportData language limitDate records =
                     ]
             }
 
-        -- Pregnancy delivery locations stats.
-        deliveryLocationsDict =
-            List.foldl
-                (\participantData accumDict ->
-                    Maybe.map
-                        (\location ->
-                            let
-                                updated =
-                                    Dict.get location accumDict
-                                        |> Maybe.map ((+) 1)
-                                        |> Maybe.withDefault 1
-                            in
-                            Dict.insert location updated accumDict
-                        )
-                        participantData.deliveryLocation
-                        |> Maybe.withDefault accumDict
-                )
-                Dict.empty
-                completed
-
         deliveryLocationsTable =
             let
+                -- Pregnancy delivery locations stats.
+                deliveryLocationsDict =
+                    List.foldl
+                        (\participantData accumDict ->
+                            Maybe.map
+                                (\location ->
+                                    let
+                                        updated =
+                                            Dict.get location accumDict
+                                                |> Maybe.map ((+) 1)
+                                                |> Maybe.withDefault 1
+                                    in
+                                    Dict.insert location updated accumDict
+                                )
+                                participantData.deliveryLocation
+                                |> Maybe.withDefault accumDict
+                        )
+                        Dict.empty
+                        completed
+
                 facilityDeliveries =
                     Dict.get FacilityDelivery deliveryLocationsDict
                         |> Maybe.withDefault 0
@@ -1847,10 +1874,10 @@ generatePrenatalReportData language limitDate records =
                 , [ translate language <| Translate.DeliveryLocation HomeDelivery
                   , String.fromInt homeDeliveries
                   ]
-                , [ translate language <| Translate.DeliveryLocationsTableTotals
+                , [ translate language Translate.DeliveryLocationsTableTotals
                   , String.fromInt totalDeliveries
                   ]
-                , [ translate language <| Translate.DeliveryLocationsTablePercentage
+                , [ translate language Translate.DeliveryLocationsTablePercentage
                   , calculatePercentage totalDeliveries totalCompletedPregnancies
                   ]
                 ]
@@ -1976,6 +2003,20 @@ viewAcuteIllnessReport language limitDate startDate scopeLabel records =
             viewStandardCells data.captions
                 |> div [ class "row captions" ]
 
+        -- Each diagnosis gets a CSS class for E2E test targeting.
+        diagnosisClasses =
+            List.map acuteIllnessDiagnosisCssClass allAcuteIllnessDiagnoses
+                ++ [ "totals", "no-diagnosis" ]
+
+        dataRows =
+            List.map2
+                (\cssClass row ->
+                    viewStandardCells row
+                        |> div [ class <| "row " ++ cssClass ]
+                )
+                diagnosisClasses
+                data.rows
+
         csvFileName =
             "acute-illness-report-"
                 ++ (String.toLower <| String.replace " " "-" scopeLabel)
@@ -1988,12 +2029,254 @@ viewAcuteIllnessReport language limitDate startDate scopeLabel records =
         csvContent =
             reportTableDataToCSV data
     in
-    div [ class "report acute-illness" ] <|
+    div [ class "report acute-illness" ]
         [ div [ class "table" ] <|
             captionsRow
-                :: List.map viewStandardRow data.rows
+                :: dataRows
         , viewDownloadCSVButton language csvFileName csvContent
         ]
+
+
+acuteIllnessDiagnosisCssClass : AcuteIllnessDiagnosis -> String
+acuteIllnessDiagnosisCssClass diagnosis =
+    case diagnosis of
+        DiagnosisCovid19Suspect ->
+            "diagnosis-covid19-suspect"
+
+        DiagnosisSevereCovid19 ->
+            "diagnosis-covid19-severe"
+
+        DiagnosisPneuminialCovid19 ->
+            "diagnosis-covid19-pneumonia"
+
+        DiagnosisLowRiskCovid19 ->
+            "diagnosis-covid19-simple"
+
+        DiagnosisMalariaComplicated ->
+            "diagnosis-malaria-complicated"
+
+        DiagnosisMalariaUncomplicated ->
+            "diagnosis-malaria-uncomplicated"
+
+        DiagnosisMalariaUncomplicatedAndPregnant ->
+            "diagnosis-malaria-uncomplicated-pregnant"
+
+        DiagnosisGastrointestinalInfectionComplicated ->
+            "diagnosis-gi-complicated"
+
+        DiagnosisGastrointestinalInfectionUncomplicated ->
+            "diagnosis-gi-uncomplicated"
+
+        DiagnosisSimpleColdAndCough ->
+            "diagnosis-cold-cough"
+
+        DiagnosisRespiratoryInfectionComplicated ->
+            "diagnosis-respiratory-complicated"
+
+        DiagnosisRespiratoryInfectionUncomplicated ->
+            "diagnosis-respiratory-uncomplicated"
+
+        DiagnosisFeverOfUnknownOrigin ->
+            "diagnosis-fever-unknown"
+
+        DiagnosisUndeterminedMoreEvaluationNeeded ->
+            "diagnosis-undetermined"
+
+        DiagnosisTuberculosisSuspect ->
+            "diagnosis-tb-suspect"
+
+
+prenatalDiagnosisCssClass : PrenatalDiagnosis -> String
+prenatalDiagnosisCssClass diagnosis =
+    case diagnosis of
+        DiagnosisChronicHypertension ->
+            "diagnosis-chronic-hypertension"
+
+        DiagnosisGestationalHypertension ->
+            "diagnosis-gestational-hypertension"
+
+        DiagnosisModeratePreeclampsia ->
+            "diagnosis-moderate-preeclampsia"
+
+        DiagnosisSeverePreeclampsia ->
+            "diagnosis-severe-preeclampsia"
+
+        DiagnosisEclampsia ->
+            "diagnosis-eclampsia"
+
+        DiagnosisHIV ->
+            "diagnosis-hiv"
+
+        DiagnosisHIVDetectableViralLoad ->
+            "diagnosis-hiv-detectable-viral-load"
+
+        DiagnosisDiscordantPartnership ->
+            "diagnosis-discordant-partnership"
+
+        DiagnosisSyphilis ->
+            "diagnosis-syphilis"
+
+        DiagnosisSyphilisWithComplications ->
+            "diagnosis-syphilis-complications"
+
+        DiagnosisNeurosyphilis ->
+            "diagnosis-neurosyphilis"
+
+        DiagnosisHepatitisB ->
+            "diagnosis-hepatitis-b"
+
+        DiagnosisMalaria ->
+            "diagnosis-malaria"
+
+        DiagnosisMalariaWithAnemia ->
+            "diagnosis-malaria-anemia"
+
+        DiagnosisMalariaWithSevereAnemia ->
+            "diagnosis-malaria-severe-anemia"
+
+        DiagnosisModerateAnemia ->
+            "diagnosis-moderate-anemia"
+
+        DiagnosisSevereAnemia ->
+            "diagnosis-severe-anemia"
+
+        DiagnosisSevereAnemiaWithComplications ->
+            "diagnosis-severe-anemia-complications"
+
+        DiagnosisMiscarriage ->
+            "diagnosis-miscarriage"
+
+        DiagnosisMolarPregnancy ->
+            "diagnosis-molar-pregnancy"
+
+        DiagnosisPlacentaPrevia ->
+            "diagnosis-placenta-previa"
+
+        DiagnosisPlacentalAbruption ->
+            "diagnosis-placental-abruption"
+
+        DiagnosisUterineRupture ->
+            "diagnosis-uterine-rupture"
+
+        DiagnosisObstructedLabor ->
+            "diagnosis-obstructed-labor"
+
+        DiagnosisPostAbortionSepsis ->
+            "diagnosis-post-abortion-sepsis"
+
+        DiagnosisEctopicPregnancy ->
+            "diagnosis-ectopic-pregnancy"
+
+        DiagnosisPROM ->
+            "diagnosis-prom"
+
+        DiagnosisPPROM ->
+            "diagnosis-pprom"
+
+        DiagnosisHyperemesisGravidum ->
+            "diagnosis-hyperemesis"
+
+        DiagnosisSevereVomiting ->
+            "diagnosis-severe-vomiting"
+
+        DiagnosisMaternalComplications ->
+            "diagnosis-maternal-complications"
+
+        DiagnosisInfection ->
+            "diagnosis-infection"
+
+        DiagnosisImminentDelivery ->
+            "diagnosis-imminent-delivery"
+
+        DiagnosisLaborAndDelivery ->
+            "diagnosis-labor-delivery"
+
+        DiagnosisHeartburn ->
+            "diagnosis-heartburn"
+
+        DiagnosisDeepVeinThrombosis ->
+            "diagnosis-dvt"
+
+        DiagnosisPelvicPainIntense ->
+            "diagnosis-pelvic-pain"
+
+        DiagnosisUrinaryTractInfection ->
+            "diagnosis-uti"
+
+        DiagnosisPyelonephritis ->
+            "diagnosis-pyelonephritis"
+
+        DiagnosisCandidiasis ->
+            "diagnosis-candidiasis"
+
+        DiagnosisGonorrhea ->
+            "diagnosis-gonorrhea"
+
+        DiagnosisTrichomonasOrBacterialVaginosis ->
+            "diagnosis-trichomonas-bv"
+
+        DiagnosisTuberculosis ->
+            "diagnosis-tuberculosis"
+
+        DiagnosisDiabetes ->
+            "diagnosis-diabetes"
+
+        DiagnosisGestationalDiabetes ->
+            "diagnosis-gestational-diabetes"
+
+        DiagnosisRhesusNegative ->
+            "diagnosis-rhesus-negative"
+
+        DiagnosisDepressionNotLikely ->
+            "diagnosis-depression-not-likely"
+
+        DiagnosisDepressionPossible ->
+            "diagnosis-depression-possible"
+
+        DiagnosisDepressionHighlyPossible ->
+            "diagnosis-depression-highly-possible"
+
+        DiagnosisDepressionProbable ->
+            "diagnosis-depression-probable"
+
+        DiagnosisSuicideRisk ->
+            "diagnosis-suicide-risk"
+
+        DiagnosisOther ->
+            "diagnosis-other"
+
+        DiagnosisPostpartumAbdominalPain ->
+            "diagnosis-pp-abdominal-pain"
+
+        DiagnosisPostpartumUrinaryIncontinence ->
+            "diagnosis-pp-urinary-incontinence"
+
+        DiagnosisPostpartumHeadache ->
+            "diagnosis-pp-headache"
+
+        DiagnosisPostpartumFatigue ->
+            "diagnosis-pp-fatigue"
+
+        DiagnosisPostpartumFever ->
+            "diagnosis-pp-fever"
+
+        DiagnosisPostpartumPerinealPainOrDischarge ->
+            "diagnosis-pp-perineal"
+
+        DiagnosisPostpartumInfection ->
+            "diagnosis-pp-infection"
+
+        DiagnosisPostpartumExcessiveBleeding ->
+            "diagnosis-pp-excessive-bleeding"
+
+        DiagnosisPostpartumEarlyMastitisOrEngorgment ->
+            "diagnosis-pp-early-mastitis"
+
+        DiagnosisPostpartumMastitis ->
+            "diagnosis-pp-mastitis"
+
+        NoPrenatalDiagnosis ->
+            "no-diagnosis"
 
 
 generateAcuteIllnessReportData :
@@ -2092,7 +2375,7 @@ viewPrenatalContactsReport language limitDate scopeLabel records =
         csvContent =
             reportTableDataToCSV data
     in
-    div [ class "report prenatal-contacts" ] <|
+    div [ class "report prenatal-contacts" ]
         [ div [ class "table" ] <|
             captionsRow
                 :: List.map viewStandardRow data.rows
@@ -2153,16 +2436,17 @@ generatePrenatalContactsReportData language limitDate records =
                             -- 30 days after estimated delivery date.
                             isJust pregnancy.dateConcluded
                                 || (not <| Date.compare thirtyDaysAfterEDD limitDate == GT)
-
-                        nonPostpartumEncounters =
-                            List.filter
-                                (\encounter ->
-                                    -- Encounter was started not after EGA date.
-                                    not <| List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ]
-                                )
-                                pregnancy.encounters
                     in
                     if completed then
+                        let
+                            nonPostpartumEncounters =
+                                List.filter
+                                    (\encounter ->
+                                        -- Encounter was started not after EGA date.
+                                        not <| List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ]
+                                    )
+                                    pregnancy.encounters
+                        in
                         Just <| List.length nonPostpartumEncounters
 
                     else
@@ -2224,7 +2508,7 @@ generatePrenatalContactsReportData language limitDate records =
 
         pregnanciesWithDiagnosedAnemia =
             List.filter
-                (\( lmpDate, pregnancy ) ->
+                (\( _, pregnancy ) ->
                     let
                         anemiaDiagnoses =
                             [ DiagnosisMalariaWithAnemia
@@ -2307,7 +2591,7 @@ viewPrenatalDiagnosesReport : Language -> NominalDate -> String -> List PatientD
 viewPrenatalDiagnosesReport language limitDate scopeLabel records =
     let
         data =
-            generatePrenatalDiagnosesReportData language limitDate records
+            generatePrenatalDiagnosesReportData language records
 
         captionsRow =
             viewStandardCells data.captions
@@ -2322,21 +2606,34 @@ viewPrenatalDiagnosesReport language limitDate scopeLabel records =
 
         csvContent =
             reportTableDataToCSV data
+
+        -- Each diagnosis gets a CSS class for E2E test targeting.
+        prenatalDiagnosisClasses =
+            List.map prenatalDiagnosisCssClass allPrenatalDiagnoses
+                ++ [ "totals" ]
+
+        dataRows =
+            List.map2
+                (\cssClass row ->
+                    viewStandardCells row
+                        |> div [ class <| "row " ++ cssClass ]
+                )
+                prenatalDiagnosisClasses
+                data.rows
     in
-    div [ class "report prenatal-diagnoses" ] <|
+    div [ class "report prenatal-diagnoses" ]
         [ div [ class "table" ] <|
             captionsRow
-                :: List.map viewStandardRow data.rows
+                :: dataRows
         , viewDownloadCSVButton language csvFileName csvContent
         ]
 
 
 generatePrenatalDiagnosesReportData :
     Language
-    -> NominalDate
     -> List PatientData
     -> MetricsResultsTableData
-generatePrenatalDiagnosesReportData language limitDate records =
+generatePrenatalDiagnosesReportData language records =
     let
         allDiagnoses =
             List.map .prenatalData records
@@ -2397,7 +2694,7 @@ viewPeripartumReport : Language -> NominalDate -> String -> List PatientData -> 
 viewPeripartumReport language limitDate scopeLabel records =
     let
         data =
-            generatePeripartumReportData language limitDate records
+            generatePeripartumReportData language records
 
         captionsRow =
             viewStandardCells data.captions
@@ -2413,7 +2710,7 @@ viewPeripartumReport language limitDate scopeLabel records =
         csvContent =
             reportTableDataToCSV data
     in
-    div [ class "report peripartum" ] <|
+    div [ class "report peripartum" ]
         [ div [ class "table" ] <|
             captionsRow
                 :: List.map viewStandardRow data.rows
@@ -2423,10 +2720,9 @@ viewPeripartumReport language limitDate scopeLabel records =
 
 generatePeripartumReportData :
     Language
-    -> NominalDate
     -> List PatientData
     -> MetricsResultsTableData
-generatePeripartumReportData language limitDate records =
+generatePeripartumReportData language records =
     let
         pregnancies =
             List.map .prenatalData records

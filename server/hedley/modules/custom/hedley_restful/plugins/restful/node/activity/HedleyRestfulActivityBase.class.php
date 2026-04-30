@@ -71,6 +71,10 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
       'sub_property' => 'field_uuid',
     ];
 
+    $public_fields['deleted'] = [
+      'property' => 'field_deleted',
+    ];
+
     foreach (array_merge($this->fields, $this->multiFields) as $field_name) {
       $public_name = str_replace('field_', '', $field_name);
 
@@ -100,6 +104,7 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
       'field_date_measured',
       'field_nurse',
       'field_person',
+      'field_deleted',
     ];
 
     foreach ($field_names as $field_name) {

@@ -1,4 +1,4 @@
-module Backend.PrenatalEncounter.Utils exposing (..)
+module Backend.PrenatalEncounter.Utils exposing (eddToLmpDate, isNurseEncounter, lmpToEDDDate, pregnancyDurationInDays, pregnancyDurationInWeeks, progressReportInitiatorFromUrlFragment, progressReportInitiatorToUrlFragment, recordPreganancyInitiatorFromUrlFragment, recordPreganancyInitiatorToUrlFragment)
 
 import Backend.PrenatalEncounter.Model
     exposing
@@ -102,16 +102,27 @@ progressReportInitiatorFromUrlFragment s =
 {-| LMP date is considered to be the day on which pregnancy has started.
 -EDD date is estimated delivery date - the day on which we expect pregnancy
 -be concluded.
--Pregnancy lasts 280 days.
 -}
 lmpToEDDDate : NominalDate -> NominalDate
 lmpToEDDDate lmpDate =
-    Date.add Days 280 lmpDate
+    Date.add Days pregnancyDurationInDays lmpDate
 
 
 eddToLmpDate : NominalDate -> NominalDate
 eddToLmpDate eddDate =
-    Date.add Days -280 eddDate
+    Date.add Days (-1 * pregnancyDurationInDays) eddDate
+
+
+pregnancyDurationInWeeks : Int
+pregnancyDurationInWeeks =
+    pregnancyDurationInDays // 7
+
+
+{-| Pregnancy lasts 280 days.
+-}
+pregnancyDurationInDays : Int
+pregnancyDurationInDays =
+    280
 
 
 isNurseEncounter : PrenatalEncounterType -> Bool
