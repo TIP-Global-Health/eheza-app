@@ -1129,9 +1129,9 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             }
           }
         }
-        // Looking into case where entity is "individual_participant".
-        // It references only the person.
-        else if (entities[0].type == 'individual_participant') {
+        // Looking into case where entity is "individual_participant" or
+        // "family_participant". Both reference only the person.
+        else if (entities[0].type == 'individual_participant' || entities[0].type == 'family_participant') {
           // Resolving person.
           let uuid = entities[0].person;
           result = await dbSync
@@ -1146,11 +1146,14 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             entities.push(person);
           }
         }
-        // Looking into case where entity is a type of individual encounter.
+        // Looking into case where entity is a type of individual or family encounter.
         // It references the participant, and the participant references the person.
         else if (entities[0].type.endsWith('_encounter')) {
-          // Resolving participant.
-          let uuid = entities[0].individual_participant;
+          // Resolving participant. Family encounters reference family_participant;
+          // all others reference individual_participant.
+          let uuid = entities[0].type.startsWith('family_')
+              ? entities[0].family_participant
+              : entities[0].individual_participant;
           result = await dbSync
               .shards
               .where('uuid')
@@ -1179,11 +1182,11 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         }
         else {
           // Looking into case where entity is a type of measurement.
-          // it can belong to group encounter or individual encounter.
+          // it can belong to group encounter or individual/family encounter.
           const entityKeys = Object.keys(result[0]);
           // Identify measurement - only measurements got "nurse" field).
           if (entityKeys.includes("nurse")) {
-            // Looking into case of individual encounter measurement.
+            // Looking into case of individual/family encounter measurement.
             const key = entityKeys.find(k => k.endsWith("_encounter"));
             if (key) {
               // Resolve encounter ID.
@@ -1199,8 +1202,11 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
               let encounter = result[0];
               if (encounter) {
                 entities.push(encounter);
-                // Resolving participant.
-                let uuid = encounter.individual_participant;
+                // Resolving participant. Family encounters reference family_participant;
+                // all others reference individual_participant.
+                let uuid = encounter.type.startsWith('family_')
+                    ? encounter.family_participant
+                    : encounter.individual_participant;
                 result = await dbSync
                     .shards
                     .where('uuid')
