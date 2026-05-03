@@ -2,16 +2,14 @@ module Pages.Completion.Update exposing (update)
 
 import App.Model exposing (PagesReturn)
 import Backend.Completion.Utils exposing (takenByFromString)
-import Backend.Model exposing (ModelBackend)
 import Error.Utils exposing (noError)
-import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra
-import Pages.Completion.Model exposing (..)
-import Pages.Completion.Utils exposing (..)
+import Pages.Completion.Model exposing (Model, Msg(..))
+import Pages.Completion.Utils exposing (reportTypeFromString)
 
 
-update : NominalDate -> ModelBackend -> Msg -> Model -> PagesReturn Model Msg
-update currentDate modelBackend msg model =
+update : Msg -> Model -> PagesReturn Model Msg
+update msg model =
     case msg of
         SetReportType value ->
             PagesReturn

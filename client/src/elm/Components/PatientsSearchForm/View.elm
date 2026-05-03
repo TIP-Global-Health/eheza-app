@@ -1,11 +1,10 @@
 module Components.PatientsSearchForm.View exposing (view)
 
-import Components.PatientsSearchForm.Model exposing (..)
+import Components.PatientsSearchForm.Model exposing (Model, Msg(..), PatientsSearchFormMode(..))
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (..)
 import Pages.Utils exposing (viewBoolInput, viewLabel, viewTextInput)
-import Translate exposing (Language, translate)
+import Translate exposing (Language)
 
 
 view : Language -> Model -> Html Msg

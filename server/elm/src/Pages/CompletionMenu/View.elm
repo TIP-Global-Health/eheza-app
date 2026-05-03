@@ -7,7 +7,7 @@ import Backend.Model exposing (ModelBackend)
 import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Pages.CompletionMenu.Model exposing (..)
+import Pages.CompletionMenu.Model exposing (Model, Msg(..))
 import Pages.Components.Types exposing (PopulationSelectionOption(..))
 import Pages.Components.Utils exposing (populationSelectionOptionToString)
 import Pages.Utils
@@ -21,11 +21,11 @@ import Pages.Utils
 import Translate exposing (translate)
 
 
-view : Language -> String -> ModelBackend -> Model -> Html Msg
-view language themePath modelBackend model =
+view : Language -> ModelBackend -> Model -> Html Msg
+view language modelBackend model =
     case modelBackend.completionMenuData of
         Just (Ok data) ->
-            viewMenu language themePath data model
+            viewMenu language data model
 
         Just (Err err) ->
             text <| Debug.toString err
@@ -34,8 +34,8 @@ view language themePath modelBackend model =
             emptyNode
 
 
-viewMenu : Language -> String -> MenuData -> Model -> Html Msg
-viewMenu language themePath data model =
+viewMenu : Language -> MenuData -> Model -> Html Msg
+viewMenu language data model =
     let
         populationSelectionInput =
             let

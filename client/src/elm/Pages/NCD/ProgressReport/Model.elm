@@ -1,4 +1,4 @@
-module Pages.NCD.ProgressReport.Model exposing (..)
+module Pages.NCD.ProgressReport.Model exposing (Model, Msg(..), NCDRiskFactor(..), emptyModel)
 
 import Backend.Entities exposing (..)
 import Components.ReportToWhatsAppDialog.Model

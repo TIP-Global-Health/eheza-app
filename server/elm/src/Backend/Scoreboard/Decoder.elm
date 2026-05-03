@@ -3,8 +3,8 @@ module Backend.Scoreboard.Decoder exposing (decodeScoreboardData, decodeSyncResp
 import AssocList as Dict
 import Backend.Components.Decoder exposing (decodeReportParams, decodeSelectedEntity)
 import Backend.Decoder exposing (decodeSite)
-import Backend.Scoreboard.Model exposing (..)
-import Backend.Scoreboard.Utils exposing (..)
+import Backend.Scoreboard.Model exposing (ANCNewbornData, CriterionBySeverities, InfrastructureEnvironmentWashData, NCDAData, NutritionBehaviorData, NutritionCriterionsData, PatientData, RawVaccinationData, ScoreboardData, SyncResponse, TargetedInterventionsData, UniversalInterventionData, VaccinationProgressDict, VaccineType(..), emptyANCNewbornData, emptyInfrastructureEnvironmentWashData, emptyNCDAData, emptyNutritionBehaviorData, emptyNutritionCriterionsData, emptyTargetedInterventionsData, emptyUniversalInterventionData)
+import Backend.Scoreboard.Utils exposing (vaccineDoseFromOrder)
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeInt)
@@ -14,8 +14,8 @@ import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Maybe.Extra exposing (isNothing)
 
 
-decodeScoreboardData : NominalDate -> Decoder ScoreboardData
-decodeScoreboardData currentDate =
+decodeScoreboardData : Decoder ScoreboardData
+decodeScoreboardData =
     succeed ScoreboardData
         |> required "site" decodeSite
         |> required "entity_name" string

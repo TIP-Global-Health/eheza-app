@@ -29,9 +29,9 @@ class RoboFile extends Tasks {
       throw new Exception('You need to fill the "PANTHEON_NAME" const in the Robo file, so it will know what is the name of your site.');
     }
 
-    $site = getenv('EHEZA_SITE');
+    $site = getenv('PANTHEON_NAME');
     if (!$site) {
-      throw new Exception('Please specify EHEZA_SITE in your DDEV local config, so it will be possible to resolve pantheon directory.');
+      throw new Exception('Please specify PANTHEON_NAME in your DDEV local config, so it will be possible to resolve pantheon directory.');
     }
 
     $pantheonDirectory = '.pantheon-' . $site;

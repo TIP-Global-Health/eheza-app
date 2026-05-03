@@ -1,4 +1,4 @@
-module Pages.Prenatal.Activity.Types exposing (..)
+module Pages.Prenatal.Activity.Types exposing (ExaminationTask(..), GWGClassification(..), HistoryTask(..), ImmunisationTask(..), MedicationTask(..), NextStepsTask(..), ObstetricHistoryStep(..), PrePregnancyClassification(..), SymptomReviewStep(..), TreatmentReviewTask(..), WarningPopupType(..))
 
 
 type ExaminationTask

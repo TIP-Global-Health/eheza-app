@@ -1,4 +1,4 @@
-module Backend.Components.Model exposing (..)
+module Backend.Components.Model exposing (HealthCenterData, HealthCenterId, MenuScope(..), PersonId, ReportParams, SelectedEntity(..))
 
 {-| The return value of Backend update functions
 -}

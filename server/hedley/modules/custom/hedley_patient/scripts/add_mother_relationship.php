@@ -16,11 +16,11 @@ $batch = drush_get_option('batch', 50);
 // Get allowed memory limit.
 $memory_limit = drush_get_option('memory_limit', 800);
 $i = 0;
-$base_query = new EntityFieldQuery();
+$base_query = hedley_general_create_entity_field_query_excluding_deleted();
 $base_query
   ->entityCondition('entity_type', 'node')
   ->propertyCondition('type', 'mother')
-  ->propertyOrderBy('nid', 'ASC')
+  ->propertyOrderBy('nid')
   ->addTag('exclude_existing_relationships')
   ->addTag('DANGEROUS_ACCESS_CHECK_OPT_OUT');
 if ($nid) {

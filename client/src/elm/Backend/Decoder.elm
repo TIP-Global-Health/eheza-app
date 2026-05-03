@@ -6,12 +6,14 @@ import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Counseling.Decoder exposing (decodeCounselingSchedule, decodeCounselingTopic)
 import Backend.Dashboard.Decoder exposing (decodeDashboardStatsRaw)
 import Backend.EducationSession.Decoder exposing (decodeEducationSession)
+import Backend.FamilyEncounterParticipant.Decoder exposing (decodeFamilyEncounterParticipant)
+import Backend.FamilyNutritionEncounter.Decoder exposing (decodeFamilyNutritionEncounter)
 import Backend.HIVEncounter.Decoder exposing (decodeHIVEncounter)
 import Backend.HealthCenter.Decoder exposing (decodeCatchmentArea, decodeHealthCenter)
 import Backend.HomeVisitEncounter.Decoder exposing (decodeHomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Decoder exposing (decodeIndividualEncounterParticipant)
-import Backend.Measurement.Decoder exposing (..)
-import Backend.Model exposing (..)
+import Backend.Measurement.Decoder exposing (decodeAcuteFindings, decodeAcuteIllnessContactsTracing, decodeAcuteIllnessCoreExam, decodeAcuteIllnessDangerSigns, decodeAcuteIllnessFollowUp, decodeAcuteIllnessMuac, decodeAcuteIllnessNutrition, decodeAcuteIllnessTraceContact, decodeAcuteIllnessVitals, decodeAhezaChild, decodeAhezaMother, decodeAppointmentConfirmation, decodeAttendance, decodeBirthPlan, decodeBreastExam, decodeCall114, decodeChildScoreboardBCGImmunisation, decodeChildScoreboardDTPImmunisation, decodeChildScoreboardDTPStandaloneImmunisation, decodeChildScoreboardIPVImmunisation, decodeChildScoreboardMRImmunisation, decodeChildScoreboardNCDA, decodeChildScoreboardOPVImmunisation, decodeChildScoreboardPCV13Immunisation, decodeChildScoreboardRotarixImmunisation, decodeContributingFactors, decodeCorePhysicalExam, decodeCounselingSession, decodeCovidTesting, decodeDangerSigns, decodeExposure, decodeFamilyNutritionMuacChild, decodeFamilyNutritionMuacMother, decodeFamilyNutritionPhoto, decodeFamilyPlanning, decodeFbf, decodeFollowUp, decodeGroupHealthEducation, decodeGroupNCDA, decodeGroupSendToHC, decodeHCContact, decodeHIVDiagnostics, decodeHIVFollowUp, decodeHIVHealthEducation, decodeHIVMedication, decodeHIVReferral, decodeHIVSymptomReview, decodeHIVTreatmentReview, decodeHealthEducation, decodeHeight, decodeIsolation, decodeLactation, decodeLastMenstrualPeriod, decodeMalariaPrevention, decodeMalariaTesting, decodeMedicalHistory, decodeMedication, decodeMedicationDistribution, decodeMuac, decodeNCDCoMorbidities, decodeNCDCoreExam, decodeNCDCreatinineTest, decodeNCDDangerSigns, decodeNCDFamilyHistory, decodeNCDFamilyPlanning, decodeNCDHIVTest, decodeNCDHbA1cTest, decodeNCDHealthEducation, decodeNCDLabsResults, decodeNCDLipidPanelTest, decodeNCDLiverFunctionTest, decodeNCDMedicationDistribution, decodeNCDMedicationHistory, decodeNCDOutsideCare, decodeNCDPregnancyTest, decodeNCDRandomBloodSugarTest, decodeNCDReferral, decodeNCDSocialHistory, decodeNCDSymptomReview, decodeNCDUrineDipstickTest, decodeNCDVitals, decodeNutrition, decodeNutritionCaring, decodeNutritionContributingFactors, decodeNutritionFeeding, decodeNutritionFollowUp, decodeNutritionFoodSecurity, decodeNutritionHealthEducation, decodeNutritionHeight, decodeNutritionHygiene, decodeNutritionMuac, decodeNutritionNCDA, decodeNutritionNutrition, decodeNutritionPhoto, decodeNutritionSendToHC, decodeNutritionWeight, decodeObstetricHistory, decodeObstetricHistoryStep2, decodeObstetricalExam, decodeParticipantConsent, decodePhoto, decodePregnancyTest, decodePrenatalAspirin, decodePrenatalBloodGpRsTest, decodePrenatalBreastfeeding, decodePrenatalCalcium, decodePrenatalFamilyPlanning, decodePrenatalFefol, decodePrenatalFolate, decodePrenatalFollowUp, decodePrenatalGUExam, decodePrenatalHIVPCRTest, decodePrenatalHIVTest, decodePrenatalHealthEducation, decodePrenatalHemoglobinTest, decodePrenatalHepatitisBTest, decodePrenatalIron, decodePrenatalLabsResults, decodePrenatalMMS, decodePrenatalMalariaTest, decodePrenatalMebendazole, decodePrenatalMedicationDistribution, decodePrenatalMentalHealth, decodePrenatalNutrition, decodePrenatalOutsideCare, decodePrenatalPartnerHIVTest, decodePrenatalPhoto, decodePrenatalRandomBloodSugarTest, decodePrenatalSendToHc, decodePrenatalSpecialityCare, decodePrenatalSymptomReview, decodePrenatalSyphilisTest, decodePrenatalTetanusImmunisation, decodePrenatalUltrasound, decodePrenatalUrineDipstickTest, decodeSendToHC, decodeSocialHistory, decodeSymptomsGI, decodeSymptomsGeneral, decodeSymptomsRespiratory, decodeTravelHistory, decodeTreatmentOngoing, decodeTreatmentReview, decodeTuberculosisDOT, decodeTuberculosisDiagnostics, decodeTuberculosisFollowUp, decodeTuberculosisHealthEducation, decodeTuberculosisMedication, decodeTuberculosisReferral, decodeTuberculosisSymptomReview, decodeTuberculosisTreatmentReview, decodeVitals, decodeWeight, decodeWellChildAlbendazole, decodeWellChildBCGImmunisation, decodeWellChildCaring, decodeWellChildContributingFactors, decodeWellChildDTPImmunisation, decodeWellChildDTPStandaloneImmunisation, decodeWellChildECD, decodeWellChildFeeding, decodeWellChildFollowUp, decodeWellChildFoodSecurity, decodeWellChildHPVImmunisation, decodeWellChildHeadCircumference, decodeWellChildHealthEducation, decodeWellChildHeight, decodeWellChildHygiene, decodeWellChildIPVImmunisation, decodeWellChildMRImmunisation, decodeWellChildMebendezole, decodeWellChildMuac, decodeWellChildNCDA, decodeWellChildNextVisit, decodeWellChildNutrition, decodeWellChildOPVImmunisation, decodeWellChildPCV13Immunisation, decodeWellChildPhoto, decodeWellChildPregnancySummary, decodeWellChildRotarixImmunisation, decodeWellChildSendToHC, decodeWellChildSymptomsReview, decodeWellChildVitals, decodeWellChildVitaminA, decodeWellChildWeight)
+import Backend.Model exposing (Revision(..))
 import Backend.NCDEncounter.Decoder exposing (decodeNCDEncounter)
 import Backend.Nurse.Decoder exposing (decodeNurse)
 import Backend.NutritionEncounter.Decoder exposing (decodeNutritionEncounter)
@@ -20,14 +22,13 @@ import Backend.Person.Decoder exposing (decodePerson)
 import Backend.PmtctParticipant.Decoder exposing (decodePmtctParticipant)
 import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalEncounter)
 import Backend.Relationship.Decoder exposing (decodeRelationship)
-import Backend.ResilienceMessage.Decoder exposing (decodeResilienceMessage)
 import Backend.ResilienceSurvey.Decoder exposing (decodeResilienceSurvey)
 import Backend.Session.Decoder exposing (decodeSession)
 import Backend.StockUpdate.Decoder exposing (decodeStockUpdate)
 import Backend.TuberculosisEncounter.Decoder exposing (decodeTuberculosisEncounter)
 import Backend.Village.Decoder exposing (decodeVillage)
 import Backend.WellChildEncounter.Decoder exposing (decodeWellChildEncounter)
-import Json.Decode exposing (..)
+import Json.Decode exposing (Decoder, andThen, fail, field, map2, string)
 import Restful.Endpoint exposing (EntityUuid, decodeEntityUuid)
 
 
@@ -68,6 +69,12 @@ decodeRevision =
 
                     "acute_illness_vitals" ->
                         decodeWithUuid AcuteIllnessVitalsRevision decodeAcuteIllnessVitals
+
+                    "aheza_child" ->
+                        decodeWithUuid AhezaChildRevision decodeAhezaChild
+
+                    "aheza_mother" ->
+                        decodeWithUuid AhezaMotherRevision decodeAhezaMother
 
                     "appointment_confirmation" ->
                         decodeWithUuid AppointmentConfirmationRevision decodeAppointmentConfirmation
@@ -149,6 +156,21 @@ decodeRevision =
 
                     "exposure" ->
                         decodeWithUuid ExposureRevision decodeExposure
+
+                    "family_participant" ->
+                        decodeWithUuid FamilyEncounterParticipantRevision decodeFamilyEncounterParticipant
+
+                    "family_nutrition_encounter" ->
+                        decodeWithUuid FamilyNutritionEncounterRevision decodeFamilyNutritionEncounter
+
+                    "family_nutrition_muac_child" ->
+                        decodeWithUuid FamilyNutritionMuacChildRevision decodeFamilyNutritionMuacChild
+
+                    "family_nutrition_muac_mother" ->
+                        decodeWithUuid FamilyNutritionMuacMotherRevision decodeFamilyNutritionMuacMother
+
+                    "family_nutrition_photo" ->
+                        decodeWithUuid FamilyNutritionPhotoRevision decodeFamilyNutritionPhoto
 
                     "family_planning" ->
                         decodeWithUuid FamilyPlanningRevision decodeFamilyPlanning
@@ -476,6 +498,9 @@ decodeRevision =
 
                     "prenatal_tetanus_immunisation" ->
                         decodeWithUuid PrenatalTetanusImmunisationRevision decodePrenatalTetanusImmunisation
+
+                    "prenatal_ultrasound" ->
+                        decodeWithUuid PrenatalUltrasoundRevision decodePrenatalUltrasound
 
                     "prenatal_urine_dipstick_test" ->
                         decodeWithUuid PrenatalUrineDipstickTestRevision decodePrenatalUrineDipstickTest

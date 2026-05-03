@@ -3,7 +3,7 @@ module Pages.NextSteps.Model exposing (Model, Msg(..), emptyModel)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import EverySet exposing (EverySet)
-import Measurement.Model exposing (..)
+import Measurement.Model exposing (ContributingFactorsForm, HealthEducationForm, NextStepsTask, NutritionFollowUpForm, SendToHCForm, emptyContributingFactorsForm, emptyHealthEducationForm, emptyNutritionFollowUpForm, emptySendToHCForm)
 import Pages.Page exposing (SessionPage)
 
 

@@ -11,7 +11,7 @@ import Backend.Measurement.Model
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.StockUpdate.Model exposing (StockManagementData)
-import Backend.StockUpdate.Utils exposing (..)
+import Backend.StockUpdate.Utils exposing (dateToMonthYear, monthYearDiff, stockSupplierToString)
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import Gizra.Html exposing (emptyNode, showIf)
@@ -23,12 +23,11 @@ import Html.Events exposing (on, onClick, onInput)
 import Json.Decode
 import List.Extra
 import List.Zipper
-import Maybe exposing (Maybe)
 import Maybe.Extra
 import Pages.Dashboard.View exposing (chwCard)
 import Pages.Page exposing (Page(..))
-import Pages.StockManagement.Model exposing (..)
-import Pages.StockManagement.Utils exposing (..)
+import Pages.StockManagement.Model exposing (CorrectEntryForm, CorrectionEntryType(..), DisplayMode(..), Model, Msg(..), ReceiveStockForm, StockManagementContext(..), StockManagementMenu(..), maxMonthGap)
+import Pages.StockManagement.Utils exposing (correctionEntryTypeToString)
 import Pages.Utils
     exposing
         ( customPopup
@@ -50,7 +49,7 @@ import Pages.Utils
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Round
-import SyncManager.Model exposing (SyncInfoAuthorityZipper)
+import SyncManager.Model exposing (Site(..), SyncInfoAuthorityZipper)
 import Time
 import Translate exposing (Language, translate)
 import Utils.Html exposing (viewModal)
@@ -61,28 +60,44 @@ import Utils.WebData exposing (viewWebData)
 view :
     Language
     -> NominalDate
-    -> Maybe HealthCenterId
+    -> Site
+    -> StockManagementContext
     -> NurseId
     -> Nurse
     -> SyncInfoAuthorityZipper
     -> ModelIndexedDb
     -> Model
     -> Html Msg
-view language currentDate maybeHealthCenterId nurseId nurse syncInfoAuthorities db model =
-    Maybe.andThen
-        (\healthCenterId ->
-            Dict.get healthCenterId db.stockManagementData
-        )
-        maybeHealthCenterId
-        |> Maybe.withDefault NotAsked
+view language currentDate site context nurseId nurse syncInfoAuthorities db model =
+    let
+        healthCenterId =
+            case context of
+                ContextHealthCenter id ->
+                    id
+
+                ContextVillage id _ ->
+                    id
+
+        stockData =
+            case context of
+                ContextHealthCenter id ->
+                    Dict.get id db.stockManagementData
+                        |> Maybe.withDefault NotAsked
+
+                ContextVillage id _ ->
+                    Dict.get id db.villageStockManagementData
+                        |> Maybe.withDefault NotAsked
+    in
+    stockData
         |> viewWebData language
-            (viewHeaderAndContent language currentDate maybeHealthCenterId nurseId nurse syncInfoAuthorities model)
+            (viewHeaderAndContent language currentDate site (Just healthCenterId) nurseId nurse syncInfoAuthorities model)
             identity
 
 
 viewHeaderAndContent :
     Language
     -> NominalDate
+    -> Site
     -> Maybe HealthCenterId
     -> NurseId
     -> Nurse
@@ -90,7 +105,7 @@ viewHeaderAndContent :
     -> Model
     -> StockManagementData
     -> Html Msg
-viewHeaderAndContent language currentDate maybeHealthCenterId nurseId nurse syncInfoAuthorities model data =
+viewHeaderAndContent language currentDate site maybeHealthCenterId nurseId nurse syncInfoAuthorities model data =
     let
         header =
             let
@@ -119,16 +134,16 @@ viewHeaderAndContent language currentDate maybeHealthCenterId nurseId nurse sync
                 ]
 
         content =
-            let
-                lastUpdated =
-                    viewLastUpdated language maybeHealthCenterId syncInfoAuthorities
-            in
             case model.displayMode of
                 ModeMain ->
-                    viewModeMain language currentDate nurseId nurse lastUpdated data model
+                    let
+                        lastUpdated =
+                            viewLastUpdated language maybeHealthCenterId syncInfoAuthorities
+                    in
+                    viewModeMain language currentDate lastUpdated data model
 
                 ModeMonthDetails monthGap ->
-                    viewModeMonthDetails language currentDate monthGap lastUpdated data
+                    viewModeMonthDetails language currentDate monthGap data
 
                 ModeReceiveStock ->
                     let
@@ -136,7 +151,7 @@ viewHeaderAndContent language currentDate maybeHealthCenterId nurseId nurse sync
                             Dict.get (dateToMonthYear currentDate) data
                                 |> Maybe.map .consumptionAverage
                     in
-                    viewModeReceiveStock language currentDate nurseId nurse consumptionAverage model.receiveStockForm
+                    viewModeReceiveStock language currentDate site nurseId nurse consumptionAverage model.receiveStockForm
 
                 ModeCorrectEntry ->
                     viewModeCorrectEntry language currentDate nurseId nurse model.correctEntryForm
@@ -184,13 +199,11 @@ viewLastUpdated language maybeHealthCenterId syncInfoAuthorities =
 viewModeMain :
     Language
     -> NominalDate
-    -> NurseId
-    -> Nurse
     -> Html Msg
     -> StockManagementData
     -> Model
     -> List (Html Msg)
-viewModeMain language currentDate nurseId nurse lastUpdated data model =
+viewModeMain language currentDate lastUpdated data model =
     let
         viewButton label action =
             button
@@ -298,10 +311,9 @@ viewModeMonthDetails :
     Language
     -> NominalDate
     -> Int
-    -> Html Msg
     -> StockManagementData
     -> List (Html Msg)
-viewModeMonthDetails language currentDate monthGap lastUpdated data =
+viewModeMonthDetails language currentDate monthGap data =
     let
         dateLastDayOfSelectedMonth =
             resolveSelectedDateForMonthSelector currentDate monthGap
@@ -313,11 +325,10 @@ viewModeMonthDetails language currentDate monthGap lastUpdated data =
             div [ class "row header" ]
                 [ div [ class "cell date" ] [ text <| translate language Translate.Date ]
                 , div [ class "cell from-to" ]
-                    [ text <|
-                        (translate language Translate.ReceivedFrom ++ " / " ++ translate language Translate.IssuedTo)
+                    [ text (translate language Translate.ReceivedFrom ++ " / " ++ translate language Translate.IssuedTo)
                     ]
                 , div [ class "cell batch" ] [ text <| translate language Translate.BatchNumberAbbrev ]
-                , div [ class "cell expirity" ] [ text <| translate language Translate.ExpirityDate ]
+                , div [ class "cell expirity" ] [ text <| translate language Translate.ExpiryDate ]
                 , div [ class "cell received" ] [ text <| translate language Translate.Received ]
                 , div [ class "cell issued" ] [ text <| translate language Translate.Issued ]
                 , div [ class "cell balance" ] [ text <| translate language Translate.Balance ]
@@ -357,22 +368,22 @@ viewModeMonthDetails language currentDate monthGap lastUpdated data =
                                     )
                                     dataForMonth.stockUpdates
 
-                            fbfs =
+                            distributions =
                                 List.map
-                                    (\fbf ->
-                                        { date = fbf.dateMeasured
+                                    (\entry ->
+                                        { date = entry.dateMeasured
                                         , fromTo = translate language Translate.Patients
                                         , batch = ""
                                         , expirity = Nothing
                                         , received = Nothing
-                                        , issued = Just fbf.value.distributedAmount
+                                        , issued = Just entry.distributedAmount
 
-                                        -- Fbf distribution does not have signature.
+                                        -- Distribution does not have signature.
                                         , signature = Nothing
                                         , balance = Nothing
                                         }
                                     )
-                                    dataForMonth.fbfs
+                                    dataForMonth.distributions
                                     |> List.foldl
                                         (\new accum ->
                                             Dict.get new.date accum
@@ -402,7 +413,7 @@ viewModeMonthDetails language currentDate monthGap lastUpdated data =
 
                             all =
                                 stockUpdates
-                                    ++ fbfs
+                                    ++ distributions
                                     |> List.sortWith (sortByDateDesc .date)
 
                             allWithBalance =
@@ -495,14 +506,31 @@ viewModeMonthDetails language currentDate monthGap lastUpdated data =
     ]
 
 
-viewModeReceiveStock : Language -> NominalDate -> NurseId -> Nurse -> Maybe Float -> ReceiveStockForm -> List (Html Msg)
-viewModeReceiveStock language currentDate nurseId nurse consumptionAverage form =
+viewModeReceiveStock : Language -> NominalDate -> Site -> NurseId -> Nurse -> Maybe Float -> ReceiveStockForm -> List (Html Msg)
+viewModeReceiveStock language currentDate site nurseId nurse consumptionAverage form =
     let
         ( inputs, tasks ) =
             let
                 ( derivedInputs, derivedTasks ) =
                     if form.confirmIdentity == Just True then
                         let
+                            supplierOptions =
+                                if site == SiteRwanda then
+                                    [ SupplierAheza
+                                    , SupplierMOH
+                                    , SupplierRBC
+                                    , SupplierUNICEF
+                                    , SupplierRMSCentral
+                                    , SupplierRMSDistrict
+                                    , SupplierBUFMAR
+                                    ]
+
+                                else
+                                    [ SupplierAheza
+                                    , SupplierMOH
+                                    , SupplierUNICEF
+                                    ]
+
                             dateRecordedSelectorConfig =
                                 let
                                     fromDate =
@@ -560,13 +588,7 @@ viewModeReceiveStock language currentDate nurseId nurse consumptionAverage form 
                           , viewQuestionLabel language Translate.StockManagementSupplierQuestion
                           , viewSelectListInput language
                                 form.supplier
-                                [ SupplierMOH
-                                , SupplierRBC
-                                , SupplierUNICEF
-                                , SupplierRMSCentral
-                                , SupplierRMSDistrict
-                                , SupplierBUFMAR
-                                ]
+                                supplierOptions
                                 stockSupplierToString
                                 SetStockSupplier
                                 Translate.StockSupplier
@@ -585,7 +607,7 @@ viewModeReceiveStock language currentDate nurseId nurse consumptionAverage form 
                                 [ text dateExpiresForView ]
                           , viewModal <| viewCalendarPopup language form.dateExpiresSelectorPopupState form.dateExpires
                           , viewQuestionLabel language Translate.StockManagementQuantityAddedQuestion
-                          , viewNumberInput language
+                          , viewNumberInput
                                 form.quantity
                                 SetQuantityAdded
                                 "quantity"
@@ -733,7 +755,7 @@ viewModeCorrectEntry language currentDate nurseId nurse form =
                           ]
                             ++ correctionReasonInputs
                             ++ [ viewLabel language Translate.StockManagementQuantityCorrectionLabel
-                               , viewNumberInput language
+                               , viewNumberInput
                                     form.quantity
                                     SetQuantityDeducted
                                     "quantity"

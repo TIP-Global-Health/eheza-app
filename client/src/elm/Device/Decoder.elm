@@ -1,9 +1,9 @@
 module Device.Decoder exposing (decode)
 
-import Device.Model exposing (..)
+import Device.Model exposing (Device)
 import Gizra.Json exposing (decodeInt)
-import Json.Decode exposing (..)
-import Json.Decode.Pipeline exposing (..)
+import Json.Decode exposing (Decoder, nullable, string, succeed)
+import Json.Decode.Pipeline exposing (optional, required)
 
 
 decode : String -> Decoder Device

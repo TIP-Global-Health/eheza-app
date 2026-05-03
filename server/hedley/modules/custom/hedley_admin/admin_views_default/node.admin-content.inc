@@ -150,6 +150,13 @@ $handler->display->display_options['fields']['views_bulk_operations']['vbo_opera
     'label' => 'Delete',
     'postpone_processing' => 0,
   ),
+  'action::hedley_admin_mark_as_deleted_action' => array(
+    'selected' => 1,
+    'skip_confirmation' => 1,
+    'override_label' => 1,
+    'label' => 'Mark as deleted',
+    'postpone_processing' => 0,
+  ),
   'action::views_bulk_operations_modify_action' => array(
     'selected' => 1,
     'skip_confirmation' => 1,

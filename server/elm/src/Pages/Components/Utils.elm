@@ -1,4 +1,4 @@
-module Pages.Components.Utils exposing (..)
+module Pages.Components.Utils exposing (populationSelectionOptionFromString, populationSelectionOptionToString, syncStatusAndProgress)
 
 import Pages.Components.Types exposing (PopulationSelectionOption(..))
 

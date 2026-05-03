@@ -25,12 +25,12 @@ $batch = drush_get_option('batch', 50);
 $memory_limit = drush_get_option('memory_limit', 800);
 
 // We're just testing that field_child has a value ...
-$base_query = new EntityFieldQuery();
+$base_query = hedley_general_create_entity_field_query_excluding_deleted();
 $base_query
   ->entityCondition('entity_type', 'node')
   ->propertyCondition('status', NODE_PUBLISHED)
   ->propertyCondition('type', 'family_planning')
-  ->propertyOrderBy('nid', 'ASC');
+  ->propertyOrderBy('nid');
 
 if ($nid) {
   $base_query->propertyCondition('nid', $nid, '>');

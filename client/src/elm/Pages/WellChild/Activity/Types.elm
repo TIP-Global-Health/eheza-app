@@ -1,4 +1,4 @@
-module Pages.WellChild.Activity.Types exposing (..)
+module Pages.WellChild.Activity.Types exposing (DangerSignsTask(..), HomeVisitTask(..), MedicationTask(..), NextStepsTask(..), NutritionAssessmentTask(..))
 
 
 type DangerSignsTask

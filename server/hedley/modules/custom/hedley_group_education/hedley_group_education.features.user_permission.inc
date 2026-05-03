@@ -15,7 +15,7 @@ function hedley_group_education_user_default_permissions() {
   $permissions['create education_session content'] = array(
     'name' => 'create education_session content',
     'roles' => array(
-      'E-ledger viewer' => 'E-ledger viewer',
+      'administrator' => 'administrator',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -25,7 +25,7 @@ function hedley_group_education_user_default_permissions() {
   $permissions['delete any education_session content'] = array(
     'name' => 'delete any education_session content',
     'roles' => array(
-      'sync' => 'sync',
+      'administrator' => 'administrator',
     ),
     'module' => 'node',
   );
@@ -34,7 +34,7 @@ function hedley_group_education_user_default_permissions() {
   $permissions['delete own education_session content'] = array(
     'name' => 'delete own education_session content',
     'roles' => array(
-      'sync' => 'sync',
+      'administrator' => 'administrator',
     ),
     'module' => 'node',
   );
@@ -43,7 +43,7 @@ function hedley_group_education_user_default_permissions() {
   $permissions['edit any education_session content'] = array(
     'name' => 'edit any education_session content',
     'roles' => array(
-      'E-ledger viewer' => 'E-ledger viewer',
+      'administrator' => 'administrator',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -53,7 +53,7 @@ function hedley_group_education_user_default_permissions() {
   $permissions['edit own education_session content'] = array(
     'name' => 'edit own education_session content',
     'roles' => array(
-      'E-ledger viewer' => 'E-ledger viewer',
+      'administrator' => 'administrator',
       'sync' => 'sync',
     ),
     'module' => 'node',

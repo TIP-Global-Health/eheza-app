@@ -1,4 +1,4 @@
-module SyncManager.Model exposing (..)
+module SyncManager.Model exposing (BackendAuthorityEntity(..), BackendEntity, BackendEntityIdentifier, BackendGeneralEntity(..), BackendWhatsAppEntity, DownloadPhotosAllRec, DownloadPhotosBatchRec, DownloadPhotosMode(..), DownloadPhotosStatus(..), DownloadSyncResponse, Flags, IncidentContnentIdentifier, IndexDbDeferredPhotoRemoteData, IndexDbQueryDeferredPhotoResultRecord, IndexDbQueryType(..), IndexDbQueryTypeResult(..), IndexDbQueryUploadAuthorityResultRecord, IndexDbQueryUploadFileResultRecord, IndexDbQueryUploadGeneralResultRecord, IndexDbQueryUploadPhotoResultRecord, IndexDbQueryUploadWhatsAppResultRecord, IndexDbSaveResult, IndexDbSaveResultTable(..), IndexDbSaveStatus(..), IndexDbUploadRemoteData, Model, Msg(..), Site(..), SiteFeature(..), SyncCycle(..), SyncIncidentType(..), SyncInfoAuthority, SyncInfoAuthorityForPort, SyncInfoAuthorityZipper, SyncInfoGeneral, SyncInfoGeneralForPort, SyncInfoStatus(..), SyncSpeed, SyncStatus(..), UploadFileError(..), UploadMethod(..), UploadRec, downloadRequestTimeout, emptyModel, emptySyncInfoAuthority, emptyUploadRec)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
@@ -8,6 +8,8 @@ import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic)
 import Backend.Dashboard.Model exposing (DashboardStatsRaw)
 import Backend.EducationSession.Model exposing (EducationSession)
 import Backend.Entities exposing (HealthCenterId)
+import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterParticipant)
+import Backend.FamilyNutritionEncounter.Model exposing (FamilyNutritionEncounter)
 import Backend.HIVEncounter.Model exposing (HIVEncounter)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
 import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
@@ -21,7 +23,6 @@ import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.Relationship.Model exposing (Relationship)
-import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
 import Backend.ResilienceSurvey.Model exposing (ResilienceSurvey)
 import Backend.Session.Model exposing (Session)
 import Backend.TuberculosisEncounter.Model exposing (TuberculosisEncounter)
@@ -70,6 +71,8 @@ type BackendAuthorityEntity
     | BackendAuthorityAcuteIllnessNutrition (BackendEntity AcuteIllnessNutrition)
     | BackendAuthorityAcuteIllnessTraceContact (BackendEntity AcuteIllnessTraceContact)
     | BackendAuthorityAcuteIllnessVitals (BackendEntity AcuteIllnessVitals)
+    | BackendAuthorityAhezaChild (BackendEntity AhezaChild)
+    | BackendAuthorityAhezaMother (BackendEntity AhezaMother)
     | BackendAuthorityAppointmentConfirmation (BackendEntity PrenatalAppointmentConfirmation)
     | BackendAuthorityAttendance (BackendEntity Attendance)
     | BackendAuthorityBreastExam (BackendEntity BreastExam)
@@ -95,6 +98,11 @@ type BackendAuthorityEntity
     | BackendAuthorityDashboardStats (BackendEntity DashboardStatsRaw)
     | BackendAuthorityEducationSession (BackendEntity EducationSession)
     | BackendAuthorityExposure (BackendEntity Exposure)
+    | BackendAuthorityFamilyNutritionEncounter (BackendEntity FamilyNutritionEncounter)
+    | BackendAuthorityFamilyNutritionMuacChild (BackendEntity FamilyNutritionMuacChild)
+    | BackendAuthorityFamilyNutritionMuacMother (BackendEntity FamilyNutritionMuacMother)
+    | BackendAuthorityFamilyNutritionPhoto (BackendEntity FamilyNutritionPhoto)
+    | BackendAuthorityFamilyParticipant (BackendEntity FamilyEncounterParticipant)
     | BackendAuthorityFamilyPlanning (BackendEntity FamilyPlanning)
     | BackendAuthorityFollowUp (BackendEntity FollowUp)
     | BackendAuthorityGroupHealthEducation (BackendEntity GroupHealthEducation)
@@ -201,6 +209,7 @@ type BackendAuthorityEntity
     | BackendAuthorityPrenatalSymptomReview (BackendEntity PrenatalSymptomReview)
     | BackendAuthorityPrenatalSyphilisTest (BackendEntity PrenatalSyphilisTest)
     | BackendAuthorityPrenatalTetanusImmunisation (BackendEntity PrenatalTetanusImmunisation)
+    | BackendAuthorityPrenatalUltrasound (BackendEntity PrenatalUltrasound)
     | BackendAuthorityPrenatalUrineDipstickTest (BackendEntity PrenatalUrineDipstickTest)
     | BackendAuthorityRelationship (BackendEntity Relationship)
     | BackendAuthorityMalariaPrevention (BackendEntity MalariaPrevention)
@@ -487,15 +496,6 @@ type alias DownloadPhotosBatchRec =
     }
 
 
-emptyDownloadPhotosBatchRec : Int -> DownloadPhotosBatchRec
-emptyDownloadPhotosBatchRec batchSize =
-    { batchSize = batchSize
-    , batchCounter = batchSize
-    , indexDbRemoteData = RemoteData.NotAsked
-    , backendRemoteData = RemoteData.NotAsked
-    }
-
-
 type alias DownloadPhotosAllRec =
     { indexDbRemoteData : IndexDbDeferredPhotoRemoteData
     , backendRemoteData : WebData ()
@@ -567,7 +567,7 @@ type IndexDbQueryType
     | IndexDbQueryUploadWhatsApp
       -- Query one authority at a time, to make sure
       -- content is being uploaded in correct order,
-      -- and we present correct 'remianing for upload'
+      -- and we present correct 'remaining for upload'
       -- on sync screen.
     | IndexDbQueryUploadAuthority String
       -- Get a single deferred photo.
@@ -721,16 +721,20 @@ type alias IncidentContnentIdentifier =
 type Site
     = SiteRwanda
     | SiteBurundi
+    | SiteSomalia
     | SiteUnknown
 
 
 type SiteFeature
-    = FeatureGPSCoordinates
+    = FeatureFamilyNutrition
+    | FeatureGPSCoordinates
     | FeatureGroupEducation
+    | FeatureHealthyStart -- defines few slightly different behaviors at Prenatal flows.
     | FeatureHIVManagement
     | FeatureNCDA
     | FeatureReportToWhatsApp
-    | FeatureStockManagement
+    | FeatureStockManagementHC
+    | FeatureStockManagementVillage
     | FeatureTuberculosisManagement
 
 

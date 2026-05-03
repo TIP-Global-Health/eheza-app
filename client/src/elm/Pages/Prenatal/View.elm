@@ -1,4 +1,4 @@
-module Pages.Prenatal.View exposing (..)
+module Pages.Prenatal.View exposing (customWarningPopup, viewMalariaPreventionContent, viewMedicationDistributionForm, viewPauseEncounterButton)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -6,9 +6,8 @@ import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (..)
-import Pages.Prenatal.Model exposing (..)
-import Pages.Prenatal.Utils exposing (..)
+import Pages.Prenatal.Model exposing (AssembledData, MalariaPreventionData, MalariaPreventionForm, MedicationDistributionForm, PrenatalEncounterPhase)
+import Pages.Prenatal.Utils exposing (malariaPreventionFormWithDefault, resolveMedicationDistributionInputsAndTasks)
 import Pages.Utils
     exposing
         ( customPopup
@@ -19,7 +18,7 @@ import Pages.Utils
         , viewSaveAction
         , viewTasksCount
         )
-import Translate exposing (Language, translate)
+import Translate exposing (Language)
 
 
 viewMedicationDistributionForm :
@@ -52,13 +51,12 @@ viewMedicationDistributionForm language currentDate phase assembled setBoolInput
 
 viewMalariaPreventionContent :
     Language
-    -> NominalDate
     -> AssembledData
     -> ((Bool -> MalariaPreventionForm -> MalariaPreventionForm) -> Bool -> msg)
     -> (PersonId -> Maybe ( MalariaPreventionId, MalariaPrevention ) -> msg)
     -> MalariaPreventionData
     -> List (Html msg)
-viewMalariaPreventionContent language currentDate assembled setBoolInputMsg saveMsg data =
+viewMalariaPreventionContent language assembled setBoolInputMsg saveMsg data =
     let
         form =
             assembled.measurements.malariaPrevention

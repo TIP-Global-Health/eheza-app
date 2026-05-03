@@ -18,7 +18,7 @@ import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData)
 import Pages.Prenatal.Encounter.View exposing (viewMotherAndMeasurements)
 import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.Outcome.Model exposing (Model, Msg(..))
-import Pages.Utils exposing (taskCompleted, viewBoolInput, viewLabel, viewSaveAction, viewSelectListInput, viewTasksCount)
+import Pages.Utils exposing (taskCompleted, viewBoolInput, viewLabel, viewSelectListInput, viewTasksCount)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
 import Utils.Html exposing (viewModal)
@@ -42,11 +42,11 @@ view language currentDate id isChw initiator db model =
                     )
                 |> Maybe.withDefault NotAsked
     in
-    viewWebData language (viewHeaderAndContent language currentDate id isChw initiator model) identity data
+    viewWebData language (viewHeaderAndContent language currentDate isChw initiator model) identity data
 
 
-viewHeaderAndContent : Language -> NominalDate -> IndividualEncounterParticipantId -> Bool -> RecordPreganancyInitiator -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id isChw initiator model data =
+viewHeaderAndContent : Language -> NominalDate -> Bool -> RecordPreganancyInitiator -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate isChw initiator model data =
     let
         header =
             viewHeader language initiator data

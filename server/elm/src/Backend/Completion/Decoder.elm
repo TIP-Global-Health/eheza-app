@@ -1,12 +1,12 @@
 module Backend.Completion.Decoder exposing (decodeCompletionData, decodeSyncResponse)
 
-import Backend.Completion.Model exposing (..)
-import Backend.Completion.Utils exposing (..)
+import Backend.Completion.Model exposing (ActivitiesCompletionData, CompletionData, EncounterData, NutritionGroupEncounterData, SyncResponse, TakenBy(..), WellChildEncounterData, WellChildEncounterType(..))
+import Backend.Completion.Utils exposing (acuteIllnessActivityFromMapping, childScoreboardActivityFromMapping, hivActivityFromMapping, homeVisitActivityFromMapping, ncdActivityFromMapping, nutritionChildActivityFromMapping, nutritionMotherActivityFromMapping, prenatalActivityFromMapping, takenByFromString, tuberculosisActivityFromMapping, wellChildActivityFromMapping)
 import Backend.Components.Decoder exposing (decodeReportParams, decodeSelectedEntity)
 import Backend.Decoder exposing (decodeSite, decodeWithFallback)
 import Gizra.Json exposing (decodeInt)
-import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
-import Json.Decode exposing (Decoder, andThen, fail, field, list, nullable, oneOf, string, succeed)
+import Gizra.NominalDate exposing (decodeYYYYMMDD)
+import Json.Decode exposing (Decoder, andThen, fail, field, list, map, nullable, oneOf, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, optional, required, requiredAt)
 
 
@@ -30,8 +30,8 @@ decodeCompletionData =
         |> hardcoded Nothing
 
 
-decodeSyncResponse : NominalDate -> Decoder SyncResponse
-decodeSyncResponse currentDate =
+decodeSyncResponse : Decoder SyncResponse
+decodeSyncResponse =
     field "data"
         (succeed SyncResponse
             |> requiredAt [ "batch", "acute_illness" ] (list (decodeEncounterData acuteIllnessActivityFromMapping))
@@ -120,11 +120,10 @@ decodeActivitiesCompletionDataList : (String -> Maybe activity) -> Decoder (List
 decodeActivitiesCompletionDataList activityFromString =
     oneOf
         [ string
-            |> andThen
+            |> map
                 (\s ->
                     String.split "$" s
                         |> List.filterMap (activitiesCompletionDataFromString activityFromString)
-                        |> succeed
                 )
         , succeed []
         ]

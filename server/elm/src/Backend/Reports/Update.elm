@@ -6,22 +6,21 @@ import Backend.Reports.Decoder exposing (decodeReportsData, decodeSyncResponse)
 import Backend.Reports.Model exposing (Msg(..))
 import Backend.Types exposing (BackendReturn)
 import Error.Utils exposing (noError)
-import Gizra.NominalDate exposing (NominalDate)
-import HttpBuilder exposing (..)
+import HttpBuilder exposing (withExpectJson, withJsonBody)
 import Json.Decode exposing (decodeValue)
 import Json.Encode exposing (object, string)
 import RemoteData
 
 
-update : NominalDate -> String -> Msg -> ModelBackend -> BackendReturn Msg
-update currentDate backendUrl msg model =
+update : String -> Msg -> ModelBackend -> BackendReturn Msg
+update backendUrl msg model =
     case msg of
         SetData value ->
             let
                 modelUpdated =
                     { model | reportsData = Just <| decodeValue decodeReportsData value }
             in
-            update currentDate backendUrl (SendSyncRequest 0) modelUpdated
+            update backendUrl (SendSyncRequest 0) modelUpdated
 
         SendSyncRequest fromPersonId ->
             let
@@ -69,6 +68,6 @@ update currentDate backendUrl msg model =
                             BackendReturn modelUpdated Cmd.none noError []
 
                         else
-                            update currentDate backendUrl (SendSyncRequest response.lastIdSynced) modelUpdated
+                            update backendUrl (SendSyncRequest response.lastIdSynced) modelUpdated
                     )
                 |> Maybe.withDefault (BackendReturn model Cmd.none noError [])

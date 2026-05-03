@@ -7,7 +7,7 @@ import Backend.Scoreboard.Model exposing (Msg(..))
 import Backend.Types exposing (BackendReturn)
 import Error.Utils exposing (noError)
 import Gizra.NominalDate exposing (NominalDate)
-import HttpBuilder exposing (..)
+import HttpBuilder exposing (withExpectJson, withJsonBody)
 import Json.Decode exposing (decodeValue)
 import Json.Encode exposing (object, string)
 import RemoteData
@@ -19,7 +19,7 @@ update currentDate backendUrl msg model =
         SetData value ->
             let
                 modelUpdated =
-                    { model | scoreboardData = Just <| decodeValue (decodeScoreboardData currentDate) value }
+                    { model | scoreboardData = Just <| decodeValue decodeScoreboardData value }
             in
             update currentDate backendUrl (SendSyncRequest 0) modelUpdated
 

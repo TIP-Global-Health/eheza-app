@@ -8,19 +8,18 @@ import Backend.Measurement.Model exposing (AdverseEvent(..), TuberculosisPrescri
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.TuberculosisEncounter.Model
-import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (unwrap)
 import Measurement.Utils exposing (ongoingTreatmentReviewFormWithDefault, toFollowUpValueWithDefault, toOngoingTreatmentReviewValueWithDefault, toSendToHCValueWithDefault)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Tuberculosis.Activity.Model exposing (..)
-import Pages.Tuberculosis.Activity.Utils exposing (..)
+import Pages.Tuberculosis.Activity.Model exposing (Model, Msg(..))
+import Pages.Tuberculosis.Activity.Utils exposing (diagnosticsFormWithDefault, dotFormWithDefault, prescribedMedicationFormWithDefault, toDOTValueWithDefault, toDiagnosticsValueWithDefault, toHealthEducationValueWithDefault, toPrescribedMedicationValueWithDefault, toSymptomReviewValueWithDefault)
 import Pages.Utils exposing (setMultiSelectInputValue)
 import RemoteData
 
 
-update : NominalDate -> TuberculosisEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate id db msg model =
+update : TuberculosisEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update id db msg model =
     let
         resolveFormWithDefaults getMeasurementFunc formWithDefaultsFunc form =
             Dict.get id db.tuberculosisMeasurements
@@ -198,7 +197,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update id db) extraMsgs
 
         SetDOTBoolInput formUpdateFunc value ->
             let
@@ -273,7 +272,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update id db) extraMsgs
 
         SetTreatmentReviewBoolInput formUpdateFunc value ->
             let
@@ -370,7 +369,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update id db) extraMsgs
 
         SetSymptomReviewBoolInput formUpdateFunc value ->
             let
@@ -462,7 +461,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update id db) extraMsgs
 
         SetFollowUpOption option ->
             let
@@ -506,7 +505,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update id db) extraMsgs
 
         SetReferToHealthCenter value ->
             let
@@ -584,4 +583,4 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update id db) extraMsgs

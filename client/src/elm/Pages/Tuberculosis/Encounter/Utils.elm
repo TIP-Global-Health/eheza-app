@@ -1,4 +1,4 @@
-module Pages.Tuberculosis.Encounter.Utils exposing (..)
+module Pages.Tuberculosis.Encounter.Utils exposing (generateAssembledData, partitionActivities)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -6,14 +6,9 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (getTuberculosisEncountersForParticipant)
 import Backend.TuberculosisActivity.Model exposing (TuberculosisActivity)
 import Backend.TuberculosisActivity.Utils exposing (allActivities)
-import Date
-import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Maybe.Extra exposing (andMap, isJust, or, unwrap)
 import Pages.Tuberculosis.Activity.Utils exposing (activityCompleted, expectActivity)
-import Pages.Tuberculosis.Encounter.Model exposing (..)
+import Pages.Tuberculosis.Encounter.Model exposing (AssembledData, EncounterData)
 import RemoteData exposing (RemoteData(..), WebData)
 import Utils.NominalDate exposing (sortByStartDateDesc)
 

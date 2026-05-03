@@ -10,7 +10,7 @@ import Backend.Person.Utils exposing (defaultIconForPerson, graduatingAgeInMonth
 import Backend.PrenatalActivity.Model
 import Backend.Session.Utils exposing (getSession)
 import Backend.Village.Utils exposing (personLivesInVillage)
-import Components.PatientsSearchForm.Utils exposing (..)
+import Components.PatientsSearchForm.Utils
 import Components.PatientsSearchForm.View
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffMonths)
@@ -19,7 +19,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isNothing, unwrap)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.People.Model exposing (..)
+import Pages.People.Model exposing (Model, Msg(..))
 import Pages.Utils exposing (viewBySyncStatus)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -108,6 +108,12 @@ viewHeader initiator relation title =
                     -- Not in use, as at Acute Ilness patient is created
                     -- from a dedicated form.
                     PinCodePage
+
+                FamilyEncounterOrigin _ ->
+                    -- For now, we do not use this page for family encounters.
+                    -- Those got their own dedicated page.
+                    -- Therefore, we default to Pincode page.
+                    PinCodePage
     in
     div
         [ class "ui basic segment head" ]
@@ -130,25 +136,6 @@ viewSearchForm language currentDate maybeVillageId isChw initiator relation mode
             Components.PatientsSearchForm.View.view language model
                 |> Html.map Pages.People.Model.MsgPatientsSearchForm
 
-        relatedPerson =
-            Maybe.andThen (\id -> Dict.get id db.people) relation
-                |> Maybe.andThen RemoteData.toMaybe
-
-        expectedAge =
-            relatedPerson
-                |> Maybe.andThen (isPersonAnAdult currentDate)
-                |> (\isAdult ->
-                        case isAdult of
-                            Just True ->
-                                ExpectChild
-
-                            Just False ->
-                                ExpectAdult
-
-                            Nothing ->
-                                ExpectAdultOrChild
-                   )
-
         searchValue =
             Components.PatientsSearchForm.Utils.getSearchValue model
 
@@ -158,6 +145,25 @@ viewSearchForm language currentDate maybeVillageId isChw initiator relation mode
 
             else
                 let
+                    relatedPerson =
+                        Maybe.andThen (\id -> Dict.get id db.people) relation
+                            |> Maybe.andThen RemoteData.toMaybe
+
+                    expectedAge =
+                        relatedPerson
+                            |> Maybe.andThen (isPersonAnAdult currentDate)
+                            |> (\isAdult ->
+                                    case isAdult of
+                                        Just True ->
+                                            ExpectChild
+
+                                        Just False ->
+                                            ExpectAdult
+
+                                        Nothing ->
+                                            ExpectAdultOrChild
+                               )
+
                     -- When relation person is provided, we need to make sure
                     -- that at search result, we don't present:
                     -- 1. Relation person himself.
@@ -251,7 +257,7 @@ viewSearchForm language currentDate maybeVillageId isChw initiator relation mode
         searchResultsParticipants =
             Maybe.withDefault (Success Dict.empty) results
                 |> RemoteData.withDefault Dict.empty
-                |> Dict.map (viewParticipant language currentDate initiator relation db)
+                |> Dict.map (viewParticipant language currentDate initiator relation)
                 |> Dict.values
 
         searchHelper =
@@ -296,8 +302,8 @@ viewSearchForm language currentDate maybeVillageId isChw initiator relation mode
         ]
 
 
-viewParticipant : Language -> NominalDate -> Initiator -> Maybe PersonId -> ModelIndexedDb -> PersonId -> Person -> Html Msg
-viewParticipant language currentDate initiator relation db id person =
+viewParticipant : Language -> NominalDate -> Initiator -> Maybe PersonId -> PersonId -> Person -> Html Msg
+viewParticipant language currentDate initiator relation id person =
     let
         typeForThumbnail =
             defaultIconForPerson currentDate person
@@ -321,7 +327,7 @@ viewParticipant language currentDate initiator relation db id person =
                 , div [ class "action-icon-wrapper blue" ]
                     [ span
                         [ class "action-icon forward"
-                        , onClick <| SetActivePage <| UserPage <| nextPage
+                        , onClick <| SetActivePage <| UserPage nextPage
                         ]
                         []
                     ]
@@ -333,7 +339,7 @@ viewParticipant language currentDate initiator relation db id person =
                     [ class "details" ]
                     [ h2
                         [ class "ui header" ]
-                        [ text <| person.name ]
+                        [ text person.name ]
                     , p []
                         [ label [] [ text <| translate language Translate.DOB ++ ": " ]
                         , span []

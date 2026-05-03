@@ -1,6 +1,6 @@
-module Pages.MessagingGuide.View exposing (..)
+module Pages.MessagingGuide.View exposing (view)
 
-import App.Model exposing (Msg(..))
+import App.Model
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)

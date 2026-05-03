@@ -1,4 +1,4 @@
-module Backend.Components.Encoder exposing (..)
+module Backend.Components.Encoder exposing (encodeReportParams)
 
 import Backend.Components.Model exposing (ReportParams)
 import Json.Encode exposing (Value, int, string)

@@ -23,7 +23,7 @@ import Backend.Completion.Model
 import Backend.Completion.Utils exposing (takenByToString)
 import Backend.Components.Model exposing (SelectedEntity(..))
 import Backend.Model exposing (ModelBackend)
-import Date
+import Date exposing (Date)
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
@@ -31,8 +31,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Maybe.Extra exposing (isJust, isNothing)
-import Pages.Completion.Model exposing (..)
-import Pages.Completion.Utils exposing (..)
+import Pages.Completion.Model exposing (Model, Msg(..), ReportType(..))
+import Pages.Completion.Utils exposing (allAcuteIllnessActivities, allHIVActivities, allHomeVisitActivities, allNCDActivities, allNutritionChildGroupActivities, allNutritionIndividualActivities, allNutritionMotherGroupActivities, allPrenatalActivities, allTuberculosisActivities, newbornExamActivities, reportTypeToString, resolveChildScoreboardActivities, resolveSPVActivities)
 import Pages.Components.View exposing (viewMetricsResultsTable)
 import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Utils exposing (calculatePercentage, launchDate, viewCustomSelectListInput, viewSelectListInput, wrapSelectListInput)
@@ -40,11 +40,11 @@ import Translate exposing (TranslationId, translate)
 import Utils.Html exposing (viewModal)
 
 
-view : Language -> NominalDate -> String -> ModelBackend -> Model -> Html Msg
-view language currentDate themePath modelBackend model =
+view : Language -> NominalDate -> ModelBackend -> Model -> Html Msg
+view language currentDate modelBackend model =
     case modelBackend.completionData of
         Just (Ok data) ->
-            viewCompletionData language currentDate themePath data model
+            viewCompletionData language currentDate data model
 
         Just (Err err) ->
             text <| Debug.toString err
@@ -53,8 +53,8 @@ view language currentDate themePath modelBackend model =
             emptyNode
 
 
-viewCompletionData : Language -> NominalDate -> String -> CompletionData -> Model -> Html Msg
-viewCompletionData language currentDate themePath data model =
+viewCompletionData : Language -> NominalDate -> CompletionData -> Model -> Html Msg
+viewCompletionData language currentDate data model =
     let
         topBar =
             let
@@ -156,7 +156,7 @@ viewCompletionData language currentDate themePath data model =
 
         dateInputs =
             Maybe.map
-                (\reportType ->
+                (\_ ->
                     let
                         startDateInput =
                             let
@@ -429,8 +429,8 @@ applyFilters :
     NominalDate
     -> NominalDate
     -> Maybe TakenBy
-    -> List { a | startDate : Date.Date, takenBy : Maybe TakenBy }
-    -> List { a | startDate : Date.Date, takenBy : Maybe TakenBy }
+    -> List { a | startDate : Date, takenBy : Maybe TakenBy }
+    -> List { a | startDate : Date, takenBy : Maybe TakenBy }
 applyFilters startDate limitDate mTakenBy =
     List.filter
         (\encounter ->
@@ -452,10 +452,10 @@ applyFilters startDate limitDate mTakenBy =
 customApplyFilters :
     NominalDate
     -> NominalDate
-    -> ({ a | encounterType : WellChildEncounterType, startDate : Date.Date } -> TakenBy)
+    -> ({ a | encounterType : WellChildEncounterType, startDate : Date } -> TakenBy)
     -> Maybe TakenBy
-    -> List { a | encounterType : WellChildEncounterType, startDate : Date.Date }
-    -> List { a | encounterType : WellChildEncounterType, startDate : Date.Date }
+    -> List { a | encounterType : WellChildEncounterType, startDate : Date }
+    -> List { a | encounterType : WellChildEncounterType, startDate : Date }
 customApplyFilters startDate limitDate resolveTakenByFunc mTakenBy =
     List.filter
         (\encounter ->

@@ -1,8 +1,6 @@
 module Pages.Tuberculosis.ProgressReport.View exposing (view)
 
-import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model
     exposing
         ( FollowUpOption(..)
@@ -12,14 +10,10 @@ import Backend.Measurement.Model
         , TuberculosisDOTSign(..)
         , TuberculosisHealthEducationSign(..)
         , TuberculosisPrescribedMedication(..)
-        , TuberculosisSymptom(..)
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model exposing (Person)
-import Backend.TuberculosisActivity.Utils exposing (allActivities)
 import Components.ReportToWhatsAppDialog.Model
-import Components.ReportToWhatsAppDialog.Utils
 import Components.ReportToWhatsAppDialog.View
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
@@ -29,25 +23,21 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, isNothing)
-import Measurement.Model exposing (LaboratoryTask(..))
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Tuberculosis.Activity.Utils exposing (generateAllEncountersData, resolvePrescribedMedicationSets)
 import Pages.Tuberculosis.Encounter.Model exposing (AssembledData, EncounterData)
 import Pages.Tuberculosis.Encounter.Utils exposing (generateAssembledData, partitionActivities)
 import Pages.Tuberculosis.Encounter.View exposing (allowEndingEncounter)
-import Pages.Tuberculosis.ProgressReport.Model exposing (..)
+import Pages.Tuberculosis.ProgressReport.Model exposing (Model, Msg(..), ViewMode(..))
 import Pages.Utils
     exposing
         ( viewConfirmationDialog
         , viewEndEncounterMenuForProgressReport
-        , viewPersonDetailsExtended
         )
 import Pages.WellChild.ProgressReport.View exposing (viewPaneHeading, viewPersonInfoPane)
-import RemoteData
 import SyncManager.Model exposing (Site, SiteFeature)
-import Translate exposing (Language, TranslationId, translate)
+import Translate exposing (Language, translate)
 import Utils.Html exposing (viewModal)
-import Utils.NominalDate exposing (sortTuplesByDateDesc)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -83,7 +73,7 @@ view language currentDate site features id db model =
             else
                 Nothing
     in
-    div [ class "page-report tuberculosis" ] <|
+    div [ class "page-report tuberculosis" ]
         [ header
         , content
         , viewModal endEncounterDialog
@@ -130,15 +120,12 @@ viewContent language currentDate site features model assembled =
                 ViewModeGlobal ->
                     viewGlobalContent language
                         currentDate
-                        model
                         allEncountersData
                         assembled
 
                 ViewModeEncounter encounterId ->
                     viewEncounterDetailsContent language
-                        currentDate
                         encounterId
-                        model
                         allEncountersData
 
         endEncounterMenu =
@@ -170,7 +157,6 @@ viewContent language currentDate site features model assembled =
                , Html.map MsgReportToWhatsAppDialog
                     (Components.ReportToWhatsAppDialog.View.view
                         language
-                        currentDate
                         site
                         ( assembled.participant.person, assembled.person )
                         Components.ReportToWhatsAppDialog.Model.ReportTuberculosis
@@ -183,11 +169,10 @@ viewContent language currentDate site features model assembled =
 viewGlobalContent :
     Language
     -> NominalDate
-    -> Model
     -> List EncounterData
     -> AssembledData
     -> List (Html Msg)
-viewGlobalContent language currentDate model allEncountersData assembled =
+viewGlobalContent language currentDate allEncountersData assembled =
     let
         firstEncounterData =
             List.filter (.measurements >> .diagnostics >> isJust)
@@ -199,21 +184,20 @@ viewGlobalContent language currentDate model allEncountersData assembled =
             Maybe.map .startDate firstEncounterData
     in
     [ viewPersonInfoPane language currentDate assembled.person
-    , viewSummaryPane language currentDate allEncountersData firstEncounterData initiationDate
+    , viewSummaryPane language allEncountersData firstEncounterData initiationDate
     , viewTreatmentTimelinePane language currentDate initiationDate
-    , viewAdverseEventsPane language currentDate allEncountersData
-    , viewEncountersPane language currentDate allEncountersData
+    , viewAdverseEventsPane language allEncountersData
+    , viewEncountersPane language allEncountersData
     ]
 
 
 viewSummaryPane :
     Language
-    -> NominalDate
     -> List EncounterData
     -> Maybe EncounterData
     -> Maybe NominalDate
     -> Html any
-viewSummaryPane language currentDate allEncountersData firstEncounterData initiationDate =
+viewSummaryPane language allEncountersData firstEncounterData initiationDate =
     let
         completionDate =
             Maybe.map (Date.add Months 6)
@@ -298,8 +282,8 @@ viewTreatmentTimelinePane language currentDate initiationDate =
         ]
 
 
-viewAdverseEventsPane : Language -> NominalDate -> List EncounterData -> Html any
-viewAdverseEventsPane language currentDate allEncountersData =
+viewAdverseEventsPane : Language -> List EncounterData -> Html any
+viewAdverseEventsPane language allEncountersData =
     let
         adverseEventsWithDates =
             List.filterMap
@@ -337,8 +321,8 @@ viewAdverseEventsPane language currentDate allEncountersData =
         ]
 
 
-viewEncountersPane : Language -> NominalDate -> List EncounterData -> Html Msg
-viewEncountersPane language currentDate allEncountersData =
+viewEncountersPane : Language -> List EncounterData -> Html Msg
+viewEncountersPane language allEncountersData =
     let
         heading =
             div [ class "heading" ]
@@ -375,12 +359,10 @@ viewEncountersPane language currentDate allEncountersData =
 
 viewEncounterDetailsContent :
     Language
-    -> NominalDate
     -> TuberculosisEncounterId
-    -> Model
     -> List EncounterData
     -> List (Html Msg)
-viewEncounterDetailsContent language currentDate encounterId model allEncountersData =
+viewEncounterDetailsContent language encounterId allEncountersData =
     List.filter (.id >> (==) encounterId) allEncountersData
         |> List.head
         |> Maybe.map
@@ -569,9 +551,9 @@ viewEncounterDetailsContent language currentDate encounterId model allEncounters
                             ]
                 in
                 [ div [ class "pane encounter-details" ]
-                    [ div [ class <| "pane-heading" ]
+                    [ div [ class "pane-heading" ]
                         [ text <| translate language Translate.EncounterDate ++ ": " ++ formatDDMMYYYY data.startDate ]
-                    , div [ class <| "pane-content" ]
+                    , div [ class "pane-content" ]
                         [ viewEntry Translate.Medication medicationDistributed currentMedicationsForView
                         , Maybe.map .takenAsPrescribedData treatmentReviewEntriesData
                             |> viewTreatmentReviewEntry Translate.TakenAsPrescribed
@@ -587,4 +569,4 @@ viewEncounterDetailsContent language currentDate encounterId model allEncounters
                     ]
                 ]
             )
-        >> Maybe.withDefault []
+        |> Maybe.withDefault []

@@ -1,7 +1,7 @@
-module GeoLocation.Utils exposing (..)
+module GeoLocation.Utils exposing (filterGeoLocationDictByParent, geoLocationDictToOptions, getGeoInfo, getGeoLocation, getReverseGeoInfo, resolveGeoSructureLabelLevel1, resolveGeoSructureLabelLevel2, resolveGeoSructureLabelLevel3, resolveGeoSructureLabelLevel4, resolveGeoSructureLabelLevel5)
 
 import AssocList as Dict exposing (Dict)
-import GeoLocation.Model exposing (..)
+import GeoLocation.Model exposing (GeoInfo, GeoLocation, GeoLocationId, ParentId, ReverseGeoInfo)
 import Restful.Endpoint exposing (fromEntityId, toEntityId)
 import SyncManager.Model exposing (Site(..))
 import Translate exposing (TranslationId)
@@ -61,7 +61,14 @@ getGeoProvinces site =
         SiteBurundi ->
             Dict.fromList
                 [ ( toEntityId 1, GeoLocation "Bururi" Nothing )
-                , ( toEntityId 30, GeoLocation "Rumonge" Nothing )
+                , ( toEntityId 19, GeoLocation "Rumonge" Nothing )
+                , ( toEntityId 46, GeoLocation "Burunga" Nothing )
+                ]
+
+        SiteSomalia ->
+            Dict.fromList
+                [ ( toEntityId 1, GeoLocation "Banadir" Nothing )
+                , ( toEntityId 16, GeoLocation "Lower Jubba" Nothing )
                 ]
 
         _ ->
@@ -85,7 +92,15 @@ getGeoDistricts site =
         SiteBurundi ->
             Dict.fromList
                 [ ( toEntityId 2, GeoLocation "Vyanda" (Just <| toEntityId 1) )
-                , ( toEntityId 31, GeoLocation "Rumonge" (Just <| toEntityId 30) )
+                , ( toEntityId 20, GeoLocation "Rumonge" (Just <| toEntityId 19) )
+                , ( toEntityId 47, GeoLocation "Matana" (Just <| toEntityId 46) )
+                ]
+
+        SiteSomalia ->
+            Dict.fromList
+                [ ( toEntityId 2, GeoLocation "Deynile" (Just <| toEntityId 1) )
+                , ( toEntityId 9, GeoLocation "Garasbaley" (Just <| toEntityId 1) )
+                , ( toEntityId 17, GeoLocation "Afmadow" (Just <| toEntityId 16) )
                 ]
 
         _ ->
@@ -100,6 +115,9 @@ getGeoSectors site =
 
         SiteBurundi ->
             getGeoSectorsForBurundi
+
+        SiteSomalia ->
+            getGeoSectorsForSomalia
 
         _ ->
             Dict.empty
@@ -187,10 +205,28 @@ getGeoSectorsForBurundi : Dict GeoLocationId GeoLocation
 getGeoSectorsForBurundi =
     Dict.fromList
         [ ( toEntityId 3, GeoLocation "Gitsiro" (Just <| toEntityId 2) )
-        , ( toEntityId 23, GeoLocation "Rweza" (Just <| toEntityId 2) )
-        , ( toEntityId 32, GeoLocation "Kigwena" (Just <| toEntityId 31) )
-        , ( toEntityId 65, GeoLocation "Gatete" (Just <| toEntityId 31) )
-        , ( toEntityId 96, GeoLocation "Buruhukiro" (Just <| toEntityId 31) )
+        , ( toEntityId 14, GeoLocation "Rweza" (Just <| toEntityId 2) )
+        , ( toEntityId 21, GeoLocation "Kigwena" (Just <| toEntityId 20) )
+        , ( toEntityId 32, GeoLocation "Gatete" (Just <| toEntityId 20) )
+        , ( toEntityId 41, GeoLocation "Buruhukiro" (Just <| toEntityId 20) )
+        , ( toEntityId 48, GeoLocation "Mugamba" (Just <| toEntityId 47) )
+        , ( toEntityId 51, GeoLocation "Kibezi" (Just <| toEntityId 47) )
+        , ( toEntityId 56, GeoLocation "Vyuya" (Just <| toEntityId 47) )
+        , ( toEntityId 59, GeoLocation "Mwumba" (Just <| toEntityId 47) )
+        , ( toEntityId 66, GeoLocation "Kivumu" (Just <| toEntityId 47) )
+        , ( toEntityId 69, GeoLocation "Muraramba" (Just <| toEntityId 47) )
+        , ( toEntityId 72, GeoLocation "Nyagasasa" (Just <| toEntityId 47) )
+        ]
+
+
+getGeoSectorsForSomalia : Dict GeoLocationId GeoLocation
+getGeoSectorsForSomalia =
+    Dict.fromList
+        [ ( toEntityId 3, GeoLocation "Koshin" (Just <| toEntityId 2) )
+        , ( toEntityId 6, GeoLocation "Zeytuun" (Just <| toEntityId 2) )
+        , ( toEntityId 10, GeoLocation "Iskaashi" (Just <| toEntityId 9) )
+        , ( toEntityId 13, GeoLocation "Qodaxley" (Just <| toEntityId 9) )
+        , ( toEntityId 18, GeoLocation "Dhobley" (Just <| toEntityId 17) )
         ]
 
 
@@ -202,6 +238,9 @@ getGeoCells site =
 
         SiteBurundi ->
             getGeoCellsForBurundi
+
+        SiteSomalia ->
+            getGeoCellsForSomalia
 
         _ ->
             Dict.empty
@@ -560,23 +599,56 @@ getGeoCellsForBurundi : Dict GeoLocationId GeoLocation
 getGeoCellsForBurundi =
     Dict.fromList
         [ ( toEntityId 4, GeoLocation "Mushishi" (Just <| toEntityId 3) )
-        , ( toEntityId 10, GeoLocation "Mirango" (Just <| toEntityId 3) )
-        , ( toEntityId 15, GeoLocation "Kabwayi" (Just <| toEntityId 3) )
-        , ( toEntityId 19, GeoLocation "Kigutu" (Just <| toEntityId 3) )
-        , ( toEntityId 21, GeoLocation "Kirungu" (Just <| toEntityId 3) )
-        , ( toEntityId 24, GeoLocation "Migera" (Just <| toEntityId 23) )
-        , ( toEntityId 27, GeoLocation "Karirimvya" (Just <| toEntityId 23) )
-        , ( toEntityId 33, GeoLocation "Nyakuguma" (Just <| toEntityId 32) )
-        , ( toEntityId 41, GeoLocation "Kanenge" (Just <| toEntityId 32) )
-        , ( toEntityId 46, GeoLocation "Mayengo" (Just <| toEntityId 32) )
-        , ( toEntityId 51, GeoLocation "Cabara" (Just <| toEntityId 32) )
-        , ( toEntityId 57, GeoLocation "Gashasha" (Just <| toEntityId 32) )
-        , ( toEntityId 66, GeoLocation "Mutambara" (Just <| toEntityId 65) )
-        , ( toEntityId 74, GeoLocation "Gatete" (Just <| toEntityId 65) )
-        , ( toEntityId 81, GeoLocation "Busebwa" (Just <| toEntityId 65) )
-        , ( toEntityId 88, GeoLocation "Mugara" (Just <| toEntityId 65) )
-        , ( toEntityId 97, GeoLocation "Gitwe" (Just <| toEntityId 96) )
-        , ( toEntityId 102, GeoLocation "Karagara" (Just <| toEntityId 96) )
+        , ( toEntityId 6, GeoLocation "Mirango" (Just <| toEntityId 3) )
+        , ( toEntityId 8, GeoLocation "Kabwayi" (Just <| toEntityId 3) )
+        , ( toEntityId 10, GeoLocation "Kigutu" (Just <| toEntityId 3) )
+        , ( toEntityId 12, GeoLocation "Kirungu" (Just <| toEntityId 3) )
+        , ( toEntityId 15, GeoLocation "Migera" (Just <| toEntityId 14) )
+        , ( toEntityId 17, GeoLocation "Karirimvya" (Just <| toEntityId 14) )
+        , ( toEntityId 22, GeoLocation "Nyakuguma" (Just <| toEntityId 21) )
+        , ( toEntityId 24, GeoLocation "Kanenge" (Just <| toEntityId 21) )
+        , ( toEntityId 26, GeoLocation "Mayengo" (Just <| toEntityId 21) )
+        , ( toEntityId 28, GeoLocation "Cabara" (Just <| toEntityId 21) )
+        , ( toEntityId 30, GeoLocation "Gashasha" (Just <| toEntityId 21) )
+        , ( toEntityId 33, GeoLocation "Mutambara" (Just <| toEntityId 32) )
+        , ( toEntityId 35, GeoLocation "Gatete" (Just <| toEntityId 32) )
+        , ( toEntityId 37, GeoLocation "Busebwa" (Just <| toEntityId 32) )
+        , ( toEntityId 39, GeoLocation "Mugara" (Just <| toEntityId 32) )
+        , ( toEntityId 42, GeoLocation "Gitwe" (Just <| toEntityId 41) )
+        , ( toEntityId 44, GeoLocation "Karagara" (Just <| toEntityId 41) )
+        , ( toEntityId 49, GeoLocation "Coma" (Just <| toEntityId 48) )
+        , ( toEntityId 54, GeoLocation "Donge-burasira" (Just <| toEntityId 48) )
+        , ( toEntityId 83, GeoLocation "Ntentamaza" (Just <| toEntityId 48) )
+        , ( toEntityId 91, GeoLocation "Nyatubuye" (Just <| toEntityId 48) )
+        , ( toEntityId 95, GeoLocation "Rukere" (Just <| toEntityId 48) )
+        , ( toEntityId 97, GeoLocation "Taba" (Just <| toEntityId 48) )
+        , ( toEntityId 52, GeoLocation "Donge-ruzi" (Just <| toEntityId 51) )
+        , ( toEntityId 62, GeoLocation "Kibezi" (Just <| toEntityId 51) )
+        , ( toEntityId 79, GeoLocation "Musho" (Just <| toEntityId 51) )
+        , ( toEntityId 57, GeoLocation "Gataka" (Just <| toEntityId 56) )
+        , ( toEntityId 64, GeoLocation "Kirinzi" (Just <| toEntityId 56) )
+        , ( toEntityId 87, GeoLocation "Nyakimonyi" (Just <| toEntityId 56) )
+        , ( toEntityId 60, GeoLocation "Gozi" (Just <| toEntityId 59) )
+        , ( toEntityId 81, GeoLocation "Mwumba" (Just <| toEntityId 59) )
+        , ( toEntityId 67, GeoLocation "Kivumu" (Just <| toEntityId 66) )
+        , ( toEntityId 77, GeoLocation "Munini" (Just <| toEntityId 66) )
+        , ( toEntityId 70, GeoLocation "Mpota" (Just <| toEntityId 69) )
+        , ( toEntityId 73, GeoLocation "Mugendo-ndengo" (Just <| toEntityId 72) )
+        , ( toEntityId 75, GeoLocation "Mugendo-ruko" (Just <| toEntityId 72) )
+        , ( toEntityId 85, GeoLocation "Nyakigano" (Just <| toEntityId 72) )
+        , ( toEntityId 89, GeoLocation "Nyamugari" (Just <| toEntityId 72) )
+        , ( toEntityId 93, GeoLocation "Ruhinga" (Just <| toEntityId 72) )
+        ]
+
+
+getGeoCellsForSomalia : Dict GeoLocationId GeoLocation
+getGeoCellsForSomalia =
+    Dict.fromList
+        [ ( toEntityId 4, GeoLocation "Koshin" (Just <| toEntityId 3) )
+        , ( toEntityId 7, GeoLocation "Zeytuun" (Just <| toEntityId 6) )
+        , ( toEntityId 11, GeoLocation "Iskaashi" (Just <| toEntityId 10) )
+        , ( toEntityId 14, GeoLocation "Qodaxley" (Just <| toEntityId 13) )
+        , ( toEntityId 19, GeoLocation "Dhobley" (Just <| toEntityId 18) )
         ]
 
 
@@ -588,6 +660,9 @@ getGeoVillages site =
 
         SiteBurundi ->
             getGeoVillagesForBurundi
+
+        SiteSomalia ->
+            getGeoVillagesForSomalia
 
         _ ->
             Dict.empty
@@ -2965,28 +3040,61 @@ getGeoVillagesForBurundi : Dict GeoLocationId GeoLocation
 getGeoVillagesForBurundi =
     Dict.fromList
         [ ( toEntityId 5, GeoLocation "Mushishi" (Just <| toEntityId 4) )
-        , ( toEntityId 11, GeoLocation "Mirango" (Just <| toEntityId 10) )
-        , ( toEntityId 16, GeoLocation "Kabwayi" (Just <| toEntityId 15) )
-        , ( toEntityId 20, GeoLocation "Kigutu" (Just <| toEntityId 19) )
-        , ( toEntityId 22, GeoLocation "Kirungu" (Just <| toEntityId 21) )
-        , ( toEntityId 25, GeoLocation "Migera" (Just <| toEntityId 24) )
-        , ( toEntityId 28, GeoLocation "Karirimvya" (Just <| toEntityId 27) )
-        , ( toEntityId 34, GeoLocation "Nyakuguma" (Just <| toEntityId 33) )
-        , ( toEntityId 42, GeoLocation "Kanenge" (Just <| toEntityId 41) )
-        , ( toEntityId 47, GeoLocation "Mayengo" (Just <| toEntityId 46) )
-        , ( toEntityId 52, GeoLocation "Cabara" (Just <| toEntityId 51) )
-        , ( toEntityId 58, GeoLocation "Gashasha" (Just <| toEntityId 57) )
-        , ( toEntityId 67, GeoLocation "Mutambara" (Just <| toEntityId 66) )
-        , ( toEntityId 75, GeoLocation "Gatete" (Just <| toEntityId 74) )
-        , ( toEntityId 82, GeoLocation "Busebwa" (Just <| toEntityId 81) )
-        , ( toEntityId 89, GeoLocation "Mugara" (Just <| toEntityId 88) )
-        , ( toEntityId 98, GeoLocation "Gitwe" (Just <| toEntityId 97) )
-        , ( toEntityId 103, GeoLocation "Karagara" (Just <| toEntityId 102) )
+        , ( toEntityId 7, GeoLocation "Mirango" (Just <| toEntityId 6) )
+        , ( toEntityId 9, GeoLocation "Kabwayi" (Just <| toEntityId 8) )
+        , ( toEntityId 11, GeoLocation "Kigutu" (Just <| toEntityId 10) )
+        , ( toEntityId 13, GeoLocation "Kirungu" (Just <| toEntityId 12) )
+        , ( toEntityId 16, GeoLocation "Migera" (Just <| toEntityId 15) )
+        , ( toEntityId 18, GeoLocation "Karirimvya" (Just <| toEntityId 17) )
+        , ( toEntityId 23, GeoLocation "Nyakuguma" (Just <| toEntityId 22) )
+        , ( toEntityId 25, GeoLocation "Kanenge" (Just <| toEntityId 24) )
+        , ( toEntityId 27, GeoLocation "Mayengo" (Just <| toEntityId 26) )
+        , ( toEntityId 29, GeoLocation "Cabara" (Just <| toEntityId 28) )
+        , ( toEntityId 31, GeoLocation "Gashasha" (Just <| toEntityId 30) )
+        , ( toEntityId 34, GeoLocation "Mutambara" (Just <| toEntityId 33) )
+        , ( toEntityId 36, GeoLocation "Gatete" (Just <| toEntityId 35) )
+        , ( toEntityId 38, GeoLocation "Busebw" (Just <| toEntityId 37) )
+        , ( toEntityId 40, GeoLocation "Mugara" (Just <| toEntityId 39) )
+        , ( toEntityId 43, GeoLocation "Gitwe" (Just <| toEntityId 42) )
+        , ( toEntityId 45, GeoLocation "Karagara" (Just <| toEntityId 44) )
+        , ( toEntityId 50, GeoLocation "Coma" (Just <| toEntityId 49) )
+        , ( toEntityId 53, GeoLocation "Donge-ruzi" (Just <| toEntityId 52) )
+        , ( toEntityId 55, GeoLocation "Donge-burasira" (Just <| toEntityId 54) )
+        , ( toEntityId 58, GeoLocation "Gataka" (Just <| toEntityId 57) )
+        , ( toEntityId 61, GeoLocation "Gozi" (Just <| toEntityId 60) )
+        , ( toEntityId 63, GeoLocation "Kibezi" (Just <| toEntityId 62) )
+        , ( toEntityId 65, GeoLocation "Kirinzi" (Just <| toEntityId 64) )
+        , ( toEntityId 68, GeoLocation "Kivumu" (Just <| toEntityId 67) )
+        , ( toEntityId 71, GeoLocation "Mpota" (Just <| toEntityId 70) )
+        , ( toEntityId 74, GeoLocation "Mugendo-ndengo" (Just <| toEntityId 73) )
+        , ( toEntityId 76, GeoLocation "Mugendo-ruko" (Just <| toEntityId 75) )
+        , ( toEntityId 78, GeoLocation "Munini" (Just <| toEntityId 77) )
+        , ( toEntityId 80, GeoLocation "Musho" (Just <| toEntityId 79) )
+        , ( toEntityId 82, GeoLocation "Mwumba" (Just <| toEntityId 81) )
+        , ( toEntityId 84, GeoLocation "Ntentamaza" (Just <| toEntityId 83) )
+        , ( toEntityId 86, GeoLocation "Nyakigano" (Just <| toEntityId 85) )
+        , ( toEntityId 88, GeoLocation "Nyakimonyi" (Just <| toEntityId 87) )
+        , ( toEntityId 90, GeoLocation "Nyamugari" (Just <| toEntityId 89) )
+        , ( toEntityId 92, GeoLocation "Nyatubuye" (Just <| toEntityId 91) )
+        , ( toEntityId 94, GeoLocation "Ruhinga" (Just <| toEntityId 93) )
+        , ( toEntityId 96, GeoLocation "Rukere" (Just <| toEntityId 95) )
+        , ( toEntityId 98, GeoLocation "Taba" (Just <| toEntityId 97) )
         ]
 
 
-resolveGeoSructureLabelLevel1 : Site -> TranslationId
-resolveGeoSructureLabelLevel1 site =
+getGeoVillagesForSomalia : Dict GeoLocationId GeoLocation
+getGeoVillagesForSomalia =
+    Dict.fromList
+        [ ( toEntityId 5, GeoLocation "Koshin" (Just <| toEntityId 4) )
+        , ( toEntityId 8, GeoLocation "Zeytuun" (Just <| toEntityId 7) )
+        , ( toEntityId 12, GeoLocation "Iskaashi" (Just <| toEntityId 11) )
+        , ( toEntityId 15, GeoLocation "Qodaxley" (Just <| toEntityId 14) )
+        , ( toEntityId 20, GeoLocation "Kowaad" (Just <| toEntityId 19) )
+        ]
+
+
+resolveGeoSructureLabelLevel1 : TranslationId
+resolveGeoSructureLabelLevel1 =
     Translate.Province
 
 
@@ -2998,6 +3106,9 @@ resolveGeoSructureLabelLevel2 site =
 
         SiteBurundi ->
             Translate.Commune
+
+        SiteSomalia ->
+            Translate.District
 
         SiteUnknown ->
             Translate.EmptyString
@@ -3012,6 +3123,9 @@ resolveGeoSructureLabelLevel3 site =
         SiteBurundi ->
             Translate.Zone
 
+        SiteSomalia ->
+            Translate.Sector
+
         SiteUnknown ->
             Translate.EmptyString
 
@@ -3025,6 +3139,9 @@ resolveGeoSructureLabelLevel4 site =
         SiteBurundi ->
             Translate.Colline
 
+        SiteSomalia ->
+            Translate.Cell
+
         SiteUnknown ->
             Translate.EmptyString
 
@@ -3037,6 +3154,9 @@ resolveGeoSructureLabelLevel5 site =
 
         SiteBurundi ->
             Translate.CollineSub
+
+        SiteSomalia ->
+            Translate.Village
 
         SiteUnknown ->
             Translate.EmptyString

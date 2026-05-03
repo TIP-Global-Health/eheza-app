@@ -4,7 +4,7 @@ import AssocList as Dict
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..), AcuteIllnessProgressReportInitiator(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndicationForPerson)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths, isChildUnderAgeOf5, isPersonAnAdult)
@@ -38,7 +38,7 @@ import Pages.AcuteIllness.Activity.Utils
 import Pages.AcuteIllness.Encounter.Model exposing (AcuteIllnessEncounterData, AssembledData)
 import Pages.AcuteIllness.Encounter.Utils exposing (generateAssembledData)
 import Pages.AcuteIllness.Encounter.View exposing (allowEndingEncounter, partitionActivities)
-import Pages.AcuteIllness.ProgressReport.Model exposing (..)
+import Pages.AcuteIllness.ProgressReport.Model exposing (AcuteIllnessStatus(..), Model, Msg(..))
 import Pages.GlobalCaseManagement.Utils exposing (calculateDueDate)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Utils exposing (viewConfirmationDialog, viewEndEncounterMenuForProgressReport)
@@ -123,12 +123,12 @@ viewContent language currentDate site features id isChw initiator model assemble
             , Html.Attributes.id "report-content"
             ]
             [ viewPersonInfoPane language currentDate assembled.person
-            , viewAssessmentPane language currentDate assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent assembled
-            , viewSymptomsPane language currentDate assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent
+            , viewAssessmentPane language assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent assembled
+            , viewSymptomsPane language assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent
             , viewPhysicalExamPane language currentDate assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent assembled
-            , viewNutritionSignsPane language currentDate assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent assembled
-            , viewTreatmentPane language currentDate assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent assembled
-            , viewActionsTakenPane language currentDate assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent assembled
+            , viewNutritionSignsPane language assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent
+            , viewTreatmentPane language assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent assembled
+            , viewActionsTakenPane language assembled.firstInitialWithSubsequent assembled.secondInitialWithSubsequent assembled
             , viewNextStepsPane language currentDate assembled
             , -- Actions are hidden when 'Share via WhatsApp' dialog is open,
               -- so they do not appear on generated screenshot.
@@ -138,7 +138,6 @@ viewContent language currentDate site features id isChw initiator model assemble
         , Html.map MsgReportToWhatsAppDialog
             (Components.ReportToWhatsAppDialog.View.view
                 language
-                currentDate
                 site
                 ( assembled.participant.person, assembled.person )
                 Components.ReportToWhatsAppDialog.Model.ReportAcuteIllness
@@ -195,12 +194,11 @@ viewHeader language id initiator =
 
 viewAssessmentPane :
     Language
-    -> NominalDate
     -> List AcuteIllnessEncounterData
     -> List AcuteIllnessEncounterData
     -> AssembledData
     -> Html Msg
-viewAssessmentPane language currentDate firstInitialWithSubsequent secondInitialWithSubsequent assembled =
+viewAssessmentPane language firstInitialWithSubsequent secondInitialWithSubsequent assembled =
     let
         encountersWithDiagnosis =
             firstInitialWithSubsequent
@@ -262,8 +260,8 @@ viewAssessmentPane language currentDate firstInitialWithSubsequent secondInitial
                     :: previousAssessments
 
 
-viewSymptomsPane : Language -> NominalDate -> List AcuteIllnessEncounterData -> List AcuteIllnessEncounterData -> Html Msg
-viewSymptomsPane language currentDate firstInitialWithSubsequent secondInitialWithSubsequent =
+viewSymptomsPane : Language -> List AcuteIllnessEncounterData -> List AcuteIllnessEncounterData -> Html Msg
+viewSymptomsPane language firstInitialWithSubsequent secondInitialWithSubsequent =
     let
         initialWithSubsequent =
             if List.isEmpty secondInitialWithSubsequent then
@@ -508,43 +506,47 @@ viewPhysicalExamPane language currentDate firstInitialWithSubsequent secondIniti
                                     )
                                     respiratoryRate
 
-                            muac =
-                                encounterData.measurements
-                                    |> .muac
-                                    |> getMeasurementValueFunc
-                                    |> Maybe.map (\(MuacInCm muac_) -> muac_)
-
-                            muacWarning =
-                                Maybe.map
-                                    (\muac_ ->
-                                        case muacIndication (MuacInCm muac_) of
-                                            ColorAlertRed ->
-                                                "red"
-
-                                            ColorAlertYellow ->
-                                                "orange"
-
-                                            ColorAlertGreen ->
-                                                "green"
-                                    )
-                                    muac
-
                             muacCell =
                                 if not showMuac then
                                     emptyNode
 
-                                else if isNothing muac then
-                                    viewNotTaken
-
-                                else if muacWarning == Just "green" then
-                                    td [ class "muac" ] [ text <| "(" ++ (String.toLower <| translate language Translate.Normal) ++ ")" ]
-
                                 else
                                     let
-                                        muacValue =
-                                            Maybe.map String.fromFloat muac
+                                        muac =
+                                            encounterData.measurements
+                                                |> .muac
+                                                |> getMeasurementValueFunc
+                                                |> Maybe.map (\(MuacInCm muac_) -> muac_)
                                     in
-                                    viewValueWithAlert muacValue muacWarning "muac"
+                                    if isNothing muac then
+                                        viewNotTaken
+
+                                    else
+                                        let
+                                            muacWarning =
+                                                Maybe.map
+                                                    (\muac_ ->
+                                                        case muacIndicationForPerson currentDate assembled.person (MuacInCm muac_) of
+                                                            ColorAlertRed ->
+                                                                "red"
+
+                                                            ColorAlertYellow ->
+                                                                "orange"
+
+                                                            ColorAlertGreen ->
+                                                                "green"
+                                                    )
+                                                    muac
+                                        in
+                                        if muacWarning == Just "green" then
+                                            td [ class "muac" ] [ text <| "(" ++ (String.toLower <| translate language Translate.Normal) ++ ")" ]
+
+                                        else
+                                            let
+                                                muacValue =
+                                                    Maybe.map String.fromFloat muac
+                                            in
+                                            viewValueWithAlert muacValue muacWarning "muac"
                         in
                         tr []
                             [ td [ class "date" ] [ text <| formatDDMMYYYY encounterData.startDate ]
@@ -587,12 +589,10 @@ viewPhysicalExamPane language currentDate firstInitialWithSubsequent secondIniti
 
 viewNutritionSignsPane :
     Language
-    -> NominalDate
     -> List AcuteIllnessEncounterData
     -> List AcuteIllnessEncounterData
-    -> AssembledData
     -> Html Msg
-viewNutritionSignsPane language currentDate firstInitialWithSubsequent secondInitialWithSubsequent assembled =
+viewNutritionSignsPane language firstInitialWithSubsequent secondInitialWithSubsequent =
     let
         nutritions =
             firstInitialWithSubsequent
@@ -618,27 +618,25 @@ viewNutritionSignsPane language currentDate firstInitialWithSubsequent secondIni
 
 viewTreatmentPane :
     Language
-    -> NominalDate
     -> List AcuteIllnessEncounterData
     -> List AcuteIllnessEncounterData
     -> AssembledData
     -> Html Msg
-viewTreatmentPane language currentDate firstInitialWithSubsequent secondInitialWithSubsequent assembled =
+viewTreatmentPane language firstInitialWithSubsequent secondInitialWithSubsequent assembled =
     div [ class "pane treatment" ]
         [ viewPaneHeading language Translate.Treatment
         , div [ class "pane-content" ] <|
-            viewTreatmentSigns language currentDate assembled.initialEncounter firstInitialWithSubsequent secondInitialWithSubsequent
+            viewTreatmentSigns language assembled.initialEncounter firstInitialWithSubsequent secondInitialWithSubsequent
         ]
 
 
 viewTreatmentSigns :
     Language
-    -> NominalDate
     -> Bool
     -> List AcuteIllnessEncounterData
     -> List AcuteIllnessEncounterData
     -> List (Html Msg)
-viewTreatmentSigns language currentDate initialEncounter firstInitialWithSubsequent secondInitialWithSubsequent =
+viewTreatmentSigns language initialEncounter firstInitialWithSubsequent secondInitialWithSubsequent =
     let
         initialWithSubsequent =
             if List.isEmpty secondInitialWithSubsequent then
@@ -774,7 +772,7 @@ viewTreatmentSigns language currentDate initialEncounter firstInitialWithSubsequ
                                                         [ text "- "
                                                         , text <| translate language <| Translate.AdverseEventSinglePlural <| List.length events
                                                         , text " "
-                                                        , text <| translate language <| Translate.To
+                                                        , text <| translate language Translate.To
                                                         , text " "
                                                         , text medications
                                                         , text ": "
@@ -805,7 +803,7 @@ viewTreatmentSigns language currentDate initialEncounter firstInitialWithSubsequ
                                             >> viewTreatmentOngoing dataSubsequent.startDate
                                             >> List.append
                                                 [ div [ class "visit-date" ]
-                                                    [ text <| translate language <| Translate.On
+                                                    [ text <| translate language Translate.On
                                                     , text " "
                                                     , text <| formatDDMMYYYY dataSubsequent.startDate
                                                     , text " :"
@@ -820,12 +818,11 @@ viewTreatmentSigns language currentDate initialEncounter firstInitialWithSubsequ
 
 viewActionsTakenPane :
     Language
-    -> NominalDate
     -> List AcuteIllnessEncounterData
     -> List AcuteIllnessEncounterData
     -> AssembledData
     -> Html Msg
-viewActionsTakenPane language currentDate firstInitialWithSubsequent secondInitialWithSubsequent assembled =
+viewActionsTakenPane language firstInitialWithSubsequent secondInitialWithSubsequent assembled =
     let
         content =
             firstInitialWithSubsequent
@@ -1069,7 +1066,7 @@ viewActionsTakenMedicationDistribution language date person diagnosis measuremen
                         Maybe.map
                             (\dosage ->
                                 [ viewAdministeredMedicationLabel language Translate.Administered (Translate.MedicationDistributionSign Zinc) "icon-pills" (Just date)
-                                , viewTabletsPrescription language dosage (Translate.ByMouthDaylyForXDays 10)
+                                , viewTabletsPrescription language dosage (Translate.ByMouthDailyForXDays 10)
                                 ]
                             )
                             (resolveZincDosage date person)
@@ -1124,13 +1121,13 @@ viewNonAdministrationReason language medicineTranslationId iconClass maybeDate r
             div [] <|
                 [ span [ class "medicine" ] [ text <| translate language medicineTranslationId ]
                 , text " "
-                , text <| translate language <| Translate.RecommendedButNotGivenDueTo
+                , text <| translate language Translate.RecommendedButNotGivenDueTo
                 , text ": "
                 , text <| translate language <| Translate.AdministrationNote reason
                 ]
                     ++ renderDatePart language maybeDate
     in
-    div [ class "header icon-label" ] <|
+    div [ class "header icon-label" ]
         [ i [ class iconClass ] []
         , message
         ]
