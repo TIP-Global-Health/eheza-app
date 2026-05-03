@@ -24,7 +24,7 @@ $batch = drush_get_option('batch', 50);
 // Get allowed memory limit.
 $memory_limit = drush_get_option('memory_limit', 800);
 
-$base_query = new EntityFieldQuery();
+$base_query = hedley_general_create_entity_field_query_excluding_deleted();
 $base_query
   ->entityCondition('entity_type', 'node')
   ->propertyCondition('type', 'child')
@@ -85,7 +85,7 @@ while (TRUE) {
 
     $mother_id = $child->field_mother->field_person->getIdentifier();
     if (!empty($mother_id)) {
-      $relationship_query = new EntityFieldQuery();
+      $relationship_query = hedley_general_create_entity_field_query_excluding_deleted();
       $relationship_query
         ->entityCondition('entity_type', 'node')
         ->propertyCondition('type', 'relationship')

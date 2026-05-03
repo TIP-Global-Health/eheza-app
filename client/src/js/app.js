@@ -317,6 +317,14 @@ dbSync.version(30).stores({
     shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter,acute_illness_encounter,home_visit_encounter,well_child_encounter,ncd_encounter,child_scoreboard_encounter,tuberculosis_encounter,hiv_encounter,*name_search,[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult],[type+province+district+sector+cell+village],newborn,*participating_patients,*national_id_number',
 });
 
+dbSync.version(31).upgrade(function (tx) {
+  return tx.dbErrors.clear();
+});
+
+dbSync.version(32).stores({
+    shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter,acute_illness_encounter,home_visit_encounter,well_child_encounter,ncd_encounter,child_scoreboard_encounter,tuberculosis_encounter,hiv_encounter,family_nutrition_encounter,*name_search,[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+family_participant],[type+adult],[type+province+district+sector+cell+village],newborn,*participating_patients,*national_id_number',
+});
+
 /**
  * --- !!! IMPORTANT !!! ---
  *
@@ -375,7 +383,7 @@ function gatherWords (text) {
  *
  * @type {number}
  */
-const dbVersion = 30;
+const dbVersion = 32;
 
 /**
  * Return saved info for General sync.
@@ -906,7 +914,6 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         return sendIndexedDbFetchResult(queryType, resultToSend);
       })();
       break;
-
 
     case 'IndexDbQueryUploadWhatsApp':
       (async () => {

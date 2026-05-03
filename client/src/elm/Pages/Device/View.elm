@@ -3,7 +3,7 @@ module Pages.Device.View exposing (view)
 import App.Model
 import App.Utils exposing (getLoggedInData)
 import AssocList as Dict
-import Device.Model exposing (..)
+import Device.Model exposing (Device)
 import EverySet
 import Gizra.TimePosix exposing (viewTimePosix)
 import Html exposing (..)
@@ -11,7 +11,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Zipper as Zipper
 import Maybe.Extra
-import Pages.Device.Model exposing (..)
+import Pages.Device.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (toEntityUuid)
@@ -107,7 +107,7 @@ viewSyncInfo language info =
             viewDateTime (Time.millisToPosix info.lastSuccesfulContact)
     in
     div [ class "sync-status" ]
-        [ div [] [ text <| translate language Translate.LastSuccesfulContactLabel ++ ": " ++ lastSuccessfulContact ]
+        [ div [] [ text <| translate language Translate.LastSuccessfulContactLabel ++ ": " ++ lastSuccessfulContact ]
         , div [] [ text <| translate language Translate.RemainingForUploadLabel ++ ": " ++ String.fromInt info.remainingToUpload ]
         , div [] [ text <| translate language Translate.RemainingForDownloadLabel ++ ": " ++ String.fromInt info.remainingToDownload ]
         , div [] [ text <| translate language Translate.StatusLabel ++ ": " ++ syncInfoStatusToString info.status ]

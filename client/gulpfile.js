@@ -5,7 +5,6 @@ var gulp = require("gulp");
 
 var transform = require('gulp-transform');
 
-var gulpSequence = require('gulp-sequence');
 
 var uglify = require('gulp-uglify');
 
@@ -20,6 +19,8 @@ var rename = require("gulp-rename");
 var browserSync = require("browser-sync");
 
 var elm = require('gulp-elm');
+
+var sass = require('gulp-sass')(require('sass'));
 
 var fs = require('fs');
 var path = require('path');
@@ -45,22 +46,21 @@ const {
 
 
 // Deletes the directory that is used to serve the site during development
-gulp.task("clean:dev", function(cb) {
-  return del(["serve"],
-    cb);
+gulp.task("clean:dev", function() {
+  return del(["serve"]);
 });
 
 // Deletes the directory that the optimized site is output to
-gulp.task("clean:prod", function(cb) {
-  return del(["dist"], cb);
+gulp.task("clean:prod", function() {
+  return del(["dist"]);
 });
 
 // Compiles the SASS files and moves them into the "assets/stylesheets" directory
-gulp.task("styles", [], function() {
+gulp.task("styles", function() {
   // Looks at the style.scss file for what to include and creates a style.css file
   return gulp.src("src/assets/scss/style.scss")
     .pipe(plumber())
-    .pipe($.sass())
+    .pipe(sass({silenceDeprecations: ['legacy-js-api', 'import']}))
     .on('error', function(err) {
       browserSync.notify("SASS error");
 
@@ -92,7 +92,7 @@ gulp.task("styles", [], function() {
 });
 
 // Compile the raw Z-Score files to something more useful.
-gulp.task("zscore", [], function() {
+gulp.task("zscore", function() {
   var parseOptions = {
     cast: true,
     columns: true,
@@ -128,7 +128,7 @@ gulp.task("zscore", [], function() {
     })).pipe(gulp.dest('src/generated/ZScore/Fixture/'));
 });
 
-gulp.task('version', [], function() {
+gulp.task('version', function() {
   var stream = sourceStream('Version.elm');
 
   gitRev.short(function(rev) {
@@ -172,14 +172,18 @@ gulp.task("copy:fonts", function() {
 });
 
 // Copy index.html and CNAME files to the "serve" directory
-gulp.task("copy:dev", ["copy:bower", "copy:html2canvas", "copy:signature_pad",
-  "copy:rollbar", "copy:images", "copy:favicon", "copy:fonts"
-], function() {
-  return gulp.src(["src/index.html", "src/CNAME", "src/js/**/*"])
-    .pipe(gulp.dest("serve"))
-    .pipe($.size({
-      title: "index.html & CNAME"
-    }))
+gulp.task("copy:dev", function(cb) {
+  gulp.series(
+    gulp.parallel("copy:bower", "copy:html2canvas", "copy:signature_pad",
+      "copy:rollbar", "copy:images", "copy:favicon", "copy:fonts"),
+    function copyDevFiles() {
+      return gulp.src(["src/index.html", "src/CNAME", "src/js/**/*"])
+        .pipe(gulp.dest("serve"))
+        .pipe($.size({
+          title: "index.html & CNAME"
+        }))
+    }
+  )(cb);
 });
 
 // Copy bower.
@@ -251,14 +255,15 @@ gulp.task("cname", function() {
 });
 
 gulp.task('bower', function() {
-  gulp.src("src/index.html")
+  return gulp.src("src/index.html")
     .pipe(wiredep())
     .pipe(gulp.dest("serve"));
 });
 
 // Optimizes all the CSS, HTML and concats the JS etc
-gulp.task("minify", ["styles", "zscore", "copy:images", "copy:favicon"],
-  function() {
+gulp.task("minify", gulp.series(
+  gulp.parallel("styles", "zscore", "copy:images", "copy:favicon"),
+  function minifyFiles() {
     return gulp.src("serve/**/*.*")
       // Concatenate JavaScript files and preserve important comments.
       // DropZone had a problem if we mangle
@@ -290,11 +295,12 @@ gulp.task("minify", ["styles", "zscore", "copy:images", "copy:favicon"],
       .pipe($.size({
         title: "optimizations"
       }));
-  });
+  }
+));
 
 
 // Task to upload your site to your GH Pages repo
-gulp.task("deploy", [], function() {
+gulp.task("deploy", function() {
   // Deploys your optimized site, you can change the settings in the html task if you want to
   return gulp.src("dist/**/*")
     .pipe($.ghPages({
@@ -302,9 +308,7 @@ gulp.task("deploy", [], function() {
     }));
 });
 
-gulp.task('elm-init', elm.init);
-
-gulp.task('elm', ['elm-init', 'version'], function() {
+gulp.task('elm', gulp.series('version', function elmCompile() {
   return gulp.src('src/elm/Main.elm')
     .pipe(plumber())
     .pipe(elm({
@@ -323,36 +327,43 @@ gulp.task('elm', ['elm-init', 'version'], function() {
         "</pre></body></html>");
     })
     .pipe(gulp.dest('serve'));
-});
+}));
 
 // BrowserSync will serve our site on a local server for us and other devices to use
 // It will also autoreload across all devices as well as keep the viewport synchronized
 // between them.
-gulp.task("serve:dev", ["build"], function() {
-  bs = browserSync({
-    notify: true,
-    // tunnel: "",
-    server: {
-      baseDir: "serve"
-    },
-    "open": false
-  });
+gulp.task("serve:dev", function(cb) {
+  gulp.series("build", function serveDevServer(innerCb) {
+    bs = browserSync({
+      notify: true,
+      // tunnel: "",
+      server: {
+        baseDir: "serve"
+      },
+      "open": false
+    }, innerCb);
+  })(cb);
 });
 
 // Serves on HTTPS for the Android emulator.
-gulp.task("serve:emulator", ["build", "ssl-cert"], function() {
-  bs = browserSync({
-    notify: true,
-    // tunnel: "",
-    server: {
-      baseDir: "serve"
-    },
-    "open": false,
-    https: {
-      cert: "ssl/ssl.pem",
-      key: "ssl/ssl.key"
+gulp.task("serve:emulator", function(cb) {
+  gulp.series(
+    gulp.parallel("build", "ssl-cert"),
+    function serveEmulatorServer(innerCb) {
+      bs = browserSync({
+        notify: true,
+        // tunnel: "",
+        server: {
+          baseDir: "serve"
+        },
+        "open": false,
+        https: {
+          cert: "ssl/ssl.pem",
+          key: "ssl/ssl.key"
+        }
+      }, innerCb);
     }
-  });
+  )(cb);
 });
 
 // Makes an SSL certificate for eheza-app.dev for the Android emulator. Just
@@ -379,24 +390,21 @@ gulp.task("ssl-cert", function(cb) {
 
 // These tasks will look for files that change while serving and will auto-regenerate or
 // reload the website accordingly. Update or add other files you need to be watched.
-gulp.task("watch", function() {
+gulp.task("watch", function(cb) {
   // We need to copy dev, so index.html may be replaced by error messages.
-  gulp.watch(["src/index.html", "src/js/**/*.js"], [
-    "pwa:dev", reload
-  ]);
-  gulp.watch(["src/elm/**/*.elm"], [
-    "pwa:dev", reload
-  ]);
-  gulp.watch(["src/assets/scss/**/*.scss"], [
-    "pwa:dev", reload
-  ]);
-  gulp.watch(["src/assets/zscore/**/*.txt"], [
-    "pwa:dev", reload
-  ]);
+  gulp.watch(["src/index.html", "src/js/**/*.js"],
+    gulp.series("pwa:dev", function reloadBrowser(done) { reload(); done(); }));
+  gulp.watch(["src/elm/**/*.elm"],
+    gulp.series("pwa:dev", function reloadBrowser2(done) { reload(); done(); }));
+  gulp.watch(["src/assets/scss/**/*.scss"],
+    gulp.series("pwa:dev", function reloadBrowser3(done) { reload(); done(); }));
+  gulp.watch(["src/assets/zscore/**/*.txt"],
+    gulp.series("pwa:dev", function reloadBrowser4(done) { reload(); done(); }));
+  cb();
 });
 
 // Serve the site after optimizations to see that everything looks fine
-gulp.task("serve:prod", function() {
+gulp.task("serve:prod", function(cb) {
   bs = browserSync({
     "open": false,
     notify: false,
@@ -404,7 +412,7 @@ gulp.task("serve:prod", function() {
     server: {
       baseDir: "dist"
     }
-  });
+  }, cb);
 });
 
 var precacheFileGlob =
@@ -427,38 +435,41 @@ var precacheLocalDev = [
 ];
 
 // For offline use while developing
-gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm"], function() {
-  var workboxBuild = require('workbox-build');
+gulp.task('pwa:dev', gulp.series(
+  gulp.parallel("styles", "zscore", "copy:dev", "elm"),
+  function generateServiceWorker() {
+    var workboxBuild = require('workbox-build');
 
-  return workboxBuild.generateSW({
-    swDest: 'serve/service-worker.js',
-    cacheId: 'eheza-app',
-    globDirectory: 'serve',
-    globPatterns: precacheLocalDev,
-    maximumFileSizeToCacheInBytes: 50 * 1024 * 1024,
-    clientsClaim: true,
-    skipWaiting: false,
-    importScripts: [
-      'bower_components/dexie/dist/dexie.min.js',
-      'uuid.js',
-      'sw.js',
-      'config.js',
-      'lifecycle.js',
-      'nodes.js',
-      'statistics.js',
-      'photos.js',
-    ]
-  });
-});
+    return workboxBuild.generateSW({
+      swDest: 'serve/service-worker.js',
+      cacheId: 'eheza-app',
+      globDirectory: 'serve',
+      globPatterns: precacheLocalDev,
+      maximumFileSizeToCacheInBytes: 50 * 1024 * 1024,
+      clientsClaim: true,
+      skipWaiting: false,
+      importScripts: [
+        'bower_components/dexie/dist/dexie.min.js',
+        'uuid.js',
+        'sw.js',
+        'config.js',
+        'lifecycle.js',
+        'nodes.js',
+        'statistics.js',
+        'photos.js',
+      ]
+    });
+  }
+));
 
 // Serve for the Android emulator, then watch.
-gulp.task("emulator", ["serve:emulator", "watch"]);
+gulp.task("emulator", gulp.series("serve:emulator", "watch"));
 
 // Default task, run when just writing "gulp" in the terminal
-gulp.task("default", gulpSequence("serve:dev", "watch"));
+gulp.task("default", gulp.series("serve:dev", "watch"));
 
 // Builds the site but doesnt serve it to you
-gulp.task("build", gulpSequence("clean:dev", "pwa:dev"));
+gulp.task("build", gulp.series("clean:dev", "pwa:dev"));
 
 // Tweak config to include real environment.
 gulp.task("deploy:config", function() {
@@ -471,11 +482,15 @@ gulp.task("deploy:config", function() {
 });
 
 // Revert config.
-gulp.task("deploy:revert", function() {
-  return exec("git checkout src/elm/Config.elm");
+gulp.task("deploy:revert", function(cb) {
+  exec("git checkout src/elm/Config.elm", cb);
 });
 
 // Builds your site with the "build" command and then runs all the optimizations on
 // it and outputs it to "./dist"
-gulp.task("publish", gulpSequence("deploy:config", ["build", "clean:prod"],
- ["minify", "cname", "images"], "deploy:revert"));
+gulp.task("publish", gulp.series(
+  "deploy:config",
+  gulp.parallel("build", "clean:prod"),
+  gulp.parallel("minify", "cname", "images"),
+  "deploy:revert"
+));

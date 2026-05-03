@@ -1,4 +1,4 @@
-module Backend.TuberculosisEncounter.Model exposing (..)
+module Backend.TuberculosisEncounter.Model exposing (Model, Msg(..), TuberculosisEncounter, emptyModel, emptyTuberculosisEncounter)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -10,6 +10,7 @@ type alias TuberculosisEncounter =
     { participant : IndividualEncounterParticipantId
     , startDate : NominalDate
     , endDate : Maybe NominalDate
+    , deleted : Bool
     , shard : Maybe HealthCenterId
     }
 
@@ -19,6 +20,7 @@ emptyTuberculosisEncounter participant startDate shard =
     { participant = participant
     , startDate = startDate
     , endDate = Nothing
+    , deleted = False
     , shard = shard
     }
 

@@ -6,7 +6,7 @@ import Backend.NCDEncounter.Model
 import Components.ReportToWhatsAppDialog.Model
 import Components.ReportToWhatsAppDialog.Update
 import Gizra.Update exposing (sequenceExtra)
-import Pages.NCD.ProgressReport.Model exposing (..)
+import Pages.NCD.ProgressReport.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..))
 import Pages.Report.Model exposing (LabResultsMode(..))
 

@@ -1,4 +1,4 @@
-module Pages.Nutrition.Activity.Utils exposing (..)
+module Pages.Nutrition.Activity.Utils exposing (activityCompleted, allMandatoryActivities, expectActivity, generateNutritionAssessment, mandatoryActivitiesCompleted, nextStepsTasksCompletedFromTotal)
 
 import Backend.Measurement.Model
     exposing
@@ -10,12 +10,11 @@ import Backend.Measurement.Utils exposing (expectNCDAActivity, getMeasurementVal
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.NutritionEncounter.Utils
-import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
-import Measurement.Model exposing (..)
+import Measurement.Model exposing (NextStepsTask(..))
 import Measurement.Utils
     exposing
         ( contributingFactorsFormWithDefault
@@ -30,7 +29,7 @@ import Measurement.View
         , healthEducationFormInutsAndTasks
         , sendToFacilityInputsAndTasks
         )
-import Pages.Nutrition.Activity.Model exposing (..)
+import Pages.Nutrition.Activity.Model exposing (NextStepsData)
 import Pages.Nutrition.Encounter.Model exposing (AssembledData)
 import Pages.Utils exposing (resolveTasksCompletedFromTotal)
 import SyncManager.Model exposing (Site(..), SiteFeature)
@@ -62,8 +61,8 @@ generateNutritionAssessment currentDate zscores db assembled =
     Backend.NutritionEncounter.Utils.generateNutritionAssessment currentDate zscores assembled.participant.person muacValue nutritionValue weightValue True db
 
 
-expectActivity : NominalDate -> ZScore.Model.Model -> EverySet SiteFeature -> Bool -> AssembledData -> ModelIndexedDb -> NutritionActivity -> Bool
-expectActivity currentDate zscores features isChw assembled db activity =
+expectActivity : NominalDate -> Site -> ZScore.Model.Model -> EverySet SiteFeature -> Bool -> AssembledData -> ModelIndexedDb -> NutritionActivity -> Bool
+expectActivity currentDate site zscores features isChw assembled db activity =
     case activity of
         -- Show for children that are at least 6 months old.
         Muac ->
@@ -71,12 +70,12 @@ expectActivity currentDate zscores features isChw assembled db activity =
                 |> Maybe.map (\ageMonths -> ageMonths > 5)
                 |> Maybe.withDefault False
 
-        -- For nurses only, show if child is bellow age of 24 months.
+        -- For nurses only, show if child is below age of 24 months.
         NCDA ->
             expectNCDAActivity currentDate features isChw assembled.person
 
         NextSteps ->
-            if mandatoryActivitiesCompleted currentDate zscores features assembled.person isChw assembled db then
+            if mandatoryActivitiesCompleted currentDate site zscores features isChw assembled db then
                 -- Any assesment require sending to HC.
                 generateNutritionAssessment currentDate zscores db assembled
                     |> List.isEmpty
@@ -90,19 +89,19 @@ expectActivity currentDate zscores features isChw assembled db activity =
             True
 
 
-activityCompleted : NominalDate -> ZScore.Model.Model -> EverySet SiteFeature -> Bool -> AssembledData -> ModelIndexedDb -> NutritionActivity -> Bool
-activityCompleted currentDate zscores features isChw assembled db activity =
+activityCompleted : NominalDate -> Site -> ZScore.Model.Model -> EverySet SiteFeature -> Bool -> AssembledData -> ModelIndexedDb -> NutritionActivity -> Bool
+activityCompleted currentDate site zscores features isChw assembled db activity =
     let
         measurements =
             assembled.measurements
     in
     case activity of
         Height ->
-            (not <| expectActivity currentDate zscores features isChw assembled db Height)
+            (not <| expectActivity currentDate site zscores features isChw assembled db Height)
                 || isJust measurements.height
 
         Muac ->
-            (not <| expectActivity currentDate zscores features isChw assembled db Muac)
+            (not <| expectActivity currentDate site zscores features isChw assembled db Muac)
                 || isJust measurements.muac
 
         Nutrition ->
@@ -118,7 +117,7 @@ activityCompleted currentDate zscores features isChw assembled db activity =
             isJust measurements.ncda
 
         NextSteps ->
-            (not <| expectActivity currentDate zscores features isChw assembled db NextSteps)
+            (not <| expectActivity currentDate site zscores features isChw assembled db NextSteps)
                 || (isJust measurements.sendToHC
                         && isJust measurements.healthEducation
                         && isJust measurements.contributingFactors
@@ -126,26 +125,31 @@ activityCompleted currentDate zscores features isChw assembled db activity =
                    )
 
 
-mandatoryActivitiesCompleted : NominalDate -> ZScore.Model.Model -> EverySet SiteFeature -> Person -> Bool -> AssembledData -> ModelIndexedDb -> Bool
-mandatoryActivitiesCompleted currentDate zscores features child isChw assembled db =
-    allMandatoryActivities isChw
-        |> List.all (activityCompleted currentDate zscores features isChw assembled db)
+mandatoryActivitiesCompleted : NominalDate -> Site -> ZScore.Model.Model -> EverySet SiteFeature -> Bool -> AssembledData -> ModelIndexedDb -> Bool
+mandatoryActivitiesCompleted currentDate site zscores features isChw assembled db =
+    allMandatoryActivities site isChw
+        |> List.all (activityCompleted currentDate site zscores features isChw assembled db)
 
 
 {-| List of activities that need to be completed, in order to
 decide if to show Next Steps activity, or not.
 -}
-allMandatoryActivities : Bool -> List NutritionActivity
-allMandatoryActivities isChw =
+allMandatoryActivities : Site -> Bool -> List NutritionActivity
+allMandatoryActivities site isChw =
     if isChw then
-        [ Muac, Nutrition, Weight ]
+        -- Weight is optional for CHW in Burundi.
+        if site == SiteBurundi then
+            [ Muac, Nutrition ]
+
+        else
+            [ Muac, Nutrition, Weight ]
 
     else
         [ Height, Muac, Nutrition, Weight ]
 
 
-nextStepsTasksCompletedFromTotal : NominalDate -> NutritionMeasurements -> NextStepsData -> NextStepsTask -> ( Int, Int )
-nextStepsTasksCompletedFromTotal currentDate measurements data task =
+nextStepsTasksCompletedFromTotal : NutritionMeasurements -> NextStepsData -> NextStepsTask -> ( Int, Int )
+nextStepsTasksCompletedFromTotal measurements data task =
     let
         ( _, tasks ) =
             case task of
@@ -153,7 +157,6 @@ nextStepsTasksCompletedFromTotal currentDate measurements data task =
                     getMeasurementValueFunc measurements.sendToHC
                         |> sendToHCFormWithDefault data.sendToHCForm
                         |> sendToFacilityInputsAndTasks English
-                            currentDate
                             FacilityHealthCenter
                             Pages.Nutrition.Activity.Model.SetReferToHealthCenter
                             Pages.Nutrition.Activity.Model.SetReasonForNonReferral
@@ -164,7 +167,6 @@ nextStepsTasksCompletedFromTotal currentDate measurements data task =
                     getMeasurementValueFunc measurements.healthEducation
                         |> healthEducationFormWithDefault data.healthEducationForm
                         |> healthEducationFormInutsAndTasks English
-                            currentDate
                             Pages.Nutrition.Activity.Model.SetProvidedEducationForDiagnosis
                             Pages.Nutrition.Activity.Model.SetReasonForNotProvidingHealthEducation
 
@@ -172,14 +174,12 @@ nextStepsTasksCompletedFromTotal currentDate measurements data task =
                     getMeasurementValueFunc measurements.contributingFactors
                         |> contributingFactorsFormWithDefault data.contributingFactorsForm
                         |> contributingFactorsFormInutsAndTasks English
-                            currentDate
                             Pages.Nutrition.Activity.Model.SetContributingFactorsSign
 
                 NextStepFollowUp ->
                     getMeasurementValueFunc measurements.followUp
                         |> nutritionFollowUpFormWithDefault data.followUpForm
                         |> followUpFormInputsAndTasks English
-                            currentDate
                             []
                             Pages.Nutrition.Activity.Model.SetFollowUpOption
     in

@@ -67,6 +67,49 @@ function hedley_forms_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-participant_consent-field_deleted'.
+  $field_instances['node-participant_consent-field_deleted'] = array(
+    'bundle' => 'participant_consent',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance: 'node-participant_consent-field_language'.
   $field_instances['node-participant_consent-field_language'] = array(
     'bundle' => 'participant_consent',
@@ -139,6 +182,7 @@ function hedley_forms_field_default_field_instances() {
       'active' => 1,
       'module' => 'entityreference',
       'settings' => array(
+        'hide_ids' => FALSE,
         'match_operator' => 'CONTAINS',
         'path' => '',
         'size' => 60,
@@ -183,6 +227,7 @@ function hedley_forms_field_default_field_instances() {
       'active' => 1,
       'module' => 'entityreference',
       'settings' => array(
+        'hide_ids' => FALSE,
         'match_operator' => 'CONTAINS',
         'path' => '',
         'size' => 60,
@@ -227,6 +272,7 @@ function hedley_forms_field_default_field_instances() {
       'active' => 1,
       'module' => 'entityreference',
       'settings' => array(
+        'hide_ids' => FALSE,
         'match_operator' => 'CONTAINS',
         'path' => '',
         'size' => 60,
@@ -271,6 +317,7 @@ function hedley_forms_field_default_field_instances() {
       'active' => 1,
       'module' => 'entityreference',
       'settings' => array(
+        'hide_ids' => FALSE,
         'match_operator' => 'CONTAINS',
         'path' => '',
         'size' => 60,
@@ -315,6 +362,7 @@ function hedley_forms_field_default_field_instances() {
       'active' => 1,
       'module' => 'entityreference',
       'settings' => array(
+        'hide_ids' => FALSE,
         'match_operator' => 'CONTAINS',
         'path' => '',
         'size' => 60,
@@ -534,6 +582,7 @@ function hedley_forms_field_default_field_instances() {
   // Included for use with string extractors like potx.
   t('Body');
   t('Date Measured');
+  t('Deleted');
   t('Group Encounter');
   t('Kinyarwanda Body');
   t('Kinyarwanda Title');

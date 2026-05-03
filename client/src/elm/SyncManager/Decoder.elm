@@ -13,6 +13,8 @@ import Backend.Clinic.Decoder
 import Backend.Counseling.Decoder
 import Backend.Dashboard.Decoder
 import Backend.EducationSession.Decoder
+import Backend.FamilyEncounterParticipant.Decoder
+import Backend.FamilyNutritionEncounter.Decoder
 import Backend.HIVEncounter.Decoder
 import Backend.HealthCenter.Decoder
 import Backend.HomeVisitEncounter.Decoder
@@ -36,8 +38,8 @@ import Components.ReportToWhatsAppDialog.Decoder exposing (decodeReportType)
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate
-import Json.Decode exposing (..)
-import Json.Decode.Pipeline exposing (..)
+import Json.Decode exposing (Decoder, andThen, at, fail, field, int, list, map, nullable, oneOf, string, succeed)
+import Json.Decode.Pipeline exposing (hardcoded, optional, optionalAt, required, requiredAt)
 import RemoteData exposing (RemoteData)
 import SyncManager.Model exposing (..)
 import SyncManager.Utils exposing (siteFeaturesFromString, siteFromString)
@@ -52,28 +54,28 @@ decodeIndexDbQueryTypeResult =
                 case queryType of
                     "IndexDbQueryUploadPhotoResult" ->
                         decodeIndexDbQueryUploadPhotoResultRecordRemoteData
-                            |> andThen (\val -> succeed (IndexDbQueryUploadPhotoResult val))
+                            |> map (\val -> IndexDbQueryUploadPhotoResult val)
 
                     "IndexDbQueryUploadScreenshotResult" ->
                         decodeIndexDbQueryUploadScreenshotResultRecordRemoteData
-                            |> andThen (\val -> succeed (IndexDbQueryUploadScreenshotResult val))
+                            |> map (\val -> IndexDbQueryUploadScreenshotResult val)
 
                     "IndexDbQueryUploadAuthorityResult" ->
                         field "data" decodeIndexDbQueryUploadAuthorityResultRecord
-                            |> andThen (\record -> succeed (IndexDbQueryUploadAuthorityResult (Just record)))
+                            |> map (\record -> IndexDbQueryUploadAuthorityResult (Just record))
 
                     "IndexDbQueryUploadGeneralResult" ->
                         field "data" decodeIndexDbQueryUploadGeneralResultRecord
-                            |> andThen (\record -> succeed (IndexDbQueryUploadGeneralResult (Just record)))
+                            |> map (\record -> IndexDbQueryUploadGeneralResult (Just record))
 
                     "IndexDbQueryUploadWhatsAppResult" ->
                         field "data" decodeIndexDbQueryUploadWhatsAppResultRecord
-                            |> andThen (\record -> succeed (IndexDbQueryUploadWhatsAppResult (Just record)))
+                            |> map (\record -> IndexDbQueryUploadWhatsAppResult (Just record))
 
                     "IndexDbQueryDeferredPhotoResult" ->
                         oneOf
                             [ field "data" decodeIndexDbQueryDeferredPhotoResult
-                                |> andThen (\record -> succeed (IndexDbQueryDeferredPhotoResult (Just record)))
+                                |> map (\record -> IndexDbQueryDeferredPhotoResult (Just record))
 
                             -- In case we have no deferred photo.
                             , succeed (IndexDbQueryDeferredPhotoResult Nothing)
@@ -81,11 +83,11 @@ decodeIndexDbQueryTypeResult =
 
                     "IndexDbQueryGetTotalEntriesToUploadResult" ->
                         field "data" decodeInt
-                            |> andThen (\val -> succeed (IndexDbQueryGetTotalEntriesToUploadResult val))
+                            |> map (\val -> IndexDbQueryGetTotalEntriesToUploadResult val)
 
                     "IndexDbQueryGetShardsEntityByUuidResult" ->
                         field "data" string
-                            |> andThen (\val -> succeed (IndexDbQueryGetShardsEntityByUuidResult val))
+                            |> map (\val -> IndexDbQueryGetShardsEntityByUuidResult val)
 
                     _ ->
                         fail <| queryType ++ " is not a recognized IndexDbQueryTypeResult"
@@ -101,7 +103,7 @@ decodeIndexDbQueryUploadPhotoResultRecordRemoteData =
                     "Success" ->
                         oneOf
                             [ at [ "data", "result" ] decodeIndexDbQueryUploadPhotoResultRecord
-                                |> andThen (\record -> succeed (RemoteData.Success (Just record)))
+                                |> map (\record -> RemoteData.Success (Just record))
 
                             -- In case we have no photos to upload.
                             , succeed (RemoteData.Success Nothing)
@@ -142,7 +144,7 @@ decodeIndexDbQueryUploadScreenshotResultRecordRemoteData =
                     "Success" ->
                         oneOf
                             [ at [ "data", "result" ] decodeIndexDbQueryUploadFileResultRecord
-                                |> andThen (\record -> succeed (RemoteData.Success (Just record)))
+                                |> map (\record -> RemoteData.Success (Just record))
 
                             -- In case we have no photos to upload.
                             , succeed (RemoteData.Success Nothing)
@@ -223,13 +225,12 @@ decodeIndexDbQueryUploadAuthorityResultRecord =
         |> required "remaining" decodeInt
         |> optional "uploadPhotos"
             (list decodeIndexDbQueryUploadPhotoResultRecord
-                |> andThen
+                |> map
                     (\list_ ->
                         -- Convert list to a dict.
                         list_
                             |> List.map (\row -> ( row.localId, row ))
                             |> Dict.fromList
-                            |> succeed
                     )
             )
             Dict.empty
@@ -320,7 +321,7 @@ decodeBackendGeneralEntity uuidDecoder identifierDecoder =
                 let
                     doDecode decoder tag =
                         decoder
-                            |> andThen
+                            |> map
                                 (\entity ->
                                     let
                                         backendEntity =
@@ -329,7 +330,7 @@ decodeBackendGeneralEntity uuidDecoder identifierDecoder =
                                             , entity = entity
                                             }
                                     in
-                                    succeed (tag backendEntity)
+                                    tag backendEntity
                                 )
                 in
                 case type_ of
@@ -365,13 +366,13 @@ decodeBackendGeneralEntity uuidDecoder identifierDecoder =
 decodeSite : Decoder Site
 decodeSite =
     string
-        |> andThen (siteFromString >> succeed)
+        |> map siteFromString
 
 
 decodeSiteFeatures : Decoder (EverySet SiteFeature)
 decodeSiteFeatures =
     string
-        |> andThen (siteFeaturesFromString >> succeed)
+        |> map siteFeaturesFromString
 
 
 decodeDownloadSyncResponseAuthority : Decoder (DownloadSyncResponse BackendAuthorityEntity)
@@ -415,7 +416,7 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                 let
                     doDecode decoder tag =
                         decoder
-                            |> andThen
+                            |> map
                                 (\entity ->
                                     let
                                         backendEntity =
@@ -424,7 +425,7 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                                             , entity = entity
                                             }
                                     in
-                                    succeed (tag backendEntity)
+                                    tag backendEntity
                                 )
                 in
                 case type_ of
@@ -477,6 +478,16 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeAcuteIllnessVitals
                             BackendAuthorityAcuteIllnessVitals
+
+                    "aheza_child" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeAhezaChild
+                            BackendAuthorityAhezaChild
+
+                    "aheza_mother" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeAhezaMother
+                            BackendAuthorityAhezaMother
 
                     "appointment_confirmation" ->
                         doDecode
@@ -597,6 +608,31 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeExposure
                             BackendAuthorityExposure
+
+                    "family_participant" ->
+                        doDecode
+                            Backend.FamilyEncounterParticipant.Decoder.decodeFamilyEncounterParticipant
+                            BackendAuthorityFamilyParticipant
+
+                    "family_nutrition_encounter" ->
+                        doDecode
+                            Backend.FamilyNutritionEncounter.Decoder.decodeFamilyNutritionEncounter
+                            BackendAuthorityFamilyNutritionEncounter
+
+                    "family_nutrition_muac_child" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeFamilyNutritionMuacChild
+                            BackendAuthorityFamilyNutritionMuacChild
+
+                    "family_nutrition_muac_mother" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeFamilyNutritionMuacMother
+                            BackendAuthorityFamilyNutritionMuacMother
+
+                    "family_nutrition_photo" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeFamilyNutritionPhoto
+                            BackendAuthorityFamilyNutritionPhoto
 
                     "family_planning" ->
                         doDecode
@@ -1127,6 +1163,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodePrenatalTetanusImmunisation
                             BackendAuthorityPrenatalTetanusImmunisation
+
+                    "prenatal_ultrasound" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalUltrasound
+                            BackendAuthorityPrenatalUltrasound
 
                     "prenatal_urine_dipstick_test" ->
                         doDecode

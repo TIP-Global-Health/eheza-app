@@ -1,4 +1,4 @@
-module Backend.ChildScoreboardEncounter.Model exposing (..)
+module Backend.ChildScoreboardEncounter.Model exposing (ChildScoreboardEncounter, Model, Msg(..), emptyChildScoreboardEncounter, emptyModel)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -10,6 +10,7 @@ type alias ChildScoreboardEncounter =
     { participant : IndividualEncounterParticipantId
     , startDate : NominalDate
     , endDate : Maybe NominalDate
+    , deleted : Bool
     , shard : Maybe HealthCenterId
     }
 
@@ -19,6 +20,7 @@ emptyChildScoreboardEncounter participant startDate shard =
     { participant = participant
     , startDate = startDate
     , endDate = Nothing
+    , deleted = False
     , shard = shard
     }
 

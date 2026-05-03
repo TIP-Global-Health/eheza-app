@@ -1,12 +1,12 @@
-module Pages.Reports.Utils exposing (..)
+module Pages.Reports.Utils exposing (countTotalEncounters, countTotalNutritionEncounters, eddToLmpDate, familyNutritionEncounterToMetrics, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, nutritionEncounterDataToNutritionMetrics, reportTypeFromString, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth, sumNutritionMetrics)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Reports.Model exposing (..)
+import Backend.Reports.Model exposing (FamilyNutritionEncounterData, NutritionEncounterData, PatientData, PersonId, SelectedEntity(..))
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate, diffDays)
 import List.Extra exposing (unique)
 import Maybe.Extra
-import Pages.Reports.Model exposing (..)
+import Pages.Reports.Model exposing (NutritionMetrics, NutritionMetricsResults, PregnancyTrimester(..), ReportType(..), emptyNutritionMetrics)
 import Set
 
 
@@ -93,6 +93,12 @@ countTotalNutritionEncounters data =
     in
     countIndividualDataEncounters data.wellChildData
         + countIndividualDataEncounters data.individualNutritionData
+        -- familyNutritionData (date-only, mother-side) is always 0 for
+        -- children (the nutrition report filters to under-6), but this
+        -- function is also called via countTotalEncounters for the
+        -- Demographics impacted filter, which iterates mothers.
+        + countIndividualDataEncounters data.familyNutritionData
+        + countIndividualDataEncounters data.familyNutritionMuacData
         + countGroupDataEncounters data.groupNutritionPmtctData
         + countGroupDataEncounters data.groupNutritionFbfData
         + countGroupDataEncounters data.groupNutritionSorwatheData
@@ -120,52 +126,92 @@ sumNutritionMetrics =
                 , underweightNormal = accum.underweightNormal ++ metrics.underweightNormal
                 , underweightModerate = accum.underweightModerate ++ metrics.underweightModerate
                 , underweightSevere = accum.underweightSevere ++ metrics.underweightSevere
+                , acuteMalnutritionNormal = accum.acuteMalnutritionNormal ++ metrics.acuteMalnutritionNormal
+                , acuteMalnutritionMam = accum.acuteMalnutritionMam ++ metrics.acuteMalnutritionMam
+                , acuteMalnutritionSam = accum.acuteMalnutritionSam ++ metrics.acuteMalnutritionSam
             }
         )
         emptyNutritionMetrics
 
 
+categorizeAcuteMalnutrition : PersonId -> Maybe Float -> Bool -> ( List PersonId, List PersonId, List PersonId )
+categorizeAcuteMalnutrition personId mMuacCm hasEdema =
+    case mMuacCm of
+        Nothing ->
+            ( [], [], [] )
+
+        Just muacCm ->
+            if muacCm < 11.5 || hasEdema then
+                ( [], [], [ personId ] )
+
+            else if muacCm < 12.5 then
+                ( [], [ personId ], [] )
+
+            else
+                ( [ personId ], [], [] )
+
+
 nutritionEncounterDataToNutritionMetrics : PersonId -> NutritionEncounterData -> NutritionMetrics
-nutritionEncounterDataToNutritionMetrics personId =
-    .nutritionData
-        >> Maybe.map
-            (\data ->
-                let
-                    categorizeZScore =
-                        Maybe.map
-                            (\score ->
-                                if score <= -3 then
-                                    ( [], [], [ personId ] )
+nutritionEncounterDataToNutritionMetrics personId encounter =
+    let
+        categorizeZScore =
+            Maybe.map
+                (\score ->
+                    if score <= -3 then
+                        ( [], [], [ personId ] )
 
-                                else if score <= -2 then
-                                    ( [], [ personId ], [] )
+                    else if score <= -2 then
+                        ( [], [ personId ], [] )
 
-                                else
-                                    ( [ personId ], [], [] )
-                            )
-                            >> Maybe.withDefault ( [], [], [] )
+                    else
+                        ( [ personId ], [], [] )
+                )
+                >> Maybe.withDefault ( [], [], [] )
 
-                    ( stuntingNormal, stuntingModerate, stuntingSevere ) =
-                        categorizeZScore data.stunting
+        ( stuntingNormal, stuntingModerate, stuntingSevere ) =
+            encounter.nutritionData
+                |> Maybe.map (.stunting >> categorizeZScore)
+                |> Maybe.withDefault ( [], [], [] )
 
-                    ( wastingNormal, wastingModerate, wastingSevere ) =
-                        categorizeZScore data.wasting
+        ( wastingNormal, wastingModerate, wastingSevere ) =
+            encounter.nutritionData
+                |> Maybe.map (.wasting >> categorizeZScore)
+                |> Maybe.withDefault ( [], [], [] )
 
-                    ( underweightNormal, underweightModerate, underweightSevere ) =
-                        categorizeZScore data.underweight
-                in
-                { stuntingNormal = stuntingNormal
-                , stuntingModerate = stuntingModerate
-                , stuntingSevere = stuntingSevere
-                , wastingNormal = wastingNormal
-                , wastingModerate = wastingModerate
-                , wastingSevere = wastingSevere
-                , underweightNormal = underweightNormal
-                , underweightModerate = underweightModerate
-                , underweightSevere = underweightSevere
-                }
-            )
-        >> Maybe.withDefault emptyNutritionMetrics
+        ( underweightNormal, underweightModerate, underweightSevere ) =
+            encounter.nutritionData
+                |> Maybe.map (.underweight >> categorizeZScore)
+                |> Maybe.withDefault ( [], [], [] )
+
+        ( acuteMalnutritionNormal, acuteMalnutritionMam, acuteMalnutritionSam ) =
+            categorizeAcuteMalnutrition personId encounter.muacCm encounter.hasEdema
+    in
+    { stuntingNormal = stuntingNormal
+    , stuntingModerate = stuntingModerate
+    , stuntingSevere = stuntingSevere
+    , wastingNormal = wastingNormal
+    , wastingModerate = wastingModerate
+    , wastingSevere = wastingSevere
+    , underweightNormal = underweightNormal
+    , underweightModerate = underweightModerate
+    , underweightSevere = underweightSevere
+    , acuteMalnutritionNormal = acuteMalnutritionNormal
+    , acuteMalnutritionMam = acuteMalnutritionMam
+    , acuteMalnutritionSam = acuteMalnutritionSam
+    }
+
+
+familyNutritionEncounterToMetrics : PersonId -> FamilyNutritionEncounterData -> NutritionMetrics
+familyNutritionEncounterToMetrics personId encounter =
+    let
+        ( acuteMalnutritionNormal, acuteMalnutritionMam, acuteMalnutritionSam ) =
+            categorizeAcuteMalnutrition personId encounter.muacCm False
+    in
+    { emptyNutritionMetrics
+        | acuteMalnutritionNormal = acuteMalnutritionNormal
+        , acuteMalnutritionMam = acuteMalnutritionMam
+        , acuteMalnutritionSam = acuteMalnutritionSam
+    }
 
 
 generatePrevalenceNutritionMetricsResults : NutritionMetrics -> NutritionMetricsResults
@@ -195,6 +241,12 @@ generatePrevalenceNutritionMetricsResults metrics =
                 ++ metrics.underweightSevere
                 ++ metrics.underweightNormal
                 |> unique
+
+        acuteMalnutritionTotal =
+            metrics.acuteMalnutritionMam
+                ++ metrics.acuteMalnutritionSam
+                ++ metrics.acuteMalnutritionNormal
+                |> unique
     in
     { stuntingModerate = calculatePercentage metrics.stuntingModerate stuntingTotal
     , stuntingSevere = calculatePercentage metrics.stuntingSevere stuntingTotal
@@ -202,6 +254,8 @@ generatePrevalenceNutritionMetricsResults metrics =
     , wastingSevere = calculatePercentage metrics.wastingSevere wastingTotal
     , underweightModerate = calculatePercentage metrics.underweightModerate underweightTotal
     , underweightSevere = calculatePercentage metrics.underweightSevere underweightTotal
+    , acuteMalnutritionMam = calculatePercentage metrics.acuteMalnutritionMam acuteMalnutritionTotal
+    , acuteMalnutritionSam = calculatePercentage metrics.acuteMalnutritionSam acuteMalnutritionTotal
     }
 
 
@@ -283,6 +337,29 @@ generateIncidenceNutritionMetricsResults currentPeriodMetric previousPeriodMetri
 
         underweightSevereNotIdentifiedInPreviousPeriod =
             Set.diff (Set.fromList currentPeriodMetric.underweightSevere) (Set.fromList previousPeriodMetric.underweightSevere)
+
+        -- ACUTE MALNUTRITION
+        previousPeriodAcuteMalnutritionMamSam =
+            previousPeriodMetric.acuteMalnutritionMam
+                ++ previousPeriodMetric.acuteMalnutritionSam
+                |> unique
+
+        previousPeriodAcuteMalnutritionTotal =
+            previousPeriodAcuteMalnutritionMamSam
+                ++ previousPeriodMetric.acuteMalnutritionNormal
+                |> Set.fromList
+
+        acuteMalnutritionMamTestedInPreviousPeriod =
+            Set.intersect (Set.fromList currentPeriodMetric.acuteMalnutritionMam) previousPeriodAcuteMalnutritionTotal
+
+        acuteMalnutritionMamNotIdentifiedInPreviousPeriod =
+            Set.diff (Set.fromList currentPeriodMetric.acuteMalnutritionMam) (Set.fromList previousPeriodAcuteMalnutritionMamSam)
+
+        acuteMalnutritionSamTestedInPreviousPeriod =
+            Set.intersect (Set.fromList currentPeriodMetric.acuteMalnutritionSam) previousPeriodAcuteMalnutritionTotal
+
+        acuteMalnutritionSamNotIdentifiedInPreviousPeriod =
+            Set.diff (Set.fromList currentPeriodMetric.acuteMalnutritionSam) (Set.fromList previousPeriodMetric.acuteMalnutritionSam)
     in
     { stuntingModerate =
         calculatePercentage
@@ -308,6 +385,14 @@ generateIncidenceNutritionMetricsResults currentPeriodMetric previousPeriodMetri
         calculatePercentage
             (Set.intersect underweightSevereTestedInPreviousPeriod underweightSevereNotIdentifiedInPreviousPeriod)
             previousPeriodUnderweightTotal
+    , acuteMalnutritionMam =
+        calculatePercentage
+            (Set.intersect acuteMalnutritionMamTestedInPreviousPeriod acuteMalnutritionMamNotIdentifiedInPreviousPeriod)
+            previousPeriodAcuteMalnutritionTotal
+    , acuteMalnutritionSam =
+        calculatePercentage
+            (Set.intersect acuteMalnutritionSamTestedInPreviousPeriod acuteMalnutritionSamNotIdentifiedInPreviousPeriod)
+            previousPeriodAcuteMalnutritionTotal
     }
 
 

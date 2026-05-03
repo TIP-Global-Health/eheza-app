@@ -1,12 +1,13 @@
 module Backend.StockUpdate.Decoder exposing (decodeStockUpdate)
 
 import Backend.Measurement.Model exposing (ImageUrl(..), StockCorrectionReason, StockSupplier, StockUpdate, StockUpdateType)
-import Backend.StockUpdate.Utils exposing (..)
+import Backend.StockUpdate.Utils exposing (stockCorrectionReasonFromString, stockSupplierFromString, stockUpdateTypeFromString)
 import Gizra.Json exposing (decodeInt, decodeStringWithDefault)
 import Gizra.NominalDate
-import Json.Decode exposing (..)
-import Json.Decode.Pipeline exposing (..)
+import Json.Decode exposing (Decoder, andThen, bool, fail, map, nullable, string, succeed)
+import Json.Decode.Pipeline exposing (optional, required)
 import Restful.Endpoint exposing (decodeEntityUuid)
+import Utils.Json exposing (decodeWithFallback)
 
 
 decodeStockUpdate : Decoder StockUpdate
@@ -23,7 +24,9 @@ decodeStockUpdate =
         |> optional "notes" (nullable string) Nothing
         |> optional "stock_correction_reason" (nullable decodeStockCorrectionReason) Nothing
         |> required "health_center" decodeEntityUuid
+        |> required "deleted" (decodeWithFallback False bool)
         |> optional "shard" (nullable decodeEntityUuid) Nothing
+        |> optional "village_ref" (nullable decodeEntityUuid) Nothing
         |> optional "signature" (map ImageUrl (decodeStringWithDefault "")) (ImageUrl "")
 
 

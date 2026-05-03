@@ -62,6 +62,16 @@ function hedley_schedule_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create family_participant content'.
+  $permissions['create family_participant content'] = array(
+    'name' => 'create family_participant content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create home_visit_encounter content'.
   $permissions['create home_visit_encounter content'] = array(
     'name' => 'create home_visit_encounter content',
@@ -177,6 +187,15 @@ function hedley_schedule_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any family_participant content'.
+  $permissions['delete any family_participant content'] = array(
+    'name' => 'delete any family_participant content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any home_visit_encounter content'.
   $permissions['delete any home_visit_encounter content'] = array(
     'name' => 'delete any home_visit_encounter content',
@@ -279,6 +298,15 @@ function hedley_schedule_user_default_permissions() {
   // Exported permission: 'delete own counseling_topic content'.
   $permissions['delete own counseling_topic content'] = array(
     'name' => 'delete own counseling_topic content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own family_participant content'.
+  $permissions['delete own family_participant content'] = array(
+    'name' => 'delete own family_participant content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -392,6 +420,16 @@ function hedley_schedule_user_default_permissions() {
   // Exported permission: 'edit any counseling_topic content'.
   $permissions['edit any counseling_topic content'] = array(
     'name' => 'edit any counseling_topic content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any family_participant content'.
+  $permissions['edit any family_participant content'] = array(
+    'name' => 'edit any family_participant content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -513,6 +551,16 @@ function hedley_schedule_user_default_permissions() {
   // Exported permission: 'edit own counseling_topic content'.
   $permissions['edit own counseling_topic content'] = array(
     'name' => 'edit own counseling_topic content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own family_participant content'.
+  $permissions['edit own family_participant content'] = array(
+    'name' => 'edit own family_participant content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',

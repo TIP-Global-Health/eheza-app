@@ -42,6 +42,10 @@ class HedleyRestfulEducationSession extends HedleyRestfulSyncBase {
       'sub_property' => 'field_uuid',
     ];
 
+    $public_fields['deleted'] = [
+      'property' => 'field_deleted',
+    ];
+
     // The label is decorative only.
     unset($public_fields['label']);
 
@@ -59,6 +63,7 @@ class HedleyRestfulEducationSession extends HedleyRestfulSyncBase {
       'field_village_ref',
       'field_education_topics',
       'field_participating_patients',
+      'field_deleted',
     ];
     foreach ($field_names as $field_name) {
       hedley_general_join_field_to_query($query, 'node', $field_name, FALSE);

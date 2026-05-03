@@ -325,7 +325,7 @@ function hedley_ncda_build_results_app($province, $district, $sector = NULL, $ce
  */
 function hedley_ncda_generate_results_data($province, $district, $sector, $cell, $village) {
   $three_years_ago = date('Y-m-d', strtotime('-3 years'));
-  $base_query = new EntityFieldQuery();
+  $base_query = hedley_general_create_entity_field_query_excluding_deleted();
   $base_query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'person')
@@ -337,8 +337,7 @@ function hedley_ncda_generate_results_data($province, $district, $sector, $cell,
     ->fieldCondition('field_birth_date', 'value', $three_years_ago, '>')
     ->fieldCondition('field_province', 'value', $province)
     ->fieldCondition('field_district', 'value', $district)
-    ->fieldCondition('field_ncda_data', 'value', NULL, 'IS NOT NULL')
-    ->addTag('exclude_deleted');
+    ->fieldCondition('field_ncda_data', 'value', NULL, 'IS NOT NULL');
 
   if (!empty($sector)) {
     $base_query->fieldCondition('field_sector', 'value', $sector);
@@ -646,7 +645,7 @@ function hedley_ncda_calculate_aggregated_data_for_person($person, $birth_date_f
       $data['edd_date'] = $edd_date;
     }
     // Resolving the dates of ANC visits that took place during the pregnancy.
-    $encounters_ids = hedley_person_encounters_for_individual_participant($newborn_participant_id);
+    $encounters_ids = hedley_person_load_individual_participant_encounters_ids($newborn_participant_id);
     if (!empty($encounters_ids)) {
       $encounters = node_load_multiple($encounters_ids);
       foreach ($encounters as $encounter) {
@@ -1150,6 +1149,10 @@ function hedley_general_ncda_newborn_participant($child_id) {
   $query = db_select('field_data_field_newborn', 't');
   $query->addField('t', 'entity_id');
   $query->condition('field_newborn_target_id', $child_id);
+  // Join with node table first.
+  $query->join('node', 'n', 't.entity_id = n.nid');
+  // Apply exclude deleted logic.
+  $query = hedley_general_apply_exclude_deleted($query);
   $query->range(0, 1);
 
   $result = $query->execute()->fetchCol();
