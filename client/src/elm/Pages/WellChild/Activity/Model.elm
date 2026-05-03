@@ -29,6 +29,8 @@ type Msg
     | SaveSymptomsReview PersonId (Maybe ( WellChildSymptomsReviewId, WellChildSymptomsReview )) (Maybe DangerSignsTask)
     | SetVitalsIntInput (Maybe Int -> VitalsForm -> VitalsForm) String
     | SetVitalsFloatInput (Maybe Float -> VitalsForm -> VitalsForm) String
+    | SetBodyTemperatureNotTaken Bool
+    | SetRespiratoryRateNotTaken Bool
     | SaveVitals PersonId (Maybe ( WellChildVitalsId, WellChildVitals )) (Maybe DangerSignsTask)
       -- NUTRITION ASSESMENT
     | SetActiveNutritionAssessmentTask NutritionAssessmentTask

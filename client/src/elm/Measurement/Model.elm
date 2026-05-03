@@ -395,8 +395,10 @@ type alias VitalsForm =
     , heartRateDirty : Bool
     , respiratoryRate : Maybe Int
     , respiratoryRateDirty : Bool
+    , respiratoryRateNotTaken : Maybe Bool
     , bodyTemperature : Maybe Float
     , bodyTemperatureDirty : Bool
+    , bodyTemperatureNotTaken : Maybe Bool
     , sysRepeated : Maybe Float
     , sysRepeatedDirty : Bool
     , diaRepeated : Maybe Float
@@ -414,8 +416,10 @@ emptyVitalsForm =
     , heartRateDirty = False
     , respiratoryRate = Nothing
     , respiratoryRateDirty = False
+    , respiratoryRateNotTaken = Nothing
     , bodyTemperature = Nothing
     , bodyTemperatureDirty = False
+    , bodyTemperatureNotTaken = Nothing
     , sysRepeated = Nothing
     , sysRepeatedDirty = False
     , diaRepeated = Nothing
@@ -426,6 +430,8 @@ emptyVitalsForm =
 type alias VitalsFormConfig msg =
     { setIntInputMsg : (Maybe Int -> VitalsForm -> VitalsForm) -> String -> msg
     , setFloatInputMsg : (Maybe Float -> VitalsForm -> VitalsForm) -> String -> msg
+    , setRespiratoryRateNotTakenMsg : Bool -> msg
+    , setBodyTemperatureNotTakenMsg : Bool -> msg
     , sysBloodPressurePreviousValue : Maybe Float
     , diaBloodPressurePreviousValue : Maybe Float
     , heartRatePreviousValue : Maybe Float
@@ -435,6 +441,7 @@ type alias VitalsFormConfig msg =
     , formClass : String
     , mode : VitalsFormMode
     , invokationModule : InvokationModule
+    , allowSkipping : Bool
     }
 
 

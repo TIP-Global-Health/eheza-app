@@ -978,8 +978,8 @@ type alias VitalsValue =
     { sys : Maybe Float
     , dia : Maybe Float
     , heartRate : Maybe Int
-    , respiratoryRate : Int
-    , bodyTemperature : Float
+    , respiratoryRate : Maybe Int
+    , bodyTemperature : Maybe Float
     , sysRepeated : Maybe Float
     , diaRepeated : Maybe Float
     }

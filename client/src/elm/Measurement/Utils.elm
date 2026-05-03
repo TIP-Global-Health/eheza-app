@@ -693,10 +693,32 @@ vitalsFormWithDefault form saved =
                 , diaBloodPressureDirty = form.diaBloodPressureDirty
                 , heartRate = maybeValueConsideringIsDirtyField form.heartRateDirty form.heartRate value.heartRate
                 , heartRateDirty = form.heartRateDirty
-                , respiratoryRate = valueConsideringIsDirtyField form.respiratoryRateDirty form.respiratoryRate value.respiratoryRate
+                , respiratoryRate = maybeValueConsideringIsDirtyField form.respiratoryRateDirty form.respiratoryRate value.respiratoryRate
                 , respiratoryRateDirty = form.respiratoryRateDirty
-                , bodyTemperature = valueConsideringIsDirtyField form.bodyTemperatureDirty form.bodyTemperature value.bodyTemperature
+                , respiratoryRateNotTaken =
+                    if form.respiratoryRateDirty then
+                        form.respiratoryRateNotTaken
+
+                    else
+                        case value.respiratoryRate of
+                            Just _ ->
+                                Just False
+
+                            Nothing ->
+                                Just True
+                , bodyTemperature = maybeValueConsideringIsDirtyField form.bodyTemperatureDirty form.bodyTemperature value.bodyTemperature
                 , bodyTemperatureDirty = form.bodyTemperatureDirty
+                , bodyTemperatureNotTaken =
+                    if form.bodyTemperatureDirty then
+                        form.bodyTemperatureNotTaken
+
+                    else
+                        case value.bodyTemperature of
+                            Just _ ->
+                                Just False
+
+                            Nothing ->
+                                Just True
                 , sysRepeated = maybeValueConsideringIsDirtyField form.sysRepeatedDirty form.sysRepeated value.sysRepeated
                 , sysRepeatedDirty = form.sysRepeatedDirty
                 , diaRepeated = maybeValueConsideringIsDirtyField form.diaRepeatedDirty form.diaRepeated value.diaRepeated
@@ -713,18 +735,50 @@ toVitalsValueWithDefault saved form =
 
 toVitalsValue : VitalsForm -> Maybe VitalsValue
 toVitalsValue form =
-    Maybe.map2
-        (\respiratoryRate bodyTemperature ->
-            VitalsValue form.sysBloodPressure
+    let
+        rrSkipped =
+            form.respiratoryRateNotTaken == Just True
+
+        tempSkipped =
+            form.bodyTemperatureNotTaken == Just True
+
+        -- Each field must be either explicitly skipped OR have a value.
+        -- Refuses partial input regardless of whether the view's task
+        -- tracker would have allowed save.
+        rrResolved =
+            rrSkipped || isJust form.respiratoryRate
+
+        tempResolved =
+            tempSkipped || isJust form.bodyTemperature
+    in
+    if rrResolved && tempResolved then
+        let
+            rrField =
+                if rrSkipped then
+                    Nothing
+
+                else
+                    form.respiratoryRate
+
+            tempField =
+                if tempSkipped then
+                    Nothing
+
+                else
+                    form.bodyTemperature
+        in
+        Just
+            (VitalsValue form.sysBloodPressure
                 form.diaBloodPressure
                 form.heartRate
-                respiratoryRate
-                bodyTemperature
+                rrField
+                tempField
                 form.sysRepeated
                 form.diaRepeated
-        )
-        form.respiratoryRate
-        form.bodyTemperature
+            )
+
+    else
+        Nothing
 
 
 resolveMedicationsNonAdministrationReasons :

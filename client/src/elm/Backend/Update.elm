@@ -2340,14 +2340,20 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                 processWellChildVitalsRevision participantId encounterId value =
                     let
                         bodyTemperatureAlert =
-                            value.bodyTemperature < 35 || value.bodyTemperature >= 37.5
+                            Maybe.map (\t -> t < 35 || t >= 37.5) value.bodyTemperature
+                                |> Maybe.withDefault False
 
                         respiratoryRateAlert =
-                            Dict.get participantId model.people
-                                |> Maybe.withDefault NotAsked
-                                |> RemoteData.toMaybe
-                                |> Maybe.andThen (ageInMonths currentDate)
-                                |> (\ageMonths -> respiratoryRateAbnormalForAge ageMonths value.respiratoryRate)
+                            Maybe.map
+                                (\rate ->
+                                    Dict.get participantId model.people
+                                        |> Maybe.withDefault NotAsked
+                                        |> RemoteData.toMaybe
+                                        |> Maybe.andThen (ageInMonths currentDate)
+                                        |> (\ageMonths -> respiratoryRateAbnormalForAge ageMonths rate)
+                                )
+                                value.respiratoryRate
+                                |> Maybe.withDefault False
                     in
                     if bodyTemperatureAlert || respiratoryRateAlert then
                         generateWellChildDangerSignsAlertMsgs encounterId

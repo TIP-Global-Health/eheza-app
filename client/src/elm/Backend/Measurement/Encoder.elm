@@ -1918,8 +1918,8 @@ encodeVitals =
 
 encodeVitalsValueWithType : String -> VitalsValue -> List ( String, Value )
 encodeVitalsValueWithType type_ value =
-    [ ( "respiratory_rate", int value.respiratoryRate )
-    , ( "body_temperature", float value.bodyTemperature )
+    [ ( "respiratory_rate", maybe int value.respiratoryRate )
+    , ( "body_temperature", maybe float value.bodyTemperature )
     ]
         -- Not all Vitals CTs got the sys, dia, sys_repeated,
         -- dia_repeated and  heart_rate fields. Therefore we use

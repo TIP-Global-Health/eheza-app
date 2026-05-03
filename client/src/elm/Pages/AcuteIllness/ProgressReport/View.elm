@@ -463,7 +463,7 @@ viewPhysicalExamPane language currentDate firstInitialWithSubsequent secondIniti
                             bodyTemperature =
                                 encounterData.measurements.vitals
                                     |> getMeasurementValueFunc
-                                    |> Maybe.map .bodyTemperature
+                                    |> Maybe.andThen .bodyTemperature
 
                             bodyTemperatureValue =
                                 Maybe.map
@@ -486,7 +486,7 @@ viewPhysicalExamPane language currentDate firstInitialWithSubsequent secondIniti
                             respiratoryRate =
                                 encounterData.measurements.vitals
                                     |> getMeasurementValueFunc
-                                    |> Maybe.map .respiratoryRate
+                                    |> Maybe.andThen .respiratoryRate
 
                             respiratoryRateValue =
                                 Maybe.map

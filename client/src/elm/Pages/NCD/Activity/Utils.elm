@@ -199,18 +199,6 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
         |> List.all (activityCompleted currentDate assembled)
 
 
-resolvePreviousValue : AssembledData -> (NCDMeasurements -> Maybe ( id, NCDMeasurement a )) -> (a -> b) -> Maybe b
-resolvePreviousValue assembled measurementFunc valueFunc =
-    assembled.previousEncountersData
-        |> List.filterMap
-            (.measurements
-                >> measurementFunc
-                >> Maybe.map (Tuple.second >> .value >> valueFunc)
-            )
-        |> List.reverse
-        |> List.head
-
-
 resolvePreviousMaybeValue : AssembledData -> (NCDMeasurements -> Maybe ( id, NCDMeasurement a )) -> (a -> Maybe b) -> Maybe b
 resolvePreviousMaybeValue assembled measurementFunc valueFunc =
     assembled.previousEncountersData
@@ -327,19 +315,22 @@ generateVitalsFormConfig : AssembledData -> VitalsFormConfig Msg
 generateVitalsFormConfig assembled =
     { setIntInputMsg = SetVitalsIntInput
     , setFloatInputMsg = SetVitalsFloatInput
+    , setRespiratoryRateNotTakenMsg = always NoOp
+    , setBodyTemperatureNotTakenMsg = always NoOp
     , sysBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .sys
     , diaBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .dia
     , heartRatePreviousValue =
         resolvePreviousMaybeValue assembled .vitals .heartRate
             |> Maybe.map toFloat
     , respiratoryRatePreviousValue =
-        resolvePreviousValue assembled .vitals .respiratoryRate
+        resolvePreviousMaybeValue assembled .vitals .respiratoryRate
             |> Maybe.map toFloat
-    , bodyTemperaturePreviousValue = resolvePreviousValue assembled .vitals .bodyTemperature
+    , bodyTemperaturePreviousValue = resolvePreviousMaybeValue assembled .vitals .bodyTemperature
     , birthDate = assembled.person.birthDate
     , formClass = "vitals"
     , mode = VitalsFormFull
     , invokationModule = InvokationModuleNCD
+    , allowSkipping = False
     }
 
 

@@ -693,8 +693,8 @@ dangerSignsTaskCompleted assembled task =
             isJust measurements.vitals
 
 
-dangerSignsTasksCompletedFromTotal : NominalDate -> AssembledData -> DangerSignsData -> DangerSignsTask -> ( Int, Int )
-dangerSignsTasksCompletedFromTotal currentDate assembled data task =
+dangerSignsTasksCompletedFromTotal : NominalDate -> Bool -> AssembledData -> DangerSignsData -> DangerSignsTask -> ( Int, Int )
+dangerSignsTasksCompletedFromTotal currentDate isChw assembled data task =
     let
         measurements =
             assembled.measurements
@@ -709,7 +709,7 @@ dangerSignsTasksCompletedFromTotal currentDate assembled data task =
                 TaskVitals ->
                     let
                         formConfig =
-                            generateVitalsFormConfig assembled
+                            generateVitalsFormConfig isChw assembled
                     in
                     getMeasurementValueFunc measurements.vitals
                         |> vitalsFormWithDefault data.vitalsForm
@@ -718,26 +718,10 @@ dangerSignsTasksCompletedFromTotal currentDate assembled data task =
     resolveTasksCompletedFromTotal tasks
 
 
-mandatoryDangerSignsTasksCompleted : Site -> AssembledData -> Bool
-mandatoryDangerSignsTasksCompleted site assembled =
-    resolvedMandatoryDangerSignsTasksCompleted site assembled
-        |> List.all (dangerSignsTaskCompleted assembled)
-
-
-resolvedMandatoryDangerSignsTasksCompleted : Site -> AssembledData -> List DangerSignsTask
-resolvedMandatoryDangerSignsTasksCompleted site assembled =
-    case assembled.encounter.encounterType of
-        PediatricCare ->
-            [ TaskSymptomsReview, TaskVitals ]
-
-        -- CHW encounter types.
-        _ ->
-            if site == SiteBurundi then
-                -- Vitals are optional for CHW in Burundi.
-                [ TaskSymptomsReview ]
-
-            else
-                [ TaskSymptomsReview, TaskVitals ]
+mandatoryDangerSignsTasksCompleted : AssembledData -> Bool
+mandatoryDangerSignsTasksCompleted assembled =
+    dangerSignsTaskCompleted assembled TaskSymptomsReview
+        && dangerSignsTaskCompleted assembled TaskVitals
 
 
 symptomsReviewFormInputsAndTasks : Language -> SymptomsReviewForm -> ( List (Html Msg), List (Maybe Bool) )
@@ -770,21 +754,27 @@ symptomsReviewFormInputsAndTasks language form =
     )
 
 
-generateVitalsFormConfig : AssembledData -> VitalsFormConfig Msg
-generateVitalsFormConfig assembled =
+generateVitalsFormConfig : Bool -> AssembledData -> VitalsFormConfig Msg
+generateVitalsFormConfig isChw assembled =
     { setIntInputMsg = SetVitalsIntInput
     , setFloatInputMsg = SetVitalsFloatInput
+    , setRespiratoryRateNotTakenMsg = SetRespiratoryRateNotTaken
+    , setBodyTemperatureNotTakenMsg = SetBodyTemperatureNotTaken
     , sysBloodPressurePreviousValue = Nothing
     , diaBloodPressurePreviousValue = Nothing
     , heartRatePreviousValue = Nothing
     , respiratoryRatePreviousValue =
         resolvePreviousValue assembled .vitals .respiratoryRate
+            |> Maybe.andThen identity
             |> Maybe.map toFloat
-    , bodyTemperaturePreviousValue = resolvePreviousValue assembled .vitals .bodyTemperature
+    , bodyTemperaturePreviousValue =
+        resolvePreviousValue assembled .vitals .bodyTemperature
+            |> Maybe.andThen identity
     , birthDate = assembled.person.birthDate
     , formClass = "vitals"
     , mode = VitalsFormBasic
     , invokationModule = InvokationModuleWellChild
+    , allowSkipping = isChw
     }
 
 
