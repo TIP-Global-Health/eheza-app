@@ -83,8 +83,8 @@ function hedley_user_user_presave(&$edit, $account, $category) {
     }
 
     $bundle = $data->type;
-    // Note: 'session' is omitted here because it is already returned by
-    // hedley_general_get_encounter_types().
+    // Note: 'session' is omitted from the inline list because it is already
+    // returned by hedley_general_get_encounter_types().
     $allowed_entities = array_merge(
       [
         'person',
