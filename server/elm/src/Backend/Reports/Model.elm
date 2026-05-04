@@ -1,4 +1,4 @@
-module Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, ChildScorecardEncounterData, DeliveryLocation(..), FamilyNutritionEncounterData, Gender(..), HIVEncounterData, HomeVisitEncounterData, Msg(..), NCDEncounterData, NutritionData, NutritionEncounterData, NutritionReportTableType(..), PatientData, PersonId, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalIndicator(..), PrenatalParticipantData, ReportsData, SelectedEntity(..), TuberculosisEncounterData, WellChildEncounterData)
+module Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, ChildScorecardEncounterData, DeliveryLocation(..), FamilyNutritionEncounterData, FamilyNutritionMotherEncounterData, Gender(..), HIVEncounterData, HomeVisitEncounterData, MotherFbfEncounterData, Msg(..), NCDEncounterData, NutritionData, NutritionEncounterData, NutritionReportTableType(..), PatientData, PersonId, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalIndicator(..), PrenatalParticipantData, ReportsData, SelectedEntity(..), TuberculosisEncounterData, WellChildEncounterData)
 
 import App.Types exposing (Site)
 import AssocList exposing (Dict)
@@ -34,7 +34,7 @@ type alias PatientData =
     , gender : Gender
     , acuteIllnessData : Maybe (List (List AcuteIllnessEncounterData))
     , prenatalData : Maybe (List PrenatalParticipantData)
-    , familyNutritionData : Maybe (List (List FamilyNutritionEncounterData))
+    , familyNutritionData : Maybe (List (List FamilyNutritionMotherEncounterData))
     , familyNutritionMuacData : Maybe (List (List FamilyNutritionEncounterData))
     , homeVisitData : Maybe (List (List HomeVisitEncounterData))
     , wellChildData : Maybe (List (List WellChildEncounterData))
@@ -48,6 +48,7 @@ type alias PatientData =
     , groupNutritionSorwatheData : Maybe (List NutritionEncounterData)
     , groupNutritionChwData : Maybe (List NutritionEncounterData)
     , groupNutritionAchiData : Maybe (List NutritionEncounterData)
+    , groupNutritionFbfMotherData : Maybe (List MotherFbfEncounterData)
     }
 
 
@@ -224,6 +225,7 @@ type alias NutritionEncounterData =
     , nutritionData : Maybe NutritionData
     , muacCm : Maybe Float
     , hasEdema : Bool
+    , fbfAmount : Maybe Float
     }
 
 
@@ -245,6 +247,19 @@ type alias WellChildEncounterData =
 type alias FamilyNutritionEncounterData =
     { startDate : NominalDate
     , muacCm : Maybe Float
+    , ahezaAmount : Maybe Float
+    }
+
+
+type alias FamilyNutritionMotherEncounterData =
+    { startDate : NominalDate
+    , ahezaAmount : Maybe Float
+    }
+
+
+type alias MotherFbfEncounterData =
+    { startDate : NominalDate
+    , fbfAmount : Float
     }
 
 

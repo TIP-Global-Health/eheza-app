@@ -53,6 +53,7 @@ define('HEDLEY_ACTIVITY_WELL_CHILD_NCDA_CONTENT_TYPE', 'well_child_ncda');
 define('HEDLEY_ACTIVITY_CHILD_SCOREBOARD_NCDA_CONTENT_TYPE', 'child_scoreboard_ncda');
 define('HEDLEY_ACTIVITY_WELL_CHILD_PREGNANCY_SUMMARY_CONTENT_TYPE', 'well_child_pregnancy_summary');
 define('HEDLEY_ACTIVITY_CHILD_FBF_CONTENT_TYPE', 'child_fbf');
+define('HEDLEY_ACTIVITY_MOTHER_FBF_CONTENT_TYPE', 'mother_fbf');
 define('HEDLEY_ACTIVITY_GROUP_SEND_TO_HC_CONTENT_TYPE', 'group_send_to_hc');
 define('HEDLEY_ACTIVITY_NUTRITION_SEND_TO_HC_CONTENT_TYPE', 'nutrition_send_to_hc');
 define('HEDLEY_ACTIVITY_WELL_CHILD_SEND_TO_HC_CONTENT_TYPE', 'well_child_send_to_hc');

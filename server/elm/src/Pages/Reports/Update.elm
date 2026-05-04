@@ -153,12 +153,14 @@ calculateNutritionReportDataTask currentDate data =
                                     (\item ->
                                         -- WellChildEncounterData mirrors NutritionEncounterData's
                                         -- shape (date, nutritionData, muacCm) plus immunisationData;
-                                        -- well-child wire doesn't carry edema today, so default to False.
+                                        -- well-child wire doesn't carry edema or FBF distribution
+                                        -- today, so default both to absent.
                                         ( record.id
                                         , { startDate = item.startDate
                                           , nutritionData = item.nutritionData
                                           , muacCm = item.muacCm
                                           , hasEdema = False
+                                          , fbfAmount = Nothing
                                           }
                                         )
                                     )
