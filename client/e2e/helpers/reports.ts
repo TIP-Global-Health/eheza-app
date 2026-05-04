@@ -161,24 +161,6 @@ export function generateNCDAPersonData(excludeSet = false) {
 }
 
 /**
- * Recalculate NCDA large datasets -- aggregates per-person NCDA data into
- * scope-level report_data nodes, then clears Drupal caches.
- */
-export function ncdaRecalculateLargeDatasets() {
-  const { drushCmd, cwd } = drushEnv();
-  console.log('Recalculating NCDA large datasets...');
-  execSync(
-    `${drushCmd} scr profiles/hedley/modules/custom/hedley_ncda/scripts/recalculate-large-datasets.php`,
-    { cwd, timeout: 300000, encoding: 'utf-8', stdio: 'pipe' },
-  );
-  // Clear Drupal caches so pages serve the fresh report_data.
-  execSync(`${drushCmd} cc all`, {
-    cwd, timeout: 30000, encoding: 'utf-8', stdio: 'pipe',
-  });
-  console.log('NCDA large datasets recalculated.');
-}
-
-/**
  * Backdate a person node's `created` timestamp.
  *
  * The NCDA scoreboard Elm view uses a strict less-than check
@@ -265,6 +247,10 @@ export async function navigateToNCDAScoreboard(page: Page, geoPath: string): Pro
   if (paneCount < 2) {
     throw new Error(`NCDA scoreboard at ${url} did not render at least 2 panes after 5 retries (got ${paneCount})`);
   }
+
+  // Records are now fetched via /api/reports-data; wait for the sync
+  // indicator to flip to COMPLETED before reading any pane values.
+  await waitForReportSync(page);
 
   await page.waitForTimeout(WAIT.sectionTransition);
 }
@@ -417,7 +403,26 @@ export function recalculateLargeDatasets() {
 // ---------------------------------------------------------------------------
 
 /**
+ * Wait for the Reports/Scoreboard/Completion Elm app to finish syncing
+ * its `records` data via /api/reports-data. The view renders a
+ * div.download-status containing "Download status: COMPLETED" once
+ * `remainingForDownload` reaches 0 (see syncStatusAndProgress in
+ * server/elm/src/Pages/Components/Utils.elm).
+ *
+ * Reports/Completion split the status and progress into two child divs;
+ * Scoreboard concatenates them into a single text node. Filtering on
+ * the parent `div.download-status` works for all three.
+ */
+export async function waitForReportSync(page: Page, timeoutMs = 60000) {
+  await page
+    .locator('div.download-status')
+    .filter({ hasText: 'Download status: COMPLETED' })
+    .waitFor({ timeout: timeoutMs });
+}
+
+/**
  * Navigate to the Statistical Queries results page for a Health Center scope.
+ * Waits for the initial RESTful sync to complete before returning.
  */
 export async function navigateToHCReportsPage(
   page: Page,
@@ -429,6 +434,7 @@ export async function navigateToHCReportsPage(
     `${baseUrl}/admin/reports/statistical-queries/health-center/${healthCenterId}?t=${Date.now()}`,
   );
   await page.locator('.page-content.reports').waitFor({ timeout: 30000 });
+  await waitForReportSync(page);
 }
 
 /**
@@ -1185,27 +1191,8 @@ export function generateCompletionData(encounterType: string, excludeSet = false
 }
 
 /**
- * Aggregate per-encounter completion data into scope-level report_data
- * nodes (global + per health center), then clear Drupal caches.
- *
- * Note: execSync with hardcoded commands — same pattern as
- * recalculateLargeDatasets(). No user input involved.
- */
-export function completionRecalculateLargeDatasets() {
-  const { drushCmd, cwd } = drushEnv();
-  console.log('Recalculating completion large datasets...');
-  execSync(
-    `${drushCmd} scr profiles/hedley/modules/custom/hedley_reports/scripts/completion-recalculate-large-datasets.php`,
-    { cwd, timeout: 300000, encoding: 'utf-8', stdio: 'pipe' },
-  );
-  execSync(`${drushCmd} cc all`, {
-    cwd, timeout: 30000, encoding: 'utf-8', stdio: 'pipe',
-  });
-  console.log('Completion large datasets recalculated.');
-}
-
-/**
  * Navigate to the Completion report results page for a Health Center scope.
+ * Waits for the initial RESTful sync to complete before returning.
  */
 export async function navigateToCompletionReportPage(
   page: Page,
@@ -1216,6 +1203,7 @@ export async function navigateToCompletionReportPage(
     `${baseUrl}/admin/reports/completion/health-center/${healthCenterId}?t=${Date.now()}`,
   );
   await page.locator('.page-content.completion').waitFor({ timeout: 30000 });
+  await waitForReportSync(page);
 }
 
 /**

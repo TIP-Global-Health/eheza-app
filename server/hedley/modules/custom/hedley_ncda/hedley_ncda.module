@@ -363,8 +363,13 @@ function hedley_ncda_generate_results_data_for_restful($from_nid, $batch, $provi
   $count = $count_query->count()->execute();
 
   if ($count == 0) {
-    // No more items left.
-    return [];
+    // No more items left -- return the structured shape Elm expects so
+    // its decoder doesn't fail and leave sync stuck at "PENDING".
+    return [
+      'batch' => [],
+      'total_remaining' => 0,
+      'last' => 0,
+    ];
   }
 
   $result = $query

@@ -1207,7 +1207,7 @@ function hedley_reports_build_statistical_queries_results_app($province = NULL, 
   $data['site'] = variable_get('hedley_general_site_name', '');
   $data['params'] = $params;
 
-  if (in_array($data['entity_type'], ['province', 'district'])) {
+  if (in_array($data['entity_type'], ['province', 'district', 'health-center'])) {
     // For large data sets, try loading additional data.
     $data['additional'] = hedley_reports_load_results_additional_data('statistical-query', $data['entity_type'], $province, $district, $health_center);
   }
@@ -1378,8 +1378,13 @@ function hedley_reports_generate_results_data_for_restful($from_nid, $batch, $pr
   $count = $count_query->count()->execute();
 
   if ($count == 0) {
-    // No more items left.
-    return [];
+    // No more items left -- return the structured shape Elm expects so
+    // its decoder doesn't fail and leave sync stuck at "PENDING".
+    return [
+      'batch' => [],
+      'total_remaining' => 0,
+      'last' => 0,
+    ];
   }
 
   $result = $query
@@ -1476,6 +1481,10 @@ function hedley_reports_create_or_update_results_data_node(array $data, $report_
     if (!empty($health_center)) {
       $node->field_health_center[LANGUAGE_NONE][0]['target_id'] = $health_center;
     }
+  }
+  else {
+    // Update the existing Report Data node.
+    $node = node_load($node_id);
   }
 
   if ($report_variant == 'statistical-query') {
@@ -2757,8 +2766,13 @@ function hedley_reports_generate_completion_data_for_restful($from_nid, $batch, 
   $count = $count_query->count()->execute();
 
   if ($count == 0) {
-    // No more items left.
-    return [];
+    // No more items left -- return the structured shape Elm expects so
+    // its decoder doesn't fail and leave sync stuck at "PENDING".
+    return [
+      'batch' => [],
+      'total_remaining' => 0,
+      'last' => 0,
+    ];
   }
 
   $result = $query

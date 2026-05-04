@@ -40,7 +40,6 @@ import {
   SimpleTableData,
   ensurePrenatalMedicationsVariable,
   generateCompletionData,
-  completionRecalculateLargeDatasets,
   navigateToCompletionReportPage,
   selectCompletionReportType,
   selectCompletionTakenBy,
@@ -50,7 +49,6 @@ import {
   CompletionTableData,
   ensureNCDAFeatureEnabled,
   generateNCDAPersonData,
-  ncdaRecalculateLargeDatasets,
   backdatePersonCreated,
   navigateToNCDAScoreboard,
   readScoreboardPane,
@@ -275,11 +273,11 @@ test.describe('Admin Reports', () => {
       clearAdvancedQueue();
       recalculateLargeDatasets();
 
-      // NCDA scoreboard baseline: generate per-person NCDA data and
-      // pre-compute district-level Report Data nodes.
+      // NCDA scoreboard baseline: generate per-person NCDA data. The
+      // scoreboard Elm app now pulls these per-person rows directly via
+      // /api/reports-data, so no scope-level aggregation step is needed.
       ensureNCDAFeatureEnabled();
       generateNCDAPersonData(false);
-      ncdaRecalculateLargeDatasets();
     });
 
     let baselineRegistered: PatientsTableData;
@@ -386,7 +384,6 @@ test.describe('Admin Reports', () => {
       generateCompletionData('tuberculosis', true);
       generateCompletionData('nutrition-individual', true);
       generateCompletionData('nutrition-group', true);
-      completionRecalculateLargeDatasets();
 
       await navigateToCompletionReportPage(page, NYANGE_HC_ID);
 
@@ -1192,11 +1189,11 @@ test.describe('Admin Reports', () => {
       generateCompletionData('tuberculosis', true);
       generateCompletionData('nutrition-individual', true);
       generateCompletionData('nutrition-group', true);
-      completionRecalculateLargeDatasets();
 
-      // Re-compute district-level NCDA Report Data nodes with new encounter data.
-      // Per-person field_ncda_data is already updated by AQ processing above.
-      ncdaRecalculateLargeDatasets();
+      // No scope-level aggregation step: the Reports/Completion/Scoreboard
+      // Elm apps now pull per-person/per-encounter rows directly via
+      // /api/reports-data. Per-person field_ncda_data is already updated
+      // by AQ processing above.
     });
 
     // ── Phase 3: Verify Demographics deltas — HC scope ──
@@ -2490,9 +2487,9 @@ test.describe('Admin Reports', () => {
       backdatePersonCreated(fbfChildName);
       backdatePersonCreated(nbChildName);
 
-      // Regenerate NCDA aggregated data and clear caches.
+      // Regenerate per-person NCDA data; the scoreboard sync will pick
+      // up the refreshed rows on next page load.
       generateNCDAPersonData(true);
-      ncdaRecalculateLargeDatasets();
     });
 
     await step('Navigate to NCDA Scoreboard — village level (Akanduga)', async () => {
