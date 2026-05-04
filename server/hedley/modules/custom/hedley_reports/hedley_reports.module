@@ -1263,36 +1263,34 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
     $nutrition = hedley_reports_nutrition_metrics_to_string($zscores + $muac_edema);
     $session_data = "$encounter_date $nutrition";
 
-    // Skip sessions that only carry mother_fbf data: those don't represent a
-    // child encounter, so they must not flow into group_nutrition.<group> as
-    // a child entry. They're emitted separately below under
-    // group_nutrition_mother.<group>.
-    $has_child_data = isset($zscores_by_encounter[$session->nid])
-      || isset($muac_edema_by_encounter[$session->nid])
-      || isset($child_fbf_amount_by_session[$session->nid]);
+    // Embed FBF distributed amount on the wire as a |<amount> tail chunk
+    // appended to the existing space-delimited second segment. The Elm
+    // decoder splits the second segment on '|' to separate anthropometry
+    // (",,,," up to "stunting,wasting,underweight,muac,edema") from the
+    // FBF amount. Wire shapes after this change:
+    // - "YYYY-MM-DD" (unchanged legacy date-only).
+    // - "YYYY-MM-DD <anth>" (unchanged anthropometry only).
+    // - "YYYY-MM-DD <anth>|<amount>" (anthropometry + FBF).
+    // - "YYYY-MM-DD ,,,,|<amount>" (FBF only -- empty anth chunk).
+    // Stays in sync with decodeNutritionEncounterData in
+    // server/elm/src/Backend/Reports/Decoder.elm; update both together.
+    //
+    // Every session in $sessions_ids gets emitted under
+    // group_nutrition.<group> regardless of whether the person is the
+    // child or the mother at that session: the Demographics encounter
+    // table counts these as session attendance for both. A mother who
+    // attended an FBF session (e.g. via family_planning / lactation /
+    // mother_fbf) appears here with empty anthropometry; a child shows
+    // whatever measurements were recorded.
+    if (isset($child_fbf_amount_by_session[$session->nid])) {
+      $session_data .= '|' . $child_fbf_amount_by_session[$session->nid];
+    }
 
-    if ($has_child_data) {
-      // Embed FBF distributed amount on the wire as a |<amount> tail chunk
-      // appended to the existing space-delimited second segment. The Elm
-      // decoder splits the second segment on '|' to separate anthropometry
-      // (",,,," up to "stunting,wasting,underweight,muac,edema") from the
-      // FBF amount. Wire shapes after this change:
-      // - "YYYY-MM-DD" (unchanged legacy date-only).
-      // - "YYYY-MM-DD <anth>" (unchanged anthropometry only).
-      // - "YYYY-MM-DD <anth>|<amount>" (anthropometry + FBF).
-      // - "YYYY-MM-DD ,,,,|<amount>" (FBF only -- empty anth chunk).
-      // Stays in sync with decodeNutritionEncounterData in
-      // server/elm/src/Backend/Reports/Decoder.elm; update both together.
-      if (isset($child_fbf_amount_by_session[$session->nid])) {
-        $session_data .= '|' . $child_fbf_amount_by_session[$session->nid];
-      }
-
-      if (empty($sessions_data[$group_type])) {
-        $sessions_data[$group_type] = [$session_data];
-      }
-      else {
-        $sessions_data[$group_type][] = $session_data;
-      }
+    if (empty($sessions_data[$group_type])) {
+      $sessions_data[$group_type] = [$session_data];
+    }
+    else {
+      $sessions_data[$group_type][] = $session_data;
     }
 
     // Mother FBF: per (session, mother) wire "YYYY-MM-DD <amount>" emitted

@@ -440,6 +440,20 @@ export async function navigateToReportsMenu(page: Page) {
   await page.locator('.page-content.reports-menu').waitFor({ timeout: 30000 });
 }
 
+/**
+ * Navigate to the Statistical Queries results page for the Global scope (all
+ * patients across all health centers). The Drupal route is registered at
+ * `admin/reports/statistical-queries/all` (see hedley_reports.module).
+ */
+export async function navigateToGlobalReportsPage(page: Page) {
+  const baseUrl = getDdevUrl();
+  // Cache-busting parameter to prevent browser from serving stale page.
+  await page.goto(
+    `${baseUrl}/admin/reports/statistical-queries/all?t=${Date.now()}`,
+  );
+  await page.locator('.page-content.reports').waitFor({ timeout: 30000 });
+}
+
 // ---------------------------------------------------------------------------
 // Report type & date selection
 // ---------------------------------------------------------------------------
@@ -728,6 +742,21 @@ export async function readPostnatalCareTable(
   page: Page,
 ): Promise<SimpleTableData> {
   return readSimpleTable(page, 'div.report.postnatal-care div.table');
+}
+
+/**
+ * Read the FBF Distribution report table.
+ * Container: div.report.fbf-distribution div.table
+ * Each row has 2 cells: [category label, total amount].
+ * Categories: "FBF Child", "FBF Mother", "Aheza Child", "Aheza Mother".
+ * Totals are numeric (whole numbers print without decimals; fractional with up
+ * to 2dp). readSimpleTable parses cells via parseInt — sufficient for the
+ * whole-number test fixtures.
+ */
+export async function readFBFDistributionTable(
+  page: Page,
+): Promise<SimpleTableData> {
+  return readSimpleTable(page, 'div.report.fbf-distribution div.table');
 }
 
 /**

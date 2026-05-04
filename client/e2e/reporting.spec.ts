@@ -24,6 +24,7 @@ import {
   readAIDiagnosisRow,
   readPrenatalDiagnosisRow,
   readPrenatalVisitsTable,
+  readFBFDistributionTable,
   readPeripartumTable,
   readPostnatalCareTable,
   findPrenatalRow,
@@ -321,6 +322,10 @@ test.describe('Admin Reports', () => {
     let baselinePNC15WeeksTo10Months: number;
     let baselinePNC10To19Months: number;
     let baselinePNC19To24Months: number;
+    let baselineFBFDistChild: number;
+    let baselineFBFDistMother: number;
+    let baselineAhezaDistChild: number;
+    let baselineAhezaDistMother: number;
     let baselineNutrition: Map<number, NutritionMetricRow[]>;
     let baselineCompletion: CompletionTableData;
     let baselinePrenatalCompletion: CompletionTableData;
@@ -429,6 +434,30 @@ test.describe('Admin Reports', () => {
         `7-11w=${baselinePNC7To11Weeks}, 11-15w=${baselinePNC11To15Weeks}, ` +
         `15w-10mo=${baselinePNC15WeeksTo10Months}, ` +
         `10-19mo=${baselinePNC10To19Months}, 19-24mo=${baselinePNC19To24Months}`,
+      );
+
+      // Record FBF Distribution report baselines. The migration / demo
+      // population can already include FBF and AHEZA records, so the test
+      // encounters are verified by delta against this baseline rather than
+      // absolute totals. The reader uses parseInt on the cells; integer
+      // deltas are preserved correctly even when the underlying floats
+      // truncate, since the test's added amounts are whole numbers.
+      await selectReportType(page, 'fbf-distribution');
+      await setDateRange(page, REPORT_START_DATE, reportLimitDate);
+      const baselineFBFDistTable = await readFBFDistributionTable(page);
+      baselineFBFDistChild =
+        findSimpleRow(baselineFBFDistTable, 'FBF Child')?.total ?? 0;
+      baselineFBFDistMother =
+        findSimpleRow(baselineFBFDistTable, 'FBF Mother')?.total ?? 0;
+      baselineAhezaDistChild =
+        findSimpleRow(baselineFBFDistTable, 'Aheza Child')?.total ?? 0;
+      baselineAhezaDistMother =
+        findSimpleRow(baselineFBFDistTable, 'Aheza Mother')?.total ?? 0;
+      console.log(
+        `Baseline FBF Distribution: fbfChild=${baselineFBFDistChild}, ` +
+        `fbfMother=${baselineFBFDistMother}, ` +
+        `ahezaChild=${baselineAhezaDistChild}, ` +
+        `ahezaMother=${baselineAhezaDistMother}`,
       );
 
       // Record Nutrition report baseline (first column = newest completed month).
@@ -1703,6 +1732,51 @@ test.describe('Admin Reports', () => {
 
       // CSV download button.
       await expect(page.locator('button.download-csv'), 'Nutrition CSV download button should be visible').toBeVisible();
+    });
+
+    // ── Phase 3b: FBF Distribution report ──
+    //
+    // Phase 1a created an FBF nurse group session at Nyange I (FBF clinic,
+    // group_type='fbf') with completeChildFbf (amount '1') and
+    // completeMotherFbf (amount '1'). Phase 1b created a CHW Family
+    // Nutrition encounter with completeAhezaMother (amount '3') and
+    // completeAhezaChild (amount '2'). All test-created persons land at
+    // Nyange HC, so the same HC scope used by the other Phase 3 reports
+    // captures the new distribution rows. Pre-existing migration data may
+    // already contribute non-zero baseline totals, so we assert deltas
+    // against the baseline captured in Phase 0.
+
+    await step('Verify FBF Distribution report deltas', async () => {
+      await selectReportType(page, 'fbf-distribution');
+      await setDateRange(page, REPORT_START_DATE, reportLimitDate);
+
+      const fbfDistribution = await readFBFDistributionTable(page);
+
+      const fbfChild = findSimpleRow(fbfDistribution, 'FBF Child')?.total ?? 0;
+      const fbfMother = findSimpleRow(fbfDistribution, 'FBF Mother')?.total ?? 0;
+      const ahezaChild = findSimpleRow(fbfDistribution, 'Aheza Child')?.total ?? 0;
+      const ahezaMother = findSimpleRow(fbfDistribution, 'Aheza Mother')?.total ?? 0;
+
+      console.log('\n=== FBF DISTRIBUTION ===');
+      console.log(`FBF Child:    ${baselineFBFDistChild} → ${fbfChild} (Δ ${fbfChild - baselineFBFDistChild})`);
+      console.log(`FBF Mother:   ${baselineFBFDistMother} → ${fbfMother} (Δ ${fbfMother - baselineFBFDistMother})`);
+      console.log(`Aheza Child:  ${baselineAhezaDistChild} → ${ahezaChild} (Δ ${ahezaChild - baselineAhezaDistChild})`);
+      console.log(`Aheza Mother: ${baselineAhezaDistMother} → ${ahezaMother} (Δ ${ahezaMother - baselineAhezaDistMother})`);
+
+      // completeChildFbf (amount '1') -> FBF Child +1
+      expect(fbfChild - baselineFBFDistChild, 'FBF Child delta should be +1').toBe(1);
+      // completeMotherFbf (amount '1') -> FBF Mother +1
+      expect(fbfMother - baselineFBFDistMother, 'FBF Mother delta should be +1').toBe(1);
+      // completeAhezaChild (amount '2') -> Aheza Child +2
+      expect(ahezaChild - baselineAhezaDistChild, 'Aheza Child delta should be +2').toBe(2);
+      // completeAhezaMother (amount '3') -> Aheza Mother +3
+      expect(ahezaMother - baselineAhezaDistMother, 'Aheza Mother delta should be +3').toBe(3);
+
+      // CSV download button.
+      await expect(
+        page.locator('button.download-csv'),
+        'FBF Distribution CSV download button should be visible',
+      ).toBeVisible();
     });
 
     // ── Phase 4: Demographics scope (Province) ──
