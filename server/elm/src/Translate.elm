@@ -32,7 +32,7 @@ import Backend.Scoreboard.Model
 import Date
 import Pages.Completion.Model
 import Pages.Components.Types exposing (PopulationSelectionOption(..))
-import Pages.Reports.Model exposing (PregnancyTrimester(..), PrenatalContactType(..), ReportType(..))
+import Pages.Reports.Model exposing (FbfDistributionCategory(..), PregnancyTrimester(..), PrenatalContactType(..), ReportType(..))
 import Pages.Scoreboard.Model exposing (NCDAANCNewbornItem(..), NCDAAcuteMalnutritionItem(..), NCDADemographicsItem(..), NCDAInfrastructureEnvironmentWashItem(..), NCDANutritionBehaviorItem(..), NCDAStuntingItem(..), NCDATargetedInterventionsItem(..), NCDAUniversalInterventionItem(..))
 import Time exposing (Month(..))
 
@@ -124,6 +124,8 @@ type TranslationId
     | FamilyNutrition
     | FamilyPlanning
     | FBF
+    | FbfDistributionCategory FbfDistributionCategory
+    | FbfDistributionType
     | Feeding
     | Female
     | FirstVisit
@@ -879,6 +881,43 @@ translationSet transId =
 
         FBF ->
             { english = "FBF"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        FbfDistributionCategory category ->
+            case category of
+                FbfDistributionFbfChild ->
+                    { english = "FBF Child"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                FbfDistributionFbfMother ->
+                    { english = "FBF Mother"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                FbfDistributionAhezaChild ->
+                    { english = "Aheza Child"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                FbfDistributionAhezaMother ->
+                    { english = "Aheza Mother"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+        FbfDistributionType ->
+            { english = "Type"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing
@@ -3000,6 +3039,13 @@ translationSet transId =
 
                 ReportDemographics ->
                     { english = "Demographics"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                ReportFBFDistribution ->
+                    { english = "FBF Distribution"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     , somali = Nothing

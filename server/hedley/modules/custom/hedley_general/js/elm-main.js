@@ -6735,6 +6735,7 @@ var $author$project$Pages$Reports$Update$performNutritionReportDataCalculation =
 	});
 var $author$project$Pages$Reports$Model$ReportAcuteIllness = {$: 'ReportAcuteIllness'};
 var $author$project$Pages$Reports$Model$ReportDemographics = {$: 'ReportDemographics'};
+var $author$project$Pages$Reports$Model$ReportFBFDistribution = {$: 'ReportFBFDistribution'};
 var $author$project$Pages$Reports$Model$ReportNutrition = {$: 'ReportNutrition'};
 var $author$project$Pages$Reports$Model$ReportPeripartum = {$: 'ReportPeripartum'};
 var $author$project$Pages$Reports$Model$ReportPostnatalCare = {$: 'ReportPostnatalCare'};
@@ -6747,6 +6748,8 @@ var $author$project$Pages$Reports$Utils$reportTypeFromString = function (reportT
 			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportAcuteIllness);
 		case 'demographics':
 			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportDemographics);
+		case 'fbf-distribution':
+			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportFBFDistribution);
 		case 'nutrition':
 			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportNutrition);
 		case 'peripartum':
@@ -11805,6 +11808,20 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Family Planning', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'FBF':
 				return {english: 'FBF', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'FbfDistributionCategory':
+				var category = transId.a;
+				switch (category.$) {
+					case 'FbfDistributionFbfChild':
+						return {english: 'FBF Child', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					case 'FbfDistributionFbfMother':
+						return {english: 'FBF Mother', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					case 'FbfDistributionAhezaChild':
+						return {english: 'Aheza Child', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					default:
+						return {english: 'Aheza Mother', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+				}
+			case 'FbfDistributionType':
+				return {english: 'Type', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Feeding':
 				return {english: 'Feeding', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Female':
@@ -13145,6 +13162,8 @@ var $author$project$Translate$translationSet = function (transId) {
 						continue translationSet;
 					case 'ReportDemographics':
 						return {english: 'Demographics', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					case 'ReportFBFDistribution':
+						return {english: 'FBF Distribution', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'ReportNutrition':
 						var $temp$transId = $author$project$Translate$Nutrition;
 						transId = $temp$transId;
@@ -17156,6 +17175,8 @@ var $author$project$Pages$Reports$Utils$reportTypeToString = function (reportTyp
 			return 'acute-illness';
 		case 'ReportDemographics':
 			return 'demographics';
+		case 'ReportFBFDistribution':
+			return 'fbf-distribution';
 		case 'ReportNutrition':
 			return 'nutrition';
 		case 'ReportPeripartum':
@@ -18153,6 +18174,173 @@ var $author$project$Pages$Reports$View$viewDemographicsReport = F5(
 						[
 							A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
 						]))));
+	});
+var $author$project$Pages$Reports$Model$FbfDistributionAhezaChild = {$: 'FbfDistributionAhezaChild'};
+var $author$project$Pages$Reports$Model$FbfDistributionAhezaMother = {$: 'FbfDistributionAhezaMother'};
+var $author$project$Pages$Reports$Model$FbfDistributionFbfChild = {$: 'FbfDistributionFbfChild'};
+var $author$project$Pages$Reports$Model$FbfDistributionFbfMother = {$: 'FbfDistributionFbfMother'};
+var $author$project$Pages$Reports$Model$allFbfDistributionCategories = _List_fromArray(
+	[$author$project$Pages$Reports$Model$FbfDistributionFbfChild, $author$project$Pages$Reports$Model$FbfDistributionFbfMother, $author$project$Pages$Reports$Model$FbfDistributionAhezaChild, $author$project$Pages$Reports$Model$FbfDistributionAhezaMother]);
+var $author$project$Pages$Reports$View$fbfDistributionCategoryCssClass = function (category) {
+	switch (category.$) {
+		case 'FbfDistributionAhezaChild':
+			return 'aheza-child';
+		case 'FbfDistributionAhezaMother':
+			return 'aheza-mother';
+		case 'FbfDistributionFbfChild':
+			return 'fbf-child';
+		default:
+			return 'fbf-mother';
+	}
+};
+var $author$project$Translate$FbfDistributionCategory = function (a) {
+	return {$: 'FbfDistributionCategory', a: a};
+};
+var $author$project$Translate$FbfDistributionType = {$: 'FbfDistributionType'};
+var $elm$core$Basics$round = _Basics_round;
+var $author$project$Pages$Reports$View$formatDistributionTotal = function (value) {
+	return _Utils_eq(
+		value,
+		$elm$core$Basics$round(value)) ? $elm$core$String$fromInt(
+		$elm$core$Basics$round(value)) : A2($myrho$elm_round$Round$round, 2, value);
+};
+var $author$project$Pages$Reports$View$generateFBFDistributionReportData = F2(
+	function (language, records) {
+		var fbfMotherTotal = $elm$core$List$sum(
+			A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.fbfAmount;
+				},
+				$elm$core$List$concat(
+					A2(
+						$elm$core$List$filterMap,
+						function ($) {
+							return $.groupNutritionFbfMotherData;
+						},
+						records))));
+		var fbfChildTotal = $elm$core$List$sum(
+			A2(
+				$elm$core$List$filterMap,
+				function ($) {
+					return $.fbfAmount;
+				},
+				$elm$core$List$concat(
+					A2(
+						$elm$core$List$filterMap,
+						function ($) {
+							return $.groupNutritionFbfData;
+						},
+						records))));
+		var ahezaMotherTotal = $elm$core$List$sum(
+			A2(
+				$elm$core$List$filterMap,
+				function ($) {
+					return $.ahezaAmount;
+				},
+				$elm$core$List$concat(
+					$elm$core$List$concat(
+						A2(
+							$elm$core$List$filterMap,
+							function ($) {
+								return $.familyNutritionData;
+							},
+							records)))));
+		var ahezaChildTotal = $elm$core$List$sum(
+			A2(
+				$elm$core$List$filterMap,
+				function ($) {
+					return $.ahezaAmount;
+				},
+				$elm$core$List$concat(
+					$elm$core$List$concat(
+						A2(
+							$elm$core$List$filterMap,
+							function ($) {
+								return $.familyNutritionMuacData;
+							},
+							records)))));
+		var totalFor = function (category) {
+			switch (category.$) {
+				case 'FbfDistributionAhezaChild':
+					return ahezaChildTotal;
+				case 'FbfDistributionAhezaMother':
+					return ahezaMotherTotal;
+				case 'FbfDistributionFbfChild':
+					return fbfChildTotal;
+				default:
+					return fbfMotherTotal;
+			}
+		};
+		var rows = A2(
+			$elm$core$List$map,
+			function (category) {
+				return _List_fromArray(
+					[
+						A2(
+						$author$project$Translate$translate,
+						language,
+						$author$project$Translate$FbfDistributionCategory(category)),
+						$author$project$Pages$Reports$View$formatDistributionTotal(
+						totalFor(category))
+					]);
+			},
+			$author$project$Pages$Reports$Model$allFbfDistributionCategories);
+		return {
+			captions: _List_fromArray(
+				[
+					A2($author$project$Translate$translate, language, $author$project$Translate$FbfDistributionType),
+					A2($author$project$Translate$translate, language, $author$project$Translate$Total)
+				]),
+			heading: '',
+			rows: rows
+		};
+	});
+var $author$project$Pages$Reports$View$viewFBFDistributionReport = F4(
+	function (language, limitDate, scopeLabel, records) {
+		var data = A2($author$project$Pages$Reports$View$generateFBFDistributionReportData, language, records);
+		var dataRows = A3(
+			$elm$core$List$map2,
+			F2(
+				function (category, row) {
+					return A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class(
+								'row ' + $author$project$Pages$Reports$View$fbfDistributionCategoryCssClass(category))
+							]),
+						$author$project$Pages$Components$View$viewStandardCells(row));
+				}),
+			$author$project$Pages$Reports$Model$allFbfDistributionCategories,
+			data.rows);
+		var csvFileName = 'fbf-distribution-report-' + ($elm$core$String$toLower(
+			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
+		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
+		var captionsRow = A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('row captions')
+				]),
+			$author$project$Pages$Components$View$viewStandardCells(data.captions));
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('report fbf-distribution')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('table')
+						]),
+					A2($elm$core$List$cons, captionsRow, dataRows)),
+					A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
+				]));
 	});
 var $author$project$Translate$AcuteMalnutritionMam = {$: 'AcuteMalnutritionMam'};
 var $author$project$Translate$AcuteMalnutritionSam = {$: 'AcuteMalnutritionSam'};
@@ -21621,6 +21809,18 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 															},
 															record.acuteIllnessData),
 														childScorecardData: A2(filterIndividualBy, $elm$core$Basics$identity, record.childScorecardData),
+														familyNutritionData: A2(
+															filterIndividualBy,
+															function ($) {
+																return $.startDate;
+															},
+															record.familyNutritionData),
+														familyNutritionMuacData: A2(
+															filterIndividualBy,
+															function ($) {
+																return $.startDate;
+															},
+															record.familyNutritionMuacData),
 														groupNutritionAchiData: A2(
 															filterGroupBy,
 															function ($) {
@@ -21639,6 +21839,12 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 																return $.startDate;
 															},
 															record.groupNutritionFbfData),
+														groupNutritionFbfMotherData: A2(
+															filterGroupBy,
+															function ($) {
+																return $.startDate;
+															},
+															record.groupNutritionFbfMotherData),
 														groupNutritionPmtctData: A2(
 															filterGroupBy,
 															function ($) {
@@ -21679,6 +21885,8 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 										return A5($author$project$Pages$Reports$View$viewAcuteIllnessReport, language, limitDate, startDate, scopeLabel, recordsTillLimitDate);
 									case 'ReportDemographics':
 										return A5($author$project$Pages$Reports$View$viewDemographicsReport, language, startDate, limitDate, scopeLabel, recordsTillLimitDate);
+									case 'ReportFBFDistribution':
+										return A4($author$project$Pages$Reports$View$viewFBFDistributionReport, language, limitDate, scopeLabel, recordsTillLimitDate);
 									case 'ReportNutrition':
 										return A5($author$project$Pages$Reports$View$viewNutritionReport, language, limitDate, scopeLabel, data.nutritionReportData, model.nutritionReportData);
 									case 'ReportPeripartum':
@@ -21726,7 +21934,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 								language,
 								model.reportType,
 								_List_fromArray(
-									[$author$project$Pages$Reports$Model$ReportAcuteIllness, $author$project$Pages$Reports$Model$ReportPrenatal, $author$project$Pages$Reports$Model$ReportPrenatalContacts, $author$project$Pages$Reports$Model$ReportPrenatalDiagnoses, $author$project$Pages$Reports$Model$ReportDemographics, $author$project$Pages$Reports$Model$ReportNutrition, $author$project$Pages$Reports$Model$ReportPeripartum, $author$project$Pages$Reports$Model$ReportPostnatalCare]),
+									[$author$project$Pages$Reports$Model$ReportAcuteIllness, $author$project$Pages$Reports$Model$ReportPrenatal, $author$project$Pages$Reports$Model$ReportPrenatalContacts, $author$project$Pages$Reports$Model$ReportPrenatalDiagnoses, $author$project$Pages$Reports$Model$ReportDemographics, $author$project$Pages$Reports$Model$ReportNutrition, $author$project$Pages$Reports$Model$ReportPeripartum, $author$project$Pages$Reports$Model$ReportPostnatalCare, $author$project$Pages$Reports$Model$ReportFBFDistribution]),
 								$author$project$Pages$Reports$Utils$reportTypeToString,
 								$author$project$Pages$Reports$Model$SetReportType,
 								$author$project$Translate$ReportType,

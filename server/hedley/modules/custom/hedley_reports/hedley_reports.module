@@ -1834,7 +1834,17 @@ function hedley_reports_load_results_data($report_variant, $scope, $province = N
   }
 
   $node = node_load($node_id);
-  $file = file_load($node->field_data_file[LANGUAGE_NONE][0]['fid']);
+  // The report_data node may exist as a placeholder with no file yet (e.g.
+  // when the recalculate-large-datasets.php script has not produced the
+  // data file for this scope). Guard the field access so a missing file
+  // doesn't spam notices via $node->field_data_file[LANGUAGE_NONE][0].
+  $file_id = isset($node->field_data_file[LANGUAGE_NONE][0]['fid'])
+    ? $node->field_data_file[LANGUAGE_NONE][0]['fid']
+    : 0;
+  if (empty($file_id)) {
+    return [[], NULL];
+  }
+  $file = file_load($file_id);
   if (!$file) {
     return [[], NULL];
   }
@@ -1911,7 +1921,12 @@ function hedley_reports_create_or_update_results_data_node(array $data, $report_
   else {
     // Update the Report Data node.
     $node = node_load($node_id);
-    $old_file = file_load($node->field_data_file[LANGUAGE_NONE][0]['fid']);
+    // Same guard as in hedley_reports_load_results_data: a stub
+    // report_data node may exist without an attached file.
+    $old_file_id = isset($node->field_data_file[LANGUAGE_NONE][0]['fid'])
+      ? $node->field_data_file[LANGUAGE_NONE][0]['fid']
+      : 0;
+    $old_file = !empty($old_file_id) ? file_load($old_file_id) : FALSE;
     if ($old_file) {
       // Delete the old file.
       file_delete($old_file, TRUE);
