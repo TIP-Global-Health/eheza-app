@@ -234,7 +234,7 @@ test.describe('Admin Reports', () => {
   // Statistical Queries and Completion reports show the correct deltas.
   //
   // Patients created:
-  //   Nurse: NutrChild (M 10mo) — Nutrition (with measurements) + SPV (2 encounters, impacted)
+  //   Nurse: NutrChild (M 11mo) — Nutrition (with measurements) + SPV (2 encounters, impacted)
   //          PrenatalMom (F 25y) — Prenatal initial + postpartum (2 encounters, impacted)
   //          AINurse (F 30y) — AI initial + subsequent (2 encounters, impacted)
   //          AIChild (M 30mo) — AI initial (with MUAC + Nutrition)
@@ -309,7 +309,7 @@ test.describe('Admin Reports', () => {
     let baselinePeripartumPrematureLabour: number;
     let baselinePeripartumBreastfedFirstHour: number;
     // Postnatal Care report baselines (PR #1556). Among the existing test
-    // patients, only NutrChild (M, 10mo, full nurse SPV with
+    // patients, only NutrChild (M, 11mo, full nurse SPV with
     // completeWCImmunisation) contributes — they fall in the "10-19 months
     // UpToDate" bucket. Other test children either lack a well-child
     // encounter (AIChild, CSChild, HVChild) or are below the lowest age
@@ -635,10 +635,15 @@ test.describe('Admin Reports', () => {
       await page.goto(pwaBaseUrl);
       await setupDevice(page, '1234', 'Nyange Health Center');
 
-      // --- NutrChild (male, 10 months): Nutrition encounter ---
+      // --- NutrChild (male, 11 months): Nutrition encounter ---
       // Complete mandatory activities with abnormal measurements to trigger
-      // stunting severe (height 60cm at 10mo) + underweight severe (6.0kg at 10mo).
-      const nutrChild = await createNutritionChild(page, { ageMonths: 10 });
+      // stunting severe (height 60cm at 11mo) + underweight severe (6.0kg
+      // at 11mo). Age 11mo intentionally clears both the 10-month bucket
+      // boundary in the Postnatal Care report (Date.diff Months on a
+      // 10-month-old DOB occasionally rounds to 9 due to UTC/local-day
+      // shift in setDate, flipping the child between buckets) and stays
+      // inside the Demographics "1M - 2Y" bucket.
+      const nutrChild = await createNutritionChild(page, { ageMonths: 11 });
       nutrChildName = nutrChild.fullName;
       await enterHeight(page, '60');
       await saveActivity(page);
@@ -1623,7 +1628,7 @@ test.describe('Admin Reports', () => {
     //
     // The report has 6 rows: SPV/Newborn-Exam-within-24h-of-birth + 5
     // age-bucket "UpToDate with immunization" rows (7-11w, 11-15w,
-    // 15w-10mo, 10-19mo, 19-24mo). NutrChild (M, 10mo) gets a full nurse
+    // 15w-10mo, 10-19mo, 19-24mo). NutrChild (M, 11mo) gets a full nurse
     // SPV here with completeWCImmunisation, which administers every
     // age-eligible vaccine today. After sync, NutrChild's wellChildData
     // carries the full immunisation dict; the report's
@@ -1661,7 +1666,7 @@ test.describe('Admin Reports', () => {
       // Within-24h row should not move (no test patient has a same-day SPV).
       expect(newWithin24h - baselinePNCWithin24h,
         '"within 24 hours of birth" row should be unchanged').toBe(0);
-      // NutrChild (10mo, full SPV with all eligible vaccines administered
+      // NutrChild (11mo, full SPV with all eligible vaccines administered
       // today) should land in the 10-19 months bucket as UpToDate.
       expect(new10To19Months - baselinePNC10To19Months,
         '"Children aged 10-19 mos UpToDate" row should grow by +1').toBe(1);
@@ -2446,7 +2451,7 @@ test.describe('Admin Reports', () => {
 
     // ── Phase 12: Completion Report — Well Child (SPV) ──
     //
-    // NutrChild (10mo male, Nurse) completed SPV encounter:
+    // NutrChild (11mo male, Nurse) completed SPV encounter:
     // DangerSigns, NutritionAssessment, ECD, Medication, Immunisation, NCDA, NextSteps.
     // Supports Taken By filter (Nurse + CHW).
 
