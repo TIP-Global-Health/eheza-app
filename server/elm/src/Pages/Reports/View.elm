@@ -344,16 +344,18 @@ viewReportsData language currentDate themePath data model =
         , div [ class "inputs" ] <|
             (viewSelectListInput language
                 model.reportType
-                [ ReportAcuteIllness
-                , ReportDemographics
-                , ReportFBFDistribution
-                , ReportNutrition
-                , ReportPeripartum
-                , ReportPostnatalCare
-                , ReportPrenatal
-                , ReportPrenatalContacts
-                , ReportPrenatalDiagnoses
-                ]
+                ([ ReportAcuteIllness
+                 , ReportDemographics
+                 , ReportFBFDistribution
+                 , ReportNutrition
+                 , ReportPeripartum
+                 , ReportPostnatalCare
+                 , ReportPrenatal
+                 , ReportPrenatalContacts
+                 , ReportPrenatalDiagnoses
+                 ]
+                    |> List.sortBy (\rt -> String.toLower (translate language (Translate.ReportType rt)))
+                )
                 reportTypeToString
                 SetReportType
                 Translate.ReportType

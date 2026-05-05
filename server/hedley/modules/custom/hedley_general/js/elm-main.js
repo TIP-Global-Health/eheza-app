@@ -22008,8 +22008,17 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 								$author$project$Pages$Utils$viewSelectListInput,
 								language,
 								model.reportType,
-								_List_fromArray(
-									[$author$project$Pages$Reports$Model$ReportAcuteIllness, $author$project$Pages$Reports$Model$ReportDemographics, $author$project$Pages$Reports$Model$ReportFBFDistribution, $author$project$Pages$Reports$Model$ReportNutrition, $author$project$Pages$Reports$Model$ReportPeripartum, $author$project$Pages$Reports$Model$ReportPostnatalCare, $author$project$Pages$Reports$Model$ReportPrenatal, $author$project$Pages$Reports$Model$ReportPrenatalContacts, $author$project$Pages$Reports$Model$ReportPrenatalDiagnoses]),
+								A2(
+									$elm$core$List$sortBy,
+									function (rt) {
+										return $elm$core$String$toLower(
+											A2(
+												$author$project$Translate$translate,
+												language,
+												$author$project$Translate$ReportType(rt)));
+									},
+									_List_fromArray(
+										[$author$project$Pages$Reports$Model$ReportAcuteIllness, $author$project$Pages$Reports$Model$ReportDemographics, $author$project$Pages$Reports$Model$ReportFBFDistribution, $author$project$Pages$Reports$Model$ReportNutrition, $author$project$Pages$Reports$Model$ReportPeripartum, $author$project$Pages$Reports$Model$ReportPostnatalCare, $author$project$Pages$Reports$Model$ReportPrenatal, $author$project$Pages$Reports$Model$ReportPrenatalContacts, $author$project$Pages$Reports$Model$ReportPrenatalDiagnoses])),
 								$author$project$Pages$Reports$Utils$reportTypeToString,
 								$author$project$Pages$Reports$Model$SetReportType,
 								$author$project$Translate$ReportType,
