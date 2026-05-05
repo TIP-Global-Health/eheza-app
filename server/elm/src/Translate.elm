@@ -889,28 +889,28 @@ translationSet transId =
         FbfDistributionCategory category ->
             case category of
                 FbfDistributionFbfChild ->
-                    { english = "FBF Child"
+                    { english = "FBF Child (packages)"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     , somali = Nothing
                     }
 
                 FbfDistributionFbfMother ->
-                    { english = "FBF Mother"
+                    { english = "FBF Mother (packages)"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     , somali = Nothing
                     }
 
                 FbfDistributionAhezaChild ->
-                    { english = "Aheza Child"
+                    { english = "Aheza Child (kg)"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     , somali = Nothing
                     }
 
                 FbfDistributionAhezaMother ->
-                    { english = "Aheza Mother"
+                    { english = "Aheza Mother (kg)"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     , somali = Nothing
