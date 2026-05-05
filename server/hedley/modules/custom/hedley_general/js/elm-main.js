@@ -11871,6 +11871,8 @@ var $author$project$Translate$translationSet = function (transId) {
 					default:
 						return {english: 'Aheza Mother (kg)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 				}
+			case 'FbfDistributionOccurrences':
+				return {english: 'Occurrences', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'FbfDistributionType':
 				return {english: 'Type', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Feeding':
@@ -18260,6 +18262,7 @@ var $author$project$Pages$Reports$View$fbfDistributionCategoryCssClass = functio
 var $author$project$Translate$FbfDistributionCategory = function (a) {
 	return {$: 'FbfDistributionCategory', a: a};
 };
+var $author$project$Translate$FbfDistributionOccurrences = {$: 'FbfDistributionOccurrences'};
 var $author$project$Translate$FbfDistributionType = {$: 'FbfDistributionType'};
 var $elm$core$Basics$round = _Basics_round;
 var $author$project$Pages$Reports$View$formatDistributionTotal = function (value) {
@@ -18270,75 +18273,72 @@ var $author$project$Pages$Reports$View$formatDistributionTotal = function (value
 };
 var $author$project$Pages$Reports$View$generateFBFDistributionReportData = F3(
 	function (language, categories, records) {
-		var fbfMotherTotal = $elm$core$List$sum(
-			A2(
-				$elm$core$List$map,
-				function ($) {
-					return $.fbfAmount;
-				},
+		var fbfMotherAmounts = A2(
+			$elm$core$List$map,
+			function ($) {
+				return $.fbfAmount;
+			},
+			$elm$core$List$concat(
+				A2(
+					$elm$core$List$filterMap,
+					function ($) {
+						return $.groupNutritionFbfMotherData;
+					},
+					records)));
+		var fbfChildAmounts = A2(
+			$elm$core$List$filterMap,
+			function ($) {
+				return $.fbfAmount;
+			},
+			$elm$core$List$concat(
+				A2(
+					$elm$core$List$filterMap,
+					function ($) {
+						return $.groupNutritionFbfData;
+					},
+					records)));
+		var ahezaMotherAmounts = A2(
+			$elm$core$List$filterMap,
+			function ($) {
+				return $.ahezaAmount;
+			},
+			$elm$core$List$concat(
 				$elm$core$List$concat(
 					A2(
 						$elm$core$List$filterMap,
 						function ($) {
-							return $.groupNutritionFbfMotherData;
+							return $.familyNutritionData;
 						},
 						records))));
-		var fbfChildTotal = $elm$core$List$sum(
-			A2(
-				$elm$core$List$filterMap,
-				function ($) {
-					return $.fbfAmount;
-				},
+		var ahezaChildAmounts = A2(
+			$elm$core$List$filterMap,
+			function ($) {
+				return $.ahezaAmount;
+			},
+			$elm$core$List$concat(
 				$elm$core$List$concat(
 					A2(
 						$elm$core$List$filterMap,
 						function ($) {
-							return $.groupNutritionFbfData;
+							return $.familyNutritionMuacData;
 						},
 						records))));
-		var ahezaMotherTotal = $elm$core$List$sum(
-			A2(
-				$elm$core$List$filterMap,
-				function ($) {
-					return $.ahezaAmount;
-				},
-				$elm$core$List$concat(
-					$elm$core$List$concat(
-						A2(
-							$elm$core$List$filterMap,
-							function ($) {
-								return $.familyNutritionData;
-							},
-							records)))));
-		var ahezaChildTotal = $elm$core$List$sum(
-			A2(
-				$elm$core$List$filterMap,
-				function ($) {
-					return $.ahezaAmount;
-				},
-				$elm$core$List$concat(
-					$elm$core$List$concat(
-						A2(
-							$elm$core$List$filterMap,
-							function ($) {
-								return $.familyNutritionMuacData;
-							},
-							records)))));
-		var totalFor = function (category) {
+		var amountsFor = function (category) {
 			switch (category.$) {
 				case 'FbfDistributionAhezaChild':
-					return ahezaChildTotal;
+					return ahezaChildAmounts;
 				case 'FbfDistributionAhezaMother':
-					return ahezaMotherTotal;
+					return ahezaMotherAmounts;
 				case 'FbfDistributionFbfChild':
-					return fbfChildTotal;
+					return fbfChildAmounts;
 				default:
-					return fbfMotherTotal;
+					return fbfMotherAmounts;
 			}
 		};
 		var rows = A2(
 			$elm$core$List$map,
 			function (category) {
+				var amounts = amountsFor(category);
 				return _List_fromArray(
 					[
 						A2(
@@ -18346,7 +18346,9 @@ var $author$project$Pages$Reports$View$generateFBFDistributionReportData = F3(
 						language,
 						$author$project$Translate$FbfDistributionCategory(category)),
 						$author$project$Pages$Reports$View$formatDistributionTotal(
-						totalFor(category))
+						$elm$core$List$sum(amounts)),
+						$elm$core$String$fromInt(
+						$elm$core$List$length(amounts))
 					]);
 			},
 			categories);
@@ -18354,7 +18356,8 @@ var $author$project$Pages$Reports$View$generateFBFDistributionReportData = F3(
 			captions: _List_fromArray(
 				[
 					A2($author$project$Translate$translate, language, $author$project$Translate$FbfDistributionType),
-					A2($author$project$Translate$translate, language, $author$project$Translate$Total)
+					A2($author$project$Translate$translate, language, $author$project$Translate$Total),
+					A2($author$project$Translate$translate, language, $author$project$Translate$FbfDistributionOccurrences)
 				]),
 			heading: '',
 			rows: rows

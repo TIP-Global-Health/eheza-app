@@ -125,6 +125,7 @@ type TranslationId
     | FamilyPlanning
     | FBF
     | FbfDistributionCategory FbfDistributionCategory
+    | FbfDistributionOccurrences
     | FbfDistributionType
     | Feeding
     | Female
@@ -915,6 +916,13 @@ translationSet transId =
                     , kirundi = Nothing
                     , somali = Nothing
                     }
+
+        FbfDistributionOccurrences ->
+            { english = "Occurrences"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
 
         FbfDistributionType ->
             { english = "Type"

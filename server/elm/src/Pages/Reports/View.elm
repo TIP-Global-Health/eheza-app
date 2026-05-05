@@ -2885,58 +2885,61 @@ generateFBFDistributionReportData :
     -> MetricsResultsTableData
 generateFBFDistributionReportData language categories records =
     let
-        -- FBF child totals come exclusively from groupNutritionFbfData
+        -- FBF child amounts come exclusively from groupNutritionFbfData
         -- (clinic group_type = 'fbf'); Achi child_fbf rows live under
-        -- groupNutritionAchiData and are intentionally out of scope.
-        fbfChildTotal =
+        -- groupNutritionAchiData and are intentionally out of scope. Each
+        -- entry with a Just fbfAmount is one distribution event, so the
+        -- occurrence count is just the length of the filtered list.
+        fbfChildAmounts =
             records
                 |> List.filterMap .groupNutritionFbfData
                 |> List.concat
                 |> List.filterMap .fbfAmount
-                |> List.sum
 
-        fbfMotherTotal =
+        fbfMotherAmounts =
             records
                 |> List.filterMap .groupNutritionFbfMotherData
                 |> List.concat
                 |> List.map .fbfAmount
-                |> List.sum
 
-        ahezaChildTotal =
+        ahezaChildAmounts =
             records
                 |> List.filterMap .familyNutritionMuacData
                 |> List.concat
                 |> List.concat
                 |> List.filterMap .ahezaAmount
-                |> List.sum
 
-        ahezaMotherTotal =
+        ahezaMotherAmounts =
             records
                 |> List.filterMap .familyNutritionData
                 |> List.concat
                 |> List.concat
                 |> List.filterMap .ahezaAmount
-                |> List.sum
 
-        totalFor category =
+        amountsFor category =
             case category of
                 FbfDistributionAhezaChild ->
-                    ahezaChildTotal
+                    ahezaChildAmounts
 
                 FbfDistributionAhezaMother ->
-                    ahezaMotherTotal
+                    ahezaMotherAmounts
 
                 FbfDistributionFbfChild ->
-                    fbfChildTotal
+                    fbfChildAmounts
 
                 FbfDistributionFbfMother ->
-                    fbfMotherTotal
+                    fbfMotherAmounts
 
         rows =
             List.map
                 (\category ->
+                    let
+                        amounts =
+                            amountsFor category
+                    in
                     [ translate language (Translate.FbfDistributionCategory category)
-                    , formatDistributionTotal (totalFor category)
+                    , formatDistributionTotal (List.sum amounts)
+                    , String.fromInt (List.length amounts)
                     ]
                 )
                 categories
@@ -2945,6 +2948,7 @@ generateFBFDistributionReportData language categories records =
     , captions =
         [ translate language Translate.FbfDistributionType
         , translate language Translate.Total
+        , translate language Translate.FbfDistributionOccurrences
         ]
     , rows = rows
     }
