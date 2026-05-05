@@ -702,6 +702,12 @@ export function findEncounterRow(
 export interface SimpleTableRow {
   label: string;
   total: number;
+  /**
+   * Third-column count, when the table renders one. Currently only the
+   * FBF Distribution report has a third column ("Occurrences"). Other
+   * simple-table consumers leave this undefined.
+   */
+  occurrences?: number;
 }
 
 export interface SimpleTableData {
@@ -747,10 +753,11 @@ export async function readPostnatalCareTable(
 /**
  * Read the FBF Distribution report table.
  * Container: div.report.fbf-distribution div.table
- * Each row has 2 cells: [category label, total amount].
+ * Each row has 3 cells: [category label, total amount, occurrences].
  * Categories: "FBF Child", "FBF Mother", "Aheza Child", "Aheza Mother".
  * Totals are numeric (whole numbers print without decimals; fractional with up
- * to 2dp). readSimpleTable uses parseFloat, so fractional totals round-trip.
+ * to 2dp). Occurrences is the count of distribution events contributing to
+ * that total (one event per measurement record).
  */
 export async function readFBFDistributionTable(
   page: Page,
@@ -799,10 +806,14 @@ async function readSimpleTable(
       cellTexts.push((await cells.nth(j).textContent()) ?? '');
     }
     if (cellTexts.length >= 2) {
-      rows.push({
+      const row: SimpleTableRow = {
         label: cellTexts[0].trim(),
         total: parseFloat(cellTexts[1].trim()) || 0,
-      });
+      };
+      if (cellTexts.length >= 3) {
+        row.occurrences = parseFloat(cellTexts[2].trim()) || 0;
+      }
+      rows.push(row);
     }
   }
 
