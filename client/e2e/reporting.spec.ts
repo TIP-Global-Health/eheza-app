@@ -324,10 +324,12 @@ test.describe('Admin Reports', () => {
     let baselinePNC19To24Months: number;
     let baselineFBFDistChild: number;
     let baselineFBFDistMother: number;
+    let baselineFBFDistChildAchi: number;
     let baselineAhezaDistChild: number;
     let baselineAhezaDistMother: number;
     let baselineFBFDistChildOccurrences: number;
     let baselineFBFDistMotherOccurrences: number;
+    let baselineFBFDistChildAchiOccurrences: number;
     let baselineAhezaDistChildOccurrences: number;
     let baselineAhezaDistMotherOccurrences: number;
     let baselineNutrition: Map<number, NutritionMetricRow[]>;
@@ -448,22 +450,26 @@ test.describe('Admin Reports', () => {
       await selectReportType(page, 'fbf-distribution');
       await setDateRange(page, REPORT_START_DATE, reportLimitDate);
       const baselineFBFDistTable = await readFBFDistributionTable(page);
+      const baselineFBFDistChildAchiRow = findSimpleRow(baselineFBFDistTable, 'FBF Child (ACHI)');
       const baselineFBFDistChildRow = findSimpleRow(baselineFBFDistTable, 'FBF Child');
       const baselineFBFDistMotherRow = findSimpleRow(baselineFBFDistTable, 'FBF Mother');
       const baselineAhezaDistChildRow = findSimpleRow(baselineFBFDistTable, 'Aheza Child');
       const baselineAhezaDistMotherRow = findSimpleRow(baselineFBFDistTable, 'Aheza Mother');
       baselineFBFDistChild = baselineFBFDistChildRow?.total ?? 0;
       baselineFBFDistMother = baselineFBFDistMotherRow?.total ?? 0;
+      baselineFBFDistChildAchi = baselineFBFDistChildAchiRow?.total ?? 0;
       baselineAhezaDistChild = baselineAhezaDistChildRow?.total ?? 0;
       baselineAhezaDistMother = baselineAhezaDistMotherRow?.total ?? 0;
       baselineFBFDistChildOccurrences = baselineFBFDistChildRow?.occurrences ?? 0;
       baselineFBFDistMotherOccurrences = baselineFBFDistMotherRow?.occurrences ?? 0;
+      baselineFBFDistChildAchiOccurrences = baselineFBFDistChildAchiRow?.occurrences ?? 0;
       baselineAhezaDistChildOccurrences = baselineAhezaDistChildRow?.occurrences ?? 0;
       baselineAhezaDistMotherOccurrences = baselineAhezaDistMotherRow?.occurrences ?? 0;
       console.log(
         `Baseline FBF Distribution: ` +
         `fbfChild=${baselineFBFDistChild}/${baselineFBFDistChildOccurrences}occ, ` +
         `fbfMother=${baselineFBFDistMother}/${baselineFBFDistMotherOccurrences}occ, ` +
+        `fbfChildAchi=${baselineFBFDistChildAchi}/${baselineFBFDistChildAchiOccurrences}occ, ` +
         `ahezaChild=${baselineAhezaDistChild}/${baselineAhezaDistChildOccurrences}occ, ` +
         `ahezaMother=${baselineAhezaDistMother}/${baselineAhezaDistMotherOccurrences}occ`,
       );
@@ -1765,6 +1771,7 @@ test.describe('Admin Reports', () => {
 
       const fbfDistribution = await readFBFDistributionTable(page);
 
+      const fbfChildAchiRow = findSimpleRow(fbfDistribution, 'FBF Child (ACHI)');
       const fbfChildRow = findSimpleRow(fbfDistribution, 'FBF Child');
       const fbfMotherRow = findSimpleRow(fbfDistribution, 'FBF Mother');
       const ahezaChildRow = findSimpleRow(fbfDistribution, 'Aheza Child');
@@ -1772,18 +1779,21 @@ test.describe('Admin Reports', () => {
 
       const fbfChild = fbfChildRow?.total ?? 0;
       const fbfMother = fbfMotherRow?.total ?? 0;
+      const fbfChildAchi = fbfChildAchiRow?.total ?? 0;
       const ahezaChild = ahezaChildRow?.total ?? 0;
       const ahezaMother = ahezaMotherRow?.total ?? 0;
       const fbfChildOccurrences = fbfChildRow?.occurrences ?? 0;
       const fbfMotherOccurrences = fbfMotherRow?.occurrences ?? 0;
+      const fbfChildAchiOccurrences = fbfChildAchiRow?.occurrences ?? 0;
       const ahezaChildOccurrences = ahezaChildRow?.occurrences ?? 0;
       const ahezaMotherOccurrences = ahezaMotherRow?.occurrences ?? 0;
 
       console.log('\n=== FBF DISTRIBUTION ===');
-      console.log(`FBF Child:    total ${baselineFBFDistChild} → ${fbfChild} (Δ ${fbfChild - baselineFBFDistChild}); occ ${baselineFBFDistChildOccurrences} → ${fbfChildOccurrences} (Δ ${fbfChildOccurrences - baselineFBFDistChildOccurrences})`);
-      console.log(`FBF Mother:   total ${baselineFBFDistMother} → ${fbfMother} (Δ ${fbfMother - baselineFBFDistMother}); occ ${baselineFBFDistMotherOccurrences} → ${fbfMotherOccurrences} (Δ ${fbfMotherOccurrences - baselineFBFDistMotherOccurrences})`);
-      console.log(`Aheza Child:  total ${baselineAhezaDistChild} → ${ahezaChild} (Δ ${ahezaChild - baselineAhezaDistChild}); occ ${baselineAhezaDistChildOccurrences} → ${ahezaChildOccurrences} (Δ ${ahezaChildOccurrences - baselineAhezaDistChildOccurrences})`);
-      console.log(`Aheza Mother: total ${baselineAhezaDistMother} → ${ahezaMother} (Δ ${ahezaMother - baselineAhezaDistMother}); occ ${baselineAhezaDistMotherOccurrences} → ${ahezaMotherOccurrences} (Δ ${ahezaMotherOccurrences - baselineAhezaDistMotherOccurrences})`);
+      console.log(`FBF Child:        total ${baselineFBFDistChild} → ${fbfChild} (Δ ${fbfChild - baselineFBFDistChild}); occ ${baselineFBFDistChildOccurrences} → ${fbfChildOccurrences} (Δ ${fbfChildOccurrences - baselineFBFDistChildOccurrences})`);
+      console.log(`FBF Mother:       total ${baselineFBFDistMother} → ${fbfMother} (Δ ${fbfMother - baselineFBFDistMother}); occ ${baselineFBFDistMotherOccurrences} → ${fbfMotherOccurrences} (Δ ${fbfMotherOccurrences - baselineFBFDistMotherOccurrences})`);
+      console.log(`FBF Child (ACHI): total ${baselineFBFDistChildAchi} → ${fbfChildAchi} (Δ ${fbfChildAchi - baselineFBFDistChildAchi}); occ ${baselineFBFDistChildAchiOccurrences} → ${fbfChildAchiOccurrences} (Δ ${fbfChildAchiOccurrences - baselineFBFDistChildAchiOccurrences})`);
+      console.log(`Aheza Child:      total ${baselineAhezaDistChild} → ${ahezaChild} (Δ ${ahezaChild - baselineAhezaDistChild}); occ ${baselineAhezaDistChildOccurrences} → ${ahezaChildOccurrences} (Δ ${ahezaChildOccurrences - baselineAhezaDistChildOccurrences})`);
+      console.log(`Aheza Mother:     total ${baselineAhezaDistMother} → ${ahezaMother} (Δ ${ahezaMother - baselineAhezaDistMother}); occ ${baselineAhezaDistMotherOccurrences} → ${ahezaMotherOccurrences} (Δ ${ahezaMotherOccurrences - baselineAhezaDistMotherOccurrences})`);
 
       // Each complete*Fbf / complete*Aheza helper creates exactly one
       // distribution measurement record, so every row's Occurrences
@@ -1800,6 +1810,18 @@ test.describe('Admin Reports', () => {
       // completeAhezaMother (amount '3') -> Aheza Mother total +3, occurrences +1
       expect(ahezaMother - baselineAhezaDistMother, 'Aheza Mother total delta should be +3').toBe(3);
       expect(ahezaMotherOccurrences - baselineAhezaDistMotherOccurrences, 'Aheza Mother occurrences delta should be +1').toBe(1);
+      // The test does not create an ACHI clinic session, so the FBF
+      // Child (ACHI) row's totals should not move from baseline.
+      expect(fbfChildAchi - baselineFBFDistChildAchi, 'FBF Child (ACHI) total delta should be 0').toBe(0);
+      expect(fbfChildAchiOccurrences - baselineFBFDistChildAchiOccurrences, 'FBF Child (ACHI) occurrences delta should be 0').toBe(0);
+
+      // Unit column: FBF clinic distributions are in packages; ACHI and
+      // CHW family-nutrition (Aheza) distributions are in kg.
+      expect(fbfChildRow?.unit, 'FBF Child unit should be "package"').toBe('package');
+      expect(fbfMotherRow?.unit, 'FBF Mother unit should be "package"').toBe('package');
+      expect(fbfChildAchiRow?.unit, 'FBF Child (ACHI) unit should be "kg"').toBe('kg');
+      expect(ahezaChildRow?.unit, 'Aheza Child unit should be "kg"').toBe('kg');
+      expect(ahezaMotherRow?.unit, 'Aheza Mother unit should be "kg"').toBe('kg');
 
       // CSV download button.
       await expect(

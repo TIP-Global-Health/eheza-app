@@ -2872,6 +2872,9 @@ visibleFbfDistributionCategories features =
                 FbfDistributionFbfChild ->
                     True
 
+                FbfDistributionFbfChildAchi ->
+                    True
+
                 FbfDistributionFbfMother ->
                     True
         )
@@ -2885,14 +2888,23 @@ generateFBFDistributionReportData :
     -> MetricsResultsTableData
 generateFBFDistributionReportData language categories records =
     let
-        -- FBF child amounts come exclusively from groupNutritionFbfData
-        -- (clinic group_type = 'fbf'); Achi child_fbf rows live under
-        -- groupNutritionAchiData and are intentionally out of scope. Each
-        -- entry with a Just fbfAmount is one distribution event, so the
-        -- occurrence count is just the length of the filtered list.
+        -- FBF child amounts come from groupNutritionFbfData (clinic
+        -- group_type = 'fbf'). The same child_fbf measurement type is
+        -- also used at Achi clinics, where it represents Aheza in kg
+        -- rather than FBF packages; those records live under
+        -- groupNutritionAchiData and are surfaced as a separate row.
+        -- Each entry with a Just fbfAmount is one distribution event,
+        -- so the occurrence count is just the length of the filtered
+        -- list.
         fbfChildAmounts =
             records
                 |> List.filterMap .groupNutritionFbfData
+                |> List.concat
+                |> List.filterMap .fbfAmount
+
+        fbfChildAchiAmounts =
+            records
+                |> List.filterMap .groupNutritionAchiData
                 |> List.concat
                 |> List.filterMap .fbfAmount
 
@@ -2927,6 +2939,9 @@ generateFBFDistributionReportData language categories records =
                 FbfDistributionFbfChild ->
                     fbfChildAmounts
 
+                FbfDistributionFbfChildAchi ->
+                    fbfChildAchiAmounts
+
                 FbfDistributionFbfMother ->
                     fbfMotherAmounts
 
@@ -2939,6 +2954,7 @@ generateFBFDistributionReportData language categories records =
                     in
                     [ translate language (Translate.FbfDistributionCategory category)
                     , formatDistributionTotal (List.sum amounts)
+                    , translate language (fbfDistributionCategoryUnit category)
                     , String.fromInt (List.length amounts)
                     ]
                 )
@@ -2948,10 +2964,33 @@ generateFBFDistributionReportData language categories records =
     , captions =
         [ translate language Translate.FbfDistributionType
         , translate language Translate.FbfDistributionTotalAmount
+        , translate language Translate.FbfDistributionUnit
         , translate language Translate.FbfDistributionOccurrences
         ]
     , rows = rows
     }
+
+
+{-| FBF clinic distributions are reported in packages; AHEZA (CHW family
+nutrition) and ACHI clinic distributions are reported in kg.
+-}
+fbfDistributionCategoryUnit : FbfDistributionCategory -> TranslationId
+fbfDistributionCategoryUnit category =
+    case category of
+        FbfDistributionAhezaChild ->
+            Translate.FbfDistributionUnitKg
+
+        FbfDistributionAhezaMother ->
+            Translate.FbfDistributionUnitKg
+
+        FbfDistributionFbfChild ->
+            Translate.FbfDistributionUnitPackage
+
+        FbfDistributionFbfChildAchi ->
+            Translate.FbfDistributionUnitKg
+
+        FbfDistributionFbfMother ->
+            Translate.FbfDistributionUnitPackage
 
 
 {-| Show whole-number totals as integers (e.g. "5") and fractional totals
@@ -2979,6 +3018,9 @@ fbfDistributionCategoryCssClass category =
 
         FbfDistributionFbfChild ->
             "fbf-child"
+
+        FbfDistributionFbfChildAchi ->
+            "fbf-child-achi"
 
         FbfDistributionFbfMother ->
             "fbf-mother"

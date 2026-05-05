@@ -128,6 +128,9 @@ type TranslationId
     | FbfDistributionOccurrences
     | FbfDistributionTotalAmount
     | FbfDistributionType
+    | FbfDistributionUnit
+    | FbfDistributionUnitKg
+    | FbfDistributionUnitPackage
     | Feeding
     | Female
     | FirstVisit
@@ -891,28 +894,35 @@ translationSet transId =
         FbfDistributionCategory category ->
             case category of
                 FbfDistributionFbfChild ->
-                    { english = "FBF Child (packages)"
+                    { english = "FBF Child"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                FbfDistributionFbfChildAchi ->
+                    { english = "FBF Child (ACHI)"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     , somali = Nothing
                     }
 
                 FbfDistributionFbfMother ->
-                    { english = "FBF Mother (packages)"
+                    { english = "FBF Mother"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     , somali = Nothing
                     }
 
                 FbfDistributionAhezaChild ->
-                    { english = "Aheza Child (kg)"
+                    { english = "Aheza Child"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     , somali = Nothing
                     }
 
                 FbfDistributionAhezaMother ->
-                    { english = "Aheza Mother (kg)"
+                    { english = "Aheza Mother"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     , somali = Nothing
@@ -934,6 +944,27 @@ translationSet transId =
 
         FbfDistributionType ->
             { english = "Type"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        FbfDistributionUnit ->
+            { english = "Unit"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        FbfDistributionUnitKg ->
+            { english = "kg"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        FbfDistributionUnitPackage ->
+            { english = "package"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing

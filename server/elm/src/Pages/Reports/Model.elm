@@ -48,6 +48,7 @@ type FbfDistributionCategory
     = FbfDistributionAhezaChild
     | FbfDistributionAhezaMother
     | FbfDistributionFbfChild
+    | FbfDistributionFbfChildAchi
     | FbfDistributionFbfMother
 
 
@@ -55,6 +56,7 @@ allFbfDistributionCategories : List FbfDistributionCategory
 allFbfDistributionCategories =
     [ FbfDistributionFbfChild
     , FbfDistributionFbfMother
+    , FbfDistributionFbfChildAchi
     , FbfDistributionAhezaChild
     , FbfDistributionAhezaMother
     ]

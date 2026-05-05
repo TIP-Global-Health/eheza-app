@@ -11863,13 +11863,15 @@ var $author$project$Translate$translationSet = function (transId) {
 				var category = transId.a;
 				switch (category.$) {
 					case 'FbfDistributionFbfChild':
-						return {english: 'FBF Child (packages)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+						return {english: 'FBF Child', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					case 'FbfDistributionFbfChildAchi':
+						return {english: 'FBF Child (ACHI)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'FbfDistributionFbfMother':
-						return {english: 'FBF Mother (packages)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+						return {english: 'FBF Mother', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'FbfDistributionAhezaChild':
-						return {english: 'Aheza Child (kg)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+						return {english: 'Aheza Child', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					default:
-						return {english: 'Aheza Mother (kg)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+						return {english: 'Aheza Mother', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 				}
 			case 'FbfDistributionOccurrences':
 				return {english: '# of Encounters', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
@@ -11877,6 +11879,12 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Total amount', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'FbfDistributionType':
 				return {english: 'Type', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'FbfDistributionUnit':
+				return {english: 'Unit', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'FbfDistributionUnitKg':
+				return {english: 'kg', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'FbfDistributionUnitPackage':
+				return {english: 'package', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Feeding':
 				return {english: 'Feeding', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Female':
@@ -18257,6 +18265,8 @@ var $author$project$Pages$Reports$View$fbfDistributionCategoryCssClass = functio
 			return 'aheza-mother';
 		case 'FbfDistributionFbfChild':
 			return 'fbf-child';
+		case 'FbfDistributionFbfChildAchi':
+			return 'fbf-child-achi';
 		default:
 			return 'fbf-mother';
 	}
@@ -18267,6 +18277,23 @@ var $author$project$Translate$FbfDistributionCategory = function (a) {
 var $author$project$Translate$FbfDistributionOccurrences = {$: 'FbfDistributionOccurrences'};
 var $author$project$Translate$FbfDistributionTotalAmount = {$: 'FbfDistributionTotalAmount'};
 var $author$project$Translate$FbfDistributionType = {$: 'FbfDistributionType'};
+var $author$project$Translate$FbfDistributionUnit = {$: 'FbfDistributionUnit'};
+var $author$project$Translate$FbfDistributionUnitKg = {$: 'FbfDistributionUnitKg'};
+var $author$project$Translate$FbfDistributionUnitPackage = {$: 'FbfDistributionUnitPackage'};
+var $author$project$Pages$Reports$View$fbfDistributionCategoryUnit = function (category) {
+	switch (category.$) {
+		case 'FbfDistributionAhezaChild':
+			return $author$project$Translate$FbfDistributionUnitKg;
+		case 'FbfDistributionAhezaMother':
+			return $author$project$Translate$FbfDistributionUnitKg;
+		case 'FbfDistributionFbfChild':
+			return $author$project$Translate$FbfDistributionUnitPackage;
+		case 'FbfDistributionFbfChildAchi':
+			return $author$project$Translate$FbfDistributionUnitKg;
+		default:
+			return $author$project$Translate$FbfDistributionUnitPackage;
+	}
+};
 var $elm$core$Basics$round = _Basics_round;
 var $author$project$Pages$Reports$View$formatDistributionTotal = function (value) {
 	return _Utils_eq(
@@ -18298,6 +18325,18 @@ var $author$project$Pages$Reports$View$generateFBFDistributionReportData = F3(
 					$elm$core$List$filterMap,
 					function ($) {
 						return $.groupNutritionFbfData;
+					},
+					records)));
+		var fbfChildAchiAmounts = A2(
+			$elm$core$List$filterMap,
+			function ($) {
+				return $.fbfAmount;
+			},
+			$elm$core$List$concat(
+				A2(
+					$elm$core$List$filterMap,
+					function ($) {
+						return $.groupNutritionAchiData;
 					},
 					records)));
 		var ahezaMotherAmounts = A2(
@@ -18334,6 +18373,8 @@ var $author$project$Pages$Reports$View$generateFBFDistributionReportData = F3(
 					return ahezaMotherAmounts;
 				case 'FbfDistributionFbfChild':
 					return fbfChildAmounts;
+				case 'FbfDistributionFbfChildAchi':
+					return fbfChildAchiAmounts;
 				default:
 					return fbfMotherAmounts;
 			}
@@ -18350,6 +18391,10 @@ var $author$project$Pages$Reports$View$generateFBFDistributionReportData = F3(
 						$author$project$Translate$FbfDistributionCategory(category)),
 						$author$project$Pages$Reports$View$formatDistributionTotal(
 						$elm$core$List$sum(amounts)),
+						A2(
+						$author$project$Translate$translate,
+						language,
+						$author$project$Pages$Reports$View$fbfDistributionCategoryUnit(category)),
 						$elm$core$String$fromInt(
 						$elm$core$List$length(amounts))
 					]);
@@ -18360,6 +18405,7 @@ var $author$project$Pages$Reports$View$generateFBFDistributionReportData = F3(
 				[
 					A2($author$project$Translate$translate, language, $author$project$Translate$FbfDistributionType),
 					A2($author$project$Translate$translate, language, $author$project$Translate$FbfDistributionTotalAmount),
+					A2($author$project$Translate$translate, language, $author$project$Translate$FbfDistributionUnit),
 					A2($author$project$Translate$translate, language, $author$project$Translate$FbfDistributionOccurrences)
 				]),
 			heading: '',
@@ -18369,9 +18415,10 @@ var $author$project$Pages$Reports$View$generateFBFDistributionReportData = F3(
 var $author$project$Pages$Reports$Model$FbfDistributionAhezaChild = {$: 'FbfDistributionAhezaChild'};
 var $author$project$Pages$Reports$Model$FbfDistributionAhezaMother = {$: 'FbfDistributionAhezaMother'};
 var $author$project$Pages$Reports$Model$FbfDistributionFbfChild = {$: 'FbfDistributionFbfChild'};
+var $author$project$Pages$Reports$Model$FbfDistributionFbfChildAchi = {$: 'FbfDistributionFbfChildAchi'};
 var $author$project$Pages$Reports$Model$FbfDistributionFbfMother = {$: 'FbfDistributionFbfMother'};
 var $author$project$Pages$Reports$Model$allFbfDistributionCategories = _List_fromArray(
-	[$author$project$Pages$Reports$Model$FbfDistributionFbfChild, $author$project$Pages$Reports$Model$FbfDistributionFbfMother, $author$project$Pages$Reports$Model$FbfDistributionAhezaChild, $author$project$Pages$Reports$Model$FbfDistributionAhezaMother]);
+	[$author$project$Pages$Reports$Model$FbfDistributionFbfChild, $author$project$Pages$Reports$Model$FbfDistributionFbfMother, $author$project$Pages$Reports$Model$FbfDistributionFbfChildAchi, $author$project$Pages$Reports$Model$FbfDistributionAhezaChild, $author$project$Pages$Reports$Model$FbfDistributionAhezaMother]);
 var $author$project$Pages$Reports$View$visibleFbfDistributionCategories = function (features) {
 	var familyNutritionEnabled = A2($Gizra$elm_all_set$EverySet$member, $author$project$App$Types$FeatureFamilyNutrition, features);
 	return A2(
@@ -18383,6 +18430,8 @@ var $author$project$Pages$Reports$View$visibleFbfDistributionCategories = functi
 				case 'FbfDistributionAhezaMother':
 					return familyNutritionEnabled;
 				case 'FbfDistributionFbfChild':
+					return true;
+				case 'FbfDistributionFbfChildAchi':
 					return true;
 				default:
 					return true;

@@ -703,9 +703,13 @@ export interface SimpleTableRow {
   label: string;
   total: number;
   /**
-   * Third-column count, when the table renders one. Currently only the
-   * FBF Distribution report has a third column ("Occurrences"). Other
-   * simple-table consumers leave this undefined.
+   * Per-row unit string (e.g., "package", "kg") when the table renders a
+   * Unit column. Currently only the FBF Distribution report uses this.
+   */
+  unit?: string;
+  /**
+   * Count of distribution events when the table renders an Occurrences
+   * column. Currently only the FBF Distribution report uses this.
    */
   occurrences?: number;
 }
@@ -753,11 +757,12 @@ export async function readPostnatalCareTable(
 /**
  * Read the FBF Distribution report table.
  * Container: div.report.fbf-distribution div.table
- * Each row has 3 cells: [category label, total amount, occurrences].
+ * Each row has 4 cells: [category label, total amount, unit, occurrences].
  * Categories: "FBF Child", "FBF Mother", "Aheza Child", "Aheza Mother".
- * Totals are numeric (whole numbers print without decimals; fractional with up
- * to 2dp). Occurrences is the count of distribution events contributing to
- * that total (one event per measurement record).
+ * Totals are numeric (whole numbers print without decimals; fractional with
+ * up to 2dp). Unit is "package" for FBF rows and "kg" for Aheza rows.
+ * Occurrences is the count of distribution events contributing to that
+ * total (one event per measurement record).
  */
 export async function readFBFDistributionTable(
   page: Page,
@@ -810,8 +815,10 @@ async function readSimpleTable(
         label: cellTexts[0].trim(),
         total: parseFloat(cellTexts[1].trim()) || 0,
       };
-      if (cellTexts.length >= 3) {
-        row.occurrences = parseFloat(cellTexts[2].trim()) || 0;
+      // 4-cell layout: [label, total, unit, occurrences] (FBF Distribution).
+      if (cellTexts.length >= 4) {
+        row.unit = cellTexts[2].trim();
+        row.occurrences = parseFloat(cellTexts[3].trim()) || 0;
       }
       rows.push(row);
     }
