@@ -304,7 +304,7 @@ viewReportsData language currentDate themePath data model =
                                 viewAcuteIllnessReport language limitDate startDate scopeLabel recordsTillLimitDate
 
                             ReportDemographics ->
-                                viewDemographicsReport language startDate limitDate scopeLabel recordsTillLimitDate
+                                viewDemographicsReport language data.features startDate limitDate scopeLabel recordsTillLimitDate
 
                             ReportFBFDistribution ->
                                 viewFBFDistributionReport language data.features limitDate scopeLabel recordsTillLimitDate
@@ -369,8 +369,8 @@ viewReportsData language currentDate themePath data model =
         ]
 
 
-viewDemographicsReport : Language -> NominalDate -> NominalDate -> String -> List PatientData -> Html Msg
-viewDemographicsReport language startDate limitDate scopeLabel records =
+viewDemographicsReport : Language -> EverySet SiteFeature -> NominalDate -> NominalDate -> String -> List PatientData -> Html Msg
+viewDemographicsReport language features startDate limitDate scopeLabel records =
     let
         demographicsReportPatientsData =
             -- We get recoderds for all patients that were created not before
@@ -386,7 +386,7 @@ viewDemographicsReport language startDate limitDate scopeLabel records =
                 |> generateDemographicsReportPatientsData language limitDate
 
         demographicsReportEncountersData =
-            generateDemographicsReportEncountersData language records
+            generateDemographicsReportEncountersData language features records
 
         csvFileName =
             "demographics-report-"
@@ -688,6 +688,7 @@ demographicsReportPatientsDataToCSV data =
 
 generateDemographicsReportEncountersData :
     Language
+    -> EverySet SiteFeature
     -> List PatientData
     ->
         { heading : String
@@ -695,7 +696,7 @@ generateDemographicsReportEncountersData :
         , rows : List ( List String, Bool )
         , totals : { label : String, total : String, unique : String }
         }
-generateDemographicsReportEncountersData language records =
+generateDemographicsReportEncountersData language features records =
     let
         prenatalDataNurseEncounters =
             List.filterMap
@@ -905,10 +906,17 @@ generateDemographicsReportEncountersData language records =
         nutritionGroupAchiEncountersUnique =
             countUnique nutritionGroupAchiEncountersData
 
+        familyNutritionEnabled =
+            EverySet.member FeatureFamilyNutrition features
+
         familyNutritionEncountersData =
-            List.filterMap
-                (.familyNutritionData >> Maybe.map List.concat)
-                records
+            if familyNutritionEnabled then
+                List.filterMap
+                    (.familyNutritionData >> Maybe.map List.concat)
+                    records
+
+            else
+                []
 
         familyNutritionEncountersTotal =
             countTotal familyNutritionEncountersData
@@ -997,8 +1005,13 @@ generateDemographicsReportEncountersData language records =
         , generateRow Translate.CBNP nutritionGroupChwEncountersTotal nutritionGroupChwEncountersUnique True
         , generateRow Translate.ACHI nutritionGroupAchiEncountersTotal nutritionGroupAchiEncountersUnique True
         , generateRow Translate.Individual nutritionIndividualEncountersTotal nutritionIndividualEncountersUnique True
-        , generateRow Translate.FamilyNutrition familyNutritionEncountersTotal familyNutritionEncountersUnique False
         ]
+            ++ (if familyNutritionEnabled then
+                    [ generateRow Translate.FamilyNutrition familyNutritionEncountersTotal familyNutritionEncountersUnique False ]
+
+                else
+                    []
+               )
     , totals =
         { label = translate language Translate.Total
         , total = String.fromInt overallTotal

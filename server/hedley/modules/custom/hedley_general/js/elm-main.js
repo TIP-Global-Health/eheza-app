@@ -17560,8 +17560,22 @@ var $author$project$Translate$NutritionTotal = {$: 'NutritionTotal'};
 var $author$project$Translate$PMTCT = {$: 'PMTCT'};
 var $author$project$Translate$Sorwathe = {$: 'Sorwathe'};
 var $author$project$Translate$Unique = {$: 'Unique'};
-var $author$project$Pages$Reports$View$generateDemographicsReportEncountersData = F2(
-	function (language, records) {
+var $pzp1997$assoc_list$AssocList$member = F2(
+	function (targetKey, dict) {
+		var _v0 = A2($pzp1997$assoc_list$AssocList$get, targetKey, dict);
+		if (_v0.$ === 'Just') {
+			return true;
+		} else {
+			return false;
+		}
+	});
+var $Gizra$elm_all_set$EverySet$member = F2(
+	function (k, _v0) {
+		var d = _v0.a;
+		return A2($pzp1997$assoc_list$AssocList$member, k, d);
+	});
+var $author$project$Pages$Reports$View$generateDemographicsReportEncountersData = F3(
+	function (language, features, records) {
 		var wellChildEncountersData = A2(
 			$elm$core$List$filterMap,
 			A2(
@@ -17703,7 +17717,8 @@ var $author$project$Pages$Reports$View$generateDemographicsReportEncountersData 
 						]),
 					shiftLeft);
 			});
-		var familyNutritionEncountersData = A2(
+		var familyNutritionEnabled = A2($Gizra$elm_all_set$EverySet$member, $author$project$App$Types$FeatureFamilyNutrition, features);
+		var familyNutritionEncountersData = familyNutritionEnabled ? A2(
 			$elm$core$List$filterMap,
 			A2(
 				$elm$core$Basics$composeR,
@@ -17711,7 +17726,7 @@ var $author$project$Pages$Reports$View$generateDemographicsReportEncountersData 
 					return $.familyNutritionData;
 				},
 				$elm$core$Maybe$map($elm$core$List$concat)),
-			records);
+			records) : _List_Nil;
 		var countUnique = A2(
 			$elm$core$Basics$composeR,
 			$elm$core$List$filter(
@@ -17815,29 +17830,33 @@ var $author$project$Pages$Reports$View$generateDemographicsReportEncountersData 
 				_List_fromArray(
 					[$author$project$Translate$EncounterType, $author$project$Translate$All, $author$project$Translate$Unique])),
 			heading: A2($author$project$Translate$translate, language, $author$project$Translate$Encounters) + ':',
-			rows: _List_fromArray(
-				[
-					A4(generateRow, $author$project$Translate$ANCTotal, prenatalDataNurseEncountersTotal + prenatalDataChwEncountersTotal, prenatalDataNurseEncountersUnique + prenatalDataChwEncountersUnique, false),
-					A4(generateRow, $author$project$Translate$HealthCenter, prenatalDataNurseEncountersTotal, prenatalDataNurseEncountersUnique, true),
-					A4(generateRow, $author$project$Translate$CHW, prenatalDataChwEncountersTotal, prenatalDataChwEncountersUnique, true),
-					A4(generateRow, $author$project$Translate$AcuteIllnessTotal, acuteIllnessDataNurseEncountersTotal + acuteIllnessDataChwEncountersTotal, acuteIllnessDataNurseEncountersUnique + acuteIllnessDataChwEncountersUnique, false),
-					A4(generateRow, $author$project$Translate$HealthCenter, acuteIllnessDataNurseEncountersTotal, acuteIllnessDataNurseEncountersUnique, true),
-					A4(generateRow, $author$project$Translate$CHW, acuteIllnessDataChwEncountersTotal, acuteIllnessDataChwEncountersUnique, true),
-					A4(generateRow, $author$project$Translate$StandardPediatricVisit, wellChildDataEncountersTotal, wellChildDataEncountersUnique, false),
-					A4(generateRow, $author$project$Translate$HomeVisit, homeVisitDataEncountersTotal, homeVisitDataEncountersUnique, false),
-					A4(generateRow, $author$project$Translate$ChildScorecard, childScorecardDataEncountersTotal, childScorecardDataEncountersUnique, false),
-					A4(generateRow, $author$project$Translate$NCD, ncdDataEncountersTotal, ncdDataEncountersUnique, false),
-					A4(generateRow, $author$project$Translate$HIV, hivDataEncountersTotal, hivDataEncountersUnique, false),
-					A4(generateRow, $author$project$Translate$Tuberculosis, tuberculosisDataEncountersTotal, tuberculosisDataEncountersUnique, false),
-					A4(generateRow, $author$project$Translate$NutritionTotal, overallNutritionTotal, overallNutritionUnique, false),
-					A4(generateRow, $author$project$Translate$PMTCT, nutritionGroupPmtctEncountersTotal, nutritionGroupPmtctEncountersUnique, true),
-					A4(generateRow, $author$project$Translate$FBF, nutritionGroupFbfEncountersTotal, nutritionGroupFbfEncountersUnique, true),
-					A4(generateRow, $author$project$Translate$Sorwathe, nutritionGroupSorwatheEncountersTotal, nutritionGroupSorwatheEncountersUnique, true),
-					A4(generateRow, $author$project$Translate$CBNP, nutritionGroupChwEncountersTotal, nutritionGroupChwEncountersUnique, true),
-					A4(generateRow, $author$project$Translate$ACHI, nutritionGroupAchiEncountersTotal, nutritionGroupAchiEncountersUnique, true),
-					A4(generateRow, $author$project$Translate$Individual, nutritionIndividualEncountersTotal, nutritionIndividualEncountersUnique, true),
-					A4(generateRow, $author$project$Translate$FamilyNutrition, familyNutritionEncountersTotal, familyNutritionEncountersUnique, false)
-				]),
+			rows: _Utils_ap(
+				_List_fromArray(
+					[
+						A4(generateRow, $author$project$Translate$ANCTotal, prenatalDataNurseEncountersTotal + prenatalDataChwEncountersTotal, prenatalDataNurseEncountersUnique + prenatalDataChwEncountersUnique, false),
+						A4(generateRow, $author$project$Translate$HealthCenter, prenatalDataNurseEncountersTotal, prenatalDataNurseEncountersUnique, true),
+						A4(generateRow, $author$project$Translate$CHW, prenatalDataChwEncountersTotal, prenatalDataChwEncountersUnique, true),
+						A4(generateRow, $author$project$Translate$AcuteIllnessTotal, acuteIllnessDataNurseEncountersTotal + acuteIllnessDataChwEncountersTotal, acuteIllnessDataNurseEncountersUnique + acuteIllnessDataChwEncountersUnique, false),
+						A4(generateRow, $author$project$Translate$HealthCenter, acuteIllnessDataNurseEncountersTotal, acuteIllnessDataNurseEncountersUnique, true),
+						A4(generateRow, $author$project$Translate$CHW, acuteIllnessDataChwEncountersTotal, acuteIllnessDataChwEncountersUnique, true),
+						A4(generateRow, $author$project$Translate$StandardPediatricVisit, wellChildDataEncountersTotal, wellChildDataEncountersUnique, false),
+						A4(generateRow, $author$project$Translate$HomeVisit, homeVisitDataEncountersTotal, homeVisitDataEncountersUnique, false),
+						A4(generateRow, $author$project$Translate$ChildScorecard, childScorecardDataEncountersTotal, childScorecardDataEncountersUnique, false),
+						A4(generateRow, $author$project$Translate$NCD, ncdDataEncountersTotal, ncdDataEncountersUnique, false),
+						A4(generateRow, $author$project$Translate$HIV, hivDataEncountersTotal, hivDataEncountersUnique, false),
+						A4(generateRow, $author$project$Translate$Tuberculosis, tuberculosisDataEncountersTotal, tuberculosisDataEncountersUnique, false),
+						A4(generateRow, $author$project$Translate$NutritionTotal, overallNutritionTotal, overallNutritionUnique, false),
+						A4(generateRow, $author$project$Translate$PMTCT, nutritionGroupPmtctEncountersTotal, nutritionGroupPmtctEncountersUnique, true),
+						A4(generateRow, $author$project$Translate$FBF, nutritionGroupFbfEncountersTotal, nutritionGroupFbfEncountersUnique, true),
+						A4(generateRow, $author$project$Translate$Sorwathe, nutritionGroupSorwatheEncountersTotal, nutritionGroupSorwatheEncountersUnique, true),
+						A4(generateRow, $author$project$Translate$CBNP, nutritionGroupChwEncountersTotal, nutritionGroupChwEncountersUnique, true),
+						A4(generateRow, $author$project$Translate$ACHI, nutritionGroupAchiEncountersTotal, nutritionGroupAchiEncountersUnique, true),
+						A4(generateRow, $author$project$Translate$Individual, nutritionIndividualEncountersTotal, nutritionIndividualEncountersUnique, true)
+					]),
+				familyNutritionEnabled ? _List_fromArray(
+					[
+						A4(generateRow, $author$project$Translate$FamilyNutrition, familyNutritionEncountersTotal, familyNutritionEncountersUnique, false)
+					]) : _List_Nil),
 			totals: {
 				label: A2($author$project$Translate$translate, language, $author$project$Translate$Total),
 				total: $elm$core$String$fromInt(overallTotal),
@@ -18193,8 +18212,8 @@ var $author$project$Pages$Reports$View$viewDemographicsReportPatients = function
 				])),
 		A2($elm$core$List$map, viewTable, data.tables));
 };
-var $author$project$Pages$Reports$View$viewDemographicsReport = F5(
-	function (language, startDate, limitDate, scopeLabel, records) {
+var $author$project$Pages$Reports$View$viewDemographicsReport = F6(
+	function (language, features, startDate, limitDate, scopeLabel, records) {
 		var demographicsReportPatientsData = A3(
 			$author$project$Pages$Reports$View$generateDemographicsReportPatientsData,
 			language,
@@ -18207,7 +18226,7 @@ var $author$project$Pages$Reports$View$viewDemographicsReport = F5(
 						$elm$core$Basics$LT);
 				},
 				records));
-		var demographicsReportEncountersData = A2($author$project$Pages$Reports$View$generateDemographicsReportEncountersData, language, records);
+		var demographicsReportEncountersData = A3($author$project$Pages$Reports$View$generateDemographicsReportEncountersData, language, features, records);
 		var csvFileName = 'demographics-report-' + ($elm$core$String$toLower(
 			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
 		var csvContent = $author$project$Pages$Reports$View$demographicsReportPatientsDataToCSV(demographicsReportPatientsData) + ('\n\n\n' + $author$project$Pages$Reports$View$demographicsReportEncountersDataToCSV(demographicsReportEncountersData));
@@ -18347,20 +18366,6 @@ var $author$project$Pages$Reports$Model$FbfDistributionFbfChild = {$: 'FbfDistri
 var $author$project$Pages$Reports$Model$FbfDistributionFbfMother = {$: 'FbfDistributionFbfMother'};
 var $author$project$Pages$Reports$Model$allFbfDistributionCategories = _List_fromArray(
 	[$author$project$Pages$Reports$Model$FbfDistributionFbfChild, $author$project$Pages$Reports$Model$FbfDistributionFbfMother, $author$project$Pages$Reports$Model$FbfDistributionAhezaChild, $author$project$Pages$Reports$Model$FbfDistributionAhezaMother]);
-var $pzp1997$assoc_list$AssocList$member = F2(
-	function (targetKey, dict) {
-		var _v0 = A2($pzp1997$assoc_list$AssocList$get, targetKey, dict);
-		if (_v0.$ === 'Just') {
-			return true;
-		} else {
-			return false;
-		}
-	});
-var $Gizra$elm_all_set$EverySet$member = F2(
-	function (k, _v0) {
-		var d = _v0.a;
-		return A2($pzp1997$assoc_list$AssocList$member, k, d);
-	});
 var $author$project$Pages$Reports$View$visibleFbfDistributionCategories = function (features) {
 	var familyNutritionEnabled = A2($Gizra$elm_all_set$EverySet$member, $author$project$App$Types$FeatureFamilyNutrition, features);
 	return A2(
@@ -21959,7 +21964,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 									case 'ReportAcuteIllness':
 										return A5($author$project$Pages$Reports$View$viewAcuteIllnessReport, language, limitDate, startDate, scopeLabel, recordsTillLimitDate);
 									case 'ReportDemographics':
-										return A5($author$project$Pages$Reports$View$viewDemographicsReport, language, startDate, limitDate, scopeLabel, recordsTillLimitDate);
+										return A6($author$project$Pages$Reports$View$viewDemographicsReport, language, data.features, startDate, limitDate, scopeLabel, recordsTillLimitDate);
 									case 'ReportFBFDistribution':
 										return A5($author$project$Pages$Reports$View$viewFBFDistributionReport, language, data.features, limitDate, scopeLabel, recordsTillLimitDate);
 									case 'ReportNutrition':
