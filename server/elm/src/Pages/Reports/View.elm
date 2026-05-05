@@ -1,6 +1,6 @@
 module Pages.Reports.View exposing (view)
 
-import App.Types exposing (Language, Site)
+import App.Types exposing (Language, Site, SiteFeature(..))
 import AssocList as Dict exposing (Dict)
 import Backend.Model exposing (ModelBackend)
 import Backend.Reports.Model
@@ -23,7 +23,7 @@ import Backend.Reports.Utils exposing (allAcuteIllnessDiagnoses, allPrenatalDiag
 import Backend.Scoreboard.Utils exposing (generateVaccinationProgressForVaccine)
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
-import EverySet
+import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate
     exposing
@@ -307,7 +307,7 @@ viewReportsData language currentDate themePath data model =
                                 viewDemographicsReport language startDate limitDate scopeLabel recordsTillLimitDate
 
                             ReportFBFDistribution ->
-                                viewFBFDistributionReport language limitDate scopeLabel recordsTillLimitDate
+                                viewFBFDistributionReport language data.features limitDate scopeLabel recordsTillLimitDate
 
                             ReportNutrition ->
                                 viewNutritionReport language limitDate scopeLabel data.nutritionReportData model.nutritionReportData
@@ -345,14 +345,14 @@ viewReportsData language currentDate themePath data model =
             (viewSelectListInput language
                 model.reportType
                 [ ReportAcuteIllness
-                , ReportPrenatal
-                , ReportPrenatalContacts
-                , ReportPrenatalDiagnoses
                 , ReportDemographics
+                , ReportFBFDistribution
                 , ReportNutrition
                 , ReportPeripartum
                 , ReportPostnatalCare
-                , ReportFBFDistribution
+                , ReportPrenatal
+                , ReportPrenatalContacts
+                , ReportPrenatalDiagnoses
                 ]
                 reportTypeToString
                 SetReportType
@@ -2796,11 +2796,14 @@ generatePeripartumReportData language records =
     }
 
 
-viewFBFDistributionReport : Language -> NominalDate -> String -> List PatientData -> Html Msg
-viewFBFDistributionReport language limitDate scopeLabel records =
+viewFBFDistributionReport : Language -> EverySet SiteFeature -> NominalDate -> String -> List PatientData -> Html Msg
+viewFBFDistributionReport language features limitDate scopeLabel records =
     let
+        categories =
+            visibleFbfDistributionCategories features
+
         data =
-            generateFBFDistributionReportData language records
+            generateFBFDistributionReportData language categories records
 
         captionsRow =
             viewStandardCells data.captions
@@ -2822,7 +2825,7 @@ viewFBFDistributionReport language limitDate scopeLabel records =
                     viewStandardCells row
                         |> div [ class <| "row " ++ fbfDistributionCategoryCssClass category ]
                 )
-                allFbfDistributionCategories
+                categories
                 data.rows
     in
     div [ class "report fbf-distribution" ]
@@ -2833,11 +2836,39 @@ viewFBFDistributionReport language limitDate scopeLabel records =
         ]
 
 
+{-| Aheza categories are family-nutrition-only, so they are dropped when the
+feature is disabled. FBF categories always show.
+-}
+visibleFbfDistributionCategories : EverySet SiteFeature -> List FbfDistributionCategory
+visibleFbfDistributionCategories features =
+    let
+        familyNutritionEnabled =
+            EverySet.member FeatureFamilyNutrition features
+    in
+    List.filter
+        (\category ->
+            case category of
+                FbfDistributionAhezaChild ->
+                    familyNutritionEnabled
+
+                FbfDistributionAhezaMother ->
+                    familyNutritionEnabled
+
+                FbfDistributionFbfChild ->
+                    True
+
+                FbfDistributionFbfMother ->
+                    True
+        )
+        allFbfDistributionCategories
+
+
 generateFBFDistributionReportData :
     Language
+    -> List FbfDistributionCategory
     -> List PatientData
     -> MetricsResultsTableData
-generateFBFDistributionReportData language records =
+generateFBFDistributionReportData language categories records =
     let
         -- FBF child totals come exclusively from groupNutritionFbfData
         -- (clinic group_type = 'fbf'); Achi child_fbf rows live under
@@ -2893,7 +2924,7 @@ generateFBFDistributionReportData language records =
                     , formatDistributionTotal (totalFor category)
                     ]
                 )
-                allFbfDistributionCategories
+                categories
     in
     { heading = ""
     , captions =

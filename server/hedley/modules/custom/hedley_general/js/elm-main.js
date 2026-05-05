@@ -8833,9 +8833,9 @@ var $author$project$Backend$CompletionMenu$Update$update = F2(
 			});
 		return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
 	});
-var $author$project$Backend$Reports$Model$ReportsData = F5(
-	function (site, entityName, entityType, records, nutritionReportData) {
-		return {entityName: entityName, entityType: entityType, nutritionReportData: nutritionReportData, records: records, site: site};
+var $author$project$Backend$Reports$Model$ReportsData = F6(
+	function (site, features, entityName, entityType, records, nutritionReportData) {
+		return {entityName: entityName, entityType: entityType, features: features, nutritionReportData: nutritionReportData, records: records, site: site};
 	});
 var $author$project$Backend$Reports$Model$BackendGeneratedNutritionReportTableDate = function (tableType) {
 	return function (captions) {
@@ -10138,6 +10138,53 @@ var $author$project$Backend$Reports$Decoder$decodeSelectedEntity = A2(
 		}
 	},
 	$elm$json$Json$Decode$string);
+var $author$project$App$Types$FeatureFamilyNutrition = {$: 'FeatureFamilyNutrition'};
+var $author$project$App$Types$FeatureGPSCoordinates = {$: 'FeatureGPSCoordinates'};
+var $author$project$App$Types$FeatureGroupEducation = {$: 'FeatureGroupEducation'};
+var $author$project$App$Types$FeatureHIVManagement = {$: 'FeatureHIVManagement'};
+var $author$project$App$Types$FeatureHealthyStart = {$: 'FeatureHealthyStart'};
+var $author$project$App$Types$FeatureNCDA = {$: 'FeatureNCDA'};
+var $author$project$App$Types$FeatureReportToWhatsApp = {$: 'FeatureReportToWhatsApp'};
+var $author$project$App$Types$FeatureStockManagementHC = {$: 'FeatureStockManagementHC'};
+var $author$project$App$Types$FeatureStockManagementVillage = {$: 'FeatureStockManagementVillage'};
+var $author$project$App$Types$FeatureTuberculosisManagement = {$: 'FeatureTuberculosisManagement'};
+var $author$project$Backend$Decoder$siteFeatureFromString = function (str) {
+	var _v0 = $elm$core$String$toLower(str);
+	switch (_v0) {
+		case 'family_nutrition':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureFamilyNutrition);
+		case 'gps_coordinates':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureGPSCoordinates);
+		case 'group_education':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureGroupEducation);
+		case 'healthy_start':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureHealthyStart);
+		case 'hiv_management':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureHIVManagement);
+		case 'ncda':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureNCDA);
+		case 'report_to_whatsapp':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureReportToWhatsApp);
+		case 'stock_management_hc':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureStockManagementHC);
+		case 'stock_management_village':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureStockManagementVillage);
+		case 'tuberculosis_management':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureTuberculosisManagement);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $elm$core$String$words = _String_words;
+var $author$project$Backend$Decoder$siteFeaturesFromString = function (str) {
+	return $Gizra$elm_all_set$EverySet$fromList(
+		$elm_community$maybe_extra$Maybe$Extra$values(
+			A2(
+				$elm$core$List$map,
+				$author$project$Backend$Decoder$siteFeatureFromString,
+				$elm$core$String$words(str))));
+};
+var $author$project$Backend$Decoder$decodeSiteFeatures = A2($elm$json$Json$Decode$map, $author$project$Backend$Decoder$siteFeaturesFromString, $elm$json$Json$Decode$string);
 var $author$project$Backend$Reports$Decoder$decodeReportsData = A4(
 	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 	_List_fromArray(
@@ -10159,9 +10206,13 @@ var $author$project$Backend$Reports$Decoder$decodeReportsData = A4(
 				$elm$json$Json$Decode$string,
 				A3(
 					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-					'site',
-					$author$project$Backend$Decoder$decodeSite,
-					$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$ReportsData))))));
+					'features',
+					$author$project$Backend$Decoder$decodeSiteFeatures,
+					A3(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+						'site',
+						$author$project$Backend$Decoder$decodeSite,
+						$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$ReportsData)))))));
 var $author$project$Backend$Reports$Update$update = F2(
 	function (msg, model) {
 		var value = msg.a;
@@ -11812,13 +11863,13 @@ var $author$project$Translate$translationSet = function (transId) {
 				var category = transId.a;
 				switch (category.$) {
 					case 'FbfDistributionFbfChild':
-						return {english: 'FBF Child', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+						return {english: 'FBF Child (packages)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'FbfDistributionFbfMother':
-						return {english: 'FBF Mother', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+						return {english: 'FBF Mother (packages)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'FbfDistributionAhezaChild':
-						return {english: 'Aheza Child', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+						return {english: 'Aheza Child (kg)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					default:
-						return {english: 'Aheza Mother', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+						return {english: 'Aheza Mother (kg)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 				}
 			case 'FbfDistributionType':
 				return {english: 'Type', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
@@ -18175,12 +18226,6 @@ var $author$project$Pages$Reports$View$viewDemographicsReport = F5(
 							A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
 						]))));
 	});
-var $author$project$Pages$Reports$Model$FbfDistributionAhezaChild = {$: 'FbfDistributionAhezaChild'};
-var $author$project$Pages$Reports$Model$FbfDistributionAhezaMother = {$: 'FbfDistributionAhezaMother'};
-var $author$project$Pages$Reports$Model$FbfDistributionFbfChild = {$: 'FbfDistributionFbfChild'};
-var $author$project$Pages$Reports$Model$FbfDistributionFbfMother = {$: 'FbfDistributionFbfMother'};
-var $author$project$Pages$Reports$Model$allFbfDistributionCategories = _List_fromArray(
-	[$author$project$Pages$Reports$Model$FbfDistributionFbfChild, $author$project$Pages$Reports$Model$FbfDistributionFbfMother, $author$project$Pages$Reports$Model$FbfDistributionAhezaChild, $author$project$Pages$Reports$Model$FbfDistributionAhezaMother]);
 var $author$project$Pages$Reports$View$fbfDistributionCategoryCssClass = function (category) {
 	switch (category.$) {
 		case 'FbfDistributionAhezaChild':
@@ -18204,8 +18249,8 @@ var $author$project$Pages$Reports$View$formatDistributionTotal = function (value
 		$elm$core$Basics$round(value)) ? $elm$core$String$fromInt(
 		$elm$core$Basics$round(value)) : A2($myrho$elm_round$Round$round, 2, value);
 };
-var $author$project$Pages$Reports$View$generateFBFDistributionReportData = F2(
-	function (language, records) {
+var $author$project$Pages$Reports$View$generateFBFDistributionReportData = F3(
+	function (language, categories, records) {
 		var fbfMotherTotal = $elm$core$List$sum(
 			A2(
 				$elm$core$List$map,
@@ -18285,7 +18330,7 @@ var $author$project$Pages$Reports$View$generateFBFDistributionReportData = F2(
 						totalFor(category))
 					]);
 			},
-			$author$project$Pages$Reports$Model$allFbfDistributionCategories);
+			categories);
 		return {
 			captions: _List_fromArray(
 				[
@@ -18296,9 +18341,51 @@ var $author$project$Pages$Reports$View$generateFBFDistributionReportData = F2(
 			rows: rows
 		};
 	});
-var $author$project$Pages$Reports$View$viewFBFDistributionReport = F4(
-	function (language, limitDate, scopeLabel, records) {
-		var data = A2($author$project$Pages$Reports$View$generateFBFDistributionReportData, language, records);
+var $author$project$Pages$Reports$Model$FbfDistributionAhezaChild = {$: 'FbfDistributionAhezaChild'};
+var $author$project$Pages$Reports$Model$FbfDistributionAhezaMother = {$: 'FbfDistributionAhezaMother'};
+var $author$project$Pages$Reports$Model$FbfDistributionFbfChild = {$: 'FbfDistributionFbfChild'};
+var $author$project$Pages$Reports$Model$FbfDistributionFbfMother = {$: 'FbfDistributionFbfMother'};
+var $author$project$Pages$Reports$Model$allFbfDistributionCategories = _List_fromArray(
+	[$author$project$Pages$Reports$Model$FbfDistributionFbfChild, $author$project$Pages$Reports$Model$FbfDistributionFbfMother, $author$project$Pages$Reports$Model$FbfDistributionAhezaChild, $author$project$Pages$Reports$Model$FbfDistributionAhezaMother]);
+var $pzp1997$assoc_list$AssocList$member = F2(
+	function (targetKey, dict) {
+		var _v0 = A2($pzp1997$assoc_list$AssocList$get, targetKey, dict);
+		if (_v0.$ === 'Just') {
+			return true;
+		} else {
+			return false;
+		}
+	});
+var $Gizra$elm_all_set$EverySet$member = F2(
+	function (k, _v0) {
+		var d = _v0.a;
+		return A2($pzp1997$assoc_list$AssocList$member, k, d);
+	});
+var $author$project$Pages$Reports$View$visibleFbfDistributionCategories = function (features) {
+	var familyNutritionEnabled = A2($Gizra$elm_all_set$EverySet$member, $author$project$App$Types$FeatureFamilyNutrition, features);
+	return A2(
+		$elm$core$List$filter,
+		function (category) {
+			switch (category.$) {
+				case 'FbfDistributionAhezaChild':
+					return familyNutritionEnabled;
+				case 'FbfDistributionAhezaMother':
+					return familyNutritionEnabled;
+				case 'FbfDistributionFbfChild':
+					return true;
+				default:
+					return true;
+			}
+		},
+		$author$project$Pages$Reports$Model$allFbfDistributionCategories);
+};
+var $author$project$Pages$Reports$View$viewFBFDistributionReport = F5(
+	function (language, features, limitDate, scopeLabel, records) {
+		var csvFileName = 'fbf-distribution-report-' + ($elm$core$String$toLower(
+			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
+		var categories = $author$project$Pages$Reports$View$visibleFbfDistributionCategories(features);
+		var data = A3($author$project$Pages$Reports$View$generateFBFDistributionReportData, language, categories, records);
+		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
 		var dataRows = A3(
 			$elm$core$List$map2,
 			F2(
@@ -18312,11 +18399,8 @@ var $author$project$Pages$Reports$View$viewFBFDistributionReport = F4(
 							]),
 						$author$project$Pages$Components$View$viewStandardCells(row));
 				}),
-			$author$project$Pages$Reports$Model$allFbfDistributionCategories,
+			categories,
 			data.rows);
-		var csvFileName = 'fbf-distribution-report-' + ($elm$core$String$toLower(
-			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
-		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
 		var captionsRow = A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -20173,15 +20257,6 @@ var $author$project$Pages$Scoreboard$Utils$generateFutureVaccinationsData = F3(
 				return _Utils_Tuple2(vaccineType, nextVaccinationData);
 			});
 	});
-var $pzp1997$assoc_list$AssocList$member = F2(
-	function (targetKey, dict) {
-		var _v0 = A2($pzp1997$assoc_list$AssocList$get, targetKey, dict);
-		if (_v0.$ === 'Just') {
-			return true;
-		} else {
-			return false;
-		}
-	});
 var $pzp1997$assoc_list$AssocList$merge = F6(
 	function (leftStep, bothStep, rightStep, leftDict, _v0, initialResult) {
 		var leftAlist = leftDict.a;
@@ -21886,7 +21961,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 									case 'ReportDemographics':
 										return A5($author$project$Pages$Reports$View$viewDemographicsReport, language, startDate, limitDate, scopeLabel, recordsTillLimitDate);
 									case 'ReportFBFDistribution':
-										return A4($author$project$Pages$Reports$View$viewFBFDistributionReport, language, limitDate, scopeLabel, recordsTillLimitDate);
+										return A5($author$project$Pages$Reports$View$viewFBFDistributionReport, language, data.features, limitDate, scopeLabel, recordsTillLimitDate);
 									case 'ReportNutrition':
 										return A5($author$project$Pages$Reports$View$viewNutritionReport, language, limitDate, scopeLabel, data.nutritionReportData, model.nutritionReportData);
 									case 'ReportPeripartum':
@@ -21934,7 +22009,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 								language,
 								model.reportType,
 								_List_fromArray(
-									[$author$project$Pages$Reports$Model$ReportAcuteIllness, $author$project$Pages$Reports$Model$ReportPrenatal, $author$project$Pages$Reports$Model$ReportPrenatalContacts, $author$project$Pages$Reports$Model$ReportPrenatalDiagnoses, $author$project$Pages$Reports$Model$ReportDemographics, $author$project$Pages$Reports$Model$ReportNutrition, $author$project$Pages$Reports$Model$ReportPeripartum, $author$project$Pages$Reports$Model$ReportPostnatalCare, $author$project$Pages$Reports$Model$ReportFBFDistribution]),
+									[$author$project$Pages$Reports$Model$ReportAcuteIllness, $author$project$Pages$Reports$Model$ReportDemographics, $author$project$Pages$Reports$Model$ReportFBFDistribution, $author$project$Pages$Reports$Model$ReportNutrition, $author$project$Pages$Reports$Model$ReportPeripartum, $author$project$Pages$Reports$Model$ReportPostnatalCare, $author$project$Pages$Reports$Model$ReportPrenatal, $author$project$Pages$Reports$Model$ReportPrenatalContacts, $author$project$Pages$Reports$Model$ReportPrenatalDiagnoses]),
 								$author$project$Pages$Reports$Utils$reportTypeToString,
 								$author$project$Pages$Reports$Model$SetReportType,
 								$author$project$Translate$ReportType,

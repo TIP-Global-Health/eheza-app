@@ -1,6 +1,6 @@
 module Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, ChildScorecardEncounterData, DeliveryLocation(..), FamilyNutritionEncounterData, FamilyNutritionMotherEncounterData, Gender(..), HIVEncounterData, HomeVisitEncounterData, MotherFbfEncounterData, Msg(..), NCDEncounterData, NutritionData, NutritionEncounterData, NutritionReportTableType(..), PatientData, PersonId, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalIndicator(..), PrenatalParticipantData, ReportsData, SelectedEntity(..), TuberculosisEncounterData, WellChildEncounterData)
 
-import App.Types exposing (Site)
+import App.Types exposing (Site, SiteFeature)
 import AssocList exposing (Dict)
 import Backend.Scoreboard.Model exposing (VaccineType)
 import EverySet exposing (EverySet)
@@ -10,6 +10,7 @@ import Json.Encode exposing (Value)
 
 type alias ReportsData =
     { site : Site
+    , features : EverySet SiteFeature
     , entityName : String
     , entityType : SelectedEntity
     , records : List PatientData

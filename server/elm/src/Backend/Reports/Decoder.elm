@@ -1,7 +1,7 @@
 module Backend.Reports.Decoder exposing (decodeReportsData)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Decoder exposing (decodeSite, decodeWithFallback)
+import Backend.Decoder exposing (decodeSite, decodeSiteFeatures, decodeWithFallback)
 import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, DeliveryLocation(..), FamilyNutritionEncounterData, FamilyNutritionMotherEncounterData, Gender(..), MotherFbfEncounterData, NutritionData, NutritionEncounterData, NutritionReportTableType(..), PatientData, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalIndicator(..), PrenatalParticipantData, ReportsData, SelectedEntity(..), WellChildEncounterData)
 import Backend.Reports.Utils exposing (genderFromString)
 import Backend.Scoreboard.Model exposing (VaccineType(..))
@@ -18,6 +18,7 @@ decodeReportsData : Decoder ReportsData
 decodeReportsData =
     succeed ReportsData
         |> required "site" decodeSite
+        |> required "features" decodeSiteFeatures
         |> required "entity_name" string
         |> required "entity_type" decodeSelectedEntity
         |> required "results" (list decodePatientData)

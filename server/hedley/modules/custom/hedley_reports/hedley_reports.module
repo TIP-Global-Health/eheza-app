@@ -1695,6 +1695,7 @@ function hedley_reports_build_statistical_queries_results_app($province = NULL, 
   }
 
   $data['site'] = variable_get('hedley_general_site_name', '');
+  $data['features'] = hedley_admin_get_enabled_features_string();
 
   if (in_array($data['entity_type'], ['sector', 'cell', 'village'])) {
     // For smaller data sets, we generate results on fly.
