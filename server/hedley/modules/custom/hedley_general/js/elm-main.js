@@ -11884,7 +11884,7 @@ var $author$project$Translate$translationSet = function (transId) {
 			case 'FbfDistributionUnitKg':
 				return {english: 'kg', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'FbfDistributionUnitPackage':
-				return {english: 'package', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+				return {english: 'pkg', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Feeding':
 				return {english: 'Feeding', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Female':

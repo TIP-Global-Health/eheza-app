@@ -964,7 +964,7 @@ translationSet transId =
             }
 
         FbfDistributionUnitPackage ->
-            { english = "package"
+            { english = "pkg"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing

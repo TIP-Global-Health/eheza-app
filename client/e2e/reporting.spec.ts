@@ -1815,10 +1815,10 @@ test.describe('Admin Reports', () => {
       expect(fbfChildAchi - baselineFBFDistChildAchi, 'FBF Child (ACHI) total delta should be 0').toBe(0);
       expect(fbfChildAchiOccurrences - baselineFBFDistChildAchiOccurrences, 'FBF Child (ACHI) occurrences delta should be 0').toBe(0);
 
-      // Unit column: FBF clinic distributions are in packages; ACHI and
-      // CHW family-nutrition (Aheza) distributions are in kg.
-      expect(fbfChildRow?.unit, 'FBF Child unit should be "package"').toBe('package');
-      expect(fbfMotherRow?.unit, 'FBF Mother unit should be "package"').toBe('package');
+      // Unit column: FBF clinic distributions are in packages (pkg);
+      // ACHI and CHW family-nutrition (Aheza) distributions are in kg.
+      expect(fbfChildRow?.unit, 'FBF Child unit should be "pkg"').toBe('pkg');
+      expect(fbfMotherRow?.unit, 'FBF Mother unit should be "pkg"').toBe('pkg');
       expect(fbfChildAchiRow?.unit, 'FBF Child (ACHI) unit should be "kg"').toBe('kg');
       expect(ahezaChildRow?.unit, 'Aheza Child unit should be "kg"').toBe('kg');
       expect(ahezaMotherRow?.unit, 'Aheza Mother unit should be "kg"').toBe('kg');
