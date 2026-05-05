@@ -1294,17 +1294,18 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
     }
 
     // Mother FBF: per (session, mother) wire "YYYY-MM-DD <amount>" emitted
-    // under group_nutrition_mother.<group>. In practice only Fbf clinics
-    // produce mother distributions, but we key by group_type defensively so
-    // any future clinic type carrying mother distributions surfaces under a
-    // matching key without code changes.
+    // under group_nutrition_mother.fbf. Only Fbf clinics produce mother
+    // distributions, so the group key is hardcoded to match the Elm
+    // decoder which reads exactly this path -- decodeReportsData in
+    // server/elm/src/Backend/Reports/Decoder.elm. If another clinic type
+    // ever needs to carry mother distributions, both sides must change.
     if (isset($mother_fbf_amount_by_session[$session->nid])) {
       $mother_session_data = "$encounter_date " . $mother_fbf_amount_by_session[$session->nid];
-      if (empty($mother_sessions_data[$group_type])) {
-        $mother_sessions_data[$group_type] = [$mother_session_data];
+      if (empty($mother_sessions_data['fbf'])) {
+        $mother_sessions_data['fbf'] = [$mother_session_data];
       }
       else {
-        $mother_sessions_data[$group_type][] = $mother_session_data;
+        $mother_sessions_data['fbf'][] = $mother_session_data;
       }
     }
   }
@@ -1493,7 +1494,8 @@ function hedley_reports_family_nutrition_metrics_to_string($values) {
  *   with no parent reference or no amount are skipped. If multiple records
  *   share the same parent for this person (not expected in practice), the
  *   last one read wins, matching the existing per-encounter "last write
- *   wins" pattern used elsewhere in this function (e.g. MUAC at line 658).
+ *   wins" pattern used by the per-encounter MUAC / Z-score aggregation in
+ *   hedley_reports_calculate_aggregated_data_for_person.
  */
 function hedley_reports_collect_distributed_amounts_by_parent($person_id, $bundle, $parent_field_name) {
   $query = hedley_general_create_entity_field_query_excluding_deleted();

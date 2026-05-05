@@ -750,8 +750,7 @@ export async function readPostnatalCareTable(
  * Each row has 2 cells: [category label, total amount].
  * Categories: "FBF Child", "FBF Mother", "Aheza Child", "Aheza Mother".
  * Totals are numeric (whole numbers print without decimals; fractional with up
- * to 2dp). readSimpleTable parses cells via parseInt — sufficient for the
- * whole-number test fixtures.
+ * to 2dp). readSimpleTable uses parseFloat, so fractional totals round-trip.
  */
 export async function readFBFDistributionTable(
   page: Page,
@@ -802,7 +801,7 @@ async function readSimpleTable(
     if (cellTexts.length >= 2) {
       rows.push({
         label: cellTexts[0].trim(),
-        total: parseInt(cellTexts[1].trim(), 10) || 0,
+        total: parseFloat(cellTexts[1].trim()) || 0,
       });
     }
   }
