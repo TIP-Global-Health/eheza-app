@@ -2947,7 +2947,7 @@ generateFBFDistributionReportData language categories records =
     { heading = ""
     , captions =
         [ translate language Translate.FbfDistributionType
-        , translate language Translate.Total
+        , translate language Translate.FbfDistributionTotalAmount
         , translate language Translate.FbfDistributionOccurrences
         ]
     , rows = rows

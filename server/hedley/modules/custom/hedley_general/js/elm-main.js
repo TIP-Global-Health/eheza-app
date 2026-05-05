@@ -11872,7 +11872,9 @@ var $author$project$Translate$translationSet = function (transId) {
 						return {english: 'Aheza Mother (kg)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 				}
 			case 'FbfDistributionOccurrences':
-				return {english: 'Occurrences', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+				return {english: '# of Encounters', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'FbfDistributionTotalAmount':
+				return {english: 'Total amount', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'FbfDistributionType':
 				return {english: 'Type', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Feeding':
@@ -13216,7 +13218,7 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'ReportDemographics':
 						return {english: 'Demographics', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'ReportFBFDistribution':
-						return {english: 'FBF Distribution', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+						return {english: 'Stock Management', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'ReportNutrition':
 						var $temp$transId = $author$project$Translate$Nutrition;
 						transId = $temp$transId;
@@ -18263,6 +18265,7 @@ var $author$project$Translate$FbfDistributionCategory = function (a) {
 	return {$: 'FbfDistributionCategory', a: a};
 };
 var $author$project$Translate$FbfDistributionOccurrences = {$: 'FbfDistributionOccurrences'};
+var $author$project$Translate$FbfDistributionTotalAmount = {$: 'FbfDistributionTotalAmount'};
 var $author$project$Translate$FbfDistributionType = {$: 'FbfDistributionType'};
 var $elm$core$Basics$round = _Basics_round;
 var $author$project$Pages$Reports$View$formatDistributionTotal = function (value) {
@@ -18356,7 +18359,7 @@ var $author$project$Pages$Reports$View$generateFBFDistributionReportData = F3(
 			captions: _List_fromArray(
 				[
 					A2($author$project$Translate$translate, language, $author$project$Translate$FbfDistributionType),
-					A2($author$project$Translate$translate, language, $author$project$Translate$Total),
+					A2($author$project$Translate$translate, language, $author$project$Translate$FbfDistributionTotalAmount),
 					A2($author$project$Translate$translate, language, $author$project$Translate$FbfDistributionOccurrences)
 				]),
 			heading: '',

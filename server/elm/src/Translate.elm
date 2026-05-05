@@ -126,6 +126,7 @@ type TranslationId
     | FBF
     | FbfDistributionCategory FbfDistributionCategory
     | FbfDistributionOccurrences
+    | FbfDistributionTotalAmount
     | FbfDistributionType
     | Feeding
     | Female
@@ -918,7 +919,14 @@ translationSet transId =
                     }
 
         FbfDistributionOccurrences ->
-            { english = "Occurrences"
+            { english = "# of Encounters"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        FbfDistributionTotalAmount ->
+            { english = "Total amount"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing
@@ -3053,7 +3061,7 @@ translationSet transId =
                     }
 
                 ReportFBFDistribution ->
-                    { english = "FBF Distribution"
+                    { english = "Stock Management"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     , somali = Nothing
