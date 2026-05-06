@@ -20263,6 +20263,18 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 													},
 													record.acuteIllnessData),
 												childScorecardData: A2(filterIndividualBy, $elm$core$Basics$identity, record.childScorecardData),
+												familyNutritionData: A2(
+													filterIndividualBy,
+													function ($) {
+														return $.startDate;
+													},
+													record.familyNutritionData),
+												familyNutritionMuacData: A2(
+													filterIndividualBy,
+													function ($) {
+														return $.startDate;
+													},
+													record.familyNutritionMuacData),
 												groupNutritionAchiData: A2(
 													filterGroupBy,
 													function ($) {

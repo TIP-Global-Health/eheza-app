@@ -276,6 +276,8 @@ viewReportsData language currentDate themePath data model =
                                                         , groupNutritionSorwatheData = filterGroupBy .startDate record.groupNutritionSorwatheData
                                                         , groupNutritionChwData = filterGroupBy .startDate record.groupNutritionChwData
                                                         , groupNutritionAchiData = filterGroupBy .startDate record.groupNutritionAchiData
+                                                        , familyNutritionData = filterIndividualBy .startDate record.familyNutritionData
+                                                        , familyNutritionMuacData = filterIndividualBy .startDate record.familyNutritionMuacData
                                                     }
 
                                             else
