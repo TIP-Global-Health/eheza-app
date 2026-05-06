@@ -24,6 +24,7 @@ import {
   readAIDiagnosisRow,
   readPrenatalDiagnosisRow,
   readPrenatalVisitsTable,
+  readPrenatalContactsTable,
   readFBFDistributionTable,
   readPeripartumTable,
   readPostnatalCareTable,
@@ -297,6 +298,14 @@ test.describe('Admin Reports', () => {
     let baselineGestHypertension: number;
     let baselineDepression: number;
     let baselinePrenatalTotal: number;
+    // ANC Contact (Prenatal Contacts) report baselines. The PrenatalMom
+    // encounter created later in this test runs completeMedication, which
+    // iterates calcium / fefol / folate / iron / mms / mebendezole and
+    // marks each visible tab as administered today. Of those, MMS and
+    // Calcium have matching PrenatalIndicator codes on the wire, so those
+    // two rows should each grow by +1 after sync.
+    let baselineANCContactMMS: number;
+    let baselineANCContactCalcium: number;
     // Peripartum (PR #1552) report baselines. PrenatalMom's flow is
     // updated below to record a "Live Birth Pre-Term" outcome (rather
     // than the default at-term) and select the "Premature Onset of
@@ -390,6 +399,21 @@ test.describe('Admin Reports', () => {
       baselineGestHypertension = await readPrenatalDiagnosisRow(page, 'diagnosis-gestational-hypertension');
       baselineDepression = await readPrenatalDiagnosisRow(page, 'diagnosis-depression-not-likely');
       baselinePrenatalTotal = await readPrenatalDiagnosisRow(page, 'totals');
+
+      // Record ANC Contact (Prenatal Contacts) report baseline. Two rows
+      // we expect PrenatalMom's completeMedication to move by +1: MMS and
+      // Calcium (each set when the corresponding medication tab saves
+      // with administration-note = "administered today"). Aspirin is not
+      // in completeMedication's icon list, so the aspirin row stays flat.
+      await selectReportType(page, 'prenatal-contacts');
+      await setDateRange(page, REPORT_START_DATE, reportLimitDate);
+      const baselineANCContactTable = await readPrenatalContactsTable(page);
+      // Sanity: report rendered with all 22 rows (8 contact-counts + 14 indicators).
+      expect(baselineANCContactTable.rows.length, 'ANC Contact report should have at least 22 rows')
+        .toBeGreaterThanOrEqual(22);
+      baselineANCContactMMS = findSimpleRow(baselineANCContactTable, 'received MMS')?.total ?? 0;
+      baselineANCContactCalcium = findSimpleRow(baselineANCContactTable, 'received low-dose antenatal calcium')?.total ?? 0;
+      console.log(`Baseline ANC Contact: MMS=${baselineANCContactMMS}, Calcium=${baselineANCContactCalcium}`);
 
       // Record Peripartum (PR #1552) report baselines.
       await selectReportType(page, 'peripartum');
@@ -1586,6 +1610,41 @@ test.describe('Admin Reports', () => {
 
       // CSV download button.
       await expect(page.locator('button.download-csv'), 'Prenatal Diagnoses CSV download button should be visible').toBeVisible();
+    });
+
+    // ── ANC Contact (Prenatal Contacts) report verification ──
+    //
+    // PrenatalMom's nurse encounter (above) ran completeMedication, which
+    // marks the MMS and Calcium medication tabs as "administered today".
+    // Each of those measurements causes
+    // hedley_reports_calculate_aggregated_data_for_person to attach the
+    // corresponding PrenatalIndicator code to the encounter on the wire,
+    // and the Elm decoder + report aggregation surface a +1 on the
+    // matching report row. PrenatalCHW does not run completeMedication,
+    // so it doesn't contribute to these rows.
+    //
+    // Note: this step intentionally only verifies the *indicator* rows.
+    // The contact-count rows (PrenatalContact1..8) require encounters
+    // dated before specific EGA milestones; PrenatalMom's encounter was
+    // created today against an LMP 30 weeks in the past, so it falls
+    // after every EGA milestone and doesn't move the contact-count rows.
+    await step('Verify ANC Contact (Prenatal Contacts) report deltas', async () => {
+      await selectReportType(page, 'prenatal-contacts');
+      await setDateRange(page, REPORT_START_DATE, reportLimitDate);
+
+      const ancContactTable = await readPrenatalContactsTable(page);
+      const newMMS = findSimpleRow(ancContactTable, 'received MMS')?.total ?? 0;
+      const newCalcium = findSimpleRow(ancContactTable, 'received low-dose antenatal calcium')?.total ?? 0;
+
+      console.log('\n=== ANC CONTACT (indicator rows) ===');
+      console.log(`Received MMS:     baseline=${baselineANCContactMMS}, new=${newMMS}, delta=+${newMMS - baselineANCContactMMS}`);
+      console.log(`Received Calcium: baseline=${baselineANCContactCalcium}, new=${newCalcium}, delta=+${newCalcium - baselineANCContactCalcium}`);
+
+      expect(newMMS, '"Pregnant women who received MMS" +1').toBe(baselineANCContactMMS + 1);
+      expect(newCalcium, '"Pregnant women who received low-dose antenatal calcium" +1').toBe(baselineANCContactCalcium + 1);
+
+      // CSV download button.
+      await expect(page.locator('button.download-csv'), 'ANC Contact CSV download button should be visible').toBeVisible();
     });
 
     // ── Peripartum report verification (PR #1552) ──

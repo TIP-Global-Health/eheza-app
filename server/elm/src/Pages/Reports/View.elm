@@ -3118,7 +3118,7 @@ generatePostnatalCareReportData language site limitDate records =
                                     generateFutureVaccinationsData site
                                         patientData.birthDate
                                         vaccinationProgressDict
-                                        allVaccineTypes
+                                        (allVaccineTypes site)
 
                                 closestDateForVaccination =
                                     List.filterMap (Tuple.second >> Maybe.map Tuple.second) futureVaccinations

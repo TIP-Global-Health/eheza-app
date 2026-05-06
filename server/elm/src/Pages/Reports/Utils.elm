@@ -1,5 +1,6 @@
 module Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, countTotalNutritionEncounters, eddToLmpDate, familyNutritionEncounterToMetrics, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, nutritionEncounterDataToNutritionMetrics, prenatalContactTypeToEncountersAtWeek, reportTypeFromString, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth, sumNutritionMetrics)
 
+import App.Types exposing (Site(..))
 import AssocList as Dict exposing (Dict)
 import Backend.Reports.Model exposing (FamilyNutritionEncounterData, NutritionEncounterData, PatientData, PersonId, SelectedEntity(..))
 import Backend.Scoreboard.Model exposing (VaccineType(..))
@@ -539,15 +540,26 @@ isWideScope selectedEntity =
     List.member selectedEntity [ EntityGlobal, EntityProvince, EntityDistrict, EntityHealthCenter ]
 
 
-allVaccineTypes : List VaccineType
-allVaccineTypes =
-    [ VaccineBCG
-    , VaccineOPV
-    , VaccineDTP
-    , VaccineDTPStandalone
-    , VaccinePCV13
-    , VaccineRotarix
-    , VaccineIPV
-    , VaccineMR
-    , VaccineHPV
-    ]
+{-| Vaccines scheduled for a given site. Mirrors the client-side
+`Measurement.Utils.allVaccineTypes`: only Burundi schedules
+`VaccineDTPStandalone`; other sites schedule `VaccineHPV` instead.
+-}
+allVaccineTypes : Site -> List VaccineType
+allVaccineTypes site =
+    let
+        common =
+            [ VaccineBCG
+            , VaccineOPV
+            , VaccineDTP
+            , VaccinePCV13
+            , VaccineRotarix
+            , VaccineIPV
+            , VaccineMR
+            ]
+    in
+    case site of
+        SiteBurundi ->
+            common ++ [ VaccineDTPStandalone ]
+
+        _ ->
+            common ++ [ VaccineHPV ]

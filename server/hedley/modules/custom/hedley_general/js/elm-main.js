@@ -20081,8 +20081,21 @@ var $author$project$Translate$UpToDateWithImmunization11To15WeeksLabel = {$: 'Up
 var $author$project$Translate$UpToDateWithImmunization15WeeksTo10MonthsLabel = {$: 'UpToDateWithImmunization15WeeksTo10MonthsLabel'};
 var $author$project$Translate$UpToDateWithImmunization19To24MonthsLabel = {$: 'UpToDateWithImmunization19To24MonthsLabel'};
 var $author$project$Translate$UpToDateWithImmunization7To11WeeksLabel = {$: 'UpToDateWithImmunization7To11WeeksLabel'};
-var $author$project$Pages$Reports$Utils$allVaccineTypes = _List_fromArray(
-	[$author$project$Backend$Scoreboard$Model$VaccineBCG, $author$project$Backend$Scoreboard$Model$VaccineOPV, $author$project$Backend$Scoreboard$Model$VaccineDTP, $author$project$Backend$Scoreboard$Model$VaccineDTPStandalone, $author$project$Backend$Scoreboard$Model$VaccinePCV13, $author$project$Backend$Scoreboard$Model$VaccineRotarix, $author$project$Backend$Scoreboard$Model$VaccineIPV, $author$project$Backend$Scoreboard$Model$VaccineMR, $author$project$Backend$Scoreboard$Model$VaccineHPV]);
+var $author$project$Pages$Reports$Utils$allVaccineTypes = function (site) {
+	var common = _List_fromArray(
+		[$author$project$Backend$Scoreboard$Model$VaccineBCG, $author$project$Backend$Scoreboard$Model$VaccineOPV, $author$project$Backend$Scoreboard$Model$VaccineDTP, $author$project$Backend$Scoreboard$Model$VaccinePCV13, $author$project$Backend$Scoreboard$Model$VaccineRotarix, $author$project$Backend$Scoreboard$Model$VaccineIPV, $author$project$Backend$Scoreboard$Model$VaccineMR]);
+	if (site.$ === 'SiteBurundi') {
+		return _Utils_ap(
+			common,
+			_List_fromArray(
+				[$author$project$Backend$Scoreboard$Model$VaccineDTPStandalone]));
+	} else {
+		return _Utils_ap(
+			common,
+			_List_fromArray(
+				[$author$project$Backend$Scoreboard$Model$VaccineHPV]));
+	}
+};
 var $author$project$Gizra$NominalDate$diffWeeks = F2(
 	function (low, high) {
 		return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Weeks, low, high);
@@ -20481,7 +20494,12 @@ var $author$project$Pages$Reports$View$generatePostnatalCareReportData = F4(
 											return $.immunisationData;
 										},
 										$elm$core$List$concat(wellChildData)))));
-						var futureVaccinations = A4($author$project$Pages$Scoreboard$Utils$generateFutureVaccinationsData, site, patientData.birthDate, vaccinationProgressDict, $author$project$Pages$Reports$Utils$allVaccineTypes);
+						var futureVaccinations = A4(
+							$author$project$Pages$Scoreboard$Utils$generateFutureVaccinationsData,
+							site,
+							patientData.birthDate,
+							vaccinationProgressDict,
+							$author$project$Pages$Reports$Utils$allVaccineTypes(site));
 						var closestDateForVaccination = $elm$core$List$head(
 							A2(
 								$elm$core$List$sortWith,

@@ -797,9 +797,11 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
       case HEDLEY_ACTIVITY_PRENATAL_MEDICATION_DISTRIBUTION_CONTENT_TYPE:
         $encounter_id = $measurement->field_prenatal_encounter[LANGUAGE_NONE][0]['target_id'];
         foreach ($measurement->field_prescribed_medication[LANGUAGE_NONE] as $item) {
-          if ($item['value'] == 'azithromycin') {
+          if ($item['value'] == 'aspirin') {
+            $prenatal_indicators_by_encounter['aspirin'][] = $encounter_id;
+          }
+          elseif ($item['value'] == 'azithromycin') {
             $prenatal_indicators_by_encounter['azithromycin'][] = $encounter_id;
-            break;
           }
         }
         $recommended_treatment = $measurement->field_recommended_treatment[LANGUAGE_NONE];
