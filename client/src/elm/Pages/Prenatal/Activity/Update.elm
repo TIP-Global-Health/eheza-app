@@ -1162,10 +1162,14 @@ update currentDate id db msg model =
                         |> Maybe.withDefault []
 
                 setAdequateGWGMsg =
-                    [ Backend.PrenatalEncounter.Model.SetGWGIndicator isAdequateGWG
-                        |> Backend.Model.MsgPrenatalEncounter id
-                        |> App.Model.MsgIndexedDb
-                    ]
+                    Maybe.map
+                        (Backend.PrenatalEncounter.Model.SetGWGIndicator
+                            >> Backend.Model.MsgPrenatalEncounter id
+                            >> App.Model.MsgIndexedDb
+                            >> List.singleton
+                        )
+                        isAdequateGWG
+                        |> Maybe.withDefault []
             in
             ( model
             , Cmd.none
