@@ -3981,6 +3981,13 @@ translationSet trans =
                     , somali = Just "Canuga si fiican ma u qaataa naaska"
                     }
 
+                BreastfedFirstHour ->
+                    { english = "Was the baby breastfed within an hour of delivery"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
                 _ ->
                     translationSet EmptyString
 

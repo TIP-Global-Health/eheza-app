@@ -3184,7 +3184,7 @@ viewVitalsForm language currentDate assembled form =
     Measurement.View.viewVitalsForm language currentDate formConfig form
 
 
-viewNutritionAssessmentFormWithGWGIndicator : Language -> NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> NutritionAssessmentForm -> Maybe Float -> Maybe Float -> ( Html Msg, Bool )
+viewNutritionAssessmentFormWithGWGIndicator : Language -> NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> NutritionAssessmentForm -> Maybe Float -> Maybe Float -> ( Html Msg, Maybe Bool )
 viewNutritionAssessmentFormWithGWGIndicator language currentDate zscores isHealthyStart assembled form previouslyMeasuredHeight prePregnancyWeight =
     let
         hideHeightInput =
@@ -3273,7 +3273,6 @@ viewNutritionAssessmentFormWithGWGIndicator language currentDate zscores isHealt
 
         isAdequateGWG =
             Maybe.map Tuple.second gwgData
-                |> Maybe.withDefault False
 
         gwgData =
             if isHealthyStart then
@@ -4022,6 +4021,9 @@ viewBreastfeedingContent language assembled data =
                 (\isBreastfeeding ->
                     if isBreastfeeding then
                         let
+                            breastfedFirstHourUpdateFunc value form_ =
+                                { form_ | breastfedFirstHour = Just value, breastfedFirstHourDirty = True }
+
                             breastPainUpdateFunc value form_ =
                                 { form_ | breastPain = Just value, breastPainDirty = True }
 
@@ -4034,7 +4036,14 @@ viewBreastfeedingContent language assembled data =
                             latchingWellUpdateFunc value form_ =
                                 { form_ | latchingWell = Just value, latchingWellDirty = True }
                         in
-                        ( [ viewQuestionLabel language <| Translate.BreastfeedingSignQuestion BreastPain
+                        ( [ viewQuestionLabel language <| Translate.BreastfeedingSignQuestion BreastfedFirstHour
+                          , viewBoolInput
+                                language
+                                form.breastfedFirstHour
+                                (SetBreastfeedingBoolInput breastfedFirstHourUpdateFunc)
+                                "breastfed-first-hour"
+                                Nothing
+                          , viewQuestionLabel language <| Translate.BreastfeedingSignQuestion BreastPain
                           , viewBoolInput
                                 language
                                 form.breastPain
@@ -4063,7 +4072,12 @@ viewBreastfeedingContent language assembled data =
                                 "latching-well"
                                 Nothing
                           ]
-                        , [ form.breastPain, form.breastRedness, form.enoughMilk, form.latchingWell ]
+                        , [ form.breastfedFirstHour
+                          , form.breastPain
+                          , form.breastRedness
+                          , form.enoughMilk
+                          , form.latchingWell
+                          ]
                         )
 
                     else
@@ -4100,6 +4114,8 @@ viewBreastfeedingContent language assembled data =
                 , enoughMilkDirty = True
                 , latchingWell = Nothing
                 , latchingWellDirty = True
+                , breastfedFirstHour = Nothing
+                , breastfedFirstHourDirty = True
             }
     in
     [ viewTasksCount language tasksCompleted totalTasks

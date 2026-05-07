@@ -1211,11 +1211,12 @@ export async function completeTreatmentReview(page: Page) {
 export async function completeBreastfeeding(page: Page) {
   await openActivity(page, 'prenatal', 'breastfeeding');
 
-  // "Are you breastfeeding?" → Yes (triggers 4 more questions).
+  // "Are you breastfeeding?" → Yes (triggers 5 more questions).
   await answerYesNo(page, 'is-breastfeeding', 'Yes');
   await page.waitForTimeout(WAIT.elmRerender);
 
   // Answer the follow-up questions.
+  await answerYesNo(page, 'breastfed-first-hour', 'Yes');
   await answerYesNo(page, 'breast-pain', 'No');
   await answerYesNo(page, 'breast-redness', 'No');
   await answerYesNo(page, 'enough-milk', 'Yes');
