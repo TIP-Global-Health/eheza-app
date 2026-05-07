@@ -6,3 +6,6 @@
  */
 
 include_once 'hedley_family_nutrition.features.inc';
+
+define('HEDLEY_FAMILY_NUTRITION_AHEZA_CHILD_CONTENT_TYPE', 'aheza_child');
+define('HEDLEY_FAMILY_NUTRITION_AHEZA_MOTHER_CONTENT_TYPE', 'aheza_mother');

@@ -1,4 +1,4 @@
-module Pages.Reports.Model exposing (Model, Msg(..), NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), emptyModel, emptyNutritionMetrics)
+module Pages.Reports.Model exposing (FbfDistributionCategory(..), Model, Msg(..), NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), allFbfDistributionCategories, emptyModel, emptyNutritionMetrics)
 
 import AssocList exposing (Dict)
 import Backend.Reports.Model exposing (PersonId)
@@ -31,12 +31,35 @@ emptyModel =
 type ReportType
     = ReportAcuteIllness
     | ReportDemographics
+    | ReportFBFDistribution
     | ReportNutrition
     | ReportPeripartum
     | ReportPostnatalCare
     | ReportPrenatal
     | ReportPrenatalContacts
     | ReportPrenatalDiagnoses
+
+
+{-| Categories shown as rows in the FBF Distribution report. Only the FBF
+group with `field_group_type = 'fbf'` contributes child distributions
+(Achi-clinic child\_fbf is intentionally out of scope).
+-}
+type FbfDistributionCategory
+    = FbfDistributionAhezaChild
+    | FbfDistributionAhezaMother
+    | FbfDistributionFbfChild
+    | FbfDistributionFbfChildAchi
+    | FbfDistributionFbfMother
+
+
+allFbfDistributionCategories : List FbfDistributionCategory
+allFbfDistributionCategories =
+    [ FbfDistributionFbfChild
+    , FbfDistributionFbfMother
+    , FbfDistributionFbfChildAchi
+    , FbfDistributionAhezaChild
+    , FbfDistributionAhezaMother
+    ]
 
 
 type alias NutritionReportData =

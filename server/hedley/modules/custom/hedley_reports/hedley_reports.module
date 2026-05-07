@@ -472,8 +472,10 @@ function hedley_reports_get_triggering_measurement_types() {
     HEDLEY_ACTIVITY_REPORTS_GROUP_MEASUREMENT_BUNDLES,
     HEDLEY_ACTIVITY_WELL_CHILD_IMMUNISATION_BUNDLES,
     [
+      HEDLEY_ACTIVITY_CHILD_FBF_CONTENT_TYPE,
       HEDLEY_ACTIVITY_DANGER_SIGNS_CONTENT_TYPE,
       HEDLEY_ACTIVITY_FAMILY_NUTRITION_MUAC_CHILD_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_MOTHER_FBF_CONTENT_TYPE,
       HEDLEY_ACTIVITY_PRENATAL_ASPIRIN_CONTENT_TYPE,
       HEDLEY_ACTIVITY_PRENATAL_BREASTFEEDING_CONTENT_TYPE,
       HEDLEY_ACTIVITY_PRENATAL_CALCIUM_CONTENT_TYPE,
@@ -486,6 +488,8 @@ function hedley_reports_get_triggering_measurement_types() {
       // Completes the immunisations list (not included
       // at HEDLEY_ACTIVITY_WELL_CHILD_IMMUNISATION_BUNDLES).
       HEDLEY_ACTIVITY_WELL_CHILD_HPV_IMMUNISATION_CONTENT_TYPE,
+      HEDLEY_FAMILY_NUTRITION_AHEZA_CHILD_CONTENT_TYPE,
+      HEDLEY_FAMILY_NUTRITION_AHEZA_MOTHER_CONTENT_TYPE,
     ],
   ));
 }
@@ -533,13 +537,18 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
   ];
   $vaccine_type_mapping = hedley_reports_vaccine_type_mapping();
 
-  // Exclude family_nutrition_muac_child from the query: it is in the
-  // triggering list so that node saves enqueue an AQ recalc, but this
-  // loop has no use for those nodes -- the per-child MUAC data is
-  // collected via a dedicated query further down in this function.
+  // Bundles that participate in the AQ trigger list but have dedicated
+  // queries further down in this function; exclude them from the generic
+  // measurement loop so we don't load them twice.
   $measurements_bundles = array_diff(
     hedley_reports_get_triggering_measurement_types(),
-    [HEDLEY_ACTIVITY_FAMILY_NUTRITION_MUAC_CHILD_CONTENT_TYPE]
+    [
+      HEDLEY_ACTIVITY_CHILD_FBF_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_FAMILY_NUTRITION_MUAC_CHILD_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_MOTHER_FBF_CONTENT_TYPE,
+      HEDLEY_FAMILY_NUTRITION_AHEZA_CHILD_CONTENT_TYPE,
+      HEDLEY_FAMILY_NUTRITION_AHEZA_MOTHER_CONTENT_TYPE,
+    ]
   );
   $measurements_ids = hedley_general_get_person_measurements($person->nid, $measurements_bundles);
   $measurements = node_load_multiple($measurements_ids);
@@ -977,9 +986,8 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
           // Resolving indicators.
           // 'GWG adequate' indicator is recorded on encounter itself.
           $indicators = [];
-          $prenatal_indicators = $encounter->field_prenatal_indicators[LANGUAGE_NONE];
-          if (!empty($prenatal_indicators)) {
-            foreach ($prenatal_indicators as $item) {
+          if (!empty($encounter->field_prenatal_indicators) && !empty($encounter->field_prenatal_indicators[LANGUAGE_NONE])) {
+            foreach ($encounter->field_prenatal_indicators[LANGUAGE_NONE] as $item) {
               if ($item['value'] == 'adequate-gwg') {
                 $indicators[] = $prenatal_indicator_mapping['gwg'];
                 break;
@@ -1064,17 +1072,38 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
     }
   }
 
+  // AHEZA distribution amounts (mother and child) live on family-nutrition
+  // encounter measurements. Collected here so both the mother-side
+  // 'family-nutrition' wire (below) and the child-side 'family-nutrition-muac'
+  // wire (further down) can embed the amount alongside the existing data
+  // they emit per encounter.
+  $aheza_mother_amount_by_encounter = hedley_reports_collect_distributed_amounts_by_parent(
+    $person->nid,
+    HEDLEY_FAMILY_NUTRITION_AHEZA_MOTHER_CONTENT_TYPE,
+    'field_family_nutrition_encounter'
+  );
+  $aheza_child_amount_by_encounter = hedley_reports_collect_distributed_amounts_by_parent(
+    $person->nid,
+    HEDLEY_FAMILY_NUTRITION_AHEZA_CHILD_CONTENT_TYPE,
+    'field_family_nutrition_encounter'
+  );
+
   // Family nutrition encounters: walk family_participant nodes whose
   // field_person points at $person. field_person on family_participant is
   // the mother (the registering adult), so this block only contributes data
-  // when $person is a mother. Each family encounter is recorded as a
-  // date-only wire entry under the 'family-nutrition' key. These entries
-  // drive the Demographics report's "Family Nutrition" encounter row, which
-  // counts mothers and their family encounters across all ages (no child
-  // age filter). Per-child MUAC measurements are emitted separately under
-  // 'family-nutrition-muac' on each child's reports data; that path is
-  // what feeds the MAM/SAM stats and lives where the nutrition stats
-  // pipelines (which filter to children under 6) can actually find it.
+  // when $person is a mother. Each family encounter is recorded under the
+  // 'family-nutrition' key, with the wire shape determined by whether an
+  // aheza_mother distribution exists for the encounter:
+  // - "YYYY-MM-DD" (no AHEZA -- legacy date-only entry).
+  // - "YYYY-MM-DD <amount>" (AHEZA mother distribution recorded).
+  // These entries drive the Demographics report's "Family Nutrition"
+  // encounter row, which counts mothers and their family encounters across
+  // all ages (no child age filter). Per-child MUAC measurements are emitted
+  // separately under 'family-nutrition-muac' on each child's reports data;
+  // that path is what feeds the MAM/SAM stats and lives where the nutrition
+  // stats pipelines (which filter to children under 6) can actually find it.
+  // Stays in sync with decodeFamilyNutritionMotherEncounterData in
+  // server/elm/src/Backend/Reports/Decoder.elm; update both together.
   $family_participants_query = hedley_general_create_entity_field_query_excluding_deleted();
   $family_participants_result = $family_participants_query
     ->entityCondition('entity_type', 'node')
@@ -1098,21 +1127,32 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
       foreach ($family_encounters as $family_encounter) {
         $participant_id = $family_encounter->field_family_participant[LANGUAGE_NONE][0]['target_id'];
         $encounter_date = date("Y-m-d", strtotime($family_encounter->field_scheduled_date[LANGUAGE_NONE][0]['value']));
-        $encounters_data['family-nutrition'][$participant_id][] = $encounter_date;
+        $wire = isset($aheza_mother_amount_by_encounter[$family_encounter->nid])
+          ? "$encounter_date " . $aheza_mother_amount_by_encounter[$family_encounter->nid]
+          : $encounter_date;
+        $encounters_data['family-nutrition'][$participant_id][] = $wire;
       }
     }
   }
 
-  // Per-child family-nutrition MUAC measurements. Walk child MUAC measurement
-  // nodes whose field_person is THIS person; these only match when $person
-  // is a child (the measurement records the child's arm circumference).
-  // Each measurement contributes one wire entry to the child's
-  // 'family-nutrition-muac' data, in the same "YYYY-MM-DD muac" format that
-  // hedley_reports_generate_nutrition_report_data parses for AM stats.
+  // Per-child family-nutrition data: child MUAC and child AHEZA distribution.
+  // Walk child MUAC measurement nodes whose field_person is THIS person, and
+  // pair them up with AHEZA child distribution amounts collected above.
+  // These only match when $person is a child (the measurements record the
+  // child's arm circumference / supplement received).
+  //
+  // Each (encounter, child) pairing contributes one wire entry to the
+  // child's 'family-nutrition-muac' data. Wire shapes:
+  // - "YYYY-MM-DD <muac>" (legacy MUAC-only entry).
+  // - "YYYY-MM-DD <muac>|<amount>" (MUAC and AHEZA recorded together).
+  // - "YYYY-MM-DD |<amount>" (AHEZA only -- empty MUAC chunk).
+  //
   // Storing per-child measurements on the child rather than the mother is
-  // what gives the AM stats correct per-child denominators -- the nutrition
-  // pipelines downstream filter records to children under 6 before the
-  // computation runs, so mother-side data would be invisible to them.
+  // what gives the MAM/SAM stats correct per-child denominators -- the
+  // nutrition pipelines downstream filter records to children under 6
+  // before computation, so mother-side data would be invisible to them.
+  // Stays in sync with decodeFamilyNutritionEncounterData in
+  // server/elm/src/Backend/Reports/Decoder.elm; update both together.
   $family_muac_query = hedley_general_create_entity_field_query_excluding_deleted();
   $family_muac_result = $family_muac_query
     ->entityCondition('entity_type', 'node')
@@ -1121,27 +1161,16 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
     ->propertyCondition('status', NODE_PUBLISHED)
     ->execute();
 
+  // Build a per-encounter map of {MUAC, AHEZA} for this child. Either or
+  // both may be present; encounters with neither yield no entry.
+  $child_data_by_encounter = [];
   if (!empty($family_muac_result['node'])) {
     $family_muac_measurements = node_load_multiple(array_keys($family_muac_result['node']));
-
-    // Batch-load parent encounters to read each measurement's scheduled
-    // date. We need the encounter's date, not the measurement's
-    // field_date_measured, for consistency with the way the rest of this
-    // function dates encounters.
-    $parent_encounter_ids = [];
     foreach ($family_muac_measurements as $family_muac) {
-      $parent_id = $family_muac->field_family_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
-      if (!empty($parent_id)) {
-        $parent_encounter_ids[] = $parent_id;
-      }
-    }
-    $parent_encounters = !empty($parent_encounter_ids)
-      ? node_load_multiple(array_unique($parent_encounter_ids))
-      : [];
-
-    foreach ($family_muac_measurements as $family_muac) {
-      $parent_id = $family_muac->field_family_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
-      if (empty($parent_encounters[$parent_id])) {
+      $parent_id = !empty($family_muac->field_family_nutrition_encounter[LANGUAGE_NONE][0]['target_id'])
+        ? $family_muac->field_family_nutrition_encounter[LANGUAGE_NONE][0]['target_id']
+        : NULL;
+      if (empty($parent_id)) {
         continue;
       }
       $muac_value = !empty($family_muac->field_muac[LANGUAGE_NONE][0]['value'])
@@ -1150,9 +1179,34 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
       if (is_null($muac_value) || $muac_value === '') {
         continue;
       }
-      $parent = $parent_encounters[$parent_id];
+      $child_data_by_encounter[$parent_id]['m'] = $muac_value;
+    }
+  }
+  foreach ($aheza_child_amount_by_encounter as $encounter_id => $amount) {
+    $child_data_by_encounter[$encounter_id]['a'] = $amount;
+  }
+
+  if (!empty($child_data_by_encounter)) {
+    // Batch-load parent encounters to read each entry's scheduled date.
+    // We need the encounter's date, not the measurement's
+    // field_date_measured, for consistency with the way the rest of this
+    // function dates encounters.
+    $parent_encounters = node_load_multiple(array_keys($child_data_by_encounter));
+    foreach ($child_data_by_encounter as $encounter_id => $values) {
+      if (empty($parent_encounters[$encounter_id])) {
+        continue;
+      }
+      $parent = $parent_encounters[$encounter_id];
       $encounter_date = date("Y-m-d", strtotime($parent->field_scheduled_date[LANGUAGE_NONE][0]['value']));
-      $encounters_data['family-nutrition-muac'][$person->nid][] = "$encounter_date $muac_value";
+      $muac_part = isset($values['m']) ? $values['m'] : '';
+      if (isset($values['a'])) {
+        $wire = "$encounter_date $muac_part|" . $values['a'];
+      }
+      else {
+        // MUAC only: preserve legacy "YYYY-MM-DD <muac>" wire format.
+        $wire = "$encounter_date $muac_part";
+      }
+      $encounters_data['family-nutrition-muac'][$person->nid][] = $wire;
     }
   }
 
@@ -1164,7 +1218,27 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
   }
 
   // Load group data.
-  $sessions_ids = array_unique($sessions_ids);
+  // FBF distribution amounts (child_fbf and mother_fbf) live on session-level
+  // measurements; collect them ahead of the group-nutrition emission so we
+  // can embed the child amount in the existing wire and emit the mother
+  // amount under its own key. Sessions referenced only by an FBF record (no
+  // anthropometry at all) still need to flow through the loop, so merge
+  // their ids into $sessions_ids before loading the session nodes.
+  $child_fbf_amount_by_session = hedley_reports_collect_distributed_amounts_by_parent(
+    $person->nid,
+    HEDLEY_ACTIVITY_CHILD_FBF_CONTENT_TYPE,
+    'field_session'
+  );
+  $mother_fbf_amount_by_session = hedley_reports_collect_distributed_amounts_by_parent(
+    $person->nid,
+    HEDLEY_ACTIVITY_MOTHER_FBF_CONTENT_TYPE,
+    'field_session'
+  );
+  $sessions_ids = array_unique(array_merge(
+    $sessions_ids,
+    array_keys($child_fbf_amount_by_session),
+    array_keys($mother_fbf_amount_by_session)
+  ));
   $sessions = node_load_multiple($sessions_ids);
   $clinics_ids = [];
   foreach ($sessions as $session) {
@@ -1180,6 +1254,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
   }
 
   $sessions_data = [];
+  $mother_sessions_data = [];
   foreach ($sessions as $session) {
     $clinic_id = $session->field_clinic[LANGUAGE_NONE][0]['target_id'];
     $group_type = $group_type_by_clinic[$clinic_id];
@@ -1189,15 +1264,57 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
     $nutrition = hedley_reports_nutrition_metrics_to_string($zscores + $muac_edema);
     $session_data = "$encounter_date $nutrition";
 
+    // Embed FBF distributed amount on the wire as a |<amount> tail chunk
+    // appended to the existing space-delimited second segment. The Elm
+    // decoder splits the second segment on '|' to separate anthropometry
+    // (",,,," up to "stunting,wasting,underweight,muac,edema") from the
+    // FBF amount. Wire shapes after this change:
+    // - "YYYY-MM-DD" (unchanged legacy date-only).
+    // - "YYYY-MM-DD <anth>" (unchanged anthropometry only).
+    // - "YYYY-MM-DD <anth>|<amount>" (anthropometry + FBF).
+    // - "YYYY-MM-DD ,,,,|<amount>" (FBF only -- empty anth chunk).
+    // Stays in sync with decodeNutritionEncounterData in
+    // server/elm/src/Backend/Reports/Decoder.elm; update both together.
+    //
+    // Every session in $sessions_ids gets emitted under
+    // group_nutrition.<group> regardless of whether the person is the
+    // child or the mother at that session: the Demographics encounter
+    // table counts these as session attendance for both. A mother who
+    // attended an FBF session (e.g. via family_planning / lactation /
+    // mother_fbf) appears here with empty anthropometry; a child shows
+    // whatever measurements were recorded.
+    if (isset($child_fbf_amount_by_session[$session->nid])) {
+      $session_data .= '|' . $child_fbf_amount_by_session[$session->nid];
+    }
+
     if (empty($sessions_data[$group_type])) {
       $sessions_data[$group_type] = [$session_data];
     }
     else {
       $sessions_data[$group_type][] = $session_data;
     }
+
+    // Mother FBF: per (session, mother) wire "YYYY-MM-DD <amount>" emitted
+    // under group_nutrition_mother.fbf. Only Fbf clinics produce mother
+    // distributions, so the group key is hardcoded to match the Elm
+    // decoder which reads exactly this path -- decodeReportsData in
+    // server/elm/src/Backend/Reports/Decoder.elm. If another clinic type
+    // ever needs to carry mother distributions, both sides must change.
+    if (isset($mother_fbf_amount_by_session[$session->nid])) {
+      $mother_session_data = "$encounter_date " . $mother_fbf_amount_by_session[$session->nid];
+      if (empty($mother_sessions_data['fbf'])) {
+        $mother_sessions_data['fbf'] = [$mother_session_data];
+      }
+      else {
+        $mother_sessions_data['fbf'][] = $mother_session_data;
+      }
+    }
   }
   if (!empty($sessions_data)) {
     $data['group_nutrition'] = $sessions_data;
+  }
+  if (!empty($mother_sessions_data)) {
+    $data['group_nutrition_mother'] = $mother_sessions_data;
   }
 
   $encoded_data = json_encode($data);
@@ -1352,6 +1469,67 @@ function hedley_reports_family_nutrition_metrics_to_string($values) {
   }
 
   return (string) $values['m'];
+}
+
+/**
+ * Collects distributed_amount values from FBF / AHEZA records for one person.
+ *
+ * Stays in sync with decodeNutritionEncounterData,
+ * decodeFamilyNutritionEncounterData,
+ * decodeFamilyNutritionMotherEncounterData, and
+ * decodeMotherFbfEncounterData in
+ * server/elm/src/Backend/Reports/Decoder.elm; update both together.
+ *
+ * @param int $person_id
+ *   The person node id whose distribution records to read.
+ * @param string $bundle
+ *   The distribution bundle: child_fbf, mother_fbf, aheza_child, aheza_mother.
+ * @param string $parent_field_name
+ *   The entityreference field on the bundle that points at the parent
+ *   encounter / session: field_session for FBF bundles,
+ *   field_family_nutrition_encounter for AHEZA bundles.
+ *
+ * @return array
+ *   Associative array keyed by parent encounter / session nid; value is the
+ *   field_distributed_amount on the distribution measurement node. Records
+ *   with no parent reference or no amount are skipped. If multiple records
+ *   share the same parent for this person (not expected in practice), the
+ *   last one read wins, matching the existing per-encounter "last write
+ *   wins" pattern used by the per-encounter MUAC / Z-score aggregation in
+ *   hedley_reports_calculate_aggregated_data_for_person.
+ */
+function hedley_reports_collect_distributed_amounts_by_parent($person_id, $bundle, $parent_field_name) {
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
+  $result = $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', $bundle)
+    ->fieldCondition('field_person', 'target_id', $person_id)
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->execute();
+
+  if (empty($result['node'])) {
+    return [];
+  }
+
+  $records = node_load_multiple(array_keys($result['node']));
+  $amounts = [];
+  foreach ($records as $record) {
+    $parent_field = isset($record->{$parent_field_name}) ? $record->{$parent_field_name} : NULL;
+    $parent_id = !empty($parent_field[LANGUAGE_NONE][0]['target_id'])
+      ? $parent_field[LANGUAGE_NONE][0]['target_id']
+      : NULL;
+    if (empty($parent_id)) {
+      continue;
+    }
+    $amount = isset($record->field_distributed_amount[LANGUAGE_NONE][0]['value'])
+      ? $record->field_distributed_amount[LANGUAGE_NONE][0]['value']
+      : NULL;
+    if (is_null($amount) || $amount === '') {
+      continue;
+    }
+    $amounts[$parent_id] = $amount;
+  }
+  return $amounts;
 }
 
 /**
@@ -1520,6 +1698,7 @@ function hedley_reports_build_statistical_queries_results_app($province = NULL, 
   }
 
   $data['site'] = variable_get('hedley_general_site_name', '');
+  $data['features'] = hedley_admin_get_enabled_features_string();
 
   if (in_array($data['entity_type'], ['sector', 'cell', 'village'])) {
     // For smaller data sets, we generate results on fly.
@@ -1657,7 +1836,17 @@ function hedley_reports_load_results_data($report_variant, $scope, $province = N
   }
 
   $node = node_load($node_id);
-  $file = file_load($node->field_data_file[LANGUAGE_NONE][0]['fid']);
+  // The report_data node may exist as a placeholder with no file yet (e.g.
+  // when the recalculate-large-datasets.php script has not produced the
+  // data file for this scope). Guard the field access so a missing file
+  // doesn't spam notices via $node->field_data_file[LANGUAGE_NONE][0].
+  $file_id = isset($node->field_data_file[LANGUAGE_NONE][0]['fid'])
+    ? $node->field_data_file[LANGUAGE_NONE][0]['fid']
+    : 0;
+  if (empty($file_id)) {
+    return [[], NULL];
+  }
+  $file = file_load($file_id);
   if (!$file) {
     return [[], NULL];
   }
@@ -1734,7 +1923,12 @@ function hedley_reports_create_or_update_results_data_node(array $data, $report_
   else {
     // Update the Report Data node.
     $node = node_load($node_id);
-    $old_file = file_load($node->field_data_file[LANGUAGE_NONE][0]['fid']);
+    // Same guard as in hedley_reports_load_results_data: a stub
+    // report_data node may exist without an attached file.
+    $old_file_id = isset($node->field_data_file[LANGUAGE_NONE][0]['fid'])
+      ? $node->field_data_file[LANGUAGE_NONE][0]['fid']
+      : 0;
+    $old_file = !empty($old_file_id) ? file_load($old_file_id) : FALSE;
     if ($old_file) {
       // Delete the old file.
       file_delete($old_file, TRUE);

@@ -440,6 +440,20 @@ export async function navigateToReportsMenu(page: Page) {
   await page.locator('.page-content.reports-menu').waitFor({ timeout: 30000 });
 }
 
+/**
+ * Navigate to the Statistical Queries results page for the Global scope (all
+ * patients across all health centers). The Drupal route is registered at
+ * `admin/reports/statistical-queries/all` (see hedley_reports.module).
+ */
+export async function navigateToGlobalReportsPage(page: Page) {
+  const baseUrl = getDdevUrl();
+  // Cache-busting parameter to prevent browser from serving stale page.
+  await page.goto(
+    `${baseUrl}/admin/reports/statistical-queries/all?t=${Date.now()}`,
+  );
+  await page.locator('.page-content.reports').waitFor({ timeout: 30000 });
+}
+
 // ---------------------------------------------------------------------------
 // Report type & date selection
 // ---------------------------------------------------------------------------
@@ -688,6 +702,16 @@ export function findEncounterRow(
 export interface SimpleTableRow {
   label: string;
   total: number;
+  /**
+   * Per-row unit string (e.g., "package", "kg") when the table renders a
+   * Unit column. Currently only the FBF Distribution report uses this.
+   */
+  unit?: string;
+  /**
+   * Count of distribution events when the table renders an Occurrences
+   * column. Currently only the FBF Distribution report uses this.
+   */
+  occurrences?: number;
 }
 
 export interface SimpleTableData {
@@ -743,6 +767,22 @@ export async function readPostnatalCareTable(
 }
 
 /**
+ * Read the FBF Distribution report table.
+ * Container: div.report.fbf-distribution div.table
+ * Each row has 4 cells: [category label, total amount, unit, occurrences].
+ * Categories: "FBF Child", "FBF Mother", "Aheza Child", "Aheza Mother".
+ * Totals are numeric (whole numbers print without decimals; fractional with
+ * up to 2dp). Unit is "package" for FBF rows and "kg" for Aheza rows.
+ * Occurrences is the count of distribution events contributing to that
+ * total (one event per measurement record).
+ */
+export async function readFBFDistributionTable(
+  page: Page,
+): Promise<SimpleTableData> {
+  return readSimpleTable(page, 'div.report.fbf-distribution div.table');
+}
+
+/**
  * Read a specific AI diagnosis row by its CSS class.
  * Returns the total count, or 0 if the row is not found.
  */
@@ -783,10 +823,16 @@ async function readSimpleTable(
       cellTexts.push((await cells.nth(j).textContent()) ?? '');
     }
     if (cellTexts.length >= 2) {
-      rows.push({
+      const row: SimpleTableRow = {
         label: cellTexts[0].trim(),
-        total: parseInt(cellTexts[1].trim(), 10) || 0,
-      });
+        total: parseFloat(cellTexts[1].trim()) || 0,
+      };
+      // 4-cell layout: [label, total, unit, occurrences] (FBF Distribution).
+      if (cellTexts.length >= 4) {
+        row.unit = cellTexts[2].trim();
+        row.occurrences = parseFloat(cellTexts[3].trim()) || 0;
+      }
+      rows.push(row);
     }
   }
 

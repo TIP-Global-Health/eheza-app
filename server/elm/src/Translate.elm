@@ -32,7 +32,7 @@ import Backend.Scoreboard.Model
 import Date
 import Pages.Completion.Model
 import Pages.Components.Types exposing (PopulationSelectionOption(..))
-import Pages.Reports.Model exposing (PregnancyTrimester(..), PrenatalContactType(..), ReportType(..))
+import Pages.Reports.Model exposing (FbfDistributionCategory(..), PregnancyTrimester(..), PrenatalContactType(..), ReportType(..))
 import Pages.Scoreboard.Model exposing (NCDAANCNewbornItem(..), NCDAAcuteMalnutritionItem(..), NCDADemographicsItem(..), NCDAInfrastructureEnvironmentWashItem(..), NCDANutritionBehaviorItem(..), NCDAStuntingItem(..), NCDATargetedInterventionsItem(..), NCDAUniversalInterventionItem(..))
 import Time exposing (Month(..))
 
@@ -124,6 +124,13 @@ type TranslationId
     | FamilyNutrition
     | FamilyPlanning
     | FBF
+    | FbfDistributionCategory FbfDistributionCategory
+    | FbfDistributionOccurrences
+    | FbfDistributionTotalAmount
+    | FbfDistributionType
+    | FbfDistributionUnit
+    | FbfDistributionUnitKg
+    | FbfDistributionUnitPackage
     | Feeding
     | Female
     | FirstVisit
@@ -879,6 +886,85 @@ translationSet transId =
 
         FBF ->
             { english = "FBF"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        FbfDistributionCategory category ->
+            case category of
+                FbfDistributionFbfChild ->
+                    { english = "FBF Child"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                FbfDistributionFbfChildAchi ->
+                    { english = "FBF Child (ACHI)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                FbfDistributionFbfMother ->
+                    { english = "FBF Mother"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                FbfDistributionAhezaChild ->
+                    { english = "Aheza Child"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                FbfDistributionAhezaMother ->
+                    { english = "Aheza Mother"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+        FbfDistributionOccurrences ->
+            { english = "# of Encounters"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        FbfDistributionTotalAmount ->
+            { english = "Total amount"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        FbfDistributionType ->
+            { english = "Type"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        FbfDistributionUnit ->
+            { english = "Unit"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        FbfDistributionUnitKg ->
+            { english = "kg"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        FbfDistributionUnitPackage ->
+            { english = "pkg"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing
@@ -3000,6 +3086,13 @@ translationSet transId =
 
                 ReportDemographics ->
                     { english = "Demographics"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                ReportFBFDistribution ->
+                    { english = "Stock Management"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     , somali = Nothing

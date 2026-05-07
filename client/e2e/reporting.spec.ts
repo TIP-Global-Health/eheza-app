@@ -25,6 +25,7 @@ import {
   readPrenatalDiagnosisRow,
   readPrenatalVisitsTable,
   readPrenatalContactsTable,
+  readFBFDistributionTable,
   readPeripartumTable,
   readPostnatalCareTable,
   findPrenatalRow,
@@ -234,7 +235,7 @@ test.describe('Admin Reports', () => {
   // Statistical Queries and Completion reports show the correct deltas.
   //
   // Patients created:
-  //   Nurse: NutrChild (M 10mo) — Nutrition (with measurements) + SPV (2 encounters, impacted)
+  //   Nurse: NutrChild (M 11mo) — Nutrition (with measurements) + SPV (2 encounters, impacted)
   //          PrenatalMom (F 25y) — Prenatal initial + postpartum (2 encounters, impacted)
   //          AINurse (F 30y) — AI initial + subsequent (2 encounters, impacted)
   //          AIChild (M 30mo) — AI initial (with MUAC + Nutrition)
@@ -317,7 +318,7 @@ test.describe('Admin Reports', () => {
     let baselinePeripartumPrematureLabour: number;
     let baselinePeripartumBreastfedFirstHour: number;
     // Postnatal Care report baselines (PR #1556). Among the existing test
-    // patients, only NutrChild (M, 10mo, full nurse SPV with
+    // patients, only NutrChild (M, 11mo, full nurse SPV with
     // completeWCImmunisation) contributes — they fall in the "10-19 months
     // UpToDate" bucket. Other test children either lack a well-child
     // encounter (AIChild, CSChild, HVChild) or are below the lowest age
@@ -330,6 +331,16 @@ test.describe('Admin Reports', () => {
     let baselinePNC15WeeksTo10Months: number;
     let baselinePNC10To19Months: number;
     let baselinePNC19To24Months: number;
+    let baselineFBFDistChild: number;
+    let baselineFBFDistMother: number;
+    let baselineFBFDistChildAchi: number;
+    let baselineAhezaDistChild: number;
+    let baselineAhezaDistMother: number;
+    let baselineFBFDistChildOccurrences: number;
+    let baselineFBFDistMotherOccurrences: number;
+    let baselineFBFDistChildAchiOccurrences: number;
+    let baselineAhezaDistChildOccurrences: number;
+    let baselineAhezaDistMotherOccurrences: number;
     let baselineNutrition: Map<number, NutritionMetricRow[]>;
     let baselineCompletion: CompletionTableData;
     let baselinePrenatalCompletion: CompletionTableData;
@@ -453,6 +464,38 @@ test.describe('Admin Reports', () => {
         `7-11w=${baselinePNC7To11Weeks}, 11-15w=${baselinePNC11To15Weeks}, ` +
         `15w-10mo=${baselinePNC15WeeksTo10Months}, ` +
         `10-19mo=${baselinePNC10To19Months}, 19-24mo=${baselinePNC19To24Months}`,
+      );
+
+      // Record FBF Distribution report baselines. The migration / demo
+      // population can already include FBF and AHEZA records, so the test
+      // encounters are verified by delta against this baseline rather than
+      // absolute totals. Both the summed amount (Total column) and the
+      // event count (Occurrences column) are baselined.
+      await selectReportType(page, 'fbf-distribution');
+      await setDateRange(page, REPORT_START_DATE, reportLimitDate);
+      const baselineFBFDistTable = await readFBFDistributionTable(page);
+      const baselineFBFDistChildAchiRow = findSimpleRow(baselineFBFDistTable, 'FBF Child (ACHI)');
+      const baselineFBFDistChildRow = findSimpleRow(baselineFBFDistTable, 'FBF Child');
+      const baselineFBFDistMotherRow = findSimpleRow(baselineFBFDistTable, 'FBF Mother');
+      const baselineAhezaDistChildRow = findSimpleRow(baselineFBFDistTable, 'Aheza Child');
+      const baselineAhezaDistMotherRow = findSimpleRow(baselineFBFDistTable, 'Aheza Mother');
+      baselineFBFDistChild = baselineFBFDistChildRow?.total ?? 0;
+      baselineFBFDistMother = baselineFBFDistMotherRow?.total ?? 0;
+      baselineFBFDistChildAchi = baselineFBFDistChildAchiRow?.total ?? 0;
+      baselineAhezaDistChild = baselineAhezaDistChildRow?.total ?? 0;
+      baselineAhezaDistMother = baselineAhezaDistMotherRow?.total ?? 0;
+      baselineFBFDistChildOccurrences = baselineFBFDistChildRow?.occurrences ?? 0;
+      baselineFBFDistMotherOccurrences = baselineFBFDistMotherRow?.occurrences ?? 0;
+      baselineFBFDistChildAchiOccurrences = baselineFBFDistChildAchiRow?.occurrences ?? 0;
+      baselineAhezaDistChildOccurrences = baselineAhezaDistChildRow?.occurrences ?? 0;
+      baselineAhezaDistMotherOccurrences = baselineAhezaDistMotherRow?.occurrences ?? 0;
+      console.log(
+        `Baseline FBF Distribution: ` +
+        `fbfChild=${baselineFBFDistChild}/${baselineFBFDistChildOccurrences}occ, ` +
+        `fbfMother=${baselineFBFDistMother}/${baselineFBFDistMotherOccurrences}occ, ` +
+        `fbfChildAchi=${baselineFBFDistChildAchi}/${baselineFBFDistChildAchiOccurrences}occ, ` +
+        `ahezaChild=${baselineAhezaDistChild}/${baselineAhezaDistChildOccurrences}occ, ` +
+        `ahezaMother=${baselineAhezaDistMother}/${baselineAhezaDistMotherOccurrences}occ`,
       );
 
       // Record Nutrition report baseline (first column = newest completed month).
@@ -622,10 +665,15 @@ test.describe('Admin Reports', () => {
       await page.goto(pwaBaseUrl);
       await setupDevice(page, '1234', 'Nyange Health Center');
 
-      // --- NutrChild (male, 10 months): Nutrition encounter ---
+      // --- NutrChild (male, 11 months): Nutrition encounter ---
       // Complete mandatory activities with abnormal measurements to trigger
-      // stunting severe (height 60cm at 10mo) + underweight severe (6.0kg at 10mo).
-      const nutrChild = await createNutritionChild(page, { ageMonths: 10 });
+      // stunting severe (height 60cm at 11mo) + underweight severe (6.0kg
+      // at 11mo). Age 11mo intentionally clears both the 10-month bucket
+      // boundary in the Postnatal Care report (Date.diff Months on a
+      // 10-month-old DOB occasionally rounds to 9 due to UTC/local-day
+      // shift in setDate, flipping the child between buckets) and stays
+      // inside the Demographics "1M - 2Y" bucket.
+      const nutrChild = await createNutritionChild(page, { ageMonths: 11 });
       nutrChildName = nutrChild.fullName;
       await enterHeight(page, '60');
       await saveActivity(page);
@@ -1645,7 +1693,7 @@ test.describe('Admin Reports', () => {
     //
     // The report has 6 rows: SPV/Newborn-Exam-within-24h-of-birth + 5
     // age-bucket "UpToDate with immunization" rows (7-11w, 11-15w,
-    // 15w-10mo, 10-19mo, 19-24mo). NutrChild (M, 10mo) gets a full nurse
+    // 15w-10mo, 10-19mo, 19-24mo). NutrChild (M, 11mo) gets a full nurse
     // SPV here with completeWCImmunisation, which administers every
     // age-eligible vaccine today. After sync, NutrChild's wellChildData
     // carries the full immunisation dict; the report's
@@ -1683,7 +1731,7 @@ test.describe('Admin Reports', () => {
       // Within-24h row should not move (no test patient has a same-day SPV).
       expect(newWithin24h - baselinePNCWithin24h,
         '"within 24 hours of birth" row should be unchanged').toBe(0);
-      // NutrChild (10mo, full SPV with all eligible vaccines administered
+      // NutrChild (11mo, full SPV with all eligible vaccines administered
       // today) should land in the 10-19 months bucket as UpToDate.
       expect(new10To19Months - baselinePNC10To19Months,
         '"Children aged 10-19 mos UpToDate" row should grow by +1').toBe(1);
@@ -1762,6 +1810,83 @@ test.describe('Admin Reports', () => {
 
       // CSV download button.
       await expect(page.locator('button.download-csv'), 'Nutrition CSV download button should be visible').toBeVisible();
+    });
+
+    // ── Phase 3b: FBF Distribution report ──
+    //
+    // Phase 1a created an FBF nurse group session at Nyange I (FBF clinic,
+    // group_type='fbf') with completeChildFbf (amount '1') and
+    // completeMotherFbf (amount '1'). Phase 1b created a CHW Family
+    // Nutrition encounter with completeAhezaMother (amount '3') and
+    // completeAhezaChild (amount '2'). All test-created persons land at
+    // Nyange HC, so the same HC scope used by the other Phase 3 reports
+    // captures the new distribution rows. Pre-existing migration data may
+    // already contribute non-zero baseline totals, so we assert deltas
+    // against the baseline captured in Phase 0.
+
+    await step('Verify FBF Distribution report deltas', async () => {
+      await selectReportType(page, 'fbf-distribution');
+      await setDateRange(page, REPORT_START_DATE, reportLimitDate);
+
+      const fbfDistribution = await readFBFDistributionTable(page);
+
+      const fbfChildAchiRow = findSimpleRow(fbfDistribution, 'FBF Child (ACHI)');
+      const fbfChildRow = findSimpleRow(fbfDistribution, 'FBF Child');
+      const fbfMotherRow = findSimpleRow(fbfDistribution, 'FBF Mother');
+      const ahezaChildRow = findSimpleRow(fbfDistribution, 'Aheza Child');
+      const ahezaMotherRow = findSimpleRow(fbfDistribution, 'Aheza Mother');
+
+      const fbfChild = fbfChildRow?.total ?? 0;
+      const fbfMother = fbfMotherRow?.total ?? 0;
+      const fbfChildAchi = fbfChildAchiRow?.total ?? 0;
+      const ahezaChild = ahezaChildRow?.total ?? 0;
+      const ahezaMother = ahezaMotherRow?.total ?? 0;
+      const fbfChildOccurrences = fbfChildRow?.occurrences ?? 0;
+      const fbfMotherOccurrences = fbfMotherRow?.occurrences ?? 0;
+      const fbfChildAchiOccurrences = fbfChildAchiRow?.occurrences ?? 0;
+      const ahezaChildOccurrences = ahezaChildRow?.occurrences ?? 0;
+      const ahezaMotherOccurrences = ahezaMotherRow?.occurrences ?? 0;
+
+      console.log('\n=== FBF DISTRIBUTION ===');
+      console.log(`FBF Child:        total ${baselineFBFDistChild} → ${fbfChild} (Δ ${fbfChild - baselineFBFDistChild}); occ ${baselineFBFDistChildOccurrences} → ${fbfChildOccurrences} (Δ ${fbfChildOccurrences - baselineFBFDistChildOccurrences})`);
+      console.log(`FBF Mother:       total ${baselineFBFDistMother} → ${fbfMother} (Δ ${fbfMother - baselineFBFDistMother}); occ ${baselineFBFDistMotherOccurrences} → ${fbfMotherOccurrences} (Δ ${fbfMotherOccurrences - baselineFBFDistMotherOccurrences})`);
+      console.log(`FBF Child (ACHI): total ${baselineFBFDistChildAchi} → ${fbfChildAchi} (Δ ${fbfChildAchi - baselineFBFDistChildAchi}); occ ${baselineFBFDistChildAchiOccurrences} → ${fbfChildAchiOccurrences} (Δ ${fbfChildAchiOccurrences - baselineFBFDistChildAchiOccurrences})`);
+      console.log(`Aheza Child:      total ${baselineAhezaDistChild} → ${ahezaChild} (Δ ${ahezaChild - baselineAhezaDistChild}); occ ${baselineAhezaDistChildOccurrences} → ${ahezaChildOccurrences} (Δ ${ahezaChildOccurrences - baselineAhezaDistChildOccurrences})`);
+      console.log(`Aheza Mother:     total ${baselineAhezaDistMother} → ${ahezaMother} (Δ ${ahezaMother - baselineAhezaDistMother}); occ ${baselineAhezaDistMotherOccurrences} → ${ahezaMotherOccurrences} (Δ ${ahezaMotherOccurrences - baselineAhezaDistMotherOccurrences})`);
+
+      // Each complete*Fbf / complete*Aheza helper creates exactly one
+      // distribution measurement record, so every row's Occurrences
+      // delta is +1 regardless of the amount entered.
+      // completeChildFbf (amount '1') -> FBF Child total +1, occurrences +1
+      expect(fbfChild - baselineFBFDistChild, 'FBF Child total delta should be +1').toBe(1);
+      expect(fbfChildOccurrences - baselineFBFDistChildOccurrences, 'FBF Child occurrences delta should be +1').toBe(1);
+      // completeMotherFbf (amount '1') -> FBF Mother total +1, occurrences +1
+      expect(fbfMother - baselineFBFDistMother, 'FBF Mother total delta should be +1').toBe(1);
+      expect(fbfMotherOccurrences - baselineFBFDistMotherOccurrences, 'FBF Mother occurrences delta should be +1').toBe(1);
+      // completeAhezaChild (amount '2') -> Aheza Child total +2, occurrences +1
+      expect(ahezaChild - baselineAhezaDistChild, 'Aheza Child total delta should be +2').toBe(2);
+      expect(ahezaChildOccurrences - baselineAhezaDistChildOccurrences, 'Aheza Child occurrences delta should be +1').toBe(1);
+      // completeAhezaMother (amount '3') -> Aheza Mother total +3, occurrences +1
+      expect(ahezaMother - baselineAhezaDistMother, 'Aheza Mother total delta should be +3').toBe(3);
+      expect(ahezaMotherOccurrences - baselineAhezaDistMotherOccurrences, 'Aheza Mother occurrences delta should be +1').toBe(1);
+      // The test does not create an ACHI clinic session, so the FBF
+      // Child (ACHI) row's totals should not move from baseline.
+      expect(fbfChildAchi - baselineFBFDistChildAchi, 'FBF Child (ACHI) total delta should be 0').toBe(0);
+      expect(fbfChildAchiOccurrences - baselineFBFDistChildAchiOccurrences, 'FBF Child (ACHI) occurrences delta should be 0').toBe(0);
+
+      // Unit column: FBF clinic distributions are in packages (pkg);
+      // ACHI and CHW family-nutrition (Aheza) distributions are in kg.
+      expect(fbfChildRow?.unit, 'FBF Child unit should be "pkg"').toBe('pkg');
+      expect(fbfMotherRow?.unit, 'FBF Mother unit should be "pkg"').toBe('pkg');
+      expect(fbfChildAchiRow?.unit, 'FBF Child (ACHI) unit should be "kg"').toBe('kg');
+      expect(ahezaChildRow?.unit, 'Aheza Child unit should be "kg"').toBe('kg');
+      expect(ahezaMotherRow?.unit, 'Aheza Mother unit should be "kg"').toBe('kg');
+
+      // CSV download button.
+      await expect(
+        page.locator('button.download-csv'),
+        'FBF Distribution CSV download button should be visible',
+      ).toBeVisible();
     });
 
     // ── Phase 4: Demographics scope (Province) ──
@@ -2407,7 +2532,7 @@ test.describe('Admin Reports', () => {
 
     // ── Phase 12: Completion Report — Well Child (SPV) ──
     //
-    // NutrChild (10mo male, Nurse) completed SPV encounter:
+    // NutrChild (11mo male, Nurse) completed SPV encounter:
     // DangerSigns, NutritionAssessment, ECD, Medication, Immunisation, NCDA, NextSteps.
     // Supports Taken By filter (Nurse + CHW).
 

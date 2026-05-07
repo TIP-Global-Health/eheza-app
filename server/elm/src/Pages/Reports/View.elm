@@ -1,6 +1,6 @@
 module Pages.Reports.View exposing (view)
 
-import App.Types exposing (Language, Site)
+import App.Types exposing (Language, Site, SiteFeature(..))
 import AssocList as Dict exposing (Dict)
 import Backend.Model exposing (ModelBackend)
 import Backend.Reports.Model
@@ -23,7 +23,7 @@ import Backend.Reports.Utils exposing (allAcuteIllnessDiagnoses, allPrenatalDiag
 import Backend.Scoreboard.Utils exposing (generateVaccinationProgressForVaccine)
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
-import EverySet
+import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate
     exposing
@@ -42,7 +42,7 @@ import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Components.View exposing (viewMetricsResultsTable, viewStandardCells, viewStandardRow)
 import Pages.Model exposing (MetricsResultsTableData)
-import Pages.Reports.Model exposing (Model, Msg(..), NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), emptyNutritionMetrics)
+import Pages.Reports.Model exposing (FbfDistributionCategory(..), Model, Msg(..), NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), allFbfDistributionCategories, emptyNutritionMetrics)
 import Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, eddToLmpDate, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, prenatalContactTypeToEncountersAtWeek, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth)
 import Pages.Scoreboard.Utils exposing (generateFutureVaccinationsData)
 import Pages.Utils
@@ -289,6 +289,9 @@ viewReportsData language currentDate themePath data model =
                                                         , groupNutritionSorwatheData = filterGroupBy .startDate record.groupNutritionSorwatheData
                                                         , groupNutritionChwData = filterGroupBy .startDate record.groupNutritionChwData
                                                         , groupNutritionAchiData = filterGroupBy .startDate record.groupNutritionAchiData
+                                                        , groupNutritionFbfMotherData = filterGroupBy .startDate record.groupNutritionFbfMotherData
+                                                        , familyNutritionData = filterIndividualBy .startDate record.familyNutritionData
+                                                        , familyNutritionMuacData = filterIndividualBy .startDate record.familyNutritionMuacData
                                                     }
 
                                             else
@@ -301,7 +304,10 @@ viewReportsData language currentDate themePath data model =
                                 viewAcuteIllnessReport language limitDate startDate scopeLabel recordsTillLimitDate
 
                             ReportDemographics ->
-                                viewDemographicsReport language startDate limitDate scopeLabel recordsTillLimitDate
+                                viewDemographicsReport language data.features startDate limitDate scopeLabel recordsTillLimitDate
+
+                            ReportFBFDistribution ->
+                                viewFBFDistributionReport language data.features limitDate scopeLabel recordsTillLimitDate
 
                             ReportNutrition ->
                                 viewNutritionReport language limitDate scopeLabel data.nutritionReportData model.nutritionReportData
@@ -338,15 +344,18 @@ viewReportsData language currentDate themePath data model =
         , div [ class "inputs" ] <|
             (viewSelectListInput language
                 model.reportType
-                [ ReportAcuteIllness
-                , ReportPrenatal
-                , ReportPrenatalContacts
-                , ReportPrenatalDiagnoses
-                , ReportDemographics
-                , ReportNutrition
-                , ReportPeripartum
-                , ReportPostnatalCare
-                ]
+                ([ ReportAcuteIllness
+                 , ReportDemographics
+                 , ReportFBFDistribution
+                 , ReportNutrition
+                 , ReportPeripartum
+                 , ReportPostnatalCare
+                 , ReportPrenatal
+                 , ReportPrenatalContacts
+                 , ReportPrenatalDiagnoses
+                 ]
+                    |> List.sortBy (\rt -> String.toLower (translate language (Translate.ReportType rt)))
+                )
                 reportTypeToString
                 SetReportType
                 Translate.ReportType
@@ -360,8 +369,8 @@ viewReportsData language currentDate themePath data model =
         ]
 
 
-viewDemographicsReport : Language -> NominalDate -> NominalDate -> String -> List PatientData -> Html Msg
-viewDemographicsReport language startDate limitDate scopeLabel records =
+viewDemographicsReport : Language -> EverySet SiteFeature -> NominalDate -> NominalDate -> String -> List PatientData -> Html Msg
+viewDemographicsReport language features startDate limitDate scopeLabel records =
     let
         demographicsReportPatientsData =
             -- We get recoderds for all patients that were created not before
@@ -377,7 +386,7 @@ viewDemographicsReport language startDate limitDate scopeLabel records =
                 |> generateDemographicsReportPatientsData language limitDate
 
         demographicsReportEncountersData =
-            generateDemographicsReportEncountersData language records
+            generateDemographicsReportEncountersData language features records
 
         csvFileName =
             "demographics-report-"
@@ -679,6 +688,7 @@ demographicsReportPatientsDataToCSV data =
 
 generateDemographicsReportEncountersData :
     Language
+    -> EverySet SiteFeature
     -> List PatientData
     ->
         { heading : String
@@ -686,7 +696,7 @@ generateDemographicsReportEncountersData :
         , rows : List ( List String, Bool )
         , totals : { label : String, total : String, unique : String }
         }
-generateDemographicsReportEncountersData language records =
+generateDemographicsReportEncountersData language features records =
     let
         prenatalDataNurseEncounters =
             List.filterMap
@@ -896,10 +906,17 @@ generateDemographicsReportEncountersData language records =
         nutritionGroupAchiEncountersUnique =
             countUnique nutritionGroupAchiEncountersData
 
+        familyNutritionEnabled =
+            EverySet.member FeatureFamilyNutrition features
+
         familyNutritionEncountersData =
-            List.filterMap
-                (.familyNutritionData >> Maybe.map List.concat)
-                records
+            if familyNutritionEnabled then
+                List.filterMap
+                    (.familyNutritionData >> Maybe.map List.concat)
+                    records
+
+            else
+                []
 
         familyNutritionEncountersTotal =
             countTotal familyNutritionEncountersData
@@ -988,8 +1005,13 @@ generateDemographicsReportEncountersData language records =
         , generateRow Translate.CBNP nutritionGroupChwEncountersTotal nutritionGroupChwEncountersUnique True
         , generateRow Translate.ACHI nutritionGroupAchiEncountersTotal nutritionGroupAchiEncountersUnique True
         , generateRow Translate.Individual nutritionIndividualEncountersTotal nutritionIndividualEncountersUnique True
-        , generateRow Translate.FamilyNutrition familyNutritionEncountersTotal familyNutritionEncountersUnique False
         ]
+            ++ (if familyNutritionEnabled then
+                    [ generateRow Translate.FamilyNutrition familyNutritionEncountersTotal familyNutritionEncountersUnique False ]
+
+                else
+                    []
+               )
     , totals =
         { label = translate language Translate.Total
         , total = String.fromInt overallTotal
@@ -2787,6 +2809,221 @@ generatePeripartumReportData language records =
             (List.length <| pregnanciesWithIndicator IndicatorBreastfedFirstHour pregnancies)
         ]
     }
+
+
+viewFBFDistributionReport : Language -> EverySet SiteFeature -> NominalDate -> String -> List PatientData -> Html Msg
+viewFBFDistributionReport language features limitDate scopeLabel records =
+    let
+        categories =
+            visibleFbfDistributionCategories features
+
+        data =
+            generateFBFDistributionReportData language categories records
+
+        captionsRow =
+            viewStandardCells data.captions
+                |> div [ class "row captions" ]
+
+        csvFileName =
+            "fbf-distribution-report-"
+                ++ (String.toLower <| String.replace " " "-" scopeLabel)
+                ++ "-"
+                ++ customFormatDDMMYYYY "-" limitDate
+                ++ ".csv"
+
+        csvContent =
+            reportTableDataToCSV data
+
+        dataRows =
+            List.map2
+                (\category row ->
+                    viewStandardCells row
+                        |> div [ class <| "row " ++ fbfDistributionCategoryCssClass category ]
+                )
+                categories
+                data.rows
+    in
+    div [ class "report fbf-distribution" ]
+        [ div [ class "table" ] <|
+            captionsRow
+                :: dataRows
+        , viewDownloadCSVButton language csvFileName csvContent
+        ]
+
+
+{-| Aheza categories are family-nutrition-only, so they are dropped when the
+feature is disabled. FBF categories always show.
+-}
+visibleFbfDistributionCategories : EverySet SiteFeature -> List FbfDistributionCategory
+visibleFbfDistributionCategories features =
+    let
+        familyNutritionEnabled =
+            EverySet.member FeatureFamilyNutrition features
+    in
+    List.filter
+        (\category ->
+            case category of
+                FbfDistributionAhezaChild ->
+                    familyNutritionEnabled
+
+                FbfDistributionAhezaMother ->
+                    familyNutritionEnabled
+
+                FbfDistributionFbfChild ->
+                    True
+
+                FbfDistributionFbfChildAchi ->
+                    True
+
+                FbfDistributionFbfMother ->
+                    True
+        )
+        allFbfDistributionCategories
+
+
+generateFBFDistributionReportData :
+    Language
+    -> List FbfDistributionCategory
+    -> List PatientData
+    -> MetricsResultsTableData
+generateFBFDistributionReportData language categories records =
+    let
+        -- FBF child amounts come from groupNutritionFbfData (clinic
+        -- group_type = 'fbf'). The same child_fbf measurement type is
+        -- also used at Achi clinics, where it represents Aheza in kg
+        -- rather than FBF packages; those records live under
+        -- groupNutritionAchiData and are surfaced as a separate row.
+        -- Each entry with a Just fbfAmount is one distribution event,
+        -- so the occurrence count is just the length of the filtered
+        -- list.
+        fbfChildAmounts =
+            records
+                |> List.filterMap .groupNutritionFbfData
+                |> List.concat
+                |> List.filterMap .fbfAmount
+
+        fbfChildAchiAmounts =
+            records
+                |> List.filterMap .groupNutritionAchiData
+                |> List.concat
+                |> List.filterMap .fbfAmount
+
+        fbfMotherAmounts =
+            records
+                |> List.filterMap .groupNutritionFbfMotherData
+                |> List.concat
+                |> List.map .fbfAmount
+
+        ahezaChildAmounts =
+            records
+                |> List.filterMap .familyNutritionMuacData
+                |> List.concat
+                |> List.concat
+                |> List.filterMap .ahezaAmount
+
+        ahezaMotherAmounts =
+            records
+                |> List.filterMap .familyNutritionData
+                |> List.concat
+                |> List.concat
+                |> List.filterMap .ahezaAmount
+
+        amountsFor category =
+            case category of
+                FbfDistributionAhezaChild ->
+                    ahezaChildAmounts
+
+                FbfDistributionAhezaMother ->
+                    ahezaMotherAmounts
+
+                FbfDistributionFbfChild ->
+                    fbfChildAmounts
+
+                FbfDistributionFbfChildAchi ->
+                    fbfChildAchiAmounts
+
+                FbfDistributionFbfMother ->
+                    fbfMotherAmounts
+
+        rows =
+            List.map
+                (\category ->
+                    let
+                        amounts =
+                            amountsFor category
+                    in
+                    [ translate language (Translate.FbfDistributionCategory category)
+                    , formatDistributionTotal (List.sum amounts)
+                    , translate language (fbfDistributionCategoryUnit category)
+                    , String.fromInt (List.length amounts)
+                    ]
+                )
+                categories
+    in
+    { heading = ""
+    , captions =
+        [ translate language Translate.FbfDistributionType
+        , translate language Translate.FbfDistributionTotalAmount
+        , translate language Translate.FbfDistributionUnit
+        , translate language Translate.FbfDistributionOccurrences
+        ]
+    , rows = rows
+    }
+
+
+{-| FBF clinic distributions are reported in packages; AHEZA (CHW family
+nutrition) and ACHI clinic distributions are reported in kg.
+-}
+fbfDistributionCategoryUnit : FbfDistributionCategory -> TranslationId
+fbfDistributionCategoryUnit category =
+    case category of
+        FbfDistributionAhezaChild ->
+            Translate.FbfDistributionUnitKg
+
+        FbfDistributionAhezaMother ->
+            Translate.FbfDistributionUnitKg
+
+        FbfDistributionFbfChild ->
+            Translate.FbfDistributionUnitPackage
+
+        FbfDistributionFbfChildAchi ->
+            Translate.FbfDistributionUnitKg
+
+        FbfDistributionFbfMother ->
+            Translate.FbfDistributionUnitPackage
+
+
+{-| Show whole-number totals as integers (e.g. "5") and fractional totals
+with up to two decimal places (e.g. "5.25"). Distribution amounts can be
+integers (AHEZA, FBF packages) or decimals (FBF kg from legacy Achi data,
+out of scope here).
+-}
+formatDistributionTotal : Float -> String
+formatDistributionTotal value =
+    if value == toFloat (round value) then
+        String.fromInt (round value)
+
+    else
+        Round.round 2 value
+
+
+fbfDistributionCategoryCssClass : FbfDistributionCategory -> String
+fbfDistributionCategoryCssClass category =
+    case category of
+        FbfDistributionAhezaChild ->
+            "aheza-child"
+
+        FbfDistributionAhezaMother ->
+            "aheza-mother"
+
+        FbfDistributionFbfChild ->
+            "fbf-child"
+
+        FbfDistributionFbfChildAchi ->
+            "fbf-child-achi"
+
+        FbfDistributionFbfMother ->
+            "fbf-mother"
 
 
 viewPostnatalCareReport : Language -> Site -> NominalDate -> String -> List PatientData -> Html Msg

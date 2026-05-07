@@ -70,6 +70,9 @@ reportTypeToString reportType =
         ReportDemographics ->
             "demographics"
 
+        ReportFBFDistribution ->
+            "fbf-distribution"
+
         ReportNutrition ->
             "nutrition"
 
@@ -97,6 +100,9 @@ reportTypeFromString reportType =
 
         "demographics" ->
             Just ReportDemographics
+
+        "fbf-distribution" ->
+            Just ReportFBFDistribution
 
         "nutrition" ->
             Just ReportNutrition

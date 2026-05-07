@@ -1,8 +1,8 @@
 module Backend.Reports.Decoder exposing (decodeReportsData)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Decoder exposing (decodeSite, decodeWithFallback)
-import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, DeliveryLocation(..), FamilyNutritionEncounterData, Gender(..), NutritionData, NutritionEncounterData, NutritionReportTableType(..), PatientData, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalIndicator(..), PrenatalParticipantData, ReportsData, SelectedEntity(..), WellChildEncounterData)
+import Backend.Decoder exposing (decodeSite, decodeSiteFeatures, decodeWithFallback)
+import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, DeliveryLocation(..), FamilyNutritionEncounterData, FamilyNutritionMotherEncounterData, Gender(..), MotherFbfEncounterData, NutritionData, NutritionEncounterData, NutritionReportTableType(..), PatientData, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalIndicator(..), PrenatalParticipantData, ReportsData, SelectedEntity(..), WellChildEncounterData)
 import Backend.Reports.Utils exposing (genderFromString)
 import Backend.Scoreboard.Model exposing (VaccineType(..))
 import Date
@@ -18,6 +18,7 @@ decodeReportsData : Decoder ReportsData
 decodeReportsData =
     succeed ReportsData
         |> required "site" decodeSite
+        |> required "features" decodeSiteFeatures
         |> required "entity_name" string
         |> required "entity_type" decodeSelectedEntity
         |> required "results" (list decodePatientData)
@@ -65,7 +66,7 @@ decodePatientData =
         |> required "gender" (decodeWithFallback Female decodeGender)
         |> optionalAt [ "individual", "acute-illness" ] (nullable (list (list decodeAcuteIllnessEncounterData))) Nothing
         |> optionalAt [ "individual", "antenatal" ] (nullable (list decodePrenatalParticipantData)) Nothing
-        |> optionalAt [ "individual", "family-nutrition" ] (nullable (list (list decodeFamilyNutritionEncounterData))) Nothing
+        |> optionalAt [ "individual", "family-nutrition" ] (nullable (list (list decodeFamilyNutritionMotherEncounterData))) Nothing
         |> optionalAt [ "individual", "family-nutrition-muac" ] (nullable (list (list decodeFamilyNutritionEncounterData))) Nothing
         |> optionalAt [ "individual", "home-visit" ] (nullable (list (list decodeYYYYMMDD))) Nothing
         |> optionalAt [ "individual", "well-child" ] (nullable (list (list decodeWellChildEncounterData))) Nothing
@@ -79,6 +80,7 @@ decodePatientData =
         |> optionalAt [ "group_nutrition", "sorwathe" ] (nullable (list decodeNutritionEncounterData)) Nothing
         |> optionalAt [ "group_nutrition", "chw" ] (nullable (list decodeNutritionEncounterData)) Nothing
         |> optionalAt [ "group_nutrition", "achi" ] (nullable (list decodeNutritionEncounterData)) Nothing
+        |> optionalAt [ "group_nutrition_mother", "fbf" ] (nullable (list decodeMotherFbfEncounterData)) Nothing
 
 
 decodeGender : Decoder Gender
@@ -563,6 +565,22 @@ prenatalIndicatorFromMapping s =
             Nothing
 
 
+{-| Decoder for child entries on `individual.family-nutrition-muac`.
+
+Wire shapes emitted by hedley\_reports\_calculate\_aggregated\_data\_for\_person:
+
+  - "YYYY-MM-DD" (legacy date-only, kept for backward compatibility)
+  - "YYYY-MM-DD <muac>" (legacy MUAC-only, kept for backward compatibility)
+  - "YYYY-MM-DD <muac>|<aheza\_amount>" (MUAC + AHEZA recorded together)
+  - "YYYY-MM-DD |<aheza\_amount>" (AHEZA only -- empty MUAC chunk)
+
+The optional "|<amount>" tail chunk inside the second space-segment is the
+same convention used by decodeNutritionEncounterData below for FBF amounts.
+Stays in sync with the family-nutrition-muac emission in
+server/hedley/modules/custom/hedley\_reports/hedley\_reports.module; update
+both together.
+
+-}
 decodeFamilyNutritionEncounterData : Decoder FamilyNutritionEncounterData
 decodeFamilyNutritionEncounterData =
     string
@@ -574,7 +592,7 @@ decodeFamilyNutritionEncounterData =
                             |> Result.toMaybe
                             |> Maybe.map
                                 (\startDate ->
-                                    succeed { startDate = startDate, muacCm = Nothing }
+                                    succeed { startDate = startDate, muacCm = Nothing, ahezaAmount = Nothing }
                                 )
                             |> Maybe.withDefault (fail "Failed to decode FamilyNutritionEncounterData")
 
@@ -583,7 +601,11 @@ decodeFamilyNutritionEncounterData =
                             |> Result.toMaybe
                             |> Maybe.map
                                 (\startDate ->
-                                    succeed { startDate = startDate, muacCm = String.toFloat second }
+                                    let
+                                        ( muacCm, ahezaAmount ) =
+                                            parseFamilyNutritionPayload second
+                                    in
+                                    succeed { startDate = startDate, muacCm = muacCm, ahezaAmount = ahezaAmount }
                                 )
                             |> Maybe.withDefault (fail "Failed to decode FamilyNutritionEncounterData")
 
@@ -592,6 +614,107 @@ decodeFamilyNutritionEncounterData =
             )
 
 
+parseFamilyNutritionPayload : String -> ( Maybe Float, Maybe Float )
+parseFamilyNutritionPayload s =
+    case String.split "|" s of
+        [ muacPart ] ->
+            ( String.toFloat muacPart, Nothing )
+
+        [ muacPart, ahezaPart ] ->
+            ( String.toFloat muacPart, String.toFloat ahezaPart )
+
+        _ ->
+            ( Nothing, Nothing )
+
+
+{-| Decoder for mother entries on `individual.family-nutrition`.
+
+Wire shapes:
+
+  - "YYYY-MM-DD" (legacy date-only entry, kept for backward compatibility)
+  - "YYYY-MM-DD <aheza\_amount>" (AHEZA mother distribution recorded)
+
+Stays in sync with the family-nutrition mother emission in
+server/hedley/modules/custom/hedley\_reports/hedley\_reports.module; update
+both together.
+
+-}
+decodeFamilyNutritionMotherEncounterData : Decoder FamilyNutritionMotherEncounterData
+decodeFamilyNutritionMotherEncounterData =
+    string
+        |> andThen
+            (\s ->
+                case String.split " " (String.trim s) of
+                    [ first ] ->
+                        Date.fromIsoString first
+                            |> Result.toMaybe
+                            |> Maybe.map
+                                (\startDate ->
+                                    succeed { startDate = startDate, ahezaAmount = Nothing }
+                                )
+                            |> Maybe.withDefault (fail "Failed to decode FamilyNutritionMotherEncounterData")
+
+                    [ first, second ] ->
+                        Date.fromIsoString first
+                            |> Result.toMaybe
+                            |> Maybe.map
+                                (\startDate ->
+                                    succeed { startDate = startDate, ahezaAmount = String.toFloat second }
+                                )
+                            |> Maybe.withDefault (fail "Failed to decode FamilyNutritionMotherEncounterData")
+
+                    _ ->
+                        fail "Failed to decode FamilyNutritionMotherEncounterData"
+            )
+
+
+{-| Decoder for `group_nutrition_mother.fbf`.
+
+Wire shape: "YYYY-MM-DD <amount>". Mother FBF distribution records have no
+anthropometry to embed alongside, so the wire is always exactly two
+space-separated segments. Stays in sync with the mother FBF emission in
+server/hedley/modules/custom/hedley\_reports/hedley\_reports.module.
+
+-}
+decodeMotherFbfEncounterData : Decoder MotherFbfEncounterData
+decodeMotherFbfEncounterData =
+    string
+        |> andThen
+            (\s ->
+                case String.split " " (String.trim s) of
+                    [ first, second ] ->
+                        case ( Date.fromIsoString first |> Result.toMaybe, String.toFloat second ) of
+                            ( Just startDate, Just fbfAmount ) ->
+                                succeed { startDate = startDate, fbfAmount = fbfAmount }
+
+                            _ ->
+                                fail "Failed to decode MotherFbfEncounterData"
+
+                    _ ->
+                        fail "Failed to decode MotherFbfEncounterData"
+            )
+
+
+{-| Decoder for child entries on `individual.nutrition` and on
+`group_nutrition.{pmtct,fbf,sorwathe,chw,achi}`.
+
+Wire shapes emitted by hedley\_reports\_calculate\_aggregated\_data\_for\_person:
+
+  - "YYYY-MM-DD" (legacy date-only)
+  - "YYYY-MM-DD <anth>" (anthropometry, where <anth> is the comma-separated
+    payload from hedley\_reports\_nutrition\_metrics\_to\_string)
+  - "YYYY-MM-DD <anth>|<fbf\_amount>" (anthropometry + FBF distribution)
+  - "YYYY-MM-DD ,,,,|<fbf\_amount>" (FBF only -- empty anthropometry chunk;
+    the PHP emitter always produces ",,,," for empty anthropometry, never
+    an empty string)
+
+The optional "|<amount>" tail chunk is appended to the existing
+space-delimited second segment. Stays in sync with the group\_nutrition
+emission in
+server/hedley/modules/custom/hedley\_reports/hedley\_reports.module; update
+both together.
+
+-}
 decodeNutritionEncounterData : Decoder NutritionEncounterData
 decodeNutritionEncounterData =
     string
@@ -608,6 +731,7 @@ decodeNutritionEncounterData =
                                         , nutritionData = Nothing
                                         , muacCm = Nothing
                                         , hasEdema = False
+                                        , fbfAmount = Nothing
                                         }
                                 )
                             |> Maybe.withDefault (fail "Failed to decode NutritionEncounterData")
@@ -618,14 +742,23 @@ decodeNutritionEncounterData =
                             |> Maybe.map
                                 (\startDate ->
                                     let
+                                        ( anthropometryPart, fbfAmount ) =
+                                            case String.split "|" second of
+                                                [ anth, fbf ] ->
+                                                    ( anth, String.toFloat fbf )
+
+                                                _ ->
+                                                    ( second, Nothing )
+
                                         ( nutritionData, muacCm, hasEdema ) =
-                                            parseNutritionEncounterPayload second
+                                            parseAnthropometryPayload anthropometryPart
                                     in
                                     succeed
                                         { startDate = startDate
                                         , nutritionData = nutritionData
                                         , muacCm = muacCm
                                         , hasEdema = hasEdema
+                                        , fbfAmount = fbfAmount
                                         }
                                 )
                             |> Maybe.withDefault (fail "Failed to decode NutritionEncounterData")
@@ -766,8 +899,8 @@ vaccineTypeFromMapping s =
 -- fields without duplicating data inside the nested NutritionData.
 
 
-parseNutritionEncounterPayload : String -> ( Maybe NutritionData, Maybe Float, Bool )
-parseNutritionEncounterPayload payload =
+parseAnthropometryPayload : String -> ( Maybe NutritionData, Maybe Float, Bool )
+parseAnthropometryPayload payload =
     case String.split "," payload of
         [ stunting, underweight, wasting ] ->
             ( Just (NutritionData (String.toFloat stunting) (String.toFloat underweight) (String.toFloat wasting))
