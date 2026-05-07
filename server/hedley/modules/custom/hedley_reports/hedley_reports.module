@@ -2054,55 +2054,6 @@ function hedley_reports_load_results_data_node($report_variant, $scope, $provinc
 }
 
 /**
- * Creates a file with provided data as a content.
- *
- * @param array $data
- *   Data to write into file.
- *
- * @return int
- *   Created file ID.
- */
-function hedley_reports_create_data_file(array $data) {
-  // Create a temporary file with the content.
-  $file_content = json_encode($data);
-  $file_path = 'private://report-data-' . time() . '.txt.gz';
-  $file_uri = file_unmanaged_save_data($file_content, $file_path, FILE_EXISTS_REPLACE);
-  // Compress the content and save it to a .gz file.
-  $gz_file_path = hedley_reports_gz_compress_file($file_content, $file_path);
-  // Create the file object and save it.
-  $file = (object) array(
-    'uid' => 1,
-    'filename' => drupal_basename($file_uri),
-    'uri' => $gz_file_path,
-    'filemime' => 'application/gzip',
-    'status' => NODE_PUBLISHED,
-    'display' => 1,
-    'timestamp' => REQUEST_TIME,
-  );
-  file_save($file);
-
-  return $file->fid;
-}
-
-/**
- * Helper function to compress file content using gzip.
- *
- * @param string $data
- *   The data to be compressed.
- * @param string $file_path
- *   The file path where the compressed data will be saved.
- *
- * @return string
- *   The path to the gzipped file.
- */
-function hedley_reports_gz_compress_file($data, $file_path) {
-  $gz_fp = gzopen($file_path, 'w9');
-  gzwrite($gz_fp, $data);
-  gzclose($gz_fp);
-  return $file_path;
-}
-
-/**
  * Provides a mapping for Acute Illness diagnosis codes.
  *
  * This function returns an associative array where the keys are diagnosis

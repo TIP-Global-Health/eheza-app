@@ -12,6 +12,9 @@ function hedley_reports_field_default_field_bases() {
   $field_bases = array();
 
   // Exported field_base: 'field_data_file'.
+  // DEPRECATED — no longer written or read. Issue #1574 replaced
+  // gzipped-file delivery with the paginated /api/reports-data Restful
+  // endpoint. Retained for historical/rollback purposes only.
   $field_bases['field_data_file'] = array(
     'active' => 1,
     'cardinality' => 1,
