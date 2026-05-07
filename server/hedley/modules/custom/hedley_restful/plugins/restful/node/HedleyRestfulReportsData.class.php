@@ -13,7 +13,7 @@ class HedleyRestfulReportsData extends \RestfulBase implements \RestfulDataProvi
   /**
    * Data batch limit.
    */
-  const HEDLEY_RESTFUL_QUERY_BATCH = 10000;
+  const HEDLEY_RESTFUL_QUERY_BATCH = 50000;
 
   /**
    * Overrides \RestfulBase::controllersInfo().
