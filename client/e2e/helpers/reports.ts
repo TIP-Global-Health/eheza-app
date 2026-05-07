@@ -1,4 +1,4 @@
-import { Page } from '@playwright/test';
+import { expect, Page } from '@playwright/test';
 import { execSync } from 'child_process';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
@@ -404,20 +404,23 @@ export function recalculateLargeDatasets() {
 
 /**
  * Wait for the Reports/Scoreboard/Completion Elm app to finish syncing
- * its `records` data via /api/reports-data. The view renders a
- * div.download-status containing "Download status: COMPLETED" once
- * `remainingForDownload` reaches 0 (see syncStatusAndProgress in
- * server/elm/src/Pages/Components/Utils.elm).
+ * its `records` data via /api/reports-data.
  *
- * Reports/Completion split the status and progress into two child divs;
- * Scoreboard concatenates them into a single text node. Filtering on
- * the parent `div.download-status` works for all three.
+ * While sync is in progress, the page renders `div.sync-placeholder` in
+ * place of the inputs/content (PENDING or IN PROCESS); when
+ * `remainingForDownload` reaches 0 (COMPLETED) the placeholder is
+ * removed from the DOM and the inputs (or scoreboard panes) take its
+ * place. We poll for the placeholder to be absent so the helper works
+ * uniformly across all three pages and the case where sync had already
+ * finished before the helper was called.
+ *
+ * See `viewSyncingPlaceholder` / `isSyncComplete` in
+ * server/elm/src/Pages/Components/Utils.elm.
  */
 export async function waitForReportSync(page: Page, timeoutMs = 60000) {
-  await page
-    .locator('div.download-status')
-    .filter({ hasText: 'Download status: COMPLETED' })
-    .waitFor({ timeout: timeoutMs });
+  await expect(page.locator('.sync-placeholder')).toHaveCount(0, {
+    timeout: timeoutMs,
+  });
 }
 
 /**
