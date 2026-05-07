@@ -340,7 +340,8 @@ function hedley_ncda_generate_results_data_for_restful($from_nid, $batch, $provi
   $build = function () use ($from_nid, $three_years_ago, $province, $district, $sector, $cell, $village) {
     $q = db_select('field_data_field_ncda_data', 'fr');
     $q->innerJoin('node', 'n', 'n.nid = fr.entity_id');
-    // Replicates exclude_deleted tag (see hedley_general_query_exclude_deleted_alter()).
+    // Replicates the exclude_deleted query tag; see
+    // hedley_general_query_exclude_deleted_alter().
     $q->leftJoin('field_data_field_deleted', 'fd', 'fd.entity_id = n.nid');
     $q->condition('fr.entity_type', 'node')
       ->condition('fr.bundle', 'person')
@@ -363,7 +364,12 @@ function hedley_ncda_generate_results_data_for_restful($from_nid, $batch, $provi
       $q->condition("$alias.{$field}_value", $value);
     }
     // Optional sector/cell/village filters.
-    foreach (['field_sector' => $sector, 'field_cell' => $cell, 'field_village' => $village] as $field => $value) {
+    $optional = [
+      'field_sector'  => $sector,
+      'field_cell'    => $cell,
+      'field_village' => $village,
+    ];
+    foreach ($optional as $field => $value) {
       if (!empty($value)) {
         $alias = $q->innerJoin("field_data_$field", $field,
           "%alias.entity_id = n.nid AND %alias.entity_type = 'node' AND %alias.deleted = 0");

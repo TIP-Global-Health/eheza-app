@@ -1858,7 +1858,8 @@ function hedley_reports_generate_results_data_for_restful($from_nid, $batch, $pr
   $build = function () use ($from_nid, $province, $district, $sector, $cell, $village, $health_center) {
     $q = db_select('field_data_field_reports_data', 'fr');
     $q->innerJoin('node', 'n', 'n.nid = fr.entity_id');
-    // Replicates exclude_deleted tag (see hedley_general_query_exclude_deleted_alter()).
+    // Replicates the exclude_deleted query tag; see
+    // hedley_general_query_exclude_deleted_alter().
     $q->leftJoin('field_data_field_deleted', 'fd', 'fd.entity_id = n.nid');
     $q->condition('fr.entity_type', 'node')
       ->condition('fr.bundle', 'person')
