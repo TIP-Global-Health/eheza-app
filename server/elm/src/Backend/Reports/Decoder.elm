@@ -1,7 +1,7 @@
 module Backend.Reports.Decoder exposing (decodeReportsData)
 
 import Backend.Decoder exposing (decodeSite, decodeWithFallback)
-import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, DeliveryLocation(..), FamilyNutritionEncounterData, Gender(..), NutritionData, NutritionEncounterData, NutritionReportTableType(..), PatientData, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalParticipantData, ReportsData, SelectedEntity(..))
+import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, DeliveryLocation(..), FamilyNutritionEncounterData, Gender(..), NutritionData, NutritionEncounterData, NutritionReportTableType(..), PatientData, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalIndicator(..), PrenatalParticipantData, ReportsData, SelectedEntity(..))
 import Backend.Reports.Utils exposing (genderFromString)
 import Date
 import Gizra.Json exposing (decodeInt)
@@ -259,7 +259,7 @@ decodePrenatalEncounterData =
         |> andThen
             (\s ->
                 case String.split "|" (String.trim s) of
-                    [ first, second, third ] ->
+                    [ first, second, third, fourth ] ->
                         Date.fromIsoString first
                             |> Result.toMaybe
                             |> Maybe.map
@@ -276,8 +276,17 @@ decodePrenatalEncounterData =
                                                 String.split "," third
                                                     |> List.map prenatalDiagnosisFromMapping
                                                     |> Maybe.Extra.values
+
+                                        indicators =
+                                            if String.isEmpty fourth then
+                                                []
+
+                                            else
+                                                String.split "," fourth
+                                                    |> List.map prenatalIndicatorFromMapping
+                                                    |> Maybe.Extra.values
                                     in
-                                    succeed (PrenatalEncounterData startDate encounterType diagnoses)
+                                    succeed (PrenatalEncounterData startDate encounterType diagnoses indicators)
                                 )
                             |> Maybe.withDefault (fail "Failed to decode PrenatalEncounterData")
 
@@ -500,6 +509,46 @@ prenatalDiagnosisFromMapping s =
 
         "l2" ->
             Just DiagnosisPostpartumMastitis
+
+        _ ->
+            Nothing
+
+
+prenatalIndicatorFromMapping : String -> Maybe PrenatalIndicator
+prenatalIndicatorFromMapping s =
+    case s of
+        "a" ->
+            Just IndicatorAdequateGWG
+
+        "b" ->
+            Just IndicatorReceivedMMS
+
+        "c" ->
+            Just IndicatorReferredToUltrasound
+
+        "d" ->
+            Just IndicatorReceivedAspirin
+
+        "e" ->
+            Just IndicatorReceivedCalcium
+
+        "f" ->
+            Just IndicatorPretermBirth
+
+        "g" ->
+            Just IndicatorAbortion
+
+        "h" ->
+            Just IndicatorIntrauterineDeath
+
+        "i" ->
+            Just IndicatorStillbirth
+
+        "j" ->
+            Just IndicatorReceivedAzithromycin
+
+        "k" ->
+            Just IndicatorAnemiaTest
 
         _ ->
             Nothing

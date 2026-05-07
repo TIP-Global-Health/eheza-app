@@ -26,12 +26,13 @@ import Backend.Reports.Model
         , NutritionReportTableType(..)
         , PregnancyOutcome(..)
         , PrenatalDiagnosis(..)
+        , PrenatalIndicator(..)
         )
 import Backend.Scoreboard.Model
 import Date
 import Pages.Completion.Model
 import Pages.Components.Types exposing (PopulationSelectionOption(..))
-import Pages.Reports.Model exposing (PregnancyTrimester(..), ReportType(..))
+import Pages.Reports.Model exposing (PregnancyTrimester(..), PrenatalContactType(..), ReportType(..))
 import Pages.Scoreboard.Model exposing (NCDAANCNewbornItem(..), NCDAAcuteMalnutritionItem(..), NCDADemographicsItem(..), NCDAInfrastructureEnvironmentWashItem(..), NCDANutritionBehaviorItem(..), NCDAStuntingItem(..), NCDATargetedInterventionsItem(..), NCDAUniversalInterventionItem(..))
 import Time exposing (Month(..))
 
@@ -104,6 +105,7 @@ type TranslationId
     | Commune
     | Completed
     | CompletionReportType Pages.Completion.Model.ReportType
+    | ContactType
     | CoreExam
     | DangerSigns
     | DeliveryLocation DeliveryLocation
@@ -201,12 +203,18 @@ type TranslationId
     | PregnanciesActive
     | PregnanciesAll
     | PregnanciesCompleted
+    | PregnanciesWithAtLeast4Encounters
+    | PregnanciesWithAtLeast6Encounters
+    | PregnanciesWithAtLeast8Encounters
+    | PregnanciesWithFirstContactAtFirstTrimester
     | PregnancyOutcome PregnancyOutcome
     | PregnancyOutcomeLabel
     | PregnancyTest
     | PregnancyTrimester PregnancyTrimester
     | PrenatalActivity PrenatalActivity
+    | PrenatalContactType PrenatalContactType
     | PrenatalDiagnosis PrenatalDiagnosis
+    | PrenatalIndicatorLabel PrenatalIndicator
     | PrevalenceByMonthOneVisitOrMore
     | PrevalenceByMonthTwoVisitsOrMore
     | Province
@@ -727,6 +735,13 @@ translationSet transId =
 
         CHW ->
             { english = "CHW"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        ContactType ->
+            { english = "Contact Type"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing
@@ -1828,6 +1843,34 @@ translationSet transId =
             , somali = Nothing
             }
 
+        PregnanciesWithAtLeast4Encounters ->
+            { english = "Pregnant women who attended at least 4 ANC contacts"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        PregnanciesWithAtLeast6Encounters ->
+            { english = "Pregnant women who attended at least 6 ANC contacts"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        PregnanciesWithAtLeast8Encounters ->
+            { english = "Pregnant women who attended at least 8 ANC contacts"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        PregnanciesWithFirstContactAtFirstTrimester ->
+            { english = "Pregnant women who attended ANC contact within 1st trimester"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
         PregnancyOutcome outcome ->
             case outcome of
                 OutcomeLiveAtTerm ->
@@ -2239,6 +2282,64 @@ translationSet transId =
 
                 PrenatalVitalsRecheck ->
                     { english = "Vitals Recheck"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+        PrenatalContactType prenatalContactType ->
+            case prenatalContactType of
+                PrenatalContact1 ->
+                    { english = "First ANC contact (≤12 weeks)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                PrenatalContact2 ->
+                    { english = "2nd ANC contact (20 weeks)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                PrenatalContact3 ->
+                    { english = "3rd ANC contact (26 weeks)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                PrenatalContact4 ->
+                    { english = "4th ANC contact (30 weeks)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                PrenatalContact5 ->
+                    { english = "5th ANC contact (34 weeks)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                PrenatalContact6 ->
+                    { english = "6th ANC contact (36 weeks)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                PrenatalContact7 ->
+                    { english = "7th ANC contact (38 weeks)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                PrenatalContact8 ->
+                    { english = "8th ANC contact (40 weeks)"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     , somali = Nothing
@@ -2687,6 +2788,118 @@ translationSet transId =
                     , somali = Just "Midna"
                     }
 
+        PrenatalIndicatorLabel indicator ->
+            case indicator of
+                IndicatorAbortion ->
+                    -- Not for display.
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                IndicatorAdequateGWG ->
+                    { english = "Number of encounters where adequate gestational weight gain was recorded"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                IndicatorAnemiaTest ->
+                    { english = "Pregnant women tested for anemia"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                IndicatorDiagnosedAnemia ->
+                    { english = "Pregnant women diagnosed with anemia"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                IndicatorHistoryOfAdversePregnancyOutcomes ->
+                    { english = "Pregnant women with a history of preterm births, spontaneous abortion, stillbirth, or intrauterine fetal deaths"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                IndicatorHistoryOfAdversePregnancyOutcomesReceivedAzithromycin ->
+                    { english = "Pregnant women with a history of adverse pregnancy outcomes, who received Azithromycin"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                IndicatorIntrauterineDeath ->
+                    -- Not for display.
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                IndicatorReceivedAspirin ->
+                    { english = "Pregnant women who received low-dose aspirin"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                IndicatorReceivedAzithromycin ->
+                    -- Not for display.
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                IndicatorReceivedCalcium ->
+                    { english = "Pregnant women who received low-dose antenatal calcium"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                IndicatorReceivedMMS ->
+                    { english = "Pregnant women who received MMS"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                IndicatorPretermBirth ->
+                    -- Not for display.
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                IndicatorReferredToUltrasound ->
+                    { english = "Pregnant women who received ultrasound exams"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                IndicatorReferredToUltrasoundBeforeEGA24 ->
+                    { english = "Pregnant women who received at least one ultrasound before 24 weeks’ gestation"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                IndicatorStillbirth ->
+                    -- Not for display.
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
         PrevalenceByMonthOneVisitOrMore ->
             { english = "Prevalence by month - one visit or more"
             , kinyarwanda = Nothing
@@ -2767,6 +2980,13 @@ translationSet transId =
 
                 ReportPrenatal ->
                     translationSet Antenatal
+
+                ReportPrenatalContacts ->
+                    { english = "ANC Contacts"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
 
                 ReportPrenatalDiagnoses ->
                     { english = "ANC Diagnoses"

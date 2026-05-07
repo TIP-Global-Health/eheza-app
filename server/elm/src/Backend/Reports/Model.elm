@@ -1,4 +1,4 @@
-module Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, ChildScorecardEncounterData, DeliveryLocation(..), FamilyNutritionEncounterData, Gender(..), HIVEncounterData, HomeVisitEncounterData, Msg(..), NCDEncounterData, NutritionData, NutritionEncounterData, NutritionReportTableType(..), PatientData, PersonId, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalParticipantData, ReportsData, SelectedEntity(..), TuberculosisEncounterData)
+module Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, ChildScorecardEncounterData, DeliveryLocation(..), FamilyNutritionEncounterData, Gender(..), HIVEncounterData, HomeVisitEncounterData, Msg(..), NCDEncounterData, NutritionData, NutritionEncounterData, NutritionReportTableType(..), PatientData, PersonId, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalIndicator(..), PrenatalParticipantData, ReportsData, SelectedEntity(..), TuberculosisEncounterData)
 
 import App.Types exposing (Site)
 import Gizra.NominalDate exposing (NominalDate)
@@ -115,6 +115,7 @@ type alias PrenatalEncounterData =
     { startDate : NominalDate
     , encounterType : PrenatalEncounterType
     , diagnoses : List PrenatalDiagnosis
+    , indicators : List PrenatalIndicator
     }
 
 
@@ -192,6 +193,25 @@ type PrenatalDiagnosis
     | DiagnosisPostpartumEarlyMastitisOrEngorgment
     | DiagnosisPostpartumMastitis
     | NoPrenatalDiagnosis
+
+
+type PrenatalIndicator
+    = IndicatorAbortion
+    | IndicatorAdequateGWG
+    | IndicatorAnemiaTest
+    | IndicatorIntrauterineDeath
+    | IndicatorReceivedAspirin
+    | IndicatorReceivedAzithromycin
+    | IndicatorReceivedCalcium
+    | IndicatorReceivedMMS
+    | IndicatorPretermBirth
+    | IndicatorReferredToUltrasound
+    | IndicatorStillbirth
+    | -- Indicators bellow are not passed from backend.
+      IndicatorDiagnosedAnemia
+    | IndicatorHistoryOfAdversePregnancyOutcomes
+    | IndicatorHistoryOfAdversePregnancyOutcomesReceivedAzithromycin
+    | IndicatorReferredToUltrasoundBeforeEGA24
 
 
 type alias NutritionEncounterData =

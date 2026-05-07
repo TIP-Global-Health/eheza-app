@@ -707,6 +707,18 @@ export async function readAcuteIllnessTable(
 }
 
 /**
+ * Read the ANC Contact (Prenatal Contacts) report table.
+ * Container: div.report.prenatal-contacts div.table
+ * Each row has 2 cells: [contact-type or indicator label, total count].
+ * Use findSimpleRow() to look up specific rows by label substring.
+ */
+export async function readPrenatalContactsTable(
+  page: Page,
+): Promise<SimpleTableData> {
+  return readSimpleTable(page, 'div.report.prenatal-contacts div.table');
+}
+
+/**
  * Read a specific AI diagnosis row by its CSS class.
  * Returns the total count, or 0 if the row is not found.
  */

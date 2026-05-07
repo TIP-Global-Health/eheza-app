@@ -1,4 +1,4 @@
-module Pages.Reports.Model exposing (Model, Msg(..), NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), ReportType(..), emptyModel, emptyNutritionMetrics)
+module Pages.Reports.Model exposing (Model, Msg(..), NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), emptyModel, emptyNutritionMetrics)
 
 import AssocList exposing (Dict)
 import Backend.Reports.Model exposing (PersonId)
@@ -33,6 +33,7 @@ type ReportType
     | ReportDemographics
     | ReportNutrition
     | ReportPrenatal
+    | ReportPrenatalContacts
     | ReportPrenatalDiagnoses
 
 
@@ -91,6 +92,17 @@ type PregnancyTrimester
     = FirstTrimester
     | SecondTrimester
     | ThirdTrimester
+
+
+type PrenatalContactType
+    = PrenatalContact1
+    | PrenatalContact2
+    | PrenatalContact3
+    | PrenatalContact4
+    | PrenatalContact5
+    | PrenatalContact6
+    | PrenatalContact7
+    | PrenatalContact8
 
 
 type Msg

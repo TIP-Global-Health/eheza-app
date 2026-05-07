@@ -1,4 +1,4 @@
-module Pages.Reports.Utils exposing (countTotalEncounters, countTotalNutritionEncounters, eddToLmpDate, familyNutritionEncounterToMetrics, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, nutritionEncounterDataToNutritionMetrics, reportTypeFromString, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth, sumNutritionMetrics)
+module Pages.Reports.Utils exposing (countTotalEncounters, countTotalNutritionEncounters, eddToLmpDate, familyNutritionEncounterToMetrics, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, nutritionEncounterDataToNutritionMetrics, prenatalContactTypeToEncountersAtWeek, reportTypeFromString, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth, sumNutritionMetrics)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Reports.Model exposing (FamilyNutritionEncounterData, NutritionEncounterData, PatientData, PersonId, SelectedEntity(..))
@@ -6,8 +6,36 @@ import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate, diffDays)
 import List.Extra exposing (unique)
 import Maybe.Extra
-import Pages.Reports.Model exposing (NutritionMetrics, NutritionMetricsResults, PregnancyTrimester(..), ReportType(..), emptyNutritionMetrics)
+import Pages.Reports.Model exposing (NutritionMetrics, NutritionMetricsResults, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), emptyNutritionMetrics)
 import Set
+
+
+prenatalContactTypeToEncountersAtWeek : PrenatalContactType -> ( Int, Int )
+prenatalContactTypeToEncountersAtWeek prenatalContactType =
+    case prenatalContactType of
+        PrenatalContact1 ->
+            ( 1, 12 )
+
+        PrenatalContact2 ->
+            ( 2, 20 )
+
+        PrenatalContact3 ->
+            ( 3, 26 )
+
+        PrenatalContact4 ->
+            ( 4, 30 )
+
+        PrenatalContact5 ->
+            ( 5, 34 )
+
+        PrenatalContact6 ->
+            ( 6, 36 )
+
+        PrenatalContact7 ->
+            ( 7, 38 )
+
+        PrenatalContact8 ->
+            ( 8, 40 )
 
 
 eddToLmpDate : NominalDate -> NominalDate
@@ -46,6 +74,9 @@ reportTypeToString reportType =
         ReportPrenatal ->
             "prenatal"
 
+        ReportPrenatalContacts ->
+            "prenatal-contacts"
+
         ReportPrenatalDiagnoses ->
             "prenatal-diagnoses"
 
@@ -67,6 +98,9 @@ reportTypeFromString reportType =
 
         "prenatal-diagnoses" ->
             Just ReportPrenatalDiagnoses
+
+        "prenatal-contacts" ->
+            Just ReportPrenatalContacts
 
         _ ->
             Nothing
