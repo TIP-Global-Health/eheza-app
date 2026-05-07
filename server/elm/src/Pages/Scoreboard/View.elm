@@ -10,7 +10,7 @@ import Gizra.NominalDate exposing (NominalDate, diffMonths, toLastDayOfMonth)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Pages.Components.Utils exposing (isSyncComplete, syncStatusAndProgress, viewSyncingPlaceholder)
+import Pages.Components.Utils exposing (isSyncComplete, viewSyncingPlaceholder)
 import Pages.Scoreboard.Model exposing (Model, Msg(..), NCDAANCNewbornItem(..), NCDAAcuteMalnutritionItem(..), NCDADemographicsItem(..), NCDAInfrastructureEnvironmentWashItem(..), NCDANutritionBehaviorItem(..), NCDAStuntingItem(..), NCDATargetedInterventionsItem(..), NCDAUniversalInterventionItem(..), ViewMode(..))
 import Pages.Scoreboard.Utils exposing (allVaccineTypes, generateFutureVaccinationsData, valuesByViewMode, viewPercentage)
 import Pages.Utils exposing (viewYearSelector)
@@ -72,18 +72,6 @@ viewScoreboardData language currentDate data model =
                 , viewModeToggle
                 ]
 
-        downloadStatus =
-            if isSyncComplete data.remainingForDownload then
-                let
-                    ( syncStatus, progress ) =
-                        syncStatusAndProgress (List.length data.records) data.remainingForDownload
-                in
-                div [ class "download-status" ]
-                    [ text <| "Download status: " ++ syncStatus ++ "     (" ++ progress ++ ")" ]
-
-            else
-                emptyNode
-
         panes =
             if isSyncComplete data.remainingForDownload then
                 let
@@ -144,11 +132,7 @@ viewScoreboardData language currentDate data model =
                 [ viewSyncingPlaceholder language (List.length data.records) data.remainingForDownload ]
     in
     div [ class "page-content" ]
-        ([ downloadStatus
-         , topBar
-         ]
-            ++ panes
-        )
+        (topBar :: panes)
 
 
 {-| Resolves date for last day of examined month.

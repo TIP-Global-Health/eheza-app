@@ -15884,18 +15884,6 @@ var $author$project$Pages$Completion$Utils$reportTypeToString = function (report
 			return 'well-child';
 	}
 };
-var $author$project$Pages$Components$Utils$syncStatusAndProgress = function (downloaded) {
-	return A2(
-		$elm$core$Basics$composeR,
-		$elm$core$Maybe$map(
-			function (remainingForDownload) {
-				return _Utils_Tuple2(
-					(!remainingForDownload) ? 'COMPLETED' : 'IN PROCESS',
-					$elm$core$String$fromInt(downloaded) + (' / ' + $elm$core$String$fromInt(downloaded + remainingForDownload)));
-			}),
-		$elm$core$Maybe$withDefault(
-			_Utils_Tuple2('PENDING', '0 / 0')));
-};
 var $author$project$Backend$Completion$Utils$takenByToString = function (value) {
 	switch (value.$) {
 		case 'TakenByNurse':
@@ -18038,6 +18026,18 @@ var $author$project$Pages$Utils$viewSelectListInput = F7(
 			$elm$core$Maybe$Just(''));
 	});
 var $author$project$Translate$DownloadingExplanation = {$: 'DownloadingExplanation'};
+var $author$project$Pages$Components$Utils$syncStatusAndProgress = function (downloaded) {
+	return A2(
+		$elm$core$Basics$composeR,
+		$elm$core$Maybe$map(
+			function (remainingForDownload) {
+				return _Utils_Tuple2(
+					(!remainingForDownload) ? 'COMPLETED' : 'IN PROCESS',
+					$elm$core$String$fromInt(downloaded) + (' / ' + $elm$core$String$fromInt(downloaded + remainingForDownload)));
+			}),
+		$elm$core$Maybe$withDefault(
+			_Utils_Tuple2('PENDING', '0 / 0')));
+};
 var $author$project$Pages$Components$Utils$viewSyncingPlaceholder = F3(
 	function (language, downloaded, maybeRemaining) {
 		var _v0 = A2($author$project$Pages$Components$Utils$syncStatusAndProgress, downloaded, maybeRemaining);
@@ -18197,50 +18197,14 @@ var $author$project$Pages$Completion$View$viewCompletionData = F4(
 	function (language, currentDate, data, model) {
 		var topBar = function () {
 			var scopeLabel = function () {
-				var _v4 = data.entityType;
-				switch (_v4.$) {
+				var _v3 = data.entityType;
+				switch (_v3.$) {
 					case 'EntityGlobal':
 						return A2($author$project$Translate$translate, language, $author$project$Translate$Global);
 					case 'EntityHealthCenter':
 						return data.entityName;
 					default:
 						return A2($author$project$Translate$translate, language, $author$project$Translate$EmptyString);
-				}
-			}();
-			var downloadStatus = function () {
-				if ($author$project$Pages$Components$Utils$isSyncComplete(data.remainingForDownload)) {
-					var totalDownloaded = (((((((($elm$core$List$length(data.acuteIllnessData) + $elm$core$List$length(data.childScoreboardData)) + $elm$core$List$length(data.hivData)) + $elm$core$List$length(data.homeVisitData)) + $elm$core$List$length(data.ncdData)) + $elm$core$List$length(data.nutritionIndividualData)) + $elm$core$List$length(data.nutritionGroupData)) + $elm$core$List$length(data.prenatalData)) + $elm$core$List$length(data.tuberculosisData)) + $elm$core$List$length(data.wellChildData);
-					var _v3 = A2($author$project$Pages$Components$Utils$syncStatusAndProgress, totalDownloaded, data.remainingForDownload);
-					var syncStatus = _v3.a;
-					var progress = _v3.b;
-					return A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('download-status')
-							]),
-						_List_fromArray(
-							[
-								A2(
-								$elm$html$Html$div,
-								_List_Nil,
-								_List_fromArray(
-									[
-										$elm$html$Html$text('Download status: ' + syncStatus)
-									])),
-								A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$class('progress')
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text('(' + (progress + ')'))
-									]))
-							]));
-				} else {
-					return $author$project$Gizra$Html$emptyNode;
 				}
 			}();
 			return A2(
@@ -18287,8 +18251,7 @@ var $author$project$Pages$Completion$View$viewCompletionData = F4(
 							[
 								$elm$html$Html$text(
 								A2($author$project$Translate$translate, language, $author$project$Translate$Scope) + (': ' + scopeLabel))
-							])),
-						downloadStatus
+							]))
 					]));
 		}();
 		var inputsAndContent = function () {
@@ -22733,8 +22696,8 @@ var $author$project$Pages$Reports$View$viewPrenatalReport = F4(
 var $author$project$Pages$Reports$View$viewReportsData = F5(
 	function (language, currentDate, themePath, data, model) {
 		var scopeLabel = function () {
-			var _v3 = data.entityType;
-			switch (_v3.$) {
+			var _v2 = data.entityType;
+			switch (_v2.$) {
 				case 'EntityGlobal':
 					return A2($author$project$Translate$translate, language, $author$project$Translate$Global);
 				case 'EntityHealthCenter':
@@ -22747,93 +22710,52 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 							$author$project$Translate$SelectedScope(data.entityType))));
 			}
 		}();
-		var topBar = function () {
-			var downloadStatus = function () {
-				if ($author$project$Pages$Components$Utils$isSyncComplete(data.remainingForDownload)) {
-					var _v2 = A2(
-						$author$project$Pages$Components$Utils$syncStatusAndProgress,
-						$elm$core$List$length(data.records),
-						data.remainingForDownload);
-					var syncStatus = _v2.a;
-					var progress = _v2.b;
-					return A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('download-status')
-							]),
-						_List_fromArray(
-							[
-								A2(
-								$elm$html$Html$div,
-								_List_Nil,
-								_List_fromArray(
-									[
-										$elm$html$Html$text('Download status: ' + syncStatus)
-									])),
-								A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$class('progress')
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text('(' + (progress + ')'))
-									]))
-							]));
-				} else {
-					return $author$project$Gizra$Html$emptyNode;
-				}
-			}();
-			return A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('top-bar')
-					]),
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('new-selection')
-							]),
-						_List_fromArray(
-							[
-								A2(
-								$elm$html$Html$a,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$href('/admin/reports/statistical-queries')
-									]),
-								_List_fromArray(
-									[
-										A2(
-										$elm$html$Html$button,
-										_List_Nil,
-										_List_fromArray(
-											[
-												$elm$html$Html$text(
-												A2($author$project$Translate$translate, language, $author$project$Translate$NewScope))
-											]))
-									]))
-							])),
-						A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('scope')
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text(
-								A2($author$project$Translate$translate, language, $author$project$Translate$Scope) + (': ' + scopeLabel))
-							])),
-						downloadStatus
-					]));
-		}();
+		var topBar = A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('top-bar')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('new-selection')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$a,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$href('/admin/reports/statistical-queries')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$button,
+									_List_Nil,
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											A2($author$project$Translate$translate, language, $author$project$Translate$NewScope))
+										]))
+								]))
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('scope')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							A2($author$project$Translate$translate, language, $author$project$Translate$Scope) + (': ' + scopeLabel))
+						]))
+				]));
 		var inputsAndContent = function () {
 			if ($author$project$Pages$Components$Utils$isSyncComplete(data.remainingForDownload)) {
 				var dateInputs = A2(
@@ -45717,38 +45639,13 @@ var $author$project$Pages$Scoreboard$View$viewScoreboardData = F4(
 					]);
 			}
 		}();
-		var downloadStatus = function () {
-			if ($author$project$Pages$Components$Utils$isSyncComplete(data.remainingForDownload)) {
-				var _v0 = A2(
-					$author$project$Pages$Components$Utils$syncStatusAndProgress,
-					$elm$core$List$length(data.records),
-					data.remainingForDownload);
-				var syncStatus = _v0.a;
-				var progress = _v0.b;
-				return A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('download-status')
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text('Download status: ' + (syncStatus + ('     (' + (progress + ')'))))
-						]));
-			} else {
-				return $author$project$Gizra$Html$emptyNode;
-			}
-		}();
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
 					$elm$html$Html$Attributes$class('page-content')
 				]),
-			_Utils_ap(
-				_List_fromArray(
-					[downloadStatus, topBar]),
-				panes));
+			A2($elm$core$List$cons, topBar, panes));
 	});
 var $author$project$Pages$Scoreboard$View$view = F4(
 	function (language, currentDate, modelBackend, model) {

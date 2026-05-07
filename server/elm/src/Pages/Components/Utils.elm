@@ -2,7 +2,6 @@ module Pages.Components.Utils exposing
     ( isSyncComplete
     , populationSelectionOptionFromString
     , populationSelectionOptionToString
-    , syncStatusAndProgress
     , viewSyncingPlaceholder
     )
 

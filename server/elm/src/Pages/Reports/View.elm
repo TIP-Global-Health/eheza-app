@@ -40,7 +40,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
-import Pages.Components.Utils exposing (isSyncComplete, syncStatusAndProgress, viewSyncingPlaceholder)
+import Pages.Components.Utils exposing (isSyncComplete, viewSyncingPlaceholder)
 import Pages.Components.View exposing (viewMetricsResultsTable, viewStandardCells, viewStandardRow)
 import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Reports.Model exposing (FbfDistributionCategory(..), Model, Msg(..), NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), allFbfDistributionCategories, emptyNutritionMetrics)
@@ -78,21 +78,6 @@ viewReportsData : Language -> NominalDate -> String -> ReportsData -> Model -> H
 viewReportsData language currentDate themePath data model =
     let
         topBar =
-            let
-                downloadStatus =
-                    if isSyncComplete data.remainingForDownload then
-                        let
-                            ( syncStatus, progress ) =
-                                syncStatusAndProgress (List.length data.records) data.remainingForDownload
-                        in
-                        div [ class "download-status" ]
-                            [ div [] [ text <| "Download status: " ++ syncStatus ]
-                            , div [ class "progress" ] [ text <| "(" ++ progress ++ ")" ]
-                            ]
-
-                    else
-                        emptyNode
-            in
             div [ class "top-bar" ]
                 [ div [ class "new-selection" ]
                     [ a [ href "/admin/reports/statistical-queries" ]
@@ -102,7 +87,6 @@ viewReportsData language currentDate themePath data model =
                     ]
                 , div [ class "scope" ]
                     [ text <| translate language Translate.Scope ++ ": " ++ scopeLabel ]
-                , downloadStatus
                 ]
 
         scopeLabel =

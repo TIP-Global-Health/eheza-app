@@ -33,7 +33,7 @@ import Html.Events exposing (onClick)
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Completion.Model exposing (Model, Msg(..), ReportType(..))
 import Pages.Completion.Utils exposing (allAcuteIllnessActivities, allHIVActivities, allHomeVisitActivities, allNCDActivities, allNutritionChildGroupActivities, allNutritionIndividualActivities, allNutritionMotherGroupActivities, allPrenatalActivities, allTuberculosisActivities, newbornExamActivities, reportTypeToString, resolveChildScoreboardActivities, resolveSPVActivities)
-import Pages.Components.Utils exposing (isSyncComplete, syncStatusAndProgress, viewSyncingPlaceholder)
+import Pages.Components.Utils exposing (isSyncComplete, viewSyncingPlaceholder)
 import Pages.Components.View exposing (viewMetricsResultsTable)
 import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Utils exposing (calculatePercentage, launchDate, viewCustomSelectListInput, viewSelectListInput, wrapSelectListInput)
@@ -70,32 +70,6 @@ viewCompletionData language currentDate data model =
                         -- Other options are not supported.
                         _ ->
                             translate language Translate.EmptyString
-
-                downloadStatus =
-                    if isSyncComplete data.remainingForDownload then
-                        let
-                            totalDownloaded =
-                                List.length data.acuteIllnessData
-                                    + List.length data.childScoreboardData
-                                    + List.length data.hivData
-                                    + List.length data.homeVisitData
-                                    + List.length data.ncdData
-                                    + List.length data.nutritionIndividualData
-                                    + List.length data.nutritionGroupData
-                                    + List.length data.prenatalData
-                                    + List.length data.tuberculosisData
-                                    + List.length data.wellChildData
-
-                            ( syncStatus, progress ) =
-                                syncStatusAndProgress totalDownloaded data.remainingForDownload
-                        in
-                        div [ class "download-status" ]
-                            [ div [] [ text <| "Download status: " ++ syncStatus ]
-                            , div [ class "progress" ] [ text <| "(" ++ progress ++ ")" ]
-                            ]
-
-                    else
-                        emptyNode
             in
             div [ class "top-bar" ]
                 [ div [ class "new-selection" ]
@@ -106,7 +80,6 @@ viewCompletionData language currentDate data model =
                     ]
                 , div [ class "scope" ]
                     [ text <| translate language Translate.Scope ++ ": " ++ scopeLabel ]
-                , downloadStatus
                 ]
 
         inputsAndContent =
