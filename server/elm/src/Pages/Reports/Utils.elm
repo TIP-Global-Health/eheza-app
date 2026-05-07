@@ -71,6 +71,9 @@ reportTypeToString reportType =
         ReportNutrition ->
             "nutrition"
 
+        ReportPeripartum ->
+            "peripartum"
+
         ReportPrenatal ->
             "prenatal"
 
@@ -93,14 +96,17 @@ reportTypeFromString reportType =
         "nutrition" ->
             Just ReportNutrition
 
+        "peripartum" ->
+            Just ReportPeripartum
+
         "prenatal" ->
             Just ReportPrenatal
 
-        "prenatal-diagnoses" ->
-            Just ReportPrenatalDiagnoses
-
         "prenatal-contacts" ->
             Just ReportPrenatalContacts
+
+        "prenatal-diagnoses" ->
+            Just ReportPrenatalDiagnoses
 
         _ ->
             Nothing

@@ -6732,6 +6732,7 @@ var $author$project$Pages$Reports$Update$performNutritionReportDataCalculation =
 var $author$project$Pages$Reports$Model$ReportAcuteIllness = {$: 'ReportAcuteIllness'};
 var $author$project$Pages$Reports$Model$ReportDemographics = {$: 'ReportDemographics'};
 var $author$project$Pages$Reports$Model$ReportNutrition = {$: 'ReportNutrition'};
+var $author$project$Pages$Reports$Model$ReportPeripartum = {$: 'ReportPeripartum'};
 var $author$project$Pages$Reports$Model$ReportPrenatal = {$: 'ReportPrenatal'};
 var $author$project$Pages$Reports$Model$ReportPrenatalContacts = {$: 'ReportPrenatalContacts'};
 var $author$project$Pages$Reports$Model$ReportPrenatalDiagnoses = {$: 'ReportPrenatalDiagnoses'};
@@ -6743,12 +6744,14 @@ var $author$project$Pages$Reports$Utils$reportTypeFromString = function (reportT
 			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportDemographics);
 		case 'nutrition':
 			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportNutrition);
+		case 'peripartum':
+			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportPeripartum);
 		case 'prenatal':
 			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportPrenatal);
-		case 'prenatal-diagnoses':
-			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportPrenatalDiagnoses);
 		case 'prenatal-contacts':
 			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportPrenatalContacts);
+		case 'prenatal-diagnoses':
+			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportPrenatalDiagnoses);
 		default:
 			return $elm$core$Maybe$Nothing;
 	}
@@ -9542,7 +9545,9 @@ var $author$project$Backend$Reports$Decoder$prenatalEncounterTypeFromString = fu
 var $author$project$Backend$Reports$Model$IndicatorAbortion = {$: 'IndicatorAbortion'};
 var $author$project$Backend$Reports$Model$IndicatorAdequateGWG = {$: 'IndicatorAdequateGWG'};
 var $author$project$Backend$Reports$Model$IndicatorAnemiaTest = {$: 'IndicatorAnemiaTest'};
+var $author$project$Backend$Reports$Model$IndicatorBreastfedFirstHour = {$: 'IndicatorBreastfedFirstHour'};
 var $author$project$Backend$Reports$Model$IndicatorIntrauterineDeath = {$: 'IndicatorIntrauterineDeath'};
+var $author$project$Backend$Reports$Model$IndicatorPrematureOnsetContractions = {$: 'IndicatorPrematureOnsetContractions'};
 var $author$project$Backend$Reports$Model$IndicatorPretermBirth = {$: 'IndicatorPretermBirth'};
 var $author$project$Backend$Reports$Model$IndicatorReceivedAspirin = {$: 'IndicatorReceivedAspirin'};
 var $author$project$Backend$Reports$Model$IndicatorReceivedAzithromycin = {$: 'IndicatorReceivedAzithromycin'};
@@ -9574,6 +9579,10 @@ var $author$project$Backend$Reports$Decoder$prenatalIndicatorFromMapping = funct
 			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorReceivedAzithromycin);
 		case 'k':
 			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorAnemiaTest);
+		case 'l':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorBreastfedFirstHour);
+		case 'm':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorPrematureOnsetContractions);
 		default:
 			return $elm$core$Maybe$Nothing;
 	}
@@ -12803,6 +12812,8 @@ var $author$project$Translate$translationSet = function (transId) {
 						return {english: 'Number of encounters where adequate gestational weight gain was recorded', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'IndicatorAnemiaTest':
 						return {english: 'Pregnant women tested for anemia', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					case 'IndicatorBreastfedFirstHour':
+						return {english: 'Newborns breastfed within one hour of delivery', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'IndicatorDiagnosedAnemia':
 						return {english: 'Pregnant women diagnosed with anemia', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'IndicatorHistoryOfAdversePregnancyOutcomes':
@@ -12819,6 +12830,8 @@ var $author$project$Translate$translationSet = function (transId) {
 						return {english: 'Pregnant women who received low-dose antenatal calcium', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'IndicatorReceivedMMS':
 						return {english: 'Pregnant women who received MMS', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					case 'IndicatorPrematureOnsetContractions':
+						return {english: 'Pregnant women with premature labour', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'IndicatorPretermBirth':
 						return {english: '', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'IndicatorReferredToUltrasound':
@@ -12866,6 +12879,8 @@ var $author$project$Translate$translationSet = function (transId) {
 						var $temp$transId = $author$project$Translate$Nutrition;
 						transId = $temp$transId;
 						continue translationSet;
+					case 'ReportPeripartum':
+						return {english: 'Peripartum', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'ReportPrenatal':
 						var $temp$transId = $author$project$Translate$Antenatal;
 						transId = $temp$transId;
@@ -12984,6 +12999,12 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Targeted Interventions', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Total':
 				return {english: 'Total', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'TotalDeliveries':
+				return {english: 'Total deliveries', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'TotalLiveBirths':
+				return {english: 'Total live births', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'TotalLivePreTermBirths':
+				return {english: 'Preterm birth newborns', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'TreatmentReview':
 				return {english: 'Treatment Review', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Trimester':
@@ -16855,6 +16876,8 @@ var $author$project$Pages$Reports$Utils$reportTypeToString = function (reportTyp
 			return 'demographics';
 		case 'ReportNutrition':
 			return 'nutrition';
+		case 'ReportPeripartum':
+			return 'peripartum';
 		case 'ReportPrenatal':
 			return 'prenatal';
 		case 'ReportPrenatalContacts':
@@ -19321,6 +19344,121 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F5(
 						A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
 					])));
 	});
+var $author$project$Translate$PrenatalIndicatorLabel = function (a) {
+	return {$: 'PrenatalIndicatorLabel', a: a};
+};
+var $author$project$Translate$TotalDeliveries = {$: 'TotalDeliveries'};
+var $author$project$Translate$TotalLiveBirths = {$: 'TotalLiveBirths'};
+var $author$project$Translate$TotalLivePreTermBirths = {$: 'TotalLivePreTermBirths'};
+var $author$project$Pages$Reports$View$generatePeripartumReportData = F2(
+	function (language, records) {
+		var pregnanciesWithIndicator = function (indicator) {
+			return $elm$core$List$filter(
+				A2(
+					$elm$core$Basics$composeR,
+					function ($) {
+						return $.encounters;
+					},
+					$elm$core$List$any(
+						A2(
+							$elm$core$Basics$composeR,
+							function ($) {
+								return $.indicators;
+							},
+							$elm$core$List$member(indicator)))));
+		};
+		var pregnancies = $elm$core$List$concat(
+			$elm_community$maybe_extra$Maybe$Extra$values(
+				A2(
+					$elm$core$List$map,
+					function ($) {
+						return $.prenatalData;
+					},
+					records)));
+		var generateRow = F2(
+			function (label, value) {
+				return _List_fromArray(
+					[
+						A2($author$project$Translate$translate, language, label),
+						$elm$core$String$fromInt(value)
+					]);
+			});
+		var countPregnanciesByOutcome = function (outcome) {
+			return $elm$core$List$length(
+				A2(
+					$elm$core$List$filter,
+					A2(
+						$elm$core$Basics$composeR,
+						function ($) {
+							return $.outcome;
+						},
+						$elm$core$Basics$eq(
+							$elm$core$Maybe$Just(outcome))),
+					pregnancies));
+		};
+		var totalLiveAtTerm = countPregnanciesByOutcome($author$project$Backend$Reports$Model$OutcomeLiveAtTerm);
+		var totalLivePreTerm = countPregnanciesByOutcome($author$project$Backend$Reports$Model$OutcomeLivePreTerm);
+		var totalStillAtTerm = countPregnanciesByOutcome($author$project$Backend$Reports$Model$OutcomeStillAtTerm);
+		var totalStillPreTerm = countPregnanciesByOutcome($author$project$Backend$Reports$Model$OutcomeStillPreTerm);
+		return {
+			captions: _List_fromArray(
+				[
+					'',
+					A2($author$project$Translate$translate, language, $author$project$Translate$Total)
+				]),
+			heading: '',
+			rows: _List_fromArray(
+				[
+					A2(generateRow, $author$project$Translate$TotalDeliveries, ((totalLiveAtTerm + totalLivePreTerm) + totalStillAtTerm) + totalStillPreTerm),
+					A2(generateRow, $author$project$Translate$TotalLiveBirths, totalLiveAtTerm + totalLivePreTerm),
+					A2(generateRow, $author$project$Translate$TotalLivePreTermBirths, totalLivePreTerm),
+					A2(
+					generateRow,
+					$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorPrematureOnsetContractions),
+					$elm$core$List$length(
+						A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorPrematureOnsetContractions, pregnancies))),
+					A2(
+					generateRow,
+					$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorBreastfedFirstHour),
+					$elm$core$List$length(
+						A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorBreastfedFirstHour, pregnancies)))
+				])
+		};
+	});
+var $author$project$Pages$Reports$View$viewPeripartumReport = F4(
+	function (language, limitDate, scopeLabel, records) {
+		var data = A2($author$project$Pages$Reports$View$generatePeripartumReportData, language, records);
+		var csvFileName = 'peripartum-report-' + ($elm$core$String$toLower(
+			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
+		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
+		var captionsRow = A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('row captions')
+				]),
+			$author$project$Pages$Components$View$viewStandardCells(data.captions));
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('report peripartum')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('table')
+						]),
+					A2(
+						$elm$core$List$cons,
+						captionsRow,
+						A2($elm$core$List$map, $author$project$Pages$Components$View$viewStandardRow, data.rows))),
+					A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
+				]));
+	});
 var $author$project$Translate$ContactType = {$: 'ContactType'};
 var $author$project$Backend$Reports$Model$IndicatorDiagnosedAnemia = {$: 'IndicatorDiagnosedAnemia'};
 var $author$project$Backend$Reports$Model$IndicatorHistoryOfAdversePregnancyOutcomes = {$: 'IndicatorHistoryOfAdversePregnancyOutcomes'};
@@ -19340,9 +19478,6 @@ var $author$project$Pages$Reports$Model$PrenatalContact7 = {$: 'PrenatalContact7
 var $author$project$Pages$Reports$Model$PrenatalContact8 = {$: 'PrenatalContact8'};
 var $author$project$Translate$PrenatalContactType = function (a) {
 	return {$: 'PrenatalContactType', a: a};
-};
-var $author$project$Translate$PrenatalIndicatorLabel = function (a) {
-	return {$: 'PrenatalIndicatorLabel', a: a};
 };
 var $author$project$Pages$Reports$Utils$eddToLmpDate = function (eddDate) {
 	return A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, -280, eddDate);
@@ -20746,6 +20881,8 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 										return A5($author$project$Pages$Reports$View$viewDemographicsReport, language, startDate, limitDate, scopeLabel, recordsTillLimitDate);
 									case 'ReportNutrition':
 										return A5($author$project$Pages$Reports$View$viewNutritionReport, language, limitDate, scopeLabel, data.nutritionReportData, model.nutritionReportData);
+									case 'ReportPeripartum':
+										return A4($author$project$Pages$Reports$View$viewPeripartumReport, language, limitDate, scopeLabel, recordsTillLimitDate);
 									case 'ReportPrenatal':
 										return A4($author$project$Pages$Reports$View$viewPrenatalReport, language, limitDate, scopeLabel, recordsTillLimitDate);
 									case 'ReportPrenatalContacts':
@@ -20787,7 +20924,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 								language,
 								model.reportType,
 								_List_fromArray(
-									[$author$project$Pages$Reports$Model$ReportAcuteIllness, $author$project$Pages$Reports$Model$ReportPrenatal, $author$project$Pages$Reports$Model$ReportPrenatalContacts, $author$project$Pages$Reports$Model$ReportPrenatalDiagnoses, $author$project$Pages$Reports$Model$ReportDemographics, $author$project$Pages$Reports$Model$ReportNutrition]),
+									[$author$project$Pages$Reports$Model$ReportAcuteIllness, $author$project$Pages$Reports$Model$ReportPrenatal, $author$project$Pages$Reports$Model$ReportPrenatalContacts, $author$project$Pages$Reports$Model$ReportPrenatalDiagnoses, $author$project$Pages$Reports$Model$ReportDemographics, $author$project$Pages$Reports$Model$ReportNutrition, $author$project$Pages$Reports$Model$ReportPeripartum]),
 								$author$project$Pages$Reports$Utils$reportTypeToString,
 								$author$project$Pages$Reports$Model$SetReportType,
 								$author$project$Translate$ReportType,

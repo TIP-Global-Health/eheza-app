@@ -550,6 +550,12 @@ prenatalIndicatorFromMapping s =
         "k" ->
             Just IndicatorAnemiaTest
 
+        "l" ->
+            Just IndicatorBreastfedFirstHour
+
+        "m" ->
+            Just IndicatorPrematureOnsetContractions
+
         _ ->
             Nothing
 
