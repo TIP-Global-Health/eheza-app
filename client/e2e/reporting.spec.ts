@@ -26,6 +26,7 @@ import {
   readPrenatalVisitsTable,
   readPrenatalContactsTable,
   readPeripartumTable,
+  readPostnatalCareTable,
   findPrenatalRow,
   PrenatalVisitsRow,
   findSimpleRow,
@@ -315,6 +316,20 @@ test.describe('Admin Reports', () => {
     let baselinePeripartumPretermBirths: number;
     let baselinePeripartumPrematureLabour: number;
     let baselinePeripartumBreastfedFirstHour: number;
+    // Postnatal Care report baselines (PR #1556). Among the existing test
+    // patients, only NutrChild (M, 10mo, full nurse SPV with
+    // completeWCImmunisation) contributes — they fall in the "10-19 months
+    // UpToDate" bucket. Other test children either lack a well-child
+    // encounter (AIChild, CSChild, HVChild) or are below the lowest age
+    // bucket (NBChild at 1mo, below the 7-week lower bound). The
+    // "within 24h of birth" row stays flat — no test patient has a
+    // same-day SPV.
+    let baselinePNCWithin24h: number;
+    let baselinePNC7To11Weeks: number;
+    let baselinePNC11To15Weeks: number;
+    let baselinePNC15WeeksTo10Months: number;
+    let baselinePNC10To19Months: number;
+    let baselinePNC19To24Months: number;
     let baselineNutrition: Map<number, NutritionMetricRow[]>;
     let baselineCompletion: CompletionTableData;
     let baselinePrenatalCompletion: CompletionTableData;
@@ -412,6 +427,32 @@ test.describe('Admin Reports', () => {
         `preterm=${baselinePeripartumPretermBirths}, ` +
         `prematureLabour=${baselinePeripartumPrematureLabour}, ` +
         `breastfedFirstHour=${baselinePeripartumBreastfedFirstHour}`,
+      );
+
+      // Record Postnatal Care (PR #1556) report baselines.
+      await selectReportType(page, 'postnatal-care');
+      await setDateRange(page, REPORT_START_DATE, reportLimitDate);
+      const baselinePNCTable = await readPostnatalCareTable(page);
+      // Sanity: report rendered with all 6 rows.
+      expect(baselinePNCTable.rows.length, 'Postnatal Care report should have at least 6 rows')
+        .toBeGreaterThanOrEqual(6);
+      baselinePNCWithin24h =
+        findSimpleRow(baselinePNCTable, 'within 24 hours of birth')?.total ?? 0;
+      baselinePNC7To11Weeks =
+        findSimpleRow(baselinePNCTable, 'aged 7-11 weeks')?.total ?? 0;
+      baselinePNC11To15Weeks =
+        findSimpleRow(baselinePNCTable, 'aged 11-15 weeks')?.total ?? 0;
+      baselinePNC15WeeksTo10Months =
+        findSimpleRow(baselinePNCTable, '15 weeks - 10 mos')?.total ?? 0;
+      baselinePNC10To19Months =
+        findSimpleRow(baselinePNCTable, 'aged 10-19 mos')?.total ?? 0;
+      baselinePNC19To24Months =
+        findSimpleRow(baselinePNCTable, '19 mos - 2 years')?.total ?? 0;
+      console.log(
+        `Baseline Postnatal Care: within24h=${baselinePNCWithin24h}, ` +
+        `7-11w=${baselinePNC7To11Weeks}, 11-15w=${baselinePNC11To15Weeks}, ` +
+        `15w-10mo=${baselinePNC15WeeksTo10Months}, ` +
+        `10-19mo=${baselinePNC10To19Months}, 19-24mo=${baselinePNC19To24Months}`,
       );
 
       // Record Nutrition report baseline (first column = newest completed month).
@@ -1598,6 +1639,57 @@ test.describe('Admin Reports', () => {
 
       // CSV download button.
       await expect(page.locator('button.download-csv'), 'Peripartum CSV download button should be visible').toBeVisible();
+    });
+
+    // ── Postnatal Care report verification (PR #1556) ──
+    //
+    // The report has 6 rows: SPV/Newborn-Exam-within-24h-of-birth + 5
+    // age-bucket "UpToDate with immunization" rows (7-11w, 11-15w,
+    // 15w-10mo, 10-19mo, 19-24mo). NutrChild (M, 10mo) gets a full nurse
+    // SPV here with completeWCImmunisation, which administers every
+    // age-eligible vaccine today. After sync, NutrChild's wellChildData
+    // carries the full immunisation dict; the report's
+    // generateFutureVaccinationsData computes the next due dose ~4 weeks
+    // out (later than the report's limit date = today), so NutrChild
+    // counts as UpToDate in the 10-19 months bucket → delta +1.
+    //
+    // No other test patient contributes:
+    //   - AIChild/CSChild/HVChild: no well-child encounter.
+    //   - NBChild (1mo, ~4 weeks): below the 7-week lower bound of the
+    //     youngest bucket; not counted.
+    //   - "Within 24 hours of birth" row: every well-child encounter in
+    //     the test runs today against a birth date weeks-to-months in
+    //     the past, so it stays flat.
+    await step('Verify Postnatal Care report deltas', async () => {
+      await selectReportType(page, 'postnatal-care');
+      await setDateRange(page, REPORT_START_DATE, reportLimitDate);
+
+      const pncTable = await readPostnatalCareTable(page);
+      const newWithin24h = findSimpleRow(pncTable, 'within 24 hours of birth')?.total ?? 0;
+      const new7To11Weeks = findSimpleRow(pncTable, 'aged 7-11 weeks')?.total ?? 0;
+      const new11To15Weeks = findSimpleRow(pncTable, 'aged 11-15 weeks')?.total ?? 0;
+      const new15WeeksTo10Months = findSimpleRow(pncTable, '15 weeks - 10 mos')?.total ?? 0;
+      const new10To19Months = findSimpleRow(pncTable, 'aged 10-19 mos')?.total ?? 0;
+      const new19To24Months = findSimpleRow(pncTable, '19 mos - 2 years')?.total ?? 0;
+
+      console.log('\n=== POSTNATAL CARE ===');
+      console.log(`Within 24h SPV/NBExam:  baseline=${baselinePNCWithin24h}, new=${newWithin24h}, delta=+${newWithin24h - baselinePNCWithin24h}`);
+      console.log(`7-11 weeks UpToDate:    baseline=${baselinePNC7To11Weeks}, new=${new7To11Weeks}, delta=+${new7To11Weeks - baselinePNC7To11Weeks}`);
+      console.log(`11-15 weeks UpToDate:   baseline=${baselinePNC11To15Weeks}, new=${new11To15Weeks}, delta=+${new11To15Weeks - baselinePNC11To15Weeks}`);
+      console.log(`15w-10mo UpToDate:      baseline=${baselinePNC15WeeksTo10Months}, new=${new15WeeksTo10Months}, delta=+${new15WeeksTo10Months - baselinePNC15WeeksTo10Months}`);
+      console.log(`10-19mo UpToDate:       baseline=${baselinePNC10To19Months}, new=${new10To19Months}, delta=+${new10To19Months - baselinePNC10To19Months}`);
+      console.log(`19-24mo UpToDate:       baseline=${baselinePNC19To24Months}, new=${new19To24Months}, delta=+${new19To24Months - baselinePNC19To24Months}`);
+
+      // Within-24h row should not move (no test patient has a same-day SPV).
+      expect(newWithin24h - baselinePNCWithin24h,
+        '"within 24 hours of birth" row should be unchanged').toBe(0);
+      // NutrChild (10mo, full SPV with all eligible vaccines administered
+      // today) should land in the 10-19 months bucket as UpToDate.
+      expect(new10To19Months - baselinePNC10To19Months,
+        '"Children aged 10-19 mos UpToDate" row should grow by +1').toBe(1);
+
+      // CSV download button.
+      await expect(page.locator('button.download-csv'), 'Postnatal Care CSV download button should be visible').toBeVisible();
     });
 
     // ── Nutrition report verification ──

@@ -874,16 +874,16 @@ wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm birthDate form =
         (\administeredDoses administrationDates ->
             if EverySet.member VaccineDoseFirst administeredDoses then
                 let
-                    firstDoseAdminstrationDate =
+                    firstDoseAdministrationDate =
                         EverySet.toList administrationDates
                             |> List.sortWith Date.compare
                             |> List.head
                 in
                 Maybe.map
-                    (\adminstrationDate ->
-                        Date.diff Days birthDate adminstrationDate < 14
+                    (\administrationDate ->
+                        Date.diff Days birthDate administrationDate < 14
                     )
-                    firstDoseAdminstrationDate
+                    firstDoseAdministrationDate
                     |> Maybe.withDefault False
 
             else
@@ -8893,15 +8893,15 @@ generateSuggestedVaccinations currentDate site person vaccinationHistory vaccina
 wasInitialOpvAdministeredByVaccinationProgress : Maybe NominalDate -> VaccinationProgressDict -> Bool
 wasInitialOpvAdministeredByVaccinationProgress birthDate vaccinationProgress =
     let
-        firstDoseAdminstrationDate =
+        firstDoseAdministrationDate =
             Dict.get VaccineOPV vaccinationProgress
                 |> Maybe.andThen (Dict.get VaccineDoseFirst)
     in
     Maybe.map2
-        (\adminstrationDate birthDate_ ->
-            Date.diff Days birthDate_ adminstrationDate < 14
+        (\administrationDate birthDate_ ->
+            Date.diff Days birthDate_ administrationDate < 14
         )
-        firstDoseAdminstrationDate
+        firstDoseAdministrationDate
         birthDate
         |> Maybe.withDefault False
 

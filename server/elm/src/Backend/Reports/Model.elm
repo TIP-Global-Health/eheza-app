@@ -1,6 +1,9 @@
-module Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, ChildScorecardEncounterData, DeliveryLocation(..), FamilyNutritionEncounterData, Gender(..), HIVEncounterData, HomeVisitEncounterData, Msg(..), NCDEncounterData, NutritionData, NutritionEncounterData, NutritionReportTableType(..), PatientData, PersonId, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalIndicator(..), PrenatalParticipantData, ReportsData, SelectedEntity(..), TuberculosisEncounterData)
+module Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, ChildScorecardEncounterData, DeliveryLocation(..), FamilyNutritionEncounterData, Gender(..), HIVEncounterData, HomeVisitEncounterData, Msg(..), NCDEncounterData, NutritionData, NutritionEncounterData, NutritionReportTableType(..), PatientData, PersonId, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalIndicator(..), PrenatalParticipantData, ReportsData, SelectedEntity(..), TuberculosisEncounterData, WellChildEncounterData)
 
 import App.Types exposing (Site)
+import AssocList exposing (Dict)
+import Backend.Scoreboard.Model exposing (VaccineType)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Json.Encode exposing (Value)
 
@@ -34,7 +37,7 @@ type alias PatientData =
     , familyNutritionData : Maybe (List (List FamilyNutritionEncounterData))
     , familyNutritionMuacData : Maybe (List (List FamilyNutritionEncounterData))
     , homeVisitData : Maybe (List (List HomeVisitEncounterData))
-    , wellChildData : Maybe (List (List NutritionEncounterData))
+    , wellChildData : Maybe (List (List WellChildEncounterData))
     , childScorecardData : Maybe (List (List ChildScorecardEncounterData))
     , ncdData : Maybe (List (List NCDEncounterData))
     , hivData : Maybe (List (List HIVEncounterData))
@@ -226,8 +229,16 @@ type alias NutritionEncounterData =
 
 type alias NutritionData =
     { stunting : Maybe Float
-    , wasting : Maybe Float
     , underweight : Maybe Float
+    , wasting : Maybe Float
+    }
+
+
+type alias WellChildEncounterData =
+    { startDate : NominalDate
+    , nutritionData : Maybe NutritionData
+    , muacCm : Maybe Float
+    , immunisationData : Maybe (Dict VaccineType (EverySet NominalDate))
     }
 
 

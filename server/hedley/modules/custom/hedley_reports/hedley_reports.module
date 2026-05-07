@@ -464,8 +464,13 @@ function hedley_reports_get_triggering_measurement_types() {
     HEDLEY_ACTIVITY_HEIGHT_BUNDLES,
     HEDLEY_ACTIVITY_WEIGHT_BUNDLES,
     HEDLEY_ACTIVITY_MUAC_BUNDLES,
+    // REVIEW: HEAD dropped HEDLEY_ACTIVITY_NUTRITION_BUNDLES from this
+    // trigger list; base re-added it. Keeping it here so report recalcs
+    // still fire on nutrition-measurement saves; remove if this branch
+    // intentionally moved that handling elsewhere.
     HEDLEY_ACTIVITY_NUTRITION_BUNDLES,
     HEDLEY_ACTIVITY_REPORTS_GROUP_MEASUREMENT_BUNDLES,
+    HEDLEY_ACTIVITY_WELL_CHILD_IMMUNISATION_BUNDLES,
     [
       HEDLEY_ACTIVITY_DANGER_SIGNS_CONTENT_TYPE,
       HEDLEY_ACTIVITY_FAMILY_NUTRITION_MUAC_CHILD_CONTENT_TYPE,
@@ -478,6 +483,9 @@ function hedley_reports_get_triggering_measurement_types() {
       HEDLEY_ACTIVITY_PRENATAL_OBSTETRIC_HISTORY_CONTENT_TYPE,
       HEDLEY_ACTIVITY_PRENATAL_OBSTETRIC_HISTORY_STEP2_CONTENT_TYPE,
       HEDLEY_ACTIVITY_PRENATAL_REFERRAL_CONTENT_TYPE,
+      // Completes the immunisations list (not included
+      // at HEDLEY_ACTIVITY_WELL_CHILD_IMMUNISATION_BUNDLES).
+      HEDLEY_ACTIVITY_WELL_CHILD_HPV_IMMUNISATION_CONTENT_TYPE,
     ],
   ));
 }
@@ -508,7 +516,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
     : '',
   ];
 
-  $sessions_ids = $zscores_by_encounter = $muac_edema_by_encounter = [];
+  $sessions_ids = $zscores_by_encounter = $vaccinations_by_encounter = $muac_edema_by_encounter = [];
   $prenatal_indicators_by_encounter = [
     'mms' => [],
     'us' => [],
@@ -523,6 +531,8 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
     'breastfed-first-hour' => [],
     'premature-onset-contractions' => [],
   ];
+  $vaccine_type_mapping = hedley_reports_vaccine_type_mapping();
+
   // Exclude family_nutrition_muac_child from the query: it is in the
   // triggering list so that node saves enqueue an AQ recalc, but this
   // loop has no use for those nodes -- the per-child MUAC data is
@@ -816,6 +826,87 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
         }
         break;
 
+      case HEDLEY_ACTIVITY_WELL_CHILD_BCG_IMMUNISATION_CONTENT_TYPE:
+        $administration_dates = hedley_reports_get_vaccination_dates($measurement);
+        if (!empty($administration_dates)) {
+          $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
+          $vaccine_type = $vaccine_type_mapping[HEDLEY_ACTIVITY_WELL_CHILD_BCG_IMMUNISATION_CONTENT_TYPE];
+          $vaccinations_by_encounter[$encounter_id][$vaccine_type] = $administration_dates;
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_WELL_CHILD_OPV_IMMUNISATION_CONTENT_TYPE:
+        $administration_dates = hedley_reports_get_vaccination_dates($measurement);
+        if (!empty($administration_dates)) {
+          $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
+          $vaccine_type = $vaccine_type_mapping[HEDLEY_ACTIVITY_WELL_CHILD_OPV_IMMUNISATION_CONTENT_TYPE];
+          $vaccinations_by_encounter[$encounter_id][$vaccine_type] = $administration_dates;
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_WELL_CHILD_DTP_IMMUNISATION_CONTENT_TYPE:
+        $administration_dates = hedley_reports_get_vaccination_dates($measurement);
+        if (!empty($administration_dates)) {
+          $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
+          $vaccine_type = $vaccine_type_mapping[HEDLEY_ACTIVITY_WELL_CHILD_DTP_IMMUNISATION_CONTENT_TYPE];
+          $vaccinations_by_encounter[$encounter_id][$vaccine_type] = $administration_dates;
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_WELL_CHILD_DTP_STANDALONE_IMMUNISATION_CONTENT_TYPE:
+        $administration_dates = hedley_reports_get_vaccination_dates($measurement);
+        if (!empty($administration_dates)) {
+          $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
+          $vaccine_type = $vaccine_type_mapping[HEDLEY_ACTIVITY_WELL_CHILD_DTP_STANDALONE_IMMUNISATION_CONTENT_TYPE];
+          $vaccinations_by_encounter[$encounter_id][$vaccine_type] = $administration_dates;
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_WELL_CHILD_PCV13_IMMUNISATION_CONTENT_TYPE:
+        $administration_dates = hedley_reports_get_vaccination_dates($measurement);
+        if (!empty($administration_dates)) {
+          $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
+          $vaccine_type = $vaccine_type_mapping[HEDLEY_ACTIVITY_WELL_CHILD_PCV13_IMMUNISATION_CONTENT_TYPE];
+          $vaccinations_by_encounter[$encounter_id][$vaccine_type] = $administration_dates;
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_WELL_CHILD_ROTARIX_IMMUNISATION_CONTENT_TYPE:
+        $administration_dates = hedley_reports_get_vaccination_dates($measurement);
+        if (!empty($administration_dates)) {
+          $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
+          $vaccine_type = $vaccine_type_mapping[HEDLEY_ACTIVITY_WELL_CHILD_ROTARIX_IMMUNISATION_CONTENT_TYPE];
+          $vaccinations_by_encounter[$encounter_id][$vaccine_type] = $administration_dates;
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_WELL_CHILD_IPV_IMMUNISATION_CONTENT_TYPE:
+        $administration_dates = hedley_reports_get_vaccination_dates($measurement);
+        if (!empty($administration_dates)) {
+          $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
+          $vaccine_type = $vaccine_type_mapping[HEDLEY_ACTIVITY_WELL_CHILD_IPV_IMMUNISATION_CONTENT_TYPE];
+          $vaccinations_by_encounter[$encounter_id][$vaccine_type] = $administration_dates;
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_WELL_CHILD_MR_IMMUNISATION_CONTENT_TYPE:
+        $administration_dates = hedley_reports_get_vaccination_dates($measurement);
+        if (!empty($administration_dates)) {
+          $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
+          $vaccine_type = $vaccine_type_mapping[HEDLEY_ACTIVITY_WELL_CHILD_MR_IMMUNISATION_CONTENT_TYPE];
+          $vaccinations_by_encounter[$encounter_id][$vaccine_type] = $administration_dates;
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_WELL_CHILD_HPV_IMMUNISATION_CONTENT_TYPE:
+        $administration_dates = hedley_reports_get_vaccination_dates($measurement);
+        if (!empty($administration_dates)) {
+          $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
+          $vaccine_type = $vaccine_type_mapping[HEDLEY_ACTIVITY_WELL_CHILD_HPV_IMMUNISATION_CONTENT_TYPE];
+          $vaccinations_by_encounter[$encounter_id][$vaccine_type] = $administration_dates;
+        }
+        break;
+
       default:
         $encounter_id = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
         $sessions_ids[] = $encounter_id;
@@ -909,11 +1000,26 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
           break;
 
         case HEDLEY_STATS_NUTRITION_ENCOUNTER_TYPE:
-        case HEDLEY_STATS_SPV_ENCOUNTER_TYPE:
           $zscores = isset($zscores_by_encounter[$encounter->nid]) ? $zscores_by_encounter[$encounter->nid] : [];
           $muac_edema = isset($muac_edema_by_encounter[$encounter->nid]) ? $muac_edema_by_encounter[$encounter->nid] : [];
           $nutrition = hedley_reports_nutrition_metrics_to_string($zscores + $muac_edema);
           $encounter_data = "$encounter_date $nutrition";
+          break;
+
+        case HEDLEY_STATS_SPV_ENCOUNTER_TYPE:
+          $zscores = isset($zscores_by_encounter[$encounter->nid]) ? $zscores_by_encounter[$encounter->nid] : [];
+          $muac_edema = isset($muac_edema_by_encounter[$encounter->nid]) ? $muac_edema_by_encounter[$encounter->nid] : [];
+          $nutrition = hedley_reports_nutrition_metrics_to_string($zscores + $muac_edema);
+          $vaccinations_as_string = '';
+          if (!empty($vaccinations_by_encounter[$encounter->nid])) {
+            $vaccinations = [];
+            foreach ($vaccinations_by_encounter[$encounter->nid] as $vaccination_type => $dates) {
+              $dates_as_string = implode('+', $dates);
+              $vaccinations[] = "$vaccination_type:$dates_as_string";
+            }
+            $vaccinations_as_string = implode(',', $vaccinations);
+          }
+          $encounter_data = "$encounter_date|$nutrition|$vaccinations_as_string";
           break;
 
         // For remaining types recording only encounter date.
@@ -1102,6 +1208,56 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
 }
 
 /**
+ * Gets vaccination administration dates recorded at the measurement.
+ *
+ * @param object $measurement
+ *   Measurement object.
+ *
+ * @return array
+ *   List of administration dates.
+ */
+function hedley_reports_get_vaccination_dates($measurement) {
+  $dates = [];
+  $administration_dates = $measurement->field_administration_dates[LANGUAGE_NONE];
+  if (empty($administration_dates)) {
+    return $dates;
+  }
+
+  foreach ($administration_dates as $item) {
+    $dates[] = explode(' ', $item['value'])[0];
+  }
+
+  return $dates;
+}
+
+/**
+ * Returns a mapping of vaccine content type constants to code values.
+ *
+ * Provides the standard mapping between vaccine-related content type
+ * constants (e.g. HEDLEY_ACTIVITY_WELL_CHILD_BCG_IMMUNISATION_CONTENT_TYPE)
+ * and the single-character codes used to compress them on the wire.
+ * Stays in sync with vaccineTypeFromMapping in
+ * server/elm/src/Backend/Reports/Decoder.elm; update both together.
+ *
+ * @return array
+ *   An associative array mapping vaccine content type constants (string
+ *   machine names) to single-character code values.
+ */
+function hedley_reports_vaccine_type_mapping() {
+  return [
+    HEDLEY_ACTIVITY_WELL_CHILD_BCG_IMMUNISATION_CONTENT_TYPE => 'a',
+    HEDLEY_ACTIVITY_WELL_CHILD_OPV_IMMUNISATION_CONTENT_TYPE => 'b',
+    HEDLEY_ACTIVITY_WELL_CHILD_DTP_IMMUNISATION_CONTENT_TYPE => 'c',
+    HEDLEY_ACTIVITY_WELL_CHILD_DTP_STANDALONE_IMMUNISATION_CONTENT_TYPE => 'd',
+    HEDLEY_ACTIVITY_WELL_CHILD_PCV13_IMMUNISATION_CONTENT_TYPE => 'e',
+    HEDLEY_ACTIVITY_WELL_CHILD_ROTARIX_IMMUNISATION_CONTENT_TYPE => 'f',
+    HEDLEY_ACTIVITY_WELL_CHILD_IPV_IMMUNISATION_CONTENT_TYPE => 'g',
+    HEDLEY_ACTIVITY_WELL_CHILD_MR_IMMUNISATION_CONTENT_TYPE => 'h',
+    HEDLEY_ACTIVITY_WELL_CHILD_HPV_IMMUNISATION_CONTENT_TYPE => 'i',
+  ];
+}
+
+/**
  * Returns a mapping of pregnancy outcome types to corresponding code values.
  *
  * This function provides the standard mapping between human-readable pregnancy
@@ -1137,6 +1293,10 @@ function hedley_reports_pregnancy_outcome_mapping() {
  * decoder (hedley_reports_generate_nutrition_report_data) and the Elm
  * decoder (Backend.Reports.Decoder.parseNutritionEncounterPayload)
  * expect. Do not reorder the output without updating both decoders.
+ *
+ * See https://github.com/Gizra/ihangane/issues/3199 (PRs #1479 and
+ * #1481) for the bug that established this convention -- swapping
+ * encoder positions or renaming the keys reintroduces it.
  *
  * @param array|null $values
  *   An associative array of nutrition metrics with the following possible keys:
@@ -1974,7 +2134,12 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
       }
       if (isset($patient_data->individual->{"well-child"})) {
         foreach ($patient_data->individual->{"well-child"} as $items) {
-          $data_for_patient['encounters'] = array_merge($data_for_patient['encounters'], $items);
+          $normalized = [];
+          foreach ($items as $item) {
+            $parts = explode('|', $item);
+            $normalized[] = $parts[0] . ' ' . $parts[1];
+          }
+          $data_for_patient['encounters'] = array_merge($data_for_patient['encounters'], $normalized);
         }
       }
     }

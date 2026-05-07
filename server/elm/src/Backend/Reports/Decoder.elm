@@ -1,11 +1,14 @@
 module Backend.Reports.Decoder exposing (decodeReportsData)
 
+import AssocList as Dict exposing (Dict)
 import Backend.Decoder exposing (decodeSite, decodeWithFallback)
-import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, DeliveryLocation(..), FamilyNutritionEncounterData, Gender(..), NutritionData, NutritionEncounterData, NutritionReportTableType(..), PatientData, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalIndicator(..), PrenatalParticipantData, ReportsData, SelectedEntity(..))
+import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, DeliveryLocation(..), FamilyNutritionEncounterData, Gender(..), NutritionData, NutritionEncounterData, NutritionReportTableType(..), PatientData, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalIndicator(..), PrenatalParticipantData, ReportsData, SelectedEntity(..), WellChildEncounterData)
 import Backend.Reports.Utils exposing (genderFromString)
+import Backend.Scoreboard.Model exposing (VaccineType(..))
 import Date
+import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeInt)
-import Gizra.NominalDate exposing (decodeYYYYMMDD)
+import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, andThen, fail, list, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (optional, optionalAt, required)
 import Maybe.Extra
@@ -65,7 +68,7 @@ decodePatientData =
         |> optionalAt [ "individual", "family-nutrition" ] (nullable (list (list decodeFamilyNutritionEncounterData))) Nothing
         |> optionalAt [ "individual", "family-nutrition-muac" ] (nullable (list (list decodeFamilyNutritionEncounterData))) Nothing
         |> optionalAt [ "individual", "home-visit" ] (nullable (list (list decodeYYYYMMDD))) Nothing
-        |> optionalAt [ "individual", "well-child" ] (nullable (list (list decodeNutritionEncounterData))) Nothing
+        |> optionalAt [ "individual", "well-child" ] (nullable (list (list decodeWellChildEncounterData))) Nothing
         |> optionalAt [ "individual", "child-scoreboard" ] (nullable (list (list decodeYYYYMMDD))) Nothing
         |> optionalAt [ "individual", "ncd" ] (nullable (list (list decodeYYYYMMDD))) Nothing
         |> optionalAt [ "individual", "hiv" ] (nullable (list (list decodeYYYYMMDD))) Nothing
@@ -632,17 +635,148 @@ decodeNutritionEncounterData =
             )
 
 
+decodeWellChildEncounterData : Decoder WellChildEncounterData
+decodeWellChildEncounterData =
+    string
+        |> andThen
+            (\s ->
+                case String.split "|" (String.trim s) of
+                    [ first, second, third ] ->
+                        (Date.fromIsoString first |> Result.toMaybe)
+                            |> Maybe.map
+                                (\startDate ->
+                                    let
+                                        ( nutritionData, muacCm ) =
+                                            nutritionDataFromString second
+                                    in
+                                    succeed
+                                        (WellChildEncounterData startDate
+                                            nutritionData
+                                            muacCm
+                                            (immunisationDataFromString third)
+                                        )
+                                )
+                            |> Maybe.withDefault (fail "Failed to decode WellChildEncounterData")
+
+                    _ ->
+                        fail "Failed to decode WellChildEncounterData"
+            )
+
+
+
+-- Wire format from hedley_reports_nutrition_metrics_to_string is
+-- "<stunting>,<underweight>,<wasting>,<muac>,<edema>" (PRs #1479/#1481
+-- established this order to fix issue 3199; do not reorder without
+-- updating the PHP encoder/decoder in lockstep). NutritionData carries
+-- the three z-scores; MUAC is returned alongside as the tuple's second
+-- component so callers can store it on their encounter type (mirroring
+-- parseNutritionEncounterPayload below). The edema token is discarded
+-- because WellChildEncounterData doesn't carry edema today.
+
+
+nutritionDataFromString : String -> ( Maybe NutritionData, Maybe Float )
+nutritionDataFromString s =
+    case String.split "," s of
+        [ stunting, underweight, wasting, muac, _ ] ->
+            ( Just (NutritionData (String.toFloat stunting) (String.toFloat underweight) (String.toFloat wasting))
+            , String.toFloat muac
+            )
+
+        _ ->
+            ( Nothing, Nothing )
+
+
+immunisationDataFromString : String -> Maybe (Dict VaccineType (EverySet NominalDate))
+immunisationDataFromString s =
+    let
+        tuples =
+            String.split "," s
+                |> List.filterMap
+                    (\item ->
+                        case String.split ":" item of
+                            [ mappedVaccineType, administrationDates ] ->
+                                vaccineTypeFromMapping mappedVaccineType
+                                    |> Maybe.andThen
+                                        (\vaccineType ->
+                                            let
+                                                dates =
+                                                    String.split "+" administrationDates
+                                                        |> List.map (Date.fromIsoString >> Result.toMaybe)
+                                                        |> Maybe.Extra.values
+                                                        |> EverySet.fromList
+                                            in
+                                            if EverySet.isEmpty dates then
+                                                Nothing
+
+                                            else
+                                                Just ( vaccineType, dates )
+                                        )
+
+                            _ ->
+                                Nothing
+                    )
+    in
+    if List.isEmpty tuples then
+        Nothing
+
+    else
+        Just <| Dict.fromList tuples
+
+
+vaccineTypeFromMapping : String -> Maybe VaccineType
+vaccineTypeFromMapping s =
+    case s of
+        "a" ->
+            Just VaccineBCG
+
+        "b" ->
+            Just VaccineOPV
+
+        "c" ->
+            Just VaccineDTP
+
+        "d" ->
+            Just VaccineDTPStandalone
+
+        "e" ->
+            Just VaccinePCV13
+
+        "f" ->
+            Just VaccineRotarix
+
+        "g" ->
+            Just VaccineIPV
+
+        "h" ->
+            Just VaccineMR
+
+        "i" ->
+            Just VaccineHPV
+
+        _ ->
+            Nothing
+
+
+
+-- Wire format from hedley_reports_nutrition_metrics_to_string is
+-- "<stunting>,<underweight>,<wasting>,<muac>,<edema>" (PRs #1479/#1481
+-- established this order to fix issue 3199). NutritionData carries the
+-- three z-scores; MUAC and edema flow alongside in the tuple so they
+-- can be stored on NutritionEncounterData's top-level muacCm/hasEdema
+-- fields without duplicating data inside the nested NutritionData.
+
+
 parseNutritionEncounterPayload : String -> ( Maybe NutritionData, Maybe Float, Bool )
 parseNutritionEncounterPayload payload =
     case String.split "," payload of
         [ stunting, underweight, wasting ] ->
-            ( Just (NutritionData (String.toFloat stunting) (String.toFloat wasting) (String.toFloat underweight))
+            ( Just (NutritionData (String.toFloat stunting) (String.toFloat underweight) (String.toFloat wasting))
             , Nothing
             , False
             )
 
         [ stunting, underweight, wasting, muac, edema ] ->
-            ( Just (NutritionData (String.toFloat stunting) (String.toFloat wasting) (String.toFloat underweight))
+            ( Just (NutritionData (String.toFloat stunting) (String.toFloat underweight) (String.toFloat wasting))
             , String.toFloat muac
             , edema == "1"
             )

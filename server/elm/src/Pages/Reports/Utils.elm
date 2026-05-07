@@ -1,7 +1,9 @@
-module Pages.Reports.Utils exposing (countTotalEncounters, countTotalNutritionEncounters, eddToLmpDate, familyNutritionEncounterToMetrics, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, nutritionEncounterDataToNutritionMetrics, prenatalContactTypeToEncountersAtWeek, reportTypeFromString, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth, sumNutritionMetrics)
+module Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, countTotalNutritionEncounters, eddToLmpDate, familyNutritionEncounterToMetrics, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, nutritionEncounterDataToNutritionMetrics, prenatalContactTypeToEncountersAtWeek, reportTypeFromString, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth, sumNutritionMetrics)
 
+import App.Types exposing (Site(..))
 import AssocList as Dict exposing (Dict)
 import Backend.Reports.Model exposing (FamilyNutritionEncounterData, NutritionEncounterData, PatientData, PersonId, SelectedEntity(..))
+import Backend.Scoreboard.Model exposing (VaccineType(..))
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate, diffDays)
 import List.Extra exposing (unique)
@@ -74,6 +76,9 @@ reportTypeToString reportType =
         ReportPeripartum ->
             "peripartum"
 
+        ReportPostnatalCare ->
+            "postnatal-care"
+
         ReportPrenatal ->
             "prenatal"
 
@@ -98,6 +103,9 @@ reportTypeFromString reportType =
 
         "peripartum" ->
             Just ReportPeripartum
+
+        "postnatal-care" ->
+            Just ReportPostnatalCare
 
         "prenatal" ->
             Just ReportPrenatal
@@ -524,3 +532,28 @@ resolveDataSetForYear date yearIndex encountersByMonth =
 isWideScope : SelectedEntity -> Bool
 isWideScope selectedEntity =
     List.member selectedEntity [ EntityGlobal, EntityProvince, EntityDistrict, EntityHealthCenter ]
+
+
+{-| Vaccines scheduled for a given site. Mirrors the client-side
+`Measurement.Utils.allVaccineTypes`: only Burundi schedules
+`VaccineDTPStandalone`; other sites schedule `VaccineHPV` instead.
+-}
+allVaccineTypes : Site -> List VaccineType
+allVaccineTypes site =
+    let
+        common =
+            [ VaccineBCG
+            , VaccineOPV
+            , VaccineDTP
+            , VaccinePCV13
+            , VaccineRotarix
+            , VaccineIPV
+            , VaccineMR
+            ]
+    in
+    case site of
+        SiteBurundi ->
+            common ++ [ VaccineDTPStandalone ]
+
+        _ ->
+            common ++ [ VaccineHPV ]
