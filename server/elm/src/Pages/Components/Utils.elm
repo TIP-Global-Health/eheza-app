@@ -98,7 +98,7 @@ viewSyncingPlaceholder language downloaded maybeRemaining =
             syncStatusAndProgress downloaded maybeRemaining
     in
     div [ class "sync-placeholder" ]
-        [ div [ class "status" ] [ text syncStatus ]
+        [ div [ class "sync-status" ] [ text syncStatus ]
         , div [ class "explanation" ] [ text <| translate language Translate.DownloadingExplanation ]
         , div [ class "progress" ] [ text progress ]
         ]

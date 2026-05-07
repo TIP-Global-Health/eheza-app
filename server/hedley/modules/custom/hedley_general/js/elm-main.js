@@ -18055,7 +18055,7 @@ var $author$project$Pages$Components$Utils$viewSyncingPlaceholder = F3(
 					$elm$html$Html$div,
 					_List_fromArray(
 						[
-							$elm$html$Html$Attributes$class('status')
+							$elm$html$Html$Attributes$class('sync-status')
 						]),
 					_List_fromArray(
 						[
