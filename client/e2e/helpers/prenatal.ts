@@ -218,13 +218,26 @@ export async function completePregnancyDating(page: Page, lmpDate: Date) {
 }
 
 /**
- * Complete DangerSigns: select "None of These" (normal path).
+ * Complete DangerSigns. Default: select "None of These" (normal path).
+ * With { premature: true }: select "Premature Onset of Contractions"
+ * instead — used to exercise IndicatorPrematureOnsetContractions on the
+ * Peripartum report. Selecting that danger sign does NOT trigger any
+ * additional prenatal diagnoses (verified against
+ * client/src/elm/Pages/Prenatal/Activity/Utils.elm), so existing
+ * downstream assertions remain valid.
  * Creates: danger_signs
  */
-export async function completeDangerSigns(page: Page) {
+export async function completeDangerSigns(
+  page: Page,
+  options?: { premature?: boolean },
+) {
   await openActivity(page, 'prenatal', 'danger-signs');
 
-  await selectCheckbox(page, 'None of These');
+  if (options?.premature) {
+    await selectCheckbox(page, 'Premature Onset of Contractions');
+  } else {
+    await selectCheckbox(page, 'None of These');
+  }
 
   await saveActivity(page, 'prenatal');
 }
@@ -1211,11 +1224,12 @@ export async function completeTreatmentReview(page: Page) {
 export async function completeBreastfeeding(page: Page) {
   await openActivity(page, 'prenatal', 'breastfeeding');
 
-  // "Are you breastfeeding?" → Yes (triggers 4 more questions).
+  // "Are you breastfeeding?" → Yes (triggers 5 more questions).
   await answerYesNo(page, 'is-breastfeeding', 'Yes');
   await page.waitForTimeout(WAIT.elmRerender);
 
   // Answer the follow-up questions.
+  await answerYesNo(page, 'breastfed-first-hour', 'Yes');
   await answerYesNo(page, 'breast-pain', 'No');
   await answerYesNo(page, 'breast-redness', 'No');
   await answerYesNo(page, 'enough-milk', 'Yes');
@@ -1307,8 +1321,20 @@ export async function completePregnancyOutcome(page: Page) {
  * This is required before starting a Postpartum encounter.
  * Clicks "Record Pregnancy Outcome", fills the form, and saves.
  * After saving, the app navigates to PinCodePage.
+ *
+ * Default outcome: "Live Birth at Term" (dropdown index 1).
+ * With { preTerm: true }: "Live Birth Pre-Term" (dropdown index 2) —
+ * used to exercise the Peripartum report's "Preterm birth newborns"
+ * row. The dropdown order is fixed by allPregnancyOutcome in
+ * client/src/elm/Backend/IndividualEncounterParticipant/Model.elm
+ * (LiveAtTerm, LivePreTerm, StillAtTerm, StillPreTerm, Abortions).
+ * `liveChildBorn` treats both LiveAtTerm and LivePreTerm identically,
+ * so postpartum-encounter activity expectations are unchanged.
  */
-export async function recordPregnancyOutcome(page: Page) {
+export async function recordPregnancyOutcome(
+  page: Page,
+  options?: { preTerm?: boolean },
+) {
   await click(
     page.locator('div.ui.primary.button', { hasText: 'Record Pregnancy Outcome' }),
     page,
@@ -1319,9 +1345,9 @@ export async function recordPregnancyOutcome(page: Page) {
   // 1. Date Pregnancy Concluded — calendar popup via .form-input.date.
   await setDate(page, new Date(), '.form-input.date');
 
-  // 2. Pregnancy Outcome — dropdown, select "Live Birth at Term".
+  // 2. Pregnancy Outcome — dropdown.
   const outcomeSelect = page.locator('select').first();
-  await outcomeSelect.selectOption({ index: 1 });
+  await outcomeSelect.selectOption({ index: options?.preTerm ? 2 : 1 });
   await page.waitForTimeout(WAIT.formInteraction);
 
   // 3. Delivery Location — bool input (Facility/Home).

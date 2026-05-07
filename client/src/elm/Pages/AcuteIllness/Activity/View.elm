@@ -176,24 +176,26 @@ pertinentSymptomsPopup language isOpen closeMsg measurements =
 
             viewBodyTemperature =
                 vitalsValue
-                    |> Maybe.map
+                    |> Maybe.andThen
                         (.bodyTemperature
-                            >> (\bodyTemperature ->
+                            >> Maybe.map
+                                (\bodyTemperature ->
                                     viewLabelValuePopupItem
                                         Translate.BodyTemperature
                                         (String.fromFloat bodyTemperature ++ " " ++ translate language Translate.CelsiusAbbrev)
-                               )
+                                )
                         )
 
             viewRespiratoryRate =
                 vitalsValue
-                    |> Maybe.map
+                    |> Maybe.andThen
                         (.respiratoryRate
-                            >> (\respiratoryRate ->
+                            >> Maybe.map
+                                (\respiratoryRate ->
                                     viewLabelValuePopupItem
                                         Translate.RespiratoryRate
                                         (String.fromInt respiratoryRate ++ " " ++ translate language Translate.BreathsPerMinuteUnitLabel)
-                               )
+                                )
                         )
 
             travelHistory =

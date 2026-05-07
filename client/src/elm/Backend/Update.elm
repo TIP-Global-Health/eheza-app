@@ -2085,7 +2085,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
-                            Maybe.map (generateNutritionAssessmentIndividualMsgs currentDate site zscores features isChw model newModel)
+                            Maybe.map (generateNutritionAssessmentIndividualMsgs currentDate zscores features isChw model newModel)
                                 encounterId
                                 |> Maybe.withDefault []
                     in
@@ -2340,14 +2340,20 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                 processWellChildVitalsRevision participantId encounterId value =
                     let
                         bodyTemperatureAlert =
-                            value.bodyTemperature < 35 || value.bodyTemperature >= 37.5
+                            Maybe.map (\t -> t < 35 || t >= 37.5) value.bodyTemperature
+                                |> Maybe.withDefault False
 
                         respiratoryRateAlert =
-                            Dict.get participantId model.people
-                                |> Maybe.withDefault NotAsked
-                                |> RemoteData.toMaybe
-                                |> Maybe.andThen (ageInMonths currentDate)
-                                |> (\ageMonths -> respiratoryRateAbnormalForAge ageMonths value.respiratoryRate)
+                            Maybe.map
+                                (\rate ->
+                                    Dict.get participantId model.people
+                                        |> Maybe.withDefault NotAsked
+                                        |> RemoteData.toMaybe
+                                        |> Maybe.andThen (ageInMonths currentDate)
+                                        |> (\ageMonths -> respiratoryRateAbnormalForAge ageMonths rate)
+                                )
+                                value.respiratoryRate
+                                |> Maybe.withDefault False
                     in
                     if bodyTemperatureAlert || respiratoryRateAlert then
                         generateWellChildDangerSignsAlertMsgs encounterId
@@ -9375,7 +9381,6 @@ saveNCDLabsResultsMsg encounterId personId labsResultsId labsResultsValue =
 
 generateNutritionAssessmentIndividualMsgs :
     NominalDate
-    -> Site
     -> ZScore.Model.Model
     -> EverySet SiteFeature
     -> Bool
@@ -9383,14 +9388,13 @@ generateNutritionAssessmentIndividualMsgs :
     -> ModelIndexedDb
     -> NutritionEncounterId
     -> List App.Model.Msg
-generateNutritionAssessmentIndividualMsgs currentDate site zscores features isChw before after id =
+generateNutritionAssessmentIndividualMsgs currentDate zscores features isChw before after id =
     Maybe.map2
         (\assembledBefore assembledAfter ->
             let
                 mandatoryActivitiesCompleted =
                     Pages.Nutrition.Activity.Utils.mandatoryActivitiesCompleted
                         currentDate
-                        site
                         zscores
                         features
                         isChw
@@ -9670,7 +9674,6 @@ generateNutritionAssessmentWellChildlMsgs currentDate zscores site before after 
                 mandatoryActivitiesCompleted =
                     Pages.WellChild.Activity.Utils.mandatoryNutritionAssessmentTasksCompleted
                         currentDate
-                        site
                         assembledAfter
             in
             if not mandatoryActivitiesCompleted then

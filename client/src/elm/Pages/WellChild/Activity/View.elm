@@ -77,7 +77,7 @@ import Pages.Utils
         )
 import Pages.WellChild.Activity.Model exposing (DangerSignsData, HeadCircumferenceForm, HomeVisitData, ImmunisationData, MedicationData, Model, Msg(..), NextStepsData, NextVisitForm, NutritionAssessmentData, PregnancySummaryForm, SymptomsReviewForm, WarningPopupType(..), WellChildECDForm, WellChildVaccinationForm, medicationTasks)
 import Pages.WellChild.Activity.Types exposing (DangerSignsTask(..), HomeVisitTask(..), MedicationTask(..), NextStepsTask(..), NutritionAssessmentTask(..))
-import Pages.WellChild.Activity.Utils exposing (albendazoleAdministrationFormConfig, dangerSignsTasksCompletedFromTotal, expectImmunisationTask, expectMedicationTask, expectNextStepsTask, expectNutritionAssessmentTask, generateASAPImmunisationDate, generateNextVisitDates, generateNutritionAssessment, generateRemianingECDSignsBeforeCurrentEncounter, generateVitalsFormConfig, headCircumferenceFormAndTasks, headCircumferenceFormWithDefault, immunisationTasks, immunisationTasksCompletedFromTotal, mebendezoleAdministrationFormConfig, medicationTasksCompletedFromTotal, nextStepsTasks, nextStepsTasksCompletedFromTotal, nextVisitFormWithDefault, nutritionAssessmentTasksCompletedFromTotal, pregnancySummaryFormWithDefault, resolveNutritionAssessmentTasks, symptomsReviewFormInputsAndTasks, symptomsReviewFormWithDefault, vitaminAAdministrationFormConfig, wellChildECDFormWithDefault)
+import Pages.WellChild.Activity.Utils exposing (albendazoleAdministrationFormConfig, dangerSignsTasksCompletedFromTotal, expectImmunisationTask, expectMedicationTask, expectNextStepsTask, expectNutritionAssessmentTask, generateASAPImmunisationDate, generateNextVisitDates, generateNutritionAssessment, generateRemianingECDSignsBeforeCurrentEncounter, generateVitalsFormConfig, headCircumferenceFormAndTasks, headCircumferenceFormWithDefault, immunisationTasks, immunisationTasksCompletedFromTotal, mebendezoleAdministrationFormConfig, medicationTasksCompletedFromTotal, nextStepsTasks, nextStepsTasksCompletedFromTotal, nextVisitFormWithDefault, nutritionAssessmentTaskCompleted, nutritionAssessmentTasksCompletedFromTotal, pregnancySummaryFormWithDefault, resolveNutritionAssessmentTasks, symptomsReviewFormInputsAndTasks, symptomsReviewFormWithDefault, vitaminAAdministrationFormConfig, wellChildECDFormWithDefault)
 import Pages.WellChild.Encounter.Model exposing (AssembledData)
 import Pages.WellChild.Encounter.Utils exposing (generateAssembledData)
 import SyncManager.Model exposing (Site, SiteFeature)
@@ -95,16 +95,17 @@ view :
     -> Site
     -> EverySet SiteFeature
     -> WellChildEncounterId
+    -> Bool
     -> WellChildActivity
     -> ModelIndexedDb
     -> Model
     -> Html Msg
-view language currentDate zscores site features id activity db model =
+view language currentDate zscores site features id isChw activity db model =
     let
         data =
             generateAssembledData site id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate zscores site features id activity db model) identity data
+    viewWebData language (viewHeaderAndContent language currentDate zscores site features id isChw activity db model) identity data
 
 
 viewHeaderAndContent :
@@ -114,18 +115,19 @@ viewHeaderAndContent :
     -> Site
     -> EverySet SiteFeature
     -> WellChildEncounterId
+    -> Bool
     -> WellChildActivity
     -> ModelIndexedDb
     -> Model
     -> AssembledData
     -> Html Msg
-viewHeaderAndContent language currentDate zscores site features id activity db model assembled =
+viewHeaderAndContent language currentDate zscores site features id isChw activity db model assembled =
     let
         header =
             viewHeader language id activity
 
         content =
-            viewContent language currentDate zscores site features activity db model assembled
+            viewContent language currentDate zscores site features isChw activity db model assembled
     in
     div [ class "page-activity well-child" ]
         [ header
@@ -157,14 +159,15 @@ viewContent :
     -> ZScore.Model.Model
     -> Site
     -> EverySet SiteFeature
+    -> Bool
     -> WellChildActivity
     -> ModelIndexedDb
     -> Model
     -> AssembledData
     -> Html Msg
-viewContent language currentDate zscores site features activity db model assembled =
+viewContent language currentDate zscores site features isChw activity db model assembled =
     ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
-        :: viewActivity language currentDate zscores site features activity assembled db model
+        :: viewActivity language currentDate zscores site features isChw activity assembled db model
     )
         |> div [ class "ui unstackable items" ]
 
@@ -216,21 +219,22 @@ viewActivity :
     -> ZScore.Model.Model
     -> Site
     -> EverySet SiteFeature
+    -> Bool
     -> WellChildActivity
     -> AssembledData
     -> ModelIndexedDb
     -> Model
     -> List (Html Msg)
-viewActivity language currentDate zscores site features activity assembled db model =
+viewActivity language currentDate zscores site features isChw activity assembled db model =
     case activity of
         WellChildPregnancySummary ->
             viewPregnancySummaryForm language currentDate assembled model.pregnancySummaryForm
 
         WellChildDangerSigns ->
-            viewDangerSignsContent language currentDate assembled model.dangerSignsData
+            viewDangerSignsContent language currentDate isChw assembled model.dangerSignsData
 
         WellChildNutritionAssessment ->
-            viewNutritionAssessmenContent language currentDate site zscores assembled db model.nutritionAssessmentData
+            viewNutritionAssessmenContent language currentDate site zscores isChw assembled db model.nutritionAssessmentData
 
         WellChildImmunisation ->
             viewImmunisationContent language currentDate site assembled model.immunisationData
@@ -577,10 +581,11 @@ viewPregnancySummaryForm language currentDate assembled form_ =
 viewDangerSignsContent :
     Language
     -> NominalDate
+    -> Bool
     -> AssembledData
     -> DangerSignsData
     -> List (Html Msg)
-viewDangerSignsContent language currentDate assembled data =
+viewDangerSignsContent language currentDate isChw assembled data =
     let
         measurements =
             assembled.measurements
@@ -626,7 +631,7 @@ viewDangerSignsContent language currentDate assembled data =
 
         tasksCompletedFromTotalDict =
             tasks
-                |> List.map (\task -> ( task, dangerSignsTasksCompletedFromTotal currentDate assembled data task ))
+                |> List.map (\task -> ( task, dangerSignsTasksCompletedFromTotal currentDate isChw assembled data task ))
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
@@ -648,6 +653,7 @@ viewDangerSignsContent language currentDate assembled data =
                         |> vitalsFormWithDefault data.vitalsForm
                         |> viewVitalsForm language
                             currentDate
+                            isChw
                             assembled
                         |> List.singleton
 
@@ -691,11 +697,11 @@ viewDangerSignsContent language currentDate assembled data =
     ]
 
 
-viewVitalsForm : Language -> NominalDate -> AssembledData -> VitalsForm -> Html Msg
-viewVitalsForm language currentDate assembled form =
+viewVitalsForm : Language -> NominalDate -> Bool -> AssembledData -> VitalsForm -> Html Msg
+viewVitalsForm language currentDate isChw assembled form =
     let
         formConfig =
-            generateVitalsFormConfig assembled
+            generateVitalsFormConfig isChw assembled
     in
     Measurement.View.viewVitalsForm language currentDate formConfig form
 
@@ -716,11 +722,12 @@ viewNutritionAssessmenContent :
     -> NominalDate
     -> Site
     -> ZScore.Model.Model
+    -> Bool
     -> AssembledData
     -> ModelIndexedDb
     -> NutritionAssessmentData
     -> List (Html Msg)
-viewNutritionAssessmenContent language currentDate site zscores assembled db data =
+viewNutritionAssessmenContent language currentDate site zscores isChw assembled db data =
     let
         measurements =
             assembled.measurements
@@ -734,35 +741,28 @@ viewNutritionAssessmenContent language currentDate site zscores assembled db dat
 
         viewTask task =
             let
-                ( iconClass, isCompleted ) =
+                iconClass =
                     case task of
                         TaskHeight ->
-                            ( "height"
-                            , isJust measurements.height
-                            )
+                            "height"
 
                         TaskHeadCircumference ->
-                            ( "head-circumference"
-                            , isJust measurements.headCircumference
-                            )
+                            "head-circumference"
 
                         TaskMuac ->
-                            ( "muac"
-                            , isJust measurements.muac
-                            )
+                            "muac"
 
                         TaskNutrition ->
-                            ( "nutrition"
-                            , isJust measurements.nutrition
-                            )
+                            "nutrition"
 
                         TaskWeight ->
-                            ( "weight"
-                            , isJust measurements.weight
-                            )
+                            "weight"
 
                 isActive =
                     activeTask == Just task
+
+                isCompleted =
+                    nutritionAssessmentTaskCompleted currentDate assembled task
 
                 attributes =
                     classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
@@ -781,7 +781,19 @@ viewNutritionAssessmenContent language currentDate site zscores assembled db dat
                 ]
 
         tasksCompletedFromTotalDict =
-            List.map (\task -> ( task, nutritionAssessmentTasksCompletedFromTotal currentDate zscores assembled data task )) tasks
+            List.map
+                (\task ->
+                    ( task
+                    , nutritionAssessmentTasksCompletedFromTotal currentDate
+                        zscores
+                        site
+                        isChw
+                        assembled
+                        data
+                        task
+                    )
+                )
+                tasks
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
@@ -816,8 +828,15 @@ viewNutritionAssessmenContent language currentDate site zscores assembled db dat
             case activeTask of
                 Just TaskHeight ->
                     getMeasurementValueFunc measurements.height
-                        |> heightFormWithDefault data.heightForm
-                        |> viewHeightForm language currentDate zscores assembled.person previousValuesSet.height SetHeight
+                        |> heightFormWithDefault assembled.encounter.skippedForms data.heightForm
+                        |> viewHeightForm language
+                            currentDate
+                            zscores
+                            isChw
+                            assembled.person
+                            previousValuesSet.height
+                            SetHeight
+                            SetHeightNotTaken
 
                 Just TaskHeadCircumference ->
                     viewHeadCircumferenceForm language headCircumferenceZScore previousValuesSet.headCircumference headCircumferenceForm
@@ -841,8 +860,18 @@ viewNutritionAssessmenContent language currentDate site zscores assembled db dat
                             assembled.encounter.encounterType /= NewbornExam
                     in
                     getMeasurementValueFunc measurements.weight
-                        |> weightFormWithDefault data.weightForm
-                        |> viewWeightForm language currentDate zscores assembled.person heightValue previousValuesSet.weight showWeightForHeightZScore SetWeight
+                        |> weightFormWithDefault assembled.encounter.skippedForms data.weightForm
+                        |> viewWeightForm language
+                            currentDate
+                            zscores
+                            site
+                            isChw
+                            assembled.person
+                            heightValue
+                            previousValuesSet.weight
+                            showWeightForHeightZScore
+                            SetWeight
+                            SetWeightNotTaken
 
                 Nothing ->
                     []
@@ -860,7 +889,7 @@ viewNutritionAssessmenContent language currentDate site zscores assembled db dat
                         saveMsg =
                             case task of
                                 TaskHeight ->
-                                    SaveHeight personId measurements.height nextTask
+                                    SaveHeight assembled.encounter.skippedForms personId measurements.height nextTask
 
                                 TaskHeadCircumference ->
                                     PreSaveHeadCircumference personId headCircumferenceZScore measurements.headCircumference nextTask
@@ -877,7 +906,7 @@ viewNutritionAssessmenContent language currentDate site zscores assembled db dat
                                     SaveNutrition personId measurements.nutrition assessment nextTask
 
                                 TaskWeight ->
-                                    SaveWeight personId measurements.weight nextTask
+                                    SaveWeight assembled.encounter.skippedForms personId measurements.weight nextTask
 
                         disabled =
                             tasksCompleted /= totalTasks

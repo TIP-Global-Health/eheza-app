@@ -1,10 +1,10 @@
-module Backend.WellChildActivity.Utils exposing (decodeActivityFromString, encodeActivityAsString, getActivityIcon, getAllActivities)
+module Backend.WellChildActivity.Utils exposing (activityFromString, activityToString, getActivityIcon, getAllActivities)
 
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 
 
-encodeActivityAsString : WellChildActivity -> String
-encodeActivityAsString activity =
+activityToString : WellChildActivity -> String
+activityToString activity =
     case activity of
         WellChildDangerSigns ->
             "well-child-danger-signs"
@@ -39,8 +39,8 @@ encodeActivityAsString activity =
 
 {-| The inverse of encodeActivityTypeAsString
 -}
-decodeActivityFromString : String -> Maybe WellChildActivity
-decodeActivityFromString s =
+activityFromString : String -> Maybe WellChildActivity
+activityFromString s =
     case s of
         "well-child-nutrition-assessment" ->
             Just WellChildNutritionAssessment

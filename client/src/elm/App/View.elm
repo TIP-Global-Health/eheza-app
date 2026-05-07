@@ -727,7 +727,6 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                         in
                         Pages.Nutrition.Encounter.View.view model.language
                             currentDate
-                            site
                             model.zscores
                             features
                             id
@@ -749,6 +748,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             site
                             id
                             activity
+                            isChw
                             model.indexedDb
                             page_
                             |> Html.map (MsgLoggedIn << MsgPageNutritionActivity id activity)
@@ -879,6 +879,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             site
                             features
                             id
+                            isChw
                             activity
                             model.indexedDb
                             page_

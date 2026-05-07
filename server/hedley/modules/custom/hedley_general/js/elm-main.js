@@ -6804,7 +6804,11 @@ var $author$project$Pages$Reports$Update$calculateNutritionReportDataTask = F2(
 												$elm$core$Basics$composeR,
 												$elm$core$List$filter(filterByYear),
 												$elm$core$List$map(
-													$elm$core$Tuple$pair(record.id)))),
+													function (item) {
+														return _Utils_Tuple2(
+															record.id,
+															{fbfAmount: $elm$core$Maybe$Nothing, hasEdema: false, muacCm: item.muacCm, nutritionData: item.nutritionData, startDate: item.startDate});
+													}))),
 										record.wellChildData),
 										A2(
 										$elm$core$Maybe$map,
@@ -6929,8 +6933,12 @@ var $author$project$Pages$Reports$Update$performNutritionReportDataCalculation =
 	});
 var $author$project$Pages$Reports$Model$ReportAcuteIllness = {$: 'ReportAcuteIllness'};
 var $author$project$Pages$Reports$Model$ReportDemographics = {$: 'ReportDemographics'};
+var $author$project$Pages$Reports$Model$ReportFBFDistribution = {$: 'ReportFBFDistribution'};
 var $author$project$Pages$Reports$Model$ReportNutrition = {$: 'ReportNutrition'};
+var $author$project$Pages$Reports$Model$ReportPeripartum = {$: 'ReportPeripartum'};
+var $author$project$Pages$Reports$Model$ReportPostnatalCare = {$: 'ReportPostnatalCare'};
 var $author$project$Pages$Reports$Model$ReportPrenatal = {$: 'ReportPrenatal'};
+var $author$project$Pages$Reports$Model$ReportPrenatalContacts = {$: 'ReportPrenatalContacts'};
 var $author$project$Pages$Reports$Model$ReportPrenatalDiagnoses = {$: 'ReportPrenatalDiagnoses'};
 var $author$project$Pages$Reports$Utils$reportTypeFromString = function (reportType) {
 	switch (reportType) {
@@ -6938,10 +6946,18 @@ var $author$project$Pages$Reports$Utils$reportTypeFromString = function (reportT
 			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportAcuteIllness);
 		case 'demographics':
 			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportDemographics);
+		case 'fbf-distribution':
+			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportFBFDistribution);
 		case 'nutrition':
 			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportNutrition);
+		case 'peripartum':
+			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportPeripartum);
+		case 'postnatal-care':
+			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportPostnatalCare);
 		case 'prenatal':
 			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportPrenatal);
+		case 'prenatal-contacts':
+			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportPrenatalContacts);
 		case 'prenatal-diagnoses':
 			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportPrenatalDiagnoses);
 		default:
@@ -10088,9 +10104,9 @@ var $author$project$Backend$Reports$Model$HandleSyncResponse = function (a) {
 var $author$project$Backend$Reports$Model$SendSyncRequest = function (a) {
 	return {$: 'SendSyncRequest', a: a};
 };
-var $author$project$Backend$Reports$Model$ReportsData = F7(
-	function (site, entityName, entityType, params, records, nutritionReportData, remainingForDownload) {
-		return {entityName: entityName, entityType: entityType, nutritionReportData: nutritionReportData, params: params, records: records, remainingForDownload: remainingForDownload, site: site};
+var $author$project$Backend$Reports$Model$ReportsData = F8(
+	function (site, features, entityName, entityType, params, records, nutritionReportData, remainingForDownload) {
+		return {entityName: entityName, entityType: entityType, features: features, nutritionReportData: nutritionReportData, params: params, records: records, remainingForDownload: remainingForDownload, site: site};
 	});
 var $author$project$Backend$Reports$Model$BackendGeneratedNutritionReportTableDate = function (tableType) {
 	return function (captions) {
@@ -10187,6 +10203,66 @@ var $author$project$Backend$Reports$Decoder$decodeBackendGeneratedNutritionRepor
 										'type',
 										$author$project$Backend$Reports$Decoder$decodeNutritionReportTableType,
 										$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$BackendGeneratedNutritionReportTableDate)))))))))));
+var $Gizra$elm_all_set$EverySet$EverySet = function (a) {
+	return {$: 'EverySet', a: a};
+};
+var $Gizra$elm_all_set$EverySet$empty = $Gizra$elm_all_set$EverySet$EverySet($pzp1997$assoc_list$AssocList$empty);
+var $Gizra$elm_all_set$EverySet$insert = F2(
+	function (k, _v0) {
+		var d = _v0.a;
+		return $Gizra$elm_all_set$EverySet$EverySet(
+			A3($pzp1997$assoc_list$AssocList$insert, k, _Utils_Tuple0, d));
+	});
+var $Gizra$elm_all_set$EverySet$fromList = function (xs) {
+	return A3($elm$core$List$foldl, $Gizra$elm_all_set$EverySet$insert, $Gizra$elm_all_set$EverySet$empty, xs);
+};
+var $author$project$App$Types$FeatureFamilyNutrition = {$: 'FeatureFamilyNutrition'};
+var $author$project$App$Types$FeatureGPSCoordinates = {$: 'FeatureGPSCoordinates'};
+var $author$project$App$Types$FeatureGroupEducation = {$: 'FeatureGroupEducation'};
+var $author$project$App$Types$FeatureHIVManagement = {$: 'FeatureHIVManagement'};
+var $author$project$App$Types$FeatureHealthyStart = {$: 'FeatureHealthyStart'};
+var $author$project$App$Types$FeatureNCDA = {$: 'FeatureNCDA'};
+var $author$project$App$Types$FeatureReportToWhatsApp = {$: 'FeatureReportToWhatsApp'};
+var $author$project$App$Types$FeatureStockManagementHC = {$: 'FeatureStockManagementHC'};
+var $author$project$App$Types$FeatureStockManagementVillage = {$: 'FeatureStockManagementVillage'};
+var $author$project$App$Types$FeatureTuberculosisManagement = {$: 'FeatureTuberculosisManagement'};
+var $author$project$Backend$Decoder$siteFeatureFromString = function (str) {
+	var _v0 = $elm$core$String$toLower(str);
+	switch (_v0) {
+		case 'family_nutrition':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureFamilyNutrition);
+		case 'gps_coordinates':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureGPSCoordinates);
+		case 'group_education':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureGroupEducation);
+		case 'healthy_start':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureHealthyStart);
+		case 'hiv_management':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureHIVManagement);
+		case 'ncda':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureNCDA);
+		case 'report_to_whatsapp':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureReportToWhatsApp);
+		case 'stock_management_hc':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureStockManagementHC);
+		case 'stock_management_village':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureStockManagementVillage);
+		case 'tuberculosis_management':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureTuberculosisManagement);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $elm$core$String$words = _String_words;
+var $author$project$Backend$Decoder$siteFeaturesFromString = function (str) {
+	return $Gizra$elm_all_set$EverySet$fromList(
+		$elm_community$maybe_extra$Maybe$Extra$values(
+			A2(
+				$elm$core$List$map,
+				$author$project$Backend$Decoder$siteFeatureFromString,
+				$elm$core$String$words(str))));
+};
+var $author$project$Backend$Decoder$decodeSiteFeatures = A2($elm$json$Json$Decode$map, $author$project$Backend$Decoder$siteFeaturesFromString, $elm$json$Json$Decode$string);
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt = F4(
 	function (path, valDecoder, fallback, decoder) {
 		return A2(
@@ -10225,9 +10301,13 @@ var $author$project$Backend$Reports$Decoder$decodeReportsData = A2(
 						$elm$json$Json$Decode$string,
 						A3(
 							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-							'site',
-							$author$project$Backend$Decoder$decodeSite,
-							$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$ReportsData))))))));
+							'features',
+							$author$project$Backend$Decoder$decodeSiteFeatures,
+							A3(
+								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+								'site',
+								$author$project$Backend$Decoder$decodeSite,
+								$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$ReportsData)))))))));
 var $author$project$Backend$Reports$Model$SyncResponse = F3(
 	function (records, totalRemaining, lastIdSynced) {
 		return {lastIdSynced: lastIdSynced, records: records, totalRemaining: totalRemaining};
@@ -10253,7 +10333,9 @@ var $author$project$Backend$Reports$Model$PatientData = function (id) {
 																	return function (groupNutritionSorwatheData) {
 																		return function (groupNutritionChwData) {
 																			return function (groupNutritionAchiData) {
-																				return {acuteIllnessData: acuteIllnessData, birthDate: birthDate, childScorecardData: childScorecardData, created: created, familyNutritionData: familyNutritionData, familyNutritionMuacData: familyNutritionMuacData, gender: gender, groupNutritionAchiData: groupNutritionAchiData, groupNutritionChwData: groupNutritionChwData, groupNutritionFbfData: groupNutritionFbfData, groupNutritionPmtctData: groupNutritionPmtctData, groupNutritionSorwatheData: groupNutritionSorwatheData, hivData: hivData, homeVisitData: homeVisitData, id: id, individualNutritionData: individualNutritionData, ncdData: ncdData, prenatalData: prenatalData, tuberculosisData: tuberculosisData, wellChildData: wellChildData};
+																				return function (groupNutritionFbfMotherData) {
+																					return {acuteIllnessData: acuteIllnessData, birthDate: birthDate, childScorecardData: childScorecardData, created: created, familyNutritionData: familyNutritionData, familyNutritionMuacData: familyNutritionMuacData, gender: gender, groupNutritionAchiData: groupNutritionAchiData, groupNutritionChwData: groupNutritionChwData, groupNutritionFbfData: groupNutritionFbfData, groupNutritionFbfMotherData: groupNutritionFbfMotherData, groupNutritionPmtctData: groupNutritionPmtctData, groupNutritionSorwatheData: groupNutritionSorwatheData, hivData: hivData, homeVisitData: homeVisitData, id: id, individualNutritionData: individualNutritionData, ncdData: ncdData, prenatalData: prenatalData, tuberculosisData: tuberculosisData, wellChildData: wellChildData};
+																				};
 																			};
 																		};
 																	};
@@ -10379,6 +10461,34 @@ var $author$project$Backend$Reports$Decoder$decodeAcuteIllnessEncounterData = A2
 	},
 	$elm$json$Json$Decode$string);
 var $elm$core$String$toFloat = _String_toFloat;
+var $author$project$Backend$Reports$Decoder$parseFamilyNutritionPayload = function (s) {
+	var _v0 = A2($elm$core$String$split, '|', s);
+	_v0$2:
+	while (true) {
+		if (_v0.b) {
+			if (!_v0.b.b) {
+				var muacPart = _v0.a;
+				return _Utils_Tuple2(
+					$elm$core$String$toFloat(muacPart),
+					$elm$core$Maybe$Nothing);
+			} else {
+				if (!_v0.b.b.b) {
+					var muacPart = _v0.a;
+					var _v1 = _v0.b;
+					var ahezaPart = _v1.a;
+					return _Utils_Tuple2(
+						$elm$core$String$toFloat(muacPart),
+						$elm$core$String$toFloat(ahezaPart));
+				} else {
+					break _v0$2;
+				}
+			}
+		} else {
+			break _v0$2;
+		}
+	}
+	return _Utils_Tuple2($elm$core$Maybe$Nothing, $elm$core$Maybe$Nothing);
+};
 var $author$project$Backend$Reports$Decoder$decodeFamilyNutritionEncounterData = A2(
 	$elm$json$Json$Decode$andThen,
 	function (s) {
@@ -10398,7 +10508,7 @@ var $author$project$Backend$Reports$Decoder$decodeFamilyNutritionEncounterData =
 							$elm$core$Maybe$map,
 							function (startDate) {
 								return $elm$json$Json$Decode$succeed(
-									{muacCm: $elm$core$Maybe$Nothing, startDate: startDate});
+									{ahezaAmount: $elm$core$Maybe$Nothing, muacCm: $elm$core$Maybe$Nothing, startDate: startDate});
 							},
 							$elm$core$Result$toMaybe(
 								$justinmimbs$date$Date$fromIsoString(first))));
@@ -10413,9 +10523,62 @@ var $author$project$Backend$Reports$Decoder$decodeFamilyNutritionEncounterData =
 							A2(
 								$elm$core$Maybe$map,
 								function (startDate) {
+									var _v2 = $author$project$Backend$Reports$Decoder$parseFamilyNutritionPayload(second);
+									var muacCm = _v2.a;
+									var ahezaAmount = _v2.b;
+									return $elm$json$Json$Decode$succeed(
+										{ahezaAmount: ahezaAmount, muacCm: muacCm, startDate: startDate});
+								},
+								$elm$core$Result$toMaybe(
+									$justinmimbs$date$Date$fromIsoString(first))));
+					} else {
+						break _v0$2;
+					}
+				}
+			} else {
+				break _v0$2;
+			}
+		}
+		return $elm$json$Json$Decode$fail('Failed to decode FamilyNutritionEncounterData');
+	},
+	$elm$json$Json$Decode$string);
+var $author$project$Backend$Reports$Decoder$decodeFamilyNutritionMotherEncounterData = A2(
+	$elm$json$Json$Decode$andThen,
+	function (s) {
+		var _v0 = A2(
+			$elm$core$String$split,
+			' ',
+			$elm$core$String$trim(s));
+		_v0$2:
+		while (true) {
+			if (_v0.b) {
+				if (!_v0.b.b) {
+					var first = _v0.a;
+					return A2(
+						$elm$core$Maybe$withDefault,
+						$elm$json$Json$Decode$fail('Failed to decode FamilyNutritionMotherEncounterData'),
+						A2(
+							$elm$core$Maybe$map,
+							function (startDate) {
+								return $elm$json$Json$Decode$succeed(
+									{ahezaAmount: $elm$core$Maybe$Nothing, startDate: startDate});
+							},
+							$elm$core$Result$toMaybe(
+								$justinmimbs$date$Date$fromIsoString(first))));
+				} else {
+					if (!_v0.b.b.b) {
+						var first = _v0.a;
+						var _v1 = _v0.b;
+						var second = _v1.a;
+						return A2(
+							$elm$core$Maybe$withDefault,
+							$elm$json$Json$Decode$fail('Failed to decode FamilyNutritionMotherEncounterData'),
+							A2(
+								$elm$core$Maybe$map,
+								function (startDate) {
 									return $elm$json$Json$Decode$succeed(
 										{
-											muacCm: $elm$core$String$toFloat(second),
+											ahezaAmount: $elm$core$String$toFloat(second),
 											startDate: startDate
 										});
 								},
@@ -10429,7 +10592,7 @@ var $author$project$Backend$Reports$Decoder$decodeFamilyNutritionEncounterData =
 				break _v0$2;
 			}
 		}
-		return $elm$json$Json$Decode$fail('Failed to decode FamilyNutritionEncounterData');
+		return $elm$json$Json$Decode$fail('Failed to decode FamilyNutritionMotherEncounterData');
 	},
 	$elm$json$Json$Decode$string);
 var $author$project$Backend$Reports$Model$Male = {$: 'Male'};
@@ -10455,11 +10618,39 @@ var $author$project$Backend$Reports$Decoder$decodeGender = A2(
 				$author$project$Backend$Reports$Utils$genderFromString(gender)));
 	},
 	$elm$json$Json$Decode$string);
+var $author$project$Backend$Reports$Decoder$decodeMotherFbfEncounterData = A2(
+	$elm$json$Json$Decode$andThen,
+	function (s) {
+		var _v0 = A2(
+			$elm$core$String$split,
+			' ',
+			$elm$core$String$trim(s));
+		if ((_v0.b && _v0.b.b) && (!_v0.b.b.b)) {
+			var first = _v0.a;
+			var _v1 = _v0.b;
+			var second = _v1.a;
+			var _v2 = _Utils_Tuple2(
+				$elm$core$Result$toMaybe(
+					$justinmimbs$date$Date$fromIsoString(first)),
+				$elm$core$String$toFloat(second));
+			if ((_v2.a.$ === 'Just') && (_v2.b.$ === 'Just')) {
+				var startDate = _v2.a.a;
+				var fbfAmount = _v2.b.a;
+				return $elm$json$Json$Decode$succeed(
+					{fbfAmount: fbfAmount, startDate: startDate});
+			} else {
+				return $elm$json$Json$Decode$fail('Failed to decode MotherFbfEncounterData');
+			}
+		} else {
+			return $elm$json$Json$Decode$fail('Failed to decode MotherFbfEncounterData');
+		}
+	},
+	$elm$json$Json$Decode$string);
 var $author$project$Backend$Reports$Model$NutritionData = F3(
-	function (stunting, wasting, underweight) {
+	function (stunting, underweight, wasting) {
 		return {stunting: stunting, underweight: underweight, wasting: wasting};
 	});
-var $author$project$Backend$Reports$Decoder$parseNutritionEncounterPayload = function (payload) {
+var $author$project$Backend$Reports$Decoder$parseAnthropometryPayload = function (payload) {
 	var _v0 = A2($elm$core$String$split, ',', payload);
 	_v0$2:
 	while (true) {
@@ -10475,8 +10666,8 @@ var $author$project$Backend$Reports$Decoder$parseNutritionEncounterPayload = fun
 						A3(
 							$author$project$Backend$Reports$Model$NutritionData,
 							$elm$core$String$toFloat(stunting),
-							$elm$core$String$toFloat(wasting),
-							$elm$core$String$toFloat(underweight))),
+							$elm$core$String$toFloat(underweight),
+							$elm$core$String$toFloat(wasting))),
 					$elm$core$Maybe$Nothing,
 					false);
 			} else {
@@ -10495,8 +10686,8 @@ var $author$project$Backend$Reports$Decoder$parseNutritionEncounterPayload = fun
 							A3(
 								$author$project$Backend$Reports$Model$NutritionData,
 								$elm$core$String$toFloat(stunting),
-								$elm$core$String$toFloat(wasting),
-								$elm$core$String$toFloat(underweight))),
+								$elm$core$String$toFloat(underweight),
+								$elm$core$String$toFloat(wasting))),
 						$elm$core$String$toFloat(muac),
 						edema === '1');
 				} else {
@@ -10528,7 +10719,7 @@ var $author$project$Backend$Reports$Decoder$decodeNutritionEncounterData = A2(
 							$elm$core$Maybe$map,
 							function (startDate) {
 								return $elm$json$Json$Decode$succeed(
-									{hasEdema: false, muacCm: $elm$core$Maybe$Nothing, nutritionData: $elm$core$Maybe$Nothing, startDate: startDate});
+									{fbfAmount: $elm$core$Maybe$Nothing, hasEdema: false, muacCm: $elm$core$Maybe$Nothing, nutritionData: $elm$core$Maybe$Nothing, startDate: startDate});
 							},
 							$elm$core$Result$toMaybe(
 								$justinmimbs$date$Date$fromIsoString(first))));
@@ -10543,12 +10734,27 @@ var $author$project$Backend$Reports$Decoder$decodeNutritionEncounterData = A2(
 							A2(
 								$elm$core$Maybe$map,
 								function (startDate) {
-									var _v2 = $author$project$Backend$Reports$Decoder$parseNutritionEncounterPayload(second);
-									var nutritionData = _v2.a;
-									var muacCm = _v2.b;
-									var hasEdema = _v2.c;
+									var _v2 = function () {
+										var _v3 = A2($elm$core$String$split, '|', second);
+										if ((_v3.b && _v3.b.b) && (!_v3.b.b.b)) {
+											var anth = _v3.a;
+											var _v4 = _v3.b;
+											var fbf = _v4.a;
+											return _Utils_Tuple2(
+												anth,
+												$elm$core$String$toFloat(fbf));
+										} else {
+											return _Utils_Tuple2(second, $elm$core$Maybe$Nothing);
+										}
+									}();
+									var anthropometryPart = _v2.a;
+									var fbfAmount = _v2.b;
+									var _v5 = $author$project$Backend$Reports$Decoder$parseAnthropometryPayload(anthropometryPart);
+									var nutritionData = _v5.a;
+									var muacCm = _v5.b;
+									var hasEdema = _v5.c;
 									return $elm$json$Json$Decode$succeed(
-										{hasEdema: hasEdema, muacCm: muacCm, nutritionData: nutritionData, startDate: startDate});
+										{fbfAmount: fbfAmount, hasEdema: hasEdema, muacCm: muacCm, nutritionData: nutritionData, startDate: startDate});
 								},
 								$elm$core$Result$toMaybe(
 									$justinmimbs$date$Date$fromIsoString(first))));
@@ -10624,9 +10830,9 @@ var $author$project$Backend$Reports$Decoder$decodePregnancyOutcome = A2(
 				$author$project$Backend$Reports$Decoder$pregnancyOutcomeFromString(s)));
 	},
 	$elm$json$Json$Decode$string);
-var $author$project$Backend$Reports$Model$PrenatalEncounterData = F3(
-	function (startDate, encounterType, diagnoses) {
-		return {diagnoses: diagnoses, encounterType: encounterType, startDate: startDate};
+var $author$project$Backend$Reports$Model$PrenatalEncounterData = F4(
+	function (startDate, encounterType, diagnoses, indicators) {
+		return {diagnoses: diagnoses, encounterType: encounterType, indicators: indicators, startDate: startDate};
 	});
 var $author$project$Backend$Reports$Model$DiagnosisCandidiasis = {$: 'DiagnosisCandidiasis'};
 var $author$project$Backend$Reports$Model$DiagnosisChronicHypertension = {$: 'DiagnosisChronicHypertension'};
@@ -10844,6 +11050,51 @@ var $author$project$Backend$Reports$Decoder$prenatalEncounterTypeFromString = fu
 			return $author$project$Backend$Reports$Model$NurseEncounter;
 	}
 };
+var $author$project$Backend$Reports$Model$IndicatorAbortion = {$: 'IndicatorAbortion'};
+var $author$project$Backend$Reports$Model$IndicatorAdequateGWG = {$: 'IndicatorAdequateGWG'};
+var $author$project$Backend$Reports$Model$IndicatorAnemiaTest = {$: 'IndicatorAnemiaTest'};
+var $author$project$Backend$Reports$Model$IndicatorBreastfedFirstHour = {$: 'IndicatorBreastfedFirstHour'};
+var $author$project$Backend$Reports$Model$IndicatorIntrauterineDeath = {$: 'IndicatorIntrauterineDeath'};
+var $author$project$Backend$Reports$Model$IndicatorPrematureOnsetContractions = {$: 'IndicatorPrematureOnsetContractions'};
+var $author$project$Backend$Reports$Model$IndicatorPretermBirth = {$: 'IndicatorPretermBirth'};
+var $author$project$Backend$Reports$Model$IndicatorReceivedAspirin = {$: 'IndicatorReceivedAspirin'};
+var $author$project$Backend$Reports$Model$IndicatorReceivedAzithromycin = {$: 'IndicatorReceivedAzithromycin'};
+var $author$project$Backend$Reports$Model$IndicatorReceivedCalcium = {$: 'IndicatorReceivedCalcium'};
+var $author$project$Backend$Reports$Model$IndicatorReceivedMMS = {$: 'IndicatorReceivedMMS'};
+var $author$project$Backend$Reports$Model$IndicatorReferredToUltrasound = {$: 'IndicatorReferredToUltrasound'};
+var $author$project$Backend$Reports$Model$IndicatorStillbirth = {$: 'IndicatorStillbirth'};
+var $author$project$Backend$Reports$Decoder$prenatalIndicatorFromMapping = function (s) {
+	switch (s) {
+		case 'a':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorAdequateGWG);
+		case 'b':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorReceivedMMS);
+		case 'c':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorReferredToUltrasound);
+		case 'd':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorReceivedAspirin);
+		case 'e':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorReceivedCalcium);
+		case 'f':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorPretermBirth);
+		case 'g':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorAbortion);
+		case 'h':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorIntrauterineDeath);
+		case 'i':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorStillbirth);
+		case 'j':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorReceivedAzithromycin);
+		case 'k':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorAnemiaTest);
+		case 'l':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorBreastfedFirstHour);
+		case 'm':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$IndicatorPrematureOnsetContractions);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
 var $author$project$Backend$Reports$Decoder$decodePrenatalEncounterData = A2(
 	$elm$json$Json$Decode$andThen,
 	function (s) {
@@ -10851,18 +11102,25 @@ var $author$project$Backend$Reports$Decoder$decodePrenatalEncounterData = A2(
 			$elm$core$String$split,
 			'|',
 			$elm$core$String$trim(s));
-		if (((_v0.b && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
+		if ((((_v0.b && _v0.b.b) && _v0.b.b.b) && _v0.b.b.b.b) && (!_v0.b.b.b.b.b)) {
 			var first = _v0.a;
 			var _v1 = _v0.b;
 			var second = _v1.a;
 			var _v2 = _v1.b;
 			var third = _v2.a;
+			var _v3 = _v2.b;
+			var fourth = _v3.a;
 			return A2(
 				$elm$core$Maybe$withDefault,
 				$elm$json$Json$Decode$fail('Failed to decode PrenatalEncounterData'),
 				A2(
 					$elm$core$Maybe$map,
 					function (startDate) {
+						var indicators = $elm$core$String$isEmpty(fourth) ? _List_Nil : $elm_community$maybe_extra$Maybe$Extra$values(
+							A2(
+								$elm$core$List$map,
+								$author$project$Backend$Reports$Decoder$prenatalIndicatorFromMapping,
+								A2($elm$core$String$split, ',', fourth)));
 						var encounterType = $author$project$Backend$Reports$Decoder$prenatalEncounterTypeFromString(second);
 						var diagnoses = $elm$core$String$isEmpty(third) ? _List_Nil : $elm_community$maybe_extra$Maybe$Extra$values(
 							A2(
@@ -10870,7 +11128,7 @@ var $author$project$Backend$Reports$Decoder$decodePrenatalEncounterData = A2(
 								$author$project$Backend$Reports$Decoder$prenatalDiagnosisFromMapping,
 								A2($elm$core$String$split, ',', third)));
 						return $elm$json$Json$Decode$succeed(
-							A3($author$project$Backend$Reports$Model$PrenatalEncounterData, startDate, encounterType, diagnoses));
+							A4($author$project$Backend$Reports$Model$PrenatalEncounterData, startDate, encounterType, diagnoses, indicators));
 					},
 					$elm$core$Result$toMaybe(
 						$justinmimbs$date$Date$fromIsoString(first))));
@@ -10908,61 +11166,208 @@ var $author$project$Backend$Reports$Decoder$decodePrenatalParticipantData = A3(
 						'created',
 						$author$project$Gizra$NominalDate$decodeYYYYMMDD,
 						$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$PrenatalParticipantData)))))));
+var $author$project$Backend$Reports$Model$WellChildEncounterData = F4(
+	function (startDate, nutritionData, muacCm, immunisationData) {
+		return {immunisationData: immunisationData, muacCm: muacCm, nutritionData: nutritionData, startDate: startDate};
+	});
+var $pzp1997$assoc_list$AssocList$fromList = function (alist) {
+	return A3(
+		$elm$core$List$foldl,
+		F2(
+			function (_v0, result) {
+				var key = _v0.a;
+				var value = _v0.b;
+				return A3($pzp1997$assoc_list$AssocList$insert, key, value, result);
+			}),
+		$pzp1997$assoc_list$AssocList$D(_List_Nil),
+		alist);
+};
+var $pzp1997$assoc_list$AssocList$isEmpty = function (dict) {
+	return _Utils_eq(
+		dict,
+		$pzp1997$assoc_list$AssocList$D(_List_Nil));
+};
+var $Gizra$elm_all_set$EverySet$isEmpty = function (_v0) {
+	var d = _v0.a;
+	return $pzp1997$assoc_list$AssocList$isEmpty(d);
+};
+var $author$project$Backend$Scoreboard$Model$VaccineBCG = {$: 'VaccineBCG'};
+var $author$project$Backend$Scoreboard$Model$VaccineDTP = {$: 'VaccineDTP'};
+var $author$project$Backend$Scoreboard$Model$VaccineDTPStandalone = {$: 'VaccineDTPStandalone'};
+var $author$project$Backend$Scoreboard$Model$VaccineHPV = {$: 'VaccineHPV'};
+var $author$project$Backend$Scoreboard$Model$VaccineIPV = {$: 'VaccineIPV'};
+var $author$project$Backend$Scoreboard$Model$VaccineMR = {$: 'VaccineMR'};
+var $author$project$Backend$Scoreboard$Model$VaccineOPV = {$: 'VaccineOPV'};
+var $author$project$Backend$Scoreboard$Model$VaccinePCV13 = {$: 'VaccinePCV13'};
+var $author$project$Backend$Scoreboard$Model$VaccineRotarix = {$: 'VaccineRotarix'};
+var $author$project$Backend$Reports$Decoder$vaccineTypeFromMapping = function (s) {
+	switch (s) {
+		case 'a':
+			return $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$VaccineBCG);
+		case 'b':
+			return $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$VaccineOPV);
+		case 'c':
+			return $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$VaccineDTP);
+		case 'd':
+			return $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$VaccineDTPStandalone);
+		case 'e':
+			return $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$VaccinePCV13);
+		case 'f':
+			return $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$VaccineRotarix);
+		case 'g':
+			return $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$VaccineIPV);
+		case 'h':
+			return $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$VaccineMR);
+		case 'i':
+			return $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$VaccineHPV);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Backend$Reports$Decoder$immunisationDataFromString = function (s) {
+	var tuples = A2(
+		$elm$core$List$filterMap,
+		function (item) {
+			var _v0 = A2($elm$core$String$split, ':', item);
+			if ((_v0.b && _v0.b.b) && (!_v0.b.b.b)) {
+				var mappedVaccineType = _v0.a;
+				var _v1 = _v0.b;
+				var administrationDates = _v1.a;
+				return A2(
+					$elm$core$Maybe$andThen,
+					function (vaccineType) {
+						var dates = $Gizra$elm_all_set$EverySet$fromList(
+							$elm_community$maybe_extra$Maybe$Extra$values(
+								A2(
+									$elm$core$List$map,
+									A2($elm$core$Basics$composeR, $justinmimbs$date$Date$fromIsoString, $elm$core$Result$toMaybe),
+									A2($elm$core$String$split, '+', administrationDates))));
+						return $Gizra$elm_all_set$EverySet$isEmpty(dates) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(
+							_Utils_Tuple2(vaccineType, dates));
+					},
+					$author$project$Backend$Reports$Decoder$vaccineTypeFromMapping(mappedVaccineType));
+			} else {
+				return $elm$core$Maybe$Nothing;
+			}
+		},
+		A2($elm$core$String$split, ',', s));
+	return $elm$core$List$isEmpty(tuples) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(
+		$pzp1997$assoc_list$AssocList$fromList(tuples));
+};
+var $author$project$Backend$Reports$Decoder$nutritionDataFromString = function (s) {
+	var _v0 = A2($elm$core$String$split, ',', s);
+	if (((((_v0.b && _v0.b.b) && _v0.b.b.b) && _v0.b.b.b.b) && _v0.b.b.b.b.b) && (!_v0.b.b.b.b.b.b)) {
+		var stunting = _v0.a;
+		var _v1 = _v0.b;
+		var underweight = _v1.a;
+		var _v2 = _v1.b;
+		var wasting = _v2.a;
+		var _v3 = _v2.b;
+		var muac = _v3.a;
+		var _v4 = _v3.b;
+		return _Utils_Tuple2(
+			$elm$core$Maybe$Just(
+				A3(
+					$author$project$Backend$Reports$Model$NutritionData,
+					$elm$core$String$toFloat(stunting),
+					$elm$core$String$toFloat(underweight),
+					$elm$core$String$toFloat(wasting))),
+			$elm$core$String$toFloat(muac));
+	} else {
+		return _Utils_Tuple2($elm$core$Maybe$Nothing, $elm$core$Maybe$Nothing);
+	}
+};
+var $author$project$Backend$Reports$Decoder$decodeWellChildEncounterData = A2(
+	$elm$json$Json$Decode$andThen,
+	function (s) {
+		var _v0 = A2(
+			$elm$core$String$split,
+			'|',
+			$elm$core$String$trim(s));
+		if (((_v0.b && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
+			var first = _v0.a;
+			var _v1 = _v0.b;
+			var second = _v1.a;
+			var _v2 = _v1.b;
+			var third = _v2.a;
+			return A2(
+				$elm$core$Maybe$withDefault,
+				$elm$json$Json$Decode$fail('Failed to decode WellChildEncounterData'),
+				A2(
+					$elm$core$Maybe$map,
+					function (startDate) {
+						var _v3 = $author$project$Backend$Reports$Decoder$nutritionDataFromString(second);
+						var nutritionData = _v3.a;
+						var muacCm = _v3.b;
+						return $elm$json$Json$Decode$succeed(
+							A4(
+								$author$project$Backend$Reports$Model$WellChildEncounterData,
+								startDate,
+								nutritionData,
+								muacCm,
+								$author$project$Backend$Reports$Decoder$immunisationDataFromString(third)));
+					},
+					$elm$core$Result$toMaybe(
+						$justinmimbs$date$Date$fromIsoString(first))));
+		} else {
+			return $elm$json$Json$Decode$fail('Failed to decode WellChildEncounterData');
+		}
+	},
+	$elm$json$Json$Decode$string);
 var $author$project$Backend$Reports$Decoder$decodePatientData = A4(
 	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 	_List_fromArray(
-		['group_nutrition', 'achi']),
+		['group_nutrition_mother', 'fbf']),
 	$elm$json$Json$Decode$nullable(
-		$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionEncounterData)),
+		$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeMotherFbfEncounterData)),
 	$elm$core$Maybe$Nothing,
 	A4(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 		_List_fromArray(
-			['group_nutrition', 'chw']),
+			['group_nutrition', 'achi']),
 		$elm$json$Json$Decode$nullable(
 			$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionEncounterData)),
 		$elm$core$Maybe$Nothing,
 		A4(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 			_List_fromArray(
-				['group_nutrition', 'sorwathe']),
+				['group_nutrition', 'chw']),
 			$elm$json$Json$Decode$nullable(
 				$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionEncounterData)),
 			$elm$core$Maybe$Nothing,
 			A4(
 				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 				_List_fromArray(
-					['group_nutrition', 'fbf']),
+					['group_nutrition', 'sorwathe']),
 				$elm$json$Json$Decode$nullable(
 					$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionEncounterData)),
 				$elm$core$Maybe$Nothing,
 				A4(
 					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 					_List_fromArray(
-						['group_nutrition', 'pmtct']),
+						['group_nutrition', 'fbf']),
 					$elm$json$Json$Decode$nullable(
 						$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionEncounterData)),
 					$elm$core$Maybe$Nothing,
 					A4(
 						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 						_List_fromArray(
-							['individual', 'nutrition']),
+							['group_nutrition', 'pmtct']),
 						$elm$json$Json$Decode$nullable(
-							$elm$json$Json$Decode$list(
-								$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionEncounterData))),
+							$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionEncounterData)),
 						$elm$core$Maybe$Nothing,
 						A4(
 							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 							_List_fromArray(
-								['individual', 'tuberculosis']),
+								['individual', 'nutrition']),
 							$elm$json$Json$Decode$nullable(
 								$elm$json$Json$Decode$list(
-									$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD))),
+									$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionEncounterData))),
 							$elm$core$Maybe$Nothing,
 							A4(
 								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 								_List_fromArray(
-									['individual', 'hiv']),
+									['individual', 'tuberculosis']),
 								$elm$json$Json$Decode$nullable(
 									$elm$json$Json$Decode$list(
 										$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD))),
@@ -10970,7 +11375,7 @@ var $author$project$Backend$Reports$Decoder$decodePatientData = A4(
 								A4(
 									$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 									_List_fromArray(
-										['individual', 'ncd']),
+										['individual', 'hiv']),
 									$elm$json$Json$Decode$nullable(
 										$elm$json$Json$Decode$list(
 											$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD))),
@@ -10978,7 +11383,7 @@ var $author$project$Backend$Reports$Decoder$decodePatientData = A4(
 									A4(
 										$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 										_List_fromArray(
-											['individual', 'child-scoreboard']),
+											['individual', 'ncd']),
 										$elm$json$Json$Decode$nullable(
 											$elm$json$Json$Decode$list(
 												$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD))),
@@ -10986,31 +11391,31 @@ var $author$project$Backend$Reports$Decoder$decodePatientData = A4(
 										A4(
 											$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 											_List_fromArray(
-												['individual', 'well-child']),
+												['individual', 'child-scoreboard']),
 											$elm$json$Json$Decode$nullable(
 												$elm$json$Json$Decode$list(
-													$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionEncounterData))),
+													$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD))),
 											$elm$core$Maybe$Nothing,
 											A4(
 												$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 												_List_fromArray(
-													['individual', 'home-visit']),
+													['individual', 'well-child']),
 												$elm$json$Json$Decode$nullable(
 													$elm$json$Json$Decode$list(
-														$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD))),
+														$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeWellChildEncounterData))),
 												$elm$core$Maybe$Nothing,
 												A4(
 													$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 													_List_fromArray(
-														['individual', 'family-nutrition-muac']),
+														['individual', 'home-visit']),
 													$elm$json$Json$Decode$nullable(
 														$elm$json$Json$Decode$list(
-															$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeFamilyNutritionEncounterData))),
+															$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD))),
 													$elm$core$Maybe$Nothing,
 													A4(
 														$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 														_List_fromArray(
-															['individual', 'family-nutrition']),
+															['individual', 'family-nutrition-muac']),
 														$elm$json$Json$Decode$nullable(
 															$elm$json$Json$Decode$list(
 																$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeFamilyNutritionEncounterData))),
@@ -11018,35 +11423,43 @@ var $author$project$Backend$Reports$Decoder$decodePatientData = A4(
 														A4(
 															$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 															_List_fromArray(
-																['individual', 'antenatal']),
+																['individual', 'family-nutrition']),
 															$elm$json$Json$Decode$nullable(
-																$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodePrenatalParticipantData)),
+																$elm$json$Json$Decode$list(
+																	$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeFamilyNutritionMotherEncounterData))),
 															$elm$core$Maybe$Nothing,
 															A4(
 																$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 																_List_fromArray(
-																	['individual', 'acute-illness']),
+																	['individual', 'antenatal']),
 																$elm$json$Json$Decode$nullable(
-																	$elm$json$Json$Decode$list(
-																		$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeAcuteIllnessEncounterData))),
+																	$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodePrenatalParticipantData)),
 																$elm$core$Maybe$Nothing,
-																A3(
-																	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-																	'gender',
-																	A2($author$project$Backend$Decoder$decodeWithFallback, $author$project$Backend$Reports$Model$Female, $author$project$Backend$Reports$Decoder$decodeGender),
+																A4(
+																	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
+																	_List_fromArray(
+																		['individual', 'acute-illness']),
+																	$elm$json$Json$Decode$nullable(
+																		$elm$json$Json$Decode$list(
+																			$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeAcuteIllnessEncounterData))),
+																	$elm$core$Maybe$Nothing,
 																	A3(
 																		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-																		'birth_date',
-																		$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+																		'gender',
+																		A2($author$project$Backend$Decoder$decodeWithFallback, $author$project$Backend$Reports$Model$Female, $author$project$Backend$Reports$Decoder$decodeGender),
 																		A3(
 																			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-																			'created',
+																			'birth_date',
 																			$author$project$Gizra$NominalDate$decodeYYYYMMDD,
 																			A3(
 																				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-																				'id',
-																				$author$project$Gizra$Json$decodeInt,
-																				$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$PatientData)))))))))))))))))))));
+																				'created',
+																				$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+																				A3(
+																					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+																					'id',
+																					$author$project$Gizra$Json$decodeInt,
+																					$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$PatientData))))))))))))))))))))));
 var $author$project$Backend$Reports$Decoder$decodeSyncResponse = A2(
 	$elm$json$Json$Decode$field,
 	'data',
@@ -11244,18 +11657,6 @@ var $author$project$Gizra$NominalDate$diffMonths = F2(
 	function (low, high) {
 		return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Months, low, high);
 	});
-var $pzp1997$assoc_list$AssocList$fromList = function (alist) {
-	return A3(
-		$elm$core$List$foldl,
-		F2(
-			function (_v0, result) {
-				var key = _v0.a;
-				var value = _v0.b;
-				return A3($pzp1997$assoc_list$AssocList$insert, key, value, result);
-			}),
-		$pzp1997$assoc_list$AssocList$D(_List_Nil),
-		alist);
-};
 var $elm$core$Tuple$second = function (_v0) {
 	var y = _v0.b;
 	return y;
@@ -11400,31 +11801,10 @@ var $author$project$Backend$Scoreboard$Model$RawVaccinationData = F8(
 	function (bcg, opv, dtp, dtpStandalone, pcv13, rotarix, ipv, mr) {
 		return {bcg: bcg, dtp: dtp, dtpStandalone: dtpStandalone, ipv: ipv, mr: mr, opv: opv, pcv13: pcv13, rotarix: rotarix};
 	});
-var $Gizra$elm_all_set$EverySet$EverySet = function (a) {
-	return {$: 'EverySet', a: a};
-};
-var $Gizra$elm_all_set$EverySet$empty = $Gizra$elm_all_set$EverySet$EverySet($pzp1997$assoc_list$AssocList$empty);
-var $Gizra$elm_all_set$EverySet$insert = F2(
-	function (k, _v0) {
-		var d = _v0.a;
-		return $Gizra$elm_all_set$EverySet$EverySet(
-			A3($pzp1997$assoc_list$AssocList$insert, k, _Utils_Tuple0, d));
-	});
-var $Gizra$elm_all_set$EverySet$fromList = function (xs) {
-	return A3($elm$core$List$foldl, $Gizra$elm_all_set$EverySet$insert, $Gizra$elm_all_set$EverySet$empty, xs);
-};
 var $author$project$Backend$Scoreboard$Decoder$decodeUniqueDates = A2(
 	$elm$json$Json$Decode$map,
 	$Gizra$elm_all_set$EverySet$fromList,
 	$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD));
-var $author$project$Backend$Scoreboard$Model$VaccineBCG = {$: 'VaccineBCG'};
-var $author$project$Backend$Scoreboard$Model$VaccineDTP = {$: 'VaccineDTP'};
-var $author$project$Backend$Scoreboard$Model$VaccineDTPStandalone = {$: 'VaccineDTPStandalone'};
-var $author$project$Backend$Scoreboard$Model$VaccineIPV = {$: 'VaccineIPV'};
-var $author$project$Backend$Scoreboard$Model$VaccineMR = {$: 'VaccineMR'};
-var $author$project$Backend$Scoreboard$Model$VaccineOPV = {$: 'VaccineOPV'};
-var $author$project$Backend$Scoreboard$Model$VaccinePCV13 = {$: 'VaccinePCV13'};
-var $author$project$Backend$Scoreboard$Model$VaccineRotarix = {$: 'VaccineRotarix'};
 var $justinmimbs$date$Date$compare = F2(
 	function (_v0, _v1) {
 		var a = _v0.a;
@@ -11461,53 +11841,53 @@ var $author$project$Backend$Scoreboard$Utils$vaccineDoseFromOrder = function (or
 			return $elm$core$Maybe$Nothing;
 	}
 };
-var $author$project$Backend$Scoreboard$Decoder$rawVaccinationDataToVaccinationProgressDict = function (data) {
-	var generateVaccinationProgressForVaccine = function (dates) {
-		return $pzp1997$assoc_list$AssocList$fromList(
-			$elm_community$maybe_extra$Maybe$Extra$values(
+var $author$project$Backend$Scoreboard$Utils$generateVaccinationProgressForVaccine = function (dates) {
+	return $pzp1997$assoc_list$AssocList$fromList(
+		$elm_community$maybe_extra$Maybe$Extra$values(
+			A2(
+				$elm$core$List$indexedMap,
+				F2(
+					function (index, date) {
+						return A2(
+							$elm$core$Maybe$map,
+							function (dose) {
+								return _Utils_Tuple2(dose, date);
+							},
+							$author$project$Backend$Scoreboard$Utils$vaccineDoseFromOrder(index));
+					}),
 				A2(
-					$elm$core$List$indexedMap,
-					F2(
-						function (index, date) {
-							return A2(
-								$elm$core$Maybe$map,
-								function (dose) {
-									return _Utils_Tuple2(dose, date);
-								},
-								$author$project$Backend$Scoreboard$Utils$vaccineDoseFromOrder(index));
-						}),
-					A2(
-						$elm$core$List$sortWith,
-						$justinmimbs$date$Date$compare,
-						$Gizra$elm_all_set$EverySet$toList(dates)))));
-	};
+					$elm$core$List$sortWith,
+					$justinmimbs$date$Date$compare,
+					$Gizra$elm_all_set$EverySet$toList(dates)))));
+};
+var $author$project$Backend$Scoreboard$Decoder$rawVaccinationDataToVaccinationProgressDict = function (data) {
 	return $pzp1997$assoc_list$AssocList$fromList(
 		_List_fromArray(
 			[
 				_Utils_Tuple2(
 				$author$project$Backend$Scoreboard$Model$VaccineBCG,
-				generateVaccinationProgressForVaccine(data.bcg)),
+				$author$project$Backend$Scoreboard$Utils$generateVaccinationProgressForVaccine(data.bcg)),
 				_Utils_Tuple2(
 				$author$project$Backend$Scoreboard$Model$VaccineOPV,
-				generateVaccinationProgressForVaccine(data.opv)),
+				$author$project$Backend$Scoreboard$Utils$generateVaccinationProgressForVaccine(data.opv)),
 				_Utils_Tuple2(
 				$author$project$Backend$Scoreboard$Model$VaccineDTP,
-				generateVaccinationProgressForVaccine(data.dtp)),
+				$author$project$Backend$Scoreboard$Utils$generateVaccinationProgressForVaccine(data.dtp)),
 				_Utils_Tuple2(
 				$author$project$Backend$Scoreboard$Model$VaccineDTPStandalone,
-				generateVaccinationProgressForVaccine(data.dtpStandalone)),
+				$author$project$Backend$Scoreboard$Utils$generateVaccinationProgressForVaccine(data.dtpStandalone)),
 				_Utils_Tuple2(
 				$author$project$Backend$Scoreboard$Model$VaccinePCV13,
-				generateVaccinationProgressForVaccine(data.pcv13)),
+				$author$project$Backend$Scoreboard$Utils$generateVaccinationProgressForVaccine(data.pcv13)),
 				_Utils_Tuple2(
 				$author$project$Backend$Scoreboard$Model$VaccineRotarix,
-				generateVaccinationProgressForVaccine(data.rotarix)),
+				$author$project$Backend$Scoreboard$Utils$generateVaccinationProgressForVaccine(data.rotarix)),
 				_Utils_Tuple2(
 				$author$project$Backend$Scoreboard$Model$VaccineIPV,
-				generateVaccinationProgressForVaccine(data.ipv)),
+				$author$project$Backend$Scoreboard$Utils$generateVaccinationProgressForVaccine(data.ipv)),
 				_Utils_Tuple2(
 				$author$project$Backend$Scoreboard$Model$VaccineMR,
-				generateVaccinationProgressForVaccine(data.mr))
+				$author$project$Backend$Scoreboard$Utils$generateVaccinationProgressForVaccine(data.mr))
 			]));
 };
 var $author$project$Backend$Scoreboard$Decoder$decodeVaccinationProgressDict = A2(
@@ -12880,6 +13260,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				}
 			case 'CHW':
 				return {english: 'CHW', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'ContactType':
+				return {english: 'Contact Type', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'CoreExam':
 				return {english: 'Core Exam', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'DangerSigns':
@@ -12929,6 +13311,32 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Family Planning', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'FBF':
 				return {english: 'FBF', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'FbfDistributionCategory':
+				var category = transId.a;
+				switch (category.$) {
+					case 'FbfDistributionFbfChild':
+						return {english: 'FBF Child', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					case 'FbfDistributionFbfChildAchi':
+						return {english: 'FBF Child (ACHI)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					case 'FbfDistributionFbfMother':
+						return {english: 'FBF Mother', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					case 'FbfDistributionAhezaChild':
+						return {english: 'Aheza Child', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					default:
+						return {english: 'Aheza Mother', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+				}
+			case 'FbfDistributionOccurrences':
+				return {english: '# of Encounters', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'FbfDistributionTotalAmount':
+				return {english: 'Total amount', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'FbfDistributionType':
+				return {english: 'Type', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'FbfDistributionUnit':
+				return {english: 'Unit', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'FbfDistributionUnitKg':
+				return {english: 'kg', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'FbfDistributionUnitPackage':
+				return {english: 'pkg', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Feeding':
 				return {english: 'Feeding', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Female':
@@ -13350,6 +13758,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				}
 			case 'NewbornExam':
 				return {english: 'Newborn Exam', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'NewbornsWithSPVWithin24Hours':
+				return {english: 'Newborns who received Newborn Exam or SPV within 24 hours of birth', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'NewScope':
 				return {english: 'New Scope', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'NewSelection':
@@ -13495,6 +13905,14 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'All Pregnancies', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'PregnanciesCompleted':
 				return {english: 'Completed Pregnancies', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'PregnanciesWithAtLeast4Encounters':
+				return {english: 'Pregnant women who attended at least 4 ANC contacts', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'PregnanciesWithAtLeast6Encounters':
+				return {english: 'Pregnant women who attended at least 6 ANC contacts', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'PregnanciesWithAtLeast8Encounters':
+				return {english: 'Pregnant women who attended at least 8 ANC contacts', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'PregnanciesWithFirstContactAtFirstTrimester':
+				return {english: 'Pregnant women who attended ANC contact within 1st trimester', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'PregnancyOutcome':
 				var outcome = transId.a;
 				switch (outcome.$) {
@@ -13726,6 +14144,26 @@ var $author$project$Translate$translationSet = function (transId) {
 						continue translationSet;
 					default:
 						return {english: 'Vitals Recheck', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+				}
+			case 'PrenatalContactType':
+				var prenatalContactType = transId.a;
+				switch (prenatalContactType.$) {
+					case 'PrenatalContact1':
+						return {english: 'First ANC contact (≤12 weeks)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					case 'PrenatalContact2':
+						return {english: '2nd ANC contact (20 weeks)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					case 'PrenatalContact3':
+						return {english: '3rd ANC contact (26 weeks)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					case 'PrenatalContact4':
+						return {english: '4th ANC contact (30 weeks)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					case 'PrenatalContact5':
+						return {english: '5th ANC contact (34 weeks)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					case 'PrenatalContact6':
+						return {english: '6th ANC contact (36 weeks)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					case 'PrenatalContact7':
+						return {english: '7th ANC contact (38 weeks)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					default:
+						return {english: '8th ANC contact (40 weeks)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 				}
 			case 'PrenatalDiagnosis':
 				var diagnosis = transId.a;
@@ -14167,6 +14605,44 @@ var $author$project$Translate$translationSet = function (transId) {
 							somali: $elm$core$Maybe$Just('Midna')
 						};
 				}
+			case 'PrenatalIndicatorLabel':
+				var indicator = transId.a;
+				switch (indicator.$) {
+					case 'IndicatorAbortion':
+						return {english: '', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					case 'IndicatorAdequateGWG':
+						return {english: 'Number of encounters where adequate gestational weight gain was recorded', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					case 'IndicatorAnemiaTest':
+						return {english: 'Pregnant women tested for anemia', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					case 'IndicatorBreastfedFirstHour':
+						return {english: 'Newborns breastfed within one hour of delivery', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					case 'IndicatorDiagnosedAnemia':
+						return {english: 'Pregnant women diagnosed with anemia', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					case 'IndicatorHistoryOfAdversePregnancyOutcomes':
+						return {english: 'Pregnant women with a history of preterm births, spontaneous abortion, stillbirth, or intrauterine fetal deaths', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					case 'IndicatorHistoryOfAdversePregnancyOutcomesReceivedAzithromycin':
+						return {english: 'Pregnant women with a history of adverse pregnancy outcomes, who received Azithromycin', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					case 'IndicatorIntrauterineDeath':
+						return {english: '', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					case 'IndicatorReceivedAspirin':
+						return {english: 'Pregnant women who received low-dose aspirin', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					case 'IndicatorReceivedAzithromycin':
+						return {english: '', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					case 'IndicatorReceivedCalcium':
+						return {english: 'Pregnant women who received low-dose antenatal calcium', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					case 'IndicatorReceivedMMS':
+						return {english: 'Pregnant women who received MMS', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					case 'IndicatorPrematureOnsetContractions':
+						return {english: 'Pregnant women with premature labour', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					case 'IndicatorPretermBirth':
+						return {english: '', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					case 'IndicatorReferredToUltrasound':
+						return {english: 'Pregnant women who received ultrasound exams', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					case 'IndicatorReferredToUltrasoundBeforeEGA24':
+						return {english: 'Pregnant women who received at least one ultrasound before 24 weeks’ gestation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					default:
+						return {english: '', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+				}
 			case 'PrevalenceByMonthOneVisitOrMore':
 				return {english: 'Prevalence by month - one visit or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'PrevalenceByMonthTwoVisitsOrMore':
@@ -14201,14 +14677,22 @@ var $author$project$Translate$translationSet = function (transId) {
 						continue translationSet;
 					case 'ReportDemographics':
 						return {english: 'Demographics', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					case 'ReportFBFDistribution':
+						return {english: 'Stock Management', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'ReportNutrition':
 						var $temp$transId = $author$project$Translate$Nutrition;
 						transId = $temp$transId;
 						continue translationSet;
+					case 'ReportPeripartum':
+						return {english: 'Peripartum', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+					case 'ReportPostnatalCare':
+						return {english: 'Postnatal Care', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					case 'ReportPrenatal':
 						var $temp$transId = $author$project$Translate$Antenatal;
 						transId = $temp$transId;
 						continue translationSet;
+					case 'ReportPrenatalContacts':
+						return {english: 'ANC Contacts', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 					default:
 						return {english: 'ANC Diagnoses', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 				}
@@ -14325,6 +14809,12 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Targeted Interventions', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Total':
 				return {english: 'Total', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'TotalDeliveries':
+				return {english: 'Total deliveries', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'TotalLiveBirths':
+				return {english: 'Total live births', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'TotalLivePreTermBirths':
+				return {english: 'Preterm birth newborns', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'TreatmentReview':
 				return {english: 'Treatment Review', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Trimester':
@@ -14384,6 +14874,16 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Unique', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'UniversalIntervention':
 				return {english: 'Universal Intervention', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'UpToDateWithImmunization7To11WeeksLabel':
+				return {english: 'Infants aged 7-11 weeks who are up to date with immunization', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'UpToDateWithImmunization11To15WeeksLabel':
+				return {english: 'Infants aged 11-15 weeks who are up to date with immunization', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'UpToDateWithImmunization15WeeksTo10MonthsLabel':
+				return {english: 'Children aged 15 weeks - 10 mos who are up to date with immunization', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'UpToDateWithImmunization10To19MonthsLabel':
+				return {english: 'Children aged 10-19 mos who are up to date with immunization', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'UpToDateWithImmunization19To24MonthsLabel':
+				return {english: 'Children 19 mos - 2 years who are up to date with immunization', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'UrineDipstickTest':
 				return {english: 'Urine Dipstick Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'UrineDipstickTestResult':
@@ -18236,10 +18736,18 @@ var $author$project$Pages$Reports$Utils$reportTypeToString = function (reportTyp
 			return 'acute-illness';
 		case 'ReportDemographics':
 			return 'demographics';
+		case 'ReportFBFDistribution':
+			return 'fbf-distribution';
 		case 'ReportNutrition':
 			return 'nutrition';
+		case 'ReportPeripartum':
+			return 'peripartum';
+		case 'ReportPostnatalCare':
+			return 'postnatal-care';
 		case 'ReportPrenatal':
 			return 'prenatal';
+		case 'ReportPrenatalContacts':
+			return 'prenatal-contacts';
 		default:
 			return 'prenatal-diagnoses';
 	}
@@ -18575,8 +19083,22 @@ var $author$project$Translate$NutritionTotal = {$: 'NutritionTotal'};
 var $author$project$Translate$PMTCT = {$: 'PMTCT'};
 var $author$project$Translate$Sorwathe = {$: 'Sorwathe'};
 var $author$project$Translate$Unique = {$: 'Unique'};
-var $author$project$Pages$Reports$View$generateDemographicsReportEncountersData = F2(
-	function (language, records) {
+var $pzp1997$assoc_list$AssocList$member = F2(
+	function (targetKey, dict) {
+		var _v0 = A2($pzp1997$assoc_list$AssocList$get, targetKey, dict);
+		if (_v0.$ === 'Just') {
+			return true;
+		} else {
+			return false;
+		}
+	});
+var $Gizra$elm_all_set$EverySet$member = F2(
+	function (k, _v0) {
+		var d = _v0.a;
+		return A2($pzp1997$assoc_list$AssocList$member, k, d);
+	});
+var $author$project$Pages$Reports$View$generateDemographicsReportEncountersData = F3(
+	function (language, features, records) {
 		var wellChildEncountersData = A2(
 			$elm$core$List$filterMap,
 			A2(
@@ -18718,7 +19240,8 @@ var $author$project$Pages$Reports$View$generateDemographicsReportEncountersData 
 						]),
 					shiftLeft);
 			});
-		var familyNutritionEncountersData = A2(
+		var familyNutritionEnabled = A2($Gizra$elm_all_set$EverySet$member, $author$project$App$Types$FeatureFamilyNutrition, features);
+		var familyNutritionEncountersData = familyNutritionEnabled ? A2(
 			$elm$core$List$filterMap,
 			A2(
 				$elm$core$Basics$composeR,
@@ -18726,7 +19249,7 @@ var $author$project$Pages$Reports$View$generateDemographicsReportEncountersData 
 					return $.familyNutritionData;
 				},
 				$elm$core$Maybe$map($elm$core$List$concat)),
-			records);
+			records) : _List_Nil;
 		var countUnique = A2(
 			$elm$core$Basics$composeR,
 			$elm$core$List$filter(
@@ -18830,29 +19353,33 @@ var $author$project$Pages$Reports$View$generateDemographicsReportEncountersData 
 				_List_fromArray(
 					[$author$project$Translate$EncounterType, $author$project$Translate$All, $author$project$Translate$Unique])),
 			heading: A2($author$project$Translate$translate, language, $author$project$Translate$Encounters) + ':',
-			rows: _List_fromArray(
-				[
-					A4(generateRow, $author$project$Translate$ANCTotal, prenatalDataNurseEncountersTotal + prenatalDataChwEncountersTotal, prenatalDataNurseEncountersUnique + prenatalDataChwEncountersUnique, false),
-					A4(generateRow, $author$project$Translate$HealthCenter, prenatalDataNurseEncountersTotal, prenatalDataNurseEncountersUnique, true),
-					A4(generateRow, $author$project$Translate$CHW, prenatalDataChwEncountersTotal, prenatalDataChwEncountersUnique, true),
-					A4(generateRow, $author$project$Translate$AcuteIllnessTotal, acuteIllnessDataNurseEncountersTotal + acuteIllnessDataChwEncountersTotal, acuteIllnessDataNurseEncountersUnique + acuteIllnessDataChwEncountersUnique, false),
-					A4(generateRow, $author$project$Translate$HealthCenter, acuteIllnessDataNurseEncountersTotal, acuteIllnessDataNurseEncountersUnique, true),
-					A4(generateRow, $author$project$Translate$CHW, acuteIllnessDataChwEncountersTotal, acuteIllnessDataChwEncountersUnique, true),
-					A4(generateRow, $author$project$Translate$StandardPediatricVisit, wellChildDataEncountersTotal, wellChildDataEncountersUnique, false),
-					A4(generateRow, $author$project$Translate$HomeVisit, homeVisitDataEncountersTotal, homeVisitDataEncountersUnique, false),
-					A4(generateRow, $author$project$Translate$ChildScorecard, childScorecardDataEncountersTotal, childScorecardDataEncountersUnique, false),
-					A4(generateRow, $author$project$Translate$NCD, ncdDataEncountersTotal, ncdDataEncountersUnique, false),
-					A4(generateRow, $author$project$Translate$HIV, hivDataEncountersTotal, hivDataEncountersUnique, false),
-					A4(generateRow, $author$project$Translate$Tuberculosis, tuberculosisDataEncountersTotal, tuberculosisDataEncountersUnique, false),
-					A4(generateRow, $author$project$Translate$NutritionTotal, overallNutritionTotal, overallNutritionUnique, false),
-					A4(generateRow, $author$project$Translate$PMTCT, nutritionGroupPmtctEncountersTotal, nutritionGroupPmtctEncountersUnique, true),
-					A4(generateRow, $author$project$Translate$FBF, nutritionGroupFbfEncountersTotal, nutritionGroupFbfEncountersUnique, true),
-					A4(generateRow, $author$project$Translate$Sorwathe, nutritionGroupSorwatheEncountersTotal, nutritionGroupSorwatheEncountersUnique, true),
-					A4(generateRow, $author$project$Translate$CBNP, nutritionGroupChwEncountersTotal, nutritionGroupChwEncountersUnique, true),
-					A4(generateRow, $author$project$Translate$ACHI, nutritionGroupAchiEncountersTotal, nutritionGroupAchiEncountersUnique, true),
-					A4(generateRow, $author$project$Translate$Individual, nutritionIndividualEncountersTotal, nutritionIndividualEncountersUnique, true),
-					A4(generateRow, $author$project$Translate$FamilyNutrition, familyNutritionEncountersTotal, familyNutritionEncountersUnique, false)
-				]),
+			rows: _Utils_ap(
+				_List_fromArray(
+					[
+						A4(generateRow, $author$project$Translate$ANCTotal, prenatalDataNurseEncountersTotal + prenatalDataChwEncountersTotal, prenatalDataNurseEncountersUnique + prenatalDataChwEncountersUnique, false),
+						A4(generateRow, $author$project$Translate$HealthCenter, prenatalDataNurseEncountersTotal, prenatalDataNurseEncountersUnique, true),
+						A4(generateRow, $author$project$Translate$CHW, prenatalDataChwEncountersTotal, prenatalDataChwEncountersUnique, true),
+						A4(generateRow, $author$project$Translate$AcuteIllnessTotal, acuteIllnessDataNurseEncountersTotal + acuteIllnessDataChwEncountersTotal, acuteIllnessDataNurseEncountersUnique + acuteIllnessDataChwEncountersUnique, false),
+						A4(generateRow, $author$project$Translate$HealthCenter, acuteIllnessDataNurseEncountersTotal, acuteIllnessDataNurseEncountersUnique, true),
+						A4(generateRow, $author$project$Translate$CHW, acuteIllnessDataChwEncountersTotal, acuteIllnessDataChwEncountersUnique, true),
+						A4(generateRow, $author$project$Translate$StandardPediatricVisit, wellChildDataEncountersTotal, wellChildDataEncountersUnique, false),
+						A4(generateRow, $author$project$Translate$HomeVisit, homeVisitDataEncountersTotal, homeVisitDataEncountersUnique, false),
+						A4(generateRow, $author$project$Translate$ChildScorecard, childScorecardDataEncountersTotal, childScorecardDataEncountersUnique, false),
+						A4(generateRow, $author$project$Translate$NCD, ncdDataEncountersTotal, ncdDataEncountersUnique, false),
+						A4(generateRow, $author$project$Translate$HIV, hivDataEncountersTotal, hivDataEncountersUnique, false),
+						A4(generateRow, $author$project$Translate$Tuberculosis, tuberculosisDataEncountersTotal, tuberculosisDataEncountersUnique, false),
+						A4(generateRow, $author$project$Translate$NutritionTotal, overallNutritionTotal, overallNutritionUnique, false),
+						A4(generateRow, $author$project$Translate$PMTCT, nutritionGroupPmtctEncountersTotal, nutritionGroupPmtctEncountersUnique, true),
+						A4(generateRow, $author$project$Translate$FBF, nutritionGroupFbfEncountersTotal, nutritionGroupFbfEncountersUnique, true),
+						A4(generateRow, $author$project$Translate$Sorwathe, nutritionGroupSorwatheEncountersTotal, nutritionGroupSorwatheEncountersUnique, true),
+						A4(generateRow, $author$project$Translate$CBNP, nutritionGroupChwEncountersTotal, nutritionGroupChwEncountersUnique, true),
+						A4(generateRow, $author$project$Translate$ACHI, nutritionGroupAchiEncountersTotal, nutritionGroupAchiEncountersUnique, true),
+						A4(generateRow, $author$project$Translate$Individual, nutritionIndividualEncountersTotal, nutritionIndividualEncountersUnique, true)
+					]),
+				familyNutritionEnabled ? _List_fromArray(
+					[
+						A4(generateRow, $author$project$Translate$FamilyNutrition, familyNutritionEncountersTotal, familyNutritionEncountersUnique, false)
+					]) : _List_Nil),
 			totals: {
 				label: A2($author$project$Translate$translate, language, $author$project$Translate$Total),
 				total: $elm$core$String$fromInt(overallTotal),
@@ -19208,8 +19735,8 @@ var $author$project$Pages$Reports$View$viewDemographicsReportPatients = function
 				])),
 		A2($elm$core$List$map, viewTable, data.tables));
 };
-var $author$project$Pages$Reports$View$viewDemographicsReport = F5(
-	function (language, startDate, limitDate, scopeLabel, records) {
+var $author$project$Pages$Reports$View$viewDemographicsReport = F6(
+	function (language, features, startDate, limitDate, scopeLabel, records) {
 		var demographicsReportPatientsData = A3(
 			$author$project$Pages$Reports$View$generateDemographicsReportPatientsData,
 			language,
@@ -19222,7 +19749,7 @@ var $author$project$Pages$Reports$View$viewDemographicsReport = F5(
 						$elm$core$Basics$LT);
 				},
 				records));
-		var demographicsReportEncountersData = A2($author$project$Pages$Reports$View$generateDemographicsReportEncountersData, language, records);
+		var demographicsReportEncountersData = A3($author$project$Pages$Reports$View$generateDemographicsReportEncountersData, language, features, records);
 		var csvFileName = 'demographics-report-' + ($elm$core$String$toLower(
 			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
 		var csvContent = $author$project$Pages$Reports$View$demographicsReportPatientsDataToCSV(demographicsReportPatientsData) + ('\n\n\n' + $author$project$Pages$Reports$View$demographicsReportEncountersDataToCSV(demographicsReportEncountersData));
@@ -19240,6 +19767,235 @@ var $author$project$Pages$Reports$View$viewDemographicsReport = F5(
 						[
 							A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
 						]))));
+	});
+var $author$project$Pages$Reports$View$fbfDistributionCategoryCssClass = function (category) {
+	switch (category.$) {
+		case 'FbfDistributionAhezaChild':
+			return 'aheza-child';
+		case 'FbfDistributionAhezaMother':
+			return 'aheza-mother';
+		case 'FbfDistributionFbfChild':
+			return 'fbf-child';
+		case 'FbfDistributionFbfChildAchi':
+			return 'fbf-child-achi';
+		default:
+			return 'fbf-mother';
+	}
+};
+var $author$project$Translate$FbfDistributionCategory = function (a) {
+	return {$: 'FbfDistributionCategory', a: a};
+};
+var $author$project$Translate$FbfDistributionOccurrences = {$: 'FbfDistributionOccurrences'};
+var $author$project$Translate$FbfDistributionTotalAmount = {$: 'FbfDistributionTotalAmount'};
+var $author$project$Translate$FbfDistributionType = {$: 'FbfDistributionType'};
+var $author$project$Translate$FbfDistributionUnit = {$: 'FbfDistributionUnit'};
+var $author$project$Translate$FbfDistributionUnitKg = {$: 'FbfDistributionUnitKg'};
+var $author$project$Translate$FbfDistributionUnitPackage = {$: 'FbfDistributionUnitPackage'};
+var $author$project$Pages$Reports$View$fbfDistributionCategoryUnit = function (category) {
+	switch (category.$) {
+		case 'FbfDistributionAhezaChild':
+			return $author$project$Translate$FbfDistributionUnitKg;
+		case 'FbfDistributionAhezaMother':
+			return $author$project$Translate$FbfDistributionUnitKg;
+		case 'FbfDistributionFbfChild':
+			return $author$project$Translate$FbfDistributionUnitPackage;
+		case 'FbfDistributionFbfChildAchi':
+			return $author$project$Translate$FbfDistributionUnitKg;
+		default:
+			return $author$project$Translate$FbfDistributionUnitPackage;
+	}
+};
+var $elm$core$Basics$round = _Basics_round;
+var $author$project$Pages$Reports$View$formatDistributionTotal = function (value) {
+	return _Utils_eq(
+		value,
+		$elm$core$Basics$round(value)) ? $elm$core$String$fromInt(
+		$elm$core$Basics$round(value)) : A2($myrho$elm_round$Round$round, 2, value);
+};
+var $author$project$Pages$Reports$View$generateFBFDistributionReportData = F3(
+	function (language, categories, records) {
+		var fbfMotherAmounts = A2(
+			$elm$core$List$map,
+			function ($) {
+				return $.fbfAmount;
+			},
+			$elm$core$List$concat(
+				A2(
+					$elm$core$List$filterMap,
+					function ($) {
+						return $.groupNutritionFbfMotherData;
+					},
+					records)));
+		var fbfChildAmounts = A2(
+			$elm$core$List$filterMap,
+			function ($) {
+				return $.fbfAmount;
+			},
+			$elm$core$List$concat(
+				A2(
+					$elm$core$List$filterMap,
+					function ($) {
+						return $.groupNutritionFbfData;
+					},
+					records)));
+		var fbfChildAchiAmounts = A2(
+			$elm$core$List$filterMap,
+			function ($) {
+				return $.fbfAmount;
+			},
+			$elm$core$List$concat(
+				A2(
+					$elm$core$List$filterMap,
+					function ($) {
+						return $.groupNutritionAchiData;
+					},
+					records)));
+		var ahezaMotherAmounts = A2(
+			$elm$core$List$filterMap,
+			function ($) {
+				return $.ahezaAmount;
+			},
+			$elm$core$List$concat(
+				$elm$core$List$concat(
+					A2(
+						$elm$core$List$filterMap,
+						function ($) {
+							return $.familyNutritionData;
+						},
+						records))));
+		var ahezaChildAmounts = A2(
+			$elm$core$List$filterMap,
+			function ($) {
+				return $.ahezaAmount;
+			},
+			$elm$core$List$concat(
+				$elm$core$List$concat(
+					A2(
+						$elm$core$List$filterMap,
+						function ($) {
+							return $.familyNutritionMuacData;
+						},
+						records))));
+		var amountsFor = function (category) {
+			switch (category.$) {
+				case 'FbfDistributionAhezaChild':
+					return ahezaChildAmounts;
+				case 'FbfDistributionAhezaMother':
+					return ahezaMotherAmounts;
+				case 'FbfDistributionFbfChild':
+					return fbfChildAmounts;
+				case 'FbfDistributionFbfChildAchi':
+					return fbfChildAchiAmounts;
+				default:
+					return fbfMotherAmounts;
+			}
+		};
+		var rows = A2(
+			$elm$core$List$map,
+			function (category) {
+				var amounts = amountsFor(category);
+				return _List_fromArray(
+					[
+						A2(
+						$author$project$Translate$translate,
+						language,
+						$author$project$Translate$FbfDistributionCategory(category)),
+						$author$project$Pages$Reports$View$formatDistributionTotal(
+						$elm$core$List$sum(amounts)),
+						A2(
+						$author$project$Translate$translate,
+						language,
+						$author$project$Pages$Reports$View$fbfDistributionCategoryUnit(category)),
+						$elm$core$String$fromInt(
+						$elm$core$List$length(amounts))
+					]);
+			},
+			categories);
+		return {
+			captions: _List_fromArray(
+				[
+					A2($author$project$Translate$translate, language, $author$project$Translate$FbfDistributionType),
+					A2($author$project$Translate$translate, language, $author$project$Translate$FbfDistributionTotalAmount),
+					A2($author$project$Translate$translate, language, $author$project$Translate$FbfDistributionUnit),
+					A2($author$project$Translate$translate, language, $author$project$Translate$FbfDistributionOccurrences)
+				]),
+			heading: '',
+			rows: rows
+		};
+	});
+var $author$project$Pages$Reports$Model$FbfDistributionAhezaChild = {$: 'FbfDistributionAhezaChild'};
+var $author$project$Pages$Reports$Model$FbfDistributionAhezaMother = {$: 'FbfDistributionAhezaMother'};
+var $author$project$Pages$Reports$Model$FbfDistributionFbfChild = {$: 'FbfDistributionFbfChild'};
+var $author$project$Pages$Reports$Model$FbfDistributionFbfChildAchi = {$: 'FbfDistributionFbfChildAchi'};
+var $author$project$Pages$Reports$Model$FbfDistributionFbfMother = {$: 'FbfDistributionFbfMother'};
+var $author$project$Pages$Reports$Model$allFbfDistributionCategories = _List_fromArray(
+	[$author$project$Pages$Reports$Model$FbfDistributionFbfChild, $author$project$Pages$Reports$Model$FbfDistributionFbfMother, $author$project$Pages$Reports$Model$FbfDistributionFbfChildAchi, $author$project$Pages$Reports$Model$FbfDistributionAhezaChild, $author$project$Pages$Reports$Model$FbfDistributionAhezaMother]);
+var $author$project$Pages$Reports$View$visibleFbfDistributionCategories = function (features) {
+	var familyNutritionEnabled = A2($Gizra$elm_all_set$EverySet$member, $author$project$App$Types$FeatureFamilyNutrition, features);
+	return A2(
+		$elm$core$List$filter,
+		function (category) {
+			switch (category.$) {
+				case 'FbfDistributionAhezaChild':
+					return familyNutritionEnabled;
+				case 'FbfDistributionAhezaMother':
+					return familyNutritionEnabled;
+				case 'FbfDistributionFbfChild':
+					return true;
+				case 'FbfDistributionFbfChildAchi':
+					return true;
+				default:
+					return true;
+			}
+		},
+		$author$project$Pages$Reports$Model$allFbfDistributionCategories);
+};
+var $author$project$Pages$Reports$View$viewFBFDistributionReport = F5(
+	function (language, features, limitDate, scopeLabel, records) {
+		var csvFileName = 'fbf-distribution-report-' + ($elm$core$String$toLower(
+			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
+		var categories = $author$project$Pages$Reports$View$visibleFbfDistributionCategories(features);
+		var data = A3($author$project$Pages$Reports$View$generateFBFDistributionReportData, language, categories, records);
+		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
+		var dataRows = A3(
+			$elm$core$List$map2,
+			F2(
+				function (category, row) {
+					return A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class(
+								'row ' + $author$project$Pages$Reports$View$fbfDistributionCategoryCssClass(category))
+							]),
+						$author$project$Pages$Components$View$viewStandardCells(row));
+				}),
+			categories,
+			data.rows);
+		var captionsRow = A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('row captions')
+				]),
+			$author$project$Pages$Components$View$viewStandardCells(data.captions));
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('report fbf-distribution')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('table')
+						]),
+					A2($elm$core$List$cons, captionsRow, dataRows)),
+					A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
+				]));
 	});
 var $author$project$Translate$AcuteMalnutritionMam = {$: 'AcuteMalnutritionMam'};
 var $author$project$Translate$AcuteMalnutritionSam = {$: 'AcuteMalnutritionSam'};
@@ -20212,6 +20968,975 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F5(
 						A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
 					])));
 	});
+var $author$project$Translate$PrenatalIndicatorLabel = function (a) {
+	return {$: 'PrenatalIndicatorLabel', a: a};
+};
+var $author$project$Translate$TotalDeliveries = {$: 'TotalDeliveries'};
+var $author$project$Translate$TotalLiveBirths = {$: 'TotalLiveBirths'};
+var $author$project$Translate$TotalLivePreTermBirths = {$: 'TotalLivePreTermBirths'};
+var $author$project$Pages$Reports$View$generatePeripartumReportData = F2(
+	function (language, records) {
+		var pregnanciesWithIndicator = function (indicator) {
+			return $elm$core$List$filter(
+				A2(
+					$elm$core$Basics$composeR,
+					function ($) {
+						return $.encounters;
+					},
+					$elm$core$List$any(
+						A2(
+							$elm$core$Basics$composeR,
+							function ($) {
+								return $.indicators;
+							},
+							$elm$core$List$member(indicator)))));
+		};
+		var pregnancies = $elm$core$List$concat(
+			$elm_community$maybe_extra$Maybe$Extra$values(
+				A2(
+					$elm$core$List$map,
+					function ($) {
+						return $.prenatalData;
+					},
+					records)));
+		var generateRow = F2(
+			function (label, value) {
+				return _List_fromArray(
+					[
+						A2($author$project$Translate$translate, language, label),
+						$elm$core$String$fromInt(value)
+					]);
+			});
+		var countPregnanciesByOutcome = function (outcome) {
+			return $elm$core$List$length(
+				A2(
+					$elm$core$List$filter,
+					A2(
+						$elm$core$Basics$composeR,
+						function ($) {
+							return $.outcome;
+						},
+						$elm$core$Basics$eq(
+							$elm$core$Maybe$Just(outcome))),
+					pregnancies));
+		};
+		var totalLiveAtTerm = countPregnanciesByOutcome($author$project$Backend$Reports$Model$OutcomeLiveAtTerm);
+		var totalLivePreTerm = countPregnanciesByOutcome($author$project$Backend$Reports$Model$OutcomeLivePreTerm);
+		var totalStillAtTerm = countPregnanciesByOutcome($author$project$Backend$Reports$Model$OutcomeStillAtTerm);
+		var totalStillPreTerm = countPregnanciesByOutcome($author$project$Backend$Reports$Model$OutcomeStillPreTerm);
+		return {
+			captions: _List_fromArray(
+				[
+					'',
+					A2($author$project$Translate$translate, language, $author$project$Translate$Total)
+				]),
+			heading: '',
+			rows: _List_fromArray(
+				[
+					A2(generateRow, $author$project$Translate$TotalDeliveries, ((totalLiveAtTerm + totalLivePreTerm) + totalStillAtTerm) + totalStillPreTerm),
+					A2(generateRow, $author$project$Translate$TotalLiveBirths, totalLiveAtTerm + totalLivePreTerm),
+					A2(generateRow, $author$project$Translate$TotalLivePreTermBirths, totalLivePreTerm),
+					A2(
+					generateRow,
+					$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorPrematureOnsetContractions),
+					$elm$core$List$length(
+						A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorPrematureOnsetContractions, pregnancies))),
+					A2(
+					generateRow,
+					$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorBreastfedFirstHour),
+					$elm$core$List$length(
+						A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorBreastfedFirstHour, pregnancies)))
+				])
+		};
+	});
+var $author$project$Pages$Reports$View$viewPeripartumReport = F4(
+	function (language, limitDate, scopeLabel, records) {
+		var data = A2($author$project$Pages$Reports$View$generatePeripartumReportData, language, records);
+		var csvFileName = 'peripartum-report-' + ($elm$core$String$toLower(
+			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
+		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
+		var captionsRow = A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('row captions')
+				]),
+			$author$project$Pages$Components$View$viewStandardCells(data.captions));
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('report peripartum')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('table')
+						]),
+					A2(
+						$elm$core$List$cons,
+						captionsRow,
+						A2($elm$core$List$map, $author$project$Pages$Components$View$viewStandardRow, data.rows))),
+					A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
+				]));
+	});
+var $author$project$Translate$NewbornsWithSPVWithin24Hours = {$: 'NewbornsWithSPVWithin24Hours'};
+var $author$project$Translate$UpToDateWithImmunization10To19MonthsLabel = {$: 'UpToDateWithImmunization10To19MonthsLabel'};
+var $author$project$Translate$UpToDateWithImmunization11To15WeeksLabel = {$: 'UpToDateWithImmunization11To15WeeksLabel'};
+var $author$project$Translate$UpToDateWithImmunization15WeeksTo10MonthsLabel = {$: 'UpToDateWithImmunization15WeeksTo10MonthsLabel'};
+var $author$project$Translate$UpToDateWithImmunization19To24MonthsLabel = {$: 'UpToDateWithImmunization19To24MonthsLabel'};
+var $author$project$Translate$UpToDateWithImmunization7To11WeeksLabel = {$: 'UpToDateWithImmunization7To11WeeksLabel'};
+var $author$project$Pages$Reports$Utils$allVaccineTypes = function (site) {
+	var common = _List_fromArray(
+		[$author$project$Backend$Scoreboard$Model$VaccineBCG, $author$project$Backend$Scoreboard$Model$VaccineOPV, $author$project$Backend$Scoreboard$Model$VaccineDTP, $author$project$Backend$Scoreboard$Model$VaccinePCV13, $author$project$Backend$Scoreboard$Model$VaccineRotarix, $author$project$Backend$Scoreboard$Model$VaccineIPV, $author$project$Backend$Scoreboard$Model$VaccineMR]);
+	if (site.$ === 'SiteBurundi') {
+		return _Utils_ap(
+			common,
+			_List_fromArray(
+				[$author$project$Backend$Scoreboard$Model$VaccineDTPStandalone]));
+	} else {
+		return _Utils_ap(
+			common,
+			_List_fromArray(
+				[$author$project$Backend$Scoreboard$Model$VaccineHPV]));
+	}
+};
+var $author$project$Gizra$NominalDate$diffWeeks = F2(
+	function (low, high) {
+		return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Weeks, low, high);
+	});
+var $author$project$Pages$Scoreboard$Utils$getIntervalForVaccine = F2(
+	function (site, vaccineType) {
+		switch (vaccineType.$) {
+			case 'VaccineBCG':
+				return _Utils_Tuple2(0, $justinmimbs$date$Date$Days);
+			case 'VaccineOPV':
+				return _Utils_Tuple2(4, $justinmimbs$date$Date$Weeks);
+			case 'VaccineDTP':
+				return _Utils_Tuple2(4, $justinmimbs$date$Date$Weeks);
+			case 'VaccineDTPStandalone':
+				return _Utils_Tuple2(0, $justinmimbs$date$Date$Days);
+			case 'VaccinePCV13':
+				return _Utils_Tuple2(4, $justinmimbs$date$Date$Weeks);
+			case 'VaccineRotarix':
+				return _Utils_Tuple2(4, $justinmimbs$date$Date$Weeks);
+			case 'VaccineIPV':
+				return _Utils_Tuple2(0, $justinmimbs$date$Date$Days);
+			case 'VaccineMR':
+				if (site.$ === 'SiteBurundi') {
+					return _Utils_Tuple2(9, $justinmimbs$date$Date$Months);
+				} else {
+					return _Utils_Tuple2(6, $justinmimbs$date$Date$Months);
+				}
+			default:
+				return _Utils_Tuple2(6, $justinmimbs$date$Date$Months);
+		}
+	});
+var $author$project$Backend$Scoreboard$Utils$vaccineDoseToComparable = function (dose) {
+	switch (dose.$) {
+		case 'VaccineDoseFirst':
+			return 1;
+		case 'VaccineDoseSecond':
+			return 2;
+		case 'VaccineDoseThird':
+			return 3;
+		case 'VaccineDoseFourth':
+			return 4;
+		default:
+			return 5;
+	}
+};
+var $author$project$Pages$Scoreboard$Utils$initialVaccinationDateByBirthDate = F5(
+	function (site, birthDate, initialOpvAdministered, vaccinationProgress, _v0) {
+		var vaccineType = _v0.a;
+		var vaccineDose = _v0.b;
+		var dosesInterval = $author$project$Backend$Scoreboard$Utils$vaccineDoseToComparable(vaccineDose) - 1;
+		var _v1 = A2($author$project$Pages$Scoreboard$Utils$getIntervalForVaccine, site, vaccineType);
+		var interval = _v1.a;
+		var unit = _v1.b;
+		switch (vaccineType.$) {
+			case 'VaccineBCG':
+				return birthDate;
+			case 'VaccineOPV':
+				if (vaccineDose.$ === 'VaccineDoseFirst') {
+					return birthDate;
+				} else {
+					return initialOpvAdministered ? A3(
+						$justinmimbs$date$Date$add,
+						unit,
+						(dosesInterval - 1) * interval,
+						A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Weeks, 6, birthDate)) : A3(
+						$justinmimbs$date$Date$add,
+						unit,
+						dosesInterval * interval,
+						A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Weeks, 6, birthDate));
+				}
+			case 'VaccineDTP':
+				return A3(
+					$justinmimbs$date$Date$add,
+					unit,
+					dosesInterval * interval,
+					A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Weeks, 6, birthDate));
+			case 'VaccineDTPStandalone':
+				return A2(
+					$elm$core$Maybe$withDefault,
+					A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Years, 999, birthDate),
+					A2(
+						$elm$core$Maybe$map,
+						function (thirdDoseDate) {
+							var fourWeeksAfterThirdDTPDose = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, 28, thirdDoseDate);
+							var dateWhen18MonthsOld = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Months, 18, birthDate);
+							return _Utils_eq(
+								A2($justinmimbs$date$Date$compare, fourWeeksAfterThirdDTPDose, dateWhen18MonthsOld),
+								$elm$core$Basics$GT) ? fourWeeksAfterThirdDTPDose : dateWhen18MonthsOld;
+						},
+						A2(
+							$elm$core$Maybe$andThen,
+							$pzp1997$assoc_list$AssocList$get($author$project$Backend$Scoreboard$Model$VaccineDoseThird),
+							A2($pzp1997$assoc_list$AssocList$get, $author$project$Backend$Scoreboard$Model$VaccineOPV, vaccinationProgress))));
+			case 'VaccinePCV13':
+				return A3(
+					$justinmimbs$date$Date$add,
+					unit,
+					dosesInterval * interval,
+					A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Weeks, 6, birthDate));
+			case 'VaccineRotarix':
+				return A3(
+					$justinmimbs$date$Date$add,
+					unit,
+					dosesInterval * interval,
+					A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Weeks, 6, birthDate));
+			case 'VaccineIPV':
+				return A3(
+					$justinmimbs$date$Date$add,
+					unit,
+					dosesInterval * interval,
+					A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Weeks, 14, birthDate));
+			case 'VaccineMR':
+				return A3(
+					$justinmimbs$date$Date$add,
+					unit,
+					dosesInterval * interval,
+					A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Weeks, 36, birthDate));
+			default:
+				return A3(
+					$justinmimbs$date$Date$add,
+					unit,
+					dosesInterval * interval,
+					A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Years, 12, birthDate));
+		}
+	});
+var $author$project$Pages$Scoreboard$Utils$latestVaccinationDataForVaccine = F2(
+	function (vaccinationsData, vaccineType) {
+		return A2(
+			$elm$core$Maybe$andThen,
+			A2(
+				$elm$core$Basics$composeR,
+				$pzp1997$assoc_list$AssocList$toList,
+				A2(
+					$elm$core$Basics$composeR,
+					$elm$core$List$sortBy(
+						A2($elm$core$Basics$composeR, $elm$core$Tuple$first, $author$project$Backend$Scoreboard$Utils$vaccineDoseToComparable)),
+					A2($elm$core$Basics$composeR, $elm$core$List$reverse, $elm$core$List$head))),
+			A2($pzp1997$assoc_list$AssocList$get, vaccineType, vaccinationsData));
+	});
+var $author$project$Pages$Scoreboard$Utils$getLastDoseForVaccine = F2(
+	function (initialOpvAdministered, vaccineType) {
+		switch (vaccineType.$) {
+			case 'VaccineBCG':
+				return $author$project$Backend$Scoreboard$Model$VaccineDoseFirst;
+			case 'VaccineOPV':
+				return initialOpvAdministered ? $author$project$Backend$Scoreboard$Model$VaccineDoseFourth : $author$project$Backend$Scoreboard$Model$VaccineDoseThird;
+			case 'VaccineDTP':
+				return $author$project$Backend$Scoreboard$Model$VaccineDoseThird;
+			case 'VaccineDTPStandalone':
+				return $author$project$Backend$Scoreboard$Model$VaccineDoseFirst;
+			case 'VaccinePCV13':
+				return $author$project$Backend$Scoreboard$Model$VaccineDoseThird;
+			case 'VaccineRotarix':
+				return $author$project$Backend$Scoreboard$Model$VaccineDoseSecond;
+			case 'VaccineIPV':
+				return $author$project$Backend$Scoreboard$Model$VaccineDoseFirst;
+			case 'VaccineMR':
+				return $author$project$Backend$Scoreboard$Model$VaccineDoseSecond;
+			default:
+				return $author$project$Backend$Scoreboard$Model$VaccineDoseSecond;
+		}
+	});
+var $author$project$Pages$Scoreboard$Utils$getNextVaccineDose = function (dose) {
+	switch (dose.$) {
+		case 'VaccineDoseFirst':
+			return $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$VaccineDoseSecond);
+		case 'VaccineDoseSecond':
+			return $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$VaccineDoseThird);
+		case 'VaccineDoseThird':
+			return $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$VaccineDoseFourth);
+		case 'VaccineDoseFourth':
+			return $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$VaccineDoseFifth);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Pages$Scoreboard$Utils$nextVaccinationDataForVaccine = F5(
+	function (site, vaccineType, initialOpvAdministered, lastDoseDate, lastDoseAdministered) {
+		return _Utils_eq(
+			A2($author$project$Pages$Scoreboard$Utils$getLastDoseForVaccine, initialOpvAdministered, vaccineType),
+			lastDoseAdministered) ? $elm$core$Maybe$Nothing : A2(
+			$elm$core$Maybe$map,
+			function (dose) {
+				var _v0 = A2($author$project$Pages$Scoreboard$Utils$getIntervalForVaccine, site, vaccineType);
+				var interval = _v0.a;
+				var unit = _v0.b;
+				return _Utils_Tuple2(
+					dose,
+					A3($justinmimbs$date$Date$add, unit, interval, lastDoseDate));
+			},
+			$author$project$Pages$Scoreboard$Utils$getNextVaccineDose(lastDoseAdministered));
+	});
+var $author$project$Pages$Scoreboard$Utils$wasInitialOpvAdministeredByVaccinationProgress = F2(
+	function (birthDate, vaccinationProgress) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			false,
+			A2(
+				$elm$core$Maybe$map,
+				function (administrationDate) {
+					return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Days, birthDate, administrationDate) < 14;
+				},
+				A2(
+					$elm$core$Maybe$andThen,
+					$pzp1997$assoc_list$AssocList$get($author$project$Backend$Scoreboard$Model$VaccineDoseFirst),
+					A2($pzp1997$assoc_list$AssocList$get, $author$project$Backend$Scoreboard$Model$VaccineOPV, vaccinationProgress))));
+	});
+var $author$project$Pages$Scoreboard$Utils$generateFutureVaccinationsData = F3(
+	function (site, birthDate, vaccinationProgress) {
+		var initialOpvAdministered = A2($author$project$Pages$Scoreboard$Utils$wasInitialOpvAdministeredByVaccinationProgress, birthDate, vaccinationProgress);
+		return $elm$core$List$map(
+			function (vaccineType) {
+				var nextVaccinationData = function () {
+					var _v0 = A2($author$project$Pages$Scoreboard$Utils$latestVaccinationDataForVaccine, vaccinationProgress, vaccineType);
+					if (_v0.$ === 'Just') {
+						var _v1 = _v0.a;
+						var lastDoseAdministered = _v1.a;
+						var lastDoseDate = _v1.b;
+						return A5($author$project$Pages$Scoreboard$Utils$nextVaccinationDataForVaccine, site, vaccineType, initialOpvAdministered, lastDoseDate, lastDoseAdministered);
+					} else {
+						var vaccinationDate = A5(
+							$author$project$Pages$Scoreboard$Utils$initialVaccinationDateByBirthDate,
+							site,
+							birthDate,
+							initialOpvAdministered,
+							vaccinationProgress,
+							_Utils_Tuple2(vaccineType, $author$project$Backend$Scoreboard$Model$VaccineDoseFirst));
+						return $elm$core$Maybe$Just(
+							_Utils_Tuple2($author$project$Backend$Scoreboard$Model$VaccineDoseFirst, vaccinationDate));
+					}
+				}();
+				return _Utils_Tuple2(vaccineType, nextVaccinationData);
+			});
+	});
+var $pzp1997$assoc_list$AssocList$merge = F6(
+	function (leftStep, bothStep, rightStep, leftDict, _v0, initialResult) {
+		var leftAlist = leftDict.a;
+		var rightAlist = _v0.a;
+		var _v1 = A2(
+			$elm$core$List$partition,
+			function (_v2) {
+				var key = _v2.a;
+				return A2($pzp1997$assoc_list$AssocList$member, key, leftDict);
+			},
+			rightAlist);
+		var inBothAlist = _v1.a;
+		var inRightOnlyAlist = _v1.b;
+		var intermediateResult = A3(
+			$elm$core$List$foldr,
+			F2(
+				function (_v5, result) {
+					var rKey = _v5.a;
+					var rValue = _v5.b;
+					return A3(rightStep, rKey, rValue, result);
+				}),
+			initialResult,
+			inRightOnlyAlist);
+		return A3(
+			$elm$core$List$foldr,
+			F2(
+				function (_v3, result) {
+					var lKey = _v3.a;
+					var lValue = _v3.b;
+					var _v4 = A2(
+						$pzp1997$assoc_list$AssocList$get,
+						lKey,
+						$pzp1997$assoc_list$AssocList$D(inBothAlist));
+					if (_v4.$ === 'Just') {
+						var rValue = _v4.a;
+						return A4(bothStep, lKey, lValue, rValue, result);
+					} else {
+						return A3(leftStep, lKey, lValue, result);
+					}
+				}),
+			intermediateResult,
+			leftAlist);
+	});
+var $author$project$Gizra$NominalDate$sortByDate = F3(
+	function (getDateFunc, entity1, entity2) {
+		return A2(
+			$justinmimbs$date$Date$compare,
+			getDateFunc(entity1),
+			getDateFunc(entity2));
+	});
+var $pzp1997$assoc_list$AssocList$union = F2(
+	function (_v0, rightDict) {
+		var leftAlist = _v0.a;
+		return A3(
+			$elm$core$List$foldr,
+			F2(
+				function (_v1, result) {
+					var lKey = _v1.a;
+					var lValue = _v1.b;
+					return A3($pzp1997$assoc_list$AssocList$insert, lKey, lValue, result);
+				}),
+			rightDict,
+			leftAlist);
+	});
+var $Gizra$elm_all_set$EverySet$union = F2(
+	function (_v0, _v1) {
+		var d1 = _v0.a;
+		var d2 = _v1.a;
+		return $Gizra$elm_all_set$EverySet$EverySet(
+			A2($pzp1997$assoc_list$AssocList$union, d1, d2));
+	});
+var $author$project$Pages$Reports$View$generatePostnatalCareReportData = F4(
+	function (language, site, limitDate, records) {
+		var totalEncountersWithin24HoursOfBirth = $elm$core$List$length(
+			A2(
+				$elm$core$List$filter,
+				function (_v1) {
+					var birthDate = _v1.a;
+					var encounter = _v1.b;
+					return _Utils_eq(
+						A2($justinmimbs$date$Date$compare, birthDate, encounter.startDate),
+						$elm$core$Basics$EQ) || _Utils_eq(
+						A2(
+							$justinmimbs$date$Date$compare,
+							A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, 1, birthDate),
+							encounter.startDate),
+						$elm$core$Basics$EQ);
+				},
+				A2(
+					$elm$core$List$filterMap,
+					function (patientData) {
+						return A2(
+							$elm$core$Maybe$andThen,
+							function (wellChildData) {
+								return A2(
+									$elm$core$Maybe$map,
+									function (firstEncounter) {
+										return _Utils_Tuple2(patientData.birthDate, firstEncounter);
+									},
+									$elm$core$List$head(
+										A2(
+											$elm$core$List$sortWith,
+											$author$project$Gizra$NominalDate$sortByDate(
+												function ($) {
+													return $.startDate;
+												}),
+											$elm$core$List$concat(wellChildData))));
+							},
+							patientData.wellChildData);
+					},
+					records)));
+		var generateRow = F2(
+			function (label, value) {
+				return _List_fromArray(
+					[
+						A2($author$project$Translate$translate, language, label),
+						$elm$core$String$fromInt(value)
+					]);
+			});
+		var birthDatesOfUpToDateWithImmunizationPatients = A2(
+			$elm$core$List$filterMap,
+			function (patientData) {
+				return A2(
+					$elm$core$Maybe$andThen,
+					function (wellChildData) {
+						var vaccinationProgressDict = A2(
+							$pzp1997$assoc_list$AssocList$map,
+							F2(
+								function (_v0, value) {
+									return $author$project$Backend$Scoreboard$Utils$generateVaccinationProgressForVaccine(value);
+								}),
+							A3(
+								$elm$core$List$foldl,
+								F2(
+									function (immunisationsDict, accumDict) {
+										return A6(
+											$pzp1997$assoc_list$AssocList$merge,
+											F2(
+												function (key, value) {
+													return A2($pzp1997$assoc_list$AssocList$insert, key, value);
+												}),
+											F3(
+												function (key, value1, value2) {
+													return A2(
+														$pzp1997$assoc_list$AssocList$insert,
+														key,
+														A2($Gizra$elm_all_set$EverySet$union, value1, value2));
+												}),
+											F2(
+												function (key, value) {
+													return A2($pzp1997$assoc_list$AssocList$insert, key, value);
+												}),
+											immunisationsDict,
+											accumDict,
+											$pzp1997$assoc_list$AssocList$empty);
+									}),
+								$pzp1997$assoc_list$AssocList$empty,
+								$elm_community$maybe_extra$Maybe$Extra$values(
+									A2(
+										$elm$core$List$map,
+										function ($) {
+											return $.immunisationData;
+										},
+										$elm$core$List$concat(wellChildData)))));
+						var futureVaccinations = A4(
+							$author$project$Pages$Scoreboard$Utils$generateFutureVaccinationsData,
+							site,
+							patientData.birthDate,
+							vaccinationProgressDict,
+							$author$project$Pages$Reports$Utils$allVaccineTypes(site));
+						var closestDateForVaccination = $elm$core$List$head(
+							A2(
+								$elm$core$List$sortWith,
+								$justinmimbs$date$Date$compare,
+								A2(
+									$elm$core$List$filterMap,
+									A2(
+										$elm$core$Basics$composeR,
+										$elm$core$Tuple$second,
+										$elm$core$Maybe$map($elm$core$Tuple$second)),
+									futureVaccinations)));
+						return $elm_community$maybe_extra$Maybe$Extra$isNothing(closestDateForVaccination) ? $elm$core$Maybe$Just(patientData.birthDate) : A2(
+							$elm$core$Maybe$andThen,
+							function (closestDate) {
+								return _Utils_eq(
+									A2($justinmimbs$date$Date$compare, closestDate, limitDate),
+									$elm$core$Basics$GT) ? $elm$core$Maybe$Just(patientData.birthDate) : $elm$core$Maybe$Nothing;
+							},
+							closestDateForVaccination);
+					},
+					patientData.wellChildData);
+			},
+			records);
+		var totalUpToDateWithImmunizationInRange = A3(
+			$elm$core$List$foldl,
+			F2(
+				function (birthDate, accum) {
+					var diffInWeeks = A2($author$project$Gizra$NominalDate$diffWeeks, birthDate, limitDate);
+					if ((diffInWeeks >= 7) && (diffInWeeks < 11)) {
+						return _Utils_update(
+							accum,
+							{inRange7To11Weeks: accum.inRange7To11Weeks + 1});
+					} else {
+						if ((diffInWeeks >= 11) && (diffInWeeks < 15)) {
+							return _Utils_update(
+								accum,
+								{inRange11To15Weeks: accum.inRange11To15Weeks + 1});
+						} else {
+							if (diffInWeeks >= 15) {
+								var diffInMonths = A2($author$project$Gizra$NominalDate$diffMonths, birthDate, limitDate);
+								return (diffInMonths < 10) ? _Utils_update(
+									accum,
+									{inRange15WeeksTo10Months: accum.inRange15WeeksTo10Months + 1}) : ((diffInMonths < 19) ? _Utils_update(
+									accum,
+									{inRange10To19Months: accum.inRange10To19Months + 1}) : ((diffInMonths < 24) ? _Utils_update(
+									accum,
+									{inRange19To24Months: accum.inRange19To24Months + 1}) : accum));
+							} else {
+								return accum;
+							}
+						}
+					}
+				}),
+			{inRange10To19Months: 0, inRange11To15Weeks: 0, inRange15WeeksTo10Months: 0, inRange19To24Months: 0, inRange7To11Weeks: 0},
+			birthDatesOfUpToDateWithImmunizationPatients);
+		return {
+			captions: _List_fromArray(
+				[
+					'',
+					A2($author$project$Translate$translate, language, $author$project$Translate$Total)
+				]),
+			heading: '',
+			rows: _List_fromArray(
+				[
+					A2(generateRow, $author$project$Translate$NewbornsWithSPVWithin24Hours, totalEncountersWithin24HoursOfBirth),
+					A2(generateRow, $author$project$Translate$UpToDateWithImmunization7To11WeeksLabel, totalUpToDateWithImmunizationInRange.inRange7To11Weeks),
+					A2(generateRow, $author$project$Translate$UpToDateWithImmunization11To15WeeksLabel, totalUpToDateWithImmunizationInRange.inRange11To15Weeks),
+					A2(generateRow, $author$project$Translate$UpToDateWithImmunization15WeeksTo10MonthsLabel, totalUpToDateWithImmunizationInRange.inRange15WeeksTo10Months),
+					A2(generateRow, $author$project$Translate$UpToDateWithImmunization10To19MonthsLabel, totalUpToDateWithImmunizationInRange.inRange10To19Months),
+					A2(generateRow, $author$project$Translate$UpToDateWithImmunization19To24MonthsLabel, totalUpToDateWithImmunizationInRange.inRange19To24Months)
+				])
+		};
+	});
+var $author$project$Pages$Reports$View$viewPostnatalCareReport = F5(
+	function (language, site, limitDate, scopeLabel, records) {
+		var data = A4($author$project$Pages$Reports$View$generatePostnatalCareReportData, language, site, limitDate, records);
+		var csvFileName = 'postnatal-care-report-' + ($elm$core$String$toLower(
+			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
+		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
+		var captionsRow = A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('row captions')
+				]),
+			$author$project$Pages$Components$View$viewStandardCells(data.captions));
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('report postnatal-care')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('table')
+						]),
+					A2(
+						$elm$core$List$cons,
+						captionsRow,
+						A2($elm$core$List$map, $author$project$Pages$Components$View$viewStandardRow, data.rows))),
+					A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
+				]));
+	});
+var $author$project$Translate$ContactType = {$: 'ContactType'};
+var $author$project$Backend$Reports$Model$IndicatorDiagnosedAnemia = {$: 'IndicatorDiagnosedAnemia'};
+var $author$project$Backend$Reports$Model$IndicatorHistoryOfAdversePregnancyOutcomes = {$: 'IndicatorHistoryOfAdversePregnancyOutcomes'};
+var $author$project$Backend$Reports$Model$IndicatorHistoryOfAdversePregnancyOutcomesReceivedAzithromycin = {$: 'IndicatorHistoryOfAdversePregnancyOutcomesReceivedAzithromycin'};
+var $author$project$Backend$Reports$Model$IndicatorReferredToUltrasoundBeforeEGA24 = {$: 'IndicatorReferredToUltrasoundBeforeEGA24'};
+var $author$project$Translate$PregnanciesWithAtLeast4Encounters = {$: 'PregnanciesWithAtLeast4Encounters'};
+var $author$project$Translate$PregnanciesWithAtLeast6Encounters = {$: 'PregnanciesWithAtLeast6Encounters'};
+var $author$project$Translate$PregnanciesWithAtLeast8Encounters = {$: 'PregnanciesWithAtLeast8Encounters'};
+var $author$project$Translate$PregnanciesWithFirstContactAtFirstTrimester = {$: 'PregnanciesWithFirstContactAtFirstTrimester'};
+var $author$project$Pages$Reports$Model$PrenatalContact1 = {$: 'PrenatalContact1'};
+var $author$project$Pages$Reports$Model$PrenatalContact2 = {$: 'PrenatalContact2'};
+var $author$project$Pages$Reports$Model$PrenatalContact3 = {$: 'PrenatalContact3'};
+var $author$project$Pages$Reports$Model$PrenatalContact4 = {$: 'PrenatalContact4'};
+var $author$project$Pages$Reports$Model$PrenatalContact5 = {$: 'PrenatalContact5'};
+var $author$project$Pages$Reports$Model$PrenatalContact6 = {$: 'PrenatalContact6'};
+var $author$project$Pages$Reports$Model$PrenatalContact7 = {$: 'PrenatalContact7'};
+var $author$project$Pages$Reports$Model$PrenatalContact8 = {$: 'PrenatalContact8'};
+var $author$project$Translate$PrenatalContactType = function (a) {
+	return {$: 'PrenatalContactType', a: a};
+};
+var $author$project$Pages$Reports$Utils$eddToLmpDate = function (eddDate) {
+	return A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, -280, eddDate);
+};
+var $author$project$Pages$Reports$Utils$prenatalContactTypeToEncountersAtWeek = function (prenatalContactType) {
+	switch (prenatalContactType.$) {
+		case 'PrenatalContact1':
+			return _Utils_Tuple2(1, 12);
+		case 'PrenatalContact2':
+			return _Utils_Tuple2(2, 20);
+		case 'PrenatalContact3':
+			return _Utils_Tuple2(3, 26);
+		case 'PrenatalContact4':
+			return _Utils_Tuple2(4, 30);
+		case 'PrenatalContact5':
+			return _Utils_Tuple2(5, 34);
+		case 'PrenatalContact6':
+			return _Utils_Tuple2(6, 36);
+		case 'PrenatalContact7':
+			return _Utils_Tuple2(7, 38);
+		default:
+			return _Utils_Tuple2(8, 40);
+	}
+};
+var $author$project$Pages$Reports$View$generatePrenatalContactsReportData = F3(
+	function (language, limitDate, records) {
+		var pregnanciesWithLMP = A2(
+			$elm$core$List$filterMap,
+			function (pregnancy) {
+				return A2(
+					$elm$core$Maybe$map,
+					function (edd) {
+						return _Utils_Tuple2(
+							$author$project$Pages$Reports$Utils$eddToLmpDate(edd),
+							pregnancy);
+					},
+					pregnancy.eddDate);
+			},
+			$elm$core$List$concat(
+				$elm_community$maybe_extra$Maybe$Extra$values(
+					A2(
+						$elm$core$List$map,
+						function ($) {
+							return $.prenatalData;
+						},
+						records))));
+		var pregnanciesWithDiagnosedAnemia = A2(
+			$elm$core$List$filter,
+			function (_v5) {
+				var pregnancy = _v5.b;
+				var anemiaDiagnoses = _List_fromArray(
+					[$author$project$Backend$Reports$Model$DiagnosisMalariaWithAnemia, $author$project$Backend$Reports$Model$DiagnosisMalariaWithSevereAnemia, $author$project$Backend$Reports$Model$DiagnosisModerateAnemia, $author$project$Backend$Reports$Model$DiagnosisSevereAnemia, $author$project$Backend$Reports$Model$DiagnosisSevereAnemiaWithComplications]);
+				return A2(
+					$elm$core$List$any,
+					function (encounter) {
+						return A2(
+							$elm$core$List$any,
+							function (diagnosis) {
+								return A2($elm$core$List$member, diagnosis, anemiaDiagnoses);
+							},
+							encounter.diagnoses);
+					},
+					pregnancy.encounters);
+			},
+			pregnanciesWithLMP);
+		var pregnanciesWithAnyOfIndicators = function (indicators) {
+			return $elm$core$List$filter(
+				function (_v4) {
+					var pregnancy = _v4.b;
+					return A2(
+						$elm$core$List$any,
+						function (encounter) {
+							return A2(
+								$elm$core$List$any,
+								function (indicator) {
+									return A2($elm$core$List$member, indicator, encounter.indicators);
+								},
+								indicators);
+						},
+						pregnancy.encounters);
+				});
+		};
+		var pregnanciesWithHistoryOfAdversePregnancyOutcomes = A2(
+			pregnanciesWithAnyOfIndicators,
+			_List_fromArray(
+				[$author$project$Backend$Reports$Model$IndicatorPretermBirth, $author$project$Backend$Reports$Model$IndicatorAbortion, $author$project$Backend$Reports$Model$IndicatorStillbirth, $author$project$Backend$Reports$Model$IndicatorIntrauterineDeath]),
+			pregnanciesWithLMP);
+		var pregnanciesWithIndicator = function (indicator) {
+			return pregnanciesWithAnyOfIndicators(
+				_List_fromArray(
+					[indicator]));
+		};
+		var pregnanciesWithHistoryOfAdversePregnancyOutcomesReceivedAzithromycin = A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorReceivedAzithromycin, pregnanciesWithHistoryOfAdversePregnancyOutcomes);
+		var pregnanciesWithUltrasound = A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorReferredToUltrasound, pregnanciesWithLMP);
+		var pregnanciesWithUltrasoundBeforeEGA24 = A2(
+			$elm$core$List$filter,
+			function (_v3) {
+				var lmpDate = _v3.a;
+				var pregnancy = _v3.b;
+				var ega24Date = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Weeks, 24, lmpDate);
+				return A2(
+					$elm$core$List$any,
+					function (encounter) {
+						return A2($elm$core$List$member, $author$project$Backend$Reports$Model$IndicatorReferredToUltrasound, encounter.indicators) && _Utils_eq(
+							A2($justinmimbs$date$Date$compare, encounter.startDate, ega24Date),
+							$elm$core$Basics$LT);
+					},
+					pregnancy.encounters);
+			},
+			pregnanciesWithUltrasound);
+		var generateRow = F2(
+			function (label, value) {
+				return _List_fromArray(
+					[
+						A2($author$project$Translate$translate, language, label),
+						$elm$core$String$fromInt(value)
+					]);
+			});
+		var encountersAtCompletedPregnancies = A2(
+			$elm$core$List$filterMap,
+			function (_v2) {
+				var lmpDate = _v2.a;
+				var pregnancy = _v2.b;
+				var completed = function () {
+					var thirtyDaysAfterEDD = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, 310, lmpDate);
+					return $elm_community$maybe_extra$Maybe$Extra$isJust(pregnancy.dateConcluded) || (!_Utils_eq(
+						A2($justinmimbs$date$Date$compare, thirtyDaysAfterEDD, limitDate),
+						$elm$core$Basics$GT));
+				}();
+				if (completed) {
+					var nonPostpartumEncounters = A2(
+						$elm$core$List$filter,
+						function (encounter) {
+							return !A2(
+								$elm$core$List$member,
+								encounter.encounterType,
+								_List_fromArray(
+									[$author$project$Backend$Reports$Model$NursePostpartumEncounter, $author$project$Backend$Reports$Model$ChwPostpartumEncounter]));
+						},
+						pregnancy.encounters);
+					return $elm$core$Maybe$Just(
+						$elm$core$List$length(nonPostpartumEncounters));
+				} else {
+					return $elm$core$Maybe$Nothing;
+				}
+			},
+			pregnanciesWithLMP);
+		var countPregnanciesByContacts = function (_v1) {
+			var numberOfContacts = _v1.a;
+			var egaWeeks = _v1.b;
+			return $elm$core$List$length(
+				A2(
+					$elm$core$List$filter,
+					function (_v0) {
+						var lmpDate = _v0.a;
+						var pregnancy = _v0.b;
+						var egaXDate = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, egaWeeks * 7, lmpDate);
+						var encountersBeforeEGAX = A2(
+							$elm$core$List$filter,
+							function (encounter) {
+								return !_Utils_eq(
+									A2($justinmimbs$date$Date$compare, encounter.startDate, egaXDate),
+									$elm$core$Basics$GT);
+							},
+							pregnancy.encounters);
+						return (!_Utils_eq(
+							A2($justinmimbs$date$Date$compare, egaXDate, limitDate),
+							$elm$core$Basics$GT)) && _Utils_eq(
+							$elm$core$List$length(encountersBeforeEGAX),
+							numberOfContacts);
+					},
+					pregnanciesWithLMP));
+		};
+		var prenatalContactRows = A2(
+			$elm$core$List$map,
+			function (contactType) {
+				return A2(
+					generateRow,
+					$author$project$Translate$PrenatalContactType(contactType),
+					countPregnanciesByContacts(
+						$author$project$Pages$Reports$Utils$prenatalContactTypeToEncountersAtWeek(contactType)));
+			},
+			_List_fromArray(
+				[$author$project$Pages$Reports$Model$PrenatalContact1, $author$project$Pages$Reports$Model$PrenatalContact2, $author$project$Pages$Reports$Model$PrenatalContact3, $author$project$Pages$Reports$Model$PrenatalContact4, $author$project$Pages$Reports$Model$PrenatalContact5, $author$project$Pages$Reports$Model$PrenatalContact6, $author$project$Pages$Reports$Model$PrenatalContact7, $author$project$Pages$Reports$Model$PrenatalContact8]));
+		var countNumberOfPregnanciesWithAtLeastXEncounters = function (x) {
+			return $elm$core$List$length(
+				A2(
+					$elm$core$List$filter,
+					function (numberOfEncounters) {
+						return _Utils_cmp(numberOfEncounters, x) > -1;
+					},
+					encountersAtCompletedPregnancies));
+		};
+		return {
+			captions: _List_fromArray(
+				[
+					A2($author$project$Translate$translate, language, $author$project$Translate$ContactType),
+					A2($author$project$Translate$translate, language, $author$project$Translate$Total)
+				]),
+			heading: '',
+			rows: _Utils_ap(
+				prenatalContactRows,
+				_List_fromArray(
+					[
+						A2(
+						generateRow,
+						$author$project$Translate$PregnanciesWithFirstContactAtFirstTrimester,
+						countPregnanciesByContacts(
+							$author$project$Pages$Reports$Utils$prenatalContactTypeToEncountersAtWeek($author$project$Pages$Reports$Model$PrenatalContact1))),
+						A2(
+						generateRow,
+						$author$project$Translate$PregnanciesWithAtLeast4Encounters,
+						countNumberOfPregnanciesWithAtLeastXEncounters(4)),
+						A2(
+						generateRow,
+						$author$project$Translate$PregnanciesWithAtLeast6Encounters,
+						countNumberOfPregnanciesWithAtLeastXEncounters(6)),
+						A2(
+						generateRow,
+						$author$project$Translate$PregnanciesWithAtLeast8Encounters,
+						countNumberOfPregnanciesWithAtLeastXEncounters(8)),
+						A2(
+						generateRow,
+						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorAdequateGWG),
+						$elm$core$List$length(
+							A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorAdequateGWG, pregnanciesWithLMP))),
+						A2(
+						generateRow,
+						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorReceivedMMS),
+						$elm$core$List$length(
+							A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorReceivedMMS, pregnanciesWithLMP))),
+						A2(
+						generateRow,
+						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorReferredToUltrasound),
+						$elm$core$List$length(pregnanciesWithUltrasound)),
+						A2(
+						generateRow,
+						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorReferredToUltrasoundBeforeEGA24),
+						$elm$core$List$length(pregnanciesWithUltrasoundBeforeEGA24)),
+						A2(
+						generateRow,
+						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorReceivedAspirin),
+						$elm$core$List$length(
+							A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorReceivedAspirin, pregnanciesWithLMP))),
+						A2(
+						generateRow,
+						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorReceivedCalcium),
+						$elm$core$List$length(
+							A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorReceivedCalcium, pregnanciesWithLMP))),
+						A2(
+						generateRow,
+						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorHistoryOfAdversePregnancyOutcomes),
+						$elm$core$List$length(pregnanciesWithHistoryOfAdversePregnancyOutcomes)),
+						A2(
+						generateRow,
+						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorHistoryOfAdversePregnancyOutcomesReceivedAzithromycin),
+						$elm$core$List$length(pregnanciesWithHistoryOfAdversePregnancyOutcomesReceivedAzithromycin)),
+						A2(
+						generateRow,
+						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorAnemiaTest),
+						$elm$core$List$length(
+							A2(pregnanciesWithIndicator, $author$project$Backend$Reports$Model$IndicatorAnemiaTest, pregnanciesWithLMP))),
+						A2(
+						generateRow,
+						$author$project$Translate$PrenatalIndicatorLabel($author$project$Backend$Reports$Model$IndicatorDiagnosedAnemia),
+						$elm$core$List$length(pregnanciesWithDiagnosedAnemia))
+					]))
+		};
+	});
+var $author$project$Pages$Reports$View$viewPrenatalContactsReport = F4(
+	function (language, limitDate, scopeLabel, records) {
+		var data = A3($author$project$Pages$Reports$View$generatePrenatalContactsReportData, language, limitDate, records);
+		var csvFileName = 'anc-contacts-report-' + ($elm$core$String$toLower(
+			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
+		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
+		var captionsRow = A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('row captions')
+				]),
+			$author$project$Pages$Components$View$viewStandardCells(data.captions));
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('report prenatal-contacts')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('table')
+						]),
+					A2(
+						$elm$core$List$cons,
+						captionsRow,
+						A2($elm$core$List$map, $author$project$Pages$Components$View$viewStandardRow, data.rows))),
+					A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
+				]));
+	});
 var $author$project$Backend$Reports$Model$NoPrenatalDiagnosis = {$: 'NoPrenatalDiagnosis'};
 var $author$project$Backend$Reports$Utils$allPrenatalDiagnoses = _List_fromArray(
 	[$author$project$Backend$Reports$Model$DiagnosisChronicHypertension, $author$project$Backend$Reports$Model$DiagnosisGestationalHypertension, $author$project$Backend$Reports$Model$DiagnosisModeratePreeclampsia, $author$project$Backend$Reports$Model$DiagnosisSeverePreeclampsia, $author$project$Backend$Reports$Model$DiagnosisEclampsia, $author$project$Backend$Reports$Model$DiagnosisHIV, $author$project$Backend$Reports$Model$DiagnosisHIVDetectableViralLoad, $author$project$Backend$Reports$Model$DiagnosisDiscordantPartnership, $author$project$Backend$Reports$Model$DiagnosisSyphilis, $author$project$Backend$Reports$Model$DiagnosisSyphilisWithComplications, $author$project$Backend$Reports$Model$DiagnosisNeurosyphilis, $author$project$Backend$Reports$Model$DiagnosisHepatitisB, $author$project$Backend$Reports$Model$DiagnosisMalaria, $author$project$Backend$Reports$Model$DiagnosisMalariaWithAnemia, $author$project$Backend$Reports$Model$DiagnosisMalariaWithSevereAnemia, $author$project$Backend$Reports$Model$DiagnosisModerateAnemia, $author$project$Backend$Reports$Model$DiagnosisSevereAnemia, $author$project$Backend$Reports$Model$DiagnosisSevereAnemiaWithComplications, $author$project$Backend$Reports$Model$DiagnosisMiscarriage, $author$project$Backend$Reports$Model$DiagnosisMolarPregnancy, $author$project$Backend$Reports$Model$DiagnosisPlacentaPrevia, $author$project$Backend$Reports$Model$DiagnosisPlacentalAbruption, $author$project$Backend$Reports$Model$DiagnosisUterineRupture, $author$project$Backend$Reports$Model$DiagnosisObstructedLabor, $author$project$Backend$Reports$Model$DiagnosisPostAbortionSepsis, $author$project$Backend$Reports$Model$DiagnosisEctopicPregnancy, $author$project$Backend$Reports$Model$DiagnosisPROM, $author$project$Backend$Reports$Model$DiagnosisPPROM, $author$project$Backend$Reports$Model$DiagnosisHyperemesisGravidum, $author$project$Backend$Reports$Model$DiagnosisSevereVomiting, $author$project$Backend$Reports$Model$DiagnosisMaternalComplications, $author$project$Backend$Reports$Model$DiagnosisInfection, $author$project$Backend$Reports$Model$DiagnosisImminentDelivery, $author$project$Backend$Reports$Model$DiagnosisLaborAndDelivery, $author$project$Backend$Reports$Model$DiagnosisHeartburn, $author$project$Backend$Reports$Model$DiagnosisDeepVeinThrombosis, $author$project$Backend$Reports$Model$DiagnosisPelvicPainIntense, $author$project$Backend$Reports$Model$DiagnosisUrinaryTractInfection, $author$project$Backend$Reports$Model$DiagnosisPyelonephritis, $author$project$Backend$Reports$Model$DiagnosisCandidiasis, $author$project$Backend$Reports$Model$DiagnosisGonorrhea, $author$project$Backend$Reports$Model$DiagnosisTrichomonasOrBacterialVaginosis, $author$project$Backend$Reports$Model$DiagnosisTuberculosis, $author$project$Backend$Reports$Model$DiagnosisDiabetes, $author$project$Backend$Reports$Model$DiagnosisGestationalDiabetes, $author$project$Backend$Reports$Model$DiagnosisRhesusNegative, $author$project$Backend$Reports$Model$DiagnosisDepressionNotLikely, $author$project$Backend$Reports$Model$DiagnosisDepressionPossible, $author$project$Backend$Reports$Model$DiagnosisDepressionHighlyPossible, $author$project$Backend$Reports$Model$DiagnosisDepressionProbable, $author$project$Backend$Reports$Model$DiagnosisSuicideRisk, $author$project$Backend$Reports$Model$DiagnosisOther, $author$project$Backend$Reports$Model$DiagnosisPostpartumAbdominalPain, $author$project$Backend$Reports$Model$DiagnosisPostpartumUrinaryIncontinence, $author$project$Backend$Reports$Model$DiagnosisPostpartumHeadache, $author$project$Backend$Reports$Model$DiagnosisPostpartumFatigue, $author$project$Backend$Reports$Model$DiagnosisPostpartumFever, $author$project$Backend$Reports$Model$DiagnosisPostpartumPerinealPainOrDischarge, $author$project$Backend$Reports$Model$DiagnosisPostpartumInfection, $author$project$Backend$Reports$Model$DiagnosisPostpartumExcessiveBleeding, $author$project$Backend$Reports$Model$DiagnosisPostpartumEarlyMastitisOrEngorgment, $author$project$Backend$Reports$Model$DiagnosisPostpartumMastitis, $author$project$Backend$Reports$Model$NoPrenatalDiagnosis]);
@@ -20501,9 +22226,6 @@ var $author$project$Translate$PregnancyTrimester = function (a) {
 var $author$project$Pages$Reports$Model$SecondTrimester = {$: 'SecondTrimester'};
 var $author$project$Pages$Reports$Model$ThirdTrimester = {$: 'ThirdTrimester'};
 var $author$project$Translate$Trimester = {$: 'Trimester'};
-var $author$project$Pages$Reports$Utils$eddToLmpDate = function (eddDate) {
-	return A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, -280, eddDate);
-};
 var $author$project$Gizra$NominalDate$diffDays = F2(
 	function (low, high) {
 		return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Days, low, high);
@@ -20512,13 +22234,6 @@ var $author$project$Pages$Reports$Utils$resolvePregnancyTrimester = F2(
 	function (date, lmpDate) {
 		var diffInWeeks = (A2($author$project$Gizra$NominalDate$diffDays, lmpDate, date) / 7) | 0;
 		return (diffInWeeks < 13) ? $author$project$Pages$Reports$Model$FirstTrimester : ((diffInWeeks < 28) ? $author$project$Pages$Reports$Model$SecondTrimester : $author$project$Pages$Reports$Model$ThirdTrimester);
-	});
-var $author$project$Gizra$NominalDate$sortByDate = F3(
-	function (getDateFunc, entity1, entity2) {
-		return A2(
-			$justinmimbs$date$Date$compare,
-			getDateFunc(entity1),
-			getDateFunc(entity2));
 	});
 var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 	function (language, limitDate, records) {
@@ -21285,6 +23000,18 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 															},
 															record.acuteIllnessData),
 														childScorecardData: A2(filterIndividualBy, $elm$core$Basics$identity, record.childScorecardData),
+														familyNutritionData: A2(
+															filterIndividualBy,
+															function ($) {
+																return $.startDate;
+															},
+															record.familyNutritionData),
+														familyNutritionMuacData: A2(
+															filterIndividualBy,
+															function ($) {
+																return $.startDate;
+															},
+															record.familyNutritionMuacData),
 														groupNutritionAchiData: A2(
 															filterGroupBy,
 															function ($) {
@@ -21303,6 +23030,12 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 																return $.startDate;
 															},
 															record.groupNutritionFbfData),
+														groupNutritionFbfMotherData: A2(
+															filterGroupBy,
+															function ($) {
+																return $.startDate;
+															},
+															record.groupNutritionFbfMotherData),
 														groupNutritionPmtctData: A2(
 															filterGroupBy,
 															function ($) {
@@ -21342,11 +23075,19 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 									case 'ReportAcuteIllness':
 										return A5($author$project$Pages$Reports$View$viewAcuteIllnessReport, language, limitDate, startDate, scopeLabel, recordsTillLimitDate);
 									case 'ReportDemographics':
-										return A5($author$project$Pages$Reports$View$viewDemographicsReport, language, startDate, limitDate, scopeLabel, recordsTillLimitDate);
+										return A6($author$project$Pages$Reports$View$viewDemographicsReport, language, data.features, startDate, limitDate, scopeLabel, recordsTillLimitDate);
+									case 'ReportFBFDistribution':
+										return A5($author$project$Pages$Reports$View$viewFBFDistributionReport, language, data.features, limitDate, scopeLabel, recordsTillLimitDate);
 									case 'ReportNutrition':
 										return A5($author$project$Pages$Reports$View$viewNutritionReport, language, limitDate, scopeLabel, data.nutritionReportData, model.nutritionReportData);
+									case 'ReportPeripartum':
+										return A4($author$project$Pages$Reports$View$viewPeripartumReport, language, limitDate, scopeLabel, recordsTillLimitDate);
+									case 'ReportPostnatalCare':
+										return A5($author$project$Pages$Reports$View$viewPostnatalCareReport, language, data.site, limitDate, scopeLabel, recordsTillLimitDate);
 									case 'ReportPrenatal':
 										return A4($author$project$Pages$Reports$View$viewPrenatalReport, language, limitDate, scopeLabel, recordsTillLimitDate);
+									case 'ReportPrenatalContacts':
+										return A4($author$project$Pages$Reports$View$viewPrenatalContactsReport, language, limitDate, scopeLabel, recordsTillLimitDate);
 									default:
 										return A4($author$project$Pages$Reports$View$viewPrenatalDiagnosesReport, language, limitDate, scopeLabel, recordsTillLimitDate);
 								}
@@ -21383,8 +23124,17 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 								$author$project$Pages$Utils$viewSelectListInput,
 								language,
 								model.reportType,
-								_List_fromArray(
-									[$author$project$Pages$Reports$Model$ReportAcuteIllness, $author$project$Pages$Reports$Model$ReportPrenatal, $author$project$Pages$Reports$Model$ReportPrenatalDiagnoses, $author$project$Pages$Reports$Model$ReportDemographics, $author$project$Pages$Reports$Model$ReportNutrition]),
+								A2(
+									$elm$core$List$sortBy,
+									function (rt) {
+										return $elm$core$String$toLower(
+											A2(
+												$author$project$Translate$translate,
+												language,
+												$author$project$Translate$ReportType(rt)));
+									},
+									_List_fromArray(
+										[$author$project$Pages$Reports$Model$ReportAcuteIllness, $author$project$Pages$Reports$Model$ReportDemographics, $author$project$Pages$Reports$Model$ReportFBFDistribution, $author$project$Pages$Reports$Model$ReportNutrition, $author$project$Pages$Reports$Model$ReportPeripartum, $author$project$Pages$Reports$Model$ReportPostnatalCare, $author$project$Pages$Reports$Model$ReportPrenatal, $author$project$Pages$Reports$Model$ReportPrenatalContacts, $author$project$Pages$Reports$Model$ReportPrenatalDiagnoses])),
 								$author$project$Pages$Reports$Utils$reportTypeToString,
 								$author$project$Pages$Reports$Model$SetReportType,
 								$author$project$Translate$ReportType,
@@ -43477,228 +45227,6 @@ var $author$project$Translate$UniversalIntervention = {$: 'UniversalIntervention
 var $author$project$Pages$Scoreboard$Model$VitaminA = {$: 'VitaminA'};
 var $author$project$Pages$Scoreboard$Utils$allVaccineTypes = _List_fromArray(
 	[$author$project$Backend$Scoreboard$Model$VaccineBCG, $author$project$Backend$Scoreboard$Model$VaccineOPV, $author$project$Backend$Scoreboard$Model$VaccineDTP, $author$project$Backend$Scoreboard$Model$VaccineDTPStandalone, $author$project$Backend$Scoreboard$Model$VaccinePCV13, $author$project$Backend$Scoreboard$Model$VaccineRotarix, $author$project$Backend$Scoreboard$Model$VaccineIPV, $author$project$Backend$Scoreboard$Model$VaccineMR]);
-var $author$project$Pages$Scoreboard$Utils$getIntervalForVaccine = F2(
-	function (site, vaccineType) {
-		switch (vaccineType.$) {
-			case 'VaccineBCG':
-				return _Utils_Tuple2(0, $justinmimbs$date$Date$Days);
-			case 'VaccineOPV':
-				return _Utils_Tuple2(4, $justinmimbs$date$Date$Weeks);
-			case 'VaccineDTP':
-				return _Utils_Tuple2(4, $justinmimbs$date$Date$Weeks);
-			case 'VaccineDTPStandalone':
-				return _Utils_Tuple2(0, $justinmimbs$date$Date$Days);
-			case 'VaccinePCV13':
-				return _Utils_Tuple2(4, $justinmimbs$date$Date$Weeks);
-			case 'VaccineRotarix':
-				return _Utils_Tuple2(4, $justinmimbs$date$Date$Weeks);
-			case 'VaccineIPV':
-				return _Utils_Tuple2(0, $justinmimbs$date$Date$Days);
-			default:
-				if (site.$ === 'SiteBurundi') {
-					return _Utils_Tuple2(9, $justinmimbs$date$Date$Months);
-				} else {
-					return _Utils_Tuple2(6, $justinmimbs$date$Date$Months);
-				}
-		}
-	});
-var $author$project$Backend$Scoreboard$Utils$vaccineDoseToComparable = function (dose) {
-	switch (dose.$) {
-		case 'VaccineDoseFirst':
-			return 1;
-		case 'VaccineDoseSecond':
-			return 2;
-		case 'VaccineDoseThird':
-			return 3;
-		case 'VaccineDoseFourth':
-			return 4;
-		default:
-			return 5;
-	}
-};
-var $author$project$Pages$Scoreboard$Utils$initialVaccinationDateByBirthDate = F5(
-	function (site, birthDate, initialOpvAdministered, vaccinationProgress, _v0) {
-		var vaccineType = _v0.a;
-		var vaccineDose = _v0.b;
-		var dosesInterval = $author$project$Backend$Scoreboard$Utils$vaccineDoseToComparable(vaccineDose) - 1;
-		var _v1 = A2($author$project$Pages$Scoreboard$Utils$getIntervalForVaccine, site, vaccineType);
-		var interval = _v1.a;
-		var unit = _v1.b;
-		switch (vaccineType.$) {
-			case 'VaccineBCG':
-				return birthDate;
-			case 'VaccineOPV':
-				if (vaccineDose.$ === 'VaccineDoseFirst') {
-					return birthDate;
-				} else {
-					return initialOpvAdministered ? A3(
-						$justinmimbs$date$Date$add,
-						unit,
-						(dosesInterval - 1) * interval,
-						A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Weeks, 6, birthDate)) : A3(
-						$justinmimbs$date$Date$add,
-						unit,
-						dosesInterval * interval,
-						A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Weeks, 6, birthDate));
-				}
-			case 'VaccineDTP':
-				return A3(
-					$justinmimbs$date$Date$add,
-					unit,
-					dosesInterval * interval,
-					A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Weeks, 6, birthDate));
-			case 'VaccineDTPStandalone':
-				return A2(
-					$elm$core$Maybe$withDefault,
-					A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Years, 999, birthDate),
-					A2(
-						$elm$core$Maybe$map,
-						function (thirdDoseDate) {
-							var fourWeeksAfterThirdDTPDose = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, 28, thirdDoseDate);
-							var dateWhen18MonthsOld = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Months, 18, birthDate);
-							return _Utils_eq(
-								A2($justinmimbs$date$Date$compare, fourWeeksAfterThirdDTPDose, dateWhen18MonthsOld),
-								$elm$core$Basics$GT) ? fourWeeksAfterThirdDTPDose : dateWhen18MonthsOld;
-						},
-						A2(
-							$elm$core$Maybe$andThen,
-							$pzp1997$assoc_list$AssocList$get($author$project$Backend$Scoreboard$Model$VaccineDoseThird),
-							A2($pzp1997$assoc_list$AssocList$get, $author$project$Backend$Scoreboard$Model$VaccineOPV, vaccinationProgress))));
-			case 'VaccinePCV13':
-				return A3(
-					$justinmimbs$date$Date$add,
-					unit,
-					dosesInterval * interval,
-					A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Weeks, 6, birthDate));
-			case 'VaccineRotarix':
-				return A3(
-					$justinmimbs$date$Date$add,
-					unit,
-					dosesInterval * interval,
-					A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Weeks, 6, birthDate));
-			case 'VaccineIPV':
-				return A3(
-					$justinmimbs$date$Date$add,
-					unit,
-					dosesInterval * interval,
-					A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Weeks, 14, birthDate));
-			default:
-				return A3(
-					$justinmimbs$date$Date$add,
-					unit,
-					dosesInterval * interval,
-					A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Weeks, 36, birthDate));
-		}
-	});
-var $author$project$Pages$Scoreboard$Utils$latestVaccinationDataForVaccine = F2(
-	function (vaccinationsData, vaccineType) {
-		return A2(
-			$elm$core$Maybe$andThen,
-			A2(
-				$elm$core$Basics$composeR,
-				$pzp1997$assoc_list$AssocList$toList,
-				A2(
-					$elm$core$Basics$composeR,
-					$elm$core$List$sortBy(
-						A2($elm$core$Basics$composeR, $elm$core$Tuple$first, $author$project$Backend$Scoreboard$Utils$vaccineDoseToComparable)),
-					A2($elm$core$Basics$composeR, $elm$core$List$reverse, $elm$core$List$head))),
-			A2($pzp1997$assoc_list$AssocList$get, vaccineType, vaccinationsData));
-	});
-var $author$project$Pages$Scoreboard$Utils$getLastDoseForVaccine = F2(
-	function (initialOpvAdministered, vaccineType) {
-		switch (vaccineType.$) {
-			case 'VaccineBCG':
-				return $author$project$Backend$Scoreboard$Model$VaccineDoseFirst;
-			case 'VaccineOPV':
-				return initialOpvAdministered ? $author$project$Backend$Scoreboard$Model$VaccineDoseFourth : $author$project$Backend$Scoreboard$Model$VaccineDoseThird;
-			case 'VaccineDTP':
-				return $author$project$Backend$Scoreboard$Model$VaccineDoseThird;
-			case 'VaccineDTPStandalone':
-				return $author$project$Backend$Scoreboard$Model$VaccineDoseFirst;
-			case 'VaccinePCV13':
-				return $author$project$Backend$Scoreboard$Model$VaccineDoseThird;
-			case 'VaccineRotarix':
-				return $author$project$Backend$Scoreboard$Model$VaccineDoseSecond;
-			case 'VaccineIPV':
-				return $author$project$Backend$Scoreboard$Model$VaccineDoseFirst;
-			default:
-				return $author$project$Backend$Scoreboard$Model$VaccineDoseSecond;
-		}
-	});
-var $author$project$Pages$Scoreboard$Utils$getNextVaccineDose = function (dose) {
-	switch (dose.$) {
-		case 'VaccineDoseFirst':
-			return $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$VaccineDoseSecond);
-		case 'VaccineDoseSecond':
-			return $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$VaccineDoseThird);
-		case 'VaccineDoseThird':
-			return $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$VaccineDoseFourth);
-		case 'VaccineDoseFourth':
-			return $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$VaccineDoseFifth);
-		default:
-			return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$Pages$Scoreboard$Utils$nextVaccinationDataForVaccine = F5(
-	function (site, vaccineType, initialOpvAdministered, lastDoseDate, lastDoseAdministered) {
-		return _Utils_eq(
-			A2($author$project$Pages$Scoreboard$Utils$getLastDoseForVaccine, initialOpvAdministered, vaccineType),
-			lastDoseAdministered) ? $elm$core$Maybe$Nothing : A2(
-			$elm$core$Maybe$map,
-			function (dose) {
-				var _v0 = A2($author$project$Pages$Scoreboard$Utils$getIntervalForVaccine, site, vaccineType);
-				var interval = _v0.a;
-				var unit = _v0.b;
-				return _Utils_Tuple2(
-					dose,
-					A3($justinmimbs$date$Date$add, unit, interval, lastDoseDate));
-			},
-			$author$project$Pages$Scoreboard$Utils$getNextVaccineDose(lastDoseAdministered));
-	});
-var $author$project$Pages$Scoreboard$Utils$wasInitialOpvAdministeredByVaccinationProgress = F2(
-	function (birthDate, vaccinationProgress) {
-		return A2(
-			$elm$core$Maybe$withDefault,
-			false,
-			A2(
-				$elm$core$Maybe$map,
-				function (adminstrationDate) {
-					return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Days, birthDate, adminstrationDate) < 14;
-				},
-				A2(
-					$elm$core$Maybe$andThen,
-					$pzp1997$assoc_list$AssocList$get($author$project$Backend$Scoreboard$Model$VaccineDoseFirst),
-					A2($pzp1997$assoc_list$AssocList$get, $author$project$Backend$Scoreboard$Model$VaccineOPV, vaccinationProgress))));
-	});
-var $author$project$Pages$Scoreboard$Utils$generateFutureVaccinationsData = F3(
-	function (site, birthDate, vaccinationProgress) {
-		var initialOpvAdministered = A2($author$project$Pages$Scoreboard$Utils$wasInitialOpvAdministeredByVaccinationProgress, birthDate, vaccinationProgress);
-		return A2(
-			$elm$core$List$map,
-			function (vaccineType) {
-				var nextVaccinationData = function () {
-					var _v0 = A2($author$project$Pages$Scoreboard$Utils$latestVaccinationDataForVaccine, vaccinationProgress, vaccineType);
-					if (_v0.$ === 'Just') {
-						var _v1 = _v0.a;
-						var lastDoseAdministered = _v1.a;
-						var lastDoseDate = _v1.b;
-						return A5($author$project$Pages$Scoreboard$Utils$nextVaccinationDataForVaccine, site, vaccineType, initialOpvAdministered, lastDoseDate, lastDoseAdministered);
-					} else {
-						var vaccinationDate = A5(
-							$author$project$Pages$Scoreboard$Utils$initialVaccinationDateByBirthDate,
-							site,
-							birthDate,
-							initialOpvAdministered,
-							vaccinationProgress,
-							_Utils_Tuple2(vaccineType, $author$project$Backend$Scoreboard$Model$VaccineDoseFirst));
-						return $elm$core$Maybe$Just(
-							_Utils_Tuple2($author$project$Backend$Scoreboard$Model$VaccineDoseFirst, vaccinationDate));
-					}
-				}();
-				return _Utils_Tuple2(vaccineType, nextVaccinationData);
-			},
-			$author$project$Pages$Scoreboard$Utils$allVaccineTypes);
-	});
 var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F8(
 	function (language, currentDate, site, yearSelectorGap, monthsGap, childrenUnder2, viewMode, data) {
 		var resolveLastDayForMonthX = F2(
@@ -43788,7 +45316,7 @@ var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F8(
 																	dosesDict);
 															}),
 														record.ncda.universalIntervention.row1);
-													var futureVaccinations = A3($author$project$Pages$Scoreboard$Utils$generateFutureVaccinationsData, site, record.birthDate, vaccinationProgressOnReferrenceDate);
+													var futureVaccinations = A4($author$project$Pages$Scoreboard$Utils$generateFutureVaccinationsData, site, record.birthDate, vaccinationProgressOnReferrenceDate, $author$project$Pages$Scoreboard$Utils$allVaccineTypes);
 													var closestDateForVaccination = $elm$core$List$head(
 														A2(
 															$elm$core$List$sortWith,

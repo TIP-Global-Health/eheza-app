@@ -7,12 +7,18 @@
 
 const HEDLEY_PATIENT_ENCOUNTER_TYPE_VALUE_MAPPING = [
   'acute_illness_encounter' => 'acute-illness',
-  'prenatal_encounter' => 'antenatal',
   'child_scoreboard_encounter' => 'child-scoreboard',
+  'hiv_encounter' => 'hiv',
   'home_visit_encounter' => 'home-visit',
   'ncd_encounter' => 'ncd',
   'nutrition_encounter' => 'nutrition',
+  'prenatal_encounter' => 'antenatal',
+  'tuberculosis_encounter' => 'tuberculosis',
   'well_child_encounter' => 'well-child',
+];
+
+const HEDLEY_PATIENT_FAMILY_ENCOUNTER_TYPE_VALUE_MAPPING = [
+  'family_nutrition_encounter' => 'nutrition',
 ];
 
 /**
@@ -649,6 +655,90 @@ function _consolidate_child_scoreboard_encounter_content_execute(array $measurem
 }
 
 /**
+ * Performs validations before consolidation of HIV encounters content.
+ *
+ * @param array $measurements
+ *   A list of HIV measurements that belong to the 'duplicate' patient.
+ * @param int $original
+ *   Node ID of the 'original' patient.
+ * @param int $duplicate
+ *   Node ID of the 'duplicate' patient.
+ *
+ * @see _consolidate_single_participant_content_validate()
+ *
+ * @return array
+ *   Result and corresponding messages.
+ *
+ * @throws \EntityMetadataWrapperException
+ */
+function _consolidate_hiv_encounter_content_validate(array $measurements, $original, $duplicate) {
+  return _consolidate_single_participant_content_validate($measurements, $original, $duplicate, 'hiv_encounter');
+}
+
+/**
+ * Performs consolidation of HIV encounters content.
+ *
+ * @param array $measurements
+ *   A list of HIV measurements belonging to the 'duplicate' patient.
+ * @param int $original
+ *   Node ID of the 'original' patient.
+ * @param int $duplicate
+ *   Node ID of the 'duplicate' patient.
+ *
+ * @see _consolidate_single_participant_content_execute()
+ *
+ * @return string
+ *   Success message.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function _consolidate_hiv_encounter_content_execute(array $measurements, $original, $duplicate) {
+  return _consolidate_single_participant_content_execute($measurements, $original, $duplicate, 'hiv_encounter');
+}
+
+/**
+ * Performs validations before consolidation of Tuberculosis encounters content.
+ *
+ * @param array $measurements
+ *   A list of Tuberculosis measurements that belong to the 'duplicate' patient.
+ * @param int $original
+ *   Node ID of the 'original' patient.
+ * @param int $duplicate
+ *   Node ID of the 'duplicate' patient.
+ *
+ * @see _consolidate_single_participant_content_validate()
+ *
+ * @return array
+ *   Result and corresponding messages.
+ *
+ * @throws \EntityMetadataWrapperException
+ */
+function _consolidate_tuberculosis_encounter_content_validate(array $measurements, $original, $duplicate) {
+  return _consolidate_single_participant_content_validate($measurements, $original, $duplicate, 'tuberculosis_encounter');
+}
+
+/**
+ * Performs consolidation of Tuberculosis encounters content.
+ *
+ * @param array $measurements
+ *   A list of Tuberculosis measurements belonging to the 'duplicate' patient.
+ * @param int $original
+ *   Node ID of the 'original' patient.
+ * @param int $duplicate
+ *   Node ID of the 'duplicate' patient.
+ *
+ * @see _consolidate_single_participant_content_execute()
+ *
+ * @return string
+ *   Success message.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function _consolidate_tuberculosis_encounter_content_execute(array $measurements, $original, $duplicate) {
+  return _consolidate_single_participant_content_execute($measurements, $original, $duplicate, 'tuberculosis_encounter');
+}
+
+/**
  * Performs validations before consolidation for single participant use cases.
  *
  * This is a case where we have single participant, with multiple encounters.
@@ -836,17 +926,127 @@ function _consolidate_acute_illness_encounter_content_execute(array $measurement
 }
 
 /**
+ * Performs validations before consolidation of Family Nutrition content.
+ *
+ * Family encounters are special: a family_participant references the adult,
+ * but measurements may target the adult OR a child. The duplicate patient
+ * may be the adult of one or more families, a child within a family, or
+ * both. We require the original to have at most one matching
+ * family_participant, so we know where to repoint encounters when both
+ * sides have one.
+ *
+ * @param array $measurements
+ *   Family Nutrition measurements that belong to the 'duplicate' patient.
+ * @param int $original
+ *   Node ID of the 'original' patient.
+ * @param int $duplicate
+ *   Node ID of the 'duplicate' patient.
+ *
+ * @return array
+ *   Result and corresponding messages.
+ *
+ * @throws \EntityMetadataWrapperException
+ */
+function _consolidate_family_nutrition_encounter_content_validate(array $measurements, $original, $duplicate) {
+  $return = [
+    'success' => FALSE,
+    'messages' => [],
+  ];
+
+  $type_value = HEDLEY_PATIENT_FAMILY_ENCOUNTER_TYPE_VALUE_MAPPING['family_nutrition_encounter'];
+
+  $count_measurements = count($measurements);
+  $return['messages'][] = "Duplicate got $count_measurements family_nutrition_encounter measurements.";
+
+  $participants_original = hedley_person_family_participants_for_person($original, [$type_value], 'DESC');
+  $count_original = count($participants_original);
+  if ($count_original > 1) {
+    $return['messages'][] = 'Error: Original is the adult of multiple family_participants of this type. Manual fix required.';
+    return $return;
+  }
+
+  $return['messages'][] = "Original got $count_original family_nutrition_encounter participants (as the adult).";
+
+  $participants_duplicate = hedley_person_family_participants_for_person($duplicate, [$type_value], 'DESC');
+  $count_duplicate = count($participants_duplicate);
+  $return['messages'][] = "Duplicate got $count_duplicate family_nutrition_encounter participants (as the adult).";
+
+  $return['success'] = TRUE;
+  return $return;
+}
+
+/**
+ * Performs consolidation of Family Nutrition encounters content.
+ *
+ * Algorithm:
+ * 1. If original has a matching family_participant, use it as the target.
+ *    Otherwise, take the latest of duplicate's matching participants and
+ *    repoint its field_person to original (it becomes the target).
+ * 2. For any remaining duplicate participants, repoint their encounters to
+ *    the target participant and mark the duplicate participant as deleted.
+ * 3. Repoint all measurements where field_person = duplicate to original.
+ *    These cover both adult-targeted measurements (when duplicate is the
+ *    adult) and child-targeted measurements (when duplicate is the child
+ *    in someone else's family encounter).
+ *
+ * @param array $measurements
+ *   Family Nutrition measurements belonging to the 'duplicate' patient.
+ * @param int $original
+ *   Node ID of the 'original' patient.
+ * @param int $duplicate
+ *   Node ID of the 'duplicate' patient.
+ *
+ * @return string
+ *   Success message.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function _consolidate_family_nutrition_encounter_content_execute(array $measurements, $original, $duplicate) {
+  $type_value = HEDLEY_PATIENT_FAMILY_ENCOUNTER_TYPE_VALUE_MAPPING['family_nutrition_encounter'];
+
+  $participants_original = hedley_person_family_participants_for_person($original, [$type_value], 'DESC');
+  $participants_duplicate = hedley_person_family_participants_for_person($duplicate, [$type_value], 'DESC');
+
+  $target_participant = NULL;
+  if (empty($participants_original)) {
+    // Original has no matching family_participant. Take the latest of the
+    // duplicate's participants and repoint it to original.
+    $target_participant = array_pop($participants_duplicate);
+    if (!empty($target_participant)) {
+      _associate_content_by_field([$target_participant], 'field_person', $original);
+    }
+  }
+  else {
+    $target_participant = $participants_original[0];
+  }
+
+  // Repoint encounters of remaining duplicate participants to the target;
+  // mark those participants as deleted.
+  if (!empty($target_participant)) {
+    foreach ($participants_duplicate as $participant) {
+      $encounters = hedley_person_load_family_participant_encounters_ids($participant);
+      _associate_content_by_field($encounters, 'field_family_participant', $target_participant);
+
+      $wrapper_participant = entity_metadata_wrapper('node', $participant);
+      $wrapper_participant->field_deleted->set(TRUE);
+      $wrapper_participant->save();
+    }
+  }
+
+  // Move measurements where field_person = duplicate to original. These
+  // cover both adult-targeted measurements (when duplicate is the adult)
+  // and child-targeted measurements (when duplicate is the child in
+  // someone else's family encounter).
+  _associate_content_by_field($measurements, 'field_person', $original);
+
+  return 'Consolidation of Family Nutrition encounters content is completed.';
+}
+
+/**
  * Groups inputs measurements by the type of encounter to which they belong.
  *
- * Encounter types:
- *   - Group.
- *   - Prenatal.
- *   - Nutrition.
- *   - Acute Illness.
- *   - Home visit.
- *   - Well child.
- *   - NCD.
- *   - Child Scorecard.
+ * Buckets are created for every type returned by
+ * hedley_general_get_encounter_types().
  *
  * @param array $measurements
  *   A list of measurements IDs.

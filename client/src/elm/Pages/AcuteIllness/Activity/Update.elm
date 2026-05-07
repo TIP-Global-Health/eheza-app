@@ -100,6 +100,9 @@ update site selectedHealthCenter id db msg model =
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
     in
     case msg of
+        NoOp ->
+            ( model, Cmd.none, [] )
+
         SetActivePage page ->
             ( model
             , Cmd.none

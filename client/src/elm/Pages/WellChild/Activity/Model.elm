@@ -29,11 +29,14 @@ type Msg
     | SaveSymptomsReview PersonId (Maybe ( WellChildSymptomsReviewId, WellChildSymptomsReview )) (Maybe DangerSignsTask)
     | SetVitalsIntInput (Maybe Int -> VitalsForm -> VitalsForm) String
     | SetVitalsFloatInput (Maybe Float -> VitalsForm -> VitalsForm) String
+    | SetBodyTemperatureNotTaken Bool
+    | SetRespiratoryRateNotTaken Bool
     | SaveVitals PersonId (Maybe ( WellChildVitalsId, WellChildVitals )) (Maybe DangerSignsTask)
       -- NUTRITION ASSESMENT
     | SetActiveNutritionAssessmentTask NutritionAssessmentTask
     | SetHeight String
-    | SaveHeight PersonId (Maybe ( WellChildHeightId, WellChildHeight )) (Maybe NutritionAssessmentTask)
+    | SetHeightNotTaken Bool
+    | SaveHeight (EverySet SkippedForm) PersonId (Maybe ( WellChildHeightId, WellChildHeight )) (Maybe NutritionAssessmentTask)
     | SetHeadCircumference String
     | ToggleHeadCircumferenceNotTaken
     | CloseHeadCircumferencePopup PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
@@ -44,7 +47,8 @@ type Msg
     | SetNutritionSign ChildNutritionSign
     | SaveNutrition PersonId (Maybe ( WellChildNutritionId, WellChildNutrition )) (EverySet NutritionAssessment) (Maybe NutritionAssessmentTask)
     | SetWeight String
-    | SaveWeight PersonId (Maybe ( WellChildWeightId, WellChildWeight )) (Maybe NutritionAssessmentTask)
+    | SetWeightNotTaken Bool
+    | SaveWeight (EverySet SkippedForm) PersonId (Maybe ( WellChildWeightId, WellChildWeight )) (Maybe NutritionAssessmentTask)
       -- IMMUNISATION
     | SetActiveImmunisationTask ImmunisationTask
     | SetVaccinationFormViewMode WellChildVaccineType VaccinationFormViewMode

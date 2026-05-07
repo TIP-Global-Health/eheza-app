@@ -14,6 +14,7 @@ import {
   enterMuac,
   enterNutritionSigns,
   saveActivity,
+  skipHeight,
   endEncounter,
   completeSendToHC,
   completeHealthEducation,
@@ -35,7 +36,14 @@ test.describe('CHW: Individual Nutrition Encounter', () => {
     await setupDevice(page, '2345', 'Akanduga');
   });
 
-  test('normal encounter without height (optional for CHW) and backend sync', async ({
+  // Scenario: CHW encounter where height physically cannot be taken
+  // (e.g., stadiometer unavailable). Activities: Weight, MUAC, Nutrition,
+  // Height (skipped via "Unable to take measurement" checkbox).
+  // Conditions: Normal values -> no NextSteps. SkippedHeight recorded on
+  // the encounter so Height activity counts as complete.
+  // Backend: Verifies weight/muac/nutrition nodes exist; no height node
+  // since the measurement was explicitly skipped.
+  test('normal encounter with height skipped via "Unable to take measurement" and backend sync', async ({
     page,
   }) => {
     const { fullName } = await createChildAndStartEncounter(page, {
@@ -56,25 +64,39 @@ test.describe('CHW: Individual Nutrition Encounter', () => {
     const diagnosisAppeared = await saveActivity(page);
     expect(diagnosisAppeared, 'diagnosis popup should not appear for normal signs').toBe(false);
 
-    // Height is optional for CHW — skip it entirely.
-    // End Encounter should be enabled without height.
+    // Height: mark as "Unable to take measurement" (CHW-only checkbox).
+    // Records SkippedHeight on the encounter so the activity counts as
+    // completed without an actual reading.
+    await skipHeight(page);
+
+    // End Encounter should now be enabled.
     const endBtn = page.locator('div.actions button.ui.fluid.button', {
       hasText: 'End Encounter',
     });
-    await expect(endBtn, 'End Encounter button should be enabled without height for CHW').not.toHaveClass(/disabled/);
+    await expect(endBtn, 'End Encounter button should be enabled after skipping height').not.toHaveClass(/disabled/);
     await endEncounter(page);
 
     // Sync to backend.
     await syncAndWait(page);
 
-    // Verify measurements in backend — no height node expected.
+    // Verify measurements in backend — no height node since it was skipped.
     const nodes = queryBackendNodes(fullName);
     expect(nodes.weight, 'weight should be 12 kg').toBe(12);
     expect(nodes.muac, 'muac should be 14 cm').toBe(14);
     expect(nodes.nutrition, 'nutrition node should exist').toBe(true);
-    expect(nodes.height, 'height should not exist for CHW encounter').toBeUndefined();
+    expect(nodes.height, 'height should not exist when explicitly skipped').toBeUndefined();
   });
 
+  // Scenario: CHW encounter with abnormal values that trigger a positive
+  // nutrition assessment. Activities: Height (skipped), Weight, MUAC,
+  // Nutrition, then NextSteps (SendToHC, HealthEducation,
+  // ContributingFactors, FollowUp).
+  // Conditions: MUAC 11 cm (severe red zone) + Edema sign -> positive
+  // assessment. Diagnosis popup appears once all mandatory activities
+  // are complete; app auto-navigates to NextSteps.
+  // Backend: Verifies weight/muac/nutrition + all 4 NextSteps nodes,
+  // confirms no height node (skipped). Verifies follow-up entry appears
+  // in Case Management.
   test('abnormal MUAC triggers NextSteps with backend sync', async ({
     page,
   }) => {
@@ -82,6 +104,10 @@ test.describe('CHW: Individual Nutrition Encounter', () => {
       ageMonths: 24,
       isChw: true,
     });
+
+    // Skip height first so all mandatory activities can be completed.
+    // Diagnosis popup only fires after all mandatory activities are done.
+    await skipHeight(page);
 
     // Weight: 8 kg (underweight)
     await enterWeight(page, '8');

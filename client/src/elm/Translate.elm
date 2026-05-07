@@ -2206,6 +2206,7 @@ type TranslationId
     | UbudeheNumber Ubudehe
     | UltrasoundEDDQuestion
     | UltrasoundExecutionDateLabel
+    | UnableToTakeMeasurement
     | UncomplicatedMalaria
     | Underweight
     | UndeterminedDiagnoses
@@ -3979,6 +3980,13 @@ translationSet trans =
                     , kinyarwanda = Just "Umwana aronka neza"
                     , kirundi = Just "Mbega umwana aronka neza"
                     , somali = Just "Canuga si fiican ma u qaataa naaska"
+                    }
+
+                BreastfedFirstHour ->
+                    { english = "Was the baby breastfed within an hour of delivery"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
                     }
 
                 _ ->
@@ -27738,6 +27746,13 @@ translationSet trans =
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Just "Taariikhda baaritaanka uurka lagu sameeyay"
+            }
+
+        UnableToTakeMeasurement ->
+            { english = "Unable to take measurement"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
             }
 
         UncomplicatedMalaria ->

@@ -1,5 +1,8 @@
+import { execSync } from 'child_process';
+
 import { Page } from '@playwright/test';
 import { click } from './auth';
+import { drushEnv } from './device';
 import {
   WAIT,
   answerYesNo,
@@ -203,11 +206,22 @@ export async function completeDangerSigns(
     symptoms?: string[];
     respiratoryRate?: string;
     bodyTemp?: string;
+    /** When true, click the RR "Unable to take measurement" checkbox instead of filling. */
+    respiratoryRateNotTaken?: boolean;
+    /** When true, click the BT "Unable to take measurement" checkbox instead of filling. */
+    bodyTemperatureNotTaken?: boolean;
+    /** When true, after switching to the Vitals tab, asserts that no
+     *  ".ui.checkbox.activity" elements appear in the Vitals form section
+     *  (negative gate — used by nurse / non-CHW tests). */
+    expectNoSkipCheckboxes?: boolean;
   },
 ) {
   const symptoms = options?.symptoms ?? [];
   const respiratoryRate = options?.respiratoryRate ?? '20';
   const bodyTemp = options?.bodyTemp ?? '36.5';
+  const respiratoryRateNotTaken = options?.respiratoryRateNotTaken ?? false;
+  const bodyTemperatureNotTaken = options?.bodyTemperatureNotTaken ?? false;
+  const expectNoSkipCheckboxes = options?.expectNoSkipCheckboxes ?? false;
 
   await openActivity(page, 'danger-signs');
 
@@ -224,8 +238,40 @@ export async function completeDangerSigns(
 
   // --- Vitals tab ---
   await clickSubTaskTab(page, 'vitals');
-  await fillMeasurement(page, 'respiratory-rate', respiratoryRate);
-  await fillMeasurement(page, 'body-temperature', bodyTemp);
+
+  const vitalsForm = page.locator('.ui.form.vitals');
+  await vitalsForm.waitFor({ timeout: 5000 });
+
+  if (expectNoSkipCheckboxes) {
+    // Negative gate: in non-CHW Well Child Vitals, no skip checkboxes render.
+    const skipCheckboxCount = await vitalsForm.locator('.ui.checkbox.activity').count();
+    if (skipCheckboxCount !== 0) {
+      throw new Error(
+        `expectNoSkipCheckboxes: expected 0 ".ui.checkbox.activity" inside ".ui.form.vitals", found ${skipCheckboxCount}`,
+      );
+    }
+  }
+
+  // The two skip checkboxes are siblings inside .ui.form.vitals and render
+  // only when allowSkipping is on (CHW Well Child). In DOM order:
+  //   index 0 = Respiratory Rate, index 1 = Body Temperature.
+  const skipCheckboxes = vitalsForm.locator('.ui.checkbox.activity');
+
+  if (respiratoryRateNotTaken) {
+    // Click the outer div: onClick is on .ui.checkbox.activity, not the label.
+    await click(skipCheckboxes.nth(0), page);
+    await page.waitForTimeout(WAIT.formInteraction);
+  } else {
+    await fillMeasurement(page, 'respiratory-rate', respiratoryRate);
+  }
+
+  if (bodyTemperatureNotTaken) {
+    await click(skipCheckboxes.nth(1), page);
+    await page.waitForTimeout(WAIT.formInteraction);
+  } else {
+    await fillMeasurement(page, 'body-temperature', bodyTemp);
+  }
+
   await saveSubTask(page);
 
   // Wait for return to encounter page.
@@ -893,4 +939,91 @@ export function queryWellChildNodes(
     'well_child_pregnancy_summary',
     'well_child_ncda',
   ], expectedTypes);
+}
+
+/**
+ * Query the most recent `well_child_vitals` row for `personName`, returning
+ * the `field_respiratory_rate` and `field_body_temperature` values. A field
+ * with no value (skipped at form-save time) is reported as `null`.
+ *
+ * Drupal stores person titles reversed: `"secondName firstName"`.
+ *
+ * Retries up to `expectedAttempts` times (5-second delay) until either:
+ *  - The vitals node exists AND `expected` (if supplied) matches; or
+ *  - Attempts are exhausted (returns whatever was last read).
+ *
+ * The retry is needed because writes flow through service-worker shardChanges
+ * → Advanced Queue → node_save asynchronously after `syncAndWait` reports
+ * "Status: Success".
+ */
+export function queryWellChildVitalsValues(
+  personName: string,
+  expected?: { rr: number | null; temp: number | null },
+): { rr: number | null; temp: number | null } {
+  const { drushCmd, cwd } = drushEnv();
+  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
+
+  const php = `
+    \\$name = base64_decode('${personNameB64}');
+    \\$q = new EntityFieldQuery();
+    \\$r = \\$q->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'person')
+      ->propertyCondition('title', \\$name)
+      ->execute();
+    if (empty(\\$r['node'])) { echo json_encode(['error' => 'Person not found']); return; }
+    \\$pid = key(\\$r['node']);
+
+    \\$vq = new EntityFieldQuery();
+    \\$vr = \\$vq->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'well_child_vitals')
+      ->fieldCondition('field_person', 'target_id', \\$pid)
+      ->propertyOrderBy('nid', 'DESC')
+      ->range(0, 1)
+      ->execute();
+    if (empty(\\$vr['node'])) { echo json_encode(['error' => 'No well_child_vitals row']); return; }
+
+    \\$vid = key(\\$vr['node']);
+    \\$node = node_load(\\$vid);
+    \\$rrItems = field_get_items('node', \\$node, 'field_respiratory_rate');
+    \\$tempItems = field_get_items('node', \\$node, 'field_body_temperature');
+    \\$rr = (\\$rrItems && isset(\\$rrItems[0]['value']) && \\$rrItems[0]['value'] !== '' && \\$rrItems[0]['value'] !== null)
+      ? \\$rrItems[0]['value']
+      : null;
+    \\$temp = (\\$tempItems && isset(\\$tempItems[0]['value']) && \\$tempItems[0]['value'] !== '' && \\$tempItems[0]['value'] !== null)
+      ? \\$tempItems[0]['value']
+      : null;
+    echo json_encode(['rr' => \\$rr, 'temp' => \\$temp]);
+  `;
+
+  const matches = (got: { rr: number | null; temp: number | null }) => {
+    if (!expected) return true;
+    return got.rr === expected.rr && got.temp === expected.temp;
+  };
+
+  let last: { rr: number | null; temp: number | null } = { rr: null, temp: null };
+  for (let attempt = 0; attempt < 10; attempt++) {
+    try {
+      const output = execSync(`${drushCmd} eval "${php}"`, {
+        cwd, timeout: 30000, encoding: 'utf-8', stdio: 'pipe',
+      }).trim();
+      const parsed = JSON.parse(output);
+      if (parsed.error) {
+        console.log(`queryWellChildVitalsValues attempt ${attempt + 1}: ${parsed.error}`);
+        if (attempt < 9) { execSync('sleep 5'); continue; }
+        return last;
+      }
+      const rr = parsed.rr === null ? null : Number(parsed.rr);
+      const temp = parsed.temp === null ? null : Number(parsed.temp);
+      last = { rr, temp };
+      if (matches(last)) return last;
+      console.log(
+        `queryWellChildVitalsValues attempt ${attempt + 1}: got ${JSON.stringify(last)}, expected ${JSON.stringify(expected)}`,
+      );
+      if (attempt < 9) execSync('sleep 5');
+    } catch (err) {
+      console.log(`queryWellChildVitalsValues attempt ${attempt + 1}: error`, err);
+      if (attempt < 9) execSync('sleep 5');
+    }
+  }
+  return last;
 }
