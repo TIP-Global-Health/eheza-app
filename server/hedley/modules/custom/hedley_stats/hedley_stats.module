@@ -43,6 +43,7 @@ define('HEDLEY_STATS_SPV', 'sync_stats_spv');
 define('HEDLEY_STATS_CHILD_SCOREBOARD', 'sync_stats_child_scoreboard');
 define('HEDLEY_STATS_NUTRITION_INDIVIDUAL', 'sync_stats_nutrition_individual');
 define('HEDLEY_STATS_NUTRITION_GROUP', 'sync_stats_nutrition_group');
+define('HEDLEY_STATS_NUTRITION_FAMILY', 'sync_stats_nutrition_family');
 define('HEDLEY_STATS_GROUP_EDUCATION', 'sync_stats_group_education');
 
 // Cache IDs.
@@ -60,6 +61,7 @@ define('HEDLEY_STATS_SYNC_SPV_DATA', 'sync_spv_data');
 define('HEDLEY_STATS_SYNC_CHILD_SCOREBOARD_DATA', 'sync_child_scoreboard_data');
 define('HEDLEY_STATS_SYNC_NUTRITION_INDIVIDUAL_DATA', 'sync_nutrition_individual_data');
 define('HEDLEY_STATS_SYNC_NUTRITION_GROUP_DATA', 'sync_nutrition_group_data');
+define('HEDLEY_STATS_SYNC_NUTRITION_FAMILY_DATA', 'sync_nutrition_family_data');
 define('HEDLEY_STATS_SYNC_GROUP_EDUCATION_DATA', 'sync_group_education_data');
 define('HEDLEY_STATS_SYNC_VILLAGES_WITH_RESIDENTS', 'villages_with_residents');
 define('HEDLEY_STATS_SYNC_PATIENTS_DETAILS', 'patients_details');
@@ -194,6 +196,10 @@ function hedley_stats_requires_statistics_recalculation($node) {
 
   if (hedley_stats_requires_nutrition_group_statistics_recalculation($wrapper)) {
     return HEDLEY_STATS_NUTRITION_GROUP;
+  }
+
+  if (hedley_stats_requires_nutrition_family_statistics_recalculation($wrapper)) {
+    return HEDLEY_STATS_NUTRITION_FAMILY;
   }
 
   // This comes last, because it's where we should fall if all previous options
@@ -510,6 +516,27 @@ function hedley_stats_requires_nutrition_group_statistics_recalculation($wrapper
 }
 
 /**
+ * Checks if entity requires Family Nutrition statistics recalculation.
+ *
+ * @param object $wrapper
+ *   Entity metadata wrapper.
+ *
+ * @return bool
+ *   True, if statistics recalculation is required.
+ */
+function hedley_stats_requires_nutrition_family_statistics_recalculation($wrapper) {
+  $triggering_types = [
+    HEDLEY_ACTIVITY_FAMILY_NUTRITION_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_FAMILY_NUTRITION_MUAC_CHILD_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_FAMILY_NUTRITION_MUAC_MOTHER_CONTENT_TYPE,
+  ];
+
+  $bundle = $wrapper->getBundle();
+
+  return in_array($bundle, $triggering_types);
+}
+
+/**
  * Clears all statistics related caches for a health center.
  *
  * @param int $nid
@@ -557,6 +584,11 @@ function hedley_stats_clear_caches_for_health_center($nid, $cache_type_for_recal
     // Note we do not return after, since we want to clear 'old'
     // Nutrition caches as well.
     hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_NUTRITION_GROUP_DATA, $nid);
+  }
+  elseif ($cache_type_for_recalculation == HEDLEY_STATS_NUTRITION_FAMILY) {
+    // Note we do not return after, since we want to clear 'old'
+    // Nutrition caches as well.
+    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_NUTRITION_FAMILY_DATA, $nid);
   }
 
   // If we got this far, we need to clear Nutrition stats cache.
@@ -677,6 +709,7 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
   hedley_stats_get_child_scorecard_data($health_center_id);
   hedley_stats_get_nutrition_individual_data($health_center_id);
   hedley_stats_get_nutrition_group_data($health_center_id);
+  hedley_stats_get_nutrition_family_data($health_center_id);
   hedley_stats_get_group_education_data($health_center_id, $patients_details);
 
   // Set (possibly altered) patients details in cache.
@@ -795,6 +828,12 @@ function hedley_stats_pull_stats_for_health_center($health_center_id, $health_ce
   }
   $nutrition_group_data = $cache_data;
 
+  $cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_NUTRITION_FAMILY_DATA, $health_center_id);
+  if ($cache_data === NULL) {
+    return [];
+  }
+  $nutrition_family_data = $cache_data;
+
   $cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_GROUP_EDUCATION_DATA, $health_center_id);
   if ($cache_data === NULL) {
     return [];
@@ -826,6 +865,7 @@ function hedley_stats_pull_stats_for_health_center($health_center_id, $health_ce
     'child_scoreboard_data' => $child_scoreboard_data,
     'nutrition_individual_data' => $nutrition_individual_data,
     'nutrition_group_data' => $nutrition_group_data,
+    'nutrition_family_data' => $nutrition_family_data,
     'group_education_data' => $group_education_data,
     'villages_with_residents' => $villages_with_residents,
     'patients_details' => $patients_details,
@@ -2237,6 +2277,134 @@ function hedley_stats_get_nutrition_group_data($health_center_id) {
 }
 
 /**
+ * Return Family Nutrition data that is used to generate statistics.
+ *
+ * We get data of all encounters for patients that were active during
+ * past 6 months.
+ * We need to know when encounters were created, and MUAC measurements.
+ * Also, we add patient ID, to be able to associate it with its village.
+ *
+ * @param int $health_center_id
+ *   The health center node ID.
+ *
+ * @return array
+ *   List of Family Nutrition participants data with its encounters.
+ *
+ * @throws Exception
+ */
+function hedley_stats_get_nutrition_family_data($health_center_id) {
+  // Return the cache if exists.
+  if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_NUTRITION_FAMILY_DATA, $health_center_id)) {
+    return $cache_data;
+  }
+
+  // Pull all Family Nutrition encounters during past 6 months.
+  // Since dashboard presents data for past 6 months, we will be generating
+  // data for all Family Nutrition participants that had an encounter over
+  // past 6 months.
+  $query = hedley_stats_get_base_query($health_center_id, 'family_nutrition_encounter', HEDLEY_STATS_PERIOD_PAST_SIX_MONTHS);
+
+  // Resolve all family participants associated with those encounters.
+  hedley_general_join_field_to_query($query, 'node', 'field_family_participant');
+  $query->groupBy('field_family_participant.field_family_participant_target_id');
+
+  $result = $query
+    ->execute()
+    ->fetchAllAssoc('field_family_participant');
+
+  $family_participants = array_keys($result);
+  if (empty($family_participants)) {
+    $result = [];
+    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_NUTRITION_FAMILY_DATA, $health_center_id, NULL, $result);
+    return $result;
+  }
+
+  // Get encounter IDs and their dates for these family participants.
+  $query = hedley_stats_get_base_query($health_center_id, 'family_nutrition_encounter');
+  hedley_general_join_field_to_query($query, 'node', 'field_family_participant', FALSE);
+  $query->condition('field_family_participant.field_family_participant_target_id', $family_participants, 'IN');
+
+  $encounter_rows = $query
+    ->execute()
+    ->fetchAllAssoc('nid');
+
+  if (empty($encounter_rows)) {
+    $result = [];
+    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_NUTRITION_FAMILY_DATA, $health_center_id, NULL, $result);
+    return $result;
+  }
+
+  $encounter_ids = array_keys($encounter_rows);
+  $encounter_dates = [];
+  foreach ($encounter_rows as $nid => $row) {
+    $encounter_dates[$nid] = date_format(date_create($row->field_scheduled_date), 'Y-m-d');
+  }
+
+  // Free up memory.
+  drupal_static_reset();
+
+  // Process child MUAC and mother MUAC measurements, building per-person data.
+  $people = [];
+  $muac_bundles = [
+    'family_nutrition_muac_child',
+    'family_nutrition_muac_mother',
+  ];
+
+  foreach ($muac_bundles as $bundle) {
+    // Query measurement nodes for the encounters in past 6 months.
+    $query = hedley_stats_get_base_query($health_center_id, $bundle);
+    // Get the person this measurement belongs to.
+    hedley_general_join_field_to_query($query, 'node', 'field_person');
+    // Get the encounter reference.
+    hedley_general_join_field_to_query($query, 'node', 'field_family_nutrition_encounter');
+    // Filter to encounters from past 6 months at this health center.
+    $query->condition('field_family_nutrition_encounter.field_family_nutrition_encounter_target_id', $encounter_ids, 'IN');
+    // Get the MUAC value.
+    hedley_general_join_field_to_query($query, 'node', 'field_muac', FALSE);
+
+    $rows = hedley_stats_run_node_query_in_batches($query);
+    foreach ($rows as $row) {
+      $person_id = $row->field_person;
+      $encounter_id = $row->field_family_nutrition_encounter;
+
+      if (!isset($people[$person_id])) {
+        $people[$person_id] = [
+          'id' => $person_id,
+          'encounters' => [],
+        ];
+      }
+
+      $start_date = isset($encounter_dates[$encounter_id])
+        ? $encounter_dates[$encounter_id]
+        : date_format(date_create($row->field_date_measured), 'Y-m-d');
+
+      $encounter = [
+        'start_date' => $start_date,
+      ];
+      if (!empty($row->field_muac)) {
+        $encounter['muac'] = $row->field_muac;
+      }
+      // Key encounters by encounter ID to avoid duplicates.
+      $people[$person_id]['encounters'][$encounter_id] = $encounter;
+    }
+
+    // Free up memory.
+    drupal_static_reset();
+  }
+
+  foreach ($people as &$person) {
+    $person['encounters'] = array_values($person['encounters']);
+  }
+
+  $values = array_values($people);
+
+  // Store in cache.
+  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_NUTRITION_FAMILY_DATA, $health_center_id, NULL, $values);
+
+  return $values;
+}
+
+/**
  * Return Group Education data which is used to generate statistics.
  *
  * We get data of all education sessions that were ran during past 6 months.
@@ -3229,6 +3397,7 @@ function hedley_stats_get_case_management_for_period($health_center_id, array &$
 
               case 'muac':
               case 'nutrition_muac':
+              case 'family_nutrition_muac_child':
                 // The value to display in the table.
                 $item['nutrition']['muac'][$month] = $formatted_value;
                 break;
@@ -3284,6 +3453,15 @@ function hedley_stats_get_all_clinic_types() {
 function hedley_stats_get_nutrition_measurements_grouped_by_person($health_center_id, $period, $extend = FALSE) {
   $result = hedley_stats_get_nutrition_measurements_grouped_by_clinic_type_and_person($health_center_id, $period, $extend);
   $result['individual'] = hedley_stats_get_nutrition_measurements_for_individual_encounters_grouped_by_person($health_center_id, $period, $extend);
+
+  // Merge family encounter child MUAC data into CHW program type, since
+  // family encounters are CHW-led.
+  $family_data = hedley_stats_get_nutrition_measurements_for_family_encounters_grouped_by_person($health_center_id, $period, $extend);
+  foreach ($family_data as $person_id => $person_measurements) {
+    foreach ($person_measurements as $type => $dates) {
+      $result['chw'][$person_id][$type] = $dates;
+    }
+  }
 
   return $result;
 }
@@ -3400,6 +3578,58 @@ function hedley_stats_get_nutrition_measurements_for_individual_encounters_group
 }
 
 /**
+ * Gets all family encounter child MUAC measurements, for a health center.
+ *
+ * Results are for certain period, and grouped by person.
+ * Only child MUAC is included (mother MUAC is excluded as case management
+ * is child-focused).
+ *
+ * @param int $health_center_id
+ *   The Health center node ID.
+ * @param string $period
+ *   The period to query.
+ * @param bool $extend
+ *   Optional; If True, data goes back one more month for 'one year' period.
+ *
+ * @return array
+ *   Family encounter child MUAC measurements, for a health center,
+ *   within given period, grouped by person.
+ *
+ * @throws \Exception
+ */
+function hedley_stats_get_nutrition_measurements_for_family_encounters_grouped_by_person($health_center_id, $period, $extend = FALSE) {
+  // Family encounter child MUAC measurements with nutrition fields mapping.
+  $node_types = [
+    HEDLEY_ACTIVITY_FAMILY_NUTRITION_MUAC_CHILD_CONTENT_TYPE => [
+      'field_muac',
+    ],
+  ];
+
+  $query = hedley_stats_get_base_query($health_center_id, array_keys($node_types), $period, $extend);
+
+  // Get the person.
+  hedley_general_join_field_to_query($query, 'node', 'field_person');
+
+  // Get the MUAC value.
+  hedley_general_join_field_to_query($query, 'node', 'field_muac', FALSE);
+
+  $result = hedley_stats_run_node_query_in_batches($query);
+
+  // Group measurements by person.
+  $people = [];
+  foreach ($result as $measurement) {
+    // Get fields for current node type.
+    $measurement_fields = $node_types[$measurement->type];
+
+    foreach ($measurement_fields as $measurement_field) {
+      $people[$measurement->field_person][$measurement->type][$measurement->field_date_measured][$measurement_field] = $measurement->{$measurement_field};
+    }
+  }
+
+  return $people;
+}
+
+/**
  * Executes query in batches, with constant number of results at each batch.
  *
  * Complex query can produce, 50K, 100K or even more rows of result.
@@ -3481,14 +3711,16 @@ function hedley_stats_get_base_query($health_center_id, $node_type, $period = FA
   $query->condition($health_center_field_name, $health_center_id);
 
   $encounter_types = hedley_general_get_individual_encounter_types();
+  $family_encounter_types = hedley_general_get_family_encounter_types();
   $participant_types = [
     'individual_participant',
     'pmtct_participant',
   ];
 
-  // If we're dealing with group session, education session, or individual
-  // encounter, creation date is resolved using 'field_scheduled_date'.
-  if (in_array($node_type, $encounter_types) || in_array($node_type, ['session', 'education_session'])) {
+  // If we're dealing with group session, education session, individual
+  // encounter, or family encounter, creation date is resolved using
+  // 'field_scheduled_date'.
+  if (in_array($node_type, $encounter_types) || in_array($node_type, $family_encounter_types) || in_array($node_type, ['session', 'education_session'])) {
     $date_field = 'field_scheduled_date';
     hedley_general_join_field_to_query($query, 'node', $date_field, FALSE, NULL, NULL, TRUE);
   }
