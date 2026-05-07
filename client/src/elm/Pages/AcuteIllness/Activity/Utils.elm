@@ -365,15 +365,17 @@ generateVitalsFormConfig : Bool -> AssembledData -> VitalsFormConfig Msg
 generateVitalsFormConfig isChw assembled =
     { setIntInputMsg = SetVitalsIntInput
     , setFloatInputMsg = SetVitalsFloatInput
+    , setRespiratoryRateNotTakenMsg = always NoOp
+    , setBodyTemperatureNotTakenMsg = always NoOp
     , sysBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .sys
     , diaBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .dia
     , heartRatePreviousValue =
         resolvePreviousMaybeValue assembled .vitals .heartRate
             |> Maybe.map toFloat
     , respiratoryRatePreviousValue =
-        resolvePreviousValue assembled .vitals .respiratoryRate
+        resolvePreviousMaybeValue assembled .vitals .respiratoryRate
             |> Maybe.map toFloat
-    , bodyTemperaturePreviousValue = resolvePreviousValue assembled .vitals .bodyTemperature
+    , bodyTemperaturePreviousValue = resolvePreviousMaybeValue assembled .vitals .bodyTemperature
     , birthDate = assembled.person.birthDate
     , formClass = "vitals"
     , mode =
@@ -383,6 +385,7 @@ generateVitalsFormConfig isChw assembled =
         else
             VitalsFormFull
     , invokationModule = InvokationModuleAcuteIllness
+    , allowSkipping = False
     }
 
 
@@ -2716,34 +2719,32 @@ feverAtPhysicalExam measurements =
     measurements.vitals
         |> Maybe.andThen
             (\measurement ->
-                let
-                    bodyTemperature =
-                        Tuple.second measurement
-                            |> .value
-                            |> .bodyTemperature
-                in
-                if bodyTemperature >= 37.5 then
-                    Just bodyTemperature
+                Tuple.second measurement
+                    |> .value
+                    |> .bodyTemperature
+                    |> Maybe.andThen
+                        (\bodyTemperature ->
+                            if bodyTemperature >= 37.5 then
+                                Just bodyTemperature
 
-                else
-                    Nothing
+                            else
+                                Nothing
+                        )
             )
 
 
 respiratoryRateElevated : NominalDate -> Person -> AcuteIllnessMeasurements -> Bool
 respiratoryRateElevated currentDate person measurements =
-    Maybe.map
+    Maybe.andThen
         (\measurement ->
             let
                 maybeAgeMonths =
                     ageInMonths currentDate person
-
-                respiratoryRate =
-                    Tuple.second measurement
-                        |> .value
-                        |> .respiratoryRate
             in
-            respiratoryRateElevatedByAge maybeAgeMonths respiratoryRate
+            Tuple.second measurement
+                |> .value
+                |> .respiratoryRate
+                |> Maybe.map (respiratoryRateElevatedByAge maybeAgeMonths)
         )
         measurements.vitals
         |> Maybe.withDefault False
@@ -2751,18 +2752,16 @@ respiratoryRateElevated currentDate person measurements =
 
 respiratoryRateElevatedForCovid19 : NominalDate -> Person -> AcuteIllnessMeasurements -> Bool
 respiratoryRateElevatedForCovid19 currentDate person measurements =
-    Maybe.map
+    Maybe.andThen
         (\measurement ->
             let
                 maybeAgeMonths =
                     ageInMonths currentDate person
-
-                respiratoryRate =
-                    Tuple.second measurement
-                        |> .value
-                        |> .respiratoryRate
             in
-            respiratoryRateElevatedByAgeForCovid19 maybeAgeMonths respiratoryRate
+            Tuple.second measurement
+                |> .value
+                |> .respiratoryRate
+                |> Maybe.map (respiratoryRateElevatedByAgeForCovid19 maybeAgeMonths)
         )
         measurements.vitals
         |> Maybe.withDefault False

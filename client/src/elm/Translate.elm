@@ -2206,6 +2206,7 @@ type TranslationId
     | UbudeheNumber Ubudehe
     | UltrasoundEDDQuestion
     | UltrasoundExecutionDateLabel
+    | UnableToTakeMeasurement
     | UncomplicatedMalaria
     | Underweight
     | UndeterminedDiagnoses
@@ -27745,6 +27746,13 @@ translationSet trans =
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Just "Taariikhda baaritaanka uurka lagu sameeyay"
+            }
+
+        UnableToTakeMeasurement ->
+            { english = "Unable to take measurement"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
             }
 
         UncomplicatedMalaria ->

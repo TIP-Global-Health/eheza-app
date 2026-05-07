@@ -18,7 +18,8 @@ import SyncManager.Model exposing (Site)
 
 
 type Msg
-    = SetActivePage Page
+    = NoOp
+    | SetActivePage Page
     | SetAlertsDialogState Bool
     | SetWarningPopupState (Maybe AcuteIllnessDiagnosis)
     | SetPertinentSymptomsPopupState Bool

@@ -275,24 +275,26 @@ generateHighSeverityAlertData language currentDate isChw data alert =
             data.measurements.vitals
                 |> Maybe.andThen
                     (\measurement ->
-                        let
-                            value =
-                                Tuple.second measurement |> .value |> .bodyTemperature
-                        in
-                        if value >= 38.5 then
-                            Just
-                                ( trans Translate.High ++ " " ++ transAlert alert
-                                , String.fromFloat value ++ "°C"
-                                )
+                        Tuple.second measurement
+                            |> .value
+                            |> .bodyTemperature
+                            |> Maybe.andThen
+                                (\value ->
+                                    if value >= 38.5 then
+                                        Just
+                                            ( trans Translate.High ++ " " ++ transAlert alert
+                                            , String.fromFloat value ++ "°C"
+                                            )
 
-                        else if value < 35 then
-                            Just
-                                ( trans Translate.Low ++ " " ++ transAlert alert
-                                , String.fromFloat value ++ "°C"
-                                )
+                                    else if value < 35 then
+                                        Just
+                                            ( trans Translate.Low ++ " " ++ transAlert alert
+                                            , String.fromFloat value ++ "°C"
+                                            )
 
-                        else
-                            Nothing
+                                    else
+                                        Nothing
+                                )
                     )
 
         FetalHeartRate ->
@@ -399,24 +401,26 @@ generateHighSeverityAlertData language currentDate isChw data alert =
             data.measurements.vitals
                 |> Maybe.andThen
                     (\measurement ->
-                        let
-                            value =
-                                Tuple.second measurement |> .value |> .respiratoryRate
-                        in
-                        if value > 30 then
-                            Just
-                                ( trans Translate.High ++ " " ++ transAlert alert
-                                , trans <| Translate.BpmUnit value
-                                )
+                        Tuple.second measurement
+                            |> .value
+                            |> .respiratoryRate
+                            |> Maybe.andThen
+                                (\value ->
+                                    if value > 30 then
+                                        Just
+                                            ( trans Translate.High ++ " " ++ transAlert alert
+                                            , trans <| Translate.BpmUnit value
+                                            )
 
-                        else if value < 12 then
-                            Just
-                                ( trans Translate.Low ++ " " ++ transAlert alert
-                                , trans <| Translate.BpmUnit value
-                                )
+                                    else if value < 12 then
+                                        Just
+                                            ( trans Translate.Low ++ " " ++ transAlert alert
+                                            , trans <| Translate.BpmUnit value
+                                            )
 
-                        else
-                            Nothing
+                                    else
+                                        Nothing
+                                )
                     )
 
 

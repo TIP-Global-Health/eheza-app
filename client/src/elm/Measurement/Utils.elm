@@ -364,21 +364,35 @@ toAhezaMotherValue form =
             )
 
 
-heightFormWithDefault : HeightForm -> Maybe HeightInCm -> HeightForm
-heightFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
+heightFormWithDefault : EverySet SkippedForm -> HeightForm -> Maybe HeightInCm -> HeightForm
+heightFormWithDefault skippedForms form saved =
+    let
+        isSkipped =
+            Maybe.withDefault
+                (EverySet.member SkippedHeight skippedForms)
+                form.measurementNotTaken
+    in
+    if isSkipped then
+        { height = Nothing
+        , heightDirty = False
+        , measurementNotTaken = Just True
+        }
+
+    else
+        Maybe.map
             (\value ->
-                { height = valueConsideringIsDirtyField form.heightDirty form.height (value |> getHeightValue)
+                { height = valueConsideringIsDirtyField form.heightDirty form.height (getHeightValue value)
                 , heightDirty = form.heightDirty
+                , measurementNotTaken = Just False
                 }
             )
+            saved
+            |> Maybe.withDefault form
 
 
-toHeightValueWithDefault : Maybe HeightInCm -> HeightForm -> Maybe HeightInCm
-toHeightValueWithDefault saved form =
-    heightFormWithDefault form saved
+toHeightValueWithDefault : EverySet SkippedForm -> Maybe HeightInCm -> HeightForm -> Maybe HeightInCm
+toHeightValueWithDefault skippedForms saved form =
+    heightFormWithDefault skippedForms form saved
         |> toHeightValue
 
 
@@ -438,21 +452,35 @@ toNutritionValue form =
         |> andMap form.assesment
 
 
-weightFormWithDefault : WeightForm -> Maybe WeightInKg -> WeightForm
-weightFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
+weightFormWithDefault : EverySet SkippedForm -> WeightForm -> Maybe WeightInKg -> WeightForm
+weightFormWithDefault skippedForms form saved =
+    let
+        isSkipped =
+            Maybe.withDefault
+                (EverySet.member SkippedWeight skippedForms)
+                form.measurementNotTaken
+    in
+    if isSkipped then
+        { weight = Nothing
+        , weightDirty = False
+        , measurementNotTaken = Just True
+        }
+
+    else
+        Maybe.map
             (\value ->
                 { weight = valueConsideringIsDirtyField form.weightDirty form.weight (weightValueFunc value)
                 , weightDirty = form.weightDirty
+                , measurementNotTaken = Just False
                 }
             )
+            saved
+            |> Maybe.withDefault form
 
 
-toWeightValueWithDefault : Maybe WeightInKg -> WeightForm -> Maybe WeightInKg
-toWeightValueWithDefault saved form =
-    weightFormWithDefault form saved
+toWeightValueWithDefault : EverySet SkippedForm -> Maybe WeightInKg -> WeightForm -> Maybe WeightInKg
+toWeightValueWithDefault skippedForms saved form =
+    weightFormWithDefault skippedForms form saved
         |> toWeightValue
 
 
@@ -665,10 +693,32 @@ vitalsFormWithDefault form saved =
                 , diaBloodPressureDirty = form.diaBloodPressureDirty
                 , heartRate = maybeValueConsideringIsDirtyField form.heartRateDirty form.heartRate value.heartRate
                 , heartRateDirty = form.heartRateDirty
-                , respiratoryRate = valueConsideringIsDirtyField form.respiratoryRateDirty form.respiratoryRate value.respiratoryRate
+                , respiratoryRate = maybeValueConsideringIsDirtyField form.respiratoryRateDirty form.respiratoryRate value.respiratoryRate
                 , respiratoryRateDirty = form.respiratoryRateDirty
-                , bodyTemperature = valueConsideringIsDirtyField form.bodyTemperatureDirty form.bodyTemperature value.bodyTemperature
+                , respiratoryRateNotTaken =
+                    if form.respiratoryRateDirty then
+                        form.respiratoryRateNotTaken
+
+                    else
+                        case value.respiratoryRate of
+                            Just _ ->
+                                Just False
+
+                            Nothing ->
+                                Just True
+                , bodyTemperature = maybeValueConsideringIsDirtyField form.bodyTemperatureDirty form.bodyTemperature value.bodyTemperature
                 , bodyTemperatureDirty = form.bodyTemperatureDirty
+                , bodyTemperatureNotTaken =
+                    if form.bodyTemperatureDirty then
+                        form.bodyTemperatureNotTaken
+
+                    else
+                        case value.bodyTemperature of
+                            Just _ ->
+                                Just False
+
+                            Nothing ->
+                                Just True
                 , sysRepeated = maybeValueConsideringIsDirtyField form.sysRepeatedDirty form.sysRepeated value.sysRepeated
                 , sysRepeatedDirty = form.sysRepeatedDirty
                 , diaRepeated = maybeValueConsideringIsDirtyField form.diaRepeatedDirty form.diaRepeated value.diaRepeated
@@ -685,18 +735,50 @@ toVitalsValueWithDefault saved form =
 
 toVitalsValue : VitalsForm -> Maybe VitalsValue
 toVitalsValue form =
-    Maybe.map2
-        (\respiratoryRate bodyTemperature ->
-            VitalsValue form.sysBloodPressure
+    let
+        rrSkipped =
+            form.respiratoryRateNotTaken == Just True
+
+        tempSkipped =
+            form.bodyTemperatureNotTaken == Just True
+
+        -- Each field must be either explicitly skipped OR have a value.
+        -- Refuses partial input regardless of whether the view's task
+        -- tracker would have allowed save.
+        rrResolved =
+            rrSkipped || isJust form.respiratoryRate
+
+        tempResolved =
+            tempSkipped || isJust form.bodyTemperature
+    in
+    if rrResolved && tempResolved then
+        let
+            rrField =
+                if rrSkipped then
+                    Nothing
+
+                else
+                    form.respiratoryRate
+
+            tempField =
+                if tempSkipped then
+                    Nothing
+
+                else
+                    form.bodyTemperature
+        in
+        Just
+            (VitalsValue form.sysBloodPressure
                 form.diaBloodPressure
                 form.heartRate
-                respiratoryRate
-                bodyTemperature
+                rrField
+                tempField
                 form.sysRepeated
                 form.diaRepeated
-        )
-        form.respiratoryRate
-        form.bodyTemperature
+            )
+
+    else
+        Nothing
 
 
 resolveMedicationsNonAdministrationReasons :
