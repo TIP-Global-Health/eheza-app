@@ -986,9 +986,8 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
           // Resolving indicators.
           // 'GWG adequate' indicator is recorded on encounter itself.
           $indicators = [];
-          $prenatal_indicators = $encounter->field_prenatal_indicators[LANGUAGE_NONE];
-          if (!empty($prenatal_indicators)) {
-            foreach ($prenatal_indicators as $item) {
+          if (!empty($encounter->field_prenatal_indicators) && !empty($encounter->field_prenatal_indicators[LANGUAGE_NONE])) {
+            foreach ($encounter->field_prenatal_indicators[LANGUAGE_NONE] as $item) {
               if ($item['value'] == 'adequate-gwg') {
                 $indicators[] = $prenatal_indicator_mapping['gwg'];
                 break;
