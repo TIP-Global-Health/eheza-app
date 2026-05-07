@@ -11,5 +11,5 @@ $plugin = array(
   'name' => 'reports-data',
   'description' => t('Produces data for reports'),
   'class' => 'HedleyRestfulReportsData',
-  'authentication_types' => ['token'],
+  'authentication_types' => ['cookie'],
 );

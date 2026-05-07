@@ -7,21 +7,21 @@ import Backend.Scoreboard.Model exposing (Msg(..))
 import Backend.Types exposing (BackendReturn)
 import Error.Utils exposing (noError)
 import Gizra.NominalDate exposing (NominalDate)
-import HttpBuilder exposing (withExpectJson, withJsonBody)
+import HttpBuilder exposing (withExpectJson, withHeader, withJsonBody)
 import Json.Decode exposing (decodeValue)
 import Json.Encode exposing (object, string)
 import RemoteData
 
 
-update : NominalDate -> String -> Msg -> ModelBackend -> BackendReturn Msg
-update currentDate backendUrl msg model =
+update : NominalDate -> String -> String -> Msg -> ModelBackend -> BackendReturn Msg
+update currentDate backendUrl csrfToken msg model =
     case msg of
         SetData value ->
             let
                 modelUpdated =
                     { model | scoreboardData = Just <| decodeValue decodeScoreboardData value }
             in
-            update currentDate backendUrl (SendSyncRequest 0) modelUpdated
+            update currentDate backendUrl csrfToken (SendSyncRequest 0) modelUpdated
 
         SendSyncRequest fromPersonId ->
             let
@@ -39,6 +39,7 @@ update currentDate backendUrl msg model =
                                 ++ geoParams
                     in
                     HttpBuilder.post (backendUrl ++ "/api/reports-data")
+                        |> withHeader "X-CSRF-Token" csrfToken
                         |> withJsonBody (object params)
                         |> withExpectJson (decodeSyncResponse currentDate)
                         |> HttpBuilder.send (RemoteData.fromResult >> HandleSyncResponse)
@@ -69,6 +70,6 @@ update currentDate backendUrl msg model =
                             BackendReturn modelUpdated Cmd.none noError []
 
                         else
-                            update currentDate backendUrl (SendSyncRequest response.lastIdSynced) modelUpdated
+                            update currentDate backendUrl csrfToken (SendSyncRequest response.lastIdSynced) modelUpdated
                     )
                 |> Maybe.withDefault (BackendReturn model Cmd.none noError [])

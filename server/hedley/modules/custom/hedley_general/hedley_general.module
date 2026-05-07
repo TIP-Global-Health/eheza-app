@@ -617,6 +617,7 @@ function hedley_general_build_elm_app($page, array $data) {
         'data' => $data,
         'theme_path' => $path_hedley_general,
         'backend_url' => $base_url,
+        'csrf_token' => drupal_get_token(\RestfulInterface::TOKEN_VALUE),
       ],
     ],
   ];

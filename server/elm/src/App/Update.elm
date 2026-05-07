@@ -33,7 +33,7 @@ init flags =
             resolveActivePage flags.page
 
         model =
-            { emptyModel | activePage = activePage, themePath = flags.themePath, backendUrl = flags.backendUrl }
+            { emptyModel | activePage = activePage, themePath = flags.themePath, backendUrl = flags.backendUrl, csrfToken = flags.csrfToken }
 
         ( modelWithAppData, cmd ) =
             case model.activePage of
@@ -135,6 +135,7 @@ update msg model =
                 (\subMsg_ subModel ->
                     Backend.Update.updateBackend (fromLocalDateTime model.currentTime)
                         model.backendUrl
+                        model.csrfToken
                         subMsg_
                         subModel
                 )

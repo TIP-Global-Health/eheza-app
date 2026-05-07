@@ -6,21 +6,21 @@ import Backend.Components.Encoder exposing (encodeReportParams)
 import Backend.Model exposing (ModelBackend)
 import Backend.Types exposing (BackendReturn)
 import Error.Utils exposing (noError)
-import HttpBuilder exposing (withExpectJson, withJsonBody)
+import HttpBuilder exposing (withExpectJson, withHeader, withJsonBody)
 import Json.Decode exposing (decodeValue)
 import Json.Encode exposing (object, string)
 import RemoteData
 
 
-update : String -> Msg -> ModelBackend -> BackendReturn Msg
-update backendUrl msg model =
+update : String -> String -> Msg -> ModelBackend -> BackendReturn Msg
+update backendUrl csrfToken msg model =
     case msg of
         SetData value ->
             let
                 modelUpdated =
                     { model | completionData = Just <| decodeValue decodeCompletionData value }
             in
-            update backendUrl (SendSyncRequest 0) modelUpdated
+            update backendUrl csrfToken (SendSyncRequest 0) modelUpdated
 
         SendSyncRequest fromPersonId ->
             let
@@ -38,6 +38,7 @@ update backendUrl msg model =
                                 ++ geoParams
                     in
                     HttpBuilder.post (backendUrl ++ "/api/reports-data")
+                        |> withHeader "X-CSRF-Token" csrfToken
                         |> withJsonBody (object params)
                         |> withExpectJson decodeSyncResponse
                         |> HttpBuilder.send (RemoteData.fromResult >> HandleSyncResponse)
@@ -77,6 +78,6 @@ update backendUrl msg model =
                             BackendReturn modelUpdated Cmd.none noError []
 
                         else
-                            update backendUrl (SendSyncRequest response.lastIdSynced) modelUpdated
+                            update backendUrl csrfToken (SendSyncRequest response.lastIdSynced) modelUpdated
                     )
                 |> Maybe.withDefault (BackendReturn model Cmd.none noError [])

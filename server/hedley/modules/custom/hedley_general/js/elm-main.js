@@ -5719,6 +5719,7 @@ var $author$project$App$Model$emptyModel = {
 	backendUrl: '',
 	completionMenuPage: $author$project$Pages$CompletionMenu$Model$emptyModel,
 	completionPage: $author$project$Pages$Completion$Model$emptyModel,
+	csrfToken: '',
 	currentTime: $elm$time$Time$millisToPosix(0),
 	errors: _List_Nil,
 	language: $author$project$App$Types$English,
@@ -9907,6 +9908,22 @@ var $lukewestby$elm_http_builder$HttpBuilder$withExpectJson = F2(
 			withCredentials: builder.withCredentials
 		};
 	});
+var $elm$http$Http$Internal$Header = F2(
+	function (a, b) {
+		return {$: 'Header', a: a, b: b};
+	});
+var $elm$http$Http$header = $elm$http$Http$Internal$Header;
+var $lukewestby$elm_http_builder$HttpBuilder$withHeader = F3(
+	function (key, value, builder) {
+		return _Utils_update(
+			builder,
+			{
+				headers: A2(
+					$elm$core$List$cons,
+					A2($elm$http$Http$header, key, value),
+					builder.headers)
+			});
+	});
 var $elm$http$Http$Internal$StringBody = F2(
 	function (a, b) {
 		return {$: 'StringBody', a: a, b: b};
@@ -9927,8 +9944,8 @@ var $lukewestby$elm_http_builder$HttpBuilder$withJsonBody = function (value) {
 	return $lukewestby$elm_http_builder$HttpBuilder$withBody(
 		$elm$http$Http$jsonBody(value));
 };
-var $author$project$Backend$Completion$Update$update = F3(
-	function (backendUrl, msg, model) {
+var $author$project$Backend$Completion$Update$update = F4(
+	function (backendUrl, csrfToken, msg, model) {
 		update:
 		while (true) {
 			switch (msg.$) {
@@ -9941,9 +9958,11 @@ var $author$project$Backend$Completion$Update$update = F3(
 								A2($elm$json$Json$Decode$decodeValue, $author$project$Backend$Completion$Decoder$decodeCompletionData, value))
 						});
 					var $temp$backendUrl = backendUrl,
+						$temp$csrfToken = csrfToken,
 						$temp$msg = $author$project$Backend$Completion$Model$SendSyncRequest(0),
 						$temp$model = modelUpdated;
 					backendUrl = $temp$backendUrl;
+					csrfToken = $temp$csrfToken;
 					msg = $temp$msg;
 					model = $temp$model;
 					continue update;
@@ -9983,7 +10002,11 @@ var $author$project$Backend$Completion$Update$update = F3(
 								A2(
 									$lukewestby$elm_http_builder$HttpBuilder$withJsonBody,
 									$elm$json$Json$Encode$object(params),
-									$lukewestby$elm_http_builder$HttpBuilder$post(backendUrl + '/api/reports-data'))));
+									A3(
+										$lukewestby$elm_http_builder$HttpBuilder$withHeader,
+										'X-CSRF-Token',
+										csrfToken,
+										$lukewestby$elm_http_builder$HttpBuilder$post(backendUrl + '/api/reports-data')))));
 					}();
 					return A4($author$project$Backend$Types$BackendReturn, model, cmd, $author$project$Error$Utils$noError, _List_Nil);
 				default:
@@ -10023,9 +10046,10 @@ var $author$project$Backend$Completion$Update$update = F3(
 												});
 										},
 										A2($elm$core$Maybe$andThen, $elm$core$Result$toMaybe, model.completionData)));
-								return (!response.totalRemaining) ? A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil) : A3(
+								return (!response.totalRemaining) ? A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil) : A4(
 									$author$project$Backend$Completion$Update$update,
 									backendUrl,
+									csrfToken,
 									$author$project$Backend$Completion$Model$SendSyncRequest(response.lastIdSynced),
 									modelUpdated);
 							},
@@ -11476,8 +11500,8 @@ var $author$project$Backend$Reports$Decoder$decodeSyncResponse = A2(
 				'batch',
 				$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodePatientData),
 				$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$SyncResponse)))));
-var $author$project$Backend$Reports$Update$update = F3(
-	function (backendUrl, msg, model) {
+var $author$project$Backend$Reports$Update$update = F4(
+	function (backendUrl, csrfToken, msg, model) {
 		update:
 		while (true) {
 			switch (msg.$) {
@@ -11490,9 +11514,11 @@ var $author$project$Backend$Reports$Update$update = F3(
 								A2($elm$json$Json$Decode$decodeValue, $author$project$Backend$Reports$Decoder$decodeReportsData, value))
 						});
 					var $temp$backendUrl = backendUrl,
+						$temp$csrfToken = csrfToken,
 						$temp$msg = $author$project$Backend$Reports$Model$SendSyncRequest(0),
 						$temp$model = modelUpdated;
 					backendUrl = $temp$backendUrl;
+					csrfToken = $temp$csrfToken;
 					msg = $temp$msg;
 					model = $temp$model;
 					continue update;
@@ -11532,7 +11558,11 @@ var $author$project$Backend$Reports$Update$update = F3(
 								A2(
 									$lukewestby$elm_http_builder$HttpBuilder$withJsonBody,
 									$elm$json$Json$Encode$object(params),
-									$lukewestby$elm_http_builder$HttpBuilder$post(backendUrl + '/api/reports-data'))));
+									A3(
+										$lukewestby$elm_http_builder$HttpBuilder$withHeader,
+										'X-CSRF-Token',
+										csrfToken,
+										$lukewestby$elm_http_builder$HttpBuilder$post(backendUrl + '/api/reports-data')))));
 					}();
 					return A4($author$project$Backend$Types$BackendReturn, model, cmd, $author$project$Error$Utils$noError, _List_Nil);
 				default:
@@ -11563,9 +11593,10 @@ var $author$project$Backend$Reports$Update$update = F3(
 												});
 										},
 										A2($elm$core$Maybe$andThen, $elm$core$Result$toMaybe, model.reportsData)));
-								return (!response.totalRemaining) ? A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil) : A3(
+								return (!response.totalRemaining) ? A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil) : A4(
 									$author$project$Backend$Reports$Update$update,
 									backendUrl,
+									csrfToken,
 									$author$project$Backend$Reports$Model$SendSyncRequest(response.lastIdSynced),
 									modelUpdated);
 							},
@@ -12154,8 +12185,8 @@ var $author$project$Backend$Scoreboard$Decoder$decodeSyncResponse = function (cu
 						$author$project$Backend$Scoreboard$Decoder$decodePatientData(currentDate)),
 					$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$SyncResponse)))));
 };
-var $author$project$Backend$Scoreboard$Update$update = F4(
-	function (currentDate, backendUrl, msg, model) {
+var $author$project$Backend$Scoreboard$Update$update = F5(
+	function (currentDate, backendUrl, csrfToken, msg, model) {
 		update:
 		while (true) {
 			switch (msg.$) {
@@ -12169,10 +12200,12 @@ var $author$project$Backend$Scoreboard$Update$update = F4(
 						});
 					var $temp$currentDate = currentDate,
 						$temp$backendUrl = backendUrl,
+						$temp$csrfToken = csrfToken,
 						$temp$msg = $author$project$Backend$Scoreboard$Model$SendSyncRequest(0),
 						$temp$model = modelUpdated;
 					currentDate = $temp$currentDate;
 					backendUrl = $temp$backendUrl;
+					csrfToken = $temp$csrfToken;
 					msg = $temp$msg;
 					model = $temp$model;
 					continue update;
@@ -12212,7 +12245,11 @@ var $author$project$Backend$Scoreboard$Update$update = F4(
 								A2(
 									$lukewestby$elm_http_builder$HttpBuilder$withJsonBody,
 									$elm$json$Json$Encode$object(params),
-									$lukewestby$elm_http_builder$HttpBuilder$post(backendUrl + '/api/reports-data'))));
+									A3(
+										$lukewestby$elm_http_builder$HttpBuilder$withHeader,
+										'X-CSRF-Token',
+										csrfToken,
+										$lukewestby$elm_http_builder$HttpBuilder$post(backendUrl + '/api/reports-data')))));
 					}();
 					return A4($author$project$Backend$Types$BackendReturn, model, cmd, $author$project$Error$Utils$noError, _List_Nil);
 				default:
@@ -12243,10 +12280,11 @@ var $author$project$Backend$Scoreboard$Update$update = F4(
 												});
 										},
 										A2($elm$core$Maybe$andThen, $elm$core$Result$toMaybe, model.scoreboardData)));
-								return (!response.totalRemaining) ? A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil) : A4(
+								return (!response.totalRemaining) ? A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil) : A5(
 									$author$project$Backend$Scoreboard$Update$update,
 									currentDate,
 									backendUrl,
+									csrfToken,
 									$author$project$Backend$Scoreboard$Model$SendSyncRequest(response.lastIdSynced),
 									modelUpdated);
 							},
@@ -12284,8 +12322,8 @@ var $author$project$Backend$Utils$updateSubModel = F4(
 			model: backendReturn.model
 		};
 	});
-var $author$project$Backend$Update$updateBackend = F4(
-	function (currentDate, backendUrl, msg, model) {
+var $author$project$Backend$Update$updateBackend = F5(
+	function (currentDate, backendUrl, csrfToken, msg, model) {
 		switch (msg.$) {
 			case 'MsgScoreboardMenu':
 				var subMsg = msg.a;
@@ -12307,7 +12345,7 @@ var $author$project$Backend$Update$updateBackend = F4(
 					subMsg,
 					F2(
 						function (subMsg_, model_) {
-							return A4($author$project$Backend$Scoreboard$Update$update, currentDate, backendUrl, subMsg_, model_);
+							return A5($author$project$Backend$Scoreboard$Update$update, currentDate, backendUrl, csrfToken, subMsg_, model_);
 						}),
 					function (subCmds) {
 						return $author$project$Backend$Model$MsgScoreboard(subCmds);
@@ -12333,7 +12371,7 @@ var $author$project$Backend$Update$updateBackend = F4(
 					subMsg,
 					F2(
 						function (subMsg_, model_) {
-							return A3($author$project$Backend$Reports$Update$update, backendUrl, subMsg_, model_);
+							return A4($author$project$Backend$Reports$Update$update, backendUrl, csrfToken, subMsg_, model_);
 						}),
 					function (subCmds) {
 						return $author$project$Backend$Model$MsgReports(subCmds);
@@ -12359,7 +12397,7 @@ var $author$project$Backend$Update$updateBackend = F4(
 					subMsg,
 					F2(
 						function (subMsg_, model_) {
-							return A3($author$project$Backend$Completion$Update$update, backendUrl, subMsg_, model_);
+							return A4($author$project$Backend$Completion$Update$update, backendUrl, csrfToken, subMsg_, model_);
 						}),
 					function (subCmds) {
 						return $author$project$Backend$Model$MsgCompletion(subCmds);
@@ -12423,10 +12461,11 @@ var $author$project$App$Update$update = F2(
 					model.backend,
 					F2(
 						function (subMsg_, subModel) {
-							return A4(
+							return A5(
 								$author$project$Backend$Update$updateBackend,
 								$author$project$Gizra$NominalDate$fromLocalDateTime(model.currentTime),
 								model.backendUrl,
+								model.csrfToken,
 								subMsg_,
 								subModel);
 						}),
@@ -12578,7 +12617,7 @@ var $author$project$App$Update$init = function (flags) {
 	var activePage = $author$project$App$Update$resolveActivePage(flags.page);
 	var model = _Utils_update(
 		$author$project$App$Model$emptyModel,
-		{activePage: activePage, backendUrl: flags.backendUrl, themePath: flags.themePath});
+		{activePage: activePage, backendUrl: flags.backendUrl, csrfToken: flags.csrfToken, themePath: flags.themePath});
 	var _v0 = function () {
 		var _v1 = model.activePage;
 		switch (_v1.$) {
@@ -45890,16 +45929,21 @@ _Platform_export({'Main':{'init':$author$project$Main$main(
 				function (page) {
 					return A2(
 						$elm$json$Json$Decode$andThen,
-						function (backendUrl) {
+						function (csrfToken) {
 							return A2(
 								$elm$json$Json$Decode$andThen,
-								function (appData) {
-									return $elm$json$Json$Decode$succeed(
-										{appData: appData, backendUrl: backendUrl, page: page, themePath: themePath});
+								function (backendUrl) {
+									return A2(
+										$elm$json$Json$Decode$andThen,
+										function (appData) {
+											return $elm$json$Json$Decode$succeed(
+												{appData: appData, backendUrl: backendUrl, csrfToken: csrfToken, page: page, themePath: themePath});
+										},
+										A2($elm$json$Json$Decode$field, 'appData', $elm$json$Json$Decode$value));
 								},
-								A2($elm$json$Json$Decode$field, 'appData', $elm$json$Json$Decode$value));
+								A2($elm$json$Json$Decode$field, 'backendUrl', $elm$json$Json$Decode$string));
 						},
-						A2($elm$json$Json$Decode$field, 'backendUrl', $elm$json$Json$Decode$string));
+						A2($elm$json$Json$Decode$field, 'csrfToken', $elm$json$Json$Decode$string));
 				},
 				A2($elm$json$Json$Decode$field, 'page', $elm$json$Json$Decode$string));
 		},

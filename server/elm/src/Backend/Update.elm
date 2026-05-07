@@ -12,8 +12,8 @@ import Backend.Utils exposing (updateSubModel)
 import Gizra.NominalDate exposing (NominalDate)
 
 
-updateBackend : NominalDate -> String -> Msg -> ModelBackend -> BackendReturn Msg
-updateBackend currentDate backendUrl msg model =
+updateBackend : NominalDate -> String -> String -> Msg -> ModelBackend -> BackendReturn Msg
+updateBackend currentDate backendUrl csrfToken msg model =
     case msg of
         MsgScoreboardMenu subMsg ->
             updateSubModel
@@ -25,7 +25,7 @@ updateBackend currentDate backendUrl msg model =
         MsgScoreboard subMsg ->
             updateSubModel
                 subMsg
-                (\subMsg_ model_ -> Backend.Scoreboard.Update.update currentDate backendUrl subMsg_ model_)
+                (\subMsg_ model_ -> Backend.Scoreboard.Update.update currentDate backendUrl csrfToken subMsg_ model_)
                 (\subCmds -> MsgScoreboard subCmds)
                 model
 
@@ -39,7 +39,7 @@ updateBackend currentDate backendUrl msg model =
         MsgReports subMsg ->
             updateSubModel
                 subMsg
-                (\subMsg_ model_ -> Backend.Reports.Update.update backendUrl subMsg_ model_)
+                (\subMsg_ model_ -> Backend.Reports.Update.update backendUrl csrfToken subMsg_ model_)
                 (\subCmds -> MsgReports subCmds)
                 model
 
@@ -53,6 +53,6 @@ updateBackend currentDate backendUrl msg model =
         MsgCompletion subMsg ->
             updateSubModel
                 subMsg
-                (\subMsg_ model_ -> Backend.Completion.Update.update backendUrl subMsg_ model_)
+                (\subMsg_ model_ -> Backend.Completion.Update.update backendUrl csrfToken subMsg_ model_)
                 (\subCmds -> MsgCompletion subCmds)
                 model

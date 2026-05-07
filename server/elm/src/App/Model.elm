@@ -44,6 +44,7 @@ type alias Flags =
     , appData : Value
     , themePath : String
     , backendUrl : String
+    , csrfToken : String
     }
 
 
@@ -54,6 +55,7 @@ type alias Model =
     , activePage : Page
     , themePath : String
     , backendUrl : String
+    , csrfToken : String
     , currentTime : Time.Posix
     , scoreboardMenuPage : Pages.ScoreboardMenu.Model.Model
     , scoreboardPage : Pages.Scoreboard.Model.Model
@@ -72,6 +74,7 @@ emptyModel =
     , activePage = NotFound
     , themePath = ""
     , backendUrl = ""
+    , csrfToken = ""
     , currentTime = Time.millisToPosix 0
     , scoreboardMenuPage = Pages.ScoreboardMenu.Model.emptyModel
     , scoreboardPage = Pages.Scoreboard.Model.emptyModel
