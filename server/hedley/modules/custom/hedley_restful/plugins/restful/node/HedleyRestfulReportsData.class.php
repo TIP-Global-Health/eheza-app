@@ -43,6 +43,7 @@ class HedleyRestfulReportsData extends \RestfulBase implements \RestfulDataProvi
    *   A representation of the required data.
    *
    * @throws \RestfulBadRequestException
+   * @throws \RestfulForbiddenException
    */
   public function getData() {
     $request = $this->getRequest();
@@ -66,6 +67,27 @@ class HedleyRestfulReportsData extends \RestfulBase implements \RestfulDataProvi
     $cell = !empty($request['cell']) ? $request['cell'] : NULL;
     $village = !empty($request['village']) ? $request['village'] : NULL;
     $health_center = !empty($request['health_center']) ? $request['health_center'] : NULL;
+
+    // Mirror the access policy of the admin pages that host the Elm app:
+    // 'reports' / 'completion' use hedley_reports_menu_access (Statistical
+    // Queries Manager + HC-scope filter); 'scoreboard' uses
+    // hedley_ncda_aggregated_ncda_report_access (Data Manager).
+    if ($app_type === 'reports' || $app_type === 'completion') {
+      $scope_data = hedley_reports_resolve_scope_for_reports_by_current_user();
+      if (empty($scope_data) || !isset($scope_data['scope'])) {
+        throw new RestfulForbiddenException('Access denied.');
+      }
+      if ($scope_data['scope'] === HEDLEY_REPORTS_SCOPE_HEALTH_CENTERS) {
+        if (empty($health_center) || !in_array($health_center, $scope_data['items'])) {
+          throw new RestfulForbiddenException('Access denied for the requested health center.');
+        }
+      }
+    }
+    elseif ($app_type === 'scoreboard') {
+      if (!hedley_ncda_aggregated_ncda_report_access()) {
+        throw new RestfulForbiddenException('Access denied.');
+      }
+    }
 
     switch ($app_type) {
       case 'reports':
