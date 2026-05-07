@@ -7180,15 +7180,8 @@ var $author$project$Pages$ScoreboardMenu$Update$update = F2(
 				_List_Nil);
 		}
 	});
-var $author$project$Backend$Types$BackendReturn = F4(
-	function (model, cmd, error, appMsgs) {
-		return {appMsgs: appMsgs, cmd: cmd, error: error, model: model};
-	});
 var $author$project$Backend$Completion$Model$HandleSyncResponse = function (a) {
 	return {$: 'HandleSyncResponse', a: a};
-};
-var $author$project$Backend$Completion$Model$SendSyncRequest = function (a) {
-	return {$: 'SendSyncRequest', a: a};
 };
 var $author$project$Backend$Completion$Model$CompletionData = function (site) {
 	return function (entityName) {
@@ -9087,6 +9080,10 @@ var $author$project$Backend$Completion$Decoder$decodeSyncResponse = A2(
 													$elm$json$Json$Decode$list(
 														$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$acuteIllnessActivityFromMapping)),
 													$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$SyncResponse))))))))))))));
+var $author$project$Backend$Types$BackendReturn = F4(
+	function (model, cmd, error, appMsgs) {
+		return {appMsgs: appMsgs, cmd: cmd, error: error, model: model};
+	});
 var $elm$json$Json$Encode$int = _Json_wrap;
 var $author$project$Backend$Components$Encoder$encodeReportParams = function (params) {
 	return $elm_community$maybe_extra$Maybe$Extra$values(
@@ -9842,35 +9839,6 @@ var $lukewestby$elm_http_builder$HttpBuilder$send = F2(
 			tagger,
 			$lukewestby$elm_http_builder$HttpBuilder$toTask(builder));
 	});
-var $krisajenkins$remotedata$RemoteData$map = F2(
-	function (f, data) {
-		switch (data.$) {
-			case 'Success':
-				var value = data.a;
-				return $krisajenkins$remotedata$RemoteData$Success(
-					f(value));
-			case 'Loading':
-				return $krisajenkins$remotedata$RemoteData$Loading;
-			case 'NotAsked':
-				return $krisajenkins$remotedata$RemoteData$NotAsked;
-			default:
-				var error = data.a;
-				return $krisajenkins$remotedata$RemoteData$Failure(error);
-		}
-	});
-var $krisajenkins$remotedata$RemoteData$withDefault = F2(
-	function (_default, data) {
-		if (data.$ === 'Success') {
-			var x = data.a;
-			return x;
-		} else {
-			return _default;
-		}
-	});
-var $krisajenkins$remotedata$RemoteData$toMaybe = A2(
-	$elm$core$Basics$composeR,
-	$krisajenkins$remotedata$RemoteData$map($elm$core$Maybe$Just),
-	$krisajenkins$remotedata$RemoteData$withDefault($elm$core$Maybe$Nothing));
 var $elm$core$Result$toMaybe = function (result) {
 	if (result.$ === 'Ok') {
 		var v = result.a;
@@ -9944,117 +9912,176 @@ var $lukewestby$elm_http_builder$HttpBuilder$withJsonBody = function (value) {
 	return $lukewestby$elm_http_builder$HttpBuilder$withBody(
 		$elm$http$Http$jsonBody(value));
 };
-var $author$project$Backend$Completion$Update$update = F4(
-	function (backendUrl, csrfToken, msg, model) {
-		update:
-		while (true) {
-			switch (msg.$) {
-				case 'SetData':
-					var value = msg.a;
-					var modelUpdated = _Utils_update(
-						model,
-						{
-							completionData: $elm$core$Maybe$Just(
-								A2($elm$json$Json$Decode$decodeValue, $author$project$Backend$Completion$Decoder$decodeCompletionData, value))
-						});
-					var $temp$backendUrl = backendUrl,
-						$temp$csrfToken = csrfToken,
-						$temp$msg = $author$project$Backend$Completion$Model$SendSyncRequest(0),
-						$temp$model = modelUpdated;
-					backendUrl = $temp$backendUrl;
-					csrfToken = $temp$csrfToken;
-					msg = $temp$msg;
-					model = $temp$model;
-					continue update;
-				case 'SendSyncRequest':
-					var fromPersonId = msg.a;
-					var cmd = function () {
-						var geoParams = A2(
-							$elm$core$Maybe$withDefault,
-							_List_Nil,
-							A2(
-								$elm$core$Maybe$map,
-								A2(
-									$elm$core$Basics$composeR,
-									function ($) {
-										return $.params;
-									},
-									$author$project$Backend$Components$Encoder$encodeReportParams),
-								A2($elm$core$Maybe$andThen, $elm$core$Result$toMaybe, model.completionData)));
-						var params = _Utils_ap(
-							_List_fromArray(
-								[
-									_Utils_Tuple2(
-									'app_type',
-									$elm$json$Json$Encode$string('completion')),
-									_Utils_Tuple2(
-									'base_revision',
-									$elm$json$Json$Encode$string(
-										$elm$core$String$fromInt(fromPersonId)))
-								]),
-							geoParams);
-						return A2(
-							$lukewestby$elm_http_builder$HttpBuilder$send,
-							A2($elm$core$Basics$composeR, $krisajenkins$remotedata$RemoteData$fromResult, $author$project$Backend$Completion$Model$HandleSyncResponse),
-							A2(
-								$lukewestby$elm_http_builder$HttpBuilder$withExpectJson,
-								$author$project$Backend$Completion$Decoder$decodeSyncResponse,
-								A2(
-									$lukewestby$elm_http_builder$HttpBuilder$withJsonBody,
-									$elm$json$Json$Encode$object(params),
-									A3(
-										$lukewestby$elm_http_builder$HttpBuilder$withHeader,
-										'X-CSRF-Token',
-										csrfToken,
-										$lukewestby$elm_http_builder$HttpBuilder$post(backendUrl + '/api/reports-data')))));
-					}();
-					return A4($author$project$Backend$Types$BackendReturn, model, cmd, $author$project$Error$Utils$noError, _List_Nil);
-				default:
-					var data = msg.a;
-					return A2(
+var $author$project$Backend$Components$Sync$handleSendRequest = F3(
+	function (config, fromPersonId, model) {
+		var geoParams = A2(
+			$elm$core$Maybe$withDefault,
+			_List_Nil,
+			A2(
+				$elm$core$Maybe$map,
+				A2($elm$core$Basics$composeR, config.getParams, $author$project$Backend$Components$Encoder$encodeReportParams),
+				A2(
+					$elm$core$Maybe$andThen,
+					$elm$core$Result$toMaybe,
+					config.getData(model))));
+		var params = _Utils_ap(
+			_List_fromArray(
+				[
+					_Utils_Tuple2(
+					'app_type',
+					$elm$json$Json$Encode$string(config.appType)),
+					_Utils_Tuple2(
+					'base_revision',
+					$elm$json$Json$Encode$string(
+						$elm$core$String$fromInt(fromPersonId)))
+				]),
+			geoParams);
+		var cmd = A2(
+			$lukewestby$elm_http_builder$HttpBuilder$send,
+			A2($elm$core$Basics$composeR, $krisajenkins$remotedata$RemoteData$fromResult, config.wrapHandleResponse),
+			A2(
+				$lukewestby$elm_http_builder$HttpBuilder$withExpectJson,
+				config.syncResponseDecoder,
+				A2(
+					$lukewestby$elm_http_builder$HttpBuilder$withJsonBody,
+					$elm$json$Json$Encode$object(params),
+					A3(
+						$lukewestby$elm_http_builder$HttpBuilder$withHeader,
+						'X-CSRF-Token',
+						config.csrfToken,
+						$lukewestby$elm_http_builder$HttpBuilder$post(config.backendUrl + '/api/reports-data')))));
+		return A4($author$project$Backend$Types$BackendReturn, model, cmd, $author$project$Error$Utils$noError, _List_Nil);
+	});
+var $author$project$Backend$Components$Sync$handleSetData = F3(
+	function (config, value, model) {
+		return A3(
+			$author$project$Backend$Components$Sync$handleSendRequest,
+			config,
+			0,
+			A2(
+				config.setData,
+				$elm$core$Maybe$Just(
+					A2($elm$json$Json$Decode$decodeValue, config.dataDecoder, value)),
+				model));
+	});
+var $krisajenkins$remotedata$RemoteData$map = F2(
+	function (f, data) {
+		switch (data.$) {
+			case 'Success':
+				var value = data.a;
+				return $krisajenkins$remotedata$RemoteData$Success(
+					f(value));
+			case 'Loading':
+				return $krisajenkins$remotedata$RemoteData$Loading;
+			case 'NotAsked':
+				return $krisajenkins$remotedata$RemoteData$NotAsked;
+			default:
+				var error = data.a;
+				return $krisajenkins$remotedata$RemoteData$Failure(error);
+		}
+	});
+var $krisajenkins$remotedata$RemoteData$withDefault = F2(
+	function (_default, data) {
+		if (data.$ === 'Success') {
+			var x = data.a;
+			return x;
+		} else {
+			return _default;
+		}
+	});
+var $krisajenkins$remotedata$RemoteData$toMaybe = A2(
+	$elm$core$Basics$composeR,
+	$krisajenkins$remotedata$RemoteData$map($elm$core$Maybe$Just),
+	$krisajenkins$remotedata$RemoteData$withDefault($elm$core$Maybe$Nothing));
+var $author$project$Backend$Components$Sync$handleSyncResponse = F3(
+	function (config, data, model) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			A4($author$project$Backend$Types$BackendReturn, model, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil),
+			A2(
+				$elm$core$Maybe$map,
+				function (response) {
+					var modelUpdated = A2(
 						$elm$core$Maybe$withDefault,
-						A4($author$project$Backend$Types$BackendReturn, model, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil),
+						model,
 						A2(
 							$elm$core$Maybe$map,
-							function (response) {
-								var modelUpdated = A2(
-									$elm$core$Maybe$withDefault,
-									model,
-									A2(
-										$elm$core$Maybe$map,
-										function (completionData) {
-											var completionDataUpdated = _Utils_update(
-												completionData,
-												{
-													acuteIllnessData: _Utils_ap(completionData.acuteIllnessData, response.acuteIllnessData),
-													childScoreboardData: _Utils_ap(completionData.childScoreboardData, response.childScoreboardData),
-													hivData: _Utils_ap(completionData.hivData, response.hivData),
-													homeVisitData: _Utils_ap(completionData.homeVisitData, response.homeVisitData),
-													ncdData: _Utils_ap(completionData.ncdData, response.ncdData),
-													nutritionGroupData: _Utils_ap(completionData.nutritionGroupData, response.nutritionGroupData),
-													nutritionIndividualData: _Utils_ap(completionData.nutritionIndividualData, response.nutritionIndividualData),
-													prenatalData: _Utils_ap(completionData.prenatalData, response.prenatalData),
-													remainingForDownload: $elm$core$Maybe$Just(response.totalRemaining),
-													tuberculosisData: _Utils_ap(completionData.tuberculosisData, response.tuberculosisData),
-													wellChildData: _Utils_ap(completionData.wellChildData, response.wellChildData)
-												});
-											return _Utils_update(
-												model,
-												{
-													completionData: $elm$core$Maybe$Just(
-														$elm$core$Result$Ok(completionDataUpdated))
-												});
-										},
-										A2($elm$core$Maybe$andThen, $elm$core$Result$toMaybe, model.completionData)));
-								return (!response.totalRemaining) ? A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil) : A4(
-									$author$project$Backend$Completion$Update$update,
-									backendUrl,
-									csrfToken,
-									$author$project$Backend$Completion$Model$SendSyncRequest(response.lastIdSynced),
-									modelUpdated);
+							function (d) {
+								return A2(
+									config.setData,
+									$elm$core$Maybe$Just(
+										$elm$core$Result$Ok(
+											A2(config.mergeResponse, response, d))),
+									model);
 							},
-							$krisajenkins$remotedata$RemoteData$toMaybe(data)));
-			}
+							A2(
+								$elm$core$Maybe$andThen,
+								$elm$core$Result$toMaybe,
+								config.getData(model))));
+					return (!config.getRemaining(response)) ? A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil) : A3(
+						$author$project$Backend$Components$Sync$handleSendRequest,
+						config,
+						config.getLastIdSynced(response),
+						modelUpdated);
+				},
+				$krisajenkins$remotedata$RemoteData$toMaybe(data)));
+	});
+var $author$project$Backend$Completion$Update$update = F4(
+	function (backendUrl, csrfToken, msg, model) {
+		var config = {
+			appType: 'completion',
+			backendUrl: backendUrl,
+			csrfToken: csrfToken,
+			dataDecoder: $author$project$Backend$Completion$Decoder$decodeCompletionData,
+			getData: function ($) {
+				return $.completionData;
+			},
+			getLastIdSynced: function ($) {
+				return $.lastIdSynced;
+			},
+			getParams: function ($) {
+				return $.params;
+			},
+			getRemaining: function ($) {
+				return $.totalRemaining;
+			},
+			mergeResponse: F2(
+				function (response, data) {
+					return _Utils_update(
+						data,
+						{
+							acuteIllnessData: _Utils_ap(data.acuteIllnessData, response.acuteIllnessData),
+							childScoreboardData: _Utils_ap(data.childScoreboardData, response.childScoreboardData),
+							hivData: _Utils_ap(data.hivData, response.hivData),
+							homeVisitData: _Utils_ap(data.homeVisitData, response.homeVisitData),
+							ncdData: _Utils_ap(data.ncdData, response.ncdData),
+							nutritionGroupData: _Utils_ap(data.nutritionGroupData, response.nutritionGroupData),
+							nutritionIndividualData: _Utils_ap(data.nutritionIndividualData, response.nutritionIndividualData),
+							prenatalData: _Utils_ap(data.prenatalData, response.prenatalData),
+							remainingForDownload: $elm$core$Maybe$Just(response.totalRemaining),
+							tuberculosisData: _Utils_ap(data.tuberculosisData, response.tuberculosisData),
+							wellChildData: _Utils_ap(data.wellChildData, response.wellChildData)
+						});
+				}),
+			setData: F2(
+				function (v, m) {
+					return _Utils_update(
+						m,
+						{completionData: v});
+				}),
+			syncResponseDecoder: $author$project$Backend$Completion$Decoder$decodeSyncResponse,
+			wrapHandleResponse: $author$project$Backend$Completion$Model$HandleSyncResponse
+		};
+		switch (msg.$) {
+			case 'SetData':
+				var value = msg.a;
+				return A3($author$project$Backend$Components$Sync$handleSetData, config, value, model);
+			case 'SendSyncRequest':
+				var fromPersonId = msg.a;
+				return A3($author$project$Backend$Components$Sync$handleSendRequest, config, fromPersonId, model);
+			default:
+				var data = msg.a;
+				return A3($author$project$Backend$Components$Sync$handleSyncResponse, config, data, model);
 		}
 	});
 var $author$project$Backend$CompletionMenu$Model$MenuData = F3(
@@ -10124,9 +10151,6 @@ var $author$project$Backend$CompletionMenu$Update$update = F2(
 	});
 var $author$project$Backend$Reports$Model$HandleSyncResponse = function (a) {
 	return {$: 'HandleSyncResponse', a: a};
-};
-var $author$project$Backend$Reports$Model$SendSyncRequest = function (a) {
-	return {$: 'SendSyncRequest', a: a};
 };
 var $author$project$Backend$Reports$Model$ReportsData = F8(
 	function (site, features, entityName, entityType, params, records, nutritionReportData, remainingForDownload) {
@@ -11502,106 +11526,51 @@ var $author$project$Backend$Reports$Decoder$decodeSyncResponse = A2(
 				$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$SyncResponse)))));
 var $author$project$Backend$Reports$Update$update = F4(
 	function (backendUrl, csrfToken, msg, model) {
-		update:
-		while (true) {
-			switch (msg.$) {
-				case 'SetData':
-					var value = msg.a;
-					var modelUpdated = _Utils_update(
-						model,
+		var config = {
+			appType: 'reports',
+			backendUrl: backendUrl,
+			csrfToken: csrfToken,
+			dataDecoder: $author$project$Backend$Reports$Decoder$decodeReportsData,
+			getData: function ($) {
+				return $.reportsData;
+			},
+			getLastIdSynced: function ($) {
+				return $.lastIdSynced;
+			},
+			getParams: function ($) {
+				return $.params;
+			},
+			getRemaining: function ($) {
+				return $.totalRemaining;
+			},
+			mergeResponse: F2(
+				function (response, data) {
+					return _Utils_update(
+						data,
 						{
-							reportsData: $elm$core$Maybe$Just(
-								A2($elm$json$Json$Decode$decodeValue, $author$project$Backend$Reports$Decoder$decodeReportsData, value))
+							records: _Utils_ap(data.records, response.records),
+							remainingForDownload: $elm$core$Maybe$Just(response.totalRemaining)
 						});
-					var $temp$backendUrl = backendUrl,
-						$temp$csrfToken = csrfToken,
-						$temp$msg = $author$project$Backend$Reports$Model$SendSyncRequest(0),
-						$temp$model = modelUpdated;
-					backendUrl = $temp$backendUrl;
-					csrfToken = $temp$csrfToken;
-					msg = $temp$msg;
-					model = $temp$model;
-					continue update;
-				case 'SendSyncRequest':
-					var fromPersonId = msg.a;
-					var cmd = function () {
-						var geoParams = A2(
-							$elm$core$Maybe$withDefault,
-							_List_Nil,
-							A2(
-								$elm$core$Maybe$map,
-								A2(
-									$elm$core$Basics$composeR,
-									function ($) {
-										return $.params;
-									},
-									$author$project$Backend$Components$Encoder$encodeReportParams),
-								A2($elm$core$Maybe$andThen, $elm$core$Result$toMaybe, model.reportsData)));
-						var params = _Utils_ap(
-							_List_fromArray(
-								[
-									_Utils_Tuple2(
-									'app_type',
-									$elm$json$Json$Encode$string('reports')),
-									_Utils_Tuple2(
-									'base_revision',
-									$elm$json$Json$Encode$string(
-										$elm$core$String$fromInt(fromPersonId)))
-								]),
-							geoParams);
-						return A2(
-							$lukewestby$elm_http_builder$HttpBuilder$send,
-							A2($elm$core$Basics$composeR, $krisajenkins$remotedata$RemoteData$fromResult, $author$project$Backend$Reports$Model$HandleSyncResponse),
-							A2(
-								$lukewestby$elm_http_builder$HttpBuilder$withExpectJson,
-								$author$project$Backend$Reports$Decoder$decodeSyncResponse,
-								A2(
-									$lukewestby$elm_http_builder$HttpBuilder$withJsonBody,
-									$elm$json$Json$Encode$object(params),
-									A3(
-										$lukewestby$elm_http_builder$HttpBuilder$withHeader,
-										'X-CSRF-Token',
-										csrfToken,
-										$lukewestby$elm_http_builder$HttpBuilder$post(backendUrl + '/api/reports-data')))));
-					}();
-					return A4($author$project$Backend$Types$BackendReturn, model, cmd, $author$project$Error$Utils$noError, _List_Nil);
-				default:
-					var data = msg.a;
-					return A2(
-						$elm$core$Maybe$withDefault,
-						A4($author$project$Backend$Types$BackendReturn, model, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil),
-						A2(
-							$elm$core$Maybe$map,
-							function (response) {
-								var modelUpdated = A2(
-									$elm$core$Maybe$withDefault,
-									model,
-									A2(
-										$elm$core$Maybe$map,
-										function (reportsData) {
-											var reportsDataUpdated = _Utils_update(
-												reportsData,
-												{
-													records: _Utils_ap(reportsData.records, response.records),
-													remainingForDownload: $elm$core$Maybe$Just(response.totalRemaining)
-												});
-											return _Utils_update(
-												model,
-												{
-													reportsData: $elm$core$Maybe$Just(
-														$elm$core$Result$Ok(reportsDataUpdated))
-												});
-										},
-										A2($elm$core$Maybe$andThen, $elm$core$Result$toMaybe, model.reportsData)));
-								return (!response.totalRemaining) ? A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil) : A4(
-									$author$project$Backend$Reports$Update$update,
-									backendUrl,
-									csrfToken,
-									$author$project$Backend$Reports$Model$SendSyncRequest(response.lastIdSynced),
-									modelUpdated);
-							},
-							$krisajenkins$remotedata$RemoteData$toMaybe(data)));
-			}
+				}),
+			setData: F2(
+				function (v, m) {
+					return _Utils_update(
+						m,
+						{reportsData: v});
+				}),
+			syncResponseDecoder: $author$project$Backend$Reports$Decoder$decodeSyncResponse,
+			wrapHandleResponse: $author$project$Backend$Reports$Model$HandleSyncResponse
+		};
+		switch (msg.$) {
+			case 'SetData':
+				var value = msg.a;
+				return A3($author$project$Backend$Components$Sync$handleSetData, config, value, model);
+			case 'SendSyncRequest':
+				var fromPersonId = msg.a;
+				return A3($author$project$Backend$Components$Sync$handleSendRequest, config, fromPersonId, model);
+			default:
+				var data = msg.a;
+				return A3($author$project$Backend$Components$Sync$handleSyncResponse, config, data, model);
 		}
 	});
 var $author$project$Backend$ReportsMenu$Model$MenuData = F3(
@@ -11635,9 +11604,6 @@ var $author$project$Backend$ReportsMenu$Update$update = F2(
 	});
 var $author$project$Backend$Scoreboard$Model$HandleSyncResponse = function (a) {
 	return {$: 'HandleSyncResponse', a: a};
-};
-var $author$project$Backend$Scoreboard$Model$SendSyncRequest = function (a) {
-	return {$: 'SendSyncRequest', a: a};
 };
 var $author$project$Backend$Scoreboard$Model$ScoreboardData = F6(
 	function (site, entityName, entityType, params, records, remainingForDownload) {
@@ -12187,109 +12153,51 @@ var $author$project$Backend$Scoreboard$Decoder$decodeSyncResponse = function (cu
 };
 var $author$project$Backend$Scoreboard$Update$update = F5(
 	function (currentDate, backendUrl, csrfToken, msg, model) {
-		update:
-		while (true) {
-			switch (msg.$) {
-				case 'SetData':
-					var value = msg.a;
-					var modelUpdated = _Utils_update(
-						model,
+		var config = {
+			appType: 'scoreboard',
+			backendUrl: backendUrl,
+			csrfToken: csrfToken,
+			dataDecoder: $author$project$Backend$Scoreboard$Decoder$decodeScoreboardData,
+			getData: function ($) {
+				return $.scoreboardData;
+			},
+			getLastIdSynced: function ($) {
+				return $.lastIdSynced;
+			},
+			getParams: function ($) {
+				return $.params;
+			},
+			getRemaining: function ($) {
+				return $.totalRemaining;
+			},
+			mergeResponse: F2(
+				function (response, data) {
+					return _Utils_update(
+						data,
 						{
-							scoreboardData: $elm$core$Maybe$Just(
-								A2($elm$json$Json$Decode$decodeValue, $author$project$Backend$Scoreboard$Decoder$decodeScoreboardData, value))
+							records: _Utils_ap(data.records, response.records),
+							remainingForDownload: $elm$core$Maybe$Just(response.totalRemaining)
 						});
-					var $temp$currentDate = currentDate,
-						$temp$backendUrl = backendUrl,
-						$temp$csrfToken = csrfToken,
-						$temp$msg = $author$project$Backend$Scoreboard$Model$SendSyncRequest(0),
-						$temp$model = modelUpdated;
-					currentDate = $temp$currentDate;
-					backendUrl = $temp$backendUrl;
-					csrfToken = $temp$csrfToken;
-					msg = $temp$msg;
-					model = $temp$model;
-					continue update;
-				case 'SendSyncRequest':
-					var fromPersonId = msg.a;
-					var cmd = function () {
-						var geoParams = A2(
-							$elm$core$Maybe$withDefault,
-							_List_Nil,
-							A2(
-								$elm$core$Maybe$map,
-								A2(
-									$elm$core$Basics$composeR,
-									function ($) {
-										return $.params;
-									},
-									$author$project$Backend$Components$Encoder$encodeReportParams),
-								A2($elm$core$Maybe$andThen, $elm$core$Result$toMaybe, model.scoreboardData)));
-						var params = _Utils_ap(
-							_List_fromArray(
-								[
-									_Utils_Tuple2(
-									'app_type',
-									$elm$json$Json$Encode$string('scoreboard')),
-									_Utils_Tuple2(
-									'base_revision',
-									$elm$json$Json$Encode$string(
-										$elm$core$String$fromInt(fromPersonId)))
-								]),
-							geoParams);
-						return A2(
-							$lukewestby$elm_http_builder$HttpBuilder$send,
-							A2($elm$core$Basics$composeR, $krisajenkins$remotedata$RemoteData$fromResult, $author$project$Backend$Scoreboard$Model$HandleSyncResponse),
-							A2(
-								$lukewestby$elm_http_builder$HttpBuilder$withExpectJson,
-								$author$project$Backend$Scoreboard$Decoder$decodeSyncResponse(currentDate),
-								A2(
-									$lukewestby$elm_http_builder$HttpBuilder$withJsonBody,
-									$elm$json$Json$Encode$object(params),
-									A3(
-										$lukewestby$elm_http_builder$HttpBuilder$withHeader,
-										'X-CSRF-Token',
-										csrfToken,
-										$lukewestby$elm_http_builder$HttpBuilder$post(backendUrl + '/api/reports-data')))));
-					}();
-					return A4($author$project$Backend$Types$BackendReturn, model, cmd, $author$project$Error$Utils$noError, _List_Nil);
-				default:
-					var data = msg.a;
-					return A2(
-						$elm$core$Maybe$withDefault,
-						A4($author$project$Backend$Types$BackendReturn, model, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil),
-						A2(
-							$elm$core$Maybe$map,
-							function (response) {
-								var modelUpdated = A2(
-									$elm$core$Maybe$withDefault,
-									model,
-									A2(
-										$elm$core$Maybe$map,
-										function (scoreboardData) {
-											var scoreboardDataUpdated = _Utils_update(
-												scoreboardData,
-												{
-													records: _Utils_ap(scoreboardData.records, response.records),
-													remainingForDownload: $elm$core$Maybe$Just(response.totalRemaining)
-												});
-											return _Utils_update(
-												model,
-												{
-													scoreboardData: $elm$core$Maybe$Just(
-														$elm$core$Result$Ok(scoreboardDataUpdated))
-												});
-										},
-										A2($elm$core$Maybe$andThen, $elm$core$Result$toMaybe, model.scoreboardData)));
-								return (!response.totalRemaining) ? A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil) : A5(
-									$author$project$Backend$Scoreboard$Update$update,
-									currentDate,
-									backendUrl,
-									csrfToken,
-									$author$project$Backend$Scoreboard$Model$SendSyncRequest(response.lastIdSynced),
-									modelUpdated);
-							},
-							$krisajenkins$remotedata$RemoteData$toMaybe(data)));
-			}
+				}),
+			setData: F2(
+				function (v, m) {
+					return _Utils_update(
+						m,
+						{scoreboardData: v});
+				}),
+			syncResponseDecoder: $author$project$Backend$Scoreboard$Decoder$decodeSyncResponse(currentDate),
+			wrapHandleResponse: $author$project$Backend$Scoreboard$Model$HandleSyncResponse
+		};
+		switch (msg.$) {
+			case 'SetData':
+				var value = msg.a;
+				return A3($author$project$Backend$Components$Sync$handleSetData, config, value, model);
+			case 'SendSyncRequest':
+				var fromPersonId = msg.a;
+				return A3($author$project$Backend$Components$Sync$handleSendRequest, config, fromPersonId, model);
+			default:
+				var data = msg.a;
+				return A3($author$project$Backend$Components$Sync$handleSyncResponse, config, data, model);
 		}
 	});
 var $author$project$Backend$ScoreboardMenu$Model$MenuData = function (site) {
