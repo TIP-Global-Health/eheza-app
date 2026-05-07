@@ -13244,6 +13244,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'District', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'DownloadCSV':
 				return {english: 'Download CSV', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'DownloadingExplanation':
+				return {english: 'Downloading data from the server. Please wait until the download completes before selecting a report.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'EmptyString':
 				return {english: '', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Encounters':
@@ -15795,6 +15797,11 @@ var $elm_community$maybe_extra$Maybe$Extra$isJust = function (m) {
 		return true;
 	}
 };
+var $author$project$Pages$Components$Utils$isSyncComplete = function (remaining) {
+	return _Utils_eq(
+		remaining,
+		$elm$core$Maybe$Just(0));
+};
 var $author$project$Pages$Utils$launchDate = A3($justinmimbs$date$Date$fromCalendarDate, 2018, $elm$time$Time$Jan, 1);
 var $elm$core$Maybe$map3 = F4(
 	function (func, ma, mb, mc) {
@@ -15876,6 +15883,18 @@ var $author$project$Pages$Completion$Utils$reportTypeToString = function (report
 		default:
 			return 'well-child';
 	}
+};
+var $author$project$Pages$Components$Utils$syncStatusAndProgress = function (downloaded) {
+	return A2(
+		$elm$core$Basics$composeR,
+		$elm$core$Maybe$map(
+			function (remainingForDownload) {
+				return _Utils_Tuple2(
+					(!remainingForDownload) ? 'COMPLETED' : 'IN PROCESS',
+					$elm$core$String$fromInt(downloaded) + (' / ' + $elm$core$String$fromInt(downloaded + remainingForDownload)));
+			}),
+		$elm$core$Maybe$withDefault(
+			_Utils_Tuple2('PENDING', '0 / 0')));
 };
 var $author$project$Backend$Completion$Utils$takenByToString = function (value) {
 	switch (value.$) {
@@ -18018,6 +18037,53 @@ var $author$project$Pages$Utils$viewSelectListInput = F7(
 			inputClass,
 			$elm$core$Maybe$Just(''));
 	});
+var $author$project$Translate$DownloadingExplanation = {$: 'DownloadingExplanation'};
+var $author$project$Pages$Components$Utils$viewSyncingPlaceholder = F3(
+	function (language, downloaded, maybeRemaining) {
+		var _v0 = A2($author$project$Pages$Components$Utils$syncStatusAndProgress, downloaded, maybeRemaining);
+		var syncStatus = _v0.a;
+		var progress = _v0.b;
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('sync-placeholder')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('status')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(syncStatus)
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('explanation')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							A2($author$project$Translate$translate, language, $author$project$Translate$DownloadingExplanation))
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('progress')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(progress)
+						]))
+				]));
+	});
 var $author$project$Translate$TuberculosisActivity = function (a) {
 	return {$: 'TuberculosisActivity', a: a};
 };
@@ -18141,20 +18207,42 @@ var $author$project$Pages$Completion$View$viewCompletionData = F4(
 						return A2($author$project$Translate$translate, language, $author$project$Translate$EmptyString);
 				}
 			}();
-			var _v3 = A2(
-				$elm$core$Maybe$withDefault,
-				_Utils_Tuple2('PENDING', '0 / 0'),
-				A2(
-					$elm$core$Maybe$map,
-					function (remainingForDownload) {
-						var totalDownloaded = (((((((($elm$core$List$length(data.acuteIllnessData) + $elm$core$List$length(data.childScoreboardData)) + $elm$core$List$length(data.hivData)) + $elm$core$List$length(data.homeVisitData)) + $elm$core$List$length(data.ncdData)) + $elm$core$List$length(data.nutritionIndividualData)) + $elm$core$List$length(data.nutritionGroupData)) + $elm$core$List$length(data.prenatalData)) + $elm$core$List$length(data.tuberculosisData)) + $elm$core$List$length(data.wellChildData);
-						return _Utils_Tuple2(
-							(!remainingForDownload) ? 'COMPLETED' : 'IN PROCESS',
-							$elm$core$String$fromInt(totalDownloaded) + (' / ' + $elm$core$String$fromInt(totalDownloaded + remainingForDownload)));
-					},
-					data.remainingForDownload));
-			var syncStatus = _v3.a;
-			var progress = _v3.b;
+			var downloadStatus = function () {
+				if ($author$project$Pages$Components$Utils$isSyncComplete(data.remainingForDownload)) {
+					var totalDownloaded = (((((((($elm$core$List$length(data.acuteIllnessData) + $elm$core$List$length(data.childScoreboardData)) + $elm$core$List$length(data.hivData)) + $elm$core$List$length(data.homeVisitData)) + $elm$core$List$length(data.ncdData)) + $elm$core$List$length(data.nutritionIndividualData)) + $elm$core$List$length(data.nutritionGroupData)) + $elm$core$List$length(data.prenatalData)) + $elm$core$List$length(data.tuberculosisData)) + $elm$core$List$length(data.wellChildData);
+					var _v3 = A2($author$project$Pages$Components$Utils$syncStatusAndProgress, totalDownloaded, data.remainingForDownload);
+					var syncStatus = _v3.a;
+					var progress = _v3.b;
+					return A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('download-status')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Download status: ' + syncStatus)
+									])),
+								A2(
+								$elm$html$Html$div,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('progress')
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('(' + (progress + ')'))
+									]))
+							]));
+				} else {
+					return $author$project$Gizra$Html$emptyNode;
+				}
+			}();
 			return A2(
 				$elm$html$Html$div,
 				_List_fromArray(
@@ -18200,213 +18288,181 @@ var $author$project$Pages$Completion$View$viewCompletionData = F4(
 								$elm$html$Html$text(
 								A2($author$project$Translate$translate, language, $author$project$Translate$Scope) + (': ' + scopeLabel))
 							])),
-						A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('download-status')
-							]),
-						_List_fromArray(
-							[
-								A2(
-								$elm$html$Html$div,
-								_List_Nil,
-								_List_fromArray(
-									[
-										$elm$html$Html$text('Download status: ' + syncStatus)
-									])),
-								A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$class('progress')
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text('(' + (progress + ')'))
-									]))
-							]))
+						downloadStatus
 					]));
 		}();
-		var takenByInput = A2(
-			$elm$core$Maybe$withDefault,
-			$author$project$Gizra$Html$emptyNode,
-			A2(
-				$elm$core$Maybe$map,
-				function (reportType) {
-					if (A2(
-						$elm$core$List$member,
-						reportType,
-						_List_fromArray(
-							[$author$project$Pages$Completion$Model$ReportChildScoreboard, $author$project$Pages$Completion$Model$ReportHIV, $author$project$Pages$Completion$Model$ReportHomeVisit, $author$project$Pages$Completion$Model$ReportNewbornExam, $author$project$Pages$Completion$Model$ReportTuberculosis, $author$project$Pages$Completion$Model$ReportNCD]))) {
-						return $author$project$Gizra$Html$emptyNode;
-					} else {
-						if ($elm_community$maybe_extra$Maybe$Extra$isJust(model.reportType)) {
-							var options = A2(
-								$elm$core$List$map,
-								function (option) {
-									return _Utils_Tuple2(
-										A2(
-											$author$project$Translate$translate,
-											language,
-											$author$project$Translate$TakenBy(option)),
-										option);
-								},
-								_List_fromArray(
-									[$author$project$Backend$Completion$Model$TakenByNurse, $author$project$Backend$Completion$Model$TakenByCHW]));
-							return A4(
-								$author$project$Pages$Utils$wrapSelectListInput,
-								language,
-								$author$project$Translate$TakenByLabel,
-								false,
-								A6(
-									$author$project$Pages$Utils$viewCustomSelectListInput,
-									model.takenBy,
-									options,
-									$author$project$Backend$Completion$Utils$takenByToString,
-									$author$project$Pages$Completion$Model$SetTakenBy,
-									'select-input',
-									$elm$core$Maybe$Just(
-										A2($author$project$Translate$translate, language, $author$project$Translate$Any))));
-						} else {
-							return $author$project$Gizra$Html$emptyNode;
-						}
-					}
-				},
-				model.reportType));
-		var dateInputs = A2(
-			$elm$core$Maybe$withDefault,
-			_List_Nil,
-			A2(
-				$elm$core$Maybe$map,
-				function (_v2) {
-					var startDateInput = function () {
-						var dateSelectorConfig = {
-							close: $author$project$Pages$Completion$Model$SetStartDateSelectorState($elm$core$Maybe$Nothing),
-							dateDefault: $elm$core$Maybe$Just($author$project$Pages$Utils$launchDate),
-							dateFrom: $author$project$Pages$Utils$launchDate,
-							dateTo: currentDate,
-							select: $author$project$Pages$Completion$Model$SetStartDate
-						};
-						var dateForView = A2(
-							$elm$core$Maybe$withDefault,
-							'',
-							A2($elm$core$Maybe$map, $author$project$Gizra$NominalDate$formatDDMMYYYY, model.startDate));
-						return A4(
-							$author$project$Pages$Utils$wrapSelectListInput,
-							language,
-							$author$project$Translate$SelectStartDate,
-							false,
-							A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$class('form-input date'),
-										$elm$html$Html$Events$onClick(
-										$author$project$Pages$Completion$Model$SetStartDateSelectorState(
-											$elm$core$Maybe$Just(dateSelectorConfig)))
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text(dateForView)
-									])));
-					}();
-					var limitDateInput = function () {
-						if ($elm_community$maybe_extra$Maybe$Extra$isNothing(model.startDate)) {
-							return $author$project$Gizra$Html$emptyNode;
-						} else {
-							var limitDateForView = A2(
-								$elm$core$Maybe$withDefault,
-								'',
-								A2($elm$core$Maybe$map, $author$project$Gizra$NominalDate$formatDDMMYYYY, model.limitDate));
-							var dateFrom = A2($elm$core$Maybe$withDefault, $author$project$Pages$Utils$launchDate, model.startDate);
-							var dateSelectorConfig = {
-								close: $author$project$Pages$Completion$Model$SetLimitDateSelectorState($elm$core$Maybe$Nothing),
-								dateDefault: $elm$core$Maybe$Just(currentDate),
-								dateFrom: dateFrom,
-								dateTo: currentDate,
-								select: $author$project$Pages$Completion$Model$SetLimitDate
-							};
-							return A4(
-								$author$project$Pages$Utils$wrapSelectListInput,
-								language,
-								$author$project$Translate$SelectLimitDate,
-								false,
-								A2(
-									$elm$html$Html$div,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$class('form-input date'),
-											$elm$html$Html$Events$onClick(
-											$author$project$Pages$Completion$Model$SetLimitDateSelectorState(
-												$elm$core$Maybe$Just(dateSelectorConfig)))
-										]),
-									_List_fromArray(
-										[
-											$elm$html$Html$text(limitDateForView)
-										])));
-						}
-					}();
-					return _List_fromArray(
-						[startDateInput, limitDateInput]);
-				},
-				model.reportType));
-		var content = ($elm_community$maybe_extra$Maybe$Extra$isJust(model.startDateSelectorPopupState) || $elm_community$maybe_extra$Maybe$Extra$isJust(model.limitDateSelectorPopupState)) ? $author$project$Gizra$Html$emptyNode : A2(
-			$elm$core$Maybe$withDefault,
-			$author$project$Gizra$Html$emptyNode,
-			A4(
-				$elm$core$Maybe$map3,
-				F3(
-					function (reportType, startDate, limitDate) {
-						var _v0 = A2(
-							$elm$core$List$partition,
-							A2(
-								$elm$core$Basics$composeR,
-								function ($) {
-									return $.encounterType;
-								},
-								$elm$core$Basics$eq($author$project$Backend$Completion$Model$NewbornExam)),
-							data.wellChildData);
-						var newbornExamData = _v0.a;
-						var spvData = _v0.b;
-						switch (reportType.$) {
-							case 'ReportAcuteIllness':
-								return A5($author$project$Pages$Completion$View$viewAcuteIllnessReport, language, startDate, limitDate, model.takenBy, data.acuteIllnessData);
-							case 'ReportChildScoreboard':
-								return A6($author$project$Pages$Completion$View$viewChildScoreboardReport, language, data.site, startDate, limitDate, model.takenBy, data.childScoreboardData);
-							case 'ReportHIV':
-								return A5($author$project$Pages$Completion$View$viewHIVReport, language, startDate, limitDate, model.takenBy, data.hivData);
-							case 'ReportHomeVisit':
-								return A5($author$project$Pages$Completion$View$viewHomeVisitReport, language, startDate, limitDate, model.takenBy, data.homeVisitData);
-							case 'ReportNCD':
-								return A5($author$project$Pages$Completion$View$viewNCDReport, language, startDate, limitDate, model.takenBy, data.ncdData);
-							case 'ReportNewbornExam':
-								return A5($author$project$Pages$Completion$View$viewNewbornExamReport, language, startDate, limitDate, model.takenBy, newbornExamData);
-							case 'ReportNutritionGroup':
-								return A5($author$project$Pages$Completion$View$viewNutritionGroupReport, language, startDate, limitDate, model.takenBy, data.nutritionGroupData);
-							case 'ReportNutritionIndividual':
-								return A5($author$project$Pages$Completion$View$viewNutritionIndividualReport, language, startDate, limitDate, model.takenBy, data.nutritionIndividualData);
-							case 'ReportPrenatal':
-								return A5($author$project$Pages$Completion$View$viewPrenatalReport, language, startDate, limitDate, model.takenBy, data.prenatalData);
-							case 'ReportTuberculosis':
-								return A5($author$project$Pages$Completion$View$viewTuberculosisReport, language, startDate, limitDate, model.takenBy, data.tuberculosisData);
-							default:
-								return A6($author$project$Pages$Completion$View$viewSPVReport, language, data.site, startDate, limitDate, model.takenBy, spvData);
-						}
-					}),
-				model.reportType,
-				model.startDate,
-				model.limitDate));
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('page-content completion')
-				]),
-			_List_fromArray(
-				[
-					topBar,
+		var inputsAndContent = function () {
+			if ($author$project$Pages$Components$Utils$isSyncComplete(data.remainingForDownload)) {
+				var takenByInput = A2(
+					$elm$core$Maybe$withDefault,
+					$author$project$Gizra$Html$emptyNode,
 					A2(
+						$elm$core$Maybe$map,
+						function (reportType) {
+							if (A2(
+								$elm$core$List$member,
+								reportType,
+								_List_fromArray(
+									[$author$project$Pages$Completion$Model$ReportChildScoreboard, $author$project$Pages$Completion$Model$ReportHIV, $author$project$Pages$Completion$Model$ReportHomeVisit, $author$project$Pages$Completion$Model$ReportNewbornExam, $author$project$Pages$Completion$Model$ReportTuberculosis, $author$project$Pages$Completion$Model$ReportNCD]))) {
+								return $author$project$Gizra$Html$emptyNode;
+							} else {
+								if ($elm_community$maybe_extra$Maybe$Extra$isJust(model.reportType)) {
+									var options = A2(
+										$elm$core$List$map,
+										function (option) {
+											return _Utils_Tuple2(
+												A2(
+													$author$project$Translate$translate,
+													language,
+													$author$project$Translate$TakenBy(option)),
+												option);
+										},
+										_List_fromArray(
+											[$author$project$Backend$Completion$Model$TakenByNurse, $author$project$Backend$Completion$Model$TakenByCHW]));
+									return A4(
+										$author$project$Pages$Utils$wrapSelectListInput,
+										language,
+										$author$project$Translate$TakenByLabel,
+										false,
+										A6(
+											$author$project$Pages$Utils$viewCustomSelectListInput,
+											model.takenBy,
+											options,
+											$author$project$Backend$Completion$Utils$takenByToString,
+											$author$project$Pages$Completion$Model$SetTakenBy,
+											'select-input',
+											$elm$core$Maybe$Just(
+												A2($author$project$Translate$translate, language, $author$project$Translate$Any))));
+								} else {
+									return $author$project$Gizra$Html$emptyNode;
+								}
+							}
+						},
+						model.reportType));
+				var dateInputs = A2(
+					$elm$core$Maybe$withDefault,
+					_List_Nil,
+					A2(
+						$elm$core$Maybe$map,
+						function (_v2) {
+							var startDateInput = function () {
+								var dateSelectorConfig = {
+									close: $author$project$Pages$Completion$Model$SetStartDateSelectorState($elm$core$Maybe$Nothing),
+									dateDefault: $elm$core$Maybe$Just($author$project$Pages$Utils$launchDate),
+									dateFrom: $author$project$Pages$Utils$launchDate,
+									dateTo: currentDate,
+									select: $author$project$Pages$Completion$Model$SetStartDate
+								};
+								var dateForView = A2(
+									$elm$core$Maybe$withDefault,
+									'',
+									A2($elm$core$Maybe$map, $author$project$Gizra$NominalDate$formatDDMMYYYY, model.startDate));
+								return A4(
+									$author$project$Pages$Utils$wrapSelectListInput,
+									language,
+									$author$project$Translate$SelectStartDate,
+									false,
+									A2(
+										$elm$html$Html$div,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('form-input date'),
+												$elm$html$Html$Events$onClick(
+												$author$project$Pages$Completion$Model$SetStartDateSelectorState(
+													$elm$core$Maybe$Just(dateSelectorConfig)))
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text(dateForView)
+											])));
+							}();
+							var limitDateInput = function () {
+								if ($elm_community$maybe_extra$Maybe$Extra$isNothing(model.startDate)) {
+									return $author$project$Gizra$Html$emptyNode;
+								} else {
+									var limitDateForView = A2(
+										$elm$core$Maybe$withDefault,
+										'',
+										A2($elm$core$Maybe$map, $author$project$Gizra$NominalDate$formatDDMMYYYY, model.limitDate));
+									var dateFrom = A2($elm$core$Maybe$withDefault, $author$project$Pages$Utils$launchDate, model.startDate);
+									var dateSelectorConfig = {
+										close: $author$project$Pages$Completion$Model$SetLimitDateSelectorState($elm$core$Maybe$Nothing),
+										dateDefault: $elm$core$Maybe$Just(currentDate),
+										dateFrom: dateFrom,
+										dateTo: currentDate,
+										select: $author$project$Pages$Completion$Model$SetLimitDate
+									};
+									return A4(
+										$author$project$Pages$Utils$wrapSelectListInput,
+										language,
+										$author$project$Translate$SelectLimitDate,
+										false,
+										A2(
+											$elm$html$Html$div,
+											_List_fromArray(
+												[
+													$elm$html$Html$Attributes$class('form-input date'),
+													$elm$html$Html$Events$onClick(
+													$author$project$Pages$Completion$Model$SetLimitDateSelectorState(
+														$elm$core$Maybe$Just(dateSelectorConfig)))
+												]),
+											_List_fromArray(
+												[
+													$elm$html$Html$text(limitDateForView)
+												])));
+								}
+							}();
+							return _List_fromArray(
+								[startDateInput, limitDateInput]);
+						},
+						model.reportType));
+				var content = ($elm_community$maybe_extra$Maybe$Extra$isJust(model.startDateSelectorPopupState) || $elm_community$maybe_extra$Maybe$Extra$isJust(model.limitDateSelectorPopupState)) ? $author$project$Gizra$Html$emptyNode : A2(
+					$elm$core$Maybe$withDefault,
+					$author$project$Gizra$Html$emptyNode,
+					A4(
+						$elm$core$Maybe$map3,
+						F3(
+							function (reportType, startDate, limitDate) {
+								var _v0 = A2(
+									$elm$core$List$partition,
+									A2(
+										$elm$core$Basics$composeR,
+										function ($) {
+											return $.encounterType;
+										},
+										$elm$core$Basics$eq($author$project$Backend$Completion$Model$NewbornExam)),
+									data.wellChildData);
+								var newbornExamData = _v0.a;
+								var spvData = _v0.b;
+								switch (reportType.$) {
+									case 'ReportAcuteIllness':
+										return A5($author$project$Pages$Completion$View$viewAcuteIllnessReport, language, startDate, limitDate, model.takenBy, data.acuteIllnessData);
+									case 'ReportChildScoreboard':
+										return A6($author$project$Pages$Completion$View$viewChildScoreboardReport, language, data.site, startDate, limitDate, model.takenBy, data.childScoreboardData);
+									case 'ReportHIV':
+										return A5($author$project$Pages$Completion$View$viewHIVReport, language, startDate, limitDate, model.takenBy, data.hivData);
+									case 'ReportHomeVisit':
+										return A5($author$project$Pages$Completion$View$viewHomeVisitReport, language, startDate, limitDate, model.takenBy, data.homeVisitData);
+									case 'ReportNCD':
+										return A5($author$project$Pages$Completion$View$viewNCDReport, language, startDate, limitDate, model.takenBy, data.ncdData);
+									case 'ReportNewbornExam':
+										return A5($author$project$Pages$Completion$View$viewNewbornExamReport, language, startDate, limitDate, model.takenBy, newbornExamData);
+									case 'ReportNutritionGroup':
+										return A5($author$project$Pages$Completion$View$viewNutritionGroupReport, language, startDate, limitDate, model.takenBy, data.nutritionGroupData);
+									case 'ReportNutritionIndividual':
+										return A5($author$project$Pages$Completion$View$viewNutritionIndividualReport, language, startDate, limitDate, model.takenBy, data.nutritionIndividualData);
+									case 'ReportPrenatal':
+										return A5($author$project$Pages$Completion$View$viewPrenatalReport, language, startDate, limitDate, model.takenBy, data.prenatalData);
+									case 'ReportTuberculosis':
+										return A5($author$project$Pages$Completion$View$viewTuberculosisReport, language, startDate, limitDate, model.takenBy, data.tuberculosisData);
+									default:
+										return A6($author$project$Pages$Completion$View$viewSPVReport, language, data.site, startDate, limitDate, model.takenBy, spvData);
+								}
+							}),
+						model.reportType,
+						model.startDate,
+						model.limitDate));
+				return A2(
 					$elm$html$Html$div,
 					_List_fromArray(
 						[
@@ -18435,7 +18491,22 @@ var $author$project$Pages$Completion$View$viewCompletionData = F4(
 						_Utils_ap(
 							dateInputs,
 							_List_fromArray(
-								[content])))),
+								[content]))));
+			} else {
+				var downloadedCount = (((((((($elm$core$List$length(data.acuteIllnessData) + $elm$core$List$length(data.childScoreboardData)) + $elm$core$List$length(data.hivData)) + $elm$core$List$length(data.homeVisitData)) + $elm$core$List$length(data.ncdData)) + $elm$core$List$length(data.nutritionIndividualData)) + $elm$core$List$length(data.nutritionGroupData)) + $elm$core$List$length(data.prenatalData)) + $elm$core$List$length(data.tuberculosisData)) + $elm$core$List$length(data.wellChildData);
+				return A3($author$project$Pages$Components$Utils$viewSyncingPlaceholder, language, downloadedCount, data.remainingForDownload);
+			}
+		}();
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('page-content completion')
+				]),
+			_List_fromArray(
+				[
+					topBar,
+					inputsAndContent,
 					$author$project$Utils$Html$viewModal(
 					A3($author$project$DateSelector$SelectorPopup$viewCalendarPopup, language, model.startDateSelectorPopupState, model.startDate)),
 					$author$project$Utils$Html$viewModal(
@@ -18698,19 +18769,6 @@ var $author$project$Pages$Reports$Utils$reportTypeToString = function (reportTyp
 		default:
 			return 'prenatal-diagnoses';
 	}
-};
-var $author$project$Pages$Components$Utils$syncStatusAndProgress = function (records) {
-	return A2(
-		$elm$core$Basics$composeR,
-		$elm$core$Maybe$map(
-			function (remainingForDownload) {
-				var totalDownloaded = $elm$core$List$length(records);
-				return _Utils_Tuple2(
-					(!remainingForDownload) ? 'COMPLETED' : 'IN PROCESS',
-					$elm$core$String$fromInt(totalDownloaded) + (' / ' + $elm$core$String$fromInt(totalDownloaded + remainingForDownload)));
-			}),
-		$elm$core$Maybe$withDefault(
-			_Utils_Tuple2('PENDING', '0 / 0')));
 };
 var $author$project$Pages$Reports$View$acuteIllnessDiagnosisCssClass = function (diagnosis) {
 	switch (diagnosis.$) {
@@ -22690,9 +22748,44 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 			}
 		}();
 		var topBar = function () {
-			var _v2 = A2($author$project$Pages$Components$Utils$syncStatusAndProgress, data.records, data.remainingForDownload);
-			var syncStatus = _v2.a;
-			var progress = _v2.b;
+			var downloadStatus = function () {
+				if ($author$project$Pages$Components$Utils$isSyncComplete(data.remainingForDownload)) {
+					var _v2 = A2(
+						$author$project$Pages$Components$Utils$syncStatusAndProgress,
+						$elm$core$List$length(data.records),
+						data.remainingForDownload);
+					var syncStatus = _v2.a;
+					var progress = _v2.b;
+					return A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('download-status')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Download status: ' + syncStatus)
+									])),
+								A2(
+								$elm$html$Html$div,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('progress')
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('(' + (progress + ')'))
+									]))
+							]));
+				} else {
+					return $author$project$Gizra$Html$emptyNode;
+				}
+			}();
 			return A2(
 				$elm$html$Html$div,
 				_List_fromArray(
@@ -22738,323 +22831,290 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 								$elm$html$Html$text(
 								A2($author$project$Translate$translate, language, $author$project$Translate$Scope) + (': ' + scopeLabel))
 							])),
-						A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('download-status')
-							]),
-						_List_fromArray(
-							[
-								A2(
-								$elm$html$Html$div,
-								_List_Nil,
-								_List_fromArray(
-									[
-										$elm$html$Html$text('Download status: ' + syncStatus)
-									])),
-								A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$class('progress')
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text('(' + (progress + ')'))
-									]))
-							]))
+						downloadStatus
 					]));
 		}();
-		var dateInputs = A2(
-			$elm$core$Maybe$withDefault,
-			_List_Nil,
-			A2(
-				$elm$core$Maybe$map,
-				function (reportType) {
-					if (_Utils_eq(reportType, $author$project$Pages$Reports$Model$ReportNutrition)) {
-						return _List_Nil;
-					} else {
-						var startDateInput = function () {
-							var dateSelectorConfig = {
-								close: $author$project$Pages$Reports$Model$SetStartDateSelectorState($elm$core$Maybe$Nothing),
-								dateDefault: $elm$core$Maybe$Just($author$project$Pages$Utils$launchDate),
-								dateFrom: $author$project$Pages$Utils$launchDate,
-								dateTo: currentDate,
-								select: $author$project$Pages$Reports$Model$SetStartDate
-							};
-							var dateForView = A2(
-								$elm$core$Maybe$withDefault,
-								'',
-								A2($elm$core$Maybe$map, $author$project$Gizra$NominalDate$formatDDMMYYYY, model.startDate));
-							return A4(
-								$author$project$Pages$Utils$wrapSelectListInput,
-								language,
-								$author$project$Translate$SelectStartDate,
-								false,
-								A2(
-									$elm$html$Html$div,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$class('form-input date'),
-											$elm$html$Html$Events$onClick(
-											$author$project$Pages$Reports$Model$SetStartDateSelectorState(
-												$elm$core$Maybe$Just(dateSelectorConfig)))
-										]),
-									_List_fromArray(
-										[
-											$elm$html$Html$text(dateForView)
-										])));
-						}();
-						var limitDateInput = function () {
-							if ($elm_community$maybe_extra$Maybe$Extra$isNothing(model.startDate)) {
-								return $author$project$Gizra$Html$emptyNode;
-							} else {
-								var limitDateForView = A2(
-									$elm$core$Maybe$withDefault,
-									'',
-									A2($elm$core$Maybe$map, $author$project$Gizra$NominalDate$formatDDMMYYYY, model.limitDate));
-								var dateFrom = A2($elm$core$Maybe$withDefault, $author$project$Pages$Utils$launchDate, model.startDate);
-								var dateSelectorConfig = {
-									close: $author$project$Pages$Reports$Model$SetLimitDateSelectorState($elm$core$Maybe$Nothing),
-									dateDefault: $elm$core$Maybe$Just(currentDate),
-									dateFrom: dateFrom,
-									dateTo: currentDate,
-									select: $author$project$Pages$Reports$Model$SetLimitDate
-								};
-								return A4(
-									$author$project$Pages$Utils$wrapSelectListInput,
-									language,
-									$author$project$Translate$SelectLimitDate,
-									false,
-									A2(
-										$elm$html$Html$div,
-										_List_fromArray(
-											[
-												$elm$html$Html$Attributes$class('form-input date'),
-												$elm$html$Html$Events$onClick(
-												$author$project$Pages$Reports$Model$SetLimitDateSelectorState(
-													$elm$core$Maybe$Just(dateSelectorConfig)))
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text(limitDateForView)
-											])));
-							}
-						}();
-						return _List_fromArray(
-							[startDateInput, limitDateInput]);
-					}
-				},
-				model.reportType));
-		var content = function () {
-			if ($elm_community$maybe_extra$Maybe$Extra$isJust(model.startDateSelectorPopupState) || $elm_community$maybe_extra$Maybe$Extra$isJust(model.limitDateSelectorPopupState)) {
-				return $author$project$Gizra$Html$emptyNode;
-			} else {
-				var _v0 = _Utils_eq(
-					model.reportType,
-					$elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportNutrition)) ? _Utils_Tuple2(
-					$elm$core$Maybe$Just($author$project$Pages$Utils$launchDate),
-					$elm$core$Maybe$Just(currentDate)) : _Utils_Tuple2(model.startDate, model.limitDate);
-				var startDateByReportType = _v0.a;
-				var limitDateByReportType = _v0.b;
-				return A2(
+		var inputsAndContent = function () {
+			if ($author$project$Pages$Components$Utils$isSyncComplete(data.remainingForDownload)) {
+				var dateInputs = A2(
 					$elm$core$Maybe$withDefault,
-					$author$project$Pages$Reports$Utils$isWideScope(data.entityType) ? A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$WideScopeNote, '', 'label wide-scope') : $author$project$Gizra$Html$emptyNode,
-					A4(
-						$elm$core$Maybe$map3,
-						F3(
-							function (reportType, startDate, limitDate) {
-								var recordsTillLimitDate = (_Utils_eq(
-									A2($justinmimbs$date$Date$compare, startDate, $author$project$Pages$Utils$launchDate),
-									$elm$core$Basics$EQ) && _Utils_eq(
-									A2($justinmimbs$date$Date$compare, limitDate, currentDate),
-									$elm$core$Basics$EQ)) ? data.records : A2(
-									$elm$core$List$filterMap,
-									function (record) {
-										if (!_Utils_eq(
-											A2($justinmimbs$date$Date$compare, record.created, limitDate),
-											$elm$core$Basics$GT)) {
-											var filterPrenatalData = $elm$core$Maybe$map(
-												$elm$core$List$filterMap(
-													function (participantData) {
-														if (_Utils_eq(
-															A2($justinmimbs$date$Date$compare, participantData.created, limitDate),
-															$elm$core$Basics$GT)) {
-															return $elm$core$Maybe$Nothing;
-														} else {
-															var filteredEncounters = A2(
-																$elm$core$List$filter,
-																function (encounterData) {
-																	return (!_Utils_eq(
-																		A2($justinmimbs$date$Date$compare, encounterData.startDate, startDate),
-																		$elm$core$Basics$LT)) && (!_Utils_eq(
-																		A2($justinmimbs$date$Date$compare, encounterData.startDate, limitDate),
-																		$elm$core$Basics$GT));
-																},
-																participantData.encounters);
-															if ($elm$core$List$isEmpty(filteredEncounters)) {
-																return $elm$core$Maybe$Nothing;
-															} else {
-																var dateConcluded = A2(
-																	$elm$core$Maybe$andThen,
-																	function (date) {
-																		return _Utils_eq(
-																			A2($justinmimbs$date$Date$compare, limitDate, date),
-																			$elm$core$Basics$LT) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(date);
-																	},
-																	participantData.dateConcluded);
-																return $elm$core$Maybe$Just(
-																	_Utils_update(
-																		participantData,
-																		{dateConcluded: dateConcluded, encounters: filteredEncounters}));
-															}
-														}
-													}));
-											var filterIndividualBy = function (resolveDateFunc) {
-												return $elm$core$Maybe$map(
-													$elm$core$List$map(
-														$elm$core$List$filter(
-															function (encounterData) {
-																var encounterDate = resolveDateFunc(encounterData);
-																return (!_Utils_eq(
-																	A2($justinmimbs$date$Date$compare, encounterDate, startDate),
-																	$elm$core$Basics$LT)) && (!_Utils_eq(
-																	A2($justinmimbs$date$Date$compare, encounterDate, limitDate),
-																	$elm$core$Basics$GT));
-															})));
-											};
-											var filterGroupBy = function (resolveDateFunc) {
-												return $elm$core$Maybe$map(
-													$elm$core$List$filter(
-														function (encounterData) {
-															var encounterDate = resolveDateFunc(encounterData);
-															return (!_Utils_eq(
-																A2($justinmimbs$date$Date$compare, encounterDate, startDate),
-																$elm$core$Basics$LT)) && (!_Utils_eq(
-																A2($justinmimbs$date$Date$compare, encounterDate, limitDate),
-																$elm$core$Basics$GT));
-														}));
-											};
-											return $elm$core$Maybe$Just(
-												_Utils_update(
-													record,
-													{
-														acuteIllnessData: A2(
-															filterIndividualBy,
-															function ($) {
-																return $.startDate;
-															},
-															record.acuteIllnessData),
-														childScorecardData: A2(filterIndividualBy, $elm$core$Basics$identity, record.childScorecardData),
-														familyNutritionData: A2(
-															filterIndividualBy,
-															function ($) {
-																return $.startDate;
-															},
-															record.familyNutritionData),
-														familyNutritionMuacData: A2(
-															filterIndividualBy,
-															function ($) {
-																return $.startDate;
-															},
-															record.familyNutritionMuacData),
-														groupNutritionAchiData: A2(
-															filterGroupBy,
-															function ($) {
-																return $.startDate;
-															},
-															record.groupNutritionAchiData),
-														groupNutritionChwData: A2(
-															filterGroupBy,
-															function ($) {
-																return $.startDate;
-															},
-															record.groupNutritionChwData),
-														groupNutritionFbfData: A2(
-															filterGroupBy,
-															function ($) {
-																return $.startDate;
-															},
-															record.groupNutritionFbfData),
-														groupNutritionFbfMotherData: A2(
-															filterGroupBy,
-															function ($) {
-																return $.startDate;
-															},
-															record.groupNutritionFbfMotherData),
-														groupNutritionPmtctData: A2(
-															filterGroupBy,
-															function ($) {
-																return $.startDate;
-															},
-															record.groupNutritionPmtctData),
-														groupNutritionSorwatheData: A2(
-															filterGroupBy,
-															function ($) {
-																return $.startDate;
-															},
-															record.groupNutritionSorwatheData),
-														hivData: A2(filterIndividualBy, $elm$core$Basics$identity, record.hivData),
-														homeVisitData: A2(filterIndividualBy, $elm$core$Basics$identity, record.homeVisitData),
-														individualNutritionData: A2(
-															filterIndividualBy,
-															function ($) {
-																return $.startDate;
-															},
-															record.individualNutritionData),
-														ncdData: A2(filterIndividualBy, $elm$core$Basics$identity, record.ncdData),
-														prenatalData: filterPrenatalData(record.prenatalData),
-														tuberculosisData: A2(filterIndividualBy, $elm$core$Basics$identity, record.tuberculosisData),
-														wellChildData: A2(
-															filterIndividualBy,
-															function ($) {
-																return $.startDate;
-															},
-															record.wellChildData)
-													}));
-										} else {
-											return $elm$core$Maybe$Nothing;
-										}
-									},
-									data.records);
-								switch (reportType.$) {
-									case 'ReportAcuteIllness':
-										return A5($author$project$Pages$Reports$View$viewAcuteIllnessReport, language, limitDate, startDate, scopeLabel, recordsTillLimitDate);
-									case 'ReportDemographics':
-										return A6($author$project$Pages$Reports$View$viewDemographicsReport, language, data.features, startDate, limitDate, scopeLabel, recordsTillLimitDate);
-									case 'ReportFBFDistribution':
-										return A5($author$project$Pages$Reports$View$viewFBFDistributionReport, language, data.features, limitDate, scopeLabel, recordsTillLimitDate);
-									case 'ReportNutrition':
-										return A5($author$project$Pages$Reports$View$viewNutritionReport, language, limitDate, scopeLabel, data.nutritionReportData, model.nutritionReportData);
-									case 'ReportPeripartum':
-										return A4($author$project$Pages$Reports$View$viewPeripartumReport, language, limitDate, scopeLabel, recordsTillLimitDate);
-									case 'ReportPostnatalCare':
-										return A5($author$project$Pages$Reports$View$viewPostnatalCareReport, language, data.site, limitDate, scopeLabel, recordsTillLimitDate);
-									case 'ReportPrenatal':
-										return A4($author$project$Pages$Reports$View$viewPrenatalReport, language, limitDate, scopeLabel, recordsTillLimitDate);
-									case 'ReportPrenatalContacts':
-										return A4($author$project$Pages$Reports$View$viewPrenatalContactsReport, language, limitDate, scopeLabel, recordsTillLimitDate);
-									default:
-										return A4($author$project$Pages$Reports$View$viewPrenatalDiagnosesReport, language, limitDate, scopeLabel, recordsTillLimitDate);
-								}
-							}),
-						model.reportType,
-						startDateByReportType,
-						limitDateByReportType));
-			}
-		}();
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('page-content reports')
-				]),
-			_List_fromArray(
-				[
-					$author$project$Pages$Utils$generateReportsHeaderImage(themePath),
-					topBar,
+					_List_Nil,
 					A2(
+						$elm$core$Maybe$map,
+						function (reportType) {
+							if (_Utils_eq(reportType, $author$project$Pages$Reports$Model$ReportNutrition)) {
+								return _List_Nil;
+							} else {
+								var startDateInput = function () {
+									var dateSelectorConfig = {
+										close: $author$project$Pages$Reports$Model$SetStartDateSelectorState($elm$core$Maybe$Nothing),
+										dateDefault: $elm$core$Maybe$Just($author$project$Pages$Utils$launchDate),
+										dateFrom: $author$project$Pages$Utils$launchDate,
+										dateTo: currentDate,
+										select: $author$project$Pages$Reports$Model$SetStartDate
+									};
+									var dateForView = A2(
+										$elm$core$Maybe$withDefault,
+										'',
+										A2($elm$core$Maybe$map, $author$project$Gizra$NominalDate$formatDDMMYYYY, model.startDate));
+									return A4(
+										$author$project$Pages$Utils$wrapSelectListInput,
+										language,
+										$author$project$Translate$SelectStartDate,
+										false,
+										A2(
+											$elm$html$Html$div,
+											_List_fromArray(
+												[
+													$elm$html$Html$Attributes$class('form-input date'),
+													$elm$html$Html$Events$onClick(
+													$author$project$Pages$Reports$Model$SetStartDateSelectorState(
+														$elm$core$Maybe$Just(dateSelectorConfig)))
+												]),
+											_List_fromArray(
+												[
+													$elm$html$Html$text(dateForView)
+												])));
+								}();
+								var limitDateInput = function () {
+									if ($elm_community$maybe_extra$Maybe$Extra$isNothing(model.startDate)) {
+										return $author$project$Gizra$Html$emptyNode;
+									} else {
+										var limitDateForView = A2(
+											$elm$core$Maybe$withDefault,
+											'',
+											A2($elm$core$Maybe$map, $author$project$Gizra$NominalDate$formatDDMMYYYY, model.limitDate));
+										var dateFrom = A2($elm$core$Maybe$withDefault, $author$project$Pages$Utils$launchDate, model.startDate);
+										var dateSelectorConfig = {
+											close: $author$project$Pages$Reports$Model$SetLimitDateSelectorState($elm$core$Maybe$Nothing),
+											dateDefault: $elm$core$Maybe$Just(currentDate),
+											dateFrom: dateFrom,
+											dateTo: currentDate,
+											select: $author$project$Pages$Reports$Model$SetLimitDate
+										};
+										return A4(
+											$author$project$Pages$Utils$wrapSelectListInput,
+											language,
+											$author$project$Translate$SelectLimitDate,
+											false,
+											A2(
+												$elm$html$Html$div,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$class('form-input date'),
+														$elm$html$Html$Events$onClick(
+														$author$project$Pages$Reports$Model$SetLimitDateSelectorState(
+															$elm$core$Maybe$Just(dateSelectorConfig)))
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text(limitDateForView)
+													])));
+									}
+								}();
+								return _List_fromArray(
+									[startDateInput, limitDateInput]);
+							}
+						},
+						model.reportType));
+				var content = function () {
+					if ($elm_community$maybe_extra$Maybe$Extra$isJust(model.startDateSelectorPopupState) || $elm_community$maybe_extra$Maybe$Extra$isJust(model.limitDateSelectorPopupState)) {
+						return $author$project$Gizra$Html$emptyNode;
+					} else {
+						var _v0 = _Utils_eq(
+							model.reportType,
+							$elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportNutrition)) ? _Utils_Tuple2(
+							$elm$core$Maybe$Just($author$project$Pages$Utils$launchDate),
+							$elm$core$Maybe$Just(currentDate)) : _Utils_Tuple2(model.startDate, model.limitDate);
+						var startDateByReportType = _v0.a;
+						var limitDateByReportType = _v0.b;
+						return A2(
+							$elm$core$Maybe$withDefault,
+							$author$project$Pages$Reports$Utils$isWideScope(data.entityType) ? A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$WideScopeNote, '', 'label wide-scope') : $author$project$Gizra$Html$emptyNode,
+							A4(
+								$elm$core$Maybe$map3,
+								F3(
+									function (reportType, startDate, limitDate) {
+										var recordsTillLimitDate = (_Utils_eq(
+											A2($justinmimbs$date$Date$compare, startDate, $author$project$Pages$Utils$launchDate),
+											$elm$core$Basics$EQ) && _Utils_eq(
+											A2($justinmimbs$date$Date$compare, limitDate, currentDate),
+											$elm$core$Basics$EQ)) ? data.records : A2(
+											$elm$core$List$filterMap,
+											function (record) {
+												if (!_Utils_eq(
+													A2($justinmimbs$date$Date$compare, record.created, limitDate),
+													$elm$core$Basics$GT)) {
+													var filterPrenatalData = $elm$core$Maybe$map(
+														$elm$core$List$filterMap(
+															function (participantData) {
+																if (_Utils_eq(
+																	A2($justinmimbs$date$Date$compare, participantData.created, limitDate),
+																	$elm$core$Basics$GT)) {
+																	return $elm$core$Maybe$Nothing;
+																} else {
+																	var filteredEncounters = A2(
+																		$elm$core$List$filter,
+																		function (encounterData) {
+																			return (!_Utils_eq(
+																				A2($justinmimbs$date$Date$compare, encounterData.startDate, startDate),
+																				$elm$core$Basics$LT)) && (!_Utils_eq(
+																				A2($justinmimbs$date$Date$compare, encounterData.startDate, limitDate),
+																				$elm$core$Basics$GT));
+																		},
+																		participantData.encounters);
+																	if ($elm$core$List$isEmpty(filteredEncounters)) {
+																		return $elm$core$Maybe$Nothing;
+																	} else {
+																		var dateConcluded = A2(
+																			$elm$core$Maybe$andThen,
+																			function (date) {
+																				return _Utils_eq(
+																					A2($justinmimbs$date$Date$compare, limitDate, date),
+																					$elm$core$Basics$LT) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(date);
+																			},
+																			participantData.dateConcluded);
+																		return $elm$core$Maybe$Just(
+																			_Utils_update(
+																				participantData,
+																				{dateConcluded: dateConcluded, encounters: filteredEncounters}));
+																	}
+																}
+															}));
+													var filterIndividualBy = function (resolveDateFunc) {
+														return $elm$core$Maybe$map(
+															$elm$core$List$map(
+																$elm$core$List$filter(
+																	function (encounterData) {
+																		var encounterDate = resolveDateFunc(encounterData);
+																		return (!_Utils_eq(
+																			A2($justinmimbs$date$Date$compare, encounterDate, startDate),
+																			$elm$core$Basics$LT)) && (!_Utils_eq(
+																			A2($justinmimbs$date$Date$compare, encounterDate, limitDate),
+																			$elm$core$Basics$GT));
+																	})));
+													};
+													var filterGroupBy = function (resolveDateFunc) {
+														return $elm$core$Maybe$map(
+															$elm$core$List$filter(
+																function (encounterData) {
+																	var encounterDate = resolveDateFunc(encounterData);
+																	return (!_Utils_eq(
+																		A2($justinmimbs$date$Date$compare, encounterDate, startDate),
+																		$elm$core$Basics$LT)) && (!_Utils_eq(
+																		A2($justinmimbs$date$Date$compare, encounterDate, limitDate),
+																		$elm$core$Basics$GT));
+																}));
+													};
+													return $elm$core$Maybe$Just(
+														_Utils_update(
+															record,
+															{
+																acuteIllnessData: A2(
+																	filterIndividualBy,
+																	function ($) {
+																		return $.startDate;
+																	},
+																	record.acuteIllnessData),
+																childScorecardData: A2(filterIndividualBy, $elm$core$Basics$identity, record.childScorecardData),
+																familyNutritionData: A2(
+																	filterIndividualBy,
+																	function ($) {
+																		return $.startDate;
+																	},
+																	record.familyNutritionData),
+																familyNutritionMuacData: A2(
+																	filterIndividualBy,
+																	function ($) {
+																		return $.startDate;
+																	},
+																	record.familyNutritionMuacData),
+																groupNutritionAchiData: A2(
+																	filterGroupBy,
+																	function ($) {
+																		return $.startDate;
+																	},
+																	record.groupNutritionAchiData),
+																groupNutritionChwData: A2(
+																	filterGroupBy,
+																	function ($) {
+																		return $.startDate;
+																	},
+																	record.groupNutritionChwData),
+																groupNutritionFbfData: A2(
+																	filterGroupBy,
+																	function ($) {
+																		return $.startDate;
+																	},
+																	record.groupNutritionFbfData),
+																groupNutritionFbfMotherData: A2(
+																	filterGroupBy,
+																	function ($) {
+																		return $.startDate;
+																	},
+																	record.groupNutritionFbfMotherData),
+																groupNutritionPmtctData: A2(
+																	filterGroupBy,
+																	function ($) {
+																		return $.startDate;
+																	},
+																	record.groupNutritionPmtctData),
+																groupNutritionSorwatheData: A2(
+																	filterGroupBy,
+																	function ($) {
+																		return $.startDate;
+																	},
+																	record.groupNutritionSorwatheData),
+																hivData: A2(filterIndividualBy, $elm$core$Basics$identity, record.hivData),
+																homeVisitData: A2(filterIndividualBy, $elm$core$Basics$identity, record.homeVisitData),
+																individualNutritionData: A2(
+																	filterIndividualBy,
+																	function ($) {
+																		return $.startDate;
+																	},
+																	record.individualNutritionData),
+																ncdData: A2(filterIndividualBy, $elm$core$Basics$identity, record.ncdData),
+																prenatalData: filterPrenatalData(record.prenatalData),
+																tuberculosisData: A2(filterIndividualBy, $elm$core$Basics$identity, record.tuberculosisData),
+																wellChildData: A2(
+																	filterIndividualBy,
+																	function ($) {
+																		return $.startDate;
+																	},
+																	record.wellChildData)
+															}));
+												} else {
+													return $elm$core$Maybe$Nothing;
+												}
+											},
+											data.records);
+										switch (reportType.$) {
+											case 'ReportAcuteIllness':
+												return A5($author$project$Pages$Reports$View$viewAcuteIllnessReport, language, limitDate, startDate, scopeLabel, recordsTillLimitDate);
+											case 'ReportDemographics':
+												return A6($author$project$Pages$Reports$View$viewDemographicsReport, language, data.features, startDate, limitDate, scopeLabel, recordsTillLimitDate);
+											case 'ReportFBFDistribution':
+												return A5($author$project$Pages$Reports$View$viewFBFDistributionReport, language, data.features, limitDate, scopeLabel, recordsTillLimitDate);
+											case 'ReportNutrition':
+												return A5($author$project$Pages$Reports$View$viewNutritionReport, language, limitDate, scopeLabel, data.nutritionReportData, model.nutritionReportData);
+											case 'ReportPeripartum':
+												return A4($author$project$Pages$Reports$View$viewPeripartumReport, language, limitDate, scopeLabel, recordsTillLimitDate);
+											case 'ReportPostnatalCare':
+												return A5($author$project$Pages$Reports$View$viewPostnatalCareReport, language, data.site, limitDate, scopeLabel, recordsTillLimitDate);
+											case 'ReportPrenatal':
+												return A4($author$project$Pages$Reports$View$viewPrenatalReport, language, limitDate, scopeLabel, recordsTillLimitDate);
+											case 'ReportPrenatalContacts':
+												return A4($author$project$Pages$Reports$View$viewPrenatalContactsReport, language, limitDate, scopeLabel, recordsTillLimitDate);
+											default:
+												return A4($author$project$Pages$Reports$View$viewPrenatalDiagnosesReport, language, limitDate, scopeLabel, recordsTillLimitDate);
+										}
+									}),
+								model.reportType,
+								startDateByReportType,
+								limitDateByReportType));
+					}
+				}();
+				return A2(
 					$elm$html$Html$div,
 					_List_fromArray(
 						[
@@ -23089,7 +23149,26 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 						_Utils_ap(
 							dateInputs,
 							_List_fromArray(
-								[content])))),
+								[content]))));
+			} else {
+				return A3(
+					$author$project$Pages$Components$Utils$viewSyncingPlaceholder,
+					language,
+					$elm$core$List$length(data.records),
+					data.remainingForDownload);
+			}
+		}();
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('page-content reports')
+				]),
+			_List_fromArray(
+				[
+					$author$project$Pages$Utils$generateReportsHeaderImage(themePath),
+					topBar,
+					inputsAndContent,
 					$author$project$Utils$Html$viewModal(
 					A3($author$project$DateSelector$SelectorPopup$viewCalendarPopup, language, model.startDateSelectorPopupState, model.startDate)),
 					$author$project$Utils$Html$viewModal(
@@ -45498,153 +45577,178 @@ var $author$project$Pages$Utils$viewYearSelector = F3(
 	});
 var $author$project$Pages$Scoreboard$View$viewScoreboardData = F4(
 	function (language, currentDate, data, model) {
-		var topBar = A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('top-bar')
-				]),
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('new-selection')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							$elm$html$Html$a,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$href('/admin/reports/aggregated-ncda')
-								]),
-							_List_fromArray(
-								[
-									A2(
-									$elm$html$Html$button,
-									_List_Nil,
-									_List_fromArray(
-										[
-											$elm$html$Html$text(
-											A2($author$project$Translate$translate, language, $author$project$Translate$NewSelection))
-										]))
-								]))
-						])),
-					A3($author$project$Pages$Utils$viewYearSelector, currentDate, model.yearSelectorGap, $author$project$Pages$Scoreboard$Model$ChaneYearGap),
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('values-percents')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$classList(
-									_List_fromArray(
-										[
-											_Utils_Tuple2('item', true),
-											_Utils_Tuple2(
-											'selected',
-											_Utils_eq(model.viewMode, $author$project$Pages$Scoreboard$Model$ModePercentages))
-										])),
-									$elm$html$Html$Events$onClick(
-									$author$project$Pages$Scoreboard$Model$SetViewMode($author$project$Pages$Scoreboard$Model$ModePercentages))
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text('%')
-								])),
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$classList(
-									_List_fromArray(
-										[
-											_Utils_Tuple2('item', true),
-											_Utils_Tuple2(
-											'selected',
-											_Utils_eq(model.viewMode, $author$project$Pages$Scoreboard$Model$ModeValues))
-										])),
-									$elm$html$Html$Events$onClick(
-									$author$project$Pages$Scoreboard$Model$SetViewMode($author$project$Pages$Scoreboard$Model$ModeValues))
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text('#')
-								]))
-						]))
-				]));
-		var monthsGap = A2($author$project$Pages$Scoreboard$View$generateMonthsGap, currentDate, model.yearSelectorGap);
-		var downloadStatus = function () {
-			var _v0 = A2($author$project$Pages$Components$Utils$syncStatusAndProgress, data.records, data.remainingForDownload);
-			var syncStatus = _v0.a;
-			var progress = _v0.b;
+		var topBar = function () {
+			var viewModeToggle = $author$project$Pages$Components$Utils$isSyncComplete(data.remainingForDownload) ? A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('values-percents')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$classList(
+								_List_fromArray(
+									[
+										_Utils_Tuple2('item', true),
+										_Utils_Tuple2(
+										'selected',
+										_Utils_eq(model.viewMode, $author$project$Pages$Scoreboard$Model$ModePercentages))
+									])),
+								$elm$html$Html$Events$onClick(
+								$author$project$Pages$Scoreboard$Model$SetViewMode($author$project$Pages$Scoreboard$Model$ModePercentages))
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('%')
+							])),
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$classList(
+								_List_fromArray(
+									[
+										_Utils_Tuple2('item', true),
+										_Utils_Tuple2(
+										'selected',
+										_Utils_eq(model.viewMode, $author$project$Pages$Scoreboard$Model$ModeValues))
+									])),
+								$elm$html$Html$Events$onClick(
+								$author$project$Pages$Scoreboard$Model$SetViewMode($author$project$Pages$Scoreboard$Model$ModeValues))
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('#')
+							]))
+					])) : $author$project$Gizra$Html$emptyNode;
 			return A2(
 				$elm$html$Html$div,
 				_List_fromArray(
 					[
-						$elm$html$Html$Attributes$class('download-status')
+						$elm$html$Html$Attributes$class('top-bar')
 					]),
 				_List_fromArray(
 					[
-						$elm$html$Html$text('Download status: ' + (syncStatus + ('     (' + (progress + ')'))))
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('new-selection')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$a,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$href('/admin/reports/aggregated-ncda')
+									]),
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$button,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text(
+												A2($author$project$Translate$translate, language, $author$project$Translate$NewSelection))
+											]))
+									]))
+							])),
+						A3($author$project$Pages$Utils$viewYearSelector, currentDate, model.yearSelectorGap, $author$project$Pages$Scoreboard$Model$ChaneYearGap),
+						viewModeToggle
 					]));
 		}();
-		var childrenUnder2 = A3(
-			$elm$core$List$foldl,
-			F2(
-				function (record, accum) {
-					return A2(
-						$elm$core$List$indexedMap,
-						F2(
-							function (index, accumValue) {
-								return A2(
-									$elm$core$Maybe$withDefault,
-									accumValue,
-									A2(
-										$elm$core$Maybe$map,
-										function (gapInMonths) {
-											var targetDateForMonth = A2($author$project$Pages$Scoreboard$View$resolveTargetDateForMonth, gapInMonths, currentDate);
-											var existedDuringExaminationMonth = _Utils_eq(
-												A2($justinmimbs$date$Date$compare, record.created, targetDateForMonth),
-												$elm$core$Basics$LT);
-											var ageInMonths = A2($author$project$Gizra$NominalDate$diffMonths, record.birthDate, targetDateForMonth);
-											var gap = ageInMonths - gapInMonths;
-											return (existedDuringExaminationMonth && ((gap >= 0) && (gap < 24))) ? (accumValue + 1) : accumValue;
-										},
-										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
-							}),
-						accum);
-				}),
-			A2($elm$core$List$repeat, 12, 0),
-			data.records);
+		var panes = function () {
+			if ($author$project$Pages$Components$Utils$isSyncComplete(data.remainingForDownload)) {
+				var monthsGap = A2($author$project$Pages$Scoreboard$View$generateMonthsGap, currentDate, model.yearSelectorGap);
+				var childrenUnder2 = A3(
+					$elm$core$List$foldl,
+					F2(
+						function (record, accum) {
+							return A2(
+								$elm$core$List$indexedMap,
+								F2(
+									function (index, accumValue) {
+										return A2(
+											$elm$core$Maybe$withDefault,
+											accumValue,
+											A2(
+												$elm$core$Maybe$map,
+												function (gapInMonths) {
+													var targetDateForMonth = A2($author$project$Pages$Scoreboard$View$resolveTargetDateForMonth, gapInMonths, currentDate);
+													var existedDuringExaminationMonth = _Utils_eq(
+														A2($justinmimbs$date$Date$compare, record.created, targetDateForMonth),
+														$elm$core$Basics$LT);
+													var ageInMonths = A2($author$project$Gizra$NominalDate$diffMonths, record.birthDate, targetDateForMonth);
+													var gap = ageInMonths - gapInMonths;
+													return (existedDuringExaminationMonth && ((gap >= 0) && (gap < 24))) ? (accumValue + 1) : accumValue;
+												},
+												A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
+									}),
+								accum);
+						}),
+					A2($elm$core$List$repeat, 12, 0),
+					data.records);
+				return _List_fromArray(
+					[
+						A2($author$project$Pages$Scoreboard$View$viewAggregatedChildScoreboardPane, language, data),
+						A7($author$project$Pages$Scoreboard$View$viewDemographicsPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
+						A7($author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
+						A7($author$project$Pages$Scoreboard$View$viewStuntingPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
+						A7($author$project$Pages$Scoreboard$View$viewANCNewbornPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
+						A8($author$project$Pages$Scoreboard$View$viewUniversalInterventionPane, language, currentDate, data.site, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
+						A7($author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
+						A7($author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
+						A7($author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data)
+					]);
+			} else {
+				return _List_fromArray(
+					[
+						A3(
+						$author$project$Pages$Components$Utils$viewSyncingPlaceholder,
+						language,
+						$elm$core$List$length(data.records),
+						data.remainingForDownload)
+					]);
+			}
+		}();
+		var downloadStatus = function () {
+			if ($author$project$Pages$Components$Utils$isSyncComplete(data.remainingForDownload)) {
+				var _v0 = A2(
+					$author$project$Pages$Components$Utils$syncStatusAndProgress,
+					$elm$core$List$length(data.records),
+					data.remainingForDownload);
+				var syncStatus = _v0.a;
+				var progress = _v0.b;
+				return A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('download-status')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text('Download status: ' + (syncStatus + ('     (' + (progress + ')'))))
+						]));
+			} else {
+				return $author$project$Gizra$Html$emptyNode;
+			}
+		}();
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
 					$elm$html$Html$Attributes$class('page-content')
 				]),
-			_List_fromArray(
-				[
-					downloadStatus,
-					topBar,
-					A2($author$project$Pages$Scoreboard$View$viewAggregatedChildScoreboardPane, language, data),
-					A7($author$project$Pages$Scoreboard$View$viewDemographicsPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
-					A7($author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
-					A7($author$project$Pages$Scoreboard$View$viewStuntingPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
-					A7($author$project$Pages$Scoreboard$View$viewANCNewbornPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
-					A8($author$project$Pages$Scoreboard$View$viewUniversalInterventionPane, language, currentDate, data.site, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
-					A7($author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
-					A7($author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
-					A7($author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data)
-				]));
+			_Utils_ap(
+				_List_fromArray(
+					[downloadStatus, topBar]),
+				panes));
 	});
 var $author$project$Pages$Scoreboard$View$view = F4(
 	function (language, currentDate, modelBackend, model) {

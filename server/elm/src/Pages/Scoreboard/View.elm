@@ -10,7 +10,7 @@ import Gizra.NominalDate exposing (NominalDate, diffMonths, toLastDayOfMonth)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Pages.Components.Utils exposing (syncStatusAndProgress)
+import Pages.Components.Utils exposing (isSyncComplete, syncStatusAndProgress, viewSyncingPlaceholder)
 import Pages.Scoreboard.Model exposing (Model, Msg(..), NCDAANCNewbornItem(..), NCDAAcuteMalnutritionItem(..), NCDADemographicsItem(..), NCDAInfrastructureEnvironmentWashItem(..), NCDANutritionBehaviorItem(..), NCDAStuntingItem(..), NCDATargetedInterventionsItem(..), NCDAUniversalInterventionItem(..), ViewMode(..))
 import Pages.Scoreboard.Utils exposing (allVaccineTypes, generateFutureVaccinationsData, valuesByViewMode, viewPercentage)
 import Pages.Utils exposing (viewYearSelector)
@@ -36,6 +36,31 @@ viewScoreboardData : Language -> NominalDate -> ScoreboardData -> Model -> Html 
 viewScoreboardData language currentDate data model =
     let
         topBar =
+            let
+                viewModeToggle =
+                    if isSyncComplete data.remainingForDownload then
+                        div [ class "values-percents" ]
+                            [ div
+                                [ classList
+                                    [ ( "item", True )
+                                    , ( "selected", model.viewMode == ModePercentages )
+                                    ]
+                                , onClick <| SetViewMode ModePercentages
+                                ]
+                                [ text "%" ]
+                            , div
+                                [ classList
+                                    [ ( "item", True )
+                                    , ( "selected", model.viewMode == ModeValues )
+                                    ]
+                                , onClick <| SetViewMode ModeValues
+                                ]
+                                [ text "#" ]
+                            ]
+
+                    else
+                        emptyNode
+            in
             div [ class "top-bar" ]
                 [ div [ class "new-selection" ]
                     [ a [ href "/admin/reports/aggregated-ncda" ]
@@ -44,89 +69,86 @@ viewScoreboardData language currentDate data model =
                         ]
                     ]
                 , viewYearSelector currentDate model.yearSelectorGap ChaneYearGap
-                , div [ class "values-percents" ]
-                    [ div
-                        [ classList
-                            [ ( "item", True )
-                            , ( "selected", model.viewMode == ModePercentages )
-                            ]
-                        , onClick <| SetViewMode ModePercentages
-                        ]
-                        [ text "%" ]
-                    , div
-                        [ classList
-                            [ ( "item", True )
-                            , ( "selected", model.viewMode == ModeValues )
-                            ]
-                        , onClick <| SetViewMode ModeValues
-                        ]
-                        [ text "#" ]
-                    ]
+                , viewModeToggle
                 ]
 
         downloadStatus =
-            let
-                ( syncStatus, progress ) =
-                    syncStatusAndProgress data.records data.remainingForDownload
-            in
-            div [ class "download-status" ]
-                [ text <| "Download status: " ++ syncStatus ++ "     (" ++ progress ++ ")" ]
+            if isSyncComplete data.remainingForDownload then
+                let
+                    ( syncStatus, progress ) =
+                        syncStatusAndProgress (List.length data.records) data.remainingForDownload
+                in
+                div [ class "download-status" ]
+                    [ text <| "Download status: " ++ syncStatus ++ "     (" ++ progress ++ ")" ]
 
-        monthsGap =
-            generateMonthsGap currentDate model.yearSelectorGap
+            else
+                emptyNode
 
-        childrenUnder2 =
-            List.foldl
-                (\record accum ->
-                    List.indexedMap
-                        (\index accumValue ->
-                            Dict.get index monthsGap
-                                |> Maybe.map
-                                    (\gapInMonths ->
-                                        let
-                                            targetDateForMonth =
-                                                resolveTargetDateForMonth gapInMonths currentDate
+        panes =
+            if isSyncComplete data.remainingForDownload then
+                let
+                    monthsGap =
+                        generateMonthsGap currentDate model.yearSelectorGap
 
-                                            ageInMonths =
-                                                diffMonths record.birthDate targetDateForMonth
+                    childrenUnder2 =
+                        List.foldl
+                            (\record accum ->
+                                List.indexedMap
+                                    (\index accumValue ->
+                                        Dict.get index monthsGap
+                                            |> Maybe.map
+                                                (\gapInMonths ->
+                                                    let
+                                                        targetDateForMonth =
+                                                            resolveTargetDateForMonth gapInMonths currentDate
 
-                                            gap =
-                                                ageInMonths - gapInMonths
+                                                        ageInMonths =
+                                                            diffMonths record.birthDate targetDateForMonth
 
-                                            existedDuringExaminationMonth =
-                                                -- Making sure patient was already created during examination month.
-                                                Date.compare record.created targetDateForMonth == LT
-                                        in
-                                        if
-                                            existedDuringExaminationMonth
-                                                && (gap >= 0)
-                                                && (gap < 24)
-                                        then
-                                            accumValue + 1
+                                                        gap =
+                                                            ageInMonths - gapInMonths
 
-                                        else
-                                            accumValue
+                                                        existedDuringExaminationMonth =
+                                                            -- Making sure patient was already created during examination month.
+                                                            Date.compare record.created targetDateForMonth == LT
+                                                    in
+                                                    if
+                                                        existedDuringExaminationMonth
+                                                            && (gap >= 0)
+                                                            && (gap < 24)
+                                                    then
+                                                        accumValue + 1
+
+                                                    else
+                                                        accumValue
+                                                )
+                                            |> Maybe.withDefault accumValue
                                     )
-                                |> Maybe.withDefault accumValue
-                        )
-                        accum
-                )
-                (List.repeat 12 0)
-                data.records
+                                    accum
+                            )
+                            (List.repeat 12 0)
+                            data.records
+                in
+                [ viewAggregatedChildScoreboardPane language data
+                , viewDemographicsPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
+                , viewAcuteMalnutritionPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
+                , viewStuntingPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
+                , viewANCNewbornPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
+                , viewUniversalInterventionPane language currentDate data.site model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
+                , viewNutritionBehaviorPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
+                , viewTargetedInterventionsPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
+                , viewInfrastructureEnvironmentWashPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
+                ]
+
+            else
+                [ viewSyncingPlaceholder language (List.length data.records) data.remainingForDownload ]
     in
     div [ class "page-content" ]
-        [ downloadStatus
-        , topBar
-        , viewAggregatedChildScoreboardPane language data
-        , viewDemographicsPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
-        , viewAcuteMalnutritionPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
-        , viewStuntingPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
-        , viewANCNewbornPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
-        , viewUniversalInterventionPane language currentDate data.site model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
-        , viewNutritionBehaviorPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
-        , viewTargetedInterventionsPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
-        , viewInfrastructureEnvironmentWashPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
-        ]
+        ([ downloadStatus
+         , topBar
+         ]
+            ++ panes
+        )
 
 
 {-| Resolves date for last day of examined month.

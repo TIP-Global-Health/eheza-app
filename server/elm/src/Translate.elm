@@ -117,6 +117,7 @@ type TranslationId
     | Diagnostics
     | District
     | DownloadCSV
+    | DownloadingExplanation
     | EmptyString
     | Encounters
     | EncounterType
@@ -837,6 +838,13 @@ translationSet transId =
 
         DownloadCSV ->
             { english = "Download CSV"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        DownloadingExplanation ->
+            { english = "Downloading data from the server. Please wait until the download completes before selecting a report."
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing
