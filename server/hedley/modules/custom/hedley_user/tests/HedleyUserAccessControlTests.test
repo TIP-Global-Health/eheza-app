@@ -88,16 +88,17 @@ class HedleyUserAccessControlTests extends HedleyWebTestBase {
   }
 
   /**
-   * Testing the entry points of measurement REST handlers.
+   * Combined access-control test.
    *
    * Each test method in DrupalWebTestCase pays a full hedley-profile
-   * install (~5 min in CI). The three measurement endpoint checks
-   * (photos, nutritions, muacs) all follow the same shape -- create
-   * one node, verify anonymous is denied, verify the authorized user
-   * gets the record back -- so bundling them under one method keeps
-   * the install paid once instead of three times.
+   * install (~5 min in CI). The endpoint check (photos / nutritions /
+   * muacs) and the role + handler-coverage checks are independent and
+   * don't share state, so they live under a single method to keep the
+   * install paid once.
    */
-  public function testMeasurementEndpoints() {
+  public function testAccessControl() {
+    // Endpoint checks: create one node per measurement type, verify
+    // anonymous is denied and the authorized user gets the record back.
     $cases = [
       ['type' => 'photo', 'handler' => 'photos', 'label' => 'Photo'],
       ['type' => 'nutrition', 'handler' => 'nutritions', 'label' => 'Nutrition'],
@@ -121,6 +122,8 @@ class HedleyUserAccessControlTests extends HedleyWebTestBase {
       $results = $handler->get('');
       $this->assertEqual($results[0]['created'], date('c', $node->created), format_string('@label "created date" is correct.', ['@label' => $case['label']]));
     }
+
+    $this->checkRolesAndHandlerCoverage();
   }
 
   /**
@@ -138,14 +141,7 @@ class HedleyUserAccessControlTests extends HedleyWebTestBase {
   }
 
   /**
-   * Combined permission and RESTful-handler checks.
-   *
-   * These three concerns are read-only sanity checks against the
-   * installed module set; none of them creates nodes. Bundling them
-   * under a single test method keeps the hedley-profile install (~5
-   * min in CI) paid once instead of three times, which is what
-   * currently keeps this test class within CI's 60-min wall-clock
-   * budget.
+   * Read-only role-permission and RESTful-handler-coverage assertions.
    *
    * Covers:
    *
@@ -156,7 +152,7 @@ class HedleyUserAccessControlTests extends HedleyWebTestBase {
    *      permissions per node type, except for `device` and
    *      `report_data` which are excluded.
    */
-  public function testRolesAndHandlerCoverage() {
+  protected function checkRolesAndHandlerCoverage() {
     // 1. Administrator role -> all 5 permissions per node type.
     $administrator_role = user_role_load_by_name('administrator');
     $this->assertTrue($administrator_role, 'Administrator role exists');
