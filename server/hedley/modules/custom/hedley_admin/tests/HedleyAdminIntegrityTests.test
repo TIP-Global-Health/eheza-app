@@ -45,123 +45,107 @@ class HedleyAdminIntegrityTests extends HedleyWebTestBase {
   }
 
   /**
-   * Test "Device pairing" functionality.
+   * Combined integrity invariants.
+   *
+   * Each scenario exercises an independent invariant on a different
+   * node type (devices, nurses, sessions); none of them share state.
+   * Bundling them under a single test method keeps the
+   * hedley-profile install (~5 min in CI) paid once instead of four
+   * times.
+   *
+   * Covers:
+   *
+   *   1. Device pairing codes -- auto-assigned, settable, must be
+   *      unique.
+   *   2. Nurse PIN codes -- auto-assigned, settable, must be unique.
+   *   3. Node deletion -- forbidden across the board (devices used
+   *      as the example).
+   *   4. Session unpublishing -- forbidden.
    */
-  public function testPairingCode() {
+  public function testIntegrityInvariants() {
+    // 1. Device pairing code.
     $device = $this->drupalCreateNode([
       'type' => 'device',
       'title' => $this->randomName(),
     ]);
-
     $wrapper = entity_metadata_wrapper('node', $device);
 
-    // Newly created device should automatically get a pairing code.
-    $this->assertTrue($wrapper->field_pairing_code->value());
-
-    // We should be able to save it without an exception.
+    $this->assertTrue($wrapper->field_pairing_code->value(), 'New device gets a pairing code.');
     $wrapper->save();
 
-    // We should be able to change it.
     $wrapper->field_pairing_code->set('12345678');
     $wrapper->save();
 
-    // But we should get an exception if we have a duplicate.
-    $device = $this->drupalCreateNode([
+    $duplicate = $this->drupalCreateNode([
       'type' => 'device',
       'title' => $this->randomName(),
     ]);
-
-    $wrapper = entity_metadata_wrapper('node', $device);
-    $wrapper->field_pairing_code->set('12345678');
+    $duplicate_wrapper = entity_metadata_wrapper('node', $duplicate);
+    $duplicate_wrapper->field_pairing_code->set('12345678');
 
     try {
-      $wrapper->save();
-
+      $duplicate_wrapper->save();
       $this->fail('Failed to throw exception for duplicate pairing code');
     }
     catch (Exception $e) {
       $this->assertEqual($e->getMessage(), 'The provided pairing code was not unique.');
     }
-  }
 
-  /**
-   * Test PIN codes.
-   */
-  public function testPinCodes() {
-    $node = $this->drupalCreateNode(['type' => 'nurse']);
-    $wrapper = entity_metadata_wrapper('node', $node);
+    // 2. Nurse PIN codes.
+    $nurse = $this->drupalCreateNode(['type' => 'nurse']);
+    $nurse_wrapper = entity_metadata_wrapper('node', $nurse);
 
-    // Check that it gets a PIN code on save.
-    $wrapper->save();
-    $this->assertTrue($wrapper->field_pin_code->value());
+    $nurse_wrapper->save();
+    $this->assertTrue($nurse_wrapper->field_pin_code->value(), 'New nurse gets a PIN code.');
 
-    // Check that we can save it again without an exception.
-    $wrapper->save();
+    $nurse_wrapper->save();
     $this->pass('Saved with unchanged PIN without exception.');
 
-    // Check that we can change the PIN code.
-    $wrapper->field_pin_code->set('1234');
-    $wrapper->save();
+    $nurse_wrapper->field_pin_code->set('1234');
+    $nurse_wrapper->save();
 
-    $node = node_load($wrapper->getIdentifier());
-    $wrapper = entity_metadata_wrapper('node', $node);
-    $this->assertEqual($wrapper->field_pin_code->value(), '1234');
+    $reloaded = node_load($nurse_wrapper->getIdentifier());
+    $reloaded_wrapper = entity_metadata_wrapper('node', $reloaded);
+    $this->assertEqual($reloaded_wrapper->field_pin_code->value(), '1234');
 
-    // Test tht we get an error if we make a duplicate.
-    $node = $this->drupalCreateNode(['type' => 'nurse']);
-    $wrapper = entity_metadata_wrapper('node', $node);
-
-    $wrapper->field_pin_code->set('1234');
+    $duplicate_nurse = $this->drupalCreateNode(['type' => 'nurse']);
+    $duplicate_nurse_wrapper = entity_metadata_wrapper('node', $duplicate_nurse);
+    $duplicate_nurse_wrapper->field_pin_code->set('1234');
 
     try {
-      $wrapper->save();
-
+      $duplicate_nurse_wrapper->save();
       $this->fail('Failed to throw exception for duplicate PIN code');
     }
     catch (Exception $e) {
       $this->assertEqual($e->getMessage(), 'The provided PIN code is not unique.');
     }
-  }
 
-  /**
-   * Test revisions functionality — node deletion is forbidden.
-   */
-  public function testNodeDeletion() {
-    $device = $this->drupalCreateNode([
+    // 3. Node deletion is forbidden.
+    $deletable = $this->drupalCreateNode([
       'type' => 'device',
       'title' => $this->randomName(),
     ]);
 
     try {
-      node_delete($device->nid);
-
+      node_delete($deletable->nid);
       $this->fail('Failed to throw exception for deleting node.');
     }
     catch (Exception $e) {
       $this->assertEqual($e->getMessage(), 'Content deletion is forbidden!');
     }
-  }
 
-  /**
-   * Test that unpublishing a session is forbidden.
-   */
-  public function testSessionUnpublish() {
+    // 4. Session unpublishing is forbidden.
     $health_center_id = $this->createHealthCenter();
     $clinic_id = $this->createClinic($health_center_id);
     $session_id = $this->createSession($clinic_id);
 
-    // Make sure we can get it the session now.
     $session_node = node_load($session_id);
+    $this->assertTrue($session_node, 'Session was created.');
 
-    // Should retrieve session we just created.
-    $this->assertTrue($session_node);
-
-    // Unpublish the session node.
     $session_node->status = NODE_NOT_PUBLISHED;
     try {
       node_save($session_node);
-
-      $this->fail('Failed to throw exception for when unpublishing session.');
+      $this->fail('Failed to throw exception when unpublishing session.');
     }
     catch (Exception $e) {
       $this->assertEqual($e->getMessage(), 'Content unpublishing is forbidden!');
