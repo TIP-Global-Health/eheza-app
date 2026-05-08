@@ -96,24 +96,32 @@ class HedleyReportsDataEndpoint extends HedleyWebTestBase {
   }
 
   /**
-   * Test /api/reports-data denies users without the required role.
+   * Exercises the four access scenarios in one DrupalWebTestCase install.
+   *
+   * Each test method in DrupalWebTestCase pays a full hedley-profile
+   * install (~9 min in CI). Bundling the scenarios under a single
+   * method keeps the install cost paid once, freeing a parallel slot
+   * for HedleyUserAccessControlTests sooner. The four scenarios are:
+   *
+   *   1. Unprivileged user (no role) -- denied for every app_type.
+   *   2. Statistical Queries Manager -- allowed for reports/completion,
+   *      denied for scoreboard.
+   *   3. Data Manager -- allowed for scoreboard, denied for
+   *      reports/completion.
+   *   4. HC-scoped SQM -- allowed for own HC, denied for foreign HC
+   *      and when health_center is omitted.
    */
-  public function testUnprivilegedUserDenied() {
-    $user = $this->drupalCreateUser();
-
+  public function testReportsDataAccess() {
+    // 1. Unprivileged user (no role) -> denied everywhere.
+    $unprivileged = $this->drupalCreateUser();
     foreach (['reports', 'completion', 'scoreboard'] as $app_type) {
       $request = ['app_type' => $app_type, 'base_revision' => 0];
-      $result = $this->invokeReportsDataAsUser($user, $request);
+      $result = $this->invokeReportsDataAsUser($unprivileged, $request);
       $this->assertNull($result, "Unprivileged user denied for app_type=$app_type.");
     }
-  }
 
-  /**
-   * Test /api/reports-data: SQM grants reports/completion only.
-   */
-  public function testStatisticalQueriesManagerAccess() {
+    // 2. Statistical Queries Manager -> allowed for reports/completion only.
     $sqm = $this->grantRole($this->drupalCreateUser(), 'Statistical Queries Manager');
-
     foreach (['reports', 'completion'] as $app_type) {
       $request = ['app_type' => $app_type, 'base_revision' => 0];
       $result = $this->invokeReportsDataAsUser($sqm, $request);
@@ -123,65 +131,48 @@ class HedleyReportsDataEndpoint extends HedleyWebTestBase {
         "SQM response has expected sync shape for app_type=$app_type."
       );
     }
-
-    // SQM does NOT have Data Manager role -> denied for scoreboard.
     $request = ['app_type' => 'scoreboard', 'base_revision' => 0];
     $result = $this->invokeReportsDataAsUser($sqm, $request);
     $this->assertNull($result, 'SQM denied for app_type=scoreboard.');
-  }
 
-  /**
-   * Test /api/reports-data: Data Manager grants scoreboard only.
-   */
-  public function testDataManagerAccess() {
+    // 3. Data Manager -> allowed for scoreboard only.
     $dm = $this->grantRole($this->drupalCreateUser(), 'Data Manager');
-
     $request = ['app_type' => 'scoreboard', 'base_revision' => 0];
     $result = $this->invokeReportsDataAsUser($dm, $request);
     $this->assertNotNull($result, 'Data Manager allowed for app_type=scoreboard.');
-
-    // Data Manager does NOT have SQM role -> denied for reports/completion.
     foreach (['reports', 'completion'] as $app_type) {
       $request = ['app_type' => $app_type, 'base_revision' => 0];
       $result = $this->invokeReportsDataAsUser($dm, $request);
       $this->assertNull($result, "Data Manager denied for app_type=$app_type.");
     }
-  }
 
-  /**
-   * Test /api/reports-data: HC-scoped SQM may only request their own HC.
-   */
-  public function testHcScopedStatisticalQueriesManager() {
+    // 4. HC-scoped SQM -> own HC only.
     $allowed_hc = $this->createHealthCenter();
     $foreign_hc = $this->createHealthCenter();
-
-    $sqm = $this->grantRole($this->drupalCreateUser(), 'Statistical Queries Manager');
-    $wrapper = entity_metadata_wrapper('user', $sqm);
+    $hc_sqm = $this->grantRole($this->drupalCreateUser(), 'Statistical Queries Manager');
+    $wrapper = entity_metadata_wrapper('user', $hc_sqm);
     $wrapper->field_health_centers_for_reports->set([$allowed_hc]);
     $wrapper->save();
-    $sqm = user_load($sqm->uid, TRUE);
+    $hc_sqm = user_load($hc_sqm->uid, TRUE);
 
-    // Allowed HC -> success.
     $request = [
       'app_type' => 'reports',
       'base_revision' => 0,
       'health_center' => $allowed_hc,
     ];
-    $result = $this->invokeReportsDataAsUser($sqm, $request);
+    $result = $this->invokeReportsDataAsUser($hc_sqm, $request);
     $this->assertNotNull($result, 'HC-scoped SQM allowed for own HC.');
 
-    // Foreign HC -> denied.
     $request = [
       'app_type' => 'reports',
       'base_revision' => 0,
       'health_center' => $foreign_hc,
     ];
-    $result = $this->invokeReportsDataAsUser($sqm, $request);
+    $result = $this->invokeReportsDataAsUser($hc_sqm, $request);
     $this->assertNull($result, 'HC-scoped SQM denied for foreign HC.');
 
-    // Missing HC -> denied (HC-scoped users must specify their HC).
     $request = ['app_type' => 'reports', 'base_revision' => 0];
-    $result = $this->invokeReportsDataAsUser($sqm, $request);
+    $result = $this->invokeReportsDataAsUser($hc_sqm, $request);
     $this->assertNull($result, 'HC-scoped SQM denied when health_center is missing.');
   }
 
