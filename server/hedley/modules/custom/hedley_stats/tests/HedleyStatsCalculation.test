@@ -69,8 +69,11 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    * Testing the total encounters stats.
    */
   public function testTotalEncounters() {
-    $attendance_last_year = 10;
-    $attendance_this_year = 5;
+    // Each attendance creates ~4 nodes (mother, child, PMTCT, attendance);
+    // small counts are sufficient to validate the by-period aggregation
+    // math while keeping CI install-bound rather than fixture-bound.
+    $attendance_last_year = 2;
+    $attendance_this_year = 1;
     $this->createSessionsWithAttendance($attendance_last_year, $attendance_this_year);
 
     // Get total encounters from the stats function.
@@ -101,7 +104,10 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
       ],
     ];
 
-    $attendance = 20;
+    // Each attendance creates 4 nodes plus 3 measurements; cut the count
+    // to 4 (still alternating moderate/severe to exercise both branches)
+    // to keep CI install-bound rather than fixture-bound.
+    $attendance = 4;
     $sessions = $this->createSessionsWithAttendance(0, $attendance, '0', '-5 months');
 
     foreach ($sessions as $session) {
@@ -128,7 +134,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
       $case_management = hedley_stats_get_case_management($this->healthCenterId, $patients_details);
 
       // Assert the amount of case management.
-      $this->assertEqual(20, count($case_management['this_year']['fbf']));
+      $this->assertEqual($attendance, count($case_management['this_year']['fbf']));
     }
   }
 
@@ -136,7 +142,11 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    * Testing the total beneficiaries stats.
    */
   public function testSessionsAttendance() {
-    $attendance = 30;
+    // The test below counts records but doesn't assertEqual on counts;
+    // it's a smoke check that the function runs without error against
+    // realistic data. A small attendance is sufficient and keeps CI
+    // install-bound rather than fixture-bound.
+    $attendance = 2;
     $this->createSessionsWithAttendance(0, $attendance, '-1 year', '-1 week', strtotime('-24 months'));
 
     $this_month = [
