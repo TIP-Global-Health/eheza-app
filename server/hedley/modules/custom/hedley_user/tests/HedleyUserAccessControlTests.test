@@ -88,68 +88,39 @@ class HedleyUserAccessControlTests extends HedleyWebTestBase {
   }
 
   /**
-   * Testing the entry point of the photos.
+   * Testing the entry points of measurement REST handlers.
+   *
+   * Each test method in DrupalWebTestCase pays a full hedley-profile
+   * install (~5 min in CI). The three measurement endpoint checks
+   * (photos, nutritions, muacs) all follow the same shape -- create
+   * one node, verify anonymous is denied, verify the authorized user
+   * gets the record back -- so bundling them under one method keeps
+   * the install paid once instead of three times.
    */
-  public function testPhotosEndpoint() {
-    $photo = $this->drupalCreateNode(['type' => 'photo']);
+  public function testMeasurementEndpoints() {
+    $cases = [
+      ['type' => 'photo', 'handler' => 'photos', 'label' => 'Photo'],
+      ['type' => 'nutrition', 'handler' => 'nutritions', 'label' => 'Nutrition'],
+      ['type' => 'muac', 'handler' => 'muacs', 'label' => 'Muac'],
+    ];
 
-    /** @var RestfulEntityBaseNode $handler */
-    $handler = restful_get_restful_handler('photos');
+    foreach ($cases as $case) {
+      $node = $this->drupalCreateNode(['type' => $case['type']]);
 
-    // Make sure anonymous user doesn't get the content.
-    $handler->setAccount($this->anonymousUser);
-    $anonymous_results = $handler->get('');
-    $this->assertFalse($anonymous_results, 'Anonymous user doesn\'t have access to the "photo" content.');
+      /** @var RestfulEntityBaseNode $handler */
+      $handler = restful_get_restful_handler($case['handler']);
 
-    // Test authorized user.
-    $handler->setAccount($this->user);
+      // Make sure anonymous user doesn't get the content.
+      $handler->setAccount($this->anonymousUser);
+      $anonymous_results = $handler->get('');
+      $this->assertFalse($anonymous_results, format_string('Anonymous user doesn\'t have access to the "@type" content.', ['@type' => $case['type']]));
 
-    $results = $handler->get('');
-    $this->assertEqual($results[0]['created'], date('c', $photo->created), 'Photo "created date" is correct.');
+      // Test authorized user.
+      $handler->setAccount($this->user);
 
-  }
-
-  /**
-   * Testing the entry point of the Nutrition Signs.
-   */
-  public function testNutritionsEndpoint() {
-    $nutrition = $this->drupalCreateNode(['type' => 'nutrition']);
-
-    /** @var RestfulEntityBaseNode $handler */
-    $handler = restful_get_restful_handler('nutritions');
-
-    // Make sure anonymous user doesn't get the content.
-    $handler->setAccount($this->anonymousUser);
-    $anonymous_results = $handler->get('');
-    $this->assertFalse($anonymous_results, 'Anonymous user doesn\'t have access to the "nutrition" content.');
-
-    // Test authorized user.
-    $handler->setAccount($this->user);
-
-    $results = $handler->get('');
-    $this->assertEqual($results[0]['created'], date('c', $nutrition->created), 'Nutrition "created date" is correct.');
-
-  }
-
-  /**
-   * Testing the entry point of the muacs.
-   */
-  public function testMuacsEndpoint() {
-    $muac = $this->drupalCreateNode(['type' => 'muac']);
-
-    /** @var RestfulEntityBaseNode $handler */
-    $handler = restful_get_restful_handler('muacs');
-
-    // Make sure anonymous user doesn't get the content.
-    $handler->setAccount($this->anonymousUser);
-    $anonymous_results = $handler->get('');
-    $this->assertFalse($anonymous_results, 'Anonymous user doesn\'t have access to the "muac" content.');
-
-    // Test authorized user.
-    $handler->setAccount($this->user);
-
-    $results = $handler->get('');
-    $this->assertEqual($results[0]['created'], date('c', $muac->created), 'Muac "created date" is correct.');
+      $results = $handler->get('');
+      $this->assertEqual($results[0]['created'], date('c', $node->created), format_string('@label "created date" is correct.', ['@label' => $case['label']]));
+    }
   }
 
   /**
