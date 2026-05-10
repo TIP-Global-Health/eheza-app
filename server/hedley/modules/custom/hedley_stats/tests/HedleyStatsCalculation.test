@@ -66,28 +66,35 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
   }
 
   /**
-   * Testing the total encounters stats.
+   * Combined Stats calculations test.
+   *
+   * Each test method in DrupalWebTestCase reinstalls the entire hedley
+   * profile (~5 min in CI). The four scenarios below operate on
+   * disjoint data and the underlying hedley_stats functions all take a
+   * health center id as a parameter, so creating a fresh HC + FBF
+   * clinic at the start of each scenario keeps them isolated. Bundling
+   * them under one method keeps the install paid once instead of
+   * four times.
+   *
+   * Covers:
+   *
+   *   1. Total encounters by period (last_year / this_year split).
+   *   2. Case management aggregation across moderate/severe branches.
+   *   3. Session attendance (smoke check that the function runs).
+   *   4. Stats-blob sync with cache-hash invalidation.
    */
-  public function testTotalEncounters() {
-    $attendance_last_year = 10;
-    $attendance_this_year = 5;
+  public function testStatsCalculations() {
+    // 1. Total encounters.
+    $this->resetHealthCenter();
+    $attendance_last_year = 2;
+    $attendance_this_year = 1;
     $this->createSessionsWithAttendance($attendance_last_year, $attendance_this_year);
-
-    // Get total encounters from the stats function.
     $total_encounters = hedley_stats_get_total_encounters($this->healthCenterId, []);
-
-    // Assert the amount of attendance for last year.
     $this->assertEqual($attendance_last_year, $total_encounters['global']['fbf']['last_year']);
-
-    // Assert the amount of attendance for this year.
     $this->assertEqual($attendance_this_year, $total_encounters['global']['fbf']['this_year']);
-  }
 
-  /**
-   * Testing the "case management" stats.
-   */
-  public function testCaseManagement() {
-    // Define needed measurements for the test.
+    // 2. Case management.
+    $this->resetHealthCenter();
     $measurements = [
       HEDLEY_STATS_MODERATE => [
         'weight' => 8,
@@ -100,8 +107,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
         'muac' => 11,
       ],
     ];
-
-    $attendance = 20;
+    $attendance = 4;
     $sessions = $this->createSessionsWithAttendance(0, $attendance, '0', '-5 months');
 
     foreach ($sessions as $session) {
@@ -127,16 +133,12 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
       $patients_details = [];
       $case_management = hedley_stats_get_case_management($this->healthCenterId, $patients_details);
 
-      // Assert the amount of case management.
-      $this->assertEqual(20, count($case_management['this_year']['fbf']));
+      $this->assertEqual($attendance, count($case_management['this_year']['fbf']));
     }
-  }
 
-  /**
-   * Testing the total beneficiaries stats.
-   */
-  public function testSessionsAttendance() {
-    $attendance = 30;
+    // 3. Session attendance (smoke check).
+    $this->resetHealthCenter();
+    $attendance = 2;
     $this->createSessionsWithAttendance(0, $attendance, '-1 year', '-1 week', strtotime('-24 months'));
 
     $this_month = [
@@ -147,7 +149,6 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $patients_details = [];
     [$completed_programs, $missed_sessions] = hedley_stats_get_session_attendance_stats_by_health_center($this->healthCenterId, $fbf_clinics, $patients_details);
 
-    // Filter missed sessions.
     $count_missed_sessions = 0;
     foreach ($missed_sessions as $missed_session) {
       $expected_date = strtotime($missed_session['expected_date']);
@@ -155,8 +156,6 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
         $count_missed_sessions++;
       }
     }
-
-    // Filter completed programs.
     $count_completed_programs = 0;
     foreach ($completed_programs as $completed_program) {
       $expected_date = strtotime($completed_program['expected_date']);
@@ -164,12 +163,9 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
         $count_completed_programs++;
       }
     }
-  }
 
-  /**
-   * Testing the syncing and caching.
-   */
-  public function testSyncAndCache() {
+    // 4. Sync handler with cache-hash invalidation.
+    $this->resetHealthCenter();
     $this->createGroupNutritionData();
     $this->createIndividualNutritionEncounterData();
     $this->createNcdEncounterData();
@@ -262,6 +258,18 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
 
     // Check that we got the stats.
     $this->assertTrue(is_array($stats4));
+  }
+
+  /**
+   * Create a fresh HC + FBF clinic and point the test instance at them.
+   *
+   * Used between scenarios in testStatsCalculations to keep each
+   * scenario's data disjoint -- the hedley_stats functions all scope
+   * by HC id, so a new HC is sufficient for isolation.
+   */
+  protected function resetHealthCenter() {
+    $this->healthCenterId = $this->createHealthCenter();
+    $this->clinicId = $this->createClinic($this->healthCenterId, 'fbf');
   }
 
   /**

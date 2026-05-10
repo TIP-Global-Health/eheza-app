@@ -41,3 +41,4 @@ features[variable][] = menu_parent_report_data
 features[variable][] = node_options_report_data
 features[variable][] = node_preview_report_data
 features[variable][] = node_submitted_report_data
+files[] = tests/HedleyReportsDataEndpoint.test

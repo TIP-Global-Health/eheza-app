@@ -1,14 +1,17 @@
-module Backend.Completion.Model exposing (ActivitiesCompletionData, AcuteIllnessActivity(..), ChildScoreboardActivity(..), CompletionData, EncounterData, HIVActivity(..), HomeVisitActivity(..), Msg(..), NCDActivity(..), NutritionChildActivity(..), NutritionGroupEncounterData, NutritionMotherActivity(..), PrenatalActivity(..), SelectedEntity(..), TakenBy(..), TuberculosisActivity(..), WellChildActivity(..), WellChildEncounterData, WellChildEncounterType(..))
+module Backend.Completion.Model exposing (ActivitiesCompletionData, AcuteIllnessActivity(..), ChildScoreboardActivity(..), CompletionData, EncounterData, HIVActivity(..), HomeVisitActivity(..), Msg(..), NCDActivity(..), NutritionChildActivity(..), NutritionGroupEncounterData, NutritionMotherActivity(..), PrenatalActivity(..), SyncResponse, TakenBy(..), TuberculosisActivity(..), WellChildActivity(..), WellChildEncounterData, WellChildEncounterType(..))
 
 import App.Types exposing (Site)
+import Backend.Components.Model exposing (ReportParams, SelectedEntity)
 import Gizra.NominalDate exposing (NominalDate)
 import Json.Encode exposing (Value)
+import RemoteData exposing (WebData)
 
 
 type alias CompletionData =
     { site : Site
     , entityName : String
     , entityType : SelectedEntity
+    , params : ReportParams
     , acuteIllnessData : List (EncounterData AcuteIllnessActivity)
     , childScoreboardData : List (EncounterData ChildScoreboardActivity)
     , hivData : List (EncounterData HIVActivity)
@@ -19,12 +22,8 @@ type alias CompletionData =
     , prenatalData : List (EncounterData PrenatalActivity)
     , tuberculosisData : List (EncounterData TuberculosisActivity)
     , wellChildData : List WellChildEncounterData
+    , remainingForDownload : Maybe Int
     }
-
-
-type SelectedEntity
-    = EntityGlobal
-    | EntityHealthCenter
 
 
 type alias EncounterData activity =
@@ -280,5 +279,23 @@ type TakenBy
     | TakenByUnknown
 
 
+type alias SyncResponse =
+    { acuteIllnessData : List (EncounterData AcuteIllnessActivity)
+    , childScoreboardData : List (EncounterData ChildScoreboardActivity)
+    , hivData : List (EncounterData HIVActivity)
+    , homeVisitData : List (EncounterData HomeVisitActivity)
+    , ncdData : List (EncounterData NCDActivity)
+    , nutritionIndividualData : List (EncounterData NutritionChildActivity)
+    , nutritionGroupData : List (NutritionGroupEncounterData NutritionMotherActivity NutritionChildActivity)
+    , prenatalData : List (EncounterData PrenatalActivity)
+    , tuberculosisData : List (EncounterData TuberculosisActivity)
+    , wellChildData : List WellChildEncounterData
+    , totalRemaining : Int
+    , lastIdSynced : Int
+    }
+
+
 type Msg
     = SetData Value
+    | SendSyncRequest Int
+    | HandleSyncResponse (WebData SyncResponse)

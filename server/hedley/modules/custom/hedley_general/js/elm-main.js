@@ -4534,6 +4534,205 @@ var _Parser_findSubString = F5(function(smallString, offset, row, col, bigString
 
 
 
+// SEND REQUEST
+
+var _Http_toTask = F2(function(request, maybeProgress)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		var xhr = new XMLHttpRequest();
+
+		_Http_configureProgress(xhr, maybeProgress);
+
+		xhr.addEventListener('error', function() {
+			callback(_Scheduler_fail($elm$http$Http$NetworkError));
+		});
+		xhr.addEventListener('timeout', function() {
+			callback(_Scheduler_fail($elm$http$Http$Timeout));
+		});
+		xhr.addEventListener('load', function() {
+			callback(_Http_handleResponse(xhr, request.expect.a));
+		});
+
+		try
+		{
+			xhr.open(request.method, request.url, true);
+		}
+		catch (e)
+		{
+			return callback(_Scheduler_fail($elm$http$Http$BadUrl(request.url)));
+		}
+
+		_Http_configureRequest(xhr, request);
+
+		var body = request.body;
+		xhr.send($elm$http$Http$Internal$isStringBody(body)
+			? (xhr.setRequestHeader('Content-Type', body.a), body.b)
+			: body.a
+		);
+
+		return function() { xhr.abort(); };
+	});
+});
+
+function _Http_configureProgress(xhr, maybeProgress)
+{
+	if (!$elm$core$Maybe$isJust(maybeProgress))
+	{
+		return;
+	}
+
+	xhr.addEventListener('progress', function(event) {
+		if (!event.lengthComputable)
+		{
+			return;
+		}
+		_Scheduler_rawSpawn(maybeProgress.a({
+			bytes: event.loaded,
+			bytesExpected: event.total
+		}));
+	});
+}
+
+function _Http_configureRequest(xhr, request)
+{
+	for (var headers = request.headers; headers.b; headers = headers.b) // WHILE_CONS
+	{
+		xhr.setRequestHeader(headers.a.a, headers.a.b);
+	}
+
+	xhr.responseType = request.expect.b;
+	xhr.withCredentials = request.withCredentials;
+
+	$elm$core$Maybe$isJust(request.timeout) && (xhr.timeout = request.timeout.a);
+}
+
+
+// RESPONSES
+
+function _Http_handleResponse(xhr, responseToResult)
+{
+	var response = _Http_toResponse(xhr);
+
+	if (xhr.status < 200 || 300 <= xhr.status)
+	{
+		response.body = xhr.responseText;
+		return _Scheduler_fail($elm$http$Http$BadStatus(response));
+	}
+
+	var result = responseToResult(response);
+
+	if ($elm$core$Result$isOk(result))
+	{
+		return _Scheduler_succeed(result.a);
+	}
+	else
+	{
+		response.body = xhr.responseText;
+		return _Scheduler_fail(A2($elm$http$Http$BadPayload, result.a, response));
+	}
+}
+
+function _Http_toResponse(xhr)
+{
+	return {
+		url: xhr.responseURL,
+		status: { code: xhr.status, message: xhr.statusText },
+		headers: _Http_parseHeaders(xhr.getAllResponseHeaders()),
+		body: xhr.response
+	};
+}
+
+function _Http_parseHeaders(rawHeaders)
+{
+	var headers = $elm$core$Dict$empty;
+
+	if (!rawHeaders)
+	{
+		return headers;
+	}
+
+	var headerPairs = rawHeaders.split('\u000d\u000a');
+	for (var i = headerPairs.length; i--; )
+	{
+		var headerPair = headerPairs[i];
+		var index = headerPair.indexOf('\u003a\u0020');
+		if (index > 0)
+		{
+			var key = headerPair.substring(0, index);
+			var value = headerPair.substring(index + 2);
+
+			headers = A3($elm$core$Dict$update, key, function(oldValue) {
+				return $elm$core$Maybe$Just($elm$core$Maybe$isJust(oldValue)
+					? value + ', ' + oldValue.a
+					: value
+				);
+			}, headers);
+		}
+	}
+
+	return headers;
+}
+
+
+// EXPECTORS
+
+function _Http_expectStringResponse(responseToResult)
+{
+	return {
+		$: 0,
+		b: 'text',
+		a: responseToResult
+	};
+}
+
+var _Http_mapExpect = F2(function(func, expect)
+{
+	return {
+		$: 0,
+		b: expect.b,
+		a: function(response) {
+			var convertedResponse = expect.a(response);
+			return A2($elm$core$Result$map, func, convertedResponse);
+		}
+	};
+});
+
+
+// BODY
+
+function _Http_multipart(parts)
+{
+
+
+	for (var formData = new FormData(); parts.b; parts = parts.b) // WHILE_CONS
+	{
+		var part = parts.a;
+		formData.append(part.a, part.b);
+	}
+
+	return $elm$http$Http$Internal$FormDataBody(formData);
+}
+
+
+function _Url_percentEncode(string)
+{
+	return encodeURIComponent(string);
+}
+
+function _Url_percentDecode(string)
+{
+	try
+	{
+		return $elm$core$Maybe$Just(decodeURIComponent(string));
+	}
+	catch (e)
+	{
+		return $elm$core$Maybe$Nothing;
+	}
+}
+
+
 var _Bitwise_and = F2(function(a, b)
 {
 	return a & b;
@@ -5517,8 +5716,10 @@ var $elm$time$Time$millisToPosix = $elm$time$Time$Posix;
 var $author$project$App$Model$emptyModel = {
 	activePage: $author$project$App$Types$NotFound,
 	backend: $author$project$Backend$Model$emptyModelBackend,
+	backendUrl: '',
 	completionMenuPage: $author$project$Pages$CompletionMenu$Model$emptyModel,
 	completionPage: $author$project$Pages$Completion$Model$emptyModel,
+	csrfToken: '',
 	currentTime: $elm$time$Time$millisToPosix(0),
 	errors: _List_Nil,
 	language: $author$project$App$Types$English,
@@ -5528,6 +5729,7 @@ var $author$project$App$Model$emptyModel = {
 	scoreboardPage: $author$project$Pages$Scoreboard$Model$emptyModel,
 	themePath: ''
 };
+var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $elm$time$Time$Name = function (a) {
 	return {$: 'Name', a: a};
 };
@@ -5797,7 +5999,6 @@ var $justinmimbs$date$Date$fromPosix = F2(
 	});
 var $elm$time$Time$utc = A2($elm$time$Time$Zone, 0, _List_Nil);
 var $author$project$Gizra$NominalDate$fromLocalDateTime = $justinmimbs$date$Date$fromPosix($elm$time$Time$utc);
-var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$App$Model$PagesReturn = F4(
 	function (model, cmd, error, appMsgs) {
 		return {appMsgs: appMsgs, cmd: cmd, error: error, model: model};
@@ -5877,8 +6078,6 @@ var $author$project$Backend$Completion$Utils$takenByFromString = function (value
 var $author$project$Pages$Completion$Update$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
-			case 'NoOp':
-				return A4($author$project$App$Model$PagesReturn, model, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
 			case 'SetReportType':
 				var value = msg.a;
 				return A4(
@@ -6071,10 +6270,10 @@ var $krisajenkins$remotedata$RemoteData$isSuccess = function (data) {
 		return false;
 	}
 };
-var $author$project$Backend$Reports$Model$EntityDistrict = {$: 'EntityDistrict'};
-var $author$project$Backend$Reports$Model$EntityGlobal = {$: 'EntityGlobal'};
-var $author$project$Backend$Reports$Model$EntityHealthCenter = {$: 'EntityHealthCenter'};
-var $author$project$Backend$Reports$Model$EntityProvince = {$: 'EntityProvince'};
+var $author$project$Backend$Components$Model$EntityDistrict = {$: 'EntityDistrict'};
+var $author$project$Backend$Components$Model$EntityGlobal = {$: 'EntityGlobal'};
+var $author$project$Backend$Components$Model$EntityHealthCenter = {$: 'EntityHealthCenter'};
+var $author$project$Backend$Components$Model$EntityProvince = {$: 'EntityProvince'};
 var $elm$core$List$any = F2(
 	function (isOkay, list) {
 		any:
@@ -6110,7 +6309,7 @@ var $author$project$Pages$Reports$Utils$isWideScope = function (selectedEntity) 
 		$elm$core$List$member,
 		selectedEntity,
 		_List_fromArray(
-			[$author$project$Backend$Reports$Model$EntityGlobal, $author$project$Backend$Reports$Model$EntityProvince, $author$project$Backend$Reports$Model$EntityDistrict, $author$project$Backend$Reports$Model$EntityHealthCenter]));
+			[$author$project$Backend$Components$Model$EntityGlobal, $author$project$Backend$Components$Model$EntityProvince, $author$project$Backend$Components$Model$EntityDistrict, $author$project$Backend$Components$Model$EntityHealthCenter]));
 };
 var $author$project$Pages$Reports$Model$NutritionReportDataCalculationCompleted = function (a) {
 	return {$: 'NutritionReportDataCalculationCompleted', a: a};
@@ -6981,25 +7180,267 @@ var $author$project$Pages$ScoreboardMenu$Update$update = F2(
 				_List_Nil);
 		}
 	});
-var $author$project$Backend$Types$BackendReturn = F4(
-	function (model, cmd, error, appMsgs) {
-		return {appMsgs: appMsgs, cmd: cmd, error: error, model: model};
-	});
+var $author$project$Backend$Completion$Model$HandleSyncResponse = function (a) {
+	return {$: 'HandleSyncResponse', a: a};
+};
 var $author$project$Backend$Completion$Model$CompletionData = function (site) {
 	return function (entityName) {
 		return function (entityType) {
-			return function (acuteIllnessData) {
-				return function (childScoreboardData) {
-					return function (hivData) {
-						return function (homeVisitData) {
-							return function (ncdData) {
-								return function (nutritionIndividualData) {
-									return function (nutritionGroupData) {
-										return function (prenatalData) {
-											return function (tuberculosisData) {
-												return function (wellChildData) {
-													return {acuteIllnessData: acuteIllnessData, childScoreboardData: childScoreboardData, entityName: entityName, entityType: entityType, hivData: hivData, homeVisitData: homeVisitData, ncdData: ncdData, nutritionGroupData: nutritionGroupData, nutritionIndividualData: nutritionIndividualData, prenatalData: prenatalData, site: site, tuberculosisData: tuberculosisData, wellChildData: wellChildData};
+			return function (params) {
+				return function (acuteIllnessData) {
+					return function (childScoreboardData) {
+						return function (hivData) {
+							return function (homeVisitData) {
+								return function (ncdData) {
+									return function (nutritionIndividualData) {
+										return function (nutritionGroupData) {
+											return function (prenatalData) {
+												return function (tuberculosisData) {
+													return function (wellChildData) {
+														return function (remainingForDownload) {
+															return {acuteIllnessData: acuteIllnessData, childScoreboardData: childScoreboardData, entityName: entityName, entityType: entityType, hivData: hivData, homeVisitData: homeVisitData, ncdData: ncdData, nutritionGroupData: nutritionGroupData, nutritionIndividualData: nutritionIndividualData, params: params, prenatalData: prenatalData, remainingForDownload: remainingForDownload, site: site, tuberculosisData: tuberculosisData, wellChildData: wellChildData};
+														};
+													};
 												};
+											};
+										};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
+var $author$project$Backend$Components$Model$ReportParams = F6(
+	function (province, district, sector, cell, village, healthCenter) {
+		return {cell: cell, district: district, healthCenter: healthCenter, province: province, sector: sector, village: village};
+	});
+var $elm$json$Json$Decode$fail = _Json_fail;
+var $elm$json$Json$Decode$int = _Json_decodeInt;
+var $elm$json$Json$Decode$oneOf = _Json_oneOf;
+var $elm$json$Json$Decode$string = _Json_decodeString;
+var $author$project$Gizra$Json$decodeInt = $elm$json$Json$Decode$oneOf(
+	_List_fromArray(
+		[
+			$elm$json$Json$Decode$int,
+			A2(
+			$elm$json$Json$Decode$andThen,
+			function (s) {
+				var _v0 = $elm$core$String$toInt(s);
+				if (_v0.$ === 'Just') {
+					var value = _v0.a;
+					return $elm$json$Json$Decode$succeed(value);
+				} else {
+					return $elm$json$Json$Decode$fail('Not an integer');
+				}
+			},
+			$elm$json$Json$Decode$string)
+		]));
+var $elm$json$Json$Decode$null = _Json_decodeNull;
+var $elm$json$Json$Decode$nullable = function (decoder) {
+	return $elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				$elm$json$Json$Decode$null($elm$core$Maybe$Nothing),
+				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder)
+			]));
+};
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
+var $elm$json$Json$Decode$decodeValue = _Json_run;
+var $elm$json$Json$Decode$value = _Json_decodeValue;
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder = F3(
+	function (pathDecoder, valDecoder, fallback) {
+		var nullOr = function (decoder) {
+			return $elm$json$Json$Decode$oneOf(
+				_List_fromArray(
+					[
+						decoder,
+						$elm$json$Json$Decode$null(fallback)
+					]));
+		};
+		var handleResult = function (input) {
+			var _v0 = A2($elm$json$Json$Decode$decodeValue, pathDecoder, input);
+			if (_v0.$ === 'Ok') {
+				var rawValue = _v0.a;
+				var _v1 = A2(
+					$elm$json$Json$Decode$decodeValue,
+					nullOr(valDecoder),
+					rawValue);
+				if (_v1.$ === 'Ok') {
+					var finalResult = _v1.a;
+					return $elm$json$Json$Decode$succeed(finalResult);
+				} else {
+					var finalErr = _v1.a;
+					return $elm$json$Json$Decode$fail(
+						$elm$json$Json$Decode$errorToString(finalErr));
+				}
+			} else {
+				return $elm$json$Json$Decode$succeed(fallback);
+			}
+		};
+		return A2($elm$json$Json$Decode$andThen, handleResult, $elm$json$Json$Decode$value);
+	});
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional = F4(
+	function (key, valDecoder, fallback, decoder) {
+		return A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+			A3(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder,
+				A2($elm$json$Json$Decode$field, key, $elm$json$Json$Decode$value),
+				valDecoder,
+				fallback),
+			decoder);
+	});
+var $author$project$Backend$Components$Decoder$decodeReportParams = A4(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+	'health_center',
+	$elm$json$Json$Decode$nullable($author$project$Gizra$Json$decodeInt),
+	$elm$core$Maybe$Nothing,
+	A4(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+		'village',
+		$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string),
+		$elm$core$Maybe$Nothing,
+		A4(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+			'cell',
+			$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string),
+			$elm$core$Maybe$Nothing,
+			A4(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+				'sector',
+				$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string),
+				$elm$core$Maybe$Nothing,
+				A4(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+					'district',
+					$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string),
+					$elm$core$Maybe$Nothing,
+					A4(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+						'province',
+						$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string),
+						$elm$core$Maybe$Nothing,
+						$elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$ReportParams)))))));
+var $author$project$Backend$Components$Model$EntityCell = {$: 'EntityCell'};
+var $author$project$Backend$Components$Model$EntitySector = {$: 'EntitySector'};
+var $author$project$Backend$Components$Model$EntityVillage = {$: 'EntityVillage'};
+var $author$project$Backend$Components$Decoder$decodeSelectedEntity = A2(
+	$elm$json$Json$Decode$andThen,
+	function (entityType) {
+		switch (entityType) {
+			case 'global':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$EntityGlobal);
+			case 'province':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$EntityProvince);
+			case 'district':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$EntityDistrict);
+			case 'sector':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$EntitySector);
+			case 'cell':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$EntityCell);
+			case 'village':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$EntityVillage);
+			case 'health-center':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$EntityHealthCenter);
+			default:
+				return $elm$json$Json$Decode$fail(entityType + ' is unknown SelectedEntity type');
+		}
+	},
+	$elm$json$Json$Decode$string);
+var $author$project$App$Types$SiteBurundi = {$: 'SiteBurundi'};
+var $author$project$App$Types$SiteRwanda = {$: 'SiteRwanda'};
+var $author$project$App$Types$SiteSomalia = {$: 'SiteSomalia'};
+var $author$project$App$Types$SiteUnknown = {$: 'SiteUnknown'};
+var $elm$core$String$toLower = _String_toLower;
+var $author$project$Backend$Decoder$siteFromString = function (str) {
+	var _v0 = $elm$core$String$toLower(str);
+	switch (_v0) {
+		case 'rwanda':
+			return $author$project$App$Types$SiteRwanda;
+		case 'burundi':
+			return $author$project$App$Types$SiteBurundi;
+		case 'somalia':
+			return $author$project$App$Types$SiteSomalia;
+		default:
+			return $author$project$App$Types$SiteUnknown;
+	}
+};
+var $author$project$Backend$Decoder$decodeSite = A2($elm$json$Json$Decode$map, $author$project$Backend$Decoder$siteFromString, $elm$json$Json$Decode$string);
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded = A2($elm$core$Basics$composeR, $elm$json$Json$Decode$succeed, $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom);
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
+	function (key, valDecoder, decoder) {
+		return A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+			A2($elm$json$Json$Decode$field, key, valDecoder),
+			decoder);
+	});
+var $author$project$Backend$Completion$Decoder$decodeCompletionData = A2(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+	$elm$core$Maybe$Nothing,
+	A2(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+		_List_Nil,
+		A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+			_List_Nil,
+			A2(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+				_List_Nil,
+				A2(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+					_List_Nil,
+					A2(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+						_List_Nil,
+						A2(
+							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+							_List_Nil,
+							A2(
+								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+								_List_Nil,
+								A2(
+									$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+									_List_Nil,
+									A2(
+										$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+										_List_Nil,
+										A2(
+											$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+											_List_Nil,
+											A3(
+												$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+												'params',
+												$author$project$Backend$Components$Decoder$decodeReportParams,
+												A3(
+													$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+													'entity_type',
+													$author$project$Backend$Components$Decoder$decodeSelectedEntity,
+													A3(
+														$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+														'entity_name',
+														$elm$json$Json$Decode$string,
+														A3(
+															$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+															'site',
+															$author$project$Backend$Decoder$decodeSite,
+															$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$CompletionData))))))))))))))));
+var $author$project$Backend$Completion$Model$SyncResponse = function (acuteIllnessData) {
+	return function (childScoreboardData) {
+		return function (hivData) {
+			return function (homeVisitData) {
+				return function (ncdData) {
+					return function (nutritionIndividualData) {
+						return function (nutritionGroupData) {
+							return function (prenatalData) {
+								return function (tuberculosisData) {
+									return function (wellChildData) {
+										return function (totalRemaining) {
+											return function (lastIdSynced) {
+												return {acuteIllnessData: acuteIllnessData, childScoreboardData: childScoreboardData, hivData: hivData, homeVisitData: homeVisitData, lastIdSynced: lastIdSynced, ncdData: ncdData, nutritionGroupData: nutritionGroupData, nutritionIndividualData: nutritionIndividualData, prenatalData: prenatalData, totalRemaining: totalRemaining, tuberculosisData: tuberculosisData, wellChildData: wellChildData};
 											};
 										};
 									};
@@ -7166,8 +7607,6 @@ var $author$project$Backend$Completion$Decoder$activitiesCompletionDataFromStrin
 				A2($author$project$Backend$Completion$Model$ActivitiesCompletionData, _List_Nil, _List_Nil));
 		}
 	});
-var $elm$json$Json$Decode$fail = _Json_fail;
-var $elm$json$Json$Decode$string = _Json_decodeString;
 var $author$project$Backend$Completion$Decoder$decodeActivitiesCompletionData = function (activityFromString) {
 	return A2(
 		$elm$json$Json$Decode$andThen,
@@ -7194,7 +7633,6 @@ var $author$project$Backend$Completion$Decoder$decodeTakenBy = A2(
 				$author$project$Backend$Completion$Utils$takenByFromString(takenBy)));
 	},
 	$elm$json$Json$Decode$string);
-var $elm$json$Json$Decode$oneOf = _Json_oneOf;
 var $author$project$Backend$Decoder$decodeWithFallback = F2(
 	function (fallback, decoder) {
 		return $elm$json$Json$Decode$oneOf(
@@ -7963,68 +8401,6 @@ var $author$project$Gizra$NominalDate$decodeYYYYMMDD = A2(
 	$elm$json$Json$Decode$andThen,
 	A2($elm$core$Basics$composeL, $elm_community$json_extra$Json$Decode$Extra$fromResult, $justinmimbs$date$Date$fromIsoString),
 	$elm$json$Json$Decode$string);
-var $elm$json$Json$Decode$null = _Json_decodeNull;
-var $elm$json$Json$Decode$nullable = function (decoder) {
-	return $elm$json$Json$Decode$oneOf(
-		_List_fromArray(
-			[
-				$elm$json$Json$Decode$null($elm$core$Maybe$Nothing),
-				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder)
-			]));
-};
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
-var $elm$json$Json$Decode$decodeValue = _Json_run;
-var $elm$json$Json$Decode$value = _Json_decodeValue;
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder = F3(
-	function (pathDecoder, valDecoder, fallback) {
-		var nullOr = function (decoder) {
-			return $elm$json$Json$Decode$oneOf(
-				_List_fromArray(
-					[
-						decoder,
-						$elm$json$Json$Decode$null(fallback)
-					]));
-		};
-		var handleResult = function (input) {
-			var _v0 = A2($elm$json$Json$Decode$decodeValue, pathDecoder, input);
-			if (_v0.$ === 'Ok') {
-				var rawValue = _v0.a;
-				var _v1 = A2(
-					$elm$json$Json$Decode$decodeValue,
-					nullOr(valDecoder),
-					rawValue);
-				if (_v1.$ === 'Ok') {
-					var finalResult = _v1.a;
-					return $elm$json$Json$Decode$succeed(finalResult);
-				} else {
-					var finalErr = _v1.a;
-					return $elm$json$Json$Decode$fail(
-						$elm$json$Json$Decode$errorToString(finalErr));
-				}
-			} else {
-				return $elm$json$Json$Decode$succeed(fallback);
-			}
-		};
-		return A2($elm$json$Json$Decode$andThen, handleResult, $elm$json$Json$Decode$value);
-	});
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional = F4(
-	function (key, valDecoder, fallback, decoder) {
-		return A2(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
-			A3(
-				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder,
-				A2($elm$json$Json$Decode$field, key, $elm$json$Json$Decode$value),
-				valDecoder,
-				fallback),
-			decoder);
-	});
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
-	function (key, valDecoder, decoder) {
-		return A2(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
-			A2($elm$json$Json$Decode$field, key, valDecoder),
-			decoder);
-	});
 var $author$project$Backend$Completion$Decoder$decodeEncounterData = function (activityFromString) {
 	return A3(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
@@ -8085,40 +8461,6 @@ var $author$project$Backend$Completion$Decoder$decodeNutritionGroupEncounterData
 						$author$project$Gizra$NominalDate$decodeYYYYMMDD,
 						$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$NutritionGroupEncounterData)))));
 	});
-var $author$project$Backend$Completion$Model$EntityGlobal = {$: 'EntityGlobal'};
-var $author$project$Backend$Completion$Model$EntityHealthCenter = {$: 'EntityHealthCenter'};
-var $author$project$Backend$Completion$Decoder$decodeSelectedEntity = A2(
-	$elm$json$Json$Decode$andThen,
-	function (entityType) {
-		switch (entityType) {
-			case 'global':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$EntityGlobal);
-			case 'health-center':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$EntityHealthCenter);
-			default:
-				return $elm$json$Json$Decode$fail(entityType + ' is unknown SelectedEntity type');
-		}
-	},
-	$elm$json$Json$Decode$string);
-var $author$project$App$Types$SiteBurundi = {$: 'SiteBurundi'};
-var $author$project$App$Types$SiteRwanda = {$: 'SiteRwanda'};
-var $author$project$App$Types$SiteSomalia = {$: 'SiteSomalia'};
-var $author$project$App$Types$SiteUnknown = {$: 'SiteUnknown'};
-var $elm$core$String$toLower = _String_toLower;
-var $author$project$Backend$Decoder$siteFromString = function (str) {
-	var _v0 = $elm$core$String$toLower(str);
-	switch (_v0) {
-		case 'rwanda':
-			return $author$project$App$Types$SiteRwanda;
-		case 'burundi':
-			return $author$project$App$Types$SiteBurundi;
-		case 'somalia':
-			return $author$project$App$Types$SiteSomalia;
-		default:
-			return $author$project$App$Types$SiteUnknown;
-	}
-};
-var $author$project$Backend$Decoder$decodeSite = A2($elm$json$Json$Decode$map, $author$project$Backend$Decoder$siteFromString, $elm$json$Json$Decode$string);
 var $author$project$Backend$Completion$Model$WellChildEncounterData = F3(
 	function (startDate, encounterType, completion) {
 		return {completion: completion, encounterType: encounterType, startDate: startDate};
@@ -8667,88 +9009,1080 @@ var $author$project$Backend$Completion$Utils$tuberculosisActivityFromMapping = f
 			return $elm$core$Maybe$Nothing;
 	}
 };
-var $author$project$Backend$Completion$Decoder$decodeCompletionData = A3(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
-	_List_fromArray(
-		['results', 'well_child']),
-	$elm$json$Json$Decode$list($author$project$Backend$Completion$Decoder$decodeWellChildEncounterData),
+var $author$project$Backend$Completion$Decoder$decodeSyncResponse = A2(
+	$elm$json$Json$Decode$field,
+	'data',
 	A3(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
-		_List_fromArray(
-			['results', 'tuberculosis']),
-		$elm$json$Json$Decode$list(
-			$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$tuberculosisActivityFromMapping)),
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'last',
+		$author$project$Gizra$Json$decodeInt,
 		A3(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
-			_List_fromArray(
-				['results', 'prenatal']),
-			$elm$json$Json$Decode$list(
-				$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$prenatalActivityFromMapping)),
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'total_remaining',
+			$author$project$Gizra$Json$decodeInt,
 			A3(
 				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
 				_List_fromArray(
-					['results', 'nutrition_group']),
-				$elm$json$Json$Decode$list(
-					A2($author$project$Backend$Completion$Decoder$decodeNutritionGroupEncounterData, $author$project$Backend$Completion$Utils$nutritionMotherActivityFromMapping, $author$project$Backend$Completion$Utils$nutritionChildActivityFromMapping)),
+					['batch', 'well_child']),
+				$elm$json$Json$Decode$list($author$project$Backend$Completion$Decoder$decodeWellChildEncounterData),
 				A3(
 					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
 					_List_fromArray(
-						['results', 'nutrition_individual']),
+						['batch', 'tuberculosis']),
 					$elm$json$Json$Decode$list(
-						$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$nutritionChildActivityFromMapping)),
+						$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$tuberculosisActivityFromMapping)),
 					A3(
 						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
 						_List_fromArray(
-							['results', 'ncd']),
+							['batch', 'prenatal']),
 						$elm$json$Json$Decode$list(
-							$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$ncdActivityFromMapping)),
+							$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$prenatalActivityFromMapping)),
 						A3(
 							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
 							_List_fromArray(
-								['results', 'home_visit']),
+								['batch', 'nutrition_group']),
 							$elm$json$Json$Decode$list(
-								$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$homeVisitActivityFromMapping)),
+								A2($author$project$Backend$Completion$Decoder$decodeNutritionGroupEncounterData, $author$project$Backend$Completion$Utils$nutritionMotherActivityFromMapping, $author$project$Backend$Completion$Utils$nutritionChildActivityFromMapping)),
 							A3(
 								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
 								_List_fromArray(
-									['results', 'hiv']),
+									['batch', 'nutrition_individual']),
 								$elm$json$Json$Decode$list(
-									$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$hivActivityFromMapping)),
+									$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$nutritionChildActivityFromMapping)),
 								A3(
 									$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
 									_List_fromArray(
-										['results', 'child_scoreboard']),
+										['batch', 'ncd']),
 									$elm$json$Json$Decode$list(
-										$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$childScoreboardActivityFromMapping)),
+										$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$ncdActivityFromMapping)),
 									A3(
 										$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
 										_List_fromArray(
-											['results', 'acute_illness']),
+											['batch', 'home_visit']),
 										$elm$json$Json$Decode$list(
-											$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$acuteIllnessActivityFromMapping)),
+											$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$homeVisitActivityFromMapping)),
 										A3(
-											$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-											'entity_type',
-											$author$project$Backend$Completion$Decoder$decodeSelectedEntity,
+											$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
+											_List_fromArray(
+												['batch', 'hiv']),
+											$elm$json$Json$Decode$list(
+												$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$hivActivityFromMapping)),
 											A3(
-												$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-												'entity_name',
-												$elm$json$Json$Decode$string,
+												$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
+												_List_fromArray(
+													['batch', 'child_scoreboard']),
+												$elm$json$Json$Decode$list(
+													$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$childScoreboardActivityFromMapping)),
 												A3(
-													$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-													'site',
-													$author$project$Backend$Decoder$decodeSite,
-													$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$CompletionData))))))))))))));
-var $author$project$Backend$Completion$Update$update = F2(
-	function (msg, model) {
-		var value = msg.a;
-		var modelUpdated = _Utils_update(
-			model,
+													$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
+													_List_fromArray(
+														['batch', 'acute_illness']),
+													$elm$json$Json$Decode$list(
+														$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$acuteIllnessActivityFromMapping)),
+													$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$SyncResponse))))))))))))));
+var $author$project$Backend$Types$BackendReturn = F4(
+	function (model, cmd, error, appMsgs) {
+		return {appMsgs: appMsgs, cmd: cmd, error: error, model: model};
+	});
+var $elm$json$Json$Encode$int = _Json_wrap;
+var $author$project$Backend$Components$Encoder$encodeReportParams = function (params) {
+	return $elm_community$maybe_extra$Maybe$Extra$values(
+		_List_fromArray(
+			[
+				A2(
+				$elm$core$Maybe$map,
+				function (value) {
+					return _Utils_Tuple2(
+						'province',
+						$elm$json$Json$Encode$string(value));
+				},
+				params.province),
+				A2(
+				$elm$core$Maybe$map,
+				function (value) {
+					return _Utils_Tuple2(
+						'district',
+						$elm$json$Json$Encode$string(value));
+				},
+				params.district),
+				A2(
+				$elm$core$Maybe$map,
+				function (value) {
+					return _Utils_Tuple2(
+						'sector',
+						$elm$json$Json$Encode$string(value));
+				},
+				params.sector),
+				A2(
+				$elm$core$Maybe$map,
+				function (value) {
+					return _Utils_Tuple2(
+						'cell',
+						$elm$json$Json$Encode$string(value));
+				},
+				params.cell),
+				A2(
+				$elm$core$Maybe$map,
+				function (value) {
+					return _Utils_Tuple2(
+						'village',
+						$elm$json$Json$Encode$string(value));
+				},
+				params.village),
+				A2(
+				$elm$core$Maybe$map,
+				function (value) {
+					return _Utils_Tuple2(
+						'health_center',
+						$elm$json$Json$Encode$int(value));
+				},
+				params.healthCenter)
+			]));
+};
+var $elm$json$Json$Encode$object = function (pairs) {
+	return _Json_wrap(
+		A3(
+			$elm$core$List$foldl,
+			F2(
+				function (_v0, obj) {
+					var k = _v0.a;
+					var v = _v0.b;
+					return A3(_Json_addField, k, v, obj);
+				}),
+			_Json_emptyObject(_Utils_Tuple0),
+			pairs));
+};
+var $elm$http$Http$Internal$EmptyBody = {$: 'EmptyBody'};
+var $elm$http$Http$emptyBody = $elm$http$Http$Internal$EmptyBody;
+var $elm$http$Http$BadPayload = F2(
+	function (a, b) {
+		return {$: 'BadPayload', a: a, b: b};
+	});
+var $elm$http$Http$BadStatus = function (a) {
+	return {$: 'BadStatus', a: a};
+};
+var $elm$http$Http$BadUrl = function (a) {
+	return {$: 'BadUrl', a: a};
+};
+var $elm$http$Http$Internal$FormDataBody = function (a) {
+	return {$: 'FormDataBody', a: a};
+};
+var $elm$http$Http$NetworkError = {$: 'NetworkError'};
+var $elm$http$Http$Timeout = {$: 'Timeout'};
+var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
+var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
+var $elm$core$Maybe$isJust = function (maybe) {
+	if (maybe.$ === 'Just') {
+		return true;
+	} else {
+		return false;
+	}
+};
+var $elm$http$Http$Internal$isStringBody = function (body) {
+	if (body.$ === 'StringBody') {
+		return true;
+	} else {
+		return false;
+	}
+};
+var $elm$core$Result$map = F2(
+	function (func, ra) {
+		if (ra.$ === 'Ok') {
+			var a = ra.a;
+			return $elm$core$Result$Ok(
+				func(a));
+		} else {
+			var e = ra.a;
+			return $elm$core$Result$Err(e);
+		}
+	});
+var $elm$core$Basics$compare = _Utils_compare;
+var $elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
+				switch (_v1.$) {
+					case 'LT':
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 'EQ':
+						return $elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
+	});
+var $elm$core$Dict$Black = {$: 'Black'};
+var $elm$core$Dict$RBNode_elm_builtin = F5(
+	function (a, b, c, d, e) {
+		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
+	});
+var $elm$core$Dict$Red = {$: 'Red'};
+var $elm$core$Dict$balance = F5(
+	function (color, key, value, left, right) {
+		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
+			var _v1 = right.a;
+			var rK = right.b;
+			var rV = right.c;
+			var rLeft = right.d;
+			var rRight = right.e;
+			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+				var _v3 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var lLeft = left.d;
+				var lRight = left.e;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Red,
+					key,
+					value,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					color,
+					rK,
+					rV,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, left, rLeft),
+					rRight);
+			}
+		} else {
+			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
+				var _v5 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var _v6 = left.d;
+				var _v7 = _v6.a;
+				var llK = _v6.b;
+				var llV = _v6.c;
+				var llLeft = _v6.d;
+				var llRight = _v6.e;
+				var lRight = left.e;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Red,
+					lK,
+					lV,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, key, value, lRight, right));
+			} else {
+				return A5($elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
+			}
+		}
+	});
+var $elm$core$Dict$insertHelp = F3(
+	function (key, value, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, $elm$core$Dict$RBEmpty_elm_builtin, $elm$core$Dict$RBEmpty_elm_builtin);
+		} else {
+			var nColor = dict.a;
+			var nKey = dict.b;
+			var nValue = dict.c;
+			var nLeft = dict.d;
+			var nRight = dict.e;
+			var _v1 = A2($elm$core$Basics$compare, key, nKey);
+			switch (_v1.$) {
+				case 'LT':
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						A3($elm$core$Dict$insertHelp, key, value, nLeft),
+						nRight);
+				case 'EQ':
+					return A5($elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
+				default:
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						nLeft,
+						A3($elm$core$Dict$insertHelp, key, value, nRight));
+			}
+		}
+	});
+var $elm$core$Dict$insert = F3(
+	function (key, value, dict) {
+		var _v0 = A3($elm$core$Dict$insertHelp, key, value, dict);
+		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
+			var _v1 = _v0.a;
+			var k = _v0.b;
+			var v = _v0.c;
+			var l = _v0.d;
+			var r = _v0.e;
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
+		} else {
+			var x = _v0;
+			return x;
+		}
+	});
+var $elm$core$Dict$getMin = function (dict) {
+	getMin:
+	while (true) {
+		if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
+			var left = dict.d;
+			var $temp$dict = left;
+			dict = $temp$dict;
+			continue getMin;
+		} else {
+			return dict;
+		}
+	}
+};
+var $elm$core$Dict$moveRedLeft = function (dict) {
+	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
+		if ((dict.e.d.$ === 'RBNode_elm_builtin') && (dict.e.d.a.$ === 'Red')) {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v1 = dict.d;
+			var lClr = _v1.a;
+			var lK = _v1.b;
+			var lV = _v1.c;
+			var lLeft = _v1.d;
+			var lRight = _v1.e;
+			var _v2 = dict.e;
+			var rClr = _v2.a;
+			var rK = _v2.b;
+			var rV = _v2.c;
+			var rLeft = _v2.d;
+			var _v3 = rLeft.a;
+			var rlK = rLeft.b;
+			var rlV = rLeft.c;
+			var rlL = rLeft.d;
+			var rlR = rLeft.e;
+			var rRight = _v2.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				$elm$core$Dict$Red,
+				rlK,
+				rlV,
+				A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					rlL),
+				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rlR, rRight));
+		} else {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v4 = dict.d;
+			var lClr = _v4.a;
+			var lK = _v4.b;
+			var lV = _v4.c;
+			var lLeft = _v4.d;
+			var lRight = _v4.e;
+			var _v5 = dict.e;
+			var rClr = _v5.a;
+			var rK = _v5.b;
+			var rV = _v5.c;
+			var rLeft = _v5.d;
+			var rRight = _v5.e;
+			if (clr.$ === 'Black') {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			}
+		}
+	} else {
+		return dict;
+	}
+};
+var $elm$core$Dict$moveRedRight = function (dict) {
+	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
+		if ((dict.d.d.$ === 'RBNode_elm_builtin') && (dict.d.d.a.$ === 'Red')) {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v1 = dict.d;
+			var lClr = _v1.a;
+			var lK = _v1.b;
+			var lV = _v1.c;
+			var _v2 = _v1.d;
+			var _v3 = _v2.a;
+			var llK = _v2.b;
+			var llV = _v2.c;
+			var llLeft = _v2.d;
+			var llRight = _v2.e;
+			var lRight = _v1.e;
+			var _v4 = dict.e;
+			var rClr = _v4.a;
+			var rK = _v4.b;
+			var rV = _v4.c;
+			var rLeft = _v4.d;
+			var rRight = _v4.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				$elm$core$Dict$Red,
+				lK,
+				lV,
+				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
+				A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					lRight,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight)));
+		} else {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v5 = dict.d;
+			var lClr = _v5.a;
+			var lK = _v5.b;
+			var lV = _v5.c;
+			var lLeft = _v5.d;
+			var lRight = _v5.e;
+			var _v6 = dict.e;
+			var rClr = _v6.a;
+			var rK = _v6.b;
+			var rV = _v6.c;
+			var rLeft = _v6.d;
+			var rRight = _v6.e;
+			if (clr.$ === 'Black') {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			}
+		}
+	} else {
+		return dict;
+	}
+};
+var $elm$core$Dict$removeHelpPrepEQGT = F7(
+	function (targetKey, dict, color, key, value, left, right) {
+		if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+			var _v1 = left.a;
+			var lK = left.b;
+			var lV = left.c;
+			var lLeft = left.d;
+			var lRight = left.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				lK,
+				lV,
+				lLeft,
+				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, lRight, right));
+		} else {
+			_v2$2:
+			while (true) {
+				if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Black')) {
+					if (right.d.$ === 'RBNode_elm_builtin') {
+						if (right.d.a.$ === 'Black') {
+							var _v3 = right.a;
+							var _v4 = right.d;
+							var _v5 = _v4.a;
+							return $elm$core$Dict$moveRedRight(dict);
+						} else {
+							break _v2$2;
+						}
+					} else {
+						var _v6 = right.a;
+						var _v7 = right.d;
+						return $elm$core$Dict$moveRedRight(dict);
+					}
+				} else {
+					break _v2$2;
+				}
+			}
+			return dict;
+		}
+	});
+var $elm$core$Dict$removeMin = function (dict) {
+	if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
+		var color = dict.a;
+		var key = dict.b;
+		var value = dict.c;
+		var left = dict.d;
+		var lColor = left.a;
+		var lLeft = left.d;
+		var right = dict.e;
+		if (lColor.$ === 'Black') {
+			if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
+				var _v3 = lLeft.a;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					color,
+					key,
+					value,
+					$elm$core$Dict$removeMin(left),
+					right);
+			} else {
+				var _v4 = $elm$core$Dict$moveRedLeft(dict);
+				if (_v4.$ === 'RBNode_elm_builtin') {
+					var nColor = _v4.a;
+					var nKey = _v4.b;
+					var nValue = _v4.c;
+					var nLeft = _v4.d;
+					var nRight = _v4.e;
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						$elm$core$Dict$removeMin(nLeft),
+						nRight);
+				} else {
+					return $elm$core$Dict$RBEmpty_elm_builtin;
+				}
+			}
+		} else {
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				key,
+				value,
+				$elm$core$Dict$removeMin(left),
+				right);
+		}
+	} else {
+		return $elm$core$Dict$RBEmpty_elm_builtin;
+	}
+};
+var $elm$core$Dict$removeHelp = F2(
+	function (targetKey, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		} else {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			if (_Utils_cmp(targetKey, key) < 0) {
+				if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Black')) {
+					var _v4 = left.a;
+					var lLeft = left.d;
+					if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
+						var _v6 = lLeft.a;
+						return A5(
+							$elm$core$Dict$RBNode_elm_builtin,
+							color,
+							key,
+							value,
+							A2($elm$core$Dict$removeHelp, targetKey, left),
+							right);
+					} else {
+						var _v7 = $elm$core$Dict$moveRedLeft(dict);
+						if (_v7.$ === 'RBNode_elm_builtin') {
+							var nColor = _v7.a;
+							var nKey = _v7.b;
+							var nValue = _v7.c;
+							var nLeft = _v7.d;
+							var nRight = _v7.e;
+							return A5(
+								$elm$core$Dict$balance,
+								nColor,
+								nKey,
+								nValue,
+								A2($elm$core$Dict$removeHelp, targetKey, nLeft),
+								nRight);
+						} else {
+							return $elm$core$Dict$RBEmpty_elm_builtin;
+						}
+					}
+				} else {
+					return A5(
+						$elm$core$Dict$RBNode_elm_builtin,
+						color,
+						key,
+						value,
+						A2($elm$core$Dict$removeHelp, targetKey, left),
+						right);
+				}
+			} else {
+				return A2(
+					$elm$core$Dict$removeHelpEQGT,
+					targetKey,
+					A7($elm$core$Dict$removeHelpPrepEQGT, targetKey, dict, color, key, value, left, right));
+			}
+		}
+	});
+var $elm$core$Dict$removeHelpEQGT = F2(
+	function (targetKey, dict) {
+		if (dict.$ === 'RBNode_elm_builtin') {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			if (_Utils_eq(targetKey, key)) {
+				var _v1 = $elm$core$Dict$getMin(right);
+				if (_v1.$ === 'RBNode_elm_builtin') {
+					var minKey = _v1.b;
+					var minValue = _v1.c;
+					return A5(
+						$elm$core$Dict$balance,
+						color,
+						minKey,
+						minValue,
+						left,
+						$elm$core$Dict$removeMin(right));
+				} else {
+					return $elm$core$Dict$RBEmpty_elm_builtin;
+				}
+			} else {
+				return A5(
+					$elm$core$Dict$balance,
+					color,
+					key,
+					value,
+					left,
+					A2($elm$core$Dict$removeHelp, targetKey, right));
+			}
+		} else {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		}
+	});
+var $elm$core$Dict$remove = F2(
+	function (key, dict) {
+		var _v0 = A2($elm$core$Dict$removeHelp, key, dict);
+		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
+			var _v1 = _v0.a;
+			var k = _v0.b;
+			var v = _v0.c;
+			var l = _v0.d;
+			var r = _v0.e;
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
+		} else {
+			var x = _v0;
+			return x;
+		}
+	});
+var $elm$core$Dict$update = F3(
+	function (targetKey, alter, dictionary) {
+		var _v0 = alter(
+			A2($elm$core$Dict$get, targetKey, dictionary));
+		if (_v0.$ === 'Just') {
+			var value = _v0.a;
+			return A3($elm$core$Dict$insert, targetKey, value, dictionary);
+		} else {
+			return A2($elm$core$Dict$remove, targetKey, dictionary);
+		}
+	});
+var $elm$http$Http$expectStringResponse = _Http_expectStringResponse;
+var $lukewestby$elm_http_builder$HttpBuilder$requestWithMethodAndUrl = F2(
+	function (method, url) {
+		return {
+			body: $elm$http$Http$emptyBody,
+			cacheBuster: $elm$core$Maybe$Nothing,
+			expect: $elm$http$Http$expectStringResponse(
+				function (_v0) {
+					return $elm$core$Result$Ok(_Utils_Tuple0);
+				}),
+			headers: _List_Nil,
+			method: method,
+			queryParams: _List_Nil,
+			timeout: $elm$core$Maybe$Nothing,
+			url: url,
+			withCredentials: false
+		};
+	});
+var $lukewestby$elm_http_builder$HttpBuilder$post = $lukewestby$elm_http_builder$HttpBuilder$requestWithMethodAndUrl('POST');
+var $elm$core$Task$attempt = F2(
+	function (resultToMessage, task) {
+		return $elm$core$Task$command(
+			$elm$core$Task$Perform(
+				A2(
+					$elm$core$Task$onError,
+					A2(
+						$elm$core$Basics$composeL,
+						A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
+						$elm$core$Result$Err),
+					A2(
+						$elm$core$Task$andThen,
+						A2(
+							$elm$core$Basics$composeL,
+							A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
+							$elm$core$Result$Ok),
+						task))));
+	});
+var $elm$http$Http$Internal$Request = function (a) {
+	return {$: 'Request', a: a};
+};
+var $elm$http$Http$request = $elm$http$Http$Internal$Request;
+var $elm$url$Url$percentEncode = _Url_percentEncode;
+var $lukewestby$elm_http_builder$HttpBuilder$replace = F2(
+	function (old, _new) {
+		return A2(
+			$elm$core$Basics$composeR,
+			$elm$core$String$split(old),
+			$elm$core$String$join(_new));
+	});
+var $lukewestby$elm_http_builder$HttpBuilder$queryEscape = A2(
+	$elm$core$Basics$composeR,
+	$elm$url$Url$percentEncode,
+	A2($lukewestby$elm_http_builder$HttpBuilder$replace, '%20', '+'));
+var $lukewestby$elm_http_builder$HttpBuilder$queryPair = function (_v0) {
+	var key = _v0.a;
+	var value = _v0.b;
+	return $lukewestby$elm_http_builder$HttpBuilder$queryEscape(key) + ('=' + $lukewestby$elm_http_builder$HttpBuilder$queryEscape(value));
+};
+var $lukewestby$elm_http_builder$HttpBuilder$joinUrlEncoded = function (args) {
+	return A2(
+		$elm$core$String$join,
+		'&',
+		A2($elm$core$List$map, $lukewestby$elm_http_builder$HttpBuilder$queryPair, args));
+};
+var $lukewestby$elm_http_builder$HttpBuilder$requestUrl = function (builder) {
+	var encodedParams = $lukewestby$elm_http_builder$HttpBuilder$joinUrlEncoded(builder.queryParams);
+	var fullUrl = $elm$core$String$isEmpty(encodedParams) ? builder.url : (builder.url + ('?' + encodedParams));
+	return fullUrl;
+};
+var $lukewestby$elm_http_builder$HttpBuilder$toRequest = function (builder) {
+	return $elm$http$Http$request(
+		{
+			body: builder.body,
+			expect: builder.expect,
+			headers: builder.headers,
+			method: builder.method,
+			timeout: builder.timeout,
+			url: $lukewestby$elm_http_builder$HttpBuilder$requestUrl(builder),
+			withCredentials: builder.withCredentials
+		});
+};
+var $elm$http$Http$toTask = function (_v0) {
+	var request_ = _v0.a;
+	return A2(_Http_toTask, request_, $elm$core$Maybe$Nothing);
+};
+var $lukewestby$elm_http_builder$HttpBuilder$toTaskPlain = function (builder) {
+	return $elm$http$Http$toTask(
+		$lukewestby$elm_http_builder$HttpBuilder$toRequest(builder));
+};
+var $lukewestby$elm_http_builder$HttpBuilder$withQueryParams = F2(
+	function (queryParams, builder) {
+		return _Utils_update(
+			builder,
 			{
-				completionData: $elm$core$Maybe$Just(
-					A2($elm$json$Json$Decode$decodeValue, $author$project$Backend$Completion$Decoder$decodeCompletionData, value))
+				queryParams: _Utils_ap(builder.queryParams, queryParams)
 			});
-		return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
+	});
+var $lukewestby$elm_http_builder$HttpBuilder$toTaskWithCacheBuster = F2(
+	function (paramName, builder) {
+		var request = function (timestamp) {
+			return $lukewestby$elm_http_builder$HttpBuilder$toTaskPlain(
+				A2(
+					$lukewestby$elm_http_builder$HttpBuilder$withQueryParams,
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							paramName,
+							$elm$core$String$fromInt(
+								$elm$time$Time$posixToMillis(timestamp)))
+						]),
+					builder));
+		};
+		return A2($elm$core$Task$andThen, request, $elm$time$Time$now);
+	});
+var $lukewestby$elm_http_builder$HttpBuilder$toTask = function (builder) {
+	var _v0 = builder.cacheBuster;
+	if (_v0.$ === 'Just') {
+		var paramName = _v0.a;
+		return A2($lukewestby$elm_http_builder$HttpBuilder$toTaskWithCacheBuster, paramName, builder);
+	} else {
+		return $lukewestby$elm_http_builder$HttpBuilder$toTaskPlain(builder);
+	}
+};
+var $lukewestby$elm_http_builder$HttpBuilder$send = F2(
+	function (tagger, builder) {
+		return A2(
+			$elm$core$Task$attempt,
+			tagger,
+			$lukewestby$elm_http_builder$HttpBuilder$toTask(builder));
+	});
+var $elm$core$Result$toMaybe = function (result) {
+	if (result.$ === 'Ok') {
+		var v = result.a;
+		return $elm$core$Maybe$Just(v);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $elm$json$Json$Decode$decodeString = _Json_runOnString;
+var $elm$http$Http$expectJson = function (decoder) {
+	return $elm$http$Http$expectStringResponse(
+		function (response) {
+			var _v0 = A2($elm$json$Json$Decode$decodeString, decoder, response.body);
+			if (_v0.$ === 'Err') {
+				var decodeError = _v0.a;
+				return $elm$core$Result$Err(
+					$elm$json$Json$Decode$errorToString(decodeError));
+			} else {
+				var value = _v0.a;
+				return $elm$core$Result$Ok(value);
+			}
+		});
+};
+var $lukewestby$elm_http_builder$HttpBuilder$withExpectJson = F2(
+	function (decoder, builder) {
+		return {
+			body: builder.body,
+			cacheBuster: builder.cacheBuster,
+			expect: $elm$http$Http$expectJson(decoder),
+			headers: builder.headers,
+			method: builder.method,
+			queryParams: builder.queryParams,
+			timeout: builder.timeout,
+			url: builder.url,
+			withCredentials: builder.withCredentials
+		};
+	});
+var $elm$http$Http$Internal$Header = F2(
+	function (a, b) {
+		return {$: 'Header', a: a, b: b};
+	});
+var $elm$http$Http$header = $elm$http$Http$Internal$Header;
+var $lukewestby$elm_http_builder$HttpBuilder$withHeader = F3(
+	function (key, value, builder) {
+		return _Utils_update(
+			builder,
+			{
+				headers: A2(
+					$elm$core$List$cons,
+					A2($elm$http$Http$header, key, value),
+					builder.headers)
+			});
+	});
+var $elm$http$Http$Internal$StringBody = F2(
+	function (a, b) {
+		return {$: 'StringBody', a: a, b: b};
+	});
+var $elm$http$Http$jsonBody = function (value) {
+	return A2(
+		$elm$http$Http$Internal$StringBody,
+		'application/json',
+		A2($elm$json$Json$Encode$encode, 0, value));
+};
+var $lukewestby$elm_http_builder$HttpBuilder$withBody = F2(
+	function (body, builder) {
+		return _Utils_update(
+			builder,
+			{body: body});
+	});
+var $lukewestby$elm_http_builder$HttpBuilder$withJsonBody = function (value) {
+	return $lukewestby$elm_http_builder$HttpBuilder$withBody(
+		$elm$http$Http$jsonBody(value));
+};
+var $author$project$Backend$Components$Sync$handleSendRequest = F3(
+	function (config, fromPersonId, model) {
+		var geoParams = A2(
+			$elm$core$Maybe$withDefault,
+			_List_Nil,
+			A2(
+				$elm$core$Maybe$map,
+				A2($elm$core$Basics$composeR, config.getParams, $author$project$Backend$Components$Encoder$encodeReportParams),
+				A2(
+					$elm$core$Maybe$andThen,
+					$elm$core$Result$toMaybe,
+					config.getData(model))));
+		var params = _Utils_ap(
+			_List_fromArray(
+				[
+					_Utils_Tuple2(
+					'app_type',
+					$elm$json$Json$Encode$string(config.appType)),
+					_Utils_Tuple2(
+					'base_revision',
+					$elm$json$Json$Encode$string(
+						$elm$core$String$fromInt(fromPersonId)))
+				]),
+			geoParams);
+		var cmd = A2(
+			$lukewestby$elm_http_builder$HttpBuilder$send,
+			A2($elm$core$Basics$composeR, $krisajenkins$remotedata$RemoteData$fromResult, config.wrapHandleResponse),
+			A2(
+				$lukewestby$elm_http_builder$HttpBuilder$withExpectJson,
+				config.syncResponseDecoder,
+				A2(
+					$lukewestby$elm_http_builder$HttpBuilder$withJsonBody,
+					$elm$json$Json$Encode$object(params),
+					A3(
+						$lukewestby$elm_http_builder$HttpBuilder$withHeader,
+						'X-CSRF-Token',
+						config.csrfToken,
+						$lukewestby$elm_http_builder$HttpBuilder$post(config.backendUrl + '/api/reports-data')))));
+		return A4($author$project$Backend$Types$BackendReturn, model, cmd, $author$project$Error$Utils$noError, _List_Nil);
+	});
+var $author$project$Backend$Components$Sync$handleSetData = F3(
+	function (config, value, model) {
+		return A3(
+			$author$project$Backend$Components$Sync$handleSendRequest,
+			config,
+			0,
+			A2(
+				config.setData,
+				$elm$core$Maybe$Just(
+					A2($elm$json$Json$Decode$decodeValue, config.dataDecoder, value)),
+				model));
+	});
+var $krisajenkins$remotedata$RemoteData$map = F2(
+	function (f, data) {
+		switch (data.$) {
+			case 'Success':
+				var value = data.a;
+				return $krisajenkins$remotedata$RemoteData$Success(
+					f(value));
+			case 'Loading':
+				return $krisajenkins$remotedata$RemoteData$Loading;
+			case 'NotAsked':
+				return $krisajenkins$remotedata$RemoteData$NotAsked;
+			default:
+				var error = data.a;
+				return $krisajenkins$remotedata$RemoteData$Failure(error);
+		}
+	});
+var $krisajenkins$remotedata$RemoteData$withDefault = F2(
+	function (_default, data) {
+		if (data.$ === 'Success') {
+			var x = data.a;
+			return x;
+		} else {
+			return _default;
+		}
+	});
+var $krisajenkins$remotedata$RemoteData$toMaybe = A2(
+	$elm$core$Basics$composeR,
+	$krisajenkins$remotedata$RemoteData$map($elm$core$Maybe$Just),
+	$krisajenkins$remotedata$RemoteData$withDefault($elm$core$Maybe$Nothing));
+var $author$project$Backend$Components$Sync$handleSyncResponse = F3(
+	function (config, data, model) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			A4($author$project$Backend$Types$BackendReturn, model, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil),
+			A2(
+				$elm$core$Maybe$map,
+				function (response) {
+					var modelUpdated = A2(
+						$elm$core$Maybe$withDefault,
+						model,
+						A2(
+							$elm$core$Maybe$map,
+							function (d) {
+								return A2(
+									config.setData,
+									$elm$core$Maybe$Just(
+										$elm$core$Result$Ok(
+											A2(config.mergeResponse, response, d))),
+									model);
+							},
+							A2(
+								$elm$core$Maybe$andThen,
+								$elm$core$Result$toMaybe,
+								config.getData(model))));
+					return (!config.getRemaining(response)) ? A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil) : A3(
+						$author$project$Backend$Components$Sync$handleSendRequest,
+						config,
+						config.getLastIdSynced(response),
+						modelUpdated);
+				},
+				$krisajenkins$remotedata$RemoteData$toMaybe(data)));
+	});
+var $author$project$Backend$Completion$Update$update = F4(
+	function (backendUrl, csrfToken, msg, model) {
+		var config = {
+			appType: 'completion',
+			backendUrl: backendUrl,
+			csrfToken: csrfToken,
+			dataDecoder: $author$project$Backend$Completion$Decoder$decodeCompletionData,
+			getData: function ($) {
+				return $.completionData;
+			},
+			getLastIdSynced: function ($) {
+				return $.lastIdSynced;
+			},
+			getParams: function ($) {
+				return $.params;
+			},
+			getRemaining: function ($) {
+				return $.totalRemaining;
+			},
+			mergeResponse: F2(
+				function (response, data) {
+					return _Utils_update(
+						data,
+						{
+							acuteIllnessData: _Utils_ap(data.acuteIllnessData, response.acuteIllnessData),
+							childScoreboardData: _Utils_ap(data.childScoreboardData, response.childScoreboardData),
+							hivData: _Utils_ap(data.hivData, response.hivData),
+							homeVisitData: _Utils_ap(data.homeVisitData, response.homeVisitData),
+							ncdData: _Utils_ap(data.ncdData, response.ncdData),
+							nutritionGroupData: _Utils_ap(data.nutritionGroupData, response.nutritionGroupData),
+							nutritionIndividualData: _Utils_ap(data.nutritionIndividualData, response.nutritionIndividualData),
+							prenatalData: _Utils_ap(data.prenatalData, response.prenatalData),
+							remainingForDownload: $elm$core$Maybe$Just(response.totalRemaining),
+							tuberculosisData: _Utils_ap(data.tuberculosisData, response.tuberculosisData),
+							wellChildData: _Utils_ap(data.wellChildData, response.wellChildData)
+						});
+				}),
+			setData: F2(
+				function (v, m) {
+					return _Utils_update(
+						m,
+						{completionData: v});
+				}),
+			syncResponseDecoder: $author$project$Backend$Completion$Decoder$decodeSyncResponse,
+			wrapHandleResponse: $author$project$Backend$Completion$Model$HandleSyncResponse
+		};
+		switch (msg.$) {
+			case 'SetData':
+				var value = msg.a;
+				return A3($author$project$Backend$Components$Sync$handleSetData, config, value, model);
+			case 'SendSyncRequest':
+				var fromPersonId = msg.a;
+				return A3($author$project$Backend$Components$Sync$handleSendRequest, config, fromPersonId, model);
+			default:
+				var data = msg.a;
+				return A3($author$project$Backend$Components$Sync$handleSyncResponse, config, data, model);
+		}
 	});
 var $author$project$Backend$CompletionMenu$Model$MenuData = F3(
 	function (site, healthCenters, scope) {
@@ -8758,24 +10092,6 @@ var $author$project$Backend$Components$Model$HealthCenterData = F2(
 	function (id, name) {
 		return {id: id, name: name};
 	});
-var $elm$json$Json$Decode$int = _Json_decodeInt;
-var $author$project$Gizra$Json$decodeInt = $elm$json$Json$Decode$oneOf(
-	_List_fromArray(
-		[
-			$elm$json$Json$Decode$int,
-			A2(
-			$elm$json$Json$Decode$andThen,
-			function (s) {
-				var _v0 = $elm$core$String$toInt(s);
-				if (_v0.$ === 'Just') {
-					var value = _v0.a;
-					return $elm$json$Json$Decode$succeed(value);
-				} else {
-					return $elm$json$Json$Decode$fail('Not an integer');
-				}
-			},
-			$elm$json$Json$Decode$string)
-		]));
 var $author$project$Backend$Components$Decoder$decodeHealthCenterData = A3(
 	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 	'name',
@@ -8833,9 +10149,12 @@ var $author$project$Backend$CompletionMenu$Update$update = F2(
 			});
 		return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
 	});
-var $author$project$Backend$Reports$Model$ReportsData = F6(
-	function (site, features, entityName, entityType, records, nutritionReportData) {
-		return {entityName: entityName, entityType: entityType, features: features, nutritionReportData: nutritionReportData, records: records, site: site};
+var $author$project$Backend$Reports$Model$HandleSyncResponse = function (a) {
+	return {$: 'HandleSyncResponse', a: a};
+};
+var $author$project$Backend$Reports$Model$ReportsData = F8(
+	function (site, features, entityName, entityType, params, records, nutritionReportData, remainingForDownload) {
+		return {entityName: entityName, entityType: entityType, features: features, nutritionReportData: nutritionReportData, params: params, records: records, remainingForDownload: remainingForDownload, site: site};
 	});
 var $author$project$Backend$Reports$Model$BackendGeneratedNutritionReportTableDate = function (tableType) {
 	return function (captions) {
@@ -8932,6 +10251,115 @@ var $author$project$Backend$Reports$Decoder$decodeBackendGeneratedNutritionRepor
 										'type',
 										$author$project$Backend$Reports$Decoder$decodeNutritionReportTableType,
 										$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$BackendGeneratedNutritionReportTableDate)))))))))));
+var $Gizra$elm_all_set$EverySet$EverySet = function (a) {
+	return {$: 'EverySet', a: a};
+};
+var $Gizra$elm_all_set$EverySet$empty = $Gizra$elm_all_set$EverySet$EverySet($pzp1997$assoc_list$AssocList$empty);
+var $Gizra$elm_all_set$EverySet$insert = F2(
+	function (k, _v0) {
+		var d = _v0.a;
+		return $Gizra$elm_all_set$EverySet$EverySet(
+			A3($pzp1997$assoc_list$AssocList$insert, k, _Utils_Tuple0, d));
+	});
+var $Gizra$elm_all_set$EverySet$fromList = function (xs) {
+	return A3($elm$core$List$foldl, $Gizra$elm_all_set$EverySet$insert, $Gizra$elm_all_set$EverySet$empty, xs);
+};
+var $author$project$App$Types$FeatureFamilyNutrition = {$: 'FeatureFamilyNutrition'};
+var $author$project$App$Types$FeatureGPSCoordinates = {$: 'FeatureGPSCoordinates'};
+var $author$project$App$Types$FeatureGroupEducation = {$: 'FeatureGroupEducation'};
+var $author$project$App$Types$FeatureHIVManagement = {$: 'FeatureHIVManagement'};
+var $author$project$App$Types$FeatureHealthyStart = {$: 'FeatureHealthyStart'};
+var $author$project$App$Types$FeatureNCDA = {$: 'FeatureNCDA'};
+var $author$project$App$Types$FeatureReportToWhatsApp = {$: 'FeatureReportToWhatsApp'};
+var $author$project$App$Types$FeatureStockManagementHC = {$: 'FeatureStockManagementHC'};
+var $author$project$App$Types$FeatureStockManagementVillage = {$: 'FeatureStockManagementVillage'};
+var $author$project$App$Types$FeatureTuberculosisManagement = {$: 'FeatureTuberculosisManagement'};
+var $author$project$Backend$Decoder$siteFeatureFromString = function (str) {
+	var _v0 = $elm$core$String$toLower(str);
+	switch (_v0) {
+		case 'family_nutrition':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureFamilyNutrition);
+		case 'gps_coordinates':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureGPSCoordinates);
+		case 'group_education':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureGroupEducation);
+		case 'healthy_start':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureHealthyStart);
+		case 'hiv_management':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureHIVManagement);
+		case 'ncda':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureNCDA);
+		case 'report_to_whatsapp':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureReportToWhatsApp);
+		case 'stock_management_hc':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureStockManagementHC);
+		case 'stock_management_village':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureStockManagementVillage);
+		case 'tuberculosis_management':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureTuberculosisManagement);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $elm$core$String$words = _String_words;
+var $author$project$Backend$Decoder$siteFeaturesFromString = function (str) {
+	return $Gizra$elm_all_set$EverySet$fromList(
+		$elm_community$maybe_extra$Maybe$Extra$values(
+			A2(
+				$elm$core$List$map,
+				$author$project$Backend$Decoder$siteFeatureFromString,
+				$elm$core$String$words(str))));
+};
+var $author$project$Backend$Decoder$decodeSiteFeatures = A2($elm$json$Json$Decode$map, $author$project$Backend$Decoder$siteFeaturesFromString, $elm$json$Json$Decode$string);
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt = F4(
+	function (path, valDecoder, fallback, decoder) {
+		return A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+			A3(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder,
+				A2($elm$json$Json$Decode$at, path, $elm$json$Json$Decode$value),
+				valDecoder,
+				fallback),
+			decoder);
+	});
+var $author$project$Backend$Reports$Decoder$decodeReportsData = A2(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+	$elm$core$Maybe$Nothing,
+	A4(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
+		_List_fromArray(
+			['additional', 'nutrition_report_data']),
+		$elm$json$Json$Decode$nullable(
+			$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeBackendGeneratedNutritionReportTableDate)),
+		$elm$core$Maybe$Nothing,
+		A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+			_List_Nil,
+			A3(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				'params',
+				$author$project$Backend$Components$Decoder$decodeReportParams,
+				A3(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+					'entity_type',
+					$author$project$Backend$Components$Decoder$decodeSelectedEntity,
+					A3(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+						'entity_name',
+						$elm$json$Json$Decode$string,
+						A3(
+							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+							'features',
+							$author$project$Backend$Decoder$decodeSiteFeatures,
+							A3(
+								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+								'site',
+								$author$project$Backend$Decoder$decodeSite,
+								$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$ReportsData)))))))));
+var $author$project$Backend$Reports$Model$SyncResponse = F3(
+	function (records, totalRemaining, lastIdSynced) {
+		return {lastIdSynced: lastIdSynced, records: records, totalRemaining: totalRemaining};
+	});
 var $author$project$Backend$Reports$Model$Female = {$: 'Female'};
 var $author$project$Backend$Reports$Model$PatientData = function (id) {
 	return function (created) {
@@ -9044,14 +10472,6 @@ var $author$project$Backend$Reports$Decoder$acuteIllnessEncounterTypeFromString 
 			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$AcuteIllnessEncounterCHW);
 		default:
 			return $elm$core$Maybe$Nothing;
-	}
-};
-var $elm$core$Result$toMaybe = function (result) {
-	if (result.$ === 'Ok') {
-		var v = result.a;
-		return $elm$core$Maybe$Just(v);
-	} else {
-		return $elm$core$Maybe$Nothing;
 	}
 };
 var $author$project$Backend$Reports$Decoder$decodeAcuteIllnessEncounterData = A2(
@@ -9810,19 +11230,6 @@ var $pzp1997$assoc_list$AssocList$fromList = function (alist) {
 		$pzp1997$assoc_list$AssocList$D(_List_Nil),
 		alist);
 };
-var $Gizra$elm_all_set$EverySet$EverySet = function (a) {
-	return {$: 'EverySet', a: a};
-};
-var $Gizra$elm_all_set$EverySet$empty = $Gizra$elm_all_set$EverySet$EverySet($pzp1997$assoc_list$AssocList$empty);
-var $Gizra$elm_all_set$EverySet$insert = F2(
-	function (k, _v0) {
-		var d = _v0.a;
-		return $Gizra$elm_all_set$EverySet$EverySet(
-			A3($pzp1997$assoc_list$AssocList$insert, k, _Utils_Tuple0, d));
-	});
-var $Gizra$elm_all_set$EverySet$fromList = function (xs) {
-	return A3($elm$core$List$foldl, $Gizra$elm_all_set$EverySet$insert, $Gizra$elm_all_set$EverySet$empty, xs);
-};
 var $pzp1997$assoc_list$AssocList$isEmpty = function (dict) {
 	return _Utils_eq(
 		dict,
@@ -9955,17 +11362,6 @@ var $author$project$Backend$Reports$Decoder$decodeWellChildEncounterData = A2(
 		}
 	},
 	$elm$json$Json$Decode$string);
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt = F4(
-	function (path, valDecoder, fallback, decoder) {
-		return A2(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
-			A3(
-				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder,
-				A2($elm$json$Json$Decode$at, path, $elm$json$Json$Decode$value),
-				valDecoder,
-				fallback),
-			decoder);
-	});
 var $author$project$Backend$Reports$Decoder$decodePatientData = A4(
 	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 	_List_fromArray(
@@ -10112,117 +11508,70 @@ var $author$project$Backend$Reports$Decoder$decodePatientData = A4(
 																					'id',
 																					$author$project$Gizra$Json$decodeInt,
 																					$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$PatientData))))))))))))))))))))));
-var $author$project$Backend$Reports$Model$EntityCell = {$: 'EntityCell'};
-var $author$project$Backend$Reports$Model$EntitySector = {$: 'EntitySector'};
-var $author$project$Backend$Reports$Model$EntityVillage = {$: 'EntityVillage'};
-var $author$project$Backend$Reports$Decoder$decodeSelectedEntity = A2(
-	$elm$json$Json$Decode$andThen,
-	function (entityType) {
-		switch (entityType) {
-			case 'global':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$EntityGlobal);
-			case 'province':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$EntityProvince);
-			case 'district':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$EntityDistrict);
-			case 'sector':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$EntitySector);
-			case 'cell':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$EntityCell);
-			case 'village':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$EntityVillage);
-			case 'health-center':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$EntityHealthCenter);
-			default:
-				return $elm$json$Json$Decode$fail(entityType + ' is unknown SelectedEntity type');
-		}
-	},
-	$elm$json$Json$Decode$string);
-var $author$project$App$Types$FeatureFamilyNutrition = {$: 'FeatureFamilyNutrition'};
-var $author$project$App$Types$FeatureGPSCoordinates = {$: 'FeatureGPSCoordinates'};
-var $author$project$App$Types$FeatureGroupEducation = {$: 'FeatureGroupEducation'};
-var $author$project$App$Types$FeatureHIVManagement = {$: 'FeatureHIVManagement'};
-var $author$project$App$Types$FeatureHealthyStart = {$: 'FeatureHealthyStart'};
-var $author$project$App$Types$FeatureNCDA = {$: 'FeatureNCDA'};
-var $author$project$App$Types$FeatureReportToWhatsApp = {$: 'FeatureReportToWhatsApp'};
-var $author$project$App$Types$FeatureStockManagementHC = {$: 'FeatureStockManagementHC'};
-var $author$project$App$Types$FeatureStockManagementVillage = {$: 'FeatureStockManagementVillage'};
-var $author$project$App$Types$FeatureTuberculosisManagement = {$: 'FeatureTuberculosisManagement'};
-var $author$project$Backend$Decoder$siteFeatureFromString = function (str) {
-	var _v0 = $elm$core$String$toLower(str);
-	switch (_v0) {
-		case 'family_nutrition':
-			return $elm$core$Maybe$Just($author$project$App$Types$FeatureFamilyNutrition);
-		case 'gps_coordinates':
-			return $elm$core$Maybe$Just($author$project$App$Types$FeatureGPSCoordinates);
-		case 'group_education':
-			return $elm$core$Maybe$Just($author$project$App$Types$FeatureGroupEducation);
-		case 'healthy_start':
-			return $elm$core$Maybe$Just($author$project$App$Types$FeatureHealthyStart);
-		case 'hiv_management':
-			return $elm$core$Maybe$Just($author$project$App$Types$FeatureHIVManagement);
-		case 'ncda':
-			return $elm$core$Maybe$Just($author$project$App$Types$FeatureNCDA);
-		case 'report_to_whatsapp':
-			return $elm$core$Maybe$Just($author$project$App$Types$FeatureReportToWhatsApp);
-		case 'stock_management_hc':
-			return $elm$core$Maybe$Just($author$project$App$Types$FeatureStockManagementHC);
-		case 'stock_management_village':
-			return $elm$core$Maybe$Just($author$project$App$Types$FeatureStockManagementVillage);
-		case 'tuberculosis_management':
-			return $elm$core$Maybe$Just($author$project$App$Types$FeatureTuberculosisManagement);
-		default:
-			return $elm$core$Maybe$Nothing;
-	}
-};
-var $elm$core$String$words = _String_words;
-var $author$project$Backend$Decoder$siteFeaturesFromString = function (str) {
-	return $Gizra$elm_all_set$EverySet$fromList(
-		$elm_community$maybe_extra$Maybe$Extra$values(
-			A2(
-				$elm$core$List$map,
-				$author$project$Backend$Decoder$siteFeatureFromString,
-				$elm$core$String$words(str))));
-};
-var $author$project$Backend$Decoder$decodeSiteFeatures = A2($elm$json$Json$Decode$map, $author$project$Backend$Decoder$siteFeaturesFromString, $elm$json$Json$Decode$string);
-var $author$project$Backend$Reports$Decoder$decodeReportsData = A4(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
-	_List_fromArray(
-		['additional', 'nutrition_report_data']),
-	$elm$json$Json$Decode$nullable(
-		$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeBackendGeneratedNutritionReportTableDate)),
-	$elm$core$Maybe$Nothing,
+var $author$project$Backend$Reports$Decoder$decodeSyncResponse = A2(
+	$elm$json$Json$Decode$field,
+	'data',
 	A3(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'results',
-		$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodePatientData),
+		'last',
+		$author$project$Gizra$Json$decodeInt,
 		A3(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'entity_type',
-			$author$project$Backend$Reports$Decoder$decodeSelectedEntity,
+			'total_remaining',
+			$author$project$Gizra$Json$decodeInt,
 			A3(
 				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-				'entity_name',
-				$elm$json$Json$Decode$string,
-				A3(
-					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-					'features',
-					$author$project$Backend$Decoder$decodeSiteFeatures,
-					A3(
-						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-						'site',
-						$author$project$Backend$Decoder$decodeSite,
-						$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$ReportsData)))))));
-var $author$project$Backend$Reports$Update$update = F2(
-	function (msg, model) {
-		var value = msg.a;
-		var modelUpdated = _Utils_update(
-			model,
-			{
-				reportsData: $elm$core$Maybe$Just(
-					A2($elm$json$Json$Decode$decodeValue, $author$project$Backend$Reports$Decoder$decodeReportsData, value))
-			});
-		return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
+				'batch',
+				$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodePatientData),
+				$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$SyncResponse)))));
+var $author$project$Backend$Reports$Update$update = F4(
+	function (backendUrl, csrfToken, msg, model) {
+		var config = {
+			appType: 'reports',
+			backendUrl: backendUrl,
+			csrfToken: csrfToken,
+			dataDecoder: $author$project$Backend$Reports$Decoder$decodeReportsData,
+			getData: function ($) {
+				return $.reportsData;
+			},
+			getLastIdSynced: function ($) {
+				return $.lastIdSynced;
+			},
+			getParams: function ($) {
+				return $.params;
+			},
+			getRemaining: function ($) {
+				return $.totalRemaining;
+			},
+			mergeResponse: F2(
+				function (response, data) {
+					return _Utils_update(
+						data,
+						{
+							records: _Utils_ap(data.records, response.records),
+							remainingForDownload: $elm$core$Maybe$Just(response.totalRemaining)
+						});
+				}),
+			setData: F2(
+				function (v, m) {
+					return _Utils_update(
+						m,
+						{reportsData: v});
+				}),
+			syncResponseDecoder: $author$project$Backend$Reports$Decoder$decodeSyncResponse,
+			wrapHandleResponse: $author$project$Backend$Reports$Model$HandleSyncResponse
+		};
+		switch (msg.$) {
+			case 'SetData':
+				var value = msg.a;
+				return A3($author$project$Backend$Components$Sync$handleSetData, config, value, model);
+			case 'SendSyncRequest':
+				var fromPersonId = msg.a;
+				return A3($author$project$Backend$Components$Sync$handleSendRequest, config, fromPersonId, model);
+			default:
+				var data = msg.a;
+				return A3($author$project$Backend$Components$Sync$handleSyncResponse, config, data, model);
+		}
 	});
 var $author$project$Backend$ReportsMenu$Model$MenuData = F3(
 	function (site, healthCenters, scope) {
@@ -10253,9 +11602,39 @@ var $author$project$Backend$ReportsMenu$Update$update = F2(
 			});
 		return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
 	});
-var $author$project$Backend$Scoreboard$Model$ScoreboardData = F4(
-	function (site, entityName, entityType, records) {
-		return {entityName: entityName, entityType: entityType, records: records, site: site};
+var $author$project$Backend$Scoreboard$Model$HandleSyncResponse = function (a) {
+	return {$: 'HandleSyncResponse', a: a};
+};
+var $author$project$Backend$Scoreboard$Model$ScoreboardData = F6(
+	function (site, entityName, entityType, params, records, remainingForDownload) {
+		return {entityName: entityName, entityType: entityType, params: params, records: records, remainingForDownload: remainingForDownload, site: site};
+	});
+var $author$project$Backend$Scoreboard$Decoder$decodeScoreboardData = A2(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+	$elm$core$Maybe$Nothing,
+	A2(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded,
+		_List_Nil,
+		A3(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'params',
+			$author$project$Backend$Components$Decoder$decodeReportParams,
+			A3(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				'entity_type',
+				$author$project$Backend$Components$Decoder$decodeSelectedEntity,
+				A3(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+					'entity_name',
+					$elm$json$Json$Decode$string,
+					A3(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+						'site',
+						$author$project$Backend$Decoder$decodeSite,
+						$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$ScoreboardData)))))));
+var $author$project$Backend$Scoreboard$Model$SyncResponse = F3(
+	function (records, totalRemaining, lastIdSynced) {
+		return {lastIdSynced: lastIdSynced, records: records, totalRemaining: totalRemaining};
 	});
 var $author$project$Backend$Scoreboard$Model$PatientData = F6(
 	function (created, birthDate, eddDate, lowBirthWeight, nutrition, ncda) {
@@ -10423,7 +11802,6 @@ var $author$project$Backend$Scoreboard$Decoder$decodeUniqueDates = A2(
 	$elm$json$Json$Decode$map,
 	$Gizra$elm_all_set$EverySet$fromList,
 	$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD));
-var $elm$core$Basics$compare = _Utils_compare;
 var $justinmimbs$date$Date$compare = F2(
 	function (_v0, _v1) {
 		var a = _v0.a;
@@ -10754,60 +12132,73 @@ var $author$project$Backend$Scoreboard$Decoder$decodePatientData = function (cur
 							$author$project$Gizra$NominalDate$decodeYYYYMMDD,
 							$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$PatientData)))))));
 };
-var $author$project$Backend$Scoreboard$Model$EntityCell = {$: 'EntityCell'};
-var $author$project$Backend$Scoreboard$Model$EntityDistrict = {$: 'EntityDistrict'};
-var $author$project$Backend$Scoreboard$Model$EntitySector = {$: 'EntitySector'};
-var $author$project$Backend$Scoreboard$Model$EntityVillage = {$: 'EntityVillage'};
-var $author$project$Backend$Scoreboard$Decoder$decodeSelectedEntity = A2(
-	$elm$json$Json$Decode$andThen,
-	function (entityType) {
-		switch (entityType) {
-			case 'district':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$EntityDistrict);
-			case 'sector':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$EntitySector);
-			case 'cell':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$EntityCell);
-			case 'village':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$EntityVillage);
-			default:
-				return $elm$json$Json$Decode$fail(entityType + ' is unknown SelectedEntity type');
-		}
-	},
-	$elm$json$Json$Decode$string);
-var $author$project$Backend$Scoreboard$Decoder$decodeScoreboardData = function (currentDate) {
-	return A3(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'results',
-		$elm$json$Json$Decode$list(
-			$author$project$Backend$Scoreboard$Decoder$decodePatientData(currentDate)),
+var $author$project$Backend$Scoreboard$Decoder$decodeSyncResponse = function (currentDate) {
+	return A2(
+		$elm$json$Json$Decode$field,
+		'data',
 		A3(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'entity_type',
-			$author$project$Backend$Scoreboard$Decoder$decodeSelectedEntity,
+			'last',
+			$author$project$Gizra$Json$decodeInt,
 			A3(
 				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-				'entity_name',
-				$elm$json$Json$Decode$string,
+				'total_remaining',
+				$author$project$Gizra$Json$decodeInt,
 				A3(
 					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-					'site',
-					$author$project$Backend$Decoder$decodeSite,
-					$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$ScoreboardData)))));
+					'batch',
+					$elm$json$Json$Decode$list(
+						$author$project$Backend$Scoreboard$Decoder$decodePatientData(currentDate)),
+					$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$SyncResponse)))));
 };
-var $author$project$Backend$Scoreboard$Update$update = F3(
-	function (currentDate, msg, model) {
-		var value = msg.a;
-		var modelUpdated = _Utils_update(
-			model,
-			{
-				scoreboardData: $elm$core$Maybe$Just(
-					A2(
-						$elm$json$Json$Decode$decodeValue,
-						$author$project$Backend$Scoreboard$Decoder$decodeScoreboardData(currentDate),
-						value))
-			});
-		return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
+var $author$project$Backend$Scoreboard$Update$update = F5(
+	function (currentDate, backendUrl, csrfToken, msg, model) {
+		var config = {
+			appType: 'scoreboard',
+			backendUrl: backendUrl,
+			csrfToken: csrfToken,
+			dataDecoder: $author$project$Backend$Scoreboard$Decoder$decodeScoreboardData,
+			getData: function ($) {
+				return $.scoreboardData;
+			},
+			getLastIdSynced: function ($) {
+				return $.lastIdSynced;
+			},
+			getParams: function ($) {
+				return $.params;
+			},
+			getRemaining: function ($) {
+				return $.totalRemaining;
+			},
+			mergeResponse: F2(
+				function (response, data) {
+					return _Utils_update(
+						data,
+						{
+							records: _Utils_ap(data.records, response.records),
+							remainingForDownload: $elm$core$Maybe$Just(response.totalRemaining)
+						});
+				}),
+			setData: F2(
+				function (v, m) {
+					return _Utils_update(
+						m,
+						{scoreboardData: v});
+				}),
+			syncResponseDecoder: $author$project$Backend$Scoreboard$Decoder$decodeSyncResponse(currentDate),
+			wrapHandleResponse: $author$project$Backend$Scoreboard$Model$HandleSyncResponse
+		};
+		switch (msg.$) {
+			case 'SetData':
+				var value = msg.a;
+				return A3($author$project$Backend$Components$Sync$handleSetData, config, value, model);
+			case 'SendSyncRequest':
+				var fromPersonId = msg.a;
+				return A3($author$project$Backend$Components$Sync$handleSendRequest, config, fromPersonId, model);
+			default:
+				var data = msg.a;
+				return A3($author$project$Backend$Components$Sync$handleSyncResponse, config, data, model);
+		}
 	});
 var $author$project$Backend$ScoreboardMenu$Model$MenuData = function (site) {
 	return {site: site};
@@ -10839,8 +12230,8 @@ var $author$project$Backend$Utils$updateSubModel = F4(
 			model: backendReturn.model
 		};
 	});
-var $author$project$Backend$Update$updateBackend = F3(
-	function (currentDate, msg, model) {
+var $author$project$Backend$Update$updateBackend = F5(
+	function (currentDate, backendUrl, csrfToken, msg, model) {
 		switch (msg.$) {
 			case 'MsgScoreboardMenu':
 				var subMsg = msg.a;
@@ -10862,7 +12253,7 @@ var $author$project$Backend$Update$updateBackend = F3(
 					subMsg,
 					F2(
 						function (subMsg_, model_) {
-							return A3($author$project$Backend$Scoreboard$Update$update, currentDate, subMsg_, model_);
+							return A5($author$project$Backend$Scoreboard$Update$update, currentDate, backendUrl, csrfToken, subMsg_, model_);
 						}),
 					function (subCmds) {
 						return $author$project$Backend$Model$MsgScoreboard(subCmds);
@@ -10888,7 +12279,7 @@ var $author$project$Backend$Update$updateBackend = F3(
 					subMsg,
 					F2(
 						function (subMsg_, model_) {
-							return A2($author$project$Backend$Reports$Update$update, subMsg_, model_);
+							return A4($author$project$Backend$Reports$Update$update, backendUrl, csrfToken, subMsg_, model_);
 						}),
 					function (subCmds) {
 						return $author$project$Backend$Model$MsgReports(subCmds);
@@ -10914,7 +12305,7 @@ var $author$project$Backend$Update$updateBackend = F3(
 					subMsg,
 					F2(
 						function (subMsg_, model_) {
-							return A2($author$project$Backend$Completion$Update$update, subMsg_, model_);
+							return A4($author$project$Backend$Completion$Update$update, backendUrl, csrfToken, subMsg_, model_);
 						}),
 					function (subCmds) {
 						return $author$project$Backend$Model$MsgCompletion(subCmds);
@@ -10978,9 +12369,11 @@ var $author$project$App$Update$update = F2(
 					model.backend,
 					F2(
 						function (subMsg_, subModel) {
-							return A3(
+							return A5(
 								$author$project$Backend$Update$updateBackend,
 								$author$project$Gizra$NominalDate$fromLocalDateTime(model.currentTime),
+								model.backendUrl,
+								model.csrfToken,
 								subMsg_,
 								subModel);
 						}),
@@ -11132,57 +12525,59 @@ var $author$project$App$Update$init = function (flags) {
 	var activePage = $author$project$App$Update$resolveActivePage(flags.page);
 	var model = _Utils_update(
 		$author$project$App$Model$emptyModel,
-		{activePage: activePage, themePath: flags.themePath});
-	var modelWithAppData = function () {
-		var _v0 = model.activePage;
-		switch (_v0.$) {
+		{activePage: activePage, backendUrl: flags.backendUrl, csrfToken: flags.csrfToken, themePath: flags.themePath});
+	var _v0 = function () {
+		var _v1 = model.activePage;
+		switch (_v1.$) {
 			case 'ScoreboardMenu':
 				return A2(
 					$author$project$App$Update$update,
 					$author$project$App$Model$MsgBackend(
 						$author$project$Backend$Model$MsgScoreboardMenu(
 							$author$project$Backend$ScoreboardMenu$Model$SetData(flags.appData))),
-					model).a;
+					model);
 			case 'Scoreboard':
 				return A2(
 					$author$project$App$Update$update,
 					$author$project$App$Model$MsgBackend(
 						$author$project$Backend$Model$MsgScoreboard(
 							$author$project$Backend$Scoreboard$Model$SetData(flags.appData))),
-					model).a;
+					model);
 			case 'ReportsMenu':
 				return A2(
 					$author$project$App$Update$update,
 					$author$project$App$Model$MsgBackend(
 						$author$project$Backend$Model$MsgReportsMenu(
 							$author$project$Backend$ReportsMenu$Model$SetData(flags.appData))),
-					model).a;
+					model);
 			case 'Reports':
 				return A2(
 					$author$project$App$Update$update,
 					$author$project$App$Model$MsgBackend(
 						$author$project$Backend$Model$MsgReports(
 							$author$project$Backend$Reports$Model$SetData(flags.appData))),
-					model).a;
+					model);
 			case 'CompletionMenu':
 				return A2(
 					$author$project$App$Update$update,
 					$author$project$App$Model$MsgBackend(
 						$author$project$Backend$Model$MsgCompletionMenu(
 							$author$project$Backend$CompletionMenu$Model$SetData(flags.appData))),
-					model).a;
+					model);
 			case 'Completion':
 				return A2(
 					$author$project$App$Update$update,
 					$author$project$App$Model$MsgBackend(
 						$author$project$Backend$Model$MsgCompletion(
 							$author$project$Backend$Completion$Model$SetData(flags.appData))),
-					model).a;
+					model);
 			default:
-				return model;
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
 	}();
-	var cmds = $elm$core$Platform$Cmd$batch(
+	var modelWithAppData = _v0.a;
+	var cmd = _v0.b;
+	var fetchCmds = $elm$core$Platform$Cmd$batch(
 		A2(
 			$elm$core$List$append,
 			_List_fromArray(
@@ -11196,7 +12591,11 @@ var $author$project$App$Update$init = function (flags) {
 					$elm$core$Task$succeed,
 					$elm$core$Task$perform($elm$core$Basics$identity)),
 				$author$project$App$Fetch$fetch(modelWithAppData))));
-	return _Utils_Tuple2(modelWithAppData, cmds);
+	return _Utils_Tuple2(
+		modelWithAppData,
+		$elm$core$Platform$Cmd$batch(
+			_List_fromArray(
+				[cmd, fetchCmds])));
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
@@ -11228,7 +12627,6 @@ var $author$project$Translate$ErrorTimeout = {$: 'ErrorTimeout'};
 var $author$project$Translate$HttpError = function (a) {
 	return {$: 'HttpError', a: a};
 };
-var $elm$json$Json$Decode$decodeString = _Json_runOnString;
 var $author$project$Translate$AcuteIllness = {$: 'AcuteIllness'};
 var $author$project$Translate$Antenatal = {$: 'Antenatal'};
 var $author$project$Translate$Caring = {$: 'Caring'};
@@ -11238,6 +12636,7 @@ var $author$project$Translate$CoreExam = {$: 'CoreExam'};
 var $author$project$Translate$DangerSigns = {$: 'DangerSigns'};
 var $author$project$Translate$Diagnostics = {$: 'Diagnostics'};
 var $author$project$Translate$District = {$: 'District'};
+var $author$project$Translate$EmptyString = {$: 'EmptyString'};
 var $author$project$Translate$FamilyPlanning = {$: 'FamilyPlanning'};
 var $author$project$Translate$Feeding = {$: 'Feeding'};
 var $author$project$Translate$FollowUp = {$: 'FollowUp'};
@@ -11845,6 +13244,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'District', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'DownloadCSV':
 				return {english: 'Download CSV', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'DownloadingExplanation':
+				return {english: 'Downloading data from the server. Please wait until the download completes before selecting a report.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'EmptyString':
 				return {english: '', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
 			case 'Encounters':
@@ -13276,8 +14677,12 @@ var $author$project$Translate$translationSet = function (transId) {
 						var $temp$transId = $author$project$Translate$Cell;
 						transId = $temp$transId;
 						continue translationSet;
-					default:
+					case 'EntityVillage':
 						var $temp$transId = $author$project$Translate$Village;
+						transId = $temp$transId;
+						continue translationSet;
+					default:
+						var $temp$transId = $author$project$Translate$EmptyString;
 						transId = $temp$transId;
 						continue translationSet;
 				}
@@ -14392,6 +15797,11 @@ var $elm_community$maybe_extra$Maybe$Extra$isJust = function (m) {
 		return true;
 	}
 };
+var $author$project$Pages$Components$Utils$isSyncComplete = function (remaining) {
+	return _Utils_eq(
+		remaining,
+		$elm$core$Maybe$Just(0));
+};
 var $author$project$Pages$Utils$launchDate = A3($justinmimbs$date$Date$fromCalendarDate, 2018, $elm$time$Time$Jan, 1);
 var $elm$core$Maybe$map3 = F4(
 	function (func, ma, mb, mc) {
@@ -15089,7 +16499,6 @@ var $author$project$DateSelector$Selector$groupsOf = F2(
 				n,
 				A2($elm$core$List$drop, n, list)));
 	});
-var $elm$json$Json$Encode$int = _Json_wrap;
 var $justinmimbs$date$Date$isBetween = F3(
 	function (_v0, _v1, _v2) {
 		var a = _v0.a;
@@ -16616,6 +18025,65 @@ var $author$project$Pages$Utils$viewSelectListInput = F7(
 			inputClass,
 			$elm$core$Maybe$Just(''));
 	});
+var $author$project$Translate$DownloadingExplanation = {$: 'DownloadingExplanation'};
+var $author$project$Pages$Components$Utils$syncStatusAndProgress = function (downloaded) {
+	return A2(
+		$elm$core$Basics$composeR,
+		$elm$core$Maybe$map(
+			function (remainingForDownload) {
+				return _Utils_Tuple2(
+					(!remainingForDownload) ? 'COMPLETED' : 'IN PROCESS',
+					$elm$core$String$fromInt(downloaded) + (' / ' + $elm$core$String$fromInt(downloaded + remainingForDownload)));
+			}),
+		$elm$core$Maybe$withDefault(
+			_Utils_Tuple2('PENDING', '0 / 0')));
+};
+var $author$project$Pages$Components$Utils$viewSyncingPlaceholder = F3(
+	function (language, downloaded, maybeRemaining) {
+		var _v0 = A2($author$project$Pages$Components$Utils$syncStatusAndProgress, downloaded, maybeRemaining);
+		var syncStatus = _v0.a;
+		var progress = _v0.b;
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('sync-placeholder')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('sync-status')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(syncStatus)
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('explanation')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							A2($author$project$Translate$translate, language, $author$project$Translate$DownloadingExplanation))
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('progress')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(progress)
+						]))
+				]));
+	});
 var $author$project$Translate$TuberculosisActivity = function (a) {
 	return {$: 'TuberculosisActivity', a: a};
 };
@@ -16730,10 +18198,13 @@ var $author$project$Pages$Completion$View$viewCompletionData = F4(
 		var topBar = function () {
 			var scopeLabel = function () {
 				var _v3 = data.entityType;
-				if (_v3.$ === 'EntityGlobal') {
-					return A2($author$project$Translate$translate, language, $author$project$Translate$Global);
-				} else {
-					return data.entityName;
+				switch (_v3.$) {
+					case 'EntityGlobal':
+						return A2($author$project$Translate$translate, language, $author$project$Translate$Global);
+					case 'EntityHealthCenter':
+						return data.entityName;
+					default:
+						return A2($author$project$Translate$translate, language, $author$project$Translate$EmptyString);
 				}
 			}();
 			return A2(
@@ -16783,185 +18254,178 @@ var $author$project$Pages$Completion$View$viewCompletionData = F4(
 							]))
 					]));
 		}();
-		var takenByInput = A2(
-			$elm$core$Maybe$withDefault,
-			$author$project$Gizra$Html$emptyNode,
-			A2(
-				$elm$core$Maybe$map,
-				function (reportType) {
-					if (A2(
-						$elm$core$List$member,
-						reportType,
-						_List_fromArray(
-							[$author$project$Pages$Completion$Model$ReportChildScoreboard, $author$project$Pages$Completion$Model$ReportHIV, $author$project$Pages$Completion$Model$ReportHomeVisit, $author$project$Pages$Completion$Model$ReportNewbornExam, $author$project$Pages$Completion$Model$ReportTuberculosis, $author$project$Pages$Completion$Model$ReportNCD]))) {
-						return $author$project$Gizra$Html$emptyNode;
-					} else {
-						if ($elm_community$maybe_extra$Maybe$Extra$isJust(model.reportType)) {
-							var options = A2(
-								$elm$core$List$map,
-								function (option) {
-									return _Utils_Tuple2(
-										A2(
-											$author$project$Translate$translate,
-											language,
-											$author$project$Translate$TakenBy(option)),
-										option);
-								},
-								_List_fromArray(
-									[$author$project$Backend$Completion$Model$TakenByNurse, $author$project$Backend$Completion$Model$TakenByCHW]));
-							return A4(
-								$author$project$Pages$Utils$wrapSelectListInput,
-								language,
-								$author$project$Translate$TakenByLabel,
-								false,
-								A6(
-									$author$project$Pages$Utils$viewCustomSelectListInput,
-									model.takenBy,
-									options,
-									$author$project$Backend$Completion$Utils$takenByToString,
-									$author$project$Pages$Completion$Model$SetTakenBy,
-									'select-input',
-									$elm$core$Maybe$Just(
-										A2($author$project$Translate$translate, language, $author$project$Translate$Any))));
-						} else {
-							return $author$project$Gizra$Html$emptyNode;
-						}
-					}
-				},
-				model.reportType));
-		var dateInputs = A2(
-			$elm$core$Maybe$withDefault,
-			_List_Nil,
-			A2(
-				$elm$core$Maybe$map,
-				function (_v2) {
-					var startDateInput = function () {
-						var dateSelectorConfig = {
-							close: $author$project$Pages$Completion$Model$SetStartDateSelectorState($elm$core$Maybe$Nothing),
-							dateDefault: $elm$core$Maybe$Just($author$project$Pages$Utils$launchDate),
-							dateFrom: $author$project$Pages$Utils$launchDate,
-							dateTo: currentDate,
-							select: $author$project$Pages$Completion$Model$SetStartDate
-						};
-						var dateForView = A2(
-							$elm$core$Maybe$withDefault,
-							'',
-							A2($elm$core$Maybe$map, $author$project$Gizra$NominalDate$formatDDMMYYYY, model.startDate));
-						return A4(
-							$author$project$Pages$Utils$wrapSelectListInput,
-							language,
-							$author$project$Translate$SelectStartDate,
-							false,
-							A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$class('form-input date'),
-										$elm$html$Html$Events$onClick(
-										$author$project$Pages$Completion$Model$SetStartDateSelectorState(
-											$elm$core$Maybe$Just(dateSelectorConfig)))
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text(dateForView)
-									])));
-					}();
-					var limitDateInput = function () {
-						if ($elm_community$maybe_extra$Maybe$Extra$isNothing(model.startDate)) {
-							return $author$project$Gizra$Html$emptyNode;
-						} else {
-							var limitDateForView = A2(
-								$elm$core$Maybe$withDefault,
-								'',
-								A2($elm$core$Maybe$map, $author$project$Gizra$NominalDate$formatDDMMYYYY, model.limitDate));
-							var dateFrom = A2($elm$core$Maybe$withDefault, $author$project$Pages$Utils$launchDate, model.startDate);
-							var dateSelectorConfig = {
-								close: $author$project$Pages$Completion$Model$SetLimitDateSelectorState($elm$core$Maybe$Nothing),
-								dateDefault: $elm$core$Maybe$Just(currentDate),
-								dateFrom: dateFrom,
-								dateTo: currentDate,
-								select: $author$project$Pages$Completion$Model$SetLimitDate
-							};
-							return A4(
-								$author$project$Pages$Utils$wrapSelectListInput,
-								language,
-								$author$project$Translate$SelectLimitDate,
-								false,
-								A2(
-									$elm$html$Html$div,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$class('form-input date'),
-											$elm$html$Html$Events$onClick(
-											$author$project$Pages$Completion$Model$SetLimitDateSelectorState(
-												$elm$core$Maybe$Just(dateSelectorConfig)))
-										]),
-									_List_fromArray(
-										[
-											$elm$html$Html$text(limitDateForView)
-										])));
-						}
-					}();
-					return _List_fromArray(
-						[startDateInput, limitDateInput]);
-				},
-				model.reportType));
-		var content = ($elm_community$maybe_extra$Maybe$Extra$isJust(model.startDateSelectorPopupState) || $elm_community$maybe_extra$Maybe$Extra$isJust(model.limitDateSelectorPopupState)) ? $author$project$Gizra$Html$emptyNode : A2(
-			$elm$core$Maybe$withDefault,
-			$author$project$Gizra$Html$emptyNode,
-			A4(
-				$elm$core$Maybe$map3,
-				F3(
-					function (reportType, startDate, limitDate) {
-						var _v0 = A2(
-							$elm$core$List$partition,
-							A2(
-								$elm$core$Basics$composeR,
-								function ($) {
-									return $.encounterType;
-								},
-								$elm$core$Basics$eq($author$project$Backend$Completion$Model$NewbornExam)),
-							data.wellChildData);
-						var newbornExamData = _v0.a;
-						var spvData = _v0.b;
-						switch (reportType.$) {
-							case 'ReportAcuteIllness':
-								return A5($author$project$Pages$Completion$View$viewAcuteIllnessReport, language, startDate, limitDate, model.takenBy, data.acuteIllnessData);
-							case 'ReportChildScoreboard':
-								return A6($author$project$Pages$Completion$View$viewChildScoreboardReport, language, data.site, startDate, limitDate, model.takenBy, data.childScoreboardData);
-							case 'ReportHIV':
-								return A5($author$project$Pages$Completion$View$viewHIVReport, language, startDate, limitDate, model.takenBy, data.hivData);
-							case 'ReportHomeVisit':
-								return A5($author$project$Pages$Completion$View$viewHomeVisitReport, language, startDate, limitDate, model.takenBy, data.homeVisitData);
-							case 'ReportNCD':
-								return A5($author$project$Pages$Completion$View$viewNCDReport, language, startDate, limitDate, model.takenBy, data.ncdData);
-							case 'ReportNewbornExam':
-								return A5($author$project$Pages$Completion$View$viewNewbornExamReport, language, startDate, limitDate, model.takenBy, newbornExamData);
-							case 'ReportNutritionGroup':
-								return A5($author$project$Pages$Completion$View$viewNutritionGroupReport, language, startDate, limitDate, model.takenBy, data.nutritionGroupData);
-							case 'ReportNutritionIndividual':
-								return A5($author$project$Pages$Completion$View$viewNutritionIndividualReport, language, startDate, limitDate, model.takenBy, data.nutritionIndividualData);
-							case 'ReportPrenatal':
-								return A5($author$project$Pages$Completion$View$viewPrenatalReport, language, startDate, limitDate, model.takenBy, data.prenatalData);
-							case 'ReportTuberculosis':
-								return A5($author$project$Pages$Completion$View$viewTuberculosisReport, language, startDate, limitDate, model.takenBy, data.tuberculosisData);
-							default:
-								return A6($author$project$Pages$Completion$View$viewSPVReport, language, data.site, startDate, limitDate, model.takenBy, spvData);
-						}
-					}),
-				model.reportType,
-				model.startDate,
-				model.limitDate));
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('page-content completion')
-				]),
-			_List_fromArray(
-				[
-					topBar,
+		var inputsAndContent = function () {
+			if ($author$project$Pages$Components$Utils$isSyncComplete(data.remainingForDownload)) {
+				var takenByInput = A2(
+					$elm$core$Maybe$withDefault,
+					$author$project$Gizra$Html$emptyNode,
 					A2(
+						$elm$core$Maybe$map,
+						function (reportType) {
+							if (A2(
+								$elm$core$List$member,
+								reportType,
+								_List_fromArray(
+									[$author$project$Pages$Completion$Model$ReportChildScoreboard, $author$project$Pages$Completion$Model$ReportHIV, $author$project$Pages$Completion$Model$ReportHomeVisit, $author$project$Pages$Completion$Model$ReportNewbornExam, $author$project$Pages$Completion$Model$ReportTuberculosis, $author$project$Pages$Completion$Model$ReportNCD]))) {
+								return $author$project$Gizra$Html$emptyNode;
+							} else {
+								if ($elm_community$maybe_extra$Maybe$Extra$isJust(model.reportType)) {
+									var options = A2(
+										$elm$core$List$map,
+										function (option) {
+											return _Utils_Tuple2(
+												A2(
+													$author$project$Translate$translate,
+													language,
+													$author$project$Translate$TakenBy(option)),
+												option);
+										},
+										_List_fromArray(
+											[$author$project$Backend$Completion$Model$TakenByNurse, $author$project$Backend$Completion$Model$TakenByCHW]));
+									return A4(
+										$author$project$Pages$Utils$wrapSelectListInput,
+										language,
+										$author$project$Translate$TakenByLabel,
+										false,
+										A6(
+											$author$project$Pages$Utils$viewCustomSelectListInput,
+											model.takenBy,
+											options,
+											$author$project$Backend$Completion$Utils$takenByToString,
+											$author$project$Pages$Completion$Model$SetTakenBy,
+											'select-input',
+											$elm$core$Maybe$Just(
+												A2($author$project$Translate$translate, language, $author$project$Translate$Any))));
+								} else {
+									return $author$project$Gizra$Html$emptyNode;
+								}
+							}
+						},
+						model.reportType));
+				var dateInputs = A2(
+					$elm$core$Maybe$withDefault,
+					_List_Nil,
+					A2(
+						$elm$core$Maybe$map,
+						function (_v2) {
+							var startDateInput = function () {
+								var dateSelectorConfig = {
+									close: $author$project$Pages$Completion$Model$SetStartDateSelectorState($elm$core$Maybe$Nothing),
+									dateDefault: $elm$core$Maybe$Just($author$project$Pages$Utils$launchDate),
+									dateFrom: $author$project$Pages$Utils$launchDate,
+									dateTo: currentDate,
+									select: $author$project$Pages$Completion$Model$SetStartDate
+								};
+								var dateForView = A2(
+									$elm$core$Maybe$withDefault,
+									'',
+									A2($elm$core$Maybe$map, $author$project$Gizra$NominalDate$formatDDMMYYYY, model.startDate));
+								return A4(
+									$author$project$Pages$Utils$wrapSelectListInput,
+									language,
+									$author$project$Translate$SelectStartDate,
+									false,
+									A2(
+										$elm$html$Html$div,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('form-input date'),
+												$elm$html$Html$Events$onClick(
+												$author$project$Pages$Completion$Model$SetStartDateSelectorState(
+													$elm$core$Maybe$Just(dateSelectorConfig)))
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text(dateForView)
+											])));
+							}();
+							var limitDateInput = function () {
+								if ($elm_community$maybe_extra$Maybe$Extra$isNothing(model.startDate)) {
+									return $author$project$Gizra$Html$emptyNode;
+								} else {
+									var limitDateForView = A2(
+										$elm$core$Maybe$withDefault,
+										'',
+										A2($elm$core$Maybe$map, $author$project$Gizra$NominalDate$formatDDMMYYYY, model.limitDate));
+									var dateFrom = A2($elm$core$Maybe$withDefault, $author$project$Pages$Utils$launchDate, model.startDate);
+									var dateSelectorConfig = {
+										close: $author$project$Pages$Completion$Model$SetLimitDateSelectorState($elm$core$Maybe$Nothing),
+										dateDefault: $elm$core$Maybe$Just(currentDate),
+										dateFrom: dateFrom,
+										dateTo: currentDate,
+										select: $author$project$Pages$Completion$Model$SetLimitDate
+									};
+									return A4(
+										$author$project$Pages$Utils$wrapSelectListInput,
+										language,
+										$author$project$Translate$SelectLimitDate,
+										false,
+										A2(
+											$elm$html$Html$div,
+											_List_fromArray(
+												[
+													$elm$html$Html$Attributes$class('form-input date'),
+													$elm$html$Html$Events$onClick(
+													$author$project$Pages$Completion$Model$SetLimitDateSelectorState(
+														$elm$core$Maybe$Just(dateSelectorConfig)))
+												]),
+											_List_fromArray(
+												[
+													$elm$html$Html$text(limitDateForView)
+												])));
+								}
+							}();
+							return _List_fromArray(
+								[startDateInput, limitDateInput]);
+						},
+						model.reportType));
+				var content = ($elm_community$maybe_extra$Maybe$Extra$isJust(model.startDateSelectorPopupState) || $elm_community$maybe_extra$Maybe$Extra$isJust(model.limitDateSelectorPopupState)) ? $author$project$Gizra$Html$emptyNode : A2(
+					$elm$core$Maybe$withDefault,
+					$author$project$Gizra$Html$emptyNode,
+					A4(
+						$elm$core$Maybe$map3,
+						F3(
+							function (reportType, startDate, limitDate) {
+								var _v0 = A2(
+									$elm$core$List$partition,
+									A2(
+										$elm$core$Basics$composeR,
+										function ($) {
+											return $.encounterType;
+										},
+										$elm$core$Basics$eq($author$project$Backend$Completion$Model$NewbornExam)),
+									data.wellChildData);
+								var newbornExamData = _v0.a;
+								var spvData = _v0.b;
+								switch (reportType.$) {
+									case 'ReportAcuteIllness':
+										return A5($author$project$Pages$Completion$View$viewAcuteIllnessReport, language, startDate, limitDate, model.takenBy, data.acuteIllnessData);
+									case 'ReportChildScoreboard':
+										return A6($author$project$Pages$Completion$View$viewChildScoreboardReport, language, data.site, startDate, limitDate, model.takenBy, data.childScoreboardData);
+									case 'ReportHIV':
+										return A5($author$project$Pages$Completion$View$viewHIVReport, language, startDate, limitDate, model.takenBy, data.hivData);
+									case 'ReportHomeVisit':
+										return A5($author$project$Pages$Completion$View$viewHomeVisitReport, language, startDate, limitDate, model.takenBy, data.homeVisitData);
+									case 'ReportNCD':
+										return A5($author$project$Pages$Completion$View$viewNCDReport, language, startDate, limitDate, model.takenBy, data.ncdData);
+									case 'ReportNewbornExam':
+										return A5($author$project$Pages$Completion$View$viewNewbornExamReport, language, startDate, limitDate, model.takenBy, newbornExamData);
+									case 'ReportNutritionGroup':
+										return A5($author$project$Pages$Completion$View$viewNutritionGroupReport, language, startDate, limitDate, model.takenBy, data.nutritionGroupData);
+									case 'ReportNutritionIndividual':
+										return A5($author$project$Pages$Completion$View$viewNutritionIndividualReport, language, startDate, limitDate, model.takenBy, data.nutritionIndividualData);
+									case 'ReportPrenatal':
+										return A5($author$project$Pages$Completion$View$viewPrenatalReport, language, startDate, limitDate, model.takenBy, data.prenatalData);
+									case 'ReportTuberculosis':
+										return A5($author$project$Pages$Completion$View$viewTuberculosisReport, language, startDate, limitDate, model.takenBy, data.tuberculosisData);
+									default:
+										return A6($author$project$Pages$Completion$View$viewSPVReport, language, data.site, startDate, limitDate, model.takenBy, spvData);
+								}
+							}),
+						model.reportType,
+						model.startDate,
+						model.limitDate));
+				return A2(
 					$elm$html$Html$div,
 					_List_fromArray(
 						[
@@ -16990,7 +18454,22 @@ var $author$project$Pages$Completion$View$viewCompletionData = F4(
 						_Utils_ap(
 							dateInputs,
 							_List_fromArray(
-								[content])))),
+								[content]))));
+			} else {
+				var downloadedCount = (((((((($elm$core$List$length(data.acuteIllnessData) + $elm$core$List$length(data.childScoreboardData)) + $elm$core$List$length(data.hivData)) + $elm$core$List$length(data.homeVisitData)) + $elm$core$List$length(data.ncdData)) + $elm$core$List$length(data.nutritionIndividualData)) + $elm$core$List$length(data.nutritionGroupData)) + $elm$core$List$length(data.prenatalData)) + $elm$core$List$length(data.tuberculosisData)) + $elm$core$List$length(data.wellChildData);
+				return A3($author$project$Pages$Components$Utils$viewSyncingPlaceholder, language, downloadedCount, data.remainingForDownload);
+			}
+		}();
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('page-content completion')
+				]),
+			_List_fromArray(
+				[
+					topBar,
+					inputsAndContent,
 					$author$project$Utils$Html$viewModal(
 					A3($author$project$DateSelector$SelectorPopup$viewCalendarPopup, language, model.startDateSelectorPopupState, model.startDate)),
 					$author$project$Utils$Html$viewModal(
@@ -18704,429 +20183,6 @@ var $elm$core$Dict$foldl = F3(
 			}
 		}
 	});
-var $elm$core$Dict$Black = {$: 'Black'};
-var $elm$core$Dict$RBNode_elm_builtin = F5(
-	function (a, b, c, d, e) {
-		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
-	});
-var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
-var $elm$core$Dict$Red = {$: 'Red'};
-var $elm$core$Dict$balance = F5(
-	function (color, key, value, left, right) {
-		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
-			var _v1 = right.a;
-			var rK = right.b;
-			var rV = right.c;
-			var rLeft = right.d;
-			var rRight = right.e;
-			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
-				var _v3 = left.a;
-				var lK = left.b;
-				var lV = left.c;
-				var lLeft = left.d;
-				var lRight = left.e;
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Red,
-					key,
-					value,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rLeft, rRight));
-			} else {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					color,
-					rK,
-					rV,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, left, rLeft),
-					rRight);
-			}
-		} else {
-			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
-				var _v5 = left.a;
-				var lK = left.b;
-				var lV = left.c;
-				var _v6 = left.d;
-				var _v7 = _v6.a;
-				var llK = _v6.b;
-				var llV = _v6.c;
-				var llLeft = _v6.d;
-				var llRight = _v6.e;
-				var lRight = left.e;
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Red,
-					lK,
-					lV,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, key, value, lRight, right));
-			} else {
-				return A5($elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
-			}
-		}
-	});
-var $elm$core$Dict$getMin = function (dict) {
-	getMin:
-	while (true) {
-		if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
-			var left = dict.d;
-			var $temp$dict = left;
-			dict = $temp$dict;
-			continue getMin;
-		} else {
-			return dict;
-		}
-	}
-};
-var $elm$core$Dict$moveRedLeft = function (dict) {
-	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
-		if ((dict.e.d.$ === 'RBNode_elm_builtin') && (dict.e.d.a.$ === 'Red')) {
-			var clr = dict.a;
-			var k = dict.b;
-			var v = dict.c;
-			var _v1 = dict.d;
-			var lClr = _v1.a;
-			var lK = _v1.b;
-			var lV = _v1.c;
-			var lLeft = _v1.d;
-			var lRight = _v1.e;
-			var _v2 = dict.e;
-			var rClr = _v2.a;
-			var rK = _v2.b;
-			var rV = _v2.c;
-			var rLeft = _v2.d;
-			var _v3 = rLeft.a;
-			var rlK = rLeft.b;
-			var rlV = rLeft.c;
-			var rlL = rLeft.d;
-			var rlR = rLeft.e;
-			var rRight = _v2.e;
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				$elm$core$Dict$Red,
-				rlK,
-				rlV,
-				A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					rlL),
-				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rlR, rRight));
-		} else {
-			var clr = dict.a;
-			var k = dict.b;
-			var v = dict.c;
-			var _v4 = dict.d;
-			var lClr = _v4.a;
-			var lK = _v4.b;
-			var lV = _v4.c;
-			var lLeft = _v4.d;
-			var lRight = _v4.e;
-			var _v5 = dict.e;
-			var rClr = _v5.a;
-			var rK = _v5.b;
-			var rV = _v5.c;
-			var rLeft = _v5.d;
-			var rRight = _v5.e;
-			if (clr.$ === 'Black') {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
-			} else {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
-			}
-		}
-	} else {
-		return dict;
-	}
-};
-var $elm$core$Dict$moveRedRight = function (dict) {
-	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
-		if ((dict.d.d.$ === 'RBNode_elm_builtin') && (dict.d.d.a.$ === 'Red')) {
-			var clr = dict.a;
-			var k = dict.b;
-			var v = dict.c;
-			var _v1 = dict.d;
-			var lClr = _v1.a;
-			var lK = _v1.b;
-			var lV = _v1.c;
-			var _v2 = _v1.d;
-			var _v3 = _v2.a;
-			var llK = _v2.b;
-			var llV = _v2.c;
-			var llLeft = _v2.d;
-			var llRight = _v2.e;
-			var lRight = _v1.e;
-			var _v4 = dict.e;
-			var rClr = _v4.a;
-			var rK = _v4.b;
-			var rV = _v4.c;
-			var rLeft = _v4.d;
-			var rRight = _v4.e;
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				$elm$core$Dict$Red,
-				lK,
-				lV,
-				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
-				A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					lRight,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight)));
-		} else {
-			var clr = dict.a;
-			var k = dict.b;
-			var v = dict.c;
-			var _v5 = dict.d;
-			var lClr = _v5.a;
-			var lK = _v5.b;
-			var lV = _v5.c;
-			var lLeft = _v5.d;
-			var lRight = _v5.e;
-			var _v6 = dict.e;
-			var rClr = _v6.a;
-			var rK = _v6.b;
-			var rV = _v6.c;
-			var rLeft = _v6.d;
-			var rRight = _v6.e;
-			if (clr.$ === 'Black') {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
-			} else {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
-			}
-		}
-	} else {
-		return dict;
-	}
-};
-var $elm$core$Dict$removeHelpPrepEQGT = F7(
-	function (targetKey, dict, color, key, value, left, right) {
-		if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
-			var _v1 = left.a;
-			var lK = left.b;
-			var lV = left.c;
-			var lLeft = left.d;
-			var lRight = left.e;
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				color,
-				lK,
-				lV,
-				lLeft,
-				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, lRight, right));
-		} else {
-			_v2$2:
-			while (true) {
-				if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Black')) {
-					if (right.d.$ === 'RBNode_elm_builtin') {
-						if (right.d.a.$ === 'Black') {
-							var _v3 = right.a;
-							var _v4 = right.d;
-							var _v5 = _v4.a;
-							return $elm$core$Dict$moveRedRight(dict);
-						} else {
-							break _v2$2;
-						}
-					} else {
-						var _v6 = right.a;
-						var _v7 = right.d;
-						return $elm$core$Dict$moveRedRight(dict);
-					}
-				} else {
-					break _v2$2;
-				}
-			}
-			return dict;
-		}
-	});
-var $elm$core$Dict$removeMin = function (dict) {
-	if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
-		var color = dict.a;
-		var key = dict.b;
-		var value = dict.c;
-		var left = dict.d;
-		var lColor = left.a;
-		var lLeft = left.d;
-		var right = dict.e;
-		if (lColor.$ === 'Black') {
-			if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
-				var _v3 = lLeft.a;
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					color,
-					key,
-					value,
-					$elm$core$Dict$removeMin(left),
-					right);
-			} else {
-				var _v4 = $elm$core$Dict$moveRedLeft(dict);
-				if (_v4.$ === 'RBNode_elm_builtin') {
-					var nColor = _v4.a;
-					var nKey = _v4.b;
-					var nValue = _v4.c;
-					var nLeft = _v4.d;
-					var nRight = _v4.e;
-					return A5(
-						$elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						$elm$core$Dict$removeMin(nLeft),
-						nRight);
-				} else {
-					return $elm$core$Dict$RBEmpty_elm_builtin;
-				}
-			}
-		} else {
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				color,
-				key,
-				value,
-				$elm$core$Dict$removeMin(left),
-				right);
-		}
-	} else {
-		return $elm$core$Dict$RBEmpty_elm_builtin;
-	}
-};
-var $elm$core$Dict$removeHelp = F2(
-	function (targetKey, dict) {
-		if (dict.$ === 'RBEmpty_elm_builtin') {
-			return $elm$core$Dict$RBEmpty_elm_builtin;
-		} else {
-			var color = dict.a;
-			var key = dict.b;
-			var value = dict.c;
-			var left = dict.d;
-			var right = dict.e;
-			if (_Utils_cmp(targetKey, key) < 0) {
-				if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Black')) {
-					var _v4 = left.a;
-					var lLeft = left.d;
-					if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
-						var _v6 = lLeft.a;
-						return A5(
-							$elm$core$Dict$RBNode_elm_builtin,
-							color,
-							key,
-							value,
-							A2($elm$core$Dict$removeHelp, targetKey, left),
-							right);
-					} else {
-						var _v7 = $elm$core$Dict$moveRedLeft(dict);
-						if (_v7.$ === 'RBNode_elm_builtin') {
-							var nColor = _v7.a;
-							var nKey = _v7.b;
-							var nValue = _v7.c;
-							var nLeft = _v7.d;
-							var nRight = _v7.e;
-							return A5(
-								$elm$core$Dict$balance,
-								nColor,
-								nKey,
-								nValue,
-								A2($elm$core$Dict$removeHelp, targetKey, nLeft),
-								nRight);
-						} else {
-							return $elm$core$Dict$RBEmpty_elm_builtin;
-						}
-					}
-				} else {
-					return A5(
-						$elm$core$Dict$RBNode_elm_builtin,
-						color,
-						key,
-						value,
-						A2($elm$core$Dict$removeHelp, targetKey, left),
-						right);
-				}
-			} else {
-				return A2(
-					$elm$core$Dict$removeHelpEQGT,
-					targetKey,
-					A7($elm$core$Dict$removeHelpPrepEQGT, targetKey, dict, color, key, value, left, right));
-			}
-		}
-	});
-var $elm$core$Dict$removeHelpEQGT = F2(
-	function (targetKey, dict) {
-		if (dict.$ === 'RBNode_elm_builtin') {
-			var color = dict.a;
-			var key = dict.b;
-			var value = dict.c;
-			var left = dict.d;
-			var right = dict.e;
-			if (_Utils_eq(targetKey, key)) {
-				var _v1 = $elm$core$Dict$getMin(right);
-				if (_v1.$ === 'RBNode_elm_builtin') {
-					var minKey = _v1.b;
-					var minValue = _v1.c;
-					return A5(
-						$elm$core$Dict$balance,
-						color,
-						minKey,
-						minValue,
-						left,
-						$elm$core$Dict$removeMin(right));
-				} else {
-					return $elm$core$Dict$RBEmpty_elm_builtin;
-				}
-			} else {
-				return A5(
-					$elm$core$Dict$balance,
-					color,
-					key,
-					value,
-					left,
-					A2($elm$core$Dict$removeHelp, targetKey, right));
-			}
-		} else {
-			return $elm$core$Dict$RBEmpty_elm_builtin;
-		}
-	});
-var $elm$core$Dict$remove = F2(
-	function (key, dict) {
-		var _v0 = A2($elm$core$Dict$removeHelp, key, dict);
-		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
-			var _v1 = _v0.a;
-			var k = _v0.b;
-			var v = _v0.c;
-			var l = _v0.d;
-			var r = _v0.e;
-			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
-		} else {
-			var x = _v0;
-			return x;
-		}
-	});
 var $elm$core$Dict$diff = F2(
 	function (t1, t2) {
 		return A3(
@@ -19145,56 +20201,7 @@ var $elm$core$Set$diff = F2(
 		return $elm$core$Set$Set_elm_builtin(
 			A2($elm$core$Dict$diff, dict1, dict2));
 	});
-var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
 var $elm$core$Set$empty = $elm$core$Set$Set_elm_builtin($elm$core$Dict$empty);
-var $elm$core$Dict$insertHelp = F3(
-	function (key, value, dict) {
-		if (dict.$ === 'RBEmpty_elm_builtin') {
-			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, $elm$core$Dict$RBEmpty_elm_builtin, $elm$core$Dict$RBEmpty_elm_builtin);
-		} else {
-			var nColor = dict.a;
-			var nKey = dict.b;
-			var nValue = dict.c;
-			var nLeft = dict.d;
-			var nRight = dict.e;
-			var _v1 = A2($elm$core$Basics$compare, key, nKey);
-			switch (_v1.$) {
-				case 'LT':
-					return A5(
-						$elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						A3($elm$core$Dict$insertHelp, key, value, nLeft),
-						nRight);
-				case 'EQ':
-					return A5($elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
-				default:
-					return A5(
-						$elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						nLeft,
-						A3($elm$core$Dict$insertHelp, key, value, nRight));
-			}
-		}
-	});
-var $elm$core$Dict$insert = F3(
-	function (key, value, dict) {
-		var _v0 = A3($elm$core$Dict$insertHelp, key, value, dict);
-		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
-			var _v1 = _v0.a;
-			var k = _v0.b;
-			var v = _v0.c;
-			var l = _v0.d;
-			var r = _v0.e;
-			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
-		} else {
-			var x = _v0;
-			return x;
-		}
-	});
 var $elm$core$Set$insert = F2(
 	function (key, _v0) {
 		var dict = _v0.a;
@@ -19214,37 +20221,6 @@ var $elm$core$Dict$filter = F2(
 				}),
 			$elm$core$Dict$empty,
 			dict);
-	});
-var $elm$core$Dict$get = F2(
-	function (targetKey, dict) {
-		get:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
-				switch (_v1.$) {
-					case 'LT':
-						var $temp$targetKey = targetKey,
-							$temp$dict = left;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-					case 'EQ':
-						return $elm$core$Maybe$Just(value);
-					default:
-						var $temp$targetKey = targetKey,
-							$temp$dict = right;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-				}
-			}
-		}
 	});
 var $elm$core$Dict$member = F2(
 	function (key, dict) {
@@ -21195,7 +22171,6 @@ var $author$project$Translate$DeliveryLocation = function (a) {
 var $author$project$Translate$DeliveryLocationsTableHeading = {$: 'DeliveryLocationsTableHeading'};
 var $author$project$Translate$DeliveryLocationsTablePercentage = {$: 'DeliveryLocationsTablePercentage'};
 var $author$project$Translate$DeliveryLocationsTableTotals = {$: 'DeliveryLocationsTableTotals'};
-var $author$project$Translate$EmptyString = {$: 'EmptyString'};
 var $author$project$Pages$Reports$Model$FirstTrimester = {$: 'FirstTrimester'};
 var $author$project$Translate$FirstVisit = {$: 'FirstVisit'};
 var $author$project$Translate$HC = {$: 'HC'};
@@ -21781,295 +22756,287 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 							A2($author$project$Translate$translate, language, $author$project$Translate$Scope) + (': ' + scopeLabel))
 						]))
 				]));
-		var dateInputs = A2(
-			$elm$core$Maybe$withDefault,
-			_List_Nil,
-			A2(
-				$elm$core$Maybe$map,
-				function (reportType) {
-					if (_Utils_eq(reportType, $author$project$Pages$Reports$Model$ReportNutrition)) {
-						return _List_Nil;
-					} else {
-						var startDateInput = function () {
-							var dateSelectorConfig = {
-								close: $author$project$Pages$Reports$Model$SetStartDateSelectorState($elm$core$Maybe$Nothing),
-								dateDefault: $elm$core$Maybe$Just($author$project$Pages$Utils$launchDate),
-								dateFrom: $author$project$Pages$Utils$launchDate,
-								dateTo: currentDate,
-								select: $author$project$Pages$Reports$Model$SetStartDate
-							};
-							var dateForView = A2(
-								$elm$core$Maybe$withDefault,
-								'',
-								A2($elm$core$Maybe$map, $author$project$Gizra$NominalDate$formatDDMMYYYY, model.startDate));
-							return A4(
-								$author$project$Pages$Utils$wrapSelectListInput,
-								language,
-								$author$project$Translate$SelectStartDate,
-								false,
-								A2(
-									$elm$html$Html$div,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$class('form-input date'),
-											$elm$html$Html$Events$onClick(
-											$author$project$Pages$Reports$Model$SetStartDateSelectorState(
-												$elm$core$Maybe$Just(dateSelectorConfig)))
-										]),
-									_List_fromArray(
-										[
-											$elm$html$Html$text(dateForView)
-										])));
-						}();
-						var limitDateInput = function () {
-							if ($elm_community$maybe_extra$Maybe$Extra$isNothing(model.startDate)) {
-								return $author$project$Gizra$Html$emptyNode;
-							} else {
-								var limitDateForView = A2(
-									$elm$core$Maybe$withDefault,
-									'',
-									A2($elm$core$Maybe$map, $author$project$Gizra$NominalDate$formatDDMMYYYY, model.limitDate));
-								var dateFrom = A2($elm$core$Maybe$withDefault, $author$project$Pages$Utils$launchDate, model.startDate);
-								var dateSelectorConfig = {
-									close: $author$project$Pages$Reports$Model$SetLimitDateSelectorState($elm$core$Maybe$Nothing),
-									dateDefault: $elm$core$Maybe$Just(currentDate),
-									dateFrom: dateFrom,
-									dateTo: currentDate,
-									select: $author$project$Pages$Reports$Model$SetLimitDate
-								};
-								return A4(
-									$author$project$Pages$Utils$wrapSelectListInput,
-									language,
-									$author$project$Translate$SelectLimitDate,
-									false,
-									A2(
-										$elm$html$Html$div,
-										_List_fromArray(
-											[
-												$elm$html$Html$Attributes$class('form-input date'),
-												$elm$html$Html$Events$onClick(
-												$author$project$Pages$Reports$Model$SetLimitDateSelectorState(
-													$elm$core$Maybe$Just(dateSelectorConfig)))
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text(limitDateForView)
-											])));
-							}
-						}();
-						return _List_fromArray(
-							[startDateInput, limitDateInput]);
-					}
-				},
-				model.reportType));
-		var content = function () {
-			if ($elm_community$maybe_extra$Maybe$Extra$isJust(model.startDateSelectorPopupState) || $elm_community$maybe_extra$Maybe$Extra$isJust(model.limitDateSelectorPopupState)) {
-				return $author$project$Gizra$Html$emptyNode;
-			} else {
-				var _v0 = _Utils_eq(
-					model.reportType,
-					$elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportNutrition)) ? _Utils_Tuple2(
-					$elm$core$Maybe$Just($author$project$Pages$Utils$launchDate),
-					$elm$core$Maybe$Just(currentDate)) : _Utils_Tuple2(model.startDate, model.limitDate);
-				var startDateByReportType = _v0.a;
-				var limitDateByReportType = _v0.b;
-				return A2(
+		var inputsAndContent = function () {
+			if ($author$project$Pages$Components$Utils$isSyncComplete(data.remainingForDownload)) {
+				var dateInputs = A2(
 					$elm$core$Maybe$withDefault,
-					$author$project$Pages$Reports$Utils$isWideScope(data.entityType) ? A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$WideScopeNote, '', 'label wide-scope') : $author$project$Gizra$Html$emptyNode,
-					A4(
-						$elm$core$Maybe$map3,
-						F3(
-							function (reportType, startDate, limitDate) {
-								var recordsTillLimitDate = (_Utils_eq(
-									A2($justinmimbs$date$Date$compare, startDate, $author$project$Pages$Utils$launchDate),
-									$elm$core$Basics$EQ) && _Utils_eq(
-									A2($justinmimbs$date$Date$compare, limitDate, currentDate),
-									$elm$core$Basics$EQ)) ? data.records : A2(
-									$elm$core$List$filterMap,
-									function (record) {
-										if (!_Utils_eq(
-											A2($justinmimbs$date$Date$compare, record.created, limitDate),
-											$elm$core$Basics$GT)) {
-											var filterPrenatalData = $elm$core$Maybe$map(
-												$elm$core$List$filterMap(
-													function (participantData) {
-														if (_Utils_eq(
-															A2($justinmimbs$date$Date$compare, participantData.created, limitDate),
-															$elm$core$Basics$GT)) {
-															return $elm$core$Maybe$Nothing;
-														} else {
-															var filteredEncounters = A2(
-																$elm$core$List$filter,
-																function (encounterData) {
-																	return (!_Utils_eq(
-																		A2($justinmimbs$date$Date$compare, encounterData.startDate, startDate),
-																		$elm$core$Basics$LT)) && (!_Utils_eq(
-																		A2($justinmimbs$date$Date$compare, encounterData.startDate, limitDate),
-																		$elm$core$Basics$GT));
-																},
-																participantData.encounters);
-															if ($elm$core$List$isEmpty(filteredEncounters)) {
-																return $elm$core$Maybe$Nothing;
-															} else {
-																var dateConcluded = A2(
-																	$elm$core$Maybe$andThen,
-																	function (date) {
-																		return _Utils_eq(
-																			A2($justinmimbs$date$Date$compare, limitDate, date),
-																			$elm$core$Basics$LT) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(date);
-																	},
-																	participantData.dateConcluded);
-																return $elm$core$Maybe$Just(
-																	_Utils_update(
-																		participantData,
-																		{dateConcluded: dateConcluded, encounters: filteredEncounters}));
-															}
-														}
-													}));
-											var filterIndividualBy = function (resolveDateFunc) {
-												return $elm$core$Maybe$map(
-													$elm$core$List$map(
-														$elm$core$List$filter(
-															function (encounterData) {
-																var encounterDate = resolveDateFunc(encounterData);
-																return (!_Utils_eq(
-																	A2($justinmimbs$date$Date$compare, encounterDate, startDate),
-																	$elm$core$Basics$LT)) && (!_Utils_eq(
-																	A2($justinmimbs$date$Date$compare, encounterDate, limitDate),
-																	$elm$core$Basics$GT));
-															})));
-											};
-											var filterGroupBy = function (resolveDateFunc) {
-												return $elm$core$Maybe$map(
-													$elm$core$List$filter(
-														function (encounterData) {
-															var encounterDate = resolveDateFunc(encounterData);
-															return (!_Utils_eq(
-																A2($justinmimbs$date$Date$compare, encounterDate, startDate),
-																$elm$core$Basics$LT)) && (!_Utils_eq(
-																A2($justinmimbs$date$Date$compare, encounterDate, limitDate),
-																$elm$core$Basics$GT));
-														}));
-											};
-											return $elm$core$Maybe$Just(
-												_Utils_update(
-													record,
-													{
-														acuteIllnessData: A2(
-															filterIndividualBy,
-															function ($) {
-																return $.startDate;
-															},
-															record.acuteIllnessData),
-														childScorecardData: A2(filterIndividualBy, $elm$core$Basics$identity, record.childScorecardData),
-														familyNutritionData: A2(
-															filterIndividualBy,
-															function ($) {
-																return $.startDate;
-															},
-															record.familyNutritionData),
-														familyNutritionMuacData: A2(
-															filterIndividualBy,
-															function ($) {
-																return $.startDate;
-															},
-															record.familyNutritionMuacData),
-														groupNutritionAchiData: A2(
-															filterGroupBy,
-															function ($) {
-																return $.startDate;
-															},
-															record.groupNutritionAchiData),
-														groupNutritionChwData: A2(
-															filterGroupBy,
-															function ($) {
-																return $.startDate;
-															},
-															record.groupNutritionChwData),
-														groupNutritionFbfData: A2(
-															filterGroupBy,
-															function ($) {
-																return $.startDate;
-															},
-															record.groupNutritionFbfData),
-														groupNutritionFbfMotherData: A2(
-															filterGroupBy,
-															function ($) {
-																return $.startDate;
-															},
-															record.groupNutritionFbfMotherData),
-														groupNutritionPmtctData: A2(
-															filterGroupBy,
-															function ($) {
-																return $.startDate;
-															},
-															record.groupNutritionPmtctData),
-														groupNutritionSorwatheData: A2(
-															filterGroupBy,
-															function ($) {
-																return $.startDate;
-															},
-															record.groupNutritionSorwatheData),
-														hivData: A2(filterIndividualBy, $elm$core$Basics$identity, record.hivData),
-														homeVisitData: A2(filterIndividualBy, $elm$core$Basics$identity, record.homeVisitData),
-														individualNutritionData: A2(
-															filterIndividualBy,
-															function ($) {
-																return $.startDate;
-															},
-															record.individualNutritionData),
-														ncdData: A2(filterIndividualBy, $elm$core$Basics$identity, record.ncdData),
-														prenatalData: filterPrenatalData(record.prenatalData),
-														tuberculosisData: A2(filterIndividualBy, $elm$core$Basics$identity, record.tuberculosisData),
-														wellChildData: A2(
-															filterIndividualBy,
-															function ($) {
-																return $.startDate;
-															},
-															record.wellChildData)
-													}));
-										} else {
-											return $elm$core$Maybe$Nothing;
-										}
-									},
-									data.records);
-								switch (reportType.$) {
-									case 'ReportAcuteIllness':
-										return A5($author$project$Pages$Reports$View$viewAcuteIllnessReport, language, limitDate, startDate, scopeLabel, recordsTillLimitDate);
-									case 'ReportDemographics':
-										return A6($author$project$Pages$Reports$View$viewDemographicsReport, language, data.features, startDate, limitDate, scopeLabel, recordsTillLimitDate);
-									case 'ReportFBFDistribution':
-										return A5($author$project$Pages$Reports$View$viewFBFDistributionReport, language, data.features, limitDate, scopeLabel, recordsTillLimitDate);
-									case 'ReportNutrition':
-										return A5($author$project$Pages$Reports$View$viewNutritionReport, language, limitDate, scopeLabel, data.nutritionReportData, model.nutritionReportData);
-									case 'ReportPeripartum':
-										return A4($author$project$Pages$Reports$View$viewPeripartumReport, language, limitDate, scopeLabel, recordsTillLimitDate);
-									case 'ReportPostnatalCare':
-										return A5($author$project$Pages$Reports$View$viewPostnatalCareReport, language, data.site, limitDate, scopeLabel, recordsTillLimitDate);
-									case 'ReportPrenatal':
-										return A4($author$project$Pages$Reports$View$viewPrenatalReport, language, limitDate, scopeLabel, recordsTillLimitDate);
-									case 'ReportPrenatalContacts':
-										return A4($author$project$Pages$Reports$View$viewPrenatalContactsReport, language, limitDate, scopeLabel, recordsTillLimitDate);
-									default:
-										return A4($author$project$Pages$Reports$View$viewPrenatalDiagnosesReport, language, limitDate, scopeLabel, recordsTillLimitDate);
-								}
-							}),
-						model.reportType,
-						startDateByReportType,
-						limitDateByReportType));
-			}
-		}();
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('page-content reports')
-				]),
-			_List_fromArray(
-				[
-					$author$project$Pages$Utils$generateReportsHeaderImage(themePath),
-					topBar,
+					_List_Nil,
 					A2(
+						$elm$core$Maybe$map,
+						function (reportType) {
+							if (_Utils_eq(reportType, $author$project$Pages$Reports$Model$ReportNutrition)) {
+								return _List_Nil;
+							} else {
+								var startDateInput = function () {
+									var dateSelectorConfig = {
+										close: $author$project$Pages$Reports$Model$SetStartDateSelectorState($elm$core$Maybe$Nothing),
+										dateDefault: $elm$core$Maybe$Just($author$project$Pages$Utils$launchDate),
+										dateFrom: $author$project$Pages$Utils$launchDate,
+										dateTo: currentDate,
+										select: $author$project$Pages$Reports$Model$SetStartDate
+									};
+									var dateForView = A2(
+										$elm$core$Maybe$withDefault,
+										'',
+										A2($elm$core$Maybe$map, $author$project$Gizra$NominalDate$formatDDMMYYYY, model.startDate));
+									return A4(
+										$author$project$Pages$Utils$wrapSelectListInput,
+										language,
+										$author$project$Translate$SelectStartDate,
+										false,
+										A2(
+											$elm$html$Html$div,
+											_List_fromArray(
+												[
+													$elm$html$Html$Attributes$class('form-input date'),
+													$elm$html$Html$Events$onClick(
+													$author$project$Pages$Reports$Model$SetStartDateSelectorState(
+														$elm$core$Maybe$Just(dateSelectorConfig)))
+												]),
+											_List_fromArray(
+												[
+													$elm$html$Html$text(dateForView)
+												])));
+								}();
+								var limitDateInput = function () {
+									if ($elm_community$maybe_extra$Maybe$Extra$isNothing(model.startDate)) {
+										return $author$project$Gizra$Html$emptyNode;
+									} else {
+										var limitDateForView = A2(
+											$elm$core$Maybe$withDefault,
+											'',
+											A2($elm$core$Maybe$map, $author$project$Gizra$NominalDate$formatDDMMYYYY, model.limitDate));
+										var dateFrom = A2($elm$core$Maybe$withDefault, $author$project$Pages$Utils$launchDate, model.startDate);
+										var dateSelectorConfig = {
+											close: $author$project$Pages$Reports$Model$SetLimitDateSelectorState($elm$core$Maybe$Nothing),
+											dateDefault: $elm$core$Maybe$Just(currentDate),
+											dateFrom: dateFrom,
+											dateTo: currentDate,
+											select: $author$project$Pages$Reports$Model$SetLimitDate
+										};
+										return A4(
+											$author$project$Pages$Utils$wrapSelectListInput,
+											language,
+											$author$project$Translate$SelectLimitDate,
+											false,
+											A2(
+												$elm$html$Html$div,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$class('form-input date'),
+														$elm$html$Html$Events$onClick(
+														$author$project$Pages$Reports$Model$SetLimitDateSelectorState(
+															$elm$core$Maybe$Just(dateSelectorConfig)))
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text(limitDateForView)
+													])));
+									}
+								}();
+								return _List_fromArray(
+									[startDateInput, limitDateInput]);
+							}
+						},
+						model.reportType));
+				var content = function () {
+					if ($elm_community$maybe_extra$Maybe$Extra$isJust(model.startDateSelectorPopupState) || $elm_community$maybe_extra$Maybe$Extra$isJust(model.limitDateSelectorPopupState)) {
+						return $author$project$Gizra$Html$emptyNode;
+					} else {
+						var _v0 = _Utils_eq(
+							model.reportType,
+							$elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportNutrition)) ? _Utils_Tuple2(
+							$elm$core$Maybe$Just($author$project$Pages$Utils$launchDate),
+							$elm$core$Maybe$Just(currentDate)) : _Utils_Tuple2(model.startDate, model.limitDate);
+						var startDateByReportType = _v0.a;
+						var limitDateByReportType = _v0.b;
+						return A2(
+							$elm$core$Maybe$withDefault,
+							$author$project$Pages$Reports$Utils$isWideScope(data.entityType) ? A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$WideScopeNote, '', 'label wide-scope') : $author$project$Gizra$Html$emptyNode,
+							A4(
+								$elm$core$Maybe$map3,
+								F3(
+									function (reportType, startDate, limitDate) {
+										var recordsTillLimitDate = (_Utils_eq(
+											A2($justinmimbs$date$Date$compare, startDate, $author$project$Pages$Utils$launchDate),
+											$elm$core$Basics$EQ) && _Utils_eq(
+											A2($justinmimbs$date$Date$compare, limitDate, currentDate),
+											$elm$core$Basics$EQ)) ? data.records : A2(
+											$elm$core$List$filterMap,
+											function (record) {
+												if (!_Utils_eq(
+													A2($justinmimbs$date$Date$compare, record.created, limitDate),
+													$elm$core$Basics$GT)) {
+													var filterPrenatalData = $elm$core$Maybe$map(
+														$elm$core$List$filterMap(
+															function (participantData) {
+																if (_Utils_eq(
+																	A2($justinmimbs$date$Date$compare, participantData.created, limitDate),
+																	$elm$core$Basics$GT)) {
+																	return $elm$core$Maybe$Nothing;
+																} else {
+																	var filteredEncounters = A2(
+																		$elm$core$List$filter,
+																		function (encounterData) {
+																			return (!_Utils_eq(
+																				A2($justinmimbs$date$Date$compare, encounterData.startDate, startDate),
+																				$elm$core$Basics$LT)) && (!_Utils_eq(
+																				A2($justinmimbs$date$Date$compare, encounterData.startDate, limitDate),
+																				$elm$core$Basics$GT));
+																		},
+																		participantData.encounters);
+																	if ($elm$core$List$isEmpty(filteredEncounters)) {
+																		return $elm$core$Maybe$Nothing;
+																	} else {
+																		var dateConcluded = A2(
+																			$elm$core$Maybe$andThen,
+																			function (date) {
+																				return _Utils_eq(
+																					A2($justinmimbs$date$Date$compare, limitDate, date),
+																					$elm$core$Basics$LT) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(date);
+																			},
+																			participantData.dateConcluded);
+																		return $elm$core$Maybe$Just(
+																			_Utils_update(
+																				participantData,
+																				{dateConcluded: dateConcluded, encounters: filteredEncounters}));
+																	}
+																}
+															}));
+													var filterIndividualBy = function (resolveDateFunc) {
+														return $elm$core$Maybe$map(
+															$elm$core$List$map(
+																$elm$core$List$filter(
+																	function (encounterData) {
+																		var encounterDate = resolveDateFunc(encounterData);
+																		return (!_Utils_eq(
+																			A2($justinmimbs$date$Date$compare, encounterDate, startDate),
+																			$elm$core$Basics$LT)) && (!_Utils_eq(
+																			A2($justinmimbs$date$Date$compare, encounterDate, limitDate),
+																			$elm$core$Basics$GT));
+																	})));
+													};
+													var filterGroupBy = function (resolveDateFunc) {
+														return $elm$core$Maybe$map(
+															$elm$core$List$filter(
+																function (encounterData) {
+																	var encounterDate = resolveDateFunc(encounterData);
+																	return (!_Utils_eq(
+																		A2($justinmimbs$date$Date$compare, encounterDate, startDate),
+																		$elm$core$Basics$LT)) && (!_Utils_eq(
+																		A2($justinmimbs$date$Date$compare, encounterDate, limitDate),
+																		$elm$core$Basics$GT));
+																}));
+													};
+													return $elm$core$Maybe$Just(
+														_Utils_update(
+															record,
+															{
+																acuteIllnessData: A2(
+																	filterIndividualBy,
+																	function ($) {
+																		return $.startDate;
+																	},
+																	record.acuteIllnessData),
+																childScorecardData: A2(filterIndividualBy, $elm$core$Basics$identity, record.childScorecardData),
+																familyNutritionData: A2(
+																	filterIndividualBy,
+																	function ($) {
+																		return $.startDate;
+																	},
+																	record.familyNutritionData),
+																familyNutritionMuacData: A2(
+																	filterIndividualBy,
+																	function ($) {
+																		return $.startDate;
+																	},
+																	record.familyNutritionMuacData),
+																groupNutritionAchiData: A2(
+																	filterGroupBy,
+																	function ($) {
+																		return $.startDate;
+																	},
+																	record.groupNutritionAchiData),
+																groupNutritionChwData: A2(
+																	filterGroupBy,
+																	function ($) {
+																		return $.startDate;
+																	},
+																	record.groupNutritionChwData),
+																groupNutritionFbfData: A2(
+																	filterGroupBy,
+																	function ($) {
+																		return $.startDate;
+																	},
+																	record.groupNutritionFbfData),
+																groupNutritionFbfMotherData: A2(
+																	filterGroupBy,
+																	function ($) {
+																		return $.startDate;
+																	},
+																	record.groupNutritionFbfMotherData),
+																groupNutritionPmtctData: A2(
+																	filterGroupBy,
+																	function ($) {
+																		return $.startDate;
+																	},
+																	record.groupNutritionPmtctData),
+																groupNutritionSorwatheData: A2(
+																	filterGroupBy,
+																	function ($) {
+																		return $.startDate;
+																	},
+																	record.groupNutritionSorwatheData),
+																hivData: A2(filterIndividualBy, $elm$core$Basics$identity, record.hivData),
+																homeVisitData: A2(filterIndividualBy, $elm$core$Basics$identity, record.homeVisitData),
+																individualNutritionData: A2(
+																	filterIndividualBy,
+																	function ($) {
+																		return $.startDate;
+																	},
+																	record.individualNutritionData),
+																ncdData: A2(filterIndividualBy, $elm$core$Basics$identity, record.ncdData),
+																prenatalData: filterPrenatalData(record.prenatalData),
+																tuberculosisData: A2(filterIndividualBy, $elm$core$Basics$identity, record.tuberculosisData),
+																wellChildData: A2(
+																	filterIndividualBy,
+																	function ($) {
+																		return $.startDate;
+																	},
+																	record.wellChildData)
+															}));
+												} else {
+													return $elm$core$Maybe$Nothing;
+												}
+											},
+											data.records);
+										switch (reportType.$) {
+											case 'ReportAcuteIllness':
+												return A5($author$project$Pages$Reports$View$viewAcuteIllnessReport, language, limitDate, startDate, scopeLabel, recordsTillLimitDate);
+											case 'ReportDemographics':
+												return A6($author$project$Pages$Reports$View$viewDemographicsReport, language, data.features, startDate, limitDate, scopeLabel, recordsTillLimitDate);
+											case 'ReportFBFDistribution':
+												return A5($author$project$Pages$Reports$View$viewFBFDistributionReport, language, data.features, limitDate, scopeLabel, recordsTillLimitDate);
+											case 'ReportNutrition':
+												return A5($author$project$Pages$Reports$View$viewNutritionReport, language, limitDate, scopeLabel, data.nutritionReportData, model.nutritionReportData);
+											case 'ReportPeripartum':
+												return A4($author$project$Pages$Reports$View$viewPeripartumReport, language, limitDate, scopeLabel, recordsTillLimitDate);
+											case 'ReportPostnatalCare':
+												return A5($author$project$Pages$Reports$View$viewPostnatalCareReport, language, data.site, limitDate, scopeLabel, recordsTillLimitDate);
+											case 'ReportPrenatal':
+												return A4($author$project$Pages$Reports$View$viewPrenatalReport, language, limitDate, scopeLabel, recordsTillLimitDate);
+											case 'ReportPrenatalContacts':
+												return A4($author$project$Pages$Reports$View$viewPrenatalContactsReport, language, limitDate, scopeLabel, recordsTillLimitDate);
+											default:
+												return A4($author$project$Pages$Reports$View$viewPrenatalDiagnosesReport, language, limitDate, scopeLabel, recordsTillLimitDate);
+										}
+									}),
+								model.reportType,
+								startDateByReportType,
+								limitDateByReportType));
+					}
+				}();
+				return A2(
 					$elm$html$Html$div,
 					_List_fromArray(
 						[
@@ -22104,7 +23071,26 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 						_Utils_ap(
 							dateInputs,
 							_List_fromArray(
-								[content])))),
+								[content]))));
+			} else {
+				return A3(
+					$author$project$Pages$Components$Utils$viewSyncingPlaceholder,
+					language,
+					$elm$core$List$length(data.records),
+					data.remainingForDownload);
+			}
+		}();
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('page-content reports')
+				]),
+			_List_fromArray(
+				[
+					$author$project$Pages$Utils$generateReportsHeaderImage(themePath),
+					topBar,
+					inputsAndContent,
 					$author$project$Utils$Html$viewModal(
 					A3($author$project$DateSelector$SelectorPopup$viewCalendarPopup, language, model.startDateSelectorPopupState, model.startDate)),
 					$author$project$Utils$Html$viewModal(
@@ -44513,137 +45499,153 @@ var $author$project$Pages$Utils$viewYearSelector = F3(
 	});
 var $author$project$Pages$Scoreboard$View$viewScoreboardData = F4(
 	function (language, currentDate, data, model) {
-		var topBar = A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('top-bar')
-				]),
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('new-selection')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							$elm$html$Html$a,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$href('/admin/reports/aggregated-ncda')
-								]),
-							_List_fromArray(
-								[
-									A2(
-									$elm$html$Html$button,
-									_List_Nil,
-									_List_fromArray(
-										[
-											$elm$html$Html$text(
-											A2($author$project$Translate$translate, language, $author$project$Translate$NewSelection))
-										]))
-								]))
-						])),
-					A3($author$project$Pages$Utils$viewYearSelector, currentDate, model.yearSelectorGap, $author$project$Pages$Scoreboard$Model$ChaneYearGap),
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('values-percents')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$classList(
-									_List_fromArray(
-										[
-											_Utils_Tuple2('item', true),
-											_Utils_Tuple2(
-											'selected',
-											_Utils_eq(model.viewMode, $author$project$Pages$Scoreboard$Model$ModePercentages))
-										])),
-									$elm$html$Html$Events$onClick(
-									$author$project$Pages$Scoreboard$Model$SetViewMode($author$project$Pages$Scoreboard$Model$ModePercentages))
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text('%')
-								])),
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$classList(
-									_List_fromArray(
-										[
-											_Utils_Tuple2('item', true),
-											_Utils_Tuple2(
-											'selected',
-											_Utils_eq(model.viewMode, $author$project$Pages$Scoreboard$Model$ModeValues))
-										])),
-									$elm$html$Html$Events$onClick(
-									$author$project$Pages$Scoreboard$Model$SetViewMode($author$project$Pages$Scoreboard$Model$ModeValues))
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text('#')
-								]))
-						]))
-				]));
-		var monthsGap = A2($author$project$Pages$Scoreboard$View$generateMonthsGap, currentDate, model.yearSelectorGap);
-		var childrenUnder2 = A3(
-			$elm$core$List$foldl,
-			F2(
-				function (record, accum) {
-					return A2(
-						$elm$core$List$indexedMap,
-						F2(
-							function (index, accumValue) {
-								return A2(
-									$elm$core$Maybe$withDefault,
-									accumValue,
-									A2(
-										$elm$core$Maybe$map,
-										function (gapInMonths) {
-											var targetDateForMonth = A2($author$project$Pages$Scoreboard$View$resolveTargetDateForMonth, gapInMonths, currentDate);
-											var existedDuringExaminationMonth = _Utils_eq(
-												A2($justinmimbs$date$Date$compare, record.created, targetDateForMonth),
-												$elm$core$Basics$LT);
-											var ageInMonths = A2($author$project$Gizra$NominalDate$diffMonths, record.birthDate, targetDateForMonth);
-											var gap = ageInMonths - gapInMonths;
-											return (existedDuringExaminationMonth && ((gap >= 0) && (gap < 24))) ? (accumValue + 1) : accumValue;
-										},
-										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
-							}),
-						accum);
-				}),
-			A2($elm$core$List$repeat, 12, 0),
-			data.records);
+		var topBar = function () {
+			var viewModeToggle = $author$project$Pages$Components$Utils$isSyncComplete(data.remainingForDownload) ? A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('values-percents')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$classList(
+								_List_fromArray(
+									[
+										_Utils_Tuple2('item', true),
+										_Utils_Tuple2(
+										'selected',
+										_Utils_eq(model.viewMode, $author$project$Pages$Scoreboard$Model$ModePercentages))
+									])),
+								$elm$html$Html$Events$onClick(
+								$author$project$Pages$Scoreboard$Model$SetViewMode($author$project$Pages$Scoreboard$Model$ModePercentages))
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('%')
+							])),
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$classList(
+								_List_fromArray(
+									[
+										_Utils_Tuple2('item', true),
+										_Utils_Tuple2(
+										'selected',
+										_Utils_eq(model.viewMode, $author$project$Pages$Scoreboard$Model$ModeValues))
+									])),
+								$elm$html$Html$Events$onClick(
+								$author$project$Pages$Scoreboard$Model$SetViewMode($author$project$Pages$Scoreboard$Model$ModeValues))
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('#')
+							]))
+					])) : $author$project$Gizra$Html$emptyNode;
+			return A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('top-bar')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('new-selection')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$a,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$href('/admin/reports/aggregated-ncda')
+									]),
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$button,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text(
+												A2($author$project$Translate$translate, language, $author$project$Translate$NewSelection))
+											]))
+									]))
+							])),
+						A3($author$project$Pages$Utils$viewYearSelector, currentDate, model.yearSelectorGap, $author$project$Pages$Scoreboard$Model$ChaneYearGap),
+						viewModeToggle
+					]));
+		}();
+		var panes = function () {
+			if ($author$project$Pages$Components$Utils$isSyncComplete(data.remainingForDownload)) {
+				var monthsGap = A2($author$project$Pages$Scoreboard$View$generateMonthsGap, currentDate, model.yearSelectorGap);
+				var childrenUnder2 = A3(
+					$elm$core$List$foldl,
+					F2(
+						function (record, accum) {
+							return A2(
+								$elm$core$List$indexedMap,
+								F2(
+									function (index, accumValue) {
+										return A2(
+											$elm$core$Maybe$withDefault,
+											accumValue,
+											A2(
+												$elm$core$Maybe$map,
+												function (gapInMonths) {
+													var targetDateForMonth = A2($author$project$Pages$Scoreboard$View$resolveTargetDateForMonth, gapInMonths, currentDate);
+													var existedDuringExaminationMonth = _Utils_eq(
+														A2($justinmimbs$date$Date$compare, record.created, targetDateForMonth),
+														$elm$core$Basics$LT);
+													var ageInMonths = A2($author$project$Gizra$NominalDate$diffMonths, record.birthDate, targetDateForMonth);
+													var gap = ageInMonths - gapInMonths;
+													return (existedDuringExaminationMonth && ((gap >= 0) && (gap < 24))) ? (accumValue + 1) : accumValue;
+												},
+												A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
+									}),
+								accum);
+						}),
+					A2($elm$core$List$repeat, 12, 0),
+					data.records);
+				return _List_fromArray(
+					[
+						A2($author$project$Pages$Scoreboard$View$viewAggregatedChildScoreboardPane, language, data),
+						A7($author$project$Pages$Scoreboard$View$viewDemographicsPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
+						A7($author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
+						A7($author$project$Pages$Scoreboard$View$viewStuntingPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
+						A7($author$project$Pages$Scoreboard$View$viewANCNewbornPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
+						A8($author$project$Pages$Scoreboard$View$viewUniversalInterventionPane, language, currentDate, data.site, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
+						A7($author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
+						A7($author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
+						A7($author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data)
+					]);
+			} else {
+				return _List_fromArray(
+					[
+						A3(
+						$author$project$Pages$Components$Utils$viewSyncingPlaceholder,
+						language,
+						$elm$core$List$length(data.records),
+						data.remainingForDownload)
+					]);
+			}
+		}();
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
 					$elm$html$Html$Attributes$class('page-content')
 				]),
-			_List_fromArray(
-				[
-					topBar,
-					A2($author$project$Pages$Scoreboard$View$viewAggregatedChildScoreboardPane, language, data),
-					A7($author$project$Pages$Scoreboard$View$viewDemographicsPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
-					A7($author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
-					A7($author$project$Pages$Scoreboard$View$viewStuntingPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
-					A7($author$project$Pages$Scoreboard$View$viewANCNewbornPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
-					A8($author$project$Pages$Scoreboard$View$viewUniversalInterventionPane, language, currentDate, data.site, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
-					A7($author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
-					A7($author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
-					A7($author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data)
-				]));
+			A2($elm$core$List$cons, topBar, panes));
 	});
 var $author$project$Pages$Scoreboard$View$view = F4(
 	function (language, currentDate, modelBackend, model) {
@@ -44836,11 +45838,21 @@ _Platform_export({'Main':{'init':$author$project$Main$main(
 				function (page) {
 					return A2(
 						$elm$json$Json$Decode$andThen,
-						function (appData) {
-							return $elm$json$Json$Decode$succeed(
-								{appData: appData, page: page, themePath: themePath});
+						function (csrfToken) {
+							return A2(
+								$elm$json$Json$Decode$andThen,
+								function (backendUrl) {
+									return A2(
+										$elm$json$Json$Decode$andThen,
+										function (appData) {
+											return $elm$json$Json$Decode$succeed(
+												{appData: appData, backendUrl: backendUrl, csrfToken: csrfToken, page: page, themePath: themePath});
+										},
+										A2($elm$json$Json$Decode$field, 'appData', $elm$json$Json$Decode$value));
+								},
+								A2($elm$json$Json$Decode$field, 'backendUrl', $elm$json$Json$Decode$string));
 						},
-						A2($elm$json$Json$Decode$field, 'appData', $elm$json$Json$Decode$value));
+						A2($elm$json$Json$Decode$field, 'csrfToken', $elm$json$Json$Decode$string));
 				},
 				A2($elm$json$Json$Decode$field, 'page', $elm$json$Json$Decode$string));
 		},

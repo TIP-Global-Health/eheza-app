@@ -275,6 +275,8 @@ function hedley_ncda_aggregated_callback_village($province, $district, $sector, 
  */
 function hedley_ncda_build_results_app($province, $district, $sector = NULL, $cell = NULL, $village = NULL) {
   $data = [];
+  $params['province'] = $province;
+  $params['district'] = $district;
 
   if (empty($sector)) {
     $data['entity_name'] = $district;
@@ -283,25 +285,24 @@ function hedley_ncda_build_results_app($province, $district, $sector = NULL, $ce
   elseif (empty($cell)) {
     $data['entity_name'] = $sector;
     $data['entity_type'] = 'sector';
+    $params['sector'] = $sector;
   }
   elseif (empty($village)) {
     $data['entity_name'] = $cell;
     $data['entity_type'] = 'cell';
+    $params['sector'] = $sector;
+    $params['cell'] = $cell;
   }
   else {
     $data['entity_name'] = $village;
     $data['entity_type'] = 'village';
+    $params['sector'] = $sector;
+    $params['cell'] = $cell;
+    $params['village'] = $village;
   }
 
   $data['site'] = variable_get('hedley_general_site_name', '');
-
-  if ($data['entity_type'] == 'district') {
-    list($data['results'], $data['additional']) = hedley_reports_load_results_data('aggregated-ncda', $data['entity_type'], $province, $district);
-  }
-  else {
-    // For smaller data sets, we generate results on fly.
-    $data['results'] = hedley_ncda_generate_results_data($province, $district, $sector, $cell, $village);
-  }
+  $data['params'] = $params;
 
   return hedley_general_build_elm_app('ncda-results', $data);
 }
@@ -309,6 +310,12 @@ function hedley_ncda_build_results_app($province, $district, $sector = NULL, $ce
 /**
  * Generate aggregated NCDA data which is stored on person nodes.
  *
+ * The requests are coming from restful endpoint.
+ *
+ * @param int $from_nid
+ *   Query for data from nodes which IDs are above provided node ID.
+ * @param int $batch
+ *   Number of nodes to be processed in single batch.
  * @param string $province
  *   Province name.
  * @param string $district
@@ -323,73 +330,95 @@ function hedley_ncda_build_results_app($province, $district, $sector = NULL, $ce
  * @return array
  *   An array of generated data.
  */
-function hedley_ncda_generate_results_data($province, $district, $sector, $cell, $village) {
+function hedley_ncda_generate_results_data_for_restful($from_nid, $batch, $province, $district, $sector, $cell, $village) {
   $three_years_ago = date('Y-m-d', strtotime('-3 years'));
-  $base_query = hedley_general_create_entity_field_query_excluding_deleted();
-  $base_query
-    ->entityCondition('entity_type', 'node')
-    ->entityCondition('bundle', 'person')
-    ->propertyCondition('status', NODE_PUBLISHED)
-      // Since we show data starting Nov 23, it's enough to select only those
-      // born during the past 3 years.
-      // Position the condition as first field condition, as placing it bellow
-      // caused incorrect query results on live environment.
-    ->fieldCondition('field_birth_date', 'value', $three_years_ago, '>')
-    ->fieldCondition('field_province', 'value', $province)
-    ->fieldCondition('field_district', 'value', $district)
-    ->fieldCondition('field_ncda_data', 'value', NULL, 'IS NOT NULL');
 
-  if (!empty($sector)) {
-    $base_query->fieldCondition('field_sector', 'value', $sector);
-  }
+  // Direct SELECT against the field table avoids the node_load_multiple() that
+  // EntityFieldQuery would force; the JSON payload is read straight from
+  // field_data_field_ncda_data. The shared $build closure keeps the COUNT and
+  // data queries in lockstep.
+  $build = function () use ($from_nid, $three_years_ago, $province, $district, $sector, $cell, $village) {
+    $q = db_select('field_data_field_ncda_data', 'fr');
+    $q->innerJoin('node', 'n', 'n.nid = fr.entity_id');
+    // Replicates the exclude_deleted query tag; see
+    // hedley_general_query_exclude_deleted_alter().
+    $q->leftJoin('field_data_field_deleted', 'fd', 'fd.entity_id = n.nid');
+    $q->condition('fr.entity_type', 'node')
+      ->condition('fr.bundle', 'person')
+      ->condition('fr.deleted', 0)
+      ->condition('n.status', NODE_PUBLISHED)
+      ->condition('n.nid', $from_nid, '>')
+      ->isNotNull('fr.field_ncda_data_value')
+      ->condition(db_or()->isNull('fd.field_deleted_value')->condition('fd.field_deleted_value', 0));
 
-  if (!empty($cell)) {
-    $base_query->fieldCondition('field_cell', 'value', $cell);
-  }
+    // Since we show data starting Nov 23, it's enough to select only those
+    // born during the past 3 years.
+    $bd = $q->innerJoin('field_data_field_birth_date', 'bd',
+      "%alias.entity_id = n.nid AND %alias.entity_type = 'node' AND %alias.deleted = 0");
+    $q->condition("$bd.field_birth_date_value", $three_years_ago, '>');
 
-  if (!empty($village)) {
-    $base_query->fieldCondition('field_village', 'value', $village);
-  }
-
-  $data = [];
-  $nid = 0;
-  $batch = 400;
-  while (TRUE) {
-    // Free up memory.
-    drupal_static_reset();
-
-    $query = clone $base_query;
-    if ($nid) {
-      $query->propertyCondition('nid', $nid, '>');
+    // Mandatory province/district filters.
+    foreach (['field_province' => $province, 'field_district' => $district] as $field => $value) {
+      $alias = $q->innerJoin("field_data_$field", $field,
+        "%alias.entity_id = n.nid AND %alias.entity_type = 'node' AND %alias.deleted = 0");
+      $q->condition("$alias.{$field}_value", $value);
     }
-
-    $result = $query
-      ->range(0, $batch)
-      ->execute();
-
-    if (empty($result['node'])) {
-      // No more items left.
-      break;
-    }
-
-    $ids = array_keys($result['node']);
-    $nodes = node_load_multiple($ids);
-    foreach ($nodes as $node) {
-      $json_data = $node->field_ncda_data[LANGUAGE_NONE][0]['value'];
-      if (empty($json_data)) {
-        continue;
+    // Optional sector/cell/village filters.
+    $optional = [
+      'field_sector'  => $sector,
+      'field_cell'    => $cell,
+      'field_village' => $village,
+    ];
+    foreach ($optional as $field => $value) {
+      if (!empty($value)) {
+        $alias = $q->innerJoin("field_data_$field", $field,
+          "%alias.entity_id = n.nid AND %alias.entity_type = 'node' AND %alias.deleted = 0");
+        $q->condition("$alias.{$field}_value", $value);
       }
-
-      $decoded = json_decode($json_data);
-      $decoded->created = date("Y-m-d", $node->created);
-
-      $data[] = $decoded;
     }
+    return $q;
+  };
 
-    $nid = end($ids);
+  // Count remaining rows from $from_nid. addExpression() emits "SELECT COUNT(*)
+  // FROM ..." rather than the subquery wrapper countQuery() would generate.
+  $count_q = $build();
+  $count_q->addExpression('COUNT(*)', 'cnt');
+  $count = (int) $count_q->execute()->fetchField();
+
+  if ($count === 0) {
+    // No more items left -- return the structured shape Elm expects so
+    // its decoder doesn't fail and leave sync stuck at "PENDING".
+    return [
+      'batch' => [],
+      'total_remaining' => 0,
+      'last' => 0,
+    ];
   }
 
-  return $data;
+  $data_q = $build();
+  $data_q->fields('n', ['nid', 'created'])
+    ->fields('fr', ['field_ncda_data_value'])
+    ->orderBy('n.nid')
+    ->range(0, $batch);
+  $rows = $data_q->execute()->fetchAll();
+
+  $output = [];
+  $last = 0;
+  foreach ($rows as $r) {
+    if (empty($r->field_ncda_data_value)) {
+      continue;
+    }
+    $decoded = json_decode($r->field_ncda_data_value);
+    $decoded->created = date('Y-m-d', $r->created);
+    $output[] = $decoded;
+    $last = (int) $r->nid;
+  }
+
+  return [
+    'batch' => $output,
+    'total_remaining' => $count - count($rows),
+    'last' => $last,
+  ];
 }
 
 /**

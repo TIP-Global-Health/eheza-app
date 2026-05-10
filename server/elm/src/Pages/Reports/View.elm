@@ -2,6 +2,7 @@ module Pages.Reports.View exposing (view)
 
 import App.Types exposing (Language, Site, SiteFeature(..))
 import AssocList as Dict exposing (Dict)
+import Backend.Components.Model exposing (SelectedEntity(..))
 import Backend.Model exposing (ModelBackend)
 import Backend.Reports.Model
     exposing
@@ -17,7 +18,6 @@ import Backend.Reports.Model
         , PrenatalEncounterType(..)
         , PrenatalIndicator(..)
         , ReportsData
-        , SelectedEntity(..)
         )
 import Backend.Reports.Utils exposing (allAcuteIllnessDiagnoses, allPrenatalDiagnoses)
 import Backend.Scoreboard.Utils exposing (generateVaccinationProgressForVaccine)
@@ -40,6 +40,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
+import Pages.Components.Utils exposing (isSyncComplete, viewSyncingPlaceholder)
 import Pages.Components.View exposing (viewMetricsResultsTable, viewStandardCells, viewStandardRow)
 import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Reports.Model exposing (FbfDistributionCategory(..), Model, Msg(..), NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), allFbfDistributionCategories, emptyNutritionMetrics)
@@ -99,271 +100,279 @@ viewReportsData language currentDate themePath data model =
                 _ ->
                     data.entityName ++ " " ++ (String.toLower <| translate language (Translate.SelectedScope data.entityType))
 
-        dateInputs =
-            Maybe.map
-                (\reportType ->
-                    if reportType == ReportNutrition then
-                        []
-
-                    else
-                        let
-                            startDateInput =
-                                let
-                                    dateSelectorConfig =
-                                        { select = SetStartDate
-                                        , close = SetStartDateSelectorState Nothing
-                                        , dateFrom = launchDate
-                                        , dateTo = currentDate
-                                        , dateDefault = Just launchDate
-                                        }
-
-                                    dateForView =
-                                        Maybe.map formatDDMMYYYY model.startDate
-                                            |> Maybe.withDefault ""
-                                in
-                                div
-                                    [ class "form-input date"
-                                    , onClick <| SetStartDateSelectorState (Just dateSelectorConfig)
-                                    ]
-                                    [ text dateForView ]
-                                    |> wrapSelectListInput language Translate.SelectStartDate False
-
-                            limitDateInput =
-                                if
-                                    -- Reports requires setting start date before
-                                    -- limit date can be shown.
-                                    isNothing model.startDate
-                                then
-                                    emptyNode
+        inputsAndContent =
+            if isSyncComplete data.remainingForDownload then
+                let
+                    dateInputs =
+                        Maybe.map
+                            (\reportType ->
+                                if reportType == ReportNutrition then
+                                    []
 
                                 else
                                     let
-                                        dateFrom =
-                                            Maybe.withDefault launchDate model.startDate
-
-                                        dateSelectorConfig =
-                                            { select = SetLimitDate
-                                            , close = SetLimitDateSelectorState Nothing
-                                            , dateFrom = dateFrom
-                                            , dateTo = currentDate
-                                            , dateDefault = Just currentDate
-                                            }
-
-                                        limitDateForView =
-                                            Maybe.map formatDDMMYYYY model.limitDate
-                                                |> Maybe.withDefault ""
-                                    in
-                                    div
-                                        [ class "form-input date"
-                                        , onClick <| SetLimitDateSelectorState (Just dateSelectorConfig)
-                                        ]
-                                        [ text limitDateForView ]
-                                        |> wrapSelectListInput language Translate.SelectLimitDate False
-                        in
-                        [ startDateInput, limitDateInput ]
-                )
-                model.reportType
-                |> Maybe.withDefault []
-
-        content =
-            if
-                isJust model.startDateSelectorPopupState
-                    || isJust model.limitDateSelectorPopupState
-            then
-                -- Date selector is open, so no need to calculate
-                -- intermediate results.
-                emptyNode
-
-            else
-                let
-                    ( startDateByReportType, limitDateByReportType ) =
-                        if model.reportType == Just ReportNutrition then
-                            -- Nutrition report does not allow selecting limit date, so
-                            -- we force it to be today.
-                            ( Just launchDate, Just currentDate )
-
-                        else
-                            ( model.startDate, model.limitDate )
-                in
-                Maybe.map3
-                    (\reportType startDate limitDate ->
-                        let
-                            recordsTillLimitDate =
-                                if
-                                    (Date.compare startDate launchDate == EQ)
-                                        && (Date.compare limitDate currentDate == EQ)
-                                then
-                                    data.records
-
-                                else
-                                    List.filterMap
-                                        (\record ->
-                                            if
-                                                -- Patient was created not after the TO date.
-                                                not <| Date.compare record.created limitDate == GT
-                                            then
-                                                let
-                                                    filterPrenatalData =
-                                                        Maybe.map
-                                                            (List.filterMap
-                                                                (\participantData ->
-                                                                    -- Pregnancy was created not after the TO date.
-                                                                    if Date.compare participantData.created limitDate == GT then
-                                                                        Nothing
-
-                                                                    else
-                                                                        let
-                                                                            filteredEncounters =
-                                                                                List.filter
-                                                                                    (\encounterData ->
-                                                                                        -- Encounter was created not before the FROM date and
-                                                                                        -- not after the TO date.
-                                                                                        (not <| Date.compare encounterData.startDate startDate == LT)
-                                                                                            && (not <| Date.compare encounterData.startDate limitDate == GT)
-                                                                                    )
-                                                                                    participantData.encounters
-                                                                        in
-                                                                        if List.isEmpty filteredEncounters then
-                                                                            Nothing
-
-                                                                        else
-                                                                            let
-                                                                                dateConcluded =
-                                                                                    -- If pregnancy was concluded, but conclusion date is
-                                                                                    -- after TO date, we mark pregnancy as not concluded.
-                                                                                    Maybe.andThen
-                                                                                        (\date ->
-                                                                                            if Date.compare limitDate date == LT then
-                                                                                                Nothing
-
-                                                                                            else
-                                                                                                Just date
-                                                                                        )
-                                                                                        participantData.dateConcluded
-                                                                            in
-                                                                            Just { participantData | dateConcluded = dateConcluded, encounters = filteredEncounters }
-                                                                )
-                                                            )
-
-                                                    filterIndividualBy resolveDateFunc =
-                                                        Maybe.map
-                                                            (List.map
-                                                                (List.filter
-                                                                    (\encounterData ->
-                                                                        let
-                                                                            encounterDate =
-                                                                                resolveDateFunc encounterData
-                                                                        in
-                                                                        (not <| Date.compare encounterDate startDate == LT)
-                                                                            && (not <| Date.compare encounterDate limitDate == GT)
-                                                                    )
-                                                                )
-                                                            )
-
-                                                    filterGroupBy resolveDateFunc =
-                                                        Maybe.map
-                                                            (List.filter
-                                                                (\encounterData ->
-                                                                    let
-                                                                        encounterDate =
-                                                                            resolveDateFunc encounterData
-                                                                    in
-                                                                    (not <| Date.compare encounterDate startDate == LT)
-                                                                        && (not <| Date.compare encounterDate limitDate == GT)
-                                                                )
-                                                            )
-                                                in
-                                                Just
-                                                    { record
-                                                        | acuteIllnessData = filterIndividualBy .startDate record.acuteIllnessData
-                                                        , prenatalData = filterPrenatalData record.prenatalData
-                                                        , homeVisitData = filterIndividualBy identity record.homeVisitData
-                                                        , wellChildData = filterIndividualBy .startDate record.wellChildData
-                                                        , childScorecardData = filterIndividualBy identity record.childScorecardData
-                                                        , ncdData = filterIndividualBy identity record.ncdData
-                                                        , hivData = filterIndividualBy identity record.hivData
-                                                        , tuberculosisData = filterIndividualBy identity record.tuberculosisData
-                                                        , individualNutritionData = filterIndividualBy .startDate record.individualNutritionData
-                                                        , groupNutritionPmtctData = filterGroupBy .startDate record.groupNutritionPmtctData
-                                                        , groupNutritionFbfData = filterGroupBy .startDate record.groupNutritionFbfData
-                                                        , groupNutritionSorwatheData = filterGroupBy .startDate record.groupNutritionSorwatheData
-                                                        , groupNutritionChwData = filterGroupBy .startDate record.groupNutritionChwData
-                                                        , groupNutritionAchiData = filterGroupBy .startDate record.groupNutritionAchiData
-                                                        , groupNutritionFbfMotherData = filterGroupBy .startDate record.groupNutritionFbfMotherData
-                                                        , familyNutritionData = filterIndividualBy .startDate record.familyNutritionData
-                                                        , familyNutritionMuacData = filterIndividualBy .startDate record.familyNutritionMuacData
+                                        startDateInput =
+                                            let
+                                                dateSelectorConfig =
+                                                    { select = SetStartDate
+                                                    , close = SetStartDateSelectorState Nothing
+                                                    , dateFrom = launchDate
+                                                    , dateTo = currentDate
+                                                    , dateDefault = Just launchDate
                                                     }
 
+                                                dateForView =
+                                                    Maybe.map formatDDMMYYYY model.startDate
+                                                        |> Maybe.withDefault ""
+                                            in
+                                            div
+                                                [ class "form-input date"
+                                                , onClick <| SetStartDateSelectorState (Just dateSelectorConfig)
+                                                ]
+                                                [ text dateForView ]
+                                                |> wrapSelectListInput language Translate.SelectStartDate False
+
+                                        limitDateInput =
+                                            if
+                                                -- Reports requires setting start date before
+                                                -- limit date can be shown.
+                                                isNothing model.startDate
+                                            then
+                                                emptyNode
+
                                             else
-                                                Nothing
-                                        )
-                                        data.records
-                        in
-                        case reportType of
-                            ReportAcuteIllness ->
-                                viewAcuteIllnessReport language limitDate startDate scopeLabel recordsTillLimitDate
+                                                let
+                                                    dateFrom =
+                                                        Maybe.withDefault launchDate model.startDate
 
-                            ReportDemographics ->
-                                viewDemographicsReport language data.features startDate limitDate scopeLabel recordsTillLimitDate
+                                                    dateSelectorConfig =
+                                                        { select = SetLimitDate
+                                                        , close = SetLimitDateSelectorState Nothing
+                                                        , dateFrom = dateFrom
+                                                        , dateTo = currentDate
+                                                        , dateDefault = Just currentDate
+                                                        }
 
-                            ReportFBFDistribution ->
-                                viewFBFDistributionReport language data.features limitDate scopeLabel recordsTillLimitDate
+                                                    limitDateForView =
+                                                        Maybe.map formatDDMMYYYY model.limitDate
+                                                            |> Maybe.withDefault ""
+                                                in
+                                                div
+                                                    [ class "form-input date"
+                                                    , onClick <| SetLimitDateSelectorState (Just dateSelectorConfig)
+                                                    ]
+                                                    [ text limitDateForView ]
+                                                    |> wrapSelectListInput language Translate.SelectLimitDate False
+                                    in
+                                    [ startDateInput, limitDateInput ]
+                            )
+                            model.reportType
+                            |> Maybe.withDefault []
 
-                            ReportNutrition ->
-                                viewNutritionReport language limitDate scopeLabel data.nutritionReportData model.nutritionReportData
-
-                            ReportPeripartum ->
-                                viewPeripartumReport language limitDate scopeLabel recordsTillLimitDate
-
-                            ReportPostnatalCare ->
-                                viewPostnatalCareReport language data.site limitDate scopeLabel recordsTillLimitDate
-
-                            ReportPrenatal ->
-                                viewPrenatalReport language limitDate scopeLabel recordsTillLimitDate
-
-                            ReportPrenatalContacts ->
-                                viewPrenatalContactsReport language limitDate scopeLabel recordsTillLimitDate
-
-                            ReportPrenatalDiagnoses ->
-                                viewPrenatalDiagnosesReport language limitDate scopeLabel recordsTillLimitDate
-                    )
-                    model.reportType
-                    startDateByReportType
-                    limitDateByReportType
-                    |> Maybe.withDefault
-                        (if isWideScope data.entityType then
-                            viewCustomLabel language Translate.WideScopeNote "" "label wide-scope"
-
-                         else
+                    content =
+                        if
+                            isJust model.startDateSelectorPopupState
+                                || isJust model.limitDateSelectorPopupState
+                        then
+                            -- Date selector is open, so no need to calculate
+                            -- intermediate results.
                             emptyNode
+
+                        else
+                            let
+                                ( startDateByReportType, limitDateByReportType ) =
+                                    if model.reportType == Just ReportNutrition then
+                                        -- Nutrition report does not allow selecting limit date, so
+                                        -- we force it to be today.
+                                        ( Just launchDate, Just currentDate )
+
+                                    else
+                                        ( model.startDate, model.limitDate )
+                            in
+                            Maybe.map3
+                                (\reportType startDate limitDate ->
+                                    let
+                                        recordsTillLimitDate =
+                                            if
+                                                (Date.compare startDate launchDate == EQ)
+                                                    && (Date.compare limitDate currentDate == EQ)
+                                            then
+                                                data.records
+
+                                            else
+                                                List.filterMap
+                                                    (\record ->
+                                                        if
+                                                            -- Patient was created not after the TO date.
+                                                            not <| Date.compare record.created limitDate == GT
+                                                        then
+                                                            let
+                                                                filterPrenatalData =
+                                                                    Maybe.map
+                                                                        (List.filterMap
+                                                                            (\participantData ->
+                                                                                -- Pregnancy was created not after the TO date.
+                                                                                if Date.compare participantData.created limitDate == GT then
+                                                                                    Nothing
+
+                                                                                else
+                                                                                    let
+                                                                                        filteredEncounters =
+                                                                                            List.filter
+                                                                                                (\encounterData ->
+                                                                                                    -- Encounter was created not before the FROM date and
+                                                                                                    -- not after the TO date.
+                                                                                                    (not <| Date.compare encounterData.startDate startDate == LT)
+                                                                                                        && (not <| Date.compare encounterData.startDate limitDate == GT)
+                                                                                                )
+                                                                                                participantData.encounters
+                                                                                    in
+                                                                                    if List.isEmpty filteredEncounters then
+                                                                                        Nothing
+
+                                                                                    else
+                                                                                        let
+                                                                                            dateConcluded =
+                                                                                                -- If pregnancy was concluded, but conclusion date is
+                                                                                                -- after TO date, we mark pregnancy as not concluded.
+                                                                                                Maybe.andThen
+                                                                                                    (\date ->
+                                                                                                        if Date.compare limitDate date == LT then
+                                                                                                            Nothing
+
+                                                                                                        else
+                                                                                                            Just date
+                                                                                                    )
+                                                                                                    participantData.dateConcluded
+                                                                                        in
+                                                                                        Just { participantData | dateConcluded = dateConcluded, encounters = filteredEncounters }
+                                                                            )
+                                                                        )
+
+                                                                filterIndividualBy resolveDateFunc =
+                                                                    Maybe.map
+                                                                        (List.map
+                                                                            (List.filter
+                                                                                (\encounterData ->
+                                                                                    let
+                                                                                        encounterDate =
+                                                                                            resolveDateFunc encounterData
+                                                                                    in
+                                                                                    (not <| Date.compare encounterDate startDate == LT)
+                                                                                        && (not <| Date.compare encounterDate limitDate == GT)
+                                                                                )
+                                                                            )
+                                                                        )
+
+                                                                filterGroupBy resolveDateFunc =
+                                                                    Maybe.map
+                                                                        (List.filter
+                                                                            (\encounterData ->
+                                                                                let
+                                                                                    encounterDate =
+                                                                                        resolveDateFunc encounterData
+                                                                                in
+                                                                                (not <| Date.compare encounterDate startDate == LT)
+                                                                                    && (not <| Date.compare encounterDate limitDate == GT)
+                                                                            )
+                                                                        )
+                                                            in
+                                                            Just
+                                                                { record
+                                                                    | acuteIllnessData = filterIndividualBy .startDate record.acuteIllnessData
+                                                                    , prenatalData = filterPrenatalData record.prenatalData
+                                                                    , homeVisitData = filterIndividualBy identity record.homeVisitData
+                                                                    , wellChildData = filterIndividualBy .startDate record.wellChildData
+                                                                    , childScorecardData = filterIndividualBy identity record.childScorecardData
+                                                                    , ncdData = filterIndividualBy identity record.ncdData
+                                                                    , hivData = filterIndividualBy identity record.hivData
+                                                                    , tuberculosisData = filterIndividualBy identity record.tuberculosisData
+                                                                    , individualNutritionData = filterIndividualBy .startDate record.individualNutritionData
+                                                                    , groupNutritionPmtctData = filterGroupBy .startDate record.groupNutritionPmtctData
+                                                                    , groupNutritionFbfData = filterGroupBy .startDate record.groupNutritionFbfData
+                                                                    , groupNutritionSorwatheData = filterGroupBy .startDate record.groupNutritionSorwatheData
+                                                                    , groupNutritionChwData = filterGroupBy .startDate record.groupNutritionChwData
+                                                                    , groupNutritionAchiData = filterGroupBy .startDate record.groupNutritionAchiData
+                                                                    , groupNutritionFbfMotherData = filterGroupBy .startDate record.groupNutritionFbfMotherData
+                                                                    , familyNutritionData = filterIndividualBy .startDate record.familyNutritionData
+                                                                    , familyNutritionMuacData = filterIndividualBy .startDate record.familyNutritionMuacData
+                                                                }
+
+                                                        else
+                                                            Nothing
+                                                    )
+                                                    data.records
+                                    in
+                                    case reportType of
+                                        ReportAcuteIllness ->
+                                            viewAcuteIllnessReport language limitDate startDate scopeLabel recordsTillLimitDate
+
+                                        ReportDemographics ->
+                                            viewDemographicsReport language data.features startDate limitDate scopeLabel recordsTillLimitDate
+
+                                        ReportFBFDistribution ->
+                                            viewFBFDistributionReport language data.features limitDate scopeLabel recordsTillLimitDate
+
+                                        ReportNutrition ->
+                                            viewNutritionReport language limitDate scopeLabel data.nutritionReportData model.nutritionReportData
+
+                                        ReportPeripartum ->
+                                            viewPeripartumReport language limitDate scopeLabel recordsTillLimitDate
+
+                                        ReportPostnatalCare ->
+                                            viewPostnatalCareReport language data.site limitDate scopeLabel recordsTillLimitDate
+
+                                        ReportPrenatal ->
+                                            viewPrenatalReport language limitDate scopeLabel recordsTillLimitDate
+
+                                        ReportPrenatalContacts ->
+                                            viewPrenatalContactsReport language limitDate scopeLabel recordsTillLimitDate
+
+                                        ReportPrenatalDiagnoses ->
+                                            viewPrenatalDiagnosesReport language limitDate scopeLabel recordsTillLimitDate
+                                )
+                                model.reportType
+                                startDateByReportType
+                                limitDateByReportType
+                                |> Maybe.withDefault
+                                    (if isWideScope data.entityType then
+                                        viewCustomLabel language Translate.WideScopeNote "" "label wide-scope"
+
+                                     else
+                                        emptyNode
+                                    )
+                in
+                div [ class "inputs" ] <|
+                    (viewSelectListInput language
+                        model.reportType
+                        ([ ReportAcuteIllness
+                         , ReportDemographics
+                         , ReportFBFDistribution
+                         , ReportNutrition
+                         , ReportPeripartum
+                         , ReportPostnatalCare
+                         , ReportPrenatal
+                         , ReportPrenatalContacts
+                         , ReportPrenatalDiagnoses
+                         ]
+                            |> List.sortBy (\rt -> String.toLower (translate language (Translate.ReportType rt)))
                         )
+                        reportTypeToString
+                        SetReportType
+                        Translate.ReportType
+                        "select-input"
+                        |> wrapSelectListInput language Translate.ReportTypeLabel False
+                    )
+                        :: dateInputs
+                        ++ [ content ]
+
+            else
+                viewSyncingPlaceholder language (List.length data.records) data.remainingForDownload
     in
     div [ class "page-content reports" ]
         [ generateReportsHeaderImage themePath
         , topBar
-        , div [ class "inputs" ] <|
-            (viewSelectListInput language
-                model.reportType
-                ([ ReportAcuteIllness
-                 , ReportDemographics
-                 , ReportFBFDistribution
-                 , ReportNutrition
-                 , ReportPeripartum
-                 , ReportPostnatalCare
-                 , ReportPrenatal
-                 , ReportPrenatalContacts
-                 , ReportPrenatalDiagnoses
-                 ]
-                    |> List.sortBy (\rt -> String.toLower (translate language (Translate.ReportType rt)))
-                )
-                reportTypeToString
-                SetReportType
-                Translate.ReportType
-                "select-input"
-                |> wrapSelectListInput language Translate.ReportTypeLabel False
-            )
-                :: dateInputs
-                ++ [ content ]
+        , inputsAndContent
         , viewModal <| viewCalendarPopup language model.startDateSelectorPopupState model.startDate
         , viewModal <| viewCalendarPopup language model.limitDateSelectorPopupState model.limitDate
         ]

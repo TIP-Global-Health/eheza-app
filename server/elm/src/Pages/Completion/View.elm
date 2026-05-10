@@ -14,7 +14,6 @@ import Backend.Completion.Model
         , NutritionGroupEncounterData
         , NutritionMotherActivity
         , PrenatalActivity
-        , SelectedEntity(..)
         , TakenBy(..)
         , TuberculosisActivity
         , WellChildActivity
@@ -22,6 +21,7 @@ import Backend.Completion.Model
         , WellChildEncounterType(..)
         )
 import Backend.Completion.Utils exposing (takenByToString)
+import Backend.Components.Model exposing (SelectedEntity(..))
 import Backend.Model exposing (ModelBackend)
 import Date exposing (Date)
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
@@ -33,6 +33,7 @@ import Html.Events exposing (onClick)
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Completion.Model exposing (Model, Msg(..), ReportType(..))
 import Pages.Completion.Utils exposing (allAcuteIllnessActivities, allHIVActivities, allHomeVisitActivities, allNCDActivities, allNutritionChildGroupActivities, allNutritionIndividualActivities, allNutritionMotherGroupActivities, allPrenatalActivities, allTuberculosisActivities, newbornExamActivities, reportTypeToString, resolveChildScoreboardActivities, resolveSPVActivities)
+import Pages.Components.Utils exposing (isSyncComplete, viewSyncingPlaceholder)
 import Pages.Components.View exposing (viewMetricsResultsTable)
 import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Utils exposing (calculatePercentage, launchDate, viewCustomSelectListInput, viewSelectListInput, wrapSelectListInput)
@@ -65,6 +66,10 @@ viewCompletionData language currentDate data model =
 
                         EntityHealthCenter ->
                             data.entityName
+
+                        -- Other options are not supported.
+                        _ ->
+                            translate language Translate.EmptyString
             in
             div [ class "top-bar" ]
                 [ div [ class "new-selection" ]
@@ -77,191 +82,212 @@ viewCompletionData language currentDate data model =
                     [ text <| translate language Translate.Scope ++ ": " ++ scopeLabel ]
                 ]
 
-        takenByInput =
-            Maybe.map
-                (\reportType ->
-                    if
-                        List.member reportType
-                            [ -- Exclusively CHW encounters.
-                              ReportChildScoreboard
-                            , ReportHIV
-                            , ReportHomeVisit
-                            , ReportNewbornExam
-                            , ReportTuberculosis
+        inputsAndContent =
+            if isSyncComplete data.remainingForDownload then
+                let
+                    takenByInput =
+                        Maybe.map
+                            (\reportType ->
+                                if
+                                    List.member reportType
+                                        [ -- Exclusively CHW encounters.
+                                          ReportChildScoreboard
+                                        , ReportHIV
+                                        , ReportHomeVisit
+                                        , ReportNewbornExam
+                                        , ReportTuberculosis
 
-                            -- Exclusively Nurse encounters.
-                            , ReportNCD
-                            ]
-                    then
-                        emptyNode
+                                        -- Exclusively Nurse encounters.
+                                        , ReportNCD
+                                        ]
+                                then
+                                    emptyNode
 
-                    else if isJust model.reportType then
-                        let
-                            options =
-                                List.map
-                                    (\option ->
-                                        ( translate language <| Translate.TakenBy option, option )
-                                    )
-                                    [ TakenByNurse, TakenByCHW ]
-                        in
-                        viewCustomSelectListInput
-                            model.takenBy
-                            options
-                            takenByToString
-                            SetTakenBy
-                            "select-input"
-                            (Just <| translate language Translate.Any)
-                            |> wrapSelectListInput language Translate.TakenByLabel False
+                                else if isJust model.reportType then
+                                    let
+                                        options =
+                                            List.map
+                                                (\option ->
+                                                    ( translate language <| Translate.TakenBy option, option )
+                                                )
+                                                [ TakenByNurse, TakenByCHW ]
+                                    in
+                                    viewCustomSelectListInput
+                                        model.takenBy
+                                        options
+                                        takenByToString
+                                        SetTakenBy
+                                        "select-input"
+                                        (Just <| translate language Translate.Any)
+                                        |> wrapSelectListInput language Translate.TakenByLabel False
 
-                    else
-                        emptyNode
-                )
-                model.reportType
-                |> Maybe.withDefault emptyNode
+                                else
+                                    emptyNode
+                            )
+                            model.reportType
+                            |> Maybe.withDefault emptyNode
 
-        dateInputs =
-            Maybe.map
-                (\_ ->
-                    let
-                        startDateInput =
-                            let
-                                dateSelectorConfig =
-                                    { select = SetStartDate
-                                    , close = SetStartDateSelectorState Nothing
-                                    , dateFrom = launchDate
-                                    , dateTo = currentDate
-                                    , dateDefault = Just launchDate
-                                    }
-
-                                dateForView =
-                                    Maybe.map formatDDMMYYYY model.startDate
-                                        |> Maybe.withDefault ""
-                            in
-                            div
-                                [ class "form-input date"
-                                , onClick <| SetStartDateSelectorState (Just dateSelectorConfig)
-                                ]
-                                [ text dateForView ]
-                                |> wrapSelectListInput language Translate.SelectStartDate False
-
-                        limitDateInput =
-                            if
-                                -- Reports requires setting start date before
-                                -- limit date can be shown.
-                                isNothing model.startDate
-                            then
-                                emptyNode
-
-                            else
+                    dateInputs =
+                        Maybe.map
+                            (\_ ->
                                 let
-                                    dateFrom =
-                                        Maybe.withDefault launchDate model.startDate
+                                    startDateInput =
+                                        let
+                                            dateSelectorConfig =
+                                                { select = SetStartDate
+                                                , close = SetStartDateSelectorState Nothing
+                                                , dateFrom = launchDate
+                                                , dateTo = currentDate
+                                                , dateDefault = Just launchDate
+                                                }
 
-                                    dateSelectorConfig =
-                                        { select = SetLimitDate
-                                        , close = SetLimitDateSelectorState Nothing
-                                        , dateFrom = dateFrom
-                                        , dateTo = currentDate
-                                        , dateDefault = Just currentDate
-                                        }
+                                            dateForView =
+                                                Maybe.map formatDDMMYYYY model.startDate
+                                                    |> Maybe.withDefault ""
+                                        in
+                                        div
+                                            [ class "form-input date"
+                                            , onClick <| SetStartDateSelectorState (Just dateSelectorConfig)
+                                            ]
+                                            [ text dateForView ]
+                                            |> wrapSelectListInput language Translate.SelectStartDate False
 
-                                    limitDateForView =
-                                        Maybe.map formatDDMMYYYY model.limitDate
-                                            |> Maybe.withDefault ""
+                                    limitDateInput =
+                                        if
+                                            -- Reports requires setting start date before
+                                            -- limit date can be shown.
+                                            isNothing model.startDate
+                                        then
+                                            emptyNode
+
+                                        else
+                                            let
+                                                dateFrom =
+                                                    Maybe.withDefault launchDate model.startDate
+
+                                                dateSelectorConfig =
+                                                    { select = SetLimitDate
+                                                    , close = SetLimitDateSelectorState Nothing
+                                                    , dateFrom = dateFrom
+                                                    , dateTo = currentDate
+                                                    , dateDefault = Just currentDate
+                                                    }
+
+                                                limitDateForView =
+                                                    Maybe.map formatDDMMYYYY model.limitDate
+                                                        |> Maybe.withDefault ""
+                                            in
+                                            div
+                                                [ class "form-input date"
+                                                , onClick <| SetLimitDateSelectorState (Just dateSelectorConfig)
+                                                ]
+                                                [ text limitDateForView ]
+                                                |> wrapSelectListInput language Translate.SelectLimitDate False
                                 in
-                                div
-                                    [ class "form-input date"
-                                    , onClick <| SetLimitDateSelectorState (Just dateSelectorConfig)
-                                    ]
-                                    [ text limitDateForView ]
-                                    |> wrapSelectListInput language Translate.SelectLimitDate False
-                    in
-                    [ startDateInput, limitDateInput ]
-                )
-                model.reportType
-                |> Maybe.withDefault []
+                                [ startDateInput, limitDateInput ]
+                            )
+                            model.reportType
+                            |> Maybe.withDefault []
 
-        content =
-            if
-                isJust model.startDateSelectorPopupState
-                    || isJust model.limitDateSelectorPopupState
-            then
-                -- Date selector is open, so no need to calculate
-                -- intermediate results.
-                emptyNode
+                    content =
+                        if
+                            isJust model.startDateSelectorPopupState
+                                || isJust model.limitDateSelectorPopupState
+                        then
+                            -- Date selector is open, so no need to calculate
+                            -- intermediate results.
+                            emptyNode
+
+                        else
+                            Maybe.map3
+                                (\reportType startDate limitDate ->
+                                    let
+                                        ( newbornExamData, spvData ) =
+                                            List.partition (.encounterType >> (==) NewbornExam) data.wellChildData
+                                    in
+                                    case reportType of
+                                        ReportAcuteIllness ->
+                                            viewAcuteIllnessReport language startDate limitDate model.takenBy data.acuteIllnessData
+
+                                        ReportChildScoreboard ->
+                                            viewChildScoreboardReport language data.site startDate limitDate model.takenBy data.childScoreboardData
+
+                                        ReportHIV ->
+                                            viewHIVReport language startDate limitDate model.takenBy data.hivData
+
+                                        ReportHomeVisit ->
+                                            viewHomeVisitReport language startDate limitDate model.takenBy data.homeVisitData
+
+                                        ReportNCD ->
+                                            viewNCDReport language startDate limitDate model.takenBy data.ncdData
+
+                                        ReportNewbornExam ->
+                                            viewNewbornExamReport language startDate limitDate model.takenBy newbornExamData
+
+                                        ReportNutritionGroup ->
+                                            viewNutritionGroupReport language startDate limitDate model.takenBy data.nutritionGroupData
+
+                                        ReportNutritionIndividual ->
+                                            viewNutritionIndividualReport language startDate limitDate model.takenBy data.nutritionIndividualData
+
+                                        ReportPrenatal ->
+                                            viewPrenatalReport language startDate limitDate model.takenBy data.prenatalData
+
+                                        ReportTuberculosis ->
+                                            viewTuberculosisReport language startDate limitDate model.takenBy data.tuberculosisData
+
+                                        ReportWellChild ->
+                                            viewSPVReport language data.site startDate limitDate model.takenBy spvData
+                                )
+                                model.reportType
+                                model.startDate
+                                model.limitDate
+                                |> Maybe.withDefault emptyNode
+                in
+                div [ class "inputs" ] <|
+                    [ viewSelectListInput language
+                        model.reportType
+                        [ ReportAcuteIllness
+                        , ReportPrenatal
+                        , ReportChildScoreboard
+                        , ReportHIV
+                        , ReportHomeVisit
+                        , ReportNCD
+                        , ReportNewbornExam
+                        , ReportNutritionGroup
+                        , ReportNutritionIndividual
+                        , ReportWellChild
+                        , ReportTuberculosis
+                        ]
+                        reportTypeToString
+                        SetReportType
+                        Translate.CompletionReportType
+                        "select-input"
+                        |> wrapSelectListInput language Translate.ReportTypeLabel False
+                    , takenByInput
+                    ]
+                        ++ dateInputs
+                        ++ [ content ]
 
             else
-                Maybe.map3
-                    (\reportType startDate limitDate ->
-                        let
-                            ( newbornExamData, spvData ) =
-                                List.partition (.encounterType >> (==) NewbornExam) data.wellChildData
-                        in
-                        case reportType of
-                            ReportAcuteIllness ->
-                                viewAcuteIllnessReport language startDate limitDate model.takenBy data.acuteIllnessData
-
-                            ReportChildScoreboard ->
-                                viewChildScoreboardReport language data.site startDate limitDate model.takenBy data.childScoreboardData
-
-                            ReportHIV ->
-                                viewHIVReport language startDate limitDate model.takenBy data.hivData
-
-                            ReportHomeVisit ->
-                                viewHomeVisitReport language startDate limitDate model.takenBy data.homeVisitData
-
-                            ReportNCD ->
-                                viewNCDReport language startDate limitDate model.takenBy data.ncdData
-
-                            ReportNewbornExam ->
-                                viewNewbornExamReport language startDate limitDate model.takenBy newbornExamData
-
-                            ReportNutritionGroup ->
-                                viewNutritionGroupReport language startDate limitDate model.takenBy data.nutritionGroupData
-
-                            ReportNutritionIndividual ->
-                                viewNutritionIndividualReport language startDate limitDate model.takenBy data.nutritionIndividualData
-
-                            ReportPrenatal ->
-                                viewPrenatalReport language startDate limitDate model.takenBy data.prenatalData
-
-                            ReportTuberculosis ->
-                                viewTuberculosisReport language startDate limitDate model.takenBy data.tuberculosisData
-
-                            ReportWellChild ->
-                                viewSPVReport language data.site startDate limitDate model.takenBy spvData
-                    )
-                    model.reportType
-                    model.startDate
-                    model.limitDate
-                    |> Maybe.withDefault emptyNode
+                let
+                    downloadedCount =
+                        List.length data.acuteIllnessData
+                            + List.length data.childScoreboardData
+                            + List.length data.hivData
+                            + List.length data.homeVisitData
+                            + List.length data.ncdData
+                            + List.length data.nutritionIndividualData
+                            + List.length data.nutritionGroupData
+                            + List.length data.prenatalData
+                            + List.length data.tuberculosisData
+                            + List.length data.wellChildData
+                in
+                viewSyncingPlaceholder language downloadedCount data.remainingForDownload
     in
     div [ class "page-content completion" ]
         [ topBar
-        , div [ class "inputs" ] <|
-            [ viewSelectListInput language
-                model.reportType
-                [ ReportAcuteIllness
-                , ReportPrenatal
-                , ReportChildScoreboard
-                , ReportHIV
-                , ReportHomeVisit
-                , ReportNCD
-                , ReportNewbornExam
-                , ReportNutritionGroup
-                , ReportNutritionIndividual
-                , ReportWellChild
-                , ReportTuberculosis
-                ]
-                reportTypeToString
-                SetReportType
-                Translate.CompletionReportType
-                "select-input"
-                |> wrapSelectListInput language Translate.ReportTypeLabel False
-            , takenByInput
-            ]
-                ++ dateInputs
-                ++ [ content ]
+        , inputsAndContent
         , viewModal <| viewCalendarPopup language model.startDateSelectorPopupState model.startDate
         , viewModal <| viewCalendarPopup language model.limitDateSelectorPopupState model.limitDate
         ]

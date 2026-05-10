@@ -1,16 +1,17 @@
-module Backend.Reports.Decoder exposing (decodeReportsData)
+module Backend.Reports.Decoder exposing (decodeReportsData, decodeSyncResponse)
 
 import AssocList as Dict exposing (Dict)
+import Backend.Components.Decoder exposing (decodeReportParams, decodeSelectedEntity)
 import Backend.Decoder exposing (decodeSite, decodeSiteFeatures, decodeWithFallback)
-import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, DeliveryLocation(..), FamilyNutritionEncounterData, FamilyNutritionMotherEncounterData, Gender(..), MotherFbfEncounterData, NutritionData, NutritionEncounterData, NutritionReportTableType(..), PatientData, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalIndicator(..), PrenatalParticipantData, ReportsData, SelectedEntity(..), WellChildEncounterData)
+import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, DeliveryLocation(..), FamilyNutritionEncounterData, FamilyNutritionMotherEncounterData, Gender(..), MotherFbfEncounterData, NutritionData, NutritionEncounterData, NutritionReportTableType(..), PatientData, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalIndicator(..), PrenatalParticipantData, ReportsData, SyncResponse, WellChildEncounterData)
 import Backend.Reports.Utils exposing (genderFromString)
 import Backend.Scoreboard.Model exposing (VaccineType(..))
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
-import Json.Decode exposing (Decoder, andThen, fail, list, nullable, string, succeed)
-import Json.Decode.Pipeline exposing (optional, optionalAt, required)
+import Json.Decode exposing (Decoder, andThen, fail, field, list, nullable, string, succeed)
+import Json.Decode.Pipeline exposing (hardcoded, optional, optionalAt, required)
 import Maybe.Extra
 
 
@@ -21,40 +22,20 @@ decodeReportsData =
         |> required "features" decodeSiteFeatures
         |> required "entity_name" string
         |> required "entity_type" decodeSelectedEntity
-        |> required "results" (list decodePatientData)
+        |> required "params" decodeReportParams
+        |> hardcoded []
         |> optionalAt [ "additional", "nutrition_report_data" ] (nullable (list decodeBackendGeneratedNutritionReportTableDate)) Nothing
+        |> hardcoded Nothing
 
 
-decodeSelectedEntity : Decoder SelectedEntity
-decodeSelectedEntity =
-    string
-        |> andThen
-            (\entityType ->
-                case entityType of
-                    "global" ->
-                        succeed EntityGlobal
-
-                    "province" ->
-                        succeed EntityProvince
-
-                    "district" ->
-                        succeed EntityDistrict
-
-                    "sector" ->
-                        succeed EntitySector
-
-                    "cell" ->
-                        succeed EntityCell
-
-                    "village" ->
-                        succeed EntityVillage
-
-                    "health-center" ->
-                        succeed EntityHealthCenter
-
-                    _ ->
-                        fail <| entityType ++ " is unknown SelectedEntity type"
-            )
+decodeSyncResponse : Decoder SyncResponse
+decodeSyncResponse =
+    field "data"
+        (succeed SyncResponse
+            |> required "batch" (list decodePatientData)
+            |> required "total_remaining" decodeInt
+            |> required "last" decodeInt
+        )
 
 
 decodePatientData : Decoder PatientData

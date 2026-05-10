@@ -27,6 +27,8 @@
           appData: appSettings.data,
           page: appSettings.page,
           themePath: appSettings.theme_path,
+          backendUrl: appSettings.backend_url,
+          csrfToken: appSettings.csrf_token,
         }});
 
         if (appSettings.page === 'reports-results') {

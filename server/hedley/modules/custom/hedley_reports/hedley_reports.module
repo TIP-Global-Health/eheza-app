@@ -1663,7 +1663,7 @@ function hedley_reports_statistical_queries_report_callback_health_center($healt
  *   The HTML markup for the Elm application.
  */
 function hedley_reports_build_statistical_queries_results_app($province = NULL, $district = NULL, $sector = NULL, $cell = NULL, $village = NULL, $health_center = NULL) {
-  $data = [];
+  $data = $params = [];
 
   if (empty($province)) {
     if (empty($health_center)) {
@@ -1674,38 +1674,52 @@ function hedley_reports_build_statistical_queries_results_app($province = NULL, 
       $wrapper = entity_metadata_wrapper('node', $health_center);
       $data['entity_name'] = $wrapper->label();
       $data['entity_type'] = 'health-center';
+      $params['health_center'] = $health_center;
     }
   }
   elseif (empty($district)) {
     $data['entity_name'] = $province;
     $data['entity_type'] = 'province';
+    $params['province'] = $province;
   }
   elseif (empty($sector)) {
     $data['entity_name'] = $district;
     $data['entity_type'] = 'district';
+    $params['province'] = $province;
+    $params['district'] = $district;
   }
   elseif (empty($cell)) {
     $data['entity_name'] = $sector;
     $data['entity_type'] = 'sector';
+    $params['province'] = $province;
+    $params['district'] = $district;
+    $params['sector'] = $sector;
   }
   elseif (empty($village)) {
     $data['entity_name'] = $cell;
     $data['entity_type'] = 'cell';
+    $params['province'] = $province;
+    $params['district'] = $district;
+    $params['sector'] = $sector;
+    $params['cell'] = $cell;
   }
   else {
     $data['entity_name'] = $village;
     $data['entity_type'] = 'village';
+    $params['province'] = $province;
+    $params['district'] = $district;
+    $params['sector'] = $sector;
+    $params['cell'] = $cell;
+    $params['village'] = $village;
   }
 
   $data['site'] = variable_get('hedley_general_site_name', '');
   $data['features'] = hedley_admin_get_enabled_features_string();
+  $data['params'] = $params;
 
-  if (in_array($data['entity_type'], ['sector', 'cell', 'village'])) {
-    // For smaller data sets, we generate results on fly.
-    $data['results'] = hedley_reports_generate_results_data($province, $district, $sector, $cell, $village, $health_center);
-  }
-  else {
-    [$data['results'], $data['additional']] = hedley_reports_load_results_data('statistical-query', $data['entity_type'], $province, $district, $health_center);
+  if (in_array($data['entity_type'], ['province', 'district', 'health-center'])) {
+    // For large data sets, try loading additional data.
+    $data['additional'] = hedley_reports_load_results_additional_data('statistical-query', $data['entity_type'], $province, $district, $health_center);
   }
 
   return hedley_general_build_elm_app('reports-results', $data);
@@ -1812,7 +1826,113 @@ function hedley_reports_generate_results_data($province, $district, $sector, $ce
 }
 
 /**
- * Loads data in scope, stored at Report Data node.
+ * Generate Aggregated Reports data which is stored on person nodes.
+ *
+ * The requests are coming from restful endpoint.
+ *
+ * @param int $from_nid
+ *   Query for data from nodes which IDs are above provided node ID.
+ * @param int $batch
+ *   Number of nodes to be processed in single batch.
+ * @param string|null $province
+ *   Province name.
+ * @param string|null $district
+ *   District name.
+ * @param string|null $sector
+ *   Sector name.
+ * @param string|null $cell
+ *   Cell name.
+ * @param string|null $village
+ *   Village name.
+ * @param int|null $health_center
+ *   Health center ID.
+ *
+ * @return array
+ *   An array of generated data.
+ */
+function hedley_reports_generate_results_data_for_restful($from_nid, $batch, $province, $district, $sector, $cell, $village, $health_center) {
+  // Direct SELECT against the field table avoids the node_load_multiple() that
+  // EntityFieldQuery would force; the JSON payload is read straight from
+  // field_data_field_reports_data. The shared $build closure keeps the COUNT
+  // and data queries in lockstep.
+  $build = function () use ($from_nid, $province, $district, $sector, $cell, $village, $health_center) {
+    $q = db_select('field_data_field_reports_data', 'fr');
+    $q->innerJoin('node', 'n', 'n.nid = fr.entity_id');
+    // Replicates the exclude_deleted query tag; see
+    // hedley_general_query_exclude_deleted_alter().
+    $q->leftJoin('field_data_field_deleted', 'fd', 'fd.entity_id = n.nid');
+    $q->condition('fr.entity_type', 'node')
+      ->condition('fr.bundle', 'person')
+      ->condition('fr.deleted', 0)
+      ->condition('n.status', NODE_PUBLISHED)
+      ->condition('n.nid', $from_nid, '>')
+      ->isNotNull('fr.field_reports_data_value')
+      ->condition(db_or()->isNull('fd.field_deleted_value')->condition('fd.field_deleted_value', 0));
+
+    $locality = [
+      'field_province' => $province,
+      'field_district' => $district,
+      'field_sector'   => $sector,
+      'field_cell'     => $cell,
+      'field_village'  => $village,
+    ];
+    foreach ($locality as $field => $value) {
+      if (!empty($value)) {
+        $alias = $q->innerJoin("field_data_$field", $field,
+          "%alias.entity_id = n.nid AND %alias.entity_type = 'node' AND %alias.deleted = 0");
+        $q->condition("$alias.{$field}_value", $value);
+      }
+    }
+    if (!empty($health_center)) {
+      $alias = $q->innerJoin('field_data_field_shards', 'fs',
+        "%alias.entity_id = n.nid AND %alias.entity_type = 'node' AND %alias.deleted = 0");
+      $q->condition("$alias.field_shards_target_id", $health_center);
+    }
+    return $q;
+  };
+
+  // Count remaining rows from $from_nid. addExpression() emits "SELECT COUNT(*)
+  // FROM ..." rather than the subquery wrapper countQuery() would generate.
+  $count_q = $build();
+  $count_q->addExpression('COUNT(*)', 'cnt');
+  $count = (int) $count_q->execute()->fetchField();
+
+  if ($count === 0) {
+    // No more items left -- return the structured shape Elm expects so
+    // its decoder doesn't fail and leave sync stuck at "PENDING".
+    return [
+      'batch' => [],
+      'total_remaining' => 0,
+      'last' => 0,
+    ];
+  }
+
+  $data_q = $build();
+  $data_q->fields('n', ['nid'])
+    ->fields('fr', ['field_reports_data_value'])
+    ->orderBy('n.nid')
+    ->range(0, $batch);
+  $rows = $data_q->execute()->fetchAll();
+
+  $output = [];
+  $last = 0;
+  foreach ($rows as $r) {
+    if (empty($r->field_reports_data_value)) {
+      continue;
+    }
+    $output[] = json_decode($r->field_reports_data_value);
+    $last = (int) $r->nid;
+  }
+
+  return [
+    'batch' => $output,
+    'total_remaining' => $count - count($rows),
+    'last' => $last,
+  ];
+}
+
+/**
+ * Loads additional data in scope, stored on Report Data node.
  *
  * @param string $report_variant
  *   Type of report to load.
@@ -1826,51 +1946,20 @@ function hedley_reports_generate_results_data($province, $district, $sector, $ce
  *   Health center ID.
  *
  * @return array
- *   A 2-element array: [results, additional_data].
- *   On failure, returns [[], NULL].
+ *   Stored data.
  */
-function hedley_reports_load_results_data($report_variant, $scope, $province = NULL, $district = NULL, $health_center = NULL) {
+function hedley_reports_load_results_additional_data($report_variant, $scope, $province = NULL, $district = NULL, $health_center = NULL) {
   $node_id = hedley_reports_load_results_data_node($report_variant, $scope, $province, $district, $health_center);
   if (!$node_id) {
-    return [[], NULL];
+    return [];
   }
 
   $node = node_load($node_id);
-  // The report_data node may exist as a placeholder with no file yet (e.g.
-  // when the recalculate-large-datasets.php script has not produced the
-  // data file for this scope). Guard the field access so a missing file
-  // doesn't spam notices via $node->field_data_file[LANGUAGE_NONE][0].
-  $file_id = isset($node->field_data_file[LANGUAGE_NONE][0]['fid'])
-    ? $node->field_data_file[LANGUAGE_NONE][0]['fid']
-    : 0;
-  if (empty($file_id)) {
-    return [[], NULL];
-  }
-  $file = file_load($file_id);
-  if (!$file) {
-    return [[], NULL];
+  if (empty($node->field_reports_data) || empty($node->field_reports_data[LANGUAGE_NONE][0]['value'])) {
+    return [];
   }
 
-  // Get the real path of the file.
-  $file_path = drupal_realpath($file->uri);
-  // Open the gzipped file and read its contents.
-  $gz_fp = gzopen($file_path, 'r');
-  if (!$gz_fp) {
-    return [[], NULL];
-  }
-
-  $data = '';
-  while (!gzeof($gz_fp)) {
-    $data .= gzread($gz_fp, 4096);
-  }
-  gzclose($gz_fp);
-
-  $additional_data = '';
-  if (!empty($node->field_reports_data)) {
-    $additional_data = $node->field_reports_data[LANGUAGE_NONE][0]['value'];
-  }
-
-  return [json_decode($data), json_decode($additional_data)];
+  return json_decode($node->field_reports_data[LANGUAGE_NONE][0]['value']);
 }
 
 /**
@@ -1892,7 +1981,6 @@ function hedley_reports_load_results_data($report_variant, $scope, $province = N
  * @throws Exception
  */
 function hedley_reports_create_or_update_results_data_node(array $data, $report_variant, $scope, $province = NULL, $district = NULL, $health_center = NULL) {
-  $data_file_id = hedley_reports_create_data_file($data);
   $node_id = hedley_reports_load_results_data_node($report_variant, $scope, $province, $district, $health_center);
   if (!$node_id) {
     // Create the Report Data node.
@@ -1905,11 +1993,6 @@ function hedley_reports_create_or_update_results_data_node(array $data, $report_
     $node->language = LANGUAGE_NONE;
     $node->field_report_variant[LANGUAGE_NONE][0]['value'] = $report_variant;
     $node->field_data_scope[LANGUAGE_NONE][0]['value'] = $scope;
-    // Attach the file to the node's file field.
-    $node->field_data_file[LANGUAGE_NONE][0] = [
-      'fid' => $data_file_id,
-      'display' => 1,
-    ];
     if (!empty($province)) {
       $node->field_province[LANGUAGE_NONE][0]['value'] = $province;
     }
@@ -1921,23 +2004,8 @@ function hedley_reports_create_or_update_results_data_node(array $data, $report_
     }
   }
   else {
-    // Update the Report Data node.
+    // Update the existing Report Data node.
     $node = node_load($node_id);
-    // Same guard as in hedley_reports_load_results_data: a stub
-    // report_data node may exist without an attached file.
-    $old_file_id = isset($node->field_data_file[LANGUAGE_NONE][0]['fid'])
-      ? $node->field_data_file[LANGUAGE_NONE][0]['fid']
-      : 0;
-    $old_file = !empty($old_file_id) ? file_load($old_file_id) : FALSE;
-    if ($old_file) {
-      // Delete the old file.
-      file_delete($old_file, TRUE);
-    }
-    // Attach new file.
-    $node->field_data_file[LANGUAGE_NONE][0] = [
-      'fid' => $data_file_id,
-      'display' => 1,
-    ];
   }
 
   if ($report_variant == 'statistical-query') {
@@ -1994,55 +2062,6 @@ function hedley_reports_load_results_data_node($report_variant, $scope, $provinc
   $result = $query->execute();
 
   return empty($result['node']) ? FALSE : key($result['node']);
-}
-
-/**
- * Creates a file with provided data as a content.
- *
- * @param array $data
- *   Data to write into file.
- *
- * @return int
- *   Created file ID.
- */
-function hedley_reports_create_data_file(array $data) {
-  // Create a temporary file with the content.
-  $file_content = json_encode($data);
-  $file_path = 'private://report-data-' . time() . '.txt.gz';
-  $file_uri = file_unmanaged_save_data($file_content, $file_path, FILE_EXISTS_REPLACE);
-  // Compress the content and save it to a .gz file.
-  $gz_file_path = hedley_reports_gz_compress_file($file_content, $file_path);
-  // Create the file object and save it.
-  $file = (object) array(
-    'uid' => 1,
-    'filename' => drupal_basename($file_uri),
-    'uri' => $gz_file_path,
-    'filemime' => 'application/gzip',
-    'status' => NODE_PUBLISHED,
-    'display' => 1,
-    'timestamp' => REQUEST_TIME,
-  );
-  file_save($file);
-
-  return $file->fid;
-}
-
-/**
- * Helper function to compress file content using gzip.
- *
- * @param string $data
- *   The data to be compressed.
- * @param string $file_path
- *   The file path where the compressed data will be saved.
- *
- * @return string
- *   The path to the gzipped file.
- */
-function hedley_reports_gz_compress_file($data, $file_path) {
-  $gz_fp = gzopen($file_path, 'w9');
-  gzwrite($gz_fp, $data);
-  gzclose($gz_fp);
-  return $file_path;
 }
 
 /**
@@ -3176,7 +3195,7 @@ function hedley_reports_completion_report_callback_health_center($health_center)
  *   The HTML markup for the Elm application.
  */
 function hedley_reports_build_completion_results_app($health_center = NULL) {
-  $data = [];
+  $data = $params = [];
 
   if (empty($health_center)) {
     $data['entity_name'] = 'Global';
@@ -3186,13 +3205,128 @@ function hedley_reports_build_completion_results_app($health_center = NULL) {
     $wrapper = entity_metadata_wrapper('node', $health_center);
     $data['entity_name'] = $wrapper->label();
     $data['entity_type'] = 'health-center';
+    $params['health_center'] = $health_center;
   }
 
   $data['site'] = variable_get('hedley_general_site_name', '');
-
-  [$data['results'], $data['additional']] = hedley_reports_load_results_data('completion', $data['entity_type'], NULL, NULL, $health_center);
+  $data['params'] = $params;
 
   return hedley_general_build_elm_app('completion-results', $data);
+}
+
+/**
+ * Generate Completion report data which is stored on encounter nodes.
+ *
+ * The requests are coming from restful endpoint.
+ *
+ * @param int $from_nid
+ *   Query for data from nodes which IDs are above provided node ID.
+ * @param int $batch
+ *   Number of nodes to be processed in single batch.
+ * @param int|null $health_center
+ *   Health center ID.
+ *
+ * @return array
+ *   An array of generated data.
+ */
+function hedley_reports_generate_completion_data_for_restful($from_nid, $batch, $health_center) {
+  $bundles = [
+    // Acute Illness data.
+    'acute_illness_encounter',
+    // Nutrition Group data.
+    'attendance',
+    // Child Scoreboard data.
+    'child_scoreboard_encounter',
+    // HIV Data.
+    'hiv_encounter',
+    // Home Visit data.
+    'home_visit_encounter',
+    // NCD Data.
+    'ncd_encounter',
+    // Nutrition Individual data.
+    'nutrition_encounter',
+    // Prenatal Data.
+    'prenatal_encounter',
+    // Tuberculosis Data.
+    'tuberculosis_encounter',
+    // Well Child data.
+    'well_child_encounter',
+  ];
+
+  // Direct SELECT against the field table avoids the node_load_multiple() that
+  // EntityFieldQuery would force; the JSON payload is read straight from
+  // field_data_field_reports_data. The shared $build closure keeps the COUNT
+  // and data queries in lockstep.
+  $build = function () use ($from_nid, $bundles, $health_center) {
+    $q = db_select('field_data_field_reports_data', 'fr');
+    $q->innerJoin('node', 'n', 'n.nid = fr.entity_id');
+    $q->condition('fr.entity_type', 'node')
+      ->condition('fr.bundle', $bundles, 'IN')
+      ->condition('fr.deleted', 0)
+      ->condition('n.status', NODE_PUBLISHED)
+      ->condition('n.nid', $from_nid, '>')
+      ->isNotNull('fr.field_reports_data_value');
+    if (!empty($health_center)) {
+      $alias = $q->innerJoin('field_data_field_shards', 'fs',
+        "%alias.entity_id = n.nid AND %alias.entity_type = 'node' AND %alias.deleted = 0");
+      $q->condition("$alias.field_shards_target_id", $health_center);
+    }
+    return $q;
+  };
+
+  // Count remaining rows from $from_nid. addExpression() emits "SELECT COUNT(*)
+  // FROM ..." rather than the subquery wrapper countQuery() would generate.
+  $count_q = $build();
+  $count_q->addExpression('COUNT(*)', 'cnt');
+  $count = (int) $count_q->execute()->fetchField();
+
+  if ($count === 0) {
+    // No more items left -- return the structured shape Elm expects so
+    // its decoder doesn't fail and leave sync stuck at "PENDING".
+    return [
+      'batch' => [],
+      'total_remaining' => 0,
+      'last' => 0,
+    ];
+  }
+
+  $data_q = $build();
+  $data_q->fields('n', ['nid', 'type'])
+    ->fields('fr', ['field_reports_data_value'])
+    ->orderBy('n.nid')
+    ->range(0, $batch);
+  $rows = $data_q->execute()->fetchAll();
+
+  $type_to_bucket = [
+    'acute_illness_encounter'    => 'acute_illness',
+    'attendance'                 => 'nutrition_group',
+    'child_scoreboard_encounter' => 'child_scoreboard',
+    'hiv_encounter'              => 'hiv',
+    'home_visit_encounter'       => 'home_visit',
+    'ncd_encounter'              => 'ncd',
+    'nutrition_encounter'        => 'nutrition_individual',
+    'prenatal_encounter'         => 'prenatal',
+    'tuberculosis_encounter'     => 'tuberculosis',
+    'well_child_encounter'       => 'well_child',
+  ];
+  $data = array_fill_keys(array_values($type_to_bucket), []);
+
+  $last = 0;
+  foreach ($rows as $r) {
+    if (empty($r->field_reports_data_value)) {
+      continue;
+    }
+    if (isset($type_to_bucket[$r->type])) {
+      $data[$type_to_bucket[$r->type]][] = json_decode($r->field_reports_data_value);
+    }
+    $last = (int) $r->nid;
+  }
+
+  return [
+    'batch' => $data,
+    'total_remaining' => $count - count($rows),
+    'last' => $last,
+  ];
 }
 
 /**

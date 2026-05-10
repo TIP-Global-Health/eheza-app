@@ -19,6 +19,7 @@ import Backend.Completion.Model
         , TuberculosisActivity(..)
         , WellChildActivity(..)
         )
+import Backend.Components.Model exposing (SelectedEntity(..))
 import Backend.Reports.Model
     exposing
         ( AcuteIllnessDiagnosis(..)
@@ -28,7 +29,6 @@ import Backend.Reports.Model
         , PrenatalDiagnosis(..)
         , PrenatalIndicator(..)
         )
-import Backend.Scoreboard.Model
 import Date
 import Pages.Completion.Model
 import Pages.Components.Types exposing (PopulationSelectionOption(..))
@@ -117,6 +117,7 @@ type TranslationId
     | Diagnostics
     | District
     | DownloadCSV
+    | DownloadingExplanation
     | EmptyString
     | Encounters
     | EncounterType
@@ -238,8 +239,8 @@ type TranslationId
     | Save
     | Scope
     | Sector
-    | SelectedEntity Backend.Scoreboard.Model.SelectedEntity
-    | SelectedScope Backend.Reports.Model.SelectedEntity
+    | SelectedEntity SelectedEntity
+    | SelectedScope SelectedEntity
     | SelectLimitDate
     | SelectStartDate
     | SelectScope
@@ -837,6 +838,13 @@ translationSet transId =
 
         DownloadCSV ->
             { english = "Download CSV"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        DownloadingExplanation ->
+            { english = "Downloading data from the server. Please wait until the download completes before selecting a report."
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing
@@ -3165,39 +3173,43 @@ translationSet transId =
 
         SelectedEntity entity ->
             case entity of
-                Backend.Scoreboard.Model.EntityDistrict ->
+                EntityDistrict ->
                     translationSet District
 
-                Backend.Scoreboard.Model.EntitySector ->
+                EntitySector ->
                     translationSet Sector
 
-                Backend.Scoreboard.Model.EntityCell ->
+                EntityCell ->
                     translationSet Cell
 
-                Backend.Scoreboard.Model.EntityVillage ->
+                EntityVillage ->
                     translationSet Village
+
+                -- Other options can not be selected.
+                _ ->
+                    translationSet EmptyString
 
         SelectedScope entity ->
             case entity of
-                Backend.Reports.Model.EntityGlobal ->
+                EntityGlobal ->
                     translationSet Global
 
-                Backend.Reports.Model.EntityHealthCenter ->
+                EntityHealthCenter ->
                     translationSet HealthCenter
 
-                Backend.Reports.Model.EntityProvince ->
+                EntityProvince ->
                     translationSet Province
 
-                Backend.Reports.Model.EntityDistrict ->
+                EntityDistrict ->
                     translationSet District
 
-                Backend.Reports.Model.EntitySector ->
+                EntitySector ->
                     translationSet Sector
 
-                Backend.Reports.Model.EntityCell ->
+                EntityCell ->
                     translationSet Cell
 
-                Backend.Reports.Model.EntityVillage ->
+                EntityVillage ->
                     translationSet Village
 
         SelectLimitDate ->

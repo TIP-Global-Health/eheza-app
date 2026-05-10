@@ -2,7 +2,8 @@ module Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, coun
 
 import App.Types exposing (Site(..))
 import AssocList as Dict exposing (Dict)
-import Backend.Reports.Model exposing (FamilyNutritionEncounterData, NutritionEncounterData, PatientData, PersonId, SelectedEntity(..))
+import Backend.Components.Model exposing (PersonId, SelectedEntity(..))
+import Backend.Reports.Model exposing (FamilyNutritionEncounterData, NutritionEncounterData, PatientData)
 import Backend.Scoreboard.Model exposing (VaccineType(..))
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate, diffDays)
