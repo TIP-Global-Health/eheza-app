@@ -44,9 +44,15 @@ test.describe('CHW: HIV Initial Encounter — Positive Diagnosis', () => {
   // Conditions: Initial encounter -> Diagnostics shown, SymptomReview NOT shown. No symptoms/adverse events -> Referral NOT triggered.
   // Backend: Verifies 5 node types created (diagnostics, medication, treatment_review, health_education, follow_up),
   //          confirms hiv_referral and hiv_symptom_review absent.
-  test('complete initial HIV encounter with positive diagnosis, verify backend sync', async ({ page }) => {
-    // Verify FeatureHIVManagement flag gates the "HIV Management" button.
-    await verifyFeatureGatesEncounterButton(page, 'hiv_management', 'HIV Management');
+  test('complete initial HIV encounter with positive diagnosis, verify backend sync', async ({ page, browser }) => {
+    // Verify FeatureHIVManagement flag gates client UI + admin Reports surfaces.
+    await verifyFeatureGatesEncounterButton(page, 'hiv_management', 'HIV Management', {
+      browser,
+      admin: {
+        sqDemographicsRows: ['HIV'],
+        completionOptions: ['hiv'],
+      },
+    });
 
     const { fullName } = await createAdultAndStartHIVEncounter(page, {
       isFemale: false,

@@ -40,6 +40,7 @@ test.describe('CHW: Group Nutrition Session', () => {
 
   test('CHW group session: register mother+child, complete basic activities', async ({
     page,
+    browser,
   }) => {
     // Scenario: CHW creates a group session via GroupEncounterTypesPage,
     //   registers a new mother and child (<24mo), completes basic child
@@ -53,9 +54,15 @@ test.describe('CHW: Group Nutrition Session', () => {
     //   muac, nutrition, family_planning).
     //   Confirms child_fbf, mother_fbf, lactation absent.
 
-    // Verify FeatureNutritionGroup flag gates the "Child Nutrition" button on Group Encounter Types.
+    // Verify FeatureNutritionGroup flag gates client UI + admin Reports surfaces.
     // (Keep group_education ON so the Group Assessment entry button on Clinical stays reachable.)
-    await verifyFeatureGatesGroupEncounterButton(page, 'nutrition_group', 'Child Nutrition', 'group_education');
+    await verifyFeatureGatesGroupEncounterButton(page, 'nutrition_group', 'Child Nutrition', 'group_education', {
+      browser,
+      admin: {
+        sqDemographicsRows: ['PMTCT', 'FBF', 'Sorwathe', 'CBNP', 'ACHI'],
+        completionOptions: ['nutrition-group'],
+      },
+    });
 
     // 1. Navigate to CHW group session.
     await navigateToChwGroupSession(page);

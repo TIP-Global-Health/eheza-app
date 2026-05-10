@@ -32,7 +32,7 @@ test.describe('CHW: Family Nutrition Encounter', () => {
     await setupDevice(page, '2345', 'Akanduga');
   });
 
-  test('Case 1: Mother only — complete Aheza and MUAC', async ({ page }) => {
+  test('Case 1: Mother only — complete Aheza and MUAC', async ({ page, browser }) => {
     // Scenario: Family nutrition encounter with mother only (no children added).
     // Activities: Aheza Mother (with distribution reason), MUAC Mother.
     // Conditions: No children → only mother activities shown.
@@ -42,8 +42,13 @@ test.describe('CHW: Family Nutrition Encounter', () => {
     //   Confirms aheza_child, family_nutrition_muac_child,
     //   family_nutrition_photo absent (no children).
 
-    // Verify FeatureFamilyNutrition flag gates the "Family Assessment" button on Clinical (CHW only).
-    await verifyFeatureGatesClinicalAssessmentButton(page, 'family_nutrition', 'family-assessment');
+    // Verify FeatureFamilyNutrition flag gates client UI + admin Demographics row.
+    await verifyFeatureGatesClinicalAssessmentButton(page, 'family_nutrition', 'family-assessment', {
+      browser,
+      admin: {
+        sqDemographicsRows: ['Family Nutrition'],
+      },
+    });
 
     // 1. Register mother, skip adding children, go straight to participant page.
     const mother = await createMotherAndNavigateToPersonPage(page);

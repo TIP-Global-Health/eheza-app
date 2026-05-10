@@ -48,6 +48,7 @@ test.describe('Nurse: FBF Group Nutrition Session', () => {
 
   test('FBF group session: all activities including NextSteps', async ({
     page,
+    browser,
   }) => {
     // Scenario: Nurse creates an FBF group session with abnormal nutrition
     //   values (Edema sign + low MUAC) to trigger all activities including
@@ -58,9 +59,15 @@ test.describe('Nurse: FBF Group Nutrition Session', () => {
     // Mother activities: FamilyPlanning, Lactation, MotherFbf.
     // Backend: Verifies 14 node types (all group session content types).
 
-    // Verify FeatureNutritionGroup flag gates the "Group Assessment" button on Clinical (nurse only).
+    // Verify FeatureNutritionGroup flag gates client UI + admin Reports surfaces.
     // (On nurse the gate is unambiguous: group_education isn't part of the compound for non-CHW.)
-    await verifyFeatureGatesClinicalAssessmentButton(page, 'nutrition_group', 'group-assessment');
+    await verifyFeatureGatesClinicalAssessmentButton(page, 'nutrition_group', 'group-assessment', {
+      browser,
+      admin: {
+        sqDemographicsRows: ['PMTCT', 'FBF', 'Sorwathe', 'CBNP', 'ACHI'],
+        completionOptions: ['nutrition-group'],
+      },
+    });
 
     // 1. Navigate to FBF group session.
     await navigateToNurseGroupSession(page, 'FBF', 'Nyange I');

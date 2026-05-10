@@ -35,9 +35,16 @@ test.describe('Nurse: Well Child PediatricCare — Normal Encounter', () => {
     await setupDevice(page, '1234', 'Nyange Health Center');
   });
 
-  test('complete normal encounter with all mandatory activities and verify backend sync', async ({ page }) => {
-    // Verify FeatureWellChild flag gates the "Standard Pediatric Visit" button (nurse-side).
-    await verifyFeatureGatesEncounterButton(page, 'well_child', 'Standard Pediatric Visit');
+  test('complete normal encounter with all mandatory activities and verify backend sync', async ({ page, browser }) => {
+    // Verify FeatureWellChild flag gates client UI + admin Reports surfaces.
+    await verifyFeatureGatesEncounterButton(page, 'well_child', 'Standard Pediatric Visit', {
+      browser,
+      admin: {
+        sqOptions: ['postnatal-care'],
+        sqDemographicsRows: ['Standard Pediatric Visit'],
+        completionOptions: ['newborn-exam', 'well-child'],
+      },
+    });
 
     // Use 23 months (< 24) so NCDA activity appears for nurse.
     const { fullName } = await createChildAndStartWellChildEncounter(page, {

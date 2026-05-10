@@ -48,12 +48,19 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
     await setupDevice(page, '1234', 'Nyange Health Center');
   });
 
-  test('complete all activities and verify backend sync', async ({ page }) => {
+  test('complete all activities and verify backend sync', async ({ page, browser }) => {
     // Nurse initial encounter completes 12+ activities; needs more than the default 2m.
     test.setTimeout(600000);
 
-    // Verify FeatureAntenatal flag gates the "Antenatal Care" button.
-    await verifyFeatureGatesEncounterButton(page, 'antenatal', 'Antenatal Care');
+    // Verify FeatureAntenatal flag gates client UI + admin Reports surfaces.
+    await verifyFeatureGatesEncounterButton(page, 'antenatal', 'Antenatal Care', {
+      browser,
+      admin: {
+        sqOptions: ['peripartum', 'prenatal', 'prenatal-contacts', 'prenatal-diagnoses'],
+        sqDemographicsRows: ['ANC Total'],
+        completionOptions: ['prenatal'],
+      },
+    });
 
     // LMP date ~30 weeks ago — ensures EGA >= 28w for MentalHealth,
     // >= 13w for MalariaPrevention, and triggers all Medication tabs.

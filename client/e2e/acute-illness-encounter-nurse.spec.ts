@@ -36,9 +36,16 @@ test.describe('Nurse: Acute Illness Initial + Subsequent Encounter — Malaria U
     await setupDevice(page, '1234', 'Nyange Health Center');
   });
 
-  test('complete initial and subsequent encounters, verify backend sync', async ({ page }) => {
-    // Verify FeatureAcuteIllness flag gates the "Acute Illness" button.
-    await verifyFeatureGatesEncounterButton(page, 'acute_illness', 'Acute Illness');
+  test('complete initial and subsequent encounters, verify backend sync', async ({ page, browser }) => {
+    // Verify FeatureAcuteIllness flag gates client UI + admin Reports surfaces.
+    await verifyFeatureGatesEncounterButton(page, 'acute_illness', 'Acute Illness', {
+      browser,
+      admin: {
+        sqOptions: ['acute-illness'],
+        sqDemographicsRows: ['Acute Illness Total'],
+        completionOptions: ['acute-illness'],
+      },
+    });
 
     // =====================================================================
     // PART 1: Nurse Initial Encounter — Malaria Uncomplicated
