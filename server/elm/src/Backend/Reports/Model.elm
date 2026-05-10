@@ -1,11 +1,13 @@
-module Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, ChildScorecardEncounterData, DeliveryLocation(..), FamilyNutritionEncounterData, FamilyNutritionMotherEncounterData, Gender(..), HIVEncounterData, HomeVisitEncounterData, MotherFbfEncounterData, Msg(..), NCDEncounterData, NutritionData, NutritionEncounterData, NutritionReportTableType(..), PatientData, PersonId, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalIndicator(..), PrenatalParticipantData, ReportsData, SelectedEntity(..), TuberculosisEncounterData, WellChildEncounterData)
+module Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterData, AcuteIllnessEncounterType(..), BackendGeneratedNutritionReportTableDate, ChildScorecardEncounterData, DeliveryLocation(..), FamilyNutritionEncounterData, FamilyNutritionMotherEncounterData, Gender(..), HIVEncounterData, HomeVisitEncounterData, MotherFbfEncounterData, Msg(..), NCDEncounterData, NutritionData, NutritionEncounterData, NutritionReportTableType(..), PatientData, PregnancyOutcome(..), PrenatalDiagnosis(..), PrenatalEncounterData, PrenatalEncounterType(..), PrenatalIndicator(..), PrenatalParticipantData, ReportsData, SyncResponse, TuberculosisEncounterData, WellChildEncounterData)
 
 import App.Types exposing (Site, SiteFeature)
 import AssocList exposing (Dict)
+import Backend.Components.Model exposing (PersonId, ReportParams, SelectedEntity)
 import Backend.Scoreboard.Model exposing (VaccineType)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Json.Encode exposing (Value)
+import RemoteData exposing (WebData)
 
 
 type alias ReportsData =
@@ -13,19 +15,11 @@ type alias ReportsData =
     , features : EverySet SiteFeature
     , entityName : String
     , entityType : SelectedEntity
+    , params : ReportParams
     , records : List PatientData
     , nutritionReportData : Maybe (List BackendGeneratedNutritionReportTableDate)
+    , remainingForDownload : Maybe Int
     }
-
-
-type SelectedEntity
-    = EntityGlobal
-    | EntityProvince
-    | EntityDistrict
-    | EntitySector
-    | EntityCell
-    | EntityVillage
-    | EntityHealthCenter
 
 
 type alias PatientData =
@@ -51,10 +45,6 @@ type alias PatientData =
     , groupNutritionAchiData : Maybe (List NutritionEncounterData)
     , groupNutritionFbfMotherData : Maybe (List MotherFbfEncounterData)
     }
-
-
-type alias PersonId =
-    Int
 
 
 type Gender
@@ -309,5 +299,14 @@ type NutritionReportTableType
     | NutritionTableIncidenceYearTwoOrMore
 
 
+type alias SyncResponse =
+    { records : List PatientData
+    , totalRemaining : Int
+    , lastIdSynced : PersonId
+    }
+
+
 type Msg
     = SetData Value
+    | SendSyncRequest PersonId
+    | HandleSyncResponse (WebData SyncResponse)

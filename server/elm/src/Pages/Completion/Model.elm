@@ -41,8 +41,7 @@ type ReportType
 
 
 type Msg
-    = NoOp
-    | SetReportType String
+    = SetReportType String
     | SetTakenBy String
     | SetStartDate Date
     | SetStartDateSelectorState (Maybe (DateSelectorConfig Msg))

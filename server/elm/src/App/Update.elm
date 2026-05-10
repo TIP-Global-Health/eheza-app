@@ -33,9 +33,9 @@ init flags =
             resolveActivePage flags.page
 
         model =
-            { emptyModel | activePage = activePage, themePath = flags.themePath }
+            { emptyModel | activePage = activePage, themePath = flags.themePath, backendUrl = flags.backendUrl, csrfToken = flags.csrfToken }
 
-        modelWithAppData =
+        ( modelWithAppData, cmd ) =
             case model.activePage of
                 ScoreboardMenu ->
                     update
@@ -44,7 +44,6 @@ init flags =
                             |> MsgBackend
                         )
                         model
-                        |> Tuple.first
 
                 Scoreboard ->
                     update
@@ -53,7 +52,6 @@ init flags =
                             |> MsgBackend
                         )
                         model
-                        |> Tuple.first
 
                 ReportsMenu ->
                     update
@@ -62,7 +60,6 @@ init flags =
                             |> MsgBackend
                         )
                         model
-                        |> Tuple.first
 
                 Reports ->
                     update
@@ -71,7 +68,6 @@ init flags =
                             |> MsgBackend
                         )
                         model
-                        |> Tuple.first
 
                 CompletionMenu ->
                     update
@@ -80,7 +76,6 @@ init flags =
                             |> MsgBackend
                         )
                         model
-                        |> Tuple.first
 
                 Completion ->
                     update
@@ -89,12 +84,11 @@ init flags =
                             |> MsgBackend
                         )
                         model
-                        |> Tuple.first
 
                 NotFound ->
-                    model
+                    ( model, Cmd.none )
 
-        cmds =
+        fetchCmds =
             fetch modelWithAppData
                 |> List.map (Task.succeed >> Task.perform identity)
                 |> List.append [ Task.perform SetCurrentTime Time.now ]
@@ -102,7 +96,7 @@ init flags =
     in
     ( modelWithAppData
       -- Let the Fetcher act upon the active page.
-    , cmds
+    , Cmd.batch [ cmd, fetchCmds ]
     )
 
 
@@ -138,7 +132,13 @@ update msg model =
             updateSubModel
                 subMsg
                 model.backend
-                (\subMsg_ subModel -> Backend.Update.updateBackend (fromLocalDateTime model.currentTime) subMsg_ subModel)
+                (\subMsg_ subModel ->
+                    Backend.Update.updateBackend (fromLocalDateTime model.currentTime)
+                        model.backendUrl
+                        model.csrfToken
+                        subMsg_
+                        subModel
+                )
                 (\subModel model_ -> { model_ | backend = subModel })
                 (\subCmds -> MsgBackend subCmds)
                 model

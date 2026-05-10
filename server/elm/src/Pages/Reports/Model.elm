@@ -1,7 +1,7 @@
 module Pages.Reports.Model exposing (FbfDistributionCategory(..), Model, Msg(..), NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), allFbfDistributionCategories, emptyModel, emptyNutritionMetrics)
 
 import AssocList exposing (Dict)
-import Backend.Reports.Model exposing (PersonId)
+import Backend.Components.Model exposing (PersonId)
 import Date exposing (Date)
 import DateSelector.Model exposing (DateSelectorConfig)
 import RemoteData exposing (RemoteData(..))
