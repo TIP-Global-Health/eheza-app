@@ -57,7 +57,7 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
       browser,
       admin: {
         sqOptions: ['peripartum', 'prenatal', 'prenatal-contacts', 'prenatal-diagnoses'],
-        sqDemographicsRows: ['ANC Total'],
+        sqDemographicsRows: ['ANC (total)'],
         completionOptions: ['prenatal'],
       },
     });

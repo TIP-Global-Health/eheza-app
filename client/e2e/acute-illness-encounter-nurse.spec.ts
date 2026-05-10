@@ -42,7 +42,7 @@ test.describe('Nurse: Acute Illness Initial + Subsequent Encounter — Malaria U
       browser,
       admin: {
         sqOptions: ['acute-illness'],
-        sqDemographicsRows: ['Acute Illness Total'],
+        sqDemographicsRows: ['Acute Illness (total)'],
         completionOptions: ['acute-illness'],
       },
     });

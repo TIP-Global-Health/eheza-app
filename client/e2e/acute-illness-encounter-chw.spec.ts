@@ -44,7 +44,7 @@ test.describe('CHW: Acute Illness Initial Encounter — Uncomplicated Pneumonia'
       browser,
       admin: {
         sqOptions: ['acute-illness'],
-        sqDemographicsRows: ['Acute Illness Total'],
+        sqDemographicsRows: ['Acute Illness (total)'],
         completionOptions: ['acute-illness'],
       },
     });
