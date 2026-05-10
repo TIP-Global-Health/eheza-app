@@ -133,6 +133,7 @@ type VaccineType
     | VaccineRotarix
     | VaccineIPV
     | VaccineMR
+    | VaccineHPV
 
 
 type VaccineDose

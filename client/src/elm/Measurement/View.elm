@@ -1504,72 +1504,151 @@ vitalsFormInputsAndTasks language currentDate config form =
 
         respiratoryRateSection =
             let
-                ( redAlerts, yellowAlerts ) =
-                    case config.invokationModule of
-                        InvokationModulePrenatal ->
-                            ( [ [ (>) 12 ], [ (<) 30 ] ]
-                            , [ [ (<=) 21, (>=) 30 ] ]
-                            )
+                -- Gate on allowSkipping so non-skipping pages don't end up
+                -- with a hidden input + no checkbox when a saved row has null.
+                respiratoryRateSkipped =
+                    config.allowSkipping && (form.respiratoryRateNotTaken == Just True)
 
-                        _ ->
-                            Maybe.map
-                                (\ageYears ->
-                                    let
-                                        ( redAlertMinValue, redAlertMaxValue ) =
-                                            if ageYears < 1 then
-                                                ( 30, 49 )
+                -- Label row is always shown so it's clear which measurement
+                -- a checked "Unable to take" checkbox refers to.
+                labelRow =
+                    let
+                        ( redAlerts, yellowAlerts ) =
+                            case config.invokationModule of
+                                InvokationModulePrenatal ->
+                                    ( [ [ (>) 12 ], [ (<) 30 ] ]
+                                    , [ [ (<=) 21, (>=) 30 ] ]
+                                    )
 
-                                            else if ageYears < 5 then
-                                                ( 24, 39 )
+                                _ ->
+                                    Maybe.map
+                                        (\ageYears ->
+                                            let
+                                                ( redAlertMinValue, redAlertMaxValue ) =
+                                                    if ageYears < 1 then
+                                                        ( 30, 49 )
 
-                                            else
-                                                ( 18, 30 )
-                                    in
-                                    ( [ [ (>) redAlertMinValue ], [ (<) redAlertMaxValue ] ], [] )
-                                )
-                                ageInYears
-                                |> Maybe.withDefault ( [], [] )
-            in
-            ( [ div [ class "ui grid" ]
-                    [ div [ class "twelve wide column" ]
-                        [ viewLabel language Translate.RespiratoryRate ]
-                    , div [ class "four wide column" ]
-                        [ viewConditionalAlert form.respiratoryRate
-                            redAlerts
-                            yellowAlerts
+                                                    else if ageYears < 5 then
+                                                        ( 24, 39 )
+
+                                                    else
+                                                        ( 18, 30 )
+                                            in
+                                            ( [ [ (>) redAlertMinValue ], [ (<) redAlertMaxValue ] ], [] )
+                                        )
+                                        ageInYears
+                                        |> Maybe.withDefault ( [], [] )
+                    in
+                    div [ class "ui grid" ]
+                        [ div [ class "twelve wide column" ]
+                            [ viewLabel language Translate.RespiratoryRate ]
+                        , div [ class "four wide column" ]
+                            [ viewConditionalAlert form.respiratoryRate
+                                redAlerts
+                                yellowAlerts
+                            ]
                         ]
-                    ]
-              , viewMeasurementInput
-                    language
-                    (Maybe.map toFloat form.respiratoryRate)
-                    (config.setIntInputMsg respiratoryRateUpdateFunc)
-                    "respiratory-rate"
-                    Translate.BreathsPerMinuteUnitLabel
-              , Pages.Utils.viewPreviousMeasurement language config.respiratoryRatePreviousValue Translate.BreathsPerMinuteUnitLabel
-              , separator
+
+                inputRows =
+                    if respiratoryRateSkipped then
+                        []
+
+                    else
+                        [ viewMeasurementInput
+                            language
+                            (Maybe.map toFloat form.respiratoryRate)
+                            (config.setIntInputMsg respiratoryRateUpdateFunc)
+                            "respiratory-rate"
+                            Translate.BreathsPerMinuteUnitLabel
+                        , Pages.Utils.viewPreviousMeasurement language config.respiratoryRatePreviousValue Translate.BreathsPerMinuteUnitLabel
+                        ]
+
+                respiratoryRateCheckbox =
+                    if config.allowSkipping then
+                        div
+                            [ class "ui checkbox activity"
+                            , onClick <| config.setRespiratoryRateNotTakenMsg <| not respiratoryRateSkipped
+                            ]
+                            [ input
+                                [ type_ "checkbox"
+                                , checked respiratoryRateSkipped
+                                , classList [ ( "checked", respiratoryRateSkipped ) ]
+                                ]
+                                []
+                            , label [] [ text <| translate language Translate.UnableToTakeMeasurement ]
+                            ]
+
+                    else
+                        emptyNode
+            in
+            ( labelRow :: inputRows ++ [ respiratoryRateCheckbox, separator ]
+            , [ if respiratoryRateSkipped then
+                    maybeToBoolTask form.respiratoryRateNotTaken
+
+                else
+                    maybeToBoolTask form.respiratoryRate
               ]
-            , [ maybeToBoolTask form.respiratoryRate ]
             )
 
         bodyTemperatureSection =
-            ( [ div [ class "ui grid" ]
-                    [ div [ class "twelve wide column" ]
-                        [ viewLabel language Translate.BodyTemperature ]
-                    , div [ class "four wide column" ]
-                        [ viewConditionalAlert form.bodyTemperature
-                            [ [ (>) 35 ], [ (<=) 37.5 ] ]
-                            []
+            let
+                -- Gate on allowSkipping so non-skipping pages don't end up
+                -- with a hidden input + no checkbox when a saved row has null.
+                bodyTemperatureSkipped =
+                    config.allowSkipping && (form.bodyTemperatureNotTaken == Just True)
+
+                -- Label row is always shown so it's clear which measurement
+                -- a checked "Unable to take" checkbox refers to.
+                labelRow =
+                    div [ class "ui grid" ]
+                        [ div [ class "twelve wide column" ]
+                            [ viewLabel language Translate.BodyTemperature ]
+                        , div [ class "four wide column" ]
+                            [ viewConditionalAlert form.bodyTemperature
+                                [ [ (>) 35 ], [ (<=) 37.5 ] ]
+                                []
+                            ]
                         ]
-                    ]
-              , viewMeasurementInput
-                    language
-                    form.bodyTemperature
-                    (config.setFloatInputMsg bodyTemperatureUpdateFunc)
-                    "body-temperature"
-                    Translate.Celsius
-              , Pages.Utils.viewPreviousMeasurement language config.bodyTemperaturePreviousValue Translate.Celsius
+
+                inputRows =
+                    if bodyTemperatureSkipped then
+                        []
+
+                    else
+                        [ viewMeasurementInput
+                            language
+                            form.bodyTemperature
+                            (config.setFloatInputMsg bodyTemperatureUpdateFunc)
+                            "body-temperature"
+                            Translate.Celsius
+                        , Pages.Utils.viewPreviousMeasurement language config.bodyTemperaturePreviousValue Translate.Celsius
+                        ]
+
+                bodyTemperatureCheckbox =
+                    if config.allowSkipping then
+                        div
+                            [ class "ui checkbox activity"
+                            , onClick <| config.setBodyTemperatureNotTakenMsg <| not bodyTemperatureSkipped
+                            ]
+                            [ input
+                                [ type_ "checkbox"
+                                , checked bodyTemperatureSkipped
+                                , classList [ ( "checked", bodyTemperatureSkipped ) ]
+                                ]
+                                []
+                            , label [] [ text <| translate language Translate.UnableToTakeMeasurement ]
+                            ]
+
+                    else
+                        emptyNode
+            in
+            ( labelRow :: inputRows ++ [ bodyTemperatureCheckbox ]
+            , [ if bodyTemperatureSkipped then
+                    maybeToBoolTask form.bodyTemperatureNotTaken
+
+                else
+                    maybeToBoolTask form.bodyTemperature
               ]
-            , [ maybeToBoolTask form.bodyTemperature ]
             )
 
         separator =
@@ -4155,15 +4234,17 @@ viewHeightForm :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Bool
     -> Person
     -> Maybe Float
     -> (String -> msg)
+    -> (Bool -> msg)
     -> HeightForm
     -> List (Html msg)
-viewHeightForm language currentDate zscores person previousValue setHeightMsg form =
+viewHeightForm language currentDate zscores isChw person previousValue setHeightMsg setHeightNotTakenMsg form =
     let
         ( formForView, _ ) =
-            heightFormAndTasks language currentDate zscores person previousValue setHeightMsg form
+            heightFormAndTasks language currentDate zscores isChw person previousValue setHeightMsg setHeightNotTakenMsg form
     in
     formForView
 
@@ -4172,64 +4253,102 @@ heightFormAndTasks :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Bool
     -> Person
     -> Maybe Float
     -> (String -> msg)
+    -> (Bool -> msg)
     -> HeightForm
     -> ( List (Html msg), List (Maybe Bool) )
-heightFormAndTasks language currentDate zscores person previousValue setHeightMsg form =
+heightFormAndTasks language currentDate zscores isChw person previousValue setHeightMsg setHeightNotTakenMsg form =
     let
         activity =
             Backend.NutritionActivity.Model.Height
 
-        zScoreText =
-            Maybe.andThen
-                (\height ->
-                    Maybe.map
-                        (\birthDate -> diffDays birthDate currentDate)
-                        person.birthDate
-                        |> Maybe.andThen
-                            (\ageInDays ->
-                                zScoreLengthHeightForAge zscores ageInDays person.gender (Centimetres height)
-                            )
-                )
-                form.height
-                |> Maybe.map viewZScore
-                |> Maybe.withDefault (translate language Translate.NotAvailable)
+        measurementNotTakenChecked =
+            form.measurementNotTaken == Just True
 
-        constraints =
-            getInputConstraintsHeight
-    in
-    ( [ div [ class "ui form height" ]
-            [ viewLabel language <| Translate.NutritionActivityTitle activity
-            , p [ class "activity-helper" ] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
-            , p [ class "range-helper" ] [ text <| translate language (Translate.AllowedValuesRangeHelper constraints) ]
-            , div [ class "ui grid" ]
-                [ div [ class "eleven wide column" ]
-                    [ viewMeasurementInput
-                        language
-                        form.height
-                        setHeightMsg
-                        "height"
-                        Translate.UnitCentimeter
-                    ]
-                , div
-                    [ class "five wide column" ]
-                    [ showMaybe <|
-                        Maybe.map2 (viewMeasurementFloatDiff language Translate.UnitCentimeter)
+        inputsSection =
+            if measurementNotTakenChecked then
+                []
+
+            else
+                let
+                    zScoreText =
+                        Maybe.andThen
+                            (\height ->
+                                Maybe.map
+                                    (\birthDate -> diffDays birthDate currentDate)
+                                    person.birthDate
+                                    |> Maybe.andThen
+                                        (\ageInDays ->
+                                            zScoreLengthHeightForAge zscores ageInDays person.gender (Centimetres height)
+                                        )
+                            )
                             form.height
-                            previousValue
+                            |> Maybe.map viewZScore
+                            |> Maybe.withDefault (translate language Translate.NotAvailable)
+
+                    constraints =
+                        getInputConstraintsHeight
+                in
+                [ p [ class "range-helper" ] [ text <| translate language (Translate.AllowedValuesRangeHelper constraints) ]
+                , div [ class "ui grid" ]
+                    [ div [ class "eleven wide column" ]
+                        [ viewMeasurementInput
+                            language
+                            form.height
+                            setHeightMsg
+                            "height"
+                            Translate.UnitCentimeter
+                        ]
+                    , div
+                        [ class "five wide column" ]
+                        [ showMaybe <|
+                            Maybe.map2 (viewMeasurementFloatDiff language Translate.UnitCentimeter)
+                                form.height
+                                previousValue
+                        ]
+                    ]
+                , Pages.Utils.viewPreviousMeasurement language previousValue Translate.UnitCentimeter
+                , div [ class "ui large header z-score age" ]
+                    [ text <| translate language Translate.ZScoreHeightForAge
+                    , span [ class "sub header" ]
+                        [ text zScoreText ]
                     ]
                 ]
-            , Pages.Utils.viewPreviousMeasurement language previousValue Translate.UnitCentimeter
+
+        checkboxSection =
+            if isChw then
+                div
+                    [ class "ui checkbox activity"
+                    , onClick <| setHeightNotTakenMsg <| not measurementNotTakenChecked
+                    ]
+                    [ input
+                        [ type_ "checkbox"
+                        , checked measurementNotTakenChecked
+                        , classList [ ( "checked", measurementNotTakenChecked ) ]
+                        ]
+                        []
+                    , label [] [ text <| translate language Translate.UnableToTakeMeasurement ]
+                    ]
+
+            else
+                emptyNode
+    in
+    ( [ div [ class "ui form height" ] <|
+            [ viewLabel language <| Translate.NutritionActivityTitle activity
+            , p [ class "activity-helper" ] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
             ]
-      , div [ class "ui large header z-score age" ]
-            [ text <| translate language Translate.ZScoreHeightForAge
-            , span [ class "sub header" ]
-                [ text zScoreText ]
-            ]
+                ++ inputsSection
+      , checkboxSection
       ]
-    , [ maybeToBoolTask form.height ]
+    , [ if measurementNotTakenChecked then
+            maybeToBoolTask form.measurementNotTaken
+
+        else
+            maybeToBoolTask form.height
+      ]
     )
 
 
@@ -4353,17 +4472,31 @@ viewWeightForm :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Site
+    -> Bool
     -> Person
     -> Maybe HeightInCm
     -> Maybe Float
     -> Bool
     -> (String -> msg)
+    -> (Bool -> msg)
     -> WeightForm
     -> List (Html msg)
-viewWeightForm language currentDate zscores person heightValue previousValue showWeightForHeightZScore setWeightMsg form =
+viewWeightForm language currentDate zscores site isChw person heightValue previousValue showWeightForHeightZScore setWeightMsg setWeightNotTakenMsg form =
     let
         ( formForView, _ ) =
-            weightFormAndTasks language currentDate zscores person heightValue previousValue showWeightForHeightZScore setWeightMsg form
+            weightFormAndTasks language
+                currentDate
+                zscores
+                site
+                isChw
+                person
+                heightValue
+                previousValue
+                showWeightForHeightZScore
+                setWeightMsg
+                setWeightNotTakenMsg
+                form
     in
     formForView
 
@@ -4372,82 +4505,121 @@ weightFormAndTasks :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Site
+    -> Bool
     -> Person
     -> Maybe HeightInCm
     -> Maybe Float
     -> Bool
     -> (String -> msg)
+    -> (Bool -> msg)
     -> WeightForm
     -> ( List (Html msg), List (Maybe Bool) )
-weightFormAndTasks language currentDate zscores person heightValue previousValue showWeightForHeightZScore setWeightMsg form =
+weightFormAndTasks language currentDate zscores site isChw person heightValue previousValue showWeightForHeightZScore setWeightMsg setWeightNotTakenMsg form =
     let
         activity =
             Backend.NutritionActivity.Model.Weight
 
-        zScoreForAgeText =
-            calculateZScoreWeightForAge currentDate zscores person form.weight
-                |> Maybe.map viewZScore
-                |> Maybe.withDefault (translate language Translate.NotAvailable)
+        measurementNotTakenChecked =
+            form.measurementNotTaken == Just True
 
-        zScoreForHeightText =
-            Maybe.andThen
-                (\(HeightInCm height) ->
-                    Maybe.andThen
-                        (\weight ->
-                            Maybe.map
-                                (\birthDate -> diffDays birthDate currentDate)
-                                person.birthDate
-                                |> Maybe.andThen
-                                    (\ageInDays ->
-                                        zScoreForHeightOrLength zscores ageInDays (Centimetres height) person.gender weight
+        inputsSection =
+            if measurementNotTakenChecked then
+                []
+
+            else
+                let
+                    zScoreForAgeText =
+                        calculateZScoreWeightForAge currentDate zscores person form.weight
+                            |> Maybe.map viewZScore
+                            |> Maybe.withDefault (translate language Translate.NotAvailable)
+
+                    zScoreForHeightText =
+                        Maybe.andThen
+                            (\(HeightInCm height) ->
+                                Maybe.andThen
+                                    (\weight ->
+                                        Maybe.map
+                                            (\birthDate -> diffDays birthDate currentDate)
+                                            person.birthDate
+                                            |> Maybe.andThen
+                                                (\ageInDays ->
+                                                    zScoreForHeightOrLength zscores ageInDays (Centimetres height) person.gender weight
+                                                )
                                     )
-                        )
-                        form.weight
-                )
-                heightValue
-                |> Maybe.map viewZScore
-                |> Maybe.withDefault (translate language Translate.NotAvailable)
+                                    form.weight
+                            )
+                            heightValue
+                            |> Maybe.map viewZScore
+                            |> Maybe.withDefault (translate language Translate.NotAvailable)
 
-        constraints =
-            getInputConstraintsWeight
+                    constraints =
+                        getInputConstraintsWeight
+                in
+                [ p [ class "range-helper" ] [ text <| translate language (Translate.AllowedValuesRangeHelper constraints) ]
+                , div [ class "ui grid" ]
+                    [ div [ class "eleven wide column" ]
+                        [ viewMeasurementInput
+                            language
+                            form.weight
+                            setWeightMsg
+                            "weight"
+                            Translate.KilogramShorthand
+                        ]
+                    , div
+                        [ class "five wide column" ]
+                        [ showMaybe <|
+                            Maybe.map2 (viewMeasurementFloatDiff language Translate.KilogramShorthand)
+                                form.weight
+                                previousValue
+                        ]
+                    ]
+                , Pages.Utils.viewPreviousMeasurement language previousValue Translate.KilogramShorthand
+                , div [ class "ui large header z-score age" ]
+                    [ text <| translate language Translate.ZScoreWeightForAge
+                    , span [ class "sub header" ]
+                        [ text zScoreForAgeText ]
+                    ]
+                , showIf showWeightForHeightZScore <|
+                    div [ class "ui large header z-score height" ]
+                        [ text <| translate language Translate.ZScoreWeightForHeight
+                        , span [ class "sub header" ]
+                            [ text zScoreForHeightText
+                            ]
+                        ]
+                ]
+
+        checkboxSection =
+            if isChw && site == SiteBurundi then
+                div
+                    [ class "ui checkbox activity"
+                    , onClick <| setWeightNotTakenMsg <| not measurementNotTakenChecked
+                    ]
+                    [ input
+                        [ type_ "checkbox"
+                        , checked measurementNotTakenChecked
+                        , classList [ ( "checked", measurementNotTakenChecked ) ]
+                        ]
+                        []
+                    , label [] [ text <| translate language Translate.UnableToTakeMeasurement ]
+                    ]
+
+            else
+                emptyNode
     in
-    ( [ div [ class "ui form weight" ]
+    ( [ div [ class "ui form weight" ] <|
             [ viewLabel language <| Translate.NutritionActivityTitle activity
             , p [ class "activity-helper" ] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
-            , p [ class "range-helper" ] [ text <| translate language (Translate.AllowedValuesRangeHelper constraints) ]
-            , div [ class "ui grid" ]
-                [ div [ class "eleven wide column" ]
-                    [ viewMeasurementInput
-                        language
-                        form.weight
-                        setWeightMsg
-                        "weight"
-                        Translate.KilogramShorthand
-                    ]
-                , div
-                    [ class "five wide column" ]
-                    [ showMaybe <|
-                        Maybe.map2 (viewMeasurementFloatDiff language Translate.KilogramShorthand)
-                            form.weight
-                            previousValue
-                    ]
-                ]
-            , Pages.Utils.viewPreviousMeasurement language previousValue Translate.KilogramShorthand
             ]
-      , div [ class "ui large header z-score age" ]
-            [ text <| translate language Translate.ZScoreWeightForAge
-            , span [ class "sub header" ]
-                [ text zScoreForAgeText ]
-            ]
-      , showIf showWeightForHeightZScore <|
-            div [ class "ui large header z-score height" ]
-                [ text <| translate language Translate.ZScoreWeightForHeight
-                , span [ class "sub header" ]
-                    [ text zScoreForHeightText
-                    ]
-                ]
+                ++ inputsSection
+      , checkboxSection
       ]
-    , [ maybeToBoolTask form.weight ]
+    , [ if measurementNotTakenChecked then
+            maybeToBoolTask form.measurementNotTaken
+
+        else
+            maybeToBoolTask form.weight
+      ]
     )
 
 

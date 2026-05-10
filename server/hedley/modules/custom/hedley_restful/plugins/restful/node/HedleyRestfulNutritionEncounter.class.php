@@ -11,31 +11,21 @@
 class HedleyRestfulNutritionEncounter extends HedleyRestfulIndividualEncounter {
 
   /**
-   * {@inheritdoc}
+   * A list of fields that are assigned single value.
+   *
+   * @var array
    */
-  public function publicFieldsInfo() {
-    $public_fields = parent::publicFieldsInfo();
-
-    $public_fields['nutrition_encounter_type'] = [
-      'property' => 'field_nutrition_encounter_type',
-    ];
-
-    return $public_fields;
-  }
+  protected $fields = [
+    'field_nutrition_encounter_type',
+  ];
 
   /**
-   * {@inheritdoc}
+   * A list of fields that are assigned multiple values.
+   *
+   * @var array
    */
-  protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
-    $query = parent::alterQueryForViewWithDbSelect($query);
-
-    $field_names = [
-      'field_nutrition_encounter_type',
-    ];
-
-    foreach ($field_names as $field_name) {
-      hedley_general_join_field_to_query($query, 'node', $field_name, FALSE);
-    }
-  }
+  protected $multiFields = [
+    'field_skipped_forms',
+  ];
 
 }

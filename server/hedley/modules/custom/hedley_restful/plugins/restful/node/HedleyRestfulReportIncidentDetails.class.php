@@ -2,11 +2,11 @@
 
 /**
  * @file
- * Contains \HedleyRestfulReportState.
+ * Contains \HedleyRestfulReportIncidentDetails.
  */
 
 /**
- * Class HedleyRestfulReportState.
+ * Class HedleyRestfulReportIncidentDetails.
  */
 class HedleyRestfulReportIncidentDetails extends \RestfulBase implements \RestfulDataProviderInterface {
 

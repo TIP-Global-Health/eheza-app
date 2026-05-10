@@ -3415,7 +3415,7 @@ highUrineProteinInitialPhase measurements =
 respiratoryRateElevated : PrenatalMeasurements -> Bool
 respiratoryRateElevated measurements =
     getMeasurementValueFunc measurements.vitals
-        |> Maybe.map (\value -> value.respiratoryRate > 30)
+        |> Maybe.andThen (\value -> Maybe.map (\rr -> rr > 30) value.respiratoryRate)
         |> Maybe.withDefault False
 
 
@@ -5239,19 +5239,22 @@ generateVitalsFormConfig : AssembledData -> VitalsFormConfig Msg
 generateVitalsFormConfig assembled =
     { setIntInputMsg = SetVitalsIntInput
     , setFloatInputMsg = SetVitalsFloatInput
+    , setRespiratoryRateNotTakenMsg = always NoOp
+    , setBodyTemperatureNotTakenMsg = always NoOp
     , sysBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .sys
     , diaBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .dia
     , heartRatePreviousValue =
         resolvePreviousMaybeValue assembled .vitals .heartRate
             |> Maybe.map toFloat
     , respiratoryRatePreviousValue =
-        resolvePreviousValue assembled .vitals .respiratoryRate
+        resolvePreviousMaybeValue assembled .vitals .respiratoryRate
             |> Maybe.map toFloat
-    , bodyTemperaturePreviousValue = resolvePreviousValue assembled .vitals .bodyTemperature
+    , bodyTemperaturePreviousValue = resolvePreviousMaybeValue assembled .vitals .bodyTemperature
     , birthDate = assembled.person.birthDate
     , formClass = "examination vitals"
     , mode = VitalsFormFull
     , invokationModule = InvokationModulePrenatal
+    , allowSkipping = False
     }
 
 
@@ -6484,6 +6487,8 @@ breastfeedingFormWithDefault form saved =
                 , enoughMilkDirty = form.enoughMilkDirty
                 , latchingWell = maybeValueConsideringIsDirtyField form.latchingWellDirty form.latchingWell (EverySet.member LatchingWell value |> Just)
                 , latchingWellDirty = form.latchingWellDirty
+                , breastfedFirstHour = maybeValueConsideringIsDirtyField form.breastfedFirstHourDirty form.breastfedFirstHour (EverySet.member BreastfedFirstHour value |> Just)
+                , breastfedFirstHourDirty = form.breastfedFirstHourDirty
                 }
             )
 
@@ -6501,6 +6506,7 @@ toBreastfeedingValue form =
     , ifNullableTrue BreastRedness form.breastRedness
     , ifNullableTrue EnoughMilk form.enoughMilk
     , ifNullableTrue LatchingWell form.latchingWell
+    , ifNullableTrue BreastfedFirstHour form.breastfedFirstHour
     , Maybe.map (EverySet.singleton >> Just) form.reasonForNotBreastfeeding
         |> Maybe.withDefault (Just EverySet.empty)
     ]

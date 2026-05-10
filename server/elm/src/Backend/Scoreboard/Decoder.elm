@@ -3,8 +3,7 @@ module Backend.Scoreboard.Decoder exposing (decodeScoreboardData)
 import AssocList as Dict
 import Backend.Decoder exposing (decodeSite)
 import Backend.Scoreboard.Model exposing (ANCNewbornData, CriterionBySeverities, InfrastructureEnvironmentWashData, NCDAData, NutritionBehaviorData, NutritionCriterionsData, PatientData, RawVaccinationData, ScoreboardData, SelectedEntity(..), TargetedInterventionsData, UniversalInterventionData, VaccinationProgressDict, VaccineType(..), emptyANCNewbornData, emptyInfrastructureEnvironmentWashData, emptyNCDAData, emptyNutritionBehaviorData, emptyNutritionCriterionsData, emptyTargetedInterventionsData, emptyUniversalInterventionData)
-import Backend.Scoreboard.Utils exposing (vaccineDoseFromOrder)
-import Date
+import Backend.Scoreboard.Utils exposing (generateVaccinationProgressForVaccine)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffMonths)
 import Json.Decode exposing (Decoder, andThen, bool, fail, list, map, maybe, string, succeed)
@@ -186,18 +185,6 @@ decodeUniqueDates =
 
 rawVaccinationDataToVaccinationProgressDict : RawVaccinationData -> VaccinationProgressDict
 rawVaccinationDataToVaccinationProgressDict data =
-    let
-        generateVaccinationProgressForVaccine dates =
-            EverySet.toList dates
-                |> List.sortWith Date.compare
-                |> List.indexedMap
-                    (\index date ->
-                        vaccineDoseFromOrder index
-                            |> Maybe.map (\dose -> ( dose, date ))
-                    )
-                |> Maybe.Extra.values
-                |> Dict.fromList
-    in
     [ ( VaccineBCG, generateVaccinationProgressForVaccine data.bcg )
     , ( VaccineOPV, generateVaccinationProgressForVaccine data.opv )
     , ( VaccineDTP, generateVaccinationProgressForVaccine data.dtp )

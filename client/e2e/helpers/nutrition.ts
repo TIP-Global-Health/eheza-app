@@ -278,6 +278,45 @@ export async function enterHeight(page: Page, value: string) {
 }
 
 /**
+ * Open the Height activity, check the CHW-only "Unable to take measurement"
+ * checkbox, and save. Records SkippedHeight on the encounter so the activity
+ * counts as completed without an actual reading.
+ *
+ * Available only for CHW (per Measurement/View.elm `if isChw then ...`).
+ */
+export async function skipHeight(page: Page) {
+  await click(page.locator('.icon-task-height'), page);
+  await page.locator('div.page-activity.nutrition').waitFor({ timeout: 10000 });
+
+  await click(
+    page.locator('div.ui.checkbox.activity', {
+      hasText: 'Unable to take measurement',
+    }),
+    page,
+  );
+
+  // Save and return to the encounter page.
+  await saveActivity(page);
+}
+
+/**
+ * Same as skipHeight, but for the Weight activity.
+ */
+export async function skipWeight(page: Page) {
+  await click(page.locator('.icon-task-weight'), page);
+  await page.locator('div.page-activity.nutrition').waitFor({ timeout: 10000 });
+
+  await click(
+    page.locator('div.ui.checkbox.activity', {
+      hasText: 'Unable to take measurement',
+    }),
+    page,
+  );
+
+  await saveActivity(page);
+}
+
+/**
  * Enter a weight measurement and save.
  */
 export async function enterWeight(page: Page, value: string) {

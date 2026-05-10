@@ -46,9 +46,12 @@ test.describe('Nurse: Well Child PediatricCare — Normal Encounter', () => {
     });
 
     // 1. Danger Signs: no symptoms, normal vitals.
+    // Negative gate: Well Child PediatricCare nurse encounters do NOT show
+    // the per-measurement "Unable to take measurement" checkboxes on Vitals.
     await completeDangerSigns(page, {
       respiratoryRate: '20',
       bodyTemp: '36.5',
+      expectNoSkipCheckboxes: true,
     });
 
     // 2. Nutrition Assessment: normal values for 23-month child.

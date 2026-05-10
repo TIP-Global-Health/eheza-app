@@ -622,3 +622,54 @@ function hedley_admin_resilience_survey_export_csv($form, &$form_state) {
   echo $csv_output;
   exit;
 }
+
+/**
+ * Returns the canonical list of toggleable site features.
+ *
+ * Each entry corresponds to a `hedley_admin_feature_<name>_enabled` variable.
+ * Stays in sync with the SiteFeature union in
+ * client/src/elm/SyncManager/Model.elm and
+ * server/elm/src/App/Types.elm; update all together.
+ *
+ * @return array
+ *   List of feature identifiers in alphabetical order.
+ */
+function hedley_admin_get_available_features() {
+  return [
+    'acute_illness',
+    'antenatal',
+    'family_nutrition',
+    'gps_coordinates',
+    'group_education',
+    'healthy_start',
+    'hiv_management',
+    'ncd',
+    'ncda',
+    'nutrition_group',
+    'nutrition_individual',
+    'report_to_whatsapp',
+    'stock_management_hc',
+    'stock_management_village',
+    'tuberculosis_management',
+    'well_child',
+  ];
+}
+
+/**
+ * Returns the space-delimited list of currently enabled site features.
+ *
+ * Suitable for emission as the `features` field consumed by both the client
+ * sync API and the admin Reports Elm app (decoded by decodeSiteFeatures).
+ *
+ * @return string
+ *   Space-delimited identifiers; empty string when no feature is enabled.
+ */
+function hedley_admin_get_enabled_features_string() {
+  $enabled = array_filter(
+    hedley_admin_get_available_features(),
+    function ($feature) {
+      return variable_get("hedley_admin_feature_{$feature}_enabled", FALSE);
+    }
+  );
+  return implode(' ', $enabled);
+}

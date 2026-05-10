@@ -1,4 +1,4 @@
-module Backend.NutritionActivity.Utils exposing (allActivities, decodeActivityFromString, encodeActivityAsString, getActivityIcon)
+module Backend.NutritionActivity.Utils exposing (activityFromString, activityToString, allActivities, getActivityIcon)
 
 {-| Various utilities that deal with "activities". An activity represents the
 need for a nurse to do something with respect to a person who is checked in.
@@ -16,8 +16,8 @@ import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 {-| Used for URL etc., not for display in the normal UI (since we'd translate
 for that).
 -}
-encodeActivityAsString : NutritionActivity -> String
-encodeActivityAsString activity =
+activityToString : NutritionActivity -> String
+activityToString activity =
     case activity of
         Muac ->
             "nutrition-muac"
@@ -43,8 +43,8 @@ encodeActivityAsString activity =
 
 {-| The inverse of encodeActivityTypeAsString
 -}
-decodeActivityFromString : String -> Maybe NutritionActivity
-decodeActivityFromString s =
+activityFromString : String -> Maybe NutritionActivity
+activityFromString s =
     case s of
         "nutrition-muac" ->
             Just Muac

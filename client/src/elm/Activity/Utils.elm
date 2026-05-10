@@ -1,4 +1,4 @@
-module Activity.Utils exposing (decodeActivityFromString, encodeActivityAsString, generateNutritionAssessment, getActivityCountForMother, getActivityIcon, getAllChildActivities, getAllChildActivitiesExcludingNextSteps, getAllMotherActivities, getParticipantCountForActivity, isCaregiver, mandatoryActivitiesCompleted, motherIsCheckedIn, summarizeChildActivity, summarizeChildParticipant, summarizeMotherActivity, summarizeMotherParticipant)
+module Activity.Utils exposing (activityFromString, activityToString, generateNutritionAssessment, getActivityCountForMother, getActivityIcon, getAllChildActivities, getAllChildActivitiesExcludingNextSteps, getAllMotherActivities, getParticipantCountForActivity, isCaregiver, mandatoryActivitiesCompleted, motherIsCheckedIn, summarizeChildActivity, summarizeChildParticipant, summarizeMotherActivity, summarizeMotherParticipant)
 
 {-| Various utilities that deal with "activities". An activity represents the
 need for a nurse to do something with respect to a person who is checked in.
@@ -55,8 +55,8 @@ generateNutritionAssessment currentDate zscores childId db offlineSession =
 
 {-| Used for URL etc., not for display in the normal UI (since we'd translatefor that).
 -}
-encodeActivityAsString : Activity -> String
-encodeActivityAsString activity =
+activityToString : Activity -> String
+activityToString activity =
     case activity of
         ChildActivity childActivity ->
             case childActivity of
@@ -112,8 +112,8 @@ encodeActivityAsString activity =
 
 {-| The inverse of encodeActivityTypeAsString
 -}
-decodeActivityFromString : String -> Maybe Activity
-decodeActivityFromString s =
+activityFromString : String -> Maybe Activity
+activityFromString s =
     case s of
         "child-fbf" ->
             Just <| ChildActivity ChildFbf
