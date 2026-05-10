@@ -9,7 +9,14 @@ import {
   navigateToCompletionReportPage,
   navigateToHCReportsPage,
   selectReportType,
+  setDateRange,
 } from './reports';
+
+// Wide date window so Demographics counts include every migration-seeded
+// encounter regardless of its created/updated timestamp. Constructed in
+// UTC so the calendar popup (which reads via getUTC*) lands on the
+// intended day in any timezone — see REPORT_START_DATE in reporting.spec.ts.
+const ADMIN_REPORT_START_DATE = new Date(Date.UTC(2018, 0, 1));
 
 /**
  * What admin-Reports surfaces a given SiteFeature flag is expected to gate.
@@ -112,6 +119,13 @@ export async function assertAdminGates(
 
       if (sqRows.length > 0) {
         await selectReportType(adminPage, 'demographics');
+        // Health-center scope is "wide" (Pages.Reports.Utils.isWideScope),
+        // so the Demographics rows are gated behind a date range. Without
+        // setting it, the page only shows the WideScopeNote and no rows
+        // render -- making both presence and absence assertions fail
+        // ambiguously. Pick a wide window covering all migration-seeded
+        // encounters; the rows themselves render independently of count.
+        await setDateRange(adminPage, ADMIN_REPORT_START_DATE, new Date());
         for (const rowLabel of sqRows) {
           const row = adminPage.locator('.page-content.reports .row', {
             hasText: rowLabel,
