@@ -6314,6 +6314,10 @@ var $author$project$Pages$Reports$Utils$isWideScope = function (selectedEntity) 
 var $author$project$Pages$Reports$Model$NutritionReportDataCalculationCompleted = function (a) {
 	return {$: 'NutritionReportDataCalculationCompleted', a: a};
 };
+var $author$project$App$Types$FeatureFamilyNutrition = {$: 'FeatureFamilyNutrition'};
+var $author$project$App$Types$FeatureNutritionGroup = {$: 'FeatureNutritionGroup'};
+var $author$project$App$Types$FeatureNutritionIndividual = {$: 'FeatureNutritionIndividual'};
+var $author$project$App$Types$FeatureWellChild = {$: 'FeatureWellChild'};
 var $justinmimbs$date$Date$Years = {$: 'Years'};
 var $elm$core$List$concat = function (lists) {
 	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
@@ -6607,6 +6611,20 @@ var $pzp1997$assoc_list$AssocList$insert = F3(
 				_Utils_Tuple2(key, value),
 				alteredAlist));
 	});
+var $pzp1997$assoc_list$AssocList$member = F2(
+	function (targetKey, dict) {
+		var _v0 = A2($pzp1997$assoc_list$AssocList$get, targetKey, dict);
+		if (_v0.$ === 'Just') {
+			return true;
+		} else {
+			return false;
+		}
+	});
+var $Gizra$elm_all_set$EverySet$member = F2(
+	function (k, _v0) {
+		var d = _v0.a;
+		return A2($pzp1997$assoc_list$AssocList$member, k, d);
+	});
 var $justinmimbs$date$Date$month = A2(
 	$elm$core$Basics$composeR,
 	$justinmimbs$date$Date$toCalendarDate,
@@ -6723,16 +6741,26 @@ var $elm_community$maybe_extra$Maybe$Extra$foldrValues = F2(
 		}
 	});
 var $elm_community$maybe_extra$Maybe$Extra$values = A2($elm$core$List$foldr, $elm_community$maybe_extra$Maybe$Extra$foldrValues, _List_Nil);
-var $author$project$Pages$Reports$Update$calculateNutritionReportDataTask = F2(
-	function (currentDate, data) {
+var $author$project$Pages$Reports$Update$calculateNutritionReportDataTask = F3(
+	function (currentDate, features, data) {
 		return $elm$core$Task$succeed(
 			function () {
+				var seriesIf = F2(
+					function (flag, series) {
+						return flag ? series : $elm$core$Maybe$Nothing;
+					});
 				var records = A2(
 					$elm$core$List$filter,
 					function (record) {
 						return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, record.birthDate, currentDate) < 6;
 					},
 					data);
+				var memberFeature = function (f) {
+					return A2($Gizra$elm_all_set$EverySet$member, f, features);
+				};
+				var nutritionGroupEnabled = memberFeature($author$project$App$Types$FeatureNutritionGroup);
+				var nutritionIndividualEnabled = memberFeature($author$project$App$Types$FeatureNutritionIndividual);
+				var wellChildEnabled = memberFeature($author$project$App$Types$FeatureWellChild);
 				var insertMetricsForMonth = F3(
 					function (_v2, encounterMetrics, accum) {
 						var year = _v2.a;
@@ -6763,6 +6791,7 @@ var $author$project$Pages$Reports$Update$calculateNutritionReportDataTask = F2(
 						return ($author$project$Pages$Reports$Utils$countTotalNutritionEncounters(record) > 1) ? $elm$core$Maybe$Just(record.id) : $elm$core$Maybe$Nothing;
 					},
 					records);
+				var familyNutritionEnabled = memberFeature($author$project$App$Types$FeatureFamilyNutrition);
 				var currentYear = $justinmimbs$date$Date$year(currentDate);
 				var startingYear = currentYear - 3;
 				var filterByYear = function (encounter) {
@@ -6770,7 +6799,7 @@ var $author$project$Pages$Reports$Update$calculateNutritionReportDataTask = F2(
 						$justinmimbs$date$Date$year(encounter.startDate),
 						startingYear) > -1;
 				};
-				var familyNutritionEncounters = A2(
+				var familyNutritionEncounters = familyNutritionEnabled ? A2(
 					$elm$core$List$concatMap,
 					function (record) {
 						return A2(
@@ -6788,7 +6817,7 @@ var $author$project$Pages$Reports$Update$calculateNutritionReportDataTask = F2(
 											$elm$core$Tuple$pair(record.id)))),
 								record.familyNutritionMuacData));
 					},
-					records);
+					records) : _List_Nil;
 				var allEncounters = A2(
 					$elm$core$List$concatMap,
 					function (record) {
@@ -6797,71 +6826,92 @@ var $author$project$Pages$Reports$Update$calculateNutritionReportDataTask = F2(
 								_List_fromArray(
 									[
 										A2(
-										$elm$core$Maybe$map,
+										seriesIf,
+										wellChildEnabled,
 										A2(
-											$elm$core$Basics$composeR,
-											$elm$core$List$concat,
+											$elm$core$Maybe$map,
+											A2(
+												$elm$core$Basics$composeR,
+												$elm$core$List$concat,
+												A2(
+													$elm$core$Basics$composeR,
+													$elm$core$List$filter(filterByYear),
+													$elm$core$List$map(
+														function (item) {
+															return _Utils_Tuple2(
+																record.id,
+																{fbfAmount: $elm$core$Maybe$Nothing, hasEdema: false, muacCm: item.muacCm, nutritionData: item.nutritionData, startDate: item.startDate});
+														}))),
+											record.wellChildData)),
+										A2(
+										seriesIf,
+										nutritionIndividualEnabled,
+										A2(
+											$elm$core$Maybe$map,
+											A2(
+												$elm$core$Basics$composeR,
+												$elm$core$List$concat,
+												A2(
+													$elm$core$Basics$composeR,
+													$elm$core$List$filter(filterByYear),
+													$elm$core$List$map(
+														$elm$core$Tuple$pair(record.id)))),
+											record.individualNutritionData)),
+										A2(
+										seriesIf,
+										nutritionGroupEnabled,
+										A2(
+											$elm$core$Maybe$map,
 											A2(
 												$elm$core$Basics$composeR,
 												$elm$core$List$filter(filterByYear),
 												$elm$core$List$map(
-													function (item) {
-														return _Utils_Tuple2(
-															record.id,
-															{fbfAmount: $elm$core$Maybe$Nothing, hasEdema: false, muacCm: item.muacCm, nutritionData: item.nutritionData, startDate: item.startDate});
-													}))),
-										record.wellChildData),
+													$elm$core$Tuple$pair(record.id))),
+											record.groupNutritionPmtctData)),
 										A2(
-										$elm$core$Maybe$map,
+										seriesIf,
+										nutritionGroupEnabled,
 										A2(
-											$elm$core$Basics$composeR,
-											$elm$core$List$concat,
+											$elm$core$Maybe$map,
 											A2(
 												$elm$core$Basics$composeR,
 												$elm$core$List$filter(filterByYear),
 												$elm$core$List$map(
-													$elm$core$Tuple$pair(record.id)))),
-										record.individualNutritionData),
+													$elm$core$Tuple$pair(record.id))),
+											record.groupNutritionFbfData)),
 										A2(
-										$elm$core$Maybe$map,
+										seriesIf,
+										nutritionGroupEnabled,
 										A2(
-											$elm$core$Basics$composeR,
-											$elm$core$List$filter(filterByYear),
-											$elm$core$List$map(
-												$elm$core$Tuple$pair(record.id))),
-										record.groupNutritionPmtctData),
+											$elm$core$Maybe$map,
+											A2(
+												$elm$core$Basics$composeR,
+												$elm$core$List$filter(filterByYear),
+												$elm$core$List$map(
+													$elm$core$Tuple$pair(record.id))),
+											record.groupNutritionSorwatheData)),
 										A2(
-										$elm$core$Maybe$map,
+										seriesIf,
+										nutritionGroupEnabled,
 										A2(
-											$elm$core$Basics$composeR,
-											$elm$core$List$filter(filterByYear),
-											$elm$core$List$map(
-												$elm$core$Tuple$pair(record.id))),
-										record.groupNutritionFbfData),
+											$elm$core$Maybe$map,
+											A2(
+												$elm$core$Basics$composeR,
+												$elm$core$List$filter(filterByYear),
+												$elm$core$List$map(
+													$elm$core$Tuple$pair(record.id))),
+											record.groupNutritionChwData)),
 										A2(
-										$elm$core$Maybe$map,
+										seriesIf,
+										nutritionGroupEnabled,
 										A2(
-											$elm$core$Basics$composeR,
-											$elm$core$List$filter(filterByYear),
-											$elm$core$List$map(
-												$elm$core$Tuple$pair(record.id))),
-										record.groupNutritionSorwatheData),
-										A2(
-										$elm$core$Maybe$map,
-										A2(
-											$elm$core$Basics$composeR,
-											$elm$core$List$filter(filterByYear),
-											$elm$core$List$map(
-												$elm$core$Tuple$pair(record.id))),
-										record.groupNutritionChwData),
-										A2(
-										$elm$core$Maybe$map,
-										A2(
-											$elm$core$Basics$composeR,
-											$elm$core$List$filter(filterByYear),
-											$elm$core$List$map(
-												$elm$core$Tuple$pair(record.id))),
-										record.groupNutritionAchiData)
+											$elm$core$Maybe$map,
+											A2(
+												$elm$core$Basics$composeR,
+												$elm$core$List$filter(filterByYear),
+												$elm$core$List$map(
+													$elm$core$Tuple$pair(record.id))),
+											record.groupNutritionAchiData))
 									])));
 					},
 					records);
@@ -6920,8 +6970,8 @@ var $author$project$Pages$Reports$Update$wrapInResultTask = function (task) {
 		A2($elm$core$Basics$composeR, $elm$core$Result$Err, $elm$core$Task$succeed),
 		A2($elm$core$Task$map, $elm$core$Result$Ok, task));
 };
-var $author$project$Pages$Reports$Update$performNutritionReportDataCalculation = F2(
-	function (currentDate, data) {
+var $author$project$Pages$Reports$Update$performNutritionReportDataCalculation = F3(
+	function (currentDate, features, data) {
 		return A2(
 			$elm$core$Task$perform,
 			A2(
@@ -6930,7 +6980,7 @@ var $author$project$Pages$Reports$Update$performNutritionReportDataCalculation =
 					$elm$core$Basics$always('Calculations failed')),
 				$author$project$Pages$Reports$Model$NutritionReportDataCalculationCompleted),
 			$author$project$Pages$Reports$Update$wrapInResultTask(
-				A2($author$project$Pages$Reports$Update$calculateNutritionReportDataTask, currentDate, data)));
+				A3($author$project$Pages$Reports$Update$calculateNutritionReportDataTask, currentDate, features, data)));
 	});
 var $author$project$Pages$Reports$Model$ReportAcuteIllness = {$: 'ReportAcuteIllness'};
 var $author$project$Pages$Reports$Model$ReportDemographics = {$: 'ReportDemographics'};
@@ -6981,7 +7031,7 @@ var $author$project$Pages$Reports$Update$update = F4(
 							var _v3 = _v2.b.a;
 							return $author$project$Pages$Reports$Utils$isWideScope(data.entityType) ? _Utils_Tuple2(model.nutritionReportData, $elm$core$Platform$Cmd$none) : _Utils_Tuple2(
 								$krisajenkins$remotedata$RemoteData$Loading,
-								A2($author$project$Pages$Reports$Update$performNutritionReportDataCalculation, currentDate, data.records));
+								A3($author$project$Pages$Reports$Update$performNutritionReportDataCalculation, currentDate, data.features, data.records));
 						} else {
 							return _Utils_Tuple2(model.nutritionReportData, $elm$core$Platform$Cmd$none);
 						}
@@ -7184,21 +7234,23 @@ var $author$project$Backend$Completion$Model$HandleSyncResponse = function (a) {
 	return {$: 'HandleSyncResponse', a: a};
 };
 var $author$project$Backend$Completion$Model$CompletionData = function (site) {
-	return function (entityName) {
-		return function (entityType) {
-			return function (params) {
-				return function (acuteIllnessData) {
-					return function (childScoreboardData) {
-						return function (hivData) {
-							return function (homeVisitData) {
-								return function (ncdData) {
-									return function (nutritionIndividualData) {
-										return function (nutritionGroupData) {
-											return function (prenatalData) {
-												return function (tuberculosisData) {
-													return function (wellChildData) {
-														return function (remainingForDownload) {
-															return {acuteIllnessData: acuteIllnessData, childScoreboardData: childScoreboardData, entityName: entityName, entityType: entityType, hivData: hivData, homeVisitData: homeVisitData, ncdData: ncdData, nutritionGroupData: nutritionGroupData, nutritionIndividualData: nutritionIndividualData, params: params, prenatalData: prenatalData, remainingForDownload: remainingForDownload, site: site, tuberculosisData: tuberculosisData, wellChildData: wellChildData};
+	return function (features) {
+		return function (entityName) {
+			return function (entityType) {
+				return function (params) {
+					return function (acuteIllnessData) {
+						return function (childScoreboardData) {
+							return function (hivData) {
+								return function (homeVisitData) {
+									return function (ncdData) {
+										return function (nutritionIndividualData) {
+											return function (nutritionGroupData) {
+												return function (prenatalData) {
+													return function (tuberculosisData) {
+														return function (wellChildData) {
+															return function (remainingForDownload) {
+																return {acuteIllnessData: acuteIllnessData, childScoreboardData: childScoreboardData, entityName: entityName, entityType: entityType, features: features, hivData: hivData, homeVisitData: homeVisitData, ncdData: ncdData, nutritionGroupData: nutritionGroupData, nutritionIndividualData: nutritionIndividualData, params: params, prenatalData: prenatalData, remainingForDownload: remainingForDownload, site: site, tuberculosisData: tuberculosisData, wellChildData: wellChildData};
+															};
 														};
 													};
 												};
@@ -7370,6 +7422,80 @@ var $author$project$Backend$Decoder$siteFromString = function (str) {
 	}
 };
 var $author$project$Backend$Decoder$decodeSite = A2($elm$json$Json$Decode$map, $author$project$Backend$Decoder$siteFromString, $elm$json$Json$Decode$string);
+var $Gizra$elm_all_set$EverySet$EverySet = function (a) {
+	return {$: 'EverySet', a: a};
+};
+var $Gizra$elm_all_set$EverySet$empty = $Gizra$elm_all_set$EverySet$EverySet($pzp1997$assoc_list$AssocList$empty);
+var $Gizra$elm_all_set$EverySet$insert = F2(
+	function (k, _v0) {
+		var d = _v0.a;
+		return $Gizra$elm_all_set$EverySet$EverySet(
+			A3($pzp1997$assoc_list$AssocList$insert, k, _Utils_Tuple0, d));
+	});
+var $Gizra$elm_all_set$EverySet$fromList = function (xs) {
+	return A3($elm$core$List$foldl, $Gizra$elm_all_set$EverySet$insert, $Gizra$elm_all_set$EverySet$empty, xs);
+};
+var $author$project$App$Types$FeatureAcuteIllness = {$: 'FeatureAcuteIllness'};
+var $author$project$App$Types$FeatureAntenatal = {$: 'FeatureAntenatal'};
+var $author$project$App$Types$FeatureGPSCoordinates = {$: 'FeatureGPSCoordinates'};
+var $author$project$App$Types$FeatureGroupEducation = {$: 'FeatureGroupEducation'};
+var $author$project$App$Types$FeatureHIVManagement = {$: 'FeatureHIVManagement'};
+var $author$project$App$Types$FeatureHealthyStart = {$: 'FeatureHealthyStart'};
+var $author$project$App$Types$FeatureNCD = {$: 'FeatureNCD'};
+var $author$project$App$Types$FeatureNCDA = {$: 'FeatureNCDA'};
+var $author$project$App$Types$FeatureReportToWhatsApp = {$: 'FeatureReportToWhatsApp'};
+var $author$project$App$Types$FeatureStockManagementHC = {$: 'FeatureStockManagementHC'};
+var $author$project$App$Types$FeatureStockManagementVillage = {$: 'FeatureStockManagementVillage'};
+var $author$project$App$Types$FeatureTuberculosisManagement = {$: 'FeatureTuberculosisManagement'};
+var $author$project$Backend$Decoder$siteFeatureFromString = function (str) {
+	var _v0 = $elm$core$String$toLower(str);
+	switch (_v0) {
+		case 'acute_illness':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureAcuteIllness);
+		case 'antenatal':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureAntenatal);
+		case 'family_nutrition':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureFamilyNutrition);
+		case 'gps_coordinates':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureGPSCoordinates);
+		case 'group_education':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureGroupEducation);
+		case 'healthy_start':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureHealthyStart);
+		case 'hiv_management':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureHIVManagement);
+		case 'ncd':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureNCD);
+		case 'ncda':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureNCDA);
+		case 'nutrition_group':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureNutritionGroup);
+		case 'nutrition_individual':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureNutritionIndividual);
+		case 'report_to_whatsapp':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureReportToWhatsApp);
+		case 'stock_management_hc':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureStockManagementHC);
+		case 'stock_management_village':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureStockManagementVillage);
+		case 'tuberculosis_management':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureTuberculosisManagement);
+		case 'well_child':
+			return $elm$core$Maybe$Just($author$project$App$Types$FeatureWellChild);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $elm$core$String$words = _String_words;
+var $author$project$Backend$Decoder$siteFeaturesFromString = function (str) {
+	return $Gizra$elm_all_set$EverySet$fromList(
+		$elm_community$maybe_extra$Maybe$Extra$values(
+			A2(
+				$elm$core$List$map,
+				$author$project$Backend$Decoder$siteFeatureFromString,
+				$elm$core$String$words(str))));
+};
+var $author$project$Backend$Decoder$decodeSiteFeatures = A2($elm$json$Json$Decode$map, $author$project$Backend$Decoder$siteFeaturesFromString, $elm$json$Json$Decode$string);
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$hardcoded = A2($elm$core$Basics$composeR, $elm$json$Json$Decode$succeed, $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom);
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
 	function (key, valDecoder, decoder) {
@@ -7425,9 +7551,13 @@ var $author$project$Backend$Completion$Decoder$decodeCompletionData = A2(
 														$elm$json$Json$Decode$string,
 														A3(
 															$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-															'site',
-															$author$project$Backend$Decoder$decodeSite,
-															$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$CompletionData))))))))))))))));
+															'features',
+															$author$project$Backend$Decoder$decodeSiteFeatures,
+															A3(
+																$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+																'site',
+																$author$project$Backend$Decoder$decodeSite,
+																$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$CompletionData)))))))))))))))));
 var $author$project$Backend$Completion$Model$SyncResponse = function (acuteIllnessData) {
 	return function (childScoreboardData) {
 		return function (hivData) {
@@ -10251,66 +10381,6 @@ var $author$project$Backend$Reports$Decoder$decodeBackendGeneratedNutritionRepor
 										'type',
 										$author$project$Backend$Reports$Decoder$decodeNutritionReportTableType,
 										$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$BackendGeneratedNutritionReportTableDate)))))))))));
-var $Gizra$elm_all_set$EverySet$EverySet = function (a) {
-	return {$: 'EverySet', a: a};
-};
-var $Gizra$elm_all_set$EverySet$empty = $Gizra$elm_all_set$EverySet$EverySet($pzp1997$assoc_list$AssocList$empty);
-var $Gizra$elm_all_set$EverySet$insert = F2(
-	function (k, _v0) {
-		var d = _v0.a;
-		return $Gizra$elm_all_set$EverySet$EverySet(
-			A3($pzp1997$assoc_list$AssocList$insert, k, _Utils_Tuple0, d));
-	});
-var $Gizra$elm_all_set$EverySet$fromList = function (xs) {
-	return A3($elm$core$List$foldl, $Gizra$elm_all_set$EverySet$insert, $Gizra$elm_all_set$EverySet$empty, xs);
-};
-var $author$project$App$Types$FeatureFamilyNutrition = {$: 'FeatureFamilyNutrition'};
-var $author$project$App$Types$FeatureGPSCoordinates = {$: 'FeatureGPSCoordinates'};
-var $author$project$App$Types$FeatureGroupEducation = {$: 'FeatureGroupEducation'};
-var $author$project$App$Types$FeatureHIVManagement = {$: 'FeatureHIVManagement'};
-var $author$project$App$Types$FeatureHealthyStart = {$: 'FeatureHealthyStart'};
-var $author$project$App$Types$FeatureNCDA = {$: 'FeatureNCDA'};
-var $author$project$App$Types$FeatureReportToWhatsApp = {$: 'FeatureReportToWhatsApp'};
-var $author$project$App$Types$FeatureStockManagementHC = {$: 'FeatureStockManagementHC'};
-var $author$project$App$Types$FeatureStockManagementVillage = {$: 'FeatureStockManagementVillage'};
-var $author$project$App$Types$FeatureTuberculosisManagement = {$: 'FeatureTuberculosisManagement'};
-var $author$project$Backend$Decoder$siteFeatureFromString = function (str) {
-	var _v0 = $elm$core$String$toLower(str);
-	switch (_v0) {
-		case 'family_nutrition':
-			return $elm$core$Maybe$Just($author$project$App$Types$FeatureFamilyNutrition);
-		case 'gps_coordinates':
-			return $elm$core$Maybe$Just($author$project$App$Types$FeatureGPSCoordinates);
-		case 'group_education':
-			return $elm$core$Maybe$Just($author$project$App$Types$FeatureGroupEducation);
-		case 'healthy_start':
-			return $elm$core$Maybe$Just($author$project$App$Types$FeatureHealthyStart);
-		case 'hiv_management':
-			return $elm$core$Maybe$Just($author$project$App$Types$FeatureHIVManagement);
-		case 'ncda':
-			return $elm$core$Maybe$Just($author$project$App$Types$FeatureNCDA);
-		case 'report_to_whatsapp':
-			return $elm$core$Maybe$Just($author$project$App$Types$FeatureReportToWhatsApp);
-		case 'stock_management_hc':
-			return $elm$core$Maybe$Just($author$project$App$Types$FeatureStockManagementHC);
-		case 'stock_management_village':
-			return $elm$core$Maybe$Just($author$project$App$Types$FeatureStockManagementVillage);
-		case 'tuberculosis_management':
-			return $elm$core$Maybe$Just($author$project$App$Types$FeatureTuberculosisManagement);
-		default:
-			return $elm$core$Maybe$Nothing;
-	}
-};
-var $elm$core$String$words = _String_words;
-var $author$project$Backend$Decoder$siteFeaturesFromString = function (str) {
-	return $Gizra$elm_all_set$EverySet$fromList(
-		$elm_community$maybe_extra$Maybe$Extra$values(
-			A2(
-				$elm$core$List$map,
-				$author$project$Backend$Decoder$siteFeatureFromString,
-				$elm$core$String$words(str))));
-};
-var $author$project$Backend$Decoder$decodeSiteFeatures = A2($elm$json$Json$Decode$map, $author$project$Backend$Decoder$siteFeaturesFromString, $elm$json$Json$Decode$string);
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt = F4(
 	function (path, valDecoder, fallback, decoder) {
 		return A2(
@@ -18154,6 +18224,41 @@ var $author$project$Pages$Completion$View$viewTuberculosisReport = F5(
 						mTakenBy,
 						$author$project$Pages$Completion$View$eliminateEmptyEncounters(reportData)))));
 	});
+var $author$project$Pages$Completion$Utils$visibleReportTypes = function (features) {
+	var member = function (f) {
+		return A2($Gizra$elm_all_set$EverySet$member, f, features);
+	};
+	return A2(
+		$elm$core$List$filter,
+		function (reportType) {
+			switch (reportType.$) {
+				case 'ReportAcuteIllness':
+					return member($author$project$App$Types$FeatureAcuteIllness);
+				case 'ReportPrenatal':
+					return member($author$project$App$Types$FeatureAntenatal);
+				case 'ReportChildScoreboard':
+					return member($author$project$App$Types$FeatureNCDA);
+				case 'ReportHIV':
+					return member($author$project$App$Types$FeatureHIVManagement);
+				case 'ReportHomeVisit':
+					return member($author$project$App$Types$FeatureNutritionIndividual);
+				case 'ReportNCD':
+					return member($author$project$App$Types$FeatureNCD);
+				case 'ReportNewbornExam':
+					return member($author$project$App$Types$FeatureWellChild);
+				case 'ReportNutritionGroup':
+					return member($author$project$App$Types$FeatureNutritionGroup);
+				case 'ReportNutritionIndividual':
+					return member($author$project$App$Types$FeatureNutritionIndividual);
+				case 'ReportWellChild':
+					return member($author$project$App$Types$FeatureWellChild);
+				default:
+					return member($author$project$App$Types$FeatureTuberculosisManagement);
+			}
+		},
+		_List_fromArray(
+			[$author$project$Pages$Completion$Model$ReportAcuteIllness, $author$project$Pages$Completion$Model$ReportPrenatal, $author$project$Pages$Completion$Model$ReportChildScoreboard, $author$project$Pages$Completion$Model$ReportHIV, $author$project$Pages$Completion$Model$ReportHomeVisit, $author$project$Pages$Completion$Model$ReportNCD, $author$project$Pages$Completion$Model$ReportNewbornExam, $author$project$Pages$Completion$Model$ReportNutritionGroup, $author$project$Pages$Completion$Model$ReportNutritionIndividual, $author$project$Pages$Completion$Model$ReportWellChild, $author$project$Pages$Completion$Model$ReportTuberculosis]));
+};
 var $author$project$Pages$Utils$viewCustomLabel = F4(
 	function (language, translationId, suffix, class_) {
 		return A2(
@@ -18443,8 +18548,7 @@ var $author$project$Pages$Completion$View$viewCompletionData = F4(
 									$author$project$Pages$Utils$viewSelectListInput,
 									language,
 									model.reportType,
-									_List_fromArray(
-										[$author$project$Pages$Completion$Model$ReportAcuteIllness, $author$project$Pages$Completion$Model$ReportPrenatal, $author$project$Pages$Completion$Model$ReportChildScoreboard, $author$project$Pages$Completion$Model$ReportHIV, $author$project$Pages$Completion$Model$ReportHomeVisit, $author$project$Pages$Completion$Model$ReportNCD, $author$project$Pages$Completion$Model$ReportNewbornExam, $author$project$Pages$Completion$Model$ReportNutritionGroup, $author$project$Pages$Completion$Model$ReportNutritionIndividual, $author$project$Pages$Completion$Model$ReportWellChild, $author$project$Pages$Completion$Model$ReportTuberculosis]),
+									$author$project$Pages$Completion$Utils$visibleReportTypes(data.features),
 									$author$project$Pages$Completion$Utils$reportTypeToString,
 									$author$project$Pages$Completion$Model$SetReportType,
 									$author$project$Translate$CompletionReportType,
@@ -19051,152 +19155,122 @@ var $author$project$Translate$NutritionTotal = {$: 'NutritionTotal'};
 var $author$project$Translate$PMTCT = {$: 'PMTCT'};
 var $author$project$Translate$Sorwathe = {$: 'Sorwathe'};
 var $author$project$Translate$Unique = {$: 'Unique'};
-var $pzp1997$assoc_list$AssocList$member = F2(
-	function (targetKey, dict) {
-		var _v0 = A2($pzp1997$assoc_list$AssocList$get, targetKey, dict);
-		if (_v0.$ === 'Just') {
-			return true;
-		} else {
-			return false;
-		}
-	});
-var $Gizra$elm_all_set$EverySet$member = F2(
-	function (k, _v0) {
-		var d = _v0.a;
-		return A2($pzp1997$assoc_list$AssocList$member, k, d);
-	});
 var $author$project$Pages$Reports$View$generateDemographicsReportEncountersData = F3(
 	function (language, features, records) {
-		var wellChildEncountersData = A2(
-			$elm$core$List$filterMap,
-			A2(
-				$elm$core$Basics$composeR,
-				function ($) {
-					return $.wellChildData;
-				},
-				$elm$core$Maybe$map($elm$core$List$concat)),
-			records);
-		var tuberculosisEncountersData = A2(
-			$elm$core$List$filterMap,
-			A2(
-				$elm$core$Basics$composeR,
-				function ($) {
-					return $.tuberculosisData;
-				},
-				$elm$core$Maybe$map($elm$core$List$concat)),
-			records);
-		var prenatalDataNurseEncounters = A2(
-			$elm$core$List$filterMap,
-			A2(
-				$elm$core$Basics$composeR,
-				function ($) {
-					return $.prenatalData;
-				},
-				$elm$core$Maybe$map(
-					A2(
-						$elm$core$Basics$composeR,
-						$elm$core$List$concatMap(
-							function ($) {
-								return $.encounters;
-							}),
-						$elm$core$List$filter(
-							function (encounter) {
-								return A2(
-									$elm$core$List$member,
-									encounter.encounterType,
-									_List_fromArray(
-										[$author$project$Backend$Reports$Model$NurseEncounter, $author$project$Backend$Reports$Model$NursePostpartumEncounter]));
-							})))),
-			records);
-		var prenatalDataChwEncounters = A2(
-			$elm$core$List$filterMap,
-			A2(
-				$elm$core$Basics$composeR,
-				function ($) {
-					return $.prenatalData;
-				},
-				$elm$core$Maybe$map(
-					A2(
-						$elm$core$Basics$composeR,
-						$elm$core$List$concatMap(
-							function ($) {
-								return $.encounters;
-							}),
-						$elm$core$List$filter(
-							function (encounter) {
-								return !A2(
-									$elm$core$List$member,
-									encounter.encounterType,
-									_List_fromArray(
-										[$author$project$Backend$Reports$Model$NurseEncounter, $author$project$Backend$Reports$Model$NursePostpartumEncounter]));
-							})))),
-			records);
-		var nutritionIndividualEncountersData = A2(
-			$elm$core$List$filterMap,
-			A2(
-				$elm$core$Basics$composeR,
-				function ($) {
-					return $.individualNutritionData;
-				},
-				$elm$core$Maybe$map($elm$core$List$concat)),
-			records);
-		var nutritionGroupSorwatheEncountersData = A2(
-			$elm$core$List$filterMap,
-			function ($) {
-				return $.groupNutritionSorwatheData;
-			},
-			records);
-		var nutritionGroupPmtctEncountersData = A2(
-			$elm$core$List$filterMap,
-			function ($) {
-				return $.groupNutritionPmtctData;
-			},
-			records);
-		var nutritionGroupFbfEncountersData = A2(
-			$elm$core$List$filterMap,
-			function ($) {
-				return $.groupNutritionFbfData;
-			},
-			records);
-		var nutritionGroupChwEncountersData = A2(
-			$elm$core$List$filterMap,
-			function ($) {
-				return $.groupNutritionChwData;
-			},
-			records);
-		var nutritionGroupAchiEncountersData = A2(
-			$elm$core$List$filterMap,
-			function ($) {
-				return $.groupNutritionAchiData;
-			},
-			records);
+		var rowsIf = F2(
+			function (flag, rows) {
+				return flag ? rows : _List_Nil;
+			});
+		var memberFeature = function (f) {
+			return A2($Gizra$elm_all_set$EverySet$member, f, features);
+		};
+		var ncdEnabled = memberFeature($author$project$App$Types$FeatureNCD);
+		var ncdaEnabled = memberFeature($author$project$App$Types$FeatureNCDA);
+		var nutritionGroupEnabled = memberFeature($author$project$App$Types$FeatureNutritionGroup);
+		var nutritionIndividualEnabled = memberFeature($author$project$App$Types$FeatureNutritionIndividual);
+		var nutritionAggregateEnabled = nutritionIndividualEnabled || nutritionGroupEnabled;
+		var tuberculosisEnabled = memberFeature($author$project$App$Types$FeatureTuberculosisManagement);
+		var wellChildEnabled = memberFeature($author$project$App$Types$FeatureWellChild);
+		var loadEncountersIf = F2(
+			function (flag, loader) {
+				return flag ? loader(records) : _List_Nil;
+			});
 		var ncdEncountersData = A2(
-			$elm$core$List$filterMap,
-			A2(
-				$elm$core$Basics$composeR,
+			loadEncountersIf,
+			ncdEnabled,
+			$elm$core$List$filterMap(
+				A2(
+					$elm$core$Basics$composeR,
+					function ($) {
+						return $.ncdData;
+					},
+					$elm$core$Maybe$map($elm$core$List$concat))));
+		var nutritionGroupAchiEncountersData = A2(
+			loadEncountersIf,
+			nutritionGroupEnabled,
+			$elm$core$List$filterMap(
 				function ($) {
-					return $.ncdData;
-				},
-				$elm$core$Maybe$map($elm$core$List$concat)),
-			records);
+					return $.groupNutritionAchiData;
+				}));
+		var nutritionGroupChwEncountersData = A2(
+			loadEncountersIf,
+			nutritionGroupEnabled,
+			$elm$core$List$filterMap(
+				function ($) {
+					return $.groupNutritionChwData;
+				}));
+		var nutritionGroupFbfEncountersData = A2(
+			loadEncountersIf,
+			nutritionGroupEnabled,
+			$elm$core$List$filterMap(
+				function ($) {
+					return $.groupNutritionFbfData;
+				}));
+		var nutritionGroupPmtctEncountersData = A2(
+			loadEncountersIf,
+			nutritionGroupEnabled,
+			$elm$core$List$filterMap(
+				function ($) {
+					return $.groupNutritionPmtctData;
+				}));
+		var nutritionGroupSorwatheEncountersData = A2(
+			loadEncountersIf,
+			nutritionGroupEnabled,
+			$elm$core$List$filterMap(
+				function ($) {
+					return $.groupNutritionSorwatheData;
+				}));
+		var nutritionIndividualEncountersData = A2(
+			loadEncountersIf,
+			nutritionIndividualEnabled,
+			$elm$core$List$filterMap(
+				A2(
+					$elm$core$Basics$composeR,
+					function ($) {
+						return $.individualNutritionData;
+					},
+					$elm$core$Maybe$map($elm$core$List$concat))));
+		var tuberculosisEncountersData = A2(
+			loadEncountersIf,
+			tuberculosisEnabled,
+			$elm$core$List$filterMap(
+				A2(
+					$elm$core$Basics$composeR,
+					function ($) {
+						return $.tuberculosisData;
+					},
+					$elm$core$Maybe$map($elm$core$List$concat))));
+		var wellChildEncountersData = A2(
+			loadEncountersIf,
+			wellChildEnabled,
+			$elm$core$List$filterMap(
+				A2(
+					$elm$core$Basics$composeR,
+					function ($) {
+						return $.wellChildData;
+					},
+					$elm$core$Maybe$map($elm$core$List$concat))));
 		var homeVisitEncountersData = A2(
-			$elm$core$List$filterMap,
-			A2(
-				$elm$core$Basics$composeR,
-				function ($) {
-					return $.homeVisitData;
-				},
-				$elm$core$Maybe$map($elm$core$List$concat)),
-			records);
+			loadEncountersIf,
+			nutritionIndividualEnabled,
+			$elm$core$List$filterMap(
+				A2(
+					$elm$core$Basics$composeR,
+					function ($) {
+						return $.homeVisitData;
+					},
+					$elm$core$Maybe$map($elm$core$List$concat))));
+		var hivEnabled = memberFeature($author$project$App$Types$FeatureHIVManagement);
 		var hivEncountersData = A2(
-			$elm$core$List$filterMap,
-			A2(
-				$elm$core$Basics$composeR,
-				function ($) {
-					return $.hivData;
-				},
-				$elm$core$Maybe$map($elm$core$List$concat)),
-			records);
+			loadEncountersIf,
+			hivEnabled,
+			$elm$core$List$filterMap(
+				A2(
+					$elm$core$Basics$composeR,
+					function ($) {
+						return $.hivData;
+					},
+					$elm$core$Maybe$map($elm$core$List$concat))));
 		var generateRow = F4(
 			function (labelTransId, all, unique, shiftLeft) {
 				return _Utils_Tuple2(
@@ -19208,16 +19282,17 @@ var $author$project$Pages$Reports$View$generateDemographicsReportEncountersData 
 						]),
 					shiftLeft);
 			});
-		var familyNutritionEnabled = A2($Gizra$elm_all_set$EverySet$member, $author$project$App$Types$FeatureFamilyNutrition, features);
-		var familyNutritionEncountersData = familyNutritionEnabled ? A2(
-			$elm$core$List$filterMap,
-			A2(
-				$elm$core$Basics$composeR,
-				function ($) {
-					return $.familyNutritionData;
-				},
-				$elm$core$Maybe$map($elm$core$List$concat)),
-			records) : _List_Nil;
+		var familyNutritionEnabled = memberFeature($author$project$App$Types$FeatureFamilyNutrition);
+		var familyNutritionEncountersData = A2(
+			loadEncountersIf,
+			familyNutritionEnabled,
+			$elm$core$List$filterMap(
+				A2(
+					$elm$core$Basics$composeR,
+					function ($) {
+						return $.familyNutritionData;
+					},
+					$elm$core$Maybe$map($elm$core$List$concat))));
 		var countUnique = A2(
 			$elm$core$Basics$composeR,
 			$elm$core$List$filter(
@@ -19234,8 +19309,6 @@ var $author$project$Pages$Reports$View$generateDemographicsReportEncountersData 
 		var nutritionGroupSorwatheEncountersUnique = countUnique(nutritionGroupSorwatheEncountersData);
 		var nutritionIndividualEncountersUnique = countUnique(nutritionIndividualEncountersData);
 		var overallNutritionUnique = ((((nutritionIndividualEncountersUnique + nutritionGroupPmtctEncountersUnique) + nutritionGroupFbfEncountersUnique) + nutritionGroupSorwatheEncountersUnique) + nutritionGroupChwEncountersUnique) + nutritionGroupAchiEncountersUnique;
-		var prenatalDataChwEncountersUnique = countUnique(prenatalDataChwEncounters);
-		var prenatalDataNurseEncountersUnique = countUnique(prenatalDataNurseEncounters);
 		var tuberculosisDataEncountersUnique = countUnique(tuberculosisEncountersData);
 		var wellChildDataEncountersUnique = countUnique(wellChildEncountersData);
 		var countTotal = A2(
@@ -19253,63 +19326,118 @@ var $author$project$Pages$Reports$View$generateDemographicsReportEncountersData 
 		var nutritionGroupSorwatheEncountersTotal = countTotal(nutritionGroupSorwatheEncountersData);
 		var nutritionIndividualEncountersTotal = countTotal(nutritionIndividualEncountersData);
 		var overallNutritionTotal = ((((nutritionIndividualEncountersTotal + nutritionGroupPmtctEncountersTotal) + nutritionGroupFbfEncountersTotal) + nutritionGroupSorwatheEncountersTotal) + nutritionGroupChwEncountersTotal) + nutritionGroupAchiEncountersTotal;
-		var prenatalDataChwEncountersTotal = countTotal(prenatalDataChwEncounters);
-		var prenatalDataNurseEncountersTotal = countTotal(prenatalDataNurseEncounters);
 		var tuberculosisDataEncountersTotal = countTotal(tuberculosisEncountersData);
 		var wellChildDataEncountersTotal = countTotal(wellChildEncountersData);
 		var childScorecardEncountersData = A2(
-			$elm$core$List$filterMap,
-			A2(
-				$elm$core$Basics$composeR,
-				function ($) {
-					return $.childScorecardData;
-				},
-				$elm$core$Maybe$map($elm$core$List$concat)),
-			records);
+			loadEncountersIf,
+			ncdaEnabled,
+			$elm$core$List$filterMap(
+				A2(
+					$elm$core$Basics$composeR,
+					function ($) {
+						return $.childScorecardData;
+					},
+					$elm$core$Maybe$map($elm$core$List$concat))));
 		var childScorecardDataEncountersUnique = countUnique(childScorecardEncountersData);
 		var childScorecardDataEncountersTotal = countTotal(childScorecardEncountersData);
+		var antenatalEnabled = memberFeature($author$project$App$Types$FeatureAntenatal);
+		var prenatalDataChwEncounters = A2(
+			loadEncountersIf,
+			antenatalEnabled,
+			$elm$core$List$filterMap(
+				A2(
+					$elm$core$Basics$composeR,
+					function ($) {
+						return $.prenatalData;
+					},
+					$elm$core$Maybe$map(
+						A2(
+							$elm$core$Basics$composeR,
+							$elm$core$List$concatMap(
+								function ($) {
+									return $.encounters;
+								}),
+							$elm$core$List$filter(
+								function (encounter) {
+									return !A2(
+										$elm$core$List$member,
+										encounter.encounterType,
+										_List_fromArray(
+											[$author$project$Backend$Reports$Model$NurseEncounter, $author$project$Backend$Reports$Model$NursePostpartumEncounter]));
+								}))))));
+		var prenatalDataChwEncountersTotal = countTotal(prenatalDataChwEncounters);
+		var prenatalDataChwEncountersUnique = countUnique(prenatalDataChwEncounters);
+		var prenatalDataNurseEncounters = A2(
+			loadEncountersIf,
+			antenatalEnabled,
+			$elm$core$List$filterMap(
+				A2(
+					$elm$core$Basics$composeR,
+					function ($) {
+						return $.prenatalData;
+					},
+					$elm$core$Maybe$map(
+						A2(
+							$elm$core$Basics$composeR,
+							$elm$core$List$concatMap(
+								function ($) {
+									return $.encounters;
+								}),
+							$elm$core$List$filter(
+								function (encounter) {
+									return A2(
+										$elm$core$List$member,
+										encounter.encounterType,
+										_List_fromArray(
+											[$author$project$Backend$Reports$Model$NurseEncounter, $author$project$Backend$Reports$Model$NursePostpartumEncounter]));
+								}))))));
+		var prenatalDataNurseEncountersTotal = countTotal(prenatalDataNurseEncounters);
+		var prenatalDataNurseEncountersUnique = countUnique(prenatalDataNurseEncounters);
+		var acuteIllnessEnabled = memberFeature($author$project$App$Types$FeatureAcuteIllness);
 		var acuteIllnessDataNurseEncounters = A2(
-			$elm$core$List$filterMap,
-			A2(
-				$elm$core$Basics$composeR,
-				function ($) {
-					return $.acuteIllnessData;
-				},
-				$elm$core$Maybe$map(
-					A2(
-						$elm$core$Basics$composeR,
-						$elm$core$List$concat,
-						$elm$core$List$filter(
-							function (encounter) {
-								return A2(
-									$elm$core$List$member,
-									encounter.encounterType,
-									_List_fromArray(
-										[$author$project$Backend$Reports$Model$AcuteIllnessEncounterNurse, $author$project$Backend$Reports$Model$AcuteIllnessEncounterNurseSubsequent]));
-							})))),
-			records);
+			loadEncountersIf,
+			acuteIllnessEnabled,
+			$elm$core$List$filterMap(
+				A2(
+					$elm$core$Basics$composeR,
+					function ($) {
+						return $.acuteIllnessData;
+					},
+					$elm$core$Maybe$map(
+						A2(
+							$elm$core$Basics$composeR,
+							$elm$core$List$concat,
+							$elm$core$List$filter(
+								function (encounter) {
+									return A2(
+										$elm$core$List$member,
+										encounter.encounterType,
+										_List_fromArray(
+											[$author$project$Backend$Reports$Model$AcuteIllnessEncounterNurse, $author$project$Backend$Reports$Model$AcuteIllnessEncounterNurseSubsequent]));
+								}))))));
 		var acuteIllnessDataNurseEncountersTotal = countTotal(acuteIllnessDataNurseEncounters);
 		var acuteIllnessDataNurseEncountersUnique = countUnique(acuteIllnessDataNurseEncounters);
 		var acuteIllnessDataChwEncounters = A2(
-			$elm$core$List$filterMap,
-			A2(
-				$elm$core$Basics$composeR,
-				function ($) {
-					return $.acuteIllnessData;
-				},
-				$elm$core$Maybe$map(
-					A2(
-						$elm$core$Basics$composeR,
-						$elm$core$List$concat,
-						$elm$core$List$filter(
-							function (encounter) {
-								return !A2(
-									$elm$core$List$member,
-									encounter.encounterType,
-									_List_fromArray(
-										[$author$project$Backend$Reports$Model$AcuteIllnessEncounterNurse, $author$project$Backend$Reports$Model$AcuteIllnessEncounterNurseSubsequent]));
-							})))),
-			records);
+			loadEncountersIf,
+			acuteIllnessEnabled,
+			$elm$core$List$filterMap(
+				A2(
+					$elm$core$Basics$composeR,
+					function ($) {
+						return $.acuteIllnessData;
+					},
+					$elm$core$Maybe$map(
+						A2(
+							$elm$core$Basics$composeR,
+							$elm$core$List$concat,
+							$elm$core$List$filter(
+								function (encounter) {
+									return !A2(
+										$elm$core$List$member,
+										encounter.encounterType,
+										_List_fromArray(
+											[$author$project$Backend$Reports$Model$AcuteIllnessEncounterNurse, $author$project$Backend$Reports$Model$AcuteIllnessEncounterNurseSubsequent]));
+								}))))));
 		var acuteIllnessDataChwEncountersTotal = countTotal(acuteIllnessDataChwEncounters);
 		var overallTotal = ((((((((((prenatalDataNurseEncountersTotal + prenatalDataChwEncountersTotal) + acuteIllnessDataNurseEncountersTotal) + acuteIllnessDataChwEncountersTotal) + wellChildDataEncountersTotal) + homeVisitDataEncountersTotal) + childScorecardDataEncountersTotal) + ncdDataEncountersTotal) + hivDataEncountersTotal) + tuberculosisDataEncountersTotal) + overallNutritionTotal) + familyNutritionEncountersTotal;
 		var acuteIllnessDataChwEncountersUnique = countUnique(acuteIllnessDataChwEncounters);
@@ -19321,33 +19449,102 @@ var $author$project$Pages$Reports$View$generateDemographicsReportEncountersData 
 				_List_fromArray(
 					[$author$project$Translate$EncounterType, $author$project$Translate$All, $author$project$Translate$Unique])),
 			heading: A2($author$project$Translate$translate, language, $author$project$Translate$Encounters) + ':',
-			rows: _Utils_ap(
+			rows: $elm$core$List$concat(
 				_List_fromArray(
 					[
-						A4(generateRow, $author$project$Translate$ANCTotal, prenatalDataNurseEncountersTotal + prenatalDataChwEncountersTotal, prenatalDataNurseEncountersUnique + prenatalDataChwEncountersUnique, false),
-						A4(generateRow, $author$project$Translate$HealthCenter, prenatalDataNurseEncountersTotal, prenatalDataNurseEncountersUnique, true),
-						A4(generateRow, $author$project$Translate$CHW, prenatalDataChwEncountersTotal, prenatalDataChwEncountersUnique, true),
-						A4(generateRow, $author$project$Translate$AcuteIllnessTotal, acuteIllnessDataNurseEncountersTotal + acuteIllnessDataChwEncountersTotal, acuteIllnessDataNurseEncountersUnique + acuteIllnessDataChwEncountersUnique, false),
-						A4(generateRow, $author$project$Translate$HealthCenter, acuteIllnessDataNurseEncountersTotal, acuteIllnessDataNurseEncountersUnique, true),
-						A4(generateRow, $author$project$Translate$CHW, acuteIllnessDataChwEncountersTotal, acuteIllnessDataChwEncountersUnique, true),
-						A4(generateRow, $author$project$Translate$StandardPediatricVisit, wellChildDataEncountersTotal, wellChildDataEncountersUnique, false),
-						A4(generateRow, $author$project$Translate$HomeVisit, homeVisitDataEncountersTotal, homeVisitDataEncountersUnique, false),
-						A4(generateRow, $author$project$Translate$ChildScorecard, childScorecardDataEncountersTotal, childScorecardDataEncountersUnique, false),
-						A4(generateRow, $author$project$Translate$NCD, ncdDataEncountersTotal, ncdDataEncountersUnique, false),
-						A4(generateRow, $author$project$Translate$HIV, hivDataEncountersTotal, hivDataEncountersUnique, false),
-						A4(generateRow, $author$project$Translate$Tuberculosis, tuberculosisDataEncountersTotal, tuberculosisDataEncountersUnique, false),
-						A4(generateRow, $author$project$Translate$NutritionTotal, overallNutritionTotal, overallNutritionUnique, false),
-						A4(generateRow, $author$project$Translate$PMTCT, nutritionGroupPmtctEncountersTotal, nutritionGroupPmtctEncountersUnique, true),
-						A4(generateRow, $author$project$Translate$FBF, nutritionGroupFbfEncountersTotal, nutritionGroupFbfEncountersUnique, true),
-						A4(generateRow, $author$project$Translate$Sorwathe, nutritionGroupSorwatheEncountersTotal, nutritionGroupSorwatheEncountersUnique, true),
-						A4(generateRow, $author$project$Translate$CBNP, nutritionGroupChwEncountersTotal, nutritionGroupChwEncountersUnique, true),
-						A4(generateRow, $author$project$Translate$ACHI, nutritionGroupAchiEncountersTotal, nutritionGroupAchiEncountersUnique, true),
-						A4(generateRow, $author$project$Translate$Individual, nutritionIndividualEncountersTotal, nutritionIndividualEncountersUnique, true)
-					]),
-				familyNutritionEnabled ? _List_fromArray(
-					[
-						A4(generateRow, $author$project$Translate$FamilyNutrition, familyNutritionEncountersTotal, familyNutritionEncountersUnique, false)
-					]) : _List_Nil),
+						A2(
+						rowsIf,
+						antenatalEnabled,
+						_List_fromArray(
+							[
+								A4(generateRow, $author$project$Translate$ANCTotal, prenatalDataNurseEncountersTotal + prenatalDataChwEncountersTotal, prenatalDataNurseEncountersUnique + prenatalDataChwEncountersUnique, false),
+								A4(generateRow, $author$project$Translate$HealthCenter, prenatalDataNurseEncountersTotal, prenatalDataNurseEncountersUnique, true),
+								A4(generateRow, $author$project$Translate$CHW, prenatalDataChwEncountersTotal, prenatalDataChwEncountersUnique, true)
+							])),
+						A2(
+						rowsIf,
+						acuteIllnessEnabled,
+						_List_fromArray(
+							[
+								A4(generateRow, $author$project$Translate$AcuteIllnessTotal, acuteIllnessDataNurseEncountersTotal + acuteIllnessDataChwEncountersTotal, acuteIllnessDataNurseEncountersUnique + acuteIllnessDataChwEncountersUnique, false),
+								A4(generateRow, $author$project$Translate$HealthCenter, acuteIllnessDataNurseEncountersTotal, acuteIllnessDataNurseEncountersUnique, true),
+								A4(generateRow, $author$project$Translate$CHW, acuteIllnessDataChwEncountersTotal, acuteIllnessDataChwEncountersUnique, true)
+							])),
+						A2(
+						rowsIf,
+						wellChildEnabled,
+						_List_fromArray(
+							[
+								A4(generateRow, $author$project$Translate$StandardPediatricVisit, wellChildDataEncountersTotal, wellChildDataEncountersUnique, false)
+							])),
+						A2(
+						rowsIf,
+						nutritionIndividualEnabled,
+						_List_fromArray(
+							[
+								A4(generateRow, $author$project$Translate$HomeVisit, homeVisitDataEncountersTotal, homeVisitDataEncountersUnique, false)
+							])),
+						A2(
+						rowsIf,
+						ncdaEnabled,
+						_List_fromArray(
+							[
+								A4(generateRow, $author$project$Translate$ChildScorecard, childScorecardDataEncountersTotal, childScorecardDataEncountersUnique, false)
+							])),
+						A2(
+						rowsIf,
+						ncdEnabled,
+						_List_fromArray(
+							[
+								A4(generateRow, $author$project$Translate$NCD, ncdDataEncountersTotal, ncdDataEncountersUnique, false)
+							])),
+						A2(
+						rowsIf,
+						hivEnabled,
+						_List_fromArray(
+							[
+								A4(generateRow, $author$project$Translate$HIV, hivDataEncountersTotal, hivDataEncountersUnique, false)
+							])),
+						A2(
+						rowsIf,
+						tuberculosisEnabled,
+						_List_fromArray(
+							[
+								A4(generateRow, $author$project$Translate$Tuberculosis, tuberculosisDataEncountersTotal, tuberculosisDataEncountersUnique, false)
+							])),
+						A2(
+						rowsIf,
+						nutritionAggregateEnabled,
+						_List_fromArray(
+							[
+								A4(generateRow, $author$project$Translate$NutritionTotal, overallNutritionTotal, overallNutritionUnique, false)
+							])),
+						A2(
+						rowsIf,
+						nutritionGroupEnabled,
+						_List_fromArray(
+							[
+								A4(generateRow, $author$project$Translate$PMTCT, nutritionGroupPmtctEncountersTotal, nutritionGroupPmtctEncountersUnique, true),
+								A4(generateRow, $author$project$Translate$FBF, nutritionGroupFbfEncountersTotal, nutritionGroupFbfEncountersUnique, true),
+								A4(generateRow, $author$project$Translate$Sorwathe, nutritionGroupSorwatheEncountersTotal, nutritionGroupSorwatheEncountersUnique, true),
+								A4(generateRow, $author$project$Translate$CBNP, nutritionGroupChwEncountersTotal, nutritionGroupChwEncountersUnique, true),
+								A4(generateRow, $author$project$Translate$ACHI, nutritionGroupAchiEncountersTotal, nutritionGroupAchiEncountersUnique, true)
+							])),
+						A2(
+						rowsIf,
+						nutritionIndividualEnabled,
+						_List_fromArray(
+							[
+								A4(generateRow, $author$project$Translate$Individual, nutritionIndividualEncountersTotal, nutritionIndividualEncountersUnique, true)
+							])),
+						A2(
+						rowsIf,
+						familyNutritionEnabled,
+						_List_fromArray(
+							[
+								A4(generateRow, $author$project$Translate$FamilyNutrition, familyNutritionEncountersTotal, familyNutritionEncountersUnique, false)
+							]))
+					])),
 			totals: {
 				label: A2($author$project$Translate$translate, language, $author$project$Translate$Total),
 				total: $elm$core$String$fromInt(overallTotal),
@@ -22693,6 +22890,37 @@ var $author$project$Pages$Reports$View$viewPrenatalReport = F4(
 						A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
 					])));
 	});
+var $author$project$Pages$Reports$Utils$visibleReportTypes = function (features) {
+	var member = function (f) {
+		return A2($Gizra$elm_all_set$EverySet$member, f, features);
+	};
+	return A2(
+		$elm$core$List$filter,
+		function (reportType) {
+			switch (reportType.$) {
+				case 'ReportAcuteIllness':
+					return member($author$project$App$Types$FeatureAcuteIllness);
+				case 'ReportDemographics':
+					return true;
+				case 'ReportFBFDistribution':
+					return true;
+				case 'ReportNutrition':
+					return member($author$project$App$Types$FeatureWellChild) || (member($author$project$App$Types$FeatureNutritionIndividual) || (member($author$project$App$Types$FeatureNutritionGroup) || member($author$project$App$Types$FeatureFamilyNutrition)));
+				case 'ReportPeripartum':
+					return member($author$project$App$Types$FeatureAntenatal);
+				case 'ReportPostnatalCare':
+					return member($author$project$App$Types$FeatureWellChild);
+				case 'ReportPrenatal':
+					return member($author$project$App$Types$FeatureAntenatal);
+				case 'ReportPrenatalContacts':
+					return member($author$project$App$Types$FeatureAntenatal);
+				default:
+					return member($author$project$App$Types$FeatureAntenatal);
+			}
+		},
+		_List_fromArray(
+			[$author$project$Pages$Reports$Model$ReportAcuteIllness, $author$project$Pages$Reports$Model$ReportDemographics, $author$project$Pages$Reports$Model$ReportFBFDistribution, $author$project$Pages$Reports$Model$ReportNutrition, $author$project$Pages$Reports$Model$ReportPeripartum, $author$project$Pages$Reports$Model$ReportPostnatalCare, $author$project$Pages$Reports$Model$ReportPrenatal, $author$project$Pages$Reports$Model$ReportPrenatalContacts, $author$project$Pages$Reports$Model$ReportPrenatalDiagnoses]));
+};
 var $author$project$Pages$Reports$View$viewReportsData = F5(
 	function (language, currentDate, themePath, data, model) {
 		var scopeLabel = function () {
@@ -23062,8 +23290,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 												language,
 												$author$project$Translate$ReportType(rt)));
 									},
-									_List_fromArray(
-										[$author$project$Pages$Reports$Model$ReportAcuteIllness, $author$project$Pages$Reports$Model$ReportDemographics, $author$project$Pages$Reports$Model$ReportFBFDistribution, $author$project$Pages$Reports$Model$ReportNutrition, $author$project$Pages$Reports$Model$ReportPeripartum, $author$project$Pages$Reports$Model$ReportPostnatalCare, $author$project$Pages$Reports$Model$ReportPrenatal, $author$project$Pages$Reports$Model$ReportPrenatalContacts, $author$project$Pages$Reports$Model$ReportPrenatalDiagnoses])),
+									$author$project$Pages$Reports$Utils$visibleReportTypes(data.features)),
 								$author$project$Pages$Reports$Utils$reportTypeToString,
 								$author$project$Pages$Reports$Model$SetReportType,
 								$author$project$Translate$ReportType,
