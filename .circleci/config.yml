@@ -8,6 +8,7 @@ workflows:
       - lint_elm
       - lint_elm_review
       - lint_shellcheck
+      - test_zscore
       - test_simpletest_linux:
           requires:
             - lint_phpcs
@@ -63,6 +64,14 @@ jobs:
       - checkout
       - run: ci-scripts/install_shell.sh
       - run: ci-scripts/test_shell.sh
+  test_zscore:
+    docker:
+      - image: cimg/php:7.4.30
+    steps:
+      - checkout
+      - run:
+          name: Run standalone Z-Score calculation tests
+          command: php server/hedley/modules/custom/hedley_zscore/tests/run_zscore_tests.php
   test_simpletest_linux:
     machine:
       image: ubuntu-2204:current
@@ -70,7 +79,6 @@ jobs:
       - checkout
       - run: ci-scripts/install_ddev.sh
       - run: ci-scripts/install_drupal.sh
-      - run: ci-scripts/circleci_wait.sh ddev zscore-test
       - run: ci-scripts/circleci_wait.sh ddev simpletest
   e2e_playwright_1:
     machine:
