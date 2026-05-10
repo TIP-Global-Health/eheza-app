@@ -3209,6 +3209,7 @@ function hedley_reports_build_completion_results_app($health_center = NULL) {
   }
 
   $data['site'] = variable_get('hedley_general_site_name', '');
+  $data['features'] = hedley_admin_get_enabled_features_string();
   $data['params'] = $params;
 
   return hedley_general_build_elm_app('completion-results', $data);

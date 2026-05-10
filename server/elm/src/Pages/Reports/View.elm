@@ -44,7 +44,7 @@ import Pages.Components.Utils exposing (isSyncComplete, viewSyncingPlaceholder)
 import Pages.Components.View exposing (viewMetricsResultsTable, viewStandardCells, viewStandardRow)
 import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Reports.Model exposing (FbfDistributionCategory(..), Model, Msg(..), NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), allFbfDistributionCategories, emptyNutritionMetrics)
-import Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, eddToLmpDate, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, prenatalContactTypeToEncountersAtWeek, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth)
+import Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, eddToLmpDate, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, prenatalContactTypeToEncountersAtWeek, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth, visibleReportTypes)
 import Pages.Scoreboard.Utils exposing (generateFutureVaccinationsData)
 import Pages.Utils
     exposing
@@ -345,16 +345,7 @@ viewReportsData language currentDate themePath data model =
                 div [ class "inputs" ] <|
                     (viewSelectListInput language
                         model.reportType
-                        ([ ReportAcuteIllness
-                         , ReportDemographics
-                         , ReportFBFDistribution
-                         , ReportNutrition
-                         , ReportPeripartum
-                         , ReportPostnatalCare
-                         , ReportPrenatal
-                         , ReportPrenatalContacts
-                         , ReportPrenatalDiagnoses
-                         ]
+                        (visibleReportTypes data.features
                             |> List.sortBy (\rt -> String.toLower (translate language (Translate.ReportType rt)))
                         )
                         reportTypeToString
@@ -707,31 +698,74 @@ generateDemographicsReportEncountersData :
         }
 generateDemographicsReportEncountersData language features records =
     let
+        memberFeature f =
+            EverySet.member f features
+
+        antenatalEnabled =
+            memberFeature FeatureAntenatal
+
+        acuteIllnessEnabled =
+            memberFeature FeatureAcuteIllness
+
+        wellChildEnabled =
+            memberFeature FeatureWellChild
+
+        nutritionIndividualEnabled =
+            memberFeature FeatureNutritionIndividual
+
+        nutritionGroupEnabled =
+            memberFeature FeatureNutritionGroup
+
+        ncdEnabled =
+            memberFeature FeatureNCD
+
+        ncdaEnabled =
+            memberFeature FeatureNCDA
+
+        hivEnabled =
+            memberFeature FeatureHIVManagement
+
+        tuberculosisEnabled =
+            memberFeature FeatureTuberculosisManagement
+
+        familyNutritionEnabled =
+            memberFeature FeatureFamilyNutrition
+
+        nutritionAggregateEnabled =
+            nutritionIndividualEnabled || nutritionGroupEnabled
+
+        loadEncountersIf flag loader =
+            if flag then
+                loader records
+
+            else
+                []
+
         prenatalDataNurseEncounters =
-            List.filterMap
-                (.prenatalData
-                    >> Maybe.map
-                        (List.concatMap .encounters
-                            >> List.filter
-                                (\encounter ->
-                                    List.member encounter.encounterType [ NurseEncounter, NursePostpartumEncounter ]
-                                )
-                        )
-                )
-                records
+            loadEncountersIf antenatalEnabled <|
+                List.filterMap
+                    (.prenatalData
+                        >> Maybe.map
+                            (List.concatMap .encounters
+                                >> List.filter
+                                    (\encounter ->
+                                        List.member encounter.encounterType [ NurseEncounter, NursePostpartumEncounter ]
+                                    )
+                            )
+                    )
 
         prenatalDataChwEncounters =
-            List.filterMap
-                (.prenatalData
-                    >> Maybe.map
-                        (List.concatMap .encounters
-                            >> List.filter
-                                (\encounter ->
-                                    not <| List.member encounter.encounterType [ NurseEncounter, NursePostpartumEncounter ]
-                                )
-                        )
-                )
-                records
+            loadEncountersIf antenatalEnabled <|
+                List.filterMap
+                    (.prenatalData
+                        >> Maybe.map
+                            (List.concatMap .encounters
+                                >> List.filter
+                                    (\encounter ->
+                                        not <| List.member encounter.encounterType [ NurseEncounter, NursePostpartumEncounter ]
+                                    )
+                            )
+                    )
 
         prenatalDataNurseEncountersTotal =
             countTotal prenatalDataNurseEncounters
@@ -746,30 +780,30 @@ generateDemographicsReportEncountersData language features records =
             countUnique prenatalDataChwEncounters
 
         acuteIllnessDataNurseEncounters =
-            List.filterMap
-                (.acuteIllnessData
-                    >> Maybe.map
-                        (List.concat
-                            >> List.filter
-                                (\encounter ->
-                                    List.member encounter.encounterType [ AcuteIllnessEncounterNurse, AcuteIllnessEncounterNurseSubsequent ]
-                                )
-                        )
-                )
-                records
+            loadEncountersIf acuteIllnessEnabled <|
+                List.filterMap
+                    (.acuteIllnessData
+                        >> Maybe.map
+                            (List.concat
+                                >> List.filter
+                                    (\encounter ->
+                                        List.member encounter.encounterType [ AcuteIllnessEncounterNurse, AcuteIllnessEncounterNurseSubsequent ]
+                                    )
+                            )
+                    )
 
         acuteIllnessDataChwEncounters =
-            List.filterMap
-                (.acuteIllnessData
-                    >> Maybe.map
-                        (List.concat
-                            >> List.filter
-                                (\encounter ->
-                                    not <| List.member encounter.encounterType [ AcuteIllnessEncounterNurse, AcuteIllnessEncounterNurseSubsequent ]
-                                )
-                        )
-                )
-                records
+            loadEncountersIf acuteIllnessEnabled <|
+                List.filterMap
+                    (.acuteIllnessData
+                        >> Maybe.map
+                            (List.concat
+                                >> List.filter
+                                    (\encounter ->
+                                        not <| List.member encounter.encounterType [ AcuteIllnessEncounterNurse, AcuteIllnessEncounterNurseSubsequent ]
+                                    )
+                            )
+                    )
 
         acuteIllnessDataNurseEncountersTotal =
             countTotal acuteIllnessDataNurseEncounters
@@ -784,9 +818,9 @@ generateDemographicsReportEncountersData language features records =
             countUnique acuteIllnessDataChwEncounters
 
         wellChildEncountersData =
-            List.filterMap
-                (.wellChildData >> Maybe.map List.concat)
-                records
+            loadEncountersIf wellChildEnabled <|
+                List.filterMap
+                    (.wellChildData >> Maybe.map List.concat)
 
         wellChildDataEncountersTotal =
             countTotal wellChildEncountersData
@@ -795,9 +829,9 @@ generateDemographicsReportEncountersData language features records =
             countUnique wellChildEncountersData
 
         homeVisitEncountersData =
-            List.filterMap
-                (.homeVisitData >> Maybe.map List.concat)
-                records
+            loadEncountersIf nutritionIndividualEnabled <|
+                List.filterMap
+                    (.homeVisitData >> Maybe.map List.concat)
 
         homeVisitDataEncountersTotal =
             countTotal homeVisitEncountersData
@@ -806,9 +840,9 @@ generateDemographicsReportEncountersData language features records =
             countUnique homeVisitEncountersData
 
         childScorecardEncountersData =
-            List.filterMap
-                (.childScorecardData >> Maybe.map List.concat)
-                records
+            loadEncountersIf ncdaEnabled <|
+                List.filterMap
+                    (.childScorecardData >> Maybe.map List.concat)
 
         childScorecardDataEncountersTotal =
             countTotal childScorecardEncountersData
@@ -817,9 +851,9 @@ generateDemographicsReportEncountersData language features records =
             countUnique childScorecardEncountersData
 
         ncdEncountersData =
-            List.filterMap
-                (.ncdData >> Maybe.map List.concat)
-                records
+            loadEncountersIf ncdEnabled <|
+                List.filterMap
+                    (.ncdData >> Maybe.map List.concat)
 
         ncdDataEncountersTotal =
             countTotal ncdEncountersData
@@ -828,9 +862,9 @@ generateDemographicsReportEncountersData language features records =
             countUnique ncdEncountersData
 
         hivEncountersData =
-            List.filterMap
-                (.hivData >> Maybe.map List.concat)
-                records
+            loadEncountersIf hivEnabled <|
+                List.filterMap
+                    (.hivData >> Maybe.map List.concat)
 
         hivDataEncountersTotal =
             countTotal hivEncountersData
@@ -839,9 +873,9 @@ generateDemographicsReportEncountersData language features records =
             countUnique hivEncountersData
 
         tuberculosisEncountersData =
-            List.filterMap
-                (.tuberculosisData >> Maybe.map List.concat)
-                records
+            loadEncountersIf tuberculosisEnabled <|
+                List.filterMap
+                    (.tuberculosisData >> Maybe.map List.concat)
 
         tuberculosisDataEncountersTotal =
             countTotal tuberculosisEncountersData
@@ -850,9 +884,9 @@ generateDemographicsReportEncountersData language features records =
             countUnique tuberculosisEncountersData
 
         nutritionIndividualEncountersData =
-            List.filterMap
-                (.individualNutritionData >> Maybe.map List.concat)
-                records
+            loadEncountersIf nutritionIndividualEnabled <|
+                List.filterMap
+                    (.individualNutritionData >> Maybe.map List.concat)
 
         nutritionIndividualEncountersTotal =
             countTotal nutritionIndividualEncountersData
@@ -861,9 +895,8 @@ generateDemographicsReportEncountersData language features records =
             countUnique nutritionIndividualEncountersData
 
         nutritionGroupPmtctEncountersData =
-            List.filterMap
-                .groupNutritionPmtctData
-                records
+            loadEncountersIf nutritionGroupEnabled <|
+                List.filterMap .groupNutritionPmtctData
 
         nutritionGroupPmtctEncountersTotal =
             countTotal nutritionGroupPmtctEncountersData
@@ -872,9 +905,8 @@ generateDemographicsReportEncountersData language features records =
             countUnique nutritionGroupPmtctEncountersData
 
         nutritionGroupFbfEncountersData =
-            List.filterMap
-                .groupNutritionFbfData
-                records
+            loadEncountersIf nutritionGroupEnabled <|
+                List.filterMap .groupNutritionFbfData
 
         nutritionGroupFbfEncountersTotal =
             countTotal nutritionGroupFbfEncountersData
@@ -883,9 +915,8 @@ generateDemographicsReportEncountersData language features records =
             countUnique nutritionGroupFbfEncountersData
 
         nutritionGroupSorwatheEncountersData =
-            List.filterMap
-                .groupNutritionSorwatheData
-                records
+            loadEncountersIf nutritionGroupEnabled <|
+                List.filterMap .groupNutritionSorwatheData
 
         nutritionGroupSorwatheEncountersTotal =
             countTotal nutritionGroupSorwatheEncountersData
@@ -894,9 +925,8 @@ generateDemographicsReportEncountersData language features records =
             countUnique nutritionGroupSorwatheEncountersData
 
         nutritionGroupChwEncountersData =
-            List.filterMap
-                .groupNutritionChwData
-                records
+            loadEncountersIf nutritionGroupEnabled <|
+                List.filterMap .groupNutritionChwData
 
         nutritionGroupChwEncountersTotal =
             countTotal nutritionGroupChwEncountersData
@@ -905,9 +935,8 @@ generateDemographicsReportEncountersData language features records =
             countUnique nutritionGroupChwEncountersData
 
         nutritionGroupAchiEncountersData =
-            List.filterMap
-                .groupNutritionAchiData
-                records
+            loadEncountersIf nutritionGroupEnabled <|
+                List.filterMap .groupNutritionAchiData
 
         nutritionGroupAchiEncountersTotal =
             countTotal nutritionGroupAchiEncountersData
@@ -915,17 +944,10 @@ generateDemographicsReportEncountersData language features records =
         nutritionGroupAchiEncountersUnique =
             countUnique nutritionGroupAchiEncountersData
 
-        familyNutritionEnabled =
-            EverySet.member FeatureFamilyNutrition features
-
         familyNutritionEncountersData =
-            if familyNutritionEnabled then
+            loadEncountersIf familyNutritionEnabled <|
                 List.filterMap
                     (.familyNutritionData >> Maybe.map List.concat)
-                    records
-
-            else
-                []
 
         familyNutritionEncountersTotal =
             countTotal familyNutritionEncountersData
@@ -985,42 +1007,60 @@ generateDemographicsReportEncountersData language features records =
 
         generateRow labelTransId all unique shiftLeft =
             ( [ translate language labelTransId, String.fromInt all, String.fromInt unique ], shiftLeft )
+
+        rowsIf flag rows =
+            if flag then
+                rows
+
+            else
+                []
     in
     { heading = translate language Translate.Encounters ++ ":"
     , captions = List.map (translate language) [ Translate.EncounterType, Translate.All, Translate.Unique ]
     , rows =
-        [ generateRow Translate.ANCTotal
-            (prenatalDataNurseEncountersTotal + prenatalDataChwEncountersTotal)
-            (prenatalDataNurseEncountersUnique + prenatalDataChwEncountersUnique)
-            False
-        , generateRow Translate.HealthCenter prenatalDataNurseEncountersTotal prenatalDataNurseEncountersUnique True
-        , generateRow Translate.CHW prenatalDataChwEncountersTotal prenatalDataChwEncountersUnique True
-        , generateRow Translate.AcuteIllnessTotal
-            (acuteIllnessDataNurseEncountersTotal + acuteIllnessDataChwEncountersTotal)
-            (acuteIllnessDataNurseEncountersUnique + acuteIllnessDataChwEncountersUnique)
-            False
-        , generateRow Translate.HealthCenter acuteIllnessDataNurseEncountersTotal acuteIllnessDataNurseEncountersUnique True
-        , generateRow Translate.CHW acuteIllnessDataChwEncountersTotal acuteIllnessDataChwEncountersUnique True
-        , generateRow Translate.StandardPediatricVisit wellChildDataEncountersTotal wellChildDataEncountersUnique False
-        , generateRow Translate.HomeVisit homeVisitDataEncountersTotal homeVisitDataEncountersUnique False
-        , generateRow Translate.ChildScorecard childScorecardDataEncountersTotal childScorecardDataEncountersUnique False
-        , generateRow Translate.NCD ncdDataEncountersTotal ncdDataEncountersUnique False
-        , generateRow Translate.HIV hivDataEncountersTotal hivDataEncountersUnique False
-        , generateRow Translate.Tuberculosis tuberculosisDataEncountersTotal tuberculosisDataEncountersUnique False
-        , generateRow Translate.NutritionTotal overallNutritionTotal overallNutritionUnique False
-        , generateRow Translate.PMTCT nutritionGroupPmtctEncountersTotal nutritionGroupPmtctEncountersUnique True
-        , generateRow Translate.FBF nutritionGroupFbfEncountersTotal nutritionGroupFbfEncountersUnique True
-        , generateRow Translate.Sorwathe nutritionGroupSorwatheEncountersTotal nutritionGroupSorwatheEncountersUnique True
-        , generateRow Translate.CBNP nutritionGroupChwEncountersTotal nutritionGroupChwEncountersUnique True
-        , generateRow Translate.ACHI nutritionGroupAchiEncountersTotal nutritionGroupAchiEncountersUnique True
-        , generateRow Translate.Individual nutritionIndividualEncountersTotal nutritionIndividualEncountersUnique True
-        ]
-            ++ (if familyNutritionEnabled then
-                    [ generateRow Translate.FamilyNutrition familyNutritionEncountersTotal familyNutritionEncountersUnique False ]
-
-                else
-                    []
-               )
+        List.concat
+            [ rowsIf antenatalEnabled
+                [ generateRow Translate.ANCTotal
+                    (prenatalDataNurseEncountersTotal + prenatalDataChwEncountersTotal)
+                    (prenatalDataNurseEncountersUnique + prenatalDataChwEncountersUnique)
+                    False
+                , generateRow Translate.HealthCenter prenatalDataNurseEncountersTotal prenatalDataNurseEncountersUnique True
+                , generateRow Translate.CHW prenatalDataChwEncountersTotal prenatalDataChwEncountersUnique True
+                ]
+            , rowsIf acuteIllnessEnabled
+                [ generateRow Translate.AcuteIllnessTotal
+                    (acuteIllnessDataNurseEncountersTotal + acuteIllnessDataChwEncountersTotal)
+                    (acuteIllnessDataNurseEncountersUnique + acuteIllnessDataChwEncountersUnique)
+                    False
+                , generateRow Translate.HealthCenter acuteIllnessDataNurseEncountersTotal acuteIllnessDataNurseEncountersUnique True
+                , generateRow Translate.CHW acuteIllnessDataChwEncountersTotal acuteIllnessDataChwEncountersUnique True
+                ]
+            , rowsIf wellChildEnabled
+                [ generateRow Translate.StandardPediatricVisit wellChildDataEncountersTotal wellChildDataEncountersUnique False ]
+            , rowsIf nutritionIndividualEnabled
+                [ generateRow Translate.HomeVisit homeVisitDataEncountersTotal homeVisitDataEncountersUnique False ]
+            , rowsIf ncdaEnabled
+                [ generateRow Translate.ChildScorecard childScorecardDataEncountersTotal childScorecardDataEncountersUnique False ]
+            , rowsIf ncdEnabled
+                [ generateRow Translate.NCD ncdDataEncountersTotal ncdDataEncountersUnique False ]
+            , rowsIf hivEnabled
+                [ generateRow Translate.HIV hivDataEncountersTotal hivDataEncountersUnique False ]
+            , rowsIf tuberculosisEnabled
+                [ generateRow Translate.Tuberculosis tuberculosisDataEncountersTotal tuberculosisDataEncountersUnique False ]
+            , rowsIf nutritionAggregateEnabled
+                [ generateRow Translate.NutritionTotal overallNutritionTotal overallNutritionUnique False ]
+            , rowsIf nutritionGroupEnabled
+                [ generateRow Translate.PMTCT nutritionGroupPmtctEncountersTotal nutritionGroupPmtctEncountersUnique True
+                , generateRow Translate.FBF nutritionGroupFbfEncountersTotal nutritionGroupFbfEncountersUnique True
+                , generateRow Translate.Sorwathe nutritionGroupSorwatheEncountersTotal nutritionGroupSorwatheEncountersUnique True
+                , generateRow Translate.CBNP nutritionGroupChwEncountersTotal nutritionGroupChwEncountersUnique True
+                , generateRow Translate.ACHI nutritionGroupAchiEncountersTotal nutritionGroupAchiEncountersUnique True
+                ]
+            , rowsIf nutritionIndividualEnabled
+                [ generateRow Translate.Individual nutritionIndividualEncountersTotal nutritionIndividualEncountersUnique True ]
+            , rowsIf familyNutritionEnabled
+                [ generateRow Translate.FamilyNutrition familyNutritionEncountersTotal familyNutritionEncountersUnique False ]
+            ]
     , totals =
         { label = translate language Translate.Total
         , total = String.fromInt overallTotal
