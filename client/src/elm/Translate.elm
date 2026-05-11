@@ -3984,9 +3984,9 @@ translationSet trans =
 
                 BreastfedFirstHour ->
                     { english = "Was the baby breastfed within an hour of delivery"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana yashyizwe ku ibere mu isaha ya mbere akimara kuvuka"
                     , kirundi = Nothing
-                    , somali = Nothing
+                    , somali = Just "Canuga ma la naas nuujiyay hal saacad gudaheed dhalmada ka dib"
                     }
 
                 _ ->
