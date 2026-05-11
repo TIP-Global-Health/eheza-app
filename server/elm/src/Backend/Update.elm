@@ -2,7 +2,7 @@ module Backend.Update exposing (updateBackend)
 
 import Backend.Completion.Update
 import Backend.CompletionMenu.Update
-import Backend.Model exposing (..)
+import Backend.Model exposing (ModelBackend, Msg(..))
 import Backend.Reports.Update
 import Backend.ReportsMenu.Update
 import Backend.Scoreboard.Update
@@ -12,47 +12,47 @@ import Backend.Utils exposing (updateSubModel)
 import Gizra.NominalDate exposing (NominalDate)
 
 
-updateBackend : NominalDate -> Msg -> ModelBackend -> BackendReturn Msg
-updateBackend currentDate msg model =
+updateBackend : NominalDate -> String -> String -> Msg -> ModelBackend -> BackendReturn Msg
+updateBackend currentDate backendUrl csrfToken msg model =
     case msg of
         MsgScoreboardMenu subMsg ->
             updateSubModel
                 subMsg
-                (\subMsg_ model_ -> Backend.ScoreboardMenu.Update.update currentDate subMsg_ model_)
+                (\subMsg_ model_ -> Backend.ScoreboardMenu.Update.update subMsg_ model_)
                 (\subCmds -> MsgScoreboardMenu subCmds)
                 model
 
         MsgScoreboard subMsg ->
             updateSubModel
                 subMsg
-                (\subMsg_ model_ -> Backend.Scoreboard.Update.update currentDate subMsg_ model_)
+                (\subMsg_ model_ -> Backend.Scoreboard.Update.update currentDate backendUrl csrfToken subMsg_ model_)
                 (\subCmds -> MsgScoreboard subCmds)
                 model
 
         MsgReportsMenu subMsg ->
             updateSubModel
                 subMsg
-                (\subMsg_ model_ -> Backend.ReportsMenu.Update.update currentDate subMsg_ model_)
+                (\subMsg_ model_ -> Backend.ReportsMenu.Update.update subMsg_ model_)
                 (\subCmds -> MsgReportsMenu subCmds)
                 model
 
         MsgReports subMsg ->
             updateSubModel
                 subMsg
-                (\subMsg_ model_ -> Backend.Reports.Update.update currentDate subMsg_ model_)
+                (\subMsg_ model_ -> Backend.Reports.Update.update backendUrl csrfToken subMsg_ model_)
                 (\subCmds -> MsgReports subCmds)
                 model
 
         MsgCompletionMenu subMsg ->
             updateSubModel
                 subMsg
-                (\subMsg_ model_ -> Backend.CompletionMenu.Update.update currentDate subMsg_ model_)
+                (\subMsg_ model_ -> Backend.CompletionMenu.Update.update subMsg_ model_)
                 (\subCmds -> MsgCompletionMenu subCmds)
                 model
 
         MsgCompletion subMsg ->
             updateSubModel
                 subMsg
-                (\subMsg_ model_ -> Backend.Completion.Update.update currentDate subMsg_ model_)
+                (\subMsg_ model_ -> Backend.Completion.Update.update backendUrl csrfToken subMsg_ model_)
                 (\subCmds -> MsgCompletion subCmds)
                 model

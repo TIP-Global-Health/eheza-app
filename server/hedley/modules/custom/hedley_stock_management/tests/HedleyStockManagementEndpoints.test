@@ -164,12 +164,14 @@ class HedleyStockManagementEndpoints extends HedleyWebTestBase {
 
     $this->assertTrue($found_with_village, 'Stock update with village_ref found in response.');
     $this->assertTrue($found_without_village, 'Stock update without village_ref found in response.');
+
+    $this->checkFeatureFlags();
   }
 
   /**
-   * Test feature flags in sync endpoint.
+   * Feature-flag block, called from testStockUpdateWithVillageRef.
    */
-  public function testFeatureFlags() {
+  protected function checkFeatureFlags() {
     $user = $this->drupalCreateUser(['bypass node access']);
 
     // Enable both stock management features.

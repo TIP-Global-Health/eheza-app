@@ -1,8 +1,8 @@
 module Backend.FamilyNutritionEncounter.Decoder exposing (decodeFamilyNutritionEncounter)
 
-import Backend.FamilyNutritionEncounter.Model exposing (..)
+import Backend.FamilyNutritionEncounter.Model exposing (FamilyNutritionEncounter)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
-import Json.Decode exposing (Decoder, andThen, bool, fail, nullable, string, succeed)
+import Json.Decode exposing (Decoder, bool, nullable, succeed)
 import Json.Decode.Pipeline exposing (optional, optionalAt, required, requiredAt)
 import Restful.Endpoint exposing (decodeEntityUuid)
 import Utils.Json exposing (decodeWithFallback)

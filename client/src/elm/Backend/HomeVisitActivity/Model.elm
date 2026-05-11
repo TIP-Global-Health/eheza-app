@@ -1,4 +1,4 @@
-module Backend.HomeVisitActivity.Model exposing (..)
+module Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 
 
 type HomeVisitActivity

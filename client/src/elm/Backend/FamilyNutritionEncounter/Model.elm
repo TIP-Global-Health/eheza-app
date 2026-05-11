@@ -1,8 +1,7 @@
-module Backend.FamilyNutritionEncounter.Model exposing (..)
+module Backend.FamilyNutritionEncounter.Model exposing (FamilyNutritionEncounter, Model, Msg(..), emptyFamilyNutritionEncounter, emptyModel)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
 

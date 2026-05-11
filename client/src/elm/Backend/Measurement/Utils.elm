@@ -1,4 +1,4 @@
-module Backend.Measurement.Utils exposing (..)
+module Backend.Measurement.Utils exposing (administrationNoteFromString, administrationNoteToString, ahezaDistributionReasonFromString, ahezaDistributionReasonToString, avoidingGuidanceReasonFromString, avoidingGuidanceReasonToString, bilirubinValueFromString, bilirubinValueToString, bloodGroupFromString, bloodGroupToString, bloodSmearResultFromString, bloodSmearResultToString, breastfeedingSignFromString, breastfeedingSignToString, covidIsolationPeriod, currentValue, currentValues, diabetesBySugarCount, diabetesByUrineGlucose, expectNCDAActivity, foodGroupFromString, foodGroupToString, generatePreviousMeasurements, getCurrentReasonForNonReferral, getHeightValue, getMeasurementDateMeasuredFunc, getMeasurementValueFunc, glucoseValueFromString, glucoseValueToString, guExamSignFromString, guExamSignToString, haemoglobinValueFromString, haemoglobinValueToString, headCircumferenceIndication, headCircumferenceValueFunc, hivDiagnosisSignFromString, hivDiagnosisSignToString, hivHealthEducationSignFromString, hivHealthEducationSignToString, hivPrescribedMedicationFromString, hivPrescribedMedicationToString, hivSymptomFromString, hivSymptomToString, illnessSymptomFromString, illnessSymptomToString, ketoneValueFromString, ketoneValueToString, labExpirationPeriod, laboratoryTestFromString, laboratoryTestToString, lateFirstANCVisitReasonFromString, lateFirstANCVisitReasonToString, leukocytesValueFromString, leukocytesValueToString, lmpDateNotConfidentReasonFromString, lmpDateNotConfidentReasonToString, mapChildMeasurementsAtOfflineSession, mapMeasurementData, medicalConditionFromString, medicalConditionToString, medicalHistoryInfectiousDiseaseFromString, medicalHistoryInfectiousDiseaseToString, medicalHistoryMentalHealthIssueFromString, medicalHistoryMentalHealthIssueToString, medicalHistoryPhysicalConditionFromString, medicalHistoryPhysicalConditionToString, medicalHistorySignFromString, medicalHistorySignToString, medicationCausingHypertensionFromString, medicationCausingHypertensionToString, medicationTreatingDiabetesFromString, medicationTreatingDiabetesToString, medicationTreatingHypertensionFromString, medicationTreatingHypertensionToString, muacIndicationForAdult, muacIndicationForChild, muacIndicationForPerson, muacValueFunc, ncdDangerSignFromString, ncdDangerSignToString, ncdFamilyHistorySignFromString, ncdFamilyHistorySignToString, ncdGroup1SymptomFromString, ncdGroup1SymptomToString, ncdGroup2SymptomFromString, ncdGroup2SymptomToString, ncdPainSymptomFromString, ncdPainSymptomToString, ncdSocialHistorySignFromString, ncdSocialHistorySignToString, ncdaSignFromString, ncdaSignToString, nitriteValueFromString, nitriteValueToString, nonReferralReasonToSign, nutritionAssessmentFromString, nutritionAssessmentToComparable, nutritionAssessmentToString, nutritionSignToString, obstetricHistoryStep2SignFromString, obstetricHistoryStep2SignToString, occursInFamilySignFromString, outsideCareMedicationFromString, outsideCareMedicationToString, outsideCareSignFromString, outsideCareSignToString, phValueFromString, phValueToString, postpartumChildDangerSignFromString, postpartumChildDangerSignToString, postpartumHealingProblemFromString, postpartumHealingProblemToString, postpartumMotherDangerSignFromString, postpartumMotherDangerSignToString, predecessorFromString, predecessorToString, pregnancyTestResultFromString, pregnancyTestResultToString, prenatalFlankPainSignFromString, prenatalFlankPainSignToString, prenatalHIVSignFromString, prenatalHIVSignToString, prenatalMentalHealthQuestionFromString, prenatalMentalHealthQuestionOptionFromString, prenatalMentalHealthQuestionOptionToString, prenatalMentalHealthQuestionToString, prenatalSymptomFromString, prenatalSymptomQuestionFromString, prenatalSymptomQuestionToString, prenatalSymptomToString, proteinValueFromString, proteinValueToString, reasonForNonReferralFromString, reasonForNonReferralToString, receiveOptionFromString, receiveOptionToString, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignFromString, recommendedTreatmentSignToString, referralToFacilityCompleted, reinforceTreatmentSignFromString, reinforceTreatmentSignToString, reviewStateFromString, reviewStateToString, rhesusFromString, rhesusToString, skippedFormFromString, skippedFormToString, splitChildMeasurements, splitMotherMeasurements, stuntingLevelFromString, stuntingLevelToString, symptomsGISignFromString, symptomsGISignToString, symptomsGeneralSignFromString, symptomsGeneralSignToString, symptomsRespiratorySignFromString, symptomsRespiratorySignToString, testResultFromString, testResultToString, tuberculosisDOTSignFromString, tuberculosisDOTSignToString, tuberculosisDiagnosisFromString, tuberculosisDiagnosisToString, tuberculosisHealthEducationSignFromString, tuberculosisHealthEducationSignToString, tuberculosisPrescribedMedicationFromString, tuberculosisPrescribedMedicationToString, tuberculosisSymptomFromString, tuberculosisSymptomToString, unitOfMeasurementFromString, unitOfMeasurementToString, urobilinogenValueFromString, urobilinogenValueToString, vaccineDoseFromString, vaccineDoseToString, vaginalExamSignFromString, vaginalExamSignToString, weightValueFunc)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -2486,6 +2486,9 @@ breastfeedingSignToString value =
         LatchingWell ->
             "latching-well"
 
+        BreastfedFirstHour ->
+            "breastfed-first-hour"
+
         NoBreastfeedingSigns ->
             "none"
 
@@ -2528,6 +2531,9 @@ breastfeedingSignFromString value =
 
         "latching-well" ->
             Just LatchingWell
+
+        "breastfed-first-hour" ->
+            Just BreastfedFirstHour
 
         "none" ->
             Just NoBreastfeedingSigns
@@ -4905,17 +4911,27 @@ medicalHistoryMentalHealthIssueFromString sign =
             Nothing
 
 
-occursInFamilySignToString : OccursInFamilySign -> String
-occursInFamilySignToString sign =
-    case sign of
-        DoesOccur ->
-            "yes"
+skippedFormToString : SkippedForm -> String
+skippedFormToString skipped =
+    case skipped of
+        SkippedHeight ->
+            "height"
 
-        DoesNotOccur ->
-            "no"
+        SkippedWeight ->
+            "weight"
 
-        NotKnownIfOccurs ->
-            "do-not-know"
+
+skippedFormFromString : String -> Maybe SkippedForm
+skippedFormFromString skipped =
+    case skipped of
+        "height" ->
+            Just SkippedHeight
+
+        "weight" ->
+            Just SkippedWeight
+
+        _ ->
+            Nothing
 
 
 occursInFamilySignFromString : String -> Maybe OccursInFamilySign

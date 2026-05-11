@@ -1,0 +1,179 @@
+<?php
+
+/**
+ * @file
+ * Contains HedleyReportsDataEndpoint.
+ */
+
+/**
+ * Tests the /api/reports-data REST endpoint access control.
+ *
+ * Issue #1574 introduced the paginated /api/reports-data endpoint that
+ * serves Reports / Scoreboard / Completion data to the admin Elm app.
+ * The endpoint runs an inline access check that mirrors the access
+ * policy of the admin pages that host the Elm app:
+ *
+ *   - 'reports' / 'completion' -> Statistical Queries Manager (or admin),
+ *     with HC-scoped users restricted to their allowed health centers.
+ *   - 'scoreboard' -> Data Manager (or admin).
+ */
+class HedleyReportsDataEndpoint extends HedleyWebTestBase {
+
+  /**
+   * Info hook.
+   */
+  public static function getInfo() {
+    return [
+      'name' => 'Reports Data endpoint tests',
+      'description' => 'Access control for /api/reports-data POST endpoint.',
+      'group' => 'Hedley',
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setUp() {
+    parent::setUp(['hedley_reports', 'hedley_ncda']);
+  }
+
+  /**
+   * Switch global $user to the given account, returning the previous one.
+   *
+   * The endpoint's access check reads global $user (via
+   * hedley_reports_resolve_scope_for_reports_by_current_user and
+   * hedley_ncda_aggregated_ncda_report_access). In production those
+   * globals are set by Restful's auth providers; in this direct-call
+   * test we set them ourselves.
+   */
+  protected function switchUser($account) {
+    global $user;
+    $original = $user;
+    $user = $account;
+    drupal_save_session(FALSE);
+    return $original;
+  }
+
+  /**
+   * Restore global $user to the given account.
+   */
+  protected function restoreUser($account) {
+    global $user;
+    $user = $account;
+    drupal_save_session(TRUE);
+  }
+
+  /**
+   * Invoke /api/reports-data as the given account.
+   *
+   * Returns the response array, or NULL if RestfulForbiddenException was
+   * thrown (the access check we're exercising).
+   */
+  protected function invokeReportsDataAsUser($account, array $request) {
+    $handler = restful_get_restful_handler('reports-data');
+    $handler->setAccount($account);
+    $handler->setRequest($request);
+
+    $original = $this->switchUser($account);
+    try {
+      return $handler->getData();
+    }
+    catch (\RestfulForbiddenException $e) {
+      return NULL;
+    } finally {
+      $this->restoreUser($original);
+    }
+  }
+
+  /**
+   * Grant a role by name to the given account, then reload it.
+   */
+  protected function grantRole($account, $role_name) {
+    $role = user_role_load_by_name($role_name);
+    $account->roles[$role->rid] = $role->name;
+    user_save($account);
+    return user_load($account->uid, TRUE);
+  }
+
+  /**
+   * Exercises the four access scenarios in one DrupalWebTestCase install.
+   *
+   * Each test method in DrupalWebTestCase pays a full hedley-profile
+   * install (~9 min in CI). Bundling the scenarios under a single
+   * method keeps the install cost paid once, freeing a parallel slot
+   * for HedleyUserAccessControlTests sooner. The four scenarios are:
+   *
+   *   1. Unprivileged user (no role) -- denied for every app_type.
+   *   2. Statistical Queries Manager -- allowed for reports/completion,
+   *      denied for scoreboard.
+   *   3. Data Manager -- allowed for scoreboard, denied for
+   *      reports/completion.
+   *   4. HC-scoped SQM -- allowed for own HC, denied for foreign HC
+   *      and when health_center is omitted.
+   */
+  public function testReportsDataAccess() {
+    // 1. Unprivileged user (no role) -> denied everywhere.
+    $unprivileged = $this->drupalCreateUser();
+    foreach (['reports', 'completion', 'scoreboard'] as $app_type) {
+      $request = ['app_type' => $app_type, 'base_revision' => 0];
+      $result = $this->invokeReportsDataAsUser($unprivileged, $request);
+      $this->assertNull($result, "Unprivileged user denied for app_type=$app_type.");
+    }
+
+    // 2. Statistical Queries Manager -> allowed for reports/completion only.
+    $sqm = $this->grantRole($this->drupalCreateUser(), 'Statistical Queries Manager');
+    foreach (['reports', 'completion'] as $app_type) {
+      $request = ['app_type' => $app_type, 'base_revision' => 0];
+      $result = $this->invokeReportsDataAsUser($sqm, $request);
+      $this->assertNotNull($result, "SQM allowed for app_type=$app_type.");
+      $this->assertTrue(
+        isset($result['batch']) && isset($result['total_remaining']) && isset($result['last']),
+        "SQM response has expected sync shape for app_type=$app_type."
+      );
+    }
+    $request = ['app_type' => 'scoreboard', 'base_revision' => 0];
+    $result = $this->invokeReportsDataAsUser($sqm, $request);
+    $this->assertNull($result, 'SQM denied for app_type=scoreboard.');
+
+    // 3. Data Manager -> allowed for scoreboard only.
+    $dm = $this->grantRole($this->drupalCreateUser(), 'Data Manager');
+    $request = ['app_type' => 'scoreboard', 'base_revision' => 0];
+    $result = $this->invokeReportsDataAsUser($dm, $request);
+    $this->assertNotNull($result, 'Data Manager allowed for app_type=scoreboard.');
+    foreach (['reports', 'completion'] as $app_type) {
+      $request = ['app_type' => $app_type, 'base_revision' => 0];
+      $result = $this->invokeReportsDataAsUser($dm, $request);
+      $this->assertNull($result, "Data Manager denied for app_type=$app_type.");
+    }
+
+    // 4. HC-scoped SQM -> own HC only.
+    $allowed_hc = $this->createHealthCenter();
+    $foreign_hc = $this->createHealthCenter();
+    $hc_sqm = $this->grantRole($this->drupalCreateUser(), 'Statistical Queries Manager');
+    $wrapper = entity_metadata_wrapper('user', $hc_sqm);
+    $wrapper->field_health_centers_for_reports->set([$allowed_hc]);
+    $wrapper->save();
+    $hc_sqm = user_load($hc_sqm->uid, TRUE);
+
+    $request = [
+      'app_type' => 'reports',
+      'base_revision' => 0,
+      'health_center' => $allowed_hc,
+    ];
+    $result = $this->invokeReportsDataAsUser($hc_sqm, $request);
+    $this->assertNotNull($result, 'HC-scoped SQM allowed for own HC.');
+
+    $request = [
+      'app_type' => 'reports',
+      'base_revision' => 0,
+      'health_center' => $foreign_hc,
+    ];
+    $result = $this->invokeReportsDataAsUser($hc_sqm, $request);
+    $this->assertNull($result, 'HC-scoped SQM denied for foreign HC.');
+
+    $request = ['app_type' => 'reports', 'base_revision' => 0];
+    $result = $this->invokeReportsDataAsUser($hc_sqm, $request);
+    $this->assertNull($result, 'HC-scoped SQM denied when health_center is missing.');
+  }
+
+}

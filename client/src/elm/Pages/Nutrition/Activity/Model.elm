@@ -1,10 +1,10 @@
-module Pages.Nutrition.Activity.Model exposing (..)
+module Pages.Nutrition.Activity.Model exposing (HeightData, Model, Msg(..), MuacData, NextStepsData, NutritionData, PhotoData, WeightData, emptyModel, emptyPhotoData)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model exposing (..)
+import Measurement.Model exposing (ContributingFactorsForm, DropZoneFile, HealthEducationForm, HeightForm, MuacForm, NCDAData, NCDAForm, NCDAStep, NextStepsTask, NutritionFollowUpForm, NutritionForm, PhotoForm, SendToHCForm, WeightForm, emptyContributingFactorsForm, emptyHealthEducationForm, emptyHeightForm, emptyMuacForm, emptyNCDAData, emptyNutritionFollowUpForm, emptyNutritionForm, emptyPhotoForm, emptySendToHCForm, emptyWeightForm)
 import Pages.Page exposing (Page)
 
 
@@ -13,7 +13,8 @@ type Msg
     | SetActivePage Page
     | SetWarningPopupState (List NutritionAssessment)
     | SetHeight String
-    | SaveHeight PersonId (Maybe ( NutritionHeightId, NutritionHeight ))
+    | SetHeightNotTaken Bool
+    | SaveHeight (EverySet SkippedForm) PersonId (Maybe ( NutritionHeightId, NutritionHeight ))
     | SetMuac String
     | SaveMuac PersonId (Maybe ( NutritionMuacId, NutritionMuac ))
     | SetNutritionSign ChildNutritionSign
@@ -21,7 +22,8 @@ type Msg
     | DropZoneComplete DropZoneFile
     | SavePhoto PersonId (Maybe NutritionPhotoId) ImageUrl
     | SetWeight String
-    | SaveWeight PersonId (Maybe ( NutritionWeightId, NutritionWeight ))
+    | SetWeightNotTaken Bool
+    | SaveWeight (EverySet SkippedForm) PersonId (Maybe ( NutritionWeightId, NutritionWeight ))
     | SetUpdateANCVisits Bool
     | ToggleANCVisitDate NominalDate
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool

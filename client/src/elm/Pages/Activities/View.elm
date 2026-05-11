@@ -9,7 +9,6 @@ import EverySet
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import List
 import LocalData
 import Pages.Activities.Model exposing (DialogType(..), Model, Msg(..), Tab(..))
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))

@@ -19,8 +19,8 @@ import Measurement.Utils
         , toOngoingTreatmentReviewValueWithDefault
         , toSendToHCValueWithDefault
         )
-import Pages.HIV.Activity.Model exposing (..)
-import Pages.HIV.Activity.Utils exposing (..)
+import Pages.HIV.Activity.Model exposing (Model, Msg(..))
+import Pages.HIV.Activity.Utils exposing (diagnosticsFormWithDefault, prescribedMedicationFormWithDefault, symptomReviewFormWithDefault, toDiagnosticsValueWithDefault, toHealthEducationValueWithDefault, toPrescribedMedicationValueWithDefault, toSymptomReviewValueWithDefault)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (setMultiSelectInputValue)
 import RemoteData

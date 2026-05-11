@@ -19,6 +19,7 @@ import Backend.Completion.Model
         , TuberculosisActivity(..)
         , WellChildActivity(..)
         )
+import Backend.Components.Model exposing (SelectedEntity(..))
 import Backend.Reports.Model
     exposing
         ( AcuteIllnessDiagnosis(..)
@@ -26,13 +27,13 @@ import Backend.Reports.Model
         , NutritionReportTableType(..)
         , PregnancyOutcome(..)
         , PrenatalDiagnosis(..)
+        , PrenatalIndicator(..)
         )
-import Backend.Scoreboard.Model
 import Date
 import Pages.Completion.Model
 import Pages.Components.Types exposing (PopulationSelectionOption(..))
-import Pages.Reports.Model exposing (PregnancyTrimester(..), ReportType(..))
-import Pages.Scoreboard.Model exposing (..)
+import Pages.Reports.Model exposing (FbfDistributionCategory(..), PregnancyTrimester(..), PrenatalContactType(..), ReportType(..))
+import Pages.Scoreboard.Model exposing (NCDAANCNewbornItem(..), NCDAAcuteMalnutritionItem(..), NCDADemographicsItem(..), NCDAInfrastructureEnvironmentWashItem(..), NCDANutritionBehaviorItem(..), NCDAStuntingItem(..), NCDATargetedInterventionsItem(..), NCDAUniversalInterventionItem(..))
 import Time exposing (Month(..))
 
 
@@ -104,6 +105,7 @@ type TranslationId
     | Commune
     | Completed
     | CompletionReportType Pages.Completion.Model.ReportType
+    | ContactType
     | CoreExam
     | DangerSigns
     | DeliveryLocation DeliveryLocation
@@ -115,6 +117,7 @@ type TranslationId
     | Diagnostics
     | District
     | DownloadCSV
+    | DownloadingExplanation
     | EmptyString
     | Encounters
     | EncounterType
@@ -122,6 +125,13 @@ type TranslationId
     | FamilyNutrition
     | FamilyPlanning
     | FBF
+    | FbfDistributionCategory FbfDistributionCategory
+    | FbfDistributionOccurrences
+    | FbfDistributionTotalAmount
+    | FbfDistributionType
+    | FbfDistributionUnit
+    | FbfDistributionUnitKg
+    | FbfDistributionUnitPackage
     | Feeding
     | Female
     | FirstVisit
@@ -177,6 +187,7 @@ type TranslationId
     | NCDATargetedInterventionsItemLabel NCDATargetedInterventionsItem
     | NCDAUniversalInterventionItemLabel NCDAUniversalInterventionItem
     | NewbornExam
+    | NewbornsWithSPVWithin24Hours
     | NewScope
     | NewSelection
     | NoDiagnosis
@@ -201,12 +212,18 @@ type TranslationId
     | PregnanciesActive
     | PregnanciesAll
     | PregnanciesCompleted
+    | PregnanciesWithAtLeast4Encounters
+    | PregnanciesWithAtLeast6Encounters
+    | PregnanciesWithAtLeast8Encounters
+    | PregnanciesWithFirstContactAtFirstTrimester
     | PregnancyOutcome PregnancyOutcome
     | PregnancyOutcomeLabel
     | PregnancyTest
     | PregnancyTrimester PregnancyTrimester
     | PrenatalActivity PrenatalActivity
+    | PrenatalContactType PrenatalContactType
     | PrenatalDiagnosis PrenatalDiagnosis
+    | PrenatalIndicatorLabel PrenatalIndicator
     | PrevalenceByMonthOneVisitOrMore
     | PrevalenceByMonthTwoVisitsOrMore
     | Province
@@ -222,8 +239,8 @@ type TranslationId
     | Save
     | Scope
     | Sector
-    | SelectedEntity Backend.Scoreboard.Model.SelectedEntity
-    | SelectedScope Backend.Reports.Model.SelectedEntity
+    | SelectedEntity SelectedEntity
+    | SelectedScope SelectedEntity
     | SelectLimitDate
     | SelectStartDate
     | SelectScope
@@ -240,6 +257,9 @@ type TranslationId
     | TakenByLabel
     | TargetedInterventions
     | Total
+    | TotalDeliveries
+    | TotalLiveBirths
+    | TotalLivePreTermBirths
     | TreatmentReview
     | Trimester
     | Tuberculosis
@@ -251,6 +271,11 @@ type TranslationId
     | UnderweightSevere
     | Unique
     | UniversalIntervention
+    | UpToDateWithImmunization7To11WeeksLabel
+    | UpToDateWithImmunization11To15WeeksLabel
+    | UpToDateWithImmunization15WeeksTo10MonthsLabel
+    | UpToDateWithImmunization10To19MonthsLabel
+    | UpToDateWithImmunization19To24MonthsLabel
     | UrineDipstickTest
     | UrineDipstickTestResult
     | WastingModerate
@@ -732,6 +757,13 @@ translationSet transId =
             , somali = Nothing
             }
 
+        ContactType ->
+            { english = "Contact Type"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
         CoreExam ->
             { english = "Core Exam"
             , kinyarwanda = Nothing
@@ -811,6 +843,13 @@ translationSet transId =
             , somali = Nothing
             }
 
+        DownloadingExplanation ->
+            { english = "Downloading data from the server. Please wait until the download completes before selecting a report."
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
         EmptyString ->
             { english = ""
             , kinyarwanda = Nothing
@@ -855,6 +894,85 @@ translationSet transId =
 
         FBF ->
             { english = "FBF"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        FbfDistributionCategory category ->
+            case category of
+                FbfDistributionFbfChild ->
+                    { english = "FBF Child"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                FbfDistributionFbfChildAchi ->
+                    { english = "FBF Child (ACHI)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                FbfDistributionFbfMother ->
+                    { english = "FBF Mother"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                FbfDistributionAhezaChild ->
+                    { english = "Aheza Child"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                FbfDistributionAhezaMother ->
+                    { english = "Aheza Mother"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+        FbfDistributionOccurrences ->
+            { english = "# of Encounters"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        FbfDistributionTotalAmount ->
+            { english = "Total amount"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        FbfDistributionType ->
+            { english = "Type"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        FbfDistributionUnit ->
+            { english = "Unit"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        FbfDistributionUnitKg ->
+            { english = "kg"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        FbfDistributionUnitPackage ->
+            { english = "pkg"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing
@@ -1546,6 +1664,13 @@ translationSet transId =
             , somali = Nothing
             }
 
+        NewbornsWithSPVWithin24Hours ->
+            { english = "Newborns who received Newborn Exam or SPV within 24 hours of birth"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
         NewScope ->
             { english = "New Scope"
             , kinyarwanda = Nothing
@@ -1823,6 +1948,34 @@ translationSet transId =
 
         PregnanciesCompleted ->
             { english = "Completed Pregnancies"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        PregnanciesWithAtLeast4Encounters ->
+            { english = "Pregnant women who attended at least 4 ANC contacts"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        PregnanciesWithAtLeast6Encounters ->
+            { english = "Pregnant women who attended at least 6 ANC contacts"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        PregnanciesWithAtLeast8Encounters ->
+            { english = "Pregnant women who attended at least 8 ANC contacts"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        PregnanciesWithFirstContactAtFirstTrimester ->
+            { english = "Pregnant women who attended ANC contact within 1st trimester"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing
@@ -2239,6 +2392,64 @@ translationSet transId =
 
                 PrenatalVitalsRecheck ->
                     { english = "Vitals Recheck"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+        PrenatalContactType prenatalContactType ->
+            case prenatalContactType of
+                PrenatalContact1 ->
+                    { english = "First ANC contact (≤12 weeks)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                PrenatalContact2 ->
+                    { english = "2nd ANC contact (20 weeks)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                PrenatalContact3 ->
+                    { english = "3rd ANC contact (26 weeks)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                PrenatalContact4 ->
+                    { english = "4th ANC contact (30 weeks)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                PrenatalContact5 ->
+                    { english = "5th ANC contact (34 weeks)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                PrenatalContact6 ->
+                    { english = "6th ANC contact (36 weeks)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                PrenatalContact7 ->
+                    { english = "7th ANC contact (38 weeks)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                PrenatalContact8 ->
+                    { english = "8th ANC contact (40 weeks)"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     , somali = Nothing
@@ -2687,6 +2898,132 @@ translationSet transId =
                     , somali = Just "Midna"
                     }
 
+        PrenatalIndicatorLabel indicator ->
+            case indicator of
+                IndicatorAbortion ->
+                    -- Not for display.
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                IndicatorAdequateGWG ->
+                    { english = "Number of encounters where adequate gestational weight gain was recorded"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                IndicatorAnemiaTest ->
+                    { english = "Pregnant women tested for anemia"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                IndicatorBreastfedFirstHour ->
+                    { english = "Newborns breastfed within one hour of delivery"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                IndicatorDiagnosedAnemia ->
+                    { english = "Pregnant women diagnosed with anemia"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                IndicatorHistoryOfAdversePregnancyOutcomes ->
+                    { english = "Pregnant women with a history of preterm births, spontaneous abortion, stillbirth, or intrauterine fetal deaths"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                IndicatorHistoryOfAdversePregnancyOutcomesReceivedAzithromycin ->
+                    { english = "Pregnant women with a history of adverse pregnancy outcomes, who received Azithromycin"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                IndicatorIntrauterineDeath ->
+                    -- Not for display.
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                IndicatorReceivedAspirin ->
+                    { english = "Pregnant women who received low-dose aspirin"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                IndicatorReceivedAzithromycin ->
+                    -- Not for display.
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                IndicatorReceivedCalcium ->
+                    { english = "Pregnant women who received low-dose antenatal calcium"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                IndicatorReceivedMMS ->
+                    { english = "Pregnant women who received MMS"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                IndicatorPrematureOnsetContractions ->
+                    { english = "Pregnant women with premature labour"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                IndicatorPretermBirth ->
+                    -- Not for display.
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                IndicatorReferredToUltrasound ->
+                    { english = "Pregnant women who received ultrasound exams"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                IndicatorReferredToUltrasoundBeforeEGA24 ->
+                    { english = "Pregnant women who received at least one ultrasound before 24 weeks’ gestation"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                IndicatorStillbirth ->
+                    -- Not for display.
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
         PrevalenceByMonthOneVisitOrMore ->
             { english = "Prevalence by month - one visit or more"
             , kinyarwanda = Nothing
@@ -2762,11 +3099,39 @@ translationSet transId =
                     , somali = Nothing
                     }
 
+                ReportFBFDistribution ->
+                    { english = "Stock Management"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
                 ReportNutrition ->
                     translationSet Nutrition
 
+                ReportPeripartum ->
+                    { english = "Peripartum"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
+                ReportPostnatalCare ->
+                    { english = "Postnatal Care"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
+
                 ReportPrenatal ->
                     translationSet Antenatal
+
+                ReportPrenatalContacts ->
+                    { english = "ANC Contacts"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    , somali = Nothing
+                    }
 
                 ReportPrenatalDiagnoses ->
                     { english = "ANC Diagnoses"
@@ -2808,39 +3173,43 @@ translationSet transId =
 
         SelectedEntity entity ->
             case entity of
-                Backend.Scoreboard.Model.EntityDistrict ->
+                EntityDistrict ->
                     translationSet District
 
-                Backend.Scoreboard.Model.EntitySector ->
+                EntitySector ->
                     translationSet Sector
 
-                Backend.Scoreboard.Model.EntityCell ->
+                EntityCell ->
                     translationSet Cell
 
-                Backend.Scoreboard.Model.EntityVillage ->
+                EntityVillage ->
                     translationSet Village
+
+                -- Other options can not be selected.
+                _ ->
+                    translationSet EmptyString
 
         SelectedScope entity ->
             case entity of
-                Backend.Reports.Model.EntityGlobal ->
+                EntityGlobal ->
                     translationSet Global
 
-                Backend.Reports.Model.EntityHealthCenter ->
+                EntityHealthCenter ->
                     translationSet HealthCenter
 
-                Backend.Reports.Model.EntityProvince ->
+                EntityProvince ->
                     translationSet Province
 
-                Backend.Reports.Model.EntityDistrict ->
+                EntityDistrict ->
                     translationSet District
 
-                Backend.Reports.Model.EntitySector ->
+                EntitySector ->
                     translationSet Sector
 
-                Backend.Reports.Model.EntityCell ->
+                EntityCell ->
                     translationSet Cell
 
-                Backend.Reports.Model.EntityVillage ->
+                EntityVillage ->
                     translationSet Village
 
         SelectLimitDate ->
@@ -2971,6 +3340,27 @@ translationSet transId =
             , somali = Nothing
             }
 
+        TotalDeliveries ->
+            { english = "Total deliveries"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        TotalLiveBirths ->
+            { english = "Total live births"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        TotalLivePreTermBirths ->
+            { english = "Preterm birth newborns"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
         TreatmentReview ->
             { english = "Treatment Review"
             , kinyarwanda = Nothing
@@ -3066,6 +3456,41 @@ translationSet transId =
 
         UniversalIntervention ->
             { english = "Universal Intervention"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        UpToDateWithImmunization7To11WeeksLabel ->
+            { english = "Infants aged 7-11 weeks who are up to date with immunization"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        UpToDateWithImmunization11To15WeeksLabel ->
+            { english = "Infants aged 11-15 weeks who are up to date with immunization"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        UpToDateWithImmunization15WeeksTo10MonthsLabel ->
+            { english = "Children aged 15 weeks - 10 mos who are up to date with immunization"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        UpToDateWithImmunization10To19MonthsLabel ->
+            { english = "Children aged 10-19 mos who are up to date with immunization"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
+        UpToDateWithImmunization19To24MonthsLabel ->
+            { english = "Children 19 mos - 2 years who are up to date with immunization"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing

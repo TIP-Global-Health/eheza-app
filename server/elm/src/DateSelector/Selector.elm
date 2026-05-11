@@ -26,10 +26,9 @@ viewPopup language minimum maximum maybeSelected =
                 ]
 
         monthSection =
-            div [ class "month" ] <|
+            div [ class "month" ]
                 [ p [] [ text <| translate language Translate.MonthLabel ]
-                , Maybe.map (viewMonthSelectList language minimum maximum) maybeSelected
-                    |> Maybe.withDefault viewMonthSelectListDisabled
+                , Maybe.map (viewMonthSelectList language minimum maximum) maybeSelected |> Maybe.withDefault viewMonthSelectListDisabled
                 ]
 
         daysSection =

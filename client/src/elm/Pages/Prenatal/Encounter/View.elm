@@ -4,7 +4,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantInitiator(..))
 import Backend.Measurement.Model exposing (ObstetricHistoryValue)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.PrenatalActivity.Model exposing (..)
+import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..), allHighRiskFactors, allHighSeverityAlerts, allRecurringHighSeverityAlerts)
 import Backend.PrenatalActivity.Utils
     exposing
         ( generateHighRiskAlertData
@@ -26,8 +26,8 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Utils exposing (activityCompleted, expectActivity, noDangerSigns)
-import Pages.Prenatal.Encounter.Model exposing (..)
-import Pages.Prenatal.Encounter.Utils exposing (..)
+import Pages.Prenatal.Encounter.Model exposing (Model, Msg(..), Tab(..))
+import Pages.Prenatal.Encounter.Utils exposing (emergencyReferalRequired, generateAssembledData, generateEDDandEGA, generateGravida, generatePara, generateRecurringHighSeverityAlertData, getAllActivities, getFirstNurseEncounterMeasurements, secondPhaseRequired)
 import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.Utils exposing (undeterminedPostpartumDiagnoses)
 import Pages.Prenatal.View exposing (customWarningPopup, viewPauseEncounterButton)
@@ -44,11 +44,11 @@ view language currentDate site features id isChw db model =
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate site features id isChw model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate site features isChw model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> Site -> EverySet SiteFeature -> PrenatalEncounterId -> Bool -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate site features id isChw model assembled =
+viewHeaderAndContent : Language -> NominalDate -> Site -> EverySet SiteFeature -> Bool -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate site features isChw model assembled =
     let
         header =
             viewHeader language isChw assembled
@@ -140,7 +140,7 @@ viewUndeterminedDiagnosesWarningPopup language currentDate site features assembl
                     |> List.filter (expectActivity currentDate site features assembled)
                     |> List.partition (activityCompleted currentDate site features assembled)
         in
-        if List.length pendingActivities > 0 || List.member NextSteps completedActivities then
+        if not (List.isEmpty pendingActivities) || List.member NextSteps completedActivities then
             Nothing
 
         else
@@ -204,7 +204,7 @@ viewMotherDetails language currentDate isChw assembled alertsDialogData =
 
                             recurringHighSeverityAlertsData =
                                 allRecurringHighSeverityAlerts
-                                    |> List.map (generateRecurringHighSeverityAlertData language currentDate isChw assembled)
+                                    |> List.map (generateRecurringHighSeverityAlertData language isChw assembled)
                                     |> List.filter (List.isEmpty >> not)
 
                             alertSign =
@@ -402,17 +402,6 @@ viewMainPageContent language currentDate site features assembled model =
             in
             activityCard language label icon (SetActivePage <| UserPage navigationPage)
 
-        ( selectedActivities, emptySectionMessage ) =
-            case model.selectedTab of
-                Pending ->
-                    ( pendingActivities, translate language Translate.NoActivitiesPending )
-
-                Completed ->
-                    ( completedActivities, translate language Translate.NoActivitiesCompleted )
-
-                Reports ->
-                    ( [], "" )
-
         innerContent =
             if model.selectedTab == Reports then
                 div [ class "reports-wrapper" ]
@@ -431,6 +420,18 @@ viewMainPageContent language currentDate site features assembled model =
                     ]
 
             else
+                let
+                    ( selectedActivities, emptySectionMessage ) =
+                        case model.selectedTab of
+                            Pending ->
+                                ( pendingActivities, translate language Translate.NoActivitiesPending )
+
+                            Completed ->
+                                ( completedActivities, translate language Translate.NoActivitiesCompleted )
+
+                            Reports ->
+                                ( [], "" )
+                in
                 div [ class "full content" ]
                     [ div [ class "wrap-cards" ]
                         [ div [ class "ui four cards" ] <|

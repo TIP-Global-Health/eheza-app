@@ -1,4 +1,4 @@
-module Pages.FamilyNutrition.Encounter.Utils exposing (..)
+module Pages.FamilyNutrition.Encounter.Utils exposing (activitiesForFamilyMember, activityCompleted, generateAssembledData, nextFamilyMemberWithPendingActivities)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -6,13 +6,12 @@ import Backend.FamilyNutritionActivity.Model exposing (FamilyNutritionActivity(.
 import Backend.FamilyNutritionActivity.Utils exposing (allActivities)
 import Backend.FamilyNutritionEncounter.Utils exposing (getFamilyNutritionEncountersForParticipant)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths, isPersonAnAdult)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Gizra.NominalDate exposing (NominalDate)
-import Pages.FamilyNutrition.Encounter.Model exposing (..)
+import Pages.FamilyNutrition.Encounter.Model exposing (AssembledData, FamilyMember(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Utils.NominalDate exposing (sortTuplesByDateDesc)
 

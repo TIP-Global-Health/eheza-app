@@ -1,4 +1,4 @@
-module Backend.HIVEncounter.Model exposing (..)
+module Backend.HIVEncounter.Model exposing (HIVEncounter, Model, Msg(..), emptyHIVEncounter, emptyModel)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)

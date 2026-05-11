@@ -1,4 +1,4 @@
-import { Page } from '@playwright/test';
+import { expect, Page } from '@playwright/test';
 import { execSync } from 'child_process';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
@@ -161,24 +161,6 @@ export function generateNCDAPersonData(excludeSet = false) {
 }
 
 /**
- * Recalculate NCDA large datasets -- aggregates per-person NCDA data into
- * scope-level report_data nodes, then clears Drupal caches.
- */
-export function ncdaRecalculateLargeDatasets() {
-  const { drushCmd, cwd } = drushEnv();
-  console.log('Recalculating NCDA large datasets...');
-  execSync(
-    `${drushCmd} scr profiles/hedley/modules/custom/hedley_ncda/scripts/recalculate-large-datasets.php`,
-    { cwd, timeout: 300000, encoding: 'utf-8', stdio: 'pipe' },
-  );
-  // Clear Drupal caches so pages serve the fresh report_data.
-  execSync(`${drushCmd} cc all`, {
-    cwd, timeout: 30000, encoding: 'utf-8', stdio: 'pipe',
-  });
-  console.log('NCDA large datasets recalculated.');
-}
-
-/**
  * Backdate a person node's `created` timestamp.
  *
  * The NCDA scoreboard Elm view uses a strict less-than check
@@ -265,6 +247,10 @@ export async function navigateToNCDAScoreboard(page: Page, geoPath: string): Pro
   if (paneCount < 2) {
     throw new Error(`NCDA scoreboard at ${url} did not render at least 2 panes after 5 retries (got ${paneCount})`);
   }
+
+  // Records are now fetched via /api/reports-data; wait for the sync
+  // indicator to flip to COMPLETED before reading any pane values.
+  await waitForReportSync(page);
 
   await page.waitForTimeout(WAIT.sectionTransition);
 }
@@ -417,7 +403,29 @@ export function recalculateLargeDatasets() {
 // ---------------------------------------------------------------------------
 
 /**
+ * Wait for the Reports/Scoreboard/Completion Elm app to finish syncing
+ * its `records` data via /api/reports-data.
+ *
+ * While sync is in progress, the page renders `div.sync-placeholder` in
+ * place of the inputs/content (PENDING or IN PROCESS); when
+ * `remainingForDownload` reaches 0 (COMPLETED) the placeholder is
+ * removed from the DOM and the inputs (or scoreboard panes) take its
+ * place. We poll for the placeholder to be absent so the helper works
+ * uniformly across all three pages and the case where sync had already
+ * finished before the helper was called.
+ *
+ * See `viewSyncingPlaceholder` / `isSyncComplete` in
+ * server/elm/src/Pages/Components/Utils.elm.
+ */
+export async function waitForReportSync(page: Page, timeoutMs = 60000) {
+  await expect(page.locator('.sync-placeholder')).toHaveCount(0, {
+    timeout: timeoutMs,
+  });
+}
+
+/**
  * Navigate to the Statistical Queries results page for a Health Center scope.
+ * Waits for the initial RESTful sync to complete before returning.
  */
 export async function navigateToHCReportsPage(
   page: Page,
@@ -429,6 +437,7 @@ export async function navigateToHCReportsPage(
     `${baseUrl}/admin/reports/statistical-queries/health-center/${healthCenterId}?t=${Date.now()}`,
   );
   await page.locator('.page-content.reports').waitFor({ timeout: 30000 });
+  await waitForReportSync(page);
 }
 
 /**
@@ -438,6 +447,20 @@ export async function navigateToReportsMenu(page: Page) {
   const baseUrl = getDdevUrl();
   await page.goto(`${baseUrl}/admin/reports/statistical-queries`);
   await page.locator('.page-content.reports-menu').waitFor({ timeout: 30000 });
+}
+
+/**
+ * Navigate to the Statistical Queries results page for the Global scope (all
+ * patients across all health centers). The Drupal route is registered at
+ * `admin/reports/statistical-queries/all` (see hedley_reports.module).
+ */
+export async function navigateToGlobalReportsPage(page: Page) {
+  const baseUrl = getDdevUrl();
+  // Cache-busting parameter to prevent browser from serving stale page.
+  await page.goto(
+    `${baseUrl}/admin/reports/statistical-queries/all?t=${Date.now()}`,
+  );
+  await page.locator('.page-content.reports').waitFor({ timeout: 30000 });
 }
 
 // ---------------------------------------------------------------------------
@@ -688,6 +711,16 @@ export function findEncounterRow(
 export interface SimpleTableRow {
   label: string;
   total: number;
+  /**
+   * Per-row unit string (e.g., "package", "kg") when the table renders a
+   * Unit column. Currently only the FBF Distribution report uses this.
+   */
+  unit?: string;
+  /**
+   * Count of distribution events when the table renders an Occurrences
+   * column. Currently only the FBF Distribution report uses this.
+   */
+  occurrences?: number;
 }
 
 export interface SimpleTableData {
@@ -704,6 +737,58 @@ export async function readAcuteIllnessTable(
   page: Page,
 ): Promise<SimpleTableData> {
   return readSimpleTable(page, 'div.report.acute-illness div.table');
+}
+
+/**
+ * Read the ANC Contact (Prenatal Contacts) report table.
+ * Container: div.report.prenatal-contacts div.table
+ * Each row has 2 cells: [contact-type or indicator label, total count].
+ * Use findSimpleRow() to look up specific rows by label substring.
+ */
+export async function readPrenatalContactsTable(
+  page: Page,
+): Promise<SimpleTableData> {
+  return readSimpleTable(page, 'div.report.prenatal-contacts div.table');
+}
+
+/**
+ * Read the Peripartum report table.
+ * Container: div.report.peripartum div.table
+ * Each row has 2 cells: [outcome / indicator label, total count].
+ * Use findSimpleRow() to look up specific rows by label substring.
+ */
+export async function readPeripartumTable(
+  page: Page,
+): Promise<SimpleTableData> {
+  return readSimpleTable(page, 'div.report.peripartum div.table');
+}
+
+/**
+ * Read the Postnatal Care report table (PR #1556).
+ * Container: div.report.postnatal-care div.table
+ * Each row has 2 cells: [age-bucket / SPV-window label, total count].
+ * Use findSimpleRow() to look up specific rows by label substring.
+ */
+export async function readPostnatalCareTable(
+  page: Page,
+): Promise<SimpleTableData> {
+  return readSimpleTable(page, 'div.report.postnatal-care div.table');
+}
+
+/**
+ * Read the FBF Distribution report table.
+ * Container: div.report.fbf-distribution div.table
+ * Each row has 4 cells: [category label, total amount, unit, occurrences].
+ * Categories: "FBF Child", "FBF Mother", "Aheza Child", "Aheza Mother".
+ * Totals are numeric (whole numbers print without decimals; fractional with
+ * up to 2dp). Unit is "package" for FBF rows and "kg" for Aheza rows.
+ * Occurrences is the count of distribution events contributing to that
+ * total (one event per measurement record).
+ */
+export async function readFBFDistributionTable(
+  page: Page,
+): Promise<SimpleTableData> {
+  return readSimpleTable(page, 'div.report.fbf-distribution div.table');
 }
 
 /**
@@ -747,10 +832,16 @@ async function readSimpleTable(
       cellTexts.push((await cells.nth(j).textContent()) ?? '');
     }
     if (cellTexts.length >= 2) {
-      rows.push({
+      const row: SimpleTableRow = {
         label: cellTexts[0].trim(),
-        total: parseInt(cellTexts[1].trim(), 10) || 0,
-      });
+        total: parseFloat(cellTexts[1].trim()) || 0,
+      };
+      // 4-cell layout: [label, total, unit, occurrences] (FBF Distribution).
+      if (cellTexts.length >= 4) {
+        row.unit = cellTexts[2].trim();
+        row.occurrences = parseFloat(cellTexts[3].trim()) || 0;
+      }
+      rows.push(row);
     }
   }
 
@@ -1185,27 +1276,8 @@ export function generateCompletionData(encounterType: string, excludeSet = false
 }
 
 /**
- * Aggregate per-encounter completion data into scope-level report_data
- * nodes (global + per health center), then clear Drupal caches.
- *
- * Note: execSync with hardcoded commands — same pattern as
- * recalculateLargeDatasets(). No user input involved.
- */
-export function completionRecalculateLargeDatasets() {
-  const { drushCmd, cwd } = drushEnv();
-  console.log('Recalculating completion large datasets...');
-  execSync(
-    `${drushCmd} scr profiles/hedley/modules/custom/hedley_reports/scripts/completion-recalculate-large-datasets.php`,
-    { cwd, timeout: 300000, encoding: 'utf-8', stdio: 'pipe' },
-  );
-  execSync(`${drushCmd} cc all`, {
-    cwd, timeout: 30000, encoding: 'utf-8', stdio: 'pipe',
-  });
-  console.log('Completion large datasets recalculated.');
-}
-
-/**
  * Navigate to the Completion report results page for a Health Center scope.
+ * Waits for the initial RESTful sync to complete before returning.
  */
 export async function navigateToCompletionReportPage(
   page: Page,
@@ -1216,6 +1288,7 @@ export async function navigateToCompletionReportPage(
     `${baseUrl}/admin/reports/completion/health-center/${healthCenterId}?t=${Date.now()}`,
   );
   await page.locator('.page-content.completion').waitFor({ timeout: 30000 });
+  await waitForReportSync(page);
 }
 
 /**

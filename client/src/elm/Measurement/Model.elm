@@ -1,4 +1,4 @@
-module Measurement.Model exposing (..)
+module Measurement.Model exposing (AhezaForm, BloodGpRsResultForm, BloodGpRsTestForm, ContentAndTasksForPerformedLaboratoryTestConfig, ContentAndTasksForPerformedLaboratoryUniversalTestConfig, ContentAndTasksLaboratoryResultConfig, ContentAndTasksLaboratoryTestInitialConfig, ContentAndTasksLaboratoryUniversalTestInitialConfig, ContributingFactorsForm, CorePhysicalExamForm, CorePhysicalExamFormConfig, CreatinineResultForm, DropZoneFile, FamilyPlanningForm, FbfForm, FloatInputConstraints, FollowUpForm, GroupOfFoods(..), HIVPCRResultForm, HIVPCRTestForm, HIVResultForm, HIVTestForm, HIVTestUniversalForm, HbA1cTestForm, HealthEducationForm, HeightForm, HemoglobinResultForm, HemoglobinTestForm, HepatitisBResultForm, HepatitisBTestForm, ImmunisationTask(..), InvokationModule(..), LaboratoryTask(..), LipidPanelResultForm, LiverFunctionResultForm, MalariaResultForm, MalariaTestForm, MedicationAdministrationForm, MedicationAdministrationFormConfig, ModelChild, ModelMother, MsgChild(..), MsgMother(..), MuacForm, NCDAContentConfig, NCDAData, NCDAForm, NCDAStep(..), NextStepsTask(..), NonRDTForm, NutritionCaringForm, NutritionFeedingForm, NutritionFollowUpForm, NutritionFoodSecurityForm, NutritionForm, NutritionHygieneForm, OngoingTreatmentReviewForm, OutMsgChild(..), OutMsgMother(..), OutsideCareForm, OutsideCareStep(..), ParticipantFormProgress, ParticipantFormUI, PartnerHIVResultForm, PartnerHIVTestForm, PhotoForm, PregnancyTestForm, RandomBloodSugarResultForm, RandomBloodSugarTestForm, RandomBloodSugarTestUniversalForm, SendToHCForm, SyphilisResultForm, SyphilisTestForm, UrineDipstickResultForm, UrineDipstickTestForm, UrineDipstickTestUniversalForm, VaccinationForm, VaccinationFormDynamicContentAndTasksConfig, VaccinationFormViewMode(..), VaccinationProgressDict, VaccinationStatus(..), VitalsForm, VitalsFormConfig, VitalsFormMode(..), WeightForm, completedParticipantFormProgress, emptyAhezaForm, emptyBloodGpRsResultForm, emptyBloodGpRsTestForm, emptyContributingFactorsForm, emptyCorePhysicalExamForm, emptyCreatinineResultForm, emptyFamilyPlanningForm, emptyFbfForm, emptyFollowUpForm, emptyHIVPCRResultForm, emptyHIVPCRTestForm, emptyHIVResultForm, emptyHIVTestForm, emptyHIVTestUniversalForm, emptyHbA1cTestForm, emptyHealthEducationForm, emptyHeightForm, emptyHemoglobinResultForm, emptyHemoglobinTestForm, emptyHepatitisBResultForm, emptyHepatitisBTestForm, emptyLipidPanelResultForm, emptyLiverFunctionResultForm, emptyMalariaResultForm, emptyMalariaTestForm, emptyMedicationAdministrationForm, emptyModelChild, emptyModelMother, emptyMuacForm, emptyNCDAData, emptyNonRDTForm, emptyNutritionCaringForm, emptyNutritionFeedingForm, emptyNutritionFollowUpForm, emptyNutritionFoodSecurityForm, emptyNutritionForm, emptyNutritionHygieneForm, emptyOngoingTreatmentReviewForm, emptyOutsideCareForm, emptyParticipantFormProgress, emptyPartnerHIVResultForm, emptyPartnerHIVTestForm, emptyPhotoForm, emptyPregnancyTestForm, emptyRandomBloodSugarResultForm, emptyRandomBloodSugarTestForm, emptyRandomBloodSugarTestUniversalForm, emptySendToHCForm, emptySyphilisResultForm, emptySyphilisTestForm, emptyUrineDipstickResultForm, emptyUrineDipstickTestForm, emptyUrineDipstickTestUniversalForm, emptyVaccinationForm, emptyVitalsForm, emptyWeightForm)
 
 {-| These modules manage the UI for the various measurements relating to a
 participant.
@@ -8,7 +8,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.ParticipantConsent.Model exposing (..)
+import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Person)
 import Date exposing (Unit)
 import DateSelector.Model exposing (DateSelectorConfig)
@@ -226,10 +226,6 @@ type alias FloatInputConstraints =
     }
 
 
-type alias FileId =
-    Int
-
-
 {-| Represents the "file" that DropZone gives us when
 the upload is complete. There are several things we
 could get from this ... for now, just the location.
@@ -335,12 +331,13 @@ emptyAhezaForm =
 type alias HeightForm =
     { height : Maybe Float
     , heightDirty : Bool
+    , measurementNotTaken : Maybe Bool
     }
 
 
 emptyHeightForm : HeightForm
 emptyHeightForm =
-    HeightForm Nothing False
+    HeightForm Nothing False Nothing
 
 
 type alias MuacForm =
@@ -380,12 +377,13 @@ emptyPhotoForm =
 type alias WeightForm =
     { weight : Maybe Float
     , weightDirty : Bool
+    , measurementNotTaken : Maybe Bool
     }
 
 
 emptyWeightForm : WeightForm
 emptyWeightForm =
-    WeightForm Nothing False
+    WeightForm Nothing False Nothing
 
 
 type alias VitalsForm =
@@ -397,8 +395,10 @@ type alias VitalsForm =
     , heartRateDirty : Bool
     , respiratoryRate : Maybe Int
     , respiratoryRateDirty : Bool
+    , respiratoryRateNotTaken : Maybe Bool
     , bodyTemperature : Maybe Float
     , bodyTemperatureDirty : Bool
+    , bodyTemperatureNotTaken : Maybe Bool
     , sysRepeated : Maybe Float
     , sysRepeatedDirty : Bool
     , diaRepeated : Maybe Float
@@ -416,8 +416,10 @@ emptyVitalsForm =
     , heartRateDirty = False
     , respiratoryRate = Nothing
     , respiratoryRateDirty = False
+    , respiratoryRateNotTaken = Nothing
     , bodyTemperature = Nothing
     , bodyTemperatureDirty = False
+    , bodyTemperatureNotTaken = Nothing
     , sysRepeated = Nothing
     , sysRepeatedDirty = False
     , diaRepeated = Nothing
@@ -428,6 +430,8 @@ emptyVitalsForm =
 type alias VitalsFormConfig msg =
     { setIntInputMsg : (Maybe Int -> VitalsForm -> VitalsForm) -> String -> msg
     , setFloatInputMsg : (Maybe Float -> VitalsForm -> VitalsForm) -> String -> msg
+    , setRespiratoryRateNotTakenMsg : Bool -> msg
+    , setBodyTemperatureNotTakenMsg : Bool -> msg
     , sysBloodPressurePreviousValue : Maybe Float
     , diaBloodPressurePreviousValue : Maybe Float
     , heartRatePreviousValue : Maybe Float
@@ -437,6 +441,7 @@ type alias VitalsFormConfig msg =
     , formClass : String
     , mode : VitalsFormMode
     , invokationModule : InvokationModule
+    , allowSkipping : Bool
     }
 
 
@@ -1963,11 +1968,6 @@ type alias NCDAContentConfig msg =
     , setHelperStateMsg : Maybe NCDASign -> msg
     , saveMsg : msg
     }
-
-
-minimalNumberOfANCVisits : Int
-minimalNumberOfANCVisits =
-    4
 
 
 type alias VaccinationProgressDict =

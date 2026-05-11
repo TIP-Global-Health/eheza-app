@@ -248,15 +248,16 @@ function hedley_general_get_measurement_types() {
 /**
  * Returns list of content types that are considered as encounters.
  *
- * Both group and individual encounters are returned.
+ * Group, individual and family encounters are all returned.
  *
  * @return array
  *   List of content types that are considered as encounters.
  */
 function hedley_general_get_encounter_types() {
-  $types = hedley_general_get_individual_encounter_types();
-  // @todo: We may want to add family encounters here as well, but need to
-  // consider different places where this function is used.
+  $types = array_merge(
+    hedley_general_get_individual_encounter_types(),
+    hedley_general_get_family_encounter_types()
+  );
   // Session represents group encounter.
   $types[] = 'session';
 
@@ -607,6 +608,7 @@ function hedley_general_build_elm_app($page, array $data) {
   // Getting a unique ID for the app.
   $app_id = drupal_html_id('elm-app');
 
+  global $base_url;
   // Add settings.
   $settings = [
     'elm_apps' => [
@@ -614,6 +616,8 @@ function hedley_general_build_elm_app($page, array $data) {
         'page' => $page,
         'data' => $data,
         'theme_path' => $path_hedley_general,
+        'backend_url' => $base_url,
+        'csrf_token' => drupal_get_token(\RestfulInterface::TOKEN_VALUE),
       ],
     ],
   ];

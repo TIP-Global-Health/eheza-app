@@ -8,7 +8,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Maybe.Extra exposing (isJust)
 import Pages.Components.View exposing (viewDemographicsSelection, viewDemographicsSelectionActionButton)
-import Pages.ScoreboardMenu.Model exposing (..)
+import Pages.ScoreboardMenu.Model exposing (Model, Msg(..))
 import Pages.Utils exposing (viewCustomLabel)
 import Translate exposing (translate)
 

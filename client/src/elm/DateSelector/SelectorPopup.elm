@@ -1,7 +1,7 @@
-module DateSelector.SelectorPopup exposing (..)
+module DateSelector.SelectorPopup exposing (viewCalendarPopup)
 
 import Date exposing (Date)
-import DateSelector.Model exposing (..)
+import DateSelector.Model exposing (DateSelectorConfig)
 import DateSelector.Selector
 import Html exposing (..)
 import Html.Attributes exposing (..)

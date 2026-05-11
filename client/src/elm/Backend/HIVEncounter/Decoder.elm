@@ -1,6 +1,6 @@
 module Backend.HIVEncounter.Decoder exposing (decodeHIVEncounter)
 
-import Backend.HIVEncounter.Model exposing (..)
+import Backend.HIVEncounter.Model exposing (HIVEncounter)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, bool, nullable, succeed)
 import Json.Decode.Pipeline exposing (optional, optionalAt, required, requiredAt)

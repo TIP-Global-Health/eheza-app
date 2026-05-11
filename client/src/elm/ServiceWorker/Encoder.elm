@@ -1,7 +1,7 @@
 module ServiceWorker.Encoder exposing (encodeOutgoingMsg)
 
-import Json.Encode exposing (..)
-import ServiceWorker.Model exposing (..)
+import Json.Encode exposing (Value, object, string)
+import ServiceWorker.Model exposing (OutgoingMsg(..))
 
 
 {-| Encodes a message in a way that our port can handle it.

@@ -13,10 +13,8 @@ import Backend.FamilyEncounterParticipant.Model
 import Backend.FamilyEncounterParticipant.Utils exposing (isDailyEncounterActive)
 import Backend.FamilyNutritionEncounter.Model
 import Backend.FamilyNutritionEncounter.Utils exposing (getFamilyNutritionEncountersForParticipant)
-import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Initiator(..))
-import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -27,8 +25,8 @@ import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> HealthCenterId -> PersonId -> Bool -> FamilyParticipantInitiator -> ModelIndexedDb -> Html App.Model.Msg
-view language currentDate selectedHealthCenter id isChw initiator db =
+view : Language -> NominalDate -> HealthCenterId -> PersonId -> FamilyParticipantInitiator -> ModelIndexedDb -> Html App.Model.Msg
+view language currentDate selectedHealthCenter id initiator db =
     let
         sessions =
             Dict.get id db.familyParticipantsByPerson
@@ -39,7 +37,7 @@ view language currentDate selectedHealthCenter id isChw initiator db =
         [ viewHeader language id initiator
         , div
             [ class "ui full segment" ]
-            [ viewWebData language (viewActions language currentDate selectedHealthCenter id isChw db) identity sessions
+            [ viewWebData language (viewActions language currentDate selectedHealthCenter id db) identity sessions
             ]
         ]
 
@@ -77,11 +75,10 @@ viewActions :
     -> NominalDate
     -> HealthCenterId
     -> PersonId
-    -> Bool
     -> ModelIndexedDb
     -> Dict FamilyEncounterParticipantId FamilyEncounterParticipant
     -> Html App.Model.Msg
-viewActions language currentDate selectedHealthCenter id isChw db sessions =
+viewActions language currentDate selectedHealthCenter id db sessions =
     div []
         [ p [ class "label-visit" ]
             [ text <|
@@ -89,7 +86,7 @@ viewActions language currentDate selectedHealthCenter id isChw db sessions =
                     Translate.FamilyEncounterSelectVisit
                         Backend.FamilyEncounterParticipant.Model.NutritionEncounter
             ]
-        , viewFamilyNutritionAction language currentDate selectedHealthCenter id isChw db sessions
+        , viewFamilyNutritionAction language currentDate selectedHealthCenter id db sessions
         ]
 
 
@@ -98,11 +95,10 @@ viewFamilyNutritionAction :
     -> NominalDate
     -> HealthCenterId
     -> PersonId
-    -> Bool
     -> ModelIndexedDb
     -> Dict FamilyEncounterParticipantId FamilyEncounterParticipant
     -> Html App.Model.Msg
-viewFamilyNutritionAction language currentDate selectedHealthCenter id isChw db sessions =
+viewFamilyNutritionAction language currentDate selectedHealthCenter id db sessions =
     let
         -- Person nutrition session.
         maybeSessionId =

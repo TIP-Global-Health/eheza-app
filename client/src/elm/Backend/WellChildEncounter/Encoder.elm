@@ -1,12 +1,13 @@
 module Backend.WellChildEncounter.Encoder exposing (encodeEncounterWarning, encodeWellChildEncounter, encodeWellChildEncounterType)
 
-import Backend.WellChildEncounter.Model exposing (..)
+import Backend.Measurement.Encoder exposing (encodeSkippedForm)
+import Backend.WellChildEncounter.Model exposing (EncounterNote(..), EncounterWarning(..), WellChildEncounter, WellChildEncounterType(..))
 import EverySet
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
-import Json.Encode exposing (..)
+import Json.Encode exposing (Value, bool, list, object, string)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid)
-import Utils.Json exposing (encodeIfSet)
+import Utils.Json exposing (encodeEverySet, encodeIfSet)
 
 
 {-| Encodes a `WellChildEncounter`.
@@ -31,6 +32,7 @@ encodeWellChildEncounter encounter =
                 EverySet.toList encounter.encounterWarnings
             )
       )
+    , ( "skipped_forms", encodeEverySet encodeSkippedForm encounter.skippedForms )
     , ( "deleted", bool encounter.deleted )
     , ( "type", string "well_child_encounter" )
     ]
