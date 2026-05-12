@@ -3,7 +3,7 @@ import { click, setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { syncAndWait } from './helpers/common';
-import { verifyFeatureGatesGroupEncounterButton } from './helpers/feature-flags';
+import { setFeatureFlag, verifyFeatureGatesGroupEncounterButton } from './helpers/feature-flags';
 import {
   navigateToChwGroupSession,
   createMotherOnAttendancePage,
@@ -56,13 +56,30 @@ test.describe('CHW: Group Nutrition Session', () => {
 
     // Verify FeatureNutritionGroup flag gates client UI + admin Reports surfaces.
     // (Keep group_education ON so the Group Assessment entry button on Clinical stays reachable.)
-    await verifyFeatureGatesGroupEncounterButton(page, 'nutrition_group', 'Child Nutrition', 'group_education', {
-      browser,
-      admin: {
-        sqDemographicsRows: ['PMTCT', 'FBF', 'Sorwathe', 'CBNP', 'ACHI'],
-        completionOptions: ['nutrition-group'],
-      },
-    });
+    //
+    // family_nutrition is dropped for this gate-check so the on/off cycle of
+    // nutrition_group exercises both new Stock Management gates in one pass:
+    //   - OFF phase (both flags off): SQ dropdown drops 'fbf-distribution'
+    //     entirely (visibleReportTypes gate, both contributing features off).
+    //   - ON phase (nutrition_group on, family_nutrition off): dropdown
+    //     reappears and the 3 FBF rows render
+    //     (visibleFbfDistributionCategories gate, FBF rows track
+    //     nutrition_group; Aheza rows correctly absent under family_nutrition).
+    try {
+      setFeatureFlag('family_nutrition', false);
+      await verifyFeatureGatesGroupEncounterButton(page, 'nutrition_group', 'Child Nutrition', 'group_education', {
+        browser,
+        admin: {
+          sqOptions: ['fbf-distribution'],
+          sqDemographicsRows: ['PMTCT', 'FBF', 'Sorwathe', 'CBNP', 'ACHI'],
+          sqFbfDistributionRows: ['fbf-child', 'fbf-mother', 'fbf-child-achi'],
+          completionOptions: ['nutrition-group'],
+        },
+      });
+    } finally {
+      setFeatureFlag('family_nutrition', true);
+      await syncAndWait(page);
+    }
 
     // 1. Navigate to CHW group session.
     await navigateToChwGroupSession(page);

@@ -20096,6 +20096,7 @@ var $author$project$Pages$Reports$Model$FbfDistributionFbfMother = {$: 'FbfDistr
 var $author$project$Pages$Reports$Model$allFbfDistributionCategories = _List_fromArray(
 	[$author$project$Pages$Reports$Model$FbfDistributionFbfChild, $author$project$Pages$Reports$Model$FbfDistributionFbfMother, $author$project$Pages$Reports$Model$FbfDistributionFbfChildAchi, $author$project$Pages$Reports$Model$FbfDistributionAhezaChild, $author$project$Pages$Reports$Model$FbfDistributionAhezaMother]);
 var $author$project$Pages$Reports$View$visibleFbfDistributionCategories = function (features) {
+	var nutritionGroupEnabled = A2($Gizra$elm_all_set$EverySet$member, $author$project$App$Types$FeatureNutritionGroup, features);
 	var familyNutritionEnabled = A2($Gizra$elm_all_set$EverySet$member, $author$project$App$Types$FeatureFamilyNutrition, features);
 	return A2(
 		$elm$core$List$filter,
@@ -20106,11 +20107,11 @@ var $author$project$Pages$Reports$View$visibleFbfDistributionCategories = functi
 				case 'FbfDistributionAhezaMother':
 					return familyNutritionEnabled;
 				case 'FbfDistributionFbfChild':
-					return true;
+					return nutritionGroupEnabled;
 				case 'FbfDistributionFbfChildAchi':
-					return true;
+					return nutritionGroupEnabled;
 				default:
-					return true;
+					return nutritionGroupEnabled;
 			}
 		},
 		$author$project$Pages$Reports$Model$allFbfDistributionCategories);
@@ -22903,7 +22904,7 @@ var $author$project$Pages$Reports$Utils$visibleReportTypes = function (features)
 				case 'ReportDemographics':
 					return true;
 				case 'ReportFBFDistribution':
-					return true;
+					return member($author$project$App$Types$FeatureNutritionGroup) || member($author$project$App$Types$FeatureFamilyNutrition);
 				case 'ReportNutrition':
 					return member($author$project$App$Types$FeatureWellChild) || (member($author$project$App$Types$FeatureNutritionIndividual) || (member($author$project$App$Types$FeatureNutritionGroup) || member($author$project$App$Types$FeatureFamilyNutrition)));
 				case 'ReportPeripartum':

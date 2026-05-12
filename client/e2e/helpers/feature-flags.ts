@@ -35,6 +35,15 @@ const ADMIN_REPORT_START_DATE = new Date(Date.UTC(2018, 0, 1));
 export interface AdminReportsExpectations {
   sqOptions?: string[];
   sqDemographicsRows?: string[];
+  /**
+   * FBF Distribution rows to assert by CSS class
+   * (`fbf-child` | `fbf-mother` | `fbf-child-achi` | `aheza-child` | `aheza-mother`).
+   *
+   * When the same call lists `fbf-distribution` in `sqOptions` and `phase` is
+   * `'hidden'` the report is unreachable, so the row assertion is skipped —
+   * the dropdown assertion already proves the rows are gone.
+   */
+  sqFbfDistributionRows?: string[];
   completionOptions?: string[];
 }
 
@@ -88,8 +97,15 @@ export async function assertAdminGates(
 ): Promise<void> {
   const sqOptions = expectations.sqOptions ?? [];
   const sqRows = expectations.sqDemographicsRows ?? [];
+  const sqFbfRows = expectations.sqFbfDistributionRows ?? [];
   const completionOptions = expectations.completionOptions ?? [];
-  const needsSQ = sqOptions.length > 0 || sqRows.length > 0;
+  // Only navigate into fbf-distribution when the dropdown still lists it.
+  // If sqOptions already asserts the option is hidden, the report is
+  // unreachable and the dropdown assertion subsumes the row check.
+  const fbfRowsReachable =
+    sqFbfRows.length > 0
+    && !(phase === 'hidden' && sqOptions.includes('fbf-distribution'));
+  const needsSQ = sqOptions.length > 0 || sqRows.length > 0 || fbfRowsReachable;
   const needsCompletion = completionOptions.length > 0;
 
   if (!needsSQ && !needsCompletion) {
@@ -134,6 +150,24 @@ export async function assertAdminGates(
             await expect(row, `Demographics row "${rowLabel}" absent`).toHaveCount(0);
           } else {
             await expect(row.first(), `Demographics row "${rowLabel}" visible`).toBeVisible();
+          }
+        }
+      }
+
+      if (fbfRowsReachable) {
+        await selectReportType(adminPage, 'fbf-distribution');
+        // Same wide-scope date-gating as the Demographics block above.
+        // setDateRange is idempotent so calling it again after the
+        // Demographics path is harmless.
+        await setDateRange(adminPage, ADMIN_REPORT_START_DATE, new Date());
+        for (const rowClass of sqFbfRows) {
+          const row = adminPage.locator(
+            `div.report.fbf-distribution div.row.${rowClass}`,
+          );
+          if (phase === 'hidden') {
+            await expect(row, `FBF row ".${rowClass}" absent`).toHaveCount(0);
+          } else {
+            await expect(row.first(), `FBF row ".${rowClass}" visible`).toBeVisible();
           }
         }
       }

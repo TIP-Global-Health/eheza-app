@@ -2900,14 +2900,19 @@ viewFBFDistributionReport language features limitDate scopeLabel records =
         ]
 
 
-{-| Aheza categories are family-nutrition-only, so they are dropped when the
-feature is disabled. FBF categories always show.
+{-| FBF categories are group-nutrition-only and Aheza categories are
+family-nutrition-only; each set drops out when its driving feature is off.
+The dropdown itself is hidden when both features are off — see
+`visibleReportTypes`.
 -}
 visibleFbfDistributionCategories : EverySet SiteFeature -> List FbfDistributionCategory
 visibleFbfDistributionCategories features =
     let
         familyNutritionEnabled =
             EverySet.member FeatureFamilyNutrition features
+
+        nutritionGroupEnabled =
+            EverySet.member FeatureNutritionGroup features
     in
     List.filter
         (\category ->
@@ -2919,13 +2924,13 @@ visibleFbfDistributionCategories features =
                     familyNutritionEnabled
 
                 FbfDistributionFbfChild ->
-                    True
+                    nutritionGroupEnabled
 
                 FbfDistributionFbfChildAchi ->
-                    True
+                    nutritionGroupEnabled
 
                 FbfDistributionFbfMother ->
-                    True
+                    nutritionGroupEnabled
         )
         allFbfDistributionCategories
 

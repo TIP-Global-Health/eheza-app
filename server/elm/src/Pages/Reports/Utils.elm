@@ -571,8 +571,13 @@ allVaccineTypes site =
 have a meaningful data domain on this deployment. Reports whose sole data
 source is feature-gated drop out when that feature is disabled.
 
-`ReportDemographics` and `ReportFBFDistribution` always show — they are
-multi-source and apply row-level filters internally.
+`ReportDemographics` always shows — it is multi-source and applies row-level
+filters internally.
+
+`ReportFBFDistribution` shows when at least one of its two contributing
+sources (`FeatureNutritionGroup` for FBF rows, `FeatureFamilyNutrition` for
+Aheza rows) is enabled; rows are filtered per feature inside
+`visibleFbfDistributionCategories`.
 
 `ReportNutrition` shows when at least one of its four contributing sources
 is enabled.
@@ -594,7 +599,7 @@ visibleReportTypes features =
                     True
 
                 ReportFBFDistribution ->
-                    True
+                    member FeatureNutritionGroup || member FeatureFamilyNutrition
 
                 ReportNutrition ->
                     member FeatureWellChild
