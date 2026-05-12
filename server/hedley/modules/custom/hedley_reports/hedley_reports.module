@@ -2256,7 +2256,7 @@ function hedley_reports_generate_results_data_node_title($report_variant, $scope
       break;
 
     default:
-      $suffix = 'Glodal';
+      $suffix = 'Global';
   }
 
   return "$prefix report data - $suffix";
