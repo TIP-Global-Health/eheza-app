@@ -1717,7 +1717,7 @@ function hedley_reports_build_statistical_queries_results_app($province = NULL, 
   $data['features'] = hedley_admin_get_enabled_features_string();
   $data['params'] = $params;
 
-  if (in_array($data['entity_type'], ['province', 'district', 'health-center'])) {
+  if (in_array($data['entity_type'], ['global', 'province', 'district', 'health-center'])) {
     // For large data sets, try loading additional data.
     $data['additional'] = hedley_reports_load_results_additional_data('statistical-query', $data['entity_type'], $province, $district, $health_center);
   }

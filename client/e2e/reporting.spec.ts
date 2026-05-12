@@ -10,6 +10,7 @@ import {
   processAdvancedQueue,
   recalculateLargeDatasets,
   navigateToHCReportsPage,
+  navigateToGlobalReportsPage,
   navigateToReportsMenu,
   selectReportType,
   setDateRange,
@@ -1883,6 +1884,81 @@ test.describe('Admin Reports', () => {
       await expect(
         page.locator('button.download-csv'),
         'FBF Distribution CSV download button should be visible',
+      ).toBeVisible();
+    });
+
+    // ── Phase 3c: Nutrition report at Global scope ──
+    //
+    // Global scope reads from the pre-aggregated Report Data node produced
+    // by recalculate-large-datasets.php (scope='global'). The Elm side
+    // treats EntityGlobal as a "wide scope" (Pages/Reports/Utils.elm
+    // isWideScope) and skips client-side computation, so all 8 tables
+    // come from the backend `additional.nutrition_report_data` JSON.
+    // Guards against regressions where the PHP gate excludes 'global'
+    // and the report renders empty.
+
+    await step('Verify Nutrition report at Global scope', async () => {
+      await navigateToGlobalReportsPage(page);
+      await selectReportType(page, 'nutrition');
+      await page.waitForTimeout(WAIT.pageNavigation);
+
+      await expect(
+        page.locator('div.report.nutrition'),
+        'Nutrition report container should be visible at Global scope',
+      ).toBeVisible();
+
+      console.log('\n=== NUTRITION (GLOBAL) ===');
+
+      const columnHeaders = await readNutritionColumnHeaders(page, 0);
+      console.log(`Columns (${columnHeaders.length}): ${columnHeaders.join(' | ')}`);
+      expect(
+        columnHeaders.length,
+        'Global Nutrition report should have at least one data column',
+      ).toBeGreaterThan(0);
+
+      const allNutritionTables = [
+        ...NUTRITION_ONE_VISIT_TABLES,
+        ...NUTRITION_TWO_VISIT_TABLES,
+      ];
+      let totalNonZeroCells = 0;
+      for (const { index, name } of allNutritionTables) {
+        const rows = await readNutritionTable(page, index);
+        expect(rows.length, `Global ${name}: should have 8 metric rows`).toBe(8);
+
+        const colCount = rows[0]?.values.length ?? 0;
+        expect(colCount, `Global ${name}: should have data columns`).toBeGreaterThan(0);
+
+        expect(
+          findNutritionMetric(rows, 'MAM'),
+          `Global ${name}: MAM row should be present`,
+        ).toBeDefined();
+        expect(
+          findNutritionMetric(rows, 'SAM'),
+          `Global ${name}: SAM row should be present`,
+        ).toBeDefined();
+
+        for (const row of rows) {
+          for (const v of row.values) {
+            if (v > 0) totalNonZeroCells++;
+          }
+        }
+      }
+
+      // Across all 8 tables × 8 rows × N columns, at least one cell must
+      // be non-zero. Test-created nutrition encounters (Phase 1) are
+      // backdated and recalculated into the global aggregate (Phase 2),
+      // so the matrix can never be entirely empty here. An all-zero
+      // matrix indicates the backend additional.nutrition_report_data
+      // payload is missing or malformed — exactly the regression this
+      // step guards against.
+      expect(
+        totalNonZeroCells,
+        'Global Nutrition report should have at least one non-zero cell across all tables',
+      ).toBeGreaterThan(0);
+
+      await expect(
+        page.locator('button.download-csv'),
+        'Nutrition CSV download button should be visible at Global scope',
       ).toBeVisible();
     });
 
