@@ -44,4 +44,14 @@ class HedleyRestfulBulkPhotos extends \RestfulBase implements \RestfulDataProvid
     throw new \RestfulServerConfigurationException('Not implemented yet.');
   }
 
+  /**
+   * Stub: returns empty container until implemented.
+   *
+   * Public so simpletest can exercise the assembly logic without going
+   * through HTTP routing / response streaming.
+   */
+  public function assembleContainer(array $urls) {
+    throw new \RestfulServerConfigurationException('Not implemented yet.');
+  }
+
 }

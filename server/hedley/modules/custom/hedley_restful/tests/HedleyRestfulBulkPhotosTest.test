@@ -1,0 +1,86 @@
+<?php
+
+/**
+ * @file
+ * Contains HedleyRestfulBulkPhotosTest.
+ */
+
+/**
+ * Tests the /api/bulk-photos REST endpoint.
+ *
+ * The endpoint accepts a list of styled-photo URLs and returns a custom
+ * binary container: 8-byte LE uint64 manifest length, then UTF-8 JSON
+ * manifest, then concatenated photo bytes. Each manifest item has a
+ * status (ok / missing / forbidden / error) and, for ok items, offset
+ * and length pointing into the binary section.
+ *
+ * Tests exercise the assembly logic directly via assembleContainer()
+ * rather than going through HTTP, so we don't have to manage device
+ * tokens or response streaming in the test.
+ */
+class HedleyRestfulBulkPhotosTest extends HedleyWebTestBase {
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function getInfo() {
+    return [
+      'name' => 'Bulk photo fetch endpoint',
+      'description' => 'POST /api/bulk-photos container format and per-item statuses.',
+      'group' => 'Hedley restful',
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setUp() {
+    parent::setUp(['hedley_restful']);
+  }
+
+  /**
+   * One valid styled-photo URL returns one ok item plus its bytes.
+   */
+  public function testSinglePhotoHappyPath() {
+    $handler = restful_get_restful_handler('bulk-photos');
+    $file = $this->saveTestImage();
+    $styled_url = image_style_url('person-photo', $file->uri);
+
+    $body = $handler->assembleContainer([$styled_url]);
+    $parsed = $this->parseContainer($body);
+
+    $this->assertEqual(1, count($parsed['manifest']['items']), 'Manifest has one item.');
+    $item = $parsed['manifest']['items'][0];
+    $this->assertEqual('ok', $item['status'], 'Status is ok.');
+    $this->assertEqual($styled_url, $item['url'], 'URL is echoed verbatim.');
+    $this->assertEqual(0, $item['offset'], 'Single-item offset is 0.');
+    $this->assertTrue($item['length'] > 0, 'Length is non-zero.');
+    $bytes = substr($parsed['binary'], $item['offset'], $item['length']);
+    $this->assertEqual($item['length'], strlen($bytes), 'Binary slice matches declared length.');
+  }
+
+  /**
+   * Save a managed file from one of simpletest's bundled images.
+   */
+  protected function saveTestImage() {
+    $files = $this->drupalGetTestFiles('image');
+    $source = reset($files);
+    return file_save_data(
+      file_get_contents($source->uri),
+      'public://bulk-photos-test-' . uniqid() . '.png',
+      FILE_EXISTS_REPLACE
+    );
+  }
+
+  /**
+   * Parse the 8-byte-length + JSON-manifest + binary container.
+   */
+  protected function parseContainer($body) {
+    $unpacked = unpack('P', substr($body, 0, 8));
+    $manifest_len = $unpacked[1];
+    $manifest = json_decode(substr($body, 8, $manifest_len), TRUE);
+    $binary = substr($body, 8 + $manifest_len);
+    return ['manifest' => $manifest, 'binary' => $binary];
+  }
+
+}
