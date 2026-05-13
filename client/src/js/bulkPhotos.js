@@ -73,8 +73,23 @@ self.bulkPhotos.handleBulkPhotoFetch = async function (params) {
   for (var i = 0; i < manifest.items.length; i++) {
     var item = manifest.items[i];
     if (item.status === 'ok') {
+      var offset = Number(item.offset);
+      var length = Number(item.length);
+      // Validate bounds before slicing. A malformed manifest from a
+      // buggy server (NaN, negative, or out-of-range offsets) would
+      // otherwise throw RangeError out of new Uint8Array and abort the
+      // batch unhandled. Treat any bad item as transient so attempts++
+      // bumps the row and we retry on the next cycle.
+      if (
+        !Number.isFinite(offset) || !Number.isFinite(length)
+        || offset < 0 || length < 0
+        || binStart + offset + length > buf.byteLength
+      ) {
+        results.push({ url: item.url, ok: false, terminal: false });
+        continue;
+      }
       var blob = new Blob(
-        [new Uint8Array(buf, binStart + item.offset, item.length)],
+        [new Uint8Array(buf, binStart + offset, length)],
         { type: item.mime || 'image/jpeg' }
       );
       var cacheKey = self.photoCache.stripAccessToken(item.url);

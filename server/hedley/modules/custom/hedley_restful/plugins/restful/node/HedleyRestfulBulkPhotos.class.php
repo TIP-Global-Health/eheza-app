@@ -88,18 +88,22 @@ class HedleyRestfulBulkPhotos extends \RestfulBase implements \RestfulDataProvid
         $items[] = ['url' => $url, 'status' => $resolved['status']];
         continue;
       }
-      $size = filesize($resolved['path']);
-      if ($size === FALSE) {
+      // Read bytes once and derive length from the actual read to avoid a
+      // filesize/read race (file disappears or perms change between the
+      // two calls -> mismatched manifest offsets).
+      $bytes = @file_get_contents($resolved['path']);
+      if ($bytes === FALSE) {
         $items[] = ['url' => $url, 'status' => 'error'];
         continue;
       }
+      $size = strlen($bytes);
       $items[] = [
         'url' => $url,
         'status' => 'ok',
         'offset' => $offset,
         'length' => $size,
         'mime' => $resolved['mime'],
-        '_path' => $resolved['path'],
+        '_bytes' => $bytes,
       ];
       $offset += $size;
     }
@@ -111,9 +115,12 @@ class HedleyRestfulBulkPhotos extends \RestfulBase implements \RestfulDataProvid
    *
    * Public so simpletests can exercise the container-assembly logic
    * without going through itok validation / image-style derivative
-   * generation (those depend on Drupal infrastructure that's awkward to
-   * exercise from a fresh test database). Each item has a 'status' and,
-   * for ok items, '_path', 'mime', 'offset', 'length'.
+   * generation (those depend on Drupal infrastructure that's awkward
+   * to exercise from a fresh test database). Each item has a 'status'
+   * and, for ok items, '_bytes', 'mime', 'offset', 'length'. Bytes are
+   * stored on the item up-front so manifest offsets and the binary
+   * section can never disagree (no second I/O between manifest
+   * construction and binary emission).
    *
    * @param array $items
    *   Items with statuses already determined.
@@ -124,15 +131,15 @@ class HedleyRestfulBulkPhotos extends \RestfulBase implements \RestfulDataProvid
   public function assembleFromItems(array $items) {
     $manifest_items = [];
     foreach ($items as $item) {
-      unset($item['_path']);
+      unset($item['_bytes']);
       $manifest_items[] = $item;
     }
     $manifest = json_encode(['items' => $manifest_items]);
 
     $output = pack('P', strlen($manifest)) . $manifest;
     foreach ($items as $item) {
-      if (isset($item['status']) && $item['status'] === 'ok' && isset($item['_path'])) {
-        $output .= file_get_contents($item['_path']);
+      if (isset($item['status'], $item['_bytes']) && $item['status'] === 'ok') {
+        $output .= $item['_bytes'];
       }
     }
     return $output;
@@ -156,12 +163,14 @@ class HedleyRestfulBulkPhotos extends \RestfulBase implements \RestfulDataProvid
    *   ['status' => string, 'path' => ?string, 'mime' => ?string].
    */
   public function resolveStyledUrlToPath($url) {
+    // parse_url returns FALSE for severely malformed URLs; guard
+    // explicitly so we don't index into a non-array.
     $parsed = parse_url($url);
     // Capture style, file scheme, and relative path. Drupal 7 emits two
     // styled-URL shapes depending on the source file's scheme:
     // - /sites/<site>/files/styles/<style>/public/<path> for public source.
     // - /system/files/styles/<style>/<public|private>/<path> otherwise.
-    if (empty($parsed['path']) || !preg_match('#/files/styles/([^/]+)/(public|private)/(.+)$#', $parsed['path'], $m)) {
+    if (!is_array($parsed) || empty($parsed['path']) || !preg_match('#/files/styles/([^/]+)/(public|private)/(.+)$#', $parsed['path'], $m)) {
       return ['status' => 'error'];
     }
     $style_name = $m[1];

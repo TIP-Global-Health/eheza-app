@@ -46,8 +46,8 @@ class HedleyRestfulBulkPhotosTest extends HedleyWebTestBase {
    */
   public function testSingleOkItemHappyPath() {
     $handler = restful_get_restful_handler('bulk-photos');
-    $path = $this->saveTestImagePath();
-    $size = filesize($path);
+    $bytes = $this->loadTestImageBytes();
+    $size = strlen($bytes);
     $items = [
       [
         'url' => 'https://example.test/styled/foo.png?itok=AAA',
@@ -55,7 +55,7 @@ class HedleyRestfulBulkPhotosTest extends HedleyWebTestBase {
         'offset' => 0,
         'length' => $size,
         'mime' => 'image/png',
-        '_path' => $path,
+        '_bytes' => $bytes,
       ],
     ];
 
@@ -69,7 +69,7 @@ class HedleyRestfulBulkPhotosTest extends HedleyWebTestBase {
     $this->assertEqual(0, $manifest_item['offset']);
     $this->assertEqual($size, $manifest_item['length']);
     $this->assertEqual('image/png', $manifest_item['mime']);
-    $this->assertFalse(isset($manifest_item['_path']), '_path is stripped from public manifest.');
+    $this->assertFalse(isset($manifest_item['_bytes']), '_bytes is stripped from public manifest.');
     $this->assertEqual($size, strlen($parsed['binary']), 'Binary section length matches.');
   }
 
@@ -98,10 +98,10 @@ class HedleyRestfulBulkPhotosTest extends HedleyWebTestBase {
    */
   public function testMixedBatchOrderingAndOffsets() {
     $handler = restful_get_restful_handler('bulk-photos');
-    $path_a = $this->saveTestImagePath();
-    $path_c = $this->saveTestImagePath();
-    $size_a = filesize($path_a);
-    $size_c = filesize($path_c);
+    $bytes_a = $this->loadTestImageBytes();
+    $bytes_c = $this->loadTestImageBytes();
+    $size_a = strlen($bytes_a);
+    $size_c = strlen($bytes_c);
 
     $items = [
       [
@@ -110,7 +110,7 @@ class HedleyRestfulBulkPhotosTest extends HedleyWebTestBase {
         'offset' => 0,
         'length' => $size_a,
         'mime' => 'image/png',
-        '_path' => $path_a,
+        '_bytes' => $bytes_a,
       ],
       ['url' => 'https://example.test/b', 'status' => 'error'],
       [
@@ -119,7 +119,7 @@ class HedleyRestfulBulkPhotosTest extends HedleyWebTestBase {
         'offset' => $size_a,
         'length' => $size_c,
         'mime' => 'image/png',
-        '_path' => $path_c,
+        '_bytes' => $bytes_c,
       ],
       ['url' => 'https://example.test/d', 'status' => 'missing'],
     ];
@@ -138,10 +138,12 @@ class HedleyRestfulBulkPhotosTest extends HedleyWebTestBase {
     $this->assertEqual($size_a + $size_c, strlen($parsed['binary']));
 
     // Each ok item's bytes can be sliced out by its offset/length.
-    $bytes_a = substr($parsed['binary'], $manifest_items[0]['offset'], $manifest_items[0]['length']);
-    $bytes_c = substr($parsed['binary'], $manifest_items[2]['offset'], $manifest_items[2]['length']);
-    $this->assertEqual($size_a, strlen($bytes_a));
-    $this->assertEqual($size_c, strlen($bytes_c));
+    $slice_a = substr($parsed['binary'], $manifest_items[0]['offset'], $manifest_items[0]['length']);
+    $slice_c = substr($parsed['binary'], $manifest_items[2]['offset'], $manifest_items[2]['length']);
+    $this->assertEqual($size_a, strlen($slice_a));
+    $this->assertEqual($size_c, strlen($slice_c));
+    $this->assertEqual($bytes_a, $slice_a, 'Slice [0] matches source bytes.');
+    $this->assertEqual($bytes_c, $slice_c, 'Slice [2] matches source bytes.');
   }
 
   /**
@@ -162,17 +164,12 @@ class HedleyRestfulBulkPhotosTest extends HedleyWebTestBase {
   }
 
   /**
-   * Save a test image to public:// and return its on-disk path.
+   * Load bytes of a simpletest-bundled image.
    */
-  protected function saveTestImagePath() {
+  protected function loadTestImageBytes() {
     $files = $this->drupalGetTestFiles('image');
     $source = reset($files);
-    $file = file_save_data(
-      file_get_contents($source->uri),
-      'public://bulk-photos-test-' . uniqid() . '.png',
-      FILE_EXISTS_REPLACE
-    );
-    return drupal_realpath($file->uri);
+    return file_get_contents($source->uri);
   }
 
   /**
