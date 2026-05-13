@@ -398,7 +398,11 @@ export async function verifyFeatureGatesGroupEncounterButton(
     await click(page.locator('.link-back .icon-back'), page);
     await page.locator('div.page-pincode').waitFor({ timeout: 10000 });
   } finally {
+    // Restore both flags so cross-spec state doesn't leak. The helper
+    // forces partnerFlag ON for navigation, so we restore it alongside
+    // flagName to the project's default "all-on" state.
     setFeatureFlag(flagName, true);
+    setFeatureFlag(partnerFlag, true);
   }
 }
 

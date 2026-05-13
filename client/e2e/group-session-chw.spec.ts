@@ -58,7 +58,8 @@ test.describe('CHW: Group Nutrition Session', () => {
     // (Keep group_education ON so the Group Assessment entry button on Clinical stays reachable.)
     //
     // family_nutrition is dropped for this gate-check so the on/off cycle of
-    // nutrition_group exercises both new Stock Management gates in one pass:
+    // nutrition_group exercises both admin Reports gates for FBF data
+    // in one pass:
     //   - OFF phase (both flags off): SQ dropdown drops 'fbf-distribution'
     //     entirely (visibleReportTypes gate, both contributing features off).
     //   - ON phase (nutrition_group on, family_nutrition off): dropdown

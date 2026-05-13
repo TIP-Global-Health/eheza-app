@@ -63,7 +63,8 @@ test.describe('Nurse: FBF Group Nutrition Session', () => {
     // (On nurse the gate is unambiguous: group_education isn't part of the compound for non-CHW.)
     //
     // family_nutrition is dropped for this gate-check so the on/off cycle of
-    // nutrition_group exercises both new Stock Management gates in one pass:
+    // nutrition_group exercises both admin Reports gates for FBF data
+    // in one pass:
     //   - OFF phase (both flags off): SQ dropdown drops 'fbf-distribution'
     //     entirely (visibleReportTypes gate, both contributing features off).
     //   - ON phase (nutrition_group on, family_nutrition off): dropdown
