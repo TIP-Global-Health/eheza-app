@@ -2035,9 +2035,6 @@ update currentTime activePage dbVersion device msg model =
                                 )
                                 requestedRows
 
-                        batchSize =
-                            List.length requestedRows
-
                         downloadPhotosStatus =
                             case model.downloadPhotosStatus of
                                 DownloadPhotosInProcess (DownloadPhotosBatch record) ->
@@ -2045,7 +2042,7 @@ update currentTime activePage dbVersion device msg model =
                                         (DownloadPhotosBatch
                                             { record
                                                 | backendRemoteData = RemoteData.Success ()
-                                                , batchCounter = record.batchCounter - batchSize
+                                                , batchCounter = record.batchCounter - List.length requestedRows
                                             }
                                         )
 
