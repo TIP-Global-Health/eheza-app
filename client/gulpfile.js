@@ -456,6 +456,7 @@ gulp.task('pwa:dev', gulp.series(
         'lifecycle.js',
         'nodes.js',
         'statistics.js',
+        'photoCache.js',
         'photos.js',
       ]
     });
