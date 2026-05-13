@@ -581,12 +581,22 @@ update currentTime activePage dbVersion device msg model =
                         []
 
                 DownloadPhotosInProcess _ ->
+                    let
+                        -- Prefer the bulk endpoint unless we've already
+                        -- proven it unavailable this session.
+                        nextMsg =
+                            if model.bulkPhotosEndpointAvailable == Just False then
+                                FetchFromIndexDbDeferredPhoto
+
+                            else
+                                FetchFromIndexDbDeferredPhotoBatch
+                    in
                     update
                         currentTime
                         activePage
                         dbVersion
                         device
-                        FetchFromIndexDbDeferredPhoto
+                        nextMsg
                         model
 
         RevisionIdAuthorityAdd uuid ->
@@ -962,6 +972,57 @@ update currentTime activePage dbVersion device msg model =
                             dbVersion
                             device
                             (QueryIndexDb IndexDbQueryDeferredPhoto)
+                            { model | downloadPhotosStatus = DownloadPhotosInProcess (DownloadPhotosAll recordUpdated) }
+
+                _ ->
+                    noChange
+
+        FetchFromIndexDbDeferredPhotoBatch ->
+            -- Bulk-fetch counterpart of FetchFromIndexDbDeferredPhoto. Mirrors
+            -- the loading-state tracking so determineDownloadPhotosStatus can
+            -- drive the same outer state machine.
+            case model.downloadPhotosStatus of
+                DownloadPhotosInProcess DownloadPhotosNone ->
+                    noChange
+
+                DownloadPhotosInProcess (DownloadPhotosBatch record) ->
+                    if RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData then
+                        noChange
+
+                    else
+                        let
+                            recordUpdated =
+                                { record
+                                    | indexDbRemoteData = RemoteData.Loading
+                                    , backendRemoteData = RemoteData.NotAsked
+                                }
+                        in
+                        update
+                            currentTime
+                            activePage
+                            dbVersion
+                            device
+                            (QueryIndexDb (IndexDbQueryDeferredPhotoBatch (min 100 record.batchCounter)))
+                            { model | downloadPhotosStatus = DownloadPhotosInProcess (DownloadPhotosBatch recordUpdated) }
+
+                DownloadPhotosInProcess (DownloadPhotosAll record) ->
+                    if RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData then
+                        noChange
+
+                    else
+                        let
+                            recordUpdated =
+                                { record
+                                    | indexDbRemoteData = RemoteData.Loading
+                                    , backendRemoteData = RemoteData.NotAsked
+                                }
+                        in
+                        update
+                            currentTime
+                            activePage
+                            dbVersion
+                            device
+                            (QueryIndexDb (IndexDbQueryDeferredPhotoBatch 100))
                             { model | downloadPhotosStatus = DownloadPhotosInProcess (DownloadPhotosAll recordUpdated) }
 
                 _ ->
@@ -1791,6 +1852,220 @@ update currentTime activePage dbVersion device msg model =
                     -- Satisfy the compiler.
                     noChange
 
+        BackendDeferredPhotoBatchFetch rows ->
+            if List.isEmpty rows then
+                -- Drained: mirror BackendDeferredPhotoFetch Nothing.
+                let
+                    downloadPhotosStatus =
+                        case model.downloadPhotosStatus of
+                            DownloadPhotosInProcess (DownloadPhotosBatch record) ->
+                                DownloadPhotosInProcess (DownloadPhotosBatch { record | indexDbRemoteData = RemoteData.Success Nothing })
+
+                            DownloadPhotosInProcess (DownloadPhotosAll record) ->
+                                DownloadPhotosInProcess (DownloadPhotosAll { record | indexDbRemoteData = RemoteData.Success Nothing })
+
+                            _ ->
+                                model.downloadPhotosStatus
+                in
+                SubModelReturn
+                    (SyncManager.Utils.determineDownloadPhotosStatus { model | downloadPhotosStatus = downloadPhotosStatus })
+                    Cmd.none
+                    noError
+                    []
+
+            else
+                let
+                    downloadPhotosStatus =
+                        case model.downloadPhotosStatus of
+                            DownloadPhotosInProcess (DownloadPhotosBatch record) ->
+                                DownloadPhotosInProcess
+                                    (DownloadPhotosBatch
+                                        { record
+                                            | backendRemoteData = RemoteData.Loading
+                                            , indexDbRemoteData = RemoteData.Success (List.head rows)
+                                        }
+                                    )
+
+                            DownloadPhotosInProcess (DownloadPhotosAll record) ->
+                                DownloadPhotosInProcess
+                                    (DownloadPhotosAll
+                                        { record
+                                            | backendRemoteData = RemoteData.Loading
+                                            , indexDbRemoteData = RemoteData.Success (List.head rows)
+                                        }
+                                    )
+
+                            _ ->
+                                model.downloadPhotosStatus
+
+                    modelUpdated =
+                        { model
+                            | downloadPhotosStatus = downloadPhotosStatus
+                            , bulkPhotosInFlight = rows
+                        }
+
+                    urls =
+                        List.map .photo rows
+                in
+                SubModelReturn
+                    modelUpdated
+                    (bulkPhotoFetch { urls = urls, accessToken = device.accessToken })
+                    noError
+                    []
+
+        BackendDeferredPhotoBatchFetchHandle requestedRows result ->
+            case result of
+                Err 404 ->
+                    -- Endpoint not deployed on this server; switch to the
+                    -- single-photo fallback for the rest of the session.
+                    -- We do not bump per-row attempts; the next cycle will
+                    -- pick the same rows via the single-photo path.
+                    let
+                        downloadPhotosStatus =
+                            case model.downloadPhotosStatus of
+                                DownloadPhotosInProcess (DownloadPhotosBatch record) ->
+                                    DownloadPhotosInProcess (DownloadPhotosBatch { record | backendRemoteData = RemoteData.NotAsked, indexDbRemoteData = RemoteData.NotAsked })
+
+                                DownloadPhotosInProcess (DownloadPhotosAll record) ->
+                                    DownloadPhotosInProcess (DownloadPhotosAll { record | backendRemoteData = RemoteData.NotAsked, indexDbRemoteData = RemoteData.NotAsked })
+
+                                _ ->
+                                    model.downloadPhotosStatus
+                    in
+                    SubModelReturn
+                        { model
+                            | downloadPhotosStatus = downloadPhotosStatus
+                            , bulkPhotosEndpointAvailable = Just False
+                            , bulkPhotosConsecutiveBatchErrors = 0
+                            , bulkPhotosInFlight = []
+                        }
+                        Cmd.none
+                        noError
+                        []
+
+                Err _ ->
+                    -- Whole-batch transient failure. Don't mutate rows; the
+                    -- same rows will be re-queried next cycle. Track a small
+                    -- consecutive-failure budget so a poisonous batch can't
+                    -- deadlock — after 3 in a row, disable bulk mode for the
+                    -- rest of the session.
+                    let
+                        nextConsecutive =
+                            model.bulkPhotosConsecutiveBatchErrors + 1
+
+                        ( disabled, consecutive ) =
+                            if nextConsecutive >= 3 then
+                                ( Just False, 0 )
+
+                            else
+                                ( model.bulkPhotosEndpointAvailable, nextConsecutive )
+
+                        downloadPhotosStatus =
+                            case model.downloadPhotosStatus of
+                                DownloadPhotosInProcess (DownloadPhotosBatch record) ->
+                                    DownloadPhotosInProcess (DownloadPhotosBatch { record | backendRemoteData = RemoteData.NotAsked, indexDbRemoteData = RemoteData.NotAsked })
+
+                                DownloadPhotosInProcess (DownloadPhotosAll record) ->
+                                    DownloadPhotosInProcess (DownloadPhotosAll { record | backendRemoteData = RemoteData.NotAsked, indexDbRemoteData = RemoteData.NotAsked })
+
+                                _ ->
+                                    model.downloadPhotosStatus
+                    in
+                    SubModelReturn
+                        { model
+                            | downloadPhotosStatus = downloadPhotosStatus
+                            , bulkPhotosEndpointAvailable = disabled
+                            , bulkPhotosConsecutiveBatchErrors = consecutive
+                            , bulkPhotosInFlight = []
+                        }
+                        Cmd.none
+                        noError
+                        []
+
+                Ok results ->
+                    let
+                        outcomeByUrl =
+                            List.foldl (\r d -> Dict.insert r.url r d) Dict.empty results
+
+                        -- Per-row reconciliation: emit a delete for ok/terminal
+                        -- rows and an attempts++ for transient failures.
+                        cmds =
+                            List.map
+                                (\row ->
+                                    case Dict.get row.photo outcomeByUrl of
+                                        Just outcome ->
+                                            if outcome.ok || outcome.terminal then
+                                                askFromIndexDb
+                                                    { queryType = "IndexDbQueryRemoveDeferredPhoto"
+                                                    , data = Just row.uuid
+                                                    }
+
+                                            else
+                                                askFromIndexDb
+                                                    { queryType = "IndexDbQueryUpdateDeferredPhotoAttempts"
+                                                    , data =
+                                                        Just
+                                                            (Json.Encode.object
+                                                                [ ( "uuid", Json.Encode.string row.uuid )
+                                                                , ( "attempts", Json.Encode.int (row.attempts + 1) )
+                                                                ]
+                                                                |> Json.Encode.encode 0
+                                                            )
+                                                    }
+
+                                        Nothing ->
+                                            -- Server omitted this URL from the
+                                            -- manifest. Treat as transient.
+                                            askFromIndexDb
+                                                { queryType = "IndexDbQueryUpdateDeferredPhotoAttempts"
+                                                , data =
+                                                    Just
+                                                        (Json.Encode.object
+                                                            [ ( "uuid", Json.Encode.string row.uuid )
+                                                            , ( "attempts", Json.Encode.int (row.attempts + 1) )
+                                                            ]
+                                                            |> Json.Encode.encode 0
+                                                        )
+                                                }
+                                )
+                                requestedRows
+
+                        batchSize =
+                            List.length requestedRows
+
+                        downloadPhotosStatus =
+                            case model.downloadPhotosStatus of
+                                DownloadPhotosInProcess (DownloadPhotosBatch record) ->
+                                    DownloadPhotosInProcess
+                                        (DownloadPhotosBatch
+                                            { record
+                                                | backendRemoteData = RemoteData.Success ()
+                                                , batchCounter = record.batchCounter - batchSize
+                                            }
+                                        )
+
+                                DownloadPhotosInProcess (DownloadPhotosAll record) ->
+                                    DownloadPhotosInProcess
+                                        (DownloadPhotosAll
+                                            { record | backendRemoteData = RemoteData.Success () }
+                                        )
+
+                                _ ->
+                                    model.downloadPhotosStatus
+                    in
+                    SubModelReturn
+                        (SyncManager.Utils.determineDownloadPhotosStatus
+                            { model
+                                | downloadPhotosStatus = downloadPhotosStatus
+                                , bulkPhotosEndpointAvailable = Just True
+                                , bulkPhotosConsecutiveBatchErrors = 0
+                                , bulkPhotosInFlight = []
+                            }
+                        )
+                        (Cmd.batch cmds)
+                        noError
+                        []
+
         QueryIndexDb indexDbQueryType ->
             let
                 record =
@@ -1837,6 +2112,17 @@ update currentTime activePage dbVersion device msg model =
                         IndexDbQueryDeferredPhoto ->
                             { queryType = "IndexDbQueryDeferredPhoto"
                             , data = Nothing
+                            }
+
+                        IndexDbQueryDeferredPhotoBatch batchSize ->
+                            let
+                                encodedData =
+                                    Json.Encode.object
+                                        [ ( "batchSize", Json.Encode.int batchSize ) ]
+                                        |> Json.Encode.encode 0
+                            in
+                            { queryType = "IndexDbQueryDeferredPhotoBatch"
+                            , data = Just encodedData
                             }
 
                         IndexDbQueryRemoveDeferredPhoto uuid ->
@@ -1941,6 +2227,15 @@ update currentTime activePage dbVersion device msg model =
                                 dbVersion
                                 device
                                 (BackendDeferredPhotoFetch result)
+                                model
+
+                        IndexDbQueryDeferredPhotoBatchResult batchResult ->
+                            update
+                                currentTime
+                                activePage
+                                dbVersion
+                                device
+                                (BackendDeferredPhotoBatchFetch batchResult.rows)
                                 model
 
                         IndexDbQueryGetTotalEntriesToUploadResult result ->
@@ -2174,6 +2469,15 @@ subscriptions model =
     Sub.batch <|
         [ getFromIndexDb QueryIndexDbHandle
         , savedAtIndexedDb SavedAtIndexDbHandle
+        , bulkPhotoFetchHandle
+            (\value ->
+                let
+                    decoded =
+                        Json.Decode.decodeValue SyncManager.Decoder.decodeBulkPhotoFetchHandle value
+                            |> Result.withDefault (Err 0)
+                in
+                BackendDeferredPhotoBatchFetchHandle model.bulkPhotosInFlight decoded
+            )
         ]
             ++ backendFetchCmds
 
@@ -2236,3 +2540,15 @@ port getFromIndexDb : (Value -> msg) -> Sub msg
 {-| Reports that save to IndexDB operation was successful.
 -}
 port savedAtIndexedDb : (Value -> msg) -> Sub msg
+
+
+{-| Ask JS to POST a batch of styled-photo URLs to /api/bulk-photos and
+populate the "photos" Cache. The reply arrives via `bulkPhotoFetchHandle`.
+-}
+port bulkPhotoFetch : { urls : List String, accessToken : String } -> Cmd msg
+
+
+{-| Per-URL outcomes of the bulk fetch, or a whole-batch error code.
+Decoded by `SyncManager.Decoder.decodeBulkPhotoFetchHandle`.
+-}
+port bulkPhotoFetchHandle : (Value -> msg) -> Sub msg
