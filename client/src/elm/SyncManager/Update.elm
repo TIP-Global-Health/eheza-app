@@ -1909,7 +1909,12 @@ update currentTime activePage dbVersion device msg model =
                 in
                 SubModelReturn
                     modelUpdated
-                    (bulkPhotoFetch { urls = urls, accessToken = device.accessToken })
+                    (bulkPhotoFetch
+                        { urls = urls
+                        , accessToken = device.accessToken
+                        , backendUrl = device.backendUrl
+                        }
+                    )
                     noError
                     []
 
@@ -2545,7 +2550,7 @@ port savedAtIndexedDb : (Value -> msg) -> Sub msg
 {-| Ask JS to POST a batch of styled-photo URLs to /api/bulk-photos and
 populate the "photos" Cache. The reply arrives via `bulkPhotoFetchHandle`.
 -}
-port bulkPhotoFetch : { urls : List String, accessToken : String } -> Cmd msg
+port bulkPhotoFetch : { urls : List String, accessToken : String, backendUrl : String } -> Cmd msg
 
 
 {-| Per-URL outcomes of the bulk fetch, or a whole-batch error code.

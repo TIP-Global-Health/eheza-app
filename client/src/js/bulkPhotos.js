@@ -26,13 +26,14 @@ self.bulkPhotos = self.bulkPhotos || {};
 self.bulkPhotos.handleBulkPhotoFetch = async function (params) {
   var urls = params && params.urls;
   var accessToken = params && params.accessToken;
+  var backendUrl = (params && params.backendUrl) || '';
   if (!Array.isArray(urls)) {
     return { batchError: 0 };
   }
 
   var response;
   try {
-    response = await fetch('/api/bulk-photos?access_token=' + encodeURIComponent(accessToken || ''), {
+    response = await fetch(backendUrl + '/api/bulk-photos?access_token=' + encodeURIComponent(accessToken || ''), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ photos: urls }),

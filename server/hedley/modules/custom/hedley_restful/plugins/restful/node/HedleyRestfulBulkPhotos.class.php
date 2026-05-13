@@ -157,11 +157,16 @@ class HedleyRestfulBulkPhotos extends \RestfulBase implements \RestfulDataProvid
    */
   public function resolveStyledUrlToPath($url) {
     $parsed = parse_url($url);
-    if (empty($parsed['path']) || !preg_match('#/files/styles/([^/]+)/public/(.+)$#', $parsed['path'], $m)) {
+    // Capture style, file scheme, and relative path. Drupal 7 emits two
+    // styled-URL shapes depending on the source file's scheme:
+    // - /sites/<site>/files/styles/<style>/public/<path> for public source.
+    // - /system/files/styles/<style>/<public|private>/<path> otherwise.
+    if (empty($parsed['path']) || !preg_match('#/files/styles/([^/]+)/(public|private)/(.+)$#', $parsed['path'], $m)) {
       return ['status' => 'error'];
     }
     $style_name = $m[1];
-    $source_relative = $m[2];
+    $scheme = $m[2];
+    $source_relative = $m[3];
 
     $style = image_style_load($style_name);
     if (!$style) {
@@ -173,7 +178,7 @@ class HedleyRestfulBulkPhotos extends \RestfulBase implements \RestfulDataProvid
       parse_str($parsed['query'], $query);
     }
     $itok = isset($query['itok']) ? $query['itok'] : '';
-    $source_uri = 'public://' . $source_relative;
+    $source_uri = $scheme . '://' . $source_relative;
     $expected = image_style_path_token($style_name, $source_uri);
     if (!$itok || !hash_equals($expected, $itok)) {
       return ['status' => 'error'];
