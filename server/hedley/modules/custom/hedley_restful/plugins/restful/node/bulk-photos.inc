@@ -7,7 +7,7 @@
 
 $plugin = array(
   'label' => t('Bulk Photo Fetch'),
-  'resource' => 'sync/photos-bulk',
+  'resource' => 'bulk-photos',
   'name' => 'bulk-photos',
   'description' => t('Return many styled photos in a single binary response.'),
   'class' => 'HedleyRestfulBulkPhotos',

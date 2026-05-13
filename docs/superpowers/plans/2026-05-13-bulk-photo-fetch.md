@@ -4,7 +4,7 @@
 
 **Goal:** Replace the one-at-a-time deferred-photo download loop with a bulk fetch that drains the `deferredPhotos` IndexedDB store ~100 photos per HTTP request, populating the existing `"photos"` Cache Storage so the service worker and rendering layer stay untouched. Preserve the single-photo path as a fallback for older servers.
 
-**Architecture:** New Drupal REST endpoint `POST /api/sync/photos-bulk` accepts a list of styled-photo URLs and returns a custom binary container (8-byte manifest length + JSON manifest + concatenated photo bytes). A new JS module parses the container and writes each photo into the `"photos"` Cache via `cache.put`, using the same `access_token`-stripping rule the service worker uses. Elm's `SyncManager` orchestrates: queries N rows from `deferredPhotos`, fires the bulk fetch port, reconciles per-photo outcomes back into IndexedDB, falls back to the existing single-photo path on repeated failure or 404.
+**Architecture:** New Drupal REST endpoint `POST /api/bulk-photos` accepts a list of styled-photo URLs and returns a custom binary container (8-byte manifest length + JSON manifest + concatenated photo bytes). A new JS module parses the container and writes each photo into the `"photos"` Cache via `cache.put`, using the same `access_token`-stripping rule the service worker uses. Elm's `SyncManager` orchestrates: queries N rows from `deferredPhotos`, fires the bulk fetch port, reconciles per-photo outcomes back into IndexedDB, falls back to the existing single-photo path on repeated failure or 404.
 
 **Tech Stack:** Drupal 7 / PHP (RESTful module + RestfulBase plugin), Elm 0.19.1 (`SyncManager`), browser JS (Dexie for IndexedDB, Cache API), Playwright for E2E.
 
@@ -65,7 +65,7 @@ Save to `server/hedley/modules/custom/hedley_restful/plugins/restful/node/bulk-p
 
 $plugin = array(
   'label' => t('Bulk Photo Fetch'),
-  'resource' => 'sync/photos-bulk',
+  'resource' => 'bulk-photos',
   'name' => 'bulk-photos',
   'description' => t('Return many styled photos in a single binary response.'),
   'class' => 'HedleyRestfulBulkPhotos',
@@ -160,7 +160,7 @@ git add server/hedley/modules/custom/hedley_restful/plugins/restful/node/bulk-ph
 git commit -m "$(cat <<'EOF'
 Add bulk-photos REST endpoint stub
 
-Registers POST /api/sync/photos-bulk via ctools plugin; returns 501 until
+Registers POST /api/bulk-photos via ctools plugin; returns 501 until
 implemented in next commits. Stubbed first so subsequent simpletests have
 a route to hit.
 
@@ -206,7 +206,7 @@ class HedleyRestfulBulkPhotosTest extends HedleyWebTestBase {
   public static function getInfo() {
     return [
       'name' => 'Bulk photo fetch endpoint',
-      'description' => 'Tests POST /api/sync/photos-bulk container format and per-item statuses.',
+      'description' => 'Tests POST /api/bulk-photos container format and per-item statuses.',
       'group' => 'Hedley restful',
     ];
   }
@@ -236,7 +236,7 @@ class HedleyRestfulBulkPhotosTest extends HedleyWebTestBase {
    * POST helper. Returns ['status' => int, 'body' => string].
    */
   protected function postBulkPhotos($token, array $urls) {
-    $url = url('api/sync/photos-bulk', ['absolute' => TRUE, 'query' => ['access_token' => $token]]);
+    $url = url('api/bulk-photos', ['absolute' => TRUE, 'query' => ['access_token' => $token]]);
     $ch = curl_init($url);
     curl_setopt_array($ch, [
       CURLOPT_POST => TRUE,
@@ -729,7 +729,7 @@ Save to `client/src/js/bulkPhotos.js`:
 
 /**
  * Main-thread bulk photo fetcher. Posts a batch of styled-photo URLs to
- * /api/sync/photos-bulk, parses the binary container response, populates
+ * /api/bulk-photos, parses the binary container response, populates
  * the "photos" Cache Storage with each ok blob, and returns per-URL
  * outcomes for the caller (Elm SyncManager) to reconcile against the
  * deferredPhotos IndexedDB store.
@@ -752,7 +752,7 @@ self.bulkPhotos.handleBulkPhotoFetch = async function (params) {
 
   let response;
   try {
-    response = await fetch('/api/sync/photos-bulk?access_token=' + encodeURIComponent(accessToken), {
+    response = await fetch('/api/bulk-photos?access_token=' + encodeURIComponent(accessToken), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ photos: urls }),
@@ -1349,7 +1349,7 @@ Expected: no new issues. Fix anything reported before continuing.
 
 - [ ] **Step 9: Manual smoke test**
 
-Start `ddev gulp` if not running. Open the app in a browser, trigger a sync, watch DevTools → Network for a `POST /api/sync/photos-bulk` request. Verify response is `200 application/octet-stream`. Open Application → Cache Storage → `photos` cache; expect entries to appear in batches rather than one at a time.
+Start `ddev gulp` if not running. Open the app in a browser, trigger a sync, watch DevTools → Network for a `POST /api/bulk-photos` request. Verify response is `200 application/octet-stream`. Open Application → Cache Storage → `photos` cache; expect entries to appear in batches rather than one at a time.
 
 If the request fails or the cache stays empty:
 - Check DevTools Console for Elm port errors.
@@ -1413,7 +1413,7 @@ test.describe('Bulk photo fetch', () => {
     // 2. Observe bulk endpoint requests.
     const bulkRequests: string[] = [];
     page.on('request', (req) => {
-      if (req.url().includes('/api/sync/photos-bulk')) {
+      if (req.url().includes('/api/bulk-photos')) {
         bulkRequests.push(req.method() + ' ' + req.url());
       }
     });
@@ -1443,8 +1443,8 @@ test.describe('Bulk photo fetch', () => {
   });
 
   test('client falls back to single-photo fetch when bulk endpoint returns 404', async ({ page }) => {
-    // Route /api/sync/photos-bulk to 404 so the client trips the fallback.
-    await page.route('**/api/sync/photos-bulk*', (route) => route.fulfill({ status: 404 }));
+    // Route /api/bulk-photos to 404 so the client trips the fallback.
+    await page.route('**/api/bulk-photos*', (route) => route.fulfill({ status: 404 }));
 
     const singlePhotoRequests: string[] = [];
     page.on('request', (req) => {

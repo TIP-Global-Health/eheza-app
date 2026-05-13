@@ -102,7 +102,7 @@ SyncManager (Elm)
    │  (port) BulkPhotoFetchRequest { urls, accessToken }
    ▼
 JS bridge (client/src/js/bulkPhotos.js)
-   │  POST /api/sync/photos-bulk
+   │  POST /api/bulk-photos
    ▼
 hedley_restful endpoint (new REST plugin)
    │  itok-validate, fpassthru each file, return container
@@ -123,7 +123,12 @@ owns IndexedDB (Dexie) and Cache Storage access.
 
 ## Server endpoint contract
 
-**Route:** `POST /api/sync/photos-bulk?access_token=<TOKEN>`
+**Route:** `POST /api/bulk-photos?access_token=<TOKEN>`
+
+(Originally drafted under `/api/sync/…`, but `HedleyRestfulSync`'s
+`controllersInfo()` matches `^.*$` for any path under `/api/sync/`, which
+silently intercepts the request. All other hedley_restful endpoints use
+flat names under `/api/` — we follow that convention.)
 
 Registered as a new REST plugin under
 `server/hedley/modules/custom/hedley_restful/plugins/restful/`,
@@ -215,7 +220,7 @@ to keep peak memory under control at batch=200.
 
 ```js
 async function handleBulkPhotoFetch({ urls, accessToken }) {
-  const res = await fetch(`/api/sync/photos-bulk?access_token=${accessToken}`, {
+  const res = await fetch(`/api/bulk-photos?access_token=${accessToken}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ photos: urls }),
