@@ -109,10 +109,10 @@ not in the model. No field split is needed.
 
 ## The changes
 
-One change, in one file: `SyncManager/Utils.elm`. The post-sync photo-download
-kick is intentionally kept (see below).
+Two changes, in two files. The post-sync photo-download kick is intentionally
+kept (see below).
 
-### Remove the guard — `SyncManager/Utils.elm`
+### 1. Remove the guard — `SyncManager/Utils.elm`
 
 In `determineDownloadPhotosStatus`, remove the `case model.syncStatus of
 SyncIdle -> <inner> ; _ -> DownloadPhotosIdle` wrapper. The inner photo
@@ -121,6 +121,27 @@ regardless of what the data lane is doing.
 
 The outer `syncCycleRotate` check (`model.syncCycle == SyncCycleOn` — "is sync
 enabled at all") is untouched. When sync is paused, both lanes still pause.
+
+### 2. Kick the photo lane when deferred-photo rows land — `SyncManager/Update.elm`
+
+Removing the guard lets the photo lane *progress* during sync, but it does not
+*bootstrap* it: the lane leaves `DownloadPhotosIdle` only on a
+`BackendFetchPhotos` timer tick, and that timer's idle interval comes from
+`getDownloadPhotosSpeedForSubscriptions`, which returns `syncSpeed.idle`
+verbatim. `syncSpeed.idle` defaults to **10 minutes** (`client/src/js/app.js`,
+`getSyncSpeed`). So with only the guard removed, photos still took *minutes* to
+start — the lane sat idle waiting out that 10-minute tick. (Confirmed by
+testing: photos did start *during* sync, but minutes late.)
+
+The fix: in the `SavedAtIndexDbHandle` handler, add a case for
+`IndexDbSaveResultTableDeferredPhotos` that dispatches `TryDownloadingPhotos`.
+When the data lane writes deferred-photo rows, the JS side confirms the save
+via the `savedAtIndexedDb` port; that confirmation now kicks the photo lane out
+of `DownloadPhotosIdle` immediately — race-free (the rows have already landed),
+and through a single point that covers every deferred-photo write path.
+
+Cold-start latency drops from up to ~10 minutes to roughly one fast
+(`cycle`-interval) timer tick plus an IndexedDB round-trip.
 
 ### The post-sync kick is kept, not removed
 
@@ -152,9 +173,10 @@ was dropped:
   `DownloadPhotosIdle`), the kick is a clean `noChange` no-op — no double-start,
   no breakage.
 
-So `SchedulePhotosDownload`, `TryDownloadingPhotos`, both dispatch sites, and
-the `debouncer` model field are all left untouched. The guard removal above is
-the only code change.
+So `SchedulePhotosDownload`, the `debouncer` model field, and the post-sync
+dispatch sites are all left untouched. `TryDownloadingPhotos` is also kept — it
+simply gains a second caller (the deferred-photos save handler in change 2
+above).
 
 ## Architecture and data flow
 
@@ -177,6 +199,9 @@ Photo lane:     [bulk fetch][bulk fetch][bulk fetch] ...  (runs concurrently,
                                                            from batch ~1 onward)
 ```
 
+- The photo lane is kicked out of idle the moment deferred-photo rows are saved
+  (change 2), so "from batch ~1 onward" is real — it does not wait out the
+  photo lane's slow (~10-minute) idle timer.
 - Photo download also now runs during the *upload* phases of a cycle
   (`SyncUploadGeneral`, `SyncUploadAuthority`, etc.), not just downloads — a
   direct and intended consequence of removing the guard.
@@ -233,7 +258,8 @@ network throttling set to **Slow 3G**, against a large health center, confirm:
 1. The data lane still progresses and `syncStatus` reaches `SyncIdle` — the
    sync completes, it does not hang.
 2. Bulk-photo requests appear in the Network tab **interleaved** with sync
-   requests, starting early in the entity download — not only after it
+   requests, starting *promptly* (within seconds of the first entity batch that
+   carries photos) — not minutes late, and not only after the entity download
    finishes.
 3. No hang or stall in either lane.
 4. The `>45s`-sync page refresh still fires.

@@ -4,7 +4,7 @@
 
 **Goal:** Let the SyncManager photo-download lane run concurrently with the data-download lane, so deferred photos start downloading from the first entity batches instead of waiting for the entire ~500K-entity sync to settle.
 
-**Architecture:** The `SyncManager` already has two independent timer-driven lanes (`BackendFetchMain` for data, `BackendFetchPhotos` for photos). A single guard in `determineDownloadPhotosStatus` pins the photo lane to idle whenever the data lane is active. This plan removes that guard — a single change to one function. The two lanes share no mutable model state, so no other changes are needed.
+**Architecture:** The `SyncManager` already has two independent timer-driven lanes (`BackendFetchMain` for data, `BackendFetchPhotos` for photos). Two changes: (1) remove the guard in `determineDownloadPhotosStatus` that pins the photo lane to idle while the data lane is active; (2) kick the photo lane out of idle when deferred-photo rows land in IndexedDB, so it does not wait out its slow (10-minute default) idle timer. The two lanes share no mutable model state.
 
 The post-sync photo-download kick (`SchedulePhotosDownload` → debounced `TryDownloadingPhotos`) is **intentionally kept** — see "Design note" below.
 
@@ -36,16 +36,17 @@ An earlier draft of this plan removed `SchedulePhotosDownload` / `TryDownloading
 
   If the photo lane is in process (`downloadPhotosStatus` is anything but `DownloadPhotosIdle`), the kick is a clean `noChange` no-op — no double-start, no breakage.
 
-So `SchedulePhotosDownload`, `TryDownloadingPhotos`, both dispatch sites, and the `debouncer` field are all left untouched. The only code change in this plan is the guard removal (Task 1).
+So `SchedulePhotosDownload`, the `debouncer` field, and the post-sync dispatch sites are left untouched. `TryDownloadingPhotos` is kept too — Task 2 gives it a second caller (the deferred-photos save handler).
 
 ---
 
 ## File Structure
 
 - `client/src/elm/SyncManager/Utils.elm` — **modify.** `determineDownloadPhotosStatus` loses the `case model.syncStatus of …` guard wrapper.
-- `client/src/elm/SyncManager/Test.elm` — **create.** First unit test for `SyncManager`; pins the guard-removal behaviour. Follows the repo's co-located `*/Test.elm` pattern (e.g. `App/Test.elm`).
+- `client/src/elm/SyncManager/Update.elm` — **modify.** `SavedAtIndexDbHandle` gains a case for `IndexDbSaveResultTableDeferredPhotos` that dispatches `TryDownloadingPhotos`.
+- `client/src/elm/SyncManager/Test.elm` — **create.** First unit tests for `SyncManager` — the guard-removal behaviour and the deferred-photos kick wiring. Follows the repo's co-located `*/Test.elm` pattern (e.g. `App/Test.elm`).
 
-`SyncManager/Model.elm` and `SyncManager/Update.elm` are **not** touched.
+`SyncManager/Model.elm` is **not** touched.
 
 ---
 
@@ -293,13 +294,112 @@ git commit -m "Remove sync-active guard so photo lane runs in parallel" # + body
 
 ---
 
-## Task 2: Full baseline lint + test verification
+## Task 2: Kick the photo lane when deferred-photo rows land in IndexedDB
+
+**Status: DONE** — committed as `233812bee`.
+
+**Files:**
+- Modify: `client/src/elm/SyncManager/Update.elm` (handler `SavedAtIndexDbHandle`)
+- Test: `client/src/elm/SyncManager/Test.elm`
+
+### Context
+
+Task 1 lets the photo lane *progress* during sync, but it does not *bootstrap* it. The lane only leaves `DownloadPhotosIdle` on a `BackendFetchPhotos` timer tick, and that timer's idle interval is `getDownloadPhotosSpeedForSubscriptions`, which returns `syncSpeed.idle` verbatim. `syncSpeed.idle` defaults to **10 minutes** (`client/src/js/app.js`, `getSyncSpeed`). So after Task 1 alone, photos still took *minutes* to start during a sync — confirmed by manual testing (photos started during sync, but minutes late).
+
+The fix: deferred-photo rows are written via `sendSyncedDataToIndexDb {table = "DeferredPhotos", ...}`; the JS side confirms the save through the `savedAtIndexedDb` port, which Elm receives as `SavedAtIndexDbHandle` carrying an `IndexDbSaveResult` whose `table` is `IndexDbSaveResultTableDeferredPhotos`. That case currently falls through to `_ -> noChange`. Adding an explicit branch that dispatches `TryDownloadingPhotos` kicks the photo lane out of idle the moment the rows have landed — race-free, and through a single point that covers every deferred-photo write path.
+
+- [x] **Step 1: Add the failing test**
+
+Append a third test to `client/src/elm/SyncManager/Test.elm`, plus the imports and `testDevice` fixture it needs. New imports: `Device.Model exposing (Device)`, `Json.Encode`, `Pages.Page exposing (Page(..))`, `SyncManager.Update`, `Time`, and `Msg(..)` added to the `SyncManager.Model` exposing list. New fixture:
+
+```elm
+testDevice : Device
+testDevice =
+    { accessToken = ""
+    , refreshToken = ""
+    , backendUrl = ""
+    , deviceId = Nothing
+    }
+```
+
+The test drives `SyncManager.Update.update` with a `SavedAtIndexDbHandle` message carrying a successful `DeferredPhotos` save result and asserts the photo lane has left `DownloadPhotosIdle`:
+
+```elm
+        , test "SavedAtIndexDbHandle for a successful DeferredPhotos save kicks the photo lane out of idle" <|
+            \() ->
+                let
+                    saveResult =
+                        Json.Encode.object
+                            [ ( "table", Json.Encode.string "DeferredPhotos" )
+                            , ( "status", Json.Encode.string "Success" )
+                            , ( "timestamp", Json.Encode.string "" )
+                            ]
+                in
+                SyncManager.Update.update
+                    (Time.millisToPosix 0)
+                    DevicePage
+                    0
+                    testDevice
+                    (SavedAtIndexDbHandle saveResult)
+                    { testModel
+                        | downloadPhotosStatus = DownloadPhotosIdle
+                        , syncCycle = SyncCycleOn
+                    }
+                    |> .model
+                    |> .downloadPhotosStatus
+                    |> Expect.notEqual DownloadPhotosIdle
+```
+
+- [x] **Step 2: Run the test to verify it fails**
+
+`cd client && npx elm-test src/elm/SyncManager/Test.elm` — the new test FAILS (`SavedAtIndexDbHandle` for `DeferredPhotos` hits `_ -> noChange`, so the lane stays `DownloadPhotosIdle`); the other two PASS.
+
+- [x] **Step 3: Add the `IndexDbSaveResultTableDeferredPhotos` case**
+
+In `SavedAtIndexDbHandle` (`SyncManager/Update.elm`), between the `IndexDbSaveResultTableAutority` and `IndexDbSaveResultTableGeneral` branches, add:
+
+```elm
+                                IndexDbSaveResultTableDeferredPhotos ->
+                                    -- Deferred-photo rows have just landed in IndexedDB.
+                                    -- Kick the photo lane so it starts draining them now
+                                    -- rather than waiting out its idle timer.
+                                    update
+                                        currentTime
+                                        activePage
+                                        dbVersion
+                                        device
+                                        TryDownloadingPhotos
+                                        model
+```
+
+The `_ -> noChange` now covers only `IndexDbSaveResultTableAuthorityStats`.
+
+- [x] **Step 4: Run the test to verify it passes**
+
+`cd client && npx elm-test src/elm/SyncManager/Test.elm` — all 3 tests PASS.
+
+- [x] **Step 5: elm-format + full compile**
+
+`elm-format --validate` on the touched files (clean), then `elm make src/elm/Main.elm --output=/dev/null` (the fix touches `Update.elm`) — compiles, exit 0.
+
+- [x] **Step 6: Commit**
+
+```bash
+git add client/src/elm/SyncManager/Update.elm client/src/elm/SyncManager/Test.elm
+git commit -m "Kick photo lane when deferred-photo rows land in IndexedDB" # + body, Issue #1743, [ci skip]
+```
+
+---
+
+## Task 3: Full baseline lint + test verification
+
+**Status: DONE.** elm-format clean for the touched files (the only files `elm-format --validate client/src/` flags are pre-existing generated/config noise — `src/generated/**`, `Config.Deploy.elm` — untouched by this branch). `elm-review` clean. `elm-test` 3/3. Full `elm make` compiles.
 
 **Files:** none modified (verification only; commit only if `elm-format` reformats something).
 
 ### Context
 
-Task 1 ran targeted `elm-format` and test checks. This task runs the full baseline the spec calls for, to catch anything the targeted checks missed.
+Tasks 1 and 2 ran targeted `elm-format` and test checks. This task runs the full baseline the spec calls for, to catch anything the targeted checks missed.
 
 - [ ] **Step 1: Validate formatting across the whole source tree**
 
@@ -319,7 +419,7 @@ Per the repo's known caveat, clear the stale cache first. Run from the repo root
 rm -rf client/elm-stuff && cd client && elm-review
 ```
 
-Expected: `I found no errors!`. Note: `SchedulePhotosDownload` and `TryDownloadingPhotos` are intentionally retained and still referenced, so there is no unused-constructor concern.
+Expected: `I found no errors!`. Note: `SchedulePhotosDownload` and `TryDownloadingPhotos` are intentionally retained and still referenced, so there is no unused-constructor concern. Local-env caveat: on a dev machine with a gitignored `Config.Deploy.elm` and/or a stale `src/generated/generated.bak/` directory present, `elm-review` aborts with a "several modules named X" global error — CI never sees those files. To run elm-review locally, temporarily move those artifacts aside and restore them afterwards.
 
 - [ ] **Step 3: Run the SyncManager unit tests**
 
@@ -361,7 +461,7 @@ If Step 1 produced no changes, skip this step — do not create an empty commit.
 
 ---
 
-## Task 3: Manual throttled-network verification
+## Task 4: Manual throttled-network verification
 
 **Files:** none modified (manual verification; documented here so it is not skipped).
 
@@ -406,7 +506,7 @@ If all checks pass, the feature is verified — note this in the PR description.
 
 ## Self-Review Notes
 
-- **Spec coverage:** Task 1 covers the guard removal (spec §The changes). Task 2 covers the automated baseline (spec §Testing). Task 3 covers the manual throttled-network test (spec §Testing, the load-bearing verification). Branching is done — branch `parallel-photo-download` exists off `bulk-photo-fetch` with the spec and plan committed.
-- **Post-sync kick kept by design:** an earlier draft removed `SchedulePhotosDownload` / `TryDownloadingPhotos`; that was dropped on review — the kick is the tested mechanism that starts photos after a fast small-HC sync, and `TryDownloadingPhotos` already no-ops when the photo lane is in process. See "Design note" above. The plan's only code change is Task 1's guard removal.
+- **Spec coverage:** Task 1 covers the guard removal and Task 2 the deferred-photos kick (spec §The changes). Task 3 covers the automated baseline; Task 4 the manual throttled-network test, the load-bearing verification (spec §Testing). Branching is done — branch `parallel-photo-download` off `bulk-photo-fetch`, spec + plan committed; PR #1744 open.
+- **Post-sync kick kept by design:** an earlier draft removed `SchedulePhotosDownload` / `TryDownloadingPhotos`; that was dropped on review — the kick is the tested mechanism that starts photos after a fast small-HC sync, and `TryDownloadingPhotos` already no-ops when the photo lane is in process. See "Design note" above. `TryDownloadingPhotos` also gains a second caller in Task 2 (the deferred-photos save handler).
 - **No Model.elm field change:** the spec's earliest draft proposed splitting `downloadRequestTime`; investigation confirmed the photo lane never touches that field (it tracks in-flight state via `backendRemoteData` inside `downloadPhotosStatus`), so no field split is needed. The spec was corrected accordingly.
-- **`Issue #1741`** is used in commit messages per the repo convention of linking issues without `Closes`/`Fixes`. Confirm 1741 is the correct issue for this work; if a different issue tracks the parallel-download work, substitute it.
+- **Issue linking:** the issue for this work is **#1743** (used by the Task 2 commit and linked from PR #1744). The earlier guard-removal commits reference `#1741` — a placeholder carried from the `bulk-photo-fetch` branch context before #1743 existed. Per the repo convention, issues are linked with `Issue #N.`, never `Closes`/`Fixes`.
