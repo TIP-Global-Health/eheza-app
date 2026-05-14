@@ -80,11 +80,18 @@ instead of waiting for the whole entity sync to finish.
 
 ## Approach
 
-Make the photo lane fully independent of the data lane by removing the single
-guard that couples them, and eliminating the one piece of mutable state the two
-lanes currently share. Three surgical changes across three files; no new
-machinery — the timers, the photo state machine, and the photo speed/back-off
-function all already exist and work. We are un-gating proven code.
+Make the photo lane run concurrently with the data lane by removing the single
+guard that couples them. No new machinery — the two timers, the photo state
+machine, and the photo speed/back-off function all already exist and work. We
+are un-gating proven code.
+
+The two lanes turn out to share **no mutable model state**. Investigation
+confirmed `downloadRequestTime` (the timeout clock) is used only by the data
+lane — `BackendAuthorityFetch` and `BackendGeneralFetch`. The photo lane tracks
+its in-flight request via `backendRemoteData` inside the `downloadPhotosStatus`
+record, which is entirely separate. Elm's runtime also processes `update` calls
+one at a time, so the only contention is at runtime (bandwidth + main thread),
+not in the model. No field split is needed.
 
 ### Rejected alternatives
 
@@ -97,56 +104,59 @@ function all already exist and work. We are un-gating proven code.
   if field measurement shows data sync is hurt too much.
 - **Extract photo lane into its own sub-module.** Rejected as contrary to the
   "simplest change" goal and higher-risk for the slow-device regression.
-- **Keep the shared `downloadRequestTime` field.** Rejected — it is a genuine
-  concurrency bug once the lanes run together (see "The changes").
 
 ## The changes
 
-### `SyncManager/Utils.elm`
+Two changes, across three files (the second change spans `Model.elm` and
+`Update.elm` because removing a `Msg` constructor touches both).
+
+### 1. Remove the guard — `SyncManager/Utils.elm`
 
 In `determineDownloadPhotosStatus`, remove the `case model.syncStatus of
 SyncIdle -> <inner> ; _ -> DownloadPhotosIdle` wrapper. The inner photo
-state-machine logic runs unconditionally.
+state-machine logic runs unconditionally, so the photo lane progresses
+regardless of what the data lane is doing.
 
 The outer `syncCycleRotate` check (`model.syncCycle == SyncCycleOn` — "is sync
 enabled at all") is untouched. When sync is paused, both lanes still pause.
 
-### `SyncManager/Model.elm`
+### 2. Remove `SchedulePhotosDownload` and `TryDownloadingPhotos` — `SyncManager/Model.elm` + `SyncManager/Update.elm`
 
-Add `photosRequestTime : Time.Posix` to `Model`, initialised to
-`Time.millisToPosix 0` in `emptyModel`. The existing `downloadRequestTime`
-remains the data lane's timeout clock.
+With the photo lane running continuously off its own timer, the debounced
+"kick" that scheduled photo download after a sync cycle settled is redundant.
 
-Rationale: today both lanes read and write the single `model.downloadRequestTime`
-field for "has my in-flight request timed out?" (data lane in `BackendAuthorityFetch`;
-photo lane in the deferred-photo fetch path). If the lanes run concurrently,
-each lane's request resets the other lane's timeout clock — timeout detection
-becomes incoherent. Splitting the field gives each lane its own clock.
+`SchedulePhotosDownload` debounces a `TryDownloadingPhotos` message;
+`TryDownloadingPhotos` is dispatched *only* from the `SchedulePhotosDownload`
+handler. So removing `SchedulePhotosDownload` orphans `TryDownloadingPhotos` —
+both go.
 
-### `SyncManager/Update.elm`
+- `SyncManager/Model.elm` — remove the `SchedulePhotosDownload` and
+  `TryDownloadingPhotos` constructors from the `Msg` type.
+- `SyncManager/Update.elm` — remove the `SchedulePhotosDownload` handler, the
+  `TryDownloadingPhotos` handler, and the two `SchedulePhotosDownload` dispatch
+  sites. Each dispatch site currently sends
+  `[ SchedulePhotosDownload, QueryIndexDb IndexDbQueryGetTotalEntriesToUpload ]`;
+  after the change each sends `[ QueryIndexDb IndexDbQueryGetTotalEntriesToUpload ]`.
+- `BackendFetchPhotos` stays — it is still dispatched by the photo-lane timer
+  subscription. `SchedulePageRefresh`, `RefreshPage`, and the `>45s`-sync branch
+  that triggers the refresh are left exactly as-is. The `debouncer` model field
+  stays — it is still used by `SchedulePageRefresh`.
 
-- The photo lane's timeout check and its write of the request timestamp switch
-  from `downloadRequestTime` to `photosRequestTime`. The data lane keeps
-  `downloadRequestTime`.
-- Remove the `SchedulePhotosDownload` message, its handler, and its dispatch
-  sites. With the photo lane running continuously off its own timer, the
-  debounced "kick" is redundant. The post-sync `else` branch (sync settled,
-  took ≤45s) keeps only `QueryIndexDb IndexDbQueryGetTotalEntriesToUpload`.
-- `SchedulePageRefresh` and the `>45s`-sync branch that triggers it are left
-  exactly as-is.
-
-The implementation plan will enumerate the exact line locations; at design time
-there are two `SchedulePhotosDownload` dispatch sites plus the message and its
-handler.
+Elm compiles fine with unused `Msg` constructors, but `elm-review`'s
+`NoUnused.CustomTypeConstructors` rule flags them — which is why the orphaned
+`TryDownloadingPhotos` must be removed in the same change. The implementation
+plan enumerates the exact line locations.
 
 ## Architecture and data flow
 
 After the change, the two lanes are fully independent — each has its own timer,
-its own state field (`syncStatus` / `downloadPhotosStatus`), its own timeout
-clock (`downloadRequestTime` / `photosRequestTime`), and its own speed/back-off
-function. They never coordinate. The `deferredPhotos` IndexedDB table remains
-the implicit producer→consumer queue: the data lane writes photo-URL rows as
-entity batches land, the photo lane drains them.
+its own state field (`syncStatus` / `downloadPhotosStatus`), its own in-flight
+tracking (the data lane's `downloadRequestTime` timeout clock; the photo lane's
+`backendRemoteData` inside `downloadPhotosStatus`), and its own speed/back-off
+function. They never coordinate and share no mutable model state. The
+`deferredPhotos` IndexedDB table remains the implicit producer→consumer queue:
+the data lane writes photo-URL rows as entity batches land, the photo lane
+drains them.
 
 On a large-HC initial sync:
 
@@ -172,9 +182,13 @@ Photo lane:     [bulk fetch][bulk fetch][bulk fetch] ...  (runs concurrently,
   `getSyncSpeedForSubscriptions` and `getDownloadPhotosSpeedForSubscriptions`
   both slow their own timer on a `Failure`. Concurrent failures in the two
   lanes do not interfere.
-- Splitting `downloadRequestTime` makes timeout detection independent: a stuck
-  photo request no longer resets the data lane's timeout clock, and vice versa.
-- After this change there is no shared mutable state between the two lanes.
+- In-flight tracking is already per-lane: the data lane uses
+  `downloadRequestTime` (a timeout clock); the photo lane uses
+  `backendRemoteData` inside `downloadPhotosStatus`. Neither touches the other.
+- There is no shared mutable model state between the two lanes, so removing the
+  guard introduces no data-level race. Elm processes `update` calls one at a
+  time; the only contention is at runtime (bandwidth + main thread), which is
+  the accepted full-tilt trade-off.
 
 ## Branching and integration
 
@@ -218,15 +232,13 @@ network throttling set to **Slow 3G**, against a large health center, confirm:
 
 ## Things to verify during implementation
 
-1. Enumerate every read and write of `downloadRequestTime` in
-   `SyncManager/Update.elm` and confirm each is correctly assigned to the data
-   lane (`downloadRequestTime`) or the photo lane (`photosRequestTime`) —
-   including the `requestTimestamp` helper near the top of `update`.
-2. Confirm `determineDownloadPhotosStatus` has no other implicit dependency on
+1. Confirm `determineDownloadPhotosStatus` has no implicit dependency on
    `syncStatus` beyond the guard being removed.
-3. Confirm removing `SchedulePhotosDownload` leaves no dangling references
-   (message constructor, handler, dispatch sites, and any decoder/test usage).
-4. Confirm the photo lane running during data-lane *upload* phases does not
+2. Confirm removing `SchedulePhotosDownload` and `TryDownloadingPhotos` leaves
+   no dangling references — both `Msg` constructors, both handlers, the two
+   dispatch sites. The compiler catches references to a removed constructor;
+   `elm-review` catches a constructor that is defined but never used.
+3. Confirm the photo lane running during data-lane *upload* phases does not
    collide with the photo *upload* path — they use different IndexedDB tables,
    but verify under the manual test.
 
