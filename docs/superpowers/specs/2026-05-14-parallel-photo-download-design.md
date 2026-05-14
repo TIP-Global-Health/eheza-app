@@ -77,6 +77,8 @@ instead of waiting for the whole entity sync to finish.
 - **Changes to the bulk-photo fetch mechanism itself**, the upload-photo path,
   or entity metadata sync.
 - **Removing the post-long-sync page refresh.** Kept as-is (see below).
+- **Removing the post-sync photo-download kick.** `SchedulePhotosDownload` /
+  `TryDownloadingPhotos` are intentionally kept — see "The changes".
 
 ## Approach
 
@@ -107,10 +109,10 @@ not in the model. No field split is needed.
 
 ## The changes
 
-Two changes, across three files (the second change spans `Model.elm` and
-`Update.elm` because removing a `Msg` constructor touches both).
+One change, in one file: `SyncManager/Utils.elm`. The post-sync photo-download
+kick is intentionally kept (see below).
 
-### 1. Remove the guard — `SyncManager/Utils.elm`
+### Remove the guard — `SyncManager/Utils.elm`
 
 In `determineDownloadPhotosStatus`, remove the `case model.syncStatus of
 SyncIdle -> <inner> ; _ -> DownloadPhotosIdle` wrapper. The inner photo
@@ -120,32 +122,39 @@ regardless of what the data lane is doing.
 The outer `syncCycleRotate` check (`model.syncCycle == SyncCycleOn` — "is sync
 enabled at all") is untouched. When sync is paused, both lanes still pause.
 
-### 2. Remove `SchedulePhotosDownload` and `TryDownloadingPhotos` — `SyncManager/Model.elm` + `SyncManager/Update.elm`
+### The post-sync kick is kept, not removed
 
-With the photo lane running continuously off its own timer, the debounced
-"kick" that scheduled photo download after a sync cycle settled is redundant.
+`SchedulePhotosDownload` debounces a `TryDownloadingPhotos` message to kick
+photo download ~15s after a sync cycle settles. An earlier draft of this design
+removed it as "redundant" once the photo lane runs continuously. That removal
+was dropped:
 
-`SchedulePhotosDownload` debounces a `TryDownloadingPhotos` message;
-`TryDownloadingPhotos` is dispatched *only* from the `SchedulePhotosDownload`
-handler. So removing `SchedulePhotosDownload` orphans `TryDownloadingPhotos` —
-both go.
+- **Small HCs are the common case.** Their sync settles fast, and the post-sync
+  kick is the well-tested mechanism that gets photos going. Keeping it
+  preserves the proven behaviour for the common path.
+- **The "already running" concern is already handled.** The worry with keeping
+  the kick is that it could fire while the photo lane is *already running* (now
+  possible, since the lanes run in parallel). The existing `TryDownloadingPhotos`
+  handler already guards this:
 
-- `SyncManager/Model.elm` — remove the `SchedulePhotosDownload` and
-  `TryDownloadingPhotos` constructors from the `Msg` type.
-- `SyncManager/Update.elm` — remove the `SchedulePhotosDownload` handler, the
-  `TryDownloadingPhotos` handler, and the two `SchedulePhotosDownload` dispatch
-  sites. Each dispatch site currently sends
-  `[ SchedulePhotosDownload, QueryIndexDb IndexDbQueryGetTotalEntriesToUpload ]`;
-  after the change each sends `[ QueryIndexDb IndexDbQueryGetTotalEntriesToUpload ]`.
-- `BackendFetchPhotos` stays — it is still dispatched by the photo-lane timer
-  subscription. `SchedulePageRefresh`, `RefreshPage`, and the `>45s`-sync branch
-  that triggers the refresh are left exactly as-is. The `debouncer` model field
-  stays — it is still used by `SchedulePageRefresh`.
+  ```elm
+        TryDownloadingPhotos ->
+            case model.downloadPhotosStatus of
+                DownloadPhotosIdle ->
+                    update ... BackendFetchPhotos model
 
-Elm compiles fine with unused `Msg` constructors, but `elm-review`'s
-`NoUnused.CustomTypeConstructors` rule flags them — which is why the orphaned
-`TryDownloadingPhotos` must be removed in the same change. The implementation
-plan enumerates the exact line locations.
+                _ ->
+                    -- Sync is already in progress.
+                    noChange
+  ```
+
+  If the photo lane is in process (`downloadPhotosStatus` is anything but
+  `DownloadPhotosIdle`), the kick is a clean `noChange` no-op — no double-start,
+  no breakage.
+
+So `SchedulePhotosDownload`, `TryDownloadingPhotos`, both dispatch sites, and
+the `debouncer` model field are all left untouched. The guard removal above is
+the only code change.
 
 ## Architecture and data flow
 
@@ -229,15 +238,18 @@ network throttling set to **Slow 3G**, against a large health center, confirm:
 3. No hang or stall in either lane.
 4. The `>45s`-sync page refresh still fires.
 5. The photo lane resumes draining `deferredPhotos` after that refresh.
+6. On a *small* HC (fast sync), the post-sync `SchedulePhotosDownload` kick
+   firing while the photo lane may already be running causes no double-fetch,
+   error, or stall — it is absorbed cleanly by `TryDownloadingPhotos`' guard.
 
 ## Things to verify during implementation
 
 1. Confirm `determineDownloadPhotosStatus` has no implicit dependency on
    `syncStatus` beyond the guard being removed.
-2. Confirm removing `SchedulePhotosDownload` and `TryDownloadingPhotos` leaves
-   no dangling references — both `Msg` constructors, both handlers, the two
-   dispatch sites. The compiler catches references to a removed constructor;
-   `elm-review` catches a constructor that is defined but never used.
+2. Confirm the post-sync kick is a safe no-op when the photo lane is already
+   running — `TryDownloadingPhotos` should `noChange` whenever
+   `downloadPhotosStatus /= DownloadPhotosIdle`. Verified by code inspection and
+   exercised in the manual throttled-network test on a small HC.
 3. Confirm the photo lane running during data-lane *upload* phases does not
    collide with the photo *upload* path — they use different IndexedDB tables,
    but verify under the manual test.
