@@ -1,21 +1,27 @@
 module SyncManager.Test exposing (all)
 
+import Device.Model exposing (Device)
 import EverySet
 import Expect
+import Json.Encode
+import Pages.Page exposing (Page(..))
 import RemoteData
 import SyncManager.Model
     exposing
         ( DownloadPhotosStatus(..)
         , Flags
         , Model
+        , Msg(..)
         , Site(..)
         , SyncCycle(..)
         , SyncInfoStatus(..)
         , SyncStatus(..)
         , emptyModel
         )
+import SyncManager.Update
 import SyncManager.Utils exposing (determineDownloadPhotosStatus)
 import Test exposing (Test, describe, test)
+import Time
 
 
 testFlags : Flags
@@ -46,6 +52,15 @@ testModel =
     emptyModel testFlags
 
 
+testDevice : Device
+testDevice =
+    { accessToken = ""
+    , refreshToken = ""
+    , backendUrl = ""
+    , deviceId = Nothing
+    }
+
+
 all : Test
 all =
     describe "SyncManager photo lane"
@@ -69,4 +84,27 @@ all =
                     }
                     |> .downloadPhotosStatus
                     |> Expect.equal DownloadPhotosIdle
+        , test "SavedAtIndexDbHandle for a successful DeferredPhotos save kicks the photo lane out of idle" <|
+            \() ->
+                let
+                    saveResult =
+                        Json.Encode.object
+                            [ ( "table", Json.Encode.string "DeferredPhotos" )
+                            , ( "status", Json.Encode.string "Success" )
+                            , ( "timestamp", Json.Encode.string "" )
+                            ]
+                in
+                SyncManager.Update.update
+                    (Time.millisToPosix 0)
+                    DevicePage
+                    0
+                    testDevice
+                    (SavedAtIndexDbHandle saveResult)
+                    { testModel
+                        | downloadPhotosStatus = DownloadPhotosIdle
+                        , syncCycle = SyncCycleOn
+                    }
+                    |> .model
+                    |> .downloadPhotosStatus
+                    |> Expect.notEqual DownloadPhotosIdle
         ]

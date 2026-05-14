@@ -2291,6 +2291,18 @@ update currentTime activePage dbVersion device msg model =
                                         (BackendAuthorityFetchedDataSavedHandle indexDbSaveResult.timestamp)
                                         model
 
+                                IndexDbSaveResultTableDeferredPhotos ->
+                                    -- Deferred-photo rows have just landed in IndexedDB.
+                                    -- Kick the photo lane so it starts draining them now
+                                    -- rather than waiting out its idle timer.
+                                    update
+                                        currentTime
+                                        activePage
+                                        dbVersion
+                                        device
+                                        TryDownloadingPhotos
+                                        model
+
                                 IndexDbSaveResultTableGeneral ->
                                     update
                                         currentTime
