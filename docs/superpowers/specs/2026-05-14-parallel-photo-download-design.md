@@ -109,8 +109,9 @@ not in the model. No field split is needed.
 
 ## The changes
 
-Three changes, across four files. The post-sync photo-download kick is
-intentionally kept (see below).
+Three changes. (A supporting `elm-review` config tweak was also needed for the
+new `update`-level test — see the plan, Task 2c.) The post-sync photo-download
+kick is intentionally kept (see below).
 
 ### 1. Remove the guard — `SyncManager/Utils.elm`
 

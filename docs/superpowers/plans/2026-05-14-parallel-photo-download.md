@@ -47,6 +47,7 @@ So `SchedulePhotosDownload`, the `debouncer` field, and the post-sync dispatch s
 - `client/src/elm/SyncManager/Test.elm` — **create.** First unit tests for `SyncManager` — the guard-removal behaviour and the deferred-photos kick wiring. Follows the repo's co-located `*/Test.elm` pattern (e.g. `App/Test.elm`).
 - `client/src/elm/Translate.elm` — **modify.** Rename the `IdleWaitingForSync` translation key to `PhotosTransferIdle` and update its text.
 - `client/src/elm/Pages/Device/View.elm` — **modify.** `viewPhotosTransferInfo` uses the renamed key.
+- `client/review/src/ReviewConfig.elm` — **modify.** Exclude `SyncManager/Test.elm` from `NoMissingSubscriptionsCall` (see Task 2c).
 
 `SyncManager/Model.elm` is **not** touched.
 
@@ -421,9 +422,46 @@ git commit -m "Fix misleading idle message in photos transfer status" # + body, 
 
 ---
 
+## Task 2c: Exclude `SyncManager/Test.elm` from `NoMissingSubscriptionsCall`
+
+**Status: DONE** — committed as `737022b73`.
+
+**Files:**
+- Modify: `client/review/src/ReviewConfig.elm`
+
+### Context
+
+Caught by CI, not by local checks. The Task 3 baseline ran `elm-review` *before* Tasks 2 and 2b landed, so the expanded `SyncManager/Test.elm` (which calls `SyncManager.Update.update` directly) was never re-linted locally. CI's `lint_elm_review` flagged it:
+
+```
+NoMissingSubscriptionsCall: Missing subscriptions call to SyncManager.Update.subscriptions
+  src/elm/SyncManager/Test.elm
+```
+
+`NoMissingSubscriptionsCall` targets app wiring — "you use `update` but forgot `subscriptions`". For a unit test that calls `update` only to exercise a handler, that is a false positive.
+
+- [x] **Step 1: Exclude the test file from the rule**
+
+In `client/review/src/ReviewConfig.elm`, add `|> Rule.ignoreErrorsForFiles [ "src/elm/SyncManager/Test.elm" ]` to `NoMissingSubscriptionsCall.rule`. This matches the config's existing pattern — seven other rules already carry per-file exclusions, e.g. `NoDebug.TodoOrToString` excludes `src/elm/ZScore/Test.elm`.
+
+- [x] **Step 2: Verify**
+
+Re-run `elm-review` (with the local-artifact workaround from Task 3 Step 2) — `I found no errors!`. Confirmed green in CI on commit `737022b73` (`ci/circleci: lint_elm_review: success`).
+
+- [x] **Step 3: Commit**
+
+```bash
+git add client/review/src/ReviewConfig.elm
+git commit -m "Exclude SyncManager/Test.elm from NoMissingSubscriptionsCall" # + body, Issue #1743 (no [ci skip] — re-triggers CI)
+```
+
+---
+
 ## Task 3: Full baseline lint + test verification
 
 **Status: DONE.** elm-format clean for the touched files (the only files `elm-format --validate client/src/` flags are pre-existing generated/config noise — `src/generated/**`, `Config.Deploy.elm` — untouched by this branch). `elm-review` clean. `elm-test` 3/3. Full `elm make` compiles.
+
+**Note:** this baseline ran after Task 1 but *before* Tasks 2 and 2b landed, so its `elm-review` pass did not cover the expanded `SyncManager/Test.elm`. CI caught the gap; the re-check and fix are Task 2c. Lesson: re-run `elm-review` against the *final* state of all Elm changes before pushing, not once mid-stream.
 
 **Files:** none modified (verification only; commit only if `elm-format` reformats something).
 
@@ -536,7 +574,7 @@ If all checks pass, the feature is verified — note this in the PR description.
 
 ## Self-Review Notes
 
-- **Spec coverage:** Task 1 covers the guard removal, Task 2 the deferred-photos kick, and Task 2b the idle status-message fix (spec §The changes). Task 3 covers the automated baseline; Task 4 the manual throttled-network test, the load-bearing verification (spec §Testing). Branching is done — branch `parallel-photo-download` off `bulk-photo-fetch`, spec + plan committed; PR #1744 open.
+- **Spec coverage:** Task 1 covers the guard removal, Task 2 the deferred-photos kick, and Task 2b the idle status-message fix (spec §The changes). Task 2c is an elm-review config exclusion for the new `update`-level test, caught by CI. Task 3 covers the automated baseline; Task 4 the manual throttled-network test, the load-bearing verification (spec §Testing). Branching is done — branch `parallel-photo-download` off `bulk-photo-fetch`, spec + plan committed; PR #1744 open, CI run triggered.
 - **Post-sync kick kept by design:** an earlier draft removed `SchedulePhotosDownload` / `TryDownloadingPhotos`; that was dropped on review — the kick is the tested mechanism that starts photos after a fast small-HC sync, and `TryDownloadingPhotos` already no-ops when the photo lane is in process. See "Design note" above. `TryDownloadingPhotos` also gains a second caller in Task 2 (the deferred-photos save handler).
 - **No Model.elm field change:** the spec's earliest draft proposed splitting `downloadRequestTime`; investigation confirmed the photo lane never touches that field (it tracks in-flight state via `backendRemoteData` inside `downloadPhotosStatus`), so no field split is needed. The spec was corrected accordingly.
 - **Issue linking:** the issue for this work is **#1743** (used by the Task 2 commit and linked from PR #1744). The earlier guard-removal commits reference `#1741` — a placeholder carried from the `bulk-photo-fetch` branch context before #1743 existed. Per the repo convention, issues are linked with `Issue #N.`, never `Closes`/`Fixes`.
