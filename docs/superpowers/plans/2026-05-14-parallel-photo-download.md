@@ -4,7 +4,7 @@
 
 **Goal:** Let the SyncManager photo-download lane run concurrently with the data-download lane, so deferred photos start downloading from the first entity batches instead of waiting for the entire ~500K-entity sync to settle.
 
-**Architecture:** The `SyncManager` already has two independent timer-driven lanes (`BackendFetchMain` for data, `BackendFetchPhotos` for photos). Two changes: (1) remove the guard in `determineDownloadPhotosStatus` that pins the photo lane to idle while the data lane is active; (2) kick the photo lane out of idle when deferred-photo rows land in IndexedDB, so it does not wait out its slow (10-minute default) idle timer. The two lanes share no mutable model state.
+**Architecture:** The `SyncManager` already has two independent timer-driven lanes (`BackendFetchMain` for data, `BackendFetchPhotos` for photos). Three changes: (1) remove the guard in `determineDownloadPhotosStatus` that pins the photo lane to idle while the data lane is active; (2) kick the photo lane out of idle when deferred-photo rows land in IndexedDB, so it does not wait out its slow (10-minute default) idle timer; (3) fix the now-misleading "Idle, waiting for next Sync cycle" message on the Device page's photos-transfer status panel. The two lanes share no mutable model state.
 
 The post-sync photo-download kick (`SchedulePhotosDownload` → debounced `TryDownloadingPhotos`) is **intentionally kept** — see "Design note" below.
 
@@ -45,6 +45,8 @@ So `SchedulePhotosDownload`, the `debouncer` field, and the post-sync dispatch s
 - `client/src/elm/SyncManager/Utils.elm` — **modify.** `determineDownloadPhotosStatus` loses the `case model.syncStatus of …` guard wrapper.
 - `client/src/elm/SyncManager/Update.elm` — **modify.** `SavedAtIndexDbHandle` gains a case for `IndexDbSaveResultTableDeferredPhotos` that dispatches `TryDownloadingPhotos`.
 - `client/src/elm/SyncManager/Test.elm` — **create.** First unit tests for `SyncManager` — the guard-removal behaviour and the deferred-photos kick wiring. Follows the repo's co-located `*/Test.elm` pattern (e.g. `App/Test.elm`).
+- `client/src/elm/Translate.elm` — **modify.** Rename the `IdleWaitingForSync` translation key to `PhotosTransferIdle` and update its text.
+- `client/src/elm/Pages/Device/View.elm` — **modify.** `viewPhotosTransferInfo` uses the renamed key.
 
 `SyncManager/Model.elm` is **not** touched.
 
@@ -391,6 +393,34 @@ git commit -m "Kick photo lane when deferred-photo rows land in IndexedDB" # + b
 
 ---
 
+## Task 2b: Fix the idle photos-transfer status message
+
+**Status: DONE** — committed as `83c91af86`.
+
+**Files:**
+- Modify: `client/src/elm/Translate.elm`, `client/src/elm/Pages/Device/View.elm`
+
+### Context
+
+Found during review of Task 1. The Device page's "Photos Transfer Status" panel (`viewPhotosTransferInfo`) shows `Translate.IdleWaitingForSync` — "Idle, waiting for next Sync cycle" — when `downloadPhotosStatus` is `DownloadPhotosIdle`. That message described the *old* guarded behaviour (the lane parked behind sync). After Task 1, an idle photo lane just means "nothing in progress right now", not "blocked on sync" — so the message is misleading.
+
+- [x] **Step 1: Rename the key and update the text**
+
+In `Translate.elm`, rename the `IdleWaitingForSync` constructor to `PhotosTransferIdle` — relocating it alphabetically in both the `Translate` union type and the translation `case` (it moves from the `I` group to just before `PhotosTransferStatus`) — and set its `english` text to `"Idle — no photos pending"` (other languages stay `Nothing`). In `Pages/Device/View.elm`, `viewPhotosTransferInfo`'s `DownloadPhotosIdle` branch now uses `Translate.PhotosTransferIdle`.
+
+- [x] **Step 2: Verify**
+
+`grep -rn IdleWaitingForSync src/` returns nothing; `elm-format --validate` on the two files is clean; `elm make src/elm/Main.elm --output=/dev/null` compiles (exit 0).
+
+- [x] **Step 3: Commit**
+
+```bash
+git add client/src/elm/Translate.elm client/src/elm/Pages/Device/View.elm
+git commit -m "Fix misleading idle message in photos transfer status" # + body, Issue #1743, [ci skip]
+```
+
+---
+
 ## Task 3: Full baseline lint + test verification
 
 **Status: DONE.** elm-format clean for the touched files (the only files `elm-format --validate client/src/` flags are pre-existing generated/config noise — `src/generated/**`, `Config.Deploy.elm` — untouched by this branch). `elm-review` clean. `elm-test` 3/3. Full `elm make` compiles.
@@ -506,7 +536,7 @@ If all checks pass, the feature is verified — note this in the PR description.
 
 ## Self-Review Notes
 
-- **Spec coverage:** Task 1 covers the guard removal and Task 2 the deferred-photos kick (spec §The changes). Task 3 covers the automated baseline; Task 4 the manual throttled-network test, the load-bearing verification (spec §Testing). Branching is done — branch `parallel-photo-download` off `bulk-photo-fetch`, spec + plan committed; PR #1744 open.
+- **Spec coverage:** Task 1 covers the guard removal, Task 2 the deferred-photos kick, and Task 2b the idle status-message fix (spec §The changes). Task 3 covers the automated baseline; Task 4 the manual throttled-network test, the load-bearing verification (spec §Testing). Branching is done — branch `parallel-photo-download` off `bulk-photo-fetch`, spec + plan committed; PR #1744 open.
 - **Post-sync kick kept by design:** an earlier draft removed `SchedulePhotosDownload` / `TryDownloadingPhotos`; that was dropped on review — the kick is the tested mechanism that starts photos after a fast small-HC sync, and `TryDownloadingPhotos` already no-ops when the photo lane is in process. See "Design note" above. `TryDownloadingPhotos` also gains a second caller in Task 2 (the deferred-photos save handler).
 - **No Model.elm field change:** the spec's earliest draft proposed splitting `downloadRequestTime`; investigation confirmed the photo lane never touches that field (it tracks in-flight state via `backendRemoteData` inside `downloadPhotosStatus`), so no field split is needed. The spec was corrected accordingly.
 - **Issue linking:** the issue for this work is **#1743** (used by the Task 2 commit and linked from PR #1744). The earlier guard-removal commits reference `#1741` — a placeholder carried from the `bulk-photo-fetch` branch context before #1743 existed. Per the repo convention, issues are linked with `Issue #N.`, never `Closes`/`Fixes`.

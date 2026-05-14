@@ -109,8 +109,8 @@ not in the model. No field split is needed.
 
 ## The changes
 
-Two changes, in two files. The post-sync photo-download kick is intentionally
-kept (see below).
+Three changes, across four files. The post-sync photo-download kick is
+intentionally kept (see below).
 
 ### 1. Remove the guard — `SyncManager/Utils.elm`
 
@@ -142,6 +142,19 @@ and through a single point that covers every deferred-photo write path.
 
 Cold-start latency drops from up to ~10 minutes to roughly one fast
 (`cycle`-interval) timer tick plus an IndexedDB round-trip.
+
+### 3. Fix the idle photos-transfer status message — `Translate.elm` + `Pages/Device/View.elm`
+
+The Device page's "Photos Transfer Status" panel (`viewPhotosTransferInfo`)
+showed **"Idle, waiting for next Sync cycle"** whenever the photo lane was
+`DownloadPhotosIdle`. That was accurate under the old guard — the lane really
+was parked until a sync cycle ended — but misleading now: with the guard gone,
+`DownloadPhotosIdle` just means the lane has nothing in progress *right now*,
+not that it is blocked behind sync.
+
+Renamed the translation key `IdleWaitingForSync` → `PhotosTransferIdle` (the
+old name encoded the stale concept; it is used in exactly one place) and
+changed the text to **"Idle — no photos pending"**.
 
 ### The post-sync kick is kept, not removed
 
@@ -267,6 +280,9 @@ network throttling set to **Slow 3G**, against a large health center, confirm:
 6. On a *small* HC (fast sync), the post-sync `SchedulePhotosDownload` kick
    firing while the photo lane may already be running causes no double-fetch,
    error, or stall — it is absorbed cleanly by `TryDownloadingPhotos`' guard.
+7. The Device page "Photos Transfer Status" panel reads sensibly throughout —
+   "Idle — no photos pending" when the lane is idle, progress counts while
+   downloading.
 
 ## Things to verify during implementation
 
