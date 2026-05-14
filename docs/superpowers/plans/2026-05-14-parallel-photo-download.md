@@ -6,7 +6,7 @@
 
 **Architecture:** The `SyncManager` already has two independent timer-driven lanes (`BackendFetchMain` for data, `BackendFetchPhotos` for photos). A single guard in `determineDownloadPhotosStatus` pins the photo lane to idle whenever the data lane is active. This plan removes that guard, then removes the now-redundant `SchedulePhotosDownload` / `TryDownloadingPhotos` debounce machinery. The two lanes share no mutable model state, so no other changes are needed.
 
-**Tech Stack:** Elm 0.19.1. Tests via `elm-test` (run per-file: `elm-test <path>`). Linting via `elm-format` and `elm-review`.
+**Tech Stack:** Elm 0.19.1. Tests via `elm-test` (run per-file: `npx elm-test <path>` — `npx` so the project-pinned `elm-test@0.19.1-revision6` is used, not a newer global one). Linting via `elm-format` and `elm-review`.
 
 **Spec:** `docs/superpowers/specs/2026-05-14-parallel-photo-download-design.md`
 
@@ -118,7 +118,7 @@ all =
 Run from `client/`:
 
 ```bash
-cd client && elm-test src/elm/SyncManager/Test.elm
+cd client && npx elm-test src/elm/SyncManager/Test.elm
 ```
 
 Expected: the **first** test FAILS — `Expect.notEqual DownloadPhotosIdle` fails because the guard pins `downloadPhotosStatus` to `DownloadPhotosIdle` when `syncStatus = SyncDownloadAuthority …`. The **second** test PASSES (it is a regression guard for the `SyncCyclePause` behaviour, which this change does not touch).
@@ -241,7 +241,7 @@ Replace it with this block (the inner `case currentStatus of …` is lifted out 
 Run from `client/`:
 
 ```bash
-cd client && elm-test src/elm/SyncManager/Test.elm
+cd client && npx elm-test src/elm/SyncManager/Test.elm
 ```
 
 Expected: BOTH tests PASS.
@@ -254,7 +254,7 @@ Run from the repo root:
 elm-format --validate client/src/elm/SyncManager/Utils.elm client/src/elm/SyncManager/Test.elm
 ```
 
-Expected: no output (both files are correctly formatted). If it reports a diff, run `elm-format client/src/elm/SyncManager/Utils.elm client/src/elm/SyncManager/Test.elm` to auto-format, then re-run `elm-test src/elm/SyncManager/Test.elm` to confirm tests still pass.
+Expected: no output (both files are correctly formatted). If it reports a diff, run `elm-format client/src/elm/SyncManager/Utils.elm client/src/elm/SyncManager/Test.elm` to auto-format, then re-run `npx elm-test src/elm/SyncManager/Test.elm` to confirm tests still pass.
 
 - [ ] **Step 6: Commit**
 
@@ -455,7 +455,7 @@ Expected: `I found no errors!` — in particular, no `NoUnused.CustomTypeConstru
 Run from `client/`:
 
 ```bash
-cd client && elm-test src/elm/SyncManager/Test.elm
+cd client && npx elm-test src/elm/SyncManager/Test.elm
 ```
 
 Expected: both tests PASS.
