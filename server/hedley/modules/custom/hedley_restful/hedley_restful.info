@@ -19,7 +19,7 @@ files[] = plugins/restful/node/activity/hiv/HedleyRestfulHIVActivityBase.class.p
 files[] = plugins/restful/node/activity/family-nutrition/HedleyRestfulFamilyNutritionActivityBase.class.php
 
 files[] = plugins/restful/node/HedleyRestfulEntityBaseNode.php
-files[] = plugins/restful/node/HedleyRestfulSyncBase.class.php
+files[] = plugins/restful/node/sync/HedleyRestfulSyncBase.class.php
 
 files[] = plugins/restful/node/encounter/HedleyRestfulIndividualEncounter.class.php
 files[] = plugins/restful/node/encounter/HedleyRestfulFamilyEncounter.class.php
