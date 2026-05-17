@@ -14,7 +14,7 @@ files[] = plugins/restful/node/activity/acute-illness/HedleyRestfulAcuteIllnessA
 files[] = plugins/restful/node/activity/HedleyRestfulHomeVisitActivityBase.class.php
 files[] = plugins/restful/node/activity/HedleyRestfulWellChildActivityBase.class.php
 files[] = plugins/restful/node/activity/HedleyRestfulChildScoreboardActivityBase.class.php
-files[] = plugins/restful/node/activity/HedleyRestfulTuberculosisActivityBase.class.php
+files[] = plugins/restful/node/activity/tuberculosis/HedleyRestfulTuberculosisActivityBase.class.php
 files[] = plugins/restful/node/activity/hiv/HedleyRestfulHIVActivityBase.class.php
 files[] = plugins/restful/node/activity/HedleyRestfulFamilyNutritionActivityBase.class.php
 
