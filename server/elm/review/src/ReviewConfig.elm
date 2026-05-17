@@ -27,6 +27,7 @@ import NoMissingTypeExpose
 import NoPrematureLetComputation
 import NoRedundantlyQualifiedType
 import NoSimpleLetBody
+import NoUnused.CustomTypeConstructors
 import NoUnused.Dependencies
 import NoUnused.Exports
 import NoUnused.Parameters
@@ -74,6 +75,7 @@ rules =
     , NoMissingTypeExpose.rule
     , NoSimpleLetBody.rule
     , NoPrematureLetComputation.rule
+    , NoUnused.CustomTypeConstructors.rule []
     , NoUnused.Dependencies.rule
     , NoUnused.Exports.rule
     , NoUnused.Parameters.rule
