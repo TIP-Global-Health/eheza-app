@@ -3543,8 +3543,9 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
   $fbf_launch_date_obj = new DateTime($fbf_launch_date);
 
   // Processing measurements by participant type.
+  $persons = node_load_multiple(array_keys($measurements_by_participant));
   foreach ($measurements_by_participant as $person_id => $measurements) {
-    $person = node_load($person_id);
+    $person = $persons[$person_id];
     // Ordering measurements by type.
     $measurements_by_type = [];
     foreach ($measurements as $measurement) {
