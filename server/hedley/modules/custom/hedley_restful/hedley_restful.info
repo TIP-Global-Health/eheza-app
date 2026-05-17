@@ -5,8 +5,8 @@ package = Hedley
 dependencies[] = restful
 dependencies[] = entity_validator
 
-files[] = plugins/restful/node/activity/HedleyRestfulActivityBase.class.php
-files[] = plugins/restful/node/activity/HedleyRestfulGroupActivityBase.class.php
+files[] = plugins/restful/node/activity/_base/HedleyRestfulActivityBase.class.php
+files[] = plugins/restful/node/activity/_base/HedleyRestfulGroupActivityBase.class.php
 files[] = plugins/restful/node/activity/ncd/HedleyRestfulNCDActivityBase.class.php
 files[] = plugins/restful/node/activity/nutrition/HedleyRestfulNutritionActivityBase.class.php
 files[] = plugins/restful/node/activity/prenatal/HedleyRestfulPrenatalActivityBase.class.php
