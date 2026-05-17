@@ -27,7 +27,6 @@ import NoMissingTypeExpose
 import NoPrematureLetComputation
 import NoRedundantlyQualifiedType
 import NoSimpleLetBody
-import NoUnused.CustomTypeConstructors
 import NoUnused.Dependencies
 import NoUnused.Exports
 import NoUnused.Parameters
@@ -85,13 +84,6 @@ rules =
     , NoMissingTypeExpose.rule
     , NoSimpleLetBody.rule
     , NoPrematureLetComputation.rule
-    , NoUnused.CustomTypeConstructors.rule []
-        -- Reliable for Translate.elm's TranslationId (no constructor names
-        -- collide with imported type aliases). Elsewhere the rule produces
-        -- false positives when a constructor name matches a type alias
-        -- imported via `exposing (..)` (e.g. ChildActivity ContributingFactors
-        -- vs Backend.Measurement.Model's ContributingFactors type alias).
-        |> Rule.filterErrorsForFiles (\path -> path == "src/elm/Translate.elm")
     , NoUnused.Dependencies.rule
     , NoUnused.Exports.rule
         |> Rule.ignoreErrorsForFiles

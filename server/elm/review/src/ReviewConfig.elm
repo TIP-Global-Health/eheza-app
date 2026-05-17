@@ -27,7 +27,6 @@ import NoMissingTypeExpose
 import NoPrematureLetComputation
 import NoRedundantlyQualifiedType
 import NoSimpleLetBody
-import NoUnused.CustomTypeConstructors
 import NoUnused.Dependencies
 import NoUnused.Exports
 import NoUnused.Parameters
@@ -75,11 +74,6 @@ rules =
     , NoMissingTypeExpose.rule
     , NoSimpleLetBody.rule
     , NoPrematureLetComputation.rule
-    , NoUnused.CustomTypeConstructors.rule []
-        -- See client/review/src/ReviewConfig.elm for the rationale: outside
-        -- Translate.elm the rule produces false positives when constructor
-        -- names collide with type aliases imported via `exposing (..)`.
-        |> Rule.filterErrorsForFiles (\path -> path == "src/Translate.elm")
     , NoUnused.Dependencies.rule
     , NoUnused.Exports.rule
     , NoUnused.Parameters.rule
