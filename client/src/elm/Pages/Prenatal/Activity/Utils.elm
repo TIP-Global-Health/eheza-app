@@ -5038,7 +5038,6 @@ toObstetricHistoryStep2Value form =
         |> andMap (Just <| Maybe.map EverySet.singleton form.cSectionReason)
         |> andMap previousDeliverySet
         |> andMap (Maybe.map EverySet.singleton form.previousDeliveryPeriod)
-        |> andMap (Just <| EverySet.singleton NoObstetricHistorySign)
         |> andMap (Maybe.map EverySet.fromList form.signs)
 
 

@@ -571,9 +571,7 @@ type TranslationId
     | ContributingFactor ContributingFactorsSign
     | ContributingFactors
     | ContributingFactorsQuestion
-    | ConvulsionsAndUnconsciousPreviousDelivery
     | ConvulsionsLabel
-    | ConvulsionsPreviousDelivery
     | CorePhysicalExamLabel
     | COVID19WithSignsOfPneumonia
     | Creatinine
@@ -5214,25 +5212,11 @@ translationSet trans =
             , somali = Just "Bukaanka ama hooyada bukaanka mala kulantay wax kamid ah kuwan soo socda"
             }
 
-        ConvulsionsAndUnconsciousPreviousDelivery ->
-            { english = "Experienced convulsions and resulted in becoming unconscious after delivery"
-            , kinyarwanda = Just "Ubushize yaragagaye bimuviramo kutumva akimara kubyara"
-            , kirundi = Just "Umurwayi/umuvyeyi yagize ibizunguzungu hama haziramwo uguta ubwenge mu gihe yarahejeje kuvyara"
-            , somali = Nothing
-            }
-
         ConvulsionsLabel ->
             { english = "Convulsions"
             , kinyarwanda = Just "Kugagara"
             , kirundi = Just "Ibisahuzi"
             , somali = Just "Gariir"
-            }
-
-        ConvulsionsPreviousDelivery ->
-            { english = "Experienced convulsions in previous delivery"
-            , kinyarwanda = Just "Ubushize yaragagaye abyara"
-            , kirundi = Just "Yarumvise ibizunguzungu igihe aheruka kwibaruka"
-            , somali = Nothing
             }
 
         CorePhysicalExamLabel ->
@@ -12674,8 +12658,9 @@ translationSet trans =
                 NoMedicalHistorySigns ->
                     translationSet NoneOfTheAbove
 
-                -- Other signs do not require translation as they are
-                -- depricated, and will be removed around Jan 2025.
+                -- UterineMyoma and MentalHealthHistory are kept as legacy
+                -- values to preserve historical data, but are no longer
+                -- surfaced in the UI.
                 _ ->
                     translationSet EmptyString
 
