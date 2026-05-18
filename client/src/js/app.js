@@ -531,38 +531,26 @@ elmApp.ports.scrollToElement.subscribe(function(elementId) {
 });
 
 elmApp.ports.getCoordinates.subscribe(function() {
-  if ("geolocation" in navigator) {
-    const options = {
-        enableHighAccuracy: true,  // Use GPS if available for better accuracy.
-        timeout: 15000,            // Time to wait for position (15 * 1000 ms).
-        maximumAge: 600000         // Accept cached positions up to 10 minutes old (10 * 60 * 1000 ms).
-    };
-
-    navigator.geolocation.getCurrentPosition(
-        (position) => {
-            const { latitude, longitude } = position.coords;
-            const result = {latitude: latitude, longitude: longitude};
-            elmApp.ports.coordinates.send(result);
-        },
-        (error) => {
-            rollbar.log("Error fetching location:", error);
-            switch(error.code) {
-                case error.PERMISSION_DENIED:
-                    rollbar.log("User denied geolocation permission");
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    rollbar.log("Location information unavailable");
-                    break;
-                case error.TIMEOUT:
-                    rollbar.log("Location request timed out");
-                    break;
-            }
-        },
-        options
-    );
-  } else {
-      rollbar.log("Geolocation is not available.");
+  if (!("geolocation" in navigator)) {
+    return;
   }
+
+  const options = {
+      enableHighAccuracy: true,  // Use GPS if available for better accuracy.
+      timeout: 15000,            // Time to wait for position (15 * 1000 ms).
+      maximumAge: 600000         // Accept cached positions up to 10 minutes old (10 * 60 * 1000 ms).
+  };
+
+  navigator.geolocation.getCurrentPosition(
+      (position) => {
+          const { latitude, longitude } = position.coords;
+          const result = {latitude: latitude, longitude: longitude};
+          elmApp.ports.coordinates.send(result);
+      },
+      // Failure is expected (denied / hardware unavailable / timeout); Elm uses Maybe GPSCoordinates.
+      () => {},
+      options
+  );
 });
 
 
@@ -1775,7 +1763,8 @@ function attachDropzone() {
   var element = document.querySelector(selector);
 
   if (element) {
-    if (element.dropZone) {
+    // Lowercase: Dropzone itself sets `.dropzone` on the host element.
+    if (element.dropzone) {
       // Bail, since already initialized
       return;
     } else {
