@@ -883,7 +883,6 @@ type TranslationId
     | HypertensionStageAndRenalComplicationsHeader Bool NCDDiagnosis
     | IdentityPopupHeader
     | IdentityPopupInstructions
-    | IdleWaitingForSync
     | Ignore
     | IllnessSymptom IllnessSymptom
     | IMDailyX10Days
@@ -1344,6 +1343,7 @@ type TranslationId
     | PersonHasBeenSaved
     | PertinentSymptoms
     | Photo
+    | PhotosTransferIdle
     | PhotosTransferStatus
     | PhysicalConditions
     | PhysicalExam
@@ -9019,13 +9019,6 @@ translationSet trans =
             , somali = Nothing
             }
 
-        IdleWaitingForSync ->
-            { english = "Idle, waiting for next Sync cycle"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
-            , somali = Nothing
-            }
-
         Ignore ->
             { english = "Ignore"
             , kinyarwanda = Just "Bwirengagize"
@@ -16408,6 +16401,13 @@ translationSet trans =
             , kinyarwanda = Just "Ifoto"
             , kirundi = Just "Ifoto"
             , somali = Just "Sawir"
+            }
+
+        PhotosTransferIdle ->
+            { english = "Idle — no photos pending"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
             }
 
         PhotosTransferStatus ->

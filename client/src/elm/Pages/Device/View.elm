@@ -128,7 +128,7 @@ viewPhotosTransferInfo language syncStatus status =
                 _ ->
                     case status of
                         DownloadPhotosIdle ->
-                            div [] [ text <| translate language Translate.IdleWaitingForSync ]
+                            div [] [ text <| translate language Translate.PhotosTransferIdle ]
 
                         DownloadPhotosInProcess DownloadPhotosNone ->
                             div [] [ text <| translate language Translate.Disabled ]
