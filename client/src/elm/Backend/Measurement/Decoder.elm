@@ -2395,61 +2395,11 @@ decodePreviousDeliverySign =
                     "c-section-in-previous-delivery" ->
                         succeed CSectionInPreviousDelivery
 
-                    "stillborn-previous-delivery" ->
-                        succeed StillbornPreviousDelivery
-
-                    "baby-died-on-day-of-birth-previous-delivery" ->
-                        succeed BabyDiedOnDayOfBirthPreviousDelivery
-
-                    "partial-placenta-previous-delivery" ->
-                        succeed PartialPlacentaPreviousDelivery
-
-                    "severe-hemorrhaging-previous-delivery" ->
-                        succeed SevereHemorrhagingPreviousDelivery
-
-                    "convulsions-previous-delivery" ->
-                        succeed ConvulsionsPreviousDelivery
-
-                    "convulsions-and-unconscious-previous-delivery" ->
-                        succeed ConvulsionsAndUnconsciousPreviousDelivery
-
                     "none" ->
                         succeed NoPreviousDeliverySign
 
                     _ ->
                         fail <| s ++ " is not a recognized PreviousDeliverySign"
-            )
-
-
-decodeObstetricHistorySign : Decoder ObstetricHistorySign
-decodeObstetricHistorySign =
-    string
-        |> andThen
-            (\s ->
-                case s of
-                    "successive-abortions" ->
-                        succeed SuccessiveAbortions
-
-                    "successive-premature-deliveries" ->
-                        succeed SuccessivePrematureDeliveries
-
-                    "preeclampsia-previous-pregnancy" ->
-                        succeed PreeclampsiaPreviousPregnancy
-
-                    "gestational-diabetes-previous-pregnancy" ->
-                        succeed GestationalDiabetesPreviousPregnancy
-
-                    "incomplete-cervix-previous-pregnancy" ->
-                        succeed IncompleteCervixPreviousPregnancy
-
-                    "rh-negative" ->
-                        succeed RhNegative
-
-                    "none" ->
-                        succeed NoObstetricHistorySign
-
-                    _ ->
-                        fail <| s ++ " is not a recognized ObstetricHistorySign"
             )
 
 
@@ -2471,7 +2421,6 @@ decodeObstetricHistoryStep2 =
         |> optional "c_section_reason" (nullable (decodeEverySet decodeCSectionReason)) Nothing
         |> required "previous_delivery" (decodeEverySet decodePreviousDeliverySign)
         |> required "previous_delivery_period" (decodeEverySet decodePreviousDeliveryPeriod)
-        |> required "obstetric_history" (decodeEverySet decodeObstetricHistorySign)
         |> optional "obstetric_history_step2"
             (decodeEverySet decodeObstetricHistoryStep2Sign)
             (EverySet.singleton MigrateObstetricHistoryStep2Sign)
