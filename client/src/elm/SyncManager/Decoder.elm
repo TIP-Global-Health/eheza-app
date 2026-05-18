@@ -1,5 +1,6 @@
 module SyncManager.Decoder exposing
-    ( decodeDownloadSyncResponseAuthority
+    ( decodeBulkPhotoFetchHandle
+    , decodeDownloadSyncResponseAuthority
     , decodeDownloadSyncResponseAuthorityStats
     , decodeDownloadSyncResponseGeneral
     , decodeIndexDbQueryTypeResult
@@ -38,7 +39,7 @@ import Components.ReportToWhatsAppDialog.Decoder exposing (decodeReportType)
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate
-import Json.Decode exposing (Decoder, andThen, at, fail, field, int, list, map, nullable, oneOf, string, succeed)
+import Json.Decode exposing (Decoder, andThen, at, bool, fail, field, int, list, map, nullable, oneOf, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, optional, optionalAt, required, requiredAt)
 import RemoteData exposing (RemoteData)
 import SyncManager.Model exposing (..)
@@ -79,6 +80,24 @@ decodeIndexDbQueryTypeResult =
 
                             -- In case we have no deferred photo.
                             , succeed (IndexDbQueryDeferredPhotoResult Nothing)
+                            ]
+
+                    "IndexDbQueryDeferredPhotoBatchResult" ->
+                        oneOf
+                            [ field "data" (list decodeDeferredPhotoRow)
+                                |> map
+                                    (\rows ->
+                                        IndexDbQueryDeferredPhotoBatchResult
+                                            { rows = rows
+                                            , remaining =
+                                                List.head rows
+                                                    |> Maybe.map .remaining
+                                                    |> Maybe.withDefault 0
+                                            }
+                                    )
+
+                            -- Empty batch.
+                            , succeed (IndexDbQueryDeferredPhotoBatchResult { rows = [], remaining = 0 })
                             ]
 
                     "IndexDbQueryGetTotalEntriesToUploadResult" ->
@@ -291,6 +310,42 @@ decodeIndexDbQueryDeferredPhotoResult =
         |> requiredAt [ "0", "photo" ] string
         |> requiredAt [ "0", "attempts" ] int
         |> requiredAt [ "0", "remaining" ] int
+
+
+{-| Decoder for a single deferred-photo row inside a batched response.
+The single-photo decoder above indexes via "0" because the JS side wraps
+the row in an array even for the single case; the batch endpoint sends
+the array directly, so we decode each element as an object.
+-}
+decodeDeferredPhotoRow : Decoder IndexDbQueryDeferredPhotoResultRecord
+decodeDeferredPhotoRow =
+    succeed IndexDbQueryDeferredPhotoResultRecord
+        |> required "uuid" string
+        |> required "photo" string
+        |> required "attempts" int
+        |> required "remaining" int
+
+
+{-| Decode the JS-side bulk-photo fetcher's response. The JS handler
+returns either `{batchError: <http_status_or_0>}` for whole-batch
+failures, or `{results: [{url, ok, terminal}, ...]}` on success.
+-}
+decodeBulkPhotoFetchHandle : Decoder (Result Int (List PhotoBatchResult))
+decodeBulkPhotoFetchHandle =
+    oneOf
+        [ field "batchError" int
+            |> map Err
+        , field "results" (list decodePhotoBatchResult)
+            |> map Ok
+        ]
+
+
+decodePhotoBatchResult : Decoder PhotoBatchResult
+decodePhotoBatchResult =
+    succeed PhotoBatchResult
+        |> required "url" string
+        |> required "ok" bool
+        |> required "terminal" bool
 
 
 decodeDownloadSyncResponseGeneral : Decoder (DownloadSyncResponse BackendGeneralEntity)

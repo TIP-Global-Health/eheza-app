@@ -600,6 +600,19 @@ elmApp.ports.sendSyncSpeed.subscribe(function(syncSpeed) {
 });
 
 /**
+ * Bulk fetch a batch of photo URLs.
+ *
+ * Elm calls this with {urls, accessToken}; we delegate to bulkPhotos.js
+ * which POSTs to /api/bulk-photos, parses the binary container, and
+ * populates the "photos" Cache Storage. Reply (per-URL outcomes or a
+ * whole-batch error) goes back via the bulkPhotoFetchHandle port.
+ */
+elmApp.ports.bulkPhotoFetch.subscribe(async function(params) {
+  const outcome = await self.bulkPhotos.handleBulkPhotoFetch(params);
+  elmApp.ports.bulkPhotoFetchHandle.send(outcome);
+});
+
+/**
  * Save Synced data to IndexDB.
  */
 elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(info) {
@@ -1037,6 +1050,39 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         }
 
         return sendIndexedDbFetchResult(queryType, result);
+      })();
+      break;
+
+    case 'IndexDbQueryDeferredPhotoBatch':
+      // queryParam: JSON-encoded {batchSize: int}
+      (async () => {
+
+        let batchSize = 100;
+        try {
+          const parsed = JSON.parse(data);
+          batchSize = Math.max(1, Math.min(parseInt(parsed.batchSize, 10) || 100, 200));
+        }
+        catch (e) {
+          // Fall through with default batchSize.
+        }
+
+        let rows = await dbSync
+            .deferredPhotos
+            .where('attempts')
+            .belowOrEqual(2)
+            .limit(batchSize)
+            .sortBy('attempts');
+
+        if (rows.length > 0) {
+          let total = await dbSync
+              .deferredPhotos
+              .where('attempts')
+              .belowOrEqual(2)
+              .count();
+          rows = rows.map(function(r) { r.remaining = total; return r; });
+        }
+
+        return sendIndexedDbFetchResult(queryType, rows);
       })();
       break;
 
