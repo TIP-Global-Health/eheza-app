@@ -1775,7 +1775,8 @@ function attachDropzone() {
   var element = document.querySelector(selector);
 
   if (element) {
-    if (element.dropZone) {
+    // Lowercase: Dropzone itself sets `.dropzone` on the host element.
+    if (element.dropzone) {
       // Bail, since already initialized
       return;
     } else {
