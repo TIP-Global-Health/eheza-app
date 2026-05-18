@@ -399,7 +399,7 @@ stockSupplierToString value =
             "unicef"
 
         SupplierRMSCentral ->
-            "rms-center"
+            "rms-central"
 
         SupplierRMSDistrict ->
             "rms-district"
@@ -423,7 +423,7 @@ stockSupplierFromString value =
         "unicef" ->
             Just SupplierUNICEF
 
-        "rms-center" ->
+        "rms-central" ->
             Just SupplierRMSCentral
 
         "rms-district" ->
