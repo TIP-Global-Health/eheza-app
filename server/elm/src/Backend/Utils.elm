@@ -4,6 +4,12 @@ module Backend.Utils exposing (updateSubModel)
 -}
 
 
+updateSubModel :
+    subMsg
+    -> (subMsg -> model -> { model : model, cmd : Cmd subMsg, error : error, appMsgs : appMsgs })
+    -> (subMsg -> outerMsg)
+    -> model
+    -> { model : model, cmd : Cmd outerMsg, error : error, appMsgs : appMsgs }
 updateSubModel subMsg updateFunc msg model =
     let
         backendReturn =

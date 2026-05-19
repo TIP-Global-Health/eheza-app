@@ -5045,6 +5045,31 @@ viewRandomBloodSugarTestUniversalForm language currentDate configInitial configP
     )
 
 
+randomBloodSugarTestPrerequisitesInputsAndTasks :
+    Language
+    ->
+        ((Bool
+          ->
+            { form
+                | immediateResult : Maybe Bool
+                , sugarCount : Maybe Float
+                , sugarCountDirty : Bool
+                , patientFasted : Maybe Bool
+            }
+          ->
+            { form
+                | immediateResult : Maybe Bool
+                , sugarCount : Maybe Float
+                , sugarCountDirty : Bool
+                , patientFasted : Maybe Bool
+            }
+         )
+         -> Bool
+         -> msg
+        )
+    -> Maybe Bool
+    -> Maybe Bool
+    -> ( List (Html msg), Int, Int )
 randomBloodSugarTestPrerequisitesInputsAndTasks language setRandomBloodSugarTestFormBoolInputMsg immediateResult patientFasted =
     let
         ( immediateResultSection, immediateResultTasksCompleted, immediateResultTasksTotal ) =

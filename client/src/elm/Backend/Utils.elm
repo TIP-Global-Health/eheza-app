@@ -13,6 +13,7 @@ import Backend.Measurement.Model
         , FollowUpMeasurements
         , HIVMeasurements
         , HomeVisitMeasurements
+        , Measurement
         , MotherMeasurementList
         , NCDMeasurements
         , NutritionMeasurements
@@ -23,8 +24,9 @@ import Backend.Measurement.Model
         )
 import Backend.Model exposing (ModelIndexedDb)
 import EverySet exposing (EverySet)
+import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (applyBackendUrl, toCmd, withoutDecoder)
+import Restful.Endpoint exposing (ReadWriteEndPoint, applyBackendUrl, toCmd, withoutDecoder)
 import SyncManager.Model exposing (SiteFeature(..))
 
 
@@ -206,6 +208,17 @@ mapStockManagementMeasurements id func model =
             model
 
 
+saveMeasurementCmd :
+    NominalDate
+    -> encounterId
+    -> PersonId
+    -> Maybe NurseId
+    -> Maybe HealthCenterId
+    -> Maybe valueId
+    -> value
+    -> ReadWriteEndPoint e valueId (Measurement encounterId value) (Measurement encounterId value) params
+    -> (RemoteData e () -> msg)
+    -> Cmd msg
 saveMeasurementCmd date encounter person nurse healthCenter savedValueId savedValue endpoint handleSavedMsg =
     let
         measurement =
@@ -233,6 +246,13 @@ saveMeasurementCmd date encounter person nurse healthCenter savedValueId savedVa
     toCmd (RemoteData.fromResult >> handleSavedMsg) requestData
 
 
+editMeasurementCmd :
+    valueId
+    -> value
+    -> ReadWriteEndPoint e valueId { record | value : value } c params
+    -> (RemoteData e () -> msg)
+    -> { record | value : value }
+    -> Cmd msg
 editMeasurementCmd id updatedValue endpoint handleSavedMsg measurement =
     { measurement | value = updatedValue }
         |> sw.patchFull endpoint id
