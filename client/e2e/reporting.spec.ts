@@ -59,6 +59,7 @@ import {
   findScoreboardValue,
   getCurrentMonthColumnIndex,
   ScoreboardPaneData,
+  NYANGE_HC_ID,
 } from './helpers/reports';
 
 // Encounter creation helpers.
@@ -208,9 +209,6 @@ import {
 } from './helpers/group-session';
 
 const pwaBaseUrl = `http://localhost:${getClientPort()}`;
-
-// Nyange Health Center node ID (from migration CSV).
-const NYANGE_HC_ID = 4;
 
 // Start date for report filtering — early enough to include all data.
 // Constructed in UTC because the calendar helper reads via getUTC*; using

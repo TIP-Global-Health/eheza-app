@@ -46,9 +46,16 @@ test.describe('CHW: Individual Nutrition Encounter', () => {
   // since the measurement was explicitly skipped.
   test('normal encounter with height skipped via "Unable to take measurement" and backend sync', async ({
     page,
+    browser,
   }) => {
-    // Verify FeatureNutritionIndividual flag gates the "Child Nutrition" button.
-    await verifyFeatureGatesEncounterButton(page, 'nutrition_individual', 'Child Nutrition');
+    // Verify FeatureNutritionIndividual flag gates client UI + admin Reports surfaces.
+    await verifyFeatureGatesEncounterButton(page, 'nutrition_individual', 'Child Nutrition', {
+      browser,
+      admin: {
+        sqDemographicsRows: ['Individual', 'Home Visit'],
+        completionOptions: ['nutrition-individual', 'home-visit'],
+      },
+    });
 
     const { fullName } = await createChildAndStartEncounter(page, {
       ageMonths: 24,

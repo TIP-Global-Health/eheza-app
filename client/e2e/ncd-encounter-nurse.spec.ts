@@ -43,9 +43,15 @@ test.describe('Nurse: NCD First Encounter — Male, Stage 1 Hypertension', () =>
     await setupDevice(page, '1234', 'Nyange Health Center');
   });
 
-  test('complete first NCD encounter with Stage 1 hypertension, verify backend sync', async ({ page }) => {
-    // Verify FeatureNCD flag gates the "Noncommunicable Diseases" button.
-    await verifyFeatureGatesEncounterButton(page, 'ncd', 'Noncommunicable Diseases');
+  test('complete first NCD encounter with Stage 1 hypertension, verify backend sync', async ({ page, browser }) => {
+    // Verify FeatureNCD flag gates client UI + admin Reports surfaces.
+    await verifyFeatureGatesEncounterButton(page, 'ncd', 'Noncommunicable Diseases', {
+      browser,
+      admin: {
+        sqDemographicsRows: ['NCD'],
+        completionOptions: ['ncd'],
+      },
+    });
 
     const { fullName } = await createAdultAndStartNCDEncounter(page, {
       isFemale: false,

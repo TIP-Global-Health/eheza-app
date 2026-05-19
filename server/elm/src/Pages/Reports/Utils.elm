@@ -1,11 +1,12 @@
-module Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, countTotalNutritionEncounters, eddToLmpDate, familyNutritionEncounterToMetrics, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, nutritionEncounterDataToNutritionMetrics, prenatalContactTypeToEncountersAtWeek, reportTypeFromString, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth, sumNutritionMetrics)
+module Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, countTotalNutritionEncounters, eddToLmpDate, familyNutritionEncounterToMetrics, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, nutritionEncounterDataToNutritionMetrics, prenatalContactTypeToEncountersAtWeek, reportTypeFromString, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth, sumNutritionMetrics, visibleReportTypes)
 
-import App.Types exposing (Site(..))
+import App.Types exposing (Site(..), SiteFeature(..))
 import AssocList as Dict exposing (Dict)
 import Backend.Components.Model exposing (PersonId, SelectedEntity(..))
 import Backend.Reports.Model exposing (FamilyNutritionEncounterData, NutritionEncounterData, PatientData)
 import Backend.Scoreboard.Model exposing (VaccineType(..))
 import Date exposing (Unit(..))
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays)
 import List.Extra exposing (unique)
 import Maybe.Extra
@@ -564,3 +565,70 @@ allVaccineTypes site =
 
         _ ->
             common ++ [ VaccineHPV ]
+
+
+{-| Filter the Statistical Queries report-type list down to the entries that
+have a meaningful data domain on this deployment. Reports whose sole data
+source is feature-gated drop out when that feature is disabled.
+
+`ReportDemographics` always shows — it is multi-source and applies row-level
+filters internally.
+
+`ReportFBFDistribution` shows when at least one of its two contributing
+sources (`FeatureNutritionGroup` for FBF rows, `FeatureFamilyNutrition` for
+Aheza rows) is enabled; rows are filtered per feature inside
+`visibleFbfDistributionCategories`.
+
+`ReportNutrition` shows when at least one of its four contributing sources
+is enabled.
+
+-}
+visibleReportTypes : EverySet SiteFeature -> List ReportType
+visibleReportTypes features =
+    let
+        member f =
+            EverySet.member f features
+    in
+    List.filter
+        (\reportType ->
+            case reportType of
+                ReportAcuteIllness ->
+                    member FeatureAcuteIllness
+
+                ReportDemographics ->
+                    True
+
+                ReportFBFDistribution ->
+                    member FeatureNutritionGroup || member FeatureFamilyNutrition
+
+                ReportNutrition ->
+                    member FeatureWellChild
+                        || member FeatureNutritionIndividual
+                        || member FeatureNutritionGroup
+                        || member FeatureFamilyNutrition
+
+                ReportPeripartum ->
+                    member FeatureAntenatal
+
+                ReportPostnatalCare ->
+                    member FeatureWellChild
+
+                ReportPrenatal ->
+                    member FeatureAntenatal
+
+                ReportPrenatalContacts ->
+                    member FeatureAntenatal
+
+                ReportPrenatalDiagnoses ->
+                    member FeatureAntenatal
+        )
+        [ ReportAcuteIllness
+        , ReportDemographics
+        , ReportFBFDistribution
+        , ReportNutrition
+        , ReportPeripartum
+        , ReportPostnatalCare
+        , ReportPrenatal
+        , ReportPrenatalContacts
+        , ReportPrenatalDiagnoses
+        ]

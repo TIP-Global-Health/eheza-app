@@ -7,6 +7,17 @@ import { WAIT } from './common';
 import { drushEnv } from './device';
 
 // ---------------------------------------------------------------------------
+// Health-center fixture IDs
+// ---------------------------------------------------------------------------
+
+/**
+ * Nyange Health Center node ID — fixed by the migration CSV
+ * (`hedley_migrate/csv/health_center_rwanda.csv`). Reused across specs that
+ * need a stable HC scope for admin Reports navigation.
+ */
+export const NYANGE_HC_ID = 4;
+
+// ---------------------------------------------------------------------------
 // DDEV URL resolution
 // ---------------------------------------------------------------------------
 

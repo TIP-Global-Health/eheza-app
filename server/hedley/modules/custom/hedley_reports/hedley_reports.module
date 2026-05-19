@@ -3209,6 +3209,7 @@ function hedley_reports_build_completion_results_app($health_center = NULL) {
   }
 
   $data['site'] = variable_get('hedley_general_site_name', '');
+  $data['features'] = hedley_admin_get_enabled_features_string();
   $data['params'] = $params;
 
   return hedley_general_build_elm_app('completion-results', $data);
@@ -3280,23 +3281,12 @@ function hedley_reports_generate_completion_data_for_restful($from_nid, $batch, 
   $count_q->addExpression('COUNT(*)', 'cnt');
   $count = (int) $count_q->execute()->fetchField();
 
-  if ($count === 0) {
-    // No more items left -- return the structured shape Elm expects so
-    // its decoder doesn't fail and leave sync stuck at "PENDING".
-    return [
-      'batch' => [],
-      'total_remaining' => 0,
-      'last' => 0,
-    ];
-  }
-
-  $data_q = $build();
-  $data_q->fields('n', ['nid', 'type'])
-    ->fields('fr', ['field_reports_data_value'])
-    ->orderBy('n.nid')
-    ->range(0, $batch);
-  $rows = $data_q->execute()->fetchAll();
-
+  // Bucket map is shared between the empty-batch and populated-batch
+  // returns so both responses emit the same JSON object shape, with all
+  // bundle keys present (each as an empty array when there's no data).
+  // Without this, an empty batch returned `[]` (a JSON list), and the
+  // Elm decoder's `requiredAt ["batch", "<bundle>"]` paths fail, leaving
+  // the admin Reports page stuck on "PENDING".
   $type_to_bucket = [
     'acute_illness_encounter'    => 'acute_illness',
     'attendance'                 => 'nutrition_group',
@@ -3309,7 +3299,24 @@ function hedley_reports_generate_completion_data_for_restful($from_nid, $batch, 
     'tuberculosis_encounter'     => 'tuberculosis',
     'well_child_encounter'       => 'well_child',
   ];
-  $data = array_fill_keys(array_values($type_to_bucket), []);
+  $empty_batch = array_fill_keys(array_values($type_to_bucket), []);
+
+  if ($count === 0) {
+    return [
+      'batch' => $empty_batch,
+      'total_remaining' => 0,
+      'last' => 0,
+    ];
+  }
+
+  $data_q = $build();
+  $data_q->fields('n', ['nid', 'type'])
+    ->fields('fr', ['field_reports_data_value'])
+    ->orderBy('n.nid')
+    ->range(0, $batch);
+  $rows = $data_q->execute()->fetchAll();
+
+  $data = $empty_batch;
 
   $last = 0;
   foreach ($rows as $r) {

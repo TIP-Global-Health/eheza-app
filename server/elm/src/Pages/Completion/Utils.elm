@@ -1,6 +1,6 @@
-module Pages.Completion.Utils exposing (allAcuteIllnessActivities, allHIVActivities, allHomeVisitActivities, allNCDActivities, allNutritionChildGroupActivities, allNutritionIndividualActivities, allNutritionMotherGroupActivities, allPrenatalActivities, allTuberculosisActivities, newbornExamActivities, reportTypeFromString, reportTypeToString, resolveChildScoreboardActivities, resolveSPVActivities)
+module Pages.Completion.Utils exposing (allAcuteIllnessActivities, allHIVActivities, allHomeVisitActivities, allNCDActivities, allNutritionChildGroupActivities, allNutritionIndividualActivities, allNutritionMotherGroupActivities, allPrenatalActivities, allTuberculosisActivities, newbornExamActivities, reportTypeFromString, reportTypeToString, resolveChildScoreboardActivities, resolveSPVActivities, visibleReportTypes)
 
-import App.Types exposing (Site(..))
+import App.Types exposing (Site(..), SiteFeature(..))
 import Backend.Completion.Model
     exposing
         ( AcuteIllnessActivity(..)
@@ -14,6 +14,7 @@ import Backend.Completion.Model
         , TuberculosisActivity(..)
         , WellChildActivity(..)
         )
+import EverySet exposing (EverySet)
 import Pages.Completion.Model exposing (ReportType(..))
 
 
@@ -357,3 +358,63 @@ allPrenatalActivities =
     , PrenatalVitals
     , PrenatalVitalsRecheck
     ]
+
+
+{-| Filter the Completion report-type list down to entries whose driving
+encounter feature is enabled. Each Completion subtype maps to a single
+encounter type, so gating is one feature per entry.
+-}
+visibleReportTypes : EverySet SiteFeature -> List ReportType
+visibleReportTypes features =
+    let
+        member f =
+            EverySet.member f features
+    in
+    List.filter
+        (\reportType ->
+            case reportType of
+                ReportAcuteIllness ->
+                    member FeatureAcuteIllness
+
+                ReportPrenatal ->
+                    member FeatureAntenatal
+
+                ReportChildScoreboard ->
+                    member FeatureNCDA
+
+                ReportHIV ->
+                    member FeatureHIVManagement
+
+                ReportHomeVisit ->
+                    member FeatureNutritionIndividual
+
+                ReportNCD ->
+                    member FeatureNCD
+
+                ReportNewbornExam ->
+                    member FeatureWellChild
+
+                ReportNutritionGroup ->
+                    member FeatureNutritionGroup
+
+                ReportNutritionIndividual ->
+                    member FeatureNutritionIndividual
+
+                ReportWellChild ->
+                    member FeatureWellChild
+
+                ReportTuberculosis ->
+                    member FeatureTuberculosisManagement
+        )
+        [ ReportAcuteIllness
+        , ReportPrenatal
+        , ReportChildScoreboard
+        , ReportHIV
+        , ReportHomeVisit
+        , ReportNCD
+        , ReportNewbornExam
+        , ReportNutritionGroup
+        , ReportNutritionIndividual
+        , ReportWellChild
+        , ReportTuberculosis
+        ]
