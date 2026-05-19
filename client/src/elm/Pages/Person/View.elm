@@ -698,17 +698,6 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             , title = Translate.People
                             }
 
-                        -- Note yet implemented. Providing 'default'
-                        -- values, to satisfy compiler.
-                        InmmunizationEncounter ->
-                            { goBackPage = PinCodePage
-                            , expectedAge = ExpectAdultOrChild
-                            , expectedGender = ExpectMaleOrFemale
-                            , birthDateSelectorFrom = Date.add Years -120 today
-                            , birthDateSelectorTo = today
-                            , title = Translate.People
-                            }
-
                 GroupEncounterOrigin sessionId ->
                     let
                         expectedAge =
