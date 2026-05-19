@@ -25,9 +25,6 @@ someone else will know what to do with it.
 
 And, we return a possible redirect.
 
-TODO: Perhaps instead of returning several extra parameters, it would be better to
-construct a list of messages for the caller to handle?
-
 -}
 updateChild :
     Msg ChildActivity Measurement.Model.MsgChild

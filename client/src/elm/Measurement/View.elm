@@ -291,11 +291,6 @@ viewFloatForm config language currentDate isChw child measurements previousValue
         -- we're assuming that we're editing that value, rather than making a
         -- new measurement today). Otherwise, we assume we're makeing the
         -- measurement today.
-        --
-        -- TODO: We should probably surface this in the UI ... that is, display
-        -- what day we think the measurement was made on, and allow the nurse
-        -- to change that if necessary.
-        -- And, we'll need the child's age.
         maybeAgeInDays =
             Maybe.map
                 (\birthDate ->
