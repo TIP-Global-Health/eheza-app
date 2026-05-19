@@ -282,6 +282,7 @@ type TranslationId
     | WastingSevere
     | WellChildActivity WellChildActivity
     | WideScopeNote
+    | WrongPage
     | Year Int
     | YearLabel
     | Zone
@@ -3671,6 +3672,13 @@ translationSet transId =
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing
+            }
+
+        WrongPage ->
+            { english = "Wrong page?"
+            , kinyarwanda = Just "Urupapuro rutari rwo?"
+            , kirundi = Just "Urupapuro rutari rwo?"
+            , somali = Just "Bogga ma khaldanyahay?"
             }
 
         Year year ->
