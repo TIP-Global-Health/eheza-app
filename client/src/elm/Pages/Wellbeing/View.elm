@@ -7,7 +7,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Pages.MessagingCenter.Model exposing (Msg(..))
 import Pages.MessagingCenter.Utils exposing (resolveNumberOfUnreadMessages)
-import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Page exposing (Page(..))
 import Time
 import Translate exposing (Language, translate, translateText)
 
@@ -36,7 +36,7 @@ view language currentTime nurse =
         resilienceMessageButton =
             button
                 [ class "ui primary button"
-                , onClick <| SetActivePage <| UserPage MessagingCenterPage
+                , onClick <| SetActivePage MessagingCenterPage
                 ]
                 [ span [ class "text" ] [ text <| translate language Translate.ResilienceMessage ]
                 , span [ class "counter" ] [ text <| String.fromInt numberOfUnreadMessages ]
@@ -45,7 +45,7 @@ view language currentTime nurse =
         guideMessageButton =
             button
                 [ class "ui primary button"
-                , onClick <| SetActivePage <| UserPage MessagingGuide
+                , onClick <| SetActivePage MessagingGuide
                 ]
                 [ span [ class "text" ] [ text <| translate language Translate.GuideMessage ]
                 ]

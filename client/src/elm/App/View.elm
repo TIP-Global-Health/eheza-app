@@ -1,7 +1,7 @@
 module App.View exposing (view)
 
 import App.Model exposing (ConfiguredModel, Model, Msg(..), MsgLoggedIn(..))
-import App.Utils exposing (getLoggedInData)
+import App.Utils exposing (getLoggedIn, getLoggedInData)
 import AssocList as Dict
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker, isLabTechnician)
@@ -289,72 +289,118 @@ viewConfiguredModel model configured =
             |> Html.map MsgServiceWorker
             |> flexPageWrapper configured.config model
 
-    else if not (RemoteData.isSuccess configured.device) then
-        -- If our device is not paired, then the only thing we allow is the pairing
-        -- of the device, or deployment of a new version.
-        case model.activePage of
-            ServiceWorkerPage ->
-                ServiceWorker.View.view model.currentTime model.language model.serviceWorker
-                    |> Html.map MsgServiceWorker
-                    |> flexPageWrapper configured.config model
-
-            _ ->
-                Pages.Device.View.view model.language configured.device model configured.devicePage
-                    |> Html.map MsgPageDevice
-                    |> flexPageWrapper configured.config model
-
     else
         let
             features =
                 model.syncManager.syncInfoGeneral.features
-
-            deviceName =
-                if String.isEmpty model.syncManager.syncInfoGeneral.deviceName then
-                    Nothing
-
-                else
-                    Just model.syncManager.syncInfoGeneral.deviceName
         in
-        case model.activePage of
-            DevicePage ->
-                Pages.Device.View.view model.language configured.device model configured.devicePage
-                    |> Html.map MsgPageDevice
-                    |> flexPageWrapper configured.config model
+        if not (RemoteData.isSuccess configured.device) then
+            -- If our device is not paired, then the only thing we allow is the pairing
+            -- of the device, or deployment of a new version.
+            case model.activePage of
+                ServiceWorkerPage ->
+                    ServiceWorker.View.view model.currentTime model.language model.serviceWorker
+                        |> Html.map MsgServiceWorker
+                        |> flexPageWrapper configured.config model
 
-            PinCodePage ->
-                Pages.PinCode.View.view model.language
-                    model.currentTime
-                    features
-                    model.activePage
-                    (RemoteData.map .nurse configured.loggedIn)
-                    ( model.healthCenterId, model.villageId )
-                    deviceName
-                    configured.pinCodePage
-                    model.indexedDb
-                    |> Html.map MsgPagePinCode
-                    |> flexPageWrapper configured.config model
+                _ ->
+                    Pages.Device.View.view model.language features configured.device model configured.devicePage
+                        |> Html.map MsgPageDevice
+                        |> flexPageWrapper configured.config model
 
-            PageNotFound url ->
-                Pages.PageNotFound.View.view model.language url
-                    |> oldPageWrapper configured.config model
+        else
+            let
+                viewMainPage =
+                    Pages.PinCode.View.view model.language
+                        model.currentTime
+                        features
+                        model.activePage
+                        (RemoteData.map .nurse configured.loggedIn)
+                        ( model.healthCenterId, model.villageId )
+                        deviceName
+                        configured.pinCodePage
+                        model.indexedDb
+                        |> Html.map MsgPagePinCode
+                        |> flexPageWrapper configured.config model
 
-            ServiceWorkerPage ->
-                ServiceWorker.View.view model.currentTime model.language model.serviceWorker
-                    |> Html.map MsgServiceWorker
-                    |> flexPageWrapper configured.config model
+                deviceName =
+                    if String.isEmpty model.syncManager.syncInfoGeneral.deviceName then
+                        Nothing
 
-            UserPage userPage ->
-                let
-                    site =
-                        model.syncManager.syncInfoGeneral.site
+                    else
+                        Just model.syncManager.syncInfoGeneral.deviceName
+            in
+            case model.activePage of
+                DevicePage ->
+                    Pages.Device.View.view model.language features configured.device model configured.devicePage
+                        |> Html.map MsgPageDevice
+                        |> flexPageWrapper configured.config model
 
-                    geoInfo =
-                        model.syncManager.geoInfo
+                PinCodePage ->
+                    viewMainPage
 
-                    reverseGeoInfo =
-                        model.syncManager.reverseGeoInfo
-                in
-                viewUserPage userPage deviceName site features geoInfo reverseGeoInfo model configured
+                MessagingCenterPage ->
+                    getLoggedIn model
+                        |> Maybe.map
+                            (\loggedInModel ->
+                                let
+                                    ( nurseId, nurse ) =
+                                        loggedInModel.nurse
+
+                                    page_ =
+                                        Dict.get nurseId loggedInModel.messagingCenterPages
+                                            |> Maybe.withDefault Pages.MessagingCenter.Model.emptyModel
+                                in
+                                Pages.MessagingCenter.View.view model.language
+                                    model.currentTime
+                                    nurseId
+                                    nurse
+                                    model.indexedDb
+                                    page_
+                                    |> Html.map (MsgLoggedIn << MsgPageMessagingCenter nurseId)
+                                    |> flexPageWrapper configured.config model
+                            )
+                        |> Maybe.withDefault viewMainPage
+
+                WellbeingPage ->
+                    getLoggedIn model
+                        |> Maybe.map
+                            (\loggedInModel ->
+                                let
+                                    ( nurseId, nurse ) =
+                                        loggedInModel.nurse
+                                in
+                                Pages.Wellbeing.View.view model.language model.currentTime nurse
+                                    |> Html.map (MsgLoggedIn << MsgPageMessagingCenter nurseId)
+                                    |> flexPageWrapper configured.config model
+                            )
+                        |> Maybe.withDefault viewMainPage
+
+                MessagingGuide ->
+                    Pages.MessagingGuide.View.view model.language
+                        |> flexPageWrapper configured.config model
+
+                PageNotFound url ->
+                    Pages.PageNotFound.View.view model.language url
+                        |> oldPageWrapper configured.config model
+
+                ServiceWorkerPage ->
+                    ServiceWorker.View.view model.currentTime model.language model.serviceWorker
+                        |> Html.map MsgServiceWorker
+                        |> flexPageWrapper configured.config model
+
+                UserPage userPage ->
+                    let
+                        site =
+                            model.syncManager.syncInfoGeneral.site
+
+                        geoInfo =
+                            model.syncManager.geoInfo
+
+                        reverseGeoInfo =
+                            model.syncManager.reverseGeoInfo
+                    in
+                    viewUserPage userPage deviceName site features geoInfo reverseGeoInfo model configured
 
 
 viewUserPage : UserPage -> Maybe String -> Site -> EverySet SiteFeature -> GeoInfo -> ReverseGeoInfo -> Model -> ConfiguredModel -> Html Msg
@@ -1131,39 +1177,6 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             model.indexedDb
                             page_
                             |> Html.map (MsgLoggedIn << MsgPagePatientRecord personId)
-                            |> flexPageWrapper configured.config model
-
-                    MessagingCenterPage ->
-                        let
-                            ( nurseId, nurse ) =
-                                loggedInModel.nurse
-
-                            page_ =
-                                Dict.get nurseId loggedInModel.messagingCenterPages
-                                    |> Maybe.withDefault Pages.MessagingCenter.Model.emptyModel
-                        in
-                        Pages.MessagingCenter.View.view model.language
-                            model.currentTime
-                            nurseId
-                            nurse
-                            model.indexedDb
-                            page_
-                            |> Html.map (MsgLoggedIn << MsgPageMessagingCenter nurseId)
-                            |> flexPageWrapper configured.config model
-
-                    WellbeingPage ->
-                        let
-                            ( nurseId, nurse ) =
-                                loggedInModel.nurse
-                        in
-                        Pages.Wellbeing.View.view model.language
-                            model.currentTime
-                            nurse
-                            |> Html.map (MsgLoggedIn << MsgPageMessagingCenter nurseId)
-                            |> flexPageWrapper configured.config model
-
-                    MessagingGuide ->
-                        Pages.MessagingGuide.View.view model.language
                             |> flexPageWrapper configured.config model
 
                     StockManagementPage ->

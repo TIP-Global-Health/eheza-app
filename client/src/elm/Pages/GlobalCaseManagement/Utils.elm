@@ -1,7 +1,7 @@
 module Pages.GlobalCaseManagement.Utils exposing (calculateDueDate, chwFilters, fillPersonName, filterFollowUpsOfResidents, followUpDueOptionByDate, generateAcuteIllnessEncounters, generateAcuteIllnessFollowUps, generateAcuteIllnessParticipants, generateHIVFollowUps, generateHIVParticipants, generateImmunizationFollowUps, generateNutritionFollowUps, generatePrenatalEncounters, generatePrenatalFollowUps, generatePrenatalParticipants, generateTuberculosisEncounters, generateTuberculosisFollowUps, generateTuberculosisParticipants, labTechFilters, labsResultsTestData, nurseFilters, resolveUniquePatientsFromFollowUps)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Entities exposing (..)
+import Backend.Entities exposing (AcuteIllnessEncounterId, HIVEncounterId, IndividualEncounterParticipantId, PersonId, PrenatalEncounterId, TuberculosisEncounterId)
 import Backend.Measurement.Model
     exposing
         ( FollowUpMeasurements
@@ -10,7 +10,16 @@ import Backend.Measurement.Model
         , LaboratoryTest(..)
         )
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Utils exposing (hivManagementEnabled, tuberculosisManagementEnabled)
+import Backend.Utils
+    exposing
+        ( acuteIllnessEnabled
+        , antenatalEnabled
+        , hivManagementEnabled
+        , ncdEnabled
+        , nutritionEnabled
+        , tuberculosisManagementEnabled
+        , wellChildEnabled
+        )
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays)
@@ -23,33 +32,33 @@ import SyncManager.Model exposing (SiteFeature)
 
 chwFilters : EverySet SiteFeature -> List CaseManagementFilter
 chwFilters features =
-    [ FilterAcuteIllness
-    , FilterAntenatal
-    , FilterNutrition
-    , FilterImmunization
-    ]
-        ++ (if tuberculosisManagementEnabled features then
-                [ FilterTuberculosis ]
-
-            else
-                []
-           )
-        ++ (if hivManagementEnabled features then
-                [ FilterHIV ]
-
-            else
-                []
-           )
+    viewFilterIfFeatureEnabled features acuteIllnessEnabled FilterAcuteIllness
+        ++ viewFilterIfFeatureEnabled features antenatalEnabled FilterAntenatal
+        ++ viewFilterIfFeatureEnabled features nutritionEnabled FilterNutrition
+        ++ viewFilterIfFeatureEnabled features wellChildEnabled FilterImmunization
+        ++ viewFilterIfFeatureEnabled features tuberculosisManagementEnabled FilterTuberculosis
+        ++ viewFilterIfFeatureEnabled features hivManagementEnabled FilterHIV
 
 
-nurseFilters : List CaseManagementFilter
-nurseFilters =
-    [ FilterContactsTrace, FilterPrenatalLabs, FilterNCDLabs ]
+nurseFilters : EverySet SiteFeature -> List CaseManagementFilter
+nurseFilters features =
+    viewFilterIfFeatureEnabled features acuteIllnessEnabled FilterContactsTrace
+        ++ viewFilterIfFeatureEnabled features antenatalEnabled FilterPrenatalLabs
+        ++ viewFilterIfFeatureEnabled features ncdEnabled FilterNCDLabs
 
 
-labTechFilters : List CaseManagementFilter
-labTechFilters =
-    [ FilterPrenatalLabs ]
+labTechFilters : EverySet SiteFeature -> List CaseManagementFilter
+labTechFilters features =
+    viewFilterIfFeatureEnabled features antenatalEnabled FilterPrenatalLabs
+
+
+viewFilterIfFeatureEnabled : EverySet SiteFeature -> (EverySet SiteFeature -> Bool) -> CaseManagementFilter -> List CaseManagementFilter
+viewFilterIfFeatureEnabled features enabledFunc filter =
+    if enabledFunc features then
+        [ filter ]
+
+    else
+        []
 
 
 generateNutritionFollowUps : NominalDate -> FollowUpMeasurements -> Dict PersonId NutritionFollowUpItem

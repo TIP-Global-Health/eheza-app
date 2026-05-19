@@ -3,6 +3,7 @@ import { setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { WAIT, syncAndWait } from './helpers/common';
+import { verifyFeatureGatesEncounterButton } from './helpers/feature-flags';
 import {
   createAdultAndStartEncounter,
   createChildAndStartEncounter,
@@ -35,7 +36,16 @@ test.describe('Nurse: Acute Illness Initial + Subsequent Encounter — Malaria U
     await setupDevice(page, '1234', 'Nyange Health Center');
   });
 
-  test('complete initial and subsequent encounters, verify backend sync', async ({ page }) => {
+  test('complete initial and subsequent encounters, verify backend sync', async ({ page, browser }) => {
+    // Verify FeatureAcuteIllness flag gates client UI + admin Reports surfaces.
+    await verifyFeatureGatesEncounterButton(page, 'acute_illness', 'Acute Illness', {
+      browser,
+      admin: {
+        sqOptions: ['acute-illness'],
+        sqDemographicsRows: ['Acute Illness (total)'],
+        completionOptions: ['acute-illness'],
+      },
+    });
 
     // =====================================================================
     // PART 1: Nurse Initial Encounter — Malaria Uncomplicated

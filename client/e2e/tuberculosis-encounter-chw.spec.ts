@@ -7,6 +7,7 @@ import {
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { syncAndWait } from './helpers/common';
+import { verifyFeatureGatesEncounterButton } from './helpers/feature-flags';
 import {
   createAdultAndStartTBEncounter,
   completeDiagnostics,
@@ -45,7 +46,16 @@ test.describe('CHW: Tuberculosis Initial Encounter — Positive Diagnosis', () =
   //             No symptoms/adverse events -> Referral NOT triggered.
   // Backend: Verifies 6 node types created (diagnostics, medication, dot, treatment_review,
   //          health_education, follow_up), confirms symptom_review and referral absent.
-  test('complete initial TB encounter with positive pulmonary diagnosis, verify backend sync', async ({ page }) => {
+  test('complete initial TB encounter with positive pulmonary diagnosis, verify backend sync', async ({ page, browser }) => {
+    // Verify FeatureTuberculosisManagement flag gates client UI + admin Reports surfaces.
+    await verifyFeatureGatesEncounterButton(page, 'tuberculosis_management', 'TB Management', {
+      browser,
+      admin: {
+        sqDemographicsRows: ['Tuberculosis'],
+        completionOptions: ['tuberculosis'],
+      },
+    });
+
     const { fullName } = await createAdultAndStartTBEncounter(page, {
       isFemale: false,
     });

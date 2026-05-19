@@ -770,16 +770,22 @@ type Site
 
 
 type SiteFeature
-    = FeatureFamilyNutrition
+    = FeatureAcuteIllness
+    | FeatureAntenatal
+    | FeatureFamilyNutrition
     | FeatureGPSCoordinates
     | FeatureGroupEducation
     | FeatureHealthyStart -- defines few slightly different behaviors at Prenatal flows.
     | FeatureHIVManagement
+    | FeatureNCD
     | FeatureNCDA
+    | FeatureNutritionGroup
+    | FeatureNutritionIndividual
     | FeatureReportToWhatsApp
     | FeatureStockManagementHC
     | FeatureStockManagementVillage
     | FeatureTuberculosisManagement
+    | FeatureWellChild
 
 
 type Msg

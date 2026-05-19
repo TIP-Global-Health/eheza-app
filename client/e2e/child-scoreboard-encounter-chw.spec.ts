@@ -3,6 +3,7 @@ import { setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { syncAndWait } from './helpers/common';
+import { verifyFeatureGatesEncounterButton } from './helpers/feature-flags';
 import {
   createChildAndStartEncounter,
   completeNCDA,
@@ -37,7 +38,16 @@ test.describe('CHW: Child Scoreboard Encounter — First NCDA + Vaccination Hist
   //             ChildBehindOnVaccination → "No" triggers VaccinationHistory activity.
   // Backend: Verifies child_scoreboard_ncda + 7 vaccination nodes created,
   //          confirms child_scoreboard_dtp_sa_iz absent (Burundi-only).
-  test('complete NCDA and vaccination history, verify backend sync', async ({ page }) => {
+  test('complete NCDA and vaccination history, verify backend sync', async ({ page, browser }) => {
+    // Verify FeatureNCDA flag gates client UI + admin Reports surfaces.
+    await verifyFeatureGatesEncounterButton(page, 'ncda', 'Child Scorecard', {
+      browser,
+      admin: {
+        sqDemographicsRows: ['Child Scorecard'],
+        completionOptions: ['child-scoreboard'],
+      },
+    });
+
     // 1. Register a 10-month-old child and start the encounter.
     const { fullName } = await createChildAndStartEncounter(page, {
       ageMonths: 10,

@@ -7,6 +7,7 @@ import {
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { WAIT, syncAndWait } from './helpers/common';
+import { verifyFeatureGatesEncounterButton } from './helpers/feature-flags';
 import {
   createAdultAndStartEncounter,
   completeSymptoms,
@@ -37,7 +38,16 @@ test.describe('CHW: Acute Illness Initial Encounter — Uncomplicated Pneumonia'
     await setupDevice(page, '2345', 'Akanduga');
   });
 
-  test('complete CHW initial encounter with respiratory symptoms, verify backend sync', async ({ page }) => {
+  test('complete CHW initial encounter with respiratory symptoms, verify backend sync', async ({ page, browser }) => {
+    // Verify FeatureAcuteIllness flag gates client UI + admin Reports surfaces.
+    await verifyFeatureGatesEncounterButton(page, 'acute_illness', 'Acute Illness', {
+      browser,
+      admin: {
+        sqOptions: ['acute-illness'],
+        sqDemographicsRows: ['Acute Illness (total)'],
+        completionOptions: ['acute-illness'],
+      },
+    });
 
     const { fullName } = await createAdultAndStartEncounter(page, {
       isChw: true,

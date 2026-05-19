@@ -1,6 +1,6 @@
 module Pages.PinCode.Update exposing (update)
 
-import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Page exposing (Page(..))
 import Pages.PinCode.Model exposing (Model, Msg(..), OutMsg(..))
 import Time
 import Time.Extra
@@ -47,7 +47,7 @@ update msg model =
 
                 outMsg =
                     if accept then
-                        Just <| SetActivePage <| UserPage MessagingCenterPage
+                        Just <| SetActivePage MessagingCenterPage
 
                     else
                         Nothing

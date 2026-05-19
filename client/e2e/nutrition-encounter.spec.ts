@@ -3,6 +3,7 @@ import { click, setupDevice } from './helpers/auth';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { WAIT, syncAndWait } from './helpers/common';
+import { assertAdminGates, setFeatureFlag, verifyFeatureGatesEncounterButton } from './helpers/feature-flags';
 import {
   createChildAndStartEncounter,
   completeNCDA,
@@ -34,7 +35,17 @@ test.describe('Nurse: Individual Nutrition Encounter', () => {
 
   test('complete normal encounter with NCDA and verify backend sync', async ({
     page,
+    browser,
   }) => {
+    // Verify FeatureNutritionIndividual flag gates client UI + admin Reports surfaces.
+    await verifyFeatureGatesEncounterButton(page, 'nutrition_individual', 'Child Nutrition', {
+      browser,
+      admin: {
+        sqDemographicsRows: ['Individual', 'Home Visit'],
+        completionOptions: ['nutrition-individual', 'home-visit'],
+      },
+    });
+
     // Use age 10 months (< 24) so NCDA activity appears for nurse.
     const { fullName } = await createChildAndStartEncounter(page, {
       ageMonths: 10,
@@ -193,5 +204,44 @@ test.describe('Nurse: Individual Nutrition Encounter', () => {
     expect(nodes.healthEducation, 'healthEducation node should exist').toBe(true);
     expect(nodes.contributingFactors, 'contributingFactors node should exist').toBe(true);
     expect(nodes.followUp, 'followUp node should exist').toBe(true);
+  });
+
+  // Compound gate: ReportNutrition (SQ dropdown value="nutrition") is hidden
+  // ONLY when ALL FOUR contributing data sources are off — Well Child,
+  // Nutrition Individual, Nutrition Group, Family Nutrition. Flipping any
+  // one of them back on must restore the dropdown entry. (See
+  // `visibleReportTypes` in server/elm/src/Pages/Reports/Utils.elm.)
+  test('Compound: SQ Nutrition dropdown gates on all four contributing sources', async ({ browser }) => {
+    const allFour = [
+      'well_child',
+      'nutrition_individual',
+      'nutrition_group',
+      'family_nutrition',
+    ] as const;
+
+    try {
+      // 1. All four OFF -> Nutrition option must disappear.
+      for (const flag of allFour) {
+        setFeatureFlag(flag, false);
+      }
+      await assertAdminGates(
+        browser,
+        { sqOptions: ['nutrition'] },
+        'hidden',
+      );
+
+      // 2. Flip ONE back ON -> Nutrition option must return.
+      setFeatureFlag('nutrition_individual', true);
+      await assertAdminGates(
+        browser,
+        { sqOptions: ['nutrition'] },
+        'visible',
+      );
+    } finally {
+      // Restore all four to ON regardless of assertion outcome.
+      for (const flag of allFour) {
+        setFeatureFlag(flag, true);
+      }
+    }
   });
 });

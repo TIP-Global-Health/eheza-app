@@ -1982,8 +1982,32 @@ siteFromString str =
 siteFeatureFromString : String -> Maybe SiteFeature
 siteFeatureFromString str =
     case String.toLower str of
+        "acute_illness" ->
+            Just FeatureAcuteIllness
+
+        "antenatal" ->
+            Just FeatureAntenatal
+
+        "gps_coordinates" ->
+            Just FeatureGPSCoordinates
+
+        "group_education" ->
+            Just FeatureGroupEducation
+
+        "hiv_management" ->
+            Just FeatureHIVManagement
+
+        "ncd" ->
+            Just FeatureNCD
+
         "ncda" ->
             Just FeatureNCDA
+
+        "nutrition_group" ->
+            Just FeatureNutritionGroup
+
+        "nutrition_individual" ->
+            Just FeatureNutritionIndividual
 
         "report_to_whatsapp" ->
             Just FeatureReportToWhatsApp
@@ -1997,14 +2021,8 @@ siteFeatureFromString str =
         "tuberculosis_management" ->
             Just FeatureTuberculosisManagement
 
-        "group_education" ->
-            Just FeatureGroupEducation
-
-        "hiv_management" ->
-            Just FeatureHIVManagement
-
-        "gps_coordinates" ->
-            Just FeatureGPSCoordinates
+        "well_child" ->
+            Just FeatureWellChild
 
         "family_nutrition" ->
             Just FeatureFamilyNutrition
@@ -2019,8 +2037,32 @@ siteFeatureFromString str =
 siteFeatureToString : SiteFeature -> String
 siteFeatureToString feature =
     case feature of
+        FeatureAcuteIllness ->
+            "acute_illness"
+
+        FeatureAntenatal ->
+            "antenatal"
+
+        FeatureGPSCoordinates ->
+            "gps_coordinates"
+
+        FeatureGroupEducation ->
+            "group_education"
+
+        FeatureHIVManagement ->
+            "hiv_management"
+
+        FeatureNCD ->
+            "ncd"
+
         FeatureNCDA ->
             "ncda"
+
+        FeatureNutritionGroup ->
+            "nutrition_group"
+
+        FeatureNutritionIndividual ->
+            "nutrition_individual"
 
         FeatureReportToWhatsApp ->
             "report_to_whatsapp"
@@ -2034,14 +2076,8 @@ siteFeatureToString feature =
         FeatureTuberculosisManagement ->
             "tuberculosis_management"
 
-        FeatureGroupEducation ->
-            "group_education"
-
-        FeatureHIVManagement ->
-            "hiv_management"
-
-        FeatureGPSCoordinates ->
-            "gps_coordinates"
+        FeatureWellChild ->
+            "well_child"
 
         FeatureFamilyNutrition ->
             "family_nutrition"

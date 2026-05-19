@@ -8,6 +8,7 @@ import {
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { WAIT, syncAndWait } from './helpers/common';
+import { verifyFeatureGatesEncounterButton } from './helpers/feature-flags';
 import {
   createChildAndStartEncounter,
   enterWeight,
@@ -45,7 +46,17 @@ test.describe('CHW: Individual Nutrition Encounter', () => {
   // since the measurement was explicitly skipped.
   test('normal encounter with height skipped via "Unable to take measurement" and backend sync', async ({
     page,
+    browser,
   }) => {
+    // Verify FeatureNutritionIndividual flag gates client UI + admin Reports surfaces.
+    await verifyFeatureGatesEncounterButton(page, 'nutrition_individual', 'Child Nutrition', {
+      browser,
+      admin: {
+        sqDemographicsRows: ['Individual', 'Home Visit'],
+        completionOptions: ['nutrition-individual', 'home-visit'],
+      },
+    });
+
     const { fullName } = await createChildAndStartEncounter(page, {
       ageMonths: 24,
       isChw: true,

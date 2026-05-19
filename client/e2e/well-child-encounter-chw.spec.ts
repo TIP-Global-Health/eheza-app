@@ -9,6 +9,7 @@ import {
   saveSubTask,
   syncAndWait,
 } from './helpers/common';
+import { verifyFeatureGatesEncounterButton } from './helpers/feature-flags';
 import {
   createChildAndStartWellChildEncounter,
   completePregnancySummary,
@@ -40,7 +41,16 @@ test.describe('CHW: Well Child NewbornExam Encounter', () => {
     await setupDevice(page, '2345', 'Akanduga');
   });
 
-  test('complete newborn exam with PregnancySummary, NutritionAssessment, Immunisation, verify backend sync', async ({ page }) => {
+  test('complete newborn exam with PregnancySummary, NutritionAssessment, Immunisation, verify backend sync', async ({ page, browser }) => {
+    // Verify FeatureWellChild flag gates client UI + admin Reports surfaces.
+    await verifyFeatureGatesEncounterButton(page, 'well_child', 'Well Child Visit', {
+      browser,
+      admin: {
+        sqOptions: ['postnatal-care'],
+        sqDemographicsRows: ['Standard Pediatric Visit'],
+        completionOptions: ['newborn-exam', 'well-child'],
+      },
+    });
 
     const { fullName } = await createChildAndStartWellChildEncounter(page, {
       ageMonths: 1,

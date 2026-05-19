@@ -7,6 +7,7 @@ import {
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
 import { syncAndWait } from './helpers/common';
+import { verifyFeatureGatesEncounterButton } from './helpers/feature-flags';
 import {
   createAdultFemaleAndStartEncounter,
   startPrenatalEncounter,
@@ -35,7 +36,17 @@ test.describe('CHW: Prenatal First Encounter', () => {
     await setupDevice(page, '2345', 'Akanduga');
   });
 
-  test('complete all activities and verify backend sync', async ({ page }) => {
+  test('complete all activities and verify backend sync', async ({ page, browser }) => {
+    // Verify FeatureAntenatal flag gates client UI + admin Reports surfaces.
+    await verifyFeatureGatesEncounterButton(page, 'antenatal', 'Antenatal Care', {
+      browser,
+      admin: {
+        sqOptions: ['peripartum', 'prenatal', 'prenatal-contacts', 'prenatal-diagnoses'],
+        sqDemographicsRows: ['ANC (total)'],
+        completionOptions: ['prenatal'],
+      },
+    });
+
     // LMP date ~30 weeks ago.
     const lmpDate = new Date();
     lmpDate.setDate(lmpDate.getDate() - 30 * 7);
