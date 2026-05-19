@@ -1838,11 +1838,12 @@ function attachDropzone() {
     return;
   }
 
-  // TODO: Feed the dictDefaultMessage in as a param, so we can use the
-  // translated version.
+  // The default message is rendered by Elm inside `.dz-message`. Dropzone
+  // detects the pre-existing element (see Dropzone.js init guard against
+  // `.dz-message`) and leaves the translated content in place, so we do
+  // not need to pass `dictDefaultMessage` here.
   dropZone = new Dropzone(selector, {
     url: "cache-upload/images",
-    dictDefaultMessage: "Touch here to take a photo, or drop a photo file here.",
     acceptedFiles: "jpg,jpeg,png,gif,image/*",
     capture: 'camera',
     resizeWidth: 600,
