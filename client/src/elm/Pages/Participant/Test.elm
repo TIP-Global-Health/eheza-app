@@ -16,22 +16,6 @@ nextActivityTest =
         always Expect.pass
 
 
-
-{-
-   let
-       singleChild =
-           ({ info = Participant.Model.ParticipantChild exampleChildA })
-   in
-       describe "A nurse visits the last activity" <|
-           [ test "Then on completion, the process is over" <|
-               \() ->
-                   Expect.equal
-                       (nextActivity ( 1, singleChild ) emptyModel)
-                       Nothing
-           ]
--}
-
-
 all : Test
 all =
     describe "Next activity flow"
