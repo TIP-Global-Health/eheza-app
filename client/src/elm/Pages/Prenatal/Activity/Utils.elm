@@ -1,4 +1,4 @@
-module Pages.Prenatal.Activity.Utils exposing (..)
+module Pages.Prenatal.Activity.Utils exposing (activityCompleted, appointmentConfirmationFormInutsAndTasks, appointmentConfirmationFormWithDefault, birthPlanFormWithDefault, breastExamFormWithDefault, breastfeedingFormWithDefault, calciumAdministrationFormConfig, dangerSignsFormWithDefault, examinationTaskCompleted, examinationTasksCompletedFromTotal, expectActivity, expectImmunisationTask, expectLaboratoryTask, fefolAdministrationFormConfig, folateAdministrationFormConfig, followUpFormInutsAndTasks, followUpFormWithDefault, generateDangerSignsListForChw, generateFutureVaccinationsDataByProgress, generatePendingLabsFromPreviousEncounters, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, generateVitalsFormConfig, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, guExamFormInputsAndTasks, guExamFormWithDefault, healthEducationFormInputsAndTasks, healthEducationFormWithDefault, highBloodPressureCondition, historyTaskCompleted, immunisationTaskToVaccineType, immunisationTasks, immunisationTasksCompletedFromTotal, ironAdministrationFormConfig, laboratoryTaskCompleted, laboratoryTasks, lastMenstrualPeriodFormWithDefault, mandatoryActivitiesForAssessmentCompleted, mebendazoleAdministrationFormConfig, medicalHistoryFormWithDefault, medicationFormWithDefault, medicationTaskCompleted, medicationTasksCompletedFromTotal, mentalHealthFormWithDefault, mmsAdministrationFormConfig, nextStepsTaskCompleted, nextStepsTasksCompletedFromTotal, noDangerSigns, obstetricHistoryFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, pregnancyTestFormWithDefault, prenatalNutritionFormWithDefault, reasonsForNotBreastfeedingLeft, reasonsForNotBreastfeedingRight, resolveBookingWeight, resolveExaminationTasks, resolveGWGClassification, resolveGWGClassificationForHealthyStart, resolveHistoryTasks, resolveMeasuredHeight, resolveMedicationTasks, resolveMedicationTreatmentFormInputsAndTasks, resolveNextStepsTasks, resolvePrePregnancyClassification, resolvePrePregnancyWeight, resolvePrenatalMedicationFormInputsAndTasks, resolvePreviousValue, resolvePreviousValueWithDate, resolvePreviouslyMeasuredHeight, resolveReferralInputsAndTasksForCHW, resolveReferralInputsAndTasksForNurse, resolveTreatmentReviewTasks, resolveWarningPopupContentForUrgentDiagnoses, respiratoryRateElevated, skipObstetricHistorySecondStep, socialHistoryFormWithDefault, specialityCareFormWithDefault, suicideRiskDiagnosedBySigns, symptomReviewFormInputsAndTasks, symptomReviewFormWithDefault, toAppointmentConfirmationValueWithDefault, toBirthPlanValueWithDefault, toBreastExamValueWithDefault, toBreastfeedingValueWithDefault, toDangerSignsValueWithDefault, toFollowUpValueWithDefault, toGUExamValueWithDefault, toHealthEducationValueWithDefault, toLastMenstrualPeriodValueWithDefault, toMedicalHistoryValueWithDefault, toMedicationValueWithDefault, toObstetricHistoryStep2ValueWithDefault, toObstetricHistoryValue, toObstetricHistoryValueWithDefault, toObstetricalExamValueWithDefault, toPregnancyTestValueWithDefault, toPrenatalMentalHealthValueWithDefault, toPrenatalNutritionValueWithDefault, toSocialHistoryValueWithDefault, toSpecialityCareValueWithDefault, toSymptomReviewValueWithDefault, toUltrasoundValueWithDefault, treatmentReviewTaskCompleted, treatmentReviewTasksCompletedFromTotal, ultrasoundFormInputsAndTasks, updateSymptomReviewFormWithSymptoms, updateVaccinationFormByVaccineType, vaccinationFormDynamicContentAndTasks, weightGainStandardsByPrePregnancyClassificationHealthyStart, weightGainStandardsPerPrePregnancyClassification)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (PrenatalEncounterId)
@@ -14,7 +14,7 @@ import Backend.Measurement.Utils
         , weightValueFunc
         )
 import Backend.Person.Model exposing (Person)
-import Backend.PrenatalActivity.Model exposing (..)
+import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..), PrenatalIndicator(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter)
@@ -50,11 +50,11 @@ import Measurement.Utils
         , vitalsFormWithDefault
         )
 import Measurement.View exposing (viewActionTakenLabel, vitalsFormInputsAndTasks)
-import Pages.Prenatal.Activity.Model exposing (..)
-import Pages.Prenatal.Activity.Types exposing (..)
+import Pages.Prenatal.Activity.Model exposing (AppointmentConfirmationForm, BirthPlanForm, BreastExamForm, BreastfeedingForm, DangerSignsForm, ExaminationData, FollowUpForm, GUExamForm, ImmunisationData, MedicalHistoryForm, MedicationData, MedicationForm, MentalHealthForm, Msg(..), NextStepsData, NutritionAssessmentForm, ObstetricFormFirstStep, ObstetricFormSecondStep, ObstetricalExamForm, PregnancyDatingForm, PregnancyTestForm, PrenatalVaccinationForm, SocialHistoryForm, SpecialityCareForm, SymptomReviewForm, TreatmentReviewData, UltrasoundForm)
+import Pages.Prenatal.Activity.Types exposing (ExaminationTask(..), GWGClassification(..), HistoryTask(..), ImmunisationTask(..), MedicationTask(..), NextStepsTask(..), PrePregnancyClassification(..), SymptomReviewStep(..), TreatmentReviewTask(..))
 import Pages.Prenatal.Encounter.Utils exposing (calculateBmi, emergencyReferalRequired, generateGravida, generatePara, getAllActivities)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm, VaccinationProgressDict)
-import Pages.Prenatal.Utils exposing (..)
+import Pages.Prenatal.Utils exposing (applyDiagnosesHierarchy, bloodPressureAtHypertensionTreatmentRequiresHospitalization, calculateEGAWeeks, diabetesDiagnoses, diabetesDiagnosesInitialPhase, diagnosed, diagnosedAnyOf, diagnosedDiabetesPrevoiusly, diagnosedHighRiskOfPreeclampsiaPrevoiusly, diagnosedHypertension, diagnosedHypertensionPrevoiusly, diagnosedMalariaByPhase, diagnosedModeratePreeclampsiaPrevoiusly, diagnosedPreviously, diagnosedPreviouslyAnyOf, diagnosedRiskOfPreeclampsiaPrevoiusly, diagnosedSyphilisByPhase, diagnosesCausingHospitalReferralByPhase, emergencyReferralDiagnoses, expectMalariaPreventionActivity, getLatestTreatmentByTreatmentOptions, healthEducationFormFamilyPlanningInput, healthEducationFormInputsAndTasksForNurse, hivProgramAtHC, hypertensionDiagnoses, labTestWithImmediateResult, medicationDistributionFormWithDefaultInitialPhase, medicationDistributionMeasurementTaken, medicationsInitialPhase, mentalHealthDiagnosesRequiringTreatment, mentalHealthSpecialistAtHC, moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis, moderatePreeclampsiaDiagnoses, nurseEncounterNotPerformed, preeclampsiaDiagnoses, provideHIVEducation, provideHIVPartnerPresenceEducation, provideLegPainRednessEducation, provideMentalHealthEducation, provideNauseaAndVomitingEducation, providePelvicPainEducation, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignsForCandidiasis, recommendedTreatmentSignsForHeartburn, recommendedTreatmentSignsForHypertension, recommendedTreatmentSignsForMalaria, recommendedTreatmentSignsForMastitis, recommendedTreatmentSignsForSyphilis, recommendedTreatmentSignsForUrinaryTractInfection, referToHospitalDueToAdverseEventForHypertensionTreatment, referToHospitalDueToAdverseEventForMalariaTreatment, referralFormWithDefault, referralToFacilityCompleted, referredToSpecialityCareProgram, reinforceTreatmentSignsCompleted, resolveARVReferralDiagnosis, resolveFefolDosageAndIcon, resolveMMSDosageAndIcon, resolveMedicationDistributionInputsAndTasks, resolveNCDReferralDiagnoses, resolveReferralToFacilityInputsAndTasks, resolveRequiredMedicationsSet, showMebendazoleQuestion, symptomRecorded, symptomRecordedPreviously, syphilisDiagnosesIncludingNeurosyphilis, updateHypertensionTreatmentWithMedication)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -1751,14 +1751,14 @@ resolveGWGClassification currentDate prePregnancyClassification prePregnancyWeig
     Maybe.map
         (\lmpDate ->
             let
-                egaInWeeks =
-                    calculateEGAWeeks currentDate lmpDate
-
                 actualWeightGain =
                     currentWeight - prePregnancyWeight
 
                 expectedWeightGain =
                     let
+                        egaInWeeks =
+                            calculateEGAWeeks currentDate lmpDate
+
                         weeksAfterFirstTrimester =
                             egaInWeeks - 12
 
@@ -1805,37 +1805,37 @@ resolveGWGClassificationForHealthyStart currentDate prePregnancyClassification p
     Maybe.map
         (\lmpDate ->
             let
-                thirteenWeeksDate =
-                    Date.add Weeks 13 lmpDate
-
-                totalDays =
-                    Date.diff Days previousWeightDate currentDate
-                        |> toFloat
-
-                -- Determine how many days fall before and after 13 weeks
-                ( daysBefore13Weeks, daysAfter13Weeks ) =
-                    if Date.compare currentDate thirteenWeeksDate == LT then
-                        -- Entire period is before 13 weeks
-                        ( totalDays, 0 )
-
-                    else if not <| Date.compare previousWeightDate thirteenWeeksDate == LT then
-                        -- Entire period is at or after 13 weeks
-                        ( 0, totalDays )
-
-                    else
-                        -- Period spans 13 weeks boundary
-                        let
-                            daysBefore =
-                                Date.diff Days previousWeightDate thirteenWeeksDate
-                                    |> toFloat
-
-                            daysAfter =
-                                totalDays - daysBefore
-                        in
-                        ( daysBefore, daysAfter )
-
                 expectedWeightGain =
                     let
+                        thirteenWeeksDate =
+                            Date.add Weeks 13 lmpDate
+
+                        totalDays =
+                            Date.diff Days previousWeightDate currentDate
+                                |> toFloat
+
+                        -- Determine how many days fall before and after 13 weeks
+                        ( daysBefore13Weeks, daysAfter13Weeks ) =
+                            if Date.compare currentDate thirteenWeeksDate == LT then
+                                -- Entire period is before 13 weeks
+                                ( totalDays, 0 )
+
+                            else if not <| Date.compare previousWeightDate thirteenWeeksDate == LT then
+                                -- Entire period is at or after 13 weeks
+                                ( 0, totalDays )
+
+                            else
+                                -- Period spans 13 weeks boundary
+                                let
+                                    daysBefore =
+                                        Date.diff Days previousWeightDate thirteenWeeksDate
+                                            |> toFloat
+
+                                    daysAfter =
+                                        totalDays - daysBefore
+                                in
+                                ( daysBefore, daysAfter )
+
                         ( perDayFirstTrimester, perDayOtherTrimesters ) =
                             weightGainStandardsByPrePregnancyClassificationHealthyStart prePregnancyClassification
                     in
@@ -1995,7 +1995,7 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
                         (egaWeeks >= 37)
-                            && severePreeclampsiaRecurrentPhase signs measurements
+                            && severePreeclampsiaRecurrentPhase measurements
                     )
 
         DiagnosisEclampsia ->
@@ -2454,93 +2454,6 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                 |> Maybe.map ((==) RhesusNegative)
                 |> Maybe.withDefault False
 
-        moderateRiskPreeclampsiaDiagnosed =
-            let
-                byAgeAndFirstPregnancy =
-                    let
-                        ageInYears =
-                            Maybe.map2
-                                (Date.diff Years)
-                                assembled.person.birthDate
-                                assembled.globalLmpDate
-
-                        totalPregnancies =
-                            List.filterMap (.obstetricHistory >> getMeasurementValueFunc)
-                                allMeasurements
-                                |> List.head
-                                |> Maybe.map
-                                    (\value ->
-                                        value.termPregnancy + value.preTermPregnancy
-                                    )
-                    in
-                    Maybe.map2
-                        (\ageYears pregnanciesCount ->
-                            (pregnanciesCount == 0)
-                                && (ageYears < 18 || ageYears >= 35)
-                        )
-                        ageInYears
-                        totalPregnancies
-                        |> Maybe.withDefault False
-
-                byBMI =
-                    calculateBmi
-                        (resolveMeasuredHeight assembled
-                            |> Maybe.map getHeightValue
-                        )
-                        (getMeasurementValueFunc assembled.measurements.nutrition
-                            |> Maybe.map (.weight >> weightValueFunc)
-                        )
-                        |> Maybe.map (\bmi -> bmi >= 30)
-                        |> Maybe.withDefault False
-
-                byPreeclampsiaInFamily =
-                    List.filterMap (.medicalHistory >> getMeasurementValueFunc)
-                        allMeasurements
-                        |> List.head
-                        |> Maybe.map (.preeclampsiaInFamily >> (==) DoesOccur)
-                        |> Maybe.withDefault False
-
-                byStillbornChildren =
-                    List.filterMap (.obstetricHistory >> getMeasurementValueFunc)
-                        allMeasurements
-                        |> List.head
-                        |> Maybe.map
-                            (\value ->
-                                value.stillbirthsAtTerm + value.stillbirthsPreTerm > 0
-                            )
-                        |> Maybe.withDefault False
-
-                byObstetricHistorySigns =
-                    List.filterMap (.obstetricHistoryStep2 >> getMeasurementValueFunc)
-                        allMeasurements
-                        |> List.head
-                        |> Maybe.map
-                            (\value ->
-                                let
-                                    byPeriodFromPreviousPregnancy =
-                                        EverySet.member MoreThan10Years value.previousDeliveryPeriod
-
-                                    bySigns =
-                                        List.any
-                                            (\sign ->
-                                                EverySet.member sign value.signs
-                                            )
-                                            [ ObstetricHistoryPlacentaAbruptionPreviousDelivery
-                                            , ObstetricHistoryChildWithLowBirthweightPreviousDelivery
-                                            , ObstetricHistorySmallForGestationalAgePreviousDelivery
-                                            , ObstetricHistoryIntraUterineDeathPreviousDelivery
-                                            ]
-                                in
-                                byPeriodFromPreviousPregnancy || bySigns
-                            )
-                        |> Maybe.withDefault False
-            in
-            byAgeAndFirstPregnancy
-                || byBMI
-                || byPreeclampsiaInFamily
-                || byStillbornChildren
-                || byObstetricHistorySigns
-
         highRiskPreeclampsiaDiagnosedBySignsAndPreviousDiagnoses =
             let
                 byPreviousPreeclampsia =
@@ -2602,6 +2515,94 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
     in
     case diagnosis of
         DiagnosisModerateRiskOfPreeclampsia ->
+            let
+                moderateRiskPreeclampsiaDiagnosed =
+                    let
+                        byAgeAndFirstPregnancy =
+                            let
+                                ageInYears =
+                                    Maybe.map2
+                                        (Date.diff Years)
+                                        assembled.person.birthDate
+                                        assembled.globalLmpDate
+
+                                totalPregnancies =
+                                    List.filterMap (.obstetricHistory >> getMeasurementValueFunc)
+                                        allMeasurements
+                                        |> List.head
+                                        |> Maybe.map
+                                            (\value ->
+                                                value.termPregnancy + value.preTermPregnancy
+                                            )
+                            in
+                            Maybe.map2
+                                (\ageYears pregnanciesCount ->
+                                    (pregnanciesCount == 0)
+                                        && (ageYears < 18 || ageYears >= 35)
+                                )
+                                ageInYears
+                                totalPregnancies
+                                |> Maybe.withDefault False
+
+                        byBMI =
+                            calculateBmi
+                                (resolveMeasuredHeight assembled
+                                    |> Maybe.map getHeightValue
+                                )
+                                (getMeasurementValueFunc assembled.measurements.nutrition
+                                    |> Maybe.map (.weight >> weightValueFunc)
+                                )
+                                |> Maybe.map (\bmi -> bmi >= 30)
+                                |> Maybe.withDefault False
+
+                        byPreeclampsiaInFamily =
+                            List.filterMap (.medicalHistory >> getMeasurementValueFunc)
+                                allMeasurements
+                                |> List.head
+                                |> Maybe.map (.preeclampsiaInFamily >> (==) DoesOccur)
+                                |> Maybe.withDefault False
+
+                        byStillbornChildren =
+                            List.filterMap (.obstetricHistory >> getMeasurementValueFunc)
+                                allMeasurements
+                                |> List.head
+                                |> Maybe.map
+                                    (\value ->
+                                        value.stillbirthsAtTerm + value.stillbirthsPreTerm > 0
+                                    )
+                                |> Maybe.withDefault False
+
+                        byObstetricHistorySigns =
+                            List.filterMap (.obstetricHistoryStep2 >> getMeasurementValueFunc)
+                                allMeasurements
+                                |> List.head
+                                |> Maybe.map
+                                    (\value ->
+                                        let
+                                            byPeriodFromPreviousPregnancy =
+                                                EverySet.member MoreThan10Years value.previousDeliveryPeriod
+
+                                            bySigns =
+                                                List.any
+                                                    (\sign ->
+                                                        EverySet.member sign value.signs
+                                                    )
+                                                    [ ObstetricHistoryPlacentaAbruptionPreviousDelivery
+                                                    , ObstetricHistoryChildWithLowBirthweightPreviousDelivery
+                                                    , ObstetricHistorySmallForGestationalAgePreviousDelivery
+                                                    , ObstetricHistoryIntraUterineDeathPreviousDelivery
+                                                    ]
+                                        in
+                                        byPeriodFromPreviousPregnancy || bySigns
+                                    )
+                                |> Maybe.withDefault False
+                    in
+                    byAgeAndFirstPregnancy
+                        || byBMI
+                        || byPreeclampsiaInFamily
+                        || byStillbornChildren
+                        || byObstetricHistorySigns
+            in
             moderateRiskPreeclampsiaDiagnosed
                 && (not <| diagnosedRiskOfPreeclampsiaPrevoiusly assembled)
                 -- We don't diagnose Preeclampsia RISK, if any kind of
@@ -2753,7 +2754,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
                         (egaWeeks < 37)
-                            && severePreeclampsiaRecurrentPhase dangerSigns measurements
+                            && severePreeclampsiaRecurrentPhase measurements
                     )
 
         DiagnosisHIVInitialPhase ->
@@ -3278,8 +3279,8 @@ severePreeclampsiaInitialPhase dangerSigns measurements =
            )
 
 
-severePreeclampsiaRecurrentPhase : List DangerSign -> PrenatalMeasurements -> Bool
-severePreeclampsiaRecurrentPhase dangerSigns measurements =
+severePreeclampsiaRecurrentPhase : PrenatalMeasurements -> Bool
+severePreeclampsiaRecurrentPhase measurements =
     let
         byBloodPressure =
             getMeasurementValueFunc measurements.vitals
@@ -3317,18 +3318,6 @@ highBloodPressure measurements =
                 Maybe.map2 highBloodPressureCondition
                     value.dia
                     value.sys
-            )
-        |> Maybe.withDefault False
-
-
-repeatedHighBloodPressure : PrenatalMeasurements -> Bool
-repeatedHighBloodPressure measurements =
-    getMeasurementValueFunc measurements.vitals
-        |> Maybe.andThen
-            (\value ->
-                Maybe.map2 highBloodPressureCondition
-                    value.diaRepeated
-                    value.sysRepeated
             )
         |> Maybe.withDefault False
 
@@ -3426,7 +3415,7 @@ highUrineProteinInitialPhase measurements =
 respiratoryRateElevated : PrenatalMeasurements -> Bool
 respiratoryRateElevated measurements =
     getMeasurementValueFunc measurements.vitals
-        |> Maybe.map (\value -> value.respiratoryRate > 30)
+        |> Maybe.andThen (\value -> Maybe.map (\rr -> rr > 30) value.respiratoryRate)
         |> Maybe.withDefault False
 
 
@@ -3587,12 +3576,11 @@ mentalHealthDiagnoses =
 nextStepsTasksCompletedFromTotal :
     Language
     -> NominalDate
-    -> Bool
     -> AssembledData
     -> NextStepsData
     -> NextStepsTask
     -> ( Int, Int )
-nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task =
+nextStepsTasksCompletedFromTotal language currentDate assembled data task =
     case task of
         NextStepsAppointmentConfirmation ->
             let
@@ -3608,7 +3596,7 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                 ( _, tasks ) =
                     getMeasurementValueFunc assembled.measurements.followUp
                         |> followUpFormWithDefault data.followUpForm
-                        |> followUpFormInutsAndTasks language currentDate
+                        |> followUpFormInutsAndTasks language
             in
             resolveTasksCompletedFromTotal tasks
 
@@ -3627,11 +3615,10 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                             tasksForNurse
 
                         _ ->
-                            resolveReferralInputsAndTasksForCHW language currentDate assembled form
+                            resolveReferralInputsAndTasksForCHW language form
 
                 tasksForNurse =
                     resolveReferralInputsAndTasksForNurse language
-                        currentDate
                         assembled
                         SetReferralBoolInput
                         SetFacilityNonReferralReason
@@ -3727,8 +3714,8 @@ appointmentConfirmationFormInutsAndTasks language currentDate form =
     )
 
 
-followUpFormInutsAndTasks : Language -> NominalDate -> FollowUpForm -> ( List (Html Msg), List (Maybe Bool) )
-followUpFormInutsAndTasks language currentDate form =
+followUpFormInutsAndTasks : Language -> FollowUpForm -> ( List (Html Msg), List (Maybe Bool) )
+followUpFormInutsAndTasks language form =
     ( [ viewLabel language Translate.FollowUpWithMotherLabel
       , viewCheckBoxSelectInput language
             [ ThreeDays
@@ -4126,15 +4113,6 @@ liveChildBorn =
         >> Maybe.withDefault False
 
 
-resolveLastRecordedValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe b
-resolveLastRecordedValue assembled measurementFunc valueFunc =
-    (assembled.measurements
-        :: (List.map .measurements assembled.nursePreviousEncountersData |> List.reverse)
-    )
-        |> List.filterMap (measurementFunc >> Maybe.map (Tuple.second >> .value >> valueFunc))
-        |> List.head
-
-
 resolvePreviousValueWithDate : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe ( NominalDate, b )
 resolvePreviousValueWithDate assembled measurementFunc valueFunc =
     assembled.nursePreviousEncountersData
@@ -4194,14 +4172,6 @@ toBreastExamValue form =
     Maybe.map BreastExamValue (Maybe.map EverySet.fromList form.breast)
         |> andMap (Just form.dischargeType)
         |> andMap form.selfGuidance
-
-
-fromDangerSignsValue : Maybe DangerSignsValue -> DangerSignsForm
-fromDangerSignsValue saved =
-    { signs = Maybe.map (.signs >> EverySet.toList) saved
-    , postpartumMother = Maybe.map (.postpartumMother >> EverySet.toList) saved
-    , postpartumChild = Maybe.map (.postpartumChild >> EverySet.toList) saved
-    }
 
 
 dangerSignsFormWithDefault : DangerSignsForm -> Maybe DangerSignsValue -> DangerSignsForm
@@ -4577,7 +4547,6 @@ treatmentReviewTasksCompletedFromTotal language currentDate assembled data task 
 
                 _ ->
                     resolveMedicationTreatmentFormInputsAndTasks language
-                        currentDate
                         SetMedicationSubActivityBoolInput
                         assembled
                         form
@@ -4635,13 +4604,12 @@ resolvePrenatalMedicationFormInputsAndTasks language currentDate setBoolInputMsg
 
 resolveMedicationTreatmentFormInputsAndTasks :
     Language
-    -> NominalDate
     -> ((Bool -> MedicationForm -> MedicationForm) -> Bool -> Msg)
     -> AssembledData
     -> MedicationForm
     -> TreatmentReviewTask
     -> ( List (Html Msg), List (Maybe Bool) )
-resolveMedicationTreatmentFormInputsAndTasks language currentDate setBoolInputMsg assembled form task =
+resolveMedicationTreatmentFormInputsAndTasks language setBoolInputMsg assembled form task =
     case task of
         TreatmentReviewHIV ->
             let
@@ -4704,10 +4672,10 @@ resolveMedicationTreatmentFormInputsAndTasks language currentDate setBoolInputMs
 
             else
                 -- No HIV program at heath center => patient was supposed to get medication.
-                resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolInputMsg assembled form task
+                resolveMedicationTreatmentFormInputsAndTasksCommon language setBoolInputMsg assembled form task
 
         _ ->
-            resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolInputMsg assembled form task
+            resolveMedicationTreatmentFormInputsAndTasksCommon language setBoolInputMsg assembled form task
 
 
 reasonsForNoMedicationByPMTCT : List HIVTreatmentSign
@@ -4721,13 +4689,12 @@ reasonsForNoMedicationByPMTCT =
 
 resolveMedicationTreatmentFormInputsAndTasksCommon :
     Language
-    -> NominalDate
     -> ((Bool -> MedicationForm -> MedicationForm) -> Bool -> Msg)
     -> AssembledData
     -> MedicationForm
     -> TreatmentReviewTask
     -> ( List (Html Msg), List (Maybe Bool) )
-resolveMedicationTreatmentFormInputsAndTasksCommon language currentDate setBoolInputMsg assembled form task =
+resolveMedicationTreatmentFormInputsAndTasksCommon language setBoolInputMsg assembled form task =
     let
         configForTask =
             case task of
@@ -4973,24 +4940,6 @@ toObstetricalExamValue form =
         |> andMap form.cSectionScar
 
 
-fromObstetricHistoryValue : Maybe ObstetricHistoryValue -> ObstetricFormFirstStep
-fromObstetricHistoryValue saved =
-    { currentlyPregnant = Maybe.map .currentlyPregnant saved
-    , termPregnancy = Maybe.map .termPregnancy saved
-    , termPregnancyDirty = False
-    , preTermPregnancy = Maybe.map .preTermPregnancy saved
-    , preTermPregnancyDirty = False
-    , stillbirthsAtTerm = Maybe.map .stillbirthsAtTerm saved
-    , stillbirthsAtTermDirty = False
-    , stillbirthsPreTerm = Maybe.map .stillbirthsPreTerm saved
-    , stillbirthsPreTermDirty = False
-    , abortions = Maybe.map .abortions saved
-    , abortionsDirty = False
-    , liveChildren = Maybe.map .liveChildren saved
-    , liveChildrenDirty = False
-    }
-
-
 obstetricHistoryFormWithDefault : ObstetricFormFirstStep -> Maybe ObstetricHistoryValue -> ObstetricFormFirstStep
 obstetricHistoryFormWithDefault form saved =
     saved
@@ -5085,7 +5034,7 @@ toObstetricHistoryStep2Value form =
     -- Number of C-sections field is oboslete. Since we still need to
     -- keep this info as part of the value, to support exisitng measurements,
     -- we default it to -1.
-    Maybe.map ObstetricHistoryStep2Value (Just -1)
+    Just (ObstetricHistoryStep2Value -1)
         |> andMap (Just <| Maybe.map EverySet.singleton form.cSectionReason)
         |> andMap previousDeliverySet
         |> andMap (Maybe.map EverySet.singleton form.previousDeliveryPeriod)
@@ -5281,7 +5230,7 @@ examinationTasksCompletedFromTotal currentDate assembled data task =
                 ( _, tasks ) =
                     getMeasurementValueFunc assembled.measurements.guExam
                         |> guExamFormWithDefault data.guExamForm
-                        |> guExamFormInputsAndTasks English assembled
+                        |> guExamFormInputsAndTasks English
             in
             resolveTasksCompletedFromTotal tasks
 
@@ -5290,30 +5239,22 @@ generateVitalsFormConfig : AssembledData -> VitalsFormConfig Msg
 generateVitalsFormConfig assembled =
     { setIntInputMsg = SetVitalsIntInput
     , setFloatInputMsg = SetVitalsFloatInput
+    , setRespiratoryRateNotTakenMsg = always NoOp
+    , setBodyTemperatureNotTakenMsg = always NoOp
     , sysBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .sys
     , diaBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .dia
     , heartRatePreviousValue =
         resolvePreviousMaybeValue assembled .vitals .heartRate
             |> Maybe.map toFloat
     , respiratoryRatePreviousValue =
-        resolvePreviousValue assembled .vitals .respiratoryRate
+        resolvePreviousMaybeValue assembled .vitals .respiratoryRate
             |> Maybe.map toFloat
-    , bodyTemperaturePreviousValue = resolvePreviousValue assembled .vitals .bodyTemperature
+    , bodyTemperaturePreviousValue = resolvePreviousMaybeValue assembled .vitals .bodyTemperature
     , birthDate = assembled.person.birthDate
     , formClass = "examination vitals"
     , mode = VitalsFormFull
     , invokationModule = InvokationModulePrenatal
-    }
-
-
-fromBirthPlanValue : Maybe BirthPlanValue -> BirthPlanForm
-fromBirthPlanValue saved =
-    { haveInsurance = Maybe.map (.signs >> EverySet.member Insurance) saved
-    , boughtClothes = Maybe.map (.signs >> EverySet.member BoughtClothes) saved
-    , caregiverAccompany = Maybe.map (.signs >> EverySet.member CaregiverAccompany) saved
-    , savedMoney = Maybe.map (.signs >> EverySet.member SavedMoney) saved
-    , haveTransportation = Maybe.map (.signs >> EverySet.member Transportation) saved
-    , familyPlanning = Maybe.map (.familyPlanning >> EverySet.toList) saved
+    , allowSkipping = False
     }
 
 
@@ -5383,13 +5324,6 @@ toFollowUpValue form =
         )
         (Maybe.map (List.singleton >> EverySet.fromList) form.option)
         form.assesment
-
-
-fromAppointmentConfirmationValue : Maybe PrenatalAppointmentConfirmationValue -> AppointmentConfirmationForm
-fromAppointmentConfirmationValue saved =
-    { appointmentDate = Maybe.map .date saved
-    , dateSelectorPopupState = Nothing
-    }
 
 
 appointmentConfirmationFormWithDefault : AppointmentConfirmationForm -> Maybe PrenatalAppointmentConfirmationValue -> AppointmentConfirmationForm
@@ -5516,12 +5450,11 @@ expectLaboratoryTask currentDate assembled task =
                             else
                                 let
                                     lastTestWeek =
-                                        Dict.get test testsDates
+                                        (Dict.get test testsDates
                                             |> Maybe.map (List.map (\testsDate -> diffWeeks lmpDate testsDate))
                                             |> Maybe.withDefault []
-                                            |> List.sort
-                                            |> List.reverse
-                                            |> List.head
+                                        )
+                                            |> List.maximum
                                 in
                                 Maybe.map (\testWeek -> testWeek < week) lastTestWeek
                                     |> Maybe.withDefault True
@@ -6082,14 +6015,15 @@ toPrenatalMentalHealthValue form =
 immunisationTaskCompleted : NominalDate -> AssembledData -> ImmunisationTask -> Bool
 immunisationTaskCompleted currentDate data task =
     let
-        measurements =
-            data.measurements
-
         taskExpected =
             expectImmunisationTask currentDate data
     in
     case task of
         TaskTetanus ->
+            let
+                measurements =
+                    data.measurements
+            in
             (not <| taskExpected TaskTetanus) || isJust measurements.tetanusImmunisation
 
         TaskOverview ->
@@ -6553,6 +6487,8 @@ breastfeedingFormWithDefault form saved =
                 , enoughMilkDirty = form.enoughMilkDirty
                 , latchingWell = maybeValueConsideringIsDirtyField form.latchingWellDirty form.latchingWell (EverySet.member LatchingWell value |> Just)
                 , latchingWellDirty = form.latchingWellDirty
+                , breastfedFirstHour = maybeValueConsideringIsDirtyField form.breastfedFirstHourDirty form.breastfedFirstHour (EverySet.member BreastfedFirstHour value |> Just)
+                , breastfedFirstHourDirty = form.breastfedFirstHourDirty
                 }
             )
 
@@ -6570,6 +6506,7 @@ toBreastfeedingValue form =
     , ifNullableTrue BreastRedness form.breastRedness
     , ifNullableTrue EnoughMilk form.enoughMilk
     , ifNullableTrue LatchingWell form.latchingWell
+    , ifNullableTrue BreastfedFirstHour form.breastfedFirstHour
     , Maybe.map (EverySet.singleton >> Just) form.reasonForNotBreastfeeding
         |> Maybe.withDefault (Just EverySet.empty)
     ]
@@ -6676,8 +6613,8 @@ toGUExamValue form =
         maybeGUExamSigns
 
 
-guExamFormInputsAndTasks : Language -> AssembledData -> GUExamForm -> ( List (Html Msg), List (Maybe Bool) )
-guExamFormInputsAndTasks language assembled form =
+guExamFormInputsAndTasks : Language -> GUExamForm -> ( List (Html Msg), List (Maybe Bool) )
+guExamFormInputsAndTasks language form =
     let
         ( initialSection, initialTasks ) =
             let
@@ -6719,76 +6656,76 @@ guExamFormInputsAndTasks language assembled form =
             if isNothing form.episiotomyOrPerinealTear then
                 ( [], [] )
 
-            else if form.episiotomyOrPerinealTear == Just True then
-                let
-                    ( healingProblemsSection, healingProblemsTasks ) =
-                        if form.healingNormally == Just False then
-                            ( [ viewCustomLabel language Translate.PostpartumHealingProblemQuestion "?" "label question"
-                              , viewCheckBoxMultipleSelectInput language
-                                    [ HealingProblemSwelling, HealingProblemDischarge, HealingProblemReleaseOfSutures ]
-                                    [ HealingProblemHematoma, HealingProblemBruising ]
-                                    (form.postpartumHealingProblems |> Maybe.withDefault [])
-                                    Nothing
-                                    SetPostpartumHealingProblem
-                                    Translate.PostpartumHealingProblem
-                              , div [ class "separator double" ] []
-                              ]
-                            , [ maybeToBoolTask form.postpartumHealingProblems ]
-                            )
-
-                        else
-                            ( [], [] )
-
-                    healingNormallyUpdateFunc value form_ =
-                        { form_
-                            | healingNormally = Just value
-                            , healingNormallyDirty = True
-                            , postpartumHealingProblems = Nothing
-                            , postpartumHealingProblemsDirty = True
-                        }
-                in
-                ( [ viewCustomLabel language Translate.EpisiotomyOrPerinealTearHealingQuestion "?" "label question"
-                  , viewBoolInput
-                        language
-                        form.healingNormally
-                        (SetGUExamBoolInput healingNormallyUpdateFunc)
-                        "healing-normally"
-                        Nothing
-                  ]
-                    ++ healingProblemsSection
-                    ++ rectalHemorrhoidsSection
-                , form.healingNormally :: healingProblemsTasks ++ rectalHemorrhoidsTasks
-                )
-
             else
-                ( rectalHemorrhoidsSection, rectalHemorrhoidsTasks )
+                let
+                    ( rectalHemorrhoidsSection, rectalHemorrhoidsTasks ) =
+                        let
+                            rectalHemorrhoidsUpdateFunc value form_ =
+                                { form_ | rectalHemorrhoids = Just value }
+                        in
+                        ( [ viewCustomLabel language Translate.RectalHemorrhoids "?" "label question"
+                          , viewBoolInput
+                                language
+                                form.rectalHemorrhoids
+                                (SetGUExamBoolInput rectalHemorrhoidsUpdateFunc)
+                                "rectal-hemorrhoids"
+                                Nothing
+                          ]
+                        , [ form.rectalHemorrhoids ]
+                        )
+                in
+                if form.episiotomyOrPerinealTear == Just True then
+                    let
+                        ( healingProblemsSection, healingProblemsTasks ) =
+                            if form.healingNormally == Just False then
+                                ( [ viewCustomLabel language Translate.PostpartumHealingProblemQuestion "?" "label question"
+                                  , viewCheckBoxMultipleSelectInput language
+                                        [ HealingProblemSwelling, HealingProblemDischarge, HealingProblemReleaseOfSutures ]
+                                        [ HealingProblemHematoma, HealingProblemBruising ]
+                                        (form.postpartumHealingProblems |> Maybe.withDefault [])
+                                        Nothing
+                                        SetPostpartumHealingProblem
+                                        Translate.PostpartumHealingProblem
+                                  , div [ class "separator double" ] []
+                                  ]
+                                , [ maybeToBoolTask form.postpartumHealingProblems ]
+                                )
 
-        ( rectalHemorrhoidsSection, rectalHemorrhoidsTasks ) =
-            let
-                rectalHemorrhoidsUpdateFunc value form_ =
-                    { form_ | rectalHemorrhoids = Just value }
-            in
-            ( [ viewCustomLabel language Translate.RectalHemorrhoids "?" "label question"
-              , viewBoolInput
-                    language
-                    form.rectalHemorrhoids
-                    (SetGUExamBoolInput rectalHemorrhoidsUpdateFunc)
-                    "rectal-hemorrhoids"
-                    Nothing
-              ]
-            , [ form.rectalHemorrhoids ]
-            )
+                            else
+                                ( [], [] )
+
+                        healingNormallyUpdateFunc value form_ =
+                            { form_
+                                | healingNormally = Just value
+                                , healingNormallyDirty = True
+                                , postpartumHealingProblems = Nothing
+                                , postpartumHealingProblemsDirty = True
+                            }
+                    in
+                    ( [ viewCustomLabel language Translate.EpisiotomyOrPerinealTearHealingQuestion "?" "label question"
+                      , viewBoolInput
+                            language
+                            form.healingNormally
+                            (SetGUExamBoolInput healingNormallyUpdateFunc)
+                            "healing-normally"
+                            Nothing
+                      ]
+                        ++ healingProblemsSection
+                        ++ rectalHemorrhoidsSection
+                    , form.healingNormally :: healingProblemsTasks ++ rectalHemorrhoidsTasks
+                    )
+
+                else
+                    ( rectalHemorrhoidsSection, rectalHemorrhoidsTasks )
     in
     ( initialSection ++ derivedSection, initialTasks ++ derivedTasks )
 
 
 resolveReferralInputsAndTasksForCHW :
     Language
-    -> NominalDate
-    -> AssembledData
     -> ReferralForm
     -> ( List (Html Msg), List (Maybe Bool) )
-resolveReferralInputsAndTasksForCHW language currentDate assembled form =
+resolveReferralInputsAndTasksForCHW language form =
     let
         ( derivedSection, derivedTasks ) =
             Maybe.map
@@ -6866,13 +6803,12 @@ resolveReferralInputsAndTasksForCHW language currentDate assembled form =
 
 resolveReferralInputsAndTasksForNurse :
     Language
-    -> NominalDate
     -> AssembledData
     -> ((Bool -> ReferralForm -> ReferralForm) -> Bool -> msg)
     -> (Maybe ReasonForNonReferral -> ReferralFacility -> ReasonForNonReferral -> msg)
     -> ReferralForm
     -> ( List (Html msg), List (Maybe Bool) )
-resolveReferralInputsAndTasksForNurse language currentDate assembled setReferralBoolInputMsg setNonReferralReasonMsg form =
+resolveReferralInputsAndTasksForNurse language assembled setReferralBoolInputMsg setNonReferralReasonMsg form =
     let
         foldResults =
             List.foldr
@@ -6882,7 +6818,7 @@ resolveReferralInputsAndTasksForNurse language currentDate assembled setReferral
                 ( [], [] )
     in
     resolveRequiredReferralFacilities assembled
-        |> List.map (resolveReferralToFacilityInputsAndTasks language currentDate PrenatalEncounterPhaseInitial assembled setReferralBoolInputMsg setNonReferralReasonMsg form)
+        |> List.map (resolveReferralToFacilityInputsAndTasks language PrenatalEncounterPhaseInitial assembled setReferralBoolInputMsg setNonReferralReasonMsg form)
         |> foldResults
 
 
@@ -7106,7 +7042,7 @@ calciumAdministrationFormConfig =
 
 
 resolveCalciumDosageAndIcon : Language -> NominalDate -> Person -> Maybe ( String, String, String )
-resolveCalciumDosageAndIcon language currentDate person =
+resolveCalciumDosageAndIcon language _ _ =
     Just ( "500 mg", "icon-pills", translate language Translate.AdministerCalciumHelper )
 
 
@@ -7129,7 +7065,7 @@ folateAdministrationFormConfig =
 
 
 resolveFolicAcidDosageAndIcon : Language -> NominalDate -> Person -> Maybe ( String, String, String )
-resolveFolicAcidDosageAndIcon language currentDate person =
+resolveFolicAcidDosageAndIcon language _ _ =
     Just ( "400 UI", "icon-pills", translate language Translate.AdministerFolicAcidHelper )
 
 
@@ -7143,7 +7079,7 @@ ironAdministrationFormConfig =
 
 
 resolveIronDosageAndIcon : Language -> NominalDate -> Person -> Maybe ( String, String, String )
-resolveIronDosageAndIcon language currentDate person =
+resolveIronDosageAndIcon language _ _ =
     Just ( "120 mg", "icon-pills", translate language Translate.AdministerIronHelper )
 
 
@@ -7166,5 +7102,5 @@ mebendazoleAdministrationFormConfig =
 
 
 resolveMebendezoleDosageAndIcon : Language -> NominalDate -> Person -> Maybe ( String, String, String )
-resolveMebendezoleDosageAndIcon language currentDate person =
+resolveMebendezoleDosageAndIcon language _ _ =
     Just ( "500 mg", "icon-pills", translate language Translate.AdministerPrenatalMebendezoleHelper )

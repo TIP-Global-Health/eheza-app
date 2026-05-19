@@ -1,4 +1,4 @@
-module Backend.FamilyNutritionActivity.Utils exposing (..)
+module Backend.FamilyNutritionActivity.Utils exposing (allActivities, getActivityIcon)
 
 {-| Various utilities that deal with "activities". An activity represents the
 need for a nurse to do something with respect to a person who is checked in.
@@ -10,41 +10,7 @@ expected (and not completed).
 
 -}
 
-import Backend.FamilyNutritionActivity.Model exposing (..)
-
-
-{-| Used for URL etc., not for display in the normal UI (since we'd translate
-for that).
--}
-encodeActivityAsString : FamilyNutritionActivity -> String
-encodeActivityAsString activity =
-    case activity of
-        FamilyNutritionAheza ->
-            "family-nutrition-aheza"
-
-        FamilyNutritionMuac ->
-            "family-nutrition-muac"
-
-        FamilyNutritionPhoto ->
-            "family-nutrition-photo"
-
-
-{-| The inverse of encodeActivityAsString
--}
-decodeActivityFromString : String -> Maybe FamilyNutritionActivity
-decodeActivityFromString s =
-    case s of
-        "family-nutrition-aheza" ->
-            Just FamilyNutritionAheza
-
-        "family-nutrition-muac" ->
-            Just FamilyNutritionMuac
-
-        "family-nutrition-photo" ->
-            Just FamilyNutritionPhoto
-
-        _ ->
-            Nothing
+import Backend.FamilyNutritionActivity.Model exposing (FamilyNutritionActivity(..))
 
 
 {-| Returns a string representing an icon for the activity, for use in a

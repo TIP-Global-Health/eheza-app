@@ -2,19 +2,19 @@ module Pages.FamilyEncounterParticipants.View exposing (view)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterType(..), FamilyParticipantInitiator(..))
+import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Initiator(..), Person)
-import Backend.Person.Utils exposing (defaultIconForPerson, eligibleForPrenatalEncounter, isChildUnderAgeOf2, isPersonAnAdult)
+import Backend.Person.Utils exposing (defaultIconForPerson, isPersonAnAdult)
 import Backend.Village.Utils exposing (personLivesInVillage)
 import Components.PatientsSearchForm.Utils
 import Components.PatientsSearchForm.View
 import Gizra.Html exposing (emptyNode, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, diffYears)
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Pages.FamilyEncounterParticipants.Model exposing (..)
+import Pages.FamilyEncounterParticipants.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..), UserPage(..))
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
@@ -129,7 +129,7 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
             results
                 |> Maybe.withDefault (Success Dict.empty)
                 |> RemoteData.withDefault Dict.empty
-                |> Dict.map (viewParticipant language currentDate encounterType db)
+                |> Dict.map (viewParticipant language currentDate encounterType)
                 |> Dict.values
 
         searchHelper =
@@ -169,8 +169,8 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
         ]
 
 
-viewParticipant : Language -> NominalDate -> FamilyEncounterType -> ModelIndexedDb -> PersonId -> Person -> Html Msg
-viewParticipant language currentDate encounterType db id person =
+viewParticipant : Language -> NominalDate -> FamilyEncounterType -> PersonId -> Person -> Html Msg
+viewParticipant language currentDate encounterType id person =
     let
         action =
             case encounterType of
@@ -196,7 +196,7 @@ viewParticipant language currentDate encounterType db id person =
                     [ class "details" ]
                     [ h2
                         [ class "ui header" ]
-                        [ text <| person.name ]
+                        [ text person.name ]
                     , p []
                         [ label [] [ text <| translate language Translate.DOB ++ ": " ]
                         , span []

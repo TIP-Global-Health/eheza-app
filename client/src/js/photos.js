@@ -67,12 +67,9 @@
                     return response;
                 }
 
-                // We got the image, so cache it but without
-                // the `access_token` param.
-                params.delete('access_token');
-
-                url.search = params.toString();
-                cache.put(url, response.clone());
+                // Cache under the normalized key so the SW (here) and the
+                // bulk-photo fetcher (main thread) agree on the lookup URL.
+                cache.put(self.photoCache.stripAccessToken(event.request.url), response.clone());
                 return response;
             }());
         }

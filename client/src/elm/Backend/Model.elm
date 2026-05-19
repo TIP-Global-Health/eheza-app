@@ -31,7 +31,7 @@ import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic, E
 import Backend.Dashboard.Model exposing (DashboardStatsRaw)
 import Backend.EducationSession.Model exposing (EducationSession)
 import Backend.Entities exposing (..)
-import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterParticipant, FamilyEncounterType(..))
+import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterParticipant, FamilyEncounterType)
 import Backend.FamilyNutritionEncounter.Model exposing (FamilyNutritionEncounter)
 import Backend.HIVEncounter.Model exposing (HIVEncounter)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)

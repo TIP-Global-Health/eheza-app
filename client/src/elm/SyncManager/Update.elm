@@ -11,9 +11,8 @@ import Device.Model exposing (Device)
 import Editable
 import Error.Utils exposing (decoderError, maybeHttpError, noError)
 import GeoLocation.Utils exposing (getGeoInfo, getReverseGeoInfo)
-import Gizra.NominalDate exposing (NominalDate)
 import Http exposing (Error)
-import HttpBuilder exposing (..)
+import HttpBuilder exposing (withExpectJson, withJsonBody, withQueryParams)
 import Json.Decode exposing (Value, decodeValue)
 import Json.Encode
 import List.Zipper as Zipper
@@ -39,8 +38,8 @@ import Utils.WebData
 import Version
 
 
-update : NominalDate -> Time.Posix -> Page -> Int -> Device -> Msg -> Model -> SubModelReturn Model Msg
-update currentDate currentTime activePage dbVersion device msg model =
+update : Time.Posix -> Page -> Int -> Device -> Msg -> Model -> SubModelReturn Model Msg
+update currentTime activePage dbVersion device msg model =
     let
         noChange =
             SubModelReturn model Cmd.none noError []
@@ -81,19 +80,19 @@ update currentDate currentTime activePage dbVersion device msg model =
                 (Cmd.map MsgDebouncer subCmd)
                 noError
                 []
-                |> sequenceSubModelReturn (update currentDate currentTime activePage dbVersion device) (Maybe.Extra.toList extraMsg)
+                |> sequenceSubModelReturn (update currentTime activePage dbVersion device) (Maybe.Extra.toList extraMsg)
 
         NoOp ->
             noChange
 
         SchedulePageRefresh ->
             noChange
-                |> sequenceSubModelReturn (update currentDate currentTime activePage dbVersion device)
+                |> sequenceSubModelReturn (update currentTime activePage dbVersion device)
                     [ MsgDebouncer <| provideInput RefreshPage ]
 
         SchedulePhotosDownload ->
             noChange
-                |> sequenceSubModelReturn (update currentDate currentTime activePage dbVersion device)
+                |> sequenceSubModelReturn (update currentTime activePage dbVersion device)
                     [ MsgDebouncer <| provideInput TryDownloadingPhotos ]
 
         RefreshPage ->
@@ -118,7 +117,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 -- We also, schdule photos download send devicestate report,
                                 -- so that version and synced authorities get updated on backend.
                                 determineSyncStatus
-                                    |> sequenceSubModelReturn (update currentDate currentTime activePage dbVersion device)
+                                    |> sequenceSubModelReturn (update currentTime activePage dbVersion device)
                                         [ SchedulePhotosDownload, QueryIndexDb IndexDbQueryGetTotalEntriesToUpload ]
 
                             Just zipper ->
@@ -482,18 +481,17 @@ update currentDate currentTime activePage dbVersion device msg model =
                 )
                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityDashboardStatsFetchHandle")
                 appMsgs
-                |> sequenceSubModelReturn (update currentDate currentTime activePage dbVersion device) extraMsgs
+                |> sequenceSubModelReturn (update currentTime activePage dbVersion device) extraMsgs
 
         BackendFetchMain ->
             case model.syncStatus of
                 SyncIdle ->
                     determineSyncStatus
                         -- We send state report when we begin the sync.
-                        |> sequenceSubModelReturn (update currentDate currentTime activePage dbVersion device) [ QueryIndexDb IndexDbQueryGetTotalEntriesToUpload ]
+                        |> sequenceSubModelReturn (update currentTime activePage dbVersion device) [ QueryIndexDb IndexDbQueryGetTotalEntriesToUpload ]
 
                 SyncUploadPhoto _ _ ->
                     update
-                        currentDate
                         currentTime
                         activePage
                         dbVersion
@@ -503,7 +501,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                 SyncUploadScreenshot _ _ ->
                     update
-                        currentDate
                         currentTime
                         activePage
                         dbVersion
@@ -513,7 +510,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                 SyncUploadGeneral _ ->
                     update
-                        currentDate
                         currentTime
                         activePage
                         dbVersion
@@ -523,7 +519,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                 SyncUploadWhatsApp _ ->
                     update
-                        currentDate
                         currentTime
                         activePage
                         dbVersion
@@ -533,7 +528,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                 SyncUploadAuthority _ ->
                     update
-                        currentDate
                         currentTime
                         activePage
                         dbVersion
@@ -543,7 +537,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                 SyncDownloadGeneral _ ->
                     update
-                        currentDate
                         currentTime
                         activePage
                         dbVersion
@@ -553,7 +546,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                 SyncDownloadAuthority _ ->
                     update
-                        currentDate
                         currentTime
                         activePage
                         dbVersion
@@ -563,7 +555,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                 SyncDownloadAuthorityDashboardStats _ ->
                     update
-                        currentDate
                         currentTime
                         activePage
                         dbVersion
@@ -573,7 +564,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                 SyncReportIncident incidentType ->
                     update
-                        currentDate
                         currentTime
                         activePage
                         dbVersion
@@ -591,13 +581,22 @@ update currentDate currentTime activePage dbVersion device msg model =
                         []
 
                 DownloadPhotosInProcess _ ->
+                    let
+                        -- Prefer the bulk endpoint unless we've already
+                        -- proven it unavailable this session.
+                        nextMsg =
+                            if model.bulkPhotosEndpointAvailable == Just False then
+                                FetchFromIndexDbDeferredPhoto
+
+                            else
+                                FetchFromIndexDbDeferredPhotoBatch
+                    in
                     update
-                        currentDate
                         currentTime
                         activePage
                         dbVersion
                         device
-                        FetchFromIndexDbDeferredPhoto
+                        nextMsg
                         model
 
         RevisionIdAuthorityAdd uuid ->
@@ -634,7 +633,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                 cmd
                 noError
                 []
-                |> sequenceSubModelReturn (update currentDate currentTime activePage dbVersion device) [ TrySyncing ]
+                |> sequenceSubModelReturn (update currentTime activePage dbVersion device) [ TrySyncing ]
 
         RevisionIdAuthorityRemove uuid ->
             -- Remove authority from Local storage.
@@ -947,7 +946,6 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 }
                         in
                         update
-                            currentDate
                             currentTime
                             activePage
                             dbVersion
@@ -969,12 +967,62 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 }
                         in
                         update
-                            currentDate
                             currentTime
                             activePage
                             dbVersion
                             device
                             (QueryIndexDb IndexDbQueryDeferredPhoto)
+                            { model | downloadPhotosStatus = DownloadPhotosInProcess (DownloadPhotosAll recordUpdated) }
+
+                _ ->
+                    noChange
+
+        FetchFromIndexDbDeferredPhotoBatch ->
+            -- Bulk-fetch counterpart of FetchFromIndexDbDeferredPhoto. Mirrors
+            -- the loading-state tracking so determineDownloadPhotosStatus can
+            -- drive the same outer state machine.
+            case model.downloadPhotosStatus of
+                DownloadPhotosInProcess DownloadPhotosNone ->
+                    noChange
+
+                DownloadPhotosInProcess (DownloadPhotosBatch record) ->
+                    if RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData then
+                        noChange
+
+                    else
+                        let
+                            recordUpdated =
+                                { record
+                                    | indexDbRemoteData = RemoteData.Loading
+                                    , backendRemoteData = RemoteData.NotAsked
+                                }
+                        in
+                        update
+                            currentTime
+                            activePage
+                            dbVersion
+                            device
+                            (QueryIndexDb (IndexDbQueryDeferredPhotoBatch (min 100 record.batchCounter)))
+                            { model | downloadPhotosStatus = DownloadPhotosInProcess (DownloadPhotosBatch recordUpdated) }
+
+                DownloadPhotosInProcess (DownloadPhotosAll record) ->
+                    if RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData then
+                        noChange
+
+                    else
+                        let
+                            recordUpdated =
+                                { record
+                                    | indexDbRemoteData = RemoteData.Loading
+                                    , backendRemoteData = RemoteData.NotAsked
+                                }
+                        in
+                        update
+                            currentTime
+                            activePage
+                            dbVersion
+                            device
+                            (QueryIndexDb (IndexDbQueryDeferredPhotoBatch 100))
                             { model | downloadPhotosStatus = DownloadPhotosInProcess (DownloadPhotosAll recordUpdated) }
 
                 _ ->
@@ -997,7 +1045,6 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 }
                         in
                         update
-                            currentDate
                             currentTime
                             activePage
                             dbVersion
@@ -1028,7 +1075,6 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 }
                         in
                         update
-                            currentDate
                             currentTime
                             activePage
                             dbVersion
@@ -1067,7 +1113,6 @@ update currentDate currentTime activePage dbVersion device msg model =
                                         }
                                 in
                                 update
-                                    currentDate
                                     currentTime
                                     activePage
                                     dbVersion
@@ -1093,7 +1138,6 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 getGeoInfo model.syncInfoGeneral.site
                         in
                         update
-                            currentDate
                             currentTime
                             activePage
                             dbVersion
@@ -1133,7 +1177,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                     else
                         update
-                            currentDate
                             currentTime
                             activePage
                             dbVersion
@@ -1277,7 +1320,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendUploadAuthorityHandle")
                                 []
                                 |> sequenceSubModelReturn
-                                    (update currentDate currentTime activePage dbVersion device)
+                                    (update currentTime activePage dbVersion device)
                                     incidentDetailsMsg
 
                         RemoteData.Success _ ->
@@ -1343,7 +1386,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                             else
                                 subModelReturn
                                     |> sequenceSubModelReturn
-                                        (update currentDate currentTime activePage dbVersion device)
+                                        (update currentTime activePage dbVersion device)
                                         [ QueryIndexDb <| IndexDbQueryRemoveUploadPhotos uploadPhotosToDelete ]
 
                         _ ->
@@ -1453,7 +1496,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendUploadGeneralHandle")
                                 []
                                 |> sequenceSubModelReturn
-                                    (update currentDate currentTime activePage dbVersion device)
+                                    (update currentTime activePage dbVersion device)
                                     incidentDetailsMsg
 
                         RemoteData.Success _ ->
@@ -1606,7 +1649,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendUploadWhatsAppHandle")
                                 []
                                 |> sequenceSubModelReturn
-                                    (update currentDate currentTime activePage dbVersion device)
+                                    (update currentTime activePage dbVersion device)
                                     incidentDetailsMsg
 
                         RemoteData.Success _ ->
@@ -1719,7 +1762,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                         -- result with something like this:
                         -- image-1234.jpg?itok=[image-token]?access_token=[access-token]
                         -- Instead, we manually add the access token with a `&`.
-                        HttpBuilder.get (result.photo ++ "&" ++ "access_token=" ++ device.accessToken)
+                        HttpBuilder.get (result.photo ++ "&access_token=" ++ device.accessToken)
                             -- We don't need to decode anything, as we just want to have
                             -- the browser download it.
                             |> HttpBuilder.send (RemoteData.fromResult >> BackendDeferredPhotoFetchHandle result)
@@ -1763,7 +1806,6 @@ update currentDate currentTime activePage dbVersion device msg model =
                                         model.downloadPhotosStatus
                         in
                         update
-                            currentDate
                             currentTime
                             activePage
                             dbVersion
@@ -1799,7 +1841,6 @@ update currentDate currentTime activePage dbVersion device msg model =
                     -- We've fetched the image, so we can remove the record from
                     -- `deferredPhotos` table.
                     update
-                        currentDate
                         currentTime
                         activePage
                         dbVersion
@@ -1810,6 +1851,222 @@ update currentDate currentTime activePage dbVersion device msg model =
                 _ ->
                     -- Satisfy the compiler.
                     noChange
+
+        BackendDeferredPhotoBatchFetch rows ->
+            if List.isEmpty rows then
+                -- Drained: mirror BackendDeferredPhotoFetch Nothing.
+                let
+                    downloadPhotosStatus =
+                        case model.downloadPhotosStatus of
+                            DownloadPhotosInProcess (DownloadPhotosBatch record) ->
+                                DownloadPhotosInProcess (DownloadPhotosBatch { record | indexDbRemoteData = RemoteData.Success Nothing })
+
+                            DownloadPhotosInProcess (DownloadPhotosAll record) ->
+                                DownloadPhotosInProcess (DownloadPhotosAll { record | indexDbRemoteData = RemoteData.Success Nothing })
+
+                            _ ->
+                                model.downloadPhotosStatus
+                in
+                SubModelReturn
+                    (SyncManager.Utils.determineDownloadPhotosStatus { model | downloadPhotosStatus = downloadPhotosStatus })
+                    Cmd.none
+                    noError
+                    []
+
+            else
+                let
+                    downloadPhotosStatus =
+                        case model.downloadPhotosStatus of
+                            DownloadPhotosInProcess (DownloadPhotosBatch record) ->
+                                DownloadPhotosInProcess
+                                    (DownloadPhotosBatch
+                                        { record
+                                            | backendRemoteData = RemoteData.Loading
+                                            , indexDbRemoteData = RemoteData.Success (List.head rows)
+                                        }
+                                    )
+
+                            DownloadPhotosInProcess (DownloadPhotosAll record) ->
+                                DownloadPhotosInProcess
+                                    (DownloadPhotosAll
+                                        { record
+                                            | backendRemoteData = RemoteData.Loading
+                                            , indexDbRemoteData = RemoteData.Success (List.head rows)
+                                        }
+                                    )
+
+                            _ ->
+                                model.downloadPhotosStatus
+
+                    modelUpdated =
+                        { model
+                            | downloadPhotosStatus = downloadPhotosStatus
+                            , bulkPhotosInFlight = rows
+                        }
+
+                    urls =
+                        List.map .photo rows
+                in
+                SubModelReturn
+                    modelUpdated
+                    (bulkPhotoFetch
+                        { urls = urls
+                        , accessToken = device.accessToken
+                        , backendUrl = device.backendUrl
+                        }
+                    )
+                    noError
+                    []
+
+        BackendDeferredPhotoBatchFetchHandle requestedRows result ->
+            case result of
+                Err 404 ->
+                    -- Endpoint not deployed on this server; switch to the
+                    -- single-photo fallback for the rest of the session.
+                    -- We do not bump per-row attempts; the next cycle will
+                    -- pick the same rows via the single-photo path.
+                    let
+                        downloadPhotosStatus =
+                            case model.downloadPhotosStatus of
+                                DownloadPhotosInProcess (DownloadPhotosBatch record) ->
+                                    DownloadPhotosInProcess (DownloadPhotosBatch { record | backendRemoteData = RemoteData.NotAsked, indexDbRemoteData = RemoteData.NotAsked })
+
+                                DownloadPhotosInProcess (DownloadPhotosAll record) ->
+                                    DownloadPhotosInProcess (DownloadPhotosAll { record | backendRemoteData = RemoteData.NotAsked, indexDbRemoteData = RemoteData.NotAsked })
+
+                                _ ->
+                                    model.downloadPhotosStatus
+                    in
+                    SubModelReturn
+                        { model
+                            | downloadPhotosStatus = downloadPhotosStatus
+                            , bulkPhotosEndpointAvailable = Just False
+                            , bulkPhotosConsecutiveBatchErrors = 0
+                            , bulkPhotosInFlight = []
+                        }
+                        Cmd.none
+                        noError
+                        []
+
+                Err _ ->
+                    -- Whole-batch transient failure. Don't mutate rows; the
+                    -- same rows will be re-queried next cycle. Track a small
+                    -- consecutive-failure budget so a poisonous batch can't
+                    -- deadlock — after 3 in a row, disable bulk mode for the
+                    -- rest of the session.
+                    let
+                        nextConsecutive =
+                            model.bulkPhotosConsecutiveBatchErrors + 1
+
+                        ( disabled, consecutive ) =
+                            if nextConsecutive >= 3 then
+                                ( Just False, 0 )
+
+                            else
+                                ( model.bulkPhotosEndpointAvailable, nextConsecutive )
+
+                        downloadPhotosStatus =
+                            case model.downloadPhotosStatus of
+                                DownloadPhotosInProcess (DownloadPhotosBatch record) ->
+                                    DownloadPhotosInProcess (DownloadPhotosBatch { record | backendRemoteData = RemoteData.NotAsked, indexDbRemoteData = RemoteData.NotAsked })
+
+                                DownloadPhotosInProcess (DownloadPhotosAll record) ->
+                                    DownloadPhotosInProcess (DownloadPhotosAll { record | backendRemoteData = RemoteData.NotAsked, indexDbRemoteData = RemoteData.NotAsked })
+
+                                _ ->
+                                    model.downloadPhotosStatus
+                    in
+                    SubModelReturn
+                        { model
+                            | downloadPhotosStatus = downloadPhotosStatus
+                            , bulkPhotosEndpointAvailable = disabled
+                            , bulkPhotosConsecutiveBatchErrors = consecutive
+                            , bulkPhotosInFlight = []
+                        }
+                        Cmd.none
+                        noError
+                        []
+
+                Ok results ->
+                    let
+                        outcomeByUrl =
+                            List.foldl (\r d -> Dict.insert r.url r d) Dict.empty results
+
+                        -- Per-row reconciliation: emit a delete for ok/terminal
+                        -- rows and an attempts++ for transient failures.
+                        cmds =
+                            List.map
+                                (\row ->
+                                    case Dict.get row.photo outcomeByUrl of
+                                        Just outcome ->
+                                            if outcome.ok || outcome.terminal then
+                                                askFromIndexDb
+                                                    { queryType = "IndexDbQueryRemoveDeferredPhoto"
+                                                    , data = Just row.uuid
+                                                    }
+
+                                            else
+                                                askFromIndexDb
+                                                    { queryType = "IndexDbQueryUpdateDeferredPhotoAttempts"
+                                                    , data =
+                                                        Just
+                                                            (Json.Encode.object
+                                                                [ ( "uuid", Json.Encode.string row.uuid )
+                                                                , ( "attempts", Json.Encode.int (row.attempts + 1) )
+                                                                ]
+                                                                |> Json.Encode.encode 0
+                                                            )
+                                                    }
+
+                                        Nothing ->
+                                            -- Server omitted this URL from the
+                                            -- manifest. Treat as transient.
+                                            askFromIndexDb
+                                                { queryType = "IndexDbQueryUpdateDeferredPhotoAttempts"
+                                                , data =
+                                                    Just
+                                                        (Json.Encode.object
+                                                            [ ( "uuid", Json.Encode.string row.uuid )
+                                                            , ( "attempts", Json.Encode.int (row.attempts + 1) )
+                                                            ]
+                                                            |> Json.Encode.encode 0
+                                                        )
+                                                }
+                                )
+                                requestedRows
+
+                        downloadPhotosStatus =
+                            case model.downloadPhotosStatus of
+                                DownloadPhotosInProcess (DownloadPhotosBatch record) ->
+                                    DownloadPhotosInProcess
+                                        (DownloadPhotosBatch
+                                            { record
+                                                | backendRemoteData = RemoteData.Success ()
+                                                , batchCounter = record.batchCounter - List.length requestedRows
+                                            }
+                                        )
+
+                                DownloadPhotosInProcess (DownloadPhotosAll record) ->
+                                    DownloadPhotosInProcess
+                                        (DownloadPhotosAll
+                                            { record | backendRemoteData = RemoteData.Success () }
+                                        )
+
+                                _ ->
+                                    model.downloadPhotosStatus
+                    in
+                    SubModelReturn
+                        (SyncManager.Utils.determineDownloadPhotosStatus
+                            { model
+                                | downloadPhotosStatus = downloadPhotosStatus
+                                , bulkPhotosEndpointAvailable = Just True
+                                , bulkPhotosConsecutiveBatchErrors = 0
+                                , bulkPhotosInFlight = []
+                            }
+                        )
+                        (Cmd.batch cmds)
+                        noError
+                        []
 
         QueryIndexDb indexDbQueryType ->
             let
@@ -1859,6 +2116,17 @@ update currentDate currentTime activePage dbVersion device msg model =
                             , data = Nothing
                             }
 
+                        IndexDbQueryDeferredPhotoBatch batchSize ->
+                            let
+                                encodedData =
+                                    Json.Encode.object
+                                        [ ( "batchSize", Json.Encode.int batchSize ) ]
+                                        |> Json.Encode.encode 0
+                            in
+                            { queryType = "IndexDbQueryDeferredPhotoBatch"
+                            , data = Just encodedData
+                            }
+
                         IndexDbQueryRemoveDeferredPhoto uuid ->
                             { queryType = "IndexDbQueryRemoveDeferredPhoto"
                             , data = Just uuid
@@ -1883,8 +2151,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 uuidsAsString =
                                     uuids
                                         |> List.map String.fromInt
-                                        |> List.intersperse ","
-                                        |> String.concat
+                                        |> String.join ","
                             in
                             { queryType = "IndexDbQueryRemoveUploadPhotos"
                             , data = Just uuidsAsString
@@ -1912,7 +2179,6 @@ update currentDate currentTime activePage dbVersion device msg model =
                     case indexDbQueryTypeResult of
                         IndexDbQueryUploadPhotoResult remoteData ->
                             update
-                                currentDate
                                 currentTime
                                 activePage
                                 dbVersion
@@ -1922,7 +2188,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                         IndexDbQueryUploadScreenshotResult remoteData ->
                             update
-                                currentDate
                                 currentTime
                                 activePage
                                 dbVersion
@@ -1932,7 +2197,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                         IndexDbQueryUploadAuthorityResult result ->
                             update
-                                currentDate
                                 currentTime
                                 activePage
                                 dbVersion
@@ -1942,7 +2206,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                         IndexDbQueryUploadGeneralResult result ->
                             update
-                                currentDate
                                 currentTime
                                 activePage
                                 dbVersion
@@ -1952,7 +2215,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                         IndexDbQueryUploadWhatsAppResult result ->
                             update
-                                currentDate
                                 currentTime
                                 activePage
                                 dbVersion
@@ -1962,7 +2224,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                         IndexDbQueryDeferredPhotoResult result ->
                             update
-                                currentDate
                                 currentTime
                                 activePage
                                 dbVersion
@@ -1970,9 +2231,17 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 (BackendDeferredPhotoFetch result)
                                 model
 
+                        IndexDbQueryDeferredPhotoBatchResult batchResult ->
+                            update
+                                currentTime
+                                activePage
+                                dbVersion
+                                device
+                                (BackendDeferredPhotoBatchFetch batchResult.rows)
+                                model
+
                         IndexDbQueryGetTotalEntriesToUploadResult result ->
                             update
-                                currentDate
                                 currentTime
                                 activePage
                                 dbVersion
@@ -1982,7 +2251,6 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                         IndexDbQueryGetShardsEntityByUuidResult result ->
                             update
-                                currentDate
                                 currentTime
                                 activePage
                                 dbVersion
@@ -2016,7 +2284,6 @@ update currentDate currentTime activePage dbVersion device msg model =
                             case indexDbSaveResult.table of
                                 IndexDbSaveResultTableAutority ->
                                     update
-                                        currentDate
                                         currentTime
                                         activePage
                                         dbVersion
@@ -2024,9 +2291,20 @@ update currentDate currentTime activePage dbVersion device msg model =
                                         (BackendAuthorityFetchedDataSavedHandle indexDbSaveResult.timestamp)
                                         model
 
+                                IndexDbSaveResultTableDeferredPhotos ->
+                                    -- Deferred-photo rows have just landed in IndexedDB.
+                                    -- Kick the photo lane so it starts draining them now
+                                    -- rather than waiting out its idle timer.
+                                    update
+                                        currentTime
+                                        activePage
+                                        dbVersion
+                                        device
+                                        TryDownloadingPhotos
+                                        model
+
                                 IndexDbSaveResultTableGeneral ->
                                     update
-                                        currentDate
                                         currentTime
                                         activePage
                                         dbVersion
@@ -2162,7 +2440,6 @@ update currentDate currentTime activePage dbVersion device msg model =
             case model.syncStatus of
                 SyncIdle ->
                     update
-                        currentDate
                         currentTime
                         activePage
                         dbVersion
@@ -2178,7 +2455,6 @@ update currentDate currentTime activePage dbVersion device msg model =
             case model.downloadPhotosStatus of
                 DownloadPhotosIdle ->
                     update
-                        currentDate
                         currentTime
                         activePage
                         dbVersion
@@ -2207,6 +2483,15 @@ subscriptions model =
     Sub.batch <|
         [ getFromIndexDb QueryIndexDbHandle
         , savedAtIndexedDb SavedAtIndexDbHandle
+        , bulkPhotoFetchHandle
+            (\value ->
+                let
+                    decoded =
+                        Json.Decode.decodeValue SyncManager.Decoder.decodeBulkPhotoFetchHandle value
+                            |> Result.withDefault (Err 0)
+                in
+                BackendDeferredPhotoBatchFetchHandle model.bulkPhotosInFlight decoded
+            )
         ]
             ++ backendFetchCmds
 
@@ -2269,3 +2554,15 @@ port getFromIndexDb : (Value -> msg) -> Sub msg
 {-| Reports that save to IndexDB operation was successful.
 -}
 port savedAtIndexedDb : (Value -> msg) -> Sub msg
+
+
+{-| Ask JS to POST a batch of styled-photo URLs to /api/bulk-photos and
+populate the "photos" Cache. The reply arrives via `bulkPhotoFetchHandle`.
+-}
+port bulkPhotoFetch : { urls : List String, accessToken : String, backendUrl : String } -> Cmd msg
+
+
+{-| Per-URL outcomes of the bulk fetch, or a whole-batch error code.
+Decoded by `SyncManager.Decoder.decodeBulkPhotoFetchHandle`.
+-}
+port bulkPhotoFetchHandle : (Value -> msg) -> Sub msg

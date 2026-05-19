@@ -1,7 +1,7 @@
-module Pages.Reports.Model exposing (..)
+module Pages.Reports.Model exposing (FbfDistributionCategory(..), Model, Msg(..), NutritionMetrics, NutritionMetricsResults, NutritionReportData, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), allFbfDistributionCategories, emptyModel, emptyNutritionMetrics)
 
 import AssocList exposing (Dict)
-import Backend.Reports.Model exposing (PersonId)
+import Backend.Components.Model exposing (PersonId)
 import Date exposing (Date)
 import DateSelector.Model exposing (DateSelectorConfig)
 import RemoteData exposing (RemoteData(..))
@@ -31,9 +31,35 @@ emptyModel =
 type ReportType
     = ReportAcuteIllness
     | ReportDemographics
+    | ReportFBFDistribution
     | ReportNutrition
+    | ReportPeripartum
+    | ReportPostnatalCare
     | ReportPrenatal
+    | ReportPrenatalContacts
     | ReportPrenatalDiagnoses
+
+
+{-| Categories shown as rows in the FBF Distribution report. Only the FBF
+group with `field_group_type = 'fbf'` contributes child distributions
+(Achi-clinic child\_fbf is intentionally out of scope).
+-}
+type FbfDistributionCategory
+    = FbfDistributionAhezaChild
+    | FbfDistributionAhezaMother
+    | FbfDistributionFbfChild
+    | FbfDistributionFbfChildAchi
+    | FbfDistributionFbfMother
+
+
+allFbfDistributionCategories : List FbfDistributionCategory
+allFbfDistributionCategories =
+    [ FbfDistributionFbfChild
+    , FbfDistributionFbfMother
+    , FbfDistributionFbfChildAchi
+    , FbfDistributionAhezaChild
+    , FbfDistributionAhezaMother
+    ]
 
 
 type alias NutritionReportData =
@@ -87,23 +113,21 @@ type alias NutritionMetricsResults =
     }
 
 
-emptyNutritionMetricsResults : NutritionMetricsResults
-emptyNutritionMetricsResults =
-    { stuntingModerate = 0
-    , stuntingSevere = 0
-    , wastingModerate = 0
-    , wastingSevere = 0
-    , underweightModerate = 0
-    , underweightSevere = 0
-    , acuteMalnutritionMam = 0
-    , acuteMalnutritionSam = 0
-    }
-
-
 type PregnancyTrimester
     = FirstTrimester
     | SecondTrimester
     | ThirdTrimester
+
+
+type PrenatalContactType
+    = PrenatalContact1
+    | PrenatalContact2
+    | PrenatalContact3
+    | PrenatalContact4
+    | PrenatalContact5
+    | PrenatalContact6
+    | PrenatalContact7
+    | PrenatalContact8
 
 
 type Msg

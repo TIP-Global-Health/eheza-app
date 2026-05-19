@@ -220,7 +220,6 @@ viewFoundChild language currentDate zscores site features isChw ( childId, child
                     case state of
                         DialogWarning assessments ->
                             warningPopup language
-                                currentDate
                                 (SetDialogState Nothing)
                                 assessments
 
@@ -251,7 +250,7 @@ viewFoundChild language currentDate zscores site features isChw ( childId, child
                             , p [] <|
                                 motherInfo
                                     ++ [ break, dateOfBirth, break, age, break, gender ]
-                            , viewFamilyLinks childParticipant language childId ( sessionId, session )
+                            , viewFamilyLinks childParticipant childId ( sessionId, session )
                             ]
                         ]
                     ]
@@ -382,7 +381,7 @@ viewFoundMother language currentDate zscores site features isChw ( motherId, mot
                         |> LocalData.unwrap
                             []
                             (\measurements ->
-                                [ Measurement.View.viewMother language currentDate mother activity session.offlineSession.session.clinicType measurements form
+                                [ Measurement.View.viewMother language activity session.offlineSession.session.clinicType measurements form
                                     |> Html.map MsgMeasurement
                                     |> keyed "content"
                                 ]
@@ -417,7 +416,7 @@ viewFoundMother language currentDate zscores site features isChw ( motherId, mot
                             ]
                                 ++ ubudeheForView
                                 ++ [ p [] childrenList
-                                   , viewFamilyLinks motherParticipant language motherId ( sessionId, session )
+                                   , viewFamilyLinks motherParticipant motherId ( sessionId, session )
                                    ]
                         ]
                     ]
@@ -493,7 +492,7 @@ viewActivityCards config language offlineSession personId activities selectedTab
             if config.showProgressReportTab then
                 let
                     progressTabTitle =
-                        translate language <| Translate.ProgressReport
+                        translate language Translate.ProgressReport
                 in
                 [ tabItem progressTabTitle (selectedTab == ProgressReport) "progressreport" (SetSelectedTab ProgressReport) ]
 
@@ -567,8 +566,8 @@ viewHeader language id =
 {-| Given a mother or a child, this figures out who the whole family is, and shows links allowing
 you to switch between any family member.
 -}
-viewFamilyLinks : Participant id value activity msg NominalDate -> Language -> id -> ( SessionId, EditableSession ) -> Html (Msg activity any)
-viewFamilyLinks config language participantId ( sessionId, session ) =
+viewFamilyLinks : Participant id value activity msg NominalDate -> id -> ( SessionId, EditableSession ) -> Html (Msg activity any)
+viewFamilyLinks config participantId ( sessionId, session ) =
     let
         -- Whether we've looking at a child or a mother, we figure out who the
         -- mother is. This will never be `Nothing` so long as the

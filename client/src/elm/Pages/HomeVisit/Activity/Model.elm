@@ -1,4 +1,4 @@
-module Pages.HomeVisit.Activity.Model exposing (..)
+module Pages.HomeVisit.Activity.Model exposing (Model, Msg(..), emptyModel)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)

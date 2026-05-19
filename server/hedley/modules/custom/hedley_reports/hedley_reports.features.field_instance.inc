@@ -91,10 +91,14 @@ function hedley_reports_field_default_field_instances() {
   );
 
   // Exported field_instance: 'node-report_data-field_data_file'.
+  // DEPRECATED — no longer written or read. Issue #1574 replaced
+  // gzipped-file delivery with the paginated /api/reports-data Restful
+  // endpoint. The field is retained for historical/rollback purposes
+  // only.
   $field_instances['node-report_data-field_data_file'] = array(
     'bundle' => 'report_data',
     'deleted' => 0,
-    'description' => '',
+    'description' => 'DEPRECATED — no longer in use. Replaced by the paginated /api/reports-data Restful endpoint (issue #1574). Retained for historical/rollback purposes only.',
     'display' => array(
       'default' => array(
         'label' => 'above',

@@ -3,7 +3,7 @@ module Pages.HomeVisit.Encounter.Update exposing (update)
 import App.Model
 import Backend.HomeVisitEncounter.Model
 import Backend.Model
-import Pages.HomeVisit.Encounter.Model exposing (..)
+import Pages.HomeVisit.Encounter.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..))
 
 

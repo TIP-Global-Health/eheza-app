@@ -2,7 +2,6 @@ module Pages.FamilyNutrition.ProgressReport.View exposing (view)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (muacValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Utils exposing (isPersonAnAdult)
@@ -13,7 +12,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.FamilyNutrition.Encounter.Model exposing (AssembledData, FamilyMember(..))
 import Pages.FamilyNutrition.Encounter.Utils exposing (generateAssembledData)
-import Pages.FamilyNutrition.ProgressReport.Model exposing (..)
+import Pages.FamilyNutrition.ProgressReport.Model exposing (Model, Msg(..))
 import Pages.FamilyNutrition.ProgressReport.Svg as Svg
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Report.View exposing (viewEntries)
@@ -319,15 +318,16 @@ viewMuacPane language currentDate site model data =
                 Nothing ->
                     previousEncounterMuacValues
 
-        earliestMuacDate =
-            List.map Tuple.first allMuacValues
-                |> List.sortWith Date.compare
-                |> List.head
-
         anchorAge =
             displayPerson.birthDate
                 |> Maybe.map
                     (\birthDate ->
+                        let
+                            earliestMuacDate =
+                                List.map Tuple.first allMuacValues
+                                    |> List.sortWith Date.compare
+                                    |> List.head
+                        in
                         diffCalendarYearsAndMonths birthDate
                             (earliestMuacDate |> Maybe.withDefault currentDate)
                     )

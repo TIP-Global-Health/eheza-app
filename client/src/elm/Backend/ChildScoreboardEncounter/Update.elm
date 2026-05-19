@@ -2,8 +2,8 @@ module Backend.ChildScoreboardEncounter.Update exposing (update)
 
 import App.Model
 import App.Utils exposing (triggerRollbarOnFailure)
-import Backend.ChildScoreboardEncounter.Model exposing (..)
-import Backend.Endpoints exposing (..)
+import Backend.ChildScoreboardEncounter.Model exposing (ChildScoreboardEncounter, Model, Msg(..))
+import Backend.Endpoints exposing (childScoreboardBCGImmunisationEndpoint, childScoreboardDTPImmunisationEndpoint, childScoreboardDTPStandaloneImmunisationEndpoint, childScoreboardEncounterEndpoint, childScoreboardIPVImmunisationEndpoint, childScoreboardMRImmunisationEndpoint, childScoreboardNCDAEndpoint, childScoreboardOPVImmunisationEndpoint, childScoreboardPCV13ImmunisationEndpoint, childScoreboardRotarixImmunisationEndpoint)
 import Backend.Entities exposing (..)
 import Backend.Utils exposing (saveMeasurementCmd, sw)
 import Gizra.NominalDate exposing (NominalDate)

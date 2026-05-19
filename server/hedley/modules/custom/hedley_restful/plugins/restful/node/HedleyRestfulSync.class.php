@@ -175,32 +175,12 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       $output = array_merge($output, $rendered_items);
     }
 
-    // Generate list of enabled features.
-    $available_features = [
-      'family_nutrition',
-      'gps_coordinates',
-      'group_education',
-      'healthy_start',
-      'hiv_management',
-      'ncda',
-      'report_to_whatsapp',
-      'stock_management_hc',
-      'stock_management_village',
-      'tuberculosis_management',
-    ];
-    $enabled_features = array_filter(
-      $available_features,
-      function ($feature) {
-        return variable_get("hedley_admin_feature_{$feature}_enabled", FALSE);
-      }
-    );
-
     $return = [
       'base_revision' => $base,
       'revision_count' => $count,
       'rollbar_token' => variable_get('hedley_general_rollbar_token', ''),
       'site' => variable_get('hedley_general_site_name', ''),
-      'features' => implode(' ', $enabled_features),
+      'features' => hedley_admin_get_enabled_features_string(),
     ];
 
     if (!empty($request['access_token'])) {

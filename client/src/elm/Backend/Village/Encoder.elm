@@ -1,7 +1,7 @@
 module Backend.Village.Encoder exposing (encodeVillage)
 
 import Backend.Village.Model exposing (Village)
-import Json.Encode exposing (..)
+import Json.Encode exposing (Value, bool, string)
 import Restful.Endpoint exposing (encodeEntityUuid)
 
 

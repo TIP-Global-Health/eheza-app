@@ -14,7 +14,7 @@ import GeoLocation.Model exposing (ReverseGeoInfo)
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust)
-import Pages.Person.Model exposing (..)
+import Pages.Person.Model exposing (Model, Msg(..))
 import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (Site)
 
@@ -77,7 +77,7 @@ update currentDate site reverseGeoInfo selectedHealthCenter maybeVillageId isChw
                                                                 (\suspectedDuplicate ->
                                                                     ( []
                                                                     , [ SetDialogState <|
-                                                                            Just <|
+                                                                            Just
                                                                                 ( suspectedDuplicate
                                                                                 , PostPerson relation initiator personWithShard
                                                                                 )
@@ -116,7 +116,7 @@ update currentDate site reverseGeoInfo selectedHealthCenter maybeVillageId isChw
                                                                 personWithShard =
                                                                     { person | shard = selectedHealthCenter }
                                                             in
-                                                            ( generateMsgsForPersonEdit currentDate
+                                                            ( generateMsgsForPersonEdit
                                                                 personId
                                                                 personWithShard
                                                                 model.form
@@ -252,8 +252,8 @@ update currentDate site reverseGeoInfo selectedHealthCenter maybeVillageId isChw
             )
 
 
-generateMsgsForPersonEdit : NominalDate -> PersonId -> Person -> PersonForm -> ModelIndexedDb -> List App.Model.Msg
-generateMsgsForPersonEdit currentDate personId person form db =
+generateMsgsForPersonEdit : PersonId -> Person -> PersonForm -> ModelIndexedDb -> List App.Model.Msg
+generateMsgsForPersonEdit personId person form db =
     let
         province =
             Form.getFieldAsString Backend.Person.Form.province form

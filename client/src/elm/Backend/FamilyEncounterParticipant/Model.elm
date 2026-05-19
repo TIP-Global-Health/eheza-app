@@ -1,13 +1,8 @@
-module Backend.FamilyEncounterParticipant.Model exposing (..)
+module Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterParticipant, FamilyEncounterType(..), FamilyParticipantInitiator(..), emptyFamilyEncounterParticipant)
 
-import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessEncounterType)
 import Backend.Entities exposing (..)
-import Backend.NutritionEncounter.Model exposing (NutritionEncounterType)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
-import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType)
-import Backend.WellChildEncounter.Model exposing (WellChildEncounterType)
 import Gizra.NominalDate exposing (NominalDate)
-import RemoteData exposing (RemoteData(..), WebData)
 
 
 type alias FamilyEncounterParticipant =

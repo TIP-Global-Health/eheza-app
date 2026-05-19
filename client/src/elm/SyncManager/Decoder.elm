@@ -1,5 +1,6 @@
 module SyncManager.Decoder exposing
-    ( decodeDownloadSyncResponseAuthority
+    ( decodeBulkPhotoFetchHandle
+    , decodeDownloadSyncResponseAuthority
     , decodeDownloadSyncResponseAuthorityStats
     , decodeDownloadSyncResponseGeneral
     , decodeIndexDbQueryTypeResult
@@ -38,8 +39,8 @@ import Components.ReportToWhatsAppDialog.Decoder exposing (decodeReportType)
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate
-import Json.Decode exposing (..)
-import Json.Decode.Pipeline exposing (..)
+import Json.Decode exposing (Decoder, andThen, at, bool, fail, field, int, list, map, nullable, oneOf, string, succeed)
+import Json.Decode.Pipeline exposing (hardcoded, optional, optionalAt, required, requiredAt)
 import RemoteData exposing (RemoteData)
 import SyncManager.Model exposing (..)
 import SyncManager.Utils exposing (siteFeaturesFromString, siteFromString)
@@ -54,40 +55,58 @@ decodeIndexDbQueryTypeResult =
                 case queryType of
                     "IndexDbQueryUploadPhotoResult" ->
                         decodeIndexDbQueryUploadPhotoResultRecordRemoteData
-                            |> andThen (\val -> succeed (IndexDbQueryUploadPhotoResult val))
+                            |> map (\val -> IndexDbQueryUploadPhotoResult val)
 
                     "IndexDbQueryUploadScreenshotResult" ->
                         decodeIndexDbQueryUploadScreenshotResultRecordRemoteData
-                            |> andThen (\val -> succeed (IndexDbQueryUploadScreenshotResult val))
+                            |> map (\val -> IndexDbQueryUploadScreenshotResult val)
 
                     "IndexDbQueryUploadAuthorityResult" ->
                         field "data" decodeIndexDbQueryUploadAuthorityResultRecord
-                            |> andThen (\record -> succeed (IndexDbQueryUploadAuthorityResult (Just record)))
+                            |> map (\record -> IndexDbQueryUploadAuthorityResult (Just record))
 
                     "IndexDbQueryUploadGeneralResult" ->
                         field "data" decodeIndexDbQueryUploadGeneralResultRecord
-                            |> andThen (\record -> succeed (IndexDbQueryUploadGeneralResult (Just record)))
+                            |> map (\record -> IndexDbQueryUploadGeneralResult (Just record))
 
                     "IndexDbQueryUploadWhatsAppResult" ->
                         field "data" decodeIndexDbQueryUploadWhatsAppResultRecord
-                            |> andThen (\record -> succeed (IndexDbQueryUploadWhatsAppResult (Just record)))
+                            |> map (\record -> IndexDbQueryUploadWhatsAppResult (Just record))
 
                     "IndexDbQueryDeferredPhotoResult" ->
                         oneOf
                             [ field "data" decodeIndexDbQueryDeferredPhotoResult
-                                |> andThen (\record -> succeed (IndexDbQueryDeferredPhotoResult (Just record)))
+                                |> map (\record -> IndexDbQueryDeferredPhotoResult (Just record))
 
                             -- In case we have no deferred photo.
                             , succeed (IndexDbQueryDeferredPhotoResult Nothing)
                             ]
 
+                    "IndexDbQueryDeferredPhotoBatchResult" ->
+                        oneOf
+                            [ field "data" (list decodeDeferredPhotoRow)
+                                |> map
+                                    (\rows ->
+                                        IndexDbQueryDeferredPhotoBatchResult
+                                            { rows = rows
+                                            , remaining =
+                                                List.head rows
+                                                    |> Maybe.map .remaining
+                                                    |> Maybe.withDefault 0
+                                            }
+                                    )
+
+                            -- Empty batch.
+                            , succeed (IndexDbQueryDeferredPhotoBatchResult { rows = [], remaining = 0 })
+                            ]
+
                     "IndexDbQueryGetTotalEntriesToUploadResult" ->
                         field "data" decodeInt
-                            |> andThen (\val -> succeed (IndexDbQueryGetTotalEntriesToUploadResult val))
+                            |> map (\val -> IndexDbQueryGetTotalEntriesToUploadResult val)
 
                     "IndexDbQueryGetShardsEntityByUuidResult" ->
                         field "data" string
-                            |> andThen (\val -> succeed (IndexDbQueryGetShardsEntityByUuidResult val))
+                            |> map (\val -> IndexDbQueryGetShardsEntityByUuidResult val)
 
                     _ ->
                         fail <| queryType ++ " is not a recognized IndexDbQueryTypeResult"
@@ -103,7 +122,7 @@ decodeIndexDbQueryUploadPhotoResultRecordRemoteData =
                     "Success" ->
                         oneOf
                             [ at [ "data", "result" ] decodeIndexDbQueryUploadPhotoResultRecord
-                                |> andThen (\record -> succeed (RemoteData.Success (Just record)))
+                                |> map (\record -> RemoteData.Success (Just record))
 
                             -- In case we have no photos to upload.
                             , succeed (RemoteData.Success Nothing)
@@ -144,7 +163,7 @@ decodeIndexDbQueryUploadScreenshotResultRecordRemoteData =
                     "Success" ->
                         oneOf
                             [ at [ "data", "result" ] decodeIndexDbQueryUploadFileResultRecord
-                                |> andThen (\record -> succeed (RemoteData.Success (Just record)))
+                                |> map (\record -> RemoteData.Success (Just record))
 
                             -- In case we have no photos to upload.
                             , succeed (RemoteData.Success Nothing)
@@ -225,13 +244,12 @@ decodeIndexDbQueryUploadAuthorityResultRecord =
         |> required "remaining" decodeInt
         |> optional "uploadPhotos"
             (list decodeIndexDbQueryUploadPhotoResultRecord
-                |> andThen
+                |> map
                     (\list_ ->
                         -- Convert list to a dict.
                         list_
                             |> List.map (\row -> ( row.localId, row ))
                             |> Dict.fromList
-                            |> succeed
                     )
             )
             Dict.empty
@@ -294,6 +312,42 @@ decodeIndexDbQueryDeferredPhotoResult =
         |> requiredAt [ "0", "remaining" ] int
 
 
+{-| Decoder for a single deferred-photo row inside a batched response.
+The single-photo decoder above indexes via "0" because the JS side wraps
+the row in an array even for the single case; the batch endpoint sends
+the array directly, so we decode each element as an object.
+-}
+decodeDeferredPhotoRow : Decoder IndexDbQueryDeferredPhotoResultRecord
+decodeDeferredPhotoRow =
+    succeed IndexDbQueryDeferredPhotoResultRecord
+        |> required "uuid" string
+        |> required "photo" string
+        |> required "attempts" int
+        |> required "remaining" int
+
+
+{-| Decode the JS-side bulk-photo fetcher's response. The JS handler
+returns either `{batchError: <http_status_or_0>}` for whole-batch
+failures, or `{results: [{url, ok, terminal}, ...]}` on success.
+-}
+decodeBulkPhotoFetchHandle : Decoder (Result Int (List PhotoBatchResult))
+decodeBulkPhotoFetchHandle =
+    oneOf
+        [ field "batchError" int
+            |> map Err
+        , field "results" (list decodePhotoBatchResult)
+            |> map Ok
+        ]
+
+
+decodePhotoBatchResult : Decoder PhotoBatchResult
+decodePhotoBatchResult =
+    succeed PhotoBatchResult
+        |> required "url" string
+        |> required "ok" bool
+        |> required "terminal" bool
+
+
 decodeDownloadSyncResponseGeneral : Decoder (DownloadSyncResponse BackendGeneralEntity)
 decodeDownloadSyncResponseGeneral =
     field "data"
@@ -322,7 +376,7 @@ decodeBackendGeneralEntity uuidDecoder identifierDecoder =
                 let
                     doDecode decoder tag =
                         decoder
-                            |> andThen
+                            |> map
                                 (\entity ->
                                     let
                                         backendEntity =
@@ -331,7 +385,7 @@ decodeBackendGeneralEntity uuidDecoder identifierDecoder =
                                             , entity = entity
                                             }
                                     in
-                                    succeed (tag backendEntity)
+                                    tag backendEntity
                                 )
                 in
                 case type_ of
@@ -367,13 +421,13 @@ decodeBackendGeneralEntity uuidDecoder identifierDecoder =
 decodeSite : Decoder Site
 decodeSite =
     string
-        |> andThen (siteFromString >> succeed)
+        |> map siteFromString
 
 
 decodeSiteFeatures : Decoder (EverySet SiteFeature)
 decodeSiteFeatures =
     string
-        |> andThen (siteFeaturesFromString >> succeed)
+        |> map siteFeaturesFromString
 
 
 decodeDownloadSyncResponseAuthority : Decoder (DownloadSyncResponse BackendAuthorityEntity)
@@ -417,7 +471,7 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                 let
                     doDecode decoder tag =
                         decoder
-                            |> andThen
+                            |> map
                                 (\entity ->
                                     let
                                         backendEntity =
@@ -426,7 +480,7 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                                             , entity = entity
                                             }
                                     in
-                                    succeed (tag backendEntity)
+                                    tag backendEntity
                                 )
                 in
                 case type_ of

@@ -21,7 +21,7 @@ import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTopic)
 import Backend.EducationSession.Model exposing (EducationTopic(..))
 import Backend.Entities exposing (..)
-import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterType(..))
+import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterType)
 import Backend.HIVActivity.Model exposing (HIVActivity)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)
 import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), IndividualEncounterType(..), PregnancyOutcome(..))
@@ -111,7 +111,7 @@ import Pages.MessagingCenter.Model exposing (MessagingTab(..))
 import Pages.NCD.Activity.Types exposing (ExaminationTask(..), MedicalHistoryTask(..))
 import Pages.NCD.ProgressReport.Model exposing (NCDRiskFactor(..))
 import Pages.NCD.RecurrentActivity.Types
-import Pages.Page exposing (..)
+import Pages.Page exposing (AcuteIllnessSubPage(..), ChildWellnessSubPage(..), DashboardPage(..), NCDSubPage(..), Page(..), SessionPage(..), UserPage(..))
 import Pages.PatientRecord.Model exposing (PatientRecordFilter(..))
 import Pages.PinCode.Model exposing (MainMenuActivity(..), ResilienceReminderType(..))
 import Pages.Prenatal.Activity.Types
@@ -165,7 +165,7 @@ import Round
 import SyncManager.Model exposing (Site(..))
 import Time exposing (Month(..))
 import Translate.Model exposing (TranslationSet)
-import Translate.Utils exposing (..)
+import Translate.Utils exposing (selectLanguage)
 import ZScore.Model exposing (ChartAgeRange(..))
 
 
@@ -883,7 +883,6 @@ type TranslationId
     | HypertensionStageAndRenalComplicationsHeader Bool NCDDiagnosis
     | IdentityPopupHeader
     | IdentityPopupInstructions
-    | IdleWaitingForSync
     | Ignore
     | IllnessSymptom IllnessSymptom
     | IMDailyX10Days
@@ -1344,6 +1343,7 @@ type TranslationId
     | PersonHasBeenSaved
     | PertinentSymptoms
     | Photo
+    | PhotosTransferIdle
     | PhotosTransferStatus
     | PhysicalConditions
     | PhysicalExam
@@ -2206,6 +2206,7 @@ type TranslationId
     | UbudeheNumber Ubudehe
     | UltrasoundEDDQuestion
     | UltrasoundExecutionDateLabel
+    | UnableToTakeMeasurement
     | UncomplicatedMalaria
     | Underweight
     | UndeterminedDiagnoses
@@ -3981,6 +3982,13 @@ translationSet trans =
                     , somali = Just "Canuga si fiican ma u qaataa naaska"
                     }
 
+                BreastfedFirstHour ->
+                    { english = "Was the baby breastfed within an hour of delivery"
+                    , kinyarwanda = Just "Umwana yashyizwe ku ibere mu isaha ya mbere akimara kuvuka"
+                    , kirundi = Nothing
+                    , somali = Just "Canuga ma la naas nuujiyay hal saacad gudaheed dhalmada ka dib"
+                    }
+
                 _ ->
                     translationSet EmptyString
 
@@ -4422,7 +4430,7 @@ translationSet trans =
         ByMouthThreeTimesADayForXDays days ->
             { english = "by mouth three times per day x " ++ String.fromInt days ++ " days"
             , kinyarwanda = Just <| "inshuro ebyiri ku munsi/ mu minsi " ++ String.fromInt days
-            , kirundi = Just <| "Kumira incuro 3 k'umunsi mu kiringo (Igitigiri) iminsi"
+            , kirundi = Just "Kumira incuro 3 k'umunsi mu kiringo (Igitigiri) iminsi"
             , somali = Just <| "afka 3 jeer maalinki x " ++ String.fromInt days ++ " maalin"
             }
 
@@ -9011,13 +9019,6 @@ translationSet trans =
             , somali = Nothing
             }
 
-        IdleWaitingForSync ->
-            { english = "Idle, waiting for next Sync cycle"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
-            , somali = Nothing
-            }
-
         Ignore ->
             { english = "Ignore"
             , kinyarwanda = Just "Bwirengagize"
@@ -11447,7 +11448,7 @@ translationSet trans =
 
         LevelOfEducationLabel ->
             { english = "Level of Education"
-            , kinyarwanda = Just <| "Amashuri wize"
+            , kinyarwanda = Just "Amashuri wize"
             , kirundi = Just "Urugero rw'amashule yize"
             , somali = Just "Heerka Waxbarashada"
             }
@@ -16400,6 +16401,13 @@ translationSet trans =
             , kinyarwanda = Just "Ifoto"
             , kirundi = Just "Ifoto"
             , somali = Just "Sawir"
+            }
+
+        PhotosTransferIdle ->
+            { english = "Idle — no photos pending"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
             }
 
         PhotosTransferStatus ->
@@ -27740,6 +27748,13 @@ translationSet trans =
             , somali = Just "Taariikhda baaritaanka uurka lagu sameeyay"
             }
 
+        UnableToTakeMeasurement ->
+            { english = "Unable to take measurement"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            , somali = Nothing
+            }
+
         UncomplicatedMalaria ->
             { english = "Uncomplicated Malaria"
             , kinyarwanda = Just "Malariya yoroheje"
@@ -31049,7 +31064,7 @@ translateValidationError id =
         DigitsOnly ->
             { english = "should contain only digit characters"
             , kinyarwanda = Nothing
-            , kirundi = Just <| "Itegerezwa kuba irimwo ibiharuro gusa"
+            , kirundi = Just "Itegerezwa kuba irimwo ibiharuro gusa"
             , somali = Just "waa inuu ku jiraa kaliya qoraalada aaladeysan"
             }
 

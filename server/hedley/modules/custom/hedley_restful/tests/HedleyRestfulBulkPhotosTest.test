@@ -1,0 +1,186 @@
+<?php
+
+/**
+ * @file
+ * Contains HedleyRestfulBulkPhotosTest.
+ */
+
+/**
+ * Tests the /api/bulk-photos REST endpoint.
+ *
+ * The endpoint accepts a list of styled-photo URLs and returns a custom
+ * binary container: 8-byte LE uint64 manifest length, then UTF-8 JSON
+ * manifest, then concatenated photo bytes. Each manifest item has a
+ * status (ok / missing / forbidden / error) and, for ok items, offset
+ * and length pointing into the binary section.
+ *
+ * Container-assembly tests exercise the assembleFromItems() helper
+ * with hand-crafted item arrays so they don't depend on Drupal's
+ * image-style infrastructure (which is awkward to exercise from a
+ * fresh simpletest database). itok validation and URL resolution are
+ * covered indirectly via the request-validation tests and verified
+ * end-to-end during integration testing.
+ */
+class HedleyRestfulBulkPhotosTest extends HedleyWebTestBase {
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function getInfo() {
+    return [
+      'name' => 'Bulk photo fetch endpoint',
+      'description' => 'POST /api/bulk-photos container format and per-item statuses.',
+      'group' => 'Hedley restful',
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setUp() {
+    parent::setUp(['hedley_restful']);
+  }
+
+  /**
+   * One ok item produces one manifest entry plus its bytes.
+   */
+  public function testSingleOkItemHappyPath() {
+    $handler = restful_get_restful_handler('bulk-photos');
+    $bytes = $this->loadTestImageBytes();
+    $size = strlen($bytes);
+    $items = [
+      [
+        'url' => 'https://example.test/styled/foo.png?itok=AAA',
+        'status' => 'ok',
+        'offset' => 0,
+        'length' => $size,
+        'mime' => 'image/png',
+        '_bytes' => $bytes,
+      ],
+    ];
+
+    $body = $handler->assembleFromItems($items);
+    $parsed = $this->parseContainer($body);
+
+    $this->assertEqual(1, count($parsed['manifest']['items']), 'Manifest has one item.');
+    $manifest_item = $parsed['manifest']['items'][0];
+    $this->assertEqual('ok', $manifest_item['status']);
+    $this->assertEqual('https://example.test/styled/foo.png?itok=AAA', $manifest_item['url']);
+    $this->assertEqual(0, $manifest_item['offset']);
+    $this->assertEqual($size, $manifest_item['length']);
+    $this->assertEqual('image/png', $manifest_item['mime']);
+    $this->assertFalse(isset($manifest_item['_bytes']), '_bytes is stripped from public manifest.');
+    $this->assertEqual($size, strlen($parsed['binary']), 'Binary section length matches.');
+  }
+
+  /**
+   * Non-ok item: only url + status surface in the manifest, no bytes.
+   */
+  public function testNonOkItemHasNoBytes() {
+    $handler = restful_get_restful_handler('bulk-photos');
+
+    foreach (['error', 'missing', 'forbidden'] as $status) {
+      $items = [
+        ['url' => 'https://example.test/x', 'status' => $status],
+      ];
+      $body = $handler->assembleFromItems($items);
+      $parsed = $this->parseContainer($body);
+
+      $this->assertEqual($status, $parsed['manifest']['items'][0]['status']);
+      $this->assertFalse(isset($parsed['manifest']['items'][0]['offset']), "$status item omits offset.");
+      $this->assertFalse(isset($parsed['manifest']['items'][0]['length']), "$status item omits length.");
+      $this->assertEqual('', $parsed['binary'], "$status contributes no bytes.");
+    }
+  }
+
+  /**
+   * Mixed batch: ordering preserved, offsets cumulative across ok items.
+   */
+  public function testMixedBatchOrderingAndOffsets() {
+    $handler = restful_get_restful_handler('bulk-photos');
+    $bytes_a = $this->loadTestImageBytes();
+    $bytes_c = $this->loadTestImageBytes();
+    $size_a = strlen($bytes_a);
+    $size_c = strlen($bytes_c);
+
+    $items = [
+      [
+        'url' => 'https://example.test/a',
+        'status' => 'ok',
+        'offset' => 0,
+        'length' => $size_a,
+        'mime' => 'image/png',
+        '_bytes' => $bytes_a,
+      ],
+      ['url' => 'https://example.test/b', 'status' => 'error'],
+      [
+        'url' => 'https://example.test/c',
+        'status' => 'ok',
+        'offset' => $size_a,
+        'length' => $size_c,
+        'mime' => 'image/png',
+        '_bytes' => $bytes_c,
+      ],
+      ['url' => 'https://example.test/d', 'status' => 'missing'],
+    ];
+
+    $body = $handler->assembleFromItems($items);
+    $parsed = $this->parseContainer($body);
+    $manifest_items = $parsed['manifest']['items'];
+
+    $this->assertEqual(4, count($manifest_items));
+    $this->assertEqual('ok', $manifest_items[0]['status']);
+    $this->assertEqual('error', $manifest_items[1]['status']);
+    $this->assertEqual('ok', $manifest_items[2]['status']);
+    $this->assertEqual('missing', $manifest_items[3]['status']);
+    $this->assertEqual(0, $manifest_items[0]['offset']);
+    $this->assertEqual($size_a, $manifest_items[2]['offset']);
+    $this->assertEqual($size_a + $size_c, strlen($parsed['binary']));
+
+    // Each ok item's bytes can be sliced out by its offset/length.
+    $slice_a = substr($parsed['binary'], $manifest_items[0]['offset'], $manifest_items[0]['length']);
+    $slice_c = substr($parsed['binary'], $manifest_items[2]['offset'], $manifest_items[2]['length']);
+    $this->assertEqual($size_a, strlen($slice_a));
+    $this->assertEqual($size_c, strlen($slice_c));
+    $this->assertEqual($bytes_a, $slice_a, 'Slice [0] matches source bytes.');
+    $this->assertEqual($bytes_c, $slice_c, 'Slice [2] matches source bytes.');
+  }
+
+  /**
+   * Request with > MAX_BATCH URLs -> RestfulBadRequestException (HTTP 400).
+   */
+  public function testOverBatchCapThrows() {
+    $handler = restful_get_restful_handler('bulk-photos');
+    $oversized = array_fill(0, HedleyRestfulBulkPhotos::MAX_BATCH + 1, 'https://example.test/a');
+    $handler->setRequest(['photos' => $oversized]);
+
+    try {
+      $handler->bulkFetch();
+      $this->fail('Expected RestfulBadRequestException for over-cap batch.');
+    }
+    catch (\RestfulBadRequestException $e) {
+      $this->pass('Over-cap batch throws RestfulBadRequestException.');
+    }
+  }
+
+  /**
+   * Load bytes of a simpletest-bundled image.
+   */
+  protected function loadTestImageBytes() {
+    $files = $this->drupalGetTestFiles('image');
+    $source = reset($files);
+    return file_get_contents($source->uri);
+  }
+
+  /**
+   * Parse the 8-byte-length + JSON-manifest + binary container.
+   */
+  protected function parseContainer($body) {
+    $unpacked = unpack('P', substr($body, 0, 8));
+    $manifest_len = $unpacked[1];
+    $manifest = json_decode(substr($body, 8, $manifest_len), TRUE);
+    $binary = substr($body, 8 + $manifest_len);
+    return ['manifest' => $manifest, 'binary' => $binary];
+  }
+
+}

@@ -1,6 +1,6 @@
 module Backend.PrenatalEncounter.Decoder exposing (decodePrenatalDiagnosis, decodePrenatalEncounter, decodePrenatalEncounterType)
 
-import Backend.PrenatalEncounter.Model exposing (..)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterType(..), PrenatalIndicator(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import EverySet
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
@@ -393,6 +393,12 @@ decodePrenatalIndicator =
                 case value of
                     "past-labs-completed" ->
                         succeed IndicatorHistoryLabsCompleted
+
+                    "adequate-gwg" ->
+                        succeed IndicatorAdequateGWG
+
+                    "inadequate-gwg" ->
+                        succeed IndicatorInadequateGWG
 
                     "none" ->
                         succeed NoPrenatalIndicators

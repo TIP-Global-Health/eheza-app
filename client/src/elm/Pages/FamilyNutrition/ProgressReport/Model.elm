@@ -1,6 +1,5 @@
-module Pages.FamilyNutrition.ProgressReport.Model exposing (..)
+module Pages.FamilyNutrition.ProgressReport.Model exposing (Model, Msg(..), emptyModel)
 
-import Backend.Entities exposing (..)
 import Pages.FamilyNutrition.Encounter.Model exposing (FamilyMember(..))
 import Pages.Page exposing (Page)
 

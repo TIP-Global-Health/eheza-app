@@ -1,4 +1,4 @@
-module SyncManager.Utils exposing (..)
+module SyncManager.Utils exposing (backendAuthorityEntityToRevision, backendGeneralEntityToRevision, determineDownloadPhotosStatus, determineSyncStatus, encodeBackendAuthorityEntity, encodeBackendGeneralEntity, getBackendAuthorityEntityIdentifier, getBackendGeneralEntityIdentifier, getDataToSendAuthority, getDataToSendGeneral, getDownloadPhotosSpeedForSubscriptions, getImageFromBackendAuthorityEntity, getSyncSpeedForSubscriptions, getSyncedHealthCenters, resolveIncidentDetailsMsg, siteFeaturesFromString, siteFromString, syncInfoAuthorityForPort, syncInfoAuthorityFromPort, syncInfoGeneralForPort, syncInfoGeneralFromPort, syncInfoStatusToString)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import Backend.AcuteIllnessEncounter.Encoder
@@ -338,71 +338,50 @@ determineDownloadPhotosStatus model =
     in
     if syncCycleRotate then
         let
+            currentStatus =
+                model.downloadPhotosStatus
+
             statusUpdated =
-                case model.syncStatus of
-                    SyncIdle ->
-                        -- Cases are ordered by the cycle order.
-                        let
-                            currentStatus =
-                                model.downloadPhotosStatus
-                        in
-                        case currentStatus of
-                            DownloadPhotosIdle ->
-                                DownloadPhotosInProcess model.downloadPhotosMode
+                -- Cases are ordered by the cycle order.
+                case currentStatus of
+                    DownloadPhotosIdle ->
+                        DownloadPhotosInProcess model.downloadPhotosMode
 
-                            DownloadPhotosInProcess record ->
-                                case record of
-                                    DownloadPhotosNone ->
-                                        DownloadPhotosIdle
+                    DownloadPhotosInProcess record ->
+                        case record of
+                            DownloadPhotosNone ->
+                                DownloadPhotosIdle
 
-                                    DownloadPhotosBatch deferredPhoto ->
-                                        if deferredPhoto.indexDbRemoteData == RemoteData.Success Nothing then
-                                            -- We tried to fetch deferred photos from IndexDB,
-                                            -- but there we non matching the query.
-                                            DownloadPhotosIdle
+                            DownloadPhotosBatch deferredPhoto ->
+                                if deferredPhoto.indexDbRemoteData == RemoteData.Success Nothing then
+                                    -- We tried to fetch deferred photos from IndexDB,
+                                    -- but there we non matching the query.
+                                    DownloadPhotosIdle
 
-                                        else if deferredPhoto.batchCounter < 1 then
-                                            -- We've reached the end of the batch, so we
-                                            -- need to rotate.
-                                            DownloadPhotosIdle
+                                else if deferredPhoto.batchCounter < 1 then
+                                    -- We've reached the end of the batch, so we
+                                    -- need to rotate.
+                                    DownloadPhotosIdle
 
-                                        else
-                                            currentStatus
+                                else
+                                    currentStatus
 
-                                    DownloadPhotosAll deferredPhoto ->
-                                        if deferredPhoto.indexDbRemoteData == RemoteData.Success Nothing then
-                                            -- We tried to fetch deferred photos from IndexDB,
-                                            -- but there we non matching the query.
-                                            DownloadPhotosIdle
+                            DownloadPhotosAll deferredPhoto ->
+                                if deferredPhoto.indexDbRemoteData == RemoteData.Success Nothing then
+                                    -- We tried to fetch deferred photos from IndexDB,
+                                    -- but there we non matching the query.
+                                    DownloadPhotosIdle
 
-                                        else
-                                            -- There are still deferred photos in IndexDB
-                                            -- that match out query.
-                                            currentStatus
-
-                    -- When sync is active, we stop photos download.
-                    _ ->
-                        DownloadPhotosIdle
+                                else
+                                    -- There are still deferred photos in IndexDB
+                                    -- that match out query.
+                                    currentStatus
         in
         { model | downloadPhotosStatus = statusUpdated }
 
     else
         -- No change.
         model
-
-
-resetDownloadPhotosBatchCounter : Model -> DownloadPhotosStatus
-resetDownloadPhotosBatchCounter model =
-    case model.downloadPhotosMode of
-        DownloadPhotosBatch deferredPhoto ->
-            let
-                deferredPhotoUpdated =
-                    { deferredPhoto | batchCounter = deferredPhoto.batchSize }
-            in
-            DownloadPhotosInProcess (DownloadPhotosBatch deferredPhotoUpdated)
-
-        _ ->
-            DownloadPhotosInProcess model.downloadPhotosMode
 
 
 {-| Get info about an entity. `revision` would be the Drupal revision

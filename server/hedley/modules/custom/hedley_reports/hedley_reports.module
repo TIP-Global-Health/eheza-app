@@ -464,9 +464,33 @@ function hedley_reports_get_triggering_measurement_types() {
     HEDLEY_ACTIVITY_HEIGHT_BUNDLES,
     HEDLEY_ACTIVITY_WEIGHT_BUNDLES,
     HEDLEY_ACTIVITY_MUAC_BUNDLES,
+    // REVIEW: HEAD dropped HEDLEY_ACTIVITY_NUTRITION_BUNDLES from this
+    // trigger list; base re-added it. Keeping it here so report recalcs
+    // still fire on nutrition-measurement saves; remove if this branch
+    // intentionally moved that handling elsewhere.
     HEDLEY_ACTIVITY_NUTRITION_BUNDLES,
     HEDLEY_ACTIVITY_REPORTS_GROUP_MEASUREMENT_BUNDLES,
-    [HEDLEY_ACTIVITY_FAMILY_NUTRITION_MUAC_CHILD_CONTENT_TYPE],
+    HEDLEY_ACTIVITY_WELL_CHILD_IMMUNISATION_BUNDLES,
+    [
+      HEDLEY_ACTIVITY_CHILD_FBF_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_DANGER_SIGNS_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_FAMILY_NUTRITION_MUAC_CHILD_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_MOTHER_FBF_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_PRENATAL_ASPIRIN_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_PRENATAL_BREASTFEEDING_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_PRENATAL_CALCIUM_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_PRENATAL_HEMOGLOBIN_TEST_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_PRENATAL_MEDICATION_DISTRIBUTION_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_PRENATAL_MMS_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_PRENATAL_OBSTETRIC_HISTORY_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_PRENATAL_OBSTETRIC_HISTORY_STEP2_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_PRENATAL_REFERRAL_CONTENT_TYPE,
+      // Completes the immunisations list (not included
+      // at HEDLEY_ACTIVITY_WELL_CHILD_IMMUNISATION_BUNDLES).
+      HEDLEY_ACTIVITY_WELL_CHILD_HPV_IMMUNISATION_CONTENT_TYPE,
+      HEDLEY_FAMILY_NUTRITION_AHEZA_CHILD_CONTENT_TYPE,
+      HEDLEY_FAMILY_NUTRITION_AHEZA_MOTHER_CONTENT_TYPE,
+    ],
   ));
 }
 
@@ -496,14 +520,35 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
     : '',
   ];
 
-  $sessions_ids = $zscores_by_encounter = $muac_edema_by_encounter = [];
-  // Exclude family_nutrition_muac_child from the query: it is in the
-  // triggering list so that node saves enqueue an AQ recalc, but this
-  // loop has no use for those nodes -- the per-child MUAC data is
-  // collected via a dedicated query further down in this function.
+  $sessions_ids = $zscores_by_encounter = $vaccinations_by_encounter = $muac_edema_by_encounter = [];
+  $prenatal_indicators_by_encounter = [
+    'mms' => [],
+    'us' => [],
+    'aspirin' => [],
+    'calcium' => [],
+    'preterm-birth' => [],
+    'abortion' => [],
+    'stillbirth' => [],
+    'intrauterine-death' => [],
+    'azithromycin' => [],
+    'anemia-test' => [],
+    'breastfed-first-hour' => [],
+    'premature-onset-contractions' => [],
+  ];
+  $vaccine_type_mapping = hedley_reports_vaccine_type_mapping();
+
+  // Bundles that participate in the AQ trigger list but have dedicated
+  // queries further down in this function; exclude them from the generic
+  // measurement loop so we don't load them twice.
   $measurements_bundles = array_diff(
     hedley_reports_get_triggering_measurement_types(),
-    [HEDLEY_ACTIVITY_FAMILY_NUTRITION_MUAC_CHILD_CONTENT_TYPE]
+    [
+      HEDLEY_ACTIVITY_CHILD_FBF_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_FAMILY_NUTRITION_MUAC_CHILD_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_MOTHER_FBF_CONTENT_TYPE,
+      HEDLEY_FAMILY_NUTRITION_AHEZA_CHILD_CONTENT_TYPE,
+      HEDLEY_FAMILY_NUTRITION_AHEZA_MOTHER_CONTENT_TYPE,
+    ]
   );
   $measurements_ids = hedley_general_get_person_measurements($person->nid, $measurements_bundles);
   $measurements = node_load_multiple($measurements_ids);
@@ -669,6 +714,208 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
         $muac_edema_by_encounter[$encounter_id]['e'] = in_array('edema', $signs);
         break;
 
+      case HEDLEY_ACTIVITY_PRENATAL_MMS_CONTENT_TYPE:
+        foreach ($measurement->field_administration_note[LANGUAGE_NONE] as $item) {
+          if ($item['value'] == 'administered-today') {
+            $encounter_id = $measurement->field_prenatal_encounter[LANGUAGE_NONE][0]['target_id'];
+            $prenatal_indicators_by_encounter['mms'][] = $encounter_id;
+            break;
+          }
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_PRENATAL_REFERRAL_CONTENT_TYPE:
+        $referrals = $measurement->field_referrals[LANGUAGE_NONE];
+        if (!empty($referrals)) {
+          foreach ($measurement->field_referrals[LANGUAGE_NONE] as $item) {
+            if ($item['value'] == 'us') {
+              $encounter_id = $measurement->field_prenatal_encounter[LANGUAGE_NONE][0]['target_id'];
+              $prenatal_indicators_by_encounter['us'][] = $encounter_id;
+              break;
+            }
+          }
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_PRENATAL_ASPIRIN_CONTENT_TYPE:
+        foreach ($measurement->field_administration_note[LANGUAGE_NONE] as $item) {
+          if ($item['value'] == 'administered-today') {
+            $encounter_id = $measurement->field_prenatal_encounter[LANGUAGE_NONE][0]['target_id'];
+            $prenatal_indicators_by_encounter['aspirin'][] = $encounter_id;
+            break;
+          }
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_PRENATAL_CALCIUM_CONTENT_TYPE:
+        foreach ($measurement->field_administration_note[LANGUAGE_NONE] as $item) {
+          if ($item['value'] == 'administered-today') {
+            $encounter_id = $measurement->field_prenatal_encounter[LANGUAGE_NONE][0]['target_id'];
+            $prenatal_indicators_by_encounter['calcium'][] = $encounter_id;
+            break;
+          }
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_PRENATAL_OBSTETRIC_HISTORY_CONTENT_TYPE:
+        $encounter_id = $measurement->field_prenatal_encounter[LANGUAGE_NONE][0]['target_id'];
+        $preterm = $measurement->field_preterm_pregnancy[LANGUAGE_NONE][0]['value'];
+        if (!empty($preterm) && $preterm > 0) {
+          $prenatal_indicators_by_encounter['preterm-birth'][] = $encounter_id;
+        }
+        $stillbirths_at_term = $measurement->field_stillbirths_at_term[LANGUAGE_NONE][0]['value'];
+        $stillbirths_preterm = $measurement->field_stillbirths_preterm[LANGUAGE_NONE][0]['value'];
+        if ((!empty($stillbirths_at_term) && $stillbirths_at_term > 0) || (!empty($stillbirths_preterm) && $stillbirths_preterm > 0)) {
+          $prenatal_indicators_by_encounter['stillbirth'][] = $encounter_id;
+        }
+        $abortions = $measurement->field_abortions[LANGUAGE_NONE][0]['value'];
+        if (!empty($abortions) && $abortions > 0) {
+          $prenatal_indicators_by_encounter['abortion'][] = $encounter_id;
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_PRENATAL_OBSTETRIC_HISTORY_STEP2_CONTENT_TYPE:
+        foreach ($measurement->field_obstetric_history_step2[LANGUAGE_NONE] as $item) {
+          if ($item['value'] == 'intra-uterine-death-previous-delivery') {
+            $encounter_id = $measurement->field_prenatal_encounter[LANGUAGE_NONE][0]['target_id'];
+            $prenatal_indicators_by_encounter['intrauterine-death'][] = $encounter_id;
+            break;
+          }
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_PRENATAL_HEMOGLOBIN_TEST_CONTENT_TYPE:
+        foreach ($measurement->field_test_execution_note[LANGUAGE_NONE] as $item) {
+          if ($item['value'] == 'run-today') {
+            $encounter_id = $measurement->field_prenatal_encounter[LANGUAGE_NONE][0]['target_id'];
+            $prenatal_indicators_by_encounter['anemia-test'][] = $encounter_id;
+            break;
+          }
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_PRENATAL_MEDICATION_DISTRIBUTION_CONTENT_TYPE:
+        $encounter_id = $measurement->field_prenatal_encounter[LANGUAGE_NONE][0]['target_id'];
+        foreach ($measurement->field_prescribed_medication[LANGUAGE_NONE] as $item) {
+          if ($item['value'] == 'aspirin') {
+            $prenatal_indicators_by_encounter['aspirin'][] = $encounter_id;
+          }
+          elseif ($item['value'] == 'azithromycin') {
+            $prenatal_indicators_by_encounter['azithromycin'][] = $encounter_id;
+          }
+        }
+        $recommended_treatment = $measurement->field_recommended_treatment[LANGUAGE_NONE];
+        if (!empty($recommended_treatment)) {
+          foreach ($recommended_treatment as $item) {
+            if ($item['value'] == 'azithromycin') {
+              $prenatal_indicators_by_encounter['azithromycin'][] = $encounter_id;
+              break;
+            }
+          }
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_PRENATAL_BREASTFEEDING_CONTENT_TYPE:
+        foreach ($measurement->field_breastfeeding_signs[LANGUAGE_NONE] as $item) {
+          if ($item['value'] == 'breastfed-first-hour') {
+            $encounter_id = $measurement->field_prenatal_encounter[LANGUAGE_NONE][0]['target_id'];
+            $prenatal_indicators_by_encounter['breastfed-first-hour'][] = $encounter_id;
+            break;
+          }
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_DANGER_SIGNS_CONTENT_TYPE:
+        foreach ($measurement->field_danger_signs[LANGUAGE_NONE] as $item) {
+          if ($item['value'] == 'premature-onset-contractions') {
+            $encounter_id = $measurement->field_prenatal_encounter[LANGUAGE_NONE][0]['target_id'];
+            $prenatal_indicators_by_encounter['premature-onset-contractions'][] = $encounter_id;
+            break;
+          }
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_WELL_CHILD_BCG_IMMUNISATION_CONTENT_TYPE:
+        $administration_dates = hedley_reports_get_vaccination_dates($measurement);
+        if (!empty($administration_dates)) {
+          $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
+          $vaccine_type = $vaccine_type_mapping[HEDLEY_ACTIVITY_WELL_CHILD_BCG_IMMUNISATION_CONTENT_TYPE];
+          $vaccinations_by_encounter[$encounter_id][$vaccine_type] = $administration_dates;
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_WELL_CHILD_OPV_IMMUNISATION_CONTENT_TYPE:
+        $administration_dates = hedley_reports_get_vaccination_dates($measurement);
+        if (!empty($administration_dates)) {
+          $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
+          $vaccine_type = $vaccine_type_mapping[HEDLEY_ACTIVITY_WELL_CHILD_OPV_IMMUNISATION_CONTENT_TYPE];
+          $vaccinations_by_encounter[$encounter_id][$vaccine_type] = $administration_dates;
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_WELL_CHILD_DTP_IMMUNISATION_CONTENT_TYPE:
+        $administration_dates = hedley_reports_get_vaccination_dates($measurement);
+        if (!empty($administration_dates)) {
+          $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
+          $vaccine_type = $vaccine_type_mapping[HEDLEY_ACTIVITY_WELL_CHILD_DTP_IMMUNISATION_CONTENT_TYPE];
+          $vaccinations_by_encounter[$encounter_id][$vaccine_type] = $administration_dates;
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_WELL_CHILD_DTP_STANDALONE_IMMUNISATION_CONTENT_TYPE:
+        $administration_dates = hedley_reports_get_vaccination_dates($measurement);
+        if (!empty($administration_dates)) {
+          $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
+          $vaccine_type = $vaccine_type_mapping[HEDLEY_ACTIVITY_WELL_CHILD_DTP_STANDALONE_IMMUNISATION_CONTENT_TYPE];
+          $vaccinations_by_encounter[$encounter_id][$vaccine_type] = $administration_dates;
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_WELL_CHILD_PCV13_IMMUNISATION_CONTENT_TYPE:
+        $administration_dates = hedley_reports_get_vaccination_dates($measurement);
+        if (!empty($administration_dates)) {
+          $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
+          $vaccine_type = $vaccine_type_mapping[HEDLEY_ACTIVITY_WELL_CHILD_PCV13_IMMUNISATION_CONTENT_TYPE];
+          $vaccinations_by_encounter[$encounter_id][$vaccine_type] = $administration_dates;
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_WELL_CHILD_ROTARIX_IMMUNISATION_CONTENT_TYPE:
+        $administration_dates = hedley_reports_get_vaccination_dates($measurement);
+        if (!empty($administration_dates)) {
+          $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
+          $vaccine_type = $vaccine_type_mapping[HEDLEY_ACTIVITY_WELL_CHILD_ROTARIX_IMMUNISATION_CONTENT_TYPE];
+          $vaccinations_by_encounter[$encounter_id][$vaccine_type] = $administration_dates;
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_WELL_CHILD_IPV_IMMUNISATION_CONTENT_TYPE:
+        $administration_dates = hedley_reports_get_vaccination_dates($measurement);
+        if (!empty($administration_dates)) {
+          $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
+          $vaccine_type = $vaccine_type_mapping[HEDLEY_ACTIVITY_WELL_CHILD_IPV_IMMUNISATION_CONTENT_TYPE];
+          $vaccinations_by_encounter[$encounter_id][$vaccine_type] = $administration_dates;
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_WELL_CHILD_MR_IMMUNISATION_CONTENT_TYPE:
+        $administration_dates = hedley_reports_get_vaccination_dates($measurement);
+        if (!empty($administration_dates)) {
+          $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
+          $vaccine_type = $vaccine_type_mapping[HEDLEY_ACTIVITY_WELL_CHILD_MR_IMMUNISATION_CONTENT_TYPE];
+          $vaccinations_by_encounter[$encounter_id][$vaccine_type] = $administration_dates;
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_WELL_CHILD_HPV_IMMUNISATION_CONTENT_TYPE:
+        $administration_dates = hedley_reports_get_vaccination_dates($measurement);
+        if (!empty($administration_dates)) {
+          $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
+          $vaccine_type = $vaccine_type_mapping[HEDLEY_ACTIVITY_WELL_CHILD_HPV_IMMUNISATION_CONTENT_TYPE];
+          $vaccinations_by_encounter[$encounter_id][$vaccine_type] = $administration_dates;
+        }
+        break;
+
       default:
         $encounter_id = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
         $sessions_ids[] = $encounter_id;
@@ -678,6 +925,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
   $encounters_data = [];
   $ai_diagnosis_mapping = hedley_reports_ai_diagnosis_mapping();
   $prenatal_diagnosis_mapping = hedley_reports_prenatal_diagnosis_mapping();
+  $prenatal_indicator_mapping = hedley_reports_prenatal_indicator_mapping();
   $encounter_types_to_load = [
     HEDLEY_STATS_PRENATAL_ENCOUNTER_TYPE,
     HEDLEY_STATS_ACUTE_ILLNESS_ENCOUNTER_TYPE,
@@ -734,15 +982,52 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
             }
           }
           $mapped_diagnoses = implode(",", array_unique($mapped_diagnoses));
-          $encounter_data = "$encounter_date|$encounter_type|$mapped_diagnoses";
+
+          // Resolving indicators.
+          // 'GWG adequate' indicator is recorded on encounter itself.
+          $indicators = [];
+          if (!empty($encounter->field_prenatal_indicators) && !empty($encounter->field_prenatal_indicators[LANGUAGE_NONE])) {
+            foreach ($encounter->field_prenatal_indicators[LANGUAGE_NONE] as $item) {
+              if ($item['value'] == 'adequate-gwg') {
+                $indicators[] = $prenatal_indicator_mapping['gwg'];
+                break;
+              }
+            }
+          }
+
+          // Other indicators are resolved from measurements.
+          $keys = array_keys($prenatal_indicators_by_encounter);
+          foreach ($keys as $key) {
+            if (in_array($encounter->nid, $prenatal_indicators_by_encounter[$key])) {
+              $indicators[] = $prenatal_indicator_mapping[$key];
+            }
+          }
+          $mapped_indicators = implode(",", array_unique($indicators));
+
+          $encounter_data = "$encounter_date|$encounter_type|$mapped_diagnoses|$mapped_indicators";
           break;
 
         case HEDLEY_STATS_NUTRITION_ENCOUNTER_TYPE:
-        case HEDLEY_STATS_SPV_ENCOUNTER_TYPE:
           $zscores = isset($zscores_by_encounter[$encounter->nid]) ? $zscores_by_encounter[$encounter->nid] : [];
           $muac_edema = isset($muac_edema_by_encounter[$encounter->nid]) ? $muac_edema_by_encounter[$encounter->nid] : [];
           $nutrition = hedley_reports_nutrition_metrics_to_string($zscores + $muac_edema);
           $encounter_data = "$encounter_date $nutrition";
+          break;
+
+        case HEDLEY_STATS_SPV_ENCOUNTER_TYPE:
+          $zscores = isset($zscores_by_encounter[$encounter->nid]) ? $zscores_by_encounter[$encounter->nid] : [];
+          $muac_edema = isset($muac_edema_by_encounter[$encounter->nid]) ? $muac_edema_by_encounter[$encounter->nid] : [];
+          $nutrition = hedley_reports_nutrition_metrics_to_string($zscores + $muac_edema);
+          $vaccinations_as_string = '';
+          if (!empty($vaccinations_by_encounter[$encounter->nid])) {
+            $vaccinations = [];
+            foreach ($vaccinations_by_encounter[$encounter->nid] as $vaccination_type => $dates) {
+              $dates_as_string = implode('+', $dates);
+              $vaccinations[] = "$vaccination_type:$dates_as_string";
+            }
+            $vaccinations_as_string = implode(',', $vaccinations);
+          }
+          $encounter_data = "$encounter_date|$nutrition|$vaccinations_as_string";
           break;
 
         // For remaining types recording only encounter date.
@@ -787,17 +1072,38 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
     }
   }
 
+  // AHEZA distribution amounts (mother and child) live on family-nutrition
+  // encounter measurements. Collected here so both the mother-side
+  // 'family-nutrition' wire (below) and the child-side 'family-nutrition-muac'
+  // wire (further down) can embed the amount alongside the existing data
+  // they emit per encounter.
+  $aheza_mother_amount_by_encounter = hedley_reports_collect_distributed_amounts_by_parent(
+    $person->nid,
+    HEDLEY_FAMILY_NUTRITION_AHEZA_MOTHER_CONTENT_TYPE,
+    'field_family_nutrition_encounter'
+  );
+  $aheza_child_amount_by_encounter = hedley_reports_collect_distributed_amounts_by_parent(
+    $person->nid,
+    HEDLEY_FAMILY_NUTRITION_AHEZA_CHILD_CONTENT_TYPE,
+    'field_family_nutrition_encounter'
+  );
+
   // Family nutrition encounters: walk family_participant nodes whose
   // field_person points at $person. field_person on family_participant is
   // the mother (the registering adult), so this block only contributes data
-  // when $person is a mother. Each family encounter is recorded as a
-  // date-only wire entry under the 'family-nutrition' key. These entries
-  // drive the Demographics report's "Family Nutrition" encounter row, which
-  // counts mothers and their family encounters across all ages (no child
-  // age filter). Per-child MUAC measurements are emitted separately under
-  // 'family-nutrition-muac' on each child's reports data; that path is
-  // what feeds the MAM/SAM stats and lives where the nutrition stats
-  // pipelines (which filter to children under 6) can actually find it.
+  // when $person is a mother. Each family encounter is recorded under the
+  // 'family-nutrition' key, with the wire shape determined by whether an
+  // aheza_mother distribution exists for the encounter:
+  // - "YYYY-MM-DD" (no AHEZA -- legacy date-only entry).
+  // - "YYYY-MM-DD <amount>" (AHEZA mother distribution recorded).
+  // These entries drive the Demographics report's "Family Nutrition"
+  // encounter row, which counts mothers and their family encounters across
+  // all ages (no child age filter). Per-child MUAC measurements are emitted
+  // separately under 'family-nutrition-muac' on each child's reports data;
+  // that path is what feeds the MAM/SAM stats and lives where the nutrition
+  // stats pipelines (which filter to children under 6) can actually find it.
+  // Stays in sync with decodeFamilyNutritionMotherEncounterData in
+  // server/elm/src/Backend/Reports/Decoder.elm; update both together.
   $family_participants_query = hedley_general_create_entity_field_query_excluding_deleted();
   $family_participants_result = $family_participants_query
     ->entityCondition('entity_type', 'node')
@@ -821,21 +1127,32 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
       foreach ($family_encounters as $family_encounter) {
         $participant_id = $family_encounter->field_family_participant[LANGUAGE_NONE][0]['target_id'];
         $encounter_date = date("Y-m-d", strtotime($family_encounter->field_scheduled_date[LANGUAGE_NONE][0]['value']));
-        $encounters_data['family-nutrition'][$participant_id][] = $encounter_date;
+        $wire = isset($aheza_mother_amount_by_encounter[$family_encounter->nid])
+          ? "$encounter_date " . $aheza_mother_amount_by_encounter[$family_encounter->nid]
+          : $encounter_date;
+        $encounters_data['family-nutrition'][$participant_id][] = $wire;
       }
     }
   }
 
-  // Per-child family-nutrition MUAC measurements. Walk child MUAC measurement
-  // nodes whose field_person is THIS person; these only match when $person
-  // is a child (the measurement records the child's arm circumference).
-  // Each measurement contributes one wire entry to the child's
-  // 'family-nutrition-muac' data, in the same "YYYY-MM-DD muac" format that
-  // hedley_reports_generate_nutrition_report_data parses for AM stats.
+  // Per-child family-nutrition data: child MUAC and child AHEZA distribution.
+  // Walk child MUAC measurement nodes whose field_person is THIS person, and
+  // pair them up with AHEZA child distribution amounts collected above.
+  // These only match when $person is a child (the measurements record the
+  // child's arm circumference / supplement received).
+  //
+  // Each (encounter, child) pairing contributes one wire entry to the
+  // child's 'family-nutrition-muac' data. Wire shapes:
+  // - "YYYY-MM-DD <muac>" (legacy MUAC-only entry).
+  // - "YYYY-MM-DD <muac>|<amount>" (MUAC and AHEZA recorded together).
+  // - "YYYY-MM-DD |<amount>" (AHEZA only -- empty MUAC chunk).
+  //
   // Storing per-child measurements on the child rather than the mother is
-  // what gives the AM stats correct per-child denominators -- the nutrition
-  // pipelines downstream filter records to children under 6 before the
-  // computation runs, so mother-side data would be invisible to them.
+  // what gives the MAM/SAM stats correct per-child denominators -- the
+  // nutrition pipelines downstream filter records to children under 6
+  // before computation, so mother-side data would be invisible to them.
+  // Stays in sync with decodeFamilyNutritionEncounterData in
+  // server/elm/src/Backend/Reports/Decoder.elm; update both together.
   $family_muac_query = hedley_general_create_entity_field_query_excluding_deleted();
   $family_muac_result = $family_muac_query
     ->entityCondition('entity_type', 'node')
@@ -844,27 +1161,16 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
     ->propertyCondition('status', NODE_PUBLISHED)
     ->execute();
 
+  // Build a per-encounter map of {MUAC, AHEZA} for this child. Either or
+  // both may be present; encounters with neither yield no entry.
+  $child_data_by_encounter = [];
   if (!empty($family_muac_result['node'])) {
     $family_muac_measurements = node_load_multiple(array_keys($family_muac_result['node']));
-
-    // Batch-load parent encounters to read each measurement's scheduled
-    // date. We need the encounter's date, not the measurement's
-    // field_date_measured, for consistency with the way the rest of this
-    // function dates encounters.
-    $parent_encounter_ids = [];
     foreach ($family_muac_measurements as $family_muac) {
-      $parent_id = $family_muac->field_family_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
-      if (!empty($parent_id)) {
-        $parent_encounter_ids[] = $parent_id;
-      }
-    }
-    $parent_encounters = !empty($parent_encounter_ids)
-      ? node_load_multiple(array_unique($parent_encounter_ids))
-      : [];
-
-    foreach ($family_muac_measurements as $family_muac) {
-      $parent_id = $family_muac->field_family_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
-      if (empty($parent_encounters[$parent_id])) {
+      $parent_id = !empty($family_muac->field_family_nutrition_encounter[LANGUAGE_NONE][0]['target_id'])
+        ? $family_muac->field_family_nutrition_encounter[LANGUAGE_NONE][0]['target_id']
+        : NULL;
+      if (empty($parent_id)) {
         continue;
       }
       $muac_value = !empty($family_muac->field_muac[LANGUAGE_NONE][0]['value'])
@@ -873,9 +1179,34 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
       if (is_null($muac_value) || $muac_value === '') {
         continue;
       }
-      $parent = $parent_encounters[$parent_id];
+      $child_data_by_encounter[$parent_id]['m'] = $muac_value;
+    }
+  }
+  foreach ($aheza_child_amount_by_encounter as $encounter_id => $amount) {
+    $child_data_by_encounter[$encounter_id]['a'] = $amount;
+  }
+
+  if (!empty($child_data_by_encounter)) {
+    // Batch-load parent encounters to read each entry's scheduled date.
+    // We need the encounter's date, not the measurement's
+    // field_date_measured, for consistency with the way the rest of this
+    // function dates encounters.
+    $parent_encounters = node_load_multiple(array_keys($child_data_by_encounter));
+    foreach ($child_data_by_encounter as $encounter_id => $values) {
+      if (empty($parent_encounters[$encounter_id])) {
+        continue;
+      }
+      $parent = $parent_encounters[$encounter_id];
       $encounter_date = date("Y-m-d", strtotime($parent->field_scheduled_date[LANGUAGE_NONE][0]['value']));
-      $encounters_data['family-nutrition-muac'][$person->nid][] = "$encounter_date $muac_value";
+      $muac_part = isset($values['m']) ? $values['m'] : '';
+      if (isset($values['a'])) {
+        $wire = "$encounter_date $muac_part|" . $values['a'];
+      }
+      else {
+        // MUAC only: preserve legacy "YYYY-MM-DD <muac>" wire format.
+        $wire = "$encounter_date $muac_part";
+      }
+      $encounters_data['family-nutrition-muac'][$person->nid][] = $wire;
     }
   }
 
@@ -887,7 +1218,27 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
   }
 
   // Load group data.
-  $sessions_ids = array_unique($sessions_ids);
+  // FBF distribution amounts (child_fbf and mother_fbf) live on session-level
+  // measurements; collect them ahead of the group-nutrition emission so we
+  // can embed the child amount in the existing wire and emit the mother
+  // amount under its own key. Sessions referenced only by an FBF record (no
+  // anthropometry at all) still need to flow through the loop, so merge
+  // their ids into $sessions_ids before loading the session nodes.
+  $child_fbf_amount_by_session = hedley_reports_collect_distributed_amounts_by_parent(
+    $person->nid,
+    HEDLEY_ACTIVITY_CHILD_FBF_CONTENT_TYPE,
+    'field_session'
+  );
+  $mother_fbf_amount_by_session = hedley_reports_collect_distributed_amounts_by_parent(
+    $person->nid,
+    HEDLEY_ACTIVITY_MOTHER_FBF_CONTENT_TYPE,
+    'field_session'
+  );
+  $sessions_ids = array_unique(array_merge(
+    $sessions_ids,
+    array_keys($child_fbf_amount_by_session),
+    array_keys($mother_fbf_amount_by_session)
+  ));
   $sessions = node_load_multiple($sessions_ids);
   $clinics_ids = [];
   foreach ($sessions as $session) {
@@ -903,6 +1254,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
   }
 
   $sessions_data = [];
+  $mother_sessions_data = [];
   foreach ($sessions as $session) {
     $clinic_id = $session->field_clinic[LANGUAGE_NONE][0]['target_id'];
     $group_type = $group_type_by_clinic[$clinic_id];
@@ -912,15 +1264,57 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
     $nutrition = hedley_reports_nutrition_metrics_to_string($zscores + $muac_edema);
     $session_data = "$encounter_date $nutrition";
 
+    // Embed FBF distributed amount on the wire as a |<amount> tail chunk
+    // appended to the existing space-delimited second segment. The Elm
+    // decoder splits the second segment on '|' to separate anthropometry
+    // (",,,," up to "stunting,wasting,underweight,muac,edema") from the
+    // FBF amount. Wire shapes after this change:
+    // - "YYYY-MM-DD" (unchanged legacy date-only).
+    // - "YYYY-MM-DD <anth>" (unchanged anthropometry only).
+    // - "YYYY-MM-DD <anth>|<amount>" (anthropometry + FBF).
+    // - "YYYY-MM-DD ,,,,|<amount>" (FBF only -- empty anth chunk).
+    // Stays in sync with decodeNutritionEncounterData in
+    // server/elm/src/Backend/Reports/Decoder.elm; update both together.
+    //
+    // Every session in $sessions_ids gets emitted under
+    // group_nutrition.<group> regardless of whether the person is the
+    // child or the mother at that session: the Demographics encounter
+    // table counts these as session attendance for both. A mother who
+    // attended an FBF session (e.g. via family_planning / lactation /
+    // mother_fbf) appears here with empty anthropometry; a child shows
+    // whatever measurements were recorded.
+    if (isset($child_fbf_amount_by_session[$session->nid])) {
+      $session_data .= '|' . $child_fbf_amount_by_session[$session->nid];
+    }
+
     if (empty($sessions_data[$group_type])) {
       $sessions_data[$group_type] = [$session_data];
     }
     else {
       $sessions_data[$group_type][] = $session_data;
     }
+
+    // Mother FBF: per (session, mother) wire "YYYY-MM-DD <amount>" emitted
+    // under group_nutrition_mother.fbf. Only Fbf clinics produce mother
+    // distributions, so the group key is hardcoded to match the Elm
+    // decoder which reads exactly this path -- decodeReportsData in
+    // server/elm/src/Backend/Reports/Decoder.elm. If another clinic type
+    // ever needs to carry mother distributions, both sides must change.
+    if (isset($mother_fbf_amount_by_session[$session->nid])) {
+      $mother_session_data = "$encounter_date " . $mother_fbf_amount_by_session[$session->nid];
+      if (empty($mother_sessions_data['fbf'])) {
+        $mother_sessions_data['fbf'] = [$mother_session_data];
+      }
+      else {
+        $mother_sessions_data['fbf'][] = $mother_session_data;
+      }
+    }
   }
   if (!empty($sessions_data)) {
     $data['group_nutrition'] = $sessions_data;
+  }
+  if (!empty($mother_sessions_data)) {
+    $data['group_nutrition_mother'] = $mother_sessions_data;
   }
 
   $encoded_data = json_encode($data);
@@ -928,6 +1322,56 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
   node_save($person);
 
   return TRUE;
+}
+
+/**
+ * Gets vaccination administration dates recorded at the measurement.
+ *
+ * @param object $measurement
+ *   Measurement object.
+ *
+ * @return array
+ *   List of administration dates.
+ */
+function hedley_reports_get_vaccination_dates($measurement) {
+  $dates = [];
+  $administration_dates = $measurement->field_administration_dates[LANGUAGE_NONE];
+  if (empty($administration_dates)) {
+    return $dates;
+  }
+
+  foreach ($administration_dates as $item) {
+    $dates[] = explode(' ', $item['value'])[0];
+  }
+
+  return $dates;
+}
+
+/**
+ * Returns a mapping of vaccine content type constants to code values.
+ *
+ * Provides the standard mapping between vaccine-related content type
+ * constants (e.g. HEDLEY_ACTIVITY_WELL_CHILD_BCG_IMMUNISATION_CONTENT_TYPE)
+ * and the single-character codes used to compress them on the wire.
+ * Stays in sync with vaccineTypeFromMapping in
+ * server/elm/src/Backend/Reports/Decoder.elm; update both together.
+ *
+ * @return array
+ *   An associative array mapping vaccine content type constants (string
+ *   machine names) to single-character code values.
+ */
+function hedley_reports_vaccine_type_mapping() {
+  return [
+    HEDLEY_ACTIVITY_WELL_CHILD_BCG_IMMUNISATION_CONTENT_TYPE => 'a',
+    HEDLEY_ACTIVITY_WELL_CHILD_OPV_IMMUNISATION_CONTENT_TYPE => 'b',
+    HEDLEY_ACTIVITY_WELL_CHILD_DTP_IMMUNISATION_CONTENT_TYPE => 'c',
+    HEDLEY_ACTIVITY_WELL_CHILD_DTP_STANDALONE_IMMUNISATION_CONTENT_TYPE => 'd',
+    HEDLEY_ACTIVITY_WELL_CHILD_PCV13_IMMUNISATION_CONTENT_TYPE => 'e',
+    HEDLEY_ACTIVITY_WELL_CHILD_ROTARIX_IMMUNISATION_CONTENT_TYPE => 'f',
+    HEDLEY_ACTIVITY_WELL_CHILD_IPV_IMMUNISATION_CONTENT_TYPE => 'g',
+    HEDLEY_ACTIVITY_WELL_CHILD_MR_IMMUNISATION_CONTENT_TYPE => 'h',
+    HEDLEY_ACTIVITY_WELL_CHILD_HPV_IMMUNISATION_CONTENT_TYPE => 'i',
+  ];
 }
 
 /**
@@ -966,6 +1410,10 @@ function hedley_reports_pregnancy_outcome_mapping() {
  * decoder (hedley_reports_generate_nutrition_report_data) and the Elm
  * decoder (Backend.Reports.Decoder.parseNutritionEncounterPayload)
  * expect. Do not reorder the output without updating both decoders.
+ *
+ * See https://github.com/Gizra/ihangane/issues/3199 (PRs #1479 and
+ * #1481) for the bug that established this convention -- swapping
+ * encoder positions or renaming the keys reintroduces it.
  *
  * @param array|null $values
  *   An associative array of nutrition metrics with the following possible keys:
@@ -1021,6 +1469,67 @@ function hedley_reports_family_nutrition_metrics_to_string($values) {
   }
 
   return (string) $values['m'];
+}
+
+/**
+ * Collects distributed_amount values from FBF / AHEZA records for one person.
+ *
+ * Stays in sync with decodeNutritionEncounterData,
+ * decodeFamilyNutritionEncounterData,
+ * decodeFamilyNutritionMotherEncounterData, and
+ * decodeMotherFbfEncounterData in
+ * server/elm/src/Backend/Reports/Decoder.elm; update both together.
+ *
+ * @param int $person_id
+ *   The person node id whose distribution records to read.
+ * @param string $bundle
+ *   The distribution bundle: child_fbf, mother_fbf, aheza_child, aheza_mother.
+ * @param string $parent_field_name
+ *   The entityreference field on the bundle that points at the parent
+ *   encounter / session: field_session for FBF bundles,
+ *   field_family_nutrition_encounter for AHEZA bundles.
+ *
+ * @return array
+ *   Associative array keyed by parent encounter / session nid; value is the
+ *   field_distributed_amount on the distribution measurement node. Records
+ *   with no parent reference or no amount are skipped. If multiple records
+ *   share the same parent for this person (not expected in practice), the
+ *   last one read wins, matching the existing per-encounter "last write
+ *   wins" pattern used by the per-encounter MUAC / Z-score aggregation in
+ *   hedley_reports_calculate_aggregated_data_for_person.
+ */
+function hedley_reports_collect_distributed_amounts_by_parent($person_id, $bundle, $parent_field_name) {
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
+  $result = $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', $bundle)
+    ->fieldCondition('field_person', 'target_id', $person_id)
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->execute();
+
+  if (empty($result['node'])) {
+    return [];
+  }
+
+  $records = node_load_multiple(array_keys($result['node']));
+  $amounts = [];
+  foreach ($records as $record) {
+    $parent_field = isset($record->{$parent_field_name}) ? $record->{$parent_field_name} : NULL;
+    $parent_id = !empty($parent_field[LANGUAGE_NONE][0]['target_id'])
+      ? $parent_field[LANGUAGE_NONE][0]['target_id']
+      : NULL;
+    if (empty($parent_id)) {
+      continue;
+    }
+    $amount = isset($record->field_distributed_amount[LANGUAGE_NONE][0]['value'])
+      ? $record->field_distributed_amount[LANGUAGE_NONE][0]['value']
+      : NULL;
+    if (is_null($amount) || $amount === '') {
+      continue;
+    }
+    $amounts[$parent_id] = $amount;
+  }
+  return $amounts;
 }
 
 /**
@@ -1154,7 +1663,7 @@ function hedley_reports_statistical_queries_report_callback_health_center($healt
  *   The HTML markup for the Elm application.
  */
 function hedley_reports_build_statistical_queries_results_app($province = NULL, $district = NULL, $sector = NULL, $cell = NULL, $village = NULL, $health_center = NULL) {
-  $data = [];
+  $data = $params = [];
 
   if (empty($province)) {
     if (empty($health_center)) {
@@ -1165,37 +1674,53 @@ function hedley_reports_build_statistical_queries_results_app($province = NULL, 
       $wrapper = entity_metadata_wrapper('node', $health_center);
       $data['entity_name'] = $wrapper->label();
       $data['entity_type'] = 'health-center';
+      $params['health_center'] = $health_center;
     }
   }
   elseif (empty($district)) {
     $data['entity_name'] = $province;
     $data['entity_type'] = 'province';
+    $params['province'] = $province;
   }
   elseif (empty($sector)) {
     $data['entity_name'] = $district;
     $data['entity_type'] = 'district';
+    $params['province'] = $province;
+    $params['district'] = $district;
   }
   elseif (empty($cell)) {
     $data['entity_name'] = $sector;
     $data['entity_type'] = 'sector';
+    $params['province'] = $province;
+    $params['district'] = $district;
+    $params['sector'] = $sector;
   }
   elseif (empty($village)) {
     $data['entity_name'] = $cell;
     $data['entity_type'] = 'cell';
+    $params['province'] = $province;
+    $params['district'] = $district;
+    $params['sector'] = $sector;
+    $params['cell'] = $cell;
   }
   else {
     $data['entity_name'] = $village;
     $data['entity_type'] = 'village';
+    $params['province'] = $province;
+    $params['district'] = $district;
+    $params['sector'] = $sector;
+    $params['cell'] = $cell;
+    $params['village'] = $village;
   }
 
   $data['site'] = variable_get('hedley_general_site_name', '');
+  $data['features'] = hedley_admin_get_enabled_features_string();
+  $data['params'] = $params;
 
-  if (in_array($data['entity_type'], ['sector', 'cell', 'village'])) {
-    // For smaller data sets, we generate results on fly.
-    $data['results'] = hedley_reports_generate_results_data($province, $district, $sector, $cell, $village, $health_center);
-  }
-  else {
-    [$data['results'], $data['additional']] = hedley_reports_load_results_data('statistical-query', $data['entity_type'], $province, $district, $health_center);
+  $wide_scopes = ['global', 'province', 'district', 'health-center'];
+  if (in_array($data['entity_type'], $wide_scopes)) {
+    // For large data sets, try loading additional data.
+    $data['additional'] = hedley_reports_load_results_additional_data('statistical-query', $data['entity_type'], $province, $district, $health_center);
   }
 
   return hedley_general_build_elm_app('reports-results', $data);
@@ -1302,7 +1827,113 @@ function hedley_reports_generate_results_data($province, $district, $sector, $ce
 }
 
 /**
- * Loads data in scope, stored at Report Data node.
+ * Generate Aggregated Reports data which is stored on person nodes.
+ *
+ * The requests are coming from restful endpoint.
+ *
+ * @param int $from_nid
+ *   Query for data from nodes which IDs are above provided node ID.
+ * @param int $batch
+ *   Number of nodes to be processed in single batch.
+ * @param string|null $province
+ *   Province name.
+ * @param string|null $district
+ *   District name.
+ * @param string|null $sector
+ *   Sector name.
+ * @param string|null $cell
+ *   Cell name.
+ * @param string|null $village
+ *   Village name.
+ * @param int|null $health_center
+ *   Health center ID.
+ *
+ * @return array
+ *   An array of generated data.
+ */
+function hedley_reports_generate_results_data_for_restful($from_nid, $batch, $province, $district, $sector, $cell, $village, $health_center) {
+  // Direct SELECT against the field table avoids the node_load_multiple() that
+  // EntityFieldQuery would force; the JSON payload is read straight from
+  // field_data_field_reports_data. The shared $build closure keeps the COUNT
+  // and data queries in lockstep.
+  $build = function () use ($from_nid, $province, $district, $sector, $cell, $village, $health_center) {
+    $q = db_select('field_data_field_reports_data', 'fr');
+    $q->innerJoin('node', 'n', 'n.nid = fr.entity_id');
+    // Replicates the exclude_deleted query tag; see
+    // hedley_general_query_exclude_deleted_alter().
+    $q->leftJoin('field_data_field_deleted', 'fd', 'fd.entity_id = n.nid');
+    $q->condition('fr.entity_type', 'node')
+      ->condition('fr.bundle', 'person')
+      ->condition('fr.deleted', 0)
+      ->condition('n.status', NODE_PUBLISHED)
+      ->condition('n.nid', $from_nid, '>')
+      ->isNotNull('fr.field_reports_data_value')
+      ->condition(db_or()->isNull('fd.field_deleted_value')->condition('fd.field_deleted_value', 0));
+
+    $locality = [
+      'field_province' => $province,
+      'field_district' => $district,
+      'field_sector'   => $sector,
+      'field_cell'     => $cell,
+      'field_village'  => $village,
+    ];
+    foreach ($locality as $field => $value) {
+      if (!empty($value)) {
+        $alias = $q->innerJoin("field_data_$field", $field,
+          "%alias.entity_id = n.nid AND %alias.entity_type = 'node' AND %alias.deleted = 0");
+        $q->condition("$alias.{$field}_value", $value);
+      }
+    }
+    if (!empty($health_center)) {
+      $alias = $q->innerJoin('field_data_field_shards', 'fs',
+        "%alias.entity_id = n.nid AND %alias.entity_type = 'node' AND %alias.deleted = 0");
+      $q->condition("$alias.field_shards_target_id", $health_center);
+    }
+    return $q;
+  };
+
+  // Count remaining rows from $from_nid. addExpression() emits "SELECT COUNT(*)
+  // FROM ..." rather than the subquery wrapper countQuery() would generate.
+  $count_q = $build();
+  $count_q->addExpression('COUNT(*)', 'cnt');
+  $count = (int) $count_q->execute()->fetchField();
+
+  if ($count === 0) {
+    // No more items left -- return the structured shape Elm expects so
+    // its decoder doesn't fail and leave sync stuck at "PENDING".
+    return [
+      'batch' => [],
+      'total_remaining' => 0,
+      'last' => 0,
+    ];
+  }
+
+  $data_q = $build();
+  $data_q->fields('n', ['nid'])
+    ->fields('fr', ['field_reports_data_value'])
+    ->orderBy('n.nid')
+    ->range(0, $batch);
+  $rows = $data_q->execute()->fetchAll();
+
+  $output = [];
+  $last = 0;
+  foreach ($rows as $r) {
+    if (empty($r->field_reports_data_value)) {
+      continue;
+    }
+    $output[] = json_decode($r->field_reports_data_value);
+    $last = (int) $r->nid;
+  }
+
+  return [
+    'batch' => $output,
+    'total_remaining' => $count - count($rows),
+    'last' => $last,
+  ];
+}
+
+/**
+ * Loads additional data in scope, stored on Report Data node.
  *
  * @param string $report_variant
  *   Type of report to load.
@@ -1316,41 +1947,20 @@ function hedley_reports_generate_results_data($province, $district, $sector, $ce
  *   Health center ID.
  *
  * @return array
- *   A 2-element array: [results, additional_data].
- *   On failure, returns [[], NULL].
+ *   Stored data.
  */
-function hedley_reports_load_results_data($report_variant, $scope, $province = NULL, $district = NULL, $health_center = NULL) {
+function hedley_reports_load_results_additional_data($report_variant, $scope, $province = NULL, $district = NULL, $health_center = NULL) {
   $node_id = hedley_reports_load_results_data_node($report_variant, $scope, $province, $district, $health_center);
   if (!$node_id) {
-    return [[], NULL];
+    return [];
   }
 
   $node = node_load($node_id);
-  $file = file_load($node->field_data_file[LANGUAGE_NONE][0]['fid']);
-  if (!$file) {
-    return [[], NULL];
+  if (empty($node->field_reports_data) || empty($node->field_reports_data[LANGUAGE_NONE][0]['value'])) {
+    return [];
   }
 
-  // Get the real path of the file.
-  $file_path = drupal_realpath($file->uri);
-  // Open the gzipped file and read its contents.
-  $gz_fp = gzopen($file_path, 'r');
-  if (!$gz_fp) {
-    return [[], NULL];
-  }
-
-  $data = '';
-  while (!gzeof($gz_fp)) {
-    $data .= gzread($gz_fp, 4096);
-  }
-  gzclose($gz_fp);
-
-  $additional_data = '';
-  if (!empty($node->field_reports_data)) {
-    $additional_data = $node->field_reports_data[LANGUAGE_NONE][0]['value'];
-  }
-
-  return [json_decode($data), json_decode($additional_data)];
+  return json_decode($node->field_reports_data[LANGUAGE_NONE][0]['value']);
 }
 
 /**
@@ -1372,7 +1982,6 @@ function hedley_reports_load_results_data($report_variant, $scope, $province = N
  * @throws Exception
  */
 function hedley_reports_create_or_update_results_data_node(array $data, $report_variant, $scope, $province = NULL, $district = NULL, $health_center = NULL) {
-  $data_file_id = hedley_reports_create_data_file($data);
   $node_id = hedley_reports_load_results_data_node($report_variant, $scope, $province, $district, $health_center);
   if (!$node_id) {
     // Create the Report Data node.
@@ -1385,11 +1994,6 @@ function hedley_reports_create_or_update_results_data_node(array $data, $report_
     $node->language = LANGUAGE_NONE;
     $node->field_report_variant[LANGUAGE_NONE][0]['value'] = $report_variant;
     $node->field_data_scope[LANGUAGE_NONE][0]['value'] = $scope;
-    // Attach the file to the node's file field.
-    $node->field_data_file[LANGUAGE_NONE][0] = [
-      'fid' => $data_file_id,
-      'display' => 1,
-    ];
     if (!empty($province)) {
       $node->field_province[LANGUAGE_NONE][0]['value'] = $province;
     }
@@ -1401,18 +2005,8 @@ function hedley_reports_create_or_update_results_data_node(array $data, $report_
     }
   }
   else {
-    // Update the Report Data node.
+    // Update the existing Report Data node.
     $node = node_load($node_id);
-    $old_file = file_load($node->field_data_file[LANGUAGE_NONE][0]['fid']);
-    if ($old_file) {
-      // Delete the old file.
-      file_delete($old_file, TRUE);
-    }
-    // Attach new file.
-    $node->field_data_file[LANGUAGE_NONE][0] = [
-      'fid' => $data_file_id,
-      'display' => 1,
-    ];
   }
 
   if ($report_variant == 'statistical-query') {
@@ -1469,55 +2063,6 @@ function hedley_reports_load_results_data_node($report_variant, $scope, $provinc
   $result = $query->execute();
 
   return empty($result['node']) ? FALSE : key($result['node']);
-}
-
-/**
- * Creates a file with provided data as a content.
- *
- * @param array $data
- *   Data to write into file.
- *
- * @return int
- *   Created file ID.
- */
-function hedley_reports_create_data_file(array $data) {
-  // Create a temporary file with the content.
-  $file_content = json_encode($data);
-  $file_path = 'private://report-data-' . time() . '.txt.gz';
-  $file_uri = file_unmanaged_save_data($file_content, $file_path, FILE_EXISTS_REPLACE);
-  // Compress the content and save it to a .gz file.
-  $gz_file_path = hedley_reports_gz_compress_file($file_content, $file_path);
-  // Create the file object and save it.
-  $file = (object) array(
-    'uid' => 1,
-    'filename' => drupal_basename($file_uri),
-    'uri' => $gz_file_path,
-    'filemime' => 'application/gzip',
-    'status' => NODE_PUBLISHED,
-    'display' => 1,
-    'timestamp' => REQUEST_TIME,
-  );
-  file_save($file);
-
-  return $file->fid;
-}
-
-/**
- * Helper function to compress file content using gzip.
- *
- * @param string $data
- *   The data to be compressed.
- * @param string $file_path
- *   The file path where the compressed data will be saved.
- *
- * @return string
- *   The path to the gzipped file.
- */
-function hedley_reports_gz_compress_file($data, $file_path) {
-  $gz_fp = gzopen($file_path, 'w9');
-  gzwrite($gz_fp, $data);
-  gzclose($gz_fp);
-  return $file_path;
 }
 
 /**
@@ -1651,6 +2196,33 @@ function hedley_reports_prenatal_diagnosis_mapping() {
 }
 
 /**
+ * Provides a mapping for Prenatal indicator codes.
+ *
+ * This function returns an associative array where the keys are indicator
+ * identifiers and the values are corresponding codes.
+ *
+ * @return array
+ *   An associative array mapping indicator identifiers to their codes.
+ */
+function hedley_reports_prenatal_indicator_mapping() {
+  return [
+    'gwg' => 'a',
+    'mms' => 'b',
+    'us' => 'c',
+    'aspirin' => 'd',
+    'calcium' => 'e',
+    'preterm-birth' => 'f',
+    'abortion' => 'g',
+    'intrauterine-death' => 'h',
+    'stillbirth' => 'i',
+    'azithromycin' => 'j',
+    'anemia-test' => 'k',
+    'breastfed-first-hour' => 'l',
+    'premature-onset-contractions' => 'm',
+  ];
+}
+
+/**
  * Generates Report Data node title for provided variant and scope.
  *
  * @param string $report_variant
@@ -1684,7 +2256,7 @@ function hedley_reports_generate_results_data_node_title($report_variant, $scope
       break;
 
     default:
-      $suffix = 'Glodal';
+      $suffix = 'Global';
   }
 
   return "$prefix report data - $suffix";
@@ -1776,7 +2348,12 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
       }
       if (isset($patient_data->individual->{"well-child"})) {
         foreach ($patient_data->individual->{"well-child"} as $items) {
-          $data_for_patient['encounters'] = array_merge($data_for_patient['encounters'], $items);
+          $normalized = [];
+          foreach ($items as $item) {
+            $parts = explode('|', $item);
+            $normalized[] = $parts[0] . ' ' . $parts[1];
+          }
+          $data_for_patient['encounters'] = array_merge($data_for_patient['encounters'], $normalized);
         }
       }
     }
@@ -2619,7 +3196,7 @@ function hedley_reports_completion_report_callback_health_center($health_center)
  *   The HTML markup for the Elm application.
  */
 function hedley_reports_build_completion_results_app($health_center = NULL) {
-  $data = [];
+  $data = $params = [];
 
   if (empty($health_center)) {
     $data['entity_name'] = 'Global';
@@ -2629,13 +3206,128 @@ function hedley_reports_build_completion_results_app($health_center = NULL) {
     $wrapper = entity_metadata_wrapper('node', $health_center);
     $data['entity_name'] = $wrapper->label();
     $data['entity_type'] = 'health-center';
+    $params['health_center'] = $health_center;
   }
 
   $data['site'] = variable_get('hedley_general_site_name', '');
-
-  [$data['results'], $data['additional']] = hedley_reports_load_results_data('completion', $data['entity_type'], NULL, NULL, $health_center);
+  $data['params'] = $params;
 
   return hedley_general_build_elm_app('completion-results', $data);
+}
+
+/**
+ * Generate Completion report data which is stored on encounter nodes.
+ *
+ * The requests are coming from restful endpoint.
+ *
+ * @param int $from_nid
+ *   Query for data from nodes which IDs are above provided node ID.
+ * @param int $batch
+ *   Number of nodes to be processed in single batch.
+ * @param int|null $health_center
+ *   Health center ID.
+ *
+ * @return array
+ *   An array of generated data.
+ */
+function hedley_reports_generate_completion_data_for_restful($from_nid, $batch, $health_center) {
+  $bundles = [
+    // Acute Illness data.
+    'acute_illness_encounter',
+    // Nutrition Group data.
+    'attendance',
+    // Child Scoreboard data.
+    'child_scoreboard_encounter',
+    // HIV Data.
+    'hiv_encounter',
+    // Home Visit data.
+    'home_visit_encounter',
+    // NCD Data.
+    'ncd_encounter',
+    // Nutrition Individual data.
+    'nutrition_encounter',
+    // Prenatal Data.
+    'prenatal_encounter',
+    // Tuberculosis Data.
+    'tuberculosis_encounter',
+    // Well Child data.
+    'well_child_encounter',
+  ];
+
+  // Direct SELECT against the field table avoids the node_load_multiple() that
+  // EntityFieldQuery would force; the JSON payload is read straight from
+  // field_data_field_reports_data. The shared $build closure keeps the COUNT
+  // and data queries in lockstep.
+  $build = function () use ($from_nid, $bundles, $health_center) {
+    $q = db_select('field_data_field_reports_data', 'fr');
+    $q->innerJoin('node', 'n', 'n.nid = fr.entity_id');
+    $q->condition('fr.entity_type', 'node')
+      ->condition('fr.bundle', $bundles, 'IN')
+      ->condition('fr.deleted', 0)
+      ->condition('n.status', NODE_PUBLISHED)
+      ->condition('n.nid', $from_nid, '>')
+      ->isNotNull('fr.field_reports_data_value');
+    if (!empty($health_center)) {
+      $alias = $q->innerJoin('field_data_field_shards', 'fs',
+        "%alias.entity_id = n.nid AND %alias.entity_type = 'node' AND %alias.deleted = 0");
+      $q->condition("$alias.field_shards_target_id", $health_center);
+    }
+    return $q;
+  };
+
+  // Count remaining rows from $from_nid. addExpression() emits "SELECT COUNT(*)
+  // FROM ..." rather than the subquery wrapper countQuery() would generate.
+  $count_q = $build();
+  $count_q->addExpression('COUNT(*)', 'cnt');
+  $count = (int) $count_q->execute()->fetchField();
+
+  if ($count === 0) {
+    // No more items left -- return the structured shape Elm expects so
+    // its decoder doesn't fail and leave sync stuck at "PENDING".
+    return [
+      'batch' => [],
+      'total_remaining' => 0,
+      'last' => 0,
+    ];
+  }
+
+  $data_q = $build();
+  $data_q->fields('n', ['nid', 'type'])
+    ->fields('fr', ['field_reports_data_value'])
+    ->orderBy('n.nid')
+    ->range(0, $batch);
+  $rows = $data_q->execute()->fetchAll();
+
+  $type_to_bucket = [
+    'acute_illness_encounter'    => 'acute_illness',
+    'attendance'                 => 'nutrition_group',
+    'child_scoreboard_encounter' => 'child_scoreboard',
+    'hiv_encounter'              => 'hiv',
+    'home_visit_encounter'       => 'home_visit',
+    'ncd_encounter'              => 'ncd',
+    'nutrition_encounter'        => 'nutrition_individual',
+    'prenatal_encounter'         => 'prenatal',
+    'tuberculosis_encounter'     => 'tuberculosis',
+    'well_child_encounter'       => 'well_child',
+  ];
+  $data = array_fill_keys(array_values($type_to_bucket), []);
+
+  $last = 0;
+  foreach ($rows as $r) {
+    if (empty($r->field_reports_data_value)) {
+      continue;
+    }
+    if (isset($type_to_bucket[$r->type])) {
+      $data[$type_to_bucket[$r->type]][] = json_decode($r->field_reports_data_value);
+    }
+    $last = (int) $r->nid;
+  }
+
+  return [
+    'batch' => $data,
+    'total_remaining' => $count - count($rows),
+    'last' => $last,
+  ];
 }
 
 /**

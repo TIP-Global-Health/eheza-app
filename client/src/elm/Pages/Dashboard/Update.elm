@@ -2,17 +2,16 @@ module Pages.Dashboard.Update exposing (update)
 
 import App.Model
 import Backend.Entities exposing (HealthCenterId)
-import Backend.Model exposing (ModelIndexedDb)
-import Gizra.NominalDate exposing (NominalDate)
+import Backend.Model
 import Gizra.Update exposing (sequenceExtra)
-import Pages.Dashboard.Model exposing (..)
+import Pages.Dashboard.Model exposing (FilterPeriod(..), FilterProgramType(..), FilterType(..), Model, Msg(..), emptyModel, maxMonthGap)
 import Pages.Dashboard.Utils exposing (filterProgramTypeFromString)
 import Pages.Page exposing (DashboardPage(..), NutritionSubPage(..), Page(..), UserPage(..))
 import Restful.Endpoint exposing (toEntityUuid)
 
 
-update : NominalDate -> Maybe HealthCenterId -> DashboardPage -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate healthCenterId subPage db msg model =
+update : Maybe HealthCenterId -> DashboardPage -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update healthCenterId subPage msg model =
     case msg of
         SetModalState state ->
             ( { model | modalState = state }
@@ -48,7 +47,7 @@ update currentDate healthCenterId subPage db msg model =
             , Cmd.none
             , []
             )
-                |> sequenceExtra (update currentDate healthCenterId subPage db)
+                |> sequenceExtra (update healthCenterId subPage)
                     [ SetActivePage (UserPage (DashboardPage (PageNutrition PageCaseManagement))) ]
 
         SetFilterGender gender ->

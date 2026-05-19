@@ -1,6 +1,6 @@
-module Backend.FamilyEncounterParticipant.Utils exposing (..)
+module Backend.FamilyEncounterParticipant.Utils exposing (familyEncounterTypeFromString, familyEncounterTypeToString, initiatorFromUrlFragment, initiatorToUrlFragment, isDailyEncounterActive)
 
-import Backend.FamilyEncounterParticipant.Model exposing (..)
+import Backend.FamilyEncounterParticipant.Model exposing (FamilyEncounterType(..), FamilyParticipantInitiator(..))
 import Backend.PatientRecord.Utils
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isNothing)

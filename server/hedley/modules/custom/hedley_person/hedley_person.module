@@ -1414,6 +1414,51 @@ function hedley_person_load_individual_participant_encounters_ids($nid) {
 }
 
 /**
+ * Resolves family_participant nodes IDs where person is the adult.
+ *
+ * @param int $nid
+ *   Person node ID (the adult on field_person of the family_participant).
+ * @param array $types
+ *   Family encounter types (values of field_family_encounter_type).
+ * @param string $order
+ *   Sorting order.
+ *
+ * @return array
+ *   List of family_participant nodes IDs.
+ */
+function hedley_person_family_participants_for_person($nid, array $types, $order = 'ASC') {
+  $query = hedley_general_create_db_select_query_excluding_deleted();
+  $query->join('field_data_field_person', 'p', 'p.entity_id = n.nid');
+  $query->leftJoin('field_data_field_family_encounter_type', 'et', 'et.entity_id = p.entity_id');
+
+  $query->condition('n.type', 'family_participant');
+  $query->condition('et.field_family_encounter_type_value', $types, 'IN');
+  $query->condition('p.field_person_target_id', $nid);
+  $query->addField('n', 'nid');
+  $query->orderBy('n.nid', $order);
+
+  return $query->execute()->fetchCol();
+}
+
+/**
+ * Resolves the encounters IDs associated with a family participant.
+ *
+ * @param int $nid
+ *   Family participant node ID.
+ *
+ * @return array
+ *   An array of encounters nodes IDs associated with the participant.
+ */
+function hedley_person_load_family_participant_encounters_ids($nid) {
+  $query = hedley_general_create_db_select_query_excluding_deleted();
+  $query->join('field_data_field_family_participant', 'p', 'p.entity_id = n.nid');
+  $query->condition('p.field_family_participant_target_id', $nid);
+  $query->addField('n', 'nid');
+
+  return $query->execute()->fetchCol();
+}
+
+/**
  * Resolves measurements IDs associated with an individual encounter / session.
  *
  * @param int $nid

@@ -6,26 +6,32 @@ workflows:
     jobs:
       - lint_phpcs
       - lint_elm
+      - lint_elm_review
       - lint_shellcheck
+      - test_zscore
       - test_simpletest_linux:
           requires:
             - lint_phpcs
             - lint_elm
+            - lint_elm_review
             - lint_shellcheck
       - e2e_playwright_1:
           requires:
             - lint_phpcs
             - lint_elm
+            - lint_elm_review
             - lint_shellcheck
       - e2e_playwright_2:
           requires:
             - lint_phpcs
             - lint_elm
+            - lint_elm_review
             - lint_shellcheck
       - e2e_reporting:
           requires:
             - lint_phpcs
             - lint_elm
+            - lint_elm_review
             - lint_shellcheck
 
 jobs:
@@ -44,6 +50,13 @@ jobs:
       - checkout
       - run: ci-scripts/install_elm_format.sh
       - run: ci-scripts/test_elm_format.sh
+  lint_elm_review:
+    docker:
+      - image: cimg/node:18.20
+    steps:
+      - checkout
+      - run: ci-scripts/install_elm_review.sh
+      - run: ci-scripts/test_elm_review.sh
   lint_shellcheck:
     machine:
       image: ubuntu-2204:current
@@ -51,6 +64,14 @@ jobs:
       - checkout
       - run: ci-scripts/install_shell.sh
       - run: ci-scripts/test_shell.sh
+  test_zscore:
+    docker:
+      - image: cimg/php:7.4.30
+    steps:
+      - checkout
+      - run:
+          name: Run standalone Z-Score calculation tests
+          command: php server/hedley/modules/custom/hedley_zscore/tests/run_zscore_tests.php
   test_simpletest_linux:
     machine:
       image: ubuntu-2204:current
@@ -58,7 +79,6 @@ jobs:
       - checkout
       - run: ci-scripts/install_ddev.sh
       - run: ci-scripts/install_drupal.sh
-      - run: ci-scripts/circleci_wait.sh ddev zscore-test
       - run: ci-scripts/circleci_wait.sh ddev simpletest
   e2e_playwright_1:
     machine:
@@ -104,7 +124,7 @@ jobs:
             exit 1
       - run:
           name: Run E2E tests
-          command: cd client && npx playwright test prenatal && npx playwright test --grep-invert "Well Child|NCD|HIV|Tuberculosis|Child Scoreboard|Prenatal|Family Nutrition|Group Nutrition|Group Education|Stock Management|Admin Reports"
+          command: cd client && npx playwright test prenatal tuberculosis && npx playwright test --grep-invert "Well Child|NCD|HIV|Tuberculosis|Child Scoreboard|Prenatal|Family Nutrition|Group Nutrition|Group Education|Stock Management|Admin Reports|Bulk Photo Fetch"
           no_output_timeout: 15m
       - store_artifacts:
           path: client/test-results
@@ -153,7 +173,7 @@ jobs:
             exit 1
       - run:
           name: Run E2E tests
-          command: cd client && npx playwright test well-child ncd hiv tuberculosis child-scoreboard family-nutrition group-session education-session stock-management
+          command: cd client && npx playwright test well-child ncd hiv child-scoreboard family-nutrition group-session education-session stock-management sync-bulk-photos
           no_output_timeout: 15m
       - store_artifacts:
           path: client/test-results

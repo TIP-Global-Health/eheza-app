@@ -1,13 +1,44 @@
-module Pages.Reports.Utils exposing (..)
+module Pages.Reports.Utils exposing (allVaccineTypes, countTotalEncounters, countTotalNutritionEncounters, eddToLmpDate, familyNutritionEncounterToMetrics, generateIncidenceNutritionMetricsResults, generatePrevalenceNutritionMetricsResults, isWideScope, nutritionEncounterDataToNutritionMetrics, prenatalContactTypeToEncountersAtWeek, reportTypeFromString, reportTypeToString, resolveDataSetForMonth, resolveDataSetForQuarter, resolveDataSetForYear, resolvePregnancyTrimester, resolvePreviousDataSetForMonth, sumNutritionMetrics)
 
+import App.Types exposing (Site(..))
 import AssocList as Dict exposing (Dict)
-import Backend.Reports.Model exposing (..)
+import Backend.Components.Model exposing (PersonId, SelectedEntity(..))
+import Backend.Reports.Model exposing (FamilyNutritionEncounterData, NutritionEncounterData, PatientData)
+import Backend.Scoreboard.Model exposing (VaccineType(..))
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate, diffDays)
 import List.Extra exposing (unique)
 import Maybe.Extra
-import Pages.Reports.Model exposing (..)
+import Pages.Reports.Model exposing (NutritionMetrics, NutritionMetricsResults, PregnancyTrimester(..), PrenatalContactType(..), ReportType(..), emptyNutritionMetrics)
 import Set
+
+
+prenatalContactTypeToEncountersAtWeek : PrenatalContactType -> ( Int, Int )
+prenatalContactTypeToEncountersAtWeek prenatalContactType =
+    case prenatalContactType of
+        PrenatalContact1 ->
+            ( 1, 12 )
+
+        PrenatalContact2 ->
+            ( 2, 20 )
+
+        PrenatalContact3 ->
+            ( 3, 26 )
+
+        PrenatalContact4 ->
+            ( 4, 30 )
+
+        PrenatalContact5 ->
+            ( 5, 34 )
+
+        PrenatalContact6 ->
+            ( 6, 36 )
+
+        PrenatalContact7 ->
+            ( 7, 38 )
+
+        PrenatalContact8 ->
+            ( 8, 40 )
 
 
 eddToLmpDate : NominalDate -> NominalDate
@@ -40,11 +71,23 @@ reportTypeToString reportType =
         ReportDemographics ->
             "demographics"
 
+        ReportFBFDistribution ->
+            "fbf-distribution"
+
         ReportNutrition ->
             "nutrition"
 
+        ReportPeripartum ->
+            "peripartum"
+
+        ReportPostnatalCare ->
+            "postnatal-care"
+
         ReportPrenatal ->
             "prenatal"
+
+        ReportPrenatalContacts ->
+            "prenatal-contacts"
 
         ReportPrenatalDiagnoses ->
             "prenatal-diagnoses"
@@ -59,11 +102,23 @@ reportTypeFromString reportType =
         "demographics" ->
             Just ReportDemographics
 
+        "fbf-distribution" ->
+            Just ReportFBFDistribution
+
         "nutrition" ->
             Just ReportNutrition
 
+        "peripartum" ->
+            Just ReportPeripartum
+
+        "postnatal-care" ->
+            Just ReportPostnatalCare
+
         "prenatal" ->
             Just ReportPrenatal
+
+        "prenatal-contacts" ->
+            Just ReportPrenatalContacts
 
         "prenatal-diagnoses" ->
             Just ReportPrenatalDiagnoses
@@ -484,3 +539,28 @@ resolveDataSetForYear date yearIndex encountersByMonth =
 isWideScope : SelectedEntity -> Bool
 isWideScope selectedEntity =
     List.member selectedEntity [ EntityGlobal, EntityProvince, EntityDistrict, EntityHealthCenter ]
+
+
+{-| Vaccines scheduled for a given site. Mirrors the client-side
+`Measurement.Utils.allVaccineTypes`: only Burundi schedules
+`VaccineDTPStandalone`; other sites schedule `VaccineHPV` instead.
+-}
+allVaccineTypes : Site -> List VaccineType
+allVaccineTypes site =
+    let
+        common =
+            [ VaccineBCG
+            , VaccineOPV
+            , VaccineDTP
+            , VaccinePCV13
+            , VaccineRotarix
+            , VaccineIPV
+            , VaccineMR
+            ]
+    in
+    case site of
+        SiteBurundi ->
+            common ++ [ VaccineDTPStandalone ]
+
+        _ ->
+            common ++ [ VaccineHPV ]

@@ -1,4 +1,4 @@
-module Pages.WellChild.Encounter.Utils exposing (..)
+module Pages.WellChild.Encounter.Utils exposing (allowEndingEncounter, generateAssembledData, pediatricCareMilestoneToComparable, resolveDateForPediatricCareMilestone, resolvePediatricCareMilestoneOnDate)
 
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
@@ -6,10 +6,9 @@ import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (PediatricCareMilestone(..), WellChildEncounterType(..))
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
-import Maybe.Extra exposing (isJust)
 import Measurement.Utils
 import Pages.WellChild.Activity.Utils exposing (mandatoryDangerSignsTasksCompleted, mandatoryNutritionAssessmentTasksCompleted)
-import Pages.WellChild.Encounter.Model exposing (..)
+import Pages.WellChild.Encounter.Model exposing (AssembledData)
 import RemoteData exposing (WebData)
 import SyncManager.Model exposing (Site)
 
@@ -132,8 +131,8 @@ pediatricCareMilestoneToComparable milestone =
             10
 
 
-allowEndingEncounter : NominalDate -> Site -> List WellChildActivity -> AssembledData -> Bool
-allowEndingEncounter currentDate site pendingActivities assembled =
+allowEndingEncounter : NominalDate -> List WellChildActivity -> AssembledData -> Bool
+allowEndingEncounter currentDate pendingActivities assembled =
     List.filter (\activity -> not <| List.member activity [ WellChildNCDA, WellChildPhoto ]) pendingActivities
         |> (\pending ->
                 case pending of
@@ -145,30 +144,30 @@ allowEndingEncounter currentDate site pendingActivities assembled =
                             False
 
                         else
-                            mandatoryDangerSignsTasksCompleted currentDate site assembled
+                            mandatoryDangerSignsTasksCompleted assembled
 
                     [ WellChildNutritionAssessment ] ->
                         if assembled.encounter.encounterType == PediatricCare then
                             False
 
                         else
-                            mandatoryNutritionAssessmentTasksCompleted currentDate site assembled
+                            mandatoryNutritionAssessmentTasksCompleted currentDate assembled
 
                     [ WellChildDangerSigns, WellChildNutritionAssessment ] ->
                         if assembled.encounter.encounterType == PediatricCare then
                             False
 
                         else
-                            mandatoryDangerSignsTasksCompleted currentDate site assembled
-                                && mandatoryNutritionAssessmentTasksCompleted currentDate site assembled
+                            mandatoryDangerSignsTasksCompleted assembled
+                                && mandatoryNutritionAssessmentTasksCompleted currentDate assembled
 
                     [ WellChildNutritionAssessment, WellChildDangerSigns ] ->
                         if assembled.encounter.encounterType == PediatricCare then
                             False
 
                         else
-                            mandatoryDangerSignsTasksCompleted currentDate site assembled
-                                && mandatoryNutritionAssessmentTasksCompleted currentDate site assembled
+                            mandatoryDangerSignsTasksCompleted assembled
+                                && mandatoryNutritionAssessmentTasksCompleted currentDate assembled
 
                     _ ->
                         False

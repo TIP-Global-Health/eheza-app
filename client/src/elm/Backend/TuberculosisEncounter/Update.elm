@@ -2,9 +2,9 @@ module Backend.TuberculosisEncounter.Update exposing (update)
 
 import App.Model
 import App.Utils exposing (triggerRollbarOnFailure)
-import Backend.Endpoints exposing (..)
+import Backend.Endpoints exposing (tuberculosisDOTEndpoint, tuberculosisDiagnosticsEndpoint, tuberculosisEncounterEndpoint, tuberculosisFollowUpEndpoint, tuberculosisHealthEducationEndpoint, tuberculosisMedicationEndpoint, tuberculosisReferralEndpoint, tuberculosisSymptomReviewEndpoint, tuberculosisTreatmentReviewEndpoint)
 import Backend.Entities exposing (..)
-import Backend.TuberculosisEncounter.Model exposing (..)
+import Backend.TuberculosisEncounter.Model exposing (Model, Msg(..), TuberculosisEncounter)
 import Backend.Utils exposing (saveMeasurementCmd, sw)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (unwrap)

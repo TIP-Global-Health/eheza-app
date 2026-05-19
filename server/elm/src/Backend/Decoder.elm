@@ -1,15 +1,15 @@
-module Backend.Decoder exposing (decodeSite, decodeWithFallback)
+module Backend.Decoder exposing (decodeSite, decodeSiteFeatures, decodeWithFallback)
 
-import App.Types exposing (Site(..))
-import Backend.ScoreboardMenu.Model exposing (..)
-import Json.Decode exposing (Decoder, andThen, oneOf, string, succeed)
-import Json.Decode.Pipeline exposing (required)
+import App.Types exposing (Site(..), SiteFeature(..))
+import EverySet exposing (EverySet)
+import Json.Decode exposing (Decoder, oneOf, string, succeed)
+import Maybe.Extra
 
 
 decodeSite : Decoder Site
 decodeSite =
     string
-        |> andThen (siteFromString >> succeed)
+        |> Json.Decode.map siteFromString
 
 
 siteFromString : String -> Site
@@ -26,6 +26,62 @@ siteFromString str =
 
         _ ->
             SiteUnknown
+
+
+{-| Decodes the space-delimited `features` string emitted by
+hedley\_admin\_get\_enabled\_features\_string into the set of currently
+enabled features. Unknown identifiers are silently dropped so adding a new
+flag on the server never breaks an older admin app build.
+-}
+decodeSiteFeatures : Decoder (EverySet SiteFeature)
+decodeSiteFeatures =
+    string
+        |> Json.Decode.map siteFeaturesFromString
+
+
+siteFeaturesFromString : String -> EverySet SiteFeature
+siteFeaturesFromString str =
+    String.words str
+        |> List.map siteFeatureFromString
+        |> Maybe.Extra.values
+        |> EverySet.fromList
+
+
+siteFeatureFromString : String -> Maybe SiteFeature
+siteFeatureFromString str =
+    case String.toLower str of
+        "family_nutrition" ->
+            Just FeatureFamilyNutrition
+
+        "gps_coordinates" ->
+            Just FeatureGPSCoordinates
+
+        "group_education" ->
+            Just FeatureGroupEducation
+
+        "healthy_start" ->
+            Just FeatureHealthyStart
+
+        "hiv_management" ->
+            Just FeatureHIVManagement
+
+        "ncda" ->
+            Just FeatureNCDA
+
+        "report_to_whatsapp" ->
+            Just FeatureReportToWhatsApp
+
+        "stock_management_hc" ->
+            Just FeatureStockManagementHC
+
+        "stock_management_village" ->
+            Just FeatureStockManagementVillage
+
+        "tuberculosis_management" ->
+            Just FeatureTuberculosisManagement
+
+        _ ->
+            Nothing
 
 
 decodeWithFallback : a -> Decoder a -> Decoder a

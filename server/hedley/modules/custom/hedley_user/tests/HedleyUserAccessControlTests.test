@@ -88,68 +88,42 @@ class HedleyUserAccessControlTests extends HedleyWebTestBase {
   }
 
   /**
-   * Testing the entry point of the photos.
+   * Combined access-control test.
+   *
+   * Each test method in DrupalWebTestCase pays a full hedley-profile
+   * install (~5 min in CI). The endpoint check (photos / nutritions /
+   * muacs) and the role + handler-coverage checks are independent and
+   * don't share state, so they live under a single method to keep the
+   * install paid once.
    */
-  public function testPhotosEndpoint() {
-    $photo = $this->drupalCreateNode(['type' => 'photo']);
+  public function testAccessControl() {
+    // Endpoint checks: create one node per measurement type, verify
+    // anonymous is denied and the authorized user gets the record back.
+    $cases = [
+      ['type' => 'photo', 'handler' => 'photos', 'label' => 'Photo'],
+      ['type' => 'nutrition', 'handler' => 'nutritions', 'label' => 'Nutrition'],
+      ['type' => 'muac', 'handler' => 'muacs', 'label' => 'Muac'],
+    ];
 
-    /** @var RestfulEntityBaseNode $handler */
-    $handler = restful_get_restful_handler('photos');
+    foreach ($cases as $case) {
+      $node = $this->drupalCreateNode(['type' => $case['type']]);
 
-    // Make sure anonymous user doesn't get the content.
-    $handler->setAccount($this->anonymousUser);
-    $anonymous_results = $handler->get('');
-    $this->assertFalse($anonymous_results, 'Anonymous user doesn\'t have access to the "photo" content.');
+      /** @var RestfulEntityBaseNode $handler */
+      $handler = restful_get_restful_handler($case['handler']);
 
-    // Test authorized user.
-    $handler->setAccount($this->user);
+      // Make sure anonymous user doesn't get the content.
+      $handler->setAccount($this->anonymousUser);
+      $anonymous_results = $handler->get('');
+      $this->assertFalse($anonymous_results, format_string('Anonymous user doesn\'t have access to the "@type" content.', ['@type' => $case['type']]));
 
-    $results = $handler->get('');
-    $this->assertEqual($results[0]['created'], date('c', $photo->created), 'Photo "created date" is correct.');
+      // Test authorized user.
+      $handler->setAccount($this->user);
 
-  }
+      $results = $handler->get('');
+      $this->assertEqual($results[0]['created'], date('c', $node->created), format_string('@label "created date" is correct.', ['@label' => $case['label']]));
+    }
 
-  /**
-   * Testing the entry point of the Nutrition Signs.
-   */
-  public function testNutritionsEndpoint() {
-    $nutrition = $this->drupalCreateNode(['type' => 'nutrition']);
-
-    /** @var RestfulEntityBaseNode $handler */
-    $handler = restful_get_restful_handler('nutritions');
-
-    // Make sure anonymous user doesn't get the content.
-    $handler->setAccount($this->anonymousUser);
-    $anonymous_results = $handler->get('');
-    $this->assertFalse($anonymous_results, 'Anonymous user doesn\'t have access to the "nutrition" content.');
-
-    // Test authorized user.
-    $handler->setAccount($this->user);
-
-    $results = $handler->get('');
-    $this->assertEqual($results[0]['created'], date('c', $nutrition->created), 'Nutrition "created date" is correct.');
-
-  }
-
-  /**
-   * Testing the entry point of the muacs.
-   */
-  public function testMuacsEndpoint() {
-    $muac = $this->drupalCreateNode(['type' => 'muac']);
-
-    /** @var RestfulEntityBaseNode $handler */
-    $handler = restful_get_restful_handler('muacs');
-
-    // Make sure anonymous user doesn't get the content.
-    $handler->setAccount($this->anonymousUser);
-    $anonymous_results = $handler->get('');
-    $this->assertFalse($anonymous_results, 'Anonymous user doesn\'t have access to the "muac" content.');
-
-    // Test authorized user.
-    $handler->setAccount($this->user);
-
-    $results = $handler->get('');
-    $this->assertEqual($results[0]['created'], date('c', $muac->created), 'Muac "created date" is correct.');
+    $this->checkRolesAndHandlerCoverage();
   }
 
   /**
@@ -167,9 +141,19 @@ class HedleyUserAccessControlTests extends HedleyWebTestBase {
   }
 
   /**
-   * Test that administrator users have all 5 permissions for each node type.
+   * Read-only role-permission and RESTful-handler-coverage assertions.
+   *
+   * Covers:
+   *
+   *   1. administrator role has all 5 CRUD permissions per node type.
+   *   2. sharded RESTful handlers cover every encounter and measurement
+   *      content type, and each declared handler is resolvable.
+   *   3. sync role has create + edit (own/any) but not delete
+   *      permissions per node type, except for `device` and
+   *      `report_data` which are excluded.
    */
-  public function testAdministratorPermissions() {
+  protected function checkRolesAndHandlerCoverage() {
+    // 1. Administrator role -> all 5 permissions per node type.
     $administrator_role = user_role_load_by_name('administrator');
     $this->assertTrue($administrator_role, 'Administrator role exists');
 
@@ -179,7 +163,6 @@ class HedleyUserAccessControlTests extends HedleyWebTestBase {
     $node_types = $this->getNodeTypes();
 
     foreach ($node_types as $node_type) {
-      // Administrator should have all 5 permissions.
       $expected_permissions = array(
         "create $node_type content",
         "edit own $node_type content",
@@ -195,12 +178,8 @@ class HedleyUserAccessControlTests extends HedleyWebTestBase {
         );
       }
     }
-  }
 
-  /**
-   * Verify RESTful handlers cover all encounter and measurement content types.
-   */
-  public function testShardedHandlersCoverage() {
+    // 2. Sharded RESTful handlers cover every encounter / measurement.
     $encounter_types = hedley_general_get_encounter_types();
     $measurement_types = hedley_general_get_measurement_types();
     $sharded = array_keys(HEDLEY_RESTFUL_SHARDED);
@@ -212,6 +191,45 @@ class HedleyUserAccessControlTests extends HedleyWebTestBase {
     $this->assertIdentical([], $missing_measurements, format_string('Missing RESTful handlers for measurement types: @bundles', ['@bundles' => implode(', ', $missing_measurements)]));
 
     $this->assertHandlersResolvable(array_unique(array_merge($encounter_types, $measurement_types)));
+
+    // 3. Sync role -> create + edit (own/any) but not delete.
+    $sync_role = user_role_load_by_name('sync');
+    $this->assertTrue($sync_role, 'Sync role exists');
+
+    $permissions = user_role_permissions(array($sync_role->rid => $sync_role));
+    $sync_permissions = isset($permissions[$sync_role->rid]) ? $permissions[$sync_role->rid] : array();
+
+    foreach ($node_types as $node_type) {
+      if (in_array($node_type, array('device', 'report_data'))) {
+        // Sync does not have permissions for these node types.
+        continue;
+      }
+
+      $expected_permissions = array(
+        "create $node_type content",
+        "edit own $node_type content",
+        "edit any $node_type content",
+      );
+
+      foreach ($expected_permissions as $permission) {
+        $this->assertTrue(
+          isset($sync_permissions[$permission]),
+          "Sync has permission: $permission"
+        );
+      }
+
+      $forbidden_permissions = array(
+        "delete own $node_type content",
+        "delete any $node_type content",
+      );
+
+      foreach ($forbidden_permissions as $permission) {
+        $this->assertFalse(
+          isset($sync_permissions[$permission]),
+          "Sync does NOT have permission: $permission"
+        );
+      }
+    }
   }
 
   /**
@@ -234,53 +252,6 @@ class HedleyUserAccessControlTests extends HedleyWebTestBase {
           '@bundle' => $bundle,
           '@message' => $e->getMessage(),
         ]));
-      }
-    }
-  }
-
-  /**
-   * Test that sync users have 3 permissions for each node type.
-   */
-  public function testSyncPermissions() {
-    $sync_role = user_role_load_by_name('sync');
-    $this->assertTrue($sync_role, 'Sync role exists');
-
-    $permissions = user_role_permissions(array($sync_role->rid => $sync_role));
-    $sync_permissions = isset($permissions[$sync_role->rid]) ? $permissions[$sync_role->rid] : array();
-
-    $node_types = $this->getNodeTypes();
-
-    foreach ($node_types as $node_type) {
-      if (in_array($node_type, array('device', 'report_data'))) {
-        // Sync does not have permissions for these node types.
-        continue;
-      }
-
-      // Sync should have 3 permissions.
-      $expected_permissions = array(
-        "create $node_type content",
-        "edit own $node_type content",
-        "edit any $node_type content",
-      );
-
-      foreach ($expected_permissions as $permission) {
-        $this->assertTrue(
-          isset($sync_permissions[$permission]),
-          "Sync has permission: $permission"
-        );
-      }
-
-      // Sync should NOT have delete permissions.
-      $forbidden_permissions = array(
-        "delete own $node_type content",
-        "delete any $node_type content",
-      );
-
-      foreach ($forbidden_permissions as $permission) {
-        $this->assertFalse(
-          isset($sync_permissions[$permission]),
-          "Sync does NOT have permission: $permission"
-        );
       }
     }
   }

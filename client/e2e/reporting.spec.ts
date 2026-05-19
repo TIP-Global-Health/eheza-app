@@ -10,6 +10,7 @@ import {
   processAdvancedQueue,
   recalculateLargeDatasets,
   navigateToHCReportsPage,
+  navigateToGlobalReportsPage,
   navigateToReportsMenu,
   selectReportType,
   setDateRange,
@@ -24,6 +25,10 @@ import {
   readAIDiagnosisRow,
   readPrenatalDiagnosisRow,
   readPrenatalVisitsTable,
+  readPrenatalContactsTable,
+  readFBFDistributionTable,
+  readPeripartumTable,
+  readPostnatalCareTable,
   findPrenatalRow,
   PrenatalVisitsRow,
   findSimpleRow,
@@ -40,7 +45,6 @@ import {
   SimpleTableData,
   ensurePrenatalMedicationsVariable,
   generateCompletionData,
-  completionRecalculateLargeDatasets,
   navigateToCompletionReportPage,
   selectCompletionReportType,
   selectCompletionTakenBy,
@@ -50,7 +54,6 @@ import {
   CompletionTableData,
   ensureNCDAFeatureEnabled,
   generateNCDAPersonData,
-  ncdaRecalculateLargeDatasets,
   backdatePersonCreated,
   navigateToNCDAScoreboard,
   readScoreboardPane,
@@ -231,7 +234,7 @@ test.describe('Admin Reports', () => {
   // Statistical Queries and Completion reports show the correct deltas.
   //
   // Patients created:
-  //   Nurse: NutrChild (M 10mo) — Nutrition (with measurements) + SPV (2 encounters, impacted)
+  //   Nurse: NutrChild (M 11mo) — Nutrition (with measurements) + SPV (2 encounters, impacted)
   //          PrenatalMom (F 25y) — Prenatal initial + postpartum (2 encounters, impacted)
   //          AINurse (F 30y) — AI initial + subsequent (2 encounters, impacted)
   //          AIChild (M 30mo) — AI initial (with MUAC + Nutrition)
@@ -275,11 +278,11 @@ test.describe('Admin Reports', () => {
       clearAdvancedQueue();
       recalculateLargeDatasets();
 
-      // NCDA scoreboard baseline: generate per-person NCDA data and
-      // pre-compute district-level Report Data nodes.
+      // NCDA scoreboard baseline: generate per-person NCDA data. The
+      // scoreboard Elm app now pulls these per-person rows directly via
+      // /api/reports-data, so no scope-level aggregation step is needed.
       ensureNCDAFeatureEnabled();
       generateNCDAPersonData(false);
-      ncdaRecalculateLargeDatasets();
     });
 
     let baselineRegistered: PatientsTableData;
@@ -294,6 +297,49 @@ test.describe('Admin Reports', () => {
     let baselineGestHypertension: number;
     let baselineDepression: number;
     let baselinePrenatalTotal: number;
+    // ANC Contact (Prenatal Contacts) report baselines. The PrenatalMom
+    // encounter created later in this test runs completeMedication, which
+    // iterates calcium / fefol / folate / iron / mms / mebendezole and
+    // marks each visible tab as administered today. Of those, MMS and
+    // Calcium have matching PrenatalIndicator codes on the wire, so those
+    // two rows should each grow by +1 after sync.
+    let baselineANCContactMMS: number;
+    let baselineANCContactCalcium: number;
+    // Peripartum (PR #1552) report baselines. PrenatalMom's flow is
+    // updated below to record a "Live Birth Pre-Term" outcome (rather
+    // than the default at-term) and select the "Premature Onset of
+    // Contractions" danger sign, so all five rows should grow by +1
+    // after sync. Breastfed-first-hour fires from the existing
+    // postpartum completeBreastfeeding flow.
+    let baselinePeripartumTotalDeliveries: number;
+    let baselinePeripartumTotalLiveBirths: number;
+    let baselinePeripartumPretermBirths: number;
+    let baselinePeripartumPrematureLabour: number;
+    let baselinePeripartumBreastfedFirstHour: number;
+    // Postnatal Care report baselines (PR #1556). Among the existing test
+    // patients, only NutrChild (M, 11mo, full nurse SPV with
+    // completeWCImmunisation) contributes — they fall in the "10-19 months
+    // UpToDate" bucket. Other test children either lack a well-child
+    // encounter (AIChild, CSChild, HVChild) or are below the lowest age
+    // bucket (NBChild at 1mo, below the 7-week lower bound). The
+    // "within 24h of birth" row stays flat — no test patient has a
+    // same-day SPV.
+    let baselinePNCWithin24h: number;
+    let baselinePNC7To11Weeks: number;
+    let baselinePNC11To15Weeks: number;
+    let baselinePNC15WeeksTo10Months: number;
+    let baselinePNC10To19Months: number;
+    let baselinePNC19To24Months: number;
+    let baselineFBFDistChild: number;
+    let baselineFBFDistMother: number;
+    let baselineFBFDistChildAchi: number;
+    let baselineAhezaDistChild: number;
+    let baselineAhezaDistMother: number;
+    let baselineFBFDistChildOccurrences: number;
+    let baselineFBFDistMotherOccurrences: number;
+    let baselineFBFDistChildAchiOccurrences: number;
+    let baselineAhezaDistChildOccurrences: number;
+    let baselineAhezaDistMotherOccurrences: number;
     let baselineNutrition: Map<number, NutritionMetricRow[]>;
     let baselineCompletion: CompletionTableData;
     let baselinePrenatalCompletion: CompletionTableData;
@@ -353,6 +399,104 @@ test.describe('Admin Reports', () => {
       baselineDepression = await readPrenatalDiagnosisRow(page, 'diagnosis-depression-not-likely');
       baselinePrenatalTotal = await readPrenatalDiagnosisRow(page, 'totals');
 
+      // Record ANC Contact (Prenatal Contacts) report baseline. Two rows
+      // we expect PrenatalMom's completeMedication to move by +1: MMS and
+      // Calcium (each set when the corresponding medication tab saves
+      // with administration-note = "administered today"). Aspirin is not
+      // in completeMedication's icon list, so the aspirin row stays flat.
+      await selectReportType(page, 'prenatal-contacts');
+      await setDateRange(page, REPORT_START_DATE, reportLimitDate);
+      const baselineANCContactTable = await readPrenatalContactsTable(page);
+      // Sanity: report rendered with all 22 rows (8 contact-counts + 14 indicators).
+      expect(baselineANCContactTable.rows.length, 'ANC Contact report should have at least 22 rows')
+        .toBeGreaterThanOrEqual(22);
+      baselineANCContactMMS = findSimpleRow(baselineANCContactTable, 'received MMS')?.total ?? 0;
+      baselineANCContactCalcium = findSimpleRow(baselineANCContactTable, 'received low-dose antenatal calcium')?.total ?? 0;
+      console.log(`Baseline ANC Contact: MMS=${baselineANCContactMMS}, Calcium=${baselineANCContactCalcium}`);
+
+      // Record Peripartum (PR #1552) report baselines.
+      await selectReportType(page, 'peripartum');
+      await setDateRange(page, REPORT_START_DATE, reportLimitDate);
+      const baselinePeripartumTable = await readPeripartumTable(page);
+      // Sanity: the report rendered with all 5 rows.
+      expect(baselinePeripartumTable.rows.length, 'Peripartum report should have at least 5 rows')
+        .toBeGreaterThanOrEqual(5);
+      baselinePeripartumTotalDeliveries =
+        findSimpleRow(baselinePeripartumTable, 'Total deliveries')?.total ?? 0;
+      baselinePeripartumTotalLiveBirths =
+        findSimpleRow(baselinePeripartumTable, 'Total live births')?.total ?? 0;
+      baselinePeripartumPretermBirths =
+        findSimpleRow(baselinePeripartumTable, 'Preterm birth newborns')?.total ?? 0;
+      baselinePeripartumPrematureLabour =
+        findSimpleRow(baselinePeripartumTable, 'premature labour')?.total ?? 0;
+      baselinePeripartumBreastfedFirstHour =
+        findSimpleRow(baselinePeripartumTable, 'breastfed within one hour')?.total ?? 0;
+      console.log(
+        `Baseline Peripartum: deliveries=${baselinePeripartumTotalDeliveries}, ` +
+        `liveBirths=${baselinePeripartumTotalLiveBirths}, ` +
+        `preterm=${baselinePeripartumPretermBirths}, ` +
+        `prematureLabour=${baselinePeripartumPrematureLabour}, ` +
+        `breastfedFirstHour=${baselinePeripartumBreastfedFirstHour}`,
+      );
+
+      // Record Postnatal Care (PR #1556) report baselines.
+      await selectReportType(page, 'postnatal-care');
+      await setDateRange(page, REPORT_START_DATE, reportLimitDate);
+      const baselinePNCTable = await readPostnatalCareTable(page);
+      // Sanity: report rendered with all 6 rows.
+      expect(baselinePNCTable.rows.length, 'Postnatal Care report should have at least 6 rows')
+        .toBeGreaterThanOrEqual(6);
+      baselinePNCWithin24h =
+        findSimpleRow(baselinePNCTable, 'within 24 hours of birth')?.total ?? 0;
+      baselinePNC7To11Weeks =
+        findSimpleRow(baselinePNCTable, 'aged 7-11 weeks')?.total ?? 0;
+      baselinePNC11To15Weeks =
+        findSimpleRow(baselinePNCTable, 'aged 11-15 weeks')?.total ?? 0;
+      baselinePNC15WeeksTo10Months =
+        findSimpleRow(baselinePNCTable, '15 weeks - 10 mos')?.total ?? 0;
+      baselinePNC10To19Months =
+        findSimpleRow(baselinePNCTable, 'aged 10-19 mos')?.total ?? 0;
+      baselinePNC19To24Months =
+        findSimpleRow(baselinePNCTable, '19 mos - 2 years')?.total ?? 0;
+      console.log(
+        `Baseline Postnatal Care: within24h=${baselinePNCWithin24h}, ` +
+        `7-11w=${baselinePNC7To11Weeks}, 11-15w=${baselinePNC11To15Weeks}, ` +
+        `15w-10mo=${baselinePNC15WeeksTo10Months}, ` +
+        `10-19mo=${baselinePNC10To19Months}, 19-24mo=${baselinePNC19To24Months}`,
+      );
+
+      // Record FBF Distribution report baselines. The migration / demo
+      // population can already include FBF and AHEZA records, so the test
+      // encounters are verified by delta against this baseline rather than
+      // absolute totals. Both the summed amount (Total column) and the
+      // event count (Occurrences column) are baselined.
+      await selectReportType(page, 'fbf-distribution');
+      await setDateRange(page, REPORT_START_DATE, reportLimitDate);
+      const baselineFBFDistTable = await readFBFDistributionTable(page);
+      const baselineFBFDistChildAchiRow = findSimpleRow(baselineFBFDistTable, 'FBF Child (ACHI)');
+      const baselineFBFDistChildRow = findSimpleRow(baselineFBFDistTable, 'FBF Child');
+      const baselineFBFDistMotherRow = findSimpleRow(baselineFBFDistTable, 'FBF Mother');
+      const baselineAhezaDistChildRow = findSimpleRow(baselineFBFDistTable, 'Aheza Child');
+      const baselineAhezaDistMotherRow = findSimpleRow(baselineFBFDistTable, 'Aheza Mother');
+      baselineFBFDistChild = baselineFBFDistChildRow?.total ?? 0;
+      baselineFBFDistMother = baselineFBFDistMotherRow?.total ?? 0;
+      baselineFBFDistChildAchi = baselineFBFDistChildAchiRow?.total ?? 0;
+      baselineAhezaDistChild = baselineAhezaDistChildRow?.total ?? 0;
+      baselineAhezaDistMother = baselineAhezaDistMotherRow?.total ?? 0;
+      baselineFBFDistChildOccurrences = baselineFBFDistChildRow?.occurrences ?? 0;
+      baselineFBFDistMotherOccurrences = baselineFBFDistMotherRow?.occurrences ?? 0;
+      baselineFBFDistChildAchiOccurrences = baselineFBFDistChildAchiRow?.occurrences ?? 0;
+      baselineAhezaDistChildOccurrences = baselineAhezaDistChildRow?.occurrences ?? 0;
+      baselineAhezaDistMotherOccurrences = baselineAhezaDistMotherRow?.occurrences ?? 0;
+      console.log(
+        `Baseline FBF Distribution: ` +
+        `fbfChild=${baselineFBFDistChild}/${baselineFBFDistChildOccurrences}occ, ` +
+        `fbfMother=${baselineFBFDistMother}/${baselineFBFDistMotherOccurrences}occ, ` +
+        `fbfChildAchi=${baselineFBFDistChildAchi}/${baselineFBFDistChildAchiOccurrences}occ, ` +
+        `ahezaChild=${baselineAhezaDistChild}/${baselineAhezaDistChildOccurrences}occ, ` +
+        `ahezaMother=${baselineAhezaDistMother}/${baselineAhezaDistMotherOccurrences}occ`,
+      );
+
       // Record Nutrition report baseline (first column = newest completed month).
       // The nutrition report only shows completed months, so test encounters
       // will be backdated to the previous month after syncing.
@@ -386,7 +530,6 @@ test.describe('Admin Reports', () => {
       generateCompletionData('tuberculosis', true);
       generateCompletionData('nutrition-individual', true);
       generateCompletionData('nutrition-group', true);
-      completionRecalculateLargeDatasets();
 
       await navigateToCompletionReportPage(page, NYANGE_HC_ID);
 
@@ -520,10 +663,15 @@ test.describe('Admin Reports', () => {
       await page.goto(pwaBaseUrl);
       await setupDevice(page, '1234', 'Nyange Health Center');
 
-      // --- NutrChild (male, 10 months): Nutrition encounter ---
+      // --- NutrChild (male, 11 months): Nutrition encounter ---
       // Complete mandatory activities with abnormal measurements to trigger
-      // stunting severe (height 60cm at 10mo) + underweight severe (6.0kg at 10mo).
-      const nutrChild = await createNutritionChild(page, { ageMonths: 10 });
+      // stunting severe (height 60cm at 11mo) + underweight severe (6.0kg
+      // at 11mo). Age 11mo intentionally clears both the 10-month bucket
+      // boundary in the Postnatal Care report (Date.diff Months on a
+      // 10-month-old DOB occasionally rounds to 9 due to UTC/local-day
+      // shift in setDate, flipping the child between buckets) and stays
+      // inside the Demographics "1M - 2Y" bucket.
+      const nutrChild = await createNutritionChild(page, { ageMonths: 11 });
       nutrChildName = nutrChild.fullName;
       await enterHeight(page, '60');
       await saveActivity(page);
@@ -620,7 +768,13 @@ test.describe('Admin Reports', () => {
       await completeHistory(page, { preeclampsiaPrevious: true });
       await completeExamination(page, { vitals: { sys: '160', dia: '100' } });
       await completeFamilyPlanning(page);
-      await completePrenatalDangerSigns(page);
+      // { premature: true } selects "Premature Onset of Contractions" on
+      // the danger-signs activity, which fires
+      // IndicatorPrematureOnsetContractions on the wire and contributes
+      // +1 to the Peripartum report's "Pregnant women with premature
+      // labour" row. The selection does not trigger any new prenatal
+      // diagnoses (verified against Pages/Prenatal/Activity/Utils.elm).
+      await completePrenatalDangerSigns(page, { premature: true });
       await completeSymptomReview(page);
       await completeMalariaPrevention(page);
       await completeMentalHealth(page);
@@ -874,7 +1028,10 @@ test.describe('Admin Reports', () => {
 
       // Record pregnancy outcome from participant page first —
       // required before the Postpartum encounter button becomes active.
-      await recordPregnancyOutcome(page);
+      // { preTerm: true } picks "Live Birth Pre-Term" so the Peripartum
+      // report's "Preterm birth newborns" row gets +1. Total deliveries
+      // and total live births also +1 (LivePreTerm counts in both).
+      await recordPregnancyOutcome(page, { preTerm: true });
 
       // Re-navigate to participant page after outcome recording
       // (recordPregnancyOutcome lands on PinCodePage).
@@ -1192,11 +1349,11 @@ test.describe('Admin Reports', () => {
       generateCompletionData('tuberculosis', true);
       generateCompletionData('nutrition-individual', true);
       generateCompletionData('nutrition-group', true);
-      completionRecalculateLargeDatasets();
 
-      // Re-compute district-level NCDA Report Data nodes with new encounter data.
-      // Per-person field_ncda_data is already updated by AQ processing above.
-      ncdaRecalculateLargeDatasets();
+      // No scope-level aggregation step: the Reports/Completion/Scoreboard
+      // Elm apps now pull per-person/per-encounter rows directly via
+      // /api/reports-data. Per-person field_ncda_data is already updated
+      // by AQ processing above.
     });
 
     // ── Phase 3: Verify Demographics deltas — HC scope ──
@@ -1453,6 +1610,134 @@ test.describe('Admin Reports', () => {
       await expect(page.locator('button.download-csv'), 'Prenatal Diagnoses CSV download button should be visible').toBeVisible();
     });
 
+    // ── ANC Contact (Prenatal Contacts) report verification ──
+    //
+    // PrenatalMom's nurse encounter (above) ran completeMedication, which
+    // marks the MMS and Calcium medication tabs as "administered today".
+    // Each of those measurements causes
+    // hedley_reports_calculate_aggregated_data_for_person to attach the
+    // corresponding PrenatalIndicator code to the encounter on the wire,
+    // and the Elm decoder + report aggregation surface a +1 on the
+    // matching report row. PrenatalCHW does not run completeMedication,
+    // so it doesn't contribute to these rows.
+    //
+    // Note: this step intentionally only verifies the *indicator* rows.
+    // The contact-count rows (PrenatalContact1..8) require encounters
+    // dated before specific EGA milestones; PrenatalMom's encounter was
+    // created today against an LMP 30 weeks in the past, so it falls
+    // after every EGA milestone and doesn't move the contact-count rows.
+    await step('Verify ANC Contact (Prenatal Contacts) report deltas', async () => {
+      await selectReportType(page, 'prenatal-contacts');
+      await setDateRange(page, REPORT_START_DATE, reportLimitDate);
+
+      const ancContactTable = await readPrenatalContactsTable(page);
+      const newMMS = findSimpleRow(ancContactTable, 'received MMS')?.total ?? 0;
+      const newCalcium = findSimpleRow(ancContactTable, 'received low-dose antenatal calcium')?.total ?? 0;
+
+      console.log('\n=== ANC CONTACT (indicator rows) ===');
+      console.log(`Received MMS:     baseline=${baselineANCContactMMS}, new=${newMMS}, delta=+${newMMS - baselineANCContactMMS}`);
+      console.log(`Received Calcium: baseline=${baselineANCContactCalcium}, new=${newCalcium}, delta=+${newCalcium - baselineANCContactCalcium}`);
+
+      expect(newMMS, '"Pregnant women who received MMS" +1').toBe(baselineANCContactMMS + 1);
+      expect(newCalcium, '"Pregnant women who received low-dose antenatal calcium" +1').toBe(baselineANCContactCalcium + 1);
+
+      // CSV download button.
+      await expect(page.locator('button.download-csv'), 'ANC Contact CSV download button should be visible').toBeVisible();
+    });
+
+    // ── Peripartum report verification (PR #1552) ──
+    //
+    // PrenatalMom's flow is wired to fire all five Peripartum rows by +1:
+    //   - Pre-term outcome (recordPregnancyOutcome { preTerm: true })
+    //     → Total deliveries + Total live births + Preterm birth newborns
+    //   - "Premature Onset of Contractions" danger sign
+    //     (completeDangerSigns { premature: true })
+    //     → Pregnant women with premature labour
+    //   - "breastfed-first-hour" answered Yes in postpartum Breastfeeding
+    //     (already done by completeBreastfeeding)
+    //     → Newborns breastfed within one hour of delivery
+    //
+    // PrenatalCHW does not record a pregnancy outcome and does not
+    // contribute to any of these rows.
+    await step('Verify Peripartum report deltas', async () => {
+      await selectReportType(page, 'peripartum');
+      await setDateRange(page, REPORT_START_DATE, reportLimitDate);
+
+      const peripartumTable = await readPeripartumTable(page);
+      const newDeliveries = findSimpleRow(peripartumTable, 'Total deliveries')?.total ?? 0;
+      const newLiveBirths = findSimpleRow(peripartumTable, 'Total live births')?.total ?? 0;
+      const newPreterm = findSimpleRow(peripartumTable, 'Preterm birth newborns')?.total ?? 0;
+      const newPrematureLabour = findSimpleRow(peripartumTable, 'premature labour')?.total ?? 0;
+      const newBreastfedFirstHour = findSimpleRow(peripartumTable, 'breastfed within one hour')?.total ?? 0;
+
+      console.log('\n=== PERIPARTUM ===');
+      console.log(`Total Deliveries:           baseline=${baselinePeripartumTotalDeliveries}, new=${newDeliveries}, delta=+${newDeliveries - baselinePeripartumTotalDeliveries}`);
+      console.log(`Total Live Births:          baseline=${baselinePeripartumTotalLiveBirths}, new=${newLiveBirths}, delta=+${newLiveBirths - baselinePeripartumTotalLiveBirths}`);
+      console.log(`Preterm Birth Newborns:     baseline=${baselinePeripartumPretermBirths}, new=${newPreterm}, delta=+${newPreterm - baselinePeripartumPretermBirths}`);
+      console.log(`Premature Labour:           baseline=${baselinePeripartumPrematureLabour}, new=${newPrematureLabour}, delta=+${newPrematureLabour - baselinePeripartumPrematureLabour}`);
+      console.log(`Breastfed Within One Hour:  baseline=${baselinePeripartumBreastfedFirstHour}, new=${newBreastfedFirstHour}, delta=+${newBreastfedFirstHour - baselinePeripartumBreastfedFirstHour}`);
+
+      expect(newDeliveries, '"Total deliveries" +1').toBe(baselinePeripartumTotalDeliveries + 1);
+      expect(newLiveBirths, '"Total live births" +1').toBe(baselinePeripartumTotalLiveBirths + 1);
+      expect(newPreterm, '"Preterm birth newborns" +1').toBe(baselinePeripartumPretermBirths + 1);
+      expect(newPrematureLabour, '"Pregnant women with premature labour" +1').toBe(baselinePeripartumPrematureLabour + 1);
+      expect(newBreastfedFirstHour, '"Newborns breastfed within one hour of delivery" +1').toBe(baselinePeripartumBreastfedFirstHour + 1);
+
+      // CSV download button.
+      await expect(page.locator('button.download-csv'), 'Peripartum CSV download button should be visible').toBeVisible();
+    });
+
+    // ── Postnatal Care report verification (PR #1556) ──
+    //
+    // The report has 6 rows: SPV/Newborn-Exam-within-24h-of-birth + 5
+    // age-bucket "UpToDate with immunization" rows (7-11w, 11-15w,
+    // 15w-10mo, 10-19mo, 19-24mo). NutrChild (M, 11mo) gets a full nurse
+    // SPV here with completeWCImmunisation, which administers every
+    // age-eligible vaccine today. After sync, NutrChild's wellChildData
+    // carries the full immunisation dict; the report's
+    // generateFutureVaccinationsData computes the next due dose ~4 weeks
+    // out (later than the report's limit date = today), so NutrChild
+    // counts as UpToDate in the 10-19 months bucket → delta +1.
+    //
+    // No other test patient contributes:
+    //   - AIChild/CSChild/HVChild: no well-child encounter.
+    //   - NBChild (1mo, ~4 weeks): below the 7-week lower bound of the
+    //     youngest bucket; not counted.
+    //   - "Within 24 hours of birth" row: every well-child encounter in
+    //     the test runs today against a birth date weeks-to-months in
+    //     the past, so it stays flat.
+    await step('Verify Postnatal Care report deltas', async () => {
+      await selectReportType(page, 'postnatal-care');
+      await setDateRange(page, REPORT_START_DATE, reportLimitDate);
+
+      const pncTable = await readPostnatalCareTable(page);
+      const newWithin24h = findSimpleRow(pncTable, 'within 24 hours of birth')?.total ?? 0;
+      const new7To11Weeks = findSimpleRow(pncTable, 'aged 7-11 weeks')?.total ?? 0;
+      const new11To15Weeks = findSimpleRow(pncTable, 'aged 11-15 weeks')?.total ?? 0;
+      const new15WeeksTo10Months = findSimpleRow(pncTable, '15 weeks - 10 mos')?.total ?? 0;
+      const new10To19Months = findSimpleRow(pncTable, 'aged 10-19 mos')?.total ?? 0;
+      const new19To24Months = findSimpleRow(pncTable, '19 mos - 2 years')?.total ?? 0;
+
+      console.log('\n=== POSTNATAL CARE ===');
+      console.log(`Within 24h SPV/NBExam:  baseline=${baselinePNCWithin24h}, new=${newWithin24h}, delta=+${newWithin24h - baselinePNCWithin24h}`);
+      console.log(`7-11 weeks UpToDate:    baseline=${baselinePNC7To11Weeks}, new=${new7To11Weeks}, delta=+${new7To11Weeks - baselinePNC7To11Weeks}`);
+      console.log(`11-15 weeks UpToDate:   baseline=${baselinePNC11To15Weeks}, new=${new11To15Weeks}, delta=+${new11To15Weeks - baselinePNC11To15Weeks}`);
+      console.log(`15w-10mo UpToDate:      baseline=${baselinePNC15WeeksTo10Months}, new=${new15WeeksTo10Months}, delta=+${new15WeeksTo10Months - baselinePNC15WeeksTo10Months}`);
+      console.log(`10-19mo UpToDate:       baseline=${baselinePNC10To19Months}, new=${new10To19Months}, delta=+${new10To19Months - baselinePNC10To19Months}`);
+      console.log(`19-24mo UpToDate:       baseline=${baselinePNC19To24Months}, new=${new19To24Months}, delta=+${new19To24Months - baselinePNC19To24Months}`);
+
+      // Within-24h row should not move (no test patient has a same-day SPV).
+      expect(newWithin24h - baselinePNCWithin24h,
+        '"within 24 hours of birth" row should be unchanged').toBe(0);
+      // NutrChild (11mo, full SPV with all eligible vaccines administered
+      // today) should land in the 10-19 months bucket as UpToDate.
+      expect(new10To19Months - baselinePNC10To19Months,
+        '"Children aged 10-19 mos UpToDate" row should grow by +1').toBe(1);
+
+      // CSV download button.
+      await expect(page.locator('button.download-csv'), 'Postnatal Care CSV download button should be visible').toBeVisible();
+    });
+
     // ── Nutrition report verification ──
 
     await step('Verify Nutrition report deltas', async () => {
@@ -1523,6 +1808,158 @@ test.describe('Admin Reports', () => {
 
       // CSV download button.
       await expect(page.locator('button.download-csv'), 'Nutrition CSV download button should be visible').toBeVisible();
+    });
+
+    // ── Phase 3b: FBF Distribution report ──
+    //
+    // Phase 1a created an FBF nurse group session at Nyange I (FBF clinic,
+    // group_type='fbf') with completeChildFbf (amount '1') and
+    // completeMotherFbf (amount '1'). Phase 1b created a CHW Family
+    // Nutrition encounter with completeAhezaMother (amount '3') and
+    // completeAhezaChild (amount '2'). All test-created persons land at
+    // Nyange HC, so the same HC scope used by the other Phase 3 reports
+    // captures the new distribution rows. Pre-existing migration data may
+    // already contribute non-zero baseline totals, so we assert deltas
+    // against the baseline captured in Phase 0.
+
+    await step('Verify FBF Distribution report deltas', async () => {
+      await selectReportType(page, 'fbf-distribution');
+      await setDateRange(page, REPORT_START_DATE, reportLimitDate);
+
+      const fbfDistribution = await readFBFDistributionTable(page);
+
+      const fbfChildAchiRow = findSimpleRow(fbfDistribution, 'FBF Child (ACHI)');
+      const fbfChildRow = findSimpleRow(fbfDistribution, 'FBF Child');
+      const fbfMotherRow = findSimpleRow(fbfDistribution, 'FBF Mother');
+      const ahezaChildRow = findSimpleRow(fbfDistribution, 'Aheza Child');
+      const ahezaMotherRow = findSimpleRow(fbfDistribution, 'Aheza Mother');
+
+      const fbfChild = fbfChildRow?.total ?? 0;
+      const fbfMother = fbfMotherRow?.total ?? 0;
+      const fbfChildAchi = fbfChildAchiRow?.total ?? 0;
+      const ahezaChild = ahezaChildRow?.total ?? 0;
+      const ahezaMother = ahezaMotherRow?.total ?? 0;
+      const fbfChildOccurrences = fbfChildRow?.occurrences ?? 0;
+      const fbfMotherOccurrences = fbfMotherRow?.occurrences ?? 0;
+      const fbfChildAchiOccurrences = fbfChildAchiRow?.occurrences ?? 0;
+      const ahezaChildOccurrences = ahezaChildRow?.occurrences ?? 0;
+      const ahezaMotherOccurrences = ahezaMotherRow?.occurrences ?? 0;
+
+      console.log('\n=== FBF DISTRIBUTION ===');
+      console.log(`FBF Child:        total ${baselineFBFDistChild} → ${fbfChild} (Δ ${fbfChild - baselineFBFDistChild}); occ ${baselineFBFDistChildOccurrences} → ${fbfChildOccurrences} (Δ ${fbfChildOccurrences - baselineFBFDistChildOccurrences})`);
+      console.log(`FBF Mother:       total ${baselineFBFDistMother} → ${fbfMother} (Δ ${fbfMother - baselineFBFDistMother}); occ ${baselineFBFDistMotherOccurrences} → ${fbfMotherOccurrences} (Δ ${fbfMotherOccurrences - baselineFBFDistMotherOccurrences})`);
+      console.log(`FBF Child (ACHI): total ${baselineFBFDistChildAchi} → ${fbfChildAchi} (Δ ${fbfChildAchi - baselineFBFDistChildAchi}); occ ${baselineFBFDistChildAchiOccurrences} → ${fbfChildAchiOccurrences} (Δ ${fbfChildAchiOccurrences - baselineFBFDistChildAchiOccurrences})`);
+      console.log(`Aheza Child:      total ${baselineAhezaDistChild} → ${ahezaChild} (Δ ${ahezaChild - baselineAhezaDistChild}); occ ${baselineAhezaDistChildOccurrences} → ${ahezaChildOccurrences} (Δ ${ahezaChildOccurrences - baselineAhezaDistChildOccurrences})`);
+      console.log(`Aheza Mother:     total ${baselineAhezaDistMother} → ${ahezaMother} (Δ ${ahezaMother - baselineAhezaDistMother}); occ ${baselineAhezaDistMotherOccurrences} → ${ahezaMotherOccurrences} (Δ ${ahezaMotherOccurrences - baselineAhezaDistMotherOccurrences})`);
+
+      // Each complete*Fbf / complete*Aheza helper creates exactly one
+      // distribution measurement record, so every row's Occurrences
+      // delta is +1 regardless of the amount entered.
+      // completeChildFbf (amount '1') -> FBF Child total +1, occurrences +1
+      expect(fbfChild - baselineFBFDistChild, 'FBF Child total delta should be +1').toBe(1);
+      expect(fbfChildOccurrences - baselineFBFDistChildOccurrences, 'FBF Child occurrences delta should be +1').toBe(1);
+      // completeMotherFbf (amount '1') -> FBF Mother total +1, occurrences +1
+      expect(fbfMother - baselineFBFDistMother, 'FBF Mother total delta should be +1').toBe(1);
+      expect(fbfMotherOccurrences - baselineFBFDistMotherOccurrences, 'FBF Mother occurrences delta should be +1').toBe(1);
+      // completeAhezaChild (amount '2') -> Aheza Child total +2, occurrences +1
+      expect(ahezaChild - baselineAhezaDistChild, 'Aheza Child total delta should be +2').toBe(2);
+      expect(ahezaChildOccurrences - baselineAhezaDistChildOccurrences, 'Aheza Child occurrences delta should be +1').toBe(1);
+      // completeAhezaMother (amount '3') -> Aheza Mother total +3, occurrences +1
+      expect(ahezaMother - baselineAhezaDistMother, 'Aheza Mother total delta should be +3').toBe(3);
+      expect(ahezaMotherOccurrences - baselineAhezaDistMotherOccurrences, 'Aheza Mother occurrences delta should be +1').toBe(1);
+      // The test does not create an ACHI clinic session, so the FBF
+      // Child (ACHI) row's totals should not move from baseline.
+      expect(fbfChildAchi - baselineFBFDistChildAchi, 'FBF Child (ACHI) total delta should be 0').toBe(0);
+      expect(fbfChildAchiOccurrences - baselineFBFDistChildAchiOccurrences, 'FBF Child (ACHI) occurrences delta should be 0').toBe(0);
+
+      // Unit column: FBF clinic distributions are in packages (pkg);
+      // ACHI and CHW family-nutrition (Aheza) distributions are in kg.
+      expect(fbfChildRow?.unit, 'FBF Child unit should be "pkg"').toBe('pkg');
+      expect(fbfMotherRow?.unit, 'FBF Mother unit should be "pkg"').toBe('pkg');
+      expect(fbfChildAchiRow?.unit, 'FBF Child (ACHI) unit should be "kg"').toBe('kg');
+      expect(ahezaChildRow?.unit, 'Aheza Child unit should be "kg"').toBe('kg');
+      expect(ahezaMotherRow?.unit, 'Aheza Mother unit should be "kg"').toBe('kg');
+
+      // CSV download button.
+      await expect(
+        page.locator('button.download-csv'),
+        'FBF Distribution CSV download button should be visible',
+      ).toBeVisible();
+    });
+
+    // ── Phase 3c: Nutrition report at Global scope ──
+    //
+    // Global scope reads from the pre-aggregated Report Data node produced
+    // by recalculate-large-datasets.php (scope='global'). The Elm side
+    // treats EntityGlobal as a "wide scope" (Pages/Reports/Utils.elm
+    // isWideScope) and skips client-side computation, so all 8 tables
+    // come from the backend `additional.nutrition_report_data` JSON.
+    // Guards against regressions where the PHP gate excludes 'global'
+    // and the report renders empty.
+
+    await step('Verify Nutrition report at Global scope', async () => {
+      await navigateToGlobalReportsPage(page);
+      await selectReportType(page, 'nutrition');
+      await page.waitForTimeout(WAIT.pageNavigation);
+
+      await expect(
+        page.locator('div.report.nutrition'),
+        'Nutrition report container should be visible at Global scope',
+      ).toBeVisible();
+
+      console.log('\n=== NUTRITION (GLOBAL) ===');
+
+      const columnHeaders = await readNutritionColumnHeaders(page, 0);
+      console.log(`Columns (${columnHeaders.length}): ${columnHeaders.join(' | ')}`);
+      expect(
+        columnHeaders.length,
+        'Global Nutrition report should have at least one data column',
+      ).toBeGreaterThan(0);
+
+      const allNutritionTables = [
+        ...NUTRITION_ONE_VISIT_TABLES,
+        ...NUTRITION_TWO_VISIT_TABLES,
+      ];
+      let totalNonZeroCells = 0;
+      for (const { index, name } of allNutritionTables) {
+        const rows = await readNutritionTable(page, index);
+        expect(rows.length, `Global ${name}: should have 8 metric rows`).toBe(8);
+
+        const colCount = rows[0]?.values.length ?? 0;
+        expect(colCount, `Global ${name}: should have data columns`).toBeGreaterThan(0);
+
+        expect(
+          findNutritionMetric(rows, 'MAM'),
+          `Global ${name}: MAM row should be present`,
+        ).toBeDefined();
+        expect(
+          findNutritionMetric(rows, 'SAM'),
+          `Global ${name}: SAM row should be present`,
+        ).toBeDefined();
+
+        for (const row of rows) {
+          for (const v of row.values) {
+            if (v > 0) totalNonZeroCells++;
+          }
+        }
+      }
+
+      // Across all 8 tables × 8 rows × N columns, at least one cell must
+      // be non-zero. Test-created nutrition encounters (Phase 1) are
+      // backdated and recalculated into the global aggregate (Phase 2),
+      // so the matrix can never be entirely empty here. An all-zero
+      // matrix indicates the backend additional.nutrition_report_data
+      // payload is missing or malformed — exactly the regression this
+      // step guards against.
+      expect(
+        totalNonZeroCells,
+        'Global Nutrition report should have at least one non-zero cell across all tables',
+      ).toBeGreaterThan(0);
+
+      await expect(
+        page.locator('button.download-csv'),
+        'Nutrition CSV download button should be visible at Global scope',
+      ).toBeVisible();
     });
 
     // ── Phase 4: Demographics scope (Province) ──
@@ -2168,7 +2605,7 @@ test.describe('Admin Reports', () => {
 
     // ── Phase 12: Completion Report — Well Child (SPV) ──
     //
-    // NutrChild (10mo male, Nurse) completed SPV encounter:
+    // NutrChild (11mo male, Nurse) completed SPV encounter:
     // DangerSigns, NutritionAssessment, ECD, Medication, Immunisation, NCDA, NextSteps.
     // Supports Taken By filter (Nurse + CHW).
 
@@ -2490,9 +2927,9 @@ test.describe('Admin Reports', () => {
       backdatePersonCreated(fbfChildName);
       backdatePersonCreated(nbChildName);
 
-      // Regenerate NCDA aggregated data and clear caches.
+      // Regenerate per-person NCDA data; the scoreboard sync will pick
+      // up the refreshed rows on next page load.
       generateNCDAPersonData(true);
-      ncdaRecalculateLargeDatasets();
     });
 
     await step('Navigate to NCDA Scoreboard — village level (Akanduga)', async () => {

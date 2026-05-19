@@ -13,7 +13,6 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import List
 import LocalData
 import Maybe.Extra
 import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))

@@ -1,4 +1,4 @@
-module Pages.AcuteIllness.Activity.Model exposing (..)
+module Pages.AcuteIllness.Activity.Model exposing (AcuteFindingsForm, AcuteIllnessCoreExamForm, AcuteIllnessNutritionForm, Call114Form, ContactsTracingForm, ContactsTracingFormState(..), CovidTestingForm, DangerSignsData, ExposureData, ExposureForm, FollowUpForm, HCContactForm, IsolationForm, LaboratoryData, MalariaTestingForm, MedicationDistributionForm, Model, Msg(..), NextStepsData, OngoingTreatmentData, PhysicalExamData, PriorTreatmentData, RecordContactDetailsData, RegisterContactData, ReviewDangerSignsForm, SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, TravelHistoryForm, TreatmentReviewForm, emptyCovidTestingForm, emptyModel, emptyRecordContactDetailsData, emptyRegisterContactData)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis)
@@ -11,14 +11,15 @@ import DateSelector.Model exposing (DateSelectorConfig)
 import EverySet exposing (EverySet)
 import Form
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model exposing (..)
-import Pages.AcuteIllness.Activity.Types exposing (..)
+import Measurement.Model exposing (HealthEducationForm, MuacForm, OngoingTreatmentReviewForm, SendToHCForm, VitalsForm, emptyHealthEducationForm, emptyMuacForm, emptyOngoingTreatmentReviewForm, emptySendToHCForm, emptyVitalsForm)
+import Pages.AcuteIllness.Activity.Types exposing (AILaboratoryTask, DangerSignsTask, ExposureTask, OngoingTreatmentTask, PhysicalExamTask, PriorTreatmentTask, SymptomsTask)
 import Pages.Page exposing (Page)
 import SyncManager.Model exposing (Site)
 
 
 type Msg
-    = SetActivePage Page
+    = NoOp
+    | SetActivePage Page
     | SetAlertsDialogState Bool
     | SetWarningPopupState (Maybe AcuteIllnessDiagnosis)
     | SetPertinentSymptomsPopupState Bool

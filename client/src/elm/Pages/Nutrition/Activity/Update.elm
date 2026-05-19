@@ -3,32 +3,23 @@ module Pages.Nutrition.Activity.Update exposing (update)
 import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model
-    exposing
-        ( ChildNutritionSign(..)
-        , ContributingFactorsSign(..)
-        , ImageUrl(..)
-        , MuacInCm(..)
-        , WeightInGrm(..)
-        , WeightInKg(..)
-        )
+import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Model
 import EverySet
-import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (unwrap)
-import Measurement.Utils exposing (..)
-import Pages.Nutrition.Activity.Model exposing (..)
+import Measurement.Utils exposing (contributingFactorsFormWithDefault, ncdaFormWithDefault, nutritionFormWithDefault, toContributingFactorsValueWithDefault, toHealthEducationValueWithDefault, toHeightValueWithDefault, toMuacValueWithDefault, toNCDAValueWithDefault, toNutritionFollowUpValueWithDefault, toNutritionValueWithDefault, toSendToHCValueWithDefault, toWeightValueWithDefault)
+import Pages.Nutrition.Activity.Model exposing (Model, Msg(..), emptyPhotoData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (setMuacValueForSite, setMultiSelectInputValue)
 import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (Site)
 
 
-update : NominalDate -> Site -> NutritionEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate site id db msg model =
+update : Site -> NutritionEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update site id db msg model =
     let
         ncdaForm =
             Dict.get id db.nutritionMeasurements
@@ -78,25 +69,66 @@ update currentDate site id db msg model =
             , []
             )
 
-        SaveHeight personId saved ->
+        SetHeightNotTaken value ->
             let
-                measurementId =
-                    Maybe.map Tuple.first saved
+                updatedData =
+                    let
+                        updatedForm =
+                            model.heightData.form
+                                |> (\form ->
+                                        { form | height = Nothing, heightDirty = True, measurementNotTaken = Just value }
+                                   )
+                    in
+                    model.heightData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | heightData = updatedData }
+            , Cmd.none
+            , []
+            )
 
-                measurement =
-                    getMeasurementValueFunc saved
+        SaveHeight skippedForms personId saved ->
+            let
+                form_ =
+                    model.heightData.form
 
                 appMsgs =
-                    toHeightValueWithDefault measurement model.heightData.form
-                        |> unwrap
-                            []
-                            (\value ->
-                                [ Backend.NutritionEncounter.Model.SaveHeight personId measurementId value
-                                    |> Backend.Model.MsgNutritionEncounter id
-                                    |> App.Model.MsgIndexedDb
-                                , App.Model.SetActivePage <| UserPage <| NutritionEncounterPage id
-                                ]
-                            )
+                    if form_.measurementNotTaken == Just True then
+                        let
+                            updateSkippedFormsMsg =
+                                if EverySet.member SkippedHeight skippedForms then
+                                    []
+
+                                else
+                                    [ Backend.NutritionEncounter.Model.AddSkippedForm SkippedHeight
+                                        |> Backend.Model.MsgNutritionEncounter id
+                                        |> App.Model.MsgIndexedDb
+                                    ]
+                        in
+                        updateSkippedFormsMsg
+                            ++ [ App.Model.SetActivePage <| UserPage <| NutritionEncounterPage id ]
+
+                    else
+                        let
+                            measurementId =
+                                Maybe.map Tuple.first saved
+
+                            measurement =
+                                getMeasurementValueFunc saved
+                        in
+                        toHeightValueWithDefault skippedForms measurement form_
+                            |> unwrap
+                                []
+                                (\value ->
+                                    [ Backend.NutritionEncounter.Model.SaveHeight personId measurementId value
+                                        |> Backend.Model.MsgNutritionEncounter id
+                                        |> App.Model.MsgIndexedDb
+                                    , Backend.NutritionEncounter.Model.RemoveSkippedForm SkippedHeight
+                                        |> Backend.Model.MsgNutritionEncounter id
+                                        |> App.Model.MsgIndexedDb
+                                    , App.Model.SetActivePage <| UserPage <| NutritionEncounterPage id
+                                    ]
+                                )
             in
             ( model
             , Cmd.none
@@ -245,26 +277,66 @@ update currentDate site id db msg model =
             , []
             )
 
-        SaveWeight personId saved ->
+        SetWeightNotTaken value ->
             let
-                measurementId =
-                    Maybe.map Tuple.first saved
+                updatedData =
+                    let
+                        updatedForm =
+                            model.weightData.form
+                                |> (\form ->
+                                        { form | weight = Nothing, weightDirty = True, measurementNotTaken = Just value }
+                                   )
+                    in
+                    model.weightData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | weightData = updatedData }
+            , Cmd.none
+            , []
+            )
 
-                measurement =
-                    getMeasurementValueFunc saved
+        SaveWeight skippedForms personId saved ->
+            let
+                form_ =
+                    model.weightData.form
 
                 appMsgs =
-                    model.weightData.form
-                        |> toWeightValueWithDefault measurement
-                        |> unwrap
-                            []
-                            (\value ->
-                                [ Backend.NutritionEncounter.Model.SaveWeight personId measurementId value
-                                    |> Backend.Model.MsgNutritionEncounter id
-                                    |> App.Model.MsgIndexedDb
-                                , App.Model.SetActivePage <| UserPage <| NutritionEncounterPage id
-                                ]
-                            )
+                    if form_.measurementNotTaken == Just True then
+                        let
+                            updateSkippedFormsMsg =
+                                if EverySet.member SkippedWeight skippedForms then
+                                    []
+
+                                else
+                                    [ Backend.NutritionEncounter.Model.AddSkippedForm SkippedWeight
+                                        |> Backend.Model.MsgNutritionEncounter id
+                                        |> App.Model.MsgIndexedDb
+                                    ]
+                        in
+                        updateSkippedFormsMsg
+                            ++ [ App.Model.SetActivePage <| UserPage <| NutritionEncounterPage id ]
+
+                    else
+                        let
+                            measurementId =
+                                Maybe.map Tuple.first saved
+
+                            measurement =
+                                getMeasurementValueFunc saved
+                        in
+                        toWeightValueWithDefault skippedForms measurement form_
+                            |> unwrap
+                                []
+                                (\value ->
+                                    [ Backend.NutritionEncounter.Model.SaveWeight personId measurementId value
+                                        |> Backend.Model.MsgNutritionEncounter id
+                                        |> App.Model.MsgIndexedDb
+                                    , Backend.NutritionEncounter.Model.RemoveSkippedForm SkippedWeight
+                                        |> Backend.Model.MsgNutritionEncounter id
+                                        |> App.Model.MsgIndexedDb
+                                    , App.Model.SetActivePage <| UserPage <| NutritionEncounterPage id
+                                    ]
+                                )
             in
             ( model
             , Cmd.none
@@ -557,7 +629,7 @@ update currentDate site id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate site id db) extraMsgs
+                |> sequenceExtra (update site id db) extraMsgs
 
         SetProvidedEducationForDiagnosis value ->
             let
@@ -618,7 +690,7 @@ update currentDate site id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate site id db) extraMsgs
+                |> sequenceExtra (update site id db) extraMsgs
 
         SetContributingFactorsSign sign ->
             let
@@ -674,7 +746,7 @@ update currentDate site id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate site id db) extraMsgs
+                |> sequenceExtra (update site id db) extraMsgs
 
         SetFollowUpOption option ->
             let
@@ -721,4 +793,4 @@ update currentDate site id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate site id db) extraMsgs
+                |> sequenceExtra (update site id db) extraMsgs

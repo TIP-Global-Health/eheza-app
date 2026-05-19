@@ -9,8 +9,8 @@ import Date exposing (Unit(..))
 import Error.Utils exposing (noError)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra
-import Pages.Reports.Model exposing (..)
-import Pages.Reports.Utils exposing (..)
+import Pages.Reports.Model exposing (Model, Msg(..), NutritionReportData, ReportType(..))
+import Pages.Reports.Utils exposing (countTotalNutritionEncounters, familyNutritionEncounterToMetrics, isWideScope, nutritionEncounterDataToNutritionMetrics, reportTypeFromString, sumNutritionMetrics)
 import RemoteData exposing (RemoteData(..))
 import Task exposing (Task)
 
@@ -33,7 +33,6 @@ update currentDate modelBackend msg model =
                                 -- For large data sets, nutrition report is generated on
                                 -- backend. No need to generate proprietry data.
                                 if isWideScope data.entityType then
-                                    -- ( Loading, performNutritionReportDataCalculation currentDate data.records )
                                     ( model.nutritionReportData, Cmd.none )
 
                                 else
@@ -150,7 +149,21 @@ calculateNutritionReportDataTask currentDate data =
                         [ Maybe.map
                             (List.concat
                                 >> List.filter filterByYear
-                                >> List.map (Tuple.pair record.id)
+                                >> List.map
+                                    (\item ->
+                                        -- WellChildEncounterData mirrors NutritionEncounterData's
+                                        -- shape (date, nutritionData, muacCm) plus immunisationData;
+                                        -- well-child wire doesn't carry edema or FBF distribution
+                                        -- today, so default both to absent.
+                                        ( record.id
+                                        , { startDate = item.startDate
+                                          , nutritionData = item.nutritionData
+                                          , muacCm = item.muacCm
+                                          , hasEdema = False
+                                          , fbfAmount = Nothing
+                                          }
+                                        )
+                                    )
                             )
                             record.wellChildData
                         , Maybe.map

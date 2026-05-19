@@ -1,7 +1,7 @@
 module Pages.FamilyNutrition.ProgressReport.Update exposing (update)
 
 import App.Model
-import Pages.FamilyNutrition.ProgressReport.Model exposing (..)
+import Pages.FamilyNutrition.ProgressReport.Model exposing (Model, Msg(..))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )

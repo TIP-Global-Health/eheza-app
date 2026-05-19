@@ -1,17 +1,14 @@
-module Pages.WellChild.Activity.Model exposing (..)
+module Pages.WellChild.Activity.Model exposing (DangerSignsData, HeadCircumferenceForm, HomeVisitData, ImmunisationData, MedicationData, Model, Msg(..), NextStepsData, NextVisitForm, NutritionAssessmentData, PregnancySummaryForm, SymptomsReviewForm, WarningPopupType(..), WellChildECDForm, WellChildVaccinationForm, emptyModel, medicationTasks)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Person.Model exposing (Person)
 import Date exposing (Date)
 import DateSelector.Model exposing (DateSelectorConfig)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model exposing (..)
+import Measurement.Model exposing (ContributingFactorsForm, DropZoneFile, HealthEducationForm, HeightForm, ImmunisationTask, MedicationAdministrationForm, MuacForm, NCDAData, NCDAForm, NCDAStep, NutritionCaringForm, NutritionFeedingForm, NutritionFollowUpForm, NutritionFoodSecurityForm, NutritionForm, NutritionHygieneForm, PhotoForm, SendToHCForm, VaccinationForm, VaccinationFormViewMode, VitalsForm, WeightForm, emptyContributingFactorsForm, emptyHealthEducationForm, emptyHeightForm, emptyMedicationAdministrationForm, emptyMuacForm, emptyNCDAData, emptyNutritionCaringForm, emptyNutritionFeedingForm, emptyNutritionFollowUpForm, emptyNutritionFoodSecurityForm, emptyNutritionForm, emptyNutritionHygieneForm, emptyPhotoForm, emptySendToHCForm, emptyVaccinationForm, emptyVitalsForm, emptyWeightForm)
 import Pages.Page exposing (Page)
-import Pages.WellChild.Activity.Types exposing (..)
-import SyncManager.Model exposing (Site)
-import Translate exposing (TranslationId)
+import Pages.WellChild.Activity.Types exposing (DangerSignsTask, MedicationTask(..), NutritionAssessmentTask)
 
 
 type Msg
@@ -32,11 +29,14 @@ type Msg
     | SaveSymptomsReview PersonId (Maybe ( WellChildSymptomsReviewId, WellChildSymptomsReview )) (Maybe DangerSignsTask)
     | SetVitalsIntInput (Maybe Int -> VitalsForm -> VitalsForm) String
     | SetVitalsFloatInput (Maybe Float -> VitalsForm -> VitalsForm) String
+    | SetBodyTemperatureNotTaken Bool
+    | SetRespiratoryRateNotTaken Bool
     | SaveVitals PersonId (Maybe ( WellChildVitalsId, WellChildVitals )) (Maybe DangerSignsTask)
       -- NUTRITION ASSESMENT
     | SetActiveNutritionAssessmentTask NutritionAssessmentTask
     | SetHeight String
-    | SaveHeight PersonId (Maybe ( WellChildHeightId, WellChildHeight )) (Maybe NutritionAssessmentTask)
+    | SetHeightNotTaken Bool
+    | SaveHeight (EverySet SkippedForm) PersonId (Maybe ( WellChildHeightId, WellChildHeight )) (Maybe NutritionAssessmentTask)
     | SetHeadCircumference String
     | ToggleHeadCircumferenceNotTaken
     | CloseHeadCircumferencePopup PersonId (Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference )) (Maybe NutritionAssessmentTask)
@@ -47,7 +47,8 @@ type Msg
     | SetNutritionSign ChildNutritionSign
     | SaveNutrition PersonId (Maybe ( WellChildNutritionId, WellChildNutrition )) (EverySet NutritionAssessment) (Maybe NutritionAssessmentTask)
     | SetWeight String
-    | SaveWeight PersonId (Maybe ( WellChildWeightId, WellChildWeight )) (Maybe NutritionAssessmentTask)
+    | SetWeightNotTaken Bool
+    | SaveWeight (EverySet SkippedForm) PersonId (Maybe ( WellChildWeightId, WellChildWeight )) (Maybe NutritionAssessmentTask)
       -- IMMUNISATION
     | SetActiveImmunisationTask ImmunisationTask
     | SetVaccinationFormViewMode WellChildVaccineType VaccinationFormViewMode

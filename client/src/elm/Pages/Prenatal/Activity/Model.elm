@@ -1,4 +1,4 @@
-module Pages.Prenatal.Activity.Model exposing (..)
+module Pages.Prenatal.Activity.Model exposing (AppointmentConfirmationForm, BirthPlanData, BirthPlanForm, BreastExamForm, BreastfeedingData, BreastfeedingForm, DangerSignsData, DangerSignsForm, ExaminationData, FamilyPlanningData, FollowUpForm, GUExamForm, HealthEducationData, HistoryData, ImmunisationData, LaboratoryData, LabsHistoryForm, MedicalHistoryForm, MedicationData, MedicationForm, MentalHealthData, MentalHealthForm, MentalHealthStep(..), Model, Msg(..), NewbornEnrolmentForm, NextStepsData, NutritionAssessmentForm, ObstetricFormFirstStep, ObstetricFormSecondStep, ObstetricalExamForm, PostpartumTreatmentReviewData, PregnancyDatingData, PregnancyDatingForm, PregnancyTestForm, PrenatalPhotoData, PrenatalVaccinationForm, SocialHistoryForm, SpecialityCareData, SpecialityCareForm, SymptomReviewData, SymptomReviewForm, TreatmentReviewData, UltrasoundData, UltrasoundForm, emptyModel, emptyPregnancyDatingForm)
 
 import AssocList exposing (Dict)
 import Backend.Entities exposing (..)
@@ -47,8 +47,8 @@ import Measurement.Model
         , emptyVitalsForm
         )
 import Pages.Page exposing (Page)
-import Pages.Prenatal.Activity.Types exposing (..)
-import Pages.Prenatal.Model exposing (..)
+import Pages.Prenatal.Activity.Types exposing (ExaminationTask, HistoryTask, ImmunisationTask, MedicationTask, NextStepsTask, ObstetricHistoryStep(..), SymptomReviewStep(..), TreatmentReviewTask, WarningPopupType)
+import Pages.Prenatal.Model exposing (HealthEducationForm, MalariaPreventionData, MalariaPreventionForm, MedicationDistributionForm, ReferralForm, emptyHealthEducationForm, emptyMalariaPreventionData, emptyMedicationDistributionForm, emptyReferralForm)
 
 
 type Msg
@@ -112,7 +112,7 @@ type Msg
     | SaveVitals PersonId (Maybe ( VitalsId, Vitals )) (Maybe ExaminationTask)
       -- ExaminationMsgs, Nutrition Assessment
     | SetNutritionAssessmentMeasurement (Maybe Float -> NutritionAssessmentForm -> NutritionAssessmentForm) String
-    | SaveNutritionAssessment PersonId (Maybe ( PrenatalNutritionId, PrenatalNutrition )) (Maybe Float) (Maybe ExaminationTask)
+    | SaveNutritionAssessment PersonId (Maybe ( PrenatalNutritionId, PrenatalNutrition )) (Maybe Float) (Maybe Bool) (Maybe ExaminationTask)
       -- ExaminationMsgs, Core Physical Exam
     | SetCorePhysicalExamBoolInput (Bool -> CorePhysicalExamForm -> CorePhysicalExamForm) Bool
     | SetCorePhysicalExamHeart HeartCPESign
@@ -1128,6 +1128,8 @@ type alias BreastfeedingForm =
     , enoughMilkDirty : Bool
     , latchingWell : Maybe Bool
     , latchingWellDirty : Bool
+    , breastfedFirstHour : Maybe Bool
+    , breastfedFirstHourDirty : Bool
     }
 
 
@@ -1144,4 +1146,6 @@ emptyBreastfeedingForm =
     , enoughMilkDirty = False
     , latchingWell = Nothing
     , latchingWellDirty = False
+    , breastfedFirstHour = Nothing
+    , breastfedFirstHourDirty = False
     }
