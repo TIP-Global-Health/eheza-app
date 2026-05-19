@@ -6752,9 +6752,6 @@ translationSet trans =
                     , somali = Just "Ma dooneysaa inaad billowdo u kuurgalida Booqashada Guriga ee"
                     }
 
-                InmmunizationEncounter ->
-                    translationSet EmptyString
-
                 Backend.IndividualEncounterParticipant.Model.NutritionEncounter ->
                     translationSet EmptyString
 
@@ -9170,13 +9167,6 @@ translationSet trans =
                     , somali = Just "Ogaanshaha Booqashada Guriga Koowaad"
                     }
 
-                InmmunizationEncounter ->
-                    { english = "First Inmmunization Encounter"
-                    , kinyarwanda = Nothing
-                    , kirundi = Just "Kuronka urucanco ubwa mbere"
-                    , somali = Just "Ogaanshaha Tallaalka Koowaad"
-                    }
-
                 NCDEncounter ->
                     { english = "First NCD Encounter"
                     , kinyarwanda = Just "Isuzuma rya mbere kuburwayi butandura"
@@ -9240,13 +9230,6 @@ translationSet trans =
                     , kinyarwanda = Just "Gusura abarwayi mu rugo"
                     , kirundi = Just "Umubonano mu gihe co kugendera muhira"
                     , somali = Just "Ognaashaha Booqashada Guriga"
-                    }
-
-                InmmunizationEncounter ->
-                    { english = "Inmmunization Encounter"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Nothing
                     }
 
                 NCDEncounter ->
@@ -9316,13 +9299,6 @@ translationSet trans =
                     , kinyarwanda = Just "Hitamo Gusura Umurwayi"
                     , kirundi = Just "Hitamo Gusura Umugwayi"
                     , somali = Just "Dooro Booqasho Guri"
-                    }
-
-                InmmunizationEncounter ->
-                    { english = "Select Inmmunization Visit"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Just "Dooro Booqasho Tallaal"
                     }
 
                 NCDEncounter ->
@@ -9398,13 +9374,6 @@ translationSet trans =
                     , somali = Just "Booqashada Guriga is Xig xigta"
                     }
 
-                InmmunizationEncounter ->
-                    { english = "Subsequent Inmmunization Encounter"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    , somali = Just "Ogaanshaha Tallaalka is Xig xiga"
-                    }
-
                 NCDEncounter ->
                     { english = "Subsequent NCD Visit"
                     , kinyarwanda = Just "Isuzuma Rikurikiyeho ku Burwayi Butandura"
@@ -9453,13 +9422,6 @@ translationSet trans =
 
                 HomeVisitEncounter ->
                     translationSet HomeVisit
-
-                InmmunizationEncounter ->
-                    { english = "Inmmunization"
-                    , kinyarwanda = Nothing
-                    , kirundi = Just "Incanco"
-                    , somali = Just "Tallaal"
-                    }
 
                 NCDEncounter ->
                     { english = "Noncommunicable Diseases"
@@ -29417,13 +29379,6 @@ translateActivePage page =
                             , kinyarwanda = Nothing
                             , kirundi = Nothing
                             , somali = Just "Ka qeyb galayaasha Booqashada Guriga"
-                            }
-
-                        InmmunizationEncounter ->
-                            { english = "Inmmunization Participants"
-                            , kinyarwanda = Nothing
-                            , kirundi = Nothing
-                            , somali = Just "Ka Qeyb galayaasha Tallaalka"
                             }
 
                         NCDEncounter ->

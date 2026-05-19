@@ -74,8 +74,6 @@ type IndividualEncounterType
     | NutritionEncounter
     | TuberculosisEncounter
     | WellChildEncounter
-      -- @todo : can be removed?
-    | InmmunizationEncounter
 
 
 type DeliveryLocation
