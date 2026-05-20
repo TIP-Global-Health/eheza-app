@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Build OCL bulk-import JSON-lines from eheza-concepts.csv plus
-pih-mappings.csv and uvl-mappings.csv, with delta-against-HEAD diffing.
+pih-mappings.csv, uvl-mappings.csv and ciel-mappings.csv, with
+delta-against-HEAD diffing.
 
 Writes JSON-lines to stdout for rows that are new or changed; writes a
 counts summary to stderr.
@@ -48,6 +49,7 @@ REPO_BASE = HERE.parent.parent
 CONCEPTS_PATH = HERE / "eheza-concepts.csv"
 PIH_MAPPINGS_PATH = HERE / "pih-mappings.csv"
 UVL_MAPPINGS_PATH = HERE / "uvl-mappings.csv"
+CIEL_MAPPINGS_PATH = HERE / "ciel-mappings.csv"
 
 OCL_BASE = "https://api.openconceptlab.org"
 SOURCE_PATH = "/orgs/TIP-Global-Health/sources/EHEZA/HEAD"
@@ -299,7 +301,7 @@ def main():
     # ---- mappings ----
     new_map = unchanged_map = 0
     sample_new_map = []
-    for path in (PIH_MAPPINGS_PATH, UVL_MAPPINGS_PATH):
+    for path in (PIH_MAPPINGS_PATH, UVL_MAPPINGS_PATH, CIEL_MAPPINGS_PATH):
         if not path.exists():
             continue
         for row in csv.DictReader(open(path)):

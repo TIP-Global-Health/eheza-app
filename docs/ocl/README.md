@@ -6,9 +6,10 @@ concept dictionary published to Open Concept Lab (OCL) under
 
 The dictionary catalogues every concept E-Heza captures (signs, symptoms,
 diagnoses, medications, lab tests, vaccines, education topics,
-operational scaffolding) plus mappings into two reference dictionaries:
-PIH/PIH (217 SAME-AS / NARROWER-THAN mappings) and UVL-Burundi/uvl
-(75 SAME-AS / NARROWER-THAN / BROADER-THAN mappings).
+operational scaffolding) plus mappings into three reference dictionaries:
+PIH/PIH (218 SAME-AS / NARROWER-THAN mappings), UVL-Burundi/uvl
+(75 SAME-AS / NARROWER-THAN / BROADER-THAN mappings), and CIEL/CIEL
+(427 SAME-AS mappings).
 
 The dictionary is **not** loaded at runtime by the E-Heza app; it exists
 to give partner organisations a structured reference for E-Heza's data
@@ -19,9 +20,10 @@ model.
 | File | Purpose |
 |---|---|
 | `eheza-concepts.csv` | The single concept inventory (1579 rows). One row per concept; columns `id, translation_id, english, kinyarwanda, kirundi, somali, concept_class, datatype, description`. |
-| `pih-mappings.csv` | 217 SAME-AS / NARROWER-THAN mappings from EH-XX-NNN concepts to PIH dictionary entries. Originally curated per-encounter; consolidated here. |
+| `pih-mappings.csv` | 218 SAME-AS / NARROWER-THAN mappings from E-Heza concepts to PIH dictionary entries — 217 EH-XX-NNN concepts curated per-encounter, plus 1 hand-curated EHEZA-U addition. |
 | `uvl-mappings.csv` | 75 SAME-AS / NARROWER-THAN / BROADER-THAN mappings to UVL-Burundi/uvl. |
-| `upload.py` | OCL bulk-import uploader. Reads the three CSVs, computes the delta against OCL HEAD, emits JSON-lines payloads to stdout, prints a counts summary to stderr. |
+| `ciel-mappings.csv` | 427 SAME-AS mappings to CIEL/CIEL — 195 derived transitively through PIH, 229 from exact-name matching, 3 hand-curated. See *CIEL mappings* below. |
+| `upload.py` | OCL bulk-import uploader. Reads the four CSVs, computes the delta against OCL HEAD, emits JSON-lines payloads to stdout, prints a counts summary to stderr. |
 | `labels-master-drop-tids.txt` | Hand-curation record from the v2.0 build: 369 `translation_id`s explicitly removed from `Translate.elm` walk because they were UI atoms, lab-range enums, or workflow scaffolding rather than clinical concepts. Required by any future rebuild from source. |
 | `master-drop-names.txt` | Hand-curation record: 116 concept names removed from the structural walk to mirror the labels curation. Required by any future rebuild from source. |
 
@@ -51,8 +53,8 @@ in their respective namespace.
 
 ## Mapping CSV schema
 
-Both `pih-mappings.csv` and `uvl-mappings.csv` share the OCL bulk-import
-mapping schema:
+All three mapping files — `pih-mappings.csv`, `uvl-mappings.csv`, and
+`ciel-mappings.csv` — share the OCL bulk-import mapping schema:
 
 | Column | Notes |
 |---|---|
@@ -60,7 +62,7 @@ mapping schema:
 | `owner`, `owner_type`, `source` | `TIP-Global-Health` / `Organization` / `EHEZA` |
 | `from_concept_url` | `/orgs/TIP-Global-Health/sources/EHEZA/concepts/<id>/` — the EHEZA side |
 | `map_type` | `SAME-AS`, `NARROWER-THAN`, or `BROADER-THAN` |
-| `to_source_url` | `/orgs/PIH/sources/PIH/` or `/orgs/UVL-Burundi/sources/uvl/` |
+| `to_source_url` | `/orgs/PIH/sources/PIH/`, `/orgs/UVL-Burundi/sources/uvl/`, or `/orgs/CIEL/sources/CIEL/` |
 | `to_concept_code` | The target dictionary's concept id |
 | `to_concept_name` | Display name of the target concept (denormalised for readability) |
 | `confidence` | `high` (exact name match) or `medium` (token overlap / partial alignment) |
@@ -146,6 +148,67 @@ source.
 `Pharmacologic Drug Class`) received hand-written one-sentence
 descriptions. Operational rows (`Misc`, `Question`) intentionally left
 without descriptions — OCL accepts empty.
+
+## CIEL mappings (how `ciel-mappings.csv` was constructed)
+
+`ciel-mappings.csv` maps E-Heza concepts to the CIEL reference
+dictionary (`CIEL/CIEL` on OCL). UVL-Burundi's OpenMRS runs a
+CIEL-derived dictionary, so a CIEL mapping is the bridge that lets an
+E-Heza concept resolve onto a UVL concept. The file was built by a
+two-stage hybrid pass; like the build pipeline above, the generator
+scripts are one-offs and are not committed.
+
+### 1. Derive through PIH
+
+For each of the 217 EH-XX-NNN concepts already mapped in
+`pih-mappings.csv`, the PIH concept is fetched from OCL and its own
+`PIH → CIEL` mapping is read. The two hops are composed into one
+`EHEZA → CIEL` map type:
+
+- `SAME-AS` then `SAME-AS` → `SAME-AS`
+- any `NARROWER-THAN` in the chain → `NARROWER-THAN`
+- any `BROADER-THAN` in the chain → `BROADER-THAN`
+- a `NARROWER-THAN` + `BROADER-THAN` contradiction → skipped
+
+The `EHEZA → PIH` confidence (`high` / `medium`) carries through.
+Stage 1 yielded **195 mappings**. 22 concepts were skipped — 20 whose
+PIH concept carries no CIEL mapping, 2 whose PIH concept has multiple
+SAME-AS CIEL targets — and fell through to stage 2.
+
+### 2. Exact-match gap-fill
+
+Every E-Heza concept not covered by stage 1 is searched against
+`CIEL/CIEL`. A mapping is emitted only when **exactly one** non-retired
+CIEL concept has an English name — fully-specified or synonym, compared
+case-insensitively with whitespace collapsed — *exactly equal* to the
+E-Heza concept's English name. Zero matches, or two or more distinct
+concepts, leave the concept unmapped. Every emitted row is `SAME-AS` /
+`high`.
+
+This is deliberately conservative: exact string identity only, no fuzzy
+or token matching, favouring precision over coverage. Stage 2 yielded
+**229 mappings**; 1,146 concepts had no exact CIEL match and 8 were
+ambiguous.
+
+### 3. Hand-curated additions
+
+A targeted manual pass picked up concepts whose CIEL equivalent exists
+under wording the exact-match rule could not catch:
+
+- `EHEZA-U-1345` "Birth Date" → CIEL 166575 "Date of birth"
+- `EHEZA-U-1347` "Number Of Children" → CIEL 1825 "Total number of living children"
+- `EHEZA-U-1349` "Spouse Name" → CIEL 161135 "Partner full name"
+
+All three are `SAME-AS` / `medium` — the `medium` confidence flags a
+curated non-exact match. The same pass confirmed CIEL has no usable
+concept for the spouse / next-of-kin phone numbers or the HMIS number.
+
+### Totals
+
+427 CIEL mappings — 195 derived + 229 exact-match + 3 hand-curated —
+all `SAME-AS` (397 `high`, 30 `medium`). The `medium` rows are the 27
+derived mappings that inherit `medium` confidence from their
+`EHEZA → PIH` link, plus the 3 hand-curated additions.
 
 ## OCL upload process
 
@@ -260,7 +323,7 @@ Adding a new concept:
 1. Append a row to `eheza-concepts.csv` with the next free
    `EHEZA-U-NNNN` id (or for a per-encounter PIH-mapped concept, the
    next free id in the appropriate `EH-XX-` prefix).
-2. If it has a PIH or UVL mapping, append a row to the relevant
+2. If it has a PIH, UVL, or CIEL mapping, append a row to the relevant
    mapping file.
 3. Run the dry-run to confirm the delta is just your new row.
 4. Run the live upload.
