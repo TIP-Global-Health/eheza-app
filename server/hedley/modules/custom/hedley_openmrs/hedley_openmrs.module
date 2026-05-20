@@ -1,0 +1,114 @@
+<?php
+
+/**
+ * @file
+ * Hedley OpenMRS.
+ *
+ * Integration with UVL OpenMRS via the OpenFN mediator. Phase 1 covers the
+ * one-way patient create flow: E-Heza (Drupal) -> OpenFN -> OpenMRS.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function hedley_openmrs_menu() {
+  $items['openmrs/patient-link'] = [
+    'title' => 'OpenMRS patient link',
+    'page callback' => 'hedley_openmrs_patient_link',
+    // Public path; auth is the shared-secret check in the callback itself.
+    'access callback' => TRUE,
+    'delivery callback' => 'drupal_json_output',
+    'type' => MENU_CALLBACK,
+  ];
+
+  return $items;
+}
+
+/**
+ * Write-back endpoint: store an OpenMRS patient UUID on an E-Heza person.
+ *
+ * Called by the OpenFN load step once it has created (or matched) the patient
+ * in OpenMRS. Expects a POST with a JSON body holding "person_uuid" and
+ * "openmrs_uuid", authenticated with a shared secret in the X-OpenFN-Token
+ * header.
+ *
+ * @return array
+ *   A JSON-serialisable response array.
+ */
+function hedley_openmrs_patient_link() {
+  if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    return _hedley_openmrs_error('405 Method Not Allowed', 'Use POST.');
+  }
+
+  // Authenticate with the shared secret. Fail closed if it is unconfigured.
+  $expected = variable_get('hedley_openmrs_shared_secret', '');
+  $provided = '';
+  if (isset($_SERVER['HTTP_X_OPENFN_TOKEN'])) {
+    $provided = $_SERVER['HTTP_X_OPENFN_TOKEN'];
+  }
+  if ($expected === '' || !hash_equals($expected, $provided)) {
+    return _hedley_openmrs_error('401 Unauthorized', 'Invalid token.');
+  }
+
+  $payload = json_decode(file_get_contents('php://input'), TRUE);
+  if (!is_array($payload)) {
+    return _hedley_openmrs_error('400 Bad Request', 'Invalid JSON body.');
+  }
+
+  $payload += ['person_uuid' => '', 'openmrs_uuid' => ''];
+  $person_uuid = trim($payload['person_uuid']);
+  $openmrs_uuid = trim($payload['openmrs_uuid']);
+  if ($person_uuid === '' || $openmrs_uuid === '') {
+    return _hedley_openmrs_error('400 Bad Request', 'Missing required fields.');
+  }
+
+  // Locate the E-Heza person by UUID. Run as user 1 to bypass node access.
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'person')
+    ->fieldCondition('field_uuid', 'value', $person_uuid)
+    ->range(0, 1)
+    ->addMetaData('account', user_load(1));
+  $result = $query->execute();
+
+  if (empty($result['node'])) {
+    return _hedley_openmrs_error('404 Not Found', 'Unknown person UUID.');
+  }
+
+  $nid = key($result['node']);
+  $node = node_load($nid);
+  $node->field_openmrs_uuid[LANGUAGE_NONE][0]['value'] = $openmrs_uuid;
+  node_save($node);
+
+  watchdog('hedley_openmrs', 'Linked person @nid to OpenMRS patient @uuid.', [
+    '@nid' => $nid,
+    '@uuid' => $openmrs_uuid,
+  ], WATCHDOG_INFO);
+
+  return [
+    'status' => 'ok',
+    'nid' => (int) $nid,
+    'person_uuid' => $person_uuid,
+    'openmrs_uuid' => $openmrs_uuid,
+  ];
+}
+
+/**
+ * Builds an error response and sets the HTTP status line.
+ *
+ * @param string $status
+ *   The HTTP status line, e.g. '404 Not Found'.
+ * @param string $message
+ *   A human-readable error message.
+ *
+ * @return array
+ *   A JSON-serialisable error response array.
+ */
+function _hedley_openmrs_error($status, $message) {
+  drupal_add_http_header('Status', $status);
+
+  return [
+    'status' => 'error',
+    'message' => $message,
+  ];
+}

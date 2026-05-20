@@ -753,3 +753,11 @@ function hedley_update_7046() {
 function hedley_update_7047() {
   module_enable(['hedley_family_nutrition']);
 }
+
+/**
+ * Enable the Hedley OpenMRS module and create the OpenMRS UUID person field.
+ */
+function hedley_update_7048() {
+  module_enable(['hedley_openmrs']);
+  features_revert(['hedley_person' => ['field_base', 'field_instance']]);
+}
