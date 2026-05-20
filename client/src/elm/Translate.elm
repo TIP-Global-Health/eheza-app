@@ -525,6 +525,7 @@ type TranslationId
     | ChildIdentification
     | ChildNutritionSignLabel ChildNutritionSign
     | ChildName
+    | ChildNotFoundError
     | ChildNutrition
     | Children
     | ChildrenNames
@@ -905,6 +906,7 @@ type TranslationId
     | InfrastructureEnvironmentWash
     | InitialResultsDisplay InitialResultsDisplay
     | InitiationDate
+    | InternalError
     | IntractableVomiting Bool
     | IntractableVomitingQuestion
     | InstructionsChooseOneMedication
@@ -1151,6 +1153,7 @@ type TranslationId
     | MotherId
     | MotherName String
     | MotherNameLabel
+    | MotherNotFoundError
     | MTDIn
     | MTDOut
     | MUAC
@@ -4745,6 +4748,13 @@ translationSet trans =
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Just "Magaca Canuga"
+            }
+
+        ChildNotFoundError ->
+            { english = "Could not find this child."
+            , kinyarwanda = Just "Uyu mwana ntiyabashije kuboneka."
+            , kirundi = Just "Uyu mwana ntiyaronse."
+            , somali = Just "Canugan lama helin."
             }
 
         ChildNutrition ->
@@ -9537,6 +9547,13 @@ translationSet trans =
             , somali = Nothing
             }
 
+        InternalError ->
+            { english = "Internal error"
+            , kinyarwanda = Just "Ikosa rya sisitemu"
+            , kirundi = Just "Ikosa ryo muri sisitemu"
+            , somali = Just "Khalad gudaha ah"
+            }
+
         IntractableVomiting isIntractable ->
             if isIntractable then
                 { english = "Intractable Vomiting"
@@ -13364,6 +13381,13 @@ translationSet trans =
             , kinyarwanda = Just "Izina ry'umubyeyi"
             , kirundi = Just "Izina rya mama"
             , somali = Just "Magaca Hooyada"
+            }
+
+        MotherNotFoundError ->
+            { english = "Could not find this mother."
+            , kinyarwanda = Just "Uyu mubyeyi ntiyabashije kuboneka."
+            , kirundi = Just "Uyu muvyeyi ntiyaronse."
+            , somali = Just "Hooyadan lama helin."
             }
 
         MTDIn ->

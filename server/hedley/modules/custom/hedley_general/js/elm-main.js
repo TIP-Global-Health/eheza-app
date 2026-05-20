@@ -12599,34 +12599,12 @@ var $author$project$App$Update$init = function (flags) {
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
+var $author$project$Translate$WrongPage = {$: 'WrongPage'};
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
 var $elm$html$Html$map = $elm$virtual_dom$VirtualDom$map;
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			$elm$json$Json$Encode$string(string));
-	});
-var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
-var $author$project$Utils$Html$emptyNode = $elm$html$Html$text('');
-var $elm$html$Html$ul = _VirtualDom_node('ul');
-var $elm$html$Html$li = _VirtualDom_node('li');
-var $author$project$Translate$ErrorBadPayload = function (a) {
-	return {$: 'ErrorBadPayload', a: a};
-};
-var $author$project$Translate$ErrorBadStatus = function (a) {
-	return {$: 'ErrorBadStatus', a: a};
-};
-var $author$project$Translate$ErrorBadUrl = {$: 'ErrorBadUrl'};
-var $author$project$Translate$ErrorNetworkError = {$: 'ErrorNetworkError'};
-var $author$project$Translate$ErrorTimeout = {$: 'ErrorTimeout'};
-var $author$project$Translate$HttpError = function (a) {
-	return {$: 'HttpError', a: a};
-};
 var $author$project$Translate$AcuteIllness = {$: 'AcuteIllness'};
 var $author$project$Translate$Antenatal = {$: 'Antenatal'};
 var $author$project$Translate$Caring = {$: 'Caring'};
@@ -14953,6 +14931,13 @@ var $author$project$Translate$translationSet = function (transId) {
 				}
 			case 'WideScopeNote':
 				return {english: 'The selected scope may contain a large number of patients and report generation could take several minutes.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing, somali: $elm$core$Maybe$Nothing};
+			case 'WrongPage':
+				return {
+					english: 'Wrong page?',
+					kinyarwanda: $elm$core$Maybe$Just('Urupapuro rutari rwo?'),
+					kirundi: $elm$core$Maybe$Just('Urupapuro rutari rwo?'),
+					somali: $elm$core$Maybe$Just('Bogga ma khaldanyahay?')
+				};
 			case 'Year':
 				var year = transId.a;
 				return {
@@ -15010,6 +14995,29 @@ var $author$project$Translate$translate = F2(
 					}(set));
 		}
 	});
+var $elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$string(string));
+	});
+var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
+var $author$project$Utils$Html$emptyNode = $elm$html$Html$text('');
+var $elm$html$Html$ul = _VirtualDom_node('ul');
+var $elm$html$Html$li = _VirtualDom_node('li');
+var $author$project$Translate$ErrorBadPayload = function (a) {
+	return {$: 'ErrorBadPayload', a: a};
+};
+var $author$project$Translate$ErrorBadStatus = function (a) {
+	return {$: 'ErrorBadStatus', a: a};
+};
+var $author$project$Translate$ErrorBadUrl = {$: 'ErrorBadUrl'};
+var $author$project$Translate$ErrorNetworkError = {$: 'ErrorNetworkError'};
+var $author$project$Translate$ErrorTimeout = {$: 'ErrorTimeout'};
+var $author$project$Translate$HttpError = function (a) {
+	return {$: 'HttpError', a: a};
+};
 var $author$project$Utils$WebData$errorString = F2(
 	function (language, error) {
 		switch (error.$) {
@@ -45818,7 +45826,8 @@ var $author$project$App$View$view = function (model) {
 				_List_Nil,
 				_List_fromArray(
 					[
-						$elm$html$Html$text('Wrong page?')
+						$elm$html$Html$text(
+						A2($author$project$Translate$translate, model.language, $author$project$Translate$WrongPage))
 					]));
 	}
 };
