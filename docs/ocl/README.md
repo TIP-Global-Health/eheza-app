@@ -9,7 +9,7 @@ diagnoses, medications, lab tests, vaccines, education topics,
 operational scaffolding) plus mappings into three reference dictionaries:
 PIH/PIH (218 SAME-AS / NARROWER-THAN mappings), UVL-Burundi/uvl
 (75 SAME-AS / NARROWER-THAN / BROADER-THAN mappings), and CIEL/CIEL
-(427 SAME-AS mappings).
+(429 SAME-AS mappings).
 
 The dictionary is **not** loaded at runtime by the E-Heza app; it exists
 to give partner organisations a structured reference for E-Heza's data
@@ -22,7 +22,7 @@ model.
 | `eheza-concepts.csv` | The single concept inventory (1579 rows). One row per concept; columns `id, translation_id, english, kinyarwanda, kirundi, somali, concept_class, datatype, description`. |
 | `pih-mappings.csv` | 218 SAME-AS / NARROWER-THAN mappings from E-Heza concepts to PIH dictionary entries — 217 EH-XX-NNN concepts curated per-encounter, plus 1 hand-curated EHEZA-U addition. |
 | `uvl-mappings.csv` | 75 SAME-AS / NARROWER-THAN / BROADER-THAN mappings to UVL-Burundi/uvl. |
-| `ciel-mappings.csv` | 427 SAME-AS mappings to CIEL/CIEL — 195 derived transitively through PIH, 229 from exact-name matching, 3 hand-curated. See *CIEL mappings* below. |
+| `ciel-mappings.csv` | 429 SAME-AS mappings to CIEL/CIEL — 195 derived transitively through PIH, 229 from exact-name matching, 5 hand-curated. See *CIEL mappings* below. |
 | `upload.py` | OCL bulk-import uploader. Reads the four CSVs, computes the delta against OCL HEAD, emits JSON-lines payloads to stdout, prints a counts summary to stderr. |
 | `labels-master-drop-tids.txt` | Hand-curation record from the v2.0 build: 369 `translation_id`s explicitly removed from `Translate.elm` walk because they were UI atoms, lab-range enums, or workflow scaffolding rather than clinical concepts. Required by any future rebuild from source. |
 | `master-drop-names.txt` | Hand-curation record: 116 concept names removed from the structural walk to mirror the labels curation. Required by any future rebuild from source. |
@@ -195,20 +195,22 @@ ambiguous.
 A targeted manual pass picked up concepts whose CIEL equivalent exists
 under wording the exact-match rule could not catch:
 
+- `EH-PER-003` "National ID number" → CIEL 163084 "National identification number"
+- `EH-PER-009` "Telephone number" → CIEL 159635 "Contact phone number"
 - `EHEZA-U-1345` "Birth Date" → CIEL 166575 "Date of birth"
 - `EHEZA-U-1347` "Number Of Children" → CIEL 1825 "Total number of living children"
 - `EHEZA-U-1349` "Spouse Name" → CIEL 161135 "Partner full name"
 
-All three are `SAME-AS` / `medium` — the `medium` confidence flags a
+All five are `SAME-AS` / `medium` — the `medium` confidence flags a
 curated non-exact match. The same pass confirmed CIEL has no usable
 concept for the spouse / next-of-kin phone numbers or the HMIS number.
 
 ### Totals
 
-427 CIEL mappings — 195 derived + 229 exact-match + 3 hand-curated —
-all `SAME-AS` (397 `high`, 30 `medium`). The `medium` rows are the 27
+429 CIEL mappings — 195 derived + 229 exact-match + 5 hand-curated —
+all `SAME-AS` (397 `high`, 32 `medium`). The `medium` rows are the 27
 derived mappings that inherit `medium` confidence from their
-`EHEZA → PIH` link, plus the 3 hand-curated additions.
+`EHEZA → PIH` link, plus the 5 hand-curated additions.
 
 ## OCL upload process
 
