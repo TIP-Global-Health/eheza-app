@@ -1,0 +1,22 @@
+{
+  "_comment": "OpenMRS metadata UUIDs for the OpenFN job. Local PoC values; UVL provisions its own. Password is not stored here \u2014 it goes in the OpenFN job secrets.",
+  "base_url": "http://localhost:8090/openmrs/ws/rest/v1",
+  "integration_user": "openfn",
+  "identifier_types": {
+    "national_id": "b6cf43fd-32ab-4503-9104-a6030919c56e",
+    "openmrs_id": "8d793bee-c2cc-11de-8d13-0010c6dffd0f"
+  },
+  "default_location": "8d6c993e-c2cc-11de-8d13-0010c6dffd0f",
+  "person_attribute_types": {
+    "civil_status": "8d871f2a-c2cc-11de-8d13-0010c6dffd0f",
+    "telephone": "028aee41-1f87-4b21-a3a4-f61eaaa24b65",
+    "education_level": "941295f7-9388-4be9-acb8-1f3a12ba72cb",
+    "hiv_status": "4c517673-0cd6-487a-9963-fe16c732edd2",
+    "mode_of_delivery": "46d3453d-5eb9-4505-a134-9add10c88eab",
+    "spouse_name": "20dc9f1f-c16c-46a1-a235-2bd1b7356507",
+    "spouse_phone": "f59158d9-a1a8-4eaf-b634-6644b3bddc4f",
+    "next_of_kin_name": "22ea36b6-ada5-45b2-b67f-983842fc818e",
+    "next_of_kin_phone": "8bd9b615-79ff-48ed-8d0f-056f64cff068",
+    "number_of_children": "4bfe967a-ae49-4e14-91df-e652e8e8ac79"
+  }
+}
