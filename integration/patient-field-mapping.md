@@ -151,6 +151,11 @@ Burundi they arrive empty and the attributes are omitted.
   (`HedleyRestfulPeople`); exact JSON keys are pinned when the export
   payload is defined.
 - Omit empty optional fields — don't send null/blank attributes.
+- When `nationalIdNumber` is empty the transform emits an OpenMRS-ID
+  identifier flagged `autoGenerate: true` (identifier type + location, no
+  value). The **load step** resolves the value via idgen before the POST,
+  on the create branch only. This guarantees every patient has ≥1
+  identifier — OpenMRS rejects a patient with none.
 - All OpenMRS UUIDs come from job config — never hardcode — so the
   local→UVL switch is config-only.
 - `nationalIdNumber`, `firstName`+`secondName`, `birthDate`, and
