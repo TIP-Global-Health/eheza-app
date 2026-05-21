@@ -8,6 +8,8 @@
  * one-way patient create flow: E-Heza (Drupal) -> OpenFN -> OpenMRS.
  */
 
+define('HEDLEY_OPENMRS_PUSH_PERSON', 'hedley_openmrs_push_person');
+
 /**
  * Implements hook_menu().
  */
@@ -22,6 +24,174 @@ function hedley_openmrs_menu() {
   ];
 
   return $items;
+}
+
+/**
+ * Implements hook_node_insert().
+ *
+ * When a person is created — including during device sync — queue it to be
+ * pushed to OpenFN. The queue absorbs the batches that arrive after an
+ * offline device syncs.
+ */
+function hedley_openmrs_node_insert($node) {
+  if ($node->type !== 'person') {
+    return;
+  }
+
+  hedley_general_add_task_to_advanced_queue_by_id(
+    HEDLEY_OPENMRS_PUSH_PERSON,
+    $node->nid,
+    ['person_id' => $node->nid]
+  );
+}
+
+/**
+ * Implements hook_advanced_queue_info().
+ */
+function hedley_openmrs_advanced_queue_info() {
+  $items[HEDLEY_OPENMRS_PUSH_PERSON] = [
+    'label' => t('Push person registration to OpenFN'),
+    'worker callback' => 'hedley_openmrs_push_person_worker',
+    'groups' => ['hedley'],
+    'retry after' => 120,
+    'max attempts' => 5,
+  ];
+
+  return $items;
+}
+
+/**
+ * Advanced-queue worker: POST a person registration to the OpenFN webhook.
+ *
+ * @param object $queue_item
+ *   The queue item; its data holds 'person_id'.
+ *
+ * @return array
+ *   An advanced-queue status/result array.
+ */
+function hedley_openmrs_push_person_worker($queue_item) {
+  $person_id = !empty($queue_item->data['person_id'])
+    ? $queue_item->data['person_id'] : NULL;
+  if (!$person_id) {
+    return [
+      'status' => ADVANCEDQUEUE_STATUS_FAILURE,
+      'result' => t('Queue item has no person ID.'),
+    ];
+  }
+
+  $webhook_url = variable_get('hedley_openmrs_openfn_webhook_url', '');
+  if ($webhook_url === '') {
+    return [
+      'status' => ADVANCEDQUEUE_STATUS_FAILURE_RETRY,
+      'result' => t('OpenFN webhook URL is not configured.'),
+    ];
+  }
+
+  $node = node_load($person_id);
+  if (empty($node) || $node->type !== 'person') {
+    return [
+      'status' => ADVANCEDQUEUE_STATUS_FAILURE,
+      'result' => t('Person @id not found.', ['@id' => $person_id]),
+    ];
+  }
+
+  $headers = ['Content-Type' => 'application/json'];
+  $token = variable_get('hedley_openmrs_openfn_token', '');
+  if ($token !== '') {
+    $headers['X-OpenFN-Token'] = $token;
+  }
+
+  $response = drupal_http_request($webhook_url, [
+    'method' => 'POST',
+    'headers' => $headers,
+    'data' => drupal_json_encode(hedley_openmrs_build_person_payload($node)),
+    'timeout' => 30,
+  ]);
+
+  $code = isset($response->code) ? (int) $response->code : 0;
+  if ($code >= 200 && $code < 300) {
+    return [
+      'status' => ADVANCEDQUEUE_STATUS_SUCCESS,
+      'result' => t('Pushed person @id to OpenFN.', ['@id' => $person_id]),
+    ];
+  }
+
+  return [
+    'status' => ADVANCEDQUEUE_STATUS_FAILURE_RETRY,
+    'result' => t('OpenFN push for person @id failed (HTTP @code).', [
+      '@id' => $person_id,
+      '@code' => $code,
+    ]),
+  ];
+}
+
+/**
+ * Builds the person payload sent to OpenFN.
+ *
+ * A flat representation of the registration fields the OpenFN transform
+ * maps onto an OpenMRS patient. person_uuid is the E-Heza UUID, used to
+ * write the OpenMRS UUID back.
+ *
+ * @param object $node
+ *   The person node.
+ *
+ * @return array
+ *   The payload.
+ */
+function hedley_openmrs_build_person_payload($node) {
+  $fields = [
+    'person_uuid' => 'field_uuid',
+    'first_name' => 'field_first_name',
+    'second_name' => 'field_second_name',
+    'national_id' => 'field_national_id_number',
+    'birth_date' => 'field_birth_date',
+    'gender' => 'field_gender',
+    'hiv_status' => 'field_hiv_status',
+    'marital_status' => 'field_marital_status',
+    'mode_of_delivery' => 'field_mode_of_delivery',
+    'education_level' => 'field_education_level',
+    'phone_number' => 'field_phone_number',
+    'province' => 'field_province',
+    'district' => 'field_district',
+    'sector' => 'field_sector',
+    'cell' => 'field_cell',
+    'village' => 'field_village',
+    'latitude' => 'field_latitude',
+    'longitude' => 'field_longitude',
+    'spouse_name' => 'field_spouse_name',
+    'spouse_phone_number' => 'field_spouse_phone_number',
+    'next_of_kin_name' => 'field_next_of_kin_name',
+    'next_of_kin_phone_number' => 'field_next_of_kin_phone_number',
+    'number_of_children' => 'field_number_of_children',
+  ];
+
+  $payload = [];
+  foreach ($fields as $key => $field) {
+    $payload[$key] = _hedley_openmrs_field($node, $field);
+  }
+  $payload['birth_date_estimated'] =
+    (bool) _hedley_openmrs_field($node, 'field_birth_date_estimated');
+
+  return $payload;
+}
+
+/**
+ * Returns the first value of a node field, or NULL.
+ *
+ * @param object $node
+ *   The node.
+ * @param string $field
+ *   The field machine name.
+ *
+ * @return mixed|null
+ *   The field value, or NULL when the field is empty.
+ */
+function _hedley_openmrs_field($node, $field) {
+  if (isset($node->{$field}[LANGUAGE_NONE][0]['value'])) {
+    return $node->{$field}[LANGUAGE_NONE][0]['value'];
+  }
+
+  return NULL;
 }
 
 /**
