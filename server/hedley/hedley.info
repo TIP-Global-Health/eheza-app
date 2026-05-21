@@ -55,6 +55,7 @@ dependencies[] = hedley_group_education
 dependencies[] = hedley_ncd
 dependencies[] = hedley_ncda
 dependencies[] = hedley_nutrition
+dependencies[] = hedley_openmrs
 dependencies[] = hedley_patient
 dependencies[] = hedley_person
 dependencies[] = hedley_prenatal
