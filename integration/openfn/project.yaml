@@ -1,0 +1,51 @@
+# OpenFN Lightning project for the E-Heza -> OpenMRS patient PoC.
+#
+# Deploy with the openfn CLI (see README.md):
+#   npx @openfn/cli deploy -c .config.json -p project.yaml --state-path .state.json
+#
+# The webhook trigger receives the person payload the Drupal hedley_openmrs
+# worker POSTs; the three jobs (jobs/*.js) run in order. Credentials hold the
+# OpenMRS and E-Heza connection details and are created in Lightning, not here.
+name: eheza-openmrs
+description: E-Heza person registrations to OpenMRS patients, via OpenFN.
+collections: {}
+credentials: {}
+workflows:
+  patient-sync:
+    name: Patient sync
+    jobs:
+      transform:
+        name: Transform
+        adaptor: '@openfn/language-common@latest'
+        body:
+          path: jobs/transform.js
+        credential: null
+      match:
+        name: Match
+        adaptor: '@openfn/language-http@latest'
+        body:
+          path: jobs/match.js
+        credential: null
+      load:
+        name: Load
+        adaptor: '@openfn/language-http@latest'
+        body:
+          path: jobs/load.js
+        credential: null
+    triggers:
+      webhook:
+        type: webhook
+        enabled: true
+    edges:
+      webhook->transform:
+        condition_type: always
+        source_trigger: webhook
+        target_job: transform
+      transform->match:
+        condition_type: on_job_success
+        source_job: transform
+        target_job: match
+      match->load:
+        condition_type: on_job_success
+        source_job: match
+        target_job: load
