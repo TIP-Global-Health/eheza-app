@@ -14,6 +14,9 @@
 
 fn(async (state) => {
   const person = state.data || {};
+  const cfg = state.configuration || {};
+  const searchUrl = cfg.openmrsBaseUrl + '/patient';
+  const authHeaders = { Authorization: cfg.openmrsAuth };
 
   // Representation that carries the person birthdate used by Tier 2.
   const REP = 'custom:(uuid,display,person:(uuid,gender,birthdate))';
@@ -31,8 +34,9 @@ fn(async (state) => {
   // Tier 1 — national ID. An exact identifier match is decisive.
   if (person.national_id) {
     const hits = resultsOf(
-      await get('/patient', {
+      await get(searchUrl, {
         query: { identifier: person.national_id, v: REP },
+        headers: authHeaders,
       })(state)
     );
     if (hits.length === 1) {
@@ -59,11 +63,12 @@ fn(async (state) => {
       throw new Error('Cannot match: the person payload is missing a name');
     }
     const hits = resultsOf(
-      await get('/patient', {
+      await get(searchUrl, {
         query: {
           q: person.first_name + ' ' + person.second_name,
           v: REP,
         },
+        headers: authHeaders,
       })(state)
     );
     const birth = dateOnly(person.birth_date);

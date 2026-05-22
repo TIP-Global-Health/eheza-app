@@ -19,18 +19,18 @@ const vm = require('node:vm');
 
 let postCalls = [];
 
-/** Stand-in for the HTTP adaptor's `post` — records the call, returns an op. */
-function fakePost(url, options) {
+/** Stand-in for the HTTP adaptor's `post(path, data, options)` — records the call. */
+function fakePost(url, data, options) {
   return (state) => {
     postCalls.push({
       url,
-      body: (options && options.body) || null,
+      body: data || null,
       headers: (options && options.headers) || {},
     });
-    const data = String(url).endsWith('/patient')
+    const response = String(url).endsWith('/patient')
       ? { uuid: 'omrs-created-uuid' }
       : {};
-    return { ...state, data };
+    return { ...state, data: response };
   };
 }
 

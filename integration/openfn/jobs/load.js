@@ -79,12 +79,8 @@ fn(async (state) => {
       openmrsId = luhnOpenmrsId(person.person_uuid);
       patient = resolveIdentifiers(patient, openmrsId);
     }
-    const res = await post(cfg.openmrsBaseUrl + '/patient', {
-      body: patient,
-      headers: {
-        Authorization: cfg.openmrsAuth,
-        'Content-Type': 'application/json',
-      },
+    const res = await post(cfg.openmrsBaseUrl + '/patient', patient, {
+      headers: { Authorization: cfg.openmrsAuth },
     })(state);
     patientUuid = res.data && res.data.uuid;
     if (!patientUuid) {
@@ -95,13 +91,11 @@ fn(async (state) => {
   }
 
   // Record the OpenMRS patient on the E-Heza person — for create and link.
-  await post(cfg.ehezaPatientLinkUrl, {
-    body: { person_uuid: person.person_uuid, openmrs_uuid: patientUuid },
-    headers: {
-      'X-OpenFN-Token': cfg.ehezaToken,
-      'Content-Type': 'application/json',
-    },
-  })(state);
+  await post(
+    cfg.ehezaPatientLinkUrl,
+    { person_uuid: person.person_uuid, openmrs_uuid: patientUuid },
+    { headers: { 'X-OpenFN-Token': cfg.ehezaToken } }
+  )(state);
 
   console.log('Loaded', person.person_uuid, '->', match.action, patientUuid);
 

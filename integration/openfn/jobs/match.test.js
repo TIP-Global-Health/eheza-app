@@ -21,11 +21,13 @@ const vm = require('node:vm');
 // 'id:<value>'  -> response for GET /patient?identifier=<value>
 // 'q:<value>'   -> response for GET /patient?q=<value>
 let searchResponses = {};
+let getCalls = [];
 
-/** Stand-in for the HTTP adaptor's `get` — returns an operation. */
-function fakeGet(_path, options) {
+/** Stand-in for the HTTP adaptor's `get(path, options)` — records the call. */
+function fakeGet(path, options) {
   return (state) => {
     const query = (options && options.query) || {};
+    getCalls.push({ path, headers: (options && options.headers) || {} });
     const key =
       query.identifier != null ? 'id:' + query.identifier : 'q:' + query.q;
     return { ...state, data: searchResponses[key] || { results: [] } };
@@ -55,12 +57,17 @@ function loadMatch() {
 
 const match = loadMatch();
 
-/** Run the job, silencing its audit logging. */
+const CONFIG = {
+  openmrsBaseUrl: 'http://omrs.test/ws/rest/v1',
+  openmrsAuth: 'Basic dGVzdA==',
+};
+
+/** Run the job, silencing its audit logging; a configuration is injected. */
 const run = async (state) => {
   const log = console.log;
   console.log = () => {};
   try {
-    return await match(state);
+    return await match({ configuration: CONFIG, ...state });
   } finally {
     console.log = log;
   }
@@ -92,6 +99,7 @@ const PERSON_NO_ID = {
 
 test.beforeEach(() => {
   searchResponses = {};
+  getCalls = [];
 });
 
 test('national ID with exactly one hit → link via national-id', async () => {
@@ -188,4 +196,13 @@ test('records the candidates considered, for the audit trail', async () => {
   assert.equal(m.candidates.length, 1);
   assert.equal(m.candidates[0].uuid, 'omrs-jean');
   assert.equal(m.candidates[0].birthdate, '1988-03-04');
+});
+
+test('queries OpenMRS with the configured base URL and Authorization header', async () => {
+  searchResponses['id:1234567890123456'] = {
+    results: [omrsPatient('omrs-jean', '1988-03-04T00:00:00.000+0000')],
+  };
+  await run({ data: PERSON_WITH_ID });
+  assert.equal(getCalls[0].path, 'http://omrs.test/ws/rest/v1/patient');
+  assert.equal(getCalls[0].headers.Authorization, 'Basic dGVzdA==');
 });
