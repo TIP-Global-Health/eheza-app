@@ -106,13 +106,22 @@ into `docker-compose.yml`:
 
 ### Known issue — credential not in the run snapshot
 
-Runs execute against a workflow *snapshot*. The `eheza-openmrs-config`
-credential was attached to the match/load jobs *after* the deploy snapshot
-was taken, so runs currently fail at the match step with an empty
-`state.configuration` (`UNEXPECTED_RELATIVE_URL`). Fix: reference the
-credential on the `match` and `load` jobs in `project.yaml` and re-deploy —
-a re-deploy creates a fresh snapshot — or attach it in the Lightning UI,
-which bumps the workflow version.
+Runs execute against an immutable workflow *snapshot*. The
+`eheza-openmrs-config` credential is attached to the live `match`/`load`
+jobs, but the snapshot the runs use was cut at deploy time, before the
+credential existed — so runs fail at the match step with an empty
+`state.configuration` (`UNEXPECTED_RELATIVE_URL`).
+
+A fresh snapshot must be cut from the current workflow. The reliable way:
+open the workflow in the Lightning UI and save it — that snapshots the
+current jobs (credential included). Re-running `openfn deploy` does **not**
+work cleanly here — the credential already exists, so deploy tries to
+re-create it and hits a `project_credentials` unique-constraint error.
+Letting deploy own the credential would mean deleting the hand-created one
+first, but then its secret body still has to be entered via the UI.
+
+Everything upstream is verified: the queue worker, the webhook, and the
+transform step all run correctly on real data.
 
 The Lightning webhook trigger is unauthenticated by default; if a token is
 added, also set the Drupal `hedley_openmrs_openfn_token` variable.
