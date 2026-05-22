@@ -90,11 +90,29 @@ ddev drush vset hedley_openmrs_openfn_webhook_url \
 
 Currently deployed trigger: `deaf5f93-e554-44c5-b006-7ac77636c3b9`.
 
-## Wiring notes — to confirm during end-to-end testing
+## End-to-end status
 
-- **Worker networking.** The OpenFN *worker* container runs the jobs and must
-  reach OpenMRS and the DDEV web server on the host. On Linux Docker add
-  `extra_hosts: ["host.docker.internal:host-gateway"]` to the `worker`
-  service in `docker-compose.yml`, or put the services on a shared network.
-- The Lightning webhook trigger is unauthenticated by default. If a token is
-  added, also set the Drupal `hedley_openmrs_openfn_token` variable.
+The full chain has been exercised: a person registered in E-Heza → Advanced
+Queue → the `hedley_openmrs` worker → the webhook → Lightning. The **transform
+step runs correctly on real data**. Resolved during testing and now baked
+into `docker-compose.yml`:
+
+- **Worker networking** — the worker joins DDEV's network (so the load job
+  can reach the E-Heza backend) and reaches OpenMRS via
+  `host.docker.internal`. It targets Lightning by container name, because
+  `web` is ambiguous once the worker is on DDEV's network.
+- **`ORIGINS`** — required on the Lightning service, else the worker
+  websocket's `check_origin` is `nil` and the connection crashes.
+
+### Known issue — credential not in the run snapshot
+
+Runs execute against a workflow *snapshot*. The `eheza-openmrs-config`
+credential was attached to the match/load jobs *after* the deploy snapshot
+was taken, so runs currently fail at the match step with an empty
+`state.configuration` (`UNEXPECTED_RELATIVE_URL`). Fix: reference the
+credential on the `match` and `load` jobs in `project.yaml` and re-deploy —
+a re-deploy creates a fresh snapshot — or attach it in the Lightning UI,
+which bumps the workflow version.
+
+The Lightning webhook trigger is unauthenticated by default; if a token is
+added, also set the Drupal `hedley_openmrs_openfn_token` variable.

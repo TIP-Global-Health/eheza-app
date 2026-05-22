@@ -47,6 +47,8 @@ services:
       URL_HOST: localhost
       URL_PORT: "4001"
       URL_SCHEME: http
+      # Without this the worker websocket's check_origin is nil and crashes.
+      ORIGINS: "//localhost:*"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4000/health_check"]
       interval: 10s
@@ -63,7 +65,21 @@ services:
       - web
     environment:
       WORKER_SECRET: ${WORKER_SECRET}
-    command: ["pnpm", "start:prod", "-l", "ws://web:4000/worker"]
+    # OpenMRS is reached on the host; the E-Heza backend over DDEV's network.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - default
+      - ddev
+    # 'web' is ambiguous once the worker joins DDEV's network (DDEV also has
+    # a 'web' service) — target the Lightning container by its name.
+    command: ["pnpm", "start:prod", "-l", "ws://openfn-poc-web-1:4000/worker"]
 
 volumes:
   postgres: {}
+
+networks:
+  # DDEV's shared network, so the load job can reach the E-Heza backend.
+  ddev:
+    name: ddev_default
+    external: true
