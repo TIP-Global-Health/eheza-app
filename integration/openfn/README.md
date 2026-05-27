@@ -62,21 +62,37 @@ jobs. Re-run it after editing any `jobs/*.js` or `project.yaml`.
 ### 3. Credentials
 
 `match` and `load` read `state.configuration` from a Lightning credential.
-Secrets are not carried in `project.yaml`; create the credential in the
-Lightning UI (http://localhost:4001 → Credentials → New → **Raw JSON**),
-name it `eheza-openmrs-config`, and attach it to the **match** and **load**
-steps (transform needs none). Body:
+Secrets are not carried in `project.yaml`; configure it through the
+Lightning UI after the deploy:
 
-```json
-{
-  "openmrsBaseUrl": "http://host.docker.internal:8090/openmrs/ws/rest/v1",
-  "openmrsAuth": "Basic <base64 of the OpenMRS integration user:password>",
-  "ehezaPatientLinkUrl": "http://host.docker.internal:<ddev-web-http-port>/openmrs/patient-link",
-  "ehezaToken": "<value of the Drupal hedley_openmrs_shared_secret variable>"
-}
-```
+1. **Create the credential.** In project settings
+   (`/projects/<project-id>/settings#credentials`) → New → **Raw JSON**,
+   name `eheza-openmrs-config`. **Environment matters in Lightning v2.x:**
+   the credential's environment must match the project's. A fresh project
+   has no env set, which Lightning calls `unknown` — set the credential's
+   environment to `unknown` accordingly. Body:
 
-The DDEV web HTTP port: `docker port ddev-ihangane-web 80`.
+   ```json
+   {
+     "openmrsBaseUrl": "http://host.docker.internal:8090/openmrs/ws/rest/v1",
+     "openmrsAuth": "Basic <base64 of the OpenMRS integration user:password>",
+     "ehezaPatientLinkUrl": "http://ddev-ihangane-web/openmrs/patient-link",
+     "ehezaToken": "<value of the Drupal hedley_openmrs_shared_secret variable>"
+   }
+   ```
+
+   The E-Heza URL uses the DDEV web container name because the worker
+   joins DDEV's network (see `docker-compose.yml`).
+
+2. **Attach to the steps.** Open the `Patient sync` workflow editor and,
+   on the **Match** and **Load** steps, open *Configure connection* and
+   pick `eheza-openmrs-config`. Transform needs none.
+
+3. **Save the workflow.** Use the workflow-level Save (not the modal's
+   Close) — that commits the attachment *and cuts a fresh snapshot*. Runs
+   created before this save use the older snapshot and ignore the
+   credential. Verified once end-to-end: registration → queue → webhook →
+   transform → match → load → patient in OpenMRS + UUID written back.
 
 ### 4. Point E-Heza at the webhook
 
@@ -90,38 +106,16 @@ ddev drush vset hedley_openmrs_openfn_webhook_url \
 
 Currently deployed trigger: `deaf5f93-e554-44c5-b006-7ac77636c3b9`.
 
-## End-to-end status
+## Stack wiring notes
 
-The full chain has been exercised: a person registered in E-Heza → Advanced
-Queue → the `hedley_openmrs` worker → the webhook → Lightning. The **transform
-step runs correctly on real data**. Resolved during testing and now baked
-into `docker-compose.yml`:
+Two `docker-compose.yml` quirks worth understanding (both baked in):
 
-- **Worker networking** — the worker joins DDEV's network (so the load job
-  can reach the E-Heza backend) and reaches OpenMRS via
-  `host.docker.internal`. It targets Lightning by container name, because
-  `web` is ambiguous once the worker is on DDEV's network.
+- **Worker networking** — the worker joins DDEV's network (so the load
+  job can reach the E-Heza backend by container name) and reaches OpenMRS
+  via `host.docker.internal`. It targets Lightning by container name,
+  because `web` is ambiguous once the worker is on DDEV's network.
 - **`ORIGINS`** — required on the Lightning service, else the worker
   websocket's `check_origin` is `nil` and the connection crashes.
-
-### Known issue — credential not in the run snapshot
-
-Runs execute against an immutable workflow *snapshot*. The
-`eheza-openmrs-config` credential is attached to the live `match`/`load`
-jobs, but the snapshot the runs use was cut at deploy time, before the
-credential existed — so runs fail at the match step with an empty
-`state.configuration` (`UNEXPECTED_RELATIVE_URL`).
-
-A fresh snapshot must be cut from the current workflow. The reliable way:
-open the workflow in the Lightning UI and save it — that snapshots the
-current jobs (credential included). Re-running `openfn deploy` does **not**
-work cleanly here — the credential already exists, so deploy tries to
-re-create it and hits a `project_credentials` unique-constraint error.
-Letting deploy own the credential would mean deleting the hand-created one
-first, but then its secret body still has to be entered via the UI.
-
-Everything upstream is verified: the queue worker, the webhook, and the
-transform step all run correctly on real data.
 
 The Lightning webhook trigger is unauthenticated by default; if a token is
 added, also set the Drupal `hedley_openmrs_openfn_token` variable.
