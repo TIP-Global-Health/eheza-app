@@ -79,6 +79,7 @@ const REAL_WITH_ID = {
   next_of_kin_phone_number: null,
   number_of_children: null,
   birth_date_estimated: false,
+  country: null,
 };
 
 // Every optional field populated, with real Drupal allowed_values.
@@ -107,6 +108,7 @@ const FULL = {
   next_of_kin_phone_number: '0788222333',
   number_of_children: '2',
   birth_date_estimated: true,
+  country: 'Rwanda',
 };
 
 // A realistic person with no national ID (e.g. a child) — the identifier gap.
@@ -135,6 +137,7 @@ const MINIMAL_NO_ID = {
   next_of_kin_phone_number: null,
   number_of_children: null,
   birth_date_estimated: false,
+  country: null,
 };
 
 test('maps name to a single preferred PersonName', () => {
@@ -166,6 +169,14 @@ test('maps the Rwanda address hierarchy onto PersonAddress slots', () => {
       cityVillage: 'Akanduga',
     },
   ]);
+});
+
+test('includes the country in the address when the site provides one', () => {
+  // The site-derived country (rwanda -> Rwanda) is carried on the payload by
+  // hedley_openmrs_build_person_payload and lands on PersonAddress.country.
+  assert.equal(run(FULL).person.addresses[0].country, 'Rwanda');
+  // Empty country (null on the payload) is omitted, not sent as undefined.
+  assert.equal(run(REAL_WITH_ID).person.addresses[0].country, undefined);
 });
 
 test('value maps resolve every clinical list field', () => {

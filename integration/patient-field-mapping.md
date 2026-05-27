@@ -67,15 +67,16 @@ Rwanda's 5-level hierarchy maps onto PersonAddress slots (Burundi's is
 against the target instance's address-hierarchy configuration** — the
 below is a sensible default.
 
-| E-Heza | OpenMRS PersonAddress |
-|---|---|
-| `province` | `stateProvince` |
-| `district` | `countyDistrict` |
-| `sector` | `address3` |
-| `cell` | `address2` |
-| `village` | `cityVillage` |
-| `registrationLatitude` | `latitude` |
-| `registrationLongitude` | `longitude` |
+| E-Heza | OpenMRS PersonAddress | Notes |
+|---|---|---|
+| *(site)* | `country` | `rwanda`→`Rwanda`, `burundi`→`Burundi`; resolved from the Drupal `hedley_general_site_name` variable in the payload builder, not a person field |
+| `province` | `stateProvince` | |
+| `district` | `countyDistrict` | |
+| `sector` | `address3` | |
+| `cell` | `address2` | |
+| `village` | `cityVillage` | |
+| `registrationLatitude` | `latitude` | |
+| `registrationLongitude` | `longitude` | |
 
 ### person.attributes[]
 

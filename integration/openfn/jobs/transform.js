@@ -119,8 +119,10 @@ fn((state) => {
     });
   }
 
-  // Address - Rwanda hierarchy onto PersonAddress slots.
+  // Address - country (from the E-Heza site), then Rwanda hierarchy onto
+  // PersonAddress slots.
   const address = {};
+  if (present(person.country)) address.country = person.country;
   if (present(person.province)) address.stateProvince = person.province;
   if (present(person.district)) address.countyDistrict = person.district;
   if (present(person.sector)) address.address3 = person.sector;

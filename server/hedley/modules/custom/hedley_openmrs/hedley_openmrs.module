@@ -172,6 +172,11 @@ function hedley_openmrs_build_person_payload($node) {
   $payload['birth_date_estimated'] =
     (bool) _hedley_openmrs_field($node, 'field_birth_date_estimated');
 
+  // Country comes from the site, not the person node.
+  $countries = ['rwanda' => 'Rwanda', 'burundi' => 'Burundi'];
+  $site = variable_get('hedley_general_site_name', '');
+  $payload['country'] = isset($countries[$site]) ? $countries[$site] : NULL;
+
   return $payload;
 }
 
