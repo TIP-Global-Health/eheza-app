@@ -10,9 +10,11 @@ load`. The match step picks the branch.
 
 `hedley_openmrs_node_update($node)` on the `person` bundle:
 
-- Build the *relevant-field set* from `hedley_openmrs_build_person_payload`'s
-  keys, plus `field_uuid`. The set is closed: photo, reports data, sync
-  state, audit timestamps are outside it and never cause an enqueue.
+- Build the *relevant-field set* from `_hedley_openmrs_synced_fields()`
+  plus `field_birth_date_estimated`. `field_openmrs_uuid` is
+  **intentionally excluded** so the load step's UUID write-back does not
+  loop. The set is closed: photo, reports data, sync state, audit
+  timestamps are outside it and never cause an enqueue.
 - Diff `$node->original` against `$node` over that set. Short-circuit when
   nothing in the set changed.
 - Enqueue the same `hedley_openmrs_push_person` queue task. No new queue.

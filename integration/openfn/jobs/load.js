@@ -4,10 +4,12 @@
  *
  * Input  (state.data): the E-Heza person payload (person_uuid).
  *        (state.openmrsPatient): the transform output — the POST body.
- *        (state.match): { action: 'link' | 'create', patientUuid }.
+ *        (state.match): { action: 'link' | 'create' | 'update', patientUuid }.
  *        (state.configuration): OpenMRS URL + auth, E-Heza write-back URL
  *        + shared secret.
  * Output (state.loadResult): { action, patientUuid, openmrsId }.
+ *        On 'update' the write-back endpoint is not called — the OpenMRS
+ *        UUID is unchanged. See integration/patient-update.md.
  *
  * Adaptor: @openfn/language-http
  */
@@ -86,9 +88,11 @@ const updatePatient = async (state, cfg, patientUuid) => {
   const rep =
     'custom:(uuid,identifiers:(uuid,identifierType:(uuid)),person:' +
     '(uuid,addresses:(uuid),attributes:(uuid,attributeType:(uuid)),preferredName:(uuid)))';
+  // Pass `v` through the adaptor's `query` option so reserved chars in
+  // the custom-rep value are encoded — same pattern as match.js.
   const res = await get(
-    cfg.openmrsBaseUrl + '/patient/' + patientUuid + '?v=' + rep,
-    { headers: authHeaders }
+    cfg.openmrsBaseUrl + '/patient/' + patientUuid,
+    { query: { v: rep }, headers: authHeaders }
   )(state);
   const got = res.data || {};
   const gotPerson = got.person || {};

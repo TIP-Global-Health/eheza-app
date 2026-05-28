@@ -49,7 +49,7 @@ function hedley_openmrs_node_insert($node) {
  * Implements hook_node_update().
  *
  * Re-queue the person for OpenFN whenever any of the demographic fields
- * we sync to OpenMRS has actually changed. Photo, reports data, sync
+ * we sync to OpenMRS have actually changed. Photo, reports data, sync
  * state and other unrelated fields don't cause an enqueue. The load
  * step's own UUID write-back does not loop, because field_openmrs_uuid
  * is intentionally not in the tracked set.
@@ -190,11 +190,24 @@ function hedley_openmrs_build_person_payload($node) {
 }
 
 /**
- * The set of person fields this module syncs to OpenMRS.
+ * Person fields whose Drupal values flow into the OpenMRS payload as-is.
  *
- * Single source of truth shared by the payload builder and the
- * update-detection hook: anything outside this list never appears in
- * the payload and never causes an update enqueue.
+ * The payload builder reads each value into the matching payload key;
+ * the update-detection hook tracks the same set, plus
+ * field_birth_date_estimated, for its diff against $node->original.
+ *
+ * Three payload entries are intentionally outside this list:
+ * - birth_date_estimated  — also a node field, but cast to bool;
+ * - country               — derived from the hedley_general_site_name
+ *                           variable, not a node field;
+ * - existing_openmrs_uuid — carries field_openmrs_uuid into the
+ *                           payload but is *excluded* from the update
+ *                           diff so the load step's UUID write-back
+ *                           cannot loop.
+ *
+ * Anything outside the list and those three (photo, reports data,
+ * sync state, audit timestamps, …) neither appears in the payload nor
+ * causes an update enqueue.
  *
  * @return array
  *   payload-key => Drupal-field-name.
