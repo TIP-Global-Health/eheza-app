@@ -18,6 +18,8 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 let postCalls = [];
+let getResponse = null;
+let getCalls = [];
 
 /** Stand-in for the HTTP adaptor's `post(path, data, options)` — records the call. */
 function fakePost(url, data, options) {
@@ -34,6 +36,14 @@ function fakePost(url, data, options) {
   };
 }
 
+/** Stand-in for the HTTP adaptor's `get(path, options)` — used by the update branch. */
+function fakeGet(url, options) {
+  return (state) => {
+    getCalls.push({ url, headers: (options && options.headers) || {} });
+    return { ...state, data: getResponse };
+  };
+}
+
 /** Evaluate load.js in the current realm, returning its async operation. */
 function loadJob() {
   const src = fs.readFileSync(path.join(__dirname, 'load.js'), 'utf8');
@@ -42,6 +52,7 @@ function loadJob() {
     operation = f;
   };
   globalThis.post = fakePost;
+  globalThis.get = fakeGet;
   try {
     vm.runInThisContext(src, { filename: 'load.js' });
   } finally {
@@ -120,7 +131,49 @@ const writeBack = () =>
 
 test.beforeEach(() => {
   postCalls = [];
+  getCalls = [];
+  getResponse = null;
 });
+
+/** A canned "current patient state" returned by the fake GET on update. */
+const existingPatient = (overrides = {}) => ({
+  uuid: 'omrs-patient-uuid',
+  identifiers: overrides.identifiers || [
+    { uuid: 'id-uuid', identifierType: { uuid: 'natid-type' } },
+  ],
+  person: {
+    uuid: 'omrs-person-uuid',
+    addresses: overrides.addresses || [{ uuid: 'addr-uuid' }],
+    attributes: overrides.attributes || [
+      { uuid: 'attr-uuid', attributeType: { uuid: 'civil_status_type' } },
+    ],
+    preferredName: overrides.preferredName === undefined
+      ? { uuid: 'name-uuid' }
+      : overrides.preferredName,
+  },
+});
+
+const desiredPatient = () => ({
+  person: {
+    names: [{ givenName: 'Aline', familyName: 'Mukamana', preferred: true }],
+    gender: 'F',
+    birthdate: '2019-07-15',
+    birthdateEstimated: false,
+    attributes: [{ attributeType: 'civil_status_type', value: 'Married' }],
+  },
+  identifiers: [
+    { identifier: '1234567890123456', identifierType: 'natid-type', location: 'loc', preferred: true },
+  ],
+});
+
+const updateState = (over = {}) => ({
+  data: { person_uuid: 'eh-uuid', ...over.data },
+  openmrsPatient: over.openmrsPatient || desiredPatient(),
+  match: { action: 'update', patientUuid: 'omrs-patient-uuid', ...(over.match || {}) },
+  configuration: CONFIG,
+});
+
+const find = (predicate) => postCalls.find(predicate);
 
 test('link → no OpenMRS create, just the write-back', async () => {
   await run({
@@ -243,4 +296,134 @@ test('does not mutate state.openmrsPatient', async () => {
   });
   assert.equal(patient.identifiers[0].autoGenerate, true);
   assert.equal(patient.identifiers[0].identifier, undefined);
+});
+
+// -- Update branch --
+
+test('update GETs the patient once to discover subresource UUIDs', async () => {
+  getResponse = existingPatient();
+  await run(updateState());
+  assert.equal(getCalls.length, 1);
+  assert.ok(getCalls[0].url.includes('/patient/omrs-patient-uuid'));
+});
+
+test('update posts the person-level patch (gender, birthdate, estimated)', async () => {
+  getResponse = existingPatient();
+  await run(updateState());
+  const personPatch = find((c) => c.url === CONFIG.openmrsBaseUrl + '/person/omrs-person-uuid');
+  assert.ok(personPatch, 'expected POST /person/{personUuid}');
+  assert.deepEqual(personPatch.body, {
+    gender: 'F',
+    birthdate: '2019-07-15',
+    birthdateEstimated: false,
+  });
+});
+
+test('update skips the gender "U" sentinel — preserves OpenMRS gender', async () => {
+  getResponse = existingPatient();
+  const desired = desiredPatient();
+  desired.person.gender = 'U';
+  await run(updateState({ openmrsPatient: desired }));
+  const personPatch = find((c) => c.url === CONFIG.openmrsBaseUrl + '/person/omrs-person-uuid');
+  assert.equal(personPatch.body.gender, undefined);
+});
+
+test('update skips a null birthdate — preserves OpenMRS birthdate', async () => {
+  getResponse = existingPatient();
+  const desired = desiredPatient();
+  desired.person.birthdate = null;
+  await run(updateState({ openmrsPatient: desired }));
+  const personPatch = postCalls.find((c) => c.url === CONFIG.openmrsBaseUrl + '/person/omrs-person-uuid');
+  // With only gender to send, the patch posts but without birthdate.
+  if (personPatch) {
+    assert.equal(personPatch.body.birthdate, undefined);
+    assert.equal(personPatch.body.birthdateEstimated, undefined);
+  }
+});
+
+test('update posts the name to the existing preferredName subresource', async () => {
+  getResponse = existingPatient();
+  await run(updateState());
+  const nameCall = find((c) => c.url === CONFIG.openmrsBaseUrl + '/person/omrs-person-uuid/name/name-uuid');
+  assert.ok(nameCall, 'expected POST /person/{uuid}/name/{nameUuid}');
+  assert.equal(nameCall.body.givenName, 'Aline');
+  assert.equal(nameCall.body.familyName, 'Mukamana');
+});
+
+test('update creates a new name when no preferredName exists', async () => {
+  getResponse = existingPatient({ preferredName: null });
+  await run(updateState());
+  const nameCreate = find((c) => c.url === CONFIG.openmrsBaseUrl + '/person/omrs-person-uuid/name');
+  assert.ok(nameCreate, 'expected POST /person/{uuid}/name (create)');
+  assert.equal(nameCreate.body.preferred, true);
+});
+
+test('update posts the address to the existing address subresource', async () => {
+  getResponse = existingPatient();
+  const desired = desiredPatient();
+  desired.person.addresses = [{ stateProvince: 'Amajyaruguru', country: 'Rwanda' }];
+  await run(updateState({ openmrsPatient: desired }));
+  const addrCall = find((c) => c.url === CONFIG.openmrsBaseUrl + '/person/omrs-person-uuid/address/addr-uuid');
+  assert.ok(addrCall, 'expected POST /person/{uuid}/address/{addressUuid}');
+  assert.equal(addrCall.body.country, 'Rwanda');
+});
+
+test('update creates a new address when none exists in OpenMRS', async () => {
+  getResponse = existingPatient({ addresses: [] });
+  const desired = desiredPatient();
+  desired.person.addresses = [{ stateProvince: 'Kigali' }];
+  await run(updateState({ openmrsPatient: desired }));
+  const addrCreate = find((c) => c.url === CONFIG.openmrsBaseUrl + '/person/omrs-person-uuid/address');
+  assert.ok(addrCreate, 'expected POST /person/{uuid}/address (create)');
+});
+
+test('update upserts an identifier by its type — to existing /identifier/{uuid}', async () => {
+  getResponse = existingPatient();
+  await run(updateState());
+  const idCall = find((c) => c.url === CONFIG.openmrsBaseUrl + '/patient/omrs-patient-uuid/identifier/id-uuid');
+  assert.ok(idCall);
+  assert.equal(idCall.body.identifier, '1234567890123456');
+});
+
+test('update posts a new identifier when its type is not in OpenMRS', async () => {
+  getResponse = existingPatient({ identifiers: [] });
+  await run(updateState());
+  const idCreate = find((c) => c.url === CONFIG.openmrsBaseUrl + '/patient/omrs-patient-uuid/identifier');
+  assert.ok(idCreate);
+  assert.equal(idCreate.body.identifier, '1234567890123456');
+});
+
+test('update skips autoGenerate identifier placeholders', async () => {
+  getResponse = existingPatient({ identifiers: [] });
+  const desired = desiredPatient();
+  desired.identifiers = [
+    { identifierType: 'omrsid-type', location: 'loc', autoGenerate: true, preferred: true },
+  ];
+  await run(updateState({ openmrsPatient: desired }));
+  const idCall = postCalls.find((c) => c.url.includes('/identifier'));
+  assert.equal(idCall, undefined);
+});
+
+test('update upserts an attribute by its type — to existing /attribute/{uuid}', async () => {
+  getResponse = existingPatient();
+  await run(updateState());
+  const attrCall = find((c) => c.url === CONFIG.openmrsBaseUrl + '/person/omrs-person-uuid/attribute/attr-uuid');
+  assert.ok(attrCall);
+  assert.equal(attrCall.body.value, 'Married');
+});
+
+test('update posts a new attribute when its type is not in OpenMRS', async () => {
+  getResponse = existingPatient({ attributes: [] });
+  await run(updateState());
+  const attrCreate = find((c) => c.url === CONFIG.openmrsBaseUrl + '/person/omrs-person-uuid/attribute');
+  assert.ok(attrCreate);
+  assert.equal(attrCreate.body.value, 'Married');
+});
+
+test('update does not call the E-Heza write-back endpoint', async () => {
+  getResponse = existingPatient();
+  const out = await run(updateState());
+  assert.equal(writeBack(), undefined);
+  assert.equal(out.loadResult.action, 'update');
+  assert.equal(out.loadResult.patientUuid, 'omrs-patient-uuid');
 });

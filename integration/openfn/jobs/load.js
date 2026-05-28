@@ -67,6 +67,130 @@ const resolveIdentifiers = (patient, openmrsId) => ({
   }),
 });
 
+/**
+ * Apply the transform's desired patient body onto an existing OpenMRS
+ * patient — additive, never destructive (Phase 1.5 policy):
+ *   - Empty source fields → no write; OpenMRS's value is preserved.
+ *   - Non-empty source fields → POST to the matching OpenMRS subresource.
+ *   - identifiers / attributes upserted by their `identifierType` /
+ *     `attributeType` (one per type, the OpenMRS convention).
+ *   - `autoGenerate` placeholders are skipped (only meaningful on create).
+ *
+ * One GET discovers the subresource UUIDs; everything after is POSTs.
+ */
+const updatePatient = async (state, cfg, patientUuid) => {
+  const desired = state.openmrsPatient || {};
+  const desiredPerson = desired.person || {};
+  const authHeaders = { Authorization: cfg.openmrsAuth };
+
+  const rep =
+    'custom:(uuid,identifiers:(uuid,identifierType:(uuid)),person:' +
+    '(uuid,addresses:(uuid),attributes:(uuid,attributeType:(uuid)),preferredName:(uuid)))';
+  const res = await get(
+    cfg.openmrsBaseUrl + '/patient/' + patientUuid + '?v=' + rep,
+    { headers: authHeaders }
+  )(state);
+  const got = res.data || {};
+  const gotPerson = got.person || {};
+  const personUuid = gotPerson.uuid;
+  if (!personUuid) {
+    throw new Error('update: GET /patient returned no person uuid');
+  }
+
+  const personPath = cfg.openmrsBaseUrl + '/person/' + personUuid;
+  const patientPath = cfg.openmrsBaseUrl + '/patient/' + patientUuid;
+
+  // Person-level patch. Gender 'U' is the transform's fallback for an
+  // empty source — skip it so OpenMRS keeps its real value.
+  const personPatch = {};
+  if (desiredPerson.gender && desiredPerson.gender !== 'U') {
+    personPatch.gender = desiredPerson.gender;
+  }
+  if (desiredPerson.birthdate) {
+    personPatch.birthdate = desiredPerson.birthdate;
+    personPatch.birthdateEstimated = !!desiredPerson.birthdateEstimated;
+  }
+  if (Object.keys(personPatch).length > 0) {
+    await post(personPath, personPatch, { headers: authHeaders })(state);
+  }
+
+  // Name — upsert the preferred name.
+  const desiredName = (desiredPerson.names || [])[0];
+  if (desiredName) {
+    const namePatch = {};
+    if (desiredName.givenName) namePatch.givenName = desiredName.givenName;
+    if (desiredName.familyName) namePatch.familyName = desiredName.familyName;
+    if (Object.keys(namePatch).length > 0) {
+      const nameUuid = gotPerson.preferredName && gotPerson.preferredName.uuid;
+      if (nameUuid) {
+        await post(personPath + '/name/' + nameUuid, namePatch, {
+          headers: authHeaders,
+        })(state);
+      } else {
+        await post(
+          personPath + '/name',
+          { ...namePatch, preferred: true },
+          { headers: authHeaders }
+        )(state);
+      }
+    }
+  }
+
+  // Address — one PersonAddress per person here; upsert it.
+  const desiredAddress = (desiredPerson.addresses || [])[0];
+  if (desiredAddress) {
+    const addrUuid = ((gotPerson.addresses || [])[0] || {}).uuid;
+    if (addrUuid) {
+      await post(personPath + '/address/' + addrUuid, desiredAddress, {
+        headers: authHeaders,
+      })(state);
+    } else {
+      await post(personPath + '/address', desiredAddress, {
+        headers: authHeaders,
+      })(state);
+    }
+  }
+
+  // Identifiers — upsert by identifierType; skip autoGenerate placeholders.
+  for (const id of desired.identifiers || []) {
+    if (id.autoGenerate) {
+      continue;
+    }
+    const existing = (got.identifiers || []).find(
+      (i) => i.identifierType && i.identifierType.uuid === id.identifierType
+    );
+    if (existing) {
+      await post(
+        patientPath + '/identifier/' + existing.uuid,
+        { identifier: id.identifier },
+        { headers: authHeaders }
+      )(state);
+    } else {
+      await post(patientPath + '/identifier', id, {
+        headers: authHeaders,
+      })(state);
+    }
+  }
+
+  // PersonAttributes — upsert by attributeType.
+  for (const attr of desiredPerson.attributes || []) {
+    const existing = (gotPerson.attributes || []).find(
+      (a) => a.attributeType && a.attributeType.uuid === attr.attributeType
+    );
+    if (existing) {
+      await post(
+        personPath + '/attribute/' + existing.uuid,
+        { value: attr.value },
+        { headers: authHeaders }
+      )(state);
+    } else {
+      await post(personPath + '/attribute', attr, {
+        headers: authHeaders,
+      })(state);
+    }
+  }
+};
+
 fn(async (state) => {
   const person = state.data || {};
   const match = state.match || {};
@@ -75,7 +199,16 @@ fn(async (state) => {
   let patientUuid;
   let openmrsId = null;
 
-  if (match.action === 'link') {
+  if (match.action === 'update') {
+    patientUuid = match.patientUuid;
+    await updatePatient(state, cfg, patientUuid);
+    console.log('Loaded', person.person_uuid, '->', match.action, patientUuid);
+    return {
+      ...state,
+      data: person,
+      loadResult: { action: 'update', patientUuid, openmrsId: null },
+    };
+  } else if (match.action === 'link') {
     patientUuid = match.patientUuid;
   } else if (match.action === 'create') {
     let patient = state.openmrsPatient || {};
