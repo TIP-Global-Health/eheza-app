@@ -104,8 +104,20 @@ fn(async (state) => {
 
   let match;
 
-  // Tier 1 — national ID. An exact identifier match is decisive.
-  if (person.national_id) {
+  // Existing OpenMRS UUID on the payload short-circuits to update. The
+  // E-Heza trigger sets this when the person has already been synced.
+  if (person.existing_openmrs_uuid) {
+    match = {
+      action: 'update',
+      patientUuid: person.existing_openmrs_uuid,
+      via: 'existing-uuid',
+      candidates: [],
+    };
+  }
+
+  // Tier 1 — national ID. An exact identifier match is decisive. Runs
+  // only when Tier 0 (existing-uuid short-circuit) did not decide.
+  if (!match && person.national_id) {
     const res = await get(searchUrl, {
       query: { identifier: person.national_id, v: REP },
       headers: authHeaders,

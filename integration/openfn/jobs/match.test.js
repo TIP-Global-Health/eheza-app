@@ -206,3 +206,14 @@ test('queries OpenMRS with the configured base URL and Authorization header', as
   assert.equal(getCalls[0].path, 'http://omrs.test/ws/rest/v1/patient');
   assert.equal(getCalls[0].headers.Authorization, 'Basic dGVzdA==');
 });
+
+test('short-circuits to update when an existing OpenMRS UUID is on the payload', async () => {
+  const { match: m } = await run({
+    data: { ...PERSON_WITH_ID, existing_openmrs_uuid: 'omrs-existing' },
+  });
+  assert.equal(m.action, 'update');
+  assert.equal(m.patientUuid, 'omrs-existing');
+  assert.equal(m.via, 'existing-uuid');
+  // No OpenMRS search is performed — the existing UUID is decisive.
+  assert.equal(getCalls.length, 0);
+});

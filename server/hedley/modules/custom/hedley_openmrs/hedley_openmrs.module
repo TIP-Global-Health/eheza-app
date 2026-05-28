@@ -46,6 +46,30 @@ function hedley_openmrs_node_insert($node) {
 }
 
 /**
+ * Implements hook_node_update().
+ *
+ * Re-queue the person for OpenFN whenever any of the demographic fields
+ * we sync to OpenMRS have actually changed. Photo, reports data, sync
+ * state and other unrelated fields don't cause an enqueue. The load
+ * step's own UUID write-back does not loop, because field_openmrs_uuid
+ * is intentionally not in the tracked set.
+ */
+function hedley_openmrs_node_update($node) {
+  if ($node->type !== 'person') {
+    return;
+  }
+  if (!_hedley_openmrs_should_push_update($node)) {
+    return;
+  }
+
+  hedley_general_add_task_to_advanced_queue_by_id(
+    HEDLEY_OPENMRS_PUSH_PERSON,
+    $node->nid,
+    ['person_id' => $node->nid]
+  );
+}
+
+/**
  * Implements hook_advanced_queue_info().
  */
 function hedley_openmrs_advanced_queue_info() {
@@ -145,7 +169,51 @@ function hedley_openmrs_push_person_worker($queue_item) {
  *   The payload.
  */
 function hedley_openmrs_build_person_payload($node) {
-  $fields = [
+  $payload = [];
+  foreach (_hedley_openmrs_synced_fields() as $key => $field) {
+    $payload[$key] = _hedley_openmrs_field($node, $field);
+  }
+  $payload['birth_date_estimated'] =
+    (bool) _hedley_openmrs_field($node, 'field_birth_date_estimated');
+
+  // Country comes from the site, not the person node.
+  $countries = ['rwanda' => 'Rwanda', 'burundi' => 'Burundi'];
+  $site = variable_get('hedley_general_site_name', '');
+  $payload['country'] = isset($countries[$site]) ? $countries[$site] : NULL;
+
+  // Existing OpenMRS UUID, when this person has already been synced —
+  // the match step uses it to short-circuit to the update path.
+  $payload['existing_openmrs_uuid'] =
+    _hedley_openmrs_field($node, 'field_openmrs_uuid');
+
+  return $payload;
+}
+
+/**
+ * Person fields whose Drupal values flow into the OpenMRS payload as-is.
+ *
+ * The payload builder reads each value into the matching payload key;
+ * the update-detection hook tracks the same set, plus
+ * field_birth_date_estimated, for its diff against $node->original.
+ *
+ * Three payload entries are intentionally outside this list:
+ * - birth_date_estimated  — also a node field, but cast to bool;
+ * - country               — derived from the hedley_general_site_name
+ *                           variable, not a node field;
+ * - existing_openmrs_uuid — carries field_openmrs_uuid into the
+ *                           payload but is *excluded* from the update
+ *                           diff so the load step's UUID write-back
+ *                           cannot loop.
+ *
+ * Anything outside the list and those three (photo, reports data,
+ * sync state, audit timestamps, …) neither appears in the payload nor
+ * causes an update enqueue.
+ *
+ * @return array
+ *   payload-key => Drupal-field-name.
+ */
+function _hedley_openmrs_synced_fields() {
+  return [
     'person_uuid' => 'field_uuid',
     'first_name' => 'field_first_name',
     'second_name' => 'field_second_name',
@@ -170,20 +238,35 @@ function hedley_openmrs_build_person_payload($node) {
     'next_of_kin_phone_number' => 'field_next_of_kin_phone_number',
     'number_of_children' => 'field_number_of_children',
   ];
+}
 
-  $payload = [];
-  foreach ($fields as $key => $field) {
-    $payload[$key] = _hedley_openmrs_field($node, $field);
+/**
+ * Whether a node_update on a person should re-push to OpenFN.
+ *
+ * Returns TRUE only when at least one tracked field actually changed
+ * against $node->original. field_openmrs_uuid is intentionally not in
+ * the tracked set, so the load step's UUID write-back does not loop.
+ *
+ * @param object $node
+ *   The updated person node, with $node->original populated by Drupal.
+ *
+ * @return bool
+ *   TRUE if the update should enqueue an OpenFN push.
+ */
+function _hedley_openmrs_should_push_update($node) {
+  if (empty($node->original)) {
+    return FALSE;
   }
-  $payload['birth_date_estimated'] =
-    (bool) _hedley_openmrs_field($node, 'field_birth_date_estimated');
-
-  // Country comes from the site, not the person node.
-  $countries = ['rwanda' => 'Rwanda', 'burundi' => 'Burundi'];
-  $site = variable_get('hedley_general_site_name', '');
-  $payload['country'] = isset($countries[$site]) ? $countries[$site] : NULL;
-
-  return $payload;
+  $tracked = array_values(_hedley_openmrs_synced_fields());
+  $tracked[] = 'field_birth_date_estimated';
+  foreach ($tracked as $field) {
+    $new = _hedley_openmrs_field($node, $field);
+    $old = _hedley_openmrs_field($node->original, $field);
+    if ($new !== $old) {
+      return TRUE;
+    }
+  }
+  return FALSE;
 }
 
 /**
