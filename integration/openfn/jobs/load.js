@@ -35,6 +35,11 @@ const luhnCheckDigit = (digits) => {
  * numbers — `n * 16 + 15` never exceeds Number.MAX_SAFE_INTEGER), zero
  * padded to 12 digits, then a hyphen and a standard-Luhn check digit are
  * appended — the format the OpenMRS LuhnIdentifierValidator accepts.
+ *
+ * Collisions between two distinct person UUIDs are mathematically
+ * possible (modulo reduction), but extremely unlikely at the PoC's
+ * population scale. For UVL production this branch should be replaced
+ * by an idgen-driven identifier (see integration/load-step.md).
  */
 const luhnOpenmrsId = (personUuid) => {
   const hex = String(personUuid).replace(/-/g, '');

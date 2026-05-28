@@ -15,7 +15,10 @@ fn((state) => {
   const person = state.data || {};
 
   // OpenMRS metadata UUIDs. Prefer values supplied on state; the fallback
-  // is the local PoC instance (integration/openmrs/openmrs-metadata.json).
+  // mirrors the UUIDs `integration/openmrs/provision.py` writes into
+  // openmrs-metadata.json, remapped here into the nested shape the
+  // transform uses (identifierType/location/attr) rather than the file's
+  // flat shape (identifier_types/default_location/person_attribute_types).
   // To target another OpenMRS, supply state.openmrsMetadata.
   const meta = state.openmrsMetadata || {
     identifierType: {

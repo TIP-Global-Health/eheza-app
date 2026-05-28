@@ -54,8 +54,10 @@ placeholder; the load step mints the value.
   standard-Luhn check digit. (`9876543-1` is accepted; `9876543-2` is not.)
 - **Base** — derived deterministically from `data.person_uuid`: the UUID's
   hex reduced modulo 10^12 and zero-padded to 12 digits. The same person
-  always yields the same ID, so a re-run is idempotent and two distinct
-  persons cannot collide on the base.
+  always yields the same ID, so a re-run is idempotent; collisions between
+  two distinct UUIDs are possible in principle (modulo reduction) but
+  extremely unlikely at the PoC's population scale. UVL production should
+  switch this branch to an idgen-driven identifier.
 - The minted ID goes into the OpenMRS Identification Number identifier;
   its type and location come from the placeholder the transform produced.
 
@@ -75,7 +77,8 @@ the local instance has no idgen source configured, hence this approach.
 Pure logic separated from the OpenFN glue, as in the match step:
 
 - **Pure** — `luhnOpenmrsId(personUuid)` and `resolveIdentifiers(patient,
-  personUuid)`. Exhaustively unit-tested with `node --test`.
+  openmrsId)` (the load step computes the OpenMRS ID once and passes it
+  in). Exhaustively unit-tested with `node --test`.
 - **Thin glue** — the conditional `POST /patient` and the write-back.
 
 `load.test.js` drives the job through faked `post`/`get`: the link path,

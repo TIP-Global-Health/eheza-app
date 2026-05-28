@@ -16,19 +16,19 @@ workflows:
     jobs:
       transform:
         name: Transform
-        adaptor: '@openfn/language-common@latest'
+        adaptor: '@openfn/language-common@3.3.2'
         body:
           path: jobs/transform.js
         credential: null
       match:
         name: Match
-        adaptor: '@openfn/language-http@latest'
+        adaptor: '@openfn/language-http@7.3.0'
         body:
           path: jobs/match.js
         credential: null
       load:
         name: Load
-        adaptor: '@openfn/language-http@latest'
+        adaptor: '@openfn/language-http@7.3.0'
         body:
           path: jobs/load.js
         credential: null

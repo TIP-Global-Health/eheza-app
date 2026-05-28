@@ -15,20 +15,40 @@ metadata; this script doubles as the spec for what UVL must provide.
 """
 import base64
 import json
+import os
 import sys
 import urllib.error
 import urllib.parse
 import urllib.request
+from pathlib import Path
 
-BASE = 'http://localhost:8090/openmrs/ws/rest/v1'
-# Local PoC instance — the documented default OpenMRS admin credentials.
-ADMIN_AUTH = base64.b64encode(b'admin:Admin123').decode()
+# Defaults match the local PoC OpenMRS; override via env vars when pointing
+# at any other instance. Nothing sensitive lives in the repo — secrets come
+# from the environment.
+BASE = os.environ.get(
+    'OPENMRS_BASE_URL', 'http://localhost:8090/openmrs/ws/rest/v1'
+)
+ADMIN_USER = os.environ.get('OPENMRS_ADMIN_USER', 'admin')
+ADMIN_PASSWORD = os.environ.get('OPENMRS_ADMIN_PASSWORD', 'Admin123')
+ADMIN_AUTH = base64.b64encode(
+    f'{ADMIN_USER}:{ADMIN_PASSWORD}'.encode()
+).decode()
 
-INTEGRATION_USER = 'openfn'
-INTEGRATION_PASSWORD = 'Openfn-Integration-1'
-INTEGRATION_ROLE = 'Privilege Level: Full'
+INTEGRATION_USER = os.environ.get('OPENMRS_INTEGRATION_USER', 'openfn')
+INTEGRATION_PASSWORD = os.environ.get(
+    'OPENMRS_INTEGRATION_PASSWORD', 'Openfn-Integration-1'
+)
+INTEGRATION_ROLE = os.environ.get(
+    'OPENMRS_INTEGRATION_ROLE', 'Privilege Level: Full'
+)
 
-OUT = '/var/www/html/ihangane/integration/openmrs/openmrs-metadata.json'
+# Default to a script-relative path so the script is portable.
+OUT = Path(
+    os.environ.get(
+        'OPENMRS_METADATA_OUT',
+        str(Path(__file__).resolve().parent / 'openmrs-metadata.json'),
+    )
+)
 
 # Person-attribute types the transform writes to (display name -> description).
 # "Civil Status" already ships with OpenMRS and is reused for marital status.
@@ -164,7 +184,8 @@ def main():
         f.write('\n')
 
     print(f'\nWrote {OUT}', file=sys.stderr)
-    print(f'Integration user: {INTEGRATION_USER} / {INTEGRATION_PASSWORD}',
+    print(f'Integration user: {INTEGRATION_USER}', file=sys.stderr)
+    print('Password: set via OPENMRS_INTEGRATION_PASSWORD env var.',
           file=sys.stderr)
 
 

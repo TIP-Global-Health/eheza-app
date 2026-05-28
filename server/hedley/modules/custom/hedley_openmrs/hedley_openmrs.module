@@ -116,8 +116,14 @@ function hedley_openmrs_push_person_worker($queue_item) {
     ];
   }
 
+  // 4xx (except 429 rate-limit) won't succeed on retry — bad payload, auth
+  // or routing problems. Fail permanently so the queue doesn't churn.
+  $permanent = $code >= 400 && $code < 500 && $code !== 429;
+  $status = $permanent
+    ? ADVANCEDQUEUE_STATUS_FAILURE
+    : ADVANCEDQUEUE_STATUS_FAILURE_RETRY;
   return [
-    'status' => ADVANCEDQUEUE_STATUS_FAILURE_RETRY,
+    'status' => $status,
     'result' => t('OpenFN push for person @id failed (HTTP @code).', [
       '@id' => $person_id,
       '@code' => $code,
@@ -236,6 +242,11 @@ function hedley_openmrs_patient_link() {
   if ($person_uuid === '' || $openmrs_uuid === '') {
     return _hedley_openmrs_error('400 Bad Request', 'Missing required fields.');
   }
+  $uuid_re = '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i';
+  if (!preg_match($uuid_re, $person_uuid)
+      || !preg_match($uuid_re, $openmrs_uuid)) {
+    return _hedley_openmrs_error('400 Bad Request', 'Malformed UUID.');
+  }
 
   // Locate the E-Heza person by UUID. Run as user 1 to bypass node access.
   $query = new EntityFieldQuery();
@@ -252,6 +263,25 @@ function hedley_openmrs_patient_link() {
 
   $nid = key($result['node']);
   $node = node_load($nid);
+
+  // Refuse silent re-linking — a second call with a different OpenMRS UUID
+  // means the OpenMRS side diverged (duplicate create, race, manual replay)
+  // and is worth a human looking at. The same UUID is treated as idempotent.
+  $existing = isset($node->field_openmrs_uuid[LANGUAGE_NONE][0]['value'])
+    ? $node->field_openmrs_uuid[LANGUAGE_NONE][0]['value'] : '';
+  if ($existing !== '' && $existing !== $openmrs_uuid) {
+    watchdog(
+      'hedley_openmrs',
+      'Refusing to relink person @nid: was @old, asked to set @new.',
+      ['@nid' => $nid, '@old' => $existing, '@new' => $openmrs_uuid],
+      WATCHDOG_WARNING
+    );
+    return _hedley_openmrs_error(
+      '409 Conflict',
+      'Person already linked to a different OpenMRS patient.'
+    );
+  }
+
   $node->field_openmrs_uuid[LANGUAGE_NONE][0]['value'] = $openmrs_uuid;
   node_save($node);
 

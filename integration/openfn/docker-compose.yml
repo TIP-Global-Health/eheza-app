@@ -59,7 +59,9 @@ services:
       - "4001:4000"
 
   worker:
-    image: openfn/ws-worker:latest
+    # Pinned to a known-compatible version with openfn/lightning:v2.16.4
+    # (we saw worker_version=1.25.1 on the live handshake). Bump deliberately.
+    image: openfn/ws-worker:1.25.1
     restart: unless-stopped
     depends_on:
       - web
