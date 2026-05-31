@@ -1725,51 +1725,7 @@ encodePreviousDeliverySign sign =
             CSectionInPreviousDelivery ->
                 "c-section-in-previous-delivery"
 
-            StillbornPreviousDelivery ->
-                "stillborn-previous-delivery"
-
-            BabyDiedOnDayOfBirthPreviousDelivery ->
-                "baby-died-on-day-of-birth-previous-delivery"
-
-            PartialPlacentaPreviousDelivery ->
-                "partial-placenta-previous-delivery"
-
-            SevereHemorrhagingPreviousDelivery ->
-                "severe-hemorrhaging-previous-delivery"
-
-            ConvulsionsPreviousDelivery ->
-                "convulsions-previous-delivery"
-
-            ConvulsionsAndUnconsciousPreviousDelivery ->
-                "convulsions-and-unconscious-previous-delivery"
-
             NoPreviousDeliverySign ->
-                "none"
-
-
-encodeObstetricHistorySign : ObstetricHistorySign -> Value
-encodeObstetricHistorySign sign =
-    string <|
-        case sign of
-            SuccessiveAbortions ->
-                "successive-abortions"
-
-            SuccessivePrematureDeliveries ->
-                "successive-premature-deliveries"
-
-            PreeclampsiaPreviousPregnancy ->
-                "preeclampsia-previous-pregnancy"
-
-            GestationalDiabetesPreviousPregnancy ->
-                "gestational-diabetes-previous-pregnancy"
-
-            IncompleteCervixPreviousPregnancy ->
-                "incomplete-cervix-previous-pregnancy"
-
-            RhNegative ->
-                "rh-negative"
-
-            NoObstetricHistorySign ->
                 "none"
 
 
@@ -1786,7 +1742,6 @@ encodeObstetricHistoryStep2 =
 encodeObstetricHistoryStep2Value : ObstetricHistoryStep2Value -> List ( String, Value )
 encodeObstetricHistoryStep2Value value =
     [ ( "c_sections", int value.cSections )
-    , ( "obstetric_history", encodeEverySet encodeObstetricHistorySign value.obstetricHistory )
     , ( "obstetric_history_step2", encodeEverySet encodeObstetricHistoryStep2Sign value.signs )
     , ( "previous_delivery", encodeEverySet encodePreviousDeliverySign value.previousDelivery )
     , ( "previous_delivery_period", encodeEverySet encodePreviousDeliveryPeriod value.previousDeliveryPeriod )

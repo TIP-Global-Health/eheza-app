@@ -4723,20 +4723,8 @@ medicalHistorySignToString sign =
         HypertensionBeforePregnancy ->
             "hypertension-before-pregnancy"
 
-        TuberculosisPast ->
-            "tuberculosis-past"
-
-        TuberculosisPresent ->
-            "tuberculosis-present"
-
         Asthma ->
             "asthma"
-
-        BowedLegs ->
-            "bowed-legs"
-
-        HIV ->
-            "hiv"
 
         MentalHealthHistory ->
             "mental-health-history"
@@ -4766,20 +4754,8 @@ medicalHistorySignFromString sign =
         "hypertension-before-pregnancy" ->
             Just HypertensionBeforePregnancy
 
-        "tuberculosis-past" ->
-            Just TuberculosisPast
-
-        "tuberculosis-present" ->
-            Just TuberculosisPresent
-
         "asthma" ->
             Just Asthma
-
-        "bowed-legs" ->
-            Just BowedLegs
-
-        "hiv" ->
-            Just HIV
 
         "mental-health-history" ->
             Just MentalHealthHistory

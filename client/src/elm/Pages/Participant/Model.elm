@@ -69,16 +69,6 @@ emptyModel =
 
 {-| Like our various `Tab` types, except that `Progress Report` is singled out
 here for special treatment.
-
-TODO: This probably means that `PogressReport` should also be handled specailly
-in `Activity.Utils` when we're calculating how many activitie are completed or
-pending ... it ought to be neither, I suppose.
-
-Alternatively, perhaps `ProgressReport` ought not to be handled specially.
-Perhaps `ProgressReport` ought to be a normal activity, where the activity is
-showing it to the mother, and this is "saved" to the backend to confirm that it
-was shown to the mother.
-
 -}
 type Tab
     = Completed

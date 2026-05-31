@@ -28,3 +28,5 @@ files[] = plugins/restful/node/encounter/HedleyRestfulNCDEncounter.class.php
 files[] = plugins/restful/node/encounter/HedleyRestfulNutritionEncounter.class.php
 files[] = plugins/restful/node/encounter/HedleyRestfulPrenatalEncounter.class.php
 files[] = plugins/restful/node/encounter/HedleyRestfulWellChildEncounter.class.php
+
+files[] = tests/HedleyRestfulBulkPhotosTest.test

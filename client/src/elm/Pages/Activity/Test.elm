@@ -16,23 +16,6 @@ nextParticipantTest =
         always Expect.pass
 
 
-
-{-
-   let
-       -- Here, we're just finishing exampleChildA.
-       noPendingDict =
-           makeLoneChildDict (toEntityUuid 1) exampleChildA
-   in
-       describe "A nurse visits the Weight activity" <|
-           [ test "Then after completing all the participants, the process is completed" <|
-               \() ->
-                   Expect.equal
-                       (nextParticipant noPendingDict emptyModel)
-                       Nothing
-           ]
--}
-
-
 all : Test
 all =
     describe "Next participant flow"

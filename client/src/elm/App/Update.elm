@@ -1509,8 +1509,18 @@ update msg model =
                         in
                         case errorType of
                             Http err ->
-                                Utils.WebData.viewErrorForRollbar err
-                                    |> generateRollbarCmd
+                                case err of
+                                    -- Offline-first: NetworkError and Timeout are
+                                    -- expected during sync and shouldn't reach Rollbar.
+                                    NetworkError ->
+                                        Cmd.none
+
+                                    Timeout ->
+                                        Cmd.none
+
+                                    _ ->
+                                        Utils.WebData.viewErrorForRollbar err
+                                            |> generateRollbarCmd
 
                             Decoder err ->
                                 Json.Decode.errorToString err

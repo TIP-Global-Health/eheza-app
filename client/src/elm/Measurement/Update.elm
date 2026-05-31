@@ -573,11 +573,6 @@ updateMother measurements msg model =
 
         SendOutMsgMother outMsg ->
             let
-                -- TODO: For the moment, we're just assuming that the save into
-                -- the local cache succeeds ... we don't do any error checking.
-                -- Once we do, this mechanism would transition to the handling
-                -- for the RemoteData that represents the state of the save &
-                -- the possible error message.
                 updated =
                     case outMsg of
                         SaveCompletedForm _ formId _ ->
@@ -612,10 +607,6 @@ selectNextForm : MeasurementData MotherMeasurements -> ParticipantFormId -> Mode
 selectNextForm measurements formId model =
     let
         completedFormIds =
-            -- TODO: Note in the last step we treat the current formId as
-            -- completed ...  once we're actually doing error checking on the
-            -- save to the cache, we will need to adjust that (to take into
-            -- account whether the save succeeded or not).
             measurements
                 |> mapMeasurementData .consent
                 |> currentValues

@@ -531,38 +531,26 @@ elmApp.ports.scrollToElement.subscribe(function(elementId) {
 });
 
 elmApp.ports.getCoordinates.subscribe(function() {
-  if ("geolocation" in navigator) {
-    const options = {
-        enableHighAccuracy: true,  // Use GPS if available for better accuracy.
-        timeout: 15000,            // Time to wait for position (15 * 1000 ms).
-        maximumAge: 600000         // Accept cached positions up to 10 minutes old (10 * 60 * 1000 ms).
-    };
-
-    navigator.geolocation.getCurrentPosition(
-        (position) => {
-            const { latitude, longitude } = position.coords;
-            const result = {latitude: latitude, longitude: longitude};
-            elmApp.ports.coordinates.send(result);
-        },
-        (error) => {
-            rollbar.log("Error fetching location:", error);
-            switch(error.code) {
-                case error.PERMISSION_DENIED:
-                    rollbar.log("User denied geolocation permission");
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    rollbar.log("Location information unavailable");
-                    break;
-                case error.TIMEOUT:
-                    rollbar.log("Location request timed out");
-                    break;
-            }
-        },
-        options
-    );
-  } else {
-      rollbar.log("Geolocation is not available.");
+  if (!("geolocation" in navigator)) {
+    return;
   }
+
+  const options = {
+      enableHighAccuracy: true,  // Use GPS if available for better accuracy.
+      timeout: 15000,            // Time to wait for position (15 * 1000 ms).
+      maximumAge: 600000         // Accept cached positions up to 10 minutes old (10 * 60 * 1000 ms).
+  };
+
+  navigator.geolocation.getCurrentPosition(
+      (position) => {
+          const { latitude, longitude } = position.coords;
+          const result = {latitude: latitude, longitude: longitude};
+          elmApp.ports.coordinates.send(result);
+      },
+      // Failure is expected (denied / hardware unavailable / timeout); Elm uses Maybe GPSCoordinates.
+      () => {},
+      options
+  );
 });
 
 
@@ -597,6 +585,19 @@ elmApp.ports.sendSyncInfoAuthorities.subscribe(function(syncInfoAuthorities) {
  */
 elmApp.ports.sendSyncSpeed.subscribe(function(syncSpeed) {
   localStorage.setItem('syncSpeed', JSON.stringify(syncSpeed));
+});
+
+/**
+ * Bulk fetch a batch of photo URLs.
+ *
+ * Elm calls this with {urls, accessToken}; we delegate to bulkPhotos.js
+ * which POSTs to /api/bulk-photos, parses the binary container, and
+ * populates the "photos" Cache Storage. Reply (per-URL outcomes or a
+ * whole-batch error) goes back via the bulkPhotoFetchHandle port.
+ */
+elmApp.ports.bulkPhotoFetch.subscribe(async function(params) {
+  const outcome = await self.bulkPhotos.handleBulkPhotoFetch(params);
+  elmApp.ports.bulkPhotoFetchHandle.send(outcome);
 });
 
 /**
@@ -1037,6 +1038,39 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         }
 
         return sendIndexedDbFetchResult(queryType, result);
+      })();
+      break;
+
+    case 'IndexDbQueryDeferredPhotoBatch':
+      // queryParam: JSON-encoded {batchSize: int}
+      (async () => {
+
+        let batchSize = 100;
+        try {
+          const parsed = JSON.parse(data);
+          batchSize = Math.max(1, Math.min(parseInt(parsed.batchSize, 10) || 100, 200));
+        }
+        catch (e) {
+          // Fall through with default batchSize.
+        }
+
+        let rows = await dbSync
+            .deferredPhotos
+            .where('attempts')
+            .belowOrEqual(2)
+            .limit(batchSize)
+            .sortBy('attempts');
+
+        if (rows.length > 0) {
+          let total = await dbSync
+              .deferredPhotos
+              .where('attempts')
+              .belowOrEqual(2)
+              .count();
+          rows = rows.map(function(r) { r.remaining = total; return r; });
+        }
+
+        return sendIndexedDbFetchResult(queryType, rows);
       })();
       break;
 
@@ -1775,7 +1809,8 @@ function attachDropzone() {
   var element = document.querySelector(selector);
 
   if (element) {
-    if (element.dropZone) {
+    // Lowercase: Dropzone itself sets `.dropzone` on the host element.
+    if (element.dropzone) {
       // Bail, since already initialized
       return;
     } else {
@@ -1792,11 +1827,12 @@ function attachDropzone() {
     return;
   }
 
-  // TODO: Feed the dictDefaultMessage in as a param, so we can use the
-  // translated version.
+  // The default message is rendered by Elm inside `.dz-message`. Dropzone
+  // detects the pre-existing element (see Dropzone.js init guard against
+  // `.dz-message`) and leaves the translated content in place, so we do
+  // not need to pass `dictDefaultMessage` here.
   dropZone = new Dropzone(selector, {
     url: "cache-upload/images",
-    dictDefaultMessage: "Touch here to take a photo, or drop a photo file here.",
     acceptedFiles: "jpg,jpeg,png,gif,image/*",
     capture: 'camera',
     resizeWidth: 600,
