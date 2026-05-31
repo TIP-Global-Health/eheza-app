@@ -107,6 +107,11 @@ rules =
             , "src/elm/Measurement/Utils.elm"
             ]
     , NoMissingSubscriptionsCall.rule
+        |> Rule.ignoreErrorsForFiles
+            [ -- Unit test calls SyncManager.Update.update directly to exercise
+              -- a handler; it is not app wiring, so subscriptions do not apply.
+              "src/elm/SyncManager/Test.elm"
+            ]
     , NoUselessSubscriptions.rule
     , NoLeftPizza.rule NoLeftPizza.Redundant
     , Validate.Regexes.rule

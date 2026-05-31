@@ -265,7 +265,6 @@ type TranslationId
     | Tuberculosis
     | TuberculosisActivity TuberculosisActivity
     | Vitals
-    | ViewMode
     | Village
     | UnderweightModerate
     | UnderweightSevere
@@ -282,6 +281,7 @@ type TranslationId
     | WastingSevere
     | WellChildActivity WellChildActivity
     | WideScopeNote
+    | WrongPage
     | Year Int
     | YearLabel
     | Zone
@@ -3412,13 +3412,6 @@ translationSet transId =
                 TuberculosisTreatmentReview ->
                     translationSet TreatmentReview
 
-        ViewMode ->
-            { english = "View Mode"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
-            , somali = Nothing
-            }
-
         Vitals ->
             { english = "Vitals"
             , kinyarwanda = Nothing
@@ -3671,6 +3664,13 @@ translationSet transId =
             , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Nothing
+            }
+
+        WrongPage ->
+            { english = "Wrong page?"
+            , kinyarwanda = Just "Urupapuro rutari rwo?"
+            , kirundi = Just "Urupapuro rutari rwo?"
+            , somali = Just "Bogga ma khaldanyahay?"
             }
 
         Year year ->

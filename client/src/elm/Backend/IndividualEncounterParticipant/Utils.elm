@@ -25,9 +25,6 @@ individualEncounterTypeToString encounterType =
         HomeVisitEncounter ->
             "home-visit"
 
-        InmmunizationEncounter ->
-            "inmmunization"
-
         NCDEncounter ->
             "ncd"
 
@@ -58,9 +55,6 @@ individualEncounterTypeFromString string =
 
         "home-visit" ->
             Just HomeVisitEncounter
-
-        "inmmunization" ->
-            Just InmmunizationEncounter
 
         "ncd" ->
             Just NCDEncounter
