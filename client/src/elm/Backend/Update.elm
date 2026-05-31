@@ -4496,11 +4496,6 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
 
                                                     WellChildEncounter ->
                                                         WellChildParticipantPage InitiatorParticipantsPage personId
-
-                                                    -- Note yet implemented. Providing 'default'
-                                                    -- page, to satisfy compiler.
-                                                    InmmunizationEncounter ->
-                                                        IndividualEncounterTypesPage
                                         in
                                         ( [ resetFormMsg, navigationMsg nextPage ]
                                         , []
@@ -4773,9 +4768,6 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
 
                                         _ ->
                                             []
-
-                                InmmunizationEncounter ->
-                                    []
                         )
                         data
                         |> RemoteData.withDefault []
