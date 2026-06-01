@@ -533,6 +533,90 @@ function hedley_openmrs_patient_link() {
 }
 
 /**
+ * Write-back endpoint: store an OpenMRS encounter UUID on a prenatal encounter.
+ *
+ * Called by the OpenFN load step once it has created the encounter in
+ * OpenMRS. Expects a POST with JSON body holding "encounter_uuid" and
+ * "openmrs_uuid", authenticated with the shared secret in X-OpenFN-Token.
+ *
+ * @return array
+ *   A JSON-serialisable response array.
+ */
+function hedley_openmrs_encounter_link() {
+  if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    return _hedley_openmrs_error('405 Method Not Allowed', 'Use POST.');
+  }
+
+  $expected = variable_get('hedley_openmrs_shared_secret', '');
+  $provided = isset($_SERVER['HTTP_X_OPENFN_TOKEN'])
+    ? $_SERVER['HTTP_X_OPENFN_TOKEN'] : '';
+  if ($expected === '' || !hash_equals($expected, $provided)) {
+    return _hedley_openmrs_error('401 Unauthorized', 'Invalid token.');
+  }
+
+  $payload = json_decode(file_get_contents('php://input'), TRUE);
+  if (!is_array($payload)) {
+    return _hedley_openmrs_error('400 Bad Request', 'Invalid JSON body.');
+  }
+
+  $payload += ['encounter_uuid' => '', 'openmrs_uuid' => ''];
+  $encounter_uuid = trim($payload['encounter_uuid']);
+  $openmrs_uuid = trim($payload['openmrs_uuid']);
+  if ($encounter_uuid === '' || $openmrs_uuid === '') {
+    return _hedley_openmrs_error('400 Bad Request', 'Missing required fields.');
+  }
+  $uuid_re = '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i';
+  if (!preg_match($uuid_re, $encounter_uuid)
+      || !preg_match($uuid_re, $openmrs_uuid)) {
+    return _hedley_openmrs_error('400 Bad Request', 'Malformed UUID.');
+  }
+
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'prenatal_encounter')
+    ->fieldCondition('field_uuid', 'value', $encounter_uuid)
+    ->range(0, 1)
+    ->addMetaData('account', user_load(1));
+  $result = $query->execute();
+
+  if (empty($result['node'])) {
+    return _hedley_openmrs_error('404 Not Found', 'Unknown encounter UUID.');
+  }
+
+  $nid = key($result['node']);
+  $node = node_load($nid);
+
+  $existing = _hedley_openmrs_field($node, 'field_openmrs_encounter_uuid');
+  if (!empty($existing) && $existing !== $openmrs_uuid) {
+    watchdog(
+      'hedley_openmrs',
+      'Refusing to relink encounter @nid: was @old, asked to set @new.',
+      ['@nid' => $nid, '@old' => $existing, '@new' => $openmrs_uuid],
+      WATCHDOG_WARNING
+    );
+    return _hedley_openmrs_error(
+      '409 Conflict',
+      'Encounter already linked to a different OpenMRS encounter.'
+    );
+  }
+
+  $node->field_openmrs_encounter_uuid[LANGUAGE_NONE][0]['value'] = $openmrs_uuid;
+  node_save($node);
+
+  watchdog('hedley_openmrs', 'Linked encounter @nid to OpenMRS encounter @uuid.', [
+    '@nid' => $nid,
+    '@uuid' => $openmrs_uuid,
+  ], WATCHDOG_INFO);
+
+  return [
+    'status' => 'ok',
+    'nid' => (int) $nid,
+    'encounter_uuid' => $encounter_uuid,
+    'openmrs_uuid' => $openmrs_uuid,
+  ];
+}
+
+/**
  * Builds the prenatal-encounter payload sent to OpenFN.
  *
  * Gathers the encounter node plus every measurement node that references
