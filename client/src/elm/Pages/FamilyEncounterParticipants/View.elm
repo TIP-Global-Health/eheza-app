@@ -106,7 +106,6 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
                         (Dict.filter
                             (\_ filteredPerson ->
                                 -- Show only participants that belong to selected health center.
-                                -- Todo: check if this really required.
                                 (filteredPerson.healthCenterId == Just healthCenterId)
                                     && encounterCondition filteredPerson
                                     && chwCondition filteredPerson

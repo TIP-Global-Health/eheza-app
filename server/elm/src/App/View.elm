@@ -11,6 +11,7 @@ import Pages.Reports.View
 import Pages.ReportsMenu.View
 import Pages.Scoreboard.View
 import Pages.ScoreboardMenu.View
+import Translate exposing (translate)
 
 
 view : Model -> Html Msg
@@ -83,4 +84,4 @@ view model =
 
         NotFound ->
             div []
-                [ text "Wrong page?" ]
+                [ text <| translate model.language Translate.WrongPage ]

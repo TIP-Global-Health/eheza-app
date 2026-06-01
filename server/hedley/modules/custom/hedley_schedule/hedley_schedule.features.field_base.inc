@@ -244,7 +244,6 @@ function hedley_schedule_field_default_field_bases() {
         'nutrition' => 'Nutrition',
         'tuberculosis' => 'Tuberculosis',
         'well-child' => 'Well Child',
-        'inmmunization' => 'Inmmunization',
       ),
       'allowed_values_function' => '',
     ),

@@ -63,13 +63,12 @@ viewChild language currentDate zscores site features isChw childId ( sessionId, 
             viewFoundChild language currentDate zscores site features isChw ( childId, child ) ( sessionId, session ) pages db model
 
         Nothing ->
-            -- TODO: Make this error a little nicer, and translatable ... it
-            -- could occur for real if an invalid or out-of-date URL is
-            -- entered, for instance. It shouldn't occur through normal
-            -- navigation if the session is consistent (i.e. absent bugs).
+            -- Reachable if an invalid or out-of-date URL is entered. Should
+            -- not occur through normal navigation if the session is
+            -- consistent (i.e. absent bugs).
             div [ class "wrap" ]
-                [ h3 [] [ text "Internal error" ]
-                , p [] [ text "Error in Pages.Participant.View.viewChild -- child could not be found." ]
+                [ h3 [] [ text <| translate language Translate.InternalError ]
+                , p [] [ text <| translate language Translate.ChildNotFoundError ]
                 ]
 
 
@@ -284,13 +283,12 @@ viewMother language currentDate zscores site features isChw motherId ( sessionId
             viewFoundMother language currentDate zscores site features isChw ( motherId, mother ) ( sessionId, session ) pages db model
 
         Nothing ->
-            -- TODO: Make this error a little nicer, and translatable ... it
-            -- could occur for real if an invalid or out-of-date URL is
-            -- entered, for instance. It shouldn't occur through normal
-            -- navigation if the session is consistent (i.e. absent bugs).
+            -- Reachable if an invalid or out-of-date URL is entered. Should
+            -- not occur through normal navigation if the session is
+            -- consistent (i.e. absent bugs).
             div [ class "wrap" ]
-                [ h3 [] [ text "Internal error" ]
-                , p [] [ text "Error in Pages.Participant.View.viewMother -- mother could not be found." ]
+                [ h3 [] [ text <| translate language Translate.InternalError ]
+                , p [] [ text <| translate language Translate.MotherNotFoundError ]
                 ]
 
 

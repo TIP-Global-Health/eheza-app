@@ -3992,6 +3992,7 @@ toMalariaPreventionValue phaseRecorded form =
         form.receivedMosquitoNet
 
 
+labTestWithImmediateResult : (a -> Maybe ( b, { c | value : { d | testPrerequisites : Maybe (EverySet TestPrerequisite) } } )) -> a -> Bool
 labTestWithImmediateResult getMeasurementFunc measurements =
     getMeasurementFunc measurements
         |> getMeasurementValueFunc

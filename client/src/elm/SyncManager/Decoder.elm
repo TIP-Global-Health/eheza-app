@@ -267,12 +267,7 @@ decodeIndexDbQueryUploadAuthorityResultRecord =
 So we grab the `localId` and `uuid`, and feed them to the decodeBackendGeneralEntity.
 
 -}
-
-
-
---decodeBackendGeneralEntityAndUploadMethod : a -> Decoder ( BackendGeneralEntity, UploadMethod )
-
-
+decodeBackendEntityAndUploadMethod : (String -> Int -> Decoder a) -> Decoder ( a, UploadMethod )
 decodeBackendEntityAndUploadMethod func =
     (succeed (\a b -> ( a, b ))
         |> required "uuid" string
@@ -361,10 +356,10 @@ decodeDownloadSyncResponseGeneral =
         )
 
 
-
---decodeBackendGeneralEntity : Decoder (number -> BackendGeneralEntity) -> Decoder BackendGeneralEntity
-
-
+decodeBackendGeneralEntity :
+    (Decoder (String -> Int -> ( String, String, Int )) -> Decoder (Int -> ( String, String, Int )))
+    -> (Decoder (Int -> ( String, String, Int )) -> Decoder ( String, String, Int ))
+    -> Decoder BackendGeneralEntity
 decodeBackendGeneralEntity uuidDecoder identifierDecoder =
     (succeed (\a b c -> ( a, b, c ))
         |> required "type" string
@@ -456,10 +451,10 @@ decodeDownloadSyncResponseAuthorityStats =
         )
 
 
-
---decodeBackendAuthorityEntity : Decoder BackendAuthorityEntity
-
-
+decodeBackendAuthorityEntity :
+    (Decoder (String -> Int -> ( String, String, Int )) -> Decoder (Int -> ( String, String, Int )))
+    -> (Decoder (Int -> ( String, String, Int )) -> Decoder ( String, String, Int ))
+    -> Decoder BackendAuthorityEntity
 decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
     (succeed (\a b c -> ( a, b, c ))
         |> required "type" string
