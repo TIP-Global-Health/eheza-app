@@ -132,10 +132,14 @@ def find_concept(name):
     Unlike find(), this uses the ?q= search endpoint rather than listing,
     because a real OpenMRS holds thousands of concepts and a limit=100 list
     would never reach ours. Concepts created with a FULLY_SPECIFIED name
-    surface that name as `display`, so we match on it exactly. Each catalog
-    row has a unique name, so there is no intra-run collision to worry about;
-    idempotency only matters across separate runs, by which point the search
-    index has caught up.
+    surface that name as `display`, so we match on it exactly.
+
+    Note: this relies on OpenMRS's concept search index being current. The
+    index is updated asynchronously, so a concept created seconds earlier may
+    not yet be searchable. If the script is interrupted and re-run before the
+    index flushes, that concept might not be found and a second create with
+    the same name could be issued, producing a duplicate. We accept this as a
+    PoC limitation — in practice the index catches up between separate runs.
     """
     res = api(f'/concept?q={urllib.parse.quote(name)}&v=default')
     for r in res.get('results', []):
@@ -164,7 +168,13 @@ def ensure_concept(name, datatype):
 
 
 def provision_prenatal_concepts():
-    """Create one concept per catalog row; return {eheza_key: uuid}."""
+    """Create one concept per catalog row; return {eheza_key: uuid}.
+
+    Provisioning is non-transactional: if a concept create fails mid-loop,
+    concepts created earlier in the loop remain and no config is written.
+    Re-running resumes from where it left off (idempotent for concepts that
+    were already created).
+    """
     if not CATALOG.exists():
         print(f'  ! catalog {CATALOG} not found — skipping concepts',
               file=sys.stderr)
