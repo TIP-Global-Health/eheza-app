@@ -1,0 +1,43 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the hedley_openmrs module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function hedley_openmrs_install() {
+  _hedley_openmrs_create_encounter_uuid_field();
+}
+
+/**
+ * Creates the field that stores the linked OpenMRS encounter UUID.
+ */
+function _hedley_openmrs_create_encounter_uuid_field() {
+  if (field_info_field('field_openmrs_encounter_uuid')) {
+    return;
+  }
+
+  field_create_field([
+    'field_name' => 'field_openmrs_encounter_uuid',
+    'type' => 'text',
+    'cardinality' => 1,
+    'settings' => ['max_length' => 64],
+  ]);
+
+  field_create_instance([
+    'field_name' => 'field_openmrs_encounter_uuid',
+    'entity_type' => 'node',
+    'bundle' => 'prenatal_encounter',
+    'label' => 'OpenMRS encounter UUID',
+  ]);
+}
+
+/**
+ * Enables the OpenMRS encounter link field on prenatal encounters.
+ */
+function hedley_openmrs_update_7001() {
+  _hedley_openmrs_create_encounter_uuid_field();
+}
