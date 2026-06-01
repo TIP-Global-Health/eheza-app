@@ -12,6 +12,396 @@
         "measurement": "appointment_confirmation"
     },
     {
+        "eheza_key": "birth_plan.birth_plan_signs",
+        "concept_name": "E-Heza Birth Plan Birth Plan Signs",
+        "datatype": "Text",
+        "measurement": "birth_plan"
+    },
+    {
+        "eheza_key": "birth_plan.date_measured",
+        "concept_name": "E-Heza Birth Plan Date Measured",
+        "datatype": "Date",
+        "measurement": "birth_plan"
+    },
+    {
+        "eheza_key": "birth_plan.family_planning_signs",
+        "concept_name": "E-Heza Birth Plan Family Planning Signs",
+        "datatype": "Text",
+        "measurement": "birth_plan"
+    },
+    {
+        "eheza_key": "breast_exam.breast",
+        "concept_name": "E-Heza Breast Exam Breast",
+        "datatype": "Text",
+        "measurement": "breast_exam"
+    },
+    {
+        "eheza_key": "breast_exam.breast_self_exam",
+        "concept_name": "E-Heza Breast Exam Breast Self Exam",
+        "datatype": "Boolean",
+        "measurement": "breast_exam"
+    },
+    {
+        "eheza_key": "breast_exam.date_measured",
+        "concept_name": "E-Heza Breast Exam Date Measured",
+        "datatype": "Date",
+        "measurement": "breast_exam"
+    },
+    {
+        "eheza_key": "breast_exam.discharge_type",
+        "concept_name": "E-Heza Breast Exam Discharge Type",
+        "datatype": "Text",
+        "measurement": "breast_exam"
+    },
+    {
+        "eheza_key": "core_physical_exam.abdomen",
+        "concept_name": "E-Heza Core Physical Exam Abdomen",
+        "datatype": "Text",
+        "measurement": "core_physical_exam"
+    },
+    {
+        "eheza_key": "core_physical_exam.date_measured",
+        "concept_name": "E-Heza Core Physical Exam Date Measured",
+        "datatype": "Date",
+        "measurement": "core_physical_exam"
+    },
+    {
+        "eheza_key": "core_physical_exam.eyes",
+        "concept_name": "E-Heza Core Physical Exam Eyes",
+        "datatype": "Text",
+        "measurement": "core_physical_exam"
+    },
+    {
+        "eheza_key": "core_physical_exam.hands",
+        "concept_name": "E-Heza Core Physical Exam Hands",
+        "datatype": "Text",
+        "measurement": "core_physical_exam"
+    },
+    {
+        "eheza_key": "core_physical_exam.head_hair",
+        "concept_name": "E-Heza Core Physical Exam Head Hair",
+        "datatype": "Text",
+        "measurement": "core_physical_exam"
+    },
+    {
+        "eheza_key": "core_physical_exam.heart",
+        "concept_name": "E-Heza Core Physical Exam Heart",
+        "datatype": "Text",
+        "measurement": "core_physical_exam"
+    },
+    {
+        "eheza_key": "core_physical_exam.heart_murmur",
+        "concept_name": "E-Heza Core Physical Exam Heart Murmur",
+        "datatype": "Boolean",
+        "measurement": "core_physical_exam"
+    },
+    {
+        "eheza_key": "core_physical_exam.legs",
+        "concept_name": "E-Heza Core Physical Exam Legs",
+        "datatype": "Text",
+        "measurement": "core_physical_exam"
+    },
+    {
+        "eheza_key": "core_physical_exam.lungs",
+        "concept_name": "E-Heza Core Physical Exam Lungs",
+        "datatype": "Text",
+        "measurement": "core_physical_exam"
+    },
+    {
+        "eheza_key": "core_physical_exam.neck",
+        "concept_name": "E-Heza Core Physical Exam Neck",
+        "datatype": "Text",
+        "measurement": "core_physical_exam"
+    },
+    {
+        "eheza_key": "danger_signs.danger_signs",
+        "concept_name": "E-Heza Danger Signs Danger Signs",
+        "datatype": "Text",
+        "measurement": "danger_signs"
+    },
+    {
+        "eheza_key": "danger_signs.date_measured",
+        "concept_name": "E-Heza Danger Signs Date Measured",
+        "datatype": "Date",
+        "measurement": "danger_signs"
+    },
+    {
+        "eheza_key": "danger_signs.postpartum_child",
+        "concept_name": "E-Heza Danger Signs Postpartum Child",
+        "datatype": "Text",
+        "measurement": "danger_signs"
+    },
+    {
+        "eheza_key": "danger_signs.postpartum_mother",
+        "concept_name": "E-Heza Danger Signs Postpartum Mother",
+        "datatype": "Text",
+        "measurement": "danger_signs"
+    },
+    {
+        "eheza_key": "last_menstrual_period.confident",
+        "concept_name": "E-Heza Last Menstrual Period Confident",
+        "datatype": "Boolean",
+        "measurement": "last_menstrual_period"
+    },
+    {
+        "eheza_key": "last_menstrual_period.confirmation",
+        "concept_name": "E-Heza Last Menstrual Period Confirmation",
+        "datatype": "Boolean",
+        "measurement": "last_menstrual_period"
+    },
+    {
+        "eheza_key": "last_menstrual_period.date_measured",
+        "concept_name": "E-Heza Last Menstrual Period Date Measured",
+        "datatype": "Date",
+        "measurement": "last_menstrual_period"
+    },
+    {
+        "eheza_key": "last_menstrual_period.last_menstrual_period",
+        "concept_name": "E-Heza Last Menstrual Period Last Menstrual Period",
+        "datatype": "Date",
+        "measurement": "last_menstrual_period"
+    },
+    {
+        "eheza_key": "last_menstrual_period.late_first_visit_reason",
+        "concept_name": "E-Heza Last Menstrual Period Late First Visit Reason",
+        "datatype": "Text",
+        "measurement": "last_menstrual_period"
+    },
+    {
+        "eheza_key": "last_menstrual_period.not_confident_reason",
+        "concept_name": "E-Heza Last Menstrual Period Not Confident Reason",
+        "datatype": "Text",
+        "measurement": "last_menstrual_period"
+    },
+    {
+        "eheza_key": "last_menstrual_period.weight",
+        "concept_name": "E-Heza Last Menstrual Period Weight",
+        "datatype": "Numeric",
+        "measurement": "last_menstrual_period"
+    },
+    {
+        "eheza_key": "medical_history.date_measured",
+        "concept_name": "E-Heza Medical History Date Measured",
+        "datatype": "Date",
+        "measurement": "medical_history"
+    },
+    {
+        "eheza_key": "medical_history.infectious_disease_history",
+        "concept_name": "E-Heza Medical History Infectious Disease History",
+        "datatype": "Text",
+        "measurement": "medical_history"
+    },
+    {
+        "eheza_key": "medical_history.medical_history",
+        "concept_name": "E-Heza Medical History Medical History",
+        "datatype": "Text",
+        "measurement": "medical_history"
+    },
+    {
+        "eheza_key": "medical_history.mental_health_issues",
+        "concept_name": "E-Heza Medical History Mental Health Issues",
+        "datatype": "Text",
+        "measurement": "medical_history"
+    },
+    {
+        "eheza_key": "medical_history.physical_condition_history",
+        "concept_name": "E-Heza Medical History Physical Condition History",
+        "datatype": "Text",
+        "measurement": "medical_history"
+    },
+    {
+        "eheza_key": "medical_history.preeclampsia_in_family",
+        "concept_name": "E-Heza Medical History Preeclampsia In Family",
+        "datatype": "Text",
+        "measurement": "medical_history"
+    },
+    {
+        "eheza_key": "medication.anemia_treatment",
+        "concept_name": "E-Heza Medication Anemia Treatment",
+        "datatype": "Text",
+        "measurement": "medication"
+    },
+    {
+        "eheza_key": "medication.date_measured",
+        "concept_name": "E-Heza Medication Date Measured",
+        "datatype": "Date",
+        "measurement": "medication"
+    },
+    {
+        "eheza_key": "medication.hiv_treatment",
+        "concept_name": "E-Heza Medication Hiv Treatment",
+        "datatype": "Text",
+        "measurement": "medication"
+    },
+    {
+        "eheza_key": "medication.hypertension_treatment",
+        "concept_name": "E-Heza Medication Hypertension Treatment",
+        "datatype": "Text",
+        "measurement": "medication"
+    },
+    {
+        "eheza_key": "medication.malaria_treatment",
+        "concept_name": "E-Heza Medication Malaria Treatment",
+        "datatype": "Text",
+        "measurement": "medication"
+    },
+    {
+        "eheza_key": "medication.medication",
+        "concept_name": "E-Heza Medication Medication",
+        "datatype": "Text",
+        "measurement": "medication"
+    },
+    {
+        "eheza_key": "medication.syphilis_treatment",
+        "concept_name": "E-Heza Medication Syphilis Treatment",
+        "datatype": "Text",
+        "measurement": "medication"
+    },
+    {
+        "eheza_key": "obstetric_history.abortions",
+        "concept_name": "E-Heza Obstetric History Abortions",
+        "datatype": "Numeric",
+        "measurement": "obstetric_history"
+    },
+    {
+        "eheza_key": "obstetric_history.currently_pregnant",
+        "concept_name": "E-Heza Obstetric History Currently Pregnant",
+        "datatype": "Boolean",
+        "measurement": "obstetric_history"
+    },
+    {
+        "eheza_key": "obstetric_history.date_measured",
+        "concept_name": "E-Heza Obstetric History Date Measured",
+        "datatype": "Date",
+        "measurement": "obstetric_history"
+    },
+    {
+        "eheza_key": "obstetric_history.live_children",
+        "concept_name": "E-Heza Obstetric History Live Children",
+        "datatype": "Numeric",
+        "measurement": "obstetric_history"
+    },
+    {
+        "eheza_key": "obstetric_history.preterm_pregnancy",
+        "concept_name": "E-Heza Obstetric History Preterm Pregnancy",
+        "datatype": "Numeric",
+        "measurement": "obstetric_history"
+    },
+    {
+        "eheza_key": "obstetric_history.stillbirths_at_term",
+        "concept_name": "E-Heza Obstetric History Stillbirths At Term",
+        "datatype": "Numeric",
+        "measurement": "obstetric_history"
+    },
+    {
+        "eheza_key": "obstetric_history.stillbirths_preterm",
+        "concept_name": "E-Heza Obstetric History Stillbirths Preterm",
+        "datatype": "Numeric",
+        "measurement": "obstetric_history"
+    },
+    {
+        "eheza_key": "obstetric_history.term_pregnancy",
+        "concept_name": "E-Heza Obstetric History Term Pregnancy",
+        "datatype": "Numeric",
+        "measurement": "obstetric_history"
+    },
+    {
+        "eheza_key": "obstetric_history_step2.c_section_reason",
+        "concept_name": "E-Heza Obstetric History Step2 C Section Reason",
+        "datatype": "Text",
+        "measurement": "obstetric_history_step2"
+    },
+    {
+        "eheza_key": "obstetric_history_step2.c_sections",
+        "concept_name": "E-Heza Obstetric History Step2 C Sections",
+        "datatype": "Numeric",
+        "measurement": "obstetric_history_step2"
+    },
+    {
+        "eheza_key": "obstetric_history_step2.date_measured",
+        "concept_name": "E-Heza Obstetric History Step2 Date Measured",
+        "datatype": "Date",
+        "measurement": "obstetric_history_step2"
+    },
+    {
+        "eheza_key": "obstetric_history_step2.obstetric_history",
+        "concept_name": "E-Heza Obstetric History Step2 Obstetric History",
+        "datatype": "Text",
+        "measurement": "obstetric_history_step2"
+    },
+    {
+        "eheza_key": "obstetric_history_step2.obstetric_history_step2",
+        "concept_name": "E-Heza Obstetric History Step2 Obstetric History Step2",
+        "datatype": "Text",
+        "measurement": "obstetric_history_step2"
+    },
+    {
+        "eheza_key": "obstetric_history_step2.previous_delivery",
+        "concept_name": "E-Heza Obstetric History Step2 Previous Delivery",
+        "datatype": "Text",
+        "measurement": "obstetric_history_step2"
+    },
+    {
+        "eheza_key": "obstetric_history_step2.previous_delivery_period",
+        "concept_name": "E-Heza Obstetric History Step2 Previous Delivery Period",
+        "datatype": "Text",
+        "measurement": "obstetric_history_step2"
+    },
+    {
+        "eheza_key": "obstetrical_exam.c_section_scar",
+        "concept_name": "E-Heza Obstetrical Exam C Section Scar",
+        "datatype": "Text",
+        "measurement": "obstetrical_exam"
+    },
+    {
+        "eheza_key": "obstetrical_exam.date_measured",
+        "concept_name": "E-Heza Obstetrical Exam Date Measured",
+        "datatype": "Date",
+        "measurement": "obstetrical_exam"
+    },
+    {
+        "eheza_key": "obstetrical_exam.fetal_heart_rate",
+        "concept_name": "E-Heza Obstetrical Exam Fetal Heart Rate",
+        "datatype": "Numeric",
+        "measurement": "obstetrical_exam"
+    },
+    {
+        "eheza_key": "obstetrical_exam.fetal_movement",
+        "concept_name": "E-Heza Obstetrical Exam Fetal Movement",
+        "datatype": "Boolean",
+        "measurement": "obstetrical_exam"
+    },
+    {
+        "eheza_key": "obstetrical_exam.fetal_presentation",
+        "concept_name": "E-Heza Obstetrical Exam Fetal Presentation",
+        "datatype": "Text",
+        "measurement": "obstetrical_exam"
+    },
+    {
+        "eheza_key": "obstetrical_exam.fundal_height",
+        "concept_name": "E-Heza Obstetrical Exam Fundal Height",
+        "datatype": "Numeric",
+        "measurement": "obstetrical_exam"
+    },
+    {
+        "eheza_key": "obstetrical_exam.fundal_palpable",
+        "concept_name": "E-Heza Obstetrical Exam Fundal Palpable",
+        "datatype": "Boolean",
+        "measurement": "obstetrical_exam"
+    },
+    {
+        "eheza_key": "pregnancy_testing.date_measured",
+        "concept_name": "E-Heza Pregnancy Testing Date Measured",
+        "datatype": "Date",
+        "measurement": "pregnancy_testing"
+    },
+    {
+        "eheza_key": "pregnancy_testing.urine_pregnancy_test",
+        "concept_name": "E-Heza Pregnancy Testing Urine Pregnancy Test",
+        "datatype": "Text",
+        "measurement": "pregnancy_testing"
+    },
+    {
         "eheza_key": "prenatal_aspirin.administration_note",
         "concept_name": "E-Heza Prenatal Aspirin Administration Note",
         "datatype": "Text",
@@ -90,6 +480,18 @@
         "measurement": "prenatal_calcium"
     },
     {
+        "eheza_key": "prenatal_family_planning.date_measured",
+        "concept_name": "E-Heza Prenatal Family Planning Date Measured",
+        "datatype": "Date",
+        "measurement": "prenatal_family_planning"
+    },
+    {
+        "eheza_key": "prenatal_family_planning.family_planning_signs",
+        "concept_name": "E-Heza Prenatal Family Planning Family Planning Signs",
+        "datatype": "Text",
+        "measurement": "prenatal_family_planning"
+    },
+    {
         "eheza_key": "prenatal_fefol.administration_note",
         "concept_name": "E-Heza Prenatal Fefol Administration Note",
         "datatype": "Text",
@@ -160,6 +562,24 @@
         "concept_name": "E-Heza Prenatal Gu Exam Vaginal Exam Signs",
         "datatype": "Text",
         "measurement": "prenatal_gu_exam"
+    },
+    {
+        "eheza_key": "prenatal_health_education.date_measured",
+        "concept_name": "E-Heza Prenatal Health Education Date Measured",
+        "datatype": "Date",
+        "measurement": "prenatal_health_education"
+    },
+    {
+        "eheza_key": "prenatal_health_education.health_education_signs_ph2",
+        "concept_name": "E-Heza Prenatal Health Education Health Education Signs Ph2",
+        "datatype": "Text",
+        "measurement": "prenatal_health_education"
+    },
+    {
+        "eheza_key": "prenatal_health_education.prenatal_health_education",
+        "concept_name": "E-Heza Prenatal Health Education Prenatal Health Education",
+        "datatype": "Text",
+        "measurement": "prenatal_health_education"
     },
     {
         "eheza_key": "prenatal_hemoglobin_test.date_measured",
@@ -468,6 +888,30 @@
         "measurement": "prenatal_mms"
     },
     {
+        "eheza_key": "prenatal_nutrition.date_measured",
+        "concept_name": "E-Heza Prenatal Nutrition Date Measured",
+        "datatype": "Date",
+        "measurement": "prenatal_nutrition"
+    },
+    {
+        "eheza_key": "prenatal_nutrition.height",
+        "concept_name": "E-Heza Prenatal Nutrition Height",
+        "datatype": "Numeric",
+        "measurement": "prenatal_nutrition"
+    },
+    {
+        "eheza_key": "prenatal_nutrition.muac",
+        "concept_name": "E-Heza Prenatal Nutrition Muac",
+        "datatype": "Numeric",
+        "measurement": "prenatal_nutrition"
+    },
+    {
+        "eheza_key": "prenatal_nutrition.weight",
+        "concept_name": "E-Heza Prenatal Nutrition Weight",
+        "datatype": "Numeric",
+        "measurement": "prenatal_nutrition"
+    },
+    {
         "eheza_key": "prenatal_outside_care.date_measured",
         "concept_name": "E-Heza Prenatal Outside Care Date Measured",
         "datatype": "Date",
@@ -526,6 +970,18 @@
         "concept_name": "E-Heza Prenatal Partner Hiv Test Test Result",
         "datatype": "Text",
         "measurement": "prenatal_partner_hiv_test"
+    },
+    {
+        "eheza_key": "prenatal_photo.date_measured",
+        "concept_name": "E-Heza Prenatal Photo Date Measured",
+        "datatype": "Date",
+        "measurement": "prenatal_photo"
+    },
+    {
+        "eheza_key": "prenatal_photo.photo",
+        "concept_name": "E-Heza Prenatal Photo Photo",
+        "datatype": "Text",
+        "measurement": "prenatal_photo"
     },
     {
         "eheza_key": "prenatal_random_blood_sugar_test.date_measured",
@@ -814,6 +1270,42 @@
         "concept_name": "E-Heza Prenatal Urine Dipstick Test Urobilinogen",
         "datatype": "Text",
         "measurement": "prenatal_urine_dipstick_test"
+    },
+    {
+        "eheza_key": "resource.date_measured",
+        "concept_name": "E-Heza Resource Date Measured",
+        "datatype": "Date",
+        "measurement": "resource"
+    },
+    {
+        "eheza_key": "resource.phase_recorded",
+        "concept_name": "E-Heza Resource Phase Recorded",
+        "datatype": "Text",
+        "measurement": "resource"
+    },
+    {
+        "eheza_key": "resource.resources",
+        "concept_name": "E-Heza Resource Resources",
+        "datatype": "Text",
+        "measurement": "resource"
+    },
+    {
+        "eheza_key": "social_history.date_measured",
+        "concept_name": "E-Heza Social History Date Measured",
+        "datatype": "Date",
+        "measurement": "social_history"
+    },
+    {
+        "eheza_key": "social_history.partner_hiv_testing",
+        "concept_name": "E-Heza Social History Partner Hiv Testing",
+        "datatype": "Text",
+        "measurement": "social_history"
+    },
+    {
+        "eheza_key": "social_history.social_history",
+        "concept_name": "E-Heza Social History Social History",
+        "datatype": "Text",
+        "measurement": "social_history"
     },
     {
         "eheza_key": "vitals.body_temperature",

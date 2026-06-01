@@ -21,24 +21,19 @@ function hedley_openmrs_drush_command() {
 /**
  * Prenatal measurement bundles whose fields become OpenMRS observations.
  *
- * The prenatal_encounter bundle itself is excluded — it becomes the
- * Encounter, not an observation.
+ * Derived from the bundles that actually carry field_prenatal_encounter —
+ * the same universe the payload builder walks — so catalog coverage and
+ * builder output stay in lock-step. The prenatal_encounter bundle itself
+ * does not reference field_prenatal_encounter, so it is naturally excluded.
  */
 function _hedley_openmrs_prenatal_bundles() {
-  return [
-    'appointment_confirmation', 'prenatal_aspirin', 'prenatal_blood_gprs_test',
-    'prenatal_breastfeeding', 'prenatal_calcium', 'prenatal_fefol',
-    'prenatal_folate', 'prenatal_follow_up', 'prenatal_gu_exam',
-    'prenatal_hemoglobin_test', 'prenatal_hepatitis_b_test',
-    'prenatal_hiv_pcr_test', 'prenatal_hiv_test', 'prenatal_iron',
-    'prenatal_labs_results', 'prenatal_malaria_test', 'prenatal_mebendazole',
-    'prenatal_medication_distribution', 'prenatal_mental_health',
-    'prenatal_mms', 'prenatal_outside_care', 'prenatal_partner_hiv_test',
-    'prenatal_random_blood_sugar_test', 'prenatal_send_to_hc',
-    'prenatal_speciality_care', 'prenatal_symptom_review',
-    'prenatal_syphilis_test', 'prenatal_tetanus_immunisation',
-    'prenatal_ultrasound', 'prenatal_urine_dipstick_test', 'vitals',
-  ];
+  $field = field_info_field('field_prenatal_encounter');
+  if (empty($field['bundles']['node'])) {
+    return [];
+  }
+  $bundles = $field['bundles']['node'];
+  sort($bundles);
+  return $bundles;
 }
 
 /**
