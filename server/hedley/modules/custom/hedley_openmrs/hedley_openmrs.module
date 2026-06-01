@@ -418,6 +418,133 @@ function hedley_openmrs_patient_link() {
 }
 
 /**
+ * Builds the prenatal-encounter payload sent to OpenFN.
+ *
+ * Gathers the encounter node plus every measurement node that references
+ * it, flattening each measurement's field values into a single
+ * `measurements` map keyed by the field name minus its `field_` prefix.
+ *
+ * @param object $node
+ *   The prenatal_encounter node.
+ *
+ * @return array|null
+ *   The payload, or NULL when the person is not yet linked to OpenMRS.
+ */
+function hedley_openmrs_build_prenatal_payload($node) {
+  // _hedley_openmrs_skip_fields() lives in hedley_openmrs.drush.inc, which is
+  // not auto-loaded when this runs from the queue worker. Load it on demand.
+  if (!function_exists('_hedley_openmrs_skip_fields')) {
+    module_load_include('inc', 'hedley_openmrs', 'hedley_openmrs.drush');
+  }
+
+  // The encounter references the individual participant; from it we reach
+  // the person and the person's OpenMRS UUID (set by the Phase 1 flow).
+  $person_node = _hedley_openmrs_encounter_person($node);
+  if (empty($person_node)) {
+    return NULL;
+  }
+  $person_openmrs_uuid =
+    _hedley_openmrs_field($person_node, 'field_openmrs_uuid');
+  if (empty($person_openmrs_uuid)) {
+    // Person not linked yet — caller turns this into a retry.
+    return NULL;
+  }
+
+  $measurements = [];
+  $skip = array_flip(_hedley_openmrs_skip_fields());
+  foreach (_hedley_openmrs_encounter_measurements($node->nid) as $m_node) {
+    foreach (field_info_instances('node', $m_node->type) as $field_name => $i) {
+      if (isset($skip[$field_name])) {
+        continue;
+      }
+      $value = _hedley_openmrs_field($m_node, $field_name);
+      if ($value !== NULL && $value !== '') {
+        $key = preg_replace('/^field_/', '', $field_name);
+        $measurements[$key] = $value;
+      }
+    }
+  }
+
+  return [
+    'encounter_uuid' => _hedley_openmrs_field($node, 'field_uuid'),
+    'encounter_date' => _hedley_openmrs_field($node, 'field_scheduled_date'),
+    'person_uuid' => _hedley_openmrs_field($person_node, 'field_uuid'),
+    'person_openmrs_uuid' => $person_openmrs_uuid,
+    'existing_encounter_uuid' => _hedley_openmrs_field(
+      $node, 'field_openmrs_encounter_uuid'
+    ),
+    'measurements' => $measurements,
+  ];
+}
+
+/**
+ * Loads the person node for a prenatal encounter via its participant.
+ *
+ * @param object $node
+ *   The prenatal_encounter node.
+ *
+ * @return object|null
+ *   The person node, or NULL.
+ */
+function _hedley_openmrs_encounter_person($node) {
+  $participant_id =
+    _hedley_openmrs_reference($node, 'field_individual_participant');
+  if (empty($participant_id)) {
+    return NULL;
+  }
+  $participant = node_load($participant_id);
+  if (empty($participant)) {
+    return NULL;
+  }
+  $person_id = _hedley_openmrs_reference($participant, 'field_person');
+  return empty($person_id) ? NULL : node_load($person_id);
+}
+
+/**
+ * Returns the first target_id of an entity-reference field, or NULL.
+ *
+ * The generic _hedley_openmrs_field() helper reads the 'value' column, but
+ * entity references (field_individual_participant, field_person) store their
+ * referenced node id under 'target_id', so they need their own accessor.
+ *
+ * @param object $node
+ *   The node.
+ * @param string $field
+ *   The entity-reference field machine name.
+ *
+ * @return int|null
+ *   The referenced node id, or NULL when the field is empty.
+ */
+function _hedley_openmrs_reference($node, $field) {
+  if (isset($node->{$field}[LANGUAGE_NONE][0]['target_id'])) {
+    return $node->{$field}[LANGUAGE_NONE][0]['target_id'];
+  }
+
+  return NULL;
+}
+
+/**
+ * Loads all measurement nodes that reference a prenatal encounter.
+ *
+ * @param int $encounter_id
+ *   The prenatal_encounter node id.
+ *
+ * @return array
+ *   Loaded measurement nodes.
+ */
+function _hedley_openmrs_encounter_measurements($encounter_id) {
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'node')
+    ->fieldCondition('field_prenatal_encounter', 'target_id', $encounter_id)
+    ->addMetaData('account', user_load(1));
+  $result = $query->execute();
+  if (empty($result['node'])) {
+    return [];
+  }
+  return node_load_multiple(array_keys($result['node']));
+}
+
+/**
  * Builds an error response and sets the HTTP status line.
  *
  * @param string $status
