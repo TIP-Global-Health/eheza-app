@@ -291,11 +291,6 @@ viewFloatForm config language currentDate isChw child measurements previousValue
         -- we're assuming that we're editing that value, rather than making a
         -- new measurement today). Otherwise, we assume we're makeing the
         -- measurement today.
-        --
-        -- TODO: We should probably surface this in the UI ... that is, display
-        -- what day we think the measurement was made on, and allow the nurse
-        -- to change that if necessary.
-        -- And, we'll need the child's age.
         maybeAgeInDays =
             Maybe.map
                 (\birthDate ->
@@ -757,74 +752,6 @@ viewChildFbf language clinicType measurement form =
         SetDistributoinNoticeForChild
         saveMsg
         form
-
-
-
-{-
-   viewCounselingSession : Language -> MeasurementData (Maybe ( CounselingSessionId, CounselingSession )) -> EditableSession -> Maybe ( CounselingTiming, EverySet CounselingTopicId ) -> Html MsgChild
-   viewCounselingSession language measurement session value =
-       let
-           existingId =
-               Maybe.map Tuple.first measurement.current
-       in
-       case value of
-           Nothing ->
-               emptyNode
-
-           Just ( timing, topics ) ->
-               let
-                   activity =
-                       ChildActivity Counseling
-
-                   allTopicsChecked =
-                       Dict.all
-                           (\id _ -> EverySet.member id topics)
-                           expected
-
-                   completed =
-                       isJust measurement.current
-
-                   -- For counseling sessions, we don't allow saves unless all the
-                   -- topics are checked. Also, we don't allow an update if the
-                   -- activity has been completed. That is, once the nurse says the
-                   -- counseling session is done, the nurse cannot correct that.
-                   saveMsg =
-                       if allTopicsChecked && not completed then
-                           SaveCounselingSession existingId timing topics
-                               |> SendOutMsgChild
-                               |> Just
-
-                       else
-                           Nothing
-
-                   expected =
-                       session.offlineSession.everyCounselingSchedule
-                           |> Dict.get timing
-                           |> Maybe.withDefault Dict.empty
-               in
-               div
-                   [ class "ui full segment counseling"
-                   , id "counselingSessionEntryForm"
-                   ]
-                   [ div [ class "content" ]
-                       [ h3 [ class "ui header" ]
-                           [ text <| translate language (Translate.ActivitiesTitle activity)
-                           ]
-                       , h3 [ class "ui header" ]
-                           [ text <| translate language (Translate.CounselingTimingHeading timing)
-                           ]
-                       , div [ class "ui form" ] <|
-                           p [] [ text <| translate language (Translate.ActivitiesLabel activity) ]
-                               :: viewCounselingTopics language completed expected topics
-                       ]
-                   , div [ class "actions" ] <|
-                       saveButton
-                           language
-                           saveMsg
-                           measurement
-                           Nothing
-                   ]
--}
 
 
 viewContributingFactors : Language -> MeasurementData (Maybe ( ContributingFactorsId, ContributingFactors )) -> ContributingFactorsForm -> Html MsgChild

@@ -190,9 +190,6 @@ initiatorFromUrlFragment s =
         "antenatal" ->
             IndividualEncounterOrigin AntenatalEncounter |> Just
 
-        "inmmunization" ->
-            IndividualEncounterOrigin InmmunizationEncounter |> Just
-
         "nutrition" ->
             IndividualEncounterOrigin NutritionEncounter |> Just
 

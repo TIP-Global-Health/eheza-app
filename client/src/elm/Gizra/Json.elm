@@ -30,8 +30,6 @@ module Gizra.Json exposing
 
 -}
 
--- import Json.Decode.Extra exposing (dict2)
-
 import AssocList as Dict exposing (Dict)
 import Json.Decode exposing (..)
 import Json.Encode exposing (object)
