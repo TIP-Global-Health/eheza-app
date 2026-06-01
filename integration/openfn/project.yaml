@@ -49,3 +49,41 @@ workflows:
         condition_type: on_job_success
         source_job: match
         target_job: load
+  prenatal-encounter:
+    name: Prenatal encounter sync
+    jobs:
+      transform-encounter:
+        name: Transform encounter
+        adaptor: '@openfn/language-common@3.3.2'
+        body:
+          path: jobs/transform-encounter.js
+        credential: null
+      match-encounter:
+        name: Match encounter
+        adaptor: '@openfn/language-common@3.3.2'
+        body:
+          path: jobs/match-encounter.js
+        credential: null
+      load-encounter:
+        name: Load encounter
+        adaptor: '@openfn/language-http@7.3.0'
+        body:
+          path: jobs/load-encounter.js
+        credential: null
+    triggers:
+      webhook:
+        type: webhook
+        enabled: true
+    edges:
+      webhook->transform-encounter:
+        condition_type: always
+        source_trigger: webhook
+        target_job: transform-encounter
+      transform-encounter->match-encounter:
+        condition_type: on_job_success
+        source_job: transform-encounter
+        target_job: match-encounter
+      match-encounter->load-encounter:
+        condition_type: on_job_success
+        source_job: match-encounter
+        target_job: load-encounter
