@@ -9,6 +9,7 @@
  */
 
 define('HEDLEY_OPENMRS_PUSH_PERSON', 'hedley_openmrs_push_person');
+define('HEDLEY_OPENMRS_PUSH_PRENATAL_ENCOUNTER', 'hedley_openmrs_push_prenatal_encounter');
 
 /**
  * Implements hook_menu().
@@ -17,6 +18,15 @@ function hedley_openmrs_menu() {
   $items['openmrs/patient-link'] = [
     'title' => 'OpenMRS patient link',
     'page callback' => 'hedley_openmrs_patient_link',
+    // Public path; auth is the shared-secret check in the callback itself.
+    'access callback' => TRUE,
+    'delivery callback' => 'drupal_json_output',
+    'type' => MENU_CALLBACK,
+  ];
+
+  $items['openmrs/encounter-link'] = [
+    'title' => 'OpenMRS encounter link',
+    'page callback' => 'hedley_openmrs_encounter_link',
     // Public path; auth is the shared-secret check in the callback itself.
     'access callback' => TRUE,
     'delivery callback' => 'drupal_json_output',
@@ -34,6 +44,15 @@ function hedley_openmrs_menu() {
  * offline device syncs.
  */
 function hedley_openmrs_node_insert($node) {
+  if ($node->type === 'prenatal_encounter') {
+    hedley_general_add_task_to_advanced_queue_by_id(
+      HEDLEY_OPENMRS_PUSH_PRENATAL_ENCOUNTER,
+      $node->nid,
+      ['encounter_id' => $node->nid]
+    );
+    return;
+  }
+
   if ($node->type !== 'person') {
     return;
   }
@@ -55,6 +74,15 @@ function hedley_openmrs_node_insert($node) {
  * is intentionally not in the tracked set.
  */
 function hedley_openmrs_node_update($node) {
+  if ($node->type === 'prenatal_encounter') {
+    hedley_general_add_task_to_advanced_queue_by_id(
+      HEDLEY_OPENMRS_PUSH_PRENATAL_ENCOUNTER,
+      $node->nid,
+      ['encounter_id' => $node->nid]
+    );
+    return;
+  }
+
   if ($node->type !== 'person') {
     return;
   }
@@ -76,6 +104,14 @@ function hedley_openmrs_advanced_queue_info() {
   $items[HEDLEY_OPENMRS_PUSH_PERSON] = [
     'label' => t('Push person registration to OpenFN'),
     'worker callback' => 'hedley_openmrs_push_person_worker',
+    'groups' => ['hedley'],
+    'retry after' => 120,
+    'max attempts' => 5,
+  ];
+
+  $items[HEDLEY_OPENMRS_PUSH_PRENATAL_ENCOUNTER] = [
+    'label' => t('Push prenatal encounter to OpenFN'),
+    'worker callback' => 'hedley_openmrs_push_prenatal_encounter_worker',
     'groups' => ['hedley'],
     'retry after' => 120,
     'max attempts' => 5,
