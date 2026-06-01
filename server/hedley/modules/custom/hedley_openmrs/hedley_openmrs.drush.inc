@@ -46,8 +46,8 @@ function _hedley_openmrs_prenatal_bundles() {
  */
 function _hedley_openmrs_skip_fields() {
   return [
-    'field_prenatal_encounter', 'field_uuid', 'field_shard', 'field_nurse',
-    'field_person', 'field_deleted', 'field_health_center',
+    'field_prenatal_encounter', 'field_uuid', 'field_shard', 'field_shards',
+    'field_nurse', 'field_person', 'field_deleted', 'field_health_center',
   ];
 }
 

@@ -325,6 +325,34 @@ function _hedley_openmrs_field($node, $field) {
 }
 
 /**
+ * Returns all values of a node field joined into one string.
+ *
+ * E-Heza stores multi-select measurements as multiple field deltas; the
+ * OpenMRS PoC carries them as one comma-separated Text observation, so a
+ * multi-value field is not silently truncated to its first value.
+ *
+ * @param object $node
+ *   The node.
+ * @param string $field
+ *   The field machine name.
+ *
+ * @return string|null
+ *   The joined values, or NULL when the field is empty.
+ */
+function _hedley_openmrs_field_joined($node, $field) {
+  if (empty($node->{$field}[LANGUAGE_NONE])) {
+    return NULL;
+  }
+  $values = [];
+  foreach ($node->{$field}[LANGUAGE_NONE] as $item) {
+    if (isset($item['value']) && $item['value'] !== '') {
+      $values[] = $item['value'];
+    }
+  }
+  return empty($values) ? NULL : implode(', ', $values);
+}
+
+/**
  * Write-back endpoint: store an OpenMRS patient UUID on an E-Heza person.
  *
  * Called by the OpenFN load step once it has created (or matched) the patient
@@ -453,11 +481,15 @@ function hedley_openmrs_build_prenatal_payload($node) {
   $measurements = [];
   $skip = array_flip(_hedley_openmrs_skip_fields());
   foreach (_hedley_openmrs_encounter_measurements($node->nid) as $m_node) {
+    // Skip soft-deleted measurements — they must not reach OpenMRS.
+    if (_hedley_openmrs_field($m_node, 'field_deleted')) {
+      continue;
+    }
     foreach (field_info_instances('node', $m_node->type) as $field_name => $i) {
       if (isset($skip[$field_name])) {
         continue;
       }
-      $value = _hedley_openmrs_field($m_node, $field_name);
+      $value = _hedley_openmrs_field_joined($m_node, $field_name);
       if ($value !== NULL && $value !== '') {
         $key = preg_replace('/^field_/', '', $field_name);
         $measurements[$key] = $value;
