@@ -662,7 +662,9 @@ function hedley_openmrs_build_prenatal_payload($node) {
       }
       $value = _hedley_openmrs_field_joined($m_node, $field_name);
       if ($value !== NULL && $value !== '') {
-        $key = preg_replace('/^field_/', '', $field_name);
+        // Namespace by bundle so fields shared across measurement bundles
+        // (test_result, execution_date, ...) don't collide and drop obs.
+        $key = $m_node->type . '.' . preg_replace('/^field_/', '', $field_name);
         $measurements[$key] = $value;
       }
     }

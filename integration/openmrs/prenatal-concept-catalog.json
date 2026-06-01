@@ -1,428 +1,866 @@
 [
     {
-        "eheza_key": "administered_doses",
-        "concept_name": "E-Heza Administered Doses",
-        "datatype": "Text",
-        "measurement": "prenatal_tetanus_immunisation"
-    },
-    {
-        "eheza_key": "administration_dates",
-        "concept_name": "E-Heza Administration Dates",
+        "eheza_key": "appointment_confirmation.appointment_confirmation",
+        "concept_name": "E-Heza Appointment Confirmation Appointment Confirmation",
         "datatype": "Date",
-        "measurement": "prenatal_tetanus_immunisation"
+        "measurement": "appointment_confirmation"
     },
     {
-        "eheza_key": "administration_note",
-        "concept_name": "E-Heza Administration Note",
+        "eheza_key": "appointment_confirmation.date_measured",
+        "concept_name": "E-Heza Appointment Confirmation Date Measured",
+        "datatype": "Date",
+        "measurement": "appointment_confirmation"
+    },
+    {
+        "eheza_key": "prenatal_aspirin.administration_note",
+        "concept_name": "E-Heza Prenatal Aspirin Administration Note",
         "datatype": "Text",
         "measurement": "prenatal_aspirin"
     },
     {
-        "eheza_key": "appointment_confirmation",
-        "concept_name": "E-Heza Appointment Confirmation",
+        "eheza_key": "prenatal_aspirin.date_measured",
+        "concept_name": "E-Heza Prenatal Aspirin Date Measured",
         "datatype": "Date",
-        "measurement": "appointment_confirmation"
+        "measurement": "prenatal_aspirin"
     },
     {
-        "eheza_key": "avoiding_guidance_reason",
-        "concept_name": "E-Heza Avoiding Guidance Reason",
-        "datatype": "Text",
-        "measurement": "prenatal_medication_distribution"
-    },
-    {
-        "eheza_key": "bilirubin",
-        "concept_name": "E-Heza Bilirubin",
-        "datatype": "Text",
-        "measurement": "prenatal_urine_dipstick_test"
-    },
-    {
-        "eheza_key": "blood_group",
-        "concept_name": "E-Heza Blood Group",
+        "eheza_key": "prenatal_blood_gprs_test.blood_group",
+        "concept_name": "E-Heza Prenatal Blood Gprs Test Blood Group",
         "datatype": "Text",
         "measurement": "prenatal_blood_gprs_test"
     },
     {
-        "eheza_key": "blood_smear_result",
-        "concept_name": "E-Heza Blood Smear Result",
+        "eheza_key": "prenatal_blood_gprs_test.date_measured",
+        "concept_name": "E-Heza Prenatal Blood Gprs Test Date Measured",
+        "datatype": "Date",
+        "measurement": "prenatal_blood_gprs_test"
+    },
+    {
+        "eheza_key": "prenatal_blood_gprs_test.execution_date",
+        "concept_name": "E-Heza Prenatal Blood Gprs Test Execution Date",
+        "datatype": "Date",
+        "measurement": "prenatal_blood_gprs_test"
+    },
+    {
+        "eheza_key": "prenatal_blood_gprs_test.originating_encounter",
+        "concept_name": "E-Heza Prenatal Blood Gprs Test Originating Encounter",
         "datatype": "Text",
-        "measurement": "prenatal_malaria_test"
+        "measurement": "prenatal_blood_gprs_test"
     },
     {
-        "eheza_key": "body_temperature",
-        "concept_name": "E-Heza Body Temperature",
-        "datatype": "Numeric",
-        "measurement": "vitals"
+        "eheza_key": "prenatal_blood_gprs_test.rhesus",
+        "concept_name": "E-Heza Prenatal Blood Gprs Test Rhesus",
+        "datatype": "Text",
+        "measurement": "prenatal_blood_gprs_test"
     },
     {
-        "eheza_key": "breastfeeding_signs",
-        "concept_name": "E-Heza Breastfeeding Signs",
+        "eheza_key": "prenatal_blood_gprs_test.test_execution_note",
+        "concept_name": "E-Heza Prenatal Blood Gprs Test Test Execution Note",
+        "datatype": "Text",
+        "measurement": "prenatal_blood_gprs_test"
+    },
+    {
+        "eheza_key": "prenatal_blood_gprs_test.test_prerequisites",
+        "concept_name": "E-Heza Prenatal Blood Gprs Test Test Prerequisites",
+        "datatype": "Text",
+        "measurement": "prenatal_blood_gprs_test"
+    },
+    {
+        "eheza_key": "prenatal_breastfeeding.breastfeeding_signs",
+        "concept_name": "E-Heza Prenatal Breastfeeding Breastfeeding Signs",
         "datatype": "Text",
         "measurement": "prenatal_breastfeeding"
     },
     {
-        "eheza_key": "completed_tests",
-        "concept_name": "E-Heza Completed Tests",
-        "datatype": "Text",
-        "measurement": "prenatal_labs_results"
+        "eheza_key": "prenatal_breastfeeding.date_measured",
+        "concept_name": "E-Heza Prenatal Breastfeeding Date Measured",
+        "datatype": "Date",
+        "measurement": "prenatal_breastfeeding"
     },
     {
-        "eheza_key": "date_concluded",
-        "concept_name": "E-Heza Date Concluded",
+        "eheza_key": "prenatal_calcium.administration_note",
+        "concept_name": "E-Heza Prenatal Calcium Administration Note",
+        "datatype": "Text",
+        "measurement": "prenatal_calcium"
+    },
+    {
+        "eheza_key": "prenatal_calcium.date_measured",
+        "concept_name": "E-Heza Prenatal Calcium Date Measured",
+        "datatype": "Date",
+        "measurement": "prenatal_calcium"
+    },
+    {
+        "eheza_key": "prenatal_fefol.administration_note",
+        "concept_name": "E-Heza Prenatal Fefol Administration Note",
+        "datatype": "Text",
+        "measurement": "prenatal_fefol"
+    },
+    {
+        "eheza_key": "prenatal_fefol.date_measured",
+        "concept_name": "E-Heza Prenatal Fefol Date Measured",
+        "datatype": "Date",
+        "measurement": "prenatal_fefol"
+    },
+    {
+        "eheza_key": "prenatal_folate.administration_note",
+        "concept_name": "E-Heza Prenatal Folate Administration Note",
+        "datatype": "Text",
+        "measurement": "prenatal_folate"
+    },
+    {
+        "eheza_key": "prenatal_folate.date_measured",
+        "concept_name": "E-Heza Prenatal Folate Date Measured",
+        "datatype": "Date",
+        "measurement": "prenatal_folate"
+    },
+    {
+        "eheza_key": "prenatal_follow_up.date_concluded",
+        "concept_name": "E-Heza Prenatal Follow Up Date Concluded",
         "datatype": "Date",
         "measurement": "prenatal_follow_up"
     },
     {
-        "eheza_key": "date_measured",
-        "concept_name": "E-Heza Date Measured",
+        "eheza_key": "prenatal_follow_up.date_measured",
+        "concept_name": "E-Heza Prenatal Follow Up Date Measured",
         "datatype": "Date",
-        "measurement": "appointment_confirmation"
+        "measurement": "prenatal_follow_up"
     },
     {
-        "eheza_key": "dia",
-        "concept_name": "E-Heza Dia",
-        "datatype": "Numeric",
-        "measurement": "vitals"
-    },
-    {
-        "eheza_key": "dia_repeated",
-        "concept_name": "E-Heza Dia Repeated",
-        "datatype": "Numeric",
-        "measurement": "vitals"
-    },
-    {
-        "eheza_key": "edd_days",
-        "concept_name": "E-Heza Edd Days",
-        "datatype": "Numeric",
-        "measurement": "prenatal_ultrasound"
-    },
-    {
-        "eheza_key": "edd_weeks",
-        "concept_name": "E-Heza Edd Weeks",
-        "datatype": "Numeric",
-        "measurement": "prenatal_ultrasound"
-    },
-    {
-        "eheza_key": "execution_date",
-        "concept_name": "E-Heza Execution Date",
-        "datatype": "Date",
-        "measurement": "prenatal_blood_gprs_test"
-    },
-    {
-        "eheza_key": "expected_date_concluded",
-        "concept_name": "E-Heza Expected Date Concluded",
-        "datatype": "Date",
-        "measurement": "prenatal_ultrasound"
-    },
-    {
-        "eheza_key": "flank_pain_sign",
-        "concept_name": "E-Heza Flank Pain Sign",
-        "datatype": "Text",
-        "measurement": "prenatal_symptom_review"
-    },
-    {
-        "eheza_key": "follow_up_options",
-        "concept_name": "E-Heza Follow Up Options",
+        "eheza_key": "prenatal_follow_up.follow_up_options",
+        "concept_name": "E-Heza Prenatal Follow Up Follow Up Options",
         "datatype": "Text",
         "measurement": "prenatal_follow_up"
     },
     {
-        "eheza_key": "glucose",
-        "concept_name": "E-Heza Glucose",
+        "eheza_key": "prenatal_follow_up.prenatal_assesment",
+        "concept_name": "E-Heza Prenatal Follow Up Prenatal Assesment",
         "datatype": "Text",
-        "measurement": "prenatal_urine_dipstick_test"
+        "measurement": "prenatal_follow_up"
     },
     {
-        "eheza_key": "gu_exam_signs",
-        "concept_name": "E-Heza Gu Exam Signs",
+        "eheza_key": "prenatal_gu_exam.date_measured",
+        "concept_name": "E-Heza Prenatal Gu Exam Date Measured",
+        "datatype": "Date",
+        "measurement": "prenatal_gu_exam"
+    },
+    {
+        "eheza_key": "prenatal_gu_exam.gu_exam_signs",
+        "concept_name": "E-Heza Prenatal Gu Exam Gu Exam Signs",
         "datatype": "Text",
         "measurement": "prenatal_gu_exam"
     },
     {
-        "eheza_key": "haemoglobin",
-        "concept_name": "E-Heza Haemoglobin",
+        "eheza_key": "prenatal_gu_exam.postpartum_healing_problem",
+        "concept_name": "E-Heza Prenatal Gu Exam Postpartum Healing Problem",
         "datatype": "Text",
-        "measurement": "prenatal_urine_dipstick_test"
+        "measurement": "prenatal_gu_exam"
     },
     {
-        "eheza_key": "heart_rate",
-        "concept_name": "E-Heza Heart Rate",
-        "datatype": "Numeric",
-        "measurement": "vitals"
+        "eheza_key": "prenatal_gu_exam.vaginal_exam_signs",
+        "concept_name": "E-Heza Prenatal Gu Exam Vaginal Exam Signs",
+        "datatype": "Text",
+        "measurement": "prenatal_gu_exam"
     },
     {
-        "eheza_key": "hemoglobin_count",
-        "concept_name": "E-Heza Hemoglobin Count",
+        "eheza_key": "prenatal_hemoglobin_test.date_measured",
+        "concept_name": "E-Heza Prenatal Hemoglobin Test Date Measured",
+        "datatype": "Date",
+        "measurement": "prenatal_hemoglobin_test"
+    },
+    {
+        "eheza_key": "prenatal_hemoglobin_test.execution_date",
+        "concept_name": "E-Heza Prenatal Hemoglobin Test Execution Date",
+        "datatype": "Date",
+        "measurement": "prenatal_hemoglobin_test"
+    },
+    {
+        "eheza_key": "prenatal_hemoglobin_test.hemoglobin_count",
+        "concept_name": "E-Heza Prenatal Hemoglobin Test Hemoglobin Count",
         "datatype": "Numeric",
         "measurement": "prenatal_hemoglobin_test"
     },
     {
-        "eheza_key": "hiv_signs",
-        "concept_name": "E-Heza Hiv Signs",
+        "eheza_key": "prenatal_hemoglobin_test.test_execution_note",
+        "concept_name": "E-Heza Prenatal Hemoglobin Test Test Execution Note",
         "datatype": "Text",
-        "measurement": "prenatal_hiv_test"
+        "measurement": "prenatal_hemoglobin_test"
     },
     {
-        "eheza_key": "hiv_viral_load",
-        "concept_name": "E-Heza Hiv Viral Load",
-        "datatype": "Numeric",
-        "measurement": "prenatal_hiv_pcr_test"
-    },
-    {
-        "eheza_key": "hiv_viral_load_status",
-        "concept_name": "E-Heza Hiv Viral Load Status",
+        "eheza_key": "prenatal_hemoglobin_test.test_prerequisites",
+        "concept_name": "E-Heza Prenatal Hemoglobin Test Test Prerequisites",
         "datatype": "Text",
-        "measurement": "prenatal_hiv_pcr_test"
+        "measurement": "prenatal_hemoglobin_test"
     },
     {
-        "eheza_key": "illness_symptoms",
-        "concept_name": "E-Heza Illness Symptoms",
-        "datatype": "Text",
-        "measurement": "prenatal_syphilis_test"
+        "eheza_key": "prenatal_hepatitis_b_test.date_measured",
+        "concept_name": "E-Heza Prenatal Hepatitis B Test Date Measured",
+        "datatype": "Date",
+        "measurement": "prenatal_hepatitis_b_test"
     },
     {
-        "eheza_key": "ketone",
-        "concept_name": "E-Heza Ketone",
-        "datatype": "Text",
-        "measurement": "prenatal_urine_dipstick_test"
+        "eheza_key": "prenatal_hepatitis_b_test.execution_date",
+        "concept_name": "E-Heza Prenatal Hepatitis B Test Execution Date",
+        "datatype": "Date",
+        "measurement": "prenatal_hepatitis_b_test"
     },
     {
-        "eheza_key": "leukocytes",
-        "concept_name": "E-Heza Leukocytes",
-        "datatype": "Text",
-        "measurement": "prenatal_urine_dipstick_test"
-    },
-    {
-        "eheza_key": "mental_health_signs",
-        "concept_name": "E-Heza Mental Health Signs",
-        "datatype": "Text",
-        "measurement": "prenatal_mental_health"
-    },
-    {
-        "eheza_key": "nitrite",
-        "concept_name": "E-Heza Nitrite",
-        "datatype": "Text",
-        "measurement": "prenatal_urine_dipstick_test"
-    },
-    {
-        "eheza_key": "non_administration_reason",
-        "concept_name": "E-Heza Non Administration Reason",
-        "datatype": "Text",
-        "measurement": "prenatal_medication_distribution"
-    },
-    {
-        "eheza_key": "originating_encounter",
-        "concept_name": "E-Heza Originating Encounter",
-        "datatype": "Text",
-        "measurement": "prenatal_blood_gprs_test"
-    },
-    {
-        "eheza_key": "outside_care_medications",
-        "concept_name": "E-Heza Outside Care Medications",
-        "datatype": "Text",
-        "measurement": "prenatal_outside_care"
-    },
-    {
-        "eheza_key": "outside_care_signs",
-        "concept_name": "E-Heza Outside Care Signs",
-        "datatype": "Text",
-        "measurement": "prenatal_outside_care"
-    },
-    {
-        "eheza_key": "patient_notified",
-        "concept_name": "E-Heza Patient Notified",
-        "datatype": "Boolean",
-        "measurement": "prenatal_labs_results"
-    },
-    {
-        "eheza_key": "performed_tests",
-        "concept_name": "E-Heza Performed Tests",
-        "datatype": "Text",
-        "measurement": "prenatal_labs_results"
-    },
-    {
-        "eheza_key": "ph",
-        "concept_name": "E-Heza Ph",
-        "datatype": "Text",
-        "measurement": "prenatal_urine_dipstick_test"
-    },
-    {
-        "eheza_key": "postpartum_healing_problem",
-        "concept_name": "E-Heza Postpartum Healing Problem",
-        "datatype": "Text",
-        "measurement": "prenatal_gu_exam"
-    },
-    {
-        "eheza_key": "pregnancy_signs",
-        "concept_name": "E-Heza Pregnancy Signs",
-        "datatype": "Text",
-        "measurement": "prenatal_ultrasound"
-    },
-    {
-        "eheza_key": "prenatal_assesment",
-        "concept_name": "E-Heza Prenatal Assesment",
-        "datatype": "Text",
-        "measurement": "prenatal_follow_up"
-    },
-    {
-        "eheza_key": "prenatal_diagnoses",
-        "concept_name": "E-Heza Prenatal Diagnoses",
-        "datatype": "Text",
-        "measurement": "prenatal_outside_care"
-    },
-    {
-        "eheza_key": "prenatal_symptom_questions",
-        "concept_name": "E-Heza Prenatal Symptom Questions",
-        "datatype": "Text",
-        "measurement": "prenatal_symptom_review"
-    },
-    {
-        "eheza_key": "prenatal_symptoms",
-        "concept_name": "E-Heza Prenatal Symptoms",
-        "datatype": "Text",
-        "measurement": "prenatal_symptom_review"
-    },
-    {
-        "eheza_key": "prescribed_medication",
-        "concept_name": "E-Heza Prescribed Medication",
-        "datatype": "Text",
-        "measurement": "prenatal_medication_distribution"
-    },
-    {
-        "eheza_key": "protein",
-        "concept_name": "E-Heza Protein",
-        "datatype": "Text",
-        "measurement": "prenatal_urine_dipstick_test"
-    },
-    {
-        "eheza_key": "reason_not_sent_to_hc",
-        "concept_name": "E-Heza Reason Not Sent To Hc",
-        "datatype": "Text",
-        "measurement": "prenatal_send_to_hc"
-    },
-    {
-        "eheza_key": "reasons_for_non_referrals",
-        "concept_name": "E-Heza Reasons For Non Referrals",
-        "datatype": "Text",
-        "measurement": "prenatal_send_to_hc"
-    },
-    {
-        "eheza_key": "recommended_treatment",
-        "concept_name": "E-Heza Recommended Treatment",
-        "datatype": "Text",
-        "measurement": "prenatal_medication_distribution"
-    },
-    {
-        "eheza_key": "referrals",
-        "concept_name": "E-Heza Referrals",
-        "datatype": "Text",
-        "measurement": "prenatal_send_to_hc"
-    },
-    {
-        "eheza_key": "reinforce_treatment_signs",
-        "concept_name": "E-Heza Reinforce Treatment Signs",
-        "datatype": "Text",
-        "measurement": "prenatal_medication_distribution"
-    },
-    {
-        "eheza_key": "respiratory_rate",
-        "concept_name": "E-Heza Respiratory Rate",
-        "datatype": "Numeric",
-        "measurement": "vitals"
-    },
-    {
-        "eheza_key": "review_state",
-        "concept_name": "E-Heza Review State",
-        "datatype": "Text",
-        "measurement": "prenatal_labs_results"
-    },
-    {
-        "eheza_key": "rhesus",
-        "concept_name": "E-Heza Rhesus",
-        "datatype": "Text",
-        "measurement": "prenatal_blood_gprs_test"
-    },
-    {
-        "eheza_key": "send_to_hc",
-        "concept_name": "E-Heza Send To Hc",
-        "datatype": "Text",
-        "measurement": "prenatal_send_to_hc"
-    },
-    {
-        "eheza_key": "shards",
-        "concept_name": "E-Heza Shards",
-        "datatype": "Text",
-        "measurement": "appointment_confirmation"
-    },
-    {
-        "eheza_key": "specialist_at_hc",
-        "concept_name": "E-Heza Specialist At Hc",
-        "datatype": "Boolean",
-        "measurement": "prenatal_mental_health"
-    },
-    {
-        "eheza_key": "speciality_care_signs",
-        "concept_name": "E-Heza Speciality Care Signs",
-        "datatype": "Text",
-        "measurement": "prenatal_speciality_care"
-    },
-    {
-        "eheza_key": "sugar_count",
-        "concept_name": "E-Heza Sugar Count",
-        "datatype": "Numeric",
-        "measurement": "prenatal_random_blood_sugar_test"
-    },
-    {
-        "eheza_key": "sys",
-        "concept_name": "E-Heza Sys",
-        "datatype": "Numeric",
-        "measurement": "vitals"
-    },
-    {
-        "eheza_key": "sys_repeated",
-        "concept_name": "E-Heza Sys Repeated",
-        "datatype": "Numeric",
-        "measurement": "vitals"
-    },
-    {
-        "eheza_key": "test_execution_note",
-        "concept_name": "E-Heza Test Execution Note",
-        "datatype": "Text",
-        "measurement": "prenatal_blood_gprs_test"
-    },
-    {
-        "eheza_key": "test_prerequisites",
-        "concept_name": "E-Heza Test Prerequisites",
-        "datatype": "Text",
-        "measurement": "prenatal_blood_gprs_test"
-    },
-    {
-        "eheza_key": "test_result",
-        "concept_name": "E-Heza Test Result",
+        "eheza_key": "prenatal_hepatitis_b_test.originating_encounter",
+        "concept_name": "E-Heza Prenatal Hepatitis B Test Originating Encounter",
         "datatype": "Text",
         "measurement": "prenatal_hepatitis_b_test"
     },
     {
-        "eheza_key": "test_variant",
-        "concept_name": "E-Heza Test Variant",
+        "eheza_key": "prenatal_hepatitis_b_test.test_execution_note",
+        "concept_name": "E-Heza Prenatal Hepatitis B Test Test Execution Note",
         "datatype": "Text",
-        "measurement": "prenatal_urine_dipstick_test"
+        "measurement": "prenatal_hepatitis_b_test"
     },
     {
-        "eheza_key": "tests_with_follow_up",
-        "concept_name": "E-Heza Tests With Follow Up",
+        "eheza_key": "prenatal_hepatitis_b_test.test_prerequisites",
+        "concept_name": "E-Heza Prenatal Hepatitis B Test Test Prerequisites",
+        "datatype": "Text",
+        "measurement": "prenatal_hepatitis_b_test"
+    },
+    {
+        "eheza_key": "prenatal_hepatitis_b_test.test_result",
+        "concept_name": "E-Heza Prenatal Hepatitis B Test Test Result",
+        "datatype": "Text",
+        "measurement": "prenatal_hepatitis_b_test"
+    },
+    {
+        "eheza_key": "prenatal_hiv_pcr_test.date_measured",
+        "concept_name": "E-Heza Prenatal Hiv Pcr Test Date Measured",
+        "datatype": "Date",
+        "measurement": "prenatal_hiv_pcr_test"
+    },
+    {
+        "eheza_key": "prenatal_hiv_pcr_test.execution_date",
+        "concept_name": "E-Heza Prenatal Hiv Pcr Test Execution Date",
+        "datatype": "Date",
+        "measurement": "prenatal_hiv_pcr_test"
+    },
+    {
+        "eheza_key": "prenatal_hiv_pcr_test.hiv_viral_load",
+        "concept_name": "E-Heza Prenatal Hiv Pcr Test Hiv Viral Load",
+        "datatype": "Numeric",
+        "measurement": "prenatal_hiv_pcr_test"
+    },
+    {
+        "eheza_key": "prenatal_hiv_pcr_test.hiv_viral_load_status",
+        "concept_name": "E-Heza Prenatal Hiv Pcr Test Hiv Viral Load Status",
+        "datatype": "Text",
+        "measurement": "prenatal_hiv_pcr_test"
+    },
+    {
+        "eheza_key": "prenatal_hiv_pcr_test.test_execution_note",
+        "concept_name": "E-Heza Prenatal Hiv Pcr Test Test Execution Note",
+        "datatype": "Text",
+        "measurement": "prenatal_hiv_pcr_test"
+    },
+    {
+        "eheza_key": "prenatal_hiv_pcr_test.test_prerequisites",
+        "concept_name": "E-Heza Prenatal Hiv Pcr Test Test Prerequisites",
+        "datatype": "Text",
+        "measurement": "prenatal_hiv_pcr_test"
+    },
+    {
+        "eheza_key": "prenatal_hiv_test.date_measured",
+        "concept_name": "E-Heza Prenatal Hiv Test Date Measured",
+        "datatype": "Date",
+        "measurement": "prenatal_hiv_test"
+    },
+    {
+        "eheza_key": "prenatal_hiv_test.execution_date",
+        "concept_name": "E-Heza Prenatal Hiv Test Execution Date",
+        "datatype": "Date",
+        "measurement": "prenatal_hiv_test"
+    },
+    {
+        "eheza_key": "prenatal_hiv_test.hiv_signs",
+        "concept_name": "E-Heza Prenatal Hiv Test Hiv Signs",
+        "datatype": "Text",
+        "measurement": "prenatal_hiv_test"
+    },
+    {
+        "eheza_key": "prenatal_hiv_test.test_execution_note",
+        "concept_name": "E-Heza Prenatal Hiv Test Test Execution Note",
+        "datatype": "Text",
+        "measurement": "prenatal_hiv_test"
+    },
+    {
+        "eheza_key": "prenatal_hiv_test.test_prerequisites",
+        "concept_name": "E-Heza Prenatal Hiv Test Test Prerequisites",
+        "datatype": "Text",
+        "measurement": "prenatal_hiv_test"
+    },
+    {
+        "eheza_key": "prenatal_hiv_test.test_result",
+        "concept_name": "E-Heza Prenatal Hiv Test Test Result",
+        "datatype": "Text",
+        "measurement": "prenatal_hiv_test"
+    },
+    {
+        "eheza_key": "prenatal_iron.administration_note",
+        "concept_name": "E-Heza Prenatal Iron Administration Note",
+        "datatype": "Text",
+        "measurement": "prenatal_iron"
+    },
+    {
+        "eheza_key": "prenatal_iron.date_measured",
+        "concept_name": "E-Heza Prenatal Iron Date Measured",
+        "datatype": "Date",
+        "measurement": "prenatal_iron"
+    },
+    {
+        "eheza_key": "prenatal_labs_results.completed_tests",
+        "concept_name": "E-Heza Prenatal Labs Results Completed Tests",
         "datatype": "Text",
         "measurement": "prenatal_labs_results"
     },
     {
-        "eheza_key": "urobilinogen",
-        "concept_name": "E-Heza Urobilinogen",
+        "eheza_key": "prenatal_labs_results.date_concluded",
+        "concept_name": "E-Heza Prenatal Labs Results Date Concluded",
+        "datatype": "Date",
+        "measurement": "prenatal_labs_results"
+    },
+    {
+        "eheza_key": "prenatal_labs_results.date_measured",
+        "concept_name": "E-Heza Prenatal Labs Results Date Measured",
+        "datatype": "Date",
+        "measurement": "prenatal_labs_results"
+    },
+    {
+        "eheza_key": "prenatal_labs_results.patient_notified",
+        "concept_name": "E-Heza Prenatal Labs Results Patient Notified",
+        "datatype": "Boolean",
+        "measurement": "prenatal_labs_results"
+    },
+    {
+        "eheza_key": "prenatal_labs_results.performed_tests",
+        "concept_name": "E-Heza Prenatal Labs Results Performed Tests",
+        "datatype": "Text",
+        "measurement": "prenatal_labs_results"
+    },
+    {
+        "eheza_key": "prenatal_labs_results.review_state",
+        "concept_name": "E-Heza Prenatal Labs Results Review State",
+        "datatype": "Text",
+        "measurement": "prenatal_labs_results"
+    },
+    {
+        "eheza_key": "prenatal_labs_results.tests_with_follow_up",
+        "concept_name": "E-Heza Prenatal Labs Results Tests With Follow Up",
+        "datatype": "Text",
+        "measurement": "prenatal_labs_results"
+    },
+    {
+        "eheza_key": "prenatal_malaria_test.blood_smear_result",
+        "concept_name": "E-Heza Prenatal Malaria Test Blood Smear Result",
+        "datatype": "Text",
+        "measurement": "prenatal_malaria_test"
+    },
+    {
+        "eheza_key": "prenatal_malaria_test.date_measured",
+        "concept_name": "E-Heza Prenatal Malaria Test Date Measured",
+        "datatype": "Date",
+        "measurement": "prenatal_malaria_test"
+    },
+    {
+        "eheza_key": "prenatal_malaria_test.execution_date",
+        "concept_name": "E-Heza Prenatal Malaria Test Execution Date",
+        "datatype": "Date",
+        "measurement": "prenatal_malaria_test"
+    },
+    {
+        "eheza_key": "prenatal_malaria_test.test_execution_note",
+        "concept_name": "E-Heza Prenatal Malaria Test Test Execution Note",
+        "datatype": "Text",
+        "measurement": "prenatal_malaria_test"
+    },
+    {
+        "eheza_key": "prenatal_malaria_test.test_prerequisites",
+        "concept_name": "E-Heza Prenatal Malaria Test Test Prerequisites",
+        "datatype": "Text",
+        "measurement": "prenatal_malaria_test"
+    },
+    {
+        "eheza_key": "prenatal_malaria_test.test_result",
+        "concept_name": "E-Heza Prenatal Malaria Test Test Result",
+        "datatype": "Text",
+        "measurement": "prenatal_malaria_test"
+    },
+    {
+        "eheza_key": "prenatal_mebendazole.administration_note",
+        "concept_name": "E-Heza Prenatal Mebendazole Administration Note",
+        "datatype": "Text",
+        "measurement": "prenatal_mebendazole"
+    },
+    {
+        "eheza_key": "prenatal_mebendazole.date_measured",
+        "concept_name": "E-Heza Prenatal Mebendazole Date Measured",
+        "datatype": "Date",
+        "measurement": "prenatal_mebendazole"
+    },
+    {
+        "eheza_key": "prenatal_medication_distribution.avoiding_guidance_reason",
+        "concept_name": "E-Heza Prenatal Medication Distribution Avoiding Guidance Reason",
+        "datatype": "Text",
+        "measurement": "prenatal_medication_distribution"
+    },
+    {
+        "eheza_key": "prenatal_medication_distribution.date_measured",
+        "concept_name": "E-Heza Prenatal Medication Distribution Date Measured",
+        "datatype": "Date",
+        "measurement": "prenatal_medication_distribution"
+    },
+    {
+        "eheza_key": "prenatal_medication_distribution.non_administration_reason",
+        "concept_name": "E-Heza Prenatal Medication Distribution Non Administration Reason",
+        "datatype": "Text",
+        "measurement": "prenatal_medication_distribution"
+    },
+    {
+        "eheza_key": "prenatal_medication_distribution.prescribed_medication",
+        "concept_name": "E-Heza Prenatal Medication Distribution Prescribed Medication",
+        "datatype": "Text",
+        "measurement": "prenatal_medication_distribution"
+    },
+    {
+        "eheza_key": "prenatal_medication_distribution.recommended_treatment",
+        "concept_name": "E-Heza Prenatal Medication Distribution Recommended Treatment",
+        "datatype": "Text",
+        "measurement": "prenatal_medication_distribution"
+    },
+    {
+        "eheza_key": "prenatal_medication_distribution.reinforce_treatment_signs",
+        "concept_name": "E-Heza Prenatal Medication Distribution Reinforce Treatment Signs",
+        "datatype": "Text",
+        "measurement": "prenatal_medication_distribution"
+    },
+    {
+        "eheza_key": "prenatal_mental_health.date_measured",
+        "concept_name": "E-Heza Prenatal Mental Health Date Measured",
+        "datatype": "Date",
+        "measurement": "prenatal_mental_health"
+    },
+    {
+        "eheza_key": "prenatal_mental_health.mental_health_signs",
+        "concept_name": "E-Heza Prenatal Mental Health Mental Health Signs",
+        "datatype": "Text",
+        "measurement": "prenatal_mental_health"
+    },
+    {
+        "eheza_key": "prenatal_mental_health.specialist_at_hc",
+        "concept_name": "E-Heza Prenatal Mental Health Specialist At Hc",
+        "datatype": "Boolean",
+        "measurement": "prenatal_mental_health"
+    },
+    {
+        "eheza_key": "prenatal_mms.administration_note",
+        "concept_name": "E-Heza Prenatal Mms Administration Note",
+        "datatype": "Text",
+        "measurement": "prenatal_mms"
+    },
+    {
+        "eheza_key": "prenatal_mms.date_measured",
+        "concept_name": "E-Heza Prenatal Mms Date Measured",
+        "datatype": "Date",
+        "measurement": "prenatal_mms"
+    },
+    {
+        "eheza_key": "prenatal_outside_care.date_measured",
+        "concept_name": "E-Heza Prenatal Outside Care Date Measured",
+        "datatype": "Date",
+        "measurement": "prenatal_outside_care"
+    },
+    {
+        "eheza_key": "prenatal_outside_care.outside_care_medications",
+        "concept_name": "E-Heza Prenatal Outside Care Outside Care Medications",
+        "datatype": "Text",
+        "measurement": "prenatal_outside_care"
+    },
+    {
+        "eheza_key": "prenatal_outside_care.outside_care_signs",
+        "concept_name": "E-Heza Prenatal Outside Care Outside Care Signs",
+        "datatype": "Text",
+        "measurement": "prenatal_outside_care"
+    },
+    {
+        "eheza_key": "prenatal_outside_care.prenatal_diagnoses",
+        "concept_name": "E-Heza Prenatal Outside Care Prenatal Diagnoses",
+        "datatype": "Text",
+        "measurement": "prenatal_outside_care"
+    },
+    {
+        "eheza_key": "prenatal_partner_hiv_test.date_measured",
+        "concept_name": "E-Heza Prenatal Partner Hiv Test Date Measured",
+        "datatype": "Date",
+        "measurement": "prenatal_partner_hiv_test"
+    },
+    {
+        "eheza_key": "prenatal_partner_hiv_test.execution_date",
+        "concept_name": "E-Heza Prenatal Partner Hiv Test Execution Date",
+        "datatype": "Date",
+        "measurement": "prenatal_partner_hiv_test"
+    },
+    {
+        "eheza_key": "prenatal_partner_hiv_test.hiv_signs",
+        "concept_name": "E-Heza Prenatal Partner Hiv Test Hiv Signs",
+        "datatype": "Text",
+        "measurement": "prenatal_partner_hiv_test"
+    },
+    {
+        "eheza_key": "prenatal_partner_hiv_test.test_execution_note",
+        "concept_name": "E-Heza Prenatal Partner Hiv Test Test Execution Note",
+        "datatype": "Text",
+        "measurement": "prenatal_partner_hiv_test"
+    },
+    {
+        "eheza_key": "prenatal_partner_hiv_test.test_prerequisites",
+        "concept_name": "E-Heza Prenatal Partner Hiv Test Test Prerequisites",
+        "datatype": "Text",
+        "measurement": "prenatal_partner_hiv_test"
+    },
+    {
+        "eheza_key": "prenatal_partner_hiv_test.test_result",
+        "concept_name": "E-Heza Prenatal Partner Hiv Test Test Result",
+        "datatype": "Text",
+        "measurement": "prenatal_partner_hiv_test"
+    },
+    {
+        "eheza_key": "prenatal_random_blood_sugar_test.date_measured",
+        "concept_name": "E-Heza Prenatal Random Blood Sugar Test Date Measured",
+        "datatype": "Date",
+        "measurement": "prenatal_random_blood_sugar_test"
+    },
+    {
+        "eheza_key": "prenatal_random_blood_sugar_test.execution_date",
+        "concept_name": "E-Heza Prenatal Random Blood Sugar Test Execution Date",
+        "datatype": "Date",
+        "measurement": "prenatal_random_blood_sugar_test"
+    },
+    {
+        "eheza_key": "prenatal_random_blood_sugar_test.originating_encounter",
+        "concept_name": "E-Heza Prenatal Random Blood Sugar Test Originating Encounter",
+        "datatype": "Text",
+        "measurement": "prenatal_random_blood_sugar_test"
+    },
+    {
+        "eheza_key": "prenatal_random_blood_sugar_test.sugar_count",
+        "concept_name": "E-Heza Prenatal Random Blood Sugar Test Sugar Count",
+        "datatype": "Numeric",
+        "measurement": "prenatal_random_blood_sugar_test"
+    },
+    {
+        "eheza_key": "prenatal_random_blood_sugar_test.test_execution_note",
+        "concept_name": "E-Heza Prenatal Random Blood Sugar Test Test Execution Note",
+        "datatype": "Text",
+        "measurement": "prenatal_random_blood_sugar_test"
+    },
+    {
+        "eheza_key": "prenatal_random_blood_sugar_test.test_prerequisites",
+        "concept_name": "E-Heza Prenatal Random Blood Sugar Test Test Prerequisites",
+        "datatype": "Text",
+        "measurement": "prenatal_random_blood_sugar_test"
+    },
+    {
+        "eheza_key": "prenatal_send_to_hc.date_measured",
+        "concept_name": "E-Heza Prenatal Send To Hc Date Measured",
+        "datatype": "Date",
+        "measurement": "prenatal_send_to_hc"
+    },
+    {
+        "eheza_key": "prenatal_send_to_hc.reason_not_sent_to_hc",
+        "concept_name": "E-Heza Prenatal Send To Hc Reason Not Sent To Hc",
+        "datatype": "Text",
+        "measurement": "prenatal_send_to_hc"
+    },
+    {
+        "eheza_key": "prenatal_send_to_hc.reasons_for_non_referrals",
+        "concept_name": "E-Heza Prenatal Send To Hc Reasons For Non Referrals",
+        "datatype": "Text",
+        "measurement": "prenatal_send_to_hc"
+    },
+    {
+        "eheza_key": "prenatal_send_to_hc.referrals",
+        "concept_name": "E-Heza Prenatal Send To Hc Referrals",
+        "datatype": "Text",
+        "measurement": "prenatal_send_to_hc"
+    },
+    {
+        "eheza_key": "prenatal_send_to_hc.send_to_hc",
+        "concept_name": "E-Heza Prenatal Send To Hc Send To Hc",
+        "datatype": "Text",
+        "measurement": "prenatal_send_to_hc"
+    },
+    {
+        "eheza_key": "prenatal_speciality_care.date_measured",
+        "concept_name": "E-Heza Prenatal Speciality Care Date Measured",
+        "datatype": "Date",
+        "measurement": "prenatal_speciality_care"
+    },
+    {
+        "eheza_key": "prenatal_speciality_care.speciality_care_signs",
+        "concept_name": "E-Heza Prenatal Speciality Care Speciality Care Signs",
+        "datatype": "Text",
+        "measurement": "prenatal_speciality_care"
+    },
+    {
+        "eheza_key": "prenatal_symptom_review.date_measured",
+        "concept_name": "E-Heza Prenatal Symptom Review Date Measured",
+        "datatype": "Date",
+        "measurement": "prenatal_symptom_review"
+    },
+    {
+        "eheza_key": "prenatal_symptom_review.flank_pain_sign",
+        "concept_name": "E-Heza Prenatal Symptom Review Flank Pain Sign",
+        "datatype": "Text",
+        "measurement": "prenatal_symptom_review"
+    },
+    {
+        "eheza_key": "prenatal_symptom_review.prenatal_symptom_questions",
+        "concept_name": "E-Heza Prenatal Symptom Review Prenatal Symptom Questions",
+        "datatype": "Text",
+        "measurement": "prenatal_symptom_review"
+    },
+    {
+        "eheza_key": "prenatal_symptom_review.prenatal_symptoms",
+        "concept_name": "E-Heza Prenatal Symptom Review Prenatal Symptoms",
+        "datatype": "Text",
+        "measurement": "prenatal_symptom_review"
+    },
+    {
+        "eheza_key": "prenatal_syphilis_test.date_measured",
+        "concept_name": "E-Heza Prenatal Syphilis Test Date Measured",
+        "datatype": "Date",
+        "measurement": "prenatal_syphilis_test"
+    },
+    {
+        "eheza_key": "prenatal_syphilis_test.execution_date",
+        "concept_name": "E-Heza Prenatal Syphilis Test Execution Date",
+        "datatype": "Date",
+        "measurement": "prenatal_syphilis_test"
+    },
+    {
+        "eheza_key": "prenatal_syphilis_test.illness_symptoms",
+        "concept_name": "E-Heza Prenatal Syphilis Test Illness Symptoms",
+        "datatype": "Text",
+        "measurement": "prenatal_syphilis_test"
+    },
+    {
+        "eheza_key": "prenatal_syphilis_test.originating_encounter",
+        "concept_name": "E-Heza Prenatal Syphilis Test Originating Encounter",
+        "datatype": "Text",
+        "measurement": "prenatal_syphilis_test"
+    },
+    {
+        "eheza_key": "prenatal_syphilis_test.test_execution_note",
+        "concept_name": "E-Heza Prenatal Syphilis Test Test Execution Note",
+        "datatype": "Text",
+        "measurement": "prenatal_syphilis_test"
+    },
+    {
+        "eheza_key": "prenatal_syphilis_test.test_prerequisites",
+        "concept_name": "E-Heza Prenatal Syphilis Test Test Prerequisites",
+        "datatype": "Text",
+        "measurement": "prenatal_syphilis_test"
+    },
+    {
+        "eheza_key": "prenatal_syphilis_test.test_result",
+        "concept_name": "E-Heza Prenatal Syphilis Test Test Result",
+        "datatype": "Text",
+        "measurement": "prenatal_syphilis_test"
+    },
+    {
+        "eheza_key": "prenatal_tetanus_immunisation.administered_doses",
+        "concept_name": "E-Heza Prenatal Tetanus Immunisation Administered Doses",
+        "datatype": "Text",
+        "measurement": "prenatal_tetanus_immunisation"
+    },
+    {
+        "eheza_key": "prenatal_tetanus_immunisation.administration_dates",
+        "concept_name": "E-Heza Prenatal Tetanus Immunisation Administration Dates",
+        "datatype": "Date",
+        "measurement": "prenatal_tetanus_immunisation"
+    },
+    {
+        "eheza_key": "prenatal_tetanus_immunisation.administration_note",
+        "concept_name": "E-Heza Prenatal Tetanus Immunisation Administration Note",
+        "datatype": "Text",
+        "measurement": "prenatal_tetanus_immunisation"
+    },
+    {
+        "eheza_key": "prenatal_tetanus_immunisation.date_measured",
+        "concept_name": "E-Heza Prenatal Tetanus Immunisation Date Measured",
+        "datatype": "Date",
+        "measurement": "prenatal_tetanus_immunisation"
+    },
+    {
+        "eheza_key": "prenatal_ultrasound.date_measured",
+        "concept_name": "E-Heza Prenatal Ultrasound Date Measured",
+        "datatype": "Date",
+        "measurement": "prenatal_ultrasound"
+    },
+    {
+        "eheza_key": "prenatal_ultrasound.edd_days",
+        "concept_name": "E-Heza Prenatal Ultrasound Edd Days",
+        "datatype": "Numeric",
+        "measurement": "prenatal_ultrasound"
+    },
+    {
+        "eheza_key": "prenatal_ultrasound.edd_weeks",
+        "concept_name": "E-Heza Prenatal Ultrasound Edd Weeks",
+        "datatype": "Numeric",
+        "measurement": "prenatal_ultrasound"
+    },
+    {
+        "eheza_key": "prenatal_ultrasound.execution_date",
+        "concept_name": "E-Heza Prenatal Ultrasound Execution Date",
+        "datatype": "Date",
+        "measurement": "prenatal_ultrasound"
+    },
+    {
+        "eheza_key": "prenatal_ultrasound.expected_date_concluded",
+        "concept_name": "E-Heza Prenatal Ultrasound Expected Date Concluded",
+        "datatype": "Date",
+        "measurement": "prenatal_ultrasound"
+    },
+    {
+        "eheza_key": "prenatal_ultrasound.pregnancy_signs",
+        "concept_name": "E-Heza Prenatal Ultrasound Pregnancy Signs",
+        "datatype": "Text",
+        "measurement": "prenatal_ultrasound"
+    },
+    {
+        "eheza_key": "prenatal_urine_dipstick_test.bilirubin",
+        "concept_name": "E-Heza Prenatal Urine Dipstick Test Bilirubin",
         "datatype": "Text",
         "measurement": "prenatal_urine_dipstick_test"
     },
     {
-        "eheza_key": "vaginal_exam_signs",
-        "concept_name": "E-Heza Vaginal Exam Signs",
+        "eheza_key": "prenatal_urine_dipstick_test.date_measured",
+        "concept_name": "E-Heza Prenatal Urine Dipstick Test Date Measured",
+        "datatype": "Date",
+        "measurement": "prenatal_urine_dipstick_test"
+    },
+    {
+        "eheza_key": "prenatal_urine_dipstick_test.execution_date",
+        "concept_name": "E-Heza Prenatal Urine Dipstick Test Execution Date",
+        "datatype": "Date",
+        "measurement": "prenatal_urine_dipstick_test"
+    },
+    {
+        "eheza_key": "prenatal_urine_dipstick_test.glucose",
+        "concept_name": "E-Heza Prenatal Urine Dipstick Test Glucose",
         "datatype": "Text",
-        "measurement": "prenatal_gu_exam"
+        "measurement": "prenatal_urine_dipstick_test"
+    },
+    {
+        "eheza_key": "prenatal_urine_dipstick_test.haemoglobin",
+        "concept_name": "E-Heza Prenatal Urine Dipstick Test Haemoglobin",
+        "datatype": "Text",
+        "measurement": "prenatal_urine_dipstick_test"
+    },
+    {
+        "eheza_key": "prenatal_urine_dipstick_test.ketone",
+        "concept_name": "E-Heza Prenatal Urine Dipstick Test Ketone",
+        "datatype": "Text",
+        "measurement": "prenatal_urine_dipstick_test"
+    },
+    {
+        "eheza_key": "prenatal_urine_dipstick_test.leukocytes",
+        "concept_name": "E-Heza Prenatal Urine Dipstick Test Leukocytes",
+        "datatype": "Text",
+        "measurement": "prenatal_urine_dipstick_test"
+    },
+    {
+        "eheza_key": "prenatal_urine_dipstick_test.nitrite",
+        "concept_name": "E-Heza Prenatal Urine Dipstick Test Nitrite",
+        "datatype": "Text",
+        "measurement": "prenatal_urine_dipstick_test"
+    },
+    {
+        "eheza_key": "prenatal_urine_dipstick_test.ph",
+        "concept_name": "E-Heza Prenatal Urine Dipstick Test Ph",
+        "datatype": "Text",
+        "measurement": "prenatal_urine_dipstick_test"
+    },
+    {
+        "eheza_key": "prenatal_urine_dipstick_test.protein",
+        "concept_name": "E-Heza Prenatal Urine Dipstick Test Protein",
+        "datatype": "Text",
+        "measurement": "prenatal_urine_dipstick_test"
+    },
+    {
+        "eheza_key": "prenatal_urine_dipstick_test.test_execution_note",
+        "concept_name": "E-Heza Prenatal Urine Dipstick Test Test Execution Note",
+        "datatype": "Text",
+        "measurement": "prenatal_urine_dipstick_test"
+    },
+    {
+        "eheza_key": "prenatal_urine_dipstick_test.test_prerequisites",
+        "concept_name": "E-Heza Prenatal Urine Dipstick Test Test Prerequisites",
+        "datatype": "Text",
+        "measurement": "prenatal_urine_dipstick_test"
+    },
+    {
+        "eheza_key": "prenatal_urine_dipstick_test.test_variant",
+        "concept_name": "E-Heza Prenatal Urine Dipstick Test Test Variant",
+        "datatype": "Text",
+        "measurement": "prenatal_urine_dipstick_test"
+    },
+    {
+        "eheza_key": "prenatal_urine_dipstick_test.urobilinogen",
+        "concept_name": "E-Heza Prenatal Urine Dipstick Test Urobilinogen",
+        "datatype": "Text",
+        "measurement": "prenatal_urine_dipstick_test"
+    },
+    {
+        "eheza_key": "vitals.body_temperature",
+        "concept_name": "E-Heza Vitals Body Temperature",
+        "datatype": "Numeric",
+        "measurement": "vitals"
+    },
+    {
+        "eheza_key": "vitals.date_measured",
+        "concept_name": "E-Heza Vitals Date Measured",
+        "datatype": "Date",
+        "measurement": "vitals"
+    },
+    {
+        "eheza_key": "vitals.dia",
+        "concept_name": "E-Heza Vitals Dia",
+        "datatype": "Numeric",
+        "measurement": "vitals"
+    },
+    {
+        "eheza_key": "vitals.dia_repeated",
+        "concept_name": "E-Heza Vitals Dia Repeated",
+        "datatype": "Numeric",
+        "measurement": "vitals"
+    },
+    {
+        "eheza_key": "vitals.heart_rate",
+        "concept_name": "E-Heza Vitals Heart Rate",
+        "datatype": "Numeric",
+        "measurement": "vitals"
+    },
+    {
+        "eheza_key": "vitals.respiratory_rate",
+        "concept_name": "E-Heza Vitals Respiratory Rate",
+        "datatype": "Numeric",
+        "measurement": "vitals"
+    },
+    {
+        "eheza_key": "vitals.sys",
+        "concept_name": "E-Heza Vitals Sys",
+        "datatype": "Numeric",
+        "measurement": "vitals"
+    },
+    {
+        "eheza_key": "vitals.sys_repeated",
+        "concept_name": "E-Heza Vitals Sys Repeated",
+        "datatype": "Numeric",
+        "measurement": "vitals"
     }
 ]

@@ -70,13 +70,18 @@ function _hedley_openmrs_concept_datatype($drupal_type) {
 }
 
 /**
- * Builds a human-readable concept name from a field key.
+ * Builds a human-readable concept name from a bundle and field key.
  *
- * "field_hemoglobin_count" -> "E-Heza Hemoglobin Count".
+ * Names are namespaced by bundle so the same field on different measurement
+ * bundles yields distinct OpenMRS fully-specified names (and concepts).
+ * ("prenatal_hiv_test", "field_test_result") -> "E-Heza Prenatal Hiv Test
+ * Test Result".
  */
-function _hedley_openmrs_concept_name($field_name) {
+function _hedley_openmrs_concept_name($bundle, $field_name) {
   $base = preg_replace('/^field_/', '', $field_name);
-  return 'E-Heza ' . ucwords(str_replace('_', ' ', $base));
+  return 'E-Heza '
+    . ucwords(str_replace('_', ' ', $bundle)) . ' '
+    . ucwords(str_replace('_', ' ', $base));
 }
 
 /**
@@ -85,23 +90,23 @@ function _hedley_openmrs_concept_name($field_name) {
 function hedley_openmrs_drush_build_prenatal_catalog() {
   $skip = _hedley_openmrs_skip_fields();
   $rows = [];
-  $seen = [];
 
   foreach (_hedley_openmrs_prenatal_bundles() as $bundle) {
     $instances = field_info_instances('node', $bundle);
     foreach ($instances as $field_name => $instance) {
-      if (in_array($field_name, $skip, TRUE) || isset($seen[$field_name])) {
+      if (in_array($field_name, $skip, TRUE)) {
         continue;
       }
       $field = field_info_field($field_name);
       if (empty($field)) {
         continue;
       }
-      $seen[$field_name] = TRUE;
-      $key = preg_replace('/^field_/', '', $field_name);
+      // Namespace the key by bundle so the same field on different bundles
+      // (e.g. test_result, execution_date) stays a distinct concept.
+      $key = $bundle . '.' . preg_replace('/^field_/', '', $field_name);
       $rows[] = [
         'eheza_key' => $key,
-        'concept_name' => _hedley_openmrs_concept_name($field_name),
+        'concept_name' => _hedley_openmrs_concept_name($bundle, $field_name),
         'datatype' => _hedley_openmrs_concept_datatype($field['type']),
         'measurement' => $bundle,
       ];
