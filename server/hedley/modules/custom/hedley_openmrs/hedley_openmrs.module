@@ -192,6 +192,93 @@ function hedley_openmrs_push_person_worker($queue_item) {
 }
 
 /**
+ * Advanced-queue worker: POST a prenatal encounter to the OpenFN webhook.
+ *
+ * @param object $queue_item
+ *   The queue item; its data holds 'encounter_id'.
+ *
+ * @return array
+ *   An advanced-queue status/result array.
+ */
+function hedley_openmrs_push_prenatal_encounter_worker($queue_item) {
+  $encounter_id = !empty($queue_item->data['encounter_id'])
+    ? $queue_item->data['encounter_id'] : NULL;
+  if (!$encounter_id) {
+    return [
+      'status' => ADVANCEDQUEUE_STATUS_FAILURE,
+      'result' => t('Queue item has no encounter ID.'),
+    ];
+  }
+
+  $webhook_url =
+    variable_get('hedley_openmrs_openfn_encounter_webhook_url', '');
+  if ($webhook_url === '') {
+    return [
+      'status' => ADVANCEDQUEUE_STATUS_FAILURE_RETRY,
+      'result' => t('OpenFN encounter webhook URL is not configured.'),
+    ];
+  }
+
+  $node = node_load($encounter_id);
+  if (empty($node) || $node->type !== 'prenatal_encounter') {
+    return [
+      'status' => ADVANCEDQUEUE_STATUS_FAILURE,
+      'result' => t('Prenatal encounter @id not found.', [
+        '@id' => $encounter_id,
+      ]),
+    ];
+  }
+
+  $payload = hedley_openmrs_build_prenatal_payload($node);
+  if ($payload === NULL) {
+    // Person not linked to OpenMRS yet — wait and retry.
+    return [
+      'status' => ADVANCEDQUEUE_STATUS_FAILURE_RETRY,
+      'result' => t('Encounter @id person not yet linked to OpenMRS.', [
+        '@id' => $encounter_id,
+      ]),
+    ];
+  }
+
+  $headers = ['Content-Type' => 'application/json'];
+  $token = variable_get('hedley_openmrs_openfn_token', '');
+  if ($token !== '') {
+    $headers['X-OpenFN-Token'] = $token;
+  }
+
+  $response = drupal_http_request($webhook_url, [
+    'method' => 'POST',
+    'headers' => $headers,
+    'data' => drupal_json_encode($payload),
+    'timeout' => 30,
+  ]);
+
+  $code = isset($response->code) ? (int) $response->code : 0;
+  if ($code >= 200 && $code < 300) {
+    return [
+      'status' => ADVANCEDQUEUE_STATUS_SUCCESS,
+      'result' => t('Pushed prenatal encounter @id to OpenFN.', [
+        '@id' => $encounter_id,
+      ]),
+    ];
+  }
+
+  // 4xx (except 429 rate-limit) won't succeed on retry — bad payload, auth
+  // or routing problems. Fail permanently so the queue doesn't churn.
+  $permanent = $code >= 400 && $code < 500 && $code !== 429;
+  $status = $permanent
+    ? ADVANCEDQUEUE_STATUS_FAILURE
+    : ADVANCEDQUEUE_STATUS_FAILURE_RETRY;
+  return [
+    'status' => $status,
+    'result' => t('OpenFN push for encounter @id failed (HTTP @code).', [
+      '@id' => $encounter_id,
+      '@code' => $code,
+    ]),
+  ];
+}
+
+/**
  * Builds the person payload sent to OpenFN.
  *
  * A flat representation of the registration fields the OpenFN transform
