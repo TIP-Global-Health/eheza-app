@@ -1,14 +1,14 @@
 /**
- * Match - decide whether to create the OpenMRS encounter or skip it.
+ * Match - decide whether to create or replace the OpenMRS encounter.
  *
  * The encounter attaches to a patient that the Phase 1 person flow already
  * linked, so there is no fuzzy matching here: the patient UUID arrives on
- * the payload. We only decide create-vs-skip (create-once for the PoC).
+ * the payload. We only decide create-vs-replace (upsert).
  *
  * Input  (state.data.person_openmrs_uuid): linked patient UUID.
  *        (state.data.existing_encounter_uuid): set if already pushed.
- * Output (state.encounterMatch): { action: 'create'|'skip', patientUuid,
- *        encounterUuid }.
+ * Output (state.encounterMatch): { action: 'create'|'replace', patientUuid,
+ *        previousEncounterUuid }.
  *
  * Adaptor: @openfn/language-common
  */
@@ -24,7 +24,11 @@ fn((state) => {
   if (existing) {
     return {
       ...state,
-      encounterMatch: { action: 'skip', patientUuid, encounterUuid: existing },
+      encounterMatch: {
+        action: 'replace',
+        patientUuid,
+        previousEncounterUuid: existing,
+      },
     };
   }
 

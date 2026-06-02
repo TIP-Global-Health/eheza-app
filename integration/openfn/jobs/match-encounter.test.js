@@ -30,20 +30,19 @@ function loadJob(file) {
   return captured;
 }
 
-test('marks create when no existing encounter UUID', () => {
+test('create when no existing encounter UUID', () => {
   const job = loadJob('match-encounter.js');
   const out = job({ data: { person_openmrs_uuid: 'p', existing_encounter_uuid: '' } });
   assert.equal(out.encounterMatch.action, 'create');
   assert.equal(out.encounterMatch.patientUuid, 'p');
 });
 
-test('short-circuits to skip when already linked', () => {
+test('replace when an encounter UUID already exists', () => {
   const job = loadJob('match-encounter.js');
-  const out = job({
-    data: { person_openmrs_uuid: 'p', existing_encounter_uuid: 'already-there' },
-  });
-  assert.equal(out.encounterMatch.action, 'skip');
-  assert.equal(out.encounterMatch.encounterUuid, 'already-there');
+  const out = job({ data: { person_openmrs_uuid: 'p', existing_encounter_uuid: 'prev-uuid' } });
+  assert.equal(out.encounterMatch.action, 'replace');
+  assert.equal(out.encounterMatch.patientUuid, 'p');
+  assert.equal(out.encounterMatch.previousEncounterUuid, 'prev-uuid');
 });
 
 test('throws when the person is not linked', () => {
