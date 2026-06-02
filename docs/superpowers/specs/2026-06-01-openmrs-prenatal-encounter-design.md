@@ -123,8 +123,10 @@ Mirrors the Phase 1 person flow:
   references it, emitting a flat payload:
   ```
   { encounter_uuid, encounter_date, person_uuid, person_openmrs_uuid,
-    measurements: { <eheza_key>: value, … } }
+    existing_encounter_uuid, measurements: { <eheza_key>: value, … } }
   ```
+  (`existing_encounter_uuid` carries `field_openmrs_encounter_uuid` so `match`
+  can decide create vs replace.)
   It walks the measurement nodes generically (reads each field value) rather than
   hand-listing fields.
 - **Patient prerequisite:** the payload carries the person's `field_openmrs_uuid`.
