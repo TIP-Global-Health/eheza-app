@@ -3,10 +3,12 @@
  *
  *   node --test integration/openfn/jobs/load-encounter.test.js
  *
- * The job POSTs through the adaptor's `post` operation. The test loads the
- * job in the current realm with `fn` captured and `post` faked, so the real
- * branching and write-back run — only the network is stubbed. Faked POSTs
- * are recorded for inspection. Mirrors load.test.js's stubbing.
+ * The job POSTs through the adaptor's `post` operation and, on replace,
+ * voids the previous encounter through the adaptor's `del` operation. The
+ * test loads the job in the current realm with `fn` captured and `post`/`del`
+ * faked, so the real branching and write-back run — only the network is
+ * stubbed. Faked calls are recorded for inspection. Mirrors load.test.js's
+ * stubbing.
  */
 
 'use strict';
@@ -18,6 +20,12 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 let postCalls = [];
+let delCalls = [];
+
+function reset() {
+  postCalls = [];
+  delCalls = [];
+}
 
 /** Stand-in for the HTTP adaptor's `post(path, data, options)` — records the call. */
 function fakePost(url, data, options) {
@@ -28,7 +36,7 @@ function fakePost(url, data, options) {
       headers: (options && options.headers) || {},
     });
     // The link URL contains `/encounter-link`; check it FIRST. Otherwise a
-    // URL ending in `/encounter` is the create call, which returns a uuid.
+    // URL containing `/encounter` is the create call, which returns a uuid.
     const str = String(url);
     if (str.includes('/encounter-link')) {
       return { ...state, data: { status: 'ok' } };
@@ -36,6 +44,17 @@ function fakePost(url, data, options) {
     if (str.includes('/encounter')) {
       return { ...state, data: { uuid: 'new-enc-uuid' } };
     }
+    return { ...state, data: {} };
+  };
+}
+
+/** Stand-in for the HTTP adaptor's `del(path, options)` — records the call. */
+function fakeDel(url, options) {
+  return (state) => {
+    delCalls.push({
+      url,
+      headers: (options && options.headers) || {},
+    });
     return { ...state, data: {} };
   };
 }
@@ -48,6 +67,7 @@ function loadJob(file) {
     operation = f;
   };
   globalThis.post = fakePost;
+  globalThis.del = fakeDel;
   try {
     vm.runInThisContext(src, { filename: file });
   } finally {
@@ -65,15 +85,13 @@ function loadJob(file) {
   return { job };
 }
 
-test.beforeEach(() => {
-  postCalls = [];
-});
-
-test('create branch: posts encounter then links back', async () => {
+test('create branch: posts encounter then links back; no delete', async () => {
+  reset();
   const { job } = loadJob('load-encounter.js');
   const out = await job({
     configuration: {
       openmrsBaseUrl: 'http://openmrs/ws/rest/v1',
+      openmrsAuth: 'auth',
       ehezaEncounterLinkUrl: 'http://eheza/openmrs/encounter-link',
       ehezaToken: 'secret',
     },
@@ -82,35 +100,34 @@ test('create branch: posts encounter then links back', async () => {
     encounterMatch: { action: 'create', patientUuid: 'p' },
   });
 
-  assert.equal(postCalls.length, 2, 'expected two POSTs');
-
-  const create = postCalls[0];
-  const link = postCalls[1];
-
-  assert.ok(create.url.endsWith('/encounter'), 'first POST is the encounter create');
-  assert.ok(link.url.includes('/encounter-link'), 'second POST is the link-back');
-
-  assert.equal(link.body.openmrs_uuid, 'new-enc-uuid');
-  assert.equal(link.body.encounter_uuid, 'eheza-enc-uuid');
-
+  assert.equal(delCalls.length, 0);
+  assert.equal(postCalls.length, 2);
+  assert.ok(postCalls[0].url.indexOf('/encounter') !== -1);
+  assert.ok(postCalls[1].url.indexOf('/encounter-link') !== -1);
+  assert.equal(postCalls[1].body.openmrs_uuid, 'new-enc-uuid');
+  assert.equal(postCalls[1].body.encounter_uuid, 'eheza-enc-uuid');
   assert.equal(out.loadResult.action, 'created');
-  assert.equal(out.loadResult.openmrsUuid, 'new-enc-uuid');
 });
 
-test('skip branch: posts nothing', async () => {
+test('replace branch: deletes previous encounter, then creates + links back', async () => {
+  reset();
   const { job } = loadJob('load-encounter.js');
   const out = await job({
     configuration: {
       openmrsBaseUrl: 'http://openmrs/ws/rest/v1',
+      openmrsAuth: 'auth',
       ehezaEncounterLinkUrl: 'http://eheza/openmrs/encounter-link',
       ehezaToken: 'secret',
     },
     data: { encounter_uuid: 'eheza-enc-uuid' },
     openmrsEncounter: { patient: 'p', obs: [] },
-    encounterMatch: { action: 'skip', encounterUuid: 'already' },
+    encounterMatch: { action: 'replace', patientUuid: 'p', previousEncounterUuid: 'old-uuid' },
   });
 
-  assert.equal(postCalls.length, 0, 'expected no POSTs on skip');
-  assert.equal(out.loadResult.action, 'skipped');
-  assert.equal(out.loadResult.openmrsUuid, 'already');
+  assert.equal(delCalls.length, 1);
+  assert.ok(delCalls[0].url.indexOf('/encounter/old-uuid') !== -1);
+  assert.equal(postCalls.length, 2);
+  assert.ok(postCalls[0].url.indexOf('/encounter') !== -1);
+  assert.equal(postCalls[1].body.openmrs_uuid, 'new-enc-uuid');
+  assert.equal(out.loadResult.action, 'replaced');
 });
