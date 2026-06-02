@@ -625,15 +625,13 @@ function hedley_openmrs_encounter_link() {
 
   $existing = _hedley_openmrs_field($node, 'field_openmrs_encounter_uuid');
   if (!empty($existing) && $existing !== $openmrs_uuid) {
+    // Upsert replaces the OpenMRS encounter, so a new UUID is expected; record
+    // the change and overwrite (no 409 — the latest push wins).
     watchdog(
       'hedley_openmrs',
-      'Refusing to relink encounter @nid: was @old, asked to set @new.',
+      'Re-linking encounter @nid: @old -> @new (upsert).',
       ['@nid' => $nid, '@old' => $existing, '@new' => $openmrs_uuid],
-      WATCHDOG_WARNING
-    );
-    return _hedley_openmrs_error(
-      '409 Conflict',
-      'Encounter already linked to a different OpenMRS encounter.'
+      WATCHDOG_INFO
     );
   }
 
