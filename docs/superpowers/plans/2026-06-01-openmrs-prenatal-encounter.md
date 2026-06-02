@@ -1382,3 +1382,388 @@ Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
 2. **Next update number** (C1): assumed `7049`; verify with `drupal_get_schema_versions`.
 3. **`post` global reachability in load test** (D3): mirror `jobs/load.test.js` exactly if the stub isn't picked up.
 4. **Catalog row count** (~80–120) is an estimate; the generator determines the real number.
+
+---
+
+# Revision 2026-06-02 — change-driven upsert (trigger + idempotency)
+
+**Why:** the original create-once-on-encounter-creation model captures an empty encounter online (measurements trickle in over ~an hour as separate nodes; the encounter node has no "complete" signal and isn't re-saved as measurements arrive). Switch to: trigger on every encounter AND measurement save (insert+update), dedup the queue task by encounter, and make the OpenMRS write an upsert (delete-and-recreate) so the last push wins. See the spec's "Revision 2026-06-02" sections.
+
+These tasks modify already-implemented files. Each is independently committable and reviewable.
+
+## Task R1: Trigger on measurement saves + encounter updates (with loop guard)
+
+**Files:** Modify `server/hedley/modules/custom/hedley_openmrs/hedley_openmrs.module`
+
+The C2 hooks enqueue only on `prenatal_encounter` insert/update. Replace those inline blocks with a shared helper that also enqueues when a **measurement** node (any node carrying `field_prenatal_encounter`) is saved, keyed by the **parent encounter** nid so saves coalesce. Critically, skip the `encounter-link` write-back's own node_save (it only changes `field_openmrs_encounter_uuid`) or the hooks loop forever.
+
+- [ ] **Step 1: Add the shared helper** (place near the other `_hedley_openmrs_*` helpers). Reuses `_hedley_openmrs_reference()` (added in C3, reads `target_id`) and `_hedley_openmrs_field()`:
+
+```php
+/**
+ * Enqueues an OpenMRS push for the prenatal encounter a node belongs to.
+ *
+ * Handles both the prenatal_encounter node itself and any measurement node
+ * (anything carrying field_prenatal_encounter). All saves for one encounter
+ * key the advanced-queue task by the encounter nid, so a burst of measurement
+ * saves coalesces into a single task.
+ *
+ * Skips the encounter-link write-back's own save: that save only changes
+ * field_openmrs_encounter_uuid, and re-enqueueing on it would loop
+ * (push -> load -> encounter-link -> node_save -> hook -> push ...).
+ *
+ * @param object $node
+ *   The saved node.
+ *
+ * @return bool
+ *   TRUE if the node is a prenatal encounter/measurement (whether or not it
+ *   was enqueued), so the caller can stop processing it as a person.
+ */
+function _hedley_openmrs_maybe_enqueue_prenatal($node) {
+  if ($node->type === 'prenatal_encounter') {
+    // Don't re-enqueue the write-back's own save (would loop).
+    if (!empty($node->original)) {
+      $new = _hedley_openmrs_field($node, 'field_openmrs_encounter_uuid');
+      $old = _hedley_openmrs_field($node->original, 'field_openmrs_encounter_uuid');
+      if ($new !== $old) {
+        return TRUE;
+      }
+    }
+    $encounter_id = $node->nid;
+  }
+  else {
+    $encounter_id = _hedley_openmrs_reference($node, 'field_prenatal_encounter');
+    if (empty($encounter_id)) {
+      return FALSE;
+    }
+  }
+
+  hedley_general_add_task_to_advanced_queue_by_id(
+    HEDLEY_OPENMRS_PUSH_PRENATAL_ENCOUNTER,
+    $encounter_id,
+    ['encounter_id' => $encounter_id]
+  );
+
+  return TRUE;
+}
+```
+
+- [ ] **Step 2: Replace the inline prenatal block in `hedley_openmrs_node_insert()`** with a call to the helper. The function top becomes:
+
+```php
+function hedley_openmrs_node_insert($node) {
+  if (_hedley_openmrs_maybe_enqueue_prenatal($node)) {
+    return;
+  }
+  if ($node->type !== 'person') {
+    return;
+  }
+  // ... existing person enqueue unchanged ...
+```
+
+(Delete the old `if ($node->type === 'prenatal_encounter') { ... return; }` block.)
+
+- [ ] **Step 3: Replace the inline prenatal block in `hedley_openmrs_node_update()`** the same way:
+
+```php
+function hedley_openmrs_node_update($node) {
+  if (_hedley_openmrs_maybe_enqueue_prenatal($node)) {
+    return;
+  }
+  if ($node->type !== 'person') {
+    return;
+  }
+  if (!_hedley_openmrs_should_push_update($node)) {
+    return;
+  }
+  // ... existing person enqueue unchanged ...
+```
+
+- [ ] **Step 4: phpcs** — `ddev phpcs server/hedley/modules/custom/hedley_openmrs/hedley_openmrs.module` → 0/0.
+
+- [ ] **Step 5: Verify enqueue + dedup + no-loop on real data:**
+
+```
+# A measurement save enqueues the parent encounter; a 2nd save dedups.
+ddev drush ev '
+  $ids = array_keys(node_load_multiple(FALSE, ["type" => "prenatal_encounter"]));
+  $enc = node_load(reset($ids));
+  // Find one measurement of this encounter.
+  $q = new EntityFieldQuery();
+  $q->entityCondition("entity_type","node")->fieldCondition("field_prenatal_encounter","target_id",$enc->nid)->range(0,1);
+  $r = $q->execute(); $m = node_load(key($r["node"]));
+  node_save($m); // triggers node_update -> should enqueue by encounter id
+  $title = HEDLEY_OPENMRS_PUSH_PRENATAL_ENCOUNTER . "_" . $enc->nid;
+  print "task queued: " . (hedley_general_advanced_queue_task_exists(HEDLEY_OPENMRS_PUSH_PRENATAL_ENCOUNTER, $title, [ADVANCEDQUEUE_STATUS_QUEUED, ADVANCEDQUEUE_STATUS_PROCESSING]) ? "yes" : "no") . "\n";
+  node_save($m); // second save -> dedup, still one task
+'
+```
+Expected: `task queued: yes`. (The dedup is internal to the helper; the key check is that a measurement save enqueues by the encounter id and phpcs is clean.)
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add server/hedley/modules/custom/hedley_openmrs/hedley_openmrs.module
+git commit -m "Trigger OpenMRS push on measurement + encounter saves, keyed by encounter
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+[ci skip]"
+```
+
+## Task R2: encounter-link overwrites the stored UUID (upsert)
+
+**Files:** Modify `server/hedley/modules/custom/hedley_openmrs/hedley_openmrs.module`
+
+The C5 endpoint returns `409` when asked to relink to a different UUID. Under upsert, a replace legitimately changes the UUID, so overwrite it (log the change at INFO) instead of rejecting.
+
+- [ ] **Step 1: Replace the 409 guard** in `hedley_openmrs_encounter_link()`. Change:
+
+```php
+  $existing = _hedley_openmrs_field($node, 'field_openmrs_encounter_uuid');
+  if (!empty($existing) && $existing !== $openmrs_uuid) {
+    watchdog(
+      'hedley_openmrs',
+      'Refusing to relink encounter @nid: was @old, asked to set @new.',
+      ['@nid' => $nid, '@old' => $existing, '@new' => $openmrs_uuid],
+      WATCHDOG_WARNING
+    );
+    return _hedley_openmrs_error(
+      '409 Conflict',
+      'Encounter already linked to a different OpenMRS encounter.'
+    );
+  }
+```
+
+to:
+
+```php
+  $existing = _hedley_openmrs_field($node, 'field_openmrs_encounter_uuid');
+  if (!empty($existing) && $existing !== $openmrs_uuid) {
+    // Upsert replaces the OpenMRS encounter, so a new UUID is expected; record
+    // the change and overwrite (no 409 — the latest push wins).
+    watchdog(
+      'hedley_openmrs',
+      'Re-linking encounter @nid: @old -> @new (upsert).',
+      ['@nid' => $nid, '@old' => $existing, '@new' => $openmrs_uuid],
+      WATCHDOG_INFO
+    );
+  }
+```
+
+(The `node_save` + success return below it stay unchanged.)
+
+- [ ] **Step 2: phpcs** → 0/0.
+
+- [ ] **Step 3: Verify the overwrite path** (set a secret, link to UUID-A, then re-link the same encounter to UUID-B → expect 200 and the field now holds UUID-B):
+
+```bash
+ddev drush vset hedley_openmrs_shared_secret "test-secret-r2"
+EUUID=$(ddev drush ev '$ids=array_keys(node_load_multiple(FALSE,["type"=>"prenatal_encounter"])); $n=node_load(reset($ids)); print $n->field_uuid[LANGUAGE_NONE][0]["value"];')
+B="https://ihangane.ddev.site:4443/openmrs/encounter-link"
+curl -sk -o /dev/null -w "A -> %{http_code}\n" -X POST -H "X-OpenFN-Token: test-secret-r2" -H "Content-Type: application/json" -d "{\"encounter_uuid\":\"$EUUID\",\"openmrs_uuid\":\"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa\"}" "$B"
+curl -sk -o /dev/null -w "B -> %{http_code}\n" -X POST -H "X-OpenFN-Token: test-secret-r2" -H "Content-Type: application/json" -d "{\"encounter_uuid\":\"$EUUID\",\"openmrs_uuid\":\"bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb\"}" "$B"
+ddev drush ev '$ids=array_keys(node_load_multiple(FALSE,["type"=>"prenatal_encounter"])); $n=node_load(reset($ids)); print "stored: ".$n->field_openmrs_encounter_uuid[LANGUAGE_NONE][0]["value"]."\n";'
+# cleanup
+ddev drush vdel -y hedley_openmrs_shared_secret
+ddev drush ev '$ids=array_keys(node_load_multiple(FALSE,["type"=>"prenatal_encounter"])); $n=node_load(reset($ids)); unset($n->field_openmrs_encounter_uuid); node_save($n);'
+```
+Expected: `A -> 200`, `B -> 200`, `stored: bbbbbbbb-...` (overwritten, no 409).
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add server/hedley/modules/custom/hedley_openmrs/hedley_openmrs.module
+git commit -m "encounter-link overwrites stored UUID on upsert (no 409)
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+[ci skip]"
+```
+
+## Task R3: match-encounter decides create vs replace
+
+**Files:** Modify `integration/openfn/jobs/match-encounter.js` and `integration/openfn/jobs/match-encounter.test.js`. TDD: update tests first.
+
+- [ ] **Step 1: Update the test** `match-encounter.test.js` to the new contract (keep the `loadJob` helper):
+
+```javascript
+test('create when no existing encounter UUID', () => {
+  const job = loadJob('match-encounter.js');
+  const out = job({ data: { person_openmrs_uuid: 'p', existing_encounter_uuid: '' } });
+  assert.equal(out.encounterMatch.action, 'create');
+  assert.equal(out.encounterMatch.patientUuid, 'p');
+});
+
+test('replace when an encounter UUID already exists', () => {
+  const job = loadJob('match-encounter.js');
+  const out = job({ data: { person_openmrs_uuid: 'p', existing_encounter_uuid: 'prev-uuid' } });
+  assert.equal(out.encounterMatch.action, 'replace');
+  assert.equal(out.encounterMatch.patientUuid, 'p');
+  assert.equal(out.encounterMatch.previousEncounterUuid, 'prev-uuid');
+});
+
+test('throws when the person is not linked', () => {
+  const job = loadJob('match-encounter.js');
+  assert.throws(
+    () => job({ data: { person_openmrs_uuid: '', existing_encounter_uuid: '' } }),
+    /person not linked/i
+  );
+});
+```
+
+- [ ] **Step 2: Run → the replace test fails** (`node --test integration/openfn/jobs/match-encounter.test.js`).
+
+- [ ] **Step 3: Update the job** `match-encounter.js` — replace the skip branch:
+
+```javascript
+  const existing = data.existing_encounter_uuid;
+  if (existing) {
+    return {
+      ...state,
+      encounterMatch: {
+        action: 'replace',
+        patientUuid,
+        previousEncounterUuid: existing,
+      },
+    };
+  }
+
+  return {
+    ...state,
+    encounterMatch: { action: 'create', patientUuid },
+  };
+```
+
+(Update the JSDoc Output line to `{ action: 'create'|'replace', patientUuid, previousEncounterUuid }`.)
+
+- [ ] **Step 4: Run → 3/3 pass.** Then full suite `node --test integration/openfn/jobs/*.test.js`.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add integration/openfn/jobs/match-encounter.js integration/openfn/jobs/match-encounter.test.js
+git commit -m "match-encounter: decide create vs replace (upsert)
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+[ci skip]"
+```
+
+## Task R4: load-encounter upsert (delete-then-create on replace)
+
+**Files:** Modify `integration/openfn/jobs/load-encounter.js` and `integration/openfn/jobs/load-encounter.test.js`. TDD.
+
+The job currently has create + skip branches. Replace the skip branch with a replace branch that **deletes the previous OpenMRS encounter first**, then creates fresh (same as create) and writes back. Verify the `@openfn/language-http` delete operation name (likely `del(url, options)`; if unavailable use `request({ method: 'DELETE', ... })`) and mirror `load.js`'s 3-arg `post(url, data, options)` convention + `Authorization: cfg.openmrsAuth` header.
+
+- [ ] **Step 1: Update the test** `load-encounter.test.js` — fake both `post` and the delete op (record both); two tests:
+
+```javascript
+test('create branch: posts encounter then links back; no delete', async () => {
+  reset();
+  const { job } = loadJob('load-encounter.js');
+  const out = await job({
+    configuration: { openmrsBaseUrl: 'http://openmrs/ws/rest/v1', openmrsAuth: 'auth', ehezaEncounterLinkUrl: 'http://eheza/openmrs/encounter-link', ehezaToken: 'secret' },
+    data: { encounter_uuid: 'eheza-enc-uuid' },
+    openmrsEncounter: { patient: 'p', obs: [] },
+    encounterMatch: { action: 'create', patientUuid: 'p' },
+  });
+  assert.equal(delCalls.length, 0);
+  assert.equal(postCalls.length, 2);
+  assert.ok(postCalls[0].url.indexOf('/encounter') !== -1);
+  assert.ok(postCalls[1].url.indexOf('/encounter-link') !== -1);
+  assert.equal(postCalls[1].body.openmrs_uuid, 'new-enc-uuid');
+  assert.equal(out.loadResult.action, 'created');
+});
+
+test('replace branch: deletes previous encounter, then creates + links back', async () => {
+  reset();
+  const { job } = loadJob('load-encounter.js');
+  const out = await job({
+    configuration: { openmrsBaseUrl: 'http://openmrs/ws/rest/v1', openmrsAuth: 'auth', ehezaEncounterLinkUrl: 'http://eheza/openmrs/encounter-link', ehezaToken: 'secret' },
+    data: { encounter_uuid: 'eheza-enc-uuid' },
+    openmrsEncounter: { patient: 'p', obs: [] },
+    encounterMatch: { action: 'replace', patientUuid: 'p', previousEncounterUuid: 'old-uuid' },
+  });
+  assert.equal(delCalls.length, 1);
+  assert.ok(delCalls[0].url.indexOf('/encounter/old-uuid') !== -1);
+  assert.equal(postCalls.length, 2);
+  assert.equal(postCalls[1].body.openmrs_uuid, 'new-enc-uuid');
+  assert.equal(out.loadResult.action, 'replaced');
+});
+```
+(Set up `postCalls`/`delCalls` arrays and a `reset()` like the existing test's structure; the fake `post` for a `/encounter` create URL returns `{ data: { uuid: 'new-enc-uuid' } }`, the `/encounter-link` URL returns `{ data: { status: 'ok' } }`; the fake delete records the url. Mirror how `load.test.js` injects the adaptor globals.)
+
+- [ ] **Step 2: Run → fails** (no replace handling / del not used).
+
+- [ ] **Step 3: Update the job** `load-encounter.js`:
+
+```javascript
+fn(async (state) => {
+  const cfg = state.configuration || {};
+  const match = state.encounterMatch || {};
+
+  // Upsert: on replace, void the previous OpenMRS encounter before recreating.
+  if (match.action === 'replace' && match.previousEncounterUuid) {
+    await del(cfg.openmrsBaseUrl + '/encounter/' + match.previousEncounterUuid, {
+      headers: { Authorization: cfg.openmrsAuth },
+    })(state);
+  }
+
+  // Create the encounter fresh from the latest snapshot.
+  const created = await post(cfg.openmrsBaseUrl + '/encounter', state.openmrsEncounter, {
+    headers: { Authorization: cfg.openmrsAuth },
+  })(state);
+  const openmrsUuid = created.data && created.data.uuid;
+  if (!openmrsUuid) {
+    throw new Error('OpenMRS did not return an encounter uuid.');
+  }
+
+  // Write the (new) OpenMRS UUID back to E-Heza (endpoint overwrites on change).
+  await post(cfg.ehezaEncounterLinkUrl, {
+    encounter_uuid: state.data.encounter_uuid,
+    openmrs_uuid: openmrsUuid,
+  }, {
+    headers: { 'X-OpenFN-Token': cfg.ehezaToken },
+  })(state);
+
+  const action = match.action === 'replace' ? 'replaced' : 'created';
+  console.log('OpenMRS encounter', action, openmrsUuid);
+  return { ...state, loadResult: { action, openmrsUuid } };
+});
+```
+(Update the JSDoc to describe the upsert. Confirm `del` is the adaptor's delete op; adjust if it's named differently.)
+
+- [ ] **Step 4: Run → 2/2 pass.** Then full suite `node --test integration/openfn/jobs/*.test.js` → all pass.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add integration/openfn/jobs/load-encounter.js integration/openfn/jobs/load-encounter.test.js
+git commit -m "load-encounter: upsert via delete-then-create on replace
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+[ci skip]"
+```
+
+## Task R5: Update the mapping doc
+
+**Files:** Modify `integration/prenatal-encounter-mapping.md`
+
+- [ ] **Step 1:** Update the pipeline + deferred sections to reflect the revision: trigger on encounter AND measurement saves (insert+update) keyed by encounter (dedup); upsert via delete-and-recreate (create vs replace); `encounter-link` overwrites the UUID; the create-once/“deferred re-sync” line is removed; add the quiet-period debounce and void-obs-in-place as the remaining deferred items. Keep it accurate to the code as built in R1–R4.
+
+- [ ] **Step 2: Commit**
+
+```bash
+git add integration/prenatal-encounter-mapping.md
+git commit -m "Doc: prenatal encounter upsert + measurement-save triggers
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+[ci skip]"
+```
+
+## Revision self-review
+
+- Trigger on measurement saves (insert+update) → R1; encounter updates still covered → R1; keyed by encounter for dedup → R1.
+- Infinite-loop guard for the write-back's own save → R1 Step 1.
+- Drop create-once / upsert → R3 (match) + R4 (load).
+- encounter-link overwrites UUID → R2.
+- Worker + payload builder unchanged (builder already emits `existing_encounter_uuid` and skips deleted measurements).
+- Docs → R5.
