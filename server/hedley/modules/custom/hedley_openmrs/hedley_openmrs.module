@@ -44,12 +44,7 @@ function hedley_openmrs_menu() {
  * offline device syncs.
  */
 function hedley_openmrs_node_insert($node) {
-  if ($node->type === 'prenatal_encounter') {
-    hedley_general_add_task_to_advanced_queue_by_id(
-      HEDLEY_OPENMRS_PUSH_PRENATAL_ENCOUNTER,
-      $node->nid,
-      ['encounter_id' => $node->nid]
-    );
+  if (_hedley_openmrs_maybe_enqueue_prenatal($node)) {
     return;
   }
 
@@ -74,12 +69,7 @@ function hedley_openmrs_node_insert($node) {
  * is intentionally not in the tracked set.
  */
 function hedley_openmrs_node_update($node) {
-  if ($node->type === 'prenatal_encounter') {
-    hedley_general_add_task_to_advanced_queue_by_id(
-      HEDLEY_OPENMRS_PUSH_PRENATAL_ENCOUNTER,
-      $node->nid,
-      ['encounter_id' => $node->nid]
-    );
+  if (_hedley_openmrs_maybe_enqueue_prenatal($node)) {
     return;
   }
 
@@ -390,6 +380,53 @@ function _hedley_openmrs_should_push_update($node) {
     }
   }
   return FALSE;
+}
+
+/**
+ * Enqueues an OpenMRS push for the prenatal encounter a node belongs to.
+ *
+ * Handles both the prenatal_encounter node itself and any measurement node
+ * (anything carrying field_prenatal_encounter). All saves for one encounter
+ * key the advanced-queue task by the encounter nid, so a burst of measurement
+ * saves coalesces into a single task.
+ *
+ * Skips the encounter-link write-back's own save: that save only changes
+ * field_openmrs_encounter_uuid, and re-enqueueing on it would loop
+ * (push -> load -> encounter-link -> node_save -> hook -> push ...).
+ *
+ * @param object $node
+ *   The saved node.
+ *
+ * @return bool
+ *   TRUE if the node is a prenatal encounter/measurement (whether or not it
+ *   was enqueued), so the caller can stop processing it as a person.
+ */
+function _hedley_openmrs_maybe_enqueue_prenatal($node) {
+  if ($node->type === 'prenatal_encounter') {
+    // Don't re-enqueue the write-back's own save (would loop).
+    if (!empty($node->original)) {
+      $new = _hedley_openmrs_field($node, 'field_openmrs_encounter_uuid');
+      $old = _hedley_openmrs_field($node->original, 'field_openmrs_encounter_uuid');
+      if ($new !== $old) {
+        return TRUE;
+      }
+    }
+    $encounter_id = $node->nid;
+  }
+  else {
+    $encounter_id = _hedley_openmrs_reference($node, 'field_prenatal_encounter');
+    if (empty($encounter_id)) {
+      return FALSE;
+    }
+  }
+
+  hedley_general_add_task_to_advanced_queue_by_id(
+    HEDLEY_OPENMRS_PUSH_PRENATAL_ENCOUNTER,
+    $encounter_id,
+    ['encounter_id' => $encounter_id]
+  );
+
+  return TRUE;
 }
 
 /**
