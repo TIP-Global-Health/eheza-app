@@ -1,0 +1,402 @@
+<?php
+
+/**
+ * @file
+ * Hedley OpenMRS.
+ *
+ * Integration with UVL OpenMRS via the OpenFN mediator. Phase 1 covers the
+ * one-way patient create flow: E-Heza (Drupal) -> OpenFN -> OpenMRS.
+ */
+
+define('HEDLEY_OPENMRS_PUSH_PERSON', 'hedley_openmrs_push_person');
+
+/**
+ * Implements hook_menu().
+ */
+function hedley_openmrs_menu() {
+  $items['openmrs/patient-link'] = [
+    'title' => 'OpenMRS patient link',
+    'page callback' => 'hedley_openmrs_patient_link',
+    // Public path; auth is the shared-secret check in the callback itself.
+    'access callback' => TRUE,
+    'delivery callback' => 'drupal_json_output',
+    'type' => MENU_CALLBACK,
+  ];
+
+  return $items;
+}
+
+/**
+ * Implements hook_node_insert().
+ *
+ * When a person is created — including during device sync — queue it to be
+ * pushed to OpenFN. The queue absorbs the batches that arrive after an
+ * offline device syncs.
+ */
+function hedley_openmrs_node_insert($node) {
+  if ($node->type !== 'person') {
+    return;
+  }
+
+  hedley_general_add_task_to_advanced_queue_by_id(
+    HEDLEY_OPENMRS_PUSH_PERSON,
+    $node->nid,
+    ['person_id' => $node->nid]
+  );
+}
+
+/**
+ * Implements hook_node_update().
+ *
+ * Re-queue the person for OpenFN whenever any of the demographic fields
+ * we sync to OpenMRS have actually changed. Photo, reports data, sync
+ * state and other unrelated fields don't cause an enqueue. The load
+ * step's own UUID write-back does not loop, because field_openmrs_uuid
+ * is intentionally not in the tracked set.
+ */
+function hedley_openmrs_node_update($node) {
+  if ($node->type !== 'person') {
+    return;
+  }
+  if (!_hedley_openmrs_should_push_update($node)) {
+    return;
+  }
+
+  hedley_general_add_task_to_advanced_queue_by_id(
+    HEDLEY_OPENMRS_PUSH_PERSON,
+    $node->nid,
+    ['person_id' => $node->nid]
+  );
+}
+
+/**
+ * Implements hook_advanced_queue_info().
+ */
+function hedley_openmrs_advanced_queue_info() {
+  $items[HEDLEY_OPENMRS_PUSH_PERSON] = [
+    'label' => t('Push person registration to OpenFN'),
+    'worker callback' => 'hedley_openmrs_push_person_worker',
+    'groups' => ['hedley'],
+    'retry after' => 120,
+    'max attempts' => 5,
+  ];
+
+  return $items;
+}
+
+/**
+ * Advanced-queue worker: POST a person registration to the OpenFN webhook.
+ *
+ * @param object $queue_item
+ *   The queue item; its data holds 'person_id'.
+ *
+ * @return array
+ *   An advanced-queue status/result array.
+ */
+function hedley_openmrs_push_person_worker($queue_item) {
+  $person_id = !empty($queue_item->data['person_id'])
+    ? $queue_item->data['person_id'] : NULL;
+  if (!$person_id) {
+    return [
+      'status' => ADVANCEDQUEUE_STATUS_FAILURE,
+      'result' => t('Queue item has no person ID.'),
+    ];
+  }
+
+  $webhook_url = variable_get('hedley_openmrs_openfn_webhook_url', '');
+  if ($webhook_url === '') {
+    return [
+      'status' => ADVANCEDQUEUE_STATUS_FAILURE_RETRY,
+      'result' => t('OpenFN webhook URL is not configured.'),
+    ];
+  }
+
+  $node = node_load($person_id);
+  if (empty($node) || $node->type !== 'person') {
+    return [
+      'status' => ADVANCEDQUEUE_STATUS_FAILURE,
+      'result' => t('Person @id not found.', ['@id' => $person_id]),
+    ];
+  }
+
+  $headers = ['Content-Type' => 'application/json'];
+  $token = variable_get('hedley_openmrs_openfn_token', '');
+  if ($token !== '') {
+    $headers['X-OpenFN-Token'] = $token;
+  }
+
+  $response = drupal_http_request($webhook_url, [
+    'method' => 'POST',
+    'headers' => $headers,
+    'data' => drupal_json_encode(hedley_openmrs_build_person_payload($node)),
+    'timeout' => 30,
+  ]);
+
+  $code = isset($response->code) ? (int) $response->code : 0;
+  if ($code >= 200 && $code < 300) {
+    return [
+      'status' => ADVANCEDQUEUE_STATUS_SUCCESS,
+      'result' => t('Pushed person @id to OpenFN.', ['@id' => $person_id]),
+    ];
+  }
+
+  // 4xx (except 429 rate-limit) won't succeed on retry — bad payload, auth
+  // or routing problems. Fail permanently so the queue doesn't churn.
+  $permanent = $code >= 400 && $code < 500 && $code !== 429;
+  $status = $permanent
+    ? ADVANCEDQUEUE_STATUS_FAILURE
+    : ADVANCEDQUEUE_STATUS_FAILURE_RETRY;
+  return [
+    'status' => $status,
+    'result' => t('OpenFN push for person @id failed (HTTP @code).', [
+      '@id' => $person_id,
+      '@code' => $code,
+    ]),
+  ];
+}
+
+/**
+ * Builds the person payload sent to OpenFN.
+ *
+ * A flat representation of the registration fields the OpenFN transform
+ * maps onto an OpenMRS patient. person_uuid is the E-Heza UUID, used to
+ * write the OpenMRS UUID back.
+ *
+ * @param object $node
+ *   The person node.
+ *
+ * @return array
+ *   The payload.
+ */
+function hedley_openmrs_build_person_payload($node) {
+  $payload = [];
+  foreach (_hedley_openmrs_synced_fields() as $key => $field) {
+    $payload[$key] = _hedley_openmrs_field($node, $field);
+  }
+  $payload['birth_date_estimated'] =
+    (bool) _hedley_openmrs_field($node, 'field_birth_date_estimated');
+
+  // Country comes from the site, not the person node.
+  $countries = ['rwanda' => 'Rwanda', 'burundi' => 'Burundi'];
+  $site = variable_get('hedley_general_site_name', '');
+  $payload['country'] = isset($countries[$site]) ? $countries[$site] : NULL;
+
+  // Existing OpenMRS UUID, when this person has already been synced —
+  // the match step uses it to short-circuit to the update path.
+  $payload['existing_openmrs_uuid'] =
+    _hedley_openmrs_field($node, 'field_openmrs_uuid');
+
+  return $payload;
+}
+
+/**
+ * Person fields whose Drupal values flow into the OpenMRS payload as-is.
+ *
+ * The payload builder reads each value into the matching payload key;
+ * the update-detection hook tracks the same set, plus
+ * field_birth_date_estimated, for its diff against $node->original.
+ *
+ * Three payload entries are intentionally outside this list:
+ * - birth_date_estimated  — also a node field, but cast to bool;
+ * - country               — derived from the hedley_general_site_name
+ *                           variable, not a node field;
+ * - existing_openmrs_uuid — carries field_openmrs_uuid into the
+ *                           payload but is *excluded* from the update
+ *                           diff so the load step's UUID write-back
+ *                           cannot loop.
+ *
+ * Anything outside the list and those three (photo, reports data,
+ * sync state, audit timestamps, …) neither appears in the payload nor
+ * causes an update enqueue.
+ *
+ * @return array
+ *   payload-key => Drupal-field-name.
+ */
+function _hedley_openmrs_synced_fields() {
+  return [
+    'person_uuid' => 'field_uuid',
+    'first_name' => 'field_first_name',
+    'second_name' => 'field_second_name',
+    'national_id' => 'field_national_id_number',
+    'birth_date' => 'field_birth_date',
+    'gender' => 'field_gender',
+    'hiv_status' => 'field_hiv_status',
+    'marital_status' => 'field_marital_status',
+    'mode_of_delivery' => 'field_mode_of_delivery',
+    'education_level' => 'field_education_level',
+    'phone_number' => 'field_phone_number',
+    'province' => 'field_province',
+    'district' => 'field_district',
+    'sector' => 'field_sector',
+    'cell' => 'field_cell',
+    'village' => 'field_village',
+    'latitude' => 'field_latitude',
+    'longitude' => 'field_longitude',
+    'spouse_name' => 'field_spouse_name',
+    'spouse_phone_number' => 'field_spouse_phone_number',
+    'next_of_kin_name' => 'field_next_of_kin_name',
+    'next_of_kin_phone_number' => 'field_next_of_kin_phone_number',
+    'number_of_children' => 'field_number_of_children',
+  ];
+}
+
+/**
+ * Whether a node_update on a person should re-push to OpenFN.
+ *
+ * Returns TRUE only when at least one tracked field actually changed
+ * against $node->original. field_openmrs_uuid is intentionally not in
+ * the tracked set, so the load step's UUID write-back does not loop.
+ *
+ * @param object $node
+ *   The updated person node, with $node->original populated by Drupal.
+ *
+ * @return bool
+ *   TRUE if the update should enqueue an OpenFN push.
+ */
+function _hedley_openmrs_should_push_update($node) {
+  if (empty($node->original)) {
+    return FALSE;
+  }
+  $tracked = array_values(_hedley_openmrs_synced_fields());
+  $tracked[] = 'field_birth_date_estimated';
+  foreach ($tracked as $field) {
+    $new = _hedley_openmrs_field($node, $field);
+    $old = _hedley_openmrs_field($node->original, $field);
+    if ($new !== $old) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * Returns the first value of a node field, or NULL.
+ *
+ * @param object $node
+ *   The node.
+ * @param string $field
+ *   The field machine name.
+ *
+ * @return mixed|null
+ *   The field value, or NULL when the field is empty.
+ */
+function _hedley_openmrs_field($node, $field) {
+  if (isset($node->{$field}[LANGUAGE_NONE][0]['value'])) {
+    return $node->{$field}[LANGUAGE_NONE][0]['value'];
+  }
+
+  return NULL;
+}
+
+/**
+ * Write-back endpoint: store an OpenMRS patient UUID on an E-Heza person.
+ *
+ * Called by the OpenFN load step once it has created (or matched) the patient
+ * in OpenMRS. Expects a POST with a JSON body holding "person_uuid" and
+ * "openmrs_uuid", authenticated with a shared secret in the X-OpenFN-Token
+ * header.
+ *
+ * @return array
+ *   A JSON-serialisable response array.
+ */
+function hedley_openmrs_patient_link() {
+  if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    return _hedley_openmrs_error('405 Method Not Allowed', 'Use POST.');
+  }
+
+  // Authenticate with the shared secret. Fail closed if it is unconfigured.
+  $expected = variable_get('hedley_openmrs_shared_secret', '');
+  $provided = '';
+  if (isset($_SERVER['HTTP_X_OPENFN_TOKEN'])) {
+    $provided = $_SERVER['HTTP_X_OPENFN_TOKEN'];
+  }
+  if ($expected === '' || !hash_equals($expected, $provided)) {
+    return _hedley_openmrs_error('401 Unauthorized', 'Invalid token.');
+  }
+
+  $payload = json_decode(file_get_contents('php://input'), TRUE);
+  if (!is_array($payload)) {
+    return _hedley_openmrs_error('400 Bad Request', 'Invalid JSON body.');
+  }
+
+  $payload += ['person_uuid' => '', 'openmrs_uuid' => ''];
+  $person_uuid = trim($payload['person_uuid']);
+  $openmrs_uuid = trim($payload['openmrs_uuid']);
+  if ($person_uuid === '' || $openmrs_uuid === '') {
+    return _hedley_openmrs_error('400 Bad Request', 'Missing required fields.');
+  }
+  $uuid_re = '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i';
+  if (!preg_match($uuid_re, $person_uuid)
+      || !preg_match($uuid_re, $openmrs_uuid)) {
+    return _hedley_openmrs_error('400 Bad Request', 'Malformed UUID.');
+  }
+
+  // Locate the E-Heza person by UUID. Run as user 1 to bypass node access.
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'person')
+    ->fieldCondition('field_uuid', 'value', $person_uuid)
+    ->range(0, 1)
+    ->addMetaData('account', user_load(1));
+  $result = $query->execute();
+
+  if (empty($result['node'])) {
+    return _hedley_openmrs_error('404 Not Found', 'Unknown person UUID.');
+  }
+
+  $nid = key($result['node']);
+  $node = node_load($nid);
+
+  // Refuse silent re-linking — a second call with a different OpenMRS UUID
+  // means the OpenMRS side diverged (duplicate create, race, manual replay)
+  // and is worth a human looking at. The same UUID is treated as idempotent.
+  $existing = isset($node->field_openmrs_uuid[LANGUAGE_NONE][0]['value'])
+    ? $node->field_openmrs_uuid[LANGUAGE_NONE][0]['value'] : '';
+  if ($existing !== '' && $existing !== $openmrs_uuid) {
+    watchdog(
+      'hedley_openmrs',
+      'Refusing to relink person @nid: was @old, asked to set @new.',
+      ['@nid' => $nid, '@old' => $existing, '@new' => $openmrs_uuid],
+      WATCHDOG_WARNING
+    );
+    return _hedley_openmrs_error(
+      '409 Conflict',
+      'Person already linked to a different OpenMRS patient.'
+    );
+  }
+
+  $node->field_openmrs_uuid[LANGUAGE_NONE][0]['value'] = $openmrs_uuid;
+  node_save($node);
+
+  watchdog('hedley_openmrs', 'Linked person @nid to OpenMRS patient @uuid.', [
+    '@nid' => $nid,
+    '@uuid' => $openmrs_uuid,
+  ], WATCHDOG_INFO);
+
+  return [
+    'status' => 'ok',
+    'nid' => (int) $nid,
+    'person_uuid' => $person_uuid,
+    'openmrs_uuid' => $openmrs_uuid,
+  ];
+}
+
+/**
+ * Builds an error response and sets the HTTP status line.
+ *
+ * @param string $status
+ *   The HTTP status line, e.g. '404 Not Found'.
+ * @param string $message
+ *   A human-readable error message.
+ *
+ * @return array
+ *   A JSON-serialisable error response array.
+ */
+function _hedley_openmrs_error($status, $message) {
+  drupal_add_http_header('Status', $status);
+
+  return [
+    'status' => 'error',
+    'message' => $message,
+  ];
+}

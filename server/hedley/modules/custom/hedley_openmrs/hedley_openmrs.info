@@ -1,0 +1,7 @@
+name = Hedley OpenMRS
+description = Pushes E-Heza patient registrations to UVL OpenMRS via the OpenFN mediator.
+core = 7.x
+package = Hedley
+dependencies[] = advancedqueue
+dependencies[] = hedley_general
+dependencies[] = hedley_person

@@ -1,0 +1,62 @@
+# Local OpenMRS for the E-Heza -> OpenFN -> OpenMRS patient integration PoC.
+#
+# Backend + MariaDB only (no O3 frontend/gateway) - the integration only
+# needs the REST API, and the backend image still serves the legacy admin
+# UI at /openmrs/. This uses the no-demo image variant (much faster boot);
+# test patients are created via the REST API rather than pre-seeded.
+#
+#   docker compose up -d           # start (first boot runs DB migrations, ~5-10 min)
+#   docker compose logs -f backend # watch boot progress
+#   docker compose down            # stop (data volumes are kept)
+#   docker compose down -v         # stop and wipe data
+#
+# REST API:  http://localhost:8090/openmrs/ws/rest/v1/
+# Legacy UI: http://localhost:8090/openmrs/   (admin / Admin123)
+
+name: openmrs-poc
+
+services:
+  backend:
+    image: openmrs/openmrs-reference-application-3-backend:3.6.x-no-demo
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "8090:8080"
+    environment:
+      OMRS_CONFIG_MODULE_WEB_ADMIN: "true"
+      OMRS_CONFIG_AUTO_UPDATE_DATABASE: "true"
+      OMRS_CONFIG_CREATE_TABLES: "true"
+      OMRS_CONFIG_CONNECTION_SERVER: db
+      OMRS_CONFIG_CONNECTION_DATABASE: openmrs
+      OMRS_CONFIG_CONNECTION_USERNAME: openmrs
+      OMRS_CONFIG_CONNECTION_PASSWORD: openmrs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/openmrs"]
+      interval: 20s
+      timeout: 10s
+      retries: 30
+      start_period: 600s
+    volumes:
+      - openmrs-data:/openmrs/data
+
+  db:
+    image: mariadb:10.11.7
+    restart: unless-stopped
+    command: "mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci"
+    healthcheck:
+      test: "mysql --user=openmrs --password=openmrs --execute \"SHOW DATABASES;\""
+      interval: 3s
+      timeout: 1s
+      retries: 5
+    environment:
+      MYSQL_DATABASE: openmrs
+      MYSQL_USER: openmrs
+      MYSQL_PASSWORD: openmrs
+      MYSQL_ROOT_PASSWORD: openmrs
+    volumes:
+      - db-data:/var/lib/mysql
+
+volumes:
+  openmrs-data:
+  db-data:
