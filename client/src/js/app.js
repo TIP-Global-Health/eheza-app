@@ -868,10 +868,10 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
               // Update IndexDb to hold the fileId. As there could have been multiple
               // operations on the same entity, we replace all the screenshot occurrences.
-              // For example, lets say a person's screenshot was changed, and later also
-              // their name. So on the two records there were created on the
-              // screenshotUploadChanges table, the same screenshot local URL will appear.
-              await dbSync.authorityPhotoUploadChanges.where('screenshot').equals(row.screenshot).modify(changes);
+              // For example, lets say a report was generated for a person, and later
+              // another report. So on the two records that were created on the
+              // whatsAppUploads table, the same screenshot local URL will appear.
+              await dbSync.whatsAppUploads.where('screenshot').equals(row.screenshot).modify(changes);
             }
 
             return sendIndexedDbFetchResult(queryType, {tag: 'Success', result: row});
