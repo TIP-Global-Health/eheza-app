@@ -1,7 +1,11 @@
 # OpenFN integration — provisioning runbook
 
-The OpenFN Lightning workflow for the E-Heza → OpenMRS patient PoC. A person
-registered in E-Heza is POSTed to a webhook, which runs three jobs in order:
+The OpenFN Lightning project (`eheza-openmrs`) holds two E-Heza → OpenMRS
+workflows, each driven by its own webhook:
+
+### Patient sync (Phase 1)
+
+A person registered in E-Heza is POSTed to a webhook, which runs three jobs:
 
 ```
 webhook → transform → match → load
@@ -12,6 +16,26 @@ webhook → transform → match → load
 - **load** (`jobs/load.js`) — create the patient when needed, write the UUID back to E-Heza.
 
 See `../patient-field-mapping.md`, `../identity-matching.md`, `../load-step.md`.
+
+### Prenatal encounter sync (Phase 2)
+
+A prenatal encounter (and its measurements) is POSTed to a separate webhook:
+
+```
+webhook → transform-encounter → match-encounter → load-encounter
+```
+
+- **transform-encounter** (`jobs/transform-encounter.js`) — encounter payload →
+  OpenMRS encounter + one obs per measurement field (concepts from the catalog).
+- **match-encounter** (`jobs/match-encounter.js`) — decide create vs replace
+  (upsert) from `existing_encounter_uuid`; throws if the person isn't linked yet.
+- **load-encounter** (`jobs/load-encounter.js`) — on replace, void the previous
+  OpenMRS encounter then create fresh; write the encounter UUID back to E-Heza.
+
+See `../prenatal-encounter-mapping.md`. The Drupal side keys the advanced-queue
+task by encounter and triggers on every encounter/measurement save (insert &
+update), so the latest snapshot wins. **The person must be linked first** — the
+encounter worker `FAILURE_RETRY`s until the person has `field_openmrs_uuid`.
 
 ## Files
 
@@ -77,16 +101,21 @@ Lightning UI after the deploy:
      "openmrsBaseUrl": "http://host.docker.internal:8090/openmrs/ws/rest/v1",
      "openmrsAuth": "Basic <base64 of the OpenMRS integration user:password>",
      "ehezaPatientLinkUrl": "http://ddev-ihangane-web/openmrs/patient-link",
+     "ehezaEncounterLinkUrl": "http://ddev-ihangane-web/openmrs/encounter-link",
      "ehezaToken": "<value of the Drupal hedley_openmrs_shared_secret variable>"
    }
    ```
 
-   The E-Heza URL uses the DDEV web container name because the worker
-   joins DDEV's network (see `docker-compose.yml`).
+   The E-Heza URLs use the DDEV web container name because the worker
+   joins DDEV's network (see `docker-compose.yml`). One credential serves
+   both flows: the patient `load` reads `ehezaPatientLinkUrl`, the encounter
+   `load-encounter` reads `ehezaEncounterLinkUrl`; both share `ehezaToken`
+   (must equal the Drupal `hedley_openmrs_shared_secret`).
 
-2. **Attach to the steps.** Open the `Patient sync` workflow editor and,
-   on the **Match** and **Load** steps, open *Configure connection* and
-   pick `eheza-openmrs-config`. Transform needs none.
+2. **Attach to the steps.** In the `Patient sync` editor, attach
+   `eheza-openmrs-config` to the **Match** and **Load** steps. In the
+   `Prenatal encounter sync` editor, attach it to the **Load encounter**
+   step. Transform/Match-encounter need none (they do no HTTP).
 
 3. **Save the workflow.** Use the workflow-level Save (not the modal's
    Close) — that commits the attachment *and cuts a fresh snapshot*. Runs
@@ -100,11 +129,18 @@ The webhook URL is `<lightning>/i/<trigger-id>`. Set it on the Drupal side so
 the `hedley_openmrs` queue worker posts there:
 
 ```bash
+# Patient sync webhook
 ddev drush vset hedley_openmrs_openfn_webhook_url \
-  'http://host.docker.internal:4001/i/<trigger-id>'
+  'http://host.docker.internal:4001/i/<patient-trigger-id>'
+
+# Prenatal encounter sync webhook (separate workflow, separate trigger)
+ddev drush vset hedley_openmrs_openfn_encounter_webhook_url \
+  'http://host.docker.internal:4001/i/<encounter-trigger-id>'
 ```
 
-Currently deployed trigger: `deaf5f93-e554-44c5-b006-7ac77636c3b9`.
+Currently deployed triggers:
+- Patient sync: `deaf5f93-e554-44c5-b006-7ac77636c3b9`
+- Prenatal encounter sync: `52edcefb-3592-42fc-a1e5-6e92f3357487`
 
 ## Stack wiring notes
 
