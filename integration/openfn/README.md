@@ -102,7 +102,10 @@ Lightning UI after the deploy:
      "openmrsAuth": "Basic <base64 of the OpenMRS integration user:password>",
      "ehezaPatientLinkUrl": "http://ddev-ihangane-web/openmrs/patient-link",
      "ehezaEncounterLinkUrl": "http://ddev-ihangane-web/openmrs/encounter-link",
-     "ehezaToken": "<value of the Drupal hedley_openmrs_shared_secret variable>"
+     "ehezaToken": "<value of the Drupal hedley_openmrs_shared_secret variable>",
+     "encounterType": "<prenatal_encounter_type from openmrs-metadata.json>",
+     "location": "<default_location from openmrs-metadata.json>",
+     "prenatalConcepts": "<JSON STRING of prenatal_concepts from openmrs-metadata.json>"
    }
    ```
 
@@ -112,16 +115,47 @@ Lightning UI after the deploy:
    `load-encounter` reads `ehezaEncounterLinkUrl`; both share `ehezaToken`
    (must equal the Drupal `hedley_openmrs_shared_secret`).
 
-2. **Attach to the steps.** In the `Patient sync` editor, attach
-   `eheza-openmrs-config` to the **Match** and **Load** steps. In the
-   `Prenatal encounter sync` editor, attach it to the **Load encounter**
-   step. Transform/Match-encounter need none (they do no HTTP).
+   **`prenatalConcepts` must be a single JSON *string***, not a nested object:
+   Lightning's Raw JSON credential caps "sensitive keys" at 50, and the map
+   has 200+ entries. `transform-encounter` accepts either a string (it
+   `JSON.parse`s it) or an object. `provision.py` writes the map (and
+   `prenatal_encounter_type`) into `openmrs-metadata.json`; stringify the
+   `prenatal_concepts` block when pasting it here. Do **not** add a
+   `provider` key — the encounter would then need an `encounterRole` too
+   (OpenMRS `encounter_provider.encounter_role_id` is NOT NULL), so the flow
+   omits providers.
+
+2. **Attach to the steps.**
+   - `Patient sync`: attach `eheza-openmrs-config` to **Match** and **Load**.
+   - `Prenatal encounter sync`: attach it to **Transform encounter** *and*
+     **Load encounter**. `transform-encounter` needs the credential for
+     `prenatalConcepts`/`encounterType`/`location`, so its adaptor must be
+     **`@openfn/language-http`** (not `language-common`, which can't hold a
+     credential in Lightning); it does no HTTP, only `fn()`. `Match encounter`
+     needs none.
 
 3. **Save the workflow.** Use the workflow-level Save (not the modal's
    Close) — that commits the attachment *and cuts a fresh snapshot*. Runs
    created before this save use the older snapshot and ignore the
-   credential. Verified once end-to-end: registration → queue → webhook →
-   transform → match → load → patient in OpenMRS + UUID written back.
+   credential. Verified end-to-end: registration → queue → webhook →
+   transform → match → load → patient + prenatal encounter (with obs) in
+   OpenMRS, UUIDs written back.
+
+### Gotchas (hard-won)
+
+- **Re-attach credentials after every `openfn deploy`.** A CLI deploy
+  reconciles from `project.yaml` (where jobs are `credential: null`) and
+  **drops the UI-set credential attachments** on every step. Re-attach +
+  Save all of them after each deploy, or runs get empty `state.configuration`
+  (transform silently emits 0 obs; load hits `UNEXPECTED_RELATIVE_URL`).
+- **Per-environment credential bodies must match.** Lightning stores one
+  body per environment (`main`, `unknown`, …). If the run resolves an
+  environment whose body lacks `prenatalConcepts`, transform emits 0 obs
+  even though another env's body has it. Keep all bodies identical.
+- **Numeric concepts need `allowDecimal=true`.** Otherwise OpenMRS rejects
+  decimal obs (`Obs.error.precision`). `provision.py` now sets this at
+  concept creation; if you provisioned earlier, set it on the existing
+  Numeric concepts.
 
 ### 4. Point E-Heza at the webhook
 

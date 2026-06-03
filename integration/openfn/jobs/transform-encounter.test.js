@@ -84,3 +84,24 @@ test('omits measurements with empty values', () => {
   assert.equal(out.openmrsEncounter.obs.length, 1);
   assert.equal(out.openmrsEncounter.obs[0].concept, 'concept-smear');
 });
+
+test('accepts prenatalConcepts as a JSON string (Lightning credential form)', () => {
+  const job = loadJob('transform-encounter.js');
+  const out = job({
+    configuration: {
+      ...CONFIG,
+      prenatalConcepts: JSON.stringify(CONFIG.prenatalConcepts),
+    },
+    data: {
+      encounter_uuid: 'e', encounter_date: '2026-05-01',
+      person_openmrs_uuid: 'p',
+      measurements: { hemoglobin_count: 11.2, blood_smear_result: 'positive' },
+    },
+  });
+  const byConcept = Object.fromEntries(
+    out.openmrsEncounter.obs.map((o) => [o.concept, o.value])
+  );
+  assert.equal(byConcept['concept-hgb'], 11.2);
+  assert.equal(byConcept['concept-smear'], 'positive');
+  assert.equal(out.openmrsEncounter.obs.length, 2);
+});

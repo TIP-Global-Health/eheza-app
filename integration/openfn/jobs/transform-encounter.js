@@ -9,13 +9,19 @@
  * Output (state.openmrsEncounter): an OpenMRS `POST /ws/rest/v1/encounter`
  *        body with one obs per present, catalogued measurement.
  *
- * Adaptor: @openfn/language-common
+ * Adaptor: @openfn/language-http (no HTTP calls — only fn(); the http adaptor
+ * is used so Lightning can attach the credential carrying prenatalConcepts etc.)
  */
 
 fn((state) => {
   const data = state.data || {};
   const cfg = state.configuration || {};
-  const concepts = cfg.prenatalConcepts || {};
+  // prenatalConcepts may arrive as an object or, when supplied via a Lightning
+  // credential (which caps sensitive keys at 50), as a single JSON string.
+  const concepts =
+    typeof cfg.prenatalConcepts === 'string'
+      ? JSON.parse(cfg.prenatalConcepts)
+      : cfg.prenatalConcepts || {};
   const measurements = data.measurements || {};
 
   const present = (v) => v !== null && v !== undefined && v !== '';

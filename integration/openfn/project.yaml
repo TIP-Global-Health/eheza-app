@@ -54,7 +54,11 @@ workflows:
     jobs:
       transform-encounter:
         name: Transform encounter
-        adaptor: '@openfn/language-common@3.3.2'
+        # language-http (not language-common) so Lightning can attach the
+        # eheza-openmrs-config credential — the job needs prenatalConcepts /
+        # encounterType / location / provider from state.configuration. It does
+        # no HTTP; it only uses fn(), which language-http also provides.
+        adaptor: '@openfn/language-http@7.3.0'
         body:
           path: jobs/transform-encounter.js
         credential: null

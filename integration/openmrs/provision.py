@@ -154,7 +154,7 @@ def ensure_concept(name, datatype):
     if uuid:
         print(f'  = concept "{name}" exists')
         return uuid
-    created = api('/concept', 'POST', {
+    body = {
         'names': [{
             'name': name,
             'locale': 'en',
@@ -162,8 +162,33 @@ def ensure_concept(name, datatype):
         }],
         'datatype': CONCEPT_DATATYPES[datatype],
         'conceptClass': CONCEPT_CLASS_MISC,
-    })
+    }
+    # Numeric concepts default to allowDecimal=false, which makes OpenMRS
+    # reject decimal obs values (weight 62.5, hemoglobin 11.2, ...) with
+    # "Obs.error.precision". E-Heza numeric measurements can be decimals, so
+    # allow them.
+    if datatype == 'Numeric':
+        body['allowDecimal'] = True
+    created = api('/concept', 'POST', body)
     print(f'  + concept "{name}" created ({datatype})')
+    return created['uuid']
+
+
+def ensure_encounter_type(name, description):
+    """Idempotently create an encounter type; return UUID.
+
+    The prenatal-encounter OpenFN flow tags each OpenMRS encounter with this
+    type (the -no-demo reference image ships no clinical encounter types).
+    """
+    uuid = find('encountertype', name)
+    if uuid:
+        print(f'  = encounter type "{name}" exists')
+        return uuid
+    created = api('/encountertype', 'POST', {
+        'name': name,
+        'description': description,
+    })
+    print(f'  + encounter type "{name}" created')
     return created['uuid']
 
 
@@ -246,7 +271,10 @@ def main():
         })
         print(f'  + user "{INTEGRATION_USER}" created')
 
-    # --- prenatal observation concepts (from the catalog) ---
+    # --- prenatal encounter type + observation concepts (from the catalog) ---
+    prenatal_encounter_type = ensure_encounter_type(
+        'E-Heza Prenatal', 'Prenatal encounter synced from E-Heza'
+    )
     prenatal_concepts = provision_prenatal_concepts()
 
     config = {
@@ -261,6 +289,7 @@ def main():
         },
         'default_location': default_location,
         'person_attribute_types': attrs,
+        'prenatal_encounter_type': prenatal_encounter_type,
         'prenatal_concepts': prenatal_concepts,
     }
     with open(OUT, 'w') as f:
