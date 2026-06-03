@@ -89,12 +89,11 @@ jobs:
       - run:
           name: Free port 3000 for host-side serving
           command: rm -f .ddev/docker-compose.client-http.yaml
-      - run:
-          name: Install DDEV
-          command: ci-scripts/install_ddev.sh
-      - run:
-          name: Install Drupal
-          command: ci-scripts/install_drupal.sh
+      # Build the client (npm/bower/gulp/Elm) BEFORE starting DDEV. The Elm
+      # compile is memory-intensive; running it alongside the DDEV containers
+      # (MariaDB/PHP, heavy after the Drupal install) exhausted physical RAM,
+      # so the compile thrashed on swap, made no progress, and stalled past the
+      # no-output timeout. Compiling first gives Elm the full machine RAM.
       - run:
           name: Install and build client
           command: ci-scripts/install_client.sh
@@ -103,6 +102,12 @@ jobs:
           name: Verify Elm compiled
           command: |
             test -f client/serve/Main.js || (echo "Main.js not found - Elm compilation failed" && exit 1)
+      - run:
+          name: Install DDEV
+          command: ci-scripts/install_ddev.sh
+      - run:
+          name: Install Drupal
+          command: ci-scripts/install_drupal.sh
       - run:
           name: Install Playwright browsers
           command: cd client && DEBIAN_FRONTEND=noninteractive npx playwright install --with-deps chromium
@@ -138,12 +143,11 @@ jobs:
       - run:
           name: Free port 3000 for host-side serving
           command: rm -f .ddev/docker-compose.client-http.yaml
-      - run:
-          name: Install DDEV
-          command: ci-scripts/install_ddev.sh
-      - run:
-          name: Install Drupal
-          command: ci-scripts/install_drupal.sh
+      # Build the client (npm/bower/gulp/Elm) BEFORE starting DDEV. The Elm
+      # compile is memory-intensive; running it alongside the DDEV containers
+      # (MariaDB/PHP, heavy after the Drupal install) exhausted physical RAM,
+      # so the compile thrashed on swap, made no progress, and stalled past the
+      # no-output timeout. Compiling first gives Elm the full machine RAM.
       - run:
           name: Install and build client
           command: ci-scripts/install_client.sh
@@ -152,6 +156,12 @@ jobs:
           name: Verify Elm compiled
           command: |
             test -f client/serve/Main.js || (echo "Main.js not found - Elm compilation failed" && exit 1)
+      - run:
+          name: Install DDEV
+          command: ci-scripts/install_ddev.sh
+      - run:
+          name: Install Drupal
+          command: ci-scripts/install_drupal.sh
       - run:
           name: Install Playwright browsers
           command: cd client && DEBIAN_FRONTEND=noninteractive npx playwright install --with-deps chromium
@@ -187,12 +197,11 @@ jobs:
       - run:
           name: Free port 3000 for host-side serving
           command: rm -f .ddev/docker-compose.client-http.yaml
-      - run:
-          name: Install DDEV
-          command: ci-scripts/install_ddev.sh
-      - run:
-          name: Install Drupal
-          command: ci-scripts/install_drupal.sh
+      # Build the client (npm/bower/gulp/Elm) BEFORE starting DDEV. The Elm
+      # compile is memory-intensive; running it alongside the DDEV containers
+      # (MariaDB/PHP, heavy after the Drupal install) exhausted physical RAM,
+      # so the compile thrashed on swap, made no progress, and stalled past the
+      # no-output timeout. Compiling first gives Elm the full machine RAM.
       - run:
           name: Install and build client
           command: ci-scripts/install_client.sh
@@ -201,6 +210,12 @@ jobs:
           name: Verify Elm compiled
           command: |
             test -f client/serve/Main.js || (echo "Main.js not found - Elm compilation failed" && exit 1)
+      - run:
+          name: Install DDEV
+          command: ci-scripts/install_ddev.sh
+      - run:
+          name: Install Drupal
+          command: ci-scripts/install_drupal.sh
       - run:
           name: Install Playwright browsers
           command: cd client && DEBIAN_FRONTEND=noninteractive npx playwright install --with-deps chromium
