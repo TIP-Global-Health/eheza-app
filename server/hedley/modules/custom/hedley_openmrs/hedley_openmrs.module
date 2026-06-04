@@ -576,6 +576,11 @@ function hedley_openmrs_patient_link() {
  * OpenMRS. Expects a POST with JSON body holding "encounter_uuid" and
  * "openmrs_uuid", authenticated with the shared secret in X-OpenFN-Token.
  *
+ * Upsert semantics: the same openmrs_uuid is idempotent, and a *different*
+ * openmrs_uuid OVERWRITES the stored value (logged at INFO) rather than
+ * returning 409 — the upsert flow legitimately replaces the OpenMRS
+ * encounter (delete-and-recreate), so the latest UUID wins.
+ *
  * @return array
  *   A JSON-serialisable response array.
  */

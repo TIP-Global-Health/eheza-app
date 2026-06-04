@@ -34,10 +34,12 @@ const CONFIG = {
   encounterType: 'enc-type-uuid',
   location: 'loc-uuid',
   provider: 'prov-uuid',
+  // Namespaced <bundle>.<field> keys — the real shape the Drupal builder
+  // emits and the catalog/metadata use.
   prenatalConcepts: {
-    hemoglobin_count: 'concept-hgb',
-    execution_date: 'concept-exec-date',
-    blood_smear_result: 'concept-smear',
+    'prenatal_hemoglobin_test.hemoglobin_count': 'concept-hgb',
+    'prenatal_hemoglobin_test.execution_date': 'concept-exec-date',
+    'prenatal_malaria_test.blood_smear_result': 'concept-smear',
   },
 };
 
@@ -50,9 +52,9 @@ test('builds an encounter with one obs per present measurement', () => {
       encounter_date: '2026-05-01T00:00:00',
       person_openmrs_uuid: 'patient-uuid',
       measurements: {
-        hemoglobin_count: 11.2,
-        blood_smear_result: 'positive',
-        not_in_catalog: 'ignored',
+        'prenatal_hemoglobin_test.hemoglobin_count': 11.2,
+        'prenatal_malaria_test.blood_smear_result': 'positive',
+        'prenatal_malaria_test.not_in_catalog': 'ignored',
       },
     },
   };
@@ -78,7 +80,10 @@ test('omits measurements with empty values', () => {
     data: {
       encounter_uuid: 'e', encounter_date: '2026-05-01',
       person_openmrs_uuid: 'p',
-      measurements: { hemoglobin_count: '', blood_smear_result: 'negative' },
+      measurements: {
+        'prenatal_hemoglobin_test.hemoglobin_count': '',
+        'prenatal_malaria_test.blood_smear_result': 'negative',
+      },
     },
   });
   assert.equal(out.openmrsEncounter.obs.length, 1);
@@ -95,7 +100,10 @@ test('accepts prenatalConcepts as a JSON string (Lightning credential form)', ()
     data: {
       encounter_uuid: 'e', encounter_date: '2026-05-01',
       person_openmrs_uuid: 'p',
-      measurements: { hemoglobin_count: 11.2, blood_smear_result: 'positive' },
+      measurements: {
+        'prenatal_hemoglobin_test.hemoglobin_count': 11.2,
+        'prenatal_malaria_test.blood_smear_result': 'positive',
+      },
     },
   });
   const byConcept = Object.fromEntries(

@@ -172,9 +172,12 @@ ddev drush vset hedley_openmrs_openfn_encounter_webhook_url \
   'http://host.docker.internal:4001/i/<encounter-trigger-id>'
 ```
 
-Currently deployed triggers:
-- Patient sync: `deaf5f93-e554-44c5-b006-7ac77636c3b9`
-- Prenatal encounter sync: `52edcefb-3592-42fc-a1e5-6e92f3357487`
+Find the trigger ID per workflow in the Lightning UI (the webhook trigger's
+URL ends in `/i/<trigger-id>`) or in `.state.json` after a deploy. Don't
+copy the IDs below blindly — they are **environment-specific examples** and
+go stale after any redeploy/recreate:
+- Patient sync (example): `deaf5f93-e554-44c5-b006-7ac77636c3b9`
+- Prenatal encounter sync (example): `52edcefb-3592-42fc-a1e5-6e92f3357487`
 
 ## Stack wiring notes
 
