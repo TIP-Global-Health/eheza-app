@@ -30,7 +30,7 @@ import Measurement.Utils
 import Pages.ChildScoreboard.Activity.Model exposing (Model, Msg(..))
 import Pages.ChildScoreboard.Activity.Utils exposing (getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, updateVaccinationFormByVaccineType)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (insertIntoSet, setMuacValueForSite)
+import Pages.Utils exposing (insertIntoSet, saveMeasurementMsgs, setMuacValueForSite)
 import RemoteData
 import SyncManager.Model exposing (Site)
 
@@ -60,6 +60,9 @@ update currentDate site id db msg model =
         generateImmunisationMsgs nextTask =
             Maybe.map (\task -> [ SetActiveImmunisationTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| ChildScoreboardEncounterPage id ]
+
+        toIndexedDbMsg =
+            Backend.Model.MsgChildScoreboardEncounter id >> App.Model.MsgIndexedDb
     in
     case msg of
         NoOp ->
@@ -490,225 +493,89 @@ update currentDate site id db msg model =
             )
 
         SaveBCGImmunisation personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateImmunisationMsgs nextTask
-
-                appMsgs =
-                    model.immunisationData.bcgForm
-                        |> toVaccinationValueWithDefault measurement
-                        |> Maybe.map
-                            (Backend.ChildScoreboardEncounter.Model.SaveBCGImmunisation personId measurementId
-                                >> Backend.Model.MsgChildScoreboardEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toVaccinationValueWithDefault
+                model.immunisationData.bcgForm
+                saved
+                (Backend.ChildScoreboardEncounter.Model.SaveBCGImmunisation personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate site id db) extraMsgs
+                |> sequenceExtra (update currentDate site id db) (generateImmunisationMsgs nextTask)
 
         SaveDTPImmunisation personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateImmunisationMsgs nextTask
-
-                appMsgs =
-                    model.immunisationData.dtpForm
-                        |> toVaccinationValueWithDefault measurement
-                        |> Maybe.map
-                            (Backend.ChildScoreboardEncounter.Model.SaveDTPImmunisation personId measurementId
-                                >> Backend.Model.MsgChildScoreboardEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toVaccinationValueWithDefault
+                model.immunisationData.dtpForm
+                saved
+                (Backend.ChildScoreboardEncounter.Model.SaveDTPImmunisation personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate site id db) extraMsgs
+                |> sequenceExtra (update currentDate site id db) (generateImmunisationMsgs nextTask)
 
         SaveDTPStandaloneImmunisation personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateImmunisationMsgs nextTask
-
-                appMsgs =
-                    model.immunisationData.dtpForm
-                        |> toVaccinationValueWithDefault measurement
-                        |> Maybe.map
-                            (Backend.ChildScoreboardEncounter.Model.SaveDTPStandaloneImmunisation personId measurementId
-                                >> Backend.Model.MsgChildScoreboardEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toVaccinationValueWithDefault
+                model.immunisationData.dtpForm
+                saved
+                (Backend.ChildScoreboardEncounter.Model.SaveDTPStandaloneImmunisation personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate site id db) extraMsgs
+                |> sequenceExtra (update currentDate site id db) (generateImmunisationMsgs nextTask)
 
         SaveIPVImmunisation personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateImmunisationMsgs nextTask
-
-                appMsgs =
-                    model.immunisationData.ipvForm
-                        |> toVaccinationValueWithDefault measurement
-                        |> Maybe.map
-                            (Backend.ChildScoreboardEncounter.Model.SaveIPVImmunisation personId measurementId
-                                >> Backend.Model.MsgChildScoreboardEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toVaccinationValueWithDefault
+                model.immunisationData.ipvForm
+                saved
+                (Backend.ChildScoreboardEncounter.Model.SaveIPVImmunisation personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate site id db) extraMsgs
+                |> sequenceExtra (update currentDate site id db) (generateImmunisationMsgs nextTask)
 
         SaveMRImmunisation personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateImmunisationMsgs nextTask
-
-                appMsgs =
-                    model.immunisationData.mrForm
-                        |> toVaccinationValueWithDefault measurement
-                        |> Maybe.map
-                            (Backend.ChildScoreboardEncounter.Model.SaveMRImmunisation personId measurementId
-                                >> Backend.Model.MsgChildScoreboardEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toVaccinationValueWithDefault
+                model.immunisationData.mrForm
+                saved
+                (Backend.ChildScoreboardEncounter.Model.SaveMRImmunisation personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate site id db) extraMsgs
+                |> sequenceExtra (update currentDate site id db) (generateImmunisationMsgs nextTask)
 
         SaveOPVImmunisation personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateImmunisationMsgs nextTask
-
-                appMsgs =
-                    model.immunisationData.opvForm
-                        |> toVaccinationValueWithDefault measurement
-                        |> Maybe.map
-                            (Backend.ChildScoreboardEncounter.Model.SaveOPVImmunisation personId measurementId
-                                >> Backend.Model.MsgChildScoreboardEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toVaccinationValueWithDefault
+                model.immunisationData.opvForm
+                saved
+                (Backend.ChildScoreboardEncounter.Model.SaveOPVImmunisation personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate site id db) extraMsgs
+                |> sequenceExtra (update currentDate site id db) (generateImmunisationMsgs nextTask)
 
         SavePCV13Immunisation personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateImmunisationMsgs nextTask
-
-                appMsgs =
-                    model.immunisationData.pcv13Form
-                        |> toVaccinationValueWithDefault measurement
-                        |> Maybe.map
-                            (Backend.ChildScoreboardEncounter.Model.SavePCV13Immunisation personId measurementId
-                                >> Backend.Model.MsgChildScoreboardEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toVaccinationValueWithDefault
+                model.immunisationData.pcv13Form
+                saved
+                (Backend.ChildScoreboardEncounter.Model.SavePCV13Immunisation personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate site id db) extraMsgs
+                |> sequenceExtra (update currentDate site id db) (generateImmunisationMsgs nextTask)
 
         SaveRotarixImmunisation personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateImmunisationMsgs nextTask
-
-                appMsgs =
-                    model.immunisationData.rotarixForm
-                        |> toVaccinationValueWithDefault measurement
-                        |> Maybe.map
-                            (Backend.ChildScoreboardEncounter.Model.SaveRotarixImmunisation personId measurementId
-                                >> Backend.Model.MsgChildScoreboardEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toVaccinationValueWithDefault
+                model.immunisationData.rotarixForm
+                saved
+                (Backend.ChildScoreboardEncounter.Model.SaveRotarixImmunisation personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate site id db) extraMsgs
+                |> sequenceExtra (update currentDate site id db) (generateImmunisationMsgs nextTask)
