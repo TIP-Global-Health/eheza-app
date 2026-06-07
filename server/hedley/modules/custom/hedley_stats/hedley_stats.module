@@ -3713,8 +3713,20 @@ function hedley_stats_get_pmtct_participants_by_clinic($clinic_id, $range = 100)
     ->range(0, $range);
 
   $result = $query->execute();
+  $ids = !empty($result['node']) ? array_keys($result['node']) : [];
 
-  return !empty($result['node']) ? array_keys($result['node']) : [];
+  if (count($ids) >= $range) {
+    // Results reached the cap and may be truncated. Log it rather than
+    // silently dropping participants from the statistics.
+    watchdog(
+      'hedley_stats',
+      'Clinic @clinic PMTCT participants hit cap @range; may be truncated.',
+      ['@clinic' => $clinic_id, '@range' => $range],
+      WATCHDOG_WARNING
+    );
+  }
+
+  return $ids;
 }
 
 /**
@@ -3725,12 +3737,12 @@ function hedley_stats_get_pmtct_participants_by_clinic($clinic_id, $range = 100)
  * @param string $period
  *   The wanted period.
  * @param int $range
- *   The queries' range.
+ *   (optional) Max number of results. NULL (the default) returns all sessions.
  *
  * @return array
  *   Node IDs if they exist or empty array if no nodes exist.
  */
-function hedley_stats_get_clinic_sessions_by_period($clinic_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR, $range = 100) {
+function hedley_stats_get_clinic_sessions_by_period($clinic_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR, $range = NULL) {
   $dates = hedley_stats_get_period($period);
 
   $query = hedley_general_create_entity_field_query_excluding_deleted();
@@ -3742,12 +3754,28 @@ function hedley_stats_get_clinic_sessions_by_period($clinic_id, $period = HEDLEY
     // Meaning that we are still expecting those participants.
     ->fieldCondition('field_scheduled_date', 'value', $dates['start'], '>=')
     ->fieldCondition('field_scheduled_date', 'value', $dates['end'], '<=')
-    ->propertyOrderBy('nid')
-    ->range(0, $range);
+    ->propertyOrderBy('nid');
+
+  // Sessions per period are inherently bounded, so by default return them all
+  // rather than silently truncating at an arbitrary cap. A caller may still
+  // pass an explicit $range.
+  if ($range !== NULL) {
+    $query->range(0, $range);
+  }
 
   $result = $query->execute();
+  $ids = !empty($result['node']) ? array_keys($result['node']) : [];
 
-  return !empty($result['node']) ? array_keys($result['node']) : [];
+  if ($range !== NULL && count($ids) >= $range) {
+    watchdog(
+      'hedley_stats',
+      'Clinic @clinic sessions hit cap @range; may be truncated.',
+      ['@clinic' => $clinic_id, '@range' => $range],
+      WATCHDOG_WARNING
+    );
+  }
+
+  return $ids;
 }
 
 /**
