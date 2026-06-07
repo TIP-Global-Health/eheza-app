@@ -3525,10 +3525,11 @@ function hedley_stats_get_base_query($health_center_id, $node_type, $period = FA
     $date_field_name = $date_field . '.' . $date_field . '_value';
 
     $date = hedley_stats_get_period($period, $extend);
-    $query->condition($date_field_name, [
-      $date['start'],
-      $date['end'],
-    ], 'BETWEEN');
+    // Lower bound inclusive, upper bound exclusive: a period's end equals the
+    // next period's start (both at midnight), so an inclusive BETWEEN would
+    // count a boundary record in both adjacent periods.
+    $query->condition($date_field_name, $date['start'], '>=');
+    $query->condition($date_field_name, $date['end'], '<');
   }
 
   return $query;
@@ -3752,8 +3753,10 @@ function hedley_stats_get_clinic_sessions_by_period($clinic_id, $period = HEDLEY
     ->propertyCondition('status', NODE_PUBLISHED)
     ->fieldCondition('field_clinic', 'target_id', $clinic_id)
     // Meaning that we are still expecting those participants.
+    // Upper bound is exclusive: a period's end equals the next period's start
+    // (both at midnight), so '<=' would count a boundary session in both.
     ->fieldCondition('field_scheduled_date', 'value', $dates['start'], '>=')
-    ->fieldCondition('field_scheduled_date', 'value', $dates['end'], '<=')
+    ->fieldCondition('field_scheduled_date', 'value', $dates['end'], '<')
     ->propertyOrderBy('nid');
 
   // Sessions per period are inherently bounded, so by default return them all
