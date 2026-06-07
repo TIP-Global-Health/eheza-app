@@ -3721,8 +3721,8 @@ function hedley_stats_get_pmtct_participants_by_clinic($clinic_id, $range = 100)
     // silently dropping participants from the statistics.
     watchdog(
       'hedley_stats',
-      'Clinic @clinic PMTCT participants hit cap @range; may be truncated.',
-      ['@clinic' => $clinic_id, '@range' => $range],
+      'Clinic @clinic PMTCT participants: @count/@range; may be truncated.',
+      ['@clinic' => $clinic_id, '@range' => $range, '@count' => count($ids)],
       WATCHDOG_WARNING
     );
   }
@@ -3737,7 +3737,7 @@ function hedley_stats_get_pmtct_participants_by_clinic($clinic_id, $range = 100)
  *   The clinic node ID.
  * @param string $period
  *   The wanted period.
- * @param int $range
+ * @param int|null $range
  *   (optional) Max number of results. NULL (the default) returns all sessions.
  *
  * @return array
@@ -3772,8 +3772,8 @@ function hedley_stats_get_clinic_sessions_by_period($clinic_id, $period = HEDLEY
   if ($range !== NULL && count($ids) >= $range) {
     watchdog(
       'hedley_stats',
-      'Clinic @clinic sessions hit cap @range; may be truncated.',
-      ['@clinic' => $clinic_id, '@range' => $range],
+      'Clinic @clinic sessions: @count/@range; may be truncated.',
+      ['@clinic' => $clinic_id, '@range' => $range, '@count' => count($ids)],
       WATCHDOG_WARNING
     );
   }

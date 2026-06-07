@@ -1414,7 +1414,7 @@ function hedley_person_load_individual_participant_encounters_ids($nid) {
 }
 
 /**
- * Resolves the encounters IDs associated with several individual participants.
+ * Resolves the encounter IDs associated with several individual participants.
  *
  * Batched form of hedley_person_load_individual_participant_encounters_ids():
  * resolves the encounters for many participants in a single query, to avoid a
@@ -1510,6 +1510,13 @@ function hedley_person_load_individual_encounter_measurements_ids($nid, $bundle 
     $bundle = node_load($nid)->type;
   }
   $encounter_field = "field_$bundle";
+
+  // The bundle is interpolated into the table and column names below, which the
+  // query builder does not escape. Make sure it resolves to a real field before
+  // it reaches the query so an unexpected bundle can't produce invalid SQL.
+  if (!field_info_field($encounter_field)) {
+    return [];
+  }
 
   $query = hedley_general_create_db_select_query_excluding_deleted();
   $query->join("field_data_$encounter_field", 'p', 'p.entity_id = n.nid');
