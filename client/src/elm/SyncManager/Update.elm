@@ -1244,8 +1244,8 @@ update currentTime activePage dbVersion device msg model =
                                     , HttpBuilder.post (device.backendUrl ++ "/api/sync")
                                         |> withQueryParams [ ( "access_token", device.accessToken ) ]
                                         |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadAuthorityResultRecord dbVersion result)
-                                        -- We don't need to decode anything, as we just want to have
-                                        -- the browser download it.
+                                        -- We don't need to decode the response body; the upload only
+                                        -- needs to know whether it succeeded.
                                         |> HttpBuilder.withTimeout uploadRequestTimeout
                                         |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadAuthorityHandle result)
                                     )
@@ -1437,8 +1437,8 @@ update currentTime activePage dbVersion device msg model =
                                     , HttpBuilder.post (device.backendUrl ++ "/api/sync")
                                         |> withQueryParams [ ( "access_token", device.accessToken ) ]
                                         |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadGeneralResultRecord dbVersion result)
-                                        -- We don't need to decode anything, as we just want to have
-                                        -- the browser download it.
+                                        -- We don't need to decode the response body; the upload only
+                                        -- needs to know whether it succeeded.
                                         |> HttpBuilder.withTimeout uploadRequestTimeout
                                         |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadGeneralHandle result)
                                     )

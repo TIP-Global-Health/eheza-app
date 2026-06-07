@@ -6203,7 +6203,7 @@ function hedley_reports_generate_completion_data_for_child_scoreboard_encounter(
   // Load the well-child immunisation history once. It is filtered per
   // child-scoreboard encounter (by date) in memory below, instead of being
   // re-queried from the database for every encounter.
-  $wellchild_immunisations = hedley_reports_child_scoreboard_load_well_child_immunisations($person_id);
+  $well_child_immunisations = hedley_reports_child_scoreboard_load_well_child_immunisations($person_id);
 
   foreach ($encounters_data as $index => $encounter_data) {
     $encounter = $encounter_data['encounter'];
@@ -6243,7 +6243,7 @@ function hedley_reports_generate_completion_data_for_child_scoreboard_encounter(
       $encounter_data['age_in_months'] = hedley_reports_resolve_age_in_months_for_individual_encounter($encounter, $start_date_obj);
       $encounter_data['previous_encounters_data'] = array_slice($encounters_data, 0, $index);
 
-      [$encounter_data['vaccination_history'], $encounter_data['vaccination_progress']] = hedley_reports_child_scoreboard_generate_vaccination_progress_data($wellchild_immunisations, $encounter_data);
+      [$encounter_data['vaccination_history'], $encounter_data['vaccination_progress']] = hedley_reports_child_scoreboard_generate_vaccination_progress_data($well_child_immunisations, $encounter_data);
 
       $expected_immunisation_activities = hedley_reports_child_scoreboard_get_expected_immunisation_activities($encounter_data, $birth_date_obj, $gender, 'history');
       $expected = array_merge($expected, $expected_immunisation_activities);
@@ -6267,7 +6267,7 @@ function hedley_reports_generate_completion_data_for_child_scoreboard_encounter(
  * child scoreboard encounters. It merges this data with well-child
  * data to produce comprehensive vaccination progress information.
  *
- * @param array $wellchild_immunisations
+ * @param array $well_child_immunisations
  *   The well-child immunisation history, preloaded once by
  *   hedley_reports_child_scoreboard_load_well_child_immunisations().
  * @param array $encounter_data
@@ -6278,7 +6278,7 @@ function hedley_reports_generate_completion_data_for_child_scoreboard_encounter(
  *   An array containing merged vaccination progress data, with history
  *   and progress for the child.
  */
-function hedley_reports_child_scoreboard_generate_vaccination_progress_data(array $wellchild_immunisations, array $encounter_data) {
+function hedley_reports_child_scoreboard_generate_vaccination_progress_data(array $well_child_immunisations, array $encounter_data) {
   $previous_encounters_data = $encounter_data['previous_encounters_data'];
 
   $immunisation_types = [
@@ -6317,7 +6317,7 @@ function hedley_reports_child_scoreboard_generate_vaccination_progress_data(arra
 
   $history_data_by_well_child = hedley_reports_generate_vaccination_progress_data($immunisations_from_previous_encounters, 'child-scoreboard');
   $progress_data_by_well_child = hedley_reports_generate_vaccination_progress_data($immunisations_from_all_encounters, 'child-scoreboard');
-  $progress_data_by_child_scoreboard = hedley_reports_child_scoreboard_generate_vaccination_progress_data_by_well_child($wellchild_immunisations, $encounter_data['start_date_obj']);
+  $progress_data_by_child_scoreboard = hedley_reports_child_scoreboard_generate_vaccination_progress_data_by_well_child($well_child_immunisations, $encounter_data['start_date_obj']);
 
   return [
     hedley_reports_merge_vaccination_progress_data($immunisation_types, 'child-scoreboard', $history_data_by_well_child, $progress_data_by_child_scoreboard),
@@ -6577,7 +6577,7 @@ function hedley_reports_child_scoreboard_load_well_child_immunisations($person_i
  * database queries -- the history is loaded once by
  * hedley_reports_child_scoreboard_load_well_child_immunisations().
  *
- * @param array $wellchild_immunisations
+ * @param array $well_child_immunisations
  *   The preloaded well-child immunisation history (see
  *   hedley_reports_child_scoreboard_load_well_child_immunisations()).
  * @param DateTime $child_scoreboard_encounter_start_date_obj
@@ -6588,7 +6588,7 @@ function hedley_reports_child_scoreboard_load_well_child_immunisations($person_i
  *   A structured array of vaccination doses and dates, organized by
  *   immunisation type, based on child scoreboard encounters.
  */
-function hedley_reports_child_scoreboard_generate_vaccination_progress_data_by_well_child(array $wellchild_immunisations, DateTime $child_scoreboard_encounter_start_date_obj) {
+function hedley_reports_child_scoreboard_generate_vaccination_progress_data_by_well_child(array $well_child_immunisations, DateTime $child_scoreboard_encounter_start_date_obj) {
   $return = [];
 
   $immunisation_types = [
@@ -6609,7 +6609,7 @@ function hedley_reports_child_scoreboard_generate_vaccination_progress_data_by_w
       'dates' => [],
     ];
   }
-  foreach ($wellchild_immunisations as $encounter_immunisations) {
+  foreach ($well_child_immunisations as $encounter_immunisations) {
     if ($encounter_immunisations['start_date_obj'] > $child_scoreboard_encounter_start_date_obj) {
       // This encounter started after child scoreboard encounter, so, skip it.
       continue;
