@@ -1414,6 +1414,40 @@ function hedley_person_load_individual_participant_encounters_ids($nid) {
 }
 
 /**
+ * Resolves the encounters IDs associated with several individual participants.
+ *
+ * Batched form of hedley_person_load_individual_participant_encounters_ids():
+ * resolves the encounters for many participants in a single query, to avoid a
+ * query per participant.
+ *
+ * @param array $nids
+ *   Individual participant node IDs.
+ *
+ * @return array
+ *   A map keyed by individual participant node ID; each value is an array of
+ *   the encounter node IDs for that participant, ordered by node ID.
+ */
+function hedley_person_load_individual_participants_encounters_ids(array $nids) {
+  $result = [];
+  if (empty($nids)) {
+    return $result;
+  }
+
+  $query = hedley_general_create_db_select_query_excluding_deleted();
+  $query->join('field_data_field_individual_participant', 'p', 'p.entity_id = n.nid');
+  $query->condition('p.field_individual_participant_target_id', $nids, 'IN');
+  $query->addField('n', 'nid');
+  $query->addField('p', 'field_individual_participant_target_id', 'participant_id');
+  $query->orderBy('n.nid');
+
+  foreach ($query->execute() as $row) {
+    $result[$row->participant_id][] = $row->nid;
+  }
+
+  return $result;
+}
+
+/**
  * Resolves family_participant nodes IDs where person is the adult.
  *
  * @param int $nid

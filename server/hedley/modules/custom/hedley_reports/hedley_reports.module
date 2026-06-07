@@ -939,8 +939,11 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
   ];
   $individual_participants_ids = hedley_person_individual_participants_for_person($person->nid, $encounter_types_to_load);
   $individual_participants = node_load_multiple($individual_participants_ids);
+  $encounters_ids_by_participant = hedley_person_load_individual_participants_encounters_ids(array_keys($individual_participants));
   foreach ($individual_participants as $individual_participant) {
-    $encounters_ids = hedley_person_load_individual_participant_encounters_ids($individual_participant->nid);
+    $encounters_ids = isset($encounters_ids_by_participant[$individual_participant->nid])
+      ? $encounters_ids_by_participant[$individual_participant->nid]
+      : [];
     if (empty($encounters_ids)) {
       continue;
     }
