@@ -22,7 +22,7 @@ import Measurement.Utils
 import Pages.HIV.Activity.Model exposing (Model, Msg(..))
 import Pages.HIV.Activity.Utils exposing (diagnosticsFormWithDefault, prescribedMedicationFormWithDefault, symptomReviewFormWithDefault, toDiagnosticsValueWithDefault, toHealthEducationValueWithDefault, toPrescribedMedicationValueWithDefault, toSymptomReviewValueWithDefault)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (setMultiSelectInputValue)
+import Pages.Utils exposing (saveMeasurementMsgs, setMultiSelectInputValue)
 import RemoteData
 
 
@@ -55,6 +55,9 @@ update currentDate id db msg model =
         generateNextStepsMsgs nextTask =
             Maybe.map (\task -> [ SetActiveNextStepsTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| HIVEncounterPage id ]
+
+        toIndexedDbMsg =
+            Backend.Model.MsgHIVEncounter id >> App.Model.MsgIndexedDb
     in
     case msg of
         SetActivePage page ->
@@ -279,31 +282,15 @@ update currentDate id db msg model =
             )
 
         SavePrescribedMedication personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateMedicationMsgs nextTask
-
-                appMsgs =
-                    toPrescribedMedicationValueWithDefault measurement model.medicationData.prescribedMedicationForm
-                        |> Maybe.map
-                            (Backend.HIVEncounter.Model.SavePrescribedMedication personId measurementId
-                                >> Backend.Model.MsgHIVEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toPrescribedMedicationValueWithDefault
+                model.medicationData.prescribedMedicationForm
+                saved
+                (Backend.HIVEncounter.Model.SavePrescribedMedication personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate id db) (generateMedicationMsgs nextTask)
 
         SetTreatmentReviewBoolInput formUpdateFunc value ->
             let
@@ -376,31 +363,15 @@ update currentDate id db msg model =
             )
 
         SaveTreatmentReview personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateMedicationMsgs nextTask
-
-                appMsgs =
-                    toOngoingTreatmentReviewValueWithDefault measurement model.medicationData.treatmentReviewForm
-                        |> Maybe.map
-                            (Backend.HIVEncounter.Model.SaveTreatmentReview personId measurementId
-                                >> Backend.Model.MsgHIVEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toOngoingTreatmentReviewValueWithDefault
+                model.medicationData.treatmentReviewForm
+                saved
+                (Backend.HIVEncounter.Model.SaveTreatmentReview personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate id db) (generateMedicationMsgs nextTask)
 
         SetSymptom symptom ->
             let
@@ -478,31 +449,15 @@ update currentDate id db msg model =
             )
 
         SaveHealthEducation personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateNextStepsMsgs nextTask
-
-                appMsgs =
-                    toHealthEducationValueWithDefault measurement model.nextStepsData.healthEducationForm
-                        |> Maybe.map
-                            (Backend.HIVEncounter.Model.SaveHealthEducation personId measurementId
-                                >> Backend.Model.MsgHIVEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toHealthEducationValueWithDefault
+                model.nextStepsData.healthEducationForm
+                saved
+                (Backend.HIVEncounter.Model.SaveHealthEducation personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate id db) (generateNextStepsMsgs nextTask)
 
         SetFollowUpOption option ->
             let
@@ -522,31 +477,15 @@ update currentDate id db msg model =
             )
 
         SaveFollowUp personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateNextStepsMsgs nextTask
-
-                appMsgs =
-                    toFollowUpValueWithDefault measurement model.nextStepsData.followUpForm
-                        |> Maybe.map
-                            (Backend.HIVEncounter.Model.SaveFollowUp personId measurementId
-                                >> Backend.Model.MsgHIVEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toFollowUpValueWithDefault
+                model.nextStepsData.followUpForm
+                saved
+                (Backend.HIVEncounter.Model.SaveFollowUp personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate id db) (generateNextStepsMsgs nextTask)
 
         SetReferToHealthCenter value ->
             let
@@ -600,28 +539,12 @@ update currentDate id db msg model =
             )
 
         SaveReferral personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateNextStepsMsgs nextTask
-
-                appMsgs =
-                    toSendToHCValueWithDefault measurement model.nextStepsData.sendToHCForm
-                        |> Maybe.map
-                            (Backend.HIVEncounter.Model.SaveReferral personId measurementId
-                                >> Backend.Model.MsgHIVEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toSendToHCValueWithDefault
+                model.nextStepsData.sendToHCForm
+                saved
+                (Backend.HIVEncounter.Model.SaveReferral personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate id db) (generateNextStepsMsgs nextTask)

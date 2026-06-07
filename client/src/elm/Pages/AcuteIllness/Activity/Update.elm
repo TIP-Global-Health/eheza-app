@@ -40,7 +40,7 @@ import Measurement.Utils
 import Pages.AcuteIllness.Activity.Model exposing (ContactsTracingFormState(..), Model, Msg(..))
 import Pages.AcuteIllness.Activity.Utils exposing (acuteFindingsFormWithDefault, coreExamFormWithDefault, coughLessThan2WeeksConstant, reviewDangerSignsFormWithDefault, symptomMaxDuration, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, toAcuteFindingsValueWithDefault, toContactsTracingValueWithDefault, toCoreExamValueWithDefault, toCovidTestingValueWithDefault, toFollowUpValueWithDefault, toMalariaTestingValueWithDefault, toMedicationDistributionValueWithDefault, toReviewDangerSignsValueWithDefault, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toTreatmentReviewValueWithDefault, toggleSymptomsSign)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (nonAdministrationReasonToSign, setMuacValueForSite, setMultiSelectInputValue)
+import Pages.Utils exposing (nonAdministrationReasonToSign, saveMeasurementMsgs, setMuacValueForSite, setMultiSelectInputValue)
 import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (Site)
 
@@ -98,6 +98,9 @@ update site selectedHealthCenter id db msg model =
         generateNextStepsMsgs nextTask =
             Maybe.map (\task -> [ SetActiveNextStepsTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
+
+        toIndexedDbMsg =
+            Backend.Model.MsgAcuteIllnessEncounter id >> App.Model.MsgIndexedDb
     in
     case msg of
         NoOp ->
@@ -442,58 +445,26 @@ update site selectedHealthCenter id db msg model =
             )
 
         SaveVitals personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generatePhysicalExamMsgs nextTask
-
-                appMsgs =
-                    toVitalsValueWithDefault measurement model.physicalExamData.vitalsForm
-                        |> Maybe.map
-                            (Backend.AcuteIllnessEncounter.Model.SaveVitals personId measurementId
-                                >> Backend.Model.MsgAcuteIllnessEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toVitalsValueWithDefault
+                model.physicalExamData.vitalsForm
+                saved
+                (Backend.AcuteIllnessEncounter.Model.SaveVitals personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update site selectedHealthCenter id db) extraMsgs
+                |> sequenceExtra (update site selectedHealthCenter id db) (generatePhysicalExamMsgs nextTask)
 
         SaveAcuteFindings personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generatePhysicalExamMsgs nextTask
-
-                appMsgs =
-                    toAcuteFindingsValueWithDefault measurement model.physicalExamData.acuteFindingsForm
-                        |> Maybe.map
-                            (Backend.AcuteIllnessEncounter.Model.SaveAcuteFindings personId measurementId
-                                >> Backend.Model.MsgAcuteIllnessEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toAcuteFindingsValueWithDefault
+                model.physicalExamData.acuteFindingsForm
+                saved
+                (Backend.AcuteIllnessEncounter.Model.SaveAcuteFindings personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update site selectedHealthCenter id db) extraMsgs
+                |> sequenceExtra (update site selectedHealthCenter id db) (generatePhysicalExamMsgs nextTask)
 
         SetMuac string ->
             let
@@ -513,31 +484,15 @@ update site selectedHealthCenter id db msg model =
             )
 
         SaveMuac personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generatePhysicalExamMsgs nextTask
-
-                appMsgs =
-                    toMuacValueWithDefault measurement model.physicalExamData.muacForm
-                        |> Maybe.map
-                            (Backend.AcuteIllnessEncounter.Model.SaveMuac personId measurementId
-                                >> Backend.Model.MsgAcuteIllnessEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toMuacValueWithDefault
+                model.physicalExamData.muacForm
+                saved
+                (Backend.AcuteIllnessEncounter.Model.SaveMuac personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update site selectedHealthCenter id db) extraMsgs
+                |> sequenceExtra (update site selectedHealthCenter id db) (generatePhysicalExamMsgs nextTask)
 
         SetNutritionSign sign ->
             let
@@ -561,31 +516,15 @@ update site selectedHealthCenter id db msg model =
             )
 
         SaveNutrition personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generatePhysicalExamMsgs nextTask
-
-                appMsgs =
-                    Pages.AcuteIllness.Activity.Utils.toNutritionValueWithDefault measurement model.physicalExamData.nutritionForm
-                        |> Maybe.map
-                            (Backend.AcuteIllnessEncounter.Model.SaveNutrition personId measurementId
-                                >> Backend.Model.MsgAcuteIllnessEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs Pages.AcuteIllness.Activity.Utils.toNutritionValueWithDefault
+                model.physicalExamData.nutritionForm
+                saved
+                (Backend.AcuteIllnessEncounter.Model.SaveNutrition personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update site selectedHealthCenter id db) extraMsgs
+                |> sequenceExtra (update site selectedHealthCenter id db) (generatePhysicalExamMsgs nextTask)
 
         SetCoreExamHeart value ->
             let
@@ -623,31 +562,15 @@ update site selectedHealthCenter id db msg model =
             )
 
         SaveCoreExam personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generatePhysicalExamMsgs nextTask
-
-                appMsgs =
-                    toCoreExamValueWithDefault measurement model.physicalExamData.coreExamForm
-                        |> Maybe.map
-                            (Backend.AcuteIllnessEncounter.Model.SaveCoreExam personId measurementId
-                                >> Backend.Model.MsgAcuteIllnessEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toCoreExamValueWithDefault
+                model.physicalExamData.coreExamForm
+                saved
+                (Backend.AcuteIllnessEncounter.Model.SaveCoreExam personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update site selectedHealthCenter id db) extraMsgs
+                |> sequenceExtra (update site selectedHealthCenter id db) (generatePhysicalExamMsgs nextTask)
 
         SetActiveLaboratoryTask task ->
             let
@@ -695,31 +618,15 @@ update site selectedHealthCenter id db msg model =
             )
 
         SaveMalariaTesting personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateLaboratoryMsgs nextTask
-
-                appMsgs =
-                    toMalariaTestingValueWithDefault measurement model.laboratoryData.malariaTestingForm
-                        |> Maybe.map
-                            (Backend.AcuteIllnessEncounter.Model.SaveMalariaTesting personId measurementId
-                                >> Backend.Model.MsgAcuteIllnessEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toMalariaTestingValueWithDefault
+                model.laboratoryData.malariaTestingForm
+                saved
+                (Backend.AcuteIllnessEncounter.Model.SaveMalariaTesting personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update site selectedHealthCenter id db) extraMsgs
+                |> sequenceExtra (update site selectedHealthCenter id db) (generateLaboratoryMsgs nextTask)
 
         SetCovidTestingBoolInput formUpdateFunc value ->
             let
@@ -756,31 +663,15 @@ update site selectedHealthCenter id db msg model =
             )
 
         SaveCovidTesting personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateLaboratoryMsgs nextTask
-
-                appMsgs =
-                    toCovidTestingValueWithDefault measurement model.laboratoryData.covidTestingForm
-                        |> Maybe.map
-                            (Backend.AcuteIllnessEncounter.Model.SaveCovidTesting personId measurementId
-                                >> Backend.Model.MsgAcuteIllnessEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toCovidTestingValueWithDefault
+                model.laboratoryData.covidTestingForm
+                saved
+                (Backend.AcuteIllnessEncounter.Model.SaveCovidTesting personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update site selectedHealthCenter id db) extraMsgs
+                |> sequenceExtra (update site selectedHealthCenter id db) (generateLaboratoryMsgs nextTask)
 
         SetActivePriorTreatmentTask task ->
             let
@@ -896,31 +787,15 @@ update site selectedHealthCenter id db msg model =
             )
 
         SaveSendToHC personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateNextStepsMsgs nextTask
-
-                appMsgs =
-                    toSendToHCValueWithDefault measurement model.nextStepsData.sendToHCForm
-                        |> Maybe.map
-                            (Backend.AcuteIllnessEncounter.Model.SaveSendToHC personId measurementId
-                                >> Backend.Model.MsgAcuteIllnessEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toSendToHCValueWithDefault
+                model.nextStepsData.sendToHCForm
+                saved
+                (Backend.AcuteIllnessEncounter.Model.SaveSendToHC personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update site selectedHealthCenter id db) extraMsgs
+                |> sequenceExtra (update site selectedHealthCenter id db) (generateNextStepsMsgs nextTask)
 
         SetMedicationDistributionBoolInput formUpdateFunc value ->
             let
@@ -973,31 +848,15 @@ update site selectedHealthCenter id db msg model =
             )
 
         SaveMedicationDistribution personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateNextStepsMsgs nextTask
-
-                appMsgs =
-                    toMedicationDistributionValueWithDefault measurement model.nextStepsData.medicationDistributionForm
-                        |> Maybe.map
-                            (Backend.AcuteIllnessEncounter.Model.SaveMedicationDistribution personId measurementId
-                                >> Backend.Model.MsgAcuteIllnessEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toMedicationDistributionValueWithDefault
+                model.nextStepsData.medicationDistributionForm
+                saved
+                (Backend.AcuteIllnessEncounter.Model.SaveMedicationDistribution personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update site selectedHealthCenter id db) extraMsgs
+                |> sequenceExtra (update site selectedHealthCenter id db) (generateNextStepsMsgs nextTask)
 
         SetActiveOngoingTreatmentTask task ->
             let
@@ -1231,31 +1090,15 @@ update site selectedHealthCenter id db msg model =
             )
 
         SaveHealthEducation personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateNextStepsMsgs nextTask
-
-                appMsgs =
-                    toHealthEducationValueWithDefault measurement model.nextStepsData.healthEducationForm
-                        |> Maybe.map
-                            (Backend.AcuteIllnessEncounter.Model.SaveHealthEducation personId measurementId
-                                >> Backend.Model.MsgAcuteIllnessEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toHealthEducationValueWithDefault
+                model.nextStepsData.healthEducationForm
+                saved
+                (Backend.AcuteIllnessEncounter.Model.SaveHealthEducation personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update site selectedHealthCenter id db) extraMsgs
+                |> sequenceExtra (update site selectedHealthCenter id db) (generateNextStepsMsgs nextTask)
 
         SetFollowUpOption option ->
             let
@@ -1276,33 +1119,18 @@ update site selectedHealthCenter id db msg model =
 
         SaveFollowUp personId diagnosis saved nextTask ->
             let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateNextStepsMsgs nextTask
-
                 followUpForm =
                     model.nextStepsData.followUpForm
-
-                appMsgs =
-                    toFollowUpValueWithDefault measurement { followUpForm | diagnosis = diagnosis }
-                        |> Maybe.map
-                            (Backend.AcuteIllnessEncounter.Model.SaveFollowUp personId measurementId
-                                >> Backend.Model.MsgAcuteIllnessEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
             in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toFollowUpValueWithDefault
+                { followUpForm | diagnosis = diagnosis }
+                saved
+                (Backend.AcuteIllnessEncounter.Model.SaveFollowUp personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update site selectedHealthCenter id db) extraMsgs
+                |> sequenceExtra (update site selectedHealthCenter id db) (generateNextStepsMsgs nextTask)
 
         SetContactsTracingFormState newState ->
             let
@@ -1572,28 +1400,12 @@ update site selectedHealthCenter id db msg model =
                     noChange
 
         SaveContactsTracing personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateNextStepsMsgs nextTask
-
-                appMsgs =
-                    toContactsTracingValueWithDefault measurement model.nextStepsData.contactsTracingForm
-                        |> Maybe.map
-                            (Backend.AcuteIllnessEncounter.Model.SaveContactsTracing personId measurementId
-                                >> Backend.Model.MsgAcuteIllnessEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
             ( model
             , Cmd.none
-            , appMsgs
+            , saveMeasurementMsgs toContactsTracingValueWithDefault
+                model.nextStepsData.contactsTracingForm
+                saved
+                (Backend.AcuteIllnessEncounter.Model.SaveContactsTracing personId)
+                toIndexedDbMsg
             )
-                |> sequenceExtra (update site selectedHealthCenter id db) extraMsgs
+                |> sequenceExtra (update site selectedHealthCenter id db) (generateNextStepsMsgs nextTask)
