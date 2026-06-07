@@ -1,0 +1,121 @@
+<?php
+
+/**
+ * @file
+ * Drush commands for the Hedley OpenMRS integration.
+ */
+
+/**
+ * Implements hook_drush_command().
+ */
+function hedley_openmrs_drush_command() {
+  $items['hedley-openmrs-build-prenatal-catalog'] = [
+    'description' => 'Generate the prenatal concept catalog (field -> OpenMRS concept) as JSON.',
+    'aliases' => ['ho-catalog'],
+    'callback' => 'hedley_openmrs_drush_build_prenatal_catalog',
+  ];
+
+  return $items;
+}
+
+/**
+ * Prenatal measurement bundles whose fields become OpenMRS observations.
+ *
+ * Derived from the bundles that actually carry field_prenatal_encounter —
+ * the same universe the payload builder walks — so catalog coverage and
+ * builder output stay in lock-step. The prenatal_encounter bundle itself
+ * does not reference field_prenatal_encounter, so it is naturally excluded.
+ */
+function _hedley_openmrs_prenatal_bundles() {
+  $field = field_info_field('field_prenatal_encounter');
+  if (empty($field['bundles']['node'])) {
+    return [];
+  }
+  $bundles = $field['bundles']['node'];
+  sort($bundles);
+  return $bundles;
+}
+
+/**
+ * Fields never mapped to an observation (operational / reference fields).
+ */
+function _hedley_openmrs_skip_fields() {
+  return [
+    'field_prenatal_encounter', 'field_uuid', 'field_shard', 'field_shards',
+    'field_nurse', 'field_person', 'field_deleted', 'field_health_center',
+  ];
+}
+
+/**
+ * Maps a Drupal field type to an OpenMRS concept datatype.
+ */
+function _hedley_openmrs_concept_datatype($drupal_type) {
+  $numeric = ['number_integer', 'number_float', 'number_decimal'];
+  $date = ['datetime', 'date', 'datestamp'];
+  if (in_array($drupal_type, $numeric, TRUE)) {
+    return 'Numeric';
+  }
+  if (in_array($drupal_type, $date, TRUE)) {
+    return 'Date';
+  }
+  if ($drupal_type === 'list_boolean') {
+    return 'Boolean';
+  }
+  return 'Text';
+}
+
+/**
+ * Builds a human-readable concept name from a bundle and field key.
+ *
+ * Names are namespaced by bundle so the same field on different measurement
+ * bundles yields distinct OpenMRS fully-specified names (and concepts).
+ * ("prenatal_hiv_test", "field_test_result") -> "E-Heza Prenatal Hiv Test
+ * Test Result".
+ */
+function _hedley_openmrs_concept_name($bundle, $field_name) {
+  $base = preg_replace('/^field_/', '', $field_name);
+  return 'E-Heza '
+    . ucwords(str_replace('_', ' ', $bundle)) . ' '
+    . ucwords(str_replace('_', ' ', $base));
+}
+
+/**
+ * Callback: build the prenatal concept catalog and write it to JSON.
+ */
+function hedley_openmrs_drush_build_prenatal_catalog() {
+  $skip = _hedley_openmrs_skip_fields();
+  $rows = [];
+
+  foreach (_hedley_openmrs_prenatal_bundles() as $bundle) {
+    $instances = field_info_instances('node', $bundle);
+    foreach ($instances as $field_name => $instance) {
+      if (in_array($field_name, $skip, TRUE)) {
+        continue;
+      }
+      $field = field_info_field($field_name);
+      if (empty($field)) {
+        continue;
+      }
+      // Namespace the key by bundle so the same field on different bundles
+      // (e.g. test_result, execution_date) stays a distinct concept.
+      $key = $bundle . '.' . preg_replace('/^field_/', '', $field_name);
+      $rows[] = [
+        'eheza_key' => $key,
+        'concept_name' => _hedley_openmrs_concept_name($bundle, $field_name),
+        'datatype' => _hedley_openmrs_concept_datatype($field['type']),
+        'measurement' => $bundle,
+      ];
+    }
+  }
+
+  // Stable order so the committed file has a deterministic diff.
+  usort($rows, function ($a, $b) {
+    return strcmp($a['eheza_key'], $b['eheza_key']);
+  });
+
+  $path = DRUPAL_ROOT . '/../../integration/openmrs/prenatal-concept-catalog.json';
+  $json = json_encode($rows, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+  file_put_contents($path, $json . "\n");
+
+  drush_print(sprintf('Wrote %d catalog rows to %s', count($rows), $path));
+}

@@ -50,6 +50,23 @@ OUT = Path(
     )
 )
 
+# OpenMRS built-in concept-datatype UUIDs (stable across instances).
+CONCEPT_DATATYPES = {
+    'Numeric': '8d4a4488-c2cc-11de-8d13-0010c6dffd0f',
+    'Text': '8d4a4ab4-c2cc-11de-8d13-0010c6dffd0f',
+    'Date': '8d4a505e-c2cc-11de-8d13-0010c6dffd0f',
+    'Boolean': '8d4a5cca-c2cc-11de-8d13-0010c6dffd0f',
+}
+# "Misc" concept class — fine for PoC observation concepts.
+CONCEPT_CLASS_MISC = '8d492774-c2cc-11de-8d13-0010c6dffd0f'
+
+CATALOG = Path(
+    os.environ.get(
+        'OPENMRS_PRENATAL_CATALOG',
+        str(Path(__file__).resolve().parent / 'prenatal-concept-catalog.json'),
+    )
+)
+
 # Person-attribute types the transform writes to (display name -> description).
 # "Civil Status" already ships with OpenMRS and is reused for marital status.
 ATTR_TYPES = [
@@ -109,6 +126,94 @@ def ensure_attr_type(name, description):
     return created['uuid']
 
 
+def find_concept(name):
+    """Return the UUID of an existing concept by exact display name, or None.
+
+    Unlike find(), this uses the ?q= search endpoint rather than listing,
+    because a real OpenMRS holds thousands of concepts and a limit=100 list
+    would never reach ours. Concepts created with a FULLY_SPECIFIED name
+    surface that name as `display`, so we match on it exactly.
+
+    Note: this relies on OpenMRS's concept search index being current. The
+    index is updated asynchronously, so a concept created seconds earlier may
+    not yet be searchable. If the script is interrupted and re-run before the
+    index flushes, that concept might not be found and a second create with
+    the same name could be issued, producing a duplicate. We accept this as a
+    PoC limitation — in practice the index catches up between separate runs.
+    """
+    res = api(f'/concept?q={urllib.parse.quote(name)}&v=default')
+    for r in res.get('results', []):
+        if (r.get('display') or '').strip().lower() == name.strip().lower():
+            return r['uuid']
+    return None
+
+
+def ensure_concept(name, datatype):
+    """Idempotently create a concept by fully-specified name; return UUID."""
+    uuid = find_concept(name)
+    if uuid:
+        print(f'  = concept "{name}" exists')
+        return uuid
+    body = {
+        'names': [{
+            'name': name,
+            'locale': 'en',
+            'conceptNameType': 'FULLY_SPECIFIED',
+        }],
+        'datatype': CONCEPT_DATATYPES[datatype],
+        'conceptClass': CONCEPT_CLASS_MISC,
+    }
+    # Numeric concepts default to allowDecimal=false, which makes OpenMRS
+    # reject decimal obs values (weight 62.5, hemoglobin 11.2, ...) with
+    # "Obs.error.precision". E-Heza numeric measurements can be decimals, so
+    # allow them.
+    if datatype == 'Numeric':
+        body['allowDecimal'] = True
+    created = api('/concept', 'POST', body)
+    print(f'  + concept "{name}" created ({datatype})')
+    return created['uuid']
+
+
+def ensure_encounter_type(name, description):
+    """Idempotently create an encounter type; return UUID.
+
+    The prenatal-encounter OpenFN flow tags each OpenMRS encounter with this
+    type (the -no-demo reference image ships no clinical encounter types).
+    """
+    uuid = find('encountertype', name)
+    if uuid:
+        print(f'  = encounter type "{name}" exists')
+        return uuid
+    created = api('/encountertype', 'POST', {
+        'name': name,
+        'description': description,
+    })
+    print(f'  + encounter type "{name}" created')
+    return created['uuid']
+
+
+def provision_prenatal_concepts():
+    """Create one concept per catalog row; return {eheza_key: uuid}.
+
+    Provisioning is non-transactional: if a concept create fails mid-loop,
+    concepts created earlier in the loop remain and no config is written.
+    Re-running resumes from where it left off (idempotent for concepts that
+    were already created).
+    """
+    if not CATALOG.exists():
+        print(f'  ! catalog {CATALOG} not found — skipping concepts',
+              file=sys.stderr)
+        return {}
+    rows = json.loads(CATALOG.read_text())
+    concepts = {}
+    for row in rows:
+        concepts[row['eheza_key']] = ensure_concept(
+            row['concept_name'], row['datatype']
+        )
+    print(f'  provisioned {len(concepts)} prenatal concepts')
+    return concepts
+
+
 def main():
     print('Provisioning local OpenMRS...', file=sys.stderr)
 
@@ -166,6 +271,12 @@ def main():
         })
         print(f'  + user "{INTEGRATION_USER}" created')
 
+    # --- prenatal encounter type + observation concepts (from the catalog) ---
+    prenatal_encounter_type = ensure_encounter_type(
+        'E-Heza Prenatal', 'Prenatal encounter synced from E-Heza'
+    )
+    prenatal_concepts = provision_prenatal_concepts()
+
     config = {
         '_comment': ('OpenMRS metadata UUIDs for the OpenFN job. Local PoC '
                      'values; UVL provisions its own. Password is not stored '
@@ -178,6 +289,8 @@ def main():
         },
         'default_location': default_location,
         'person_attribute_types': attrs,
+        'prenatal_encounter_type': prenatal_encounter_type,
+        'prenatal_concepts': prenatal_concepts,
     }
     with open(OUT, 'w') as f:
         json.dump(config, f, indent=2)

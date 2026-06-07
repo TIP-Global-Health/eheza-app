@@ -1,7 +1,11 @@
 # OpenFN integration — provisioning runbook
 
-The OpenFN Lightning workflow for the E-Heza → OpenMRS patient PoC. A person
-registered in E-Heza is POSTed to a webhook, which runs three jobs in order:
+The OpenFN Lightning project (`eheza-openmrs`) holds two E-Heza → OpenMRS
+workflows, each driven by its own webhook:
+
+### Patient sync (Phase 1)
+
+A person registered in E-Heza is POSTed to a webhook, which runs three jobs:
 
 ```
 webhook → transform → match → load
@@ -12,6 +16,26 @@ webhook → transform → match → load
 - **load** (`jobs/load.js`) — create the patient when needed, write the UUID back to E-Heza.
 
 See `../patient-field-mapping.md`, `../identity-matching.md`, `../load-step.md`.
+
+### Prenatal encounter sync (Phase 2)
+
+A prenatal encounter (and its measurements) is POSTed to a separate webhook:
+
+```
+webhook → transform-encounter → match-encounter → load-encounter
+```
+
+- **transform-encounter** (`jobs/transform-encounter.js`) — encounter payload →
+  OpenMRS encounter + one obs per measurement field (concepts from the catalog).
+- **match-encounter** (`jobs/match-encounter.js`) — decide create vs replace
+  (upsert) from `existing_encounter_uuid`; throws if the person isn't linked yet.
+- **load-encounter** (`jobs/load-encounter.js`) — on replace, void the previous
+  OpenMRS encounter then create fresh; write the encounter UUID back to E-Heza.
+
+See `../prenatal-encounter-mapping.md`. The Drupal side keys the advanced-queue
+task by encounter and triggers on every encounter/measurement save (insert &
+update), so the latest snapshot wins. **The person must be linked first** — the
+encounter worker `FAILURE_RETRY`s until the person has `field_openmrs_uuid`.
 
 ## Files
 
@@ -77,22 +101,61 @@ Lightning UI after the deploy:
      "openmrsBaseUrl": "http://host.docker.internal:8090/openmrs/ws/rest/v1",
      "openmrsAuth": "Basic <base64 of the OpenMRS integration user:password>",
      "ehezaPatientLinkUrl": "http://ddev-ihangane-web/openmrs/patient-link",
-     "ehezaToken": "<value of the Drupal hedley_openmrs_shared_secret variable>"
+     "ehezaEncounterLinkUrl": "http://ddev-ihangane-web/openmrs/encounter-link",
+     "ehezaToken": "<value of the Drupal hedley_openmrs_shared_secret variable>",
+     "encounterType": "<prenatal_encounter_type from openmrs-metadata.json>",
+     "location": "<default_location from openmrs-metadata.json>",
+     "prenatalConcepts": "<JSON STRING of prenatal_concepts from openmrs-metadata.json>"
    }
    ```
 
-   The E-Heza URL uses the DDEV web container name because the worker
-   joins DDEV's network (see `docker-compose.yml`).
+   The E-Heza URLs use the DDEV web container name because the worker
+   joins DDEV's network (see `docker-compose.yml`). One credential serves
+   both flows: the patient `load` reads `ehezaPatientLinkUrl`, the encounter
+   `load-encounter` reads `ehezaEncounterLinkUrl`; both share `ehezaToken`
+   (must equal the Drupal `hedley_openmrs_shared_secret`).
 
-2. **Attach to the steps.** Open the `Patient sync` workflow editor and,
-   on the **Match** and **Load** steps, open *Configure connection* and
-   pick `eheza-openmrs-config`. Transform needs none.
+   **`prenatalConcepts` must be a single JSON *string***, not a nested object:
+   Lightning's Raw JSON credential caps "sensitive keys" at 50, and the map
+   has 200+ entries. `transform-encounter` accepts either a string (it
+   `JSON.parse`s it) or an object. `provision.py` writes the map (and
+   `prenatal_encounter_type`) into `openmrs-metadata.json`; stringify the
+   `prenatal_concepts` block when pasting it here. Do **not** add a
+   `provider` key — the encounter would then need an `encounterRole` too
+   (OpenMRS `encounter_provider.encounter_role_id` is NOT NULL), so the flow
+   omits providers.
+
+2. **Attach to the steps.**
+   - `Patient sync`: attach `eheza-openmrs-config` to **Match** and **Load**.
+   - `Prenatal encounter sync`: attach it to **Transform encounter** *and*
+     **Load encounter**. `transform-encounter` needs the credential for
+     `prenatalConcepts`/`encounterType`/`location`, so its adaptor must be
+     **`@openfn/language-http`** (not `language-common`, which can't hold a
+     credential in Lightning); it does no HTTP, only `fn()`. `Match encounter`
+     needs none.
 
 3. **Save the workflow.** Use the workflow-level Save (not the modal's
    Close) — that commits the attachment *and cuts a fresh snapshot*. Runs
    created before this save use the older snapshot and ignore the
-   credential. Verified once end-to-end: registration → queue → webhook →
-   transform → match → load → patient in OpenMRS + UUID written back.
+   credential. Verified end-to-end: registration → queue → webhook →
+   transform → match → load → patient + prenatal encounter (with obs) in
+   OpenMRS, UUIDs written back.
+
+### Gotchas (hard-won)
+
+- **Re-attach credentials after every `openfn deploy`.** A CLI deploy
+  reconciles from `project.yaml` (where jobs are `credential: null`) and
+  **drops the UI-set credential attachments** on every step. Re-attach +
+  Save all of them after each deploy, or runs get empty `state.configuration`
+  (transform silently emits 0 obs; load hits `UNEXPECTED_RELATIVE_URL`).
+- **Per-environment credential bodies must match.** Lightning stores one
+  body per environment (`main`, `unknown`, …). If the run resolves an
+  environment whose body lacks `prenatalConcepts`, transform emits 0 obs
+  even though another env's body has it. Keep all bodies identical.
+- **Numeric concepts need `allowDecimal=true`.** Otherwise OpenMRS rejects
+  decimal obs (`Obs.error.precision`). `provision.py` now sets this at
+  concept creation; if you provisioned earlier, set it on the existing
+  Numeric concepts.
 
 ### 4. Point E-Heza at the webhook
 
@@ -100,11 +163,21 @@ The webhook URL is `<lightning>/i/<trigger-id>`. Set it on the Drupal side so
 the `hedley_openmrs` queue worker posts there:
 
 ```bash
+# Patient sync webhook
 ddev drush vset hedley_openmrs_openfn_webhook_url \
-  'http://host.docker.internal:4001/i/<trigger-id>'
+  'http://host.docker.internal:4001/i/<patient-trigger-id>'
+
+# Prenatal encounter sync webhook (separate workflow, separate trigger)
+ddev drush vset hedley_openmrs_openfn_encounter_webhook_url \
+  'http://host.docker.internal:4001/i/<encounter-trigger-id>'
 ```
 
-Currently deployed trigger: `deaf5f93-e554-44c5-b006-7ac77636c3b9`.
+Find the trigger ID per workflow in the Lightning UI (the webhook trigger's
+URL ends in `/i/<trigger-id>`) or in `.state.json` after a deploy. Don't
+copy the IDs below blindly — they are **environment-specific examples** and
+go stale after any redeploy/recreate:
+- Patient sync (example): `deaf5f93-e554-44c5-b006-7ac77636c3b9`
+- Prenatal encounter sync (example): `52edcefb-3592-42fc-a1e5-6e92f3357487`
 
 ## Stack wiring notes
 

@@ -9,6 +9,7 @@
  */
 
 define('HEDLEY_OPENMRS_PUSH_PERSON', 'hedley_openmrs_push_person');
+define('HEDLEY_OPENMRS_PUSH_PRENATAL_ENCOUNTER', 'hedley_openmrs_push_prenatal_encounter');
 
 /**
  * Implements hook_menu().
@@ -17,6 +18,15 @@ function hedley_openmrs_menu() {
   $items['openmrs/patient-link'] = [
     'title' => 'OpenMRS patient link',
     'page callback' => 'hedley_openmrs_patient_link',
+    // Public path; auth is the shared-secret check in the callback itself.
+    'access callback' => TRUE,
+    'delivery callback' => 'drupal_json_output',
+    'type' => MENU_CALLBACK,
+  ];
+
+  $items['openmrs/encounter-link'] = [
+    'title' => 'OpenMRS encounter link',
+    'page callback' => 'hedley_openmrs_encounter_link',
     // Public path; auth is the shared-secret check in the callback itself.
     'access callback' => TRUE,
     'delivery callback' => 'drupal_json_output',
@@ -34,6 +44,10 @@ function hedley_openmrs_menu() {
  * offline device syncs.
  */
 function hedley_openmrs_node_insert($node) {
+  if (_hedley_openmrs_maybe_enqueue_prenatal($node)) {
+    return;
+  }
+
   if ($node->type !== 'person') {
     return;
   }
@@ -55,6 +69,10 @@ function hedley_openmrs_node_insert($node) {
  * is intentionally not in the tracked set.
  */
 function hedley_openmrs_node_update($node) {
+  if (_hedley_openmrs_maybe_enqueue_prenatal($node)) {
+    return;
+  }
+
   if ($node->type !== 'person') {
     return;
   }
@@ -76,6 +94,14 @@ function hedley_openmrs_advanced_queue_info() {
   $items[HEDLEY_OPENMRS_PUSH_PERSON] = [
     'label' => t('Push person registration to OpenFN'),
     'worker callback' => 'hedley_openmrs_push_person_worker',
+    'groups' => ['hedley'],
+    'retry after' => 120,
+    'max attempts' => 5,
+  ];
+
+  $items[HEDLEY_OPENMRS_PUSH_PRENATAL_ENCOUNTER] = [
+    'label' => t('Push prenatal encounter to OpenFN'),
+    'worker callback' => 'hedley_openmrs_push_prenatal_encounter_worker',
     'groups' => ['hedley'],
     'retry after' => 120,
     'max attempts' => 5,
@@ -150,6 +176,93 @@ function hedley_openmrs_push_person_worker($queue_item) {
     'status' => $status,
     'result' => t('OpenFN push for person @id failed (HTTP @code).', [
       '@id' => $person_id,
+      '@code' => $code,
+    ]),
+  ];
+}
+
+/**
+ * Advanced-queue worker: POST a prenatal encounter to the OpenFN webhook.
+ *
+ * @param object $queue_item
+ *   The queue item; its data holds 'encounter_id'.
+ *
+ * @return array
+ *   An advanced-queue status/result array.
+ */
+function hedley_openmrs_push_prenatal_encounter_worker($queue_item) {
+  $encounter_id = !empty($queue_item->data['encounter_id'])
+    ? $queue_item->data['encounter_id'] : NULL;
+  if (!$encounter_id) {
+    return [
+      'status' => ADVANCEDQUEUE_STATUS_FAILURE,
+      'result' => t('Queue item has no encounter ID.'),
+    ];
+  }
+
+  $webhook_url =
+    variable_get('hedley_openmrs_openfn_encounter_webhook_url', '');
+  if ($webhook_url === '') {
+    return [
+      'status' => ADVANCEDQUEUE_STATUS_FAILURE_RETRY,
+      'result' => t('OpenFN encounter webhook URL is not configured.'),
+    ];
+  }
+
+  $node = node_load($encounter_id);
+  if (empty($node) || $node->type !== 'prenatal_encounter') {
+    return [
+      'status' => ADVANCEDQUEUE_STATUS_FAILURE,
+      'result' => t('Prenatal encounter @id not found.', [
+        '@id' => $encounter_id,
+      ]),
+    ];
+  }
+
+  $payload = hedley_openmrs_build_prenatal_payload($node);
+  if ($payload === NULL) {
+    // Person not linked to OpenMRS yet — wait and retry.
+    return [
+      'status' => ADVANCEDQUEUE_STATUS_FAILURE_RETRY,
+      'result' => t('Encounter @id person not yet linked to OpenMRS.', [
+        '@id' => $encounter_id,
+      ]),
+    ];
+  }
+
+  $headers = ['Content-Type' => 'application/json'];
+  $token = variable_get('hedley_openmrs_openfn_token', '');
+  if ($token !== '') {
+    $headers['X-OpenFN-Token'] = $token;
+  }
+
+  $response = drupal_http_request($webhook_url, [
+    'method' => 'POST',
+    'headers' => $headers,
+    'data' => drupal_json_encode($payload),
+    'timeout' => 30,
+  ]);
+
+  $code = isset($response->code) ? (int) $response->code : 0;
+  if ($code >= 200 && $code < 300) {
+    return [
+      'status' => ADVANCEDQUEUE_STATUS_SUCCESS,
+      'result' => t('Pushed prenatal encounter @id to OpenFN.', [
+        '@id' => $encounter_id,
+      ]),
+    ];
+  }
+
+  // 4xx (except 429 rate-limit) won't succeed on retry — bad payload, auth
+  // or routing problems. Fail permanently so the queue doesn't churn.
+  $permanent = $code >= 400 && $code < 500 && $code !== 429;
+  $status = $permanent
+    ? ADVANCEDQUEUE_STATUS_FAILURE
+    : ADVANCEDQUEUE_STATUS_FAILURE_RETRY;
+  return [
+    'status' => $status,
+    'result' => t('OpenFN push for encounter @id failed (HTTP @code).', [
+      '@id' => $encounter_id,
       '@code' => $code,
     ]),
   ];
@@ -270,6 +383,53 @@ function _hedley_openmrs_should_push_update($node) {
 }
 
 /**
+ * Enqueues an OpenMRS push for the prenatal encounter a node belongs to.
+ *
+ * Handles both the prenatal_encounter node itself and any measurement node
+ * (anything carrying field_prenatal_encounter). All saves for one encounter
+ * key the advanced-queue task by the encounter nid, so a burst of measurement
+ * saves coalesces into a single task.
+ *
+ * Skips the encounter-link write-back's own save: that save only changes
+ * field_openmrs_encounter_uuid, and re-enqueueing on it would loop
+ * (push -> load -> encounter-link -> node_save -> hook -> push ...).
+ *
+ * @param object $node
+ *   The saved node.
+ *
+ * @return bool
+ *   TRUE if the node is a prenatal encounter/measurement (whether or not it
+ *   was enqueued), so the caller can stop processing it as a person.
+ */
+function _hedley_openmrs_maybe_enqueue_prenatal($node) {
+  if ($node->type === 'prenatal_encounter') {
+    // Don't re-enqueue the write-back's own save (would loop).
+    if (!empty($node->original)) {
+      $new = _hedley_openmrs_field($node, 'field_openmrs_encounter_uuid');
+      $old = _hedley_openmrs_field($node->original, 'field_openmrs_encounter_uuid');
+      if ($new !== $old) {
+        return TRUE;
+      }
+    }
+    $encounter_id = $node->nid;
+  }
+  else {
+    $encounter_id = _hedley_openmrs_reference($node, 'field_prenatal_encounter');
+    if (empty($encounter_id)) {
+      return FALSE;
+    }
+  }
+
+  hedley_general_add_task_to_advanced_queue_by_id(
+    HEDLEY_OPENMRS_PUSH_PRENATAL_ENCOUNTER,
+    $encounter_id,
+    ['encounter_id' => $encounter_id]
+  );
+
+  return TRUE;
+}
+
+/**
  * Returns the first value of a node field, or NULL.
  *
  * @param object $node
@@ -286,6 +446,34 @@ function _hedley_openmrs_field($node, $field) {
   }
 
   return NULL;
+}
+
+/**
+ * Returns all values of a node field joined into one string.
+ *
+ * E-Heza stores multi-select measurements as multiple field deltas; the
+ * OpenMRS PoC carries them as one comma-separated Text observation, so a
+ * multi-value field is not silently truncated to its first value.
+ *
+ * @param object $node
+ *   The node.
+ * @param string $field
+ *   The field machine name.
+ *
+ * @return string|null
+ *   The joined values, or NULL when the field is empty.
+ */
+function _hedley_openmrs_field_joined($node, $field) {
+  if (empty($node->{$field}[LANGUAGE_NONE])) {
+    return NULL;
+  }
+  $values = [];
+  foreach ($node->{$field}[LANGUAGE_NONE] as $item) {
+    if (isset($item['value']) && $item['value'] !== '') {
+      $values[] = $item['value'];
+    }
+  }
+  return empty($values) ? NULL : implode(', ', $values);
 }
 
 /**
@@ -379,6 +567,226 @@ function hedley_openmrs_patient_link() {
     'person_uuid' => $person_uuid,
     'openmrs_uuid' => $openmrs_uuid,
   ];
+}
+
+/**
+ * Write-back endpoint: store an OpenMRS encounter UUID on a prenatal encounter.
+ *
+ * Called by the OpenFN load step once it has created the encounter in
+ * OpenMRS. Expects a POST with JSON body holding "encounter_uuid" and
+ * "openmrs_uuid", authenticated with the shared secret in X-OpenFN-Token.
+ *
+ * Upsert semantics: the same openmrs_uuid is idempotent, and a *different*
+ * openmrs_uuid OVERWRITES the stored value (logged at INFO) rather than
+ * returning 409 — the upsert flow legitimately replaces the OpenMRS
+ * encounter (delete-and-recreate), so the latest UUID wins.
+ *
+ * @return array
+ *   A JSON-serialisable response array.
+ */
+function hedley_openmrs_encounter_link() {
+  if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    return _hedley_openmrs_error('405 Method Not Allowed', 'Use POST.');
+  }
+
+  $expected = variable_get('hedley_openmrs_shared_secret', '');
+  $provided = isset($_SERVER['HTTP_X_OPENFN_TOKEN'])
+    ? $_SERVER['HTTP_X_OPENFN_TOKEN'] : '';
+  if ($expected === '' || !hash_equals($expected, $provided)) {
+    return _hedley_openmrs_error('401 Unauthorized', 'Invalid token.');
+  }
+
+  $payload = json_decode(file_get_contents('php://input'), TRUE);
+  if (!is_array($payload)) {
+    return _hedley_openmrs_error('400 Bad Request', 'Invalid JSON body.');
+  }
+
+  $payload += ['encounter_uuid' => '', 'openmrs_uuid' => ''];
+  $encounter_uuid = trim($payload['encounter_uuid']);
+  $openmrs_uuid = trim($payload['openmrs_uuid']);
+  if ($encounter_uuid === '' || $openmrs_uuid === '') {
+    return _hedley_openmrs_error('400 Bad Request', 'Missing required fields.');
+  }
+  $uuid_re = '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i';
+  if (!preg_match($uuid_re, $encounter_uuid)
+      || !preg_match($uuid_re, $openmrs_uuid)) {
+    return _hedley_openmrs_error('400 Bad Request', 'Malformed UUID.');
+  }
+
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'prenatal_encounter')
+    ->fieldCondition('field_uuid', 'value', $encounter_uuid)
+    ->range(0, 1)
+    ->addMetaData('account', user_load(1));
+  $result = $query->execute();
+
+  if (empty($result['node'])) {
+    return _hedley_openmrs_error('404 Not Found', 'Unknown encounter UUID.');
+  }
+
+  $nid = key($result['node']);
+  $node = node_load($nid);
+
+  $existing = _hedley_openmrs_field($node, 'field_openmrs_encounter_uuid');
+  if (!empty($existing) && $existing !== $openmrs_uuid) {
+    // Upsert replaces the OpenMRS encounter, so a new UUID is expected; record
+    // the change and overwrite (no 409 — the latest push wins).
+    watchdog(
+      'hedley_openmrs',
+      'Re-linking encounter @nid: @old -> @new (upsert).',
+      ['@nid' => $nid, '@old' => $existing, '@new' => $openmrs_uuid],
+      WATCHDOG_INFO
+    );
+  }
+
+  $node->field_openmrs_encounter_uuid[LANGUAGE_NONE][0]['value'] = $openmrs_uuid;
+  node_save($node);
+
+  watchdog('hedley_openmrs', 'Linked encounter @nid to OpenMRS encounter @uuid.', [
+    '@nid' => $nid,
+    '@uuid' => $openmrs_uuid,
+  ], WATCHDOG_INFO);
+
+  return [
+    'status' => 'ok',
+    'nid' => (int) $nid,
+    'encounter_uuid' => $encounter_uuid,
+    'openmrs_uuid' => $openmrs_uuid,
+  ];
+}
+
+/**
+ * Builds the prenatal-encounter payload sent to OpenFN.
+ *
+ * Gathers the encounter node plus every measurement node that references
+ * it, flattening each measurement's field values into a single
+ * `measurements` map keyed by the field name minus its `field_` prefix.
+ *
+ * @param object $node
+ *   The prenatal_encounter node.
+ *
+ * @return array|null
+ *   The payload, or NULL when the person is not yet linked to OpenMRS.
+ */
+function hedley_openmrs_build_prenatal_payload($node) {
+  // _hedley_openmrs_skip_fields() lives in hedley_openmrs.drush.inc, which is
+  // not auto-loaded when this runs from the queue worker. Load it on demand.
+  if (!function_exists('_hedley_openmrs_skip_fields')) {
+    module_load_include('inc', 'hedley_openmrs', 'hedley_openmrs.drush');
+  }
+
+  // The encounter references the individual participant; from it we reach
+  // the person and the person's OpenMRS UUID (set by the Phase 1 flow).
+  $person_node = _hedley_openmrs_encounter_person($node);
+  if (empty($person_node)) {
+    return NULL;
+  }
+  $person_openmrs_uuid =
+    _hedley_openmrs_field($person_node, 'field_openmrs_uuid');
+  if (empty($person_openmrs_uuid)) {
+    // Person not linked yet — caller turns this into a retry.
+    return NULL;
+  }
+
+  $measurements = [];
+  $skip = array_flip(_hedley_openmrs_skip_fields());
+  foreach (_hedley_openmrs_encounter_measurements($node->nid) as $m_node) {
+    // Skip soft-deleted measurements — they must not reach OpenMRS.
+    if (_hedley_openmrs_field($m_node, 'field_deleted')) {
+      continue;
+    }
+    foreach (field_info_instances('node', $m_node->type) as $field_name => $i) {
+      if (isset($skip[$field_name])) {
+        continue;
+      }
+      $value = _hedley_openmrs_field_joined($m_node, $field_name);
+      if ($value !== NULL && $value !== '') {
+        // Namespace by bundle so fields shared across measurement bundles
+        // (test_result, execution_date, ...) don't collide and drop obs.
+        $key = $m_node->type . '.' . preg_replace('/^field_/', '', $field_name);
+        $measurements[$key] = $value;
+      }
+    }
+  }
+
+  return [
+    'encounter_uuid' => _hedley_openmrs_field($node, 'field_uuid'),
+    'encounter_date' => _hedley_openmrs_field($node, 'field_scheduled_date'),
+    'person_uuid' => _hedley_openmrs_field($person_node, 'field_uuid'),
+    'person_openmrs_uuid' => $person_openmrs_uuid,
+    'existing_encounter_uuid' => _hedley_openmrs_field(
+      $node, 'field_openmrs_encounter_uuid'
+    ),
+    'measurements' => $measurements,
+  ];
+}
+
+/**
+ * Loads the person node for a prenatal encounter via its participant.
+ *
+ * @param object $node
+ *   The prenatal_encounter node.
+ *
+ * @return object|null
+ *   The person node, or NULL.
+ */
+function _hedley_openmrs_encounter_person($node) {
+  $participant_id =
+    _hedley_openmrs_reference($node, 'field_individual_participant');
+  if (empty($participant_id)) {
+    return NULL;
+  }
+  $participant = node_load($participant_id);
+  if (empty($participant)) {
+    return NULL;
+  }
+  $person_id = _hedley_openmrs_reference($participant, 'field_person');
+  return empty($person_id) ? NULL : node_load($person_id);
+}
+
+/**
+ * Returns the first target_id of an entity-reference field, or NULL.
+ *
+ * The generic _hedley_openmrs_field() helper reads the 'value' column, but
+ * entity references (field_individual_participant, field_person) store their
+ * referenced node id under 'target_id', so they need their own accessor.
+ *
+ * @param object $node
+ *   The node.
+ * @param string $field
+ *   The entity-reference field machine name.
+ *
+ * @return int|null
+ *   The referenced node id, or NULL when the field is empty.
+ */
+function _hedley_openmrs_reference($node, $field) {
+  if (isset($node->{$field}[LANGUAGE_NONE][0]['target_id'])) {
+    return $node->{$field}[LANGUAGE_NONE][0]['target_id'];
+  }
+
+  return NULL;
+}
+
+/**
+ * Loads all measurement nodes that reference a prenatal encounter.
+ *
+ * @param int $encounter_id
+ *   The prenatal_encounter node id.
+ *
+ * @return array
+ *   Loaded measurement nodes.
+ */
+function _hedley_openmrs_encounter_measurements($encounter_id) {
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'node')
+    ->fieldCondition('field_prenatal_encounter', 'target_id', $encounter_id)
+    ->addMetaData('account', user_load(1));
+  $result = $query->execute();
+  if (empty($result['node'])) {
+    return [];
+  }
+  return node_load_multiple(array_keys($result['node']));
 }
 
 /**
