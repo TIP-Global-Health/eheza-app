@@ -393,9 +393,24 @@ function hedley_restful_resolve_nids_for_uuids(array $uuids) {
  *   The Node ID. False, if not found.
  */
 function hedley_restful_resolve_nid_for_uuid($uuid) {
-  $result = hedley_restful_resolve_nids_for_uuids([$uuid]);
+  // Request-level cache so a UUID that recurs across a sync batch (participant,
+  // encounter, session, health center, ...) is resolved with a single query.
+  $cache = &drupal_static(__FUNCTION__, []);
+  if (isset($cache[$uuid])) {
+    return $cache[$uuid];
+  }
 
-  return empty($result) ? FALSE : reset($result);
+  $result = hedley_restful_resolve_nids_for_uuids([$uuid]);
+  $nid = empty($result) ? FALSE : reset($result);
+
+  // Cache positive results only. A UUID can be looked up before it is created
+  // by a later item in the same batch; caching FALSE would make that later
+  // reference fail. The UUID -> nid mapping, once it exists, is stable.
+  if ($nid !== FALSE) {
+    $cache[$uuid] = $nid;
+  }
+
+  return $nid;
 }
 
 /**
