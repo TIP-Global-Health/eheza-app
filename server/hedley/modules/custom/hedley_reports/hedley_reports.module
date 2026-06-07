@@ -3372,7 +3372,7 @@ function hedley_reports_generate_completion_data_for_nutrition_individual_encoun
   $start_date_obj = new DateTime($start_date);
 
   // Loading all measurements that belong to encounter.
-  $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid);
+  $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
 
   if (empty($measurements_ids)) {
     $completion = hedley_reports_generate_completion_result($expected, [], $mapping);
@@ -3717,7 +3717,7 @@ function hedley_reports_generate_completion_data_for_acute_illness($participant,
     }
 
     // Loading all measurements that belong to encounter.
-    $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid);
+    $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
     // If encounter type field is empty, we default to CHW, since
     // CHW mode was developed before nurse mode.
     if (empty($encounter->field_ai_encounter_type)) {
@@ -4745,7 +4745,7 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
     }
 
     // Loading all measurements that belong to encounter.
-    $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid);
+    $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
     // If encounter type field is empty, we default to pediatric care.
     if (empty($encounter->field_well_child_encounter_type)) {
       $encounter_type = 'pediatric-care';
@@ -6099,7 +6099,7 @@ function hedley_reports_generate_completion_data_for_home_visit_encounter($encou
   $start_date = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
 
   // Loading all measurements that belong to encounter.
-  $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid);
+  $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
 
   if (empty($measurements_ids)) {
     $completion = hedley_reports_generate_completion_result($expected, [], $mapping);
@@ -6185,7 +6185,7 @@ function hedley_reports_generate_completion_data_for_child_scoreboard_encounter(
     }
 
     // Loading all measurements that belong to encounter.
-    $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid);
+    $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
 
     $measurements = !empty($measurements_ids) ? node_load_multiple($measurements_ids) : [];
     // Ordering measurements by type.
@@ -6728,7 +6728,7 @@ function hedley_reports_generate_completion_data_for_ncd($participant, $exclude_
     }
 
     // Loading all measurements that belong to encounter.
-    $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid);
+    $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
     $measurements = !empty($measurements_ids) ? node_load_multiple($measurements_ids) : [];
     // Ordering measurements by type.
     $measurements_by_type = [];
@@ -7263,7 +7263,7 @@ function hedley_reports_generate_completion_data_for_hiv($participant, $exclude_
     }
 
     // Loading all measurements that belong to encounter.
-    $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid);
+    $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
     $measurements = !empty($measurements_ids) ? node_load_multiple($measurements_ids) : [];
     // Ordering measurements by type.
     $measurements_by_type = [];
@@ -7414,7 +7414,7 @@ function hedley_reports_generate_completion_data_for_tuberculosis($participant, 
     }
 
     // Loading all measurements that belong to encounter.
-    $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid);
+    $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
     $measurements = !empty($measurements_ids) ? node_load_multiple($measurements_ids) : [];
     // Ordering measurements by type.
     $measurements_by_type = [];
@@ -7651,7 +7651,7 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
     }
 
     // Loading all measurements that belong to encounter.
-    $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid);
+    $measurements_ids = hedley_person_load_individual_encounter_measurements_ids($encounter->nid, $encounter->type);
     $measurements = !empty($measurements_ids) ? node_load_multiple($measurements_ids) : [];
     // Ordering measurements by type.
     $measurements_by_type = [];
