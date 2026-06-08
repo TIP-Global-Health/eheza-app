@@ -4690,6 +4690,19 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                 rollbarOnFailure =
                     triggerRollbarOnFailure data
 
+                -- Cache the freshly created participant so that updates dispatched
+                -- right after creation (e.g. SetEddDate from pregnancy dating) find
+                -- it loaded, instead of being silently dropped while its fetch is
+                -- still in flight. This is why some pregnancies ended up with no
+                -- EDD and needed the daily populate-edd.php backfill.
+                individualParticipantsUpdated =
+                    RemoteData.map
+                        (\( participantId, participant ) ->
+                            Dict.insert participantId (Success participant) model.individualParticipants
+                        )
+                        data
+                        |> RemoteData.withDefault model.individualParticipants
+
                 -- We automatically create new encounter for newly created  session.
                 appMsgs =
                     RemoteData.map
@@ -4772,7 +4785,10 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         data
                         |> RemoteData.withDefault []
             in
-            ( { model | postIndividualEncounterParticipant = Dict.insert personId data model.postIndividualEncounterParticipant }
+            ( { model
+                | postIndividualEncounterParticipant = Dict.insert personId data model.postIndividualEncounterParticipant
+                , individualParticipants = individualParticipantsUpdated
+              }
             , Cmd.none
             , rollbarOnFailure ++ appMsgs
             )
