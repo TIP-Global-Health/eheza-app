@@ -34,6 +34,10 @@ import Pages.AcuteIllness.Activity.Utils
         , nonBloodyDiarrheaAtSymptoms
         , resolveAcuteIllnessDiagnosis
         , resolveAcuteIllnessDiagnosisByMalariaRDT
+        , resolveAmoxicillinDosage
+        , resolveCoartemDosage
+        , resolveORSDosage
+        , resolveZincDosage
         , respiratoryInfectionDangerSignsPresent
         , respiratoryRateElevatedByAge
         , respiratoryRateElevatedByAgeForCovid19
@@ -735,9 +739,115 @@ resolveAcuteIllnessDiagnosisCovidTest =
         ]
 
 
+
+-- AGE FIXTURES (for the dosing tests, which key off the patient's age)
+
+
+personAgedYears : Int -> Person
+personAgedYears years =
+    { testPerson | birthDate = Just (Date.add Date.Years -years currentDate) }
+
+
+personAgedMonths : Int -> Person
+personAgedMonths months =
+    { testPerson | birthDate = Just (Date.add Date.Months -months currentDate) }
+
+
+
+-- DOSING TESTS
+--
+-- Expected values are taken from the CHW acute-illness reference sheet's
+-- treatment columns (the independent oracle), NOT from the implementation.
+-- Cases beyond what the sheet covers are marked [CODE] and pin current
+-- behavior (the sheet is treated as stale where it disagrees).
+
+
+coartemDosageTest : Test
+coartemDosageTest =
+    -- Sheet (Coartem, 1 tablet = "1"): 6-36mo:1, 36mo-8y:2, 8-14y:3, >14y:4.
+    describe "resolveCoartemDosage"
+        [ test "1y (6-36mo band) -> 1 tablet" <|
+            \_ -> resolveCoartemDosage currentDate (personAgedYears 1) |> Expect.equal (Just "1")
+        , test "5y (36mo-8y band) -> 2 tablets" <|
+            \_ -> resolveCoartemDosage currentDate (personAgedYears 5) |> Expect.equal (Just "2")
+        , test "10y (8-14y band) -> 3 tablets" <|
+            \_ -> resolveCoartemDosage currentDate (personAgedYears 10) |> Expect.equal (Just "3")
+        , test "20y (>14y band) -> 4 tablets" <|
+            \_ -> resolveCoartemDosage currentDate (personAgedYears 20) |> Expect.equal (Just "4")
+        , test "exactly 3y -> 2 tablets (band edge)" <|
+            \_ -> resolveCoartemDosage currentDate (personAgedYears 3) |> Expect.equal (Just "2")
+        , test "exactly 8y -> 3 tablets (band edge)" <|
+            \_ -> resolveCoartemDosage currentDate (personAgedYears 8) |> Expect.equal (Just "3")
+        , test "exactly 14y -> 4 tablets (band edge; sheet ambiguous at 14, code picks 4)" <|
+            \_ -> resolveCoartemDosage currentDate (personAgedYears 14) |> Expect.equal (Just "4")
+        ]
+
+
+orsDosageTest : Test
+orsDosageTest =
+    -- Sheet (ORS): <2y: ½ glass, >2y: 1 glass.
+    describe "resolveORSDosage"
+        [ test "1y -> ½ glass" <|
+            \_ -> resolveORSDosage currentDate (personAgedYears 1) |> Expect.equal (Just "½")
+        , test "3y -> 1 glass" <|
+            \_ -> resolveORSDosage currentDate (personAgedYears 3) |> Expect.equal (Just "1")
+        , test "exactly 2y -> 1 glass (band edge; sheet ambiguous at 2, code picks 1)" <|
+            \_ -> resolveORSDosage currentDate (personAgedYears 2) |> Expect.equal (Just "1")
+        ]
+
+
+zincDosageTest : Test
+zincDosageTest =
+    -- Sheet (Zinc): <6mo: 1 tablet, >6mo: 2 tablets.
+    describe "resolveZincDosage"
+        [ test "3mo -> 1 tablet" <|
+            \_ -> resolveZincDosage currentDate (personAgedMonths 3) |> Expect.equal (Just "1")
+        , test "12mo -> 2 tablets" <|
+            \_ -> resolveZincDosage currentDate (personAgedMonths 12) |> Expect.equal (Just "2")
+        , test "exactly 6mo -> 2 tablets (band edge; sheet ambiguous at 6, code picks 2)" <|
+            \_ -> resolveZincDosage currentDate (personAgedMonths 6) |> Expect.equal (Just "2")
+        ]
+
+
+{-| Drop the instruction TranslationId; assert only the (tablets, mg) the sheet
+specifies.
+-}
+amoxicillinDose : Person -> Maybe ( String, String )
+amoxicillinDose person =
+    resolveAmoxicillinDosage currentDate person
+        |> Maybe.map (\( dose, concentration, _ ) -> ( dose, concentration ))
+
+
+amoxicillinDosageTest : Test
+amoxicillinDosageTest =
+    -- Sheet (Amoxicillin 125mg): 2-4mo:1, 5-12mo:2, 12-30mo:3, 30-60mo:4.
+    describe "resolveAmoxicillinDosage (tablets, mg)"
+        [ test "3mo (2-4mo band) -> 1 tablet, 125mg" <|
+            \_ -> amoxicillinDose (personAgedMonths 3) |> Expect.equal (Just ( "1", "125" ))
+        , test "8mo (5-12mo band) -> 2 tablets, 125mg" <|
+            \_ -> amoxicillinDose (personAgedMonths 8) |> Expect.equal (Just ( "2", "125" ))
+        , test "18mo (12-30mo band) -> 3 tablets, 125mg" <|
+            \_ -> amoxicillinDose (personAgedMonths 18) |> Expect.equal (Just ( "3", "125" ))
+        , test "48mo (30-60mo band) -> 4 tablets, 125mg" <|
+            \_ -> amoxicillinDose (personAgedMonths 48) |> Expect.equal (Just ( "4", "125" ))
+        , test "exactly 5mo -> 2 tablets (band edge)" <|
+            \_ -> amoxicillinDose (personAgedMonths 5) |> Expect.equal (Just ( "2", "125" ))
+        , test "exactly 12mo -> 3 tablets (band edge)" <|
+            \_ -> amoxicillinDose (personAgedMonths 12) |> Expect.equal (Just ( "3", "125" ))
+        , test "exactly 30mo -> 4 tablets (band edge)" <|
+            \_ -> amoxicillinDose (personAgedMonths 30) |> Expect.equal (Just ( "4", "125" ))
+        , test "8y/96mo -> 4 tablets, 125mg [CODE: sheet stops at 60mo; pediatric dose extends to <15y]" <|
+            \_ -> amoxicillinDose (personAgedMonths 96) |> Expect.equal (Just ( "4", "125" ))
+        , test ">15y/240mo -> 1 tablet, 500mg [CODE: adult dose; not in the sheet]" <|
+            \_ -> amoxicillinDose (personAgedMonths 240) |> Expect.equal (Just ( "1", "500" ))
+        , test "<2mo/1mo -> 0.5 tablet, 125mg [CODE: by-weight note; sheet says send to HC]" <|
+            \_ -> amoxicillinDose (personAgedMonths 1) |> Expect.equal (Just ( "0.5", "125" ))
+        ]
+
+
 all : Test
 all =
-    describe "Acute Illness diagnosis tests"
+    describe "Acute Illness diagnosis and dosing tests"
         [ respiratoryRateElevatedByAgeTest
         , respiratoryRateElevatedByAgeForCovid19Test
         , malariaDangerSignsPresentTest
@@ -747,4 +857,8 @@ all =
         , resolveAcuteIllnessDiagnosisNonCovidTest
         , resolveAcuteIllnessDiagnosisTuberculosisTest
         , resolveAcuteIllnessDiagnosisCovidTest
+        , coartemDosageTest
+        , orsDosageTest
+        , zincDosageTest
+        , amoxicillinDosageTest
         ]
