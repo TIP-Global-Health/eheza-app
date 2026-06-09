@@ -80,6 +80,11 @@ rules =
             , "src/elm/Main.elm"
             , "src/elm/Pages/Prenatal/Utils.elm"
             , "src/elm/Backend/Utils.elm"
+
+            -- wrapMeasurement is intentionally unannotated so its polymorphic
+            -- record unifies with each concrete AcuteIllnessMeasurements field
+            -- (see the comment on that helper).
+            , "src/elm/Pages/AcuteIllness/Activity/Test.elm"
             ]
     , NoMissingTypeExpose.rule
     , NoSimpleLetBody.rule
@@ -90,6 +95,11 @@ rules =
             [ "src/elm/LocalConfig.Example.elm"
             , "src/elm/Config.Deploy.elm"
             , "src/elm/App/Model.elm"
+
+            -- Diagnosis predicates exposed only for the unit tests in
+            -- Pages/AcuteIllness/Activity/Test.elm. elm-review treats test
+            -- modules as unreachable, so their usages don't count here.
+            , "src/elm/Pages/AcuteIllness/Activity/Utils.elm"
             ]
     , NoUnused.Parameters.rule
     , NoUnused.Patterns.rule

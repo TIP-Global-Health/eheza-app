@@ -1638,10 +1638,15 @@ wfhTestData =
     , { func = "wfh", scale = 117.4, gender = Male, measurement = 20.9, expected = Just -0.22 }
     , { func = "wfh", scale = 119.7, gender = Male, measurement = 24.7, expected = Just 1.1 }
     , { func = "wfh", scale = 119.8, gender = Female, measurement = 22.1, expected = Just -0.29 }
-    , { func = "wfh", scale = 58, gender = Male, measurement = 7, expected = Nothing }
-    , { func = "wfh", scale = 63, gender = Female, measurement = 9.5, expected = Nothing }
-    , { func = "wfh", scale = 63.7, gender = Male, measurement = 6.8, expected = Nothing }
-    , { func = "wfh", scale = 64.5, gender = Male, measurement = 6.9, expected = Nothing }
+
+    -- Heights below 65cm still return a value: the WHO wfhanthro source table
+    -- is the combined length-or-height reference (45-120cm), so these heights
+    -- are in range. (These rows previously expected Nothing on the mistaken
+    -- assumption that weight-for-height starts at 65cm.)
+    , { func = "wfh", scale = 58, gender = Male, measurement = 7, expected = Just 2.91 }
+    , { func = "wfh", scale = 63, gender = Female, measurement = 9.5, expected = Just 3.79 }
+    , { func = "wfh", scale = 63.7, gender = Male, measurement = 6.8, expected = Just -0.27 }
+    , { func = "wfh", scale = 64.5, gender = Male, measurement = 6.9, expected = Just -0.43 }
     , { func = "wfh", scale = 65.6, gender = Male, measurement = 14.7, expected = Just 8.9 }
     , { func = "wfh", scale = 67, gender = Male, measurement = 8, expected = Just 0.15 }
     , { func = "wfh", scale = 69, gender = Male, measurement = 7.6, expected = Just -1.17 }

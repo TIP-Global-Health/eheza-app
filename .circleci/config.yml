@@ -9,6 +9,7 @@ workflows:
       - lint_elm_review
       - lint_shellcheck
       - test_zscore
+      - test_elm
       - test_simpletest_linux:
           requires:
             - lint_phpcs
@@ -72,6 +73,17 @@ jobs:
       - run:
           name: Run standalone Z-Score calculation tests
           command: php server/hedley/modules/custom/hedley_zscore/tests/run_zscore_tests.php
+  test_elm:
+    docker:
+      - image: cimg/node:18.20
+    environment:
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+    steps:
+      - checkout
+      - run:
+          name: Run Elm unit tests
+          command: ci-scripts/test_elm.sh
+          no_output_timeout: 5m
   test_simpletest_linux:
     machine:
       image: ubuntu-2204:current
