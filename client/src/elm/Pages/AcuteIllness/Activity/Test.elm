@@ -842,6 +842,14 @@ amoxicillinDosageTest =
             \_ -> amoxicillinDose (personAgedMonths 240) |> Expect.equal (Just ( "1", "500" ))
         , test "<2mo/1mo -> 0.5 tablet, 125mg [CODE: by-weight note; sheet says send to HC]" <|
             \_ -> amoxicillinDose (personAgedMonths 1) |> Expect.equal (Just ( "0.5", "125" ))
+
+        -- Exact band-edge transitions for the two highest-risk thresholds.
+        , test "exactly 2mo (0.5->1 tablet edge) -> 1 tablet, 125mg" <|
+            \_ -> amoxicillinDose (personAgedMonths 2) |> Expect.equal (Just ( "1", "125" ))
+        , test "179mo (just under 15y) -> 4 tablets, 125mg [CODE]" <|
+            \_ -> amoxicillinDose (personAgedMonths 179) |> Expect.equal (Just ( "4", "125" ))
+        , test "exactly 180mo/15y (4x125->1x500 edge) -> 1 tablet, 500mg [CODE]" <|
+            \_ -> amoxicillinDose (personAgedMonths 180) |> Expect.equal (Just ( "1", "500" ))
         ]
 
 
