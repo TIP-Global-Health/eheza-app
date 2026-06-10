@@ -80,11 +80,6 @@ rules =
             , "src/elm/Main.elm"
             , "src/elm/Pages/Prenatal/Utils.elm"
             , "src/elm/Backend/Utils.elm"
-
-            -- wrapMeasurement is intentionally unannotated so its polymorphic
-            -- record unifies with each concrete AcuteIllnessMeasurements field
-            -- (see the comment on that helper).
-            , "src/elm/Pages/AcuteIllness/Activity/Test.elm"
             ]
     , NoMissingTypeExpose.rule
     , NoSimpleLetBody.rule

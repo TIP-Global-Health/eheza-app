@@ -14,6 +14,7 @@ import Backend.Measurement.Model
         , Gender(..)
         , HeartCPESign
         , LungsCPESign
+        , Measurement
         , RapidTestResult(..)
         , SymptomsGIDerivedSign
         , SymptomsGISign(..)
@@ -40,7 +41,7 @@ import Pages.AcuteIllness.Activity.Utils
         , symptomMaxDuration
         )
 import Pages.AcuteIllness.Encounter.Model exposing (AssembledData)
-import Restful.Endpoint exposing (toEntityUuid)
+import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import SyncManager.Model exposing (SiteFeature(..))
 import Test exposing (Test, describe, test)
 import Time
@@ -60,11 +61,11 @@ dummyDate =
 {-| Wrap a measurement `value` into the full `Measurement` record shape that
 the `AcuteIllnessMeasurements` fields require, paired with a dummy entity id.
 
-Type annotation is intentionally omitted so the polymorphic record (with
-`nurse`, `healthCenter`, `participantId`, `encounterId` left as free type
-variables via `Nothing` / dummy ids) unifies with each concrete field type.
+The signature is polymorphic in the id tag, encounter type, and value, so it
+unifies with each concrete `AcuteIllnessMeasurements` field type.
 
 -}
+wrapMeasurement : value -> Maybe ( EntityUuid id, Measurement encounter value )
 wrapMeasurement value =
     Just
         ( toEntityUuid "dummy-id"
