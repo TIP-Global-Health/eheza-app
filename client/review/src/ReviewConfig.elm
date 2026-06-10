@@ -100,6 +100,10 @@ rules =
             -- Pages/AcuteIllness/Activity/Test.elm. elm-review treats test
             -- modules as unreachable, so their usages don't count here.
             , "src/elm/Pages/AcuteIllness/Activity/Utils.elm"
+
+            -- Pre-pregnancy BMI classifiers exposed only for the unit tests in
+            -- Pages/Prenatal/Activity/Test.elm (same reason).
+            , "src/elm/Pages/Prenatal/Activity/Utils.elm"
             ]
     , NoUnused.Parameters.rule
     , NoUnused.Patterns.rule
