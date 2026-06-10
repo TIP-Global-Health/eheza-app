@@ -51,6 +51,9 @@ muacIndicationTest =
 headCircumferenceIndicationTest : Test
 headCircumferenceIndicationTest =
     -- WHO: a head-circumference z-score outside +/-3 SD is a red flag.
+    -- Note: despite the `HeadCircumferenceInCm` constructor name, the value
+    -- compared by `headCircumferenceIndication` is a z-score (SD) -- which is
+    -- why these inputs are small and can be negative, not centimeters.
     describe "headCircumferenceIndication"
         [ test "-3.5 -> red" <|
             \_ ->
