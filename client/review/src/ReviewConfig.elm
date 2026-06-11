@@ -99,6 +99,10 @@ rules =
             -- Pre-pregnancy BMI classifiers exposed only for the unit tests in
             -- Pages/Prenatal/Activity/Test.elm (same reason).
             , "src/elm/Pages/Prenatal/Activity/Utils.elm"
+
+            -- Underweight z-score classifiers exposed only for the unit tests
+            -- in Backend/NutritionEncounter/Test.elm (same reason).
+            , "src/elm/Backend/NutritionEncounter/Utils.elm"
             ]
     , NoUnused.Parameters.rule
     , NoUnused.Patterns.rule
