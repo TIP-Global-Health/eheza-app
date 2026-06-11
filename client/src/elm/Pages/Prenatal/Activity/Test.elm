@@ -233,7 +233,8 @@ testAssembled measurements =
 -- LAB VALUE BUILDERS / SETTERS
 --
 -- Each lab diagnosis at the initial phase requires the test to have been
--- "performed" (executionNote in {RunToday, RunPreviously, RunConfirmedByLabTech}),
+-- "performed" (executionNote in {TestNoteRunToday, TestNoteRunPreviously,
+-- TestNoteRunConfirmedByLabTech}),
 -- a positive result, AND the `PrerequisiteImmediateResult` prerequisite
 -- (so the result is available immediately, not deferred to case management).
 
