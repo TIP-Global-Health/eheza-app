@@ -1,14 +1,40 @@
 module Pages.NCD.Test exposing (all)
 
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
+import Backend.Measurement.Model
+    exposing
+        ( CreatinineTestValue
+        , Gender(..)
+        , GlucoseValue(..)
+        , Measurement
+        , MedicalCondition(..)
+        , NCDMeasurements
+        , ProteinValue(..)
+        , RandomBloodSugarTestValue
+        , TestExecutionNote(..)
+        , TestPrerequisite(..)
+        , UrineDipstickTestValue
+        , VitalsValue
+        )
+import Backend.NCDEncounter.Model as NCDEncounterModel
+import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
+import Backend.Person.Model exposing (Person)
+import Date
+import EverySet exposing (EverySet)
 import Expect
+import Gizra.NominalDate exposing (NominalDate)
+import Pages.NCD.Model exposing (AssembledData)
 import Pages.NCD.Utils
     exposing
-        ( lowerHypertensionStageCondition
+        ( generateNCDDiagnoses
+        , lowerHypertensionStageCondition
         , stage1BloodPressureCondition
         , stage2BloodPressureCondition
         , stage3BloodPressureCondition
         )
+import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import Test exposing (Test, describe, test)
+import Time
 
 
 
@@ -108,11 +134,354 @@ lowerHypertensionStageTest =
         ]
 
 
+
+-- END-TO-END generateNCDDiagnoses
+--
+-- ORACLE: the NCDs tab of the clinical sheet. Its diagnosis combos are SETS
+-- (e.g. "Stage 1 with Renal Complications" = {Stage1, RenalComplications}).
+--
+-- No-op constraint that makes the full pipeline reduce to "the set of directly
+-- matched diagnoses": every fixture is a FIRST encounter --
+-- encounter.diagnoses = EverySet.empty AND previousEncountersData = []. With
+-- both empty, resolveCurrentHypertensionCondition returns Nothing, so the
+-- hypertension-hierarchy step (applyHypertensionDiagnosesLogic) and the
+-- determined-conditions filter (filterDiagnosesOfDeterminedConditions) are
+-- both no-ops, and generateNCDDiagnoses == the matcher set.
+
+
+dummyDate : NominalDate
+dummyDate =
+    Date.fromCalendarDate 2020 Time.Jun 1
+
+
+{-| Wrap a measurement value into the `Maybe ( id, Measurement encounter value )`
+shape stored on `NCDMeasurements`. Polymorphic in both `id` and `encounter`.
+-}
+wrapMeasurement : value -> Maybe ( EntityUuid id, Measurement encounter value )
+wrapMeasurement value =
+    Just
+        ( toEntityUuid "dummy-id"
+        , { dateMeasured = dummyDate
+          , nurse = Nothing
+          , healthCenter = Nothing
+          , participantId = toEntityUuid "dummy-person"
+          , deleted = False
+          , encounterId = Nothing
+          , value = value
+          }
+        )
+
+
+emptyNCDMeasurements : NCDMeasurements
+emptyNCDMeasurements =
+    { coMorbidities = Nothing
+    , coreExam = Nothing
+    , creatinineTest = Nothing
+    , dangerSigns = Nothing
+    , familyHistory = Nothing
+    , familyPlanning = Nothing
+    , hba1cTest = Nothing
+    , healthEducation = Nothing
+    , hivTest = Nothing
+    , labsResults = Nothing
+    , lipidPanelTest = Nothing
+    , liverFunctionTest = Nothing
+    , medicationDistribution = Nothing
+    , medicationHistory = Nothing
+    , outsideCare = Nothing
+    , pregnancyTest = Nothing
+    , randomBloodSugarTest = Nothing
+    , referral = Nothing
+    , socialHistory = Nothing
+    , symptomReview = Nothing
+    , urineDipstickTest = Nothing
+    , vitals = Nothing
+    }
+
+
+
+-- VALUE BUILDERS
+
+
+vitalsValueWith : Float -> Float -> VitalsValue
+vitalsValueWith sys dia =
+    { sys = Just sys
+    , dia = Just dia
+    , heartRate = Nothing
+    , respiratoryRate = Nothing
+    , bodyTemperature = Nothing
+    , sysRepeated = Nothing
+    , diaRepeated = Nothing
+    }
+
+
+creatinineValueWith : Float -> CreatinineTestValue
+creatinineValueWith creatinineResult =
+    { executionNote = TestNoteRunToday
+    , executionDate = Nothing
+    , creatinineResult = Just creatinineResult
+    , bunResult = Nothing
+    }
+
+
+{-| Urine dipstick value with only the protein reading set; the matcher reads
+`.protein` (renal) and `.glucose` (diabetes), both defaulted otherwise.
+-}
+urineProteinValue : ProteinValue -> UrineDipstickTestValue
+urineProteinValue protein =
+    { testVariant = Nothing
+    , executionNote = TestNoteRunToday
+    , executionDate = Nothing
+    , testPrerequisites = Nothing
+    , protein = Just protein
+    , ph = Nothing
+    , glucose = Nothing
+    , leukocytes = Nothing
+    , nitrite = Nothing
+    , urobilinogen = Nothing
+    , haemoglobin = Nothing
+    , ketone = Nothing
+    , bilirubin = Nothing
+    }
+
+
+urineGlucoseValue : GlucoseValue -> UrineDipstickTestValue
+urineGlucoseValue glucose =
+    { testVariant = Nothing
+    , executionNote = TestNoteRunToday
+    , executionDate = Nothing
+    , testPrerequisites = Nothing
+    , protein = Nothing
+    , ph = Nothing
+    , glucose = Just glucose
+    , leukocytes = Nothing
+    , nitrite = Nothing
+    , urobilinogen = Nothing
+    , haemoglobin = Nothing
+    , ketone = Nothing
+    , bilirubin = Nothing
+    }
+
+
+randomBloodSugarValue : Bool -> Float -> RandomBloodSugarTestValue encounterId
+randomBloodSugarValue fasting sugar =
+    { executionNote = TestNoteRunToday
+    , executionDate = Nothing
+    , testPrerequisites =
+        Just
+            (if fasting then
+                EverySet.singleton PrerequisiteFastFor12h
+
+             else
+                EverySet.empty
+            )
+    , sugarCount = Just sugar
+    , originatingEncounter = Nothing
+    }
+
+
+
+-- MEASUREMENT SETTERS
+
+
+withVitals : Float -> Float -> NCDMeasurements -> NCDMeasurements
+withVitals sys dia measurements =
+    { measurements | vitals = wrapMeasurement (vitalsValueWith sys dia) }
+
+
+withCoMorbidities : EverySet MedicalCondition -> NCDMeasurements -> NCDMeasurements
+withCoMorbidities conditions measurements =
+    { measurements | coMorbidities = wrapMeasurement conditions }
+
+
+withCreatinine : Float -> NCDMeasurements -> NCDMeasurements
+withCreatinine result measurements =
+    { measurements | creatinineTest = wrapMeasurement (creatinineValueWith result) }
+
+
+withUrineProtein : ProteinValue -> NCDMeasurements -> NCDMeasurements
+withUrineProtein protein measurements =
+    { measurements | urineDipstickTest = wrapMeasurement (urineProteinValue protein) }
+
+
+withUrineGlucose : GlucoseValue -> NCDMeasurements -> NCDMeasurements
+withUrineGlucose glucose measurements =
+    { measurements | urineDipstickTest = wrapMeasurement (urineGlucoseValue glucose) }
+
+
+withRandomBloodSugar : Bool -> Float -> NCDMeasurements -> NCDMeasurements
+withRandomBloodSugar fasting sugar measurements =
+    { measurements | randomBloodSugarTest = wrapMeasurement (randomBloodSugarValue fasting sugar) }
+
+
+
+-- ASSEMBLED DATA FIXTURE
+
+
+{-| An adult person. Everything except birthDate/gender is defaulted/empty.
+-}
+testPerson : Person
+testPerson =
+    { name = "Test Person"
+    , firstName = "Test"
+    , secondName = "Person"
+    , nationalIdNumber = Nothing
+    , hmisNumber = Nothing
+    , avatarUrl = Nothing
+    , birthDate = Just (Date.fromCalendarDate 1985 Time.Jan 1)
+    , isDateOfBirthEstimated = False
+    , gender = Female
+    , hivStatus = Nothing
+    , numberOfChildren = Nothing
+    , modeOfDelivery = Nothing
+    , ubudehe = Nothing
+    , educationLevel = Nothing
+    , maritalStatus = Nothing
+    , province = Nothing
+    , district = Nothing
+    , sector = Nothing
+    , cell = Nothing
+    , village = Nothing
+    , registrationLatitude = Nothing
+    , registrationLongitude = Nothing
+    , saveGPSLocation = False
+    , telephoneNumber = Nothing
+    , spouseName = Nothing
+    , spousePhoneNumber = Nothing
+    , nextOfKinName = Nothing
+    , nextOfKinPhoneNumber = Nothing
+    , healthCenterId = Nothing
+    , deleted = False
+    , shard = Nothing
+    }
+
+
+{-| Dummy NCD encounter. CRITICAL: `diagnoses = EverySet.empty` (first encounter)
+so the hypertension-hierarchy / determined-conditions pipeline steps are no-ops.
+-}
+dummyEncounter : NCDEncounterModel.NCDEncounter
+dummyEncounter =
+    { participant = toEntityUuid "dummy-participant"
+    , startDate = dummyDate
+    , endDate = Nothing
+    , diagnoses = EverySet.empty
+    , deleted = False
+    , shard = Nothing
+    }
+
+
+dummyParticipant : IndividualEncounterParticipant
+dummyParticipant =
+    { person = toEntityUuid "dummy-person"
+    , encounterType = NCDEncounter
+    , startDate = dummyDate
+    , endDate = Nothing
+    , eddDate = Nothing
+    , dateConcluded = Nothing
+    , outcome = Nothing
+    , deliveryLocation = Nothing
+    , newborn = Nothing
+    , deleted = False
+    , shard = Nothing
+    }
+
+
+{-| Build a first-encounter `AssembledData` for the given measurements.
+`previousEncountersData = []` (combined with empty `encounter.diagnoses`)
+is what keeps the full pipeline a no-op around the matcher.
+-}
+ncdAssembled : NCDMeasurements -> AssembledData
+ncdAssembled measurements =
+    { id = toEntityUuid "dummy-encounter"
+    , encounter = dummyEncounter
+    , participant = dummyParticipant
+    , person = testPerson
+    , measurements = measurements
+    , previousEncountersData = []
+    }
+
+
+{-| Base measurements: all empty + a normal vitals reading (sys 120 / dia 80).
+-}
+baseMeasurements : NCDMeasurements
+baseMeasurements =
+    emptyNCDMeasurements |> withVitals 120 80
+
+
+expectDiagnoses : List NCDDiagnosis -> NCDMeasurements -> Expect.Expectation
+expectDiagnoses expected measurements =
+    generateNCDDiagnoses (ncdAssembled measurements)
+        |> Expect.equal (EverySet.fromList expected)
+
+
+generateNCDDiagnosesTest : Test
+generateNCDDiagnosesTest =
+    describe "generateNCDDiagnoses (first encounter; oracle = NCDs tab of clinical sheet)"
+        [ test "1. normal 120/80 -> no diagnosis" <|
+            \_ ->
+                baseMeasurements
+                    |> expectDiagnoses []
+        , test "2. sys 145/dia 85 -> Stage 1 (sheet: Stage One, BP 140-159)" <|
+            \_ ->
+                (baseMeasurements |> withVitals 145 85)
+                    |> expectDiagnoses [ DiagnosisHypertensionStage1 ]
+        , test "3. sys 165/dia 85 -> Stage 2 (sheet: Stage Two)" <|
+            \_ ->
+                (baseMeasurements |> withVitals 165 85)
+                    |> expectDiagnoses [ DiagnosisHypertensionStage2 ]
+        , test "4. sys 185/dia 85 -> Stage 3 (sheet: Stage Three)" <|
+            \_ ->
+                (baseMeasurements |> withVitals 185 85)
+                    |> expectDiagnoses [ DiagnosisHypertensionStage3 ]
+        , test "5. coMorbidities {Hypertension}, normal BP -> Stage 1 (sheet: Stage One, medical history)" <|
+            \_ ->
+                (baseMeasurements |> withCoMorbidities (EverySet.singleton MedicalConditionHypertension))
+                    |> expectDiagnoses [ DiagnosisHypertensionStage1 ]
+        , test "6. sys 145 + creatinine 1.5 -> Stage 1 + Renal (sheet: Stage One with Renal Complications, creatinine >1.3)" <|
+            \_ ->
+                (baseMeasurements |> withVitals 145 85 |> withCreatinine 1.5)
+                    |> expectDiagnoses [ DiagnosisHypertensionStage1, DiagnosisRenalComplications ]
+        , test "7. sys 145 + urine protein +1 -> Stage 1 + Renal (sheet: renal by protein >=+1)" <|
+            \_ ->
+                (baseMeasurements |> withVitals 145 85 |> withUrineProtein ProteinPlus1)
+                    |> expectDiagnoses [ DiagnosisHypertensionStage1, DiagnosisRenalComplications ]
+        , test "8. sys 145 + coMorbidities {Diabetes} -> Stage 1 + Diabetes Initial (sheet: Stage One with Diabetes)" <|
+            \_ ->
+                (baseMeasurements |> withVitals 145 85 |> withCoMorbidities (EverySet.singleton MedicalConditionDiabetes))
+                    |> expectDiagnoses [ DiagnosisHypertensionStage1, DiagnosisDiabetesInitial ]
+        , test "9. sys 165 + coMorbidities {Diabetes} -> Stage 2 + Diabetes Initial (sheet: Stage Two with Diabetes)" <|
+            \_ ->
+                (baseMeasurements |> withVitals 165 85 |> withCoMorbidities (EverySet.singleton MedicalConditionDiabetes))
+                    |> expectDiagnoses [ DiagnosisHypertensionStage2, DiagnosisDiabetesInitial ]
+        , test "10. normal BP + fasting RBS 150 -> Diabetes Recurrent (sheet: Diabetes, fasting >126)" <|
+            \_ ->
+                (baseMeasurements |> withRandomBloodSugar True 150)
+                    |> expectDiagnoses [ DiagnosisDiabetesRecurrent ]
+        , test "11. normal BP + urine glucose +2 -> Diabetes Recurrent (sheet: Diabetes, urine glucose +2)" <|
+            \_ ->
+                (baseMeasurements |> withUrineGlucose GlucosePlus2)
+                    |> expectDiagnoses [ DiagnosisDiabetesRecurrent ]
+        , test "12. normal BP + creatinine 1.5 (no BP, no diabetes) -> Renal alone [CODE: tab only lists renal WITH a hypertension stage; code matches it independently]" <|
+            \_ ->
+                (baseMeasurements |> withCreatinine 1.5)
+                    |> expectDiagnoses [ DiagnosisRenalComplications ]
+        , test "13. sys 145/dia 80 (isolated systolic) -> Stage 1 [FINDING: code OR; sheet AND -> no diagnosis]" <|
+            \_ ->
+                (baseMeasurements |> withVitals 145 80)
+                    |> expectDiagnoses [ DiagnosisHypertensionStage1 ]
+        , test "14. normal BP + creatinine 1.3 -> no diagnosis (boundary: code uses >1.3)" <|
+            \_ ->
+                (baseMeasurements |> withCreatinine 1.3)
+                    |> expectDiagnoses []
+        ]
+
+
 all : Test
 all =
-    describe "NCD hypertension staging tests"
+    describe "NCD diagnosis tests"
         [ stage1Test
         , stage2Test
         , stage3Test
         , lowerHypertensionStageTest
+        , generateNCDDiagnosesTest
         ]
