@@ -96,7 +96,9 @@ rbsValue fasting sugar =
                 EverySet.singleton PrerequisiteFastFor12h
 
              else
-                EverySet.empty
+                -- Match the app's convention of an explicit NoTestPrerequisites
+                -- rather than an empty set for the non-fasting case.
+                EverySet.singleton NoTestPrerequisites
             )
     , sugarCount = Just sugar
     , originatingEncounter = Nothing
@@ -127,7 +129,9 @@ urineValue glucose =
 diabetesBySugarCountTest : Test
 diabetesBySugarCountTest =
     -- Clinical (ADA) oracle: fasting plasma glucose >= 126 mg/dL is diabetes;
-    -- random/non-fasting >= 200. (The code uses fasting > 126.)
+    -- random/non-fasting >= 200. The code uses fasting STRICTLY > 126, so the
+    -- "fasting 126 -> not diabetes" case below is NOT the oracle value -- it
+    -- pins the current code discrepancy against the ADA >= 126 cutoff.
     -- FINDING: the Labs tab has the fasting/non-fasting thresholds SWAPPED
     -- (it lists non-fasting normal up to 126 and fasting up to 200). The code
     -- matches the clinical convention; the last two cases pin that.
