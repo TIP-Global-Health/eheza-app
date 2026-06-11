@@ -377,8 +377,8 @@ withHemoglobin count measurements =
 
 
 {-| Vitals with the given systolic/diastolic blood pressure. Respiratory rate
-is left unset so the anemia-complication and severe-preeclampsia paths that key
-off an elevated respiratory rate stay inert.
+is left unset so the anemia-complication path (which keys off an elevated
+respiratory rate) stays inert.
 -}
 vitalsValueWith : Float -> Float -> VitalsValue
 vitalsValueWith sys dia =
