@@ -421,9 +421,9 @@ generateNCDDiagnosesTest =
             \_ ->
                 baseMeasurements
                     |> expectDiagnoses []
-        , test "2. sys 145/dia 85 -> Stage 1 (sheet: Stage One, BP 140-159)" <|
+        , test "2. sys 145/dia 95 -> Stage 1 (sheet: Stage One, both values in the 140-159 / 90-99 band)" <|
             \_ ->
-                (baseMeasurements |> withVitals 145 85)
+                (baseMeasurements |> withVitals 145 95)
                     |> expectDiagnoses [ DiagnosisHypertensionStage1 ]
         , test "3. sys 165/dia 85 -> Stage 2 (sheet: Stage Two)" <|
             \_ ->
@@ -439,15 +439,15 @@ generateNCDDiagnosesTest =
                     |> expectDiagnoses [ DiagnosisHypertensionStage1 ]
         , test "6. sys 145 + creatinine 1.5 -> Stage 1 + Renal (sheet: Stage One with Renal Complications, creatinine >1.3)" <|
             \_ ->
-                (baseMeasurements |> withVitals 145 85 |> withCreatinine 1.5)
+                (baseMeasurements |> withVitals 145 95 |> withCreatinine 1.5)
                     |> expectDiagnoses [ DiagnosisHypertensionStage1, DiagnosisRenalComplications ]
         , test "7. sys 145 + urine protein +1 -> Stage 1 + Renal (sheet: renal by protein >=+1)" <|
             \_ ->
-                (baseMeasurements |> withVitals 145 85 |> withUrineProtein ProteinPlus1)
+                (baseMeasurements |> withVitals 145 95 |> withUrineProtein ProteinPlus1)
                     |> expectDiagnoses [ DiagnosisHypertensionStage1, DiagnosisRenalComplications ]
         , test "8. sys 145 + coMorbidities {Diabetes} -> Stage 1 + Diabetes Initial (sheet: Stage One with Diabetes)" <|
             \_ ->
-                (baseMeasurements |> withVitals 145 85 |> withCoMorbidities (EverySet.singleton MedicalConditionDiabetes))
+                (baseMeasurements |> withVitals 145 95 |> withCoMorbidities (EverySet.singleton MedicalConditionDiabetes))
                     |> expectDiagnoses [ DiagnosisHypertensionStage1, DiagnosisDiabetesInitial ]
         , test "9. sys 165 + coMorbidities {Diabetes} -> Stage 2 + Diabetes Initial (sheet: Stage Two with Diabetes)" <|
             \_ ->
