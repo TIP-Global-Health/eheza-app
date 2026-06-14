@@ -100,6 +100,10 @@ rules =
             -- Pages/Prenatal/Activity/Test.elm (same reason).
             , "src/elm/Pages/Prenatal/Activity/Utils.elm"
 
+            -- NCD blood-pressure staging conditions exposed only for the unit
+            -- tests in Pages/NCD/Test.elm (same reason).
+            , "src/elm/Pages/NCD/Utils.elm"
+
             -- Underweight z-score classifiers exposed only for the unit tests
             -- in Backend/NutritionEncounter/Test.elm (same reason).
             , "src/elm/Backend/NutritionEncounter/Utils.elm"
