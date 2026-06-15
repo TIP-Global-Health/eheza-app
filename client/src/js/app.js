@@ -645,22 +645,57 @@ elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(info) {
 
   table.bulkPut(entities)
       .then(function() {
-          return sendIndexedDbSaveResult('Success', info.table, info.timestamp);
-      }).catch(Dexie.BulkError, function (e) {
-          return sendIndexedDbSaveResult('Failure', info.table, info.timestamp);
+          return sendIndexedDbSaveResult('Success', info.table, info.timestamp, null);
+      }).catch(function (e) {
+          // Catch EVERY failure, not just Dexie.BulkError. A QuotaExceededError
+          // (the device storage is full) or a transaction AbortError is not a
+          // BulkError, so it used to escape this handler as an unhandled
+          // rejection -- Elm was never told the save failed, and the sync lane
+          // silently retried the same batch forever. Report the error name so
+          // Elm can tell a storage-full condition apart from other failures.
+          return sendIndexedDbSaveResult('Failure', info.table, info.timestamp, indexedDbErrorName(e));
       });
 
   /**
-   * Report that save operation was successful.
+   * Report the outcome of a save operation back to Elm.
    */
-  function sendIndexedDbSaveResult(status, table, timestamp) {
+  function sendIndexedDbSaveResult(status, table, timestamp, reason) {
     const dataForSend = {
       'status': status,
       'table': table,
-      'timestamp': timestamp
+      'timestamp': timestamp,
+      'reason': reason || null
     }
 
     elmApp.ports.savedAtIndexedDb.send(dataForSend);
+  }
+
+  /**
+   * Extract a stable error name from a Dexie/IndexedDB failure, surfacing a
+   * QuotaExceededError even when Dexie wraps it (in `inner`, or among the
+   * per-row `failures` of a BulkError), so Elm can detect storage exhaustion.
+   */
+  function indexedDbErrorName(e) {
+    if (!e) {
+      return 'Unknown';
+    }
+
+    var candidates = [e];
+    if (e.inner) {
+      candidates.push(e.inner);
+    }
+    if (e.failures && e.failures.length) {
+      candidates = candidates.concat(e.failures);
+    }
+
+    for (var i = 0; i < candidates.length; i++) {
+      var name = candidates[i] && candidates[i].name;
+      if (typeof name === 'string' && name.indexOf('Quota') !== -1) {
+        return 'QuotaExceededError';
+      }
+    }
+
+    return (e.name && typeof e.name === 'string') ? e.name : 'Unknown';
   }
 
 });

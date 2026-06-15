@@ -10,6 +10,7 @@ import SyncManager.Model
     exposing
         ( DownloadPhotosStatus(..)
         , Flags
+        , IndexDbSaveError(..)
         , Model
         , Msg(..)
         , Site(..)
@@ -107,4 +108,66 @@ all =
                     |> .model
                     |> .downloadPhotosStatus
                     |> Expect.notEqual DownloadPhotosIdle
+        , test "SavedAtIndexDbHandle records a storage-full error for a QuotaExceededError failure" <|
+            \() ->
+                let
+                    saveResult =
+                        Json.Encode.object
+                            [ ( "table", Json.Encode.string "Authority" )
+                            , ( "status", Json.Encode.string "Failure" )
+                            , ( "timestamp", Json.Encode.string "" )
+                            , ( "reason", Json.Encode.string "QuotaExceededError" )
+                            ]
+                in
+                SyncManager.Update.update
+                    (Time.millisToPosix 0)
+                    DevicePage
+                    0
+                    testDevice
+                    (SavedAtIndexDbHandle saveResult)
+                    testModel
+                    |> .model
+                    |> .lastSaveError
+                    |> Expect.equal (Just IndexDbSaveErrorStorageFull)
+        , test "SavedAtIndexDbHandle records a non-quota failure as a generic save error" <|
+            \() ->
+                let
+                    saveResult =
+                        Json.Encode.object
+                            [ ( "table", Json.Encode.string "Authority" )
+                            , ( "status", Json.Encode.string "Failure" )
+                            , ( "timestamp", Json.Encode.string "" )
+                            , ( "reason", Json.Encode.string "BulkError" )
+                            ]
+                in
+                SyncManager.Update.update
+                    (Time.millisToPosix 0)
+                    DevicePage
+                    0
+                    testDevice
+                    (SavedAtIndexDbHandle saveResult)
+                    testModel
+                    |> .model
+                    |> .lastSaveError
+                    |> Expect.equal (Just (IndexDbSaveErrorOther "BulkError"))
+        , test "SavedAtIndexDbHandle clears a previous save error on a successful save" <|
+            \() ->
+                let
+                    saveResult =
+                        Json.Encode.object
+                            [ ( "table", Json.Encode.string "AuthorityStats" )
+                            , ( "status", Json.Encode.string "Success" )
+                            , ( "timestamp", Json.Encode.string "" )
+                            ]
+                in
+                SyncManager.Update.update
+                    (Time.millisToPosix 0)
+                    DevicePage
+                    0
+                    testDevice
+                    (SavedAtIndexDbHandle saveResult)
+                    { testModel | lastSaveError = Just IndexDbSaveErrorStorageFull }
+                    |> .model
+                    |> .lastSaveError
+                    |> Expect.equal Nothing
         ]
