@@ -2081,6 +2081,8 @@ type TranslationId
     | StatusLabel
     | StopSyncing
     | StorageQuota { usage : Int, quota : Int }
+    | StorageQuotaAlmostFull
+    | StorageQuotaFull
     | SubmitPairingCode
     | Success
     | SyncGeneral
@@ -26289,6 +26291,20 @@ translationSet trans =
             , kinyarwanda = Just <| "Hamaze gukoreshwa umwanya ungana na MB" ++ String.fromInt (quota.usage // (1024 * 1024)) ++ " umwanya wose ungana na MB " ++ String.fromInt (quota.quota // (1024 * 1024))
             , kirundi = Just <| "Ububiko bwakoreshejwe bungana na MO(Mégaoctets) " ++ String.fromInt (quota.usage // (1024 * 1024)) ++ " umwanya wose ungana na MO(Mégaoctets) " ++ String.fromInt (quota.quota // (1024 * 1024))
             , somali = Just <| "Keydka la adeegsaday " ++ String.fromInt (quota.usage // (1024 * 1024)) ++ " MB ga la heli karo " ++ String.fromInt (quota.quota // (1024 * 1024)) ++ " MB"
+            }
+
+        StorageQuotaAlmostFull ->
+            { english = "Device storage is almost full. Sync now and free up space to avoid losing data."
+            , kinyarwanda = Just "Umwanya wo kubika ku gikoresho hafi kuzura. Huza amakuru ubu kandi ubone umwanya kugira ngo udatakaze amakuru."
+            , kirundi = Just "Ububiko bw'igikoresho buri hafi kuzura. Huza amakuru ubu kandi uronke umwanya kugira ngo ntutakaze amakuru."
+            , somali = Just "Keydka qalabku wuxuu ku dhow yahay inuu buuxo. Hadda Howl geli oo meel bannee si aadan u lumin xogta."
+            }
+
+        StorageQuotaFull ->
+            { english = "Device storage is full. New records may not be saved. Sync and free up space now."
+            , kinyarwanda = Just "Umwanya wo kubika ku gikoresho wuzuye. Amakuru mashya ashobora kutabikwa. Huza amakuru kandi ubone umwanya ubu."
+            , kirundi = Just "Ububiko bw'igikoresho bwuzuye. Amakuru mashasha ntashobora kubikwa. Huza amakuru kandi uronke umwanya ubu."
+            , somali = Just "Keydka qalabku waa buuxaa. Diiwaannada cusub laga yaabo inaan la keydin. Hadda Howl geli oo meel bannee."
             }
 
         SubmitPairingCode ->
