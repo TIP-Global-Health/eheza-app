@@ -4,13 +4,18 @@ import AssocList as Dict
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 import Backend.Measurement.Model
     exposing
-        ( BloodSmearResult(..)
+        ( AbdomenCPESign(..)
+        , BloodGpRsTestValue
+        , BloodSmearResult(..)
+        , CorePhysicalExamValue
         , DangerSign(..)
         , DangerSignsValue
         , Gender(..)
+        , HIVPCRTestValue
         , HIVTestValue
         , HemoglobinTestValue
         , HepatitisBTestValue
+        , LungsCPESign
         , MalariaTestValue
         , Measurement
         , PrenatalAssesment(..)
@@ -18,11 +23,14 @@ import Backend.Measurement.Model
         , PrenatalMentalHealthQuestion(..)
         , PrenatalMentalHealthQuestionOption(..)
         , ProteinValue(..)
+        , RandomBloodSugarTestValue
+        , Rhesus(..)
         , SyphilisTestValue
         , TestExecutionNote(..)
         , TestPrerequisite(..)
         , TestResult(..)
         , UrineDipstickTestValue
+        , ViralLoadStatus(..)
         , VitalsValue
         , emptyPrenatalMeasurements
         )
@@ -276,6 +284,46 @@ testAssembled28Weeks measurements =
     { base | globalLmpDate = Just lmpDate28Weeks }
 
 
+{-| LMP ~16 weeks before `currentDate`, giving EGA ~16 weeks (< 20), used by the
+chronic-hypertension group: chronic hypertension is the EGA < 20 branch of the
+hypertension matchers, gestational is the EGA >= 20 branch.
+-}
+lmpDate16Weeks : NominalDate
+lmpDate16Weeks =
+    Date.add Date.Weeks -16 currentDate
+
+
+{-| The `testAssembled` fixture with EGA ~16 weeks (< 20 weeks).
+-}
+testAssembled16Weeks : PrenatalMeasurements -> AssembledData
+testAssembled16Weeks measurements =
+    let
+        base =
+            testAssembled measurements
+    in
+    { base | globalLmpDate = Just lmpDate16Weeks }
+
+
+{-| LMP ~38 weeks before `currentDate`, giving EGA ~38 weeks (>= 37), used by the
+EGA37+ pre-eclampsia group. At EGA >= 37 the recurrent moderate/severe
+pre-eclampsia diagnoses land on the `*EGA37Plus` emergency-referral variants.
+-}
+lmpDate38Weeks : NominalDate
+lmpDate38Weeks =
+    Date.add Date.Weeks -38 currentDate
+
+
+{-| The `testAssembled` fixture with EGA ~38 weeks (>= 37 weeks).
+-}
+testAssembled38Weeks : PrenatalMeasurements -> AssembledData
+testAssembled38Weeks measurements =
+    let
+        base =
+            testAssembled measurements
+    in
+    { base | globalLmpDate = Just lmpDate38Weeks }
+
+
 
 -- LAB VALUE BUILDERS / SETTERS
 --
@@ -360,6 +408,83 @@ withMalariaTest result measurements =
     { measurements | malariaTest = wrapMeasurement (malariaTestValueWith result) }
 
 
+
+-- NON-IMMEDIATE-RESULT LAB VALUE BUILDERS / SETTERS
+--
+-- Identical to the positive immediate-result builders above (performed
+-- executionNote + positive result), EXCEPT `testPrerequisites = Nothing`.
+--
+-- This is the documented representation for a "non-immediate" result:
+-- `labTestWithImmediateResult` does `Maybe.andThen .testPrerequisites`, so a
+-- `Nothing` prerequisite set makes `immediateResult` False, while
+-- `testedPositiveAt` (which only reads executionNote + testResult) stays True.
+-- A positive lab entered this way therefore fails the `*InitialPhase` matcher
+-- (which requires `immediateResult`) and instead routes to the
+-- `*RecurrentPhase` matcher (positive test WITHOUT the immediate-result
+-- requirement) on the SAME initial-phase nurse encounter.
+
+
+hivTestValueNonImmediate : HIVTestValue
+hivTestValueNonImmediate =
+    { executionNote = TestNoteRunToday
+    , executionDate = Just dummyDate
+    , testPrerequisites = Nothing
+    , testResult = Just TestPositive
+    , hivSigns = Nothing
+    }
+
+
+syphilisTestValueNonImmediate : SyphilisTestValue encounterId
+syphilisTestValueNonImmediate =
+    { executionNote = TestNoteRunToday
+    , executionDate = Just dummyDate
+    , testPrerequisites = Nothing
+    , testResult = Just TestPositive
+    , symptoms = Nothing
+    , originatingEncounter = Nothing
+    }
+
+
+hepatitisBTestValueNonImmediate : HepatitisBTestValue encounterId
+hepatitisBTestValueNonImmediate =
+    { executionNote = TestNoteRunToday
+    , executionDate = Just dummyDate
+    , testPrerequisites = Nothing
+    , testResult = Just TestPositive
+    , originatingEncounter = Nothing
+    }
+
+
+malariaTestValueNonImmediate : MalariaTestValue
+malariaTestValueNonImmediate =
+    { executionNote = TestNoteRunToday
+    , executionDate = Just dummyDate
+    , testPrerequisites = Nothing
+    , testResult = Just TestPositive
+    , bloodSmearResult = BloodSmearNotTaken
+    }
+
+
+withHIVTestNonImmediate : PrenatalMeasurements -> PrenatalMeasurements
+withHIVTestNonImmediate measurements =
+    { measurements | hivTest = wrapMeasurement hivTestValueNonImmediate }
+
+
+withSyphilisTestNonImmediate : PrenatalMeasurements -> PrenatalMeasurements
+withSyphilisTestNonImmediate measurements =
+    { measurements | syphilisTest = wrapMeasurement syphilisTestValueNonImmediate }
+
+
+withHepatitisBTestNonImmediate : PrenatalMeasurements -> PrenatalMeasurements
+withHepatitisBTestNonImmediate measurements =
+    { measurements | hepatitisBTest = wrapMeasurement hepatitisBTestValueNonImmediate }
+
+
+withMalariaTestNonImmediate : PrenatalMeasurements -> PrenatalMeasurements
+withMalariaTestNonImmediate measurements =
+    { measurements | malariaTest = wrapMeasurement malariaTestValueNonImmediate }
+
+
 {-| Hemoglobin test, run today with the given count, immediate result. The
 anemia/malaria-with-anemia diagnoses gate on `immediateResult .hemoglobinTest`,
 so the `PrerequisiteImmediateResult` prerequisite is required just like the
@@ -377,6 +502,26 @@ hemoglobinTestValueWith count =
 withHemoglobin : Float -> PrenatalMeasurements -> PrenatalMeasurements
 withHemoglobin count measurements =
     { measurements | hemoglobinTest = wrapMeasurement (hemoglobinTestValueWith count) }
+
+
+{-| Hemoglobin test with the given count entered NON-immediately
+(`testPrerequisites = Nothing`). `resolveHemoglobinCount` reads `hemoglobinCount`
+directly, so the count is still available, but `immediateResult .hemoglobinTest`
+is False -- so the `*InitialPhase` anemia matcher (which requires the immediate
+result) fails and the diagnosis routes to the `*RecurrentPhase` variant.
+-}
+hemoglobinTestValueNonImmediate : Float -> HemoglobinTestValue
+hemoglobinTestValueNonImmediate count =
+    { executionNote = TestNoteRunToday
+    , executionDate = Just dummyDate
+    , testPrerequisites = Nothing
+    , hemoglobinCount = Just count
+    }
+
+
+withHemoglobinNonImmediate : Float -> PrenatalMeasurements -> PrenatalMeasurements
+withHemoglobinNonImmediate count measurements =
+    { measurements | hemoglobinTest = wrapMeasurement (hemoglobinTestValueNonImmediate count) }
 
 
 {-| Vitals with the given systolic/diastolic blood pressure. Respiratory rate
@@ -398,6 +543,29 @@ vitalsValueWith sys dia =
 withVitals : Float -> Float -> PrenatalMeasurements -> PrenatalMeasurements
 withVitals sys dia measurements =
     { measurements | vitals = wrapMeasurement (vitalsValueWith sys dia) }
+
+
+{-| Vitals with a normal initial reading (120/80, so the _initial_ BP is not
+itself high) and the given REPEATED systolic/diastolic blood pressure. The
+recurrent-phase preeclampsia/hypertension matchers read `sysRepeated`/
+`diaRepeated`; `repeatedTestForMarginalBloodPressure` needs BOTH present and
+fires when `diaRepeated >= 90 || sysRepeated >= 140`.
+-}
+vitalsValueRepeatedWith : Float -> Float -> VitalsValue
+vitalsValueRepeatedWith sysRepeated diaRepeated =
+    { sys = Just 120
+    , dia = Just 80
+    , heartRate = Nothing
+    , respiratoryRate = Nothing
+    , bodyTemperature = Nothing
+    , sysRepeated = Just sysRepeated
+    , diaRepeated = Just diaRepeated
+    }
+
+
+withVitalsRepeated : Float -> Float -> PrenatalMeasurements -> PrenatalMeasurements
+withVitalsRepeated sysRepeated diaRepeated measurements =
+    { measurements | vitals = wrapMeasurement (vitalsValueRepeatedWith sysRepeated diaRepeated) }
 
 
 {-| Urine dipstick with the given protein level, immediate result.
@@ -424,6 +592,107 @@ urineDipstickValueWith protein =
 withUrineProtein : ProteinValue -> PrenatalMeasurements -> PrenatalMeasurements
 withUrineProtein protein measurements =
     { measurements | urineDipstickTest = wrapMeasurement (urineDipstickValueWith protein) }
+
+
+{-| Random blood sugar test with the given sugar count, entered NON-immediately.
+
+`diabetesBySugarCount` reads `PrerequisiteFastFor12h`: when present it diagnoses
+diabetes at sugarCount > 126; here the prerequisite set holds ONLY
+`PrerequisiteFastFor12h` (NOT `PrerequisiteImmediateResult`), so a count above
+126 satisfies `diabetesBySugarCount` while `immediateResult .randomBloodSugarTest`
+stays False. The `*InitialPhase` diabetes matcher (which requires the immediate
+result via `diabetesDiagnosedInitialPhase`) therefore fails and the diagnosis
+routes to the `*RecurrentPhase` variant, which gates on `diabetesDiagnosedAnyPhase`
+(no immediate-result requirement).
+
+-}
+randomBloodSugarValueNonImmediate : Float -> RandomBloodSugarTestValue encounterId
+randomBloodSugarValueNonImmediate count =
+    { executionNote = TestNoteRunToday
+    , executionDate = Just dummyDate
+    , testPrerequisites = Just (EverySet.singleton PrerequisiteFastFor12h)
+    , sugarCount = Just count
+    , originatingEncounter = Nothing
+    }
+
+
+withRandomBloodSugarNonImmediate : Float -> PrenatalMeasurements -> PrenatalMeasurements
+withRandomBloodSugarNonImmediate count measurements =
+    { measurements | randomBloodSugarTest = wrapMeasurement (randomBloodSugarValueNonImmediate count) }
+
+
+{-| Blood group / Rhesus test with the given rhesus result, entered
+NON-immediately. `rhesusNegativeDiagnosed` reads `.rhesus` directly (no immediate
+requirement), but `immediateResult .bloodGpRsTest` is False, so the
+`DiagnosisRhesusNegativeInitialPhase` matcher fails and the diagnosis routes to
+`DiagnosisRhesusNegativeRecurrentPhase`.
+-}
+bloodGpRsValueNonImmediate : Rhesus -> BloodGpRsTestValue encounterId
+bloodGpRsValueNonImmediate rhesus =
+    { executionNote = TestNoteRunToday
+    , executionDate = Just dummyDate
+    , testPrerequisites = Nothing
+    , bloodGroup = Nothing
+    , rhesus = Just rhesus
+    , originatingEncounter = Nothing
+    }
+
+
+withBloodGpRsNonImmediate : Rhesus -> PrenatalMeasurements -> PrenatalMeasurements
+withBloodGpRsNonImmediate rhesus measurements =
+    { measurements | bloodGpRsTest = wrapMeasurement (bloodGpRsValueNonImmediate rhesus) }
+
+
+{-| HIV PCR test carrying the given viral load, entered NON-immediately.
+`hivDetectableViralLoadDiagnosed` reads `.hivViralLoad` and fires when it is
+20 or above (a detectable viral load); with `testPrerequisites = Nothing`,
+`immediateResult .hivPCRTest` is False, so the
+`DiagnosisHIVDetectableViralLoadInitialPhase` matcher fails and the diagnosis
+routes to `DiagnosisHIVDetectableViralLoadRecurrentPhase`.
+-}
+hivPCRValueNonImmediate : Float -> HIVPCRTestValue
+hivPCRValueNonImmediate viralLoad =
+    { executionNote = TestNoteRunToday
+    , executionDate = Just dummyDate
+    , testPrerequisites = Nothing
+    , hivViralLoadStatus = Just ViralLoadDetectable
+    , hivViralLoad = Just viralLoad
+    }
+
+
+withHIVPCRNonImmediate : Float -> PrenatalMeasurements -> PrenatalMeasurements
+withHIVPCRNonImmediate viralLoad measurements =
+    { measurements | hivPCRTest = wrapMeasurement (hivPCRValueNonImmediate viralLoad) }
+
+
+{-| Core physical exam carrying the given lungs/abdomen severe-preeclampsia
+signs (everything else empty). `severePreeclampsiaSigns` reads
+`Wheezes`/`Crackles` in `lungs` or `TPRightUpper` in `abdomen`.
+-}
+corePhysicalExamValueWith : EverySet LungsCPESign -> EverySet AbdomenCPESign -> CorePhysicalExamValue
+corePhysicalExamValueWith lungs abdomen =
+    { hairHead = EverySet.empty
+    , eyes = EverySet.empty
+    , heart = EverySet.empty
+    , heartMurmur = False
+    , neck = EverySet.empty
+    , lungs = lungs
+    , abdomen = abdomen
+    , hands = EverySet.empty
+    , legs = EverySet.empty
+    }
+
+
+{-| Core physical exam carrying a severe-preeclampsia sign (`TPRightUpper` in
+the abdomen), so `severePreeclampsiaSigns` fires.
+-}
+withSeverePreeclampsiaSigns : PrenatalMeasurements -> PrenatalMeasurements
+withSeverePreeclampsiaSigns measurements =
+    { measurements
+        | corePhysicalExam =
+            wrapMeasurement
+                (corePhysicalExamValueWith EverySet.empty (EverySet.singleton TPRightUpper))
+    }
 
 
 {-| Danger-signs measurement carrying the given antenatal danger signs.
@@ -623,6 +892,20 @@ diagnoseNurse28Weeks measurements =
     generatePrenatalDiagnosesForNurse currentDate (testAssembled28Weeks measurements)
 
 
+{-| Run the function under test at EGA ~16 weeks (< 20).
+-}
+diagnoseNurse16Weeks : PrenatalMeasurements -> EverySet PrenatalDiagnosis
+diagnoseNurse16Weeks measurements =
+    generatePrenatalDiagnosesForNurse currentDate (testAssembled16Weeks measurements)
+
+
+{-| Run the function under test at EGA ~38 weeks (>= 37).
+-}
+diagnoseNurse38Weeks : PrenatalMeasurements -> EverySet PrenatalDiagnosis
+diagnoseNurse38Weeks measurements =
+    generatePrenatalDiagnosesForNurse currentDate (testAssembled38Weeks measurements)
+
+
 generatePrenatalDiagnosesForNurseModeratePreeclampsiaTest : Test
 generatePrenatalDiagnosesForNurseModeratePreeclampsiaTest =
     describe "generatePrenatalDiagnosesForNurse - moderate pre-eclampsia (EGA ~28 weeks)"
@@ -646,6 +929,363 @@ generatePrenatalDiagnosesForNurseModeratePreeclampsiaTest =
                     |> diagnoseNurse28Weeks
                     |> EverySet.member DiagnosisModeratePreeclampsiaInitialPhase
                     |> Expect.equal False
+        ]
+
+
+
+-- GROUP A -- RECURRENT-PHASE DISEASE DIAGNOSES (nurse)
+--
+-- KEY MECHANISM: every non-postpartum nurse encounter offers BOTH the
+-- `*InitialPhase` and `*RecurrentPhase` variant of each disease in its
+-- candidate list (`resolveLabResultsAndExaminationDiagnoses`). The Initial
+-- variant requires the lab's result to be immediate
+-- (`testedPositiveAt ... && immediateResult ...`); the Recurrent variant
+-- matches a positive test WITHOUT that requirement, additionally gated on
+-- `not (diagnosed the Initial variant)`. So a positive lab entered WITHOUT the
+-- `PrerequisiteImmediateResult` prerequisite (here: `testPrerequisites =
+-- Nothing`) fails Initial and lands on Recurrent on the SAME initial-phase
+-- `NurseEncounter`.
+--
+-- Oracle = ANC Nurse tab: a positive disease lab produces that disease's
+-- diagnosis. The disease-level mapping (HIV+ -> an HIV diagnosis) is the
+-- oracle; that a NON-immediate result lands on the Recurrent (not Initial)
+-- variant is the structural assertion.
+
+
+generatePrenatalDiagnosesForNurseRecurrentLabsTest : Test
+generatePrenatalDiagnosesForNurseRecurrentLabsTest =
+    describe "generatePrenatalDiagnosesForNurse - recurrent-phase disease diagnoses (positive lab WITHOUT immediate result)"
+        [ test "HIV positive, non-immediate -> DiagnosisHIVRecurrentPhase present AND DiagnosisHIVInitialPhase NOT present" <|
+            \_ ->
+                let
+                    diagnoses =
+                        emptyPrenatalMeasurements
+                            |> withHIVTestNonImmediate
+                            |> diagnoseNurse
+                in
+                ( EverySet.member DiagnosisHIVRecurrentPhase diagnoses
+                , EverySet.member DiagnosisHIVInitialPhase diagnoses
+                )
+                    |> Expect.equal ( True, False )
+        , test "Syphilis positive, non-immediate -> DiagnosisSyphilisRecurrentPhase present AND DiagnosisSyphilisInitialPhase NOT present" <|
+            \_ ->
+                let
+                    diagnoses =
+                        emptyPrenatalMeasurements
+                            |> withSyphilisTestNonImmediate
+                            |> diagnoseNurse
+                in
+                ( EverySet.member DiagnosisSyphilisRecurrentPhase diagnoses
+                , EverySet.member DiagnosisSyphilisInitialPhase diagnoses
+                )
+                    |> Expect.equal ( True, False )
+        , test "Malaria RDT positive, non-immediate -> DiagnosisMalariaRecurrentPhase present AND DiagnosisMalariaInitialPhase NOT present" <|
+            \_ ->
+                let
+                    diagnoses =
+                        emptyPrenatalMeasurements
+                            |> withMalariaTestNonImmediate
+                            |> diagnoseNurse
+                in
+                ( EverySet.member DiagnosisMalariaRecurrentPhase diagnoses
+                , EverySet.member DiagnosisMalariaInitialPhase diagnoses
+                )
+                    |> Expect.equal ( True, False )
+        , test "Hep B positive, non-immediate -> DiagnosisHepatitisBRecurrentPhase present AND DiagnosisHepatitisBInitialPhase NOT present" <|
+            \_ ->
+                let
+                    diagnoses =
+                        emptyPrenatalMeasurements
+                            |> withHepatitisBTestNonImmediate
+                            |> diagnoseNurse
+                in
+                ( EverySet.member DiagnosisHepatitisBRecurrentPhase diagnoses
+                , EverySet.member DiagnosisHepatitisBInitialPhase diagnoses
+                )
+                    |> Expect.equal ( True, False )
+        ]
+
+
+
+-- GROUP B -- RECURRENT MODERATE PRE-ECLAMPSIA (nurse)
+--
+-- `moderatePreeclampsiaByMeasurementsRecurrentPhase` is
+--   (highBloodPressure && highUrineProtein)
+--     || (repeatedTestForMarginalBloodPressure && (edema || highUrineProtein)).
+-- Here the *initial* reading is normal (120/80, so `highBloodPressure` is
+-- False and the Initial-phase variant does not fire), but the REPEATED reading
+-- is marginal (`sysRepeated` 145 >= 140), so `repeatedTestForMarginalBloodPressure`
+-- is True; combined with urine protein +1 this satisfies the recurrent
+-- measurement condition. EGA ~28 weeks sits inside the [20,37) gate.
+--
+-- This fires on the plain initial-phase `NurseEncounter`: that encounter's
+-- candidate list includes `DiagnosisModeratePreeclampsiaRecurrentPhase`, the
+-- Initial variant does not fire (normal initial BP), there is no prior
+-- diagnosis, and in `applyDiagnosesHierarchy` moderate-preeclampsia-recurrent
+-- (rank 11) outranks the competing gestational-hypertension-after-recheck
+-- (rank 1) that the marginal repeated BP also produces.
+
+
+generatePrenatalDiagnosesForNurseModeratePreeclampsiaRecurrentTest : Test
+generatePrenatalDiagnosesForNurseModeratePreeclampsiaRecurrentTest =
+    describe "generatePrenatalDiagnosesForNurse - recurrent moderate pre-eclampsia (EGA ~28 weeks)"
+        [ test "repeated BP marginal (sysRepeated 145) + urine protein +1, normal initial BP -> DiagnosisModeratePreeclampsiaRecurrentPhase present" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withVitalsRepeated 145 80
+                    |> withUrineProtein ProteinPlus1
+                    |> diagnoseNurse28Weeks
+                    |> EverySet.member DiagnosisModeratePreeclampsiaRecurrentPhase
+                    |> Expect.equal True
+        ]
+
+
+
+-- GROUP C -- RECURRENT-PHASE ANEMIA / MALARIA-WITH-ANEMIA (nurse)
+--
+-- Same mechanism as GROUP A: the hemoglobin (and malaria) result is entered
+-- NON-immediately (`testPrerequisites = Nothing`). `resolveHemoglobinCount`
+-- reads the count regardless, so the anemia condition still matches, but
+-- `immediateResult .hemoglobinTest` is False, so the `*InitialPhase` matcher
+-- fails and the diagnosis routes to the `*RecurrentPhase` variant.
+--
+-- Oracle = WHO Labs tab: severe Hb < 7, moderate 7..<11; combined with a
+-- positive malaria RDT -> the malaria-with-(severe-)anemia diagnoses.
+
+
+generatePrenatalDiagnosesForNurseAnemiaRecurrentTest : Test
+generatePrenatalDiagnosesForNurseAnemiaRecurrentTest =
+    describe "generatePrenatalDiagnosesForNurse - recurrent-phase anemia / malaria-with-anemia (non-immediate labs)"
+        [ test "Hb 9 (7..<11) non-immediate, no malaria -> DiagnosisModerateAnemiaRecurrentPhase present AND DiagnosisModerateAnemiaInitialPhase NOT present" <|
+            \_ ->
+                let
+                    diagnoses =
+                        emptyPrenatalMeasurements
+                            |> withHemoglobinNonImmediate 9
+                            |> diagnoseNurse
+                in
+                ( EverySet.member DiagnosisModerateAnemiaRecurrentPhase diagnoses
+                , EverySet.member DiagnosisModerateAnemiaInitialPhase diagnoses
+                )
+                    |> Expect.equal ( True, False )
+        , test "Hb 6 (<7) non-immediate, no malaria, no anemia-complication signs -> DiagnosisSevereAnemiaRecurrentPhase present AND DiagnosisSevereAnemiaInitialPhase NOT present" <|
+            \_ ->
+                let
+                    diagnoses =
+                        emptyPrenatalMeasurements
+                            |> withHemoglobinNonImmediate 6
+                            |> diagnoseNurse
+                in
+                ( EverySet.member DiagnosisSevereAnemiaRecurrentPhase diagnoses
+                , EverySet.member DiagnosisSevereAnemiaInitialPhase diagnoses
+                )
+                    |> Expect.equal ( True, False )
+        , test "malaria RDT positive + Hb 9 (7..<11), both non-immediate -> DiagnosisMalariaWithAnemiaRecurrentPhase present AND DiagnosisMalariaWithAnemiaInitialPhase NOT present" <|
+            \_ ->
+                let
+                    diagnoses =
+                        emptyPrenatalMeasurements
+                            |> withMalariaTestNonImmediate
+                            |> withHemoglobinNonImmediate 9
+                            |> diagnoseNurse
+                in
+                ( EverySet.member DiagnosisMalariaWithAnemiaRecurrentPhase diagnoses
+                , EverySet.member DiagnosisMalariaWithAnemiaInitialPhase diagnoses
+                )
+                    |> Expect.equal ( True, False )
+        , test "malaria RDT positive + Hb 6 (<7), both non-immediate -> DiagnosisMalariaWithSevereAnemiaRecurrentPhase present AND DiagnosisMalariaWithSevereAnemiaInitialPhase NOT present" <|
+            \_ ->
+                let
+                    diagnoses =
+                        emptyPrenatalMeasurements
+                            |> withMalariaTestNonImmediate
+                            |> withHemoglobinNonImmediate 6
+                            |> diagnoseNurse
+                in
+                ( EverySet.member DiagnosisMalariaWithSevereAnemiaRecurrentPhase diagnoses
+                , EverySet.member DiagnosisMalariaWithSevereAnemiaInitialPhase diagnoses
+                )
+                    |> Expect.equal ( True, False )
+        ]
+
+
+
+-- GROUP D -- RECURRENT-PHASE DIABETES / RHESUS (nurse, non-immediate labs)
+--
+-- Diabetes: `diabetesBySugarCount` reads `PrerequisiteFastFor12h` (here the
+-- ONLY prerequisite, so the result is NON-immediate); a count > 126 satisfies
+-- it. The `*InitialPhase` matcher gates on `immediateResult`, so it fails, and
+-- the diagnosis routes to the recurrent variant. The EGA gate splits the
+-- recurrent diabetes diagnosis: EGA <= 20 -> DiagnosisDiabetesRecurrentPhase;
+-- EGA > 20 -> DiagnosisGestationalDiabetesRecurrentPhase. `diagnoseNurse` is at
+-- EGA exactly 20 (<= 20), so the code produces DiagnosisDiabetesRecurrentPhase.
+--
+-- Rhesus: `rhesusNegativeDiagnosed` reads `.rhesus == RhesusNegative` directly;
+-- non-immediate entry routes to DiagnosisRhesusNegativeRecurrentPhase.
+
+
+generatePrenatalDiagnosesForNurseDiabetesRhesusRecurrentTest : Test
+generatePrenatalDiagnosesForNurseDiabetesRhesusRecurrentTest =
+    describe "generatePrenatalDiagnosesForNurse - recurrent-phase diabetes / rhesus (non-immediate labs)"
+        [ test "random blood sugar 200 (fasting, > 126) non-immediate, EGA <= 20 -> DiagnosisDiabetesRecurrentPhase present AND DiagnosisDiabetesInitialPhase NOT present" <|
+            \_ ->
+                let
+                    diagnoses =
+                        emptyPrenatalMeasurements
+                            |> withRandomBloodSugarNonImmediate 200
+                            |> diagnoseNurse
+                in
+                ( EverySet.member DiagnosisDiabetesRecurrentPhase diagnoses
+                , EverySet.member DiagnosisDiabetesInitialPhase diagnoses
+                )
+                    |> Expect.equal ( True, False )
+        , test "blood group / Rh test rhesus = RhesusNegative, non-immediate -> DiagnosisRhesusNegativeRecurrentPhase present AND DiagnosisRhesusNegativeInitialPhase NOT present" <|
+            \_ ->
+                let
+                    diagnoses =
+                        emptyPrenatalMeasurements
+                            |> withBloodGpRsNonImmediate RhesusNegative
+                            |> diagnoseNurse
+                in
+                ( EverySet.member DiagnosisRhesusNegativeRecurrentPhase diagnoses
+                , EverySet.member DiagnosisRhesusNegativeInitialPhase diagnoses
+                )
+                    |> Expect.equal ( True, False )
+        ]
+
+
+
+-- GROUP E -- HYPERTENSION AFTER RECHECK (nurse)
+--
+-- A repeated marginal BP reading (`sysRepeated` 145 >= 140, normal initial
+-- reading) with no proteinuria fires `repeatedTestForMarginalBloodPressure`,
+-- which (without proteinuria/edema) yields hypertension-after-recheck rather
+-- than recurrent pre-eclampsia. The EGA gate splits the two variants:
+--   * EGA < 20  -> DiagnosisChronicHypertensionAfterRecheck
+--   * EGA >= 20 -> DiagnosisGestationalHypertensionAfterRecheck
+-- That EGA cutoff (chronicHypertensionByMeasurementsAfterRecheck uses
+-- egaWeeks < 20; gestationalHypertensionByMeasurementsAfterRecheck uses
+-- egaWeeks >= 20) is the ONLY thing distinguishing chronic from gestational
+-- here -- no prior-encounter / medical-history data is needed.
+--
+-- These are the surviving (top) blood-pressure diagnosis after
+-- `applyHypertensionlikeDiagnosesHierarchy`: with normal initial BP and no
+-- proteinuria, no higher-ranked BP diagnosis competes.
+
+
+generatePrenatalDiagnosesForNurseHypertensionRecheckTest : Test
+generatePrenatalDiagnosesForNurseHypertensionRecheckTest =
+    describe "generatePrenatalDiagnosesForNurse - hypertension after recheck (repeated marginal BP, no proteinuria)"
+        [ test "EGA >= 20, repeated BP marginal (sysRepeated 145), normal initial BP, no proteinuria -> DiagnosisGestationalHypertensionAfterRecheck present" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withVitalsRepeated 145 80
+                    |> diagnoseNurse
+                    |> EverySet.member DiagnosisGestationalHypertensionAfterRecheck
+                    |> Expect.equal True
+        , test "EGA < 20 (~16 weeks), repeated BP marginal (sysRepeated 145), normal initial BP, no proteinuria -> DiagnosisChronicHypertensionAfterRecheck present" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withVitalsRepeated 145 80
+                    |> diagnoseNurse16Weeks
+                    |> EverySet.member DiagnosisChronicHypertensionAfterRecheck
+                    |> Expect.equal True
+        ]
+
+
+
+-- GROUP F -- SEVERE PRE-ECLAMPSIA RECURRENT (nurse, EGA < 37)
+--
+-- `severePreeclampsiaRecurrentPhase` =
+--   (initial BP >=160/110 OR repeated BP >=160/110)
+--     && highUrineProtein && severePreeclampsiaSigns.
+-- The initial reading is normal (120/80) and the REPEATED reading is severe
+-- (165/115 >= 160/110), so the recurrent (not initial) severe-BP branch fires;
+-- combined with urine protein and a severe-preeclampsia core-physical-exam sign
+-- (TPRightUpper in the abdomen) the diagnosis fires. EGA ~28 weeks (< 37) keeps
+-- it off the EGA37+ emergency-referral variant.
+
+
+generatePrenatalDiagnosesForNurseSeverePreeclampsiaRecurrentTest : Test
+generatePrenatalDiagnosesForNurseSeverePreeclampsiaRecurrentTest =
+    describe "generatePrenatalDiagnosesForNurse - recurrent severe pre-eclampsia (EGA ~28 weeks, < 37)"
+        [ test "repeated BP severe (165/115 >=160/110) + urine protein +1 + severe-preeclampsia sign, normal initial BP -> DiagnosisSeverePreeclampsiaRecurrentPhase present" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withVitalsRepeated 165 115
+                    |> withUrineProtein ProteinPlus1
+                    |> withSeverePreeclampsiaSigns
+                    |> diagnoseNurse28Weeks
+                    |> EverySet.member DiagnosisSeverePreeclampsiaRecurrentPhase
+                    |> Expect.equal True
+        ]
+
+
+
+-- GROUP G -- RECURRENT HIV DETECTABLE VIRAL LOAD (nurse)
+--
+-- `hivDetectableViralLoadDiagnosed` reads `.hivViralLoad` and fires when it is
+-- >= 20 (a detectable viral load). Entered non-immediately
+-- (`testPrerequisites = Nothing`), `immediateResult .hivPCRTest` is False, so
+-- the `*InitialPhase` matcher fails and the diagnosis routes to the
+-- `*RecurrentPhase` variant.
+
+
+generatePrenatalDiagnosesForNurseHIVViralLoadRecurrentTest : Test
+generatePrenatalDiagnosesForNurseHIVViralLoadRecurrentTest =
+    describe "generatePrenatalDiagnosesForNurse - recurrent HIV detectable viral load (non-immediate PCR)"
+        [ test "HIV PCR viral load 1000 (>= 20, detectable), non-immediate -> DiagnosisHIVDetectableViralLoadRecurrentPhase present AND DiagnosisHIVDetectableViralLoadInitialPhase NOT present" <|
+            \_ ->
+                let
+                    diagnoses =
+                        emptyPrenatalMeasurements
+                            |> withHIVPCRNonImmediate 1000
+                            |> diagnoseNurse
+                in
+                ( EverySet.member DiagnosisHIVDetectableViralLoadRecurrentPhase diagnoses
+                , EverySet.member DiagnosisHIVDetectableViralLoadInitialPhase diagnoses
+                )
+                    |> Expect.equal ( True, False )
+        ]
+
+
+
+-- GROUP H -- EGA37+ RECURRENT PRE-ECLAMPSIA (nurse, EGA >= 37)
+--
+-- The same recurrent moderate / severe pre-eclampsia recipes as GROUP B / F,
+-- but at EGA ~38 weeks (>= 37). At that EGA the recurrent pre-eclampsia
+-- diagnoses are produced by `matchEmergencyReferalPrenatalDiagnosis` as the
+-- `*EGA37Plus` emergency-referral variants instead.
+--
+--   * Moderate: repeated marginal BP (sysRepeated 145) + urine protein, normal
+--     initial BP -> DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus.
+--   * Severe: repeated severe BP (165/115) + urine protein + severe sign,
+--     normal initial BP -> DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus.
+--
+-- The EGA37+ variants are the surviving (top) blood-pressure diagnosis after
+-- `applyHypertensionlikeDiagnosesHierarchy` (ranks 31 / 41).
+
+
+generatePrenatalDiagnosesForNurseEGA37PlusPreeclampsiaRecurrentTest : Test
+generatePrenatalDiagnosesForNurseEGA37PlusPreeclampsiaRecurrentTest =
+    describe "generatePrenatalDiagnosesForNurse - recurrent pre-eclampsia EGA37+ (EGA ~38 weeks, >= 37)"
+        [ test "repeated BP marginal (sysRepeated 145) + urine protein +1, normal initial BP, EGA >= 37 -> DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus present" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withVitalsRepeated 145 80
+                    |> withUrineProtein ProteinPlus1
+                    |> diagnoseNurse38Weeks
+                    |> EverySet.member DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus
+                    |> Expect.equal True
+        , test "repeated BP severe (165/115 >=160/110) + urine protein +1 + severe-preeclampsia sign, normal initial BP, EGA >= 37 -> DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus present" <|
+            \_ ->
+                emptyPrenatalMeasurements
+                    |> withVitalsRepeated 165 115
+                    |> withUrineProtein ProteinPlus1
+                    |> withSeverePreeclampsiaSigns
+                    |> diagnoseNurse38Weeks
+                    |> EverySet.member DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus
+                    |> Expect.equal True
         ]
 
 
@@ -680,9 +1320,17 @@ all =
         [ bmiToPrePregnancyClassificationTest
         , zscoreToPrePregnancyClassificationTest
         , generatePrenatalDiagnosesForNurseLabsTest
+        , generatePrenatalDiagnosesForNurseRecurrentLabsTest
         , generatePrenatalAssesmentForChwTest
         , generatePrenatalDiagnosesForNurseAnemiaTest
         , generatePrenatalDiagnosesForNurseMalariaWithAnemiaTest
         , generatePrenatalDiagnosesForNurseModeratePreeclampsiaTest
+        , generatePrenatalDiagnosesForNurseModeratePreeclampsiaRecurrentTest
+        , generatePrenatalDiagnosesForNurseAnemiaRecurrentTest
+        , generatePrenatalDiagnosesForNurseDiabetesRhesusRecurrentTest
+        , generatePrenatalDiagnosesForNurseHypertensionRecheckTest
+        , generatePrenatalDiagnosesForNurseSeverePreeclampsiaRecurrentTest
+        , generatePrenatalDiagnosesForNurseHIVViralLoadRecurrentTest
+        , generatePrenatalDiagnosesForNurseEGA37PlusPreeclampsiaRecurrentTest
         , suicideRiskDiagnosedBySignsTest
         ]
