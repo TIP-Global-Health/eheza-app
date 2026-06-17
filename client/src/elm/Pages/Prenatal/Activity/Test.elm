@@ -15,6 +15,8 @@ import Backend.Measurement.Model
         , Measurement
         , PrenatalAssesment(..)
         , PrenatalMeasurements
+        , PrenatalMentalHealthQuestion(..)
+        , PrenatalMentalHealthQuestionOption(..)
         , ProteinValue(..)
         , SyphilisTestValue
         , TestExecutionNote(..)
@@ -32,7 +34,7 @@ import EverySet exposing (EverySet)
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.Prenatal.Activity.Types exposing (PrePregnancyClassification(..))
-import Pages.Prenatal.Activity.Utils exposing (bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, zscoreToPrePregnancyClassification)
+import Pages.Prenatal.Activity.Utils exposing (bmiToPrePregnancyClassification, generatePrenatalAssesmentForChw, generatePrenatalDiagnosesForNurse, suicideRiskDiagnosedBySigns, zscoreToPrePregnancyClassification)
 import Pages.Prenatal.Model exposing (AssembledData)
 import Restful.Endpoint exposing (EntityUuid, toEntityUuid)
 import Test exposing (Test, describe, test)
@@ -647,6 +649,31 @@ generatePrenatalDiagnosesForNurseModeratePreeclampsiaTest =
         ]
 
 
+suicideRiskDiagnosedBySignsTest : Test
+suicideRiskDiagnosedBySignsTest =
+    -- Oracle: the suicide-risk screening item (question 10). Any positive
+    -- response (Option1/2/3) flags risk; Option0 (none) does not; an unanswered
+    -- question 10 yields Nothing.
+    let
+        withQuestion10 option =
+            Dict.fromList [ ( MentalHealthQuestion10, option ) ]
+    in
+    describe "suicideRiskDiagnosedBySigns"
+        [ test "Q10 = Option0 (none) -> Just False" <|
+            \_ -> suicideRiskDiagnosedBySigns (withQuestion10 MentalHealthQuestionOption0) |> Expect.equal (Just False)
+        , test "Q10 = Option1 -> Just True" <|
+            \_ -> suicideRiskDiagnosedBySigns (withQuestion10 MentalHealthQuestionOption1) |> Expect.equal (Just True)
+        , test "Q10 = Option2 -> Just True" <|
+            \_ -> suicideRiskDiagnosedBySigns (withQuestion10 MentalHealthQuestionOption2) |> Expect.equal (Just True)
+        , test "Q10 = Option3 -> Just True" <|
+            \_ -> suicideRiskDiagnosedBySigns (withQuestion10 MentalHealthQuestionOption3) |> Expect.equal (Just True)
+        , test "no question 10 answered -> Nothing" <|
+            \_ -> suicideRiskDiagnosedBySigns Dict.empty |> Expect.equal Nothing
+        , test "only other questions answered (Q10 absent) -> Nothing" <|
+            \_ -> suicideRiskDiagnosedBySigns (Dict.fromList [ ( MentalHealthQuestion1, MentalHealthQuestionOption3 ) ]) |> Expect.equal Nothing
+        ]
+
+
 all : Test
 all =
     describe "Prenatal Activity tests"
@@ -657,4 +684,5 @@ all =
         , generatePrenatalDiagnosesForNurseAnemiaTest
         , generatePrenatalDiagnosesForNurseMalariaWithAnemiaTest
         , generatePrenatalDiagnosesForNurseModeratePreeclampsiaTest
+        , suicideRiskDiagnosedBySignsTest
         ]
