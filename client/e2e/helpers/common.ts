@@ -268,6 +268,7 @@ export function queryPregnancyEdd(personName: string): string | null {
       ->propertyCondition('type', 'individual_participant')
       ->fieldCondition('field_person', 'target_id', \\$nid)
       ->fieldCondition('field_encounter_type', 'value', 'antenatal')
+      ->propertyOrderBy('nid', 'DESC')
       ->range(0, 1)
       ->execute();
     if (empty(\\$pr['node'])) { echo json_encode(['error' => 'No pregnancy found']); return; }
@@ -291,6 +292,78 @@ export function queryPregnancyEdd(personName: string): string | null {
       console.log(`queryPregnancyEdd attempt ${attempt + 1}: ${parsed.error || 'EDD not set yet'}`);
     } catch (err) {
       console.log(`queryPregnancyEdd attempt ${attempt + 1}: error`, err);
+    }
+    if (attempt < 9) execSync('sleep 5');
+  }
+  return null;
+}
+
+/**
+ * Returns the stored LMP date (`field_last_menstrual_period` of the most recent
+ * `last_menstrual_period` measurement for the person's antenatal pregnancy) as a
+ * 'YYYY-MM-DD' string, or null if not found. Mirrors `queryPregnancyEdd`'s
+ * person -> pregnancy lookup and `populate-edd.php`'s LMP lookup (the measurement
+ * links to the pregnancy via `field_prenatal_encounter`). Retries to tolerate
+ * sync eventual-consistency. Used to assert EDD == LMP + 280 against the value
+ * the backend actually persisted, independent of how the date was entered.
+ */
+export function queryPrenatalLmp(personName: string): string | null {
+  const { drushCmd, cwd } = drushEnv();
+  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
+
+  const php = `
+    \\$name = base64_decode('${personNameB64}');
+    \\$q = new EntityFieldQuery();
+    \\$r = \\$q->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'person')
+      ->propertyCondition('title', \\$name)
+      ->execute();
+    if (empty(\\$r['node'])) { echo json_encode(['error' => 'Person not found']); return; }
+    \\$nid = key(\\$r['node']);
+
+    \\$pq = new EntityFieldQuery();
+    \\$pr = \\$pq->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'individual_participant')
+      ->fieldCondition('field_person', 'target_id', \\$nid)
+      ->fieldCondition('field_encounter_type', 'value', 'antenatal')
+      ->propertyOrderBy('nid', 'DESC')
+      ->range(0, 1)
+      ->execute();
+    if (empty(\\$pr['node'])) { echo json_encode(['error' => 'No pregnancy found']); return; }
+    \\$participant_id = key(\\$pr['node']);
+
+    \\$encounters = hedley_person_load_individual_participant_encounters_ids(\\$participant_id);
+    if (empty(\\$encounters)) { echo json_encode(['error' => 'No encounters']); return; }
+
+    \\$lq = hedley_general_create_entity_field_query_excluding_deleted();
+    \\$lr = \\$lq->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', 'last_menstrual_period')
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->fieldCondition('field_prenatal_encounter', 'target_id', \\$encounters, 'IN')
+      ->propertyOrderBy('nid', 'DESC')
+      ->range(0, 1)
+      ->execute();
+    if (empty(\\$lr['node'])) { echo json_encode(['error' => 'No LMP found']); return; }
+
+    \\$lmp = node_load(key(\\$lr['node']));
+    \\$date = isset(\\$lmp->field_last_menstrual_period[LANGUAGE_NONE][0]['value'])
+      ? \\$lmp->field_last_menstrual_period[LANGUAGE_NONE][0]['value'] : null;
+    echo json_encode(['lmp' => \\$date]);
+  `;
+
+  for (let attempt = 0; attempt < 10; attempt++) {
+    try {
+      const output = execSync(`${drushCmd} eval "${php}"`, {
+        cwd, timeout: 30000, encoding: 'utf-8', stdio: 'pipe',
+      }).trim();
+      const parsed = JSON.parse(output);
+      if (!parsed.error && parsed.lmp) {
+        // Stored as 'YYYY-MM-DD HH:MM:SS' or 'YYYY-MM-DD'; return the date part.
+        return String(parsed.lmp).slice(0, 10);
+      }
+      console.log(`queryPrenatalLmp attempt ${attempt + 1}: ${parsed.error || 'LMP not set yet'}`);
+    } catch (err) {
+      console.log(`queryPrenatalLmp attempt ${attempt + 1}: error`, err);
     }
     if (attempt < 9) execSync('sleep 5');
   }
@@ -434,11 +507,16 @@ export async function setDate(page: Page, date: Date, triggerSelector = '.date-i
   await page
     .locator('div.calendar > div.year > select')
     .selectOption(year);
+  // Let the Elm calendar grid re-render for the selected year/month before
+  // clicking the day; without these waits the click can race a stale grid and
+  // land on the wrong day (an off-by-one in date entry).
+  await page.waitForTimeout(WAIT.elmRerender);
 
   const monthValue = (date.getUTCMonth() + 1).toString();
   await page
     .locator('div.calendar > div.month > select')
     .selectOption(monthValue);
+  await page.waitForTimeout(WAIT.elmRerender);
 
   const day = date.getUTCDate();
   const dayCell = page.locator(

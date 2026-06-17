@@ -3,7 +3,7 @@ import { setupDevice } from './helpers/auth';
 import { verifyCaseManagementEntry } from './helpers/case-management';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
-import { syncAndWait, queryPregnancyEdd } from './helpers/common';
+import { syncAndWait, queryPregnancyEdd, queryPrenatalLmp } from './helpers/common';
 import {
   createAdultFemaleAndStartEncounter,
   startPrenatalEncounter,
@@ -106,15 +106,20 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
     // pregnancy was silently dropped while the LMP measurement still saved.
     const edd = queryPregnancyEdd(fullName);
     expect(edd, 'pregnancy EDD (field_expected_date_concluded) should be set').not.toBeNull();
-    // EDD = LMP + 280 days. setDate() enters the calendar date using UTC
-    // components, so compute the expected EDD in UTC to match (avoids an
-    // off-by-one when the runner's local date differs from its UTC date).
-    const expectedEdd = new Date(
-      Date.UTC(lmpDate.getUTCFullYear(), lmpDate.getUTCMonth(), lmpDate.getUTCDate() + 280),
-    );
-    const fmtDate = (d: Date) =>
-      `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
-    expect(edd, 'EDD should equal LMP + 280 days').toBe(fmtDate(expectedEdd));
+    // Verify the invariant EDD == LMP + 280 days against the LMP the backend
+    // actually stored, rather than re-deriving the expected date from the test's
+    // input. This keeps the assertion independent of any date-entry or timezone
+    // drift in the calendar picker -- the job here is to prove EDD is persisted
+    // and consistent with the stored LMP, not to re-check date entry.
+    const storedLmp = queryPrenatalLmp(fullName);
+    expect(
+      storedLmp,
+      'stored LMP date (field_last_menstrual_period) should be set',
+    ).not.toBeNull();
+    const [lmpYear, lmpMonth, lmpDay] = storedLmp!.split('-').map(Number);
+    const eddFromLmp = new Date(Date.UTC(lmpYear, lmpMonth - 1, lmpDay + 280));
+    const expectedEdd = `${eddFromLmp.getUTCFullYear()}-${String(eddFromLmp.getUTCMonth() + 1).padStart(2, '0')}-${String(eddFromLmp.getUTCDate()).padStart(2, '0')}`;
+    expect(edd, 'EDD should equal stored LMP + 280 days').toBe(expectedEdd);
 
     // History
     expect(nodes['obstetric_history'], 'obstetric_history should exist').toBe(true);

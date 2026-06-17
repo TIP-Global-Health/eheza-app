@@ -141,7 +141,7 @@ jobs:
             exit 1
       - run:
           name: Run E2E tests
-          command: cd client && npx playwright test prenatal tuberculosis && npx playwright test --grep-invert "Well Child|NCD|HIV|Tuberculosis|Child Scoreboard|Prenatal|Family Nutrition|Group Nutrition|Group Education|Stock Management|Admin Reports|Bulk Photo Fetch"
+          command: cd client && export TZ=UTC && npx playwright test prenatal tuberculosis && npx playwright test --grep-invert "Well Child|NCD|HIV|Tuberculosis|Child Scoreboard|Prenatal|Family Nutrition|Group Nutrition|Group Education|Stock Management|Admin Reports|Bulk Photo Fetch"
           no_output_timeout: 15m
       - store_artifacts:
           path: client/test-results
@@ -195,7 +195,7 @@ jobs:
             exit 1
       - run:
           name: Run E2E tests
-          command: cd client && npx playwright test well-child ncd hiv child-scoreboard family-nutrition group-session education-session stock-management sync-bulk-photos
+          command: cd client && export TZ=UTC && npx playwright test well-child ncd hiv child-scoreboard family-nutrition group-session education-session stock-management sync-bulk-photos
           no_output_timeout: 15m
       - store_artifacts:
           path: client/test-results
@@ -249,7 +249,7 @@ jobs:
             exit 1
       - run:
           name: Run E2E reporting tests
-          command: cd client && npx playwright test reporting
+          command: cd client && export TZ=UTC && npx playwright test reporting
           no_output_timeout: 15m
       - store_artifacts:
           path: client/test-results
