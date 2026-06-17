@@ -1,6 +1,6 @@
 module App.View exposing (view)
 
-import App.Model exposing (ConfiguredModel, Model, Msg(..), MsgLoggedIn(..))
+import App.Model exposing (ConfiguredModel, Model, Msg(..), MsgLoggedIn(..), StorageQuota)
 import App.Utils exposing (getLoggedInData)
 import AssocList as Dict
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
@@ -130,7 +130,7 @@ import Pages.WellChild.ProgressReport.View
 import Pages.Wellbeing.View
 import RemoteData exposing (RemoteData(..))
 import ServiceWorker.View
-import SyncManager.Model exposing (Site(..), SiteFeature)
+import SyncManager.Model exposing (IndexDbSaveError(..), Site(..), SiteFeature)
 import SyncManager.View
 import Translate exposing (translate)
 import Translate.Model exposing (Language(..))
@@ -177,7 +177,7 @@ flexPageWrapper config model html =
                 [ html ]
     in
     div [ class "page container" ] <|
-        (viewLanguageSwitcherAndVersion config model :: syncManager)
+        (viewLanguageSwitcherAndVersion config model :: viewStorageWarning model :: syncManager)
             ++ [ content ]
 
 
@@ -187,8 +187,54 @@ oldPageWrapper : Config.Model.Model -> Model -> Html Msg -> Html Msg
 oldPageWrapper config model html =
     div [ class "container" ]
         [ viewLanguageSwitcherAndVersion config model
+        , viewStorageWarning model
         , html
         ]
+
+
+{-| A banner warning that the device's local storage is filling up or full.
+
+It reads two independent signals already in the model: `storageQuota` (the
+proactive `navigator.storage.estimate()` poll) drives an early "almost full"
+warning, and a `StorageFull` save failure recorded by the SyncManager (the
+reactive signal from the save path) escalates to a "data may not be saving"
+alert. Rendered in the shared page chrome so it shows on every screen, not just
+the Device page where the raw quota is otherwise buried.
+
+-}
+viewStorageWarning : Model -> Html Msg
+viewStorageWarning model =
+    if model.syncManager.lastSaveError == Just IndexDbSaveErrorStorageFull then
+        viewStorageBanner "ui error message" (translate model.language Translate.StorageQuotaFull)
+
+    else if storageAlmostFull model.storageQuota then
+        viewStorageBanner "ui warning message" (translate model.language Translate.StorageQuotaAlmostFull)
+
+    else
+        emptyNode
+
+
+storageAlmostFull : Maybe StorageQuota -> Bool
+storageAlmostFull storageQuota =
+    case storageQuota of
+        Just { usage, quota } ->
+            quota > 0 && toFloat usage / toFloat quota >= storageQuotaWarningThreshold
+
+        Nothing ->
+            False
+
+
+viewStorageBanner : String -> String -> Html Msg
+viewStorageBanner messageClass message =
+    div [ class <| messageClass ++ " storage-warning" ]
+        [ text message ]
+
+
+{-| Fraction of the storage quota at which we start warning the nurse.
+-}
+storageQuotaWarningThreshold : Float
+storageQuotaWarningThreshold =
+    0.9
 
 
 {-| The language switcher view which sets a preferred language for each user and
