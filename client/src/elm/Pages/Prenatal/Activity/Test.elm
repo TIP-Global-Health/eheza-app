@@ -643,12 +643,10 @@ withBloodGpRsNonImmediate rhesus measurements =
 
 {-| HIV PCR test carrying the given viral load, entered NON-immediately.
 `hivDetectableViralLoadDiagnosed` reads `.hivViralLoad` and fires when it is
-
-> = 20 (a detectable viral load); with `testPrerequisites = Nothing`,
-> `immediateResult .hivPCRTest` is False, so the
-> `DiagnosisHIVDetectableViralLoadInitialPhase` matcher fails and the diagnosis
-> routes to `DiagnosisHIVDetectableViralLoadRecurrentPhase`.
-
+20 or above (a detectable viral load); with `testPrerequisites = Nothing`,
+`immediateResult .hivPCRTest` is False, so the
+`DiagnosisHIVDetectableViralLoadInitialPhase` matcher fails and the diagnosis
+routes to `DiagnosisHIVDetectableViralLoadRecurrentPhase`.
 -}
 hivPCRValueNonImmediate : Float -> HIVPCRTestValue
 hivPCRValueNonImmediate viralLoad =
