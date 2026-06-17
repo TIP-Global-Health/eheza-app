@@ -23,7 +23,7 @@ import Date
 import EverySet exposing (EverySet)
 import Expect
 import Gizra.NominalDate exposing (NominalDate)
-import Pages.NCD.Model exposing (AssembledData)
+import Pages.NCD.Model exposing (AssembledData, PreviousEncounterData)
 import Pages.NCD.Utils
     exposing
         ( generateNCDDiagnoses
@@ -414,6 +414,71 @@ expectDiagnoses expected measurements =
         |> Expect.equal (EverySet.fromList expected)
 
 
+{-| A prior NCD encounter carrying the given diagnoses. Measurements are left
+empty: the hypertension hierarchy reads the prior encounter's `.diagnoses`, not
+its measurements.
+-}
+previousEncounterWith : List NCDDiagnosis -> PreviousEncounterData
+previousEncounterWith diagnoses =
+    { id = toEntityUuid "prev-encounter"
+    , startDate = Date.add Date.Months -1 dummyDate
+    , diagnoses = EverySet.fromList diagnoses
+    , measurements = emptyNCDMeasurements
+    }
+
+
+{-| Like `expectDiagnoses`, but with one prior encounter in the history -- to
+exercise the hypertension escalation / persistence / lowering logic.
+-}
+expectDiagnosesWithHistory : List NCDDiagnosis -> List NCDDiagnosis -> NCDMeasurements -> Expect.Expectation
+expectDiagnosesWithHistory previousDiagnoses expected measurements =
+    generateNCDDiagnoses
+        { id = toEntityUuid "dummy-encounter"
+        , encounter = dummyEncounter
+        , participant = dummyParticipant
+        , person = testPerson
+        , measurements = measurements
+        , previousEncountersData = [ previousEncounterWith previousDiagnoses ]
+        }
+        |> Expect.equal (EverySet.fromList expected)
+
+
+hypertensionHierarchyTest : Test
+hypertensionHierarchyTest =
+    -- Across encounters the hypertension stage is adjusted, not just re-derived
+    -- from the current reading. The oracle is the clinical principle that
+    -- hypertension is a chronic diagnosis: escalate to a higher stage on a
+    -- higher reading, but do NOT downgrade on a single lower reading; only a
+    -- low reading (systolic < 100) steps the stage DOWN by one. The exact
+    -- step-down-by-one rule is the code's, pinned here.
+    describe "generateNCDDiagnoses - hypertension hierarchy across encounters"
+        [ test "prior Stage 1 + current Stage-3 reading (185) -> escalates to Stage 3" <|
+            \_ ->
+                (baseMeasurements |> withVitals 185 85)
+                    |> expectDiagnosesWithHistory [ DiagnosisHypertensionStage1 ] [ DiagnosisHypertensionStage3 ]
+        , test "prior Stage 3 + current Stage-1 reading (145/95) -> persists at Stage 3 (no downgrade)" <|
+            \_ ->
+                (baseMeasurements |> withVitals 145 95)
+                    |> expectDiagnosesWithHistory [ DiagnosisHypertensionStage3 ] [ DiagnosisHypertensionStage3 ]
+        , test "prior Stage 2 + low reading (sys 95) -> steps down to Stage 1" <|
+            \_ ->
+                (baseMeasurements |> withVitals 95 70)
+                    |> expectDiagnosesWithHistory [ DiagnosisHypertensionStage2 ] [ DiagnosisHypertensionStage1 ]
+        , test "prior Stage 3 + low reading (sys 95) -> steps down to Stage 2" <|
+            \_ ->
+                (baseMeasurements |> withVitals 95 70)
+                    |> expectDiagnosesWithHistory [ DiagnosisHypertensionStage3 ] [ DiagnosisHypertensionStage2 ]
+        , test "prior Stage 1 + low reading (sys 95) -> stays at Stage 1 (no lower stage)" <|
+            \_ ->
+                (baseMeasurements |> withVitals 95 70)
+                    |> expectDiagnosesWithHistory [ DiagnosisHypertensionStage1 ] [ DiagnosisHypertensionStage1 ]
+        , test "no prior hypertension + low reading (sys 95) -> no diagnosis" <|
+            \_ ->
+                (baseMeasurements |> withVitals 95 70)
+                    |> expectDiagnosesWithHistory [] []
+        ]
+
+
 generateNCDDiagnosesTest : Test
 generateNCDDiagnosesTest =
     describe "generateNCDDiagnoses (first encounter; oracle = NCDs tab of clinical sheet)"
@@ -484,4 +549,5 @@ all =
         , stage3Test
         , lowerHypertensionStageTest
         , generateNCDDiagnosesTest
+        , hypertensionHierarchyTest
         ]
