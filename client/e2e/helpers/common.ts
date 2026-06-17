@@ -268,6 +268,7 @@ export function queryPregnancyEdd(personName: string): string | null {
       ->propertyCondition('type', 'individual_participant')
       ->fieldCondition('field_person', 'target_id', \\$nid)
       ->fieldCondition('field_encounter_type', 'value', 'antenatal')
+      ->propertyOrderBy('nid', 'DESC')
       ->range(0, 1)
       ->execute();
     if (empty(\\$pr['node'])) { echo json_encode(['error' => 'No pregnancy found']); return; }
@@ -325,6 +326,7 @@ export function queryPrenatalLmp(personName: string): string | null {
       ->propertyCondition('type', 'individual_participant')
       ->fieldCondition('field_person', 'target_id', \\$nid)
       ->fieldCondition('field_encounter_type', 'value', 'antenatal')
+      ->propertyOrderBy('nid', 'DESC')
       ->range(0, 1)
       ->execute();
     if (empty(\\$pr['node'])) { echo json_encode(['error' => 'No pregnancy found']); return; }
