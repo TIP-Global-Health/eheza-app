@@ -3,7 +3,7 @@ import { setupDevice } from './helpers/auth';
 import { verifyCaseManagementEntry } from './helpers/case-management';
 import { installCursorScript } from './helpers/cursor';
 import { resetDevice } from './helpers/device';
-import { syncAndWait } from './helpers/common';
+import { syncAndWait, queryPregnancyEdd } from './helpers/common';
 import {
   createAdultFemaleAndStartEncounter,
   startPrenatalEncounter,
@@ -100,6 +100,21 @@ test.describe('Nurse: Prenatal Initial Encounter', () => {
 
     // PregnancyDating
     expect(nodes['last_menstrual_period'], 'last_menstrual_period should exist').toBe(true);
+
+    // EDD must be populated on the pregnancy after recording LMP + sync, and
+    // must equal LMP + 280 days. Guards the bug where the EDD update to the
+    // pregnancy was silently dropped while the LMP measurement still saved.
+    const edd = queryPregnancyEdd(fullName);
+    expect(edd, 'pregnancy EDD (field_expected_date_concluded) should be set').not.toBeNull();
+    // EDD = LMP + 280 days. setDate() enters the calendar date using UTC
+    // components, so compute the expected EDD in UTC to match (avoids an
+    // off-by-one when the runner's local date differs from its UTC date).
+    const expectedEdd = new Date(
+      Date.UTC(lmpDate.getUTCFullYear(), lmpDate.getUTCMonth(), lmpDate.getUTCDate() + 280),
+    );
+    const fmtDate = (d: Date) =>
+      `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+    expect(edd, 'EDD should equal LMP + 280 days').toBe(fmtDate(expectedEdd));
 
     // History
     expect(nodes['obstetric_history'], 'obstetric_history should exist').toBe(true);

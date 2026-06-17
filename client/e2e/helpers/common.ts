@@ -243,6 +243,60 @@ export function backdateEncounter(personName: string, encounterType: string, day
   console.error(`backdateEncounter(${encounterType}): failed after 5 attempts`);
 }
 
+/**
+ * Returns the EDD (`field_expected_date_concluded`, as a 'YYYY-MM-DD' string)
+ * set on a person's antenatal pregnancy (individual_participant), or null if it
+ * is not populated. Retries up to 10 times (5s apart) so it can be used for
+ * post-sync verification.
+ */
+export function queryPregnancyEdd(personName: string): string | null {
+  const { drushCmd, cwd } = drushEnv();
+  const personNameB64 = Buffer.from(personName, 'utf8').toString('base64');
+
+  const php = `
+    \\$name = base64_decode('${personNameB64}');
+    \\$q = new EntityFieldQuery();
+    \\$r = \\$q->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'person')
+      ->propertyCondition('title', \\$name)
+      ->execute();
+    if (empty(\\$r['node'])) { echo json_encode(['error' => 'Person not found']); return; }
+    \\$nid = key(\\$r['node']);
+
+    \\$pq = new EntityFieldQuery();
+    \\$pr = \\$pq->entityCondition('entity_type', 'node')
+      ->propertyCondition('type', 'individual_participant')
+      ->fieldCondition('field_person', 'target_id', \\$nid)
+      ->fieldCondition('field_encounter_type', 'value', 'antenatal')
+      ->range(0, 1)
+      ->execute();
+    if (empty(\\$pr['node'])) { echo json_encode(['error' => 'No pregnancy found']); return; }
+
+    \\$p = node_load(key(\\$pr['node']));
+    \\$edd = isset(\\$p->field_expected_date_concluded[LANGUAGE_NONE][0]['value'])
+      ? \\$p->field_expected_date_concluded[LANGUAGE_NONE][0]['value'] : null;
+    echo json_encode(['edd' => \\$edd]);
+  `;
+
+  for (let attempt = 0; attempt < 10; attempt++) {
+    try {
+      const output = execSync(`${drushCmd} eval "${php}"`, {
+        cwd, timeout: 30000, encoding: 'utf-8', stdio: 'pipe',
+      }).trim();
+      const parsed = JSON.parse(output);
+      if (!parsed.error && parsed.edd) {
+        // Stored as 'YYYY-MM-DD HH:MM:SS' or 'YYYY-MM-DD'; return the date part.
+        return String(parsed.edd).slice(0, 10);
+      }
+      console.log(`queryPregnancyEdd attempt ${attempt + 1}: ${parsed.error || 'EDD not set yet'}`);
+    } catch (err) {
+      console.log(`queryPregnancyEdd attempt ${attempt + 1}: error`, err);
+    }
+    if (attempt < 9) execSync('sleep 5');
+  }
+  return null;
+}
+
 // ---------------------------------------------------------------------------
 // Save helpers
 // ---------------------------------------------------------------------------
