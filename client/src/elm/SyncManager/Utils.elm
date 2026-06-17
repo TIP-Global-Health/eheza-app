@@ -1,4 +1,4 @@
-module SyncManager.Utils exposing (backendAuthorityEntityToRevision, backendGeneralEntityToRevision, determineDownloadPhotosStatus, determineSyncStatus, encodeBackendAuthorityEntity, encodeBackendGeneralEntity, getBackendAuthorityEntityIdentifier, getBackendGeneralEntityIdentifier, getDataToSendAuthority, getDataToSendGeneral, getDownloadPhotosSpeedForSubscriptions, getImageFromBackendAuthorityEntity, getSyncSpeedForSubscriptions, getSyncedHealthCenters, resolveIncidentDetailsMsg, siteFeaturesFromString, siteFromString, syncInfoAuthorityForPort, syncInfoAuthorityFromPort, syncInfoGeneralForPort, syncInfoGeneralFromPort, syncInfoStatusToString)
+module SyncManager.Utils exposing (backendAuthorityEntityToRevision, backendGeneralEntityToRevision, determineDownloadPhotosStatus, determineSyncStatus, encodeBackendAuthorityEntity, encodeBackendGeneralEntity, getBackendAuthorityEntityIdentifier, getBackendGeneralEntityIdentifier, getDataToSendAuthority, getDataToSendGeneral, getDownloadPhotosSpeedForSubscriptions, getImageFromBackendAuthorityEntity, getSyncSpeedForSubscriptions, getSyncedHealthCenters, indexDbSaveErrorFromReason, resolveIncidentDetailsMsg, siteFeaturesFromString, siteFromString, syncInfoAuthorityForPort, syncInfoAuthorityFromPort, syncInfoGeneralForPort, syncInfoGeneralFromPort, syncInfoStatusToString)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import Backend.AcuteIllnessEncounter.Encoder
@@ -2793,3 +2793,29 @@ resolveIncidentDetailsMsg error =
 fileUploadFailureThreshold : Int
 fileUploadFailureThreshold =
     5
+
+
+{-| Classify an IndexedDB save failure from the raw error name reported by the
+JS port. `QuotaExceededError` (the device storage is full) is singled out
+because, unlike a transient failure, re-downloading and re-saving the same batch
+cannot succeed until space is freed.
+-}
+indexDbSaveErrorFromReason : Maybe String -> IndexDbSaveError
+indexDbSaveErrorFromReason reason =
+    case reason of
+        Just name ->
+            if isStorageFullError name then
+                IndexDbSaveErrorStorageFull
+
+            else
+                IndexDbSaveErrorOther name
+
+        Nothing ->
+            IndexDbSaveErrorOther "Unknown"
+
+
+isStorageFullError : String -> Bool
+isStorageFullError name =
+    -- Browsers report a full quota as `QuotaExceededError`; older Firefox used
+    -- `NS_ERROR_DOM_QUOTA_REACHED`. Match the substring to cover both casings.
+    String.contains "Quota" name || String.contains "QUOTA" name

@@ -2284,6 +2284,12 @@ update currentTime activePage dbVersion device msg model =
                 Ok indexDbSaveResult ->
                     case indexDbSaveResult.status of
                         IndexDbSaveSuccess ->
+                            let
+                                -- A save just succeeded, so any previously
+                                -- recorded save failure is no longer current.
+                                clearedModel =
+                                    { model | lastSaveError = Nothing }
+                            in
                             case indexDbSaveResult.table of
                                 IndexDbSaveResultTableAutority ->
                                     update
@@ -2292,7 +2298,7 @@ update currentTime activePage dbVersion device msg model =
                                         dbVersion
                                         device
                                         (BackendAuthorityFetchedDataSavedHandle indexDbSaveResult.timestamp)
-                                        model
+                                        clearedModel
 
                                 IndexDbSaveResultTableDeferredPhotos ->
                                     -- Deferred-photo rows have just landed in IndexedDB.
@@ -2304,7 +2310,7 @@ update currentTime activePage dbVersion device msg model =
                                         dbVersion
                                         device
                                         TryDownloadingPhotos
-                                        model
+                                        clearedModel
 
                                 IndexDbSaveResultTableGeneral ->
                                     update
@@ -2313,15 +2319,23 @@ update currentTime activePage dbVersion device msg model =
                                         dbVersion
                                         device
                                         (BackendGeneralFetchedDataSavedHandle indexDbSaveResult.timestamp)
-                                        model
+                                        clearedModel
 
                                 _ ->
-                                    noChange
+                                    SubModelReturn clearedModel Cmd.none noError []
 
                         IndexDbSaveFailure ->
-                            -- For now, we don't make any special handling,
-                            -- so when request times out, we will retry.
-                            noChange
+                            -- A save into IndexedDB actually failed. This used to be a
+                            -- blind no-op: a QuotaExceededError (device storage full)
+                            -- was indistinguishable from success, so the lane retried
+                            -- the same batch forever with no signal. Record the failure
+                            -- so the condition is observable -- and, for storage-full,
+                            -- surfaceable to the user in a later step.
+                            SubModelReturn
+                                { model | lastSaveError = Just (SyncManager.Utils.indexDbSaveErrorFromReason indexDbSaveResult.reason) }
+                                Cmd.none
+                                noError
+                                []
 
                 Err error ->
                     SubModelReturn
