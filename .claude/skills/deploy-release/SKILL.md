@@ -1,50 +1,43 @@
 ---
 name: deploy-release
-description: Guide and perform an E-Heza deploy to Pantheon for ONE site, then optionally promote Dev→Test→Live and cut the GitHub release + changelog. Trigger when the user wants to deploy, release, ship, push to Pantheon, promote to Test/Live, go live, or generate release notes for a site (rwanda / burundi / somalia). Drives the safe/preparatory steps itself and pauses for the interactive or production-affecting commands.
+description: Guide and perform a FULL E-Heza production release for ONE site — build from `main`, deploy to Pantheon Dev, promote Dev → Test → Live, then cut the GitHub release + changelog. Trigger when the user wants to release, ship to production, go live, promote to Test/Live, or generate release notes for a site (rwanda / burundi / somalia). For deploying an arbitrary branch to a multidev/review env instead, use the `deploy-multidev` skill. Drives the safe steps itself and pauses for the interactive or production-affecting commands.
 ---
 
-# Deploy & Release (E-Heza → Pantheon)
+# Full Release (E-Heza → Pantheon, `main` → Live)
 
-This skill walks one **single site** through deploy → (optionally) Test/Live promotion → GitHub release. It mirrors the team runbook at https://github.com/Gizra/ihangane/wiki/Deployment and the commands in `server/RoboFile.php`.
+This skill performs a **full production release** for one **single site**: build from `main`, deploy to Pantheon **Dev**, promote **Dev → Test → Live**, then cut the **GitHub release + changelog**. It mirrors the runbook at https://github.com/Gizra/ihangane/wiki/Deployment and the commands in `server/RoboFile.php`.
+
+> Just need to push a branch to a multidev/review env for testing? Use the **`deploy-multidev`** skill — this one is production-only and `main`-only.
+
+**Shared reference** (site table, RoboFile internals, one-time Pantheon clone setup, troubleshooting): **`.claude/skills/_deploy-common/deploy-reference.md`** — read it before running.
 
 ## Execution model — who runs what
 
 You (Claude) **drive the safe steps** and **pause at the risky ones**. Never run a step marked 🔴 yourself.
 
 - 🟢 **You run** (via Bash on the host): git prep on `main`, all read-only preflight checks, tag math, `generate:release-notes`, and the GitHub release (`gh`).
-- 🔴 **User runs** (tell them the exact command; they run it with `! <command>` so output lands here, then you continue): anything interactive or production-affecting — `ddev auth ssh`, `ddev gulp publish`, `ddev robo deploy:pantheon`, `ddev robo deploy:pantheon-sync`, and post-deploy `fra`.
+- 🔴 **User runs** (give them the exact command; they run it with `! <command>` so output lands here, then you continue): anything interactive or production-affecting — `ddev auth ssh`, `ddev gulp publish`, `ddev robo deploy:pantheon`, `ddev robo deploy:pantheon-sync`, and post-deploy `fra`.
 
 Pausing matters because `ddev robo deploy:pantheon` shows a `git status` of the Pantheon repo and an interactive **"Commit changes and deploy?"** prompt — a human must review that change-set before confirming. `ddev auth ssh` is also interactive.
 
-**One site per run.** To deploy several sites, finish this flow, then re-invoke the skill for the next site.
+**One site per run.** To release several sites, finish this flow, then re-invoke for the next site.
 
-## Site → config mapping (memorize before anything else)
+## Site → config mapping
 
-| Target          | `EHEZA_SITE` | `PANTHEON_NAME` | Pantheon clone dir (under `server/`) |
-| --------------- | ------------ | --------------- | ------------------------------------ |
-| Rwanda          | `rwanda`     | `ihangane`      | `.pantheon-ihangane`                 |
-| Burundi (vhw)   | `burundi`    | `vhw`           | `.pantheon-vhw`                      |
-| Burundi (uvl)   | `burundi`    | `uvl`           | `.pantheon-uvl`                      |
-| Somalia         | `somalia`    | `tip-somalia`   | `.pantheon-tip-somalia`             |
+Look up the chosen site's `EHEZA_SITE`, `PANTHEON_NAME`, and Pantheon clone dir (`server/.pantheon-<PANTHEON_NAME>`) in the **site table** in `.claude/skills/_deploy-common/deploy-reference.md`.
 
-⚠️ Two distinct Burundi sites share `EHEZA_SITE=burundi` but have different `PANTHEON_NAME`. Always pin the exact Pantheon site with the user — never assume "burundi".
+⚠️ Two distinct Burundi sites (`vhw`, `uvl`) share `EHEZA_SITE=burundi` but have different `PANTHEON_NAME`. Always pin the exact Pantheon site with the user — never assume "burundi".
 
 ---
 
 ## Step 0 — Gather inputs (ask the user)
 
-Use **AskUserQuestion** to collect:
+This skill always runs the **full path** (`main` → Dev → Test → Live). Use **AskUserQuestion** to collect:
 
-1. **Target site** — Rwanda / Burundi-vhw / Burundi-uvl / Somalia. Resolve to `EHEZA_SITE` + `PANTHEON_NAME` from the table.
-2. **What to do** —
-   - *Deploy to Dev* (push Pantheon `master`) — the normal path.
-   - *Deploy to a multidev env* (feature env by branch name).
-   - *Promote Dev → Test*.
-   - *Promote Test → Live*.
-   - *Full release*: Deploy to Dev → promote to Test → promote to Live → cut GitHub release.
-3. **Cut a GitHub release at the end?** (yes/no) — only relevant once code is on Live.
+1. **Target site** — Rwanda / Burundi-vhw / Burundi-uvl / Somalia. Resolve to `EHEZA_SITE` + `PANTHEON_NAME` via the shared site table.
+2. **Cut the GitHub release at the end?** (yes/no) — the tag + changelog + GitHub release, done once code is on Live.
 
-Confirm the resolved plan back to the user in one line (site, `PANTHEON_NAME`, target env, release y/n) before proceeding.
+Confirm the plan back in one line (site, `PANTHEON_NAME`, full release to Live, release-notes y/n) before proceeding.
 
 ## Step 1 — Preflight checks (🟢 you run; all must pass before deploying)
 
@@ -63,7 +56,7 @@ Run these and report a ✅/❌ checklist. **Stop and surface any ❌ — do not 
    ```bash
    git -C server/.pantheon-<PANTHEON_NAME> status -s -uno
    ```
-   If the directory is missing, point the user to the one-time clone command in the wiki / reference file — they must create it before deploying.
+   If the directory is missing, point the user to the one-time clone command in the shared reference — they must create it before deploying.
 
 ## Step 2 — Local prep
 
@@ -71,20 +64,17 @@ Run these and report a ✅/❌ checklist. **Stop and surface any ❌ — do not 
 - 🔴 User runs (paused): `ddev auth ssh` — authenticates to Pantheon over SSH (interactive).
 - 🔴 User runs (paused): `ddev gulp publish` — minified production build of the Elm client. This is long; let it finish before deploying.
 
-## Step 3 — Deploy
+## Step 3 — Deploy to Dev
 
-🔴 User runs (paused). Pick by target env:
-
-- **Dev:** `ddev robo deploy:pantheon`
-- **Multidev `<env>`:** `ddev robo deploy:pantheon <env>`
+🔴 User runs (paused): `ddev robo deploy:pantheon`
 
 Tell the user explicitly: **at the "Commit changes and deploy?" prompt, review the printed `git status` of the Pantheon repo** and confirm only if the change-set is exactly what they expect.
 
-What this command does automatically (so you don't double-run it): rsyncs the build into the Pantheon clone, commits + pushes, then runs on that env `cc all` (twice), `updb -y`, and `uli`. It does **NOT** run `fra`.
+What this command does automatically (so you don't double-run it): rsyncs the build into the Pantheon clone, commits + pushes to Pantheon `master`, then runs on **Dev** `cc all` (twice), `updb -y`, and `uli`. It does **NOT** run `fra`.
 
-> Pantheon's `master` branch = the **Dev** environment, not production. Deploying to `master` only updates Dev.
+> Pantheon's `master` branch = the **Dev** environment, not production. This step only updates Dev; promotion to Test/Live is Step 5.
 
-## Step 4 — Post-deploy (every env you touched)
+## Step 4 — Post-deploy (every env you touch)
 
 🔴 User runs (paused) — the one step the robo command skips:
 ```bash
@@ -92,7 +82,7 @@ ddev exec terminus remote:drush <PANTHEON_NAME>.<env> -- fra -y   # features rev
 ```
 Then sanity-check the env (open the `uli` login link from the deploy output, smoke-test the app). If the deploy added manual steps (new variables, migrations), run those too.
 
-## Step 5 — Promote Dev → Test → Live (only for a full release / promotion)
+## Step 5 — Promote Dev → Test → Live
 
 Do these **in order**, pausing for the user and re-verifying between each. Each `deploy:pantheon-sync` runs `terminus env:deploy` then `cc all`×2 + `updb -y` + `uli` on that env (but again **not** `fra`).
 
@@ -102,7 +92,7 @@ Do these **in order**, pausing for the user and re-verifying between each. Each 
 
 (Equivalent GUI path: Pantheon dashboard → Test tab → confirm deploy → Live tab → confirm deploy.)
 
-## Step 6 — Cut the GitHub release (only after code is on Live, if requested)
+## Step 6 — Cut the GitHub release (after code is on Live, if requested)
 
 Run from the **eheza-app** repo (`origin` = `TIP-Global-Health/eheza-app`).
 
@@ -135,6 +125,6 @@ Run from the **eheza-app** repo (`origin` = `TIP-Global-Health/eheza-app`).
 
 ## Wrap-up
 
-Report what was deployed: site, `PANTHEON_NAME`, each env reached (Dev/Test/Live), `fra` run per env, and the release tag/URL if cut. Note anything skipped or any preflight ❌ that blocked progress.
+Report what was released: site, `PANTHEON_NAME`, each env reached (Dev/Test/Live), `fra` run per env, and the release tag/URL if cut. Note anything skipped or any preflight ❌ that blocked progress.
 
-For deeper details (RoboFile internals, the one-time Pantheon clone setup, troubleshooting preflight failures), see `references/deploy-reference.md`.
+For deeper details (RoboFile internals, the one-time Pantheon clone setup, troubleshooting preflight failures), see `.claude/skills/_deploy-common/deploy-reference.md`.

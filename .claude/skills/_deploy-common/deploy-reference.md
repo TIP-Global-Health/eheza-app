@@ -1,16 +1,17 @@
 # Deploy reference — internals, setup, troubleshooting
 
-Background detail for the `deploy-release` skill. Source of truth: the wiki
-(https://github.com/Gizra/ihangane/wiki/Deployment) and `server/RoboFile.php`.
+Background detail shared by the `deploy-release` and `deploy-multidev` skills.
+Source of truth: the wiki (https://github.com/Gizra/ihangane/wiki/Deployment)
+and `server/RoboFile.php`.
 
 ## Pantheon sites
 
-| Pantheon site (`PANTHEON_NAME`) | `EHEZA_SITE` | Dashboard |
-| ------------------------------- | ------------ | --------- |
-| `ihangane`                      | `rwanda`     | https://dashboard.pantheon.io/sites/ef0f3448-d0e5-4e83-b26c-875cfc77228b |
-| `vhw`                           | `burundi`    | https://dashboard.pantheon.io/sites/7a63355a-86c4-4823-b9bd-145d24969627 |
-| `tip-somalia`                   | `somalia`    | https://dashboard.pantheon.io/sites/6e2186e4-348e-432d-bd54-25da6834cd12 |
-| `uvl`                           | `burundi`    | https://dashboard.pantheon.io/sites/22e92340-dfa5-40cb-a5b8-58af49317149 |
+| `PANTHEON_NAME` | `EHEZA_SITE` | Clone dir (under `server/`) | Dashboard |
+| --------------- | ------------ | --------------------------- | --------- |
+| `ihangane`      | `rwanda`     | `.pantheon-ihangane`        | https://dashboard.pantheon.io/sites/ef0f3448-d0e5-4e83-b26c-875cfc77228b |
+| `vhw`           | `burundi`    | `.pantheon-vhw`             | https://dashboard.pantheon.io/sites/7a63355a-86c4-4823-b9bd-145d24969627 |
+| `tip-somalia`   | `somalia`    | `.pantheon-tip-somalia`     | https://dashboard.pantheon.io/sites/6e2186e4-348e-432d-bd54-25da6834cd12 |
+| `uvl`           | `burundi`    | `.pantheon-uvl`             | https://dashboard.pantheon.io/sites/22e92340-dfa5-40cb-a5b8-58af49317149 |
 
 `vhw` and `uvl` are two separate Burundi deployments — same `EHEZA_SITE`, different `PANTHEON_NAME`. Always confirm which one.
 
