@@ -44,7 +44,10 @@ Confirm the plan back in one line (site, `PANTHEON_NAME`, full release to Live, 
 Run these and report a ✅/❌ checklist. **Stop and surface any ❌ — do not deploy past a failure.**
 
 1. **Config matches the target site.** Read `.ddev/config.local.yaml` and confirm `EHEZA_SITE` and `PANTHEON_NAME` equal the chosen site's values.
-   - If they don't match: tell the user to fix `.ddev/config.local.yaml` **and then run `ddev restart`** (web_environment vars only reload on restart). This is the #1 footgun — wrong `PANTHEON_NAME` pushes code to the **wrong Pantheon site**; wrong `EHEZA_SITE` builds the wrong site's data/config.
+   - If they don't match: tell the user to fix `.ddev/config.local.yaml`, then restart so the new `web_environment` vars load (they only reload on restart). **Before restarting, ask the user (AskUserQuestion) whether to reinstall the project on restart — default No:**
+     - **No (default):** leave the `post-start` hook as-is (only `ddev client-install` runs) — a deploy doesn't need a reinstall. Then `ddev restart`.
+     - **Yes:** first uncomment the full commented `post-start` block in `.ddev/config.local.yaml` (see *Reinstall-on-restart toggle* in the shared reference), then `ddev restart` so it runs `site-install` + migrations + feature flags for the selected `$EHEZA_SITE`. Re-comment afterward if future restarts shouldn't reinstall.
+   - Why it matters: wrong `PANTHEON_NAME` pushes code to the **wrong Pantheon site**; wrong `EHEZA_SITE` builds the wrong site's data/config.
 2. **`main` clean & level with `origin/main`.** Step 2 runs `git checkout main`, so you need not be sitting on `main` now — but it must be deploy-ready: in sync with the remote and free of *tracked* changes. The deploy aborts only on **tracked** changes; untracked files (e.g. `.ddev/`, `server/.pantheon-*`) are ignored, so check with `-uno` (not `-sb`, which would false-alarm on those):
    ```bash
    git fetch origin main --tags

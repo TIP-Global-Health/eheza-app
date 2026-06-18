@@ -63,6 +63,23 @@ git clone ssh://codeserver.dev.22e92340-dfa5-40cb-a5b8-58af49317149@codeserver.d
 ```
 Also required (one-time): a Pantheon team membership + SSH key on the Pantheon account, and the `.ddev/config.local.yaml` `web_environment` entries (`EHEZA_SITE`, `PANTHEON_NAME`, and for infra also `EHEZA_INFRA_REPO_REMOTE`, `GITHUB_USERNAME`, `GITHUB_ACCESS_TOKEN`).
 
+## Reinstall-on-restart toggle (`config.local.yaml` → `post-start`)
+
+`ddev restart` re-runs the `post-start` hook. By default only one line there is active —
+`- exec-host: ddev client-install` (installs the Elm client deps; **not** a reinstall) — and
+everything below it is commented out, so **a normal restart does not reinstall** the local site.
+
+To make a restart **reinstall the project**, uncomment the *entire* commented `post-start` block —
+from `- exec: "cd .. && chmod +x ./scripts/build && ./scripts/build"` down through the final
+`- exec: drush uli`. That runs the full local rebuild for the selected `$EHEZA_SITE`: build, copy
+the site CSVs, `drush site-install`, enable modules, run the `default`/`counseling`/`forms`
+migrations, and set feature flags. Re-comment the block afterward if you don't want every future
+restart to reinstall.
+
+A reinstall is **not** needed to deploy — the deploy builds the client and rsyncs `www/` from
+source, independent of the local DB. Only reinstall if you want your local environment to reflect
+the newly-selected site's data.
+
 ## Troubleshooting preflight / deploy failures
 
 - **"The GitHub working directory is dirty"** — commit/stash/`.gitignore` pending changes in the eheza-app repo, then retry.

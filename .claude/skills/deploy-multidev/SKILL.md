@@ -45,7 +45,7 @@ Confirm the plan back in one line (site, `PANTHEON_NAME`, source branch → mult
 Report a ✅/❌ checklist. **Stop and surface any ❌.**
 
 1. **Config matches the target site.** Read `.ddev/config.local.yaml`; confirm `EHEZA_SITE` and `PANTHEON_NAME` equal the chosen site's values.
-   - If not: tell the user to fix `.ddev/config.local.yaml` **and then `ddev restart`** (web_environment vars only reload on restart). Wrong `PANTHEON_NAME` pushes to the **wrong Pantheon site**.
+   - If not: tell the user to fix `.ddev/config.local.yaml`, then restart so the new `web_environment` vars load (they only reload on restart). **Before restarting, ask (AskUserQuestion) whether to reinstall the project on restart — default No** (No = leave the `post-start` hook as-is, only `ddev client-install` runs; Yes = first uncomment the full commented `post-start` block — see *Reinstall-on-restart toggle* in the shared reference). Then `ddev restart`. Wrong `PANTHEON_NAME` pushes to the **wrong Pantheon site**.
 2. **Source branch exists & working tree clean.** The branch is real, and the eheza-app working tree has no *tracked* changes (the deploy aborts on tracked changes; untracked files like `.ddev/` are ignored):
    ```bash
    git rev-parse --verify <source-branch>   # exists locally...
