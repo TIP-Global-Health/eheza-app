@@ -24,6 +24,11 @@ projects[ctools][patch][] = "https://www.drupal.org/files/issues/2067997-reload-
 
 projects[composer_manager][subdir] = "contrib"
 projects[composer_manager][version] = "1.8"
+; Composer 2 compatibility: composer_manager reads the old Composer 1 format of
+; vendor/composer/installed.json. Composer 1 support was dropped by Packagist and
+; DDEV, so patch the module to also parse Composer 2's "packages" wrapper.
+; https://www.drupal.org/project/composer_manager/issues/3182422
+projects[composer_manager][patch][] = "https://www.drupal.org/files/issues/2021-02-27/composer_manager-composer_2_packages-3182422-7-D7.patch"
 
 projects[date][subdir] = "contrib"
 projects[date][version] = "2.14"
