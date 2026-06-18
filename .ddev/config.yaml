@@ -12,9 +12,10 @@ database:
     type: mariadb
     version: "10.5"
 use_dns_when_possible: true
-# Composer version is set to 1, since Drupal 7 Composer Manager doesn't
-# support Composer 2.
-composer_version: "1"
+# Composer 2: composer_manager is patched for Composer 2's installed.json
+# format via drupal-org.make (drupal.org issue #3182422). Composer 1 is no
+# longer supported by Packagist or DDEV.
+composer_version: "2"
 web_environment: []
 nodejs_version: "18"
 corepack_enable: false
