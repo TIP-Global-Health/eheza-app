@@ -68,6 +68,8 @@ Also required (one-time): a Pantheon team membership + SSH key on the Pantheon a
 `ddev restart` re-runs the `post-start` hook. By default only one line there is active —
 `- exec-host: ddev client-install` (installs the Elm client deps; **not** a reinstall) — and
 everything below it is commented out, so **a normal restart does not reinstall** the local site.
+The deploy skills run this restart on **every** deploy (Step 2) and always ask the reinstall
+question first — default **No**.
 
 To make a restart **reinstall the project**, uncomment the *entire* commented `post-start` block —
 from `- exec: "cd .. && chmod +x ./scripts/build && ./scripts/build"` down through the final
@@ -76,9 +78,17 @@ the site CSVs, `drush site-install`, enable modules, run the `default`/`counseli
 migrations, and set feature flags. Re-comment the block afterward if you don't want every future
 restart to reinstall.
 
-A reinstall is **not** needed to deploy — the deploy builds the client and rsyncs `www/` from
-source, independent of the local DB. Only reinstall if you want your local environment to reflect
-the newly-selected site's data.
+A reinstall is usually **not** needed to deploy. The deploy builds the client (`gulp publish`) and
+rsyncs `www/` independent of the local DB, and `www/profiles/hedley` is a **symlink** → `server/hedley`,
+which the deploy's `rsync -L` follows — so the **custom** E-Heza server code always reflects the
+checked-out branch live, no rebuild required.
+
+The one exception: `www/`'s Drupal **core + contrib** are assembled by `server/scripts/build`
+(`drush make`) and are **copied**, not symlinked. So if the branch you're deploying changed
+`drupal-org.make` / `drupal-org-core.make` (contrib versions) versus the currently-built `www/`,
+those are stale and only a **reinstall** (which re-runs `scripts/build`) refreshes them. For branches
+that didn't touch contrib, deploy as-is. Reinstall also when you want your local environment to
+reflect the newly-selected site's data.
 
 ## Troubleshooting preflight / deploy failures
 

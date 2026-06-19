@@ -45,7 +45,7 @@ Confirm the plan back in one line (site, `PANTHEON_NAME`, source branch → mult
 Report a ✅/❌ checklist. **Stop and surface any ❌.**
 
 1. **Config matches the target site.** Read `.ddev/config.local.yaml`; confirm `EHEZA_SITE` and `PANTHEON_NAME` equal the chosen site's values.
-   - If not: tell the user to fix `.ddev/config.local.yaml`, then restart so the new `web_environment` vars load (they only reload on restart). **Before restarting, ask (AskUserQuestion) whether to reinstall the project on restart — default No** (No = leave the `post-start` hook as-is, only `ddev client-install` runs; Yes = first uncomment the full commented `post-start` block — see *Reinstall-on-restart toggle* in the shared reference). Then `ddev restart`. Wrong `PANTHEON_NAME` pushes to the **wrong Pantheon site**.
+   - If not: tell the user to fix `.ddev/config.local.yaml` (the mandatory restart in Step 2 loads the new values). Wrong `PANTHEON_NAME` pushes to the **wrong Pantheon site**.
 2. **Source branch exists & working tree clean.** The branch is real, and the eheza-app working tree has no *tracked* changes (the deploy aborts on tracked changes; untracked files like `.ddev/` are ignored):
    ```bash
    git rev-parse --verify <source-branch>   # exists locally...
@@ -63,9 +63,13 @@ Report a ✅/❌ checklist. **Stop and surface any ❌.**
 
 ## Step 2 — Local prep
 
-- 🟢 You run: `git checkout <source-branch> && git pull` (pull only if it tracks a remote).
-- 🔴 User runs (paused): `ddev auth ssh` — authenticates to Pantheon over SSH (interactive).
-- 🔴 User runs (paused): `ddev gulp publish` — minified production build of the Elm client from the checked-out branch. Long; let it finish.
+1. 🟢 You run: `git checkout <source-branch> && git pull` (pull only if it tracks a remote).
+2. **Restart DDEV — always, deciding reinstall first.** Ask the user (AskUserQuestion) whether to reinstall the project on this restart — **default No**:
+   - **No (default):** ensure the `post-start` hook in `.ddev/config.local.yaml` is in its default state (only `- exec-host: ddev client-install` active; everything below commented). No reinstall.
+   - **Yes:** uncomment the entire commented `post-start` block (see *Reinstall-on-restart toggle* in the shared reference) so the restart runs `site-install` + migrations + feature flags for the selected `$EHEZA_SITE`. Re-comment afterward if future restarts shouldn't reinstall.
+   Then run `ddev restart` (local-only and safe to run; the reinstall answer is the confirmation for the destructive local-DB wipe a reinstall performs).
+3. 🔴 User runs (paused): `ddev auth ssh` — authenticates to Pantheon over SSH (interactive).
+4. 🔴 User runs (paused): `ddev gulp publish` — minified production build of the Elm client from the checked-out branch. Long; let it finish.
 
 ## Step 3 — Deploy to the multidev env
 
