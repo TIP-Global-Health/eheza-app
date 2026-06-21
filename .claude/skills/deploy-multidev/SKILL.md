@@ -15,7 +15,7 @@ This skill deploys a chosen **git branch** to a Pantheon **multidev** (review/fe
 
 You (Claude) **drive every step except the deploy command itself** — that one needs a human to review the change-set.
 
-- 🟢 **You run** (via Bash on the host): git prep, all preflight checks, `ddev restart`, `ddev auth ssh`, `ddev gulp publish`, the terminus auth check/login, and the post-deploy `terminus remote:drush` / `fra`. None of these are destructive, and on a normal ddev setup they're non-interactive (SSH keys are already in the agent, `TERMINUS_MACHINE_TOKEN` is in the env). Only hand `ddev auth ssh` to the user if it actually prompts for a key passphrase.
+- 🟢 **You run** (via Bash on the host): git prep, all preflight checks, `ddev restart`, `ddev auth ssh`, `ddev gulp publish`, and the terminus auth check/login. (The deploy command itself runs the post-deploy `cc`/`updb`/`fra`/`uli`.) None of these are destructive, and on a normal ddev setup they're non-interactive (SSH keys are already in the agent, `TERMINUS_MACHINE_TOKEN` is in the env). Only hand `ddev auth ssh` to the user if it actually prompts for a key passphrase.
 - 🔴 **User runs — only `ddev robo deploy:pantheon <env>`.** It prints a `git status` of the Pantheon clone and an interactive **"Commit changes and deploy?"** prompt, so a human must review the change-set before confirming. **Offer it tee'd to a log** so you read the outcome yourself instead of asking for a paste:
   ```bash
   ddev robo deploy:pantheon <env> 2>&1 | tee /tmp/deploy-<env>.log
@@ -84,17 +84,13 @@ Report a ✅/❌ checklist. **Stop and surface any ❌.**
 ```bash
 ddev robo deploy:pantheon <env> 2>&1 | tee /tmp/deploy-<env>.log
 ```
-Tell the user explicitly: **at the "Commit changes and deploy?" prompt, review the printed `git status` of the Pantheon clone** and confirm only if the change-set is exactly what they expect. When it returns, `Read` `/tmp/deploy-<env>.log` to verify the push + auto-run `cc all`/`updb`/`uli` — don't ask for a paste.
+Tell the user explicitly: **at the "Commit changes and deploy?" prompt, review the printed `git status` of the Pantheon clone** and confirm only if the change-set is exactly what they expect. When it returns, `Read` `/tmp/deploy-<env>.log` to verify the push + auto-run `cc all`/`updb`/`fra`/`uli` — don't ask for a paste.
 
-What this does automatically (so you don't double-run it): rsyncs the build into the clone, checks out the `<env>` branch, commits + pushes to it, then runs on that **multidev** env `cc all` (twice), `updb -y`, and `uli`. It does **NOT** run `fra`, and it touches **only** that multidev env.
+What this does automatically (so you don't double-run it): rsyncs the build into the clone, checks out the `<env>` branch, commits + pushes to it, then runs on that **multidev** env `cc all` (twice), `updb -y`, **`fra -y`**, **`cc all`**, and `uli`. It touches **only** that multidev env.
 
-## Step 4 — Post-deploy
+## Step 4 — Post-deploy / verify
 
-🟢 You run — the one step the robo command skips:
-```bash
-ddev exec terminus remote:drush <PANTHEON_NAME>.<env> -- fra -y   # features revert all
-```
-Then verify: open the `uli` login link from the deploy output (or the multidev URL `https://<env>-<PANTHEON_NAME>.pantheonsite.io`) and smoke-test. Run any manual steps the change introduced.
+The deploy already ran `cc all`/`updb`/`fra`/`cc all`/`uli` itself — confirm in the log. So just verify: open the `uli` login link from the deploy output (or the multidev URL `https://<env>-<PANTHEON_NAME>.pantheonsite.io`) and smoke-test. Run any manual steps the change introduced (new variables, migrations).
 
 ---
 

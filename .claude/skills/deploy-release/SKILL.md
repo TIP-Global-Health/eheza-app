@@ -15,7 +15,7 @@ This skill performs a **full production release** for one **single site**: build
 
 You (Claude) **drive every step except the deploy/promote commands** — those move code to Dev/Test/Live and need a human to review and confirm.
 
-- 🟢 **You run** (via Bash on the host): git prep on `main`, all preflight checks, `ddev restart`, `ddev auth ssh`, `ddev gulp publish`, the terminus auth check/login, the post-deploy `fra`, plus tag math, `generate:release-notes`, and the GitHub release (`gh`). None of these are destructive, and on a normal ddev setup they're non-interactive (SSH keys in the agent, `TERMINUS_MACHINE_TOKEN` in the env). Only hand `ddev auth ssh` to the user if it prompts for a key passphrase.
+- 🟢 **You run** (via Bash on the host): git prep on `main`, all preflight checks, `ddev restart`, `ddev auth ssh`, `ddev gulp publish`, the terminus auth check/login, plus tag math, `generate:release-notes`, and the GitHub release (`gh`). None of these are destructive, and on a normal ddev setup they're non-interactive (SSH keys in the agent, `TERMINUS_MACHINE_TOKEN` in the env). Only hand `ddev auth ssh` to the user if it prompts for a key passphrase.
 - 🔴 **User runs — the deploy/promote commands only**: `ddev robo deploy:pantheon` (Dev) and `ddev robo deploy:pantheon-sync test|live`. **Offer each tee'd to a log** so you read the outcome yourself instead of asking for a paste:
   ```bash
   ddev robo deploy:pantheon 2>&1 | tee /tmp/deploy-dev.log
@@ -81,27 +81,25 @@ Run these and report a ✅/❌ checklist. **Stop and surface any ❌ — do not 
 ```bash
 ddev robo deploy:pantheon 2>&1 | tee /tmp/deploy-dev.log
 ```
-Tell the user explicitly: **at the "Commit changes and deploy?" prompt, review the printed `git status` of the Pantheon repo** and confirm only if the change-set is exactly what they expect. When it returns, `Read` `/tmp/deploy-dev.log` to verify the push + auto-run `cc all`/`updb`/`uli` — don't ask for a paste.
+Tell the user explicitly: **at the "Commit changes and deploy?" prompt, review the printed `git status` of the Pantheon repo** and confirm only if the change-set is exactly what they expect. When it returns, `Read` `/tmp/deploy-dev.log` to verify the push + auto-run `cc all`/`updb`/`fra`/`uli` — don't ask for a paste.
 
-What this command does automatically (so you don't double-run it): rsyncs the build into the Pantheon clone, commits + pushes to Pantheon `master`, then runs on **Dev** `cc all` (twice), `updb -y`, and `uli`. It does **NOT** run `fra`.
+What this command does automatically (so you don't double-run it): rsyncs the build into the Pantheon clone, commits + pushes to Pantheon `master`, then runs on **Dev** `cc all` (twice), `updb -y`, **`fra -y`**, **`cc all`**, and `uli`.
 
 > Pantheon's `master` branch = the **Dev** environment, not production. This step only updates Dev; promotion to Test/Live is Step 5.
 
-## Step 4 — Post-deploy (every env you touch)
+## Step 4 — Post-deploy / verify (every env you touch)
 
-🟢 You run — the one step the robo command skips:
-```bash
-ddev exec terminus remote:drush <PANTHEON_NAME>.<env> -- fra -y   # features revert all
-```
-Then sanity-check the env (open the `uli` login link from the deploy output, smoke-test the app). If the deploy added manual steps (new variables, migrations), run those too.
+The robo deploy already ran `cc all`/`updb`/`fra`/`cc all`/`uli` itself — confirm in the log. So just sanity-check the env (open the `uli` login link from the deploy output, smoke-test the app). If the deploy added manual steps (new variables, migrations), run those too.
+
+> ⚠️ **If you promote via the Pantheon dashboard GUI** (Test/Live tabs) instead of `deploy:pantheon-sync`, the robo command never runs, so **`updb`/`fra`/`cc all` do NOT run** on that env — do them by hand: `ddev exec terminus remote:drush <PANTHEON_NAME>.<env> -- updb -y`, then `-- fra -y`, then `-- cc all`.
 
 ## Step 5 — Promote Dev → Test → Live
 
-Do these **in order**, pausing for the user and re-verifying between each. Each `deploy:pantheon-sync` runs `terminus env:deploy` then `cc all`×2 + `updb -y` + `uli` on that env (but again **not** `fra`).
+Do these **in order**, pausing for the user and re-verifying between each. Each `deploy:pantheon-sync` runs `terminus env:deploy` then `cc all`×2 + `updb -y` + **`fra -y` + `cc all`** + `uli` on that env.
 
-1. 🔴 User runs (tee'd): `ddev robo deploy:pantheon-sync test 2>&1 | tee /tmp/deploy-test.log` → `Read` the log → then you run Step 4 `fra` on `test` (🟢) → verify on the Test URL.
+1. 🔴 User runs (tee'd): `ddev robo deploy:pantheon-sync test 2>&1 | tee /tmp/deploy-test.log` → `Read` the log (confirm `updb`/`fra`/`cc` ran) → verify on the Test URL.
 2. Pause for explicit user go-ahead (this next one hits production).
-3. 🔴 User runs (tee'd): `ddev robo deploy:pantheon-sync live 2>&1 | tee /tmp/deploy-live.log` → `Read` the log → then you run Step 4 `fra` on `live` (🟢) → verify on the Live URL.
+3. 🔴 User runs (tee'd): `ddev robo deploy:pantheon-sync live 2>&1 | tee /tmp/deploy-live.log` → `Read` the log (confirm `updb`/`fra`/`cc` ran) → verify on the Live URL.
 
 (Equivalent GUI path: Pantheon dashboard → Test tab → confirm deploy → Live tab → confirm deploy.)
 

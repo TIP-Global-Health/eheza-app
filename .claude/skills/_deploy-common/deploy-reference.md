@@ -26,27 +26,29 @@ and `server/RoboFile.php`.
 6. rsyncs `www/.` (server) and `client/dist/.` (app) into the clone, excluding `.git`, `.ddev`, `client`, etc.
 7. Prints `git status`, then asks **"Commit changes and deploy?"** (interactive — needs a human).
 8. On confirm: `git pull && git add . && git commit -am 'Site update' && git push` to Pantheon.
-9. Calls `deployPantheonSync(<env>, FALSE)` → runs `cc all` (×2), `updb -y`, `uli` on that env. **Does not run `fra`.**
+9. Calls `deployPantheonSync(<env>, FALSE)` → runs `cc all` (×2), `updb -y`, `fra -y`, `cc all`, `uli` on that env.
 
 `$branchName == 'master'` maps to the Pantheon **`dev`** environment.
 
 ### `deployPantheonSync($env = 'test', $doDeploy = TRUE)` — `ddev robo deploy:pantheon-sync <env>`
 - If `$doDeploy`: `terminus env:deploy <PANTHEON_NAME>.<env>` (promotes code from the previous env).
-- Then always: `terminus remote:drush <env> -- cc all` (×2), `updb -y`, `uli`.
-- Again, **no `fra`** — run it manually after.
+- Then always: `terminus remote:drush <env> -- cc all` (×2), `updb -y`, `fra -y`, `cc all`, `uli`.
 
 ### `generateReleaseNotes($tag = NULL)` — `ddev robo generate:release-notes [tag]`
 - Lists changes **since** `$tag`. So `$tag` is the **previous** release tag (releasing `v1.17.2` → pass `v1.17.1`).
 - If `$tag` is omitted it prompts to compare from the latest tag; pass it explicitly to avoid the prompt.
 - Detects org/repo from `git remote get-url origin` to enrich entries via the GitHub API.
 
-## `fra` is the manual post-deploy step
+## `fra` runs automatically on deploy
 
-None of the robo commands run `drush fra` (features-revert-all). After every env you deploy/promote to:
-```bash
-ddev exec terminus remote:drush <PANTHEON_NAME>.<env> -- fra -y
-```
-`cc all` / `updb -y` / `uli` are already handled by the robo command for that env.
+The robo deploy commands now run `drush fra` (features-revert-all) themselves — `deployPantheonSync` runs it after `updb`, followed by a `cc all`, on every env. So `cc all` / `updb -y` / **`fra -y`** / `uli` are all handled by `ddev robo deploy:pantheon[-sync]`; you no longer run `fra` by hand.
+
+> ⚠️ **Exception — the Pantheon dashboard GUI.** If you promote to Test/Live via the dashboard (Test/Live tabs) instead of `ddev robo deploy:pantheon-sync`, the robo command never runs, so **none of `updb`/`fra`/`cc all` run** on that env — you must perform them manually:
+> ```bash
+> ddev exec terminus remote:drush <PANTHEON_NAME>.<env> -- updb -y
+> ddev exec terminus remote:drush <PANTHEON_NAME>.<env> -- fra -y
+> ddev exec terminus remote:drush <PANTHEON_NAME>.<env> -- cc all
+> ```
 
 ## One-time setup (prerequisites)
 
