@@ -13,12 +13,14 @@ This skill deploys a chosen **git branch** to a Pantheon **multidev** (review/fe
 
 ## Execution model — who runs what
 
-You (Claude) **drive the safe steps** and **pause at the risky ones**. Never run a step marked 🔴 yourself.
+You (Claude) **drive every step except the deploy command itself** — that one needs a human to review the change-set.
 
-- 🟢 **You run** (via Bash on the host): git prep (checkout/pull the source branch) and all read-only preflight checks.
-- 🔴 **User runs** (give them the exact command; they run it with `! <command>` so output lands here, then you continue): `ddev auth ssh`, `ddev gulp publish`, `ddev robo deploy:pantheon <env>`, and post-deploy `fra`.
-
-Pausing matters because `ddev robo deploy:pantheon <env>` shows a `git status` of the Pantheon repo and an interactive **"Commit changes and deploy?"** prompt — a human must review that change-set before confirming. `ddev auth ssh` is also interactive.
+- 🟢 **You run** (via Bash on the host): git prep, all preflight checks, `ddev restart`, `ddev auth ssh`, `ddev gulp publish`, the terminus auth check/login, and the post-deploy `terminus remote:drush` / `fra`. None of these are destructive, and on a normal ddev setup they're non-interactive (SSH keys are already in the agent, `TERMINUS_MACHINE_TOKEN` is in the env). Only hand `ddev auth ssh` to the user if it actually prompts for a key passphrase.
+- 🔴 **User runs — only `ddev robo deploy:pantheon <env>`.** It prints a `git status` of the Pantheon clone and an interactive **"Commit changes and deploy?"** prompt, so a human must review the change-set before confirming. **Offer it tee'd to a log** so you read the outcome yourself instead of asking for a paste:
+  ```bash
+  ddev robo deploy:pantheon <env> 2>&1 | tee /tmp/deploy-<env>.log
+  ```
+  Once it returns, `Read` `/tmp/deploy-<env>.log` to confirm the push and the auto-run `cc all`/`updb`/`uli`.
 
 **One site per run.**
 
@@ -73,20 +75,22 @@ Report a ✅/❌ checklist. **Stop and surface any ❌.**
    - **No (default):** ensure the `post-start` hook in `.ddev/config.local.yaml` is in its default state (only `- exec-host: ddev client-install` active; everything below commented). No reinstall.
    - **Yes:** uncomment the entire commented `post-start` block (see *Reinstall-on-restart toggle* in the shared reference) so the restart runs `site-install` + migrations + feature flags for the selected `$EHEZA_SITE`. Re-comment afterward if future restarts shouldn't reinstall.
    Then run `ddev restart` (local-only and safe to run; the reinstall answer is the confirmation for the destructive local-DB wipe a reinstall performs).
-3. 🔴 User runs (paused): `ddev auth ssh` — authenticates to Pantheon over SSH (interactive).
-4. 🔴 User runs (paused): `ddev gulp publish` — minified production build of the Elm client from the checked-out branch. Long; let it finish.
+3. 🟢 You run: `ddev auth ssh` — injects SSH keys so the deploy can push to Pantheon. (Hand to the user only if it prompts for a key passphrase.)
+4. 🟢 You run: `ddev gulp publish` — minified production build of the Elm client from the checked-out branch. Long (allow several minutes); let it finish before deploying.
 
 ## Step 3 — Deploy to the multidev env
 
-🔴 User runs (paused): `ddev robo deploy:pantheon <env>`
-
-Tell the user explicitly: **at the "Commit changes and deploy?" prompt, review the printed `git status` of the Pantheon repo** and confirm only if the change-set is exactly what they expect.
+🔴 User runs (the one human-review step) — offer it **tee'd to a log** so you read the outcome yourself:
+```bash
+ddev robo deploy:pantheon <env> 2>&1 | tee /tmp/deploy-<env>.log
+```
+Tell the user explicitly: **at the "Commit changes and deploy?" prompt, review the printed `git status` of the Pantheon clone** and confirm only if the change-set is exactly what they expect. When it returns, `Read` `/tmp/deploy-<env>.log` to verify the push + auto-run `cc all`/`updb`/`uli` — don't ask for a paste.
 
 What this does automatically (so you don't double-run it): rsyncs the build into the clone, checks out the `<env>` branch, commits + pushes to it, then runs on that **multidev** env `cc all` (twice), `updb -y`, and `uli`. It does **NOT** run `fra`, and it touches **only** that multidev env.
 
 ## Step 4 — Post-deploy
 
-🔴 User runs (paused) — the one step the robo command skips:
+🟢 You run — the one step the robo command skips:
 ```bash
 ddev exec terminus remote:drush <PANTHEON_NAME>.<env> -- fra -y   # features revert all
 ```

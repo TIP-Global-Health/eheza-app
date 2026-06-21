@@ -13,12 +13,14 @@ This skill performs a **full production release** for one **single site**: build
 
 ## Execution model — who runs what
 
-You (Claude) **drive the safe steps** and **pause at the risky ones**. Never run a step marked 🔴 yourself.
+You (Claude) **drive every step except the deploy/promote commands** — those move code to Dev/Test/Live and need a human to review and confirm.
 
-- 🟢 **You run** (via Bash on the host): git prep on `main`, all read-only preflight checks, tag math, `generate:release-notes`, and the GitHub release (`gh`).
-- 🔴 **User runs** (give them the exact command; they run it with `! <command>` so output lands here, then you continue): anything interactive or production-affecting — `ddev auth ssh`, `ddev gulp publish`, `ddev robo deploy:pantheon`, `ddev robo deploy:pantheon-sync`, and post-deploy `fra`.
-
-Pausing matters because `ddev robo deploy:pantheon` shows a `git status` of the Pantheon repo and an interactive **"Commit changes and deploy?"** prompt — a human must review that change-set before confirming. `ddev auth ssh` is also interactive.
+- 🟢 **You run** (via Bash on the host): git prep on `main`, all preflight checks, `ddev restart`, `ddev auth ssh`, `ddev gulp publish`, the terminus auth check/login, the post-deploy `fra`, plus tag math, `generate:release-notes`, and the GitHub release (`gh`). None of these are destructive, and on a normal ddev setup they're non-interactive (SSH keys in the agent, `TERMINUS_MACHINE_TOKEN` in the env). Only hand `ddev auth ssh` to the user if it prompts for a key passphrase.
+- 🔴 **User runs — the deploy/promote commands only**: `ddev robo deploy:pantheon` (Dev) and `ddev robo deploy:pantheon-sync test|live`. **Offer each tee'd to a log** so you read the outcome yourself instead of asking for a paste:
+  ```bash
+  ddev robo deploy:pantheon 2>&1 | tee /tmp/deploy-dev.log
+  ```
+  `deploy:pantheon` has an interactive **"Commit changes and deploy?"** prompt (a human must review the change-set before confirming), and the Test→Live promotions are production, so a human triggers them. After each returns, `Read` its log.
 
 **One site per run.** To release several sites, finish this flow, then re-invoke for the next site.
 
@@ -70,14 +72,16 @@ Run these and report a ✅/❌ checklist. **Stop and surface any ❌ — do not 
    - **No (default):** ensure the `post-start` hook in `.ddev/config.local.yaml` is in its default state (only `- exec-host: ddev client-install` active; everything below commented). No reinstall.
    - **Yes:** uncomment the entire commented `post-start` block (see *Reinstall-on-restart toggle* in the shared reference) so the restart runs `site-install` + migrations + feature flags for the selected `$EHEZA_SITE`. Re-comment afterward if future restarts shouldn't reinstall.
    Then run `ddev restart` (local-only and safe to run; the reinstall answer is the confirmation for the destructive local-DB wipe a reinstall performs).
-3. 🔴 User runs (paused): `ddev auth ssh` — authenticates to Pantheon over SSH (interactive).
-4. 🔴 User runs (paused): `ddev gulp publish` — minified production build of the Elm client. This is long; let it finish before deploying.
+3. 🟢 You run: `ddev auth ssh` — injects SSH keys so the deploy can push to Pantheon. (Hand to the user only if it prompts for a key passphrase.)
+4. 🟢 You run: `ddev gulp publish` — minified production build of the Elm client. Long (allow several minutes); let it finish before deploying.
 
 ## Step 3 — Deploy to Dev
 
-🔴 User runs (paused): `ddev robo deploy:pantheon`
-
-Tell the user explicitly: **at the "Commit changes and deploy?" prompt, review the printed `git status` of the Pantheon repo** and confirm only if the change-set is exactly what they expect.
+🔴 User runs (the one human-review step) — offer it **tee'd to a log** so you read the outcome yourself:
+```bash
+ddev robo deploy:pantheon 2>&1 | tee /tmp/deploy-dev.log
+```
+Tell the user explicitly: **at the "Commit changes and deploy?" prompt, review the printed `git status` of the Pantheon repo** and confirm only if the change-set is exactly what they expect. When it returns, `Read` `/tmp/deploy-dev.log` to verify the push + auto-run `cc all`/`updb`/`uli` — don't ask for a paste.
 
 What this command does automatically (so you don't double-run it): rsyncs the build into the Pantheon clone, commits + pushes to Pantheon `master`, then runs on **Dev** `cc all` (twice), `updb -y`, and `uli`. It does **NOT** run `fra`.
 
@@ -85,7 +89,7 @@ What this command does automatically (so you don't double-run it): rsyncs the bu
 
 ## Step 4 — Post-deploy (every env you touch)
 
-🔴 User runs (paused) — the one step the robo command skips:
+🟢 You run — the one step the robo command skips:
 ```bash
 ddev exec terminus remote:drush <PANTHEON_NAME>.<env> -- fra -y   # features revert all
 ```
@@ -95,9 +99,9 @@ Then sanity-check the env (open the `uli` login link from the deploy output, smo
 
 Do these **in order**, pausing for the user and re-verifying between each. Each `deploy:pantheon-sync` runs `terminus env:deploy` then `cc all`×2 + `updb -y` + `uli` on that env (but again **not** `fra`).
 
-1. 🔴 `ddev robo deploy:pantheon-sync test` → then Step 4 `fra` on `test` → verify on the Test URL.
+1. 🔴 User runs (tee'd): `ddev robo deploy:pantheon-sync test 2>&1 | tee /tmp/deploy-test.log` → `Read` the log → then you run Step 4 `fra` on `test` (🟢) → verify on the Test URL.
 2. Pause for explicit user go-ahead (this next one hits production).
-3. 🔴 `ddev robo deploy:pantheon-sync live` → then Step 4 `fra` on `live` → verify on the Live URL.
+3. 🔴 User runs (tee'd): `ddev robo deploy:pantheon-sync live 2>&1 | tee /tmp/deploy-live.log` → `Read` the log → then you run Step 4 `fra` on `live` (🟢) → verify on the Live URL.
 
 (Equivalent GUI path: Pantheon dashboard → Test tab → confirm deploy → Live tab → confirm deploy.)
 
