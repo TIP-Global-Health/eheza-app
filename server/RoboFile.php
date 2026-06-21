@@ -177,6 +177,11 @@ class RoboFile extends Tasks {
       // A second cache-clear, because Drupal...
       ->exec("terminus remote:drush $pantheonTerminusEnvironment -- cc all")
       ->exec("terminus remote:drush $pantheonTerminusEnvironment -- updb -y")
+      // Revert Features to code. This was a manual post-deploy step, which is
+      // easy to forget and leaves config stale; run it here on every env, then
+      // clear caches again so the reverted config takes effect.
+      ->exec("terminus remote:drush $pantheonTerminusEnvironment -- fra -y")
+      ->exec("terminus remote:drush $pantheonTerminusEnvironment -- cc all")
       ->exec("terminus remote:drush $pantheonTerminusEnvironment -- uli")
       ->run();
   }
