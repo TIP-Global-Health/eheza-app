@@ -100,7 +100,7 @@ reflect the newly-selected site's data.
 - **Pushed to the wrong site** — caused by a stale `PANTHEON_NAME`. Fix `.ddev/config.local.yaml` and **`ddev restart`** (env vars only reload on restart) before re-deploying.
 - **Empty changelog** — you passed the *new* tag to `generate:release-notes` instead of the previous one.
 - **SSH auth errors (git push to Pantheon)** — re-run `ddev auth ssh`; confirm Pantheon team membership and that your SSH key is on the Pantheon account.
-- **`terminus` "You are not logged in"** — `ddev auth ssh` does **not** authenticate terminus. Set `TERMINUS_MACHINE_TOKEN` in `.ddev/config.local.yaml` (see prerequisites) and `ddev restart`, or run `ddev exec terminus auth:login --machine-token=<token>`; verify with `ddev exec terminus auth:whoami`. The `robo` deploy may already have **pushed the code** before failing here — so after authenticating, just re-run the post-deploy `remote:drush` steps (`cc all` ×2, `updb -y`, `uli`, `fra -y`) rather than the whole deploy.
+- **`terminus` "You are not logged in"** — `ddev auth ssh` does **not** authenticate terminus. Set `TERMINUS_MACHINE_TOKEN` in `.ddev/config.local.yaml` (see prerequisites) and `ddev restart`, or run **`ddev terminus-auth`** (logs terminus in from the token; or `ddev terminus-auth <token>`); verify with `ddev exec terminus auth:whoami`. The `robo` deploy may already have **pushed the code** before failing here — so after authenticating, just re-run the post-deploy `remote:drush` steps (`cc all` ×2, `updb -y`, `uli`, `fra -y`) rather than the whole deploy.
 
 ## Branch note
 

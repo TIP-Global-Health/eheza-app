@@ -66,7 +66,7 @@ Report a ✅/❌ checklist. **Stop and surface any ❌.**
    ```bash
    ddev exec terminus auth:whoami   # expect an email, not "You are not logged in"
    ```
-   - If not logged in: set `TERMINUS_MACHINE_TOKEN` in `.ddev/config.local.yaml` (see shared reference) and `ddev restart`, or run `ddev exec terminus auth:login --machine-token=<token>`.
+   - If not logged in: run **`ddev terminus-auth`** (logs terminus in from `TERMINUS_MACHINE_TOKEN`, or `ddev terminus-auth <token>`). If the token isn't set yet, add `TERMINUS_MACHINE_TOKEN` to `.ddev/config.local.yaml` (see shared reference) and `ddev restart`.
 
 ## Step 2 — Local prep
 
