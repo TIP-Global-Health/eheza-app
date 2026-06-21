@@ -57,6 +57,11 @@ Run these and report a ✅/❌ checklist. **Stop and surface any ❌ — do not 
    git -C server/.pantheon-<PANTHEON_NAME> status -s -uno
    ```
    If the directory is missing, point the user to the one-time clone command in the shared reference — they must create it before deploying.
+5. **Terminus authenticated.** `ddev auth ssh` covers the git *push* to Pantheon, but the post-deploy/promotion `terminus remote:drush` (`cc all` / `updb` / `uli`) and `fra` have separate auth — without it the deploy pushes code and *then* fails with *"You are not logged in"*, leaving the env on new code with a stale cache/registry:
+   ```bash
+   ddev exec terminus auth:whoami   # expect an email, not "You are not logged in"
+   ```
+   - If not logged in: set `TERMINUS_MACHINE_TOKEN` in `.ddev/config.local.yaml` (see shared reference) and `ddev restart`, or run `ddev exec terminus auth:login --machine-token=<token>`.
 
 ## Step 2 — Local prep
 

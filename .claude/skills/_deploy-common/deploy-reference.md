@@ -63,6 +63,8 @@ git clone ssh://codeserver.dev.22e92340-dfa5-40cb-a5b8-58af49317149@codeserver.d
 ```
 Also required (one-time): a Pantheon team membership + SSH key on the Pantheon account, and the `.ddev/config.local.yaml` `web_environment` entries (`EHEZA_SITE`, `PANTHEON_NAME`, and for infra also `EHEZA_INFRA_REPO_REMOTE`, `GITHUB_USERNAME`, `GITHUB_ACCESS_TOKEN`).
 
+**`TERMINUS_MACHINE_TOKEN` (required for deploys).** SSH keys cover the git *push* to Pantheon, but `terminus` — used for the post-deploy `remote:drush` `cc all`/`updb`/`fra` steps — has its own auth. Create a machine token at https://dashboard.pantheon.io/machine-token/create (shown once; copy it), then add it to `web_environment` in `.ddev/config.local.yaml` so terminus auto-authenticates: `- TERMINUS_MACHINE_TOKEN=<token>` (then `ddev restart`). Without it, the deploy pushes code but every `remote:drush` step fails with *"You are not logged in"*, leaving the env on new code with a stale cache/registry.
+
 ## Reinstall-on-restart toggle (`config.local.yaml` → `post-start`)
 
 `ddev restart` re-runs the `post-start` hook. By default only one line there is active —
@@ -97,7 +99,8 @@ reflect the newly-selected site's data.
 - **"pantheon.upstream.yml is missing / php_version directive is missing"** — the Pantheon clone is stale or wrong; re-pull it (`git -C server/.pantheon-<name> pull`).
 - **Pushed to the wrong site** — caused by a stale `PANTHEON_NAME`. Fix `.ddev/config.local.yaml` and **`ddev restart`** (env vars only reload on restart) before re-deploying.
 - **Empty changelog** — you passed the *new* tag to `generate:release-notes` instead of the previous one.
-- **terminus / SSH auth errors** — re-run `ddev auth ssh`; confirm Pantheon team membership and that your SSH key is on the Pantheon account.
+- **SSH auth errors (git push to Pantheon)** — re-run `ddev auth ssh`; confirm Pantheon team membership and that your SSH key is on the Pantheon account.
+- **`terminus` "You are not logged in"** — `ddev auth ssh` does **not** authenticate terminus. Set `TERMINUS_MACHINE_TOKEN` in `.ddev/config.local.yaml` (see prerequisites) and `ddev restart`, or run `ddev exec terminus auth:login --machine-token=<token>`; verify with `ddev exec terminus auth:whoami`. The `robo` deploy may already have **pushed the code** before failing here — so after authenticating, just re-run the post-deploy `remote:drush` steps (`cc all` ×2, `updb -y`, `uli`, `fra -y`) rather than the whole deploy.
 
 ## Branch note
 

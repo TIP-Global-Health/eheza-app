@@ -60,6 +60,11 @@ Report a ✅/❌ checklist. **Stop and surface any ❌.**
      || git -C server/.pantheon-<PANTHEON_NAME> rev-parse --verify origin/<env>
    ```
    - If the multidev branch is missing: the env must exist on Pantheon first. Tell the user to create the multidev environment in the Pantheon dashboard (or via terminus), then in the clone `git fetch origin && git checkout <env>`. Without it, the deploy can't proceed.
+4. **Terminus authenticated.** `ddev auth ssh` covers the git *push* to Pantheon, but the deploy's post-deploy `terminus remote:drush` (`cc all` / `updb` / `uli`) has separate auth — without it the deploy pushes code and *then* fails with *"You are not logged in"*, leaving the env on new code with a stale cache/registry:
+   ```bash
+   ddev exec terminus auth:whoami   # expect an email, not "You are not logged in"
+   ```
+   - If not logged in: set `TERMINUS_MACHINE_TOKEN` in `.ddev/config.local.yaml` (see shared reference) and `ddev restart`, or run `ddev exec terminus auth:login --machine-token=<token>`.
 
 ## Step 2 — Local prep
 
