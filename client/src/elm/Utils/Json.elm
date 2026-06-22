@@ -59,6 +59,29 @@ decodeWithFallback fallback decoder =
     oneOf [ decoder, succeed fallback ]
 
 
+{-| Decode a JSON list, dropping any element the inner decoder cannot parse and
+keeping the recognized ones — instead of failing the whole list or coercing an
+unrecognized element into a fallback sentinel value. Use for forward-compatible
+clinical enum lists, where a value introduced by a newer backend than the client
+is running must NOT silently become a "no finding" value. A non-list value
+yields `[]`.
+-}
+decodeListDroppingUnknown : Decoder a -> Decoder (List a)
+decodeListDroppingUnknown decoder =
+    list (oneOf [ map Just decoder, succeed Nothing ])
+        |> map (List.filterMap identity)
+        |> decodeWithFallback []
+
+
+{-| Like `decodeListDroppingUnknown`, but collects the recognized elements into
+an `EverySet`. Unrecognized elements are dropped, rather than collapsing the
+whole set or inserting a sentinel value.
+-}
+decodeEverySetDroppingUnknown : Decoder a -> Decoder (EverySet a)
+decodeEverySetDroppingUnknown decoder =
+    map EverySet.fromList (decodeListDroppingUnknown decoder)
+
+
 encodeIfSet : String -> Maybe a -> (a -> Value) -> List ( String, Value )
 encodeIfSet name maybeVal encoder =
     Maybe.map (\val -> [ ( name, encoder val ) ]) maybeVal
