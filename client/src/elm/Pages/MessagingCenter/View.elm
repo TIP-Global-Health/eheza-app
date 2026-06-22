@@ -39,11 +39,11 @@ import Utils.Html exposing (viewModal)
 import Utils.NominalDate exposing (renderDate, sortByDateDesc)
 
 
-view : Language -> Time.Posix -> NurseId -> Nurse -> ModelIndexedDb -> Model -> Html Msg
-view language currentTime nurseId nurse db model =
+view : Language -> Time.Zone -> Time.Posix -> NurseId -> Nurse -> ModelIndexedDb -> Model -> Html Msg
+view language zone currentTime nurseId nurse db model =
     let
         currentDate =
-            fromLocalDateTime currentTime
+            fromLocalDateTime zone currentTime
 
         numberOfUnreadMessages =
             resolveNumberOfUnreadMessages currentTime currentDate nurse

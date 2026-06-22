@@ -137,6 +137,11 @@ type alias Model =
     , memoryQuota : Maybe MemoryQuota
     , configuration : RemoteData String ConfiguredModel
     , currentTime : Time.Posix
+
+    -- The device's local time zone, captured once at startup via `Time.here`.
+    -- Used to derive the local calendar date from `currentTime`; see
+    -- `Gizra.NominalDate.fromLocalDateTime`.
+    , zone : Time.Zone
     , language : Language
     , serviceWorker : ServiceWorker.Model.Model
     , zscores : ZScore.Model.Model
@@ -209,6 +214,7 @@ emptyModel key url flags =
     , dbVersion = flags.dbVersion
     , configuration = NotAsked
     , currentTime = Time.millisToPosix 0
+    , zone = Time.utc
     , dataWanted = Dict.empty
     , indexedDb = Backend.Model.emptyModelIndexedDb
     , language = English
@@ -427,6 +433,7 @@ type Msg
     | SetGPSCoordinates GPSCoordinates
     | SetHealthCenter (Maybe HealthCenterId)
     | SetVillage (Maybe VillageId)
+    | SetTimeZone Time.Zone
     | Tick Time.Posix
     | CheckDataWanted
     | UrlRequested Browser.UrlRequest

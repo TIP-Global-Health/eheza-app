@@ -80,17 +80,19 @@ formatDDMMYY date =
     Date.format "dd/MM/yy" date
 
 
-{-| Converts an `elm-lang/core` `Date` to a `NominalDate`.
+{-| Converts a `Time.Posix` to a `NominalDate`, taking the calendar date as
+seen in the given time zone.
 
-We pick up the date part according to whatever the local browser's time zone
-is. Thus, results will be inconsistent from one locality to the next ... since
-the same universal time might be considered one day in one time zone and a
-different day in a different time zone.
+Pass the device's local zone (captured once at startup via `Time.here`) so the
+date reflects the user's locality. This matters in Rwanda/Burundi (UTC+2) and
+Somalia (UTC+3): a moment just after local midnight is still the previous day
+in UTC, so using `Time.utc` here would stamp the wrong calendar day on
+`dateMeasured`, encounter dates, vaccine due dates, etc.
 
 -}
-fromLocalDateTime : Time.Posix -> NominalDate
-fromLocalDateTime =
-    Date.fromPosix Time.utc
+fromLocalDateTime : Time.Zone -> Time.Posix -> NominalDate
+fromLocalDateTime zone =
+    Date.fromPosix zone
 
 
 {-| Given a date, return date representing it's last month day.
