@@ -1174,6 +1174,20 @@ update msg model =
                                 |> MsgLoggedIn
                                 |> List.singleton
 
+                        -- When starting a new person registration, clear the (singleton)
+                        -- create form, so a previous patient's abandoned entry can't
+                        -- pre-fill the next person's form. Only on a genuine page change,
+                        -- not when already on the page.
+                        UserPage (CreatePersonPage _ _) ->
+                            if model.activePage == page then
+                                []
+
+                            else
+                                Pages.Person.Model.ResetCreateForm
+                                    |> MsgPageCreatePerson
+                                    |> MsgLoggedIn
+                                    |> List.singleton
+
                         _ ->
                             []
             in
