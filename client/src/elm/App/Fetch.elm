@@ -99,7 +99,7 @@ fetch model =
     else
         let
             currentDate =
-                fromLocalDateTime model.currentTime
+                fromLocalDateTime model.zone model.currentTime
         in
         case model.activePage of
             DevicePage ->

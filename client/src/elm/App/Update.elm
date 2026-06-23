@@ -194,6 +194,7 @@ init flags url key =
                             -- to fetch it only when we really, really need it).
                             Cmd.batch
                                 [ Task.perform Tick Time.now
+                                , Task.perform SetTimeZone Time.here
                                 , fetchCachedDevice
                                 , Nav.pushUrl model.navigationKey (Url.toString model.url)
                                 ]
@@ -242,7 +243,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
         currentDate =
-            fromLocalDateTime model.currentTime
+            fromLocalDateTime model.zone model.currentTime
 
         loggedInData =
             getLoggedInData model
@@ -1248,6 +1249,11 @@ update msg model =
             , cmd
             )
                 |> sequence update extraMsgs
+
+        SetTimeZone zone ->
+            ( { model | zone = zone }
+            , Cmd.none
+            )
 
         Tick time ->
             let

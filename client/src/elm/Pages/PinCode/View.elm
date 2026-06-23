@@ -29,6 +29,7 @@ import Utils.Html exposing (activityCard, activityCardWithCounter, spinner, view
 
 view :
     Language
+    -> Time.Zone
     -> Time.Posix
     -> EverySet SiteFeature
     -> Page
@@ -38,7 +39,7 @@ view :
     -> Model
     -> ModelIndexedDb
     -> Html Msg
-view language currentTime features activePage nurseData ( healthCenterId, villageId ) deviceName model db =
+view language zone currentTime features activePage nurseData ( healthCenterId, villageId ) deviceName model db =
     let
         ( header, content ) =
             case nurseData of
@@ -60,6 +61,7 @@ view language currentTime features activePage nurseData ( healthCenterId, villag
                     in
                     ( viewLoggedInHeader language isChw selectedAuthorizedLocation
                     , viewLoggedInContent language
+                        zone
                         currentTime
                         features
                         nurseId
@@ -177,6 +179,7 @@ viewAnonymousContent language activePage nurseData model =
 
 viewLoggedInContent :
     Language
+    -> Time.Zone
     -> Time.Posix
     -> EverySet SiteFeature
     -> NurseId
@@ -188,7 +191,7 @@ viewLoggedInContent :
     -> ModelIndexedDb
     -> Model
     -> List (Html Msg)
-viewLoggedInContent language currentTime features nurseId nurse ( healthCenterId, villageId ) isChw deviceName selectedAuthorizedLocation db model =
+viewLoggedInContent language zone currentTime features nurseId nurse ( healthCenterId, villageId ) isChw deviceName selectedAuthorizedLocation db model =
     let
         logoutButton =
             button
@@ -203,7 +206,7 @@ viewLoggedInContent language currentTime features nurseId nurse ( healthCenterId
     if selectedAuthorizedLocation then
         let
             currentDate =
-                fromLocalDateTime currentTime
+                fromLocalDateTime zone currentTime
 
             isLabTech =
                 isLabTechnician nurse

@@ -369,6 +369,7 @@ viewConfiguredModel model configured =
 
             PinCodePage ->
                 Pages.PinCode.View.view model.language
+                    model.zone
                     model.currentTime
                     features
                     model.activePage
@@ -416,7 +417,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
             if selectedAuthorizedHealthCenter then
                 let
                     currentDate =
-                        fromLocalDateTime model.currentTime
+                        fromLocalDateTime model.zone model.currentTime
 
                     ( isChw, isLabTech ) =
                         Tuple.second loggedInModel.nurse
@@ -1189,6 +1190,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                     |> Maybe.withDefault Pages.MessagingCenter.Model.emptyModel
                         in
                         Pages.MessagingCenter.View.view model.language
+                            model.zone
                             model.currentTime
                             nurseId
                             nurse
@@ -1203,6 +1205,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 loggedInModel.nurse
                         in
                         Pages.Wellbeing.View.view model.language
+                            model.zone
                             model.currentTime
                             nurse
                             |> Html.map (MsgLoggedIn << MsgPageMessagingCenter nurseId)
@@ -1234,6 +1237,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
 
             else
                 Pages.PinCode.View.view model.language
+                    model.zone
                     model.currentTime
                     features
                     model.activePage
@@ -1247,6 +1251,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
 
         Nothing ->
             Pages.PinCode.View.view model.language
+                model.zone
                 model.currentTime
                 features
                 model.activePage
