@@ -34,7 +34,11 @@ decodeSign =
 decodeStringSet : String -> Result Json.Decode.Error (List String)
 decodeStringSet json =
     decodeString (decodeEverySet decodeSign) json
-        |> Result.map EverySet.toList
+        -- Sort so the assertions don't depend on `EverySet`'s internal
+        -- iteration order (a set has no order; comparing sets via their
+        -- AssocList backing is itself order-sensitive, so sorting is the
+        -- robust choice).
+        |> Result.map (EverySet.toList >> List.sort)
 
 
 all : Test
