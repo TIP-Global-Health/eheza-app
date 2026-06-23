@@ -1188,6 +1188,20 @@ update msg model =
                                     |> MsgLoggedIn
                                     |> List.singleton
 
+                        -- Likewise clear the (per-person) edit form on entry, so a
+                        -- previously abandoned, unsaved edit isn't shown as the current
+                        -- value and can't clobber a value synced from another device --
+                        -- with the form empty, the view re-seeds it from the DB.
+                        UserPage (EditPersonPage id) ->
+                            if model.activePage == page then
+                                []
+
+                            else
+                                Pages.Person.Model.ResetEditForm
+                                    |> MsgPageEditPerson id
+                                    |> MsgLoggedIn
+                                    |> List.singleton
+
                         _ ->
                             []
             in
