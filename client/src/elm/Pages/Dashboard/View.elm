@@ -30,6 +30,7 @@ import Backend.Dashboard.Model
         )
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation(..))
+import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
@@ -595,11 +596,27 @@ viewMonthCell ( month, cellData ) =
     let
         class =
             classList
-                [ ( String.toLower <| Debug.toString cellData.class, True )
+                [ ( nutritionStatusToClass cellData.class, True )
                 , ( String.fromInt month, True )
                 ]
     in
     td [ class ] [ span [] [ text cellData.value ] ]
+
+
+nutritionStatusToClass : Backend.Dashboard.Model.NutritionStatus -> String
+nutritionStatusToClass status =
+    case status of
+        Backend.Dashboard.Model.Good ->
+            "good"
+
+        Backend.Dashboard.Model.Moderate ->
+            "moderate"
+
+        Backend.Dashboard.Model.Neutral ->
+            "neutral"
+
+        Backend.Dashboard.Model.Severe ->
+            "severe"
 
 
 viewFiltersPane : Language -> DashboardPage -> ModelIndexedDb -> Model -> Html Msg
@@ -2220,7 +2237,7 @@ viewFamilyPlanningDonutChart language stats =
                 dict
                     |> Dict.toList
                     |> List.filter (\( sign, _ ) -> sign /= NoFamilyPlanning)
-                    |> List.sortBy (\( name, _ ) -> Debug.toString name)
+                    |> List.sortBy (\( name, _ ) -> encodeFamilyPlanningSignAsString name)
         in
         div [ class "content" ]
             [ viewPieChart familyPlanningSignsColors signs
