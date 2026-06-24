@@ -1666,6 +1666,178 @@ updateLabsHistory originEncounterId labEncounterId isLabTech db msg data =
             )
                 |> sequenceExtra (updateLabsHistory originEncounterId labEncounterId isLabTech db) extraMsgs
 
-        -- Other messages are not related to Labs History, and will not be sent.
+        SetHIVTestResult value ->
+            let
+                form =
+                    data.hivTestForm
+
+                updatedForm =
+                    { form
+                        | testResult = testResultFromString value
+                        , hivProgramHC = Nothing
+                        , hivProgramHCDirty = True
+                        , partnerHIVPositive = Nothing
+                        , partnerHIVPositiveDirty = True
+                        , partnerTakingARV = Nothing
+                        , partnerTakingARVDirty = True
+                        , partnerSurpressedViralLoad = Nothing
+                        , partnerSurpressedViralLoadDirty = True
+                    }
+            in
+            ( { data | hivTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetHIVTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    data.hivTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+            in
+            ( { data | hivTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SaveHIVResult personId saved _ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                form =
+                    data.hivTestForm
+
+                appMsgs =
+                    toHIVResultValueWithDefault isLabTech measurement form
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveHIVTest personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter labEncounterId
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( data
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (updateLabsHistory originEncounterId labEncounterId isLabTech db) extraMsgs
+
+        SetPartnerHIVTestResult value ->
+            let
+                form =
+                    data.partnerHIVTestForm
+
+                updatedForm =
+                    { form | testResult = testResultFromString value }
+            in
+            ( { data | partnerHIVTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetPartnerHIVTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    data.partnerHIVTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+            in
+            ( { data | partnerHIVTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SavePartnerHIVResult personId saved _ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                form =
+                    data.partnerHIVTestForm
+
+                appMsgs =
+                    toPartnerHIVResultValueWithDefault isLabTech measurement form
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SavePartnerHIVTest personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter labEncounterId
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( data
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (updateLabsHistory originEncounterId labEncounterId isLabTech db) extraMsgs
+
+        SetMalariaTestResult value ->
+            let
+                form =
+                    data.malariaTestForm
+
+                updatedForm =
+                    { form | testResult = testResultFromString value }
+            in
+            ( { data | malariaTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SetBloodSmearResult value ->
+            let
+                form =
+                    data.malariaTestForm
+
+                updatedForm =
+                    { form | bloodSmearResult = bloodSmearResultFromString value }
+            in
+            ( { data | malariaTestForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SaveMalariaResult personId saved _ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                form =
+                    data.malariaTestForm
+
+                appMsgs =
+                    toMalariaResultValueWithDefault measurement form
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveMalariaTest personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter labEncounterId
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( data
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (updateLabsHistory originEncounterId labEncounterId isLabTech db) extraMsgs
+
+        -- Any other message is not related to Labs History. NOTE: every lab test
+        -- form rendered on this page MUST have its Set/Save branches handled above;
+        -- otherwise its input is silently dropped here (this is what broke
+        -- HIV/Partner-HIV/Malaria result entry until these branches were added).
         _ ->
             ( data, Cmd.none, [] )
