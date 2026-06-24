@@ -4033,7 +4033,7 @@ translationSet trans =
                 DefectNeuralTubes ->
                     { english = "Neural Tubes Defects"
                     , kinyarwanda = Just "Urutirigongo rudafunze neza"
-                    , kirundi = Nothing
+                    , kirundi = Just "Ubumuga bw'uruti rw'umugongo"
                     , somali = Just "Cudurka Dareen Sidaha Daadsan ee Laf Dhabrta"
                     }
 
@@ -5726,7 +5726,7 @@ translationSet trans =
         DeliveryComplicationsPresentQuestion ->
             { english = "Were there any complications with the delivery"
             , kinyarwanda = Just "Haba hari ibibazo umubyeyi yagize abyara"
-            , kirundi = Just "Hoba hari ingorane zijanye no kuvyara, zijanye no gutanga"
+            , kirundi = Just " Hoba hari ingorana zijanye no kuvyara"
             , somali = Just "Ma jireen wax dhibaatooyin ah oo la xiriira dhalmada"
             }
 
@@ -7149,7 +7149,7 @@ translationSet trans =
         FeelingBetter ->
             { english = "Feeling Better"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Yagize mitende"
             , somali = Nothing
             }
 
@@ -9164,7 +9164,7 @@ translationSet trans =
                     if isChw then
                         { english = "Select Well Child Visit"
                         , kinyarwanda = Just "Hitamo Isura ku buzima bwiza bw'umwana"
-                        , kirundi = Nothing
+                        , kirundi = Just "Emeza kugendera urugo rufise umwana"
                         , somali = Just "Dooro Booqashada Canuga Fayow"
                         }
 
@@ -12367,7 +12367,7 @@ translationSet trans =
         MedicalHistory ->
             { english = "Medical History"
             , kinyarwanda = Just "Amateka y'uburwayi busanzwe"
-            , kirundi = Just "Akahise ko m'ubuvuzi"
+            , kirundi = Just "Kahise k'ubuvuzi"
             , somali = Just "Taariikhda Xanuunka"
             }
 
@@ -13194,7 +13194,7 @@ translationSet trans =
         NationalId ->
             { english = "National ID"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Karangamuntu"
             , somali = Just "Aqoonsiga Qaran"
             }
 
@@ -15274,7 +15274,7 @@ translationSet trans =
                 ReceiveSupplement ->
                     { english = "Did you receive food supplement"
                     , kinyarwanda = Just "Waba warahawe inyongeramirire"
-                    , kirundi = Just "Yaba yararonse ingaburo ibereye"
+                    , kirundi = Just "Mbega Umwana yararonse ingaburo"
                     , somali = Nothing
                     }
 
@@ -15302,7 +15302,7 @@ translationSet trans =
                 EncouragedToEat ->
                     { english = "Does someone help / encourage the sick child to eat"
                     , kinyarwanda = Just "Hari umuntu waba afasha cyangwa ashishikariza umwana kurya"
-                    , kirundi = Just "Mbega hari uwufasha/uwuremesha umwana arwaye gufungura"
+                    , kirundi = Just "Mbega hari uwufasha/uwuremesha umwana gufungura"
                     , somali = Just "Qof maku caawiyaa / ku dhiiri geliyaa canuga xanuunsan inuu wax cuno"
                     }
 
@@ -15375,7 +15375,7 @@ translationSet trans =
                 FoodCovered ->
                     { english = "Is the food / RUTF covered and free from flies"
                     , kinyarwanda = Just "Ese ibiryo/RUTUFU birapfundikiye kandi nta sazi zibiriho"
-                    , kirundi = Just "Mbenga ibifungugwa - ATPE: Aliment Thérapeutique prêt à l'Emploi birapfutswe kandi birakingiwe insazi"
+                    , kirundi = Just "Mbenga ibifungugwa - Ingaburo ibereye birapfutswe kandi birakingiwe insazi"
                     , somali = Just "Cunnada / RUTF mala daboolay, oo tixsigana malaga daboolay"
                     }
 
@@ -15411,7 +15411,7 @@ translationSet trans =
                 Rutf ->
                     { english = "RUTF"
                     , kinyarwanda = Just "RUTUFU"
-                    , kirundi = Just "ATPE: Aliment Thérapeutique prêt à l'Emploi"
+                    , kirundi = Just "Ingaburo ibereye"
                     , somali = Nothing
                     }
 
@@ -26346,7 +26346,7 @@ translationSet trans =
         TakenAsPrescribed ->
             { english = "Taken as prescribed"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Yafashe imiti nk'uko vyategetswe na muganga"
             , somali = Nothing
             }
 
@@ -27303,7 +27303,7 @@ translationSet trans =
         UnableToTakeMeasurement ->
             { english = "Unable to take measurement"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Ibipimo ntivyafashwe"
             , somali = Nothing
             }
 
