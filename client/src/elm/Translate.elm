@@ -4354,21 +4354,21 @@ translationSet trans =
         ByMouthDailyForXDays days ->
             { english = "by mouth daily x " ++ String.fromInt days ++ " days"
             , kinyarwanda = Just <| "ku munsi / mu  minsi " ++ String.fromInt days
-            , kirundi = Just <| "Gucisha mu kanwa buri munsi mu iminsi " ++ String.fromInt days
+            , kirundi = Just <| "gucisha mu kanwa buri munsi mu iminsi " ++ String.fromInt days
             , somali = Just <| "Afka maalinki x " ++ String.fromInt days ++ " maalin"
             }
 
         ByMouthTwiceADayForXDays days ->
             { english = "by mouth twice per day x " ++ String.fromInt days ++ " days"
             , kinyarwanda = Just <| "inshuro ebyiri ku munsi/ mu minsi " ++ String.fromInt days
-            , kirundi = Just <| "Gucisha mu kanwa incuro 2 k'umunsi mu iminsi " ++ String.fromInt days
+            , kirundi = Just <| "gucisha mu kanwa incuro 2 k'umunsi mu iminsi " ++ String.fromInt days
             , somali = Just <| "afka laba jeer maalinki x " ++ String.fromInt days ++ " maalin"
             }
 
         ByMouthThreeTimesADayForXDays days ->
             { english = "by mouth three times per day x " ++ String.fromInt days ++ " days"
             , kinyarwanda = Just <| "inshuro 3 ku munsi/ mu minsi " ++ String.fromInt days
-            , kirundi = Just <| "Kumira incuro 3 k'umunsi mu iminsi " ++ String.fromInt days
+            , kirundi = Just <| "kumira incuro 3 k'umunsi mu iminsi " ++ String.fromInt days
             , somali = Just <| "afka 3 jeer maalinki x " ++ String.fromInt days ++ " maalin"
             }
 
