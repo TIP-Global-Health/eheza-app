@@ -2548,6 +2548,21 @@ function hedley_reports_nutrition_metrics_to_table_data($type, array $metrics) {
 }
 
 /**
+ * Resolves the timestamp of the first day of the current month.
+ *
+ * Report period stepping uses relative "-N month" arithmetic, which overflows
+ * on month-end run-dates (e.g. from the 31st, "-1 month" skips to the following
+ * month, dropping and duplicating months). Anchoring to the first of the month
+ * - which exists in every month - avoids that overflow.
+ *
+ * @return int
+ *   Unix timestamp for the first day of the current month.
+ */
+function hedley_reports_current_month_start() {
+  return strtotime(date('Y-m-01'));
+}
+
+/**
  * Generates monthly prevalence data from encounters metrics grouped by month.
  *
  * @param array $encounters_by_month
@@ -2558,7 +2573,7 @@ function hedley_reports_nutrition_metrics_to_table_data($type, array $metrics) {
  */
 function hedley_reports_generate_monthly_prevalence_data(array $encounters_by_month) {
   $result = [];
-  $current_timestamp = time();
+  $current_timestamp = hedley_reports_current_month_start();
   for ($index = 1; $index <= 12; $index++) {
     $target_timestamp = strtotime("-$index month", $current_timestamp);
     $target_date_year = date('Y', $target_timestamp);
@@ -2582,7 +2597,7 @@ function hedley_reports_generate_monthly_prevalence_data(array $encounters_by_mo
  */
 function hedley_reports_generate_monthly_incidence_data(array $encounters_by_month) {
   $result = [];
-  $current_timestamp = time();
+  $current_timestamp = hedley_reports_current_month_start();
 
   for ($index = 1; $index <= 12; $index++) {
     $target_timestamp = strtotime("-$index month", $current_timestamp);
@@ -2626,7 +2641,7 @@ function hedley_reports_generate_quarterly_incidence_data(array $encounters_by_m
   }
 
   $result = [];
-  $current_timestamp = time();
+  $current_timestamp = hedley_reports_current_month_start();
   // Showing data of the previous 4 quarters.
   for ($index = 1; $index <= 4; $index++) {
     $selected_date = strtotime("-" . (3 * $index) . " months", $current_timestamp);
@@ -2841,7 +2856,8 @@ function hedley_reports_resolve_data_set_for_year($year_index, array $encounters
  */
 function hedley_reports_resolve_data_set_for_quarter($quarter_index, array $encounters_by_month) {
   // Calculate the selected date by subtracting months.
-  $selected_date = strtotime("-" . (3 * ($quarter_index - 1)) . " months", time());
+  $anchor = hedley_reports_current_month_start();
+  $selected_date = strtotime("-" . (3 * ($quarter_index - 1)) . " months", $anchor);
 
   [$year, $quarter] = hedley_reports_resolve_quarter_date_info($selected_date);
 
