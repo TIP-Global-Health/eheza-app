@@ -480,7 +480,7 @@ toSocialHistoryValue form =
             [ Maybe.map (ifTrue SignDrinkAlcohol) form.alcohol
             , Maybe.map (ifTrue SignSmokeCigarettes) form.cigarettes
             , Maybe.map (ifTrue SignConsumeSalt) form.salt
-            , Maybe.map (ifTrue SignDifficult4TimesAYear) form.salt
+            , Maybe.map (ifTrue SignDifficult4TimesAYear) form.difficult4Times
             , Maybe.map (ifTrue SignHelpWithTreatmentAtHome) form.helpAtHome
             ]
                 |> Maybe.Extra.combine
