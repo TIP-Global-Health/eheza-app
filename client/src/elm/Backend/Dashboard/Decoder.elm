@@ -22,17 +22,6 @@ import Backend.Measurement.Decoder
         , decodeTestExecutionNote
         , decodeTestResult
         )
-import Backend.Measurement.Model
-    exposing
-        ( Call114Sign(..)
-        , DangerSign(..)
-        , HCContactSign(..)
-        , HCRecommendation(..)
-        , IsolationSign(..)
-        , MedicalCondition(..)
-        , Recommendation114(..)
-        , SendToHCSign(..)
-        )
 import Backend.NCDEncounter.Decoder exposing (decodeNCDDiagnosis)
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.NutritionEncounter.Decoder exposing (decodeNutritionEncounterType)
@@ -51,7 +40,7 @@ import Json.Decode exposing (Decoder, andThen, bool, dict, float, list, map, nul
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Pages.Report.Utils exposing (compareAcuteIllnessEncountersDesc)
 import Restful.Endpoint exposing (toEntityUuid)
-import Utils.Json exposing (decodeEverySet, decodeWithFallback)
+import Utils.Json exposing (decodeEverySet, decodeListDroppingUnknown, decodeWithFallback)
 
 
 decodeDashboardStatsRaw : Decoder DashboardStatsRaw
@@ -294,12 +283,12 @@ decodeAcuteIllnessEncounterDataItem =
         |> hardcoded 0
         |> required "diagnosis" decodeAcuteIllnessDiagnosis
         |> required "fever" bool
-        |> required "isolation" (decodeEverySet (decodeWithFallback NoIsolationSigns decodeIsolationSign))
-        |> required "send_to_hc" (decodeEverySet (decodeWithFallback NoSendToHCSigns decodeSendToHCSign))
-        |> required "call_114" (decodeEverySet (decodeWithFallback NoCall114Signs decodeCall114Sign))
-        |> required "recommendation_114" (decodeEverySet (decodeWithFallback NoneOtherRecommendation114 decodeRecommendation114))
-        |> required "contact_hc" (decodeEverySet (decodeWithFallback NoHCContactSigns decodeHCContactSign))
-        |> required "recommendation_hc" (decodeEverySet (decodeWithFallback HCRecommendationNotApplicable decodeHCRecommendation))
+        |> required "isolation" (decodeEverySet decodeIsolationSign)
+        |> required "send_to_hc" (decodeEverySet decodeSendToHCSign)
+        |> required "call_114" (decodeEverySet decodeCall114Sign)
+        |> required "recommendation_114" (decodeEverySet decodeRecommendation114)
+        |> required "contact_hc" (decodeEverySet decodeHCContactSign)
+        |> required "recommendation_hc" (decodeEverySet decodeHCRecommendation)
 
 
 decodePrenatalDataItem : Decoder PrenatalDataItem
@@ -327,15 +316,15 @@ decodePrenatalEncounterDataItem =
                         EverySet.fromList items
                 )
             <|
-                list (decodeWithFallback NoPrenatalDiagnosis decodePrenatalDiagnosis)
+                decodeListDroppingUnknown decodePrenatalDiagnosis
     in
     succeed PrenatalEncounterDataItem
         |> required "start_date" decodeYYYYMMDD
         |> optional "encounter_type" (decodeWithFallback NurseEncounter decodePrenatalEncounterType) NurseEncounter
-        |> required "danger_signs" (decodeEverySet (decodeWithFallback NoDangerSign decodeDangerSign))
+        |> required "danger_signs" (decodeEverySet decodeDangerSign)
         |> optional "diagnoses" decodeDiagnoses (EverySet.singleton NoPrenatalDiagnosis)
         |> optional "muac" (nullable decodeFloat) Nothing
-        |> required "send_to_hc" (decodeEverySet (decodeWithFallback NoSendToHCSigns decodeSendToHCSign))
+        |> required "send_to_hc" (decodeEverySet decodeSendToHCSign)
 
 
 decodeNCDDataItem : Decoder NCDDataItem
@@ -360,13 +349,13 @@ decodeNCDEncounterDataItem =
                         EverySet.fromList items
                 )
             <|
-                list (decodeWithFallback NoNCDDiagnosis decodeNCDDiagnosis)
+                decodeListDroppingUnknown decodeNCDDiagnosis
     in
     succeed NCDEncounterDataItem
         |> required "start_date" decodeYYYYMMDD
         |> optional "diagnoses" decodeDiagnoses (EverySet.singleton NoNCDDiagnosis)
-        |> required "medical_conditions" (decodeEverySet (decodeWithFallback NoMedicalConditions decodeMedicalCondition))
-        |> required "co_morbidities" (decodeEverySet (decodeWithFallback NoMedicalConditions decodeMedicalCondition))
+        |> required "medical_conditions" (decodeEverySet decodeMedicalCondition)
+        |> required "co_morbidities" (decodeEverySet decodeMedicalCondition)
         |> optional "hiv_test_result" (nullable decodeTestResult) Nothing
         |> optional "hiv_test_execution_note" (nullable decodeTestExecutionNote) Nothing
 
@@ -402,7 +391,7 @@ decodeSPVEncounterDataItem =
                         EverySet.fromList items
                 )
             <|
-                list (decodeWithFallback NoEncounterWarnings decodeEncounterWarning)
+                decodeListDroppingUnknown decodeEncounterWarning
     in
     succeed SPVEncounterDataItem
         |> required "start_date" decodeYYYYMMDD
