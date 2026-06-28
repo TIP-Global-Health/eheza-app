@@ -40,7 +40,6 @@ import Backend.Utils exposing (groupEducationEnabled)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..))
 import Color exposing (Color)
 import Date exposing (Month, Unit(..), numberToMonth)
-import Debug exposing (toString)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY, isDiffTruthy, toLastDayOfMonth)
@@ -2323,7 +2322,7 @@ viewPieChartLegend language translateFunc colorFunc signs =
                             "1"
 
                         else
-                            toString percentage
+                            String.fromInt percentage
                 in
                 div [ class "legend-item" ]
                     [ svg [ Svg.Attributes.width "12", Svg.Attributes.height "12", viewBox 0 0 100 100 ]
