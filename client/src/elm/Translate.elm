@@ -5726,7 +5726,7 @@ translationSet trans =
         DeliveryComplicationsPresentQuestion ->
             { english = "Were there any complications with the delivery"
             , kinyarwanda = Just "Haba hari ibibazo umubyeyi yagize abyara"
-            , kirundi = Just " Hoba hari ingorana zijanye no kuvyara"
+            , kirundi = Just " Hoba hari ingorane zijanye no kuvyara"
             , somali = Just "Ma jireen wax dhibaatooyin ah oo la xiriira dhalmada"
             }
 
@@ -15274,7 +15274,7 @@ translationSet trans =
                 ReceiveSupplement ->
                     { english = "Did you receive food supplement"
                     , kinyarwanda = Just "Waba warahawe inyongeramirire"
-                    , kirundi = Just "Mbega Umwana yararonse ingaburo"
+                    , kirundi = Just "Mbega umwana yararonse ingaburo"
                     , somali = Nothing
                     }
 
@@ -15375,7 +15375,7 @@ translationSet trans =
                 FoodCovered ->
                     { english = "Is the food / RUTF covered and free from flies"
                     , kinyarwanda = Just "Ese ibiryo/RUTUFU birapfundikiye kandi nta sazi zibiriho"
-                    , kirundi = Just "Mbenga ibifungugwa - Ingaburo ibereye birapfutswe kandi birakingiwe insazi"
+                    , kirundi = Just "Mbega ibifungugwa - Ingaburo ibereye birapfutswe kandi birakingiwe insazi"
                     , somali = Just "Cunnada / RUTF mala daboolay, oo tixsigana malaga daboolay"
                     }
 
