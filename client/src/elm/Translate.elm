@@ -4354,21 +4354,21 @@ translationSet trans =
         ByMouthDailyForXDays days ->
             { english = "by mouth daily x " ++ String.fromInt days ++ " days"
             , kinyarwanda = Just <| "ku munsi / mu  minsi " ++ String.fromInt days
-            , kirundi = Just <| "Gucisha mu kanwa buri munsi mu iminsi " ++ String.fromInt days
+            , kirundi = Just <| "gucisha mu kanwa buri munsi mu iminsi " ++ String.fromInt days
             , somali = Just <| "Afka maalinki x " ++ String.fromInt days ++ " maalin"
             }
 
         ByMouthTwiceADayForXDays days ->
             { english = "by mouth twice per day x " ++ String.fromInt days ++ " days"
             , kinyarwanda = Just <| "inshuro ebyiri ku munsi/ mu minsi " ++ String.fromInt days
-            , kirundi = Just <| "Gucisha mu kanwa incuro 2 k'umunsi mu iminsi " ++ String.fromInt days
+            , kirundi = Just <| "gucisha mu kanwa incuro 2 k'umunsi mu iminsi " ++ String.fromInt days
             , somali = Just <| "afka laba jeer maalinki x " ++ String.fromInt days ++ " maalin"
             }
 
         ByMouthThreeTimesADayForXDays days ->
             { english = "by mouth three times per day x " ++ String.fromInt days ++ " days"
-            , kinyarwanda = Just <| "inshuro ebyiri ku munsi/ mu minsi " ++ String.fromInt days
-            , kirundi = Just "Kumira incuro 3 k'umunsi mu kiringo (Igitigiri) iminsi"
+            , kinyarwanda = Just <| "inshuro 3 ku munsi/ mu minsi " ++ String.fromInt days
+            , kirundi = Just <| "kumira incuro 3 k'umunsi mu iminsi " ++ String.fromInt days
             , somali = Just <| "afka 3 jeer maalinki x " ++ String.fromInt days ++ " maalin"
             }
 
@@ -12564,7 +12564,7 @@ translationSet trans =
             { english = "Ciprofloxacin (1000mg): by mouth as a single dose"
             , kinyarwanda = Just "Kunywa ikinini cya Ciplofoloxacine (1000mg) inshuro imwe"
             , kirundi = Just "Ciprofloxacine (1000 mg) : Kumira igipimo kimwe/idozi imwe"
-            , somali = Just "Ciprofloxacin (100mg): afka hal doos "
+            , somali = Just "Ciprofloxacin (1000mg): afka hal doos "
             }
 
         MedicationDistributionNoticeGonorrheaPartnerMed2 ->
@@ -26601,7 +26601,7 @@ translationSet trans =
 
             else if arvs then
                 { english = "At the previous visit you were given TDF + 3TC (1 tablet), to be taken by mouth 1x a day."
-                , kinyarwanda = Just "Mu isura riheruka wahawe ikinini cya Tenofoviri na Lamividine na Dulutogaraviri (50mg), ikinini kimwe ku munsi."
+                , kinyarwanda = Just "Mu isura riheruka wahawe ikinini cya Tenofoviri na Lamividine, ikinini kimwe ku munsi."
                 , kirundi = Just "Aho uherukira kuza, wahawe FTD + 3TC (ikinini 1), umuti/ikinini wo/co gufata (kumira) rimwe (1) ku munsi."
                 , somali = Nothing
                 }
