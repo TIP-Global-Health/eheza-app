@@ -6251,7 +6251,7 @@ translationSet trans =
 
                 UseMediumPhrases ->
                     { english = "Does the child use 4-5 word sentences"
-                    , kinyarwanda = Just "Umwana ashobora gukora interuro zigizwe n'amagambo 2 kugera kuri 4"
+                    , kinyarwanda = Just "Umwana ashobora gukora interuro zigizwe n'amagambo 4 kugera kuri 5"
                     , kirundi = Just "Mbega umwana arakoresha amungane 4-5"
                     , somali = Nothing
                     }
@@ -11489,7 +11489,7 @@ translationSet trans =
 
         Low ->
             { english = "Low"
-            , kinyarwanda = Just "Kwemeza amakosa"
+            , kinyarwanda = Nothing
             , kirundi = Nothing
             , somali = Just "Hoose"
             }
@@ -14955,7 +14955,7 @@ translationSet trans =
 
         NotFollowingRecommendationQuestion ->
             { english = "Why recommendations were not followed"
-            , kinyarwanda = Just "Nta bipimo byafashwe"
+            , kinyarwanda = Nothing
             , kirundi = Just "Kubera iki ivyifuzo bitakurikijwe"
             , somali = Just "Talooyinka maxaa loo raaci waayay"
             }
@@ -30496,7 +30496,7 @@ translateMonth month short =
         Nov ->
             if short then
                 { english = "Nov"
-                , kinyarwanda = Just "Ukw"
+                , kinyarwanda = Just "Ugu"
                 , kirundi = Just "Muny"
                 , somali = Nothing
                 }
