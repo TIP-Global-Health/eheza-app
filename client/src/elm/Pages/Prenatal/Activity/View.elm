@@ -4347,11 +4347,11 @@ viewUltrasoundContent language currentDate assembled data =
 
 viewNumberInput :
     Language
-    -> Maybe a
+    -> Maybe Int
     -> (String -> msg)
     -> String
     -> TranslationId
-    -> Maybe ( List (List (a -> Bool)), List (List (a -> Bool)) )
+    -> Maybe ( List (List (Int -> Bool)), List (List (Int -> Bool)) )
     -> Html msg
 viewNumberInput language maybeCurrentValue setMsg inputClass labelTranslationId maybeAlertConditions =
     let
@@ -4359,7 +4359,7 @@ viewNumberInput language maybeCurrentValue setMsg inputClass labelTranslationId 
             maybeCurrentValue
                 |> unwrap
                     ""
-                    Debug.toString
+                    String.fromInt
 
         ( labelWidth, inputWidth, alert ) =
             maybeAlertConditions
