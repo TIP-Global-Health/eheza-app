@@ -4600,7 +4600,7 @@ translationSet trans =
         ChildCleanQuestion ->
             { english = "Is the sick child clean"
             , kinyarwanda = Just "Ese umwana urwaye afite isuku"
-            , kirundi = Just "Mbega umwana arwaye arafise isuku"
+            , kirundi = Just "Mbega umwana arafise isuku"
             , somali = Just "Canuga xanuunsan nadaafad ma leeyahay"
             }
 
@@ -15295,7 +15295,7 @@ translationSet trans =
                 SupplementShared ->
                     { english = "Is the food supplement being shared or eaten only by the sick child"
                     , kinyarwanda = Just "Ese inyongeramirire yaba ifatwa n'umwana urwaye gusa cyangwa yaba ayisangira n'abandi"
-                    , kirundi = Just "Za ngaburo wakuye kwa muganga uziha umwana arwaye wenyene canke azisangira n’abandi"
+                    , kirundi = Just "Za ngaburo wakuye kwa muganga uziha umwana wenyene canke azisangira n’abandi"
                     , somali = Just "Nafaqeeyaha ma cunay canuga xanuunsan kaligiis mise waa lala cunay"
                     }
 
@@ -24966,7 +24966,7 @@ translationSet trans =
         SearchBy ->
             { english = "Search by"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Kurondera umuntu wifashisha"
             , somali = Nothing
             }
 
