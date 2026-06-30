@@ -3324,8 +3324,17 @@ ncdaFormInputsAndTasks language currentDate site personId person config form cur
                                             else
                                                 let
                                                     muacAsFloat =
-                                                        Maybe.map (\(MuacInCm muac) -> muac)
+                                                        -- MUAC is stored in cm; show it in mm at Burundi.
+                                                        Maybe.map (\(MuacInCm muac) -> muacValueForSite site muac)
                                                             form.muac
+
+                                                    unitTransId =
+                                                        case site of
+                                                            SiteBurundi ->
+                                                                Translate.UnitMillimeter
+
+                                                            _ ->
+                                                                Translate.UnitCentimeter
                                                 in
                                                 [ div [ class "ui grid" ]
                                                     [ div [ class "eleven wide column" ]
@@ -3334,7 +3343,7 @@ ncdaFormInputsAndTasks language currentDate site personId person config form cur
                                                             muacAsFloat
                                                             config.setMuacMsg
                                                             "muac"
-                                                            Translate.UnitCentimeter
+                                                            unitTransId
                                                         ]
                                                     , div
                                                         [ class "five wide column" ]
