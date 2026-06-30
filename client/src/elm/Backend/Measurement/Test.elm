@@ -1,9 +1,10 @@
 module Backend.Measurement.Test exposing (all)
 
 import Backend.Measurement.Model exposing (ColorAlertIndication(..), GlucoseValue(..), HeadCircumferenceInCm(..), MuacInCm(..), RandomBloodSugarTestValue, TestExecutionNote(..), TestPrerequisite(..), UrineDipstickTestValue)
-import Backend.Measurement.Utils exposing (diabetesBySugarCount, diabetesByUrineGlucose, headCircumferenceIndication, muacIndicationForAdult, muacIndicationForChild)
+import Backend.Measurement.Utils exposing (diabetesBySugarCount, diabetesByUrineGlucose, headCircumferenceIndication, muacIndicationForAdult, muacIndicationForChild, muacValueFuncForSite)
 import EverySet
 import Expect
+import SyncManager.Model exposing (Site(..))
 import Test exposing (Test, describe, test)
 
 
@@ -172,6 +173,25 @@ diabetesByUrineGlucoseTest =
         ]
 
 
+muacValueFuncForSiteTest : Test
+muacValueFuncForSiteTest =
+    -- MUAC is stored in cm; Burundi displays it in mm (x10), other sites in cm.
+    describe "muacValueFuncForSite"
+        [ test "Burundi: 12.5 cm shown as 125 mm" <|
+            \_ ->
+                muacValueFuncForSite SiteBurundi (MuacInCm 12.5)
+                    |> Expect.within (Expect.Absolute 0.001) 125
+        , test "Rwanda: 12.5 cm shown unchanged" <|
+            \_ ->
+                muacValueFuncForSite SiteRwanda (MuacInCm 12.5)
+                    |> Expect.within (Expect.Absolute 0.001) 12.5
+        , test "Somalia: 12.5 cm shown unchanged" <|
+            \_ ->
+                muacValueFuncForSite SiteSomalia (MuacInCm 12.5)
+                    |> Expect.within (Expect.Absolute 0.001) 12.5
+        ]
+
+
 all : Test
 all =
     describe "Measurement data tests"
@@ -179,4 +199,5 @@ all =
         , headCircumferenceIndicationTest
         , diabetesBySugarCountTest
         , diabetesByUrineGlucoseTest
+        , muacValueFuncForSiteTest
         ]
