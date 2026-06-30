@@ -342,7 +342,12 @@ function hedley_reports_trigger_recalculation_for_edited_person($node) {
   $birth_date = $wrapper->field_birth_date->value();
   $birth_date_orig = $wrapper_orig->field_birth_date->value();
 
-  if ($birth_date == $birth_date_orig) {
+  $gender = $wrapper->field_gender->value();
+  $gender_orig = $wrapper_orig->field_gender->value();
+
+  // Birth date and gender both feed the person's aggregated nutrition data
+  // (z-scores are gender-derived), so a change to either must recalculate.
+  if ($birth_date == $birth_date_orig && $gender == $gender_orig) {
     return;
   }
 
@@ -408,28 +413,25 @@ function hedley_reports_trigger_recalculation_by_new_content($node) {
  * @throws EntityMetadataWrapperException
  */
 function hedley_reports_trigger_recalculation_by_edited_content($node) {
-  switch ($node->type) {
-    case HEDLEY_ACTIVITY_PRENATAL_ENCOUNTER_CONTENT_TYPE:
-      $participant_id = $node->field_individual_participant[LANGUAGE_NONE][0]['target_id'];
-      break;
+  // The antenatal participant node itself is a special case: it is neither a
+  // triggering encounter nor a triggering measurement, but editing it must
+  // still refresh the pregnancy's report data.
+  if ($node->type == HEDLEY_ACTIVITY_INDIVIDUAL_PARTICIPANT_CONTENT_TYPE) {
+    if ($node->field_encounter_type[LANGUAGE_NONE][0]['value'] == 'antenatal') {
+      $wrapper = entity_metadata_wrapper('node', $node);
+      $person_id = $wrapper->field_person->value(['identifier' => TRUE]);
+      hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA, $person_id, [
+        'person_id' => $person_id,
+      ]);
+    }
 
-    case HEDLEY_ACTIVITY_INDIVIDUAL_PARTICIPANT_CONTENT_TYPE:
-      if ($node->field_encounter_type[LANGUAGE_NONE][0]['value'] == 'antenatal') {
-        $participant_id = $node->nid;
-      }
-      break;
-  }
-
-  if (empty($participant_id)) {
-    // Can't resolve to which participant encounter belongs.
     return;
   }
-  $wrapper = entity_metadata_wrapper('node', $participant_id);
-  $person_id = $wrapper->field_person->value(['identifier' => TRUE]);
-  // Trigger recalculation using AQ.
-  hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA, $person_id, [
-    'person_id' => $person_id,
-  ]);
+
+  // For every other edited measurement or encounter, mirror the insert path,
+  // so value corrections and soft-deletes (which both arrive as node updates)
+  // refresh the report - not just prenatal content.
+  hedley_reports_trigger_recalculation_by_new_content($node);
 }
 
 /**
