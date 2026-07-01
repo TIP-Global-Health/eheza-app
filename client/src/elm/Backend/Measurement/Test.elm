@@ -197,6 +197,8 @@ preeclampsiaInFamilyEncodeTest =
             \_ -> encodedSign DoesOccur |> Expect.equal (Ok "yes")
         , test "DoesNotOccur -> \"no\"" <|
             \_ -> encodedSign DoesNotOccur |> Expect.equal (Ok "no")
+        , test "NotKnownIfOccurs -> \"do-not-know\"" <|
+            \_ -> encodedSign NotKnownIfOccurs |> Expect.equal (Ok "do-not-know")
         ]
 
 
