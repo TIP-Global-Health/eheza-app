@@ -13,6 +13,7 @@ import Backend.Model exposing (ModelIndexedDb, emptyModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
         ( generateNutritionAssessment
+        , resolveLatestValue
         , zScoreWeightForAgeModerate
         , zScoreWeightForAgeSevere
         )
@@ -266,6 +267,63 @@ generateNutritionAssessmentSignsTest =
         ]
 
 
+
+-- PART 3 — resolveLatestValue
+--
+-- The "previous value" reference shown next to height/MUAC/weight/head-
+-- circumference inputs must be the MOST RECENT measurement before today.
+-- Selection must not depend on the input list being pre-sorted: head
+-- circumference was concatenated oldest-first, and the old `List.head`-only
+-- selection showed the oldest value. resolveLatestValue sorts internally.
+
+
+resolveLatestValueTest : Test
+resolveLatestValueTest =
+    describe "resolveLatestValue (most recent value strictly before currentDate; order-independent)"
+        [ test "picks the most recent value when the list is oldest-first (reproduces the head-circumference bug)" <|
+            \_ ->
+                resolveLatestValue currentDate
+                    [ ( Date.fromCalendarDate 2020 Time.Jan 1, 100 )
+                    , ( Date.fromCalendarDate 2020 Time.Mar 1, 200 )
+                    , ( Date.fromCalendarDate 2020 Time.May 1, 300 )
+                    ]
+                    |> Expect.equal (Just 300)
+        , test "picks the most recent value regardless of input order" <|
+            \_ ->
+                resolveLatestValue currentDate
+                    [ ( Date.fromCalendarDate 2020 Time.Mar 1, 200 )
+                    , ( Date.fromCalendarDate 2020 Time.May 1, 300 )
+                    , ( Date.fromCalendarDate 2020 Time.Jan 1, 100 )
+                    ]
+                    |> Expect.equal (Just 300)
+        , test "ignores measurements dated on or after currentDate" <|
+            \_ ->
+                resolveLatestValue currentDate
+                    [ ( Date.fromCalendarDate 2020 Time.Apr 1, 200 )
+                    , ( Date.fromCalendarDate 2020 Time.May 15, 300 )
+                    , ( Date.fromCalendarDate 2020 Time.Jun 1, 999 )
+                    , ( Date.fromCalendarDate 2020 Time.Jul 1, 888 )
+                    ]
+                    |> Expect.equal (Just 300)
+        , test "returns Nothing for an empty list" <|
+            \_ ->
+                let
+                    noMeasurements : List ( NominalDate, Int )
+                    noMeasurements =
+                        []
+                in
+                resolveLatestValue currentDate noMeasurements
+                    |> Expect.equal Nothing
+        , test "returns Nothing when every measurement is dated on or after currentDate" <|
+            \_ ->
+                resolveLatestValue currentDate
+                    [ ( Date.fromCalendarDate 2020 Time.Jun 1, 999 )
+                    , ( Date.fromCalendarDate 2020 Time.Aug 1, 888 )
+                    ]
+                    |> Expect.equal Nothing
+        ]
+
+
 all : Test
 all =
     describe "Nutrition assessment tests"
@@ -274,4 +332,5 @@ all =
         , zScoreWeightForAgeModerateSixMonthsPlusTest
         , generateNutritionAssessmentMuacTest
         , generateNutritionAssessmentSignsTest
+        , resolveLatestValueTest
         ]

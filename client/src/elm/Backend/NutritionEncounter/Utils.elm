@@ -1,4 +1,4 @@
-module Backend.NutritionEncounter.Utils exposing (calculateZScoreWeightForAge, generateIndividualChildScoreboardMeasurementsForChild, generateNutritionAssessment, getAcuteIllnessEncountersForParticipant, getChildScoreboardEncountersForParticipant, getHIVEncountersForParticipant, getHomeVisitEncountersForParticipant, getNCDEncountersForParticipant, getNewbornExamPregnancySummary, getNutritionEncountersForParticipant, getPrenatalEncountersForParticipant, getTuberculosisEncountersForParticipant, getWellChildEncountersForParticipant, nutritionAssessmentForBackend, resolveAllWeightMeasurementsForChild, resolveNCDANeverFilled, resolveNCDANotFilledAfterAgeOfSixMonths, resolvePreviousValuesSetForChild, zScoreWeightForAgeModerate, zScoreWeightForAgeSevere)
+module Backend.NutritionEncounter.Utils exposing (calculateZScoreWeightForAge, generateIndividualChildScoreboardMeasurementsForChild, generateNutritionAssessment, getAcuteIllnessEncountersForParticipant, getChildScoreboardEncountersForParticipant, getHIVEncountersForParticipant, getHomeVisitEncountersForParticipant, getNCDEncountersForParticipant, getNewbornExamPregnancySummary, getNutritionEncountersForParticipant, getPrenatalEncountersForParticipant, getTuberculosisEncountersForParticipant, getWellChildEncountersForParticipant, nutritionAssessmentForBackend, resolveAllWeightMeasurementsForChild, resolveLatestValue, resolveNCDANeverFilled, resolveNCDANotFilledAfterAgeOfSixMonths, resolvePreviousValuesSetForChild, zScoreWeightForAgeModerate, zScoreWeightForAgeSevere)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
@@ -424,9 +424,13 @@ resolvePreviousMeasurementsSetForChild childId db =
                     )
                 |> Maybe.withDefault []
     in
-    { heights = nutritionHeights ++ wellChildHeights ++ groupHeights |> List.sortWith sortTuplesByDateDesc
-    , muacs = nutritionMuacs ++ wellChildMuacs ++ groupMuacs |> List.sortWith sortTuplesByDateDesc
-    , weights = nutritionWeights ++ wellChildWeights ++ groupWeights |> List.sortWith sortTuplesByDateDesc
+    -- Ordering is applied by `resolveLatestValue` when the most recent value is
+    -- selected, so the per-source lists are concatenated here without sorting.
+    -- (Previously `headCircumferences` lacked the sort its siblings had, which
+    -- made its "previous value" reference show the oldest measurement.)
+    { heights = nutritionHeights ++ wellChildHeights ++ groupHeights
+    , muacs = nutritionMuacs ++ wellChildMuacs ++ groupMuacs
+    , weights = nutritionWeights ++ wellChildWeights ++ groupWeights
     , headCircumferences = wellChildHeadCircumferences
     }
 
@@ -521,22 +525,30 @@ resolvePreviousValuesSetForChild currentDate site childId db =
     let
         previousMeasurementsSet =
             resolvePreviousMeasurementsSetForChild childId db
-
-        getLatestValue =
-            List.filter
-                (\( dateMeasured, _ ) ->
-                    Date.compare dateMeasured currentDate == LT
-                )
-                >> List.head
-                >> Maybe.map Tuple.second
     in
     PreviousValuesSet
-        (getLatestValue previousMeasurementsSet.heights)
-        (getLatestValue previousMeasurementsSet.muacs
+        (resolveLatestValue currentDate previousMeasurementsSet.heights)
+        (resolveLatestValue currentDate previousMeasurementsSet.muacs
             |> Maybe.map (muacValueForSite site)
         )
-        (getLatestValue previousMeasurementsSet.weights)
-        (getLatestValue previousMeasurementsSet.headCircumferences)
+        (resolveLatestValue currentDate previousMeasurementsSet.weights)
+        (resolveLatestValue currentDate previousMeasurementsSet.headCircumferences)
+
+
+{-| Select the most recently measured value dated strictly before `currentDate`.
+
+Sorts by measurement date internally, so it does not rely on the input list
+being pre-sorted. (A list that was concatenated but not sorted previously caused
+the "previous head circumference" reference to show the oldest measurement
+instead of the latest.)
+
+-}
+resolveLatestValue : NominalDate -> List ( NominalDate, a ) -> Maybe a
+resolveLatestValue currentDate =
+    List.filter (\( dateMeasured, _ ) -> Date.compare dateMeasured currentDate == LT)
+        >> List.sortWith sortTuplesByDateDesc
+        >> List.head
+        >> Maybe.map Tuple.second
 
 
 resolveAllWeightMeasurementsForChild : PersonId -> ModelIndexedDb -> List ( NominalDate, Float )

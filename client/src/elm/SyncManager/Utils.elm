@@ -1089,6 +1089,9 @@ getImageFromBackendAuthorityEntity backendAuthorityEntity =
             in
             Just url
 
+        BackendAuthorityWellChildPhoto identifier ->
+            getImageFromMeasurement identifier
+
         _ ->
             Nothing
 

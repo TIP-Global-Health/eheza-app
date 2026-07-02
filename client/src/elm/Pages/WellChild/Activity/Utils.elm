@@ -1,4 +1,4 @@
-module Pages.WellChild.Activity.Utils exposing (activityCompleted, albendazoleAdministrationFormConfig, dangerSignsTasksCompletedFromTotal, ecdSigns6To12MonthsMajors, ecdSignsFrom13Weeks, ecdSignsFrom5Weeks, expectActivity, expectImmunisationTask, expectMedicationTask, expectNextStepsTask, expectNutritionAssessmentTask, expectedECDSignsOnMilestone, generateASAPImmunisationDate, generateCompletedECDSigns, generateNextDateForImmunisationVisit, generateNextVisitDates, generateNutritionAssessment, generateRemianingECDSignsAfterCurrentEncounter, generateRemianingECDSignsBeforeCurrentEncounter, generateVitalsFormConfig, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, headCircumferenceFormAndTasks, headCircumferenceFormWithDefault, immunisationTasks, immunisationTasksCompletedFromTotal, mandatoryDangerSignsTasksCompleted, mandatoryNutritionAssessmentTasksCompleted, mebendezoleAdministrationFormConfig, medicationTasksCompletedFromTotal, nextStepsTasks, nextStepsTasksCompletedFromTotal, nextVisitFormWithDefault, nutritionAssessmentTaskCompleted, nutritionAssessmentTasksCompletedFromTotal, pregnancySummaryFormWithDefault, resolveNutritionAssessmentTasks, symptomsReviewFormInputsAndTasks, symptomsReviewFormWithDefault, toHeadCircumferenceValueWithDefault, toNextVisitValueWithDefault, toPregnancySummaryValueWithDefault, toSymptomsReviewValueWithDefault, toWellChildECDValueWithDefault, updateVaccinationFormByVaccineType, vaccinationFormDynamicContentAndTasks, vitaminAAdministrationFormConfig, wellChildECDFormWithDefault)
+module Pages.WellChild.Activity.Utils exposing (activityCompleted, albendazoleAdministrationFormConfig, dangerSignsTasksCompletedFromTotal, ecdSigns6To12MonthsMajors, ecdSignsFrom13Weeks, ecdSignsFrom5Weeks, expectActivity, expectImmunisationTask, expectMedicationTask, expectNextStepsTask, expectNutritionAssessmentTask, expectedECDSignsOnMilestone, generateASAPImmunisationDate, generateCompletedECDSigns, generateNextDateForImmunisationVisit, generateNextVisitDates, generateNutritionAssessment, generateRemianingECDSignsAfterCurrentEncounter, generateRemianingECDSignsBeforeCurrentEncounter, generateVitalsFormConfig, getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, headCircumferenceFormAndTasks, headCircumferenceFormWithDefault, immunisationTasks, immunisationTasksCompletedFromTotal, mandatoryDangerSignsTasksCompleted, mandatoryNutritionAssessmentTasksCompleted, mebendezoleAdministrationFormConfig, medicationTasksCompletedFromTotal, nextStepsTasks, nextStepsTasksCompletedFromTotal, nextVisitFormWithDefault, nutritionAssessmentTaskCompleted, nutritionAssessmentTasksCompletedFromTotal, pregnancySummaryFormWithDefault, resolveFirstEncounterDateAfterMilestone, resolveNutritionAssessmentTasks, symptomsReviewFormInputsAndTasks, symptomsReviewFormWithDefault, toHeadCircumferenceValueWithDefault, toNextVisitValueWithDefault, toPregnancySummaryValueWithDefault, toSymptomsReviewValueWithDefault, toWellChildECDValueWithDefault, updateVaccinationFormByVaccineType, vaccinationFormDynamicContentAndTasks, vitaminAAdministrationFormConfig, wellChildECDFormWithDefault)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
@@ -1020,6 +1020,18 @@ expectedECDSignsByAge currentDate assembled =
                 ecdSignsFromGroupedSignsByAge ageWeeks ageMonths groupedSigns
             )
         |> Maybe.withDefault []
+
+
+{-| The earliest WellChild encounter date strictly after the given milestone
+date. Used to bound the ECD assessment window (measurements up to and including
+that encounter). Nothing if no encounter falls after the milestone.
+-}
+resolveFirstEncounterDateAfterMilestone : NominalDate -> List NominalDate -> Maybe NominalDate
+resolveFirstEncounterDateAfterMilestone milestoneDate encounterDates =
+    encounterDates
+        |> List.filter (\date -> Date.compare milestoneDate date == LT)
+        |> List.sortWith Date.compare
+        |> List.head
 
 
 expectedECDSignsOnMilestone : NominalDate -> NominalDate -> Maybe NominalDate -> List ECDSign

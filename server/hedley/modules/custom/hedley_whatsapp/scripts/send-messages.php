@@ -56,6 +56,7 @@ $base_query->leftJoin('field_data_field_date_concluded', 'dc', 'n.nid = dc.entit
 $base_query->isNull('dc.field_date_concluded_value');
 $base_query->leftJoin('field_data_field_delivery_attempts', 'da', 'n.nid = da.entity_id');
 $base_query->condition('da.field_delivery_attempts_value', $delivery_attempts, '<');
+$base_query->orderBy('n.nid');
 
 $count_query = clone $base_query;
 if ($nid) {

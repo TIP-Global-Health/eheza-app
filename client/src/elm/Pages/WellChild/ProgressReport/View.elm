@@ -82,6 +82,7 @@ import Pages.WellChild.Activity.Utils
         ( expectedECDSignsOnMilestone
         , generateCompletedECDSigns
         , mandatoryNutritionAssessmentTasksCompleted
+        , resolveFirstEncounterDateAfterMilestone
         )
 import Pages.WellChild.Activity.View exposing (viewVaccinationOverview)
 import Pages.WellChild.Encounter.Model exposing (AssembledData)
@@ -1125,17 +1126,8 @@ genrateDefaultECDStatus birthDate milestone individualWellChildMeasurementsWithD
             resolveDateForPediatricCareMilestone birthDate milestone
 
         firstEncounterDateAfterMilestone =
-            List.filterMap
-                (\( date, _ ) ->
-                    if not <| Date.compare milestoneDate date == LT then
-                        Just date
-
-                    else
-                        Nothing
-                )
-                individualWellChildMeasurementsWithDates
-                |> List.sortWith Date.compare
-                |> List.head
+            resolveFirstEncounterDateAfterMilestone milestoneDate
+                (List.map Tuple.first individualWellChildMeasurementsWithDates)
 
         -- Take all measurements that were taken before the milestone,
         -- and, these of first encounter after milestone.

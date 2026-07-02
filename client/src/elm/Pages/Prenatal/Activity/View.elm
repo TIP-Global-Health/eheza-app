@@ -468,7 +468,7 @@ viewPregnancyDatingContent language currentDate assembled data =
                                     prePregnancyWeight =
                                         Maybe.map (\(WeightInKg weight) -> String.fromFloat weight ++ "kg")
                                             value.prePregnancyWeight
-                                            |> Maybe.withDefault "Not Set"
+                                            |> Maybe.withDefault (translate language Translate.NotAvailable)
                                 in
                                 [ viewCustomLabel language Translate.LmpDateConfirmationLabel "." "label"
                                 , viewLabel language Translate.LmpLabel
