@@ -17,7 +17,7 @@ import Measurement.Update
 import Pages.Activity.Model exposing (ChildUpdateReturns, Model, MotherUpdateReturns, Msg(..), Tab(..))
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Utils exposing (matchFilter, normalizeFilter)
-import SyncManager.Model exposing (SiteFeature)
+import SyncManager.Model exposing (Site, SiteFeature)
 import ZScore.Model
 
 
@@ -29,6 +29,7 @@ updateChild :
     NominalDate
     -> ZScore.Model.Model
     -> EverySet SiteFeature
+    -> Site
     -> Msg PersonId Measurement.Model.MsgChild
     -> Model PersonId
     -> EditableSession
@@ -36,7 +37,7 @@ updateChild :
     -> Maybe Measurement.Model.ModelChild
     -> ModelIndexedDb
     -> ChildUpdateReturns
-updateChild currentDate zscores features msg model session activity childForm db =
+updateChild currentDate zscores features site msg model session activity childForm db =
     case msg of
         GoBackToActivitiesPage sessionId ->
             ChildUpdateReturns
@@ -52,7 +53,7 @@ updateChild currentDate zscores features msg model session activity childForm db
                     (\form ->
                         let
                             ( subModel, subCmd, outMsg ) =
-                                Measurement.Update.updateChild subMsg form
+                                Measurement.Update.updateChild site subMsg form
                         in
                         ChildUpdateReturns
                             model
