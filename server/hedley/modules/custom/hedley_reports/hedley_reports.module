@@ -2417,7 +2417,10 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
       }
 
       $start_date_month = $start_date->format('m');
-      $encounter_fields = explode(',', $parts[1]);
+      // The wire may carry a "|<amount>" distribution tail (FBF) after the
+      // anthropometry CSV; strip it before parsing, matching the Elm decoder.
+      $anthropometry = explode('|', $parts[1])[0];
+      $encounter_fields = explode(',', $anthropometry);
       $nutrition_data = [
         'stunting' => (!isset($encounter_fields[0]) || $encounter_fields[0] === '') ? NULL : (float) $encounter_fields[0],
         'underweight' => (!isset($encounter_fields[1]) || $encounter_fields[1] === '') ? NULL : (float) $encounter_fields[1],
@@ -2449,7 +2452,10 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
       }
 
       $start_date_month = $start_date->format('m');
-      $muac_value = isset($parts[1]) && $parts[1] !== '' ? (float) $parts[1] : NULL;
+      // Strip the "|<distribution-amount>" tail (AHEZA) before reading MUAC, so
+      // an amount-only wire ("|500") is treated as no-MUAC rather than 0.0.
+      $muac_raw = isset($parts[1]) ? explode('|', $parts[1])[0] : '';
+      $muac_value = $muac_raw !== '' ? (float) $muac_raw : NULL;
       $family_data = [
         'stunting' => NULL,
         'underweight' => NULL,
