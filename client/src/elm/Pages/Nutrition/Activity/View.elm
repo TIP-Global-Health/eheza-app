@@ -8,7 +8,7 @@ module Pages.Nutrition.Activity.View exposing
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacValueForSite)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.NutritionEncounter.Utils
@@ -61,7 +61,7 @@ import Pages.Utils
         , viewSaveAction
         , viewTasksCount
         )
-import SyncManager.Model exposing (Site(..))
+import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
@@ -291,14 +291,8 @@ viewMuacContent language currentDate site assembled data previousValue =
             getInputConstraintsMuac site
 
         currentValue =
-            case site of
-                SiteBurundi ->
-                    -- Value is stored in cm, but for Burundi, we need to
-                    -- view it as mm. Therefore, multiplying by 10.
-                    Maybe.map ((*) 10) form.muac
-
-                _ ->
-                    form.muac
+            -- MUAC is stored in cm; muacValueForSite shows it in mm at Burundi.
+            Maybe.map (muacValueForSite site) form.muac
 
         disabled =
             (tasksCompleted /= tasksTotal)

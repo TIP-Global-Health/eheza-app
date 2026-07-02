@@ -17,6 +17,7 @@ import Backend.Measurement.Utils
         , mapMeasurementData
         , muacIndicationForChild
         , muacIndicationForPerson
+        , muacValueForSite
         , nutritionSignToString
         )
 import Backend.Model exposing (ModelIndexedDb)
@@ -4313,17 +4314,17 @@ muacFormInputsAndTasks language currentDate site person previousValue setMuacMsg
         activity =
             Backend.NutritionActivity.Model.Muac
 
-        ( currentValue, unitTransId ) =
+        currentValue =
+            -- MUAC is stored in cm; muacValueForSite shows it in mm at Burundi.
+            Maybe.map (muacValueForSite site) form.muac
+
+        unitTransId =
             case site of
                 SiteBurundi ->
-                    ( -- Value is stored in cm, but for Burundi, we need to
-                      -- view it as mm. Therefore, multiplying by 10.
-                      Maybe.map ((*) 10) form.muac
-                    , Translate.UnitMillimeter
-                    )
+                    Translate.UnitMillimeter
 
                 _ ->
-                    ( form.muac, Translate.UnitCentimeter )
+                    Translate.UnitCentimeter
 
         rangeHelper =
             if showRangeHelper then
