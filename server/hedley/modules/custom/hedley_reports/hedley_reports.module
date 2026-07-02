@@ -327,7 +327,7 @@ function hedley_reports_trigger_recalculation_for_created_person($node) {
 /**
  * Triggers recalculation of person's Reports data, when edited.
  *
- * Recalculation is required only when birthdate is edited.
+ * Recalculation is required when birthdate or gender is edited.
  * Note: Currently, editing geo fields of person is not allowed.
  *
  * @param object $node
@@ -417,7 +417,10 @@ function hedley_reports_trigger_recalculation_by_edited_content($node) {
   // triggering encounter nor a triggering measurement, but editing it must
   // still refresh the pregnancy's report data.
   if ($node->type == HEDLEY_ACTIVITY_INDIVIDUAL_PARTICIPANT_CONTENT_TYPE) {
-    if ($node->field_encounter_type[LANGUAGE_NONE][0]['value'] == 'antenatal') {
+    $encounter_type = !empty($node->field_encounter_type[LANGUAGE_NONE][0]['value'])
+      ? $node->field_encounter_type[LANGUAGE_NONE][0]['value']
+      : '';
+    if ($encounter_type == 'antenatal') {
       $wrapper = entity_metadata_wrapper('node', $node);
       $person_id = $wrapper->field_person->value(['identifier' => TRUE]);
       hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA, $person_id, [
