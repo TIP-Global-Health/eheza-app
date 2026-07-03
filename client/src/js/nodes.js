@@ -1001,7 +1001,11 @@
                             criteria.sector = fields[2];
                             criteria.cell = fields[3];
                             criteria.village = fields[4];
-                            query = table.where(criteria);
+                            // Exclude soft-deleted people, matching the other
+                            // person-search branches (name/national id).
+                            query = table.where(criteria).and(function (person) {
+                                return person.deleted !== true;
+                            });
 
                             countQuery = query.clone();
 
@@ -1161,7 +1165,10 @@
                   if (nurseId) {
                     modifyQuery = modifyQuery.then(function () {
                         criteria.nurse = nurseId;
-                        query = table.where(criteria);
+                        // Exclude soft-deleted records, as the other branches do.
+                        query = table.where(criteria).and(function (item) {
+                            return item.deleted !== true;
+                        });
 
                         countQuery = query.clone();
 
@@ -1177,7 +1184,10 @@
                   if (personId) {
                     modifyQuery = modifyQuery.then(function () {
                         criteria.participating_patients = personId;
-                        query = table.where(criteria);
+                        // Exclude soft-deleted records, as the other branches do.
+                        query = table.where(criteria).and(function (item) {
+                            return item.deleted !== true;
+                        });
 
                         countQuery = query.clone();
 
