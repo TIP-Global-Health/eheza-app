@@ -604,7 +604,7 @@ update id isLabTech db msg model =
                     model.labResultsData.hemoglobinTestForm
 
                 updatedForm =
-                    { form | hemoglobinCount = String.toFloat value }
+                    { form | hemoglobinCount = String.toFloat value, hemoglobinCountDirty = True }
 
                 updatedData =
                     model.labResultsData
@@ -666,7 +666,7 @@ update id isLabTech db msg model =
                     model.labResultsData.randomBloodSugarTestForm
 
                 updatedForm =
-                    { form | sugarCount = String.toFloat value }
+                    { form | sugarCount = String.toFloat value, sugarCountDirty = True }
 
                 updatedData =
                     model.labResultsData
@@ -752,7 +752,7 @@ update id isLabTech db msg model =
                     model.labResultsData.hivPCRTestForm
 
                 updatedForm =
-                    { form | hivViralLoad = String.toFloat value }
+                    { form | hivViralLoad = String.toFloat value, hivViralLoadDirty = True }
 
                 updatedData =
                     model.labResultsData
@@ -1538,7 +1538,7 @@ updateLabsHistory originEncounterId labEncounterId isLabTech db msg data =
                     data.hemoglobinTestForm
 
                 updatedForm =
-                    { form | hemoglobinCount = String.toFloat value }
+                    { form | hemoglobinCount = String.toFloat value, hemoglobinCountDirty = True }
             in
             ( { data | hemoglobinTestForm = updatedForm }
             , Cmd.none
@@ -1575,7 +1575,7 @@ updateLabsHistory originEncounterId labEncounterId isLabTech db msg data =
                     data.randomBloodSugarTestForm
 
                 updatedForm =
-                    { form | sugarCount = String.toFloat value }
+                    { form | sugarCount = String.toFloat value, sugarCountDirty = True }
             in
             ( { data | randomBloodSugarTestForm = updatedForm }
             , Cmd.none
@@ -1635,7 +1635,7 @@ updateLabsHistory originEncounterId labEncounterId isLabTech db msg data =
                     data.hivPCRTestForm
 
                 updatedForm =
-                    { form | hivViralLoad = String.toFloat value }
+                    { form | hivViralLoad = String.toFloat value, hivViralLoadDirty = True }
             in
             ( { data | hivPCRTestForm = updatedForm }
             , Cmd.none
