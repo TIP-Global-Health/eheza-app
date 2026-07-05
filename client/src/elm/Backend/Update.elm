@@ -4679,7 +4679,13 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             )
 
         PostIndividualEncounterParticipant extraData session ->
-            if Dict.get session.person model.postIndividualEncounterParticipant |> Maybe.map RemoteData.isLoading |> Maybe.withDefault False then
+            let
+                alreadyInFlight =
+                    Dict.get session.person model.postIndividualEncounterParticipant
+                        |> Maybe.map RemoteData.isLoading
+                        |> Maybe.withDefault False
+            in
+            if alreadyInFlight then
                 -- A create for this person is already in flight; ignore the
                 -- duplicate, so a double-tapped "begin encounter" button can't
                 -- open two encounter participants (e.g. two open pregnancies).
@@ -5100,7 +5106,13 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             )
 
         PostFamilyEncounterParticipant session ->
-            if Dict.get session.person model.postFamilyEncounterParticipant |> Maybe.map RemoteData.isLoading |> Maybe.withDefault False then
+            let
+                alreadyInFlight =
+                    Dict.get session.person model.postFamilyEncounterParticipant
+                        |> Maybe.map RemoteData.isLoading
+                        |> Maybe.withDefault False
+            in
+            if alreadyInFlight then
                 -- Already creating a family encounter participant for this
                 -- person; ignore the double-tap.
                 ( model, Cmd.none, [] )
