@@ -18,7 +18,7 @@ import Json.Encode
 import List.Zipper as Zipper
 import Maybe.Extra
 import Pages.Page exposing (Page)
-import RemoteData
+import RemoteData exposing (RemoteData)
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 import SyncManager.Decoder exposing (decodeDownloadSyncResponseAuthority, decodeDownloadSyncResponseAuthorityStats, decodeDownloadSyncResponseGeneral)
 import SyncManager.Encoder
@@ -41,7 +41,7 @@ import Version
 {-| True when either the local IndexedDB write or the backend request of a sync
 record is still in progress. Used to avoid re-issuing a step already running.
 -}
-isRecordLoading : { a | indexDbRemoteData : RemoteData.RemoteData e1 v1, backendRemoteData : RemoteData.RemoteData e2 v2 } -> Bool
+isRecordLoading : { a | indexDbRemoteData : RemoteData e1 v1, backendRemoteData : RemoteData e2 v2 } -> Bool
 isRecordLoading record =
     RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData
 
