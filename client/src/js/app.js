@@ -948,7 +948,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         };
 
         return sendIndexedDbFetchResult(queryType, resultToSend);
-      })().catch(() => sendIndexedDbFetchResult(queryType, {entities: [], remaining: 0}));
+      })().catch((e) => sendIndexedDbFetchResult(queryType, {'entities': [], 'remaining': 0, 'error': String(e)}));
       break;
 
     case 'IndexDbQueryUploadWhatsApp':
@@ -983,7 +983,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         };
 
         return sendIndexedDbFetchResult(queryType, resultToSend);
-      })().catch(() => sendIndexedDbFetchResult(queryType, {entities: [], remaining: 0}));
+      })().catch((e) => sendIndexedDbFetchResult(queryType, {'entities': [], 'remaining': 0, 'error': String(e)}));
       break;
 
     case 'IndexDbQueryUploadAuthority':
@@ -1045,7 +1045,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         }
 
         return sendIndexedDbFetchResult(queryType, resultToSend);
-      })().catch(() => sendIndexedDbFetchResult(queryType, {entities: [], remaining: 0}));
+      })().catch((e) => sendIndexedDbFetchResult(queryType, {'entities': [], 'remaining': 0, 'error': String(e)}));
       break;
 
     case 'IndexDbQueryDeferredPhoto':
