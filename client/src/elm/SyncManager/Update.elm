@@ -38,6 +38,14 @@ import Utils.WebData
 import Version
 
 
+{-| True when either the local IndexedDB write or the backend request of a sync
+record is still in progress. Used to avoid re-issuing a step already running.
+-}
+isRecordLoading : { a | indexDbRemoteData : RemoteData.RemoteData e1 v1, backendRemoteData : RemoteData.RemoteData e2 v2 } -> Bool
+isRecordLoading record =
+    RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData
+
+
 update : Time.Posix -> Page -> Int -> Device -> Msg -> Model -> SubModelReturn Model Msg
 update currentTime activePage dbVersion device msg model =
     let
@@ -933,7 +941,7 @@ update currentTime activePage dbVersion device msg model =
                     noChange
 
                 DownloadPhotosInProcess (DownloadPhotosBatch record) ->
-                    if RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData then
+                    if isRecordLoading record then
                         -- We are already loading.
                         noChange
 
@@ -954,7 +962,7 @@ update currentTime activePage dbVersion device msg model =
                             { model | downloadPhotosStatus = DownloadPhotosInProcess (DownloadPhotosBatch recordUpdated) }
 
                 DownloadPhotosInProcess (DownloadPhotosAll record) ->
-                    if RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData then
+                    if isRecordLoading record then
                         -- We are already loading.
                         noChange
 
@@ -986,7 +994,7 @@ update currentTime activePage dbVersion device msg model =
                     noChange
 
                 DownloadPhotosInProcess (DownloadPhotosBatch record) ->
-                    if RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData then
+                    if isRecordLoading record then
                         noChange
 
                     else
@@ -1006,7 +1014,7 @@ update currentTime activePage dbVersion device msg model =
                             { model | downloadPhotosStatus = DownloadPhotosInProcess (DownloadPhotosBatch recordUpdated) }
 
                 DownloadPhotosInProcess (DownloadPhotosAll record) ->
-                    if RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData then
+                    if isRecordLoading record then
                         noChange
 
                     else
@@ -1032,7 +1040,7 @@ update currentTime activePage dbVersion device msg model =
             -- Get a entities for upload from IndexDB.
             case model.syncStatus of
                 SyncUploadGeneral record ->
-                    if RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData then
+                    if isRecordLoading record then
                         -- We are already loading.
                         noChange
 
@@ -1089,7 +1097,7 @@ update currentTime activePage dbVersion device msg model =
             -- Get a entities for upload from IndexDB.
             case model.syncStatus of
                 SyncUploadAuthority record ->
-                    if RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData then
+                    if isRecordLoading record then
                         -- We are already loading.
                         noChange
 

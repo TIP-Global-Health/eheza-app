@@ -63,7 +63,12 @@ muacIndicationForChild (MuacInCm value) =
 
 muacIndicationForPerson : NominalDate -> Person -> MuacInCm -> ColorAlertIndication
 muacIndicationForPerson currentDate person muac =
-    if isPersonAnAdult currentDate person |> Maybe.withDefault False then
+    let
+        isAdult =
+            isPersonAnAdult currentDate person
+                |> Maybe.withDefault False
+    in
+    if isAdult then
         muacIndicationForAdult muac
 
     else

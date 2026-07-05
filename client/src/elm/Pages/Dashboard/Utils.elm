@@ -789,10 +789,12 @@ filterNewlyDiagnosesCasesForSelectedMonth dateLastDayOfSelectedMonth diagnoses =
                 matchDates =
                     List.filterMap
                         (\encounter ->
-                            if
-                                EverySet.toList encounter.diagnoses
-                                    |> List.any (\diagnosis -> List.member diagnosis diagnoses)
-                            then
+                            let
+                                hasMatchingDiagnosis =
+                                    EverySet.toList encounter.diagnoses
+                                        |> List.any (\diagnosis -> List.member diagnosis diagnoses)
+                            in
+                            if hasMatchingDiagnosis then
                                 Just encounter.startDate
 
                             else
