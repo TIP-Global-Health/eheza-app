@@ -4,11 +4,14 @@ import AssocList as Dict
 import Backend.Measurement.Model
     exposing
         ( ColorAlertIndication(..)
+        , MuacInCm(..)
         , VaccineDose(..)
         , WellChildVaccineType(..)
         )
 import Date exposing (Unit(..))
 import Expect
+import Measurement.Model exposing (MsgChild(..), emptyModelChild)
+import Measurement.Update exposing (updateChild)
 import Measurement.Utils
     exposing
         ( getAllDosesForVaccine
@@ -242,6 +245,31 @@ initialVaccinationDateByBirthDateTest =
         ]
 
 
+updateChildSetMuacTest : Test
+updateChildSetMuacTest =
+    -- The NCDA MUAC field stores cm. At Burundi the nurse enters mm, so the
+    -- group-session input handler must divide by 10 (like every other MUAC
+    -- field) rather than store the typed value verbatim.
+    describe "updateChild SetMuac (group NCDA MUAC input is site-aware)"
+        [ test "Burundi: entering 125 (mm) stores 12.5 cm" <|
+            \_ ->
+                let
+                    ( model, _, _ ) =
+                        updateChild SiteBurundi (SetMuac "125") emptyModelChild
+                in
+                model.ncdaData.form.muac
+                    |> Expect.equal (Just (MuacInCm 12.5))
+        , test "Rwanda: entering 12.5 (cm) stores 12.5 cm unchanged" <|
+            \_ ->
+                let
+                    ( model, _, _ ) =
+                        updateChild SiteRwanda (SetMuac "12.5") emptyModelChild
+                in
+                model.ncdaData.form.muac
+                    |> Expect.equal (Just (MuacInCm 12.5))
+        ]
+
+
 all : Test
 all =
     describe "Measurement of children: form tests"
@@ -251,4 +279,5 @@ all =
         , getIntervalForVaccineTest
         , getAllDosesForVaccineTest
         , initialVaccinationDateByBirthDateTest
+        , updateChildSetMuacTest
         ]

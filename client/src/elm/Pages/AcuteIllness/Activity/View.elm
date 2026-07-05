@@ -5,7 +5,7 @@ import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (covidIsolationPeriod, getMeasurementValueFunc, muacValueFunc)
+import Backend.Measurement.Utils exposing (covidIsolationPeriod, getMeasurementValueFunc, muacValueFuncForSite)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Form
 import Backend.Person.Model exposing (Person)
@@ -766,7 +766,7 @@ viewAcuteIllnessPhysicalExam language currentDate site isChw assembled data =
                 Just PhysicalExamMuac ->
                     let
                         previousValue =
-                            resolvePreviousValue assembled .muac muacValueFunc
+                            resolvePreviousValue assembled .muac (muacValueFuncForSite site)
                     in
                     getMeasurementValueFunc measurements.muac
                         |> muacFormWithDefault data.muacForm

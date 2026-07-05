@@ -105,6 +105,7 @@ updateFoundSession currentDate zscores site features sessionId session db msg mo
                     Pages.Activity.Update.updateChild currentDate
                         zscores
                         features
+                        site
                         subMsg
                         activityPage
                         session
@@ -204,7 +205,7 @@ updateFoundSession currentDate zscores site features sessionId session db msg mo
                         |> Maybe.withDefault Pages.Participant.Model.emptyModel
 
                 updateReturns =
-                    Pages.Participant.Update.updateChild subMsg childPage childForm
+                    Pages.Participant.Update.updateChild site subMsg childPage childForm
 
                 sessionMsgs =
                     List.map (App.Model.MsgIndexedDb << Backend.Model.MsgSession sessionId)
