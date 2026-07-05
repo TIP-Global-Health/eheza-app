@@ -1067,10 +1067,7 @@ update currentTime activePage dbVersion device msg model =
             -- Get a entities for upload from IndexDB.
             case model.syncStatus of
                 SyncUploadWhatsApp record ->
-                    if
-                        RemoteData.isLoading record.indexDbRemoteData
-                            || RemoteData.isLoading record.backendRemoteData
-                    then
+                    if isRecordLoading record then
                         -- We are already loading.
                         noChange
 
