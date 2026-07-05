@@ -814,7 +814,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
             return sendIndexedDbFetchResult(queryType, {tag: 'Success', result: row});
         });
-      })();
+      })().catch((e) => sendIndexedDbFetchResult(queryType, {tag: 'Error', error: 'UploadError', reason: String(e)}));
       break;
 
     case 'IndexDbQueryUploadScreenshot':
@@ -911,7 +911,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
             return sendIndexedDbFetchResult(queryType, {tag: 'Success', result: row});
         });
-      })();
+      })().catch((e) => sendIndexedDbFetchResult(queryType, {tag: 'Error', error: 'UploadError', reason: String(e)}));
       break;
 
     case 'IndexDbQueryUploadGeneral':
@@ -948,7 +948,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         };
 
         return sendIndexedDbFetchResult(queryType, resultToSend);
-      })();
+      })().catch(() => sendIndexedDbFetchResult(queryType, {entities: [], remaining: 0}));
       break;
 
     case 'IndexDbQueryUploadWhatsApp':
@@ -983,7 +983,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         };
 
         return sendIndexedDbFetchResult(queryType, resultToSend);
-      })();
+      })().catch(() => sendIndexedDbFetchResult(queryType, {entities: [], remaining: 0}));
       break;
 
     case 'IndexDbQueryUploadAuthority':
@@ -1045,7 +1045,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         }
 
         return sendIndexedDbFetchResult(queryType, resultToSend);
-      })();
+      })().catch(() => sendIndexedDbFetchResult(queryType, {entities: [], remaining: 0}));
       break;
 
     case 'IndexDbQueryDeferredPhoto':
