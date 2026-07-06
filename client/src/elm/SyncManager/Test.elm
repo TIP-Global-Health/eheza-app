@@ -173,9 +173,9 @@ all =
 
         -- The download lanes complete only on save success, so a batch-save
         -- failure must park the waiting lane back to idle (retried next
-        -- cycle) instead of leaving it Loading forever. testModel's
-        -- downloadRequestTime is 0, so the in-flight request timestamp
-        -- is "0".
+        -- cycle) instead of leaving it Loading forever. downloadRequestTime
+        -- is set explicitly in each test, so the in-flight request
+        -- timestamp is "0".
         , test "SavedAtIndexDbHandle parks a Loading Authority download lane to idle when its batch save fails" <|
             \() ->
                 let
@@ -193,7 +193,10 @@ all =
                     0
                     testDevice
                     (SavedAtIndexDbHandle saveResult)
-                    { testModel | syncStatus = SyncDownloadAuthority RemoteData.Loading }
+                    { testModel
+                        | syncStatus = SyncDownloadAuthority RemoteData.Loading
+                        , downloadRequestTime = Time.millisToPosix 0
+                    }
                     |> .model
                     |> .syncStatus
                     |> Expect.equal SyncIdle
@@ -214,7 +217,10 @@ all =
                     0
                     testDevice
                     (SavedAtIndexDbHandle saveResult)
-                    { testModel | syncStatus = SyncDownloadGeneral RemoteData.Loading }
+                    { testModel
+                        | syncStatus = SyncDownloadGeneral RemoteData.Loading
+                        , downloadRequestTime = Time.millisToPosix 0
+                    }
                     |> .model
                     |> .syncStatus
                     |> Expect.equal SyncIdle
@@ -235,7 +241,10 @@ all =
                     0
                     testDevice
                     (SavedAtIndexDbHandle saveResult)
-                    { testModel | syncStatus = SyncDownloadAuthority RemoteData.Loading }
+                    { testModel
+                        | syncStatus = SyncDownloadAuthority RemoteData.Loading
+                        , downloadRequestTime = Time.millisToPosix 0
+                    }
                     |> .model
                     |> .syncStatus
                     |> Expect.equal (SyncDownloadAuthority RemoteData.Loading)
@@ -256,7 +265,10 @@ all =
                     0
                     testDevice
                     (SavedAtIndexDbHandle saveResult)
-                    { testModel | syncStatus = SyncDownloadAuthority RemoteData.Loading }
+                    { testModel
+                        | syncStatus = SyncDownloadAuthority RemoteData.Loading
+                        , downloadRequestTime = Time.millisToPosix 0
+                    }
                     |> .model
                     |> .syncStatus
                     |> Expect.equal (SyncDownloadAuthority RemoteData.Loading)
