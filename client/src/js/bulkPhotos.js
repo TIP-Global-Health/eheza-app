@@ -14,7 +14,8 @@
  * handleBulkPhotoFetch returns either:
  *   { results: [{url, ok, terminal}, ...] } on success, or
  *   { batchError: <http status or 0 for network/parse failure> } on
- *   whole-batch failure.
+ *   whole-batch failure, optionally carrying a diagnostic `error` string
+ *   (ignored by the Elm decoder, visible in port traffic).
  *
  * NOTE: depends on self.photoCache.stripAccessToken — photoCache.js must
  * load before this file (handled by index.html script order).
