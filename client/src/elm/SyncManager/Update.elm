@@ -2330,14 +2330,45 @@ update currentTime activePage dbVersion device msg model =
                                     SubModelReturn clearedModel Cmd.none noError []
 
                         IndexDbSaveFailure ->
-                            -- A save into IndexedDB actually failed. This used to be a
-                            -- blind no-op: a QuotaExceededError (device storage full)
-                            -- was indistinguishable from success, so the lane retried
-                            -- the same batch forever with no signal. Record the failure
-                            -- so the condition is observable -- and, for storage-full,
-                            -- surfaceable to the user in a later step.
+                            -- A save into IndexedDB actually failed (e.g.
+                            -- QuotaExceededError when device storage is full).
+                            -- Record the failure so the condition is observable --
+                            -- for storage-full, it drives a user-facing banner.
+                            -- The download lanes complete only on save SUCCESS, so
+                            -- a lane waiting on this save would stay Loading
+                            -- forever, with the 30s timeout re-fetching the same
+                            -- batch (the revision cursor advances only on save
+                            -- success). Park it back to idle instead; the next
+                            -- sync cycle retries the batch cleanly. We must NOT
+                            -- dispatch the FetchedDataSavedHandle completion here:
+                            -- that would advance the cursor past unsaved entities.
+                            let
+                                modelWithError =
+                                    { model | lastSaveError = Just (SyncManager.Utils.indexDbSaveErrorFromReason indexDbSaveResult.reason) }
+
+                                -- Same in-flight guard as the save-success
+                                -- handlers: a reply for a superseded (timed-out)
+                                -- request must not touch the current lane.
+                                parkIfCurrentRequest =
+                                    if indexDbSaveResult.timestamp == requestTimestamp then
+                                        { modelWithError | syncStatus = SyncIdle }
+
+                                    else
+                                        modelWithError
+
+                                parkedModel =
+                                    case ( indexDbSaveResult.table, modelWithError.syncStatus ) of
+                                        ( IndexDbSaveResultTableAutority, SyncDownloadAuthority _ ) ->
+                                            parkIfCurrentRequest
+
+                                        ( IndexDbSaveResultTableGeneral, SyncDownloadGeneral _ ) ->
+                                            parkIfCurrentRequest
+
+                                        _ ->
+                                            modelWithError
+                            in
                             SubModelReturn
-                                { model | lastSaveError = Just (SyncManager.Utils.indexDbSaveErrorFromReason indexDbSaveResult.reason) }
+                                parkedModel
                                 Cmd.none
                                 noError
                                 []

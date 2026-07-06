@@ -170,4 +170,94 @@ all =
                     |> .model
                     |> .lastSaveError
                     |> Expect.equal Nothing
+
+        -- The download lanes complete only on save success, so a batch-save
+        -- failure must park the waiting lane back to idle (retried next
+        -- cycle) instead of leaving it Loading forever. testModel's
+        -- downloadRequestTime is 0, so the in-flight request timestamp
+        -- is "0".
+        , test "SavedAtIndexDbHandle parks a Loading Authority download lane to idle when its batch save fails" <|
+            \() ->
+                let
+                    saveResult =
+                        Json.Encode.object
+                            [ ( "table", Json.Encode.string "Authority" )
+                            , ( "status", Json.Encode.string "Failure" )
+                            , ( "timestamp", Json.Encode.string "0" )
+                            , ( "reason", Json.Encode.string "QuotaExceededError" )
+                            ]
+                in
+                SyncManager.Update.update
+                    (Time.millisToPosix 0)
+                    DevicePage
+                    0
+                    testDevice
+                    (SavedAtIndexDbHandle saveResult)
+                    { testModel | syncStatus = SyncDownloadAuthority RemoteData.Loading }
+                    |> .model
+                    |> .syncStatus
+                    |> Expect.equal SyncIdle
+        , test "SavedAtIndexDbHandle parks a Loading General download lane to idle when its batch save fails" <|
+            \() ->
+                let
+                    saveResult =
+                        Json.Encode.object
+                            [ ( "table", Json.Encode.string "General" )
+                            , ( "status", Json.Encode.string "Failure" )
+                            , ( "timestamp", Json.Encode.string "0" )
+                            , ( "reason", Json.Encode.string "QuotaExceededError" )
+                            ]
+                in
+                SyncManager.Update.update
+                    (Time.millisToPosix 0)
+                    DevicePage
+                    0
+                    testDevice
+                    (SavedAtIndexDbHandle saveResult)
+                    { testModel | syncStatus = SyncDownloadGeneral RemoteData.Loading }
+                    |> .model
+                    |> .syncStatus
+                    |> Expect.equal SyncIdle
+        , test "SavedAtIndexDbHandle ignores a save failure from a superseded (timed-out) request" <|
+            \() ->
+                let
+                    saveResult =
+                        Json.Encode.object
+                            [ ( "table", Json.Encode.string "Authority" )
+                            , ( "status", Json.Encode.string "Failure" )
+                            , ( "timestamp", Json.Encode.string "999" )
+                            , ( "reason", Json.Encode.string "QuotaExceededError" )
+                            ]
+                in
+                SyncManager.Update.update
+                    (Time.millisToPosix 0)
+                    DevicePage
+                    0
+                    testDevice
+                    (SavedAtIndexDbHandle saveResult)
+                    { testModel | syncStatus = SyncDownloadAuthority RemoteData.Loading }
+                    |> .model
+                    |> .syncStatus
+                    |> Expect.equal (SyncDownloadAuthority RemoteData.Loading)
+        , test "SavedAtIndexDbHandle leaves the download lane alone when another table's save fails" <|
+            \() ->
+                let
+                    saveResult =
+                        Json.Encode.object
+                            [ ( "table", Json.Encode.string "DeferredPhotos" )
+                            , ( "status", Json.Encode.string "Failure" )
+                            , ( "timestamp", Json.Encode.string "0" )
+                            , ( "reason", Json.Encode.string "QuotaExceededError" )
+                            ]
+                in
+                SyncManager.Update.update
+                    (Time.millisToPosix 0)
+                    DevicePage
+                    0
+                    testDevice
+                    (SavedAtIndexDbHandle saveResult)
+                    { testModel | syncStatus = SyncDownloadAuthority RemoteData.Loading }
+                    |> .model
+                    |> .syncStatus
+                    |> Expect.equal (SyncDownloadAuthority RemoteData.Loading)
         ]
