@@ -1986,33 +1986,59 @@ generateNextDateForImmunisationVisit currentDate site assembled =
                 )
                 futureVaccinationsData
 
+        -- Emptiness is decided on the extracted dates, and not on the
+        -- partitioned tuples: generateFutureVaccinationsData emits a
+        -- (vaccineType, Nothing) tuple for every completed vaccine cycle,
+        -- so the tuples lists are never empty.
+        longIntervalVaccinesDates =
+            List.filterMap (Tuple.second >> Maybe.map Tuple.second) longIntervalVaccinesData
+
+        shortIntervalVaccinesDates =
+            List.filterMap (Tuple.second >> Maybe.map Tuple.second) shortIntervalVaccinesData
+
         ( nextVisitDate, interval, unit ) =
-            if List.isEmpty shortIntervalVaccinesData then
-                ( List.filterMap (Tuple.second >> Maybe.map Tuple.second) longIntervalVaccinesData
+            if List.isEmpty shortIntervalVaccinesDates then
+                ( longIntervalVaccinesDates
                     |> List.sortWith Date.compare
-                    -- Get the most recent of all dates.
+                    -- Get the earliest of all dates.
                     |> List.head
                 , 6
                 , Months
                 )
 
             else
-                ( List.filterMap (Tuple.second >> Maybe.map Tuple.second) shortIntervalVaccinesData
-                    |> List.filter
-                        -- There can be a situation where IPV vaccine is to
-                        -- be administeredon latter date (first given at 14 weeks).
-                        -- We avoid this situation, and consider only dates that
-                        -- are due withing a month.
-                        (\administrationDate ->
-                            Date.diff Days currentDate administrationDate < 30
-                        )
-                    |> List.sortWith Date.compare
-                    -- Get the latest of all dates.
-                    |> List.reverse
-                    |> List.head
-                , 28
-                , Days
-                )
+                let
+                    -- There can be a situation where IPV vaccine is to
+                    -- be administeredon latter date (first given at 14 weeks).
+                    -- We avoid this situation, and consider only dates that
+                    -- are due withing a month.
+                    datesDueWithinMonth =
+                        List.filter
+                            (\administrationDate ->
+                                Date.diff Days currentDate administrationDate < 30
+                            )
+                            shortIntervalVaccinesDates
+                in
+                if List.isEmpty datesDueWithinMonth then
+                    -- No pending dose is due within a month. Fall back to the
+                    -- earliest pending dose (short or long interval), so the
+                    -- visit is suggested for when the first vaccine becomes due.
+                    List.map (\date -> ( date, 28, Days )) shortIntervalVaccinesDates
+                        ++ List.map (\date -> ( date, 6, Months )) longIntervalVaccinesDates
+                        |> List.sortWith (\( date1, _, _ ) ( date2, _, _ ) -> Date.compare date1 date2)
+                        |> List.head
+                        |> Maybe.map (\( date, fallbackInterval, fallbackUnit ) -> ( Just date, fallbackInterval, fallbackUnit ))
+                        |> Maybe.withDefault ( Nothing, 28, Days )
+
+                else
+                    ( datesDueWithinMonth
+                        |> List.sortWith Date.compare
+                        -- Get the latest of all dates.
+                        |> List.reverse
+                        |> List.head
+                    , 28
+                    , Days
+                    )
     in
     -- If we see that next suggested date already passed, or is set for today,
     -- oer requirements, we set next visit to 1 vaccine interval from current date.
