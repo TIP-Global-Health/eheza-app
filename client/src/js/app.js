@@ -596,7 +596,10 @@ elmApp.ports.sendSyncSpeed.subscribe(function(syncSpeed) {
  * whole-batch error) goes back via the bulkPhotoFetchHandle port.
  */
 elmApp.ports.bulkPhotoFetch.subscribe(async function(params) {
-  const outcome = await self.bulkPhotos.handleBulkPhotoFetch(params);
+  // Belt and braces: the handler guards its own failure paths, but a reply
+  // must reach Elm on every exit, or the photos lane stays Loading forever.
+  const outcome = await self.bulkPhotos.handleBulkPhotoFetch(params)
+    .catch((e) => ({ 'batchError': 0, 'error': String(e) }));
   elmApp.ports.bulkPhotoFetchHandle.send(outcome);
 });
 
